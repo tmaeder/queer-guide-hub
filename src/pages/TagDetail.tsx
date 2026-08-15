@@ -64,7 +64,9 @@ import { TagAliasesDisplay } from '@/components/tags/TagAliasesDisplay';
 import { TagSafetyCallout } from '@/components/tags/TagSafetyCallout';
 import { TagWikiContent } from '@/components/tags/TagWikiContent';
 import { TagInterchange } from '@/components/tags/TagInterchange';
+import { TagDiagnosticCodes } from '@/components/tags/TagDiagnosticCodes';
 import { TagLinkedContent } from '@/components/tags/TagLinkedContent';
+import { useTagMedicalCodes, countMedicalCodes } from '@/hooks/useTagMedicalCodes';
 
 /** `entity_kind` is a classification, not a state — which is exactly what
  *  DetailMasthead's bordered ink status chip is for. */
@@ -130,6 +132,11 @@ export default function TagDetail() {
 
   const { data: usage } = useTagUsageBreakdown(tag?.id);
   const { data: similar } = useSimilarTags(tag?.id ?? null, 15);
+  // Fetched here as well as inside the band so the route strip and the rail can
+  // both react to whether this term is coded at all. React Query dedupes the
+  // request; the band owns the rendering.
+  const { data: medicalCodes } = useTagMedicalCodes(tag?.id ?? null);
+  const medicalCodeCount = countMedicalCodes(medicalCodes);
 
   const relatedByEmbedding = useMemo(
     () => rankSimilarTags(similar ?? [], primary?.name, safeMode.enabled).slice(0, 10),
@@ -155,6 +162,9 @@ export default function TagDetail() {
       s.push({ id: 'about', title: t('tags.detail.about', 'About') });
       s.push(...(wiki?.sections ?? []).map((x) => ({ ...x, depth: 2 as const })));
     }
+    if (medicalCodeCount > 0) {
+      s.push({ id: 'codes', title: t('tags.detail.codes.title', 'Diagnostic codes') });
+    }
     s.push({ id: 'taxonomy', title: t('tags.detail.inTaxonomy', 'In the taxonomy') });
     if (usage?.venue_count) s.push({ id: 'venues', title: t('tags.detail.venues', 'Venues') });
     if (usage?.event_count) s.push({ id: 'events', title: t('tags.detail.events', 'Events') });
@@ -164,7 +174,10 @@ export default function TagDetail() {
       s.push({ id: 'communities', title: t('tags.detail.communities', 'Communities') });
     }
     return s;
-  }, [tag, wiki, usage, t]);
+    // medicalCodeCount belongs here: the codes RPC resolves AFTER the first
+    // render, so omitting it would pin the strip to the pre-fetch value of 0
+    // and the stop would never appear.
+  }, [tag, wiki, usage, medicalCodeCount, t]);
 
   const { activeId, goToStation } = useActiveStation(stations);
 
@@ -356,6 +369,8 @@ export default function TagDetail() {
         </section>
       )}
 
+      <TagDiagnosticCodes tagId={tag.id} />
+
       <TagInterchange tagId={tag.id} tagName={tag.name} />
 
       <TagLinkedContent tagId={tag.id} tagName={tag.name} />
@@ -390,8 +405,17 @@ export default function TagDetail() {
         </SidebarCard>
       )}
 
-      {(tag.wikipedia_url || tag.wikidata_id) && (
+      {(tag.wikipedia_url || tag.wikidata_id || medicalCodeCount > 0) && (
         <SidebarCard eyebrow={t('tags.detail.elsewhere', 'Elsewhere')}>
+          {/* An in-page anchor rather than the codes themselves: the rail is
+              240px and the band has four groups. This row is a pointer, not a
+              second copy. */}
+          {medicalCodeCount > 0 && (
+            <SidebarRow
+              label={t('tags.detail.codes.title', 'Diagnostic codes')}
+              value={<a href="#codes">{medicalCodeCount}</a>}
+            />
+          )}
           {tag.wikipedia_url && (
             <SidebarRow
               label="Wikipedia"
