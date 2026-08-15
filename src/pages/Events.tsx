@@ -124,7 +124,10 @@ const Events = () => {
       />
       <PageContainer>
         {/* Filters — first interactive surface after hero */}
-        <div className="flex flex-col gap-4 p-4 bg-card rounded-container mb-6">
+        {/* Tighter below md. Measured on prod at 390x844: this block is 392px and the
+            sticky result bar under it another 175px, so the first event sat 1,098px
+            down. gap/padding/margin at the mobile step recover 48px of that. */}
+        <div className="mb-4 flex flex-col gap-2 rounded-container bg-card px-4 py-2 md:mb-6 md:gap-4 md:p-4">
           {/* Search Bar */}
           <EventSearchBar
             search={f.search}
