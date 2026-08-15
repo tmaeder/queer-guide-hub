@@ -1,8 +1,10 @@
 import { assertEquals } from 'https://deno.land/std@0.208.0/assert/mod.ts'
 import {
+  ADULT_OCCUPATION_QIDS,
   DEFAULT_PLATFORMS,
   PLATFORM_KEYS,
   decideTier,
+  fetchAdultPerformerQids,
   displayNameFromTitle,
   extractTitle,
   nextMissState,
@@ -49,12 +51,75 @@ Deno.test('slugifyName matches the platforms own slugging', () => {
 
 // ── Nightly platform set ────────────────────────────────────────────────────
 
-Deno.test('the nightly set excludes xhamster but the prober still supports it', () => {
-  // ~3% hit rate for a third of the probe traffic on this gay-male corpus.
-  assertEquals(DEFAULT_PLATFORMS.includes('xhamster'), false)
-  assertEquals(DEFAULT_PLATFORMS, ['pornhub', 'xvideos'])
-  // Still fully probeable on demand — the capability is not removed.
+Deno.test('the nightly set is pornhub only; the others stay on-demand', () => {
+  // xhamster ~3% hit rate. xvideos produced 0 auto-links across a full sweep
+  // while generating 72% of the review queue — its /profiles/ space is
+  // self-registered, so it is never `curated`. Both remain probeable on
+  // demand via the `platforms` body field.
+  assertEquals(DEFAULT_PLATFORMS, ['pornhub'])
   assertEquals(PLATFORM_KEYS.includes('xhamster'), true)
+  assertEquals(PLATFORM_KEYS.includes('xvideos'), true)
+})
+
+Deno.test('only explicitly pornographic occupations corroborate', () => {
+  assertEquals(ADULT_OCCUPATION_QIDS.has('Q488111'), true)   // pornographic actor
+  assertEquals(ADULT_OCCUPATION_QIDS.has('Q17456089'), true) // pornographic film director
+  // Measured as frequent in the cohort but NOT establishing adult performance:
+  for (const q of ['Q4610556', 'Q33999', 'Q10800557', 'Q3286043', 'Q137686981']) {
+    assertEquals(ADULT_OCCUPATION_QIDS.has(q), false, q)
+  }
+})
+
+const porn = { mainsnak: { datavalue: { value: { id: 'Q488111' } } } }
+
+Deno.test('corroboration needs the occupation AND the right person', async () => {
+  const fake = (_url: string) =>
+    Promise.resolve({
+      entities: {
+        // porn occupation + label matches our name -> corroborated
+        Q1443300: { claims: { P106: [porn] }, labels: { en: { value: 'Joey Stefano' } } },
+        // porn occupation but the entity is a DIFFERENT person -> rejected.
+        // This is the 59.7%-wrong-QID guard: a mis-attached QID that happens
+        // to also be a performer must not lift the gate.
+        Q222: { claims: { P106: [porn] }, labels: { en: { value: 'Danny Starr' } } },
+        // right person, but not documented as a performer -> rejected
+        Q333: {
+          claims: { P106: [{ mainsnak: { datavalue: { value: { id: 'Q33999' } } } }] },
+          labels: { en: { value: 'Real Person' } },
+        },
+      },
+    })
+  const got = await fetchAdultPerformerQids(
+    [
+      { qid: 'Q1443300', name: 'Joey Stefano' },
+      { qid: 'Q222', name: 'Danny Star' },
+      { qid: 'Q333', name: 'Real Person' },
+    ],
+    fake,
+  )
+  assertEquals([...got], ['Q1443300'])
+})
+
+Deno.test('an alias in any language satisfies the name check', async () => {
+  const fake = (_url: string) =>
+    Promise.resolve({
+      entities: {
+        Q1: {
+          claims: { P106: [porn] },
+          labels: { de: { value: 'Ein Anderer Name' } },
+          aliases: { en: [{ value: 'Rocco Steele' }] },
+        },
+      },
+    })
+  const got = await fetchAdultPerformerQids([{ qid: 'Q1', name: 'Rocco-Steele' }], fake)
+  assertEquals([...got], ['Q1'])
+})
+
+Deno.test('fetchAdultPerformerQids fails CLOSED on a network error', async () => {
+  const boom = (_url: string) => Promise.reject(new Error('network down'))
+  const got = await fetchAdultPerformerQids([{ qid: 'Q1443300', name: 'Joey Stefano' }], boom)
+  // Empty set => the encyclopedic gate still applies => review, not auto.
+  assertEquals(got.size, 0)
 })
 
 // ── The redirect rule ───────────────────────────────────────────────────────
@@ -174,7 +239,7 @@ Deno.test('auto tier requires an exact name match in a curated directory', () =>
   assertEquals(d.tier, 'auto')
 })
 
-Deno.test('a Wikidata/Wikipedia-sourced row NEVER auto-applies', () => {
+Deno.test('an encyclopedic row with NO documented adult occupation still holds', () => {
   // "David Villa" is in this corpus AND is a famous footballer's name.
   const d = decideTier({
     name: 'David Villa', encyclopedic: true, singleToken: false,
@@ -182,6 +247,39 @@ Deno.test('a Wikidata/Wikipedia-sourced row NEVER auto-applies', () => {
   })
   assertEquals(d.tier, 'review')
   assertEquals(d.reason, 'encyclopedic_provenance')
+})
+
+Deno.test('Wikidata documenting a pornographic occupation lifts the gate', () => {
+  // Joey Stefano: P106 includes Q488111, so the encyclopedic source is
+  // evidence FOR the link. 95% of the blocked cohort looks like this.
+  const d = decideTier({
+    name: 'Joey Stefano', encyclopedic: true, documentedAdultPerformer: true,
+    singleToken: false, probe: curatedHit('Joey Stefano'),
+  })
+  assertEquals(d.tier, 'auto')
+  assertEquals(d.reason, 'exact_name_match_curated_directory_wikidata_corroborated')
+})
+
+Deno.test('corroboration does NOT override the identity checks', () => {
+  // The encyclopedic check moved LAST precisely so these still bite.
+  const mismatch = decideTier({
+    name: 'Chris Allen', encyclopedic: true, documentedAdultPerformer: true,
+    singleToken: false, probe: curatedHit('Someone Else'),
+  })
+  assertEquals(mismatch.reason, 'display_name_mismatch')
+
+  const single = decideTier({
+    name: 'Lukas', encyclopedic: true, documentedAdultPerformer: true,
+    singleToken: true, probe: curatedHit('Lukas'),
+  })
+  assertEquals(single.reason, 'ambiguous_name')
+
+  const selfReg = decideTier({
+    name: 'Scott Williams', encyclopedic: true, documentedAdultPerformer: true,
+    singleToken: false,
+    probe: { hit: true, url: 'https://example.test/x', displayName: 'Scott Williams', curated: false },
+  })
+  assertEquals(selfReg.reason, 'self_registered_profile')
 })
 
 Deno.test('a single-token name never auto-applies', () => {

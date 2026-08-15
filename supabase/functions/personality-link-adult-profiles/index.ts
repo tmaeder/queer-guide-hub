@@ -32,6 +32,7 @@ import {
   DEFAULT_PLATFORMS,
   PLATFORM_KEYS,
   decideTier,
+  fetchAdultPerformerQids,
   nextMissState,
   probeProfile,
   type Fetcher,
@@ -251,7 +252,7 @@ Deno.serve(async (req) => {
   // tiering signals, not the jsonb columns we have to merge into.
   const { data: current, error: curErr } = await supabase
     .from('personalities')
-    .select('id, is_adult, social_links, enrichment_status, field_provenance')
+    .select('id, is_adult, wikidata_qid, social_links, enrichment_status, field_provenance')
     .in('id', due.map((d) => d.id))
   if (curErr) {
     await report('error', 0, 0, {}, curErr.message)
@@ -263,6 +264,7 @@ Deno.serve(async (req) => {
       r.id as string,
       {
         isAdult: r.is_adult === true,
+        qid: (r.wikidata_qid as string | null) ?? null,
         social: (r.social_links ?? {}) as Record<string, string>,
         enrich: (r.enrichment_status ?? {}) as Record<string, unknown>,
         prov: (r.field_provenance ?? {}) as Record<string, unknown>,
@@ -287,6 +289,15 @@ Deno.serve(async (req) => {
   }
   const alreadyQueued = new Set(
     (openRows ?? []).map((r) => `${r.entity_id}:${r.field}`),
+  )
+
+  // Wikidata P106 for the batch, resolved ONCE. A row whose own encyclopedic
+  // source documents it as a pornographic actor is corroborated by that
+  // source, not threatened by it — see ADULT_OCCUPATION_QIDS. Fails closed.
+  const adultPerformerQids = await fetchAdultPerformerQids(
+    due
+      .map((d) => ({ qid: state.get(d.id)?.qid ?? '', name: d.name }))
+      .filter((c) => /^Q\d+$/.test(c.qid)),
   )
 
   const fetcher = makeFetcher()
@@ -338,6 +349,7 @@ Deno.serve(async (req) => {
       const decision = decideTier({
         name: row.name,
         encyclopedic: row.encyclopedic,
+        documentedAdultPerformer: !!st.qid && adultPerformerQids.has(st.qid),
         singleToken: row.single_token,
         probe,
       })
