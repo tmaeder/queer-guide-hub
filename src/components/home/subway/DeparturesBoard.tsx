@@ -25,8 +25,12 @@ function BoardRow({ row, locale }: { row: NearYouRow; locale: string }) {
     <div className="group relative border-b-2 border-foreground/10 last:border-b-0">
       <div className="grid grid-cols-[42px_1fr_auto] items-center gap-4 px-4 py-4 transition-colors group-hover:bg-surface-container md:grid-cols-[52px_120px_1fr_28px] md:px-6">
         <RouteBullet type={row.kind} size={42} />
+        {/* Blank, not an em-dash. A standing place has no departure time, and a
+            column of "—" down five of six rows reads as missing data rather
+            than as an attribute that does not apply. The cell keeps its width
+            so the titles stay on one vertical. */}
         <span className="hidden text-body-lg font-bold tabular-nums md:block">
-          {row.kind === 'event' ? formatBoardTime(row.startDate, locale) : '—'}
+          {row.kind === 'event' ? formatBoardTime(row.startDate, locale) : ''}
         </span>
         <span className="min-w-0">
           <span className="block truncate text-title font-bold md:text-headline">{row.title}</span>

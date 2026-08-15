@@ -16,6 +16,7 @@ import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import { getFallbackImage } from '@/utils/fallbackImages';
 import { formatProfession } from '@/lib/professionDisplay';
 import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
+import { cn } from '@/lib/utils';
 
 type Person = {
   id: string;
@@ -135,7 +136,11 @@ export default function ArchiveBand() {
       seeAllHref="/history"
       seeAllLabel={t('milestones.home.seeAll', 'Full timeline')}
     >
-      <div className="grid gap-10 lg:grid-cols-2">
+      {/* Two columns only when there ARE two. With ~110 curated milestones,
+          most days have none, and a fixed 2-col grid left the birthdays strip
+          in the left half under a full-width Anton heading with the right half
+          empty — the band read as broken rather than quiet. */}
+      <div className={cn('grid gap-10', hasMilestones && hasPeople && 'lg:grid-cols-2')}>
         {hasMilestones && (
           <section aria-label={t('milestones.home.title', 'On this day')}>
             <Eyebrow as="div" className="mb-4">
