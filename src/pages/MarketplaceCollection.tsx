@@ -7,16 +7,17 @@ import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { useMarketplaceCollectionBySlug } from '@/hooks/useMarketplaceCollections';
 import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
-import { EmptyState } from '@/components/ui/EmptyState';
-import { Store } from 'lucide-react';
-import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
+import { MarketplaceMasthead } from '@/components/marketplace/MarketplaceMasthead';
+import { DeadEndTrack } from '@/components/transit/DeadEndTrack';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { Button } from '@/components/ui/button';
 import { PageContainer } from '@/components/layout/PageContainer';
 
 const MarketplaceCollection = () => {
   const { t } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const { user } = useAuth();
-  const navigate = useLocalizedNavigate();
   const { collection, listings, loading, notFound } = useMarketplaceCollectionBySlug(slug);
 
   useMeta({
@@ -40,52 +41,57 @@ const MarketplaceCollection = () => {
   if (notFound) {
     return (
       <PageContainer>
-        <EmptyState
-          icon={Store}
-          title="Collection not found"
-          description="This collection may have moved or is not yet published."
-          mood="neutral"
-          primaryAction={{ label: 'Back to marketplace', onClick: () => navigate('/marketplace') }}
-        />
+        <h1 className="font-display text-display leading-[0.95]">No such collection.</h1>
+        <p className="mt-4 max-w-reading text-body-lg text-muted-foreground">
+          This collection may have moved, or it is not published yet.
+        </p>
+        <DeadEndTrack className="mt-10" label={slug ?? 'Unknown'} type="marketplace" />
+        <div className="mt-8">
+          <Button asChild>
+            <LocalizedLink to="/marketplace" className="no-underline">
+              Back to the marketplace
+            </LocalizedLink>
+          </Button>
+        </div>
       </PageContainer>
     );
   }
 
   if (loading || !collection) {
     return (
-      <PageContainer>
-        <p className="text-muted-foreground">Loading…</p>
+      <PageContainer className="flex justify-center">
+        <TrackLoader label="Loading" />
       </PageContainer>
     );
   }
 
   return (
     <div className="min-h-screen">
-      <PageContainer>
-        <header className="mb-12 max-w-3xl">
-          <p className="text-13 uppercase tracking-wide text-muted-foreground mb-2">Collection</p>
-          <h1 className="text-headline md:text-display font-semibold mb-4 leading-tight">
-            {collection.title}
-          </h1>
-          {collection.subtitle && (
-            <p className="text-body-lg text-muted-foreground">{collection.subtitle}</p>
-          )}
-          {collection.editor_blurb && (
-            <p className="mt-4 text-body-lg leading-relaxed max-w-prose">
-              {collection.editor_blurb}
-            </p>
-          )}
-        </header>
+      <MarketplaceMasthead
+        size="page"
+        backTo={{ label: 'Marketplace', to: '/marketplace' }}
+        eyebrow="Marketplace · Collection"
+        title={collection.title}
+        lede={collection.subtitle ?? undefined}
+        count={`${listings.length.toLocaleString()} item${listings.length !== 1 ? 's' : ''}`}
+      >
+        {collection.editor_blurb && (
+          <p className="mt-8 max-w-reading text-body-lg leading-relaxed">
+            {collection.editor_blurb}
+          </p>
+        )}
+      </MarketplaceMasthead>
 
+      <PageContainer>
         {listings.length === 0 ? (
-          <EmptyState
-            icon={Store}
-            title="No items in this collection yet."
-            description="Check back soon — editors are picking the lineup."
-            mood="neutral"
-          />
+          <p className="text-muted-foreground">
+            Nothing in this collection yet.{' '}
+            <LocalizedLink to="/marketplace" className="underline underline-offset-4">
+              Browse the marketplace
+            </LocalizedLink>
+          </p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
             {listings.map((l, i) => (
               <MarketplaceCard
                 key={l.id}
