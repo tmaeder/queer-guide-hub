@@ -18,35 +18,6 @@ interface ImageAssetLinkRow {
   } | null;
 }
 
-interface LinkQueryResult {
-  data: ImageAssetLinkRow[] | null;
-  error: { message: string } | null;
-}
-
-/**
- * A four-method view of the query builder, because the full one no longer fits.
- *
- * `untypedFrom` is typed as `ReturnType<typeof supabase.from>` — the union of
- * EVERY table's builder. Regenerating `types.ts` took that union from 439
- * tables to 451, and this chain then tipped past TypeScript's instantiation
- * depth limit (TS2589). Narrowing to the methods this query uses keeps the
- * chain shallow.
- *
- * Nothing is lost by it: `untypedFrom` is the escape hatch for tables outside
- * the generated types, so the rows were never checked against the schema here
- * anyway — this file already hand-wrote the row shape and cast to it. The cast
- * now lives in one place, on the query, instead of on the result.
- *
- * The underlying `untypedFrom` typing is the real defect and is worth fixing
- * centrally, but it has 261 call sites across 113 files and that is a change
- * with its own blast radius.
- */
-interface LooseImageLinkQuery extends PromiseLike<LinkQueryResult> {
-  select: (columns: string) => LooseImageLinkQuery;
-  eq: (column: string, value: unknown) => LooseImageLinkQuery;
-  in: (column: string, values: readonly string[]) => LooseImageLinkQuery;
-}
-
 /**
  * Batch-fetch the best `cover` image_asset for each of `entityIds` of the
  * given `entityType`. Returns a Map keyed by entity_id. Callers feed the
@@ -84,7 +55,7 @@ export function useEntityImageAssets(
       for (let i = 0; i < ids.length; i += CHUNK) chunks.push(ids.slice(i, i + CHUNK));
       const results = await Promise.all(
         chunks.map((chunk) =>
-          (untypedFrom('image_asset_links') as unknown as LooseImageLinkQuery)
+          untypedFrom('image_asset_links')
             .select('entity_id, role, image_assets!inner(optimized_url, thumbnail_url, optimization_status, status)')
             .eq('entity_type', entityType)
             .in('entity_id', chunk)
@@ -100,7 +71,7 @@ export function useEntityImageAssets(
         setLoading(false);
         return;
       }
-      const data = results.flatMap((r) => r.data ?? []);
+      const data = results.flatMap((r) => r.data ?? []) as unknown as ImageAssetLinkRow[];
 
       const map = new Map<string, EntityImageAsset>();
       for (const row of data) {

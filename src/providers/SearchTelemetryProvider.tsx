@@ -46,7 +46,10 @@ async function resolveSlug(table: string, slug: string): Promise<string | null> 
 		.select("id")
 		.eq("slug", slug)
 		.maybeSingle();
-	if (error || !data?.id) return null;
+	// typeof, not just truthiness: rows from `untypedFrom` carry `unknown`
+	// values, and this narrows to the string the cache and callers expect
+	// instead of stringifying whatever came back.
+	if (error || typeof data?.id !== 'string') return null;
 	slugCache.set(key, { id: data.id, ts: Date.now() });
 	return data.id;
 }
