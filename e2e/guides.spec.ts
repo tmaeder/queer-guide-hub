@@ -22,9 +22,15 @@ test.describe('Guides — unified hub', () => {
   // and no dropdowns — so /venues, /events, /news, /marketplace and /guides all
   // left the header by design. The others are still reachable because their
   // cluster hub links them; /guides was not, which left the whole family with
-  // no path from desktop chrome at all. `/shop` (the `shop` cluster hub, per
-  // DESTINATIONS in src/config/navigation.ts) now carries it, and this test
-  // guards that path rather than the retired header one.
+  // no path from desktop chrome at all. The `shop` cluster hub now carries it,
+  // and this test guards that path rather than the retired header one.
+  //
+  // That hub moved from /shop to /marketplace when the two were folded together
+  // (they were the same page — see src/routes.tsx). Entry stays `/shop` on
+  // purpose: it follows the 301, so this keeps testing "the shop hub" wherever
+  // the hub lives AND incidentally proves the fold preserved this path instead
+  // of breaking it. The section on /marketplace passes `alwaysRender` to
+  // GuidesRail for exactly the reason below.
   test('the shop hub links to the guides family', async ({ page }) => {
     await page.goto('/shop');
     await page.waitForLoadState('domcontentloaded');

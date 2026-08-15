@@ -15,6 +15,7 @@ import {
   MODE_SCOPE_BIAS,
   isIntentActive,
 } from '../navigation';
+import { ROUTE_BULLET_MAP } from '@/components/transit/routeBulletMap';
 
 const routesSrc = readFileSync(resolve(__dirname, '../../routes.tsx'), 'utf8');
 
@@ -211,10 +212,25 @@ describe('INTENT_TRACK', () => {
     // The homepage draws all four tracks. A line with no station on it is a
     // stripe of colour that leads nowhere.
     for (const track of TRACKS) {
+      expect(Object.values(INTENT_TRACK), `no intent rides the ${track} line`).toContain(track);
+    }
+  });
+
+  it('agrees with ROUTE_BULLET_MAP wherever an intent maps 1:1 to a content type', () => {
+    // Most intents span several types (going-out is venue+event, travelling is
+    // city+country+hotel), so their line is a free choice. `shop` is the one
+    // that resolves to exactly one type, and it read 'blue' against a yellow
+    // marketplace bullet until 2026-08-12 — the nav tab and the page it opened
+    // were different colours, which is the one thing a wayfinding system may
+    // not do. Add a row here only for a genuinely 1:1 intent.
+    const ONE_TO_ONE: Record<string, keyof typeof ROUTE_BULLET_MAP> = {
+      shop: 'marketplace',
+    };
+    for (const [intentId, type] of Object.entries(ONE_TO_ONE)) {
       expect(
-        Object.values(INTENT_TRACK),
-        `no intent rides the ${track} line`,
-      ).toContain(track);
+        INTENT_TRACK[intentId],
+        `intent "${intentId}" rides the ${INTENT_TRACK[intentId]} line but its content type "${type}" is ${ROUTE_BULLET_MAP[type].track}`,
+      ).toBe(ROUTE_BULLET_MAP[type].track);
     }
   });
 });

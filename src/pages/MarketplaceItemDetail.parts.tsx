@@ -362,6 +362,23 @@ function ProductFacts({ listing }: { listing: MarketplaceListing }) {
   // lone "Out of stock" chip in a picker would imply options that never
   // existed (spec module 09's rule — a sold-out variant must not misrepresent
   // what the maker offers).
+  //
+  // WHY THIS TYPE'S STACK IS PART-RENDERED (singleModules.ts declares
+  // required [1, 9, 15, 8], conditional [11, 12, 4]):
+  //   01 fact strip   — here.
+  //   08 nested entity— BrandStoryBlock, which now falls back to a
+  //                     NestedEntityCard so the maker appears on every listing
+  //                     with an approved brand, not only those with a story.
+  //   12 history      — MarketplacePriceHistory below.
+  //   09 variants     — UNRENDERABLE. No variant/size/option/SKU column exists.
+  //   15 stat line    — deliberately not rendered. Its own rule is "a count
+  //                     belongs here only if it changes what the reader DOES";
+  //                     the only counts this type has are views (vanity) and a
+  //                     review count already shown beside the rating.
+  //   11 vouches      — deliberately not rendered. Vouches takes a Roster of
+  //                     PEOPLE; marketplace reviews are rated prose, so routing
+  //                     them through it would drop the rating and the text.
+  //                     The reviews list below carries more, not less.
   const facts = [
     { label: 'Brand', value: listing.brand },
     { label: 'Department', value: dept },

@@ -239,11 +239,10 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'Support organizations, advocacy groups and crisis helplines for LGBTQ+ people, listed by country with direct links.',
   },
-  '/shop': {
-    title: 'Shop — Books, Apparel, Art and Gifts',
-    description:
-      'Books, fashion, art and gifts for and about the LGBTQ+ community, with queer-owned brands labelled where ownership is verified.',
-  },
+  // No '/shop' entry: it 301s to /marketplace at the edge. A meta entry for a
+  // redirect source is dead code AND puts the URL in sitemap-static.xml (which
+  // is Object.keys(STATIC_ROUTE_META).filter(isIndexable)), i.e. a sitemap that
+  // advertises a redirect. routeMetaContract.test.ts fails on it.
   // Backfill (2026-08): these five are linked from nav, the mobile sheet or the
   // footer but had no entry here, so resolveMeta fell through to DEFAULT_META —
   // whose title is byte-identical to the homepage's — and sitemap-static.xml,
@@ -426,11 +425,13 @@ export function isIndexable(pathname: string): boolean {
     /^\/people\/(friends|dating|travel|nearby)(\/|$)/,
     // The signed-in friends list. Nothing public to render, same class as /hub.
     /^\/community\/friends(\/|$)/,
-    // `/shop/*` is a React `Navigate` to /marketplace with no edge redirect, so
-    // every path under it returned 200 + the homepage title + the generic
-    // fallback body — an unbounded indexable URL space. `/shop` itself stays
-    // indexable and is excluded by the negative lookahead.
-    /^\/shop\/.+/,
+    // /shop folded into /marketplace. public/_redirects 301s the whole subtree
+    // at the edge, so this is the defensive second layer — it matters off
+    // Cloudflare (dev, `vite preview`, e2e) and for localized `/de/shop`, which
+    // the unprefixed edge rule cannot catch and which the router redirects only
+    // after serving a 200. Now covers `/shop` itself as well as its children:
+    // before the fold, the bare path was a real indexable page.
+    /^\/shop(\/|$)/,
   ];
   return !noindex.some((r) => r.test(pathname));
 }

@@ -119,7 +119,19 @@ export const ATTRIBUTE_KIND_LABELS: Record<MarketplaceAttributeKind, string> = {
   vibe: 'Vibe',
 };
 
-/** One-tap browse chips (occasion axis). Slugs are unified_tags slugs. */
+/**
+ * One-tap browse chips (occasion axis). Slugs are unified_tags slugs.
+ *
+ * ALWAYS build occasion links from this array, never from hand-written slugs.
+ * The now-deleted /shop page shipped tiles pointing at `?categories=books`,
+ * `?categories=art` and `?categories=apparel` — `categories` is not a filter
+ * parameter at all (the keys are q/dept/cat/type/loc/price/owned/tags/cur/
+ * avail/verified, see src/lib/marketplaceFilterParams.ts), so those three were
+ * silently dropped and landed on the UNFILTERED catalogue while presenting as
+ * curated entries. Two more pointed at `?tags=pride` and `?tags=gift`: the
+ * vocabulary is `occ-*` and there has never been a `gift` tag. Sourcing from
+ * here makes a taxonomy rename a build error instead of an empty tile.
+ */
 export const OCCASION_CHIPS: Array<{ slug: string; label: string }> = [
   { slug: 'occ-pride', label: 'Pride' },
   { slug: 'occ-drag', label: 'Drag' },

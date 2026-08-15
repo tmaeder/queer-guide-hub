@@ -53,57 +53,110 @@ export interface RelaxationStep {
   next: MarketplaceFiltersInput;
 }
 
+export interface FilterFacet {
+  /** Noun phrase — what the filter IS. For the active-filter row. */
+  noun: string;
+  /** Imperative — what dropping it DOES. For the zero-result rescue. */
+  relaxLabel: string;
+  /** The filter set with this dimension removed. */
+  next: MarketplaceFiltersInput;
+}
+
 /**
- * One actionable "Remove {facet}" chip per active dimension, most
- * restrictive first — each applies the filter set minus that dimension.
+ * Every active filter dimension, most restrictive first, described twice.
+ *
+ * Two surfaces need the same list in different voices: the active-filter row
+ * in the control band wants nouns ("Under $50 ×") and the zero-result rescue
+ * wants imperatives ("Remove price limit ($0 – $50)"). Deriving both from one
+ * list is what stops them disagreeing about what a filter is called or, worse,
+ * about which dimensions exist — a facet added to one and forgotten in the
+ * other is invisible in exactly the state where it matters.
+ *
+ * `search` is deliberately absent: it is not a chip, it is the text sitting in
+ * the search field directly above, and rendering it twice invites the reader
+ * to clear it in the place where they cannot see what they cleared. It still
+ * counts toward `countActiveFilters`, so the "All filters" badge can legitimately
+ * read one higher than the number of chips.
  */
-export function buildRelaxationSteps(f: MarketplaceFiltersInput): RelaxationStep[] {
-  const steps: RelaxationStep[] = [];
+export function describeActiveFilters(f: MarketplaceFiltersInput): FilterFacet[] {
+  const facets: FilterFacet[] = [];
   if (f.priceRange) {
-    const label =
+    const range =
       f.priceRange.max < 100000
-        ? `Remove price limit ($${f.priceRange.min} – ${f.priceRange.max})`
-        : `Remove price limit ($${f.priceRange.min}+)`;
-    steps.push({ label, next: { ...f, priceRange: undefined } });
+        ? `$${f.priceRange.min} – ${f.priceRange.max}`
+        : `$${f.priceRange.min}+`;
+    facets.push({
+      noun: range,
+      relaxLabel: `Remove price limit (${range})`,
+      next: { ...f, priceRange: undefined },
+    });
   }
   for (const tag of f.tags ?? []) {
-    steps.push({
-      label: `Remove tag "${tag.replace(/^(mat|occ|vibe)-/, '').replace(/-/g, ' ')}"`,
+    const pretty = tag.replace(/^(mat|occ|vibe)-/, '').replace(/-/g, ' ');
+    facets.push({
+      noun: pretty,
+      relaxLabel: `Remove tag "${pretty}"`,
       next: { ...f, tags: f.tags!.filter((t) => t !== tag) },
     });
   }
   if (f.communityOwned && f.communityOwned.length > 0) {
-    steps.push({
-      label: 'Remove ownership filter',
+    facets.push({
+      noun: f.communityOwned.map((v) => COMMUNITY_OWNED_LABELS[v] ?? v).join(' / '),
+      relaxLabel: 'Remove ownership filter',
       next: { ...f, communityOwned: undefined },
     });
   }
   if (f.subcategory) {
-    steps.push({
-      label: `Show all ${f.subcategory.replace(/_/g, ' ')} alternatives`,
+    const pretty = f.subcategory.replace(/_/g, ' ');
+    facets.push({
+      noun: pretty,
+      relaxLabel: `Show all ${pretty} alternatives`,
       next: { ...f, subcategory: undefined },
     });
   }
   if (f.location) {
-    steps.push({ label: `Remove location (${f.location})`, next: { ...f, location: undefined } });
+    facets.push({
+      noun: f.location,
+      relaxLabel: `Remove location (${f.location})`,
+      next: { ...f, location: undefined },
+    });
   }
   if (f.verifiedWithinDays) {
-    steps.push({
-      label: 'Include older listings',
+    facets.push({
+      noun: 'Recently verified',
+      relaxLabel: 'Include older listings',
       next: { ...f, verifiedWithinDays: undefined },
     });
   }
   if (f.currency) {
-    steps.push({ label: `Remove currency (${f.currency})`, next: { ...f, currency: undefined } });
+    facets.push({
+      noun: f.currency,
+      relaxLabel: `Remove currency (${f.currency})`,
+      next: { ...f, currency: undefined },
+    });
   }
-  if (f.availability === 'any') {
-    // Widening, not narrowing — no step.
-  }
+  // `availability: 'any'` widens rather than narrows — nothing to drop.
   if (f.department) {
-    steps.push({
-      label: 'Search all departments',
+    facets.push({
+      noun: f.department.replace(/_/g, ' '),
+      relaxLabel: 'Search all departments',
       next: { ...f, department: undefined, subcategory: undefined },
     });
   }
-  return steps.slice(0, 5);
+  return facets;
+}
+
+/**
+ * One actionable "Remove {facet}" chip per active dimension, most
+ * restrictive first — each applies the filter set minus that dimension.
+ *
+ * Capped at 5 because this renders inside an empty state, where the job is to
+ * suggest a way out rather than enumerate. The active-filter row uses
+ * `describeActiveFilters` directly and is deliberately NOT capped: a chip row
+ * that silently hides the sixth filter tells the reader they have five.
+ */
+export function buildRelaxationSteps(f: MarketplaceFiltersInput): RelaxationStep[] {
+  return describeActiveFilters(f)
+    .slice(0, 5)
+    .map(({ relaxLabel, next }) => ({ label: relaxLabel, next }));
 }
