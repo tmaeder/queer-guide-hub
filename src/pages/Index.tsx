@@ -1,7 +1,7 @@
 import React from 'react';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Skeleton } from '@/components/ui/skeleton';
-import { RecentlyViewedRail } from '@/components/home/RecentlyViewedRail';
+import { YourLines } from '@/components/home/YourLines';
 import { DeferredSection } from '@/components/home/DeferredSection';
 import { FadeIn } from '@/components/motion';
 import { lazyOptional } from '@/utils/lazyRetry';
@@ -9,6 +9,7 @@ import { SubwayHero } from '@/components/home/subway/SubwayHero';
 import { DeparturesBoard } from '@/components/home/subway/DeparturesBoard';
 import { CityCards } from '@/components/home/subway/CityCards';
 import { SupportBand } from '@/components/home/subway/SupportBand';
+import { HomeRegionProvider } from '@/components/home/HomeRegionProvider';
 import { PageContainer } from '@/components/layout/PageContainer';
 
 // Plain React.lazy reads `.default` off whatever the dynamic import resolves
@@ -16,8 +17,7 @@ import { PageContainer } from '@/components/layout/PageContainer';
 // chunk instead of crashing the homepage.
 const NewsMagazine = lazyOptional(() => import('@/components/home/NewsMagazine'));
 const HomeShoppingSection = lazyOptional(() => import('@/components/home/HomeShoppingSection'));
-const HomeBornThisWeek = lazyOptional(() => import('@/components/home/HomeBornThisWeek'));
-const HomeOnThisDay = lazyOptional(() => import('@/components/home/HomeOnThisDay'));
+const ArchiveBand = lazyOptional(() => import('@/components/home/ArchiveBand'));
 
 // ── Section shells ───────────────────────────────────────────────────────────
 
@@ -86,40 +86,46 @@ const Index = React.memo(() => {
            put the separate intent rail above the hero on phones. */}
       <SubwayHero />
 
-      {/* ── Returning visitors: one light personalized rail (self-hides) ─ */}
-      <RecentlyViewedRail />
+      {/* ── Region — resolved ONCE here and shared by every band below, so no
+           two bands can disagree about where the visitor is and the geo call
+           is paid for once. Its own boundary: a geo failure degrades to the
+           global page (the provider's neutral value), never a blank one. */}
+      <ErrorBoundary section="home-region" fallback={null}>
+        <HomeRegionProvider>
+          {/* ── Near you — region-scoped places, local events promoted ───── */}
+          <ErrorBoundary section="departures" fallback={null}>
+            <DeparturesBoard />
+          </ErrorBoundary>
 
-      {/* ── Departures — the soonest real events as board rows ─────────── */}
-      <ErrorBoundary section="departures" fallback={null}>
-        <DeparturesBoard />
+          {/* ── Your lines — the visitor's own thread (self-hides) ───────── */}
+          <ErrorBoundary section="your-lines" fallback={null}>
+            <YourLines />
+          </ErrorBoundary>
+
+          {/* ── Cities — bordered cards with bending track lines ─────────── */}
+          <ErrorBoundary section="cities" fallback={null}>
+            <CityCards />
+          </ErrorBoundary>
+
+          {/* ── Latest news — ranked, region-scoped, rotating ───────────── */}
+          <HomeDeferred section="news-magazine" skeleton={magazineSkeleton}>
+            <NewsMagazine />
+          </HomeDeferred>
+        </HomeRegionProvider>
       </ErrorBoundary>
-
-      {/* ── Cities — bordered cards with bending track lines ───────────── */}
-      <ErrorBoundary section="cities" fallback={null}>
-        <CityCards />
-      </ErrorBoundary>
-
-      {/* ── Latest news — editorial magazine grid ────────────────────── */}
-      <HomeDeferred section="news-magazine" skeleton={magazineSkeleton}>
-        <NewsMagazine />
-      </HomeDeferred>
-
-      {/* ── On this day — queer-history milestones (self-hides) ───────── */}
-      <HomeDeferred section="on-this-day" skeleton={null}>
-        <HomeOnThisDay />
-      </HomeDeferred>
-
-      {/* ── Born this week — community history marquee ────────────────── */}
-      <HomeDeferred section="born-this-week" skeleton={null}>
-        <HomeBornThisWeek />
-      </HomeDeferred>
 
       {/* ── Marketplace — brand-safe spotlight + rail (self-hides) ───── */}
       <HomeDeferred section="home-shopping" skeleton={railSkeleton}>
         <HomeShoppingSection />
       </HomeDeferred>
 
-      {/* ── Support — the closing band, paper with ink CTAs ───────────── */}
+      {/* ── From the archive — milestones + birthdays in ONE band, so a
+           quiet day loses a column instead of two whole sections ──────── */}
+      <HomeDeferred section="archive" skeleton={null}>
+        <ArchiveBand />
+      </HomeDeferred>
+
+      {/* ── Support — the closing band ────────────────────────────────── */}
       <SupportBand />
     </div>
   );

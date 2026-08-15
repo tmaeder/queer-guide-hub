@@ -90,7 +90,38 @@ function getPlaceholder(pathname: string, t: (k: string, d?: string) => string, 
   return t('search.placeholders.universal', 'Search venues, events, people, places…');
 }
 
-export const UniversalSearchBar = () => {
+export interface UniversalSearchBarProps {
+  /** `bar` is the header's 40/48px field. `hero` is the homepage's large
+   *  entry — same machinery, bigger type and target. */
+  size?: 'bar' | 'hero';
+  /**
+   * Register the global ⌘K listener. EXACTLY ONE mount per document may pass
+   * true: `useSearchHotkey` binds a window listener per mount, so two owners
+   * would open both popovers and race each other's `focusInput()`.
+   */
+  hotkey?: boolean;
+  /**
+   * Disambiguates the two mounts. Drives the listbox DOM id (a duplicate ARIA
+   * id fails the a11y sweep), the landmark label (two `role="search"` regions
+   * with the same name trips `landmark-unique`), and the telemetry source, so
+   * hero conversion stays separable from the header's.
+   */
+  surface?: 'header' | 'hero';
+}
+
+/**
+ * Open mounts, module-scoped. The mobile sheet is a NON-modal popover with no
+ * focus trap, so two open sheets can coexist; opening one closes the other.
+ * Cheaper and less invasive than making the popover modal, which would change
+ * header behaviour on every route.
+ */
+const openMounts = new Set<(open: boolean) => void>();
+
+export const UniversalSearchBar = ({
+  size = 'bar',
+  hotkey = true,
+  surface = 'header',
+}: UniversalSearchBarProps = {}) => {
   const trackClickFromSearch = useTrackClick();
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
@@ -226,12 +257,12 @@ export const UniversalSearchBar = () => {
           (filters.location ? 1 : 0) +
           (filters.categories?.length || 0) +
           (filters.cluster_ids?.length || 0),
-        source: 'universal_searchbar',
+        source: surface === 'hero' ? 'home_hero' : 'universal_searchbar',
       });
       navigate(`/search?${params}`);
       setIsOpen(false);
     },
-    [query, filters, activeScope, navigate, saveRecentSearch],
+    [query, filters, activeScope, navigate, saveRecentSearch, surface],
   );
 
   const handleSelectSuggestion = useCallback(
@@ -390,11 +421,23 @@ export const UniversalSearchBar = () => {
     ],
   );
 
-  // ⌘K / Ctrl+K hotkey.
+  // ⌘K / Ctrl+K hotkey — only the owning mount BINDS it (see `hotkey` prop).
   useSearchHotkey(() => {
     setIsOpen(true);
     focusInput();
-  });
+  }, hotkey);
+
+  // Only one search sheet open at a time across the two mounts.
+  useEffect(() => {
+    openMounts.add(setIsOpen);
+    return () => {
+      openMounts.delete(setIsOpen);
+    };
+  }, []);
+  useEffect(() => {
+    if (!isOpen) return;
+    for (const close of openMounts) if (close !== setIsOpen) close(false);
+  }, [isOpen]);
 
   // Auto-focus when popover opens (search mode only — Ask owns its own input).
   useEffect(() => {
@@ -451,8 +494,15 @@ export const UniversalSearchBar = () => {
     [location.pathname, t, isMobile],
   );
 
-  const inputHeight = isMobile ? 48 : 40;
-  const iconSize = isMobile ? 20 : 16;
+  const hero = size === 'hero';
+  const inputHeight = hero ? (isMobile ? 56 : 64) : isMobile ? 48 : 40;
+  const iconSize = hero ? 24 : isMobile ? 20 : 16;
+  // Two mounts on one document must not share a DOM id or a landmark name.
+  const listboxId = `qg-search-listbox-${surface}`;
+  const landmarkLabel =
+    surface === 'hero'
+      ? t('search.heroLandmark', 'Search the network')
+      : t('search.landmark', 'Site search');
 
   // Desktop opens the command modal; mobile keeps the anchored full-screen
   // sheet. The mock's centered 680px plate is a desktop shape — at 390px it
@@ -479,7 +529,7 @@ export const UniversalSearchBar = () => {
       <div
         ref={searchBoxRef}
         role="search"
-        aria-label="Site search"
+        aria-label={landmarkLabel}
         className={cn(
           'flex cursor-text items-center bg-background transition-colors',
           panel
@@ -487,7 +537,12 @@ export const UniversalSearchBar = () => {
               // own 4px edge is the box, and the 3px rule is what separates the
               // query from its results.
               'border-b-[3px] border-foreground px-6'
-            : 'rounded-container border-2 border-foreground focus-within:shadow-hard-sm',
+            : hero
+              ? // The homepage hero entry: the template's heavier edge and a
+                // resting hard shadow, because it is the page's primary target
+                // rather than a chrome control.
+                'rounded-container border-[3px] border-foreground shadow-hard'
+              : 'rounded-container border-2 border-foreground focus-within:shadow-hard-sm',
         )}
         onClick={() => {
           setIsOpen(true);
@@ -521,7 +576,7 @@ export const UniversalSearchBar = () => {
           role="combobox"
           aria-autocomplete="list"
           aria-expanded={isOpen}
-          aria-controls="qg-search-listbox"
+          aria-controls={listboxId}
           aria-haspopup="listbox"
           aria-activedescendant={resultsFocused !== null ? `result-${resultsFocused}` : undefined}
           placeholder={placeholder}
@@ -716,6 +771,10 @@ export const UniversalSearchBar = () => {
         />
       ) : (
         <SearchPopoverDesktop
+          // Must match the input's `aria-controls`. Both mounts render this
+          // body, so a hardcoded id would put a duplicate on the page AND
+          // leave the hero input pointing at an element that is not its own.
+          listboxId={listboxId}
           query={query}
           activeScope={activeScope}
           suggestions={suggestions}
