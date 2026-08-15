@@ -32,14 +32,21 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 
 import { useBornThisWeek } from '../useBornThisWeek';
+import { TestProviders } from '@/test/test-utils';
 
 function withResults(...r: MockResult[]) { state.results.push(...r); }
+
+/** The hook is react-query now — it pulls 500 rows to filter a +/-3 day window
+ *  and used to redo that on every mount — so it needs a client in scope. */
+function render(hook: () => ReturnType<typeof useBornThisWeek>) {
+  return renderHook(hook, { wrapper: TestProviders });
+}
 beforeEach(() => { state.results.length = 0; state.calls.length = 0; });
 
 describe('useBornThisWeek — query shape', () => {
   it("queries personalities by birth_date in 'born' mode", async () => {
     withResults({ data: [], error: null });
-    const { result } = renderHook(() => useBornThisWeek(6, 'born'));
+    const { result } = render(() => useBornThisWeek(6, 'born'));
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     const notNull = state.calls[0].chain.find(s => s.method === 'not');
@@ -49,7 +56,7 @@ describe('useBornThisWeek — query shape', () => {
 
   it("queries by death_date in 'died' mode", async () => {
     withResults({ data: [], error: null });
-    const { result } = renderHook(() => useBornThisWeek(6, 'died'));
+    const { result } = render(() => useBornThisWeek(6, 'died'));
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     const notNull = state.calls[0].chain.find(s => s.method === 'not');
@@ -70,7 +77,7 @@ describe('useBornThisWeek — adult exclusion', () => {
   // silently shrinking the strip instead of showing the wrong people.
   it.each(['born', 'died'] as const)('excludes adult performers in %s mode', async (mode) => {
     withResults({ data: [], error: null });
-    const { result } = renderHook(() => useBornThisWeek(6, mode));
+    const { result } = render(() => useBornThisWeek(6, mode));
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     const eqCalls = state.calls[0].chain.filter((s) => s.method === 'eq');
@@ -79,7 +86,7 @@ describe('useBornThisWeek — adult exclusion', () => {
 
   it('still restricts to public visibility', async () => {
     withResults({ data: [], error: null });
-    const { result } = renderHook(() => useBornThisWeek(6, 'born'));
+    const { result } = render(() => useBornThisWeek(6, 'born'));
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     const eqCalls = state.calls[0].chain.filter((s) => s.method === 'eq');
@@ -104,7 +111,7 @@ describe('useBornThisWeek — window filtering', () => {
       error: null,
     });
 
-    const { result } = renderHook(() => useBornThisWeek(6, 'born'));
+    const { result } = render(() => useBornThisWeek(6, 'born'));
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     // p-today should always be in window. p-far is outside unless today is
@@ -117,14 +124,14 @@ describe('useBornThisWeek — window filtering', () => {
       data: [{ id: 'p1', birth_date: 'not-a-date', view_count: 10 }],
       error: null,
     });
-    const { result } = renderHook(() => useBornThisWeek(6, 'born'));
+    const { result } = render(() => useBornThisWeek(6, 'born'));
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.items).toEqual([]);
   });
 
   it('returns [] on supabase error', async () => {
     withResults({ data: null, error: { message: 'rls' } });
-    const { result } = renderHook(() => useBornThisWeek(6, 'born'));
+    const { result } = render(() => useBornThisWeek(6, 'born'));
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.items).toEqual([]);
   });
