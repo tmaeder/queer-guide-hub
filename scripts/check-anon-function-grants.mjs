@@ -34,13 +34,24 @@
  *
  * FIX WHEN THIS FAILS. Do not reflexively widen the allowlist. Decide which the new
  * function is:
- *   - cron / service-role only  -> `revoke execute on function public.<name>(<args>) from public, anon;`
+ *   - cron / service-role only  -> `revoke execute on function public.<name>(<args>) from public, anon, authenticated;`
  *     (`from anon` ALONE IS A NO-OP when PUBLIC holds the grant — that left 50 of 97
- *     functions reachable in the first draft of 20260822100000)
+ *     functions reachable in the first draft of 20260822100000. It is not visible in
+ *     `proacl` either: after the short form the anon entry is GONE from the ACL while
+ *     has_function_privilege('anon', ...) is still TRUE. Always check the privilege.)
+ *   - called only from another SECURITY DEFINER function -> revoke, as above. The inner
+ *     call runs as the function owner, so the callee needs no API-role grant. This is
+ *     what made all 27 `legacy` entries revocable in 20260902100000. Contrast a TRIGGER
+ *     function, which is invoked by an ordinary user's own write and must KEEP
+ *     `authenticated` (20260823100000) — the gate excludes those for that reason.
  *   - admin console             -> add `perform assert_admin_or_internal();` to the body
- *   - genuinely public          -> add it to the `public_by_design` half of the allowlist
- *     in supabase/migrations/20260824100000_anon_function_exposure_gate.sql, WITH the
- *     call site in a comment
+ *   - genuinely public          -> add it to the allowlist in
+ *     supabase/migrations/20260824100000_anon_function_exposure_gate.sql (latest
+ *     definition: 20260902100000), WITH the call site in a comment
+ *
+ * The allowlist used to have a second `legacy` half for functions with no verified
+ * caller. It is empty as of 20260902100000 — every entry is now an endorsement with a
+ * call site next to it. Keep it that way.
  */
 
 const BASE = process.env.SUPABASE_URL
@@ -85,11 +96,14 @@ console.error(
   '\nThese run as the function owner, so RLS does not apply, and an anonymous caller can' +
     '\ninvoke them over the public REST API with only the anon key.' +
     '\n\nPick one:' +
-    '\n  cron/service-role only -> revoke execute ... from public, anon;   (NOT `from anon` alone —' +
-    '\n                            that is a no-op while PUBLIC holds the grant)' +
+    '\n  cron / service-role only, OR called only from another SECURITY DEFINER function' +
+    '\n                         -> revoke execute ... from public, anon, authenticated;' +
+    '\n                            (NOT `from anon` alone — that is a no-op while PUBLIC holds' +
+    '\n                            the grant, and it does not show up in proacl: the anon entry' +
+    '\n                            disappears while has_function_privilege() stays TRUE)' +
     '\n  admin console          -> perform assert_admin_or_internal(); in the body' +
     '\n  genuinely public       -> allowlist it in' +
     '\n                            supabase/migrations/20260824100000_anon_function_exposure_gate.sql' +
-    '\n                            with the call site in a comment',
+    '\n                            (latest definition: 20260902100000) with the call site in a comment',
 )
 process.exit(1)
