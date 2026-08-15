@@ -4304,7 +4304,9 @@
       "lawSuperseded": "Ersetzt",
       "lawPartlyStruck": "In Kraft, teilweise aufgehoben",
       "notOneLaw": "Dies ist kein einzelnes Gesetz. Es wird Land für Land erfasst.",
-      "seeByCountry": "Status nach Land ansehen"
+      "seeByCountry": "Status nach Land ansehen",
+      "spansAllRights": "Dies umfasst ein ganzes Rechtsgebiet, nicht ein einzelnes Gesetz. Wir erfassen 18 einzelne Rechte, Land für Land.",
+      "seeAllRights": "Alle 18 Rechte nach Land ansehen"
     }
   }
 }

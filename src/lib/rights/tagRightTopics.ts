@@ -47,6 +47,32 @@ export const TAG_RIGHT_TOPIC: Readonly<Record<string, string>> = {
   'hate-crime': 'hate-crime',
 };
 
+/**
+ * Tags that name the WHOLE FIELD rather than one right.
+ *
+ * `lgbtqia-rights` alone is on 2,093 records — the single most-used law tag on
+ * the site — and it had no legal pointer at all, because no answer fitted: there
+ * is no one instrument, and picking a single RIGHT_TOPIC would be worse than
+ * nothing. `transgender-rights` (674) is the clearest case of that trap; mapping
+ * it to `gender-recognition` would quietly say trans rights ARE legal gender
+ * recognition, when the corpus also covers healthcare, employment and bullying
+ * protection.
+ *
+ * So these get a third answer: the whole ledger, all 18 rights, per country.
+ */
+export const UMBRELLA_RIGHTS_TAGS: readonly string[] = [
+  'lgbtqia-rights',
+  'lgbtq-rights',
+  'transgender-rights',
+  'gay-rights',
+  'queer-rights',
+];
+
+/** True when the tag covers the whole rights corpus rather than one right. */
+export function isUmbrellaRightsTag(tagSlug: string | null | undefined): boolean {
+  return !!tagSlug && UMBRELLA_RIGHTS_TAGS.includes(tagSlug);
+}
+
 /** The rights topic a class-of-law tag maps to, or undefined for every other tag. */
 export function rightTopicForTag(tagSlug: string | null | undefined): RightTopic | undefined {
   if (!tagSlug) return undefined;

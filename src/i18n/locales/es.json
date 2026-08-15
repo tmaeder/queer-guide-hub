@@ -4304,7 +4304,9 @@
       "lawSuperseded": "Sustituida",
       "lawPartlyStruck": "En vigor, parcialmente anulada",
       "notOneLaw": "No es una sola ley. Se registra país por país.",
-      "seeByCountry": "Ver el estado por país"
+      "seeByCountry": "Ver el estado por país",
+      "spansAllRights": "Esto abarca todo un ámbito del derecho, no una sola ley. Registramos 18 derechos distintos, país por país.",
+      "seeAllRights": "Ver los 18 derechos por país"
     }
   }
 }
