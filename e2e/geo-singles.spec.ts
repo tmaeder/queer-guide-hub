@@ -63,7 +63,11 @@ for (const route of ROUTES) {
         // The station/section invariant: both lists are derived from the same
         // filtered array, so a station can never survive its section being
         // dropped for having no data.
-        await expect(page.locator(`#${CSS.escape(id)}`)).toHaveCount(1);
+        //
+        // Attribute selector, not `#${id}`: the id comes from the page, and
+        // `CSS.escape` does not exist in the Node side of a Playwright test —
+        // only inside `page.evaluate`. An `[id="…"]` needs no escaping.
+        await expect(page.locator(`[id="${id}"]`)).toHaveCount(1);
       }
     });
 
@@ -122,11 +126,13 @@ test.describe('city network diagram', () => {
     // 22 of ~3,070 cities have generated geometry. The homepage card falls
     // back to a template squiggle so its grid has no holes; on a single, under
     // a heading about getting around, that squiggle would be a false claim.
-    await page.goto('/city/reykjavik');
-    const h1 = page.locator('article h1').first();
-    if ((await h1.count()) === 0) test.skip();
-    await h1.waitFor({ state: 'visible', timeout: 30_000 });
-    await dismissCookieBanner(page);
+    // Zurich is a real, well-populated city with trams that OSM did not yield
+    // a usable relation set for — so it exercises the gate rather than a
+    // thin-data page that might not render a travel section at all.
+    await open(page, '/city/zurich');
     await expect(page.getByText('Lines', { exact: true })).toHaveCount(0);
+    for (const mode of ['Metro network', 'Light rail network', 'Tram network']) {
+      await expect(page.getByText(mode, { exact: true })).toHaveCount(0);
+    }
   });
 });
