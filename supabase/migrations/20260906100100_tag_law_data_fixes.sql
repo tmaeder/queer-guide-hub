@@ -1,6 +1,6 @@
 -- Repair the inputs the legal-citation work sits on top of.
 --
--- Found while measuring Wikidata coverage for 20260905100000: three of the
+-- Found while measuring Wikidata coverage for 20260906100000: three of the
 -- highest-usage law tags are linked to the WRONG ENTITY, and the 2026-04-27
 -- backfill wrote the wrong entity's own description into tag_sources.claim_summary,
 -- so the evidence was sitting in the database the whole time:

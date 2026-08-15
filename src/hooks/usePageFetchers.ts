@@ -362,7 +362,7 @@ export async function upsertEmailTemplate(
  * One curated citation of the law a glossary tag is about.
  *
  * Only ever the ~15 rows a human researched and URL-verified — see
- * `supabase/migrations/20260905100000_tag_sources_legal_citations.sql`.
+ * `supabase/migrations/20260906100000_tag_sources_legal_citations.sql`.
  */
 export interface TagLegalSourceRow {
   id: string;

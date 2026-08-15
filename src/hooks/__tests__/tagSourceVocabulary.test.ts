@@ -14,7 +14,7 @@ import { LEGAL_SOURCE_TYPES, INSTRUMENT_STATUSES } from '../useTagSources';
 
 const MIGRATION = resolve(
   __dirname,
-  '../../../supabase/migrations/20260905100000_tag_sources_legal_citations.sql',
+  '../../../supabase/migrations/20260906100000_tag_sources_legal_citations.sql',
 );
 
 /** Pull the quoted values out of the named CHECK constraint's ARRAY[...]. */

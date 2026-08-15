@@ -11,7 +11,7 @@
 --    the extra rows are filtered client-side by `.eq('is_public', true)` — so
 --    nothing would look broken while the table was fully readable.
 --
--- 2. WRITE GRANTS. Before 20260905100000 the grants were exactly inverted:
+-- 2. WRITE GRANTS. Before 20260906100000 the grants were exactly inverted:
 --    anon held DELETE/INSERT/UPDATE/TRUNCATE/REFERENCES/TRIGGER and NOT SELECT.
 --    That was inert only because no write policy existed, and the same migration
 --    adds write policies for the admin editor. If someone re-runs an old grant
