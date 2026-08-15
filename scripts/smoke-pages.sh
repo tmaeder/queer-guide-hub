@@ -170,6 +170,49 @@ wait_for_origin() {
 	return 0
 }
 
+# "ORIGIN IS BROKEN" is the one verdict here that nothing can recover from: it
+# is not added to POISONED, so it is never purged, never re-verified, and it
+# alone keeps `fail` above zero at the end. That makes it the verdict that has
+# to be RIGHT, and in one read it cannot be — an object that has not finished
+# propagating answers the SPA shell at `?cb=` too, exactly like an asset a
+# rewrite is shadowing.
+#
+# Measured, same run (31905701638), same asset, 22 seconds apart:
+#   20:05:40  ✗ /assets/js/dist-h5cPJ2Wm.js ... — ORIGIN IS BROKEN
+#   20:06:02  ✗ /assets/js/dist-h5cPJ2Wm.js ... — POISONED (origin is fine)
+# That run then printed "recovered 88/88" and still exited 1, because the four
+# origin-broken readings were the only failures left and none of them was real.
+#
+# wait_for_origin() does not cover this. It latches on the ENTRY chunk, whose
+# hash rotates every deploy — the block below it says so explicitly — so it
+# returns as soon as the one object most likely to be live is live, while the
+# rest of the deployment is still landing.
+#
+# So: re-probe before blaming the origin. The bounded wait is paid ONCE per run
+# (ORIGIN_RECHECKED); every later asset pays a single extra curl and no sleep.
+# Per-asset sleeps are what made this job take 18m43s — do not reintroduce them.
+#
+# RESULT COMES BACK IN A GLOBAL, NOT ON STDOUT. `x=$(reprobe_origin ...)` runs
+# the function in a SUBSHELL, so the latch it sets is discarded the moment it
+# returns and every failing asset pays the full wait again — which is precisely
+# how this job reached 18m43s before. Caught by testing the latch rather than
+# reading it: the second call still slept.
+ORIGIN_RECHECKED=""
+REPROBE_CT=""
+reprobe_origin() {
+	local path=$1 want=$2
+	if [ -z "$ORIGIN_RECHECKED" ]; then
+		for _ in 1 2 3; do
+			sleep 5
+			REPROBE_CT=$(curl -sS "${CURL_TIMEOUT[@]}" -o /dev/null -w '%{content_type}' "$SITE$path?cb=$$-${SECONDS}-${RANDOM}")
+			case "$REPROBE_CT" in *"$want"*) break ;; esac
+		done
+		ORIGIN_RECHECKED=1
+	else
+		REPROBE_CT=$(curl -sS "${CURL_TIMEOUT[@]}" -o /dev/null -w '%{content_type}' "$SITE$path?cb=$$-${SECONDS}-${RANDOM}")
+	fi
+}
+
 expect_asset_type() {
 	local path=$1 want=$2 ct busted=""
 	ALL_ASSETS+=("$path|$want")
@@ -182,6 +225,13 @@ expect_asset_type() {
 		"$SITE$path")
 	case "$ct" in
 		*"$want"*) echo "  ✓ $path is $ct"; pass=$((pass+1)); return ;;
+	esac
+
+	# The real cache key is wrong. Only now does it matter whether origin has
+	# the object, so only now is it worth re-reading.
+	case "$busted" in
+		*"$want"*) ;;
+		*) reprobe_origin "$path" "$want"; busted=$REPROBE_CT ;;
 	esac
 
 	fail=$((fail+1))
@@ -275,8 +325,26 @@ else
 	for route in $ROUTES; do
 		case " $suspect " in
 			*" $route "*)
+				# Re-read the ROUTE before failing it. The verdict above came
+				# from a read taken while a deploy was landing; the diagnostic
+				# below is a later read, and on run 31905701638 the two
+				# disagreed in print:
+				#     ✗ /help serves a STALE cached document
+				#         cached: /assets/js/index-4r5wetLY.js
+				#         origin: /assets/js/index-4r5wetLY.js
+				# Identical — the route had caught up in the interval, and the
+				# check failed the deploy while showing the evidence that it
+				# should not have. Re-judging against a fresh origin (above)
+				# does not cover this: that fixes a moving ORIGIN, this is a
+				# moving ROUTE.
+				cached=$(entry_hash "$SITE$route")
+				if [ "$cached" = "$origin" ]; then
+					echo "  ✓ $route -> $origin (was mid-deploy on the first read)"
+					pass=$((pass+1))
+					continue
+				fi
 				echo "  ✗ $route serves a STALE cached document"
-				echo "      cached: $(entry_hash "$SITE$route")"
+				echo "      cached: $cached"
 				echo "      origin: $origin"
 				echo "    Those cached chunk URLs are gone, so every module request falls"
 				echo "    through to the SPA shell and the page renders BLANK. Redeploying"
