@@ -9,6 +9,8 @@ import { useRecentlyViewedImages } from '@/hooks/useRecentlyViewedImages';
 import { useYourLinesDiscovery } from '@/hooks/useYourLines';
 import { recentlyViewedHref, type RecentlyViewedType } from '@/lib/recentlyViewed';
 import { type FallbackTheme } from '@/utils/fallbackImages';
+import { CityNetwork } from '@/components/home/subway/CityNetwork';
+import { hasCityNetwork } from '@/components/home/subway/cityNetworkGeometry';
 
 const MAX_CARDS = 8;
 
@@ -111,16 +113,27 @@ export function YourLines() {
     <Band title={t('home.yourLines.title', 'Your lines')}>
       <ul className="m-0 grid list-none grid-cols-2 gap-4 p-0 md:grid-cols-4">
         {cards.map((c) => (
-          <li key={c.key} className="card-lift relative border-[3px] border-foreground bg-background">
-            <Image
-              imageUrl={c.image}
-              fallbackEntityType={fallbackTheme(c.type)}
-              fallbackKey={c.slug}
-              imageRole="thumb"
-              heightPx={112}
-              rounded="none"
-              alt=""
-            />
+          <li
+            key={c.key}
+            className="card-lift relative border-[3px] border-foreground bg-background"
+          >
+            {!c.image && c.type === 'city' && hasCityNetwork(c.slug) ? (
+              // A themed fallback tile says "city". The city's own network says
+              // WHICH city — better placeholder, same empty-image branch.
+              <div className="flex h-28 items-center justify-center bg-background p-2">
+                <CityNetwork slug={c.slug} variant="thumb" className="h-full" />
+              </div>
+            ) : (
+              <Image
+                imageUrl={c.image}
+                fallbackEntityType={fallbackTheme(c.type)}
+                fallbackKey={c.slug}
+                imageRole="thumb"
+                heightPx={112}
+                rounded="none"
+                alt=""
+              />
+            )}
             <div className="p-4">
               <span className="block truncate text-title font-bold">{c.title}</span>
               {c.subtitle && (

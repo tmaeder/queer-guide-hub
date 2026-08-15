@@ -8,10 +8,13 @@ import { SkeletonCrossfade } from '@/components/effects';
 import { useAuth } from '@/hooks/useAuth';
 import { useRecommendations } from '@/hooks/useRecommendations';
 import { fetchPersonalizedCitiesByIds, fetchTrendingCities } from '@/hooks/usePersonalizedCities';
+import { CityNetwork } from '@/components/home/subway/CityNetwork';
+import { hasCityNetwork } from '@/components/home/subway/cityNetworkGeometry';
 
 interface CityRec {
   id: string;
   name: string;
+  slug: string | null;
   country_name: string;
   equality_score: number | null;
   population: number | null;
@@ -40,6 +43,7 @@ export function PersonalizedFeed() {
           return {
             id: city.id,
             name: city.name,
+            slug: city.slug,
             country_name: city.countries?.name || '',
             equality_score: city.countries?.equality_score ?? null,
             population: city.population,
@@ -60,6 +64,7 @@ export function PersonalizedFeed() {
       return data.map((city) => ({
         id: city.id,
         name: city.name,
+        slug: city.slug,
         country_name: city.countries?.name || '',
         equality_score: city.countries?.equality_score ?? null,
         population: city.population,
@@ -119,7 +124,13 @@ export function PersonalizedFeed() {
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {displayCities.map((city) => (
-            <LocalizedLink key={city.id} to={`/city/${city.id}`} className="no-underline">
+            <LocalizedLink
+              key={city.id}
+              // Slug when we have one — `/city/<uuid>` resolves but is not the
+              // canonical URL, and every other city surface links by slug.
+              to={`/city/${city.slug || city.id}`}
+              className="no-underline"
+            >
               <Card className="h-full">
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start mb-2">
@@ -150,6 +161,9 @@ export function PersonalizedFeed() {
                   </div>
                   {city.reason !== 'trending' && (
                     <Badge variant="outline">{reasonLabels[city.reason] || city.reason}</Badge>
+                  )}
+                  {hasCityNetwork(city.slug) && (
+                    <CityNetwork slug={city.slug} className="mt-4 h-12" variant="thumb" />
                   )}
                 </CardContent>
               </Card>

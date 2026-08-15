@@ -25,12 +25,31 @@ function parsePath(d: string): [number, number][] {
 const cities = Object.entries(CITY_NETWORKS);
 
 describe('cityNetworkGeometry', () => {
-  it('has geometry for a useful number of featured cities', () => {
-    // The homepage renders 8 cards off a 24-name whitelist; well under half
-    // means the generator quietly lost networks (Overpass answers 200 with an
-    // empty element list when a query times out — that bug cost Madrid, Paris
-    // and Mexico City their metros on the first run).
-    expect(cities.length).toBeGreaterThanOrEqual(12);
+  it('covers the cities whose networks are not in doubt', () => {
+    // A COUNT is not enough. A run that had silently lost two thirds of the
+    // world still reported 34 cities and read like data. Overpass answers 200
+    // with an empty element list BOTH when a query times out and when the
+    // endpoint is a regional extract (`overpass.osm.ch` serves Switzerland
+    // only), and "no relations found" is indistinguishable from a city that
+    // genuinely has no metro — so the guard has to name cities whose networks
+    // are not in question. Their absence means the generator was lied to, not
+    // that the world changed. Slugs, not names: the DB holds several rows for
+    // some of these.
+    const CONTROLS = [
+      'berlin',
+      'madrid',
+      'barcelona',
+      'paris',
+      'mexico-city',
+      'amsterdam',
+      'copenhagen',
+      'vienna',
+      'brussels',
+      'lisboa',
+    ];
+    const missing = CONTROLS.filter((slug) => !(slug in CITY_NETWORKS));
+    expect(missing, `control cities with no geometry: ${missing.join(', ')}`).toEqual([]);
+    expect(cities.length).toBeGreaterThanOrEqual(100);
   });
 
   it.each(cities)('%s: path data is M/L with integer coordinates', (_slug, net) => {

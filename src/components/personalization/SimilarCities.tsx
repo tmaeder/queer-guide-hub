@@ -4,6 +4,8 @@ import { Sparkles, Shield } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Card, CardContent } from '@/components/ui/card';
 import { fetchSimilarCitiesPool, fetchSameCountryCities } from '@/hooks/useSimilarCities';
+import { CityNetwork } from '@/components/home/subway/CityNetwork';
+import { hasCityNetwork } from '@/components/home/subway/cityNetworkGeometry';
 
 interface SimilarCitiesProps {
   cityId: string;
@@ -86,7 +88,13 @@ export function SimilarCities({
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {cities.map((city) => (
-          <LocalizedLink key={city.id} to={`/city/${city.id}`} className="no-underline">
+          <LocalizedLink
+            key={city.id}
+            // Slug when we have one: `/city/<uuid>` resolves but is not the
+            // canonical URL, and every other city surface links by slug.
+            to={`/city/${city.slug || city.id}`}
+            className="no-underline"
+          >
             <Card>
               <CardContent className="p-4">
                 <div className="flex justify-between items-center">
@@ -111,6 +119,9 @@ export function SimilarCities({
                     </div>
                   )}
                 </div>
+                {hasCityNetwork(city.slug) && (
+                  <CityNetwork slug={city.slug} className="mt-4 h-12" variant="thumb" />
+                )}
               </CardContent>
             </Card>
           </LocalizedLink>

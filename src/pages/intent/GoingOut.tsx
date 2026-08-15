@@ -15,6 +15,8 @@ import {
   useDestinationCities,
 } from '@/hooks/useIntentData';
 import type { SectionDef } from '@/components/entity/editorial';
+import { CityNetwork } from '@/components/home/subway/CityNetwork';
+import { hasCityNetwork } from '@/components/home/subway/cityNetworkGeometry';
 
 /**
  * `/going-out` — bars, clubs and what is actually on.
@@ -160,6 +162,9 @@ export default function GoingOut() {
               {c.countries?.name ? (
                 <p className="text-13 text-muted-foreground">{c.countries.name}</p>
               ) : null}
+              {hasCityNetwork(c.slug) && (
+                <CityNetwork slug={c.slug} variant="thumb" className="mt-4 h-16" />
+              )}
             </li>
           ))}
         </ul>

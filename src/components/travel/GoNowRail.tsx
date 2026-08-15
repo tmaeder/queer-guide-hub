@@ -7,6 +7,8 @@ import { ExternalImg } from '@/components/ui/ExternalImg';
 import { getFallbackImage } from '@/utils/fallbackImages';
 import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
 import { useGoNowDestinations, type GoNowReason } from '@/hooks/useGoNowDestinations';
+import { CityNetwork } from '@/components/home/subway/CityNetwork';
+import { hasCityNetwork } from '@/components/home/subway/cityNetworkGeometry';
 
 const REASON_ICON: Record<GoNowReason['kind'], typeof CalendarDays> = {
   event: CalendarDays,
@@ -44,6 +46,9 @@ export function GoNowRail() {
           {data.map((d) => {
             const fallback = getFallbackImage('place', d.cityId);
             const img = isValidImageUrl(d.imageUrl) ? d.imageUrl : null;
+            // No real photo but a real network: draw the city instead of the
+            // shared stock pool, which shows a skyline that is not this place.
+            const showNetwork = !img && hasCityNetwork(d.slug);
             const ReasonIcon = REASON_ICON[d.reason.kind];
             const reasonLabel =
               d.reason.kind === 'trending'
@@ -55,15 +60,29 @@ export function GoNowRail() {
                   to={`/city/${d.slug || d.cityId}`}
                   className="group relative block aspect-[3/4] overflow-hidden rounded-container bg-surface-container no-underline"
                 >
-                  <ExternalImg
-                    src={img}
-                    cfWidth={500}
-                    fallbackSrc={fallback}
-                    alt={d.name}
-                    className="absolute inset-0 h-full w-full object-cover transition-transform group-hover:scale-[1.03]"
-                  />
-                  <div className="img-scrim-readable absolute inset-0" />
-                  <div className="absolute bottom-0 start-0 end-0 p-4 text-white">
+                  {showNetwork ? (
+                    <div className="absolute inset-0 flex items-center justify-center bg-background p-4 pb-24">
+                      <CityNetwork slug={d.slug} variant="thumb" className="h-full" />
+                    </div>
+                  ) : (
+                    <>
+                      <ExternalImg
+                        src={img}
+                        cfWidth={500}
+                        fallbackSrc={fallback}
+                        alt={d.name}
+                        className="absolute inset-0 h-full w-full object-cover transition-transform group-hover:scale-[1.03]"
+                      />
+                      <div className="img-scrim-readable absolute inset-0" />
+                    </>
+                  )}
+                  <div
+                    className={
+                      showNetwork
+                        ? 'absolute bottom-0 start-0 end-0 p-4 text-foreground'
+                        : 'absolute bottom-0 start-0 end-0 p-4 text-white'
+                    }
+                  >
                     <p className="text-title font-bold leading-tight">{d.name}</p>
                     {d.countryName && <p className="mt-0.5 text-13 opacity-90">{d.countryName}</p>}
                     <p className="mt-2 flex items-center gap-1.5 text-13 opacity-90">

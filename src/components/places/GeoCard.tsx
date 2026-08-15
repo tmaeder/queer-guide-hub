@@ -7,6 +7,8 @@ import { getLegalityBadge } from '@/lib/lgbtLegality';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
+import { CityNetwork } from '@/components/home/subway/CityNetwork';
+import { hasCityNetwork } from '@/components/home/subway/cityNetworkGeometry';
 
 export type GeoCardVariant = 'country' | 'city' | 'village';
 
@@ -79,6 +81,7 @@ export const GeoCard = memo(function GeoCard(props: GeoCardProps) {
   const legality = variant === 'country' && legalityData ? getLegalityBadge(legalityData) : null;
 
   const href = slug || id;
+  const showNetwork = variant === 'city' && !imageUrl && hasCityNetwork(slug);
 
   return (
     // No `h-full` here: the old root anchor was `block`, so adding it would make
@@ -86,13 +89,26 @@ export const GeoCard = memo(function GeoCard(props: GeoCardProps) {
     <div className="relative group">
       <Card hoverable="group" className="overflow-hidden h-full flex flex-col">
         <div className="relative">
-          <CardImage
-            src={imageUrl ?? null}
-            alt={`${name} ${variant === 'city' ? 'cityscape' : 'landscape'}`}
-            fallbackIcon={FallbackIcon}
-            height={180}
-            priority={priority}
-          />
+          {/* A city with no image of its own gets a deterministic stock photo
+              from the shared pool — a generic skyline that is not this city.
+              When we have its real transit network, that is a truer picture of
+              the place than someone else's cityscape. A REAL photo always wins. */}
+          {showNetwork ? (
+            <div
+              className="flex items-center justify-center border-b-[3px] border-foreground bg-background px-4"
+              style={{ height: 180 }}
+            >
+              <CityNetwork slug={slug} variant="thumb" className="h-full" />
+            </div>
+          ) : (
+            <CardImage
+              src={imageUrl ?? null}
+              alt={`${name} ${variant === 'city' ? 'cityscape' : 'landscape'}`}
+              fallbackIcon={FallbackIcon}
+              height={180}
+              priority={priority}
+            />
+          )}
           {/* Save button — top-right of image */}
           {user && (
             <button

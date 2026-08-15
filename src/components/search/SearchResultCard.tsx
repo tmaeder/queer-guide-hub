@@ -23,6 +23,8 @@ import type { SearchResult } from '@/hooks/useSearch';
 import { BoostReasonBadge } from './BoostReasonBadge';
 import { SearchFeedbackButtons } from './SearchFeedbackButtons';
 import { QuietAddToTripButton } from '@/components/trips/QuietAddToTripButton';
+import { CityNetwork } from '@/components/home/subway/CityNetwork';
+import { hasCityNetwork } from '@/components/home/subway/cityNetworkGeometry';
 
 const TYPE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   venue: Building2,
@@ -76,6 +78,10 @@ function SearchResultCardImpl({
 }: SearchResultCardProps) {
   const { t } = useTranslation();
   if (!result?.objectID) return null;
+
+  // A city with no image falls back to a generic Globe glyph. Its own network
+  // identifies the place; the glyph identifies only the entity type.
+  const showNetwork = !result.imageUrl && result.type === 'city' && hasCityNetwork(result.slug);
   const title = result.title || (result as unknown as { name?: string }).name || '';
   if (!title) return null;
 
@@ -161,7 +167,11 @@ function SearchResultCardImpl({
         className="group flex cursor-pointer flex-col overflow-hidden rounded-element transition-colors hover:bg-accent"
       >
         <div className="relative aspect-[16/9] overflow-hidden bg-muted">
-          {result.imageUrl ? (
+          {showNetwork ? (
+            <div className="flex h-full w-full items-center justify-center bg-background p-2">
+              <CityNetwork slug={result.slug} variant="thumb" className="h-full" />
+            </div>
+          ) : result.imageUrl ? (
             <img
               src={result.imageUrl}
               alt=""
@@ -211,7 +221,9 @@ function SearchResultCardImpl({
       className="group flex cursor-pointer items-center gap-4 rounded-element p-4 transition-colors hover:bg-accent"
     >
       <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-element bg-muted">
-        {result.imageUrl ? (
+        {showNetwork ? (
+          <CityNetwork slug={result.slug} variant="thumb" className="p-1.5" />
+        ) : result.imageUrl ? (
           <img
             src={result.imageUrl}
             alt=""
