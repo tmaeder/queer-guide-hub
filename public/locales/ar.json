@@ -2778,6 +2778,69 @@
         "currency": "العملة",
         "bestTime": "أفضل وقت",
         "airport": "المطار"
+      },
+      "eyebrow": "[AR] City",
+      "sections": "[AR] Sections",
+      "loadingVenues": "[AR] Loading venues",
+      "openEvent": "[AR] Open",
+      "openMap": "[AR] Open the full map",
+      "createTrip": "[AR] Create trip",
+      "officialWebsite": "[AR] Official website",
+      "favorite": "[AR] Save to favorites",
+      "favorited": "[AR] Saved to favorites",
+      "census": {
+        "stops": "[AR] {{n}} stops",
+        "districts": "[AR] {{n}} districts",
+        "departures": "[AR] {{n}} departures"
+      },
+      "section": {
+        "rights": "[AR] Safety & rights",
+        "rightsNote": "[AR] Know before you go.",
+        "venues": "[AR] Where to go",
+        "districts": "[AR] Queer districts",
+        "districtsNote": "[AR] Walkable clusters of bars, cafés and community spaces.",
+        "events": "[AR] Next departures",
+        "overview": "[AR] About {{city}}",
+        "travel": "[AR] Getting there",
+        "news": "[AR] In the news",
+        "nearby": "[AR] Nearby"
+      },
+      "stats": {
+        "venues": "[AR] Venues",
+        "districts": "[AR] Districts",
+        "events": "[AR] Upcoming events"
+      },
+      "about": {
+        "status": "[AR] Status",
+        "capital": "[AR] Capital city",
+        "majorCity": "[AR] Major city",
+        "region": "[AR] Region",
+        "timezone": "[AR] Timezone",
+        "founded": "[AR] Founded",
+        "area": "[AR] Area",
+        "elevation": "[AR] Elevation",
+        "mayor": "[AR] Mayor",
+        "postalCodes": "[AR] Postal codes",
+        "costOfLiving": "[AR] Cost of living",
+        "universities": "[AR] Universities",
+        "sisterCities": "[AR] Sister cities"
+      },
+      "travel": {
+        "majorAirport": "[AR] Major airport",
+        "nearestAirport": "[AR] Nearest airport",
+        "allCodes": "[AR] All airport codes",
+        "lines": "[AR] Lines",
+        "networkCaption": "[AR] Rapid-transit lines, drawn from OpenStreetMap. Schematic, not to scale.",
+        "gettingAround": "[AR] Getting around",
+        "noDealsTitle": "[AR] We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
+        "noDealsBody": "[AR] If you need to travel to {{city}}, read the safety and rights section first and use the trip planner — it includes a safety briefing for high-risk destinations."
+      },
+      "endOfLine": {
+        "eyebrow": "[AR] End of line",
+        "title": "[AR] Riding on?",
+        "body": "[AR] Every city on the guide carries the same modules: safety and rights first, then the places.",
+        "allCities": "[AR] All cities",
+        "country": "[AR] More in {{country}}"
       }
     },
     "capital": "[AR] Capital",
@@ -2937,7 +3000,9 @@
       "personalities": "أصوات",
       "nearby": "القريبة",
       "news": "الأخبار",
-      "map": "الخريطة"
+      "map": "الخريطة",
+      "history": "[AR] Legal record",
+      "historyNote": "[AR] What changed and when. Safety information without a date is not safety information."
     },
     "practical": {
       "languages": "اللغات",
@@ -2956,7 +3021,10 @@
       "hdi": "مؤشر التنمية البشرية",
       "lifeExpectancy": "متوسط العمر المتوقع",
       "literacy": "معدل الإلمام بالقراءة",
-      "income": "مستوى الدخل"
+      "income": "مستوى الدخل",
+      "venues": "[AR] Venues",
+      "events": "[AR] Upcoming events",
+      "weather": "[AR] Now in {{city}}"
     },
     "cities": {
       "emptyTitle": "لا مدن بعد",
@@ -2972,7 +3040,9 @@
     },
     "travel": {
       "activities": "أنشطة وجولات",
-      "activitiesBody": "تجارب في {{country}}"
+      "activitiesBody": "تجارب في {{country}}",
+      "noDealsTitle": "[AR] We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
+      "noDealsBody": "[AR] If you need to travel to {{country}}, read the rights section on this page first and use the trip planner — it includes a safety briefing for high-risk destinations."
     },
     "news": {
       "emptyTitle": "لا أخبار محلية بعد",
@@ -3019,7 +3089,24 @@
       "ilgaLink": "ILGA World Database",
       "deathPenaltyPossible": "[AR] death penalty possible, no legal certainty"
     },
-    "planTripHighRisk": "[AR] Plan carefully — safety briefing included"
+    "planTripHighRisk": "[AR] Plan carefully — safety briefing included",
+    "eyebrow": "[AR] Country",
+    "sections": "[AR] Sections",
+    "openMap": "[AR] Open the full map",
+    "census": {
+      "cities": "[AR] {{n}} cities",
+      "stops": "[AR] {{n}} stops",
+      "departures": "[AR] {{n}} departures"
+    },
+    "history": {
+      "seeAll": "[AR] Full timeline"
+    },
+    "endOfLine": {
+      "eyebrow": "[AR] End of line",
+      "title": "[AR] Compare the law elsewhere",
+      "body": "[AR] Every country page carries the same legal breakdown, from the same sources, with the date it was checked.",
+      "rights": "[AR] Rights across the world"
+    }
   },
   "inbox": {
     "title": "صندوق الوارد",
@@ -4315,6 +4402,70 @@
       "seeByCountry": "اطّلع على الحالة حسب الدولة",
       "spansAllRights": "هذا يشمل مجالًا قانونيًا كاملًا، لا قانونًا واحدًا. نتتبّع 18 حقًا منفصلًا لكل دولة.",
       "seeAllRights": "اطّلع على الحقوق الـ18 حسب الدولة"
+    }
+  },
+  "village": {
+    "eyebrow": "[AR] District · Green line",
+    "loading": "[AR] Loading this district",
+    "loadingVenues": "[AR] Loading the stop list",
+    "sections": "[AR] Sections",
+    "planTrip": "[AR] Plan a trip to {{name}}",
+    "relatedByTag": "[AR] Related by tag",
+    "notFound": {
+      "title": "[AR] No such district.",
+      "body": "[AR] This stop is not on the line.",
+      "cta": "[AR] All queer villages"
+    },
+    "toast": {
+      "errorTitle": "[AR] Error",
+      "loadFailed": "[AR] Failed to load village details"
+    },
+    "facts": {
+      "city": "[AR] City",
+      "country": "[AR] Country",
+      "venues": "[AR] Venues",
+      "events": "[AR] Upcoming events",
+      "editorsPick": "[AR] Editor’s pick"
+    },
+    "census": {
+      "stops": "[AR] {{n}} stops",
+      "departures": "[AR] {{n}} departures"
+    },
+    "section": {
+      "about": "[AR] About {{name}}",
+      "walk": "[AR] The walk",
+      "walkNote": "[AR] Stops in order, with the straight-line gap between them.",
+      "events": "[AR] Next departures",
+      "photos": "[AR] Photos",
+      "city": "[AR] On the same line"
+    },
+    "action": {
+      "website": "[AR] Website",
+      "favorite": "[AR] Save to favorites",
+      "favorited": "[AR] Saved to favorites"
+    },
+    "events": {
+      "open": "[AR] Open"
+    },
+    "landmarks": {
+      "title": "[AR] Notable landmarks"
+    },
+    "photo": {
+      "caption": "[AR] {{village}}, {{city}}",
+      "alt": "[AR] {{name}}, photo {{n}}"
+    },
+    "parentCity": {
+      "body": "[AR] The wider city this district sits in.",
+      "action": "[AR] Open"
+    },
+    "map": {
+      "caption": "[AR] Walking distance in {{city}}."
+    },
+    "endOfLine": {
+      "eyebrow": "[AR] End of line",
+      "title": "[AR] Looking for another district?",
+      "body": "[AR] Queer villages are walkable clusters of bars, cafés and community spaces. There are more of them.",
+      "city": "[AR] More in {{city}}"
     }
   }
 }

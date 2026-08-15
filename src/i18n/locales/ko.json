@@ -2768,6 +2768,69 @@
         "currency": "통화",
         "bestTime": "가기 좋은 시기",
         "airport": "공항"
+      },
+      "eyebrow": "[KO] City",
+      "sections": "[KO] Sections",
+      "loadingVenues": "[KO] Loading venues",
+      "openEvent": "[KO] Open",
+      "openMap": "[KO] Open the full map",
+      "createTrip": "[KO] Create trip",
+      "officialWebsite": "[KO] Official website",
+      "favorite": "[KO] Save to favorites",
+      "favorited": "[KO] Saved to favorites",
+      "census": {
+        "stops": "[KO] {{n}} stops",
+        "districts": "[KO] {{n}} districts",
+        "departures": "[KO] {{n}} departures"
+      },
+      "section": {
+        "rights": "[KO] Safety & rights",
+        "rightsNote": "[KO] Know before you go.",
+        "venues": "[KO] Where to go",
+        "districts": "[KO] Queer districts",
+        "districtsNote": "[KO] Walkable clusters of bars, cafés and community spaces.",
+        "events": "[KO] Next departures",
+        "overview": "[KO] About {{city}}",
+        "travel": "[KO] Getting there",
+        "news": "[KO] In the news",
+        "nearby": "[KO] Nearby"
+      },
+      "stats": {
+        "venues": "[KO] Venues",
+        "districts": "[KO] Districts",
+        "events": "[KO] Upcoming events"
+      },
+      "about": {
+        "status": "[KO] Status",
+        "capital": "[KO] Capital city",
+        "majorCity": "[KO] Major city",
+        "region": "[KO] Region",
+        "timezone": "[KO] Timezone",
+        "founded": "[KO] Founded",
+        "area": "[KO] Area",
+        "elevation": "[KO] Elevation",
+        "mayor": "[KO] Mayor",
+        "postalCodes": "[KO] Postal codes",
+        "costOfLiving": "[KO] Cost of living",
+        "universities": "[KO] Universities",
+        "sisterCities": "[KO] Sister cities"
+      },
+      "travel": {
+        "majorAirport": "[KO] Major airport",
+        "nearestAirport": "[KO] Nearest airport",
+        "allCodes": "[KO] All airport codes",
+        "lines": "[KO] Lines",
+        "networkCaption": "[KO] Rapid-transit lines, drawn from OpenStreetMap. Schematic, not to scale.",
+        "gettingAround": "[KO] Getting around",
+        "noDealsTitle": "[KO] We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
+        "noDealsBody": "[KO] If you need to travel to {{city}}, read the safety and rights section first and use the trip planner — it includes a safety briefing for high-risk destinations."
+      },
+      "endOfLine": {
+        "eyebrow": "[KO] End of line",
+        "title": "[KO] Riding on?",
+        "body": "[KO] Every city on the guide carries the same modules: safety and rights first, then the places.",
+        "allCities": "[KO] All cities",
+        "country": "[KO] More in {{country}}"
       }
     },
     "capital": "[KO] Capital",
@@ -2927,7 +2990,9 @@
       "personalities": "목소리",
       "nearby": "근처",
       "news": "뉴스",
-      "map": "지도"
+      "map": "지도",
+      "history": "[KO] Legal record",
+      "historyNote": "[KO] What changed and when. Safety information without a date is not safety information."
     },
     "practical": {
       "languages": "언어",
@@ -2946,7 +3011,10 @@
       "hdi": "HDI",
       "lifeExpectancy": "기대수명",
       "literacy": "문해율",
-      "income": "소득 수준"
+      "income": "소득 수준",
+      "venues": "[KO] Venues",
+      "events": "[KO] Upcoming events",
+      "weather": "[KO] Now in {{city}}"
     },
     "cities": {
       "emptyTitle": "아직 도시가 없습니다",
@@ -2962,7 +3030,9 @@
     },
     "travel": {
       "activities": "액티비티 & 투어",
-      "activitiesBody": "{{country}}에서의 경험"
+      "activitiesBody": "{{country}}에서의 경험",
+      "noDealsTitle": "[KO] We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
+      "noDealsBody": "[KO] If you need to travel to {{country}}, read the rights section on this page first and use the trip planner — it includes a safety briefing for high-risk destinations."
     },
     "news": {
       "emptyTitle": "아직 현지 뉴스가 없습니다",
@@ -3009,7 +3079,24 @@
       "ilgaLink": "ILGA World Database",
       "deathPenaltyPossible": "[KO] death penalty possible, no legal certainty"
     },
-    "planTripHighRisk": "[KO] Plan carefully — safety briefing included"
+    "planTripHighRisk": "[KO] Plan carefully — safety briefing included",
+    "eyebrow": "[KO] Country",
+    "sections": "[KO] Sections",
+    "openMap": "[KO] Open the full map",
+    "census": {
+      "cities": "[KO] {{n}} cities",
+      "stops": "[KO] {{n}} stops",
+      "departures": "[KO] {{n}} departures"
+    },
+    "history": {
+      "seeAll": "[KO] Full timeline"
+    },
+    "endOfLine": {
+      "eyebrow": "[KO] End of line",
+      "title": "[KO] Compare the law elsewhere",
+      "body": "[KO] Every country page carries the same legal breakdown, from the same sources, with the date it was checked.",
+      "rights": "[KO] Rights across the world"
+    }
   },
   "inbox": {
     "title": "받은편지함",
@@ -4305,6 +4392,70 @@
       "seeByCountry": "국가별 상태 보기",
       "spansAllRights": "이것은 하나의 법률이 아니라 법 분야 전체를 가리킵니다. 18개 권리를 국가별로 기록합니다.",
       "seeAllRights": "18개 권리를 국가별로 보기"
+    }
+  },
+  "village": {
+    "eyebrow": "[KO] District · Green line",
+    "loading": "[KO] Loading this district",
+    "loadingVenues": "[KO] Loading the stop list",
+    "sections": "[KO] Sections",
+    "planTrip": "[KO] Plan a trip to {{name}}",
+    "relatedByTag": "[KO] Related by tag",
+    "notFound": {
+      "title": "[KO] No such district.",
+      "body": "[KO] This stop is not on the line.",
+      "cta": "[KO] All queer villages"
+    },
+    "toast": {
+      "errorTitle": "[KO] Error",
+      "loadFailed": "[KO] Failed to load village details"
+    },
+    "facts": {
+      "city": "[KO] City",
+      "country": "[KO] Country",
+      "venues": "[KO] Venues",
+      "events": "[KO] Upcoming events",
+      "editorsPick": "[KO] Editor’s pick"
+    },
+    "census": {
+      "stops": "[KO] {{n}} stops",
+      "departures": "[KO] {{n}} departures"
+    },
+    "section": {
+      "about": "[KO] About {{name}}",
+      "walk": "[KO] The walk",
+      "walkNote": "[KO] Stops in order, with the straight-line gap between them.",
+      "events": "[KO] Next departures",
+      "photos": "[KO] Photos",
+      "city": "[KO] On the same line"
+    },
+    "action": {
+      "website": "[KO] Website",
+      "favorite": "[KO] Save to favorites",
+      "favorited": "[KO] Saved to favorites"
+    },
+    "events": {
+      "open": "[KO] Open"
+    },
+    "landmarks": {
+      "title": "[KO] Notable landmarks"
+    },
+    "photo": {
+      "caption": "[KO] {{village}}, {{city}}",
+      "alt": "[KO] {{name}}, photo {{n}}"
+    },
+    "parentCity": {
+      "body": "[KO] The wider city this district sits in.",
+      "action": "[KO] Open"
+    },
+    "map": {
+      "caption": "[KO] Walking distance in {{city}}."
+    },
+    "endOfLine": {
+      "eyebrow": "[KO] End of line",
+      "title": "[KO] Looking for another district?",
+      "body": "[KO] Queer villages are walkable clusters of bars, cafés and community spaces. There are more of them.",
+      "city": "[KO] More in {{city}}"
     }
   }
 }

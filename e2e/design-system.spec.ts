@@ -314,6 +314,44 @@ test.describe('design system: sanctioned ink only', () => {
     '/villages/chueca',
   ];
 
+/**
+ * Per-route additions to the allowlist above, as raw hex.
+ *
+ * The comment on SANCTIONED_TOKENS says the locked functional palettes are
+ * excluded "because none of them render on these four routes; if one ever
+ * does, add it here explicitly rather than widening the tolerance." Adding the
+ * geo singles made that day arrive: a country page states a legal risk
+ * verdict, so it renders the trip-safety TRAFFIC LIGHT — a user-locked
+ * exception whose only source of truth is `src/hooks/useRiskVisual.ts`, the one
+ * module ESLint allows raw hex in — and the equality tier scale from
+ * `src/utils/equalityScore.ts`.
+ *
+ * Scoped per route on purpose. These hues mean "danger" and "how equal is this
+ * place"; letting them through globally would allow an amber tint onto
+ * /marketplace, where it would mean nothing at all. A city or village page can
+ * show the same verdict tile, so all three geo routes get the same allowance.
+ *
+ * Light-mode values only — the site has no dark mode.
+ */
+const RISK_PALETTE = [
+  // useRiskVisual: bg / fg / border for low | moderate | high | critical
+  '#ecfdf5', '#fffbeb', '#fef2f2',
+  '#047857', '#92400e', '#b91c1c', '#7f1d1d',
+  '#a7f3d0', '#fcd34d', '#fca5a5', '#dc2626',
+];
+const EQUALITY_PALETTE = [
+  // equalityScore: TIER_LABEL_COLOR + TIER_RING_COLOR
+  '#15803d', '#22c55e', '#65a30d', '#84cc16', '#ca8a04', '#eab308',
+  '#ea580c', '#f97316', '#ef4444', '#dc2626',
+  '#dcfce7', '#ecfccb', '#fef9c3', '#fff7ed', '#fef2f2',
+  '#6b7280', '#d1d5db', '#f3f4f6',
+];
+const EXTRA_SANCTIONED: Record<string, string[]> = {
+  '/city/berlin': [...RISK_PALETTE, ...EQUALITY_PALETTE],
+  '/country/germany': [...RISK_PALETTE, ...EQUALITY_PALETTE],
+  '/villages/chueca': [...RISK_PALETTE, ...EQUALITY_PALETTE],
+};
+
   // What counts as "this page has rendered its chrome".
   //
   // `#root *` is a weak signal: its first match is often the toast container,
@@ -338,7 +376,7 @@ test.describe('design system: sanctioned ink only', () => {
       await dismissCookieBanner(page);
       await page.waitForTimeout(500);
 
-      const rogue = await page.evaluate((tokens) => {
+      const rogue = await page.evaluate(([tokens, extraHex]: [string[], string[]]) => {
         const root = document.documentElement;
 
         // Resolve each token's HSL triple to rgb the way the browser does,
@@ -395,6 +433,14 @@ test.describe('design system: sanctioned ink only', () => {
           return max === 0 ? 0 : (max - min) / max;
         };
 
+        // Per-route additions (locked functional palettes) arrive as raw hex
+        // rather than as tokens: they are not CSS variables, and their source
+        // of truth is the TS module that owns them.
+        for (const hex of extraHex) {
+          const m = /^#(..)(..)(..)$/.exec(hex);
+          if (m) sanctioned.add([1, 2, 3].map((i) => parseInt(m[i], 16)).join(','));
+        }
+
         // A few channels of slack: an ink can arrive through a Tailwind opacity
         // modifier or a color-mix, both of which can shift the last bit.
         const NEAR = 4;
@@ -430,7 +476,7 @@ test.describe('design system: sanctioned ink only', () => {
           offenders.push(`${bg} on <${tag} class="${cls}">`);
         }
         return { offenders: [...new Set(offenders)], sanctioned: [...sanctioned], unparsed };
-      }, SANCTIONED_TOKENS);
+      }, [SANCTIONED_TOKENS, EXTRA_SANCTIONED[path] ?? []] as [string[], string[]]);
 
       expect(
         rogue.sanctioned.length,

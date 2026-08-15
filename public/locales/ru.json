@@ -2804,6 +2804,69 @@
         "currency": "Валюта",
         "bestTime": "Лучшее время",
         "airport": "Аэропорт"
+      },
+      "eyebrow": "[RU] City",
+      "sections": "[RU] Sections",
+      "loadingVenues": "[RU] Loading venues",
+      "openEvent": "[RU] Open",
+      "openMap": "[RU] Open the full map",
+      "createTrip": "[RU] Create trip",
+      "officialWebsite": "[RU] Official website",
+      "favorite": "[RU] Save to favorites",
+      "favorited": "[RU] Saved to favorites",
+      "census": {
+        "stops": "[RU] {{n}} stops",
+        "districts": "[RU] {{n}} districts",
+        "departures": "[RU] {{n}} departures"
+      },
+      "section": {
+        "rights": "[RU] Safety & rights",
+        "rightsNote": "[RU] Know before you go.",
+        "venues": "[RU] Where to go",
+        "districts": "[RU] Queer districts",
+        "districtsNote": "[RU] Walkable clusters of bars, cafés and community spaces.",
+        "events": "[RU] Next departures",
+        "overview": "[RU] About {{city}}",
+        "travel": "[RU] Getting there",
+        "news": "[RU] In the news",
+        "nearby": "[RU] Nearby"
+      },
+      "stats": {
+        "venues": "[RU] Venues",
+        "districts": "[RU] Districts",
+        "events": "[RU] Upcoming events"
+      },
+      "about": {
+        "status": "[RU] Status",
+        "capital": "[RU] Capital city",
+        "majorCity": "[RU] Major city",
+        "region": "[RU] Region",
+        "timezone": "[RU] Timezone",
+        "founded": "[RU] Founded",
+        "area": "[RU] Area",
+        "elevation": "[RU] Elevation",
+        "mayor": "[RU] Mayor",
+        "postalCodes": "[RU] Postal codes",
+        "costOfLiving": "[RU] Cost of living",
+        "universities": "[RU] Universities",
+        "sisterCities": "[RU] Sister cities"
+      },
+      "travel": {
+        "majorAirport": "[RU] Major airport",
+        "nearestAirport": "[RU] Nearest airport",
+        "allCodes": "[RU] All airport codes",
+        "lines": "[RU] Lines",
+        "networkCaption": "[RU] Rapid-transit lines, drawn from OpenStreetMap. Schematic, not to scale.",
+        "gettingAround": "[RU] Getting around",
+        "noDealsTitle": "[RU] We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
+        "noDealsBody": "[RU] If you need to travel to {{city}}, read the safety and rights section first and use the trip planner — it includes a safety briefing for high-risk destinations."
+      },
+      "endOfLine": {
+        "eyebrow": "[RU] End of line",
+        "title": "[RU] Riding on?",
+        "body": "[RU] Every city on the guide carries the same modules: safety and rights first, then the places.",
+        "allCities": "[RU] All cities",
+        "country": "[RU] More in {{country}}"
       }
     },
     "capital": "[RU] Capital",
@@ -2963,7 +3026,9 @@
       "personalities": "Голоса",
       "nearby": "Рядом",
       "news": "Новости",
-      "map": "Карта"
+      "map": "Карта",
+      "history": "[RU] Legal record",
+      "historyNote": "[RU] What changed and when. Safety information without a date is not safety information."
     },
     "practical": {
       "languages": "Языки",
@@ -2982,7 +3047,10 @@
       "hdi": "ИЧР",
       "lifeExpectancy": "Продолжительность жизни",
       "literacy": "Грамотность",
-      "income": "Уровень дохода"
+      "income": "Уровень дохода",
+      "venues": "[RU] Venues",
+      "events": "[RU] Upcoming events",
+      "weather": "[RU] Now in {{city}}"
     },
     "cities": {
       "emptyTitle": "Пока нет городов",
@@ -2998,7 +3066,9 @@
     },
     "travel": {
       "activities": "Развлечения и туры",
-      "activitiesBody": "Впечатления в стране {{country}}"
+      "activitiesBody": "Впечатления в стране {{country}}",
+      "noDealsTitle": "[RU] We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
+      "noDealsBody": "[RU] If you need to travel to {{country}}, read the rights section on this page first and use the trip planner — it includes a safety briefing for high-risk destinations."
     },
     "news": {
       "emptyTitle": "Пока нет местных новостей",
@@ -3045,7 +3115,24 @@
       "ilgaLink": "ILGA World Database",
       "deathPenaltyPossible": "[RU] death penalty possible, no legal certainty"
     },
-    "planTripHighRisk": "[RU] Plan carefully — safety briefing included"
+    "planTripHighRisk": "[RU] Plan carefully — safety briefing included",
+    "eyebrow": "[RU] Country",
+    "sections": "[RU] Sections",
+    "openMap": "[RU] Open the full map",
+    "census": {
+      "cities": "[RU] {{n}} cities",
+      "stops": "[RU] {{n}} stops",
+      "departures": "[RU] {{n}} departures"
+    },
+    "history": {
+      "seeAll": "[RU] Full timeline"
+    },
+    "endOfLine": {
+      "eyebrow": "[RU] End of line",
+      "title": "[RU] Compare the law elsewhere",
+      "body": "[RU] Every country page carries the same legal breakdown, from the same sources, with the date it was checked.",
+      "rights": "[RU] Rights across the world"
+    }
   },
   "inbox": {
     "title": "Входящие",
@@ -4341,6 +4428,70 @@
       "seeByCountry": "Посмотреть статус по странам",
       "spansAllRights": "Это целая область права, а не один закон. Мы отслеживаем 18 отдельных прав по каждой стране.",
       "seeAllRights": "Посмотреть все 18 прав по странам"
+    }
+  },
+  "village": {
+    "eyebrow": "[RU] District · Green line",
+    "loading": "[RU] Loading this district",
+    "loadingVenues": "[RU] Loading the stop list",
+    "sections": "[RU] Sections",
+    "planTrip": "[RU] Plan a trip to {{name}}",
+    "relatedByTag": "[RU] Related by tag",
+    "notFound": {
+      "title": "[RU] No such district.",
+      "body": "[RU] This stop is not on the line.",
+      "cta": "[RU] All queer villages"
+    },
+    "toast": {
+      "errorTitle": "[RU] Error",
+      "loadFailed": "[RU] Failed to load village details"
+    },
+    "facts": {
+      "city": "[RU] City",
+      "country": "[RU] Country",
+      "venues": "[RU] Venues",
+      "events": "[RU] Upcoming events",
+      "editorsPick": "[RU] Editor’s pick"
+    },
+    "census": {
+      "stops": "[RU] {{n}} stops",
+      "departures": "[RU] {{n}} departures"
+    },
+    "section": {
+      "about": "[RU] About {{name}}",
+      "walk": "[RU] The walk",
+      "walkNote": "[RU] Stops in order, with the straight-line gap between them.",
+      "events": "[RU] Next departures",
+      "photos": "[RU] Photos",
+      "city": "[RU] On the same line"
+    },
+    "action": {
+      "website": "[RU] Website",
+      "favorite": "[RU] Save to favorites",
+      "favorited": "[RU] Saved to favorites"
+    },
+    "events": {
+      "open": "[RU] Open"
+    },
+    "landmarks": {
+      "title": "[RU] Notable landmarks"
+    },
+    "photo": {
+      "caption": "[RU] {{village}}, {{city}}",
+      "alt": "[RU] {{name}}, photo {{n}}"
+    },
+    "parentCity": {
+      "body": "[RU] The wider city this district sits in.",
+      "action": "[RU] Open"
+    },
+    "map": {
+      "caption": "[RU] Walking distance in {{city}}."
+    },
+    "endOfLine": {
+      "eyebrow": "[RU] End of line",
+      "title": "[RU] Looking for another district?",
+      "body": "[RU] Queer villages are walkable clusters of bars, cafés and community spaces. There are more of them.",
+      "city": "[RU] More in {{city}}"
     }
   }
 }

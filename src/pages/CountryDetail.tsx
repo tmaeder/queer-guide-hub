@@ -169,8 +169,7 @@ export default function CountryDetail() {
         country.gdp_per_capita_usd != null ||
         country.human_development_index != null ||
         country.life_expectancy != null ||
-        country.literacy_rate != null ||
-        !!country.wb_income_level),
+        country.literacy_rate != null),
     [country, worldBankData, sdgData],
   );
 
@@ -447,11 +446,12 @@ export default function CountryDetail() {
             label={t('country.sections', 'Sections')}
             className="hidden lg:block"
           />
-          <ProvenanceLine
-            addedAt={country.created_at}
-            checkedAt={country.last_verified_at ?? null}
-            correctHref="/contact"
-          />
+          {/* `checkedAt` is null on purpose, and the component then prints
+              "Not independently checked yet." `countries` has no
+              `last_verified_at` column — unlike `cities` and `queer_villages`,
+              which do — so there is no check date to state. Saying so out loud
+              beats implying freshness by omission. */}
+          <ProvenanceLine addedAt={country.created_at} checkedAt={null} correctHref="/contact" />
         </>
       }
       footer={
