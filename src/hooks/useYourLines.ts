@@ -47,14 +47,18 @@ interface WorkerHit {
  * Calls `searchFetch` inside a `useQuery` rather than mounting `useSearch`:
  * that hook is useState/useEffect with no cache and no cross-mount dedupe.
  */
-export function useYourLinesDiscovery(region: HomeRegion, limit = 8) {
+export function useYourLinesDiscovery(region: HomeRegion, limit = 8, enabled = true) {
   const { t } = useTranslation();
 
   return useQuery({
     queryKey: ['your-lines-discovery', region.cityName, region.countryCode, limit],
     // Without a region there is no honest framing for these cards, and the
     // band already self-hides when it has nothing.
-    enabled: !region.loading && !!region.cityName,
+    //
+    // `enabled` is how the band tells us the visitor has a thread of their own
+    // to augment. A cold visitor's band never renders, so firing this would be
+    // a worker round-trip whose result is thrown away on every first visit.
+    enabled: enabled && !region.loading && !!region.cityName,
     staleTime: 15 * 60 * 1000,
     queryFn: async (): Promise<YourLinesCard[]> => {
       const { data: session } = await supabase.auth.getSession();

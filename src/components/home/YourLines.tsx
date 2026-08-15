@@ -64,7 +64,15 @@ export function YourLines() {
   const region = useHomeRegionContext();
   const recent = useRecentlyViewed();
   const resolvedImages = useRecentlyViewedImages(recent);
-  const { data: discovery = [] } = useYourLinesDiscovery(region, MAX_CARDS);
+
+  // A thread needs a first stitch. Without any history of their own, the
+  // discovery half is just "places in your region" — which is exactly what the
+  // Near you band above already is, so the two rendered near-identical lists
+  // (Zurich Pride, Cranberry and Petra's Tip Top Bar appeared in both) under a
+  // heading claiming the content was the reader's. Discovery AUGMENTS a
+  // personal thread here; it does not constitute one.
+  const hasOwnThread = recent.length > 0;
+  const { data: discovery = [] } = useYourLinesDiscovery(region, MAX_CARDS, hasOwnThread);
 
   const cards = useMemo<LineCard[]>(() => {
     const seen = new Set<string>();
@@ -105,7 +113,7 @@ export function YourLines() {
     return out.slice(0, MAX_CARDS);
   }, [recent, resolvedImages, discovery, t]);
 
-  if (cards.length === 0) return null;
+  if (!hasOwnThread || cards.length === 0) return null;
 
   return (
     <Band title={t('home.yourLines.title', 'Your lines')}>
