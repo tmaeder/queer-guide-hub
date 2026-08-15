@@ -48,8 +48,12 @@ export function rotateWindow<T>(items: T[], take: number, bucket: number, pinFir
   const want = take - pinned.length;
   if (want <= 0 || pool.length === 0) return pinned;
 
-  // Normalize into range for negative and oversized buckets alike.
-  const start = ((bucket % pool.length) + pool.length) % pool.length;
+  // Advance by a PAGE, not by one. A stride of 1 shifts the window a single
+  // item per bucket, so consecutive buckets shared four of five stories and
+  // "it changes every six hours" was technically true and practically
+  // invisible. Striding by `want` gives each bucket a disjoint set until the
+  // pool wraps, which is what "the page changed" actually looks like.
+  const start = (((bucket * want) % pool.length) + pool.length) % pool.length;
   const rotated: T[] = [];
   for (let i = 0; i < Math.min(want, pool.length); i++) {
     rotated.push(pool[(start + i) % pool.length]);

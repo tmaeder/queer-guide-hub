@@ -50,6 +50,26 @@ describe('rotateWindow', () => {
     expect(rotateWindow(src, 5, 3)).not.toEqual(rotateWindow(src, 5, 4));
   });
 
+  it('advances by a PAGE, so a new bucket shares nothing with the last', () => {
+    // A stride of one shifted the window a single item per bucket, so
+    // consecutive buckets shared four of five stories — "it changes every six
+    // hours" was true and invisible at the same time.
+    const src = items(20);
+    const a = rotateWindow(src, 5, 3);
+    const b = rotateWindow(src, 5, 4);
+    expect(a.filter((x) => b.includes(x))).toEqual([]);
+  });
+
+  it('pages past the pinned head without disturbing it', () => {
+    const src = items(21); // 1 pinned + 20 rotatable
+    const a = rotateWindow(src, 5, 0, 1);
+    const b = rotateWindow(src, 5, 1, 1);
+    expect(a[0]).toBe('i0');
+    expect(b[0]).toBe('i0');
+    // The four unpinned slots are a disjoint page.
+    expect(a.slice(1).filter((x) => b.slice(1).includes(x))).toEqual([]);
+  });
+
   it('holds the pinned head in place while the tail cycles', () => {
     const src = items(20);
     const a = rotateWindow(src, 5, 3, 1);
