@@ -29,6 +29,7 @@ import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
 import { checkCircuit, recordFailure, recordSuccess } from '../_shared/circuit-breaker.ts'
 import {
   BREAKER,
+  DEFAULT_PLATFORMS,
   PLATFORM_KEYS,
   decideTier,
   nextMissState,
@@ -98,10 +99,15 @@ Deno.serve(async (req) => {
 
   const dryRun = body.dry_run === true
   const batchSize = Math.max(1, Math.min(Number(body.batch_size) || DEFAULT_BATCH, 200))
-  const wanted: PlatformKey[] =
+
+  // An explicit `platforms` list is passed through to the SELECTOR too, so an
+  // on-demand xhamster run still finds work. Omitted means the nightly set,
+  // which the selector defaults to as well — see DEFAULT_PLATFORMS.
+  const explicitPlatforms: PlatformKey[] | null =
     Array.isArray(body.platforms) && body.platforms.length
       ? body.platforms.filter((p) => PLATFORM_KEYS.includes(p))
-      : PLATFORM_KEYS
+      : null
+  const wanted: PlatformKey[] = explicitPlatforms ?? DEFAULT_PLATFORMS
 
   // A breaker that is open degrades that ONE platform; the others still run.
   const open = new Set<PlatformKey>()
@@ -142,6 +148,7 @@ Deno.serve(async (req) => {
   } else {
     const { data, error } = await supabase.rpc('personalities_due_for_adult_links', {
       p_limit: batchSize,
+      ...(explicitPlatforms ? { p_platforms: explicitPlatforms } : {}),
     })
     if (error) return jsonResponse({ success: false, error: error.message }, 500, req)
     due = (data ?? []) as DueRow[]

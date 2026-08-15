@@ -20,7 +20,26 @@
 
 export type PlatformKey = 'pornhub' | 'xhamster' | 'xvideos'
 
+/** Every platform this module knows how to probe. */
 export const PLATFORM_KEYS: PlatformKey[] = ['pornhub', 'xhamster', 'xvideos']
+
+/**
+ * What the NIGHTLY sweep probes.
+ *
+ * xhamster is deliberately excluded: measured over the first ~1,000 rows of
+ * the real cohort it resolved ~3% of names while costing a third of all probe
+ * traffic, because its pornstar directory is heavily straight-skewed and this
+ * corpus is gay-male. It stays fully supported for on-demand runs — pass
+ * `platforms:['xhamster']` (or `--platform xhamster`) and both this function
+ * and the selector will include it.
+ *
+ * This has to be honoured by the SELECTOR, not just the probe loop. If the
+ * selector still reported xhamster as missing, a row whose only gap is
+ * xhamster would be handed out every night, skipped without a write, and so
+ * never have `last_attempt_at` stamped — pinning it to the head of the queue
+ * forever. That is the same starvation shape the city engine hit.
+ */
+export const DEFAULT_PLATFORMS: PlatformKey[] = ['pornhub', 'xvideos']
 
 /** Circuit-breaker name per host — seeded in the engine migration. */
 export const BREAKER: Record<PlatformKey, string> = {

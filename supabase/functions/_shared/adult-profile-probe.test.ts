@@ -1,5 +1,7 @@
 import { assertEquals } from 'https://deno.land/std@0.208.0/assert/mod.ts'
 import {
+  DEFAULT_PLATFORMS,
+  PLATFORM_KEYS,
   decideTier,
   displayNameFromTitle,
   extractTitle,
@@ -43,6 +45,16 @@ Deno.test('slugifyName matches the platforms own slugging', () => {
   assertEquals(slugifyName('Pierre Fitch'), 'pierre-fitch')
   assertEquals(slugifyName("Johnson O'Grady"), 'johnson-ogrady')
   assertEquals(slugifyName('Zeb  Atlas '), 'zeb-atlas')
+})
+
+// ── Nightly platform set ────────────────────────────────────────────────────
+
+Deno.test('the nightly set excludes xhamster but the prober still supports it', () => {
+  // ~3% hit rate for a third of the probe traffic on this gay-male corpus.
+  assertEquals(DEFAULT_PLATFORMS.includes('xhamster'), false)
+  assertEquals(DEFAULT_PLATFORMS, ['pornhub', 'xvideos'])
+  // Still fully probeable on demand — the capability is not removed.
+  assertEquals(PLATFORM_KEYS.includes('xhamster'), true)
 })
 
 // ── The redirect rule ───────────────────────────────────────────────────────
