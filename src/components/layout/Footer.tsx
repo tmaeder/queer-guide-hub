@@ -130,7 +130,10 @@ export function Footer() {
           )}
         >
           <div>
-            <h2 className="max-w-md font-display text-title leading-tight">
+            {/* Rank 4 is Space Grotesk 700, never Anton — dropping this from
+                text-headline to text-title means dropping font-display with
+                it (rankFourFace.test.ts). */}
+            <h2 className="max-w-md text-title font-bold leading-tight">
               {t('footer.antiDiscrimination.title', "We don't do bigotry here.")}
             </h2>
             <p className="mt-4 max-w-md text-13 leading-relaxed text-background/70">
