@@ -9,12 +9,12 @@ export async function fetchSimilarCitiesPool(
 ): Promise<SimilarCityRow[]> {
   const { data } = await supabase
     .from('cities')
-    .select('id, name, population, country_id, countries:country_id(name, equality_score)')
+    .select('id, name, slug, population, country_id, countries:country_id(name, equality_score)')
     .neq('id', cityId)
     .gte('population', 100000)
     .order('population', { ascending: false })
     .limit(limit);
-  return ((data ?? []) as unknown) as SimilarCityRow[];
+  return (data ?? []) as unknown as SimilarCityRow[];
 }
 
 export async function fetchSameCountryCities(
@@ -23,11 +23,11 @@ export async function fetchSameCountryCities(
 ): Promise<SimilarCityRow[]> {
   const { data } = await supabase
     .from('cities')
-    .select('id, name, population, country_id, countries:country_id(name, equality_score)')
+    .select('id, name, slug, population, country_id, countries:country_id(name, equality_score)')
     .eq('country_id', countryId)
     .neq('id', cityId)
     .gte('population', 50000)
     .order('population', { ascending: false })
     .limit(3);
-  return ((data ?? []) as unknown) as SimilarCityRow[];
+  return (data ?? []) as unknown as SimilarCityRow[];
 }

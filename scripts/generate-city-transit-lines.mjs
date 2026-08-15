@@ -49,29 +49,59 @@ const PAD = 10; // keeps the 6px station ring and the 5px line off the edge
 const MAX_LINES = 4;
 const MAX_POINTS = 9; // per line, after simplification
 const MIN_POINTS = 4;
-const SEARCH_RADIUS_M = 25000;
+// 15 km, not 25: the ranking radius below is 12 km, `around` selects a relation
+// when ANY of its members falls in range (so a line that reaches further still
+// arrives whole), and the wider query was slow enough to put the ~490-city run
+// at ~20 hours. Overpass cost scales hard with the search area.
+const SEARCH_RADIUS_M = 15000;
+// Population floor for the bulk run. Deliberately low: population is a poor
+// proxy for "has a metro" in Europe (Copenhagen 640k has four lines, plenty of
+// 2M cities have none), and a city with no network costs one empty query.
+const MIN_POPULATION = Number(process.env.MIN_POPULATION || 500000);
 // Lines are ranked by how much of them falls inside this radius, not by total
 // length — see coreLength().
 const CORE_RADIUS_M = 12000;
-// Rotated on failure. A single query for all three modes over a 25 km radius
-// 504s on the main endpoint for tram-heavy cities, so this asks one mode at a
-// time (see fetchRoutes) and rotates mirrors when one is busy.
+// Rotated on failure — the main endpoint 504s on heavy queries, so a busy
+// mirror should not end the attempt.
+//
+// PLANET MIRRORS ONLY. `overpass.osm.ch` was in this list and is a
+// SWITZERLAND-ONLY extract: it answers 200 with an empty element list for
+// every city outside Switzerland, with no `remark` to give it away. Pinned to
+// a third of a 487-city run it cached "no network" for Essen, Dortmund,
+// Gothenburg, Leipzig and 450 others — the same empty-200-is-not-an-answer
+// trap as a timeout, wearing a different hat. probeEndpoints() below now
+// catches this class at startup instead of trusting the list.
 const OVERPASS_ENDPOINTS = process.env.OVERPASS_URL
   ? [process.env.OVERPASS_URL]
   : [
       'https://overpass-api.de/api/interpreter',
       'https://overpass.kumi.systems/api/interpreter',
-      'https://overpass.osm.ch/api/interpreter',
     ];
 const UA = 'QueerGuideBot/1.0 (contact@queer.guide)';
 const SLEEP_MS = Number(process.env.SLEEP_MS || 3000);
+// One worker per mirror, each pinned to its own endpoint, so the bulk run
+// spreads load instead of queueing behind a single instance's slots. Kept at
+// the number of mirrors deliberately — this is a one-shot against free
+// infrastructure, not a scraper.
+const CONCURRENCY = Number(process.env.CONCURRENCY || OVERPASS_ENDPOINTS.length);
 
 /** Length rank → track. The flagship line is pink. */
 const TRACKS = ['pink', 'blue', 'green', 'yellow'];
 
-/** Modes in preference order. A city resolves to the first one it really has. */
+/** Modes in preference order. A city resolves to the first one it really has.
+ *  `subway` and `light_rail` are fetched in ONE request (see fetchRoutes) —
+ *  across ~490 cities the per-mode round trip dominated the run, and the two
+ *  together are still far lighter than tram, which is why tram stays separate
+ *  and is only asked for when the rail query came back thin. */
 const MODES = ['subway', 'light_rail', 'tram'];
+const RAIL_MODES = ['subway', 'light_rail'];
 const MIN_LINES_FOR_MODE = 2; // 1 lonely subway line loses to a real tram network
+// A route shorter than this is not a city transit line. Airport people-movers,
+// hotel trams (Las Vegas published the Mandalay Bay shuttle as rapid transit)
+// and park railways are all tagged like the real thing and all come in around
+// a kilometre — length is the one signal that separates them without
+// hardcoding a list of hotel names.
+const MIN_LINE_LENGTH_M = 2000;
 
 // Kept in sync with FEATURED_CITY_WHITELIST in src/hooks/usePersonalizedCities.ts.
 const CITY_NAMES = [
@@ -102,27 +132,54 @@ async function fetchCities() {
   const key = env.VITE_SUPABASE_ANON_KEY;
   if (!url || !key) throw new Error('VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY missing from .env');
 
-  const names = CITY_NAMES.map((n) => `"${n}"`).join(',');
-  const q =
-    `${url}/rest/v1/cities?select=name,slug,latitude,longitude,population` +
-    `&name=in.(${encodeURIComponent(names)})&slug=not.like.tmp-*`;
-  const res = await fetch(q, { headers: { apikey: key, Authorization: `Bearer ${key}` } });
-  if (!res.ok) throw new Error(`cities lookup failed: ${res.status} ${await res.text()}`);
-  const rows = await res.json();
+  const headers = { apikey: key, Authorization: `Bearer ${key}` };
+  const select = 'name,slug,latitude,longitude,population';
+  const get = async (query) => {
+    const res = await fetch(`${url}/rest/v1/cities?select=${select}&${query}`, { headers });
+    if (!res.ok) throw new Error(`cities lookup failed: ${res.status} ${await res.text()}`);
+    return res.json();
+  };
 
-  // Several DB rows can share a whitelist name (Berlin DE vs Berlin US) — keep
-  // the most populous, exactly as fetchTrendingCities does.
+  // The editorial whitelist FIRST, by name — several of those cities sit under
+  // the population floor (Reykjavik, Amsterdam) and the homepage renders them,
+  // so they cannot depend on the size cut.
+  const names = CITY_NAMES.map((n) => `"${n}"`).join(',');
+  const whitelisted = await get(`name=in.(${encodeURIComponent(names)})&slug=not.like.tmp-*`);
+
+  // Then everything big enough to plausibly run rapid transit. Population is a
+  // poor proxy in Europe (Copenhagen has a metro at 640k, plenty of 2M cities
+  // have none), so the floor is deliberately low and cities without a network
+  // simply produce nothing.
+  const rows = [];
+  for (let offset = 0; ; offset += 1000) {
+    const page = await get(
+      `population=gte.${MIN_POPULATION}&slug=not.like.tmp-*` +
+        `&order=population.desc&limit=1000&offset=${offset}`,
+    );
+    rows.push(...page);
+    if (page.length < 1000) break;
+  }
+
+  // Several DB rows can share a name (Berlin DE vs Berlin US) — keep the most
+  // populous, exactly as fetchTrendingCities does.
   const byName = new Map();
-  for (const r of rows) {
+  for (const r of [...whitelisted, ...rows]) {
     if (r.latitude == null || r.longitude == null || !r.slug) continue;
     const cur = byName.get(r.name);
     if (!cur || (r.population ?? 0) > (cur.population ?? 0)) byName.set(r.name, r);
   }
+
+  // Whitelist order first (they are the ones a human reviews most often), then
+  // the rest by population so the biggest networks land early in a long run.
   const ordered = [];
+  const seen = new Set();
   for (const name of CITY_NAMES) {
     const row = byName.get(name);
-    if (row) ordered.push(row);
+    if (row) { ordered.push(row); seen.add(row.slug); }
     else log(`  ! ${name}: no city row with coordinates — skipped`);
+  }
+  for (const row of [...byName.values()].sort((a, b) => (b.population ?? 0) - (a.population ?? 0))) {
+    if (!seen.has(row.slug)) ordered.push(row);
   }
   return ordered;
 }
@@ -135,19 +192,62 @@ async function fetchCities() {
  * Responses are cached on disk so re-running while tuning the simplification
  * costs Overpass nothing. Delete `scripts/output/.overpass-cache/` to refetch.
  */
-async function fetchRoutes(lat, lon, mode, slug) {
+/**
+ * Drop any endpoint that cannot answer a known-good control query.
+ *
+ * This exists because an Overpass instance can be a REGIONAL EXTRACT and there
+ * is nothing in a response to say so: `overpass.osm.ch` returns a clean
+ * `200 {"elements":[]}` for Essen, and "no relations found" is exactly what a
+ * city with no metro looks like. A control the whole planet agrees on is the
+ * only way to tell a healthy mirror from one that is quietly missing the
+ * world. Berlin's U-Bahn is the control — nine lines, unambiguous, and if a
+ * mirror cannot find it the mirror is wrong rather than Berlin.
+ */
+async function probeEndpoints() {
+  const control = `[out:json][timeout:60];rel(around:15000,52.52,13.405)["type"="route"]["route"="subway"];out ids;`;
+  const healthy = [];
+  for (const endpoint of OVERPASS_ENDPOINTS) {
+    const host = new URL(endpoint).host;
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': UA },
+        body: `data=${encodeURIComponent(control)}`,
+      });
+      if (!res.ok) { log(`  ! ${host}: control query HTTP ${res.status} — skipped`); continue; }
+      const json = await res.json();
+      const n = (json.elements || []).length;
+      if (n < 5) {
+        log(`  ! ${host}: control found ${n} Berlin subway relations — NOT a planet mirror, skipped`);
+        continue;
+      }
+      log(`  ✓ ${host}: control ok (${n} relations)`);
+      healthy.push(endpoint);
+    } catch (e) {
+      log(`  ! ${host}: control query failed (${e.message}) — skipped`);
+    }
+  }
+  if (!healthy.length) throw new Error('no healthy Overpass endpoint');
+  return healthy;
+}
+
+/** Populated by probeEndpoints() before any city is fetched. */
+let ENDPOINTS = OVERPASS_ENDPOINTS;
+
+async function fetchRoutes(lat, lon, mode, slug, endpointOffset = 0) {
   const cacheFile = resolve(CACHE_DIR, `${slug}-${mode}.json`);
   if (existsSync(cacheFile)) return JSON.parse(readFileSync(cacheFile, 'utf8'));
 
+  const filter = mode === 'rail' ? `["route"~"^(subway|light_rail)$"]` : `["route"="${mode}"]`;
   const query =
     `[out:json][timeout:180];` +
     `rel(around:${SEARCH_RADIUS_M},${lat},${lon})` +
-    `["type"="route"]["route"="${mode}"];` +
+    `["type"="route"]${filter};` +
     `out geom;`;
 
   let lastErr;
-  for (let attempt = 0; attempt < OVERPASS_ENDPOINTS.length * 2; attempt++) {
-    const endpoint = OVERPASS_ENDPOINTS[attempt % OVERPASS_ENDPOINTS.length];
+  for (let attempt = 0; attempt < ENDPOINTS.length * 3; attempt++) {
+    const endpoint = ENDPOINTS[(endpointOffset + attempt) % ENDPOINTS.length];
     try {
       const res = await fetch(endpoint, {
         method: 'POST',
@@ -466,6 +566,40 @@ function isUnbuilt(tags = {}) {
   return /^(construction|proposed)$/i.test(tags.railway || '');
 }
 
+/**
+ * Airport people-movers, hotel shuttles and funiculars are tagged exactly like
+ * city transit but are not it. Las Vegas otherwise published "Terminal 1 → D
+ * Gates" and the Mandalay Bay hotel tram as its rapid-transit network.
+ */
+function isNotCityTransit(tags = {}) {
+  const name = `${tags.name || ''} ${tags.ref || ''}`;
+  if (/\bairport\b|\bterminal\b|people[ -]?mover|\bshuttle\b|sky ?train link/i.test(name)) return true;
+  return tags.usage === 'tourism' || tags.tourism === 'yes';
+}
+
+/**
+ * The identity of a LINE, not of one direction of it.
+ *
+ * A relation without a `ref` falls back to its name, and names routinely carry
+ * the direction — "Blue: Terminal 1 → D Gates" and "Blue: D Gates → Terminal 1"
+ * are one line, as are the two halves of Memphis's MATA Trolley. Keyed on the
+ * raw name each direction became its own line and took its own track color, so
+ * a two-line system rendered as four. Everything from a `:` or a direction
+ * arrow onward is dropped, and `<F>` (New York's F express) collapses onto F.
+ */
+function lineKey(tags = {}, id) {
+  let key = (tags.ref || tags.name || String(id)).trim();
+  key = key.replace(/^[<(]|[>)]$/g, '').trim();
+  key = key.split(/\s*[:;]\s*/)[0];
+  key = key.split(/\s*(?:=>|->|→|—>)\s*/)[0];
+  // A trailing parenthetical is a variant marker, never the identity — and it
+  // can hide a direction arrow inside it, as in "Blue Line (Kavi Subhash →
+  // Dakshineshwar)", which is the same line as "Blue".
+  key = key.replace(/\s*\(.*$/, '');
+  key = key.replace(/\s+(line|linie|línea|linha|ligne)$/i, '');
+  return key.trim().toLowerCase();
+}
+
 /** Collapse a mode's relations into one polyline per line identity. */
 function groupLines(elements, city) {
   const lines = new Map();
@@ -473,33 +607,54 @@ function groupLines(elements, city) {
     if (isUnbuilt(rel.tags)) continue;
     const pts = assemble(rel);
     if (pts.length < 3) continue;
-    // `<F>` is the New York F express — a variant of F, not a fifth line.
-    // Angle brackets and a trailing express marker collapse into the base ref
-    // so one line cannot take two of the four track colors.
-    const key = (rel.tags?.ref || rel.tags?.name || String(rel.id))
-      .trim()
-      .replace(/^[<(]|[>)]$/g, '')
-      .trim();
+    if (isNotCityTransit(rel.tags)) continue;
+    const key = lineKey(rel.tags, rel.id);
     const projected = project(pts, city.latitude, city.longitude);
     const len = coreLength(projected) || polyLength(projected);
     const cur = lines.get(key);
     // Directional variants of one line: keep the longest.
-    if (!cur || len > cur.len) lines.set(key, { ref: key, len, pts: projected });
+    if (!cur || len > cur.len) {
+      lines.set(key, {
+        ref: (rel.tags?.ref || rel.tags?.name || key).trim().slice(0, 40),
+        len,
+        pts: projected,
+        mode: rel.tags?.route,
+      });
+    }
   }
   return lines;
 }
 
-async function buildCity(city) {
-  // Ask mode by mode and stop at the first real network — a city with a metro
-  // never pays for its tram query, which is the expensive one.
+async function buildCity(city, endpointOffset = 0) {
+  // ONE request covers subway + light_rail; tram is only asked for when that
+  // came back with less than a network. A city with a metro therefore never
+  // pays for its tram query, which is by far the expensive one — across ~490
+  // cities that is the difference between one run and three.
   let chosen = null;
   let fallback = null;
-  for (const mode of MODES) {
-    const lines = groupLines(await fetchRoutes(city.latitude, city.longitude, mode, city.slug), city);
-    if (lines.size >= MIN_LINES_FOR_MODE) { chosen = { mode, lines }; break; }
-    if (!fallback && lines.size >= 1) fallback = { mode, lines };
-    await sleep(SLEEP_MS);
+
+  const rail = groupLines(
+    await fetchRoutes(city.latitude, city.longitude, 'rail', city.slug, endpointOffset),
+    city,
+  );
+  // Split the combined answer back into its two modes so the preference order
+  // still holds: a real metro beats a light-rail line that happens to be longer.
+  for (const mode of RAIL_MODES) {
+    const ofMode = new Map([...rail].filter(([, l]) => l.mode === mode));
+    if (ofMode.size >= MIN_LINES_FOR_MODE) { chosen = { mode, lines: ofMode }; break; }
+    if (!fallback && ofMode.size >= 1) fallback = { mode, lines: ofMode };
   }
+
+  if (!chosen) {
+    await sleep(SLEEP_MS);
+    const tram = groupLines(
+      await fetchRoutes(city.latitude, city.longitude, 'tram', city.slug, endpointOffset),
+      city,
+    );
+    if (tram.size >= MIN_LINES_FOR_MODE) chosen = { mode: 'tram', lines: tram };
+    else if (!fallback && tram.size >= 1) fallback = { mode: 'tram', lines: tram };
+  }
+
   chosen = chosen || fallback;
   // A single line is not a network. Cape Town's only `route=tram` relation is
   // the 1 km Century City shuttle; drawn alone and scaled to fill the card it
@@ -507,7 +662,11 @@ async function buildCity(city) {
   // template line instead.
   if (!chosen || chosen.lines.size < MIN_LINES_FOR_MODE) return null;
 
-  const ranked = [...chosen.lines.values()].sort((a, b) => b.len - a.len).slice(0, MAX_LINES);
+  const ranked = [...chosen.lines.values()]
+    .filter((l) => l.len >= MIN_LINE_LENGTH_M)
+    .sort((a, b) => b.len - a.len)
+    .slice(0, MAX_LINES);
+  if (ranked.length < MIN_LINES_FOR_MODE) return null;
   const simplified = ranked.map((l) => ({ ...l, pts: simplifyToBudget(l.pts) }));
   const placed = layout(simplified.map((l) => l.pts));
   if (!placed) return null;
@@ -517,6 +676,18 @@ async function buildCity(city) {
     .filter((l, i) => placed[i].length >= 2);
   if (!lines.length) return null;
 
+  // Tight box around the drawn network. A 64px square thumb rendering the full
+  // 200x110 frame would letterbox the diagram down to nothing; cropping to this
+  // and letting preserveAspectRatio fit it is what makes the small variant
+  // legible. Padded by the stroke half-width so round caps are not clipped.
+  const b = bbox(placed);
+  const crop = {
+    x: Math.floor(b.minX - 4),
+    y: Math.floor(b.minY - 4),
+    w: Math.ceil(b.maxX - b.minX + 8),
+    h: Math.ceil(b.maxY - b.minY + 8),
+  };
+
   return {
     slug: city.slug,
     name: city.name,
@@ -524,6 +695,7 @@ async function buildCity(city) {
     lineCount: chosen.lines.size,
     lines,
     interchange: pickInterchange(placed),
+    crop,
   };
 }
 
@@ -570,6 +742,7 @@ function dataFile(cities) {
 ${c.lines.map((l) => `      { track: '${l.track}', ref: ${JSON.stringify(l.ref)}, d: '${l.d}' },`).join('\n')}
     ],
     interchange: { x: ${c.interchange.x}, y: ${c.interchange.y} },
+    crop: { x: ${c.crop.x}, y: ${c.crop.y}, w: ${c.crop.w}, h: ${c.crop.h} },
   },`,
     )
     .join('\n');
@@ -628,36 +801,68 @@ export interface CityNetwork {
   lines: NetworkLine[];
   /** Busiest shared vertex — always a vertex of one of the lines. */
   interchange: { x: number; y: number };
+  /** Tight box around the drawn network, for square/small renderings that
+   *  crop to the content instead of letterboxing the full frame. */
+  crop: { x: number; y: number; w: number; h: number };
 }
 
 /** Keyed by \`cities.slug\`. */
 export const CITY_NETWORKS: Record<string, CityNetwork> = {
 ${entries}
 };
+
+/**
+ * Does this city have a real network to draw?
+ *
+ * Lives with the data rather than in the component so a surface can ask before
+ * it commits: the diagram REPLACES a meaningless placeholder (an initial-letter
+ * tile, a type glyph, a stock skyline belonging to no particular city) and must
+ * never replace a real photograph of the place. Most cities have no geometry.
+ */
+export function hasCityNetwork(slug: string | null | undefined): boolean {
+  return !!slug && slug in CITY_NETWORKS;
+}
 `;
 }
 
 // ---------------------------------------------------------------- main
 
 async function main() {
+  ENDPOINTS = await probeEndpoints();
   const cities = (await fetchCities()).filter((c) => !ONLY || c.slug === ONLY || c.name === ONLY);
-  log(`Resolved ${cities.length} cities.\n`);
+  log(`\nResolved ${cities.length} cities.\n`);
 
-  const built = [];
-  for (const city of cities) {
-    process.stdout.write(`  ${city.name} … `);
-    try {
-      const net = await buildCity(city);
-      if (!net) log('no usable network');
-      else {
-        built.push(net);
-        log(`${net.mode}, ${net.lines.length}/${net.lineCount} lines [${net.lines.map((l) => l.ref).join(', ')}]`);
+  // Worker pool, one per mirror. Results are collected BY INDEX and compacted
+  // afterwards so the emitted file stays in the input order however the workers
+  // interleave — otherwise every rerun would reshuffle the data file and its
+  // diff would be unreadable.
+  const results = new Array(cities.length).fill(null);
+  let cursor = 0;
+  let done = 0;
+
+  const worker = async (offset) => {
+    for (;;) {
+      const i = cursor++;
+      if (i >= cities.length) return;
+      const city = cities[i];
+      try {
+        const net = await buildCity(city, offset);
+        results[i] = net;
+        log(
+          `  [${++done}/${cities.length}] ${city.name} … ` +
+            (net
+              ? `${net.mode}, ${net.lines.length}/${net.lineCount} lines [${net.lines.map((l) => l.ref).join(', ')}]`
+              : 'no usable network'),
+        );
+      } catch (e) {
+        log(`  [${++done}/${cities.length}] ${city.name} … FAILED: ${e.message}`);
       }
-    } catch (e) {
-      log(`FAILED: ${e.message}`);
+      await sleep(SLEEP_MS);
     }
-    await sleep(SLEEP_MS);
-  }
+  };
+
+  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, ENDPOINTS.length) }, (_, k) => worker(k)));
+  const built = results.filter(Boolean);
 
   log(`\n${built.length}/${cities.length} cities have a diagram.`);
 
@@ -668,6 +873,19 @@ async function main() {
   if (DRY_RUN) {
     log('--dry-run: data file not written.');
     return;
+  }
+  // The write is unconditional and total, so a run that produced little is a
+  // DELETE of everything it did not reproduce. `--only=nonsense` resolved zero
+  // cities once and silently replaced 224 diagrams with an empty record; a
+  // poisoned endpoint would do the same, more plausibly. Refuse unless the run
+  // covered the whole list, or the caller says it meant it.
+  if (ONLY || built.length < cities.length * 0.25) {
+    log(
+      `REFUSING to write: ${built.length} diagram(s) from ${cities.length} cities` +
+        `${ONLY ? ' (--only run)' : ''}. The data file is replaced wholesale, so a ` +
+        'partial run would delete the rest. Re-run without --only, or pass --force.',
+    );
+    if (!process.argv.includes('--force')) return;
   }
   writeFileSync(OUT_FILE, dataFile(built));
   log(`Data file → ${OUT_FILE}`);
