@@ -133,14 +133,49 @@ expect_content_type() {
 # empty site-wide. `<link rel="modulepreload" crossorigin>` and `<script
 # type="module" crossorigin>` — which is every chunk Vite emits — are fetched in
 # CORS mode, so the variant this header selects is the ONLY one users ever hit.
+# The propagation wait is paid ONCE for the whole deployment, not per asset.
+#
+# Every hashed asset ships in the same Pages deployment, so "has origin caught
+# up?" has ONE answer per run — asking it 46 times cannot learn anything the
+# first answer did not already tell us, but it can (and did) cost 46x.
+#
+# MEASURED, 2026-08-15 run 31866064694: the per-asset `?cb=` loop never matched
+# in CI and burned its full 5 x `sleep 5` on EVERY asset while the real
+# assertion underneath still passed — 46 checks spaced 25-26s apart, 18m43s in
+# the asset phase alone, killed by the 20-minute job cap with a green deploy
+# behind it. The identical script from a laptop finishes in ~25s because there
+# `?cb=` matches on the first try (measured: 0.09s, application/javascript).
+# So the run time was never a stalled request — it was 1,150 seconds of sleep.
+#
+# ORIGIN_READY is the one-time gate. It keeps the ordering property the block
+# above calls load-bearing (never read the real cache key before origin has the
+# object, or the read itself pins the SPA shell under `immutable` for a year)
+# while making the wait O(1) in the number of assets.
+ORIGIN_READY=""
+wait_for_origin() {
+	local probe=$1 want=$2 ct=""
+	[ -n "$ORIGIN_READY" ] && return 0
+	for _ in 1 2 3 4 5; do
+		ct=$(curl -sS "${CURL_TIMEOUT[@]}" -o /dev/null -w '%{content_type}' "$SITE$probe?cb=$$-${SECONDS}-${RANDOM}")
+		case "$ct" in *"$want"*) ORIGIN_READY=1; return 0 ;; esac
+		sleep 5
+	done
+	# Still not serving the right type at origin after 25s. Record it and move
+	# on: the per-asset checks below still run and still report honestly. This
+	# is deliberately NOT a hard exit — "origin looks unhealthy" is exactly the
+	# state the rest of the script exists to characterise.
+	ORIGIN_READY=0
+	echo "  ! origin did not serve $probe as $want within 25s (?cb= gave '${ct:-no response}')"
+	echo "    Continuing; per-asset results below are still authoritative."
+	return 0
+}
+
 expect_asset_type() {
 	local path=$1 want=$2 ct busted=""
 	ALL_ASSETS+=("$path|$want")
-	for _ in 1 2 3 4 5; do
-		busted=$(curl -sS "${CURL_TIMEOUT[@]}" -o /dev/null -w '%{content_type}' "$SITE$path?cb=$$-${SECONDS}-${RANDOM}")
-		case "$busted" in *"$want"*) break ;; esac
-		sleep 5
-	done
+	# One shot. The retry that used to live here is now wait_for_origin(),
+	# called once before the asset block.
+	busted=$(curl -sS "${CURL_TIMEOUT[@]}" -o /dev/null -w '%{content_type}' "$SITE$path?cb=$$-${SECONDS}-${RANDOM}")
 
 	ct=$(curl -sS "${CURL_TIMEOUT[@]}" -o /dev/null -w '%{content_type}' \
 		-H "Origin: $SITE" -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Dest: script' \
@@ -265,6 +300,16 @@ expect_content_type /manifest.json application/json
 home=$(curl -sS "${CURL_TIMEOUT[@]}" "$SITE/")
 css=$(printf '%s' "$home" | grep -oE '/assets/css/[^"]+\.css' | sort -u)
 js=$(printf '%s' "$home" | grep -oE '/assets/js/[^"]+\.js' | sort -u)
+
+# Pay the propagation wait once, on the entry chunk, before any per-asset read.
+# Everything below ships in the same deployment, so this one answer covers them
+# all — see wait_for_origin() for the 18m43s this replaces.
+entry=$(printf '%s' "$js" | grep -m1 -E '/assets/js/index-[A-Za-z0-9_-]+\.js' || true)
+if [ -n "$entry" ]; then
+	wait_for_origin "$entry" javascript
+elif [ -n "$css" ]; then
+	wait_for_origin "$(printf '%s' "$css" | head -1)" text/css
+fi
 
 if [ -n "$css" ]; then
 	while IFS= read -r sheet; do
