@@ -1217,6 +1217,9 @@ const RESERVED_DETAIL_SLUGS = new Set([
   'milestones',
   // /city/compare — the two-city comparison tool, not a city slug.
   'compare',
+  // /tags/interactions — the drug interaction chart. Not a tag slug; the SPA
+  // route also reserves the name so no tag can ever claim it.
+  'interactions',
 ]);
 
 function matchDetailPath(pathname: string): RegExpMatchArray | null {
