@@ -44,8 +44,16 @@ import {
   useBrandSafeRow,
   BRAND_SAFE_DEPARTMENTS,
 } from '../useMarketplaceRows';
+import { TestProviders } from '@/test/test-utils';
 
 function withResults(...r: MockResult[]) { state.results.push(...r); }
+
+/** The brand-safe row and the spotlight are react-query hooks (they feed the
+ *  homepage and must survive a remount without re-fetching), so they need a
+ *  client in scope. A fresh client per case keeps them cache-isolated. */
+function renderQueryHook<T>(hook: () => T) {
+  return renderHook(hook, { wrapper: TestProviders });
+}
 
 beforeEach(() => {
   state.results.length = 0;
@@ -138,7 +146,7 @@ describe('useBrandSafeRow', () => {
 
   it('filters strictly sfw + brand-safe departments + community ownership', async () => {
     withResults({ data: rows(6), error: null });
-    const { result } = renderHook(() => useBrandSafeRow(9));
+    const { result } = renderQueryHook(() => useBrandSafeRow(9));
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     expect(result.current.data).toHaveLength(6);
@@ -160,7 +168,7 @@ describe('useBrandSafeRow', () => {
 
   it('falls back to the ownership-unfiltered pool when < 4 owned items', async () => {
     withResults({ data: rows(2), error: null }, { data: rows(7), error: null });
-    const { result } = renderHook(() => useBrandSafeRow(9));
+    const { result } = renderQueryHook(() => useBrandSafeRow(9));
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     expect(result.current.data).toHaveLength(7);
@@ -183,7 +191,7 @@ describe('useMarketplaceSpotlight', () => {
       error: null,
     });
 
-    const { result } = renderHook(() => useMarketplaceSpotlight());
+    const { result } = renderQueryHook(() => useMarketplaceSpotlight());
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     expect(result.current.listing?.id).toBe('l1');
@@ -199,7 +207,7 @@ describe('useMarketplaceSpotlight', () => {
 
   it('returns null on error', async () => {
     withResults({ data: null, error: { message: 'fail' } });
-    const { result } = renderHook(() => useMarketplaceSpotlight());
+    const { result } = renderQueryHook(() => useMarketplaceSpotlight());
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.listing).toBeNull();
   });
