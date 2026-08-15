@@ -10,31 +10,44 @@
 --
 -- A VIEW does not work that way. Its rewrite rule stores the base relation by
 -- OID, so `ALTER TABLE ... RENAME TO ..._legacy` silently REPOINTED every
--- dependent view onto the renamed, now-drained table. That is what happened to
--- the five `triage_src_quality_*` views from 20260801050000: their definitions
--- read `city_review_queue_legacy` etc. — 0 rows — while the real rows sat in
--- entity_review_queue.
+-- dependent view onto the renamed table. That is what happened to the five
+-- `triage_src_quality_*` views from 20260801050000 — confirmed on prod via
+-- pg_rewrite/pg_depend: four of them still read `*_review_queue_legacy`.
 --
--- The failure signature is precisely this asymmetry, and it is why nobody
--- noticed for a month: `get_admin_counts` is a FUNCTION, so its static block
--- (`SELECT count(*) FROM city_review_queue WHERE status='open'`) followed the
--- name to the compat view and kept reporting the TRUE counts on the Quality
--- hub cards, while the registry-driven loop in the same function counts
--- `FROM triage_src_quality_city` and reported 0. Right badge, empty list.
+-- IT DOES NOT SHOW ZERO, AND THAT IS WHAT MADE IT SURVIVABLE FOR A MONTH.
+-- The legacy tables were renamed, not truncated, so they still hold their
+-- 2026-08-01 contents and the inbox has been serving a FROZEN SNAPSHOT of that
+-- day. Nothing looked broken. Measured on prod 2026-08-15:
 --
--- Measured open rows hidden in /admin/inbox at the time of writing (2026-08-15):
---   city 691, venue 807, village 217, marketplace 0 (604 approved /
---   781 rejected historically) — 1,715 open reviews invisible.
+--   entity   showing now   of which already   live open   never shown
+--                          resolved (ghosts)              at all
+--   city            692                    2         691             1
+--   venue           513                  201         809           497
+--   village          13                    0         217           204
+--   marketplace       0                    0           0             0
+--
+-- So the defect is two-sided: ~702 live reviews the enrichers have written
+-- since 2026-08-01 have never been visible, and 203 rows on screen are ghosts
+-- — already approved or rejected in the real queue but still listed as open.
+--
+-- Actions taken from the stale list did land correctly: the B1 backfill
+-- preserved row ids, and triage_action dispatches to approve_/reject_<entity>_
+-- review, which are plpgsql and so resolve onto the compat views over
+-- entity_review_queue. Reviewers were working a stale worklist, not a broken
+-- write path. That is also why the ghosts exist.
+--
+-- `get_admin_counts` shows the same split by the same rule: its static block
+-- (`SELECT count(*) FROM city_review_queue`) is a function reading a name, so
+-- the Quality hub cards have been reporting the TRUE counts all along, while
+-- the registry-driven loop in that same function counts FROM
+-- triage_src_quality_city and reports the frozen number.
 --
 -- `triage_src_quality_personality` was already repointed by
 -- 20260815110116_personality_adult_links_engine.sql, which fixed only its own
 -- view and left this one explicitly as a separate change. This is that change,
 -- and it copies that view's shape exactly.
 --
--- The action path needs nothing: triage_action dispatches these queue_keys to
--- approve_/reject_<entity>_review, which are plpgsql and so already operate on
--- the unified rows through the compat views. The row `id`s were preserved by
--- the B1 backfill, so an id surfaced here resolves in those RPCs unchanged.
+-- The action path needs nothing, per the paragraph above.
 --
 -- SHAPE IS A CONTRACT. triage_sources.view_name points at these and
 -- triage_action reads the columns positionally-by-name, so column NAMES, ORDER
@@ -51,10 +64,11 @@
 -- on prod, 2026-08-03; the definer-view gate keys on write grants and is blind
 -- to a stripped view whose writes were already revoked).
 --
--- These four are NOT in `security_invoker_required_views`, so they are
--- expected to be definer by design like the other triage_src_* views and this
--- should be a no-op. Captured and restored anyway rather than asserted, so the
--- migration is correct whichever way the live reloptions actually read.
+-- Measured on prod 2026-08-15: all four read `reloptions = NULL`, and none of
+-- them is in `security_invoker_required_views`, so they are definer by design
+-- like the other triage_src_* views and this block is a confirmed no-op today.
+-- Kept as capture-and-restore rather than deleted so that the next edit to
+-- these views cannot strip an invoker somebody sets in the meantime.
 
 CREATE TEMP TABLE _triage_view_opts ON COMMIT DROP AS
 SELECT c.oid, c.relname, c.reloptions
@@ -163,8 +177,9 @@ WHERE q.status = 'open'
 
 -- ── 4. Marketplace ──────────────────────────────────────────────────────────
 --
--- 0 open rows today. Repointed anyway: the enrichers write to the unified
--- queue, so the next listing review would land in the same blind spot.
+-- 0 open rows in BOTH tables today (604 approved / 781 rejected historically).
+-- Repointed anyway: the enrichers write to the unified queue, so the next
+-- listing review would land in the same blind spot.
 
 CREATE OR REPLACE VIEW public.triage_src_quality_marketplace AS
 SELECT
@@ -225,7 +240,7 @@ FROM anon;
 
 -- ── 7. Self-verification ────────────────────────────────────────────────────
 --
--- Fails the migration if ANY registered triage view still depends on a drained
+-- Fails the migration if ANY registered triage view still depends on a
 -- `*_legacy` relation — i.e. catches the same rename trap for the whole family
 -- rather than trusting that these four were the only casualties.
 
@@ -245,20 +260,20 @@ BEGIN
      AND src.oid <> v.oid;
 
   IF v_bad IS NOT NULL THEN
-    RAISE EXCEPTION 'triage view still reads a drained legacy table: %', v_bad
+    RAISE EXCEPTION 'triage view still reads a legacy table: %', v_bad
       USING ERRCODE = '22023';
   END IF;
 END $verify$;
 
 COMMENT ON VIEW public.triage_src_quality_city IS
   'Inbox source for city Truth-Engine reviews. Reads entity_review_queue '
-  '(entity_type=''city''); NEVER city_review_queue_legacy — see 20260905100000.';
+  '(entity_type=''city''); NEVER city_review_queue_legacy, which is frozen at 2026-08-01 — see 20260905100000.';
 COMMENT ON VIEW public.triage_src_quality_venue IS
   'Inbox source for venue Truth-Engine reviews. Reads entity_review_queue '
-  '(entity_type=''venue''); NEVER venue_review_queue_legacy — see 20260905100000.';
+  '(entity_type=''venue''); NEVER venue_review_queue_legacy, which is frozen at 2026-08-01 — see 20260905100000.';
 COMMENT ON VIEW public.triage_src_quality_village IS
   'Inbox source for village Truth-Engine reviews. Reads entity_review_queue '
-  '(entity_type=''village''); NEVER village_review_queue_legacy — see 20260905100000.';
+  '(entity_type=''village''); NEVER village_review_queue_legacy, which is frozen at 2026-08-01 — see 20260905100000.';
 COMMENT ON VIEW public.triage_src_quality_marketplace IS
   'Inbox source for marketplace Truth-Engine reviews. Reads entity_review_queue '
-  '(entity_type=''marketplace''); NEVER marketplace_review_queue_legacy — see 20260905100000.';
+  '(entity_type=''marketplace''); NEVER marketplace_review_queue_legacy, which is frozen at 2026-08-01 — see 20260905100000.';
