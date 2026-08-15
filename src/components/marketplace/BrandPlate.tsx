@@ -42,7 +42,10 @@ export function BrandPlate({ brand }: { brand: DirectoryBrand }) {
           {brand.logo_url ? (
             <Image src={brand.logo_url} alt="" aspect="square" rounded="none" />
           ) : (
-            <span aria-hidden="true" className="font-display text-title leading-none">
+            {/* `text-title font-bold`, not the display face: rank 4 is Space
+                Grotesk and `rankFourFace.test.ts` scans for the pairing. The
+                80px plate on the maker page is rank 3, where Anton is legal. */}
+            <span aria-hidden="true" className="text-title font-bold leading-none">
               {brandMonogram(brand.display_name)}
             </span>
           )}

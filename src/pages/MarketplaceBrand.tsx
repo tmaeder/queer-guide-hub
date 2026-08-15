@@ -175,13 +175,19 @@ export default function MarketplaceBrand() {
       <div className="border-b-4 border-foreground">
         <PageContainer flush className="py-8 md:py-12">
           <FactGrid
+            // Ownership is deliberately NOT a fact here: it is already stated
+            // as badges in the masthead above, and repeating it put the same
+            // string on screen twice (caught by MarketplaceBrand.test.tsx,
+            // which could no longer find a unique "Queer-owned"). The badges
+            // win — they are what the maker carried in the directory the
+            // reader just came from.
             facts={[
               { label: t('marketplace.facts.listings', 'Listings'), value: count || null },
-              {
-                label: t('marketplace.facts.ownership', 'Ownership'),
-                value: ownership.map((o) => OWNERSHIP_LABEL.get(o)).join(' · ') || null,
-              },
               { label: t('marketplace.facts.site', 'Site'), value: hostnameOf(brand.website) },
+              {
+                label: t('marketplace.facts.brandKey', 'Catalogue key'),
+                value: brand.brand_key,
+              },
             ]}
           />
         </PageContainer>

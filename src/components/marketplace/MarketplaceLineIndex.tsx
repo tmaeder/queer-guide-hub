@@ -122,7 +122,12 @@ export function MarketplaceLineIndex({ activeDepartment }: { activeDepartment?: 
                     </div>
                   ) : null}
                   <div className="flex flex-col gap-1 p-4">
-                    <span className="font-display text-title leading-tight text-balance">
+                    {/* Space Grotesk 700, NOT Anton. The design project's
+                        category hub sets these tiles in the display face, but
+                        rank 4 is Space Grotesk here and `rankFourFace.test.ts`
+                        enforces it — `text-title` may never carry a display
+                        face. The repo's rank table outranks the mock. */}
+                    <span className="text-title font-bold leading-tight text-balance">
                       {departmentLabel(tile.slug)}
                     </span>
                     <span
