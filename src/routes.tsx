@@ -28,6 +28,7 @@ const MarketplaceCategory = lazyRetry(() => import('./pages/MarketplaceCategory'
 const MarketplaceCategories = lazyRetry(() => import('./pages/MarketplaceCategories'));
 const MarketplaceMerchant = lazyRetry(() => import('./pages/MarketplaceMerchant'));
 const MarketplaceBrand = lazyRetry(() => import('./pages/MarketplaceBrand'));
+const MarketplaceBrands = lazyRetry(() => import('./pages/MarketplaceBrands'));
 const Organizations = lazyRetry(() => import('./pages/Organizations'));
 const HistoryTimeline = lazyRetry(() => import('./pages/HistoryTimeline'));
 const MarketplaceShare = lazyRetry(() => import('./pages/MarketplaceShare'));
@@ -698,6 +699,11 @@ export const AppRoutes = () => {
                     element={<SlugAliasRedirect toBase="guides" />}
                   />
                   <Route path="marketplace/merchants/:domain" element={<MarketplaceMerchant />} />
+                  {/* The index MUST stay above `marketplace/:slug` — the
+                      catch-all would otherwise swallow `/marketplace/brands`
+                      and render "item not found", which is what it did for as
+                      long as this route was missing. */}
+                  <Route path="marketplace/brands" element={<MarketplaceBrands />} />
                   <Route path="marketplace/brands/:slug" element={<MarketplaceBrand />} />
                   <Route path="marketplace/:slug" element={<MarketplaceItemDetail />} />
                   <Route path="wishlists" element={<Wishlists />} />

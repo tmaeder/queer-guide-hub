@@ -39,6 +39,78 @@ export function useMarketplaceBrand(slug: string | undefined) {
   });
 }
 
+export interface DirectoryBrand {
+  slug: string;
+  display_name: string;
+  logo_url: string | null;
+  story: string | null;
+  product_count: number | null;
+  ownership_tags: string[] | null;
+}
+
+/** Page size for /marketplace/brands. Also the "load more" step. */
+export const BRAND_DIRECTORY_PAGE_SIZE = 48;
+
+/**
+ * The makers directory behind /marketplace/brands.
+ *
+ * Deliberately NOT built on `useVerifiedOwnedBrands`, which hard-filters to
+ * `ownership_tags != '{}'` — that hook answers "who have we verified as
+ * queer-owned", a claim; this one answers "who sells here", a catalogue. Mixing
+ * them would let an untagged brand render under a heading that claims verified
+ * ownership, which is the exact failure `routeMetaContract` guards.
+ *
+ * `product_count > 0` is not cosmetic: `marketplace_brands` retains rows whose
+ * listings have all gone inactive, and a directory tile that opens onto an
+ * empty grid is a dead end the reader paid a navigation for.
+ *
+ * Ownership filtering uses `.overlaps()` (PostgREST `&&`) so a brand matches if
+ * it carries ANY selected tag — the chips are a widening OR, not a narrowing
+ * AND. Selecting "Trans-owned" and "BIPOC-owned" should show both, not only
+ * brands that are both.
+ */
+export function useMarketplaceBrandsDirectory(opts: {
+  search?: string;
+  ownership?: string[];
+  page?: number;
+}) {
+  const search = opts.search?.trim() ?? '';
+  const ownership = opts.ownership ?? [];
+  const page = opts.page ?? 0;
+
+  return useQuery({
+    queryKey: ['marketplace-brands-directory', search, ownership.join(','), page],
+    staleTime: 300_000,
+    queryFn: async (): Promise<{ brands: DirectoryBrand[]; total: number }> => {
+      let q = supabase
+        .from('marketplace_brands')
+        .select('slug, display_name, logo_url, story, product_count, ownership_tags', {
+          count: 'exact',
+        })
+        .eq('status', 'approved')
+        .not('slug', 'is', null)
+        .gt('product_count', 0);
+
+      if (search) q = q.ilike('display_name', `%${search}%`);
+      if (ownership.length > 0) q = q.overlaps('ownership_tags', ownership);
+
+      // A GROWING WINDOW (0 .. n), not a page slice. "Load more" on a directory
+      // has to accumulate, and doing that by widening the range keeps the
+      // accumulation in the query cache instead of in a `useState` that has to
+      // be reset in an effect every time a chip or the search box changes —
+      // which is exactly where the listing views grew their set-state-in-effect
+      // exemptions. Brand rows are six small columns, so re-reading the window
+      // costs less than the bug class does.
+      const { data, error, count } = await q
+        .order('product_count', { ascending: false, nullsFirst: false })
+        .range(0, (page + 1) * BRAND_DIRECTORY_PAGE_SIZE - 1);
+
+      if (error) throw error;
+      return { brands: (data ?? []) as DirectoryBrand[], total: count ?? 0 };
+    },
+  });
+}
+
 /** Cached brand vocabulary for search-suggestion prefix matching. */
 export function useBrandVocab() {
   return useQuery({

@@ -26,14 +26,14 @@ import { CuratedIdsProvider } from '@/components/marketplace/CuratedIdsContext';
 import { useCuratedIds } from '@/components/marketplace/useCuratedIds';
 import { ZeroResultRescue } from '@/components/marketplace/ZeroResultRescue';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { ErrorState, LoadingTimeout } from '@/components/ui/EmptyState';
 import { useDidYouMean } from '@/hooks/useDidYouMean';
 import type { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { RouteBullet } from '@/components/transit/RouteBullet';
+import { MarketplaceMasthead } from '@/components/marketplace/MarketplaceMasthead';
 import { VirtualizedGrid } from '@/components/ui/VirtualizedGrid';
 import { useGridColumns } from '@/components/ui/useGridColumns';
 import { useTranslation } from 'react-i18next';
@@ -91,12 +91,18 @@ function MainGridSection({
 
   return (
     <>
-      <div className="flex items-center justify-between mb-6">
-        <p className="text-muted-foreground">
-          Showing {visible.length.toLocaleString()} of {total.toLocaleString()} listing
+      {/* Same swatch + tabular figure as the masthead and every sub-page's
+          count, so "how big is this set" is stated one way everywhere. */}
+      <p className="mb-6 flex items-center gap-4 text-13 text-muted-foreground">
+        <span
+          aria-hidden="true"
+          className="h-1.5 w-10 shrink-0 border border-foreground bg-track-yellow"
+        />
+        <span className="tabular-nums">
+          {visible.length.toLocaleString()} of {total.toLocaleString()} listing
           {total !== 1 ? 's' : ''}
-        </p>
-      </div>
+        </span>
+      </p>
 
       {/* Calm uniform grid — editorial rhythm beats the old mosaic jigsaw.
           pb-* on virtual rows preserves the inter-row gap. */}
@@ -130,6 +136,38 @@ function MainGridSection({
         </div>
       )}
     </>
+  );
+}
+
+/**
+ * End of line: the hub's one ink block, and the makers directory's entry point.
+ *
+ * `/marketplace/brands` did not exist until now, and the brand pages it indexes
+ * were reachable only from links inside cards and spotlight blocks. A hub that
+ * lists 2,500 makers and offers no way to see them as a set was the gap.
+ */
+function MakersEntry() {
+  return (
+    <section
+      aria-labelledby="makers-entry"
+      className="border-[3px] border-foreground bg-foreground p-6 text-background md:p-8"
+    >
+      <p className="text-2xs font-bold uppercase tracking-label text-background/70">
+        End of line
+      </p>
+      <h2 id="makers-entry" className="mt-1 font-display text-headline leading-tight">
+        Every maker on this line
+      </h2>
+      <p className="mt-2 max-w-reading text-15 text-background/85">
+        Browse brands by name, or filter to the ones whose ownership we have recorded.
+      </p>
+      <LocalizedLink
+        to="/marketplace/brands"
+        className="mt-4 inline-flex items-center gap-2 border-2 border-background px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
+      >
+        All makers →
+      </LocalizedLink>
+    </section>
   );
 }
 
@@ -380,63 +418,63 @@ const Marketplace = () => {
           the document under the reader's finger. The scroll length was never
           the defect; the persistent chrome moving was.
 
-          Masthead, control band and department index now render in every
-          state. Exactly ONE band still flips: the cover story, because a
-          magazine cover above someone's search results is noise. The editorial
-          tail moved BELOW the grid, where it is an ending rather than a wall,
-          and none of it was ever filter-dependent — each block runs its own
-          query and self-hides when empty. */}
-      <div className="min-h-screen relative">
-        <header className="border-b-4 border-foreground">
-          <PageContainer flush className="pb-8 pt-8 md:pb-12 md:pt-16">
-            <div className="flex items-center gap-4">
-              <RouteBullet type="marketplace" size={44} />
-              <p className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
-                Marketplace · Yellow line
-              </p>
-            </div>
-            {/* `text-hero` flat, no md:text-hero-xl — that rank is for
-                marketing covers, not a listing index. */}
-            <h1 className="mt-4 font-display text-hero leading-[0.95]">
-              {t('pages.marketplace.title', 'Marketplace.')}
-            </h1>
-            <p className="mt-4 max-w-reading text-body-lg">
-              {t('pages.marketplace.subtitle', 'Queer-friendly products and services.')}
-            </p>
-            {/* The one place on the page that names the line. A track colour
-                has to earn its appearance; everywhere else this page is ink on
-                paper. Border-gated by the ink rule beside it.
+          NOTHING ABOVE THE RESULTS FLIPS ANY MORE. The cover story was the
+          last block still gated on `!hasActiveFilters`; it has joined the
+          editorial tail below the grid, where it can render unconditionally
+          because a magazine cover is only noise when it sits ABOVE someone's
+          search results. So the region from masthead to control band is now
+          byte-identical in every filter state, and the tail is an ending
+          rather than a wall — each of its blocks runs its own query and
+          self-hides when empty.
 
-                RENDERED UNCONDITIONALLY, and that is the point. This was
-                `{total > 0 && …}`, so filtering down to zero results unmounted
-                a whole masthead row and shifted the control band up — the exact
-                thing the rest of this page is built to prevent, reintroduced
-                three elements above the band itself. The anti-flip e2e test
-                caught it in CI (it passed locally only because the filter I
-                measured happened to return rows). A row that reserves its space
-                and reads "0 listings in view" is both honest and stable. */}
-            <p className="mt-6 flex items-center gap-4 text-13 text-muted-foreground">
-              <span
-                aria-hidden="true"
-                className="h-1.5 w-10 shrink-0 border border-foreground bg-track-yellow"
-              />
-              <span className="tabular-nums">
-                {loading && total === 0
-                  ? 'Counting…'
-                  : `${total.toLocaleString()} listing${total !== 1 ? 's' : ''} in view`}
-              </span>
-            </p>
-            <div className="mt-8 flex flex-wrap items-center gap-4">
+          Order is deliberate: masthead → stop list → control band → results.
+          The stop list is what you navigate WITH, the control band is what you
+          refine with and the thing that must survive scrolling, so it is the
+          last stationary band before the grid and sticks from there on. */}
+      <div className="min-h-screen relative">
+        <MarketplaceMasthead
+          eyebrow="Marketplace · Yellow line"
+          title={t('pages.marketplace.title', 'Marketplace.')}
+          lede={t('pages.marketplace.subtitle', 'Queer-friendly products and services.')}
+          count={
+            loading && total === 0
+              ? 'Counting…'
+              : `${total.toLocaleString()} listing${total !== 1 ? 's' : ''} in view`
+          }
+          actions={
+            <>
               <Button onClick={handleListBusiness}>
-                <Plus size={16} aria-hidden="true" />
                 {t('pages.marketplace.listBusiness', 'List your business')}
               </Button>
-            </div>
-            {/* Disclosure BEFORE the monetised links, not after an infinite
-                grid — which is where the full statement used to sit alone. */}
-            <AffiliateDisclosure variant="strip" className="mt-8" />
+              <Button variant="outline" asChild>
+                <LocalizedLink to="/marketplace/brands" className="no-underline">
+                  {t('marketplace.allMakers', 'All makers')}
+                </LocalizedLink>
+              </Button>
+            </>
+          }
+        >
+          {/* Disclosure BEFORE the monetised links, not after an infinite
+              grid — which is where the full statement used to sit alone. */}
+          <AffiliateDisclosure variant="strip" className="mt-8" />
+        </MarketplaceMasthead>
+
+        {/* Band wrappers are `div`, not `section`: each already contains a
+            component that renders its own labelled <section>, and an outer
+            <section> with no accessible name only adds a hollow region.
+
+            THE STOP LIST NOW PRECEDES THE CONTROL BAND. The line map is what
+            you navigate with; the control bar is what you refine with, and it
+            is the thing that has to still be there after you scroll — so it is
+            the last stationary band before the results and sticks directly
+            under the header from then on. */}
+        <div className="border-b-4 border-foreground">
+          <PageContainer flush className="py-8 md:py-12">
+            {/* `department` is a single slug, not an array — indexing it would
+                mark the station whose slug starts with that letter. */}
+            <MarketplaceLineIndex activeDepartment={filters.department} />
           </PageContainer>
-        </header>
+        </div>
 
         {/* A band, not an island. The control bar used to be a floating
             bordered box inside the content column; bands are the page's
@@ -460,25 +498,6 @@ const Marketplace = () => {
             />
           </PageContainer>
         </section>
-
-        {/* Band wrappers are `div`, not `section`: each already contains a
-            component that renders its own labelled <section>, and an outer
-            <section> with no accessible name only adds a hollow region. */}
-        <div className="border-b-4 border-foreground">
-          <PageContainer flush className="py-8 md:py-12">
-            {/* `department` is a single slug, not an array — indexing it would
-                mark the station whose slug starts with that letter. */}
-            <MarketplaceLineIndex activeDepartment={filters.department} />
-          </PageContainer>
-        </div>
-
-        {!hasActiveFilters && (
-          <div className="border-b-4 border-foreground">
-            <PageContainer flush className="py-8 md:py-12">
-              <MarketplaceHeroCover />
-            </PageContainer>
-          </div>
-        )}
 
         <PageContainer className="relative">
           <div className="mb-6">
@@ -535,12 +554,26 @@ const Marketplace = () => {
             These sat ABOVE the grid and vanished with any filter. Nothing here
             depends on the filter state (each block runs its own query), so
             gating them only ever cost the reader the page. Below the grid they
-            are an ending. Each self-hides when it has nothing. */}
+            are an ending. Each self-hides when it has nothing.
+
+            THE COVER STORY JOINED THEM, and that is what finally kills the
+            two-mode page. It was the last block still gated on
+            `!hasActiveFilters` — a reasonable gate in its old position (a
+            magazine cover above someone's search results is noise) but the gate
+            was only needed BECAUSE the cover sat above the grid. Down here it
+            is editorial among editorial, so it can render unconditionally and
+            the entire region above the results is now stable in every state. */}
         <div className="border-t-4 border-foreground">
           <PageContainer flush className="flex flex-col gap-16 py-12 md:gap-24 md:py-16">
+            <MarketplaceRow rowKey="new" title="New this week" />
+            <MarketplaceHeroCover />
+            {/* The makers directory's entry point from the hub. Without a link
+                here the new /marketplace/brands index is reachable only by
+                typing it — the whole reason it was worth building is that brand
+                pages were previously buried inside cards. */}
             <VerifiedOwnedBrands />
             <BrandSpotlight />
-            <MarketplaceRow rowKey="new" title="New this week" />
+            <MakersEntry />
             {/* Editor-curated collection chips; occasion toggles live in the
                 control band. */}
             <OccasionChips kinds={['collection']} />

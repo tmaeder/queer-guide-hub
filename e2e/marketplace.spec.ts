@@ -7,19 +7,25 @@ import { test, expect, type Page } from '@playwright/test';
 // (editorial pages emit no Product JSON-LD; picking one stalls the JSON-LD
 // wait until timeout, the CI failure of 2026-06-12).
 //
-// `brands/` was missing from this list and had to be added when /shop folded
+// `brands` was missing from this list and had to be added when /shop folded
 // in: BrandSpotlight already emitted one /marketplace/brands/:slug anchor, and
 // the verified-queer-owned block adds up to 24 more above the grid. The helper
 // below takes the first THREE matches and waits 20s each, so with enough brand
 // anchors in the DOM all three candidates are brand pages and the test burns
 // its whole budget on pages that can never emit Product JSON-LD.
 //
+// The trailing slash came off in 2026-08: it was written `brands/` back when
+// `/marketplace/brands/:slug` was the ONLY brand route, so the bare
+// `/marketplace/brands` index added later slipped straight through the filter
+// and hung the sku wait for its full 120s budget, three times. Match the
+// segment, not a path shape that happened to be true once.
+//
 // `$="/submit"` is now vestigial — /marketplace/submit was never a declared
 // route (it fell through to marketplace/:slug and rendered a not-found
 // listing) and the two CTAs that pointed at it now go to /submit/product.
 // Kept as a cheap guard against the URL being reintroduced.
 const LISTING_LINK_SELECTOR =
-  'a[href^="/marketplace/"]:not([href*="categor"]):not([href*="collection"]):not([href*="merchants/"]):not([href*="brands/"]):not([href*="guide"]):not([href*="share"]):not([href$="/submit"])';
+  'a[href^="/marketplace/"]:not([href*="categor"]):not([href*="collection"]):not([href*="merchants/"]):not([href*="brands"]):not([href*="guide"]):not([href*="share"]):not([href$="/submit"])';
 
 // Open a listing detail page that actually hydrates Product JSON-LD.
 // Two hardening measures born from the CI failures of 2026-07-04:
@@ -239,11 +245,12 @@ test.describe('Marketplace — discovery surface', () => {
     // Derive two real listing UUIDs by visiting detail pages and reading sku from the Product JSON-LD.
     // Avoids hardcoding API credentials in the spec.
     await page.goto('/marketplace');
-    // Excludes every non-product marketplace route — notably /brands/ (added
-    // by the 2026-07-02 brand rails, PR #1906): a brand page never emits
-    // Product JSON-LD, so picking one hangs the sku wait below.
+    // Excludes every non-product marketplace route — notably /brands (the
+    // rails from PR #1906 and the index added in 2026-08): no brand page emits
+    // Product JSON-LD, so picking one hangs the sku wait below. Match `brands`
+    // without a trailing slash so the bare index is caught too.
     const detailLinks = page.locator(
-      'a[href^="/marketplace/"]:not([href*="categor"]):not([href*="collection"]):not([href*="merchants/"]):not([href*="brands/"]):not([href*="guides"]):not([href*="missions"]):not([href*="share"]):not([href$="/submit"])',
+      'a[href^="/marketplace/"]:not([href*="categor"]):not([href*="collection"]):not([href*="merchants/"]):not([href*="brands"]):not([href*="guides"]):not([href*="missions"]):not([href*="share"]):not([href$="/submit"])',
     );
     // Curated rows hydrate progressively — poll until at least two distinct
     // product detail links exist before reading them, so the spec doesn't race
