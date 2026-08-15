@@ -1,9 +1,9 @@
-import { Plane, Bus, ShieldAlert } from 'lucide-react';
+import { ShieldAlert } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { hasAnyCriminalizationSignal } from '@/utils/equalityScore';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { FactGrid, type Fact } from '@/components/transit/FactGrid';
 import { CityTravelHub } from '@/components/travel/CityTravelHub';
-import { SimilarCities } from '@/components/personalization/SimilarCities';
+import { CityNetworkPanel } from '@/components/geo/CityNetworkPanel';
 import type { CityRelation, NearestAirportType } from './types';
 
 export interface CityTravelTabProps {
@@ -13,28 +13,68 @@ export interface CityTravelTabProps {
   nearestAirport: NearestAirportType;
 }
 
+/**
+ * Getting there and getting around.
+ *
+ * The high-stakes composition rule is unchanged and load-bearing (it mirrors
+ * `CountryTravelTab`): no deal or upsell modules where LGBTQ+ people face
+ * criminal penalties. That branch keeps `--destructive`, which is the only
+ * token allowed to mean danger.
+ *
+ * The network diagram sits HERE rather than in the masthead or the rail. It is
+ * the sanctioned four-track surface, and the design system forbids the four
+ * wayfinding hues sharing a viewport with a risk badge — the safety verdict
+ * lives at the top of the rail, so the diagram lives well below the fold, in
+ * the one section where a transit map is information rather than ornament.
+ */
 export function CityTravelTab({
   city,
   effectiveIata,
   hasAirport,
   nearestAirport,
 }: CityTravelTabProps) {
-  // High-stakes composition rule (mirrors CountryTravelTab): no deal/upsell
-  // modules where LGBTQ+ people face criminal penalties.
+  const { t } = useTranslation();
   const highRisk = hasAnyCriminalizationSignal(city.countries?.lgbti_criminalization);
+
+  const airportFacts: Fact[] = [];
+  if (city.major_airport_code)
+    airportFacts.push({
+      label: t('cities.detail.travel.majorAirport', 'Major airport'),
+      value: city.major_airport_code,
+    });
+  if (!hasAirport && nearestAirport)
+    airportFacts.push({
+      label: t('cities.detail.travel.nearestAirport', 'Nearest airport'),
+      value: `${nearestAirport.iata_code} · ${nearestAirport.distanceKm} km`,
+    });
+  if (city.airport_codes?.length)
+    airportFacts.push({
+      label: t('cities.detail.travel.allCodes', 'All airport codes'),
+      value: city.airport_codes.join(', '),
+    });
+
+  const transport: [string, unknown][] = city.transportation_info
+    ? Object.entries(city.transportation_info)
+    : [];
+
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8">
       {highRisk ? (
-        <div className="flex gap-4 rounded-container border-destructive/40 p-6 bg-surface-container">
+        <div className="flex gap-4 border-[3px] border-destructive p-4 sm:p-6">
           <ShieldAlert size={18} aria-hidden="true" className="mt-0.5 shrink-0 text-destructive" />
           <div className="flex flex-col gap-2">
-            <p className="text-body-lg font-medium">
-              We don't promote travel deals for destinations where LGBTQ+ people face criminal
-              penalties.
+            <p className="text-body-lg font-bold">
+              {t(
+                'cities.detail.travel.noDealsTitle',
+                "We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
+              )}
             </p>
             <p className="text-15 text-muted-foreground">
-              If you need to travel to {city.name}, read the safety &amp; rights section first and
-              use the trip planner — it includes a safety briefing for high-risk destinations.
+              {t(
+                'cities.detail.travel.noDealsBody',
+                'If you need to travel to {{city}}, read the safety and rights section first and use the trip planner — it includes a safety briefing for high-risk destinations.',
+                { city: city.name },
+              )}
             </p>
           </div>
         </div>
@@ -47,90 +87,37 @@ export function CityTravelTab({
         />
       )}
 
-      <SimilarCities
-        cityId={city.id}
-        cityName={city.name}
-        countryId={city.country_id}
-        equalityScore={city.countries?.equality_score}
-        latitude={city.latitude}
+      <CityNetworkPanel
+        slug={city.slug}
+        linesLabel={t('cities.detail.travel.lines', 'Lines')}
+        caption={t(
+          'cities.detail.travel.networkCaption',
+          'Rapid-transit lines, drawn from OpenStreetMap. Schematic, not to scale.',
+        )}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle style={{ alignItems: 'center' }} className="flex gap-2">
-              <Plane size={20} />
-              Airports
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {city.major_airport_code && (
-              <div className="p-4 rounded-element bg-muted mb-4">
-                <div className="flex items-center gap-2 mb-1">
-                  <Plane size={16} />
-                  <span className="text-sm font-medium">Major Airport</span>
-                </div>
-                <span className="font-bold">{city.major_airport_code}</span>
-              </div>
-            )}
-            {!hasAirport && nearestAirport && (
-              <div className="p-4 rounded-element bg-muted mb-4">
-                <div className="flex items-center gap-2 mb-1">
-                  <Plane size={16} />
-                  <span className="text-sm font-medium">Nearest Airport</span>
-                </div>
-                <span className="font-bold">{nearestAirport.iata_code}</span>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {nearestAirport.city_name} — {nearestAirport.distanceKm} km away
-                </p>
-              </div>
-            )}
-            {city.airport_codes && city.airport_codes.length > 0 && (
-              <div>
-                <span className="text-sm font-medium mb-4 block">All Airport Codes</span>
-                <div className="flex flex-wrap gap-2">
-                  {city.airport_codes.map((code: string, index: number) => (
-                    <Badge key={index} variant="outline">
-                      <Plane size={12} className="mr-1" />
-                      {code}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+      <FactGrid facts={airportFacts} />
 
-        <Card>
-          <CardHeader>
-            <CardTitle style={{ alignItems: 'center' }} className="flex gap-2">
-              <Bus size={20} />
-              Transportation
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {city.transportation_info && Object.keys(city.transportation_info).length > 0 ? (
-              <div className="flex flex-col gap-4">
-                {Object.entries(city.transportation_info).map(([key, value]) => (
-                  <div key={key} className="p-4 rounded-element bg-muted">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Bus size={16} className="text-muted-foreground" />
-                      <span className="text-sm font-medium capitalize">
-                        {key.replace(/_/g, ' ')}
-                      </span>
-                    </div>
-                    <span className="text-sm">{String(value)}</span>
-                  </div>
-                ))}
+      {transport.length > 0 && (
+        <div>
+          <h3 className="text-title font-bold">
+            {t('cities.detail.travel.gettingAround', 'Getting around')}
+          </h3>
+          <dl className="mt-2 border-[3px] border-foreground">
+            {transport.map(([key, value]) => (
+              <div
+                key={key}
+                className="flex flex-wrap items-baseline justify-between gap-4 border-b-2 border-foreground/15 px-4 py-2 last:border-b-0"
+              >
+                <dt className="text-13 capitalize text-muted-foreground">
+                  {key.replace(/_/g, ' ')}
+                </dt>
+                <dd className="m-0 text-13 font-bold">{String(value)}</dd>
               </div>
-            ) : (
-              <p className="text-muted-foreground text-center py-4">
-                No transportation information available.
-              </p>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+            ))}
+          </dl>
+        </div>
+      )}
     </div>
   );
 }

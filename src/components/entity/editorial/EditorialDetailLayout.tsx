@@ -5,7 +5,7 @@ import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { SectionNav } from './SectionNav';
-import { useActiveSection } from './useActiveSection';
+import { useActiveSection } from '@/components/transit/useActiveSection';
 import { EditorialSection } from './EditorialSection';
 import type { SectionDef } from './types';
 import { PageContainer } from '@/components/layout/PageContainer';

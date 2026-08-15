@@ -2768,6 +2768,69 @@
         "currency": "通貨",
         "bestTime": "ベストシーズン",
         "airport": "空港"
+      },
+      "eyebrow": "[JA] City",
+      "sections": "[JA] Sections",
+      "loadingVenues": "[JA] Loading venues",
+      "openEvent": "[JA] Open",
+      "openMap": "[JA] Open the full map",
+      "createTrip": "[JA] Create trip",
+      "officialWebsite": "[JA] Official website",
+      "favorite": "[JA] Save to favorites",
+      "favorited": "[JA] Saved to favorites",
+      "census": {
+        "stops": "[JA] {{n}} stops",
+        "districts": "[JA] {{n}} districts",
+        "departures": "[JA] {{n}} departures"
+      },
+      "section": {
+        "rights": "[JA] Safety & rights",
+        "rightsNote": "[JA] Know before you go.",
+        "venues": "[JA] Where to go",
+        "districts": "[JA] Queer districts",
+        "districtsNote": "[JA] Walkable clusters of bars, cafés and community spaces.",
+        "events": "[JA] Next departures",
+        "overview": "[JA] About {{city}}",
+        "travel": "[JA] Getting there",
+        "news": "[JA] In the news",
+        "nearby": "[JA] Nearby"
+      },
+      "stats": {
+        "venues": "[JA] Venues",
+        "districts": "[JA] Districts",
+        "events": "[JA] Upcoming events"
+      },
+      "about": {
+        "status": "[JA] Status",
+        "capital": "[JA] Capital city",
+        "majorCity": "[JA] Major city",
+        "region": "[JA] Region",
+        "timezone": "[JA] Timezone",
+        "founded": "[JA] Founded",
+        "area": "[JA] Area",
+        "elevation": "[JA] Elevation",
+        "mayor": "[JA] Mayor",
+        "postalCodes": "[JA] Postal codes",
+        "costOfLiving": "[JA] Cost of living",
+        "universities": "[JA] Universities",
+        "sisterCities": "[JA] Sister cities"
+      },
+      "travel": {
+        "majorAirport": "[JA] Major airport",
+        "nearestAirport": "[JA] Nearest airport",
+        "allCodes": "[JA] All airport codes",
+        "lines": "[JA] Lines",
+        "networkCaption": "[JA] Rapid-transit lines, drawn from OpenStreetMap. Schematic, not to scale.",
+        "gettingAround": "[JA] Getting around",
+        "noDealsTitle": "[JA] We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
+        "noDealsBody": "[JA] If you need to travel to {{city}}, read the safety and rights section first and use the trip planner — it includes a safety briefing for high-risk destinations."
+      },
+      "endOfLine": {
+        "eyebrow": "[JA] End of line",
+        "title": "[JA] Riding on?",
+        "body": "[JA] Every city on the guide carries the same modules: safety and rights first, then the places.",
+        "allCities": "[JA] All cities",
+        "country": "[JA] More in {{country}}"
       }
     },
     "capital": "[JA] Capital",
@@ -2927,7 +2990,9 @@
       "personalities": "声",
       "nearby": "近く",
       "news": "ニュース",
-      "map": "地図"
+      "map": "地図",
+      "history": "[JA] Legal record",
+      "historyNote": "[JA] What changed and when. Safety information without a date is not safety information."
     },
     "practical": {
       "languages": "言語",
@@ -2946,7 +3011,10 @@
       "hdi": "HDI",
       "lifeExpectancy": "平均寿命",
       "literacy": "識字率",
-      "income": "所得水準"
+      "income": "所得水準",
+      "venues": "[JA] Venues",
+      "events": "[JA] Upcoming events",
+      "weather": "[JA] Now in {{city}}"
     },
     "cities": {
       "emptyTitle": "まだ都市がありません",
@@ -2962,7 +3030,9 @@
     },
     "travel": {
       "activities": "アクティビティ＆ツアー",
-      "activitiesBody": "{{country}}での体験"
+      "activitiesBody": "{{country}}での体験",
+      "noDealsTitle": "[JA] We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
+      "noDealsBody": "[JA] If you need to travel to {{country}}, read the rights section on this page first and use the trip planner — it includes a safety briefing for high-risk destinations."
     },
     "news": {
       "emptyTitle": "まだ現地ニュースがありません",
@@ -3009,7 +3079,24 @@
       "ilgaLink": "ILGA World Database",
       "deathPenaltyPossible": "[JA] death penalty possible, no legal certainty"
     },
-    "planTripHighRisk": "[JA] Plan carefully — safety briefing included"
+    "planTripHighRisk": "[JA] Plan carefully — safety briefing included",
+    "eyebrow": "[JA] Country",
+    "sections": "[JA] Sections",
+    "openMap": "[JA] Open the full map",
+    "census": {
+      "cities": "[JA] {{n}} cities",
+      "stops": "[JA] {{n}} stops",
+      "departures": "[JA] {{n}} departures"
+    },
+    "history": {
+      "seeAll": "[JA] Full timeline"
+    },
+    "endOfLine": {
+      "eyebrow": "[JA] End of line",
+      "title": "[JA] Compare the law elsewhere",
+      "body": "[JA] Every country page carries the same legal breakdown, from the same sources, with the date it was checked.",
+      "rights": "[JA] Rights across the world"
+    }
   },
   "inbox": {
     "title": "受信箱",
@@ -4305,6 +4392,70 @@
       "seeByCountry": "国別の状況を見る",
       "spansAllRights": "これは単一の法律ではなく、法分野全体を指します。18の権利を国ごとに記録しています。",
       "seeAllRights": "18の権利を国別に見る"
+    }
+  },
+  "village": {
+    "eyebrow": "[JA] District · Green line",
+    "loading": "[JA] Loading this district",
+    "loadingVenues": "[JA] Loading the stop list",
+    "sections": "[JA] Sections",
+    "planTrip": "[JA] Plan a trip to {{name}}",
+    "relatedByTag": "[JA] Related by tag",
+    "notFound": {
+      "title": "[JA] No such district.",
+      "body": "[JA] This stop is not on the line.",
+      "cta": "[JA] All queer villages"
+    },
+    "toast": {
+      "errorTitle": "[JA] Error",
+      "loadFailed": "[JA] Failed to load village details"
+    },
+    "facts": {
+      "city": "[JA] City",
+      "country": "[JA] Country",
+      "venues": "[JA] Venues",
+      "events": "[JA] Upcoming events",
+      "editorsPick": "[JA] Editor’s pick"
+    },
+    "census": {
+      "stops": "[JA] {{n}} stops",
+      "departures": "[JA] {{n}} departures"
+    },
+    "section": {
+      "about": "[JA] About {{name}}",
+      "walk": "[JA] The walk",
+      "walkNote": "[JA] Stops in order, with the straight-line gap between them.",
+      "events": "[JA] Next departures",
+      "photos": "[JA] Photos",
+      "city": "[JA] On the same line"
+    },
+    "action": {
+      "website": "[JA] Website",
+      "favorite": "[JA] Save to favorites",
+      "favorited": "[JA] Saved to favorites"
+    },
+    "events": {
+      "open": "[JA] Open"
+    },
+    "landmarks": {
+      "title": "[JA] Notable landmarks"
+    },
+    "photo": {
+      "caption": "[JA] {{village}}, {{city}}",
+      "alt": "[JA] {{name}}, photo {{n}}"
+    },
+    "parentCity": {
+      "body": "[JA] The wider city this district sits in.",
+      "action": "[JA] Open"
+    },
+    "map": {
+      "caption": "[JA] Walking distance in {{city}}."
+    },
+    "endOfLine": {
+      "eyebrow": "[JA] End of line",
+      "title": "[JA] Looking for another district?",
+      "body": "[JA] Queer villages are walkable clusters of bars, cafés and community spaces. There are more of them.",
+      "city": "[JA] More in {{city}}"
     }
   }
 }

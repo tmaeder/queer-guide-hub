@@ -1,7 +1,5 @@
 // Feature flags. Read from Vite env vars at build time.
 
-const truthy = (v: string | undefined) => v === 'true' || v === '1' || v === 'yes';
-
 // MAP_SHELL_ENABLED removed 2026-08-10. It gated the unified MapShell against
 // the legacy per-surface ExploreMap chrome, and `VITE_MAP_SHELL: 'true'` was
 // set in BOTH deploy-pages.yml and ci.yml — so the off-branch had not rendered
@@ -26,18 +24,13 @@ export const VENUES_V2_ENABLED = (() => {
   return true;
 })();
 
-// EDITORIAL_DETAIL_LAYOUT_ENABLED — hybrid editorial layout for city / country /
-// queer-village detail pages: editorial header + sticky section nav + long-scroll
-// anchored sections, replacing the dense tab pattern. Off by default. Enable per
-// session with ?ff=editorial_detail or globally via VITE_EDITORIAL_DETAIL=true.
-export const EDITORIAL_DETAIL_LAYOUT_ENABLED = (() => {
-  if (typeof window !== 'undefined') {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('ff') === 'editorial_detail') return true;
-    if (params.get('ff') === 'editorial_detail_off') return false;
-  }
-  return truthy(import.meta.env.VITE_EDITORIAL_DETAIL);
-})();
+// EDITORIAL_DETAIL_LAYOUT_ENABLED removed 2026-08-15. It gated the "hybrid
+// editorial layout" on city / country / queer-village. City and Country stopped
+// reading it long ago and rendered `EditorialDetailLayout` unconditionally, so
+// by the end it gated exactly one page — and it was OFF, which is why every
+// visitor to a village page got the legacy tab shell while the flagged branch
+// rotted. All three now ship the subway `SinglePage` single with no branch.
+// VITE_EDITORIAL_DETAIL / ?ff=editorial_detail are inert.
 
 // TRAVEL_HUB_V2_ENABLED removed 2026-08-05. It gated a dual-branch /travel hub
 // (TripCockpit + named editorial rails vs the legacy trip hero). /travel is now

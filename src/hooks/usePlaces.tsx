@@ -11,6 +11,36 @@ export type { Country, City };
 export type CountryWithRegions = Tables<'countries'> & { regions?: Tables<'regions'> };
 export type CityWithCountry = Tables<'cities'> & { countries?: Tables<'countries'> };
 
+/**
+ * What `useOptimizedCity` / `useOptimizedCountry` ACTUALLY return.
+ *
+ * Both queries select an embed, and both hooks used to declare the bare
+ * generated Row type — so every `city.countries.…` and `country.continents.…`
+ * on the detail pages was a type error. There were 22 of them sitting in
+ * `scripts/typecheck-baseline.json` (21 on CityDetail, 1 on CountryDetail),
+ * which is what a baselined error looks like when the fix is one line in the
+ * hook rather than a change at each call site. Typing the embed here clears
+ * the whole group.
+ *
+ * The embeds are PARTIAL selects, so they are spelled out rather than reusing
+ * the full Row: claiming the whole `countries` row on `city.countries` would
+ * type-check reads of columns the query never asked for, which is the same
+ * class of lie in the other direction.
+ */
+export type CityWithCountryEmbed = City & {
+  countries:
+    | (Pick<
+        Country,
+        'id' | 'name' | 'slug' | 'code' | 'currency' | 'equality_score' | 'flag_emoji'
+      > & { lgbti_criminalization: Country['lgbti_criminalization'] })
+    | null;
+};
+
+export type CountryWithGeoEmbeds = Country & {
+  continents: { name: string | null } | null;
+  regions: { name: string | null } | null;
+};
+
 interface PlacesFilters {
   search?: string;
   continent?: string;
@@ -143,7 +173,7 @@ export function useOptimizedCities(filters?: PlacesFilters & { countryId?: strin
 }
 
 export function useOptimizedCountry(countrySlug: string) {
-  const fetchCountry = async (): Promise<Country | null> => {
+  const fetchCountry = async (): Promise<CountryWithGeoEmbeds | null> => {
     // Try slug first, fall back to ID for backwards compatibility
     const { data, error } = await supabase
       .from('countries')
@@ -152,7 +182,7 @@ export function useOptimizedCountry(countrySlug: string) {
       .maybeSingle();
 
     if (error) throw error;
-    if (data) return data;
+    if (data) return data as CountryWithGeoEmbeds;
 
     const { data: byId, error: idError } = await supabase
       .from('countries')
@@ -161,7 +191,7 @@ export function useOptimizedCountry(countrySlug: string) {
       .maybeSingle();
 
     if (idError) throw idError;
-    return byId;
+    return byId as CountryWithGeoEmbeds | null;
   };
 
   const {
@@ -189,7 +219,7 @@ export function useOptimizedCountry(countrySlug: string) {
 export function useOptimizedCity(citySlug: string) {
   // The countries embed is load-bearing: CityRightsTab + useOptimizedCountry
   // resolve national rights data through city.countries.
-  const fetchCity = async (): Promise<City | null> => {
+  const fetchCity = async (): Promise<CityWithCountryEmbed | null> => {
     // Try slug first, fall back to ID for backwards compatibility
     const { data, error } = await supabase
       .from('cities')
@@ -198,7 +228,7 @@ export function useOptimizedCity(citySlug: string) {
       .maybeSingle();
 
     if (error) throw error;
-    if (data) return followMerged(data);
+    if (data) return followMerged(data as CityWithCountryEmbed);
 
     // Fallback: try as ID (UUID or numeric)
     const { data: byId, error: idError } = await supabase
@@ -208,13 +238,15 @@ export function useOptimizedCity(citySlug: string) {
       .maybeSingle();
 
     if (idError) throw idError;
-    return followMerged(byId);
+    return followMerged(byId as CityWithCountryEmbed | null);
   };
 
   // Merged duplicates (duplicate_of_id set) keep their old slug; resolve it to
   // the canonical survivor so old city URLs land on the consolidated record.
-  const followMerged = async (city: City | null): Promise<City | null> => {
-    const canonicalId = (city as { duplicate_of_id?: string | null } | null)?.duplicate_of_id;
+  const followMerged = async (
+    city: CityWithCountryEmbed | null,
+  ): Promise<CityWithCountryEmbed | null> => {
+    const canonicalId = city?.duplicate_of_id;
     if (!city || !canonicalId) return city;
     const { data: canonical, error } = await supabase
       .from('cities')
@@ -222,7 +254,7 @@ export function useOptimizedCity(citySlug: string) {
       .eq('id', canonicalId)
       .maybeSingle();
     if (error) throw error;
-    return canonical ?? city;
+    return (canonical as CityWithCountryEmbed | null) ?? city;
   };
 
   const {

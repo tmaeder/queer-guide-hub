@@ -40,6 +40,13 @@ const ROUTES = [
   // body, all separate PageContainers. Absent from this list until the 2026-08
   // rebuild.
   '/tags',
+  // The three geo singles. `SinglePage` frames itself with a `flush`
+  // PageContainer and then lays out a `1fr 360px` grid inside it, so a rail
+  // that does not reflow under the body would overflow at 390px — exactly what
+  // this spec catches. No detail route was covered here before.
+  '/city/berlin',
+  '/country/germany',
+  '/villages/chueca',
 ];
 
 const WIDTHS = [390, 768, 1440, 1920];
