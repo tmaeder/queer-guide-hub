@@ -386,6 +386,7 @@ export const UniversalSearchBar = () => {
       focusInput,
       handleSelectSuggestion,
       handleSearch,
+      restoreFocusToField,
     ],
   );
 
