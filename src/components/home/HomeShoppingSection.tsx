@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { HomeSection } from './HomeSection';
+import { Band } from './Band';
 import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
 import { useBrandSafeRow, useMarketplaceSpotlight } from '@/hooks/useMarketplaceRows';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
@@ -31,7 +31,8 @@ export default function HomeShoppingSection() {
   if (!loading && !spotlight && items.length === 0) return null;
 
   return (
-    <HomeSection
+    <Band
+      surface="tint"
       eyebrow={t('home.shop.eyebrow', 'Marketplace')}
       title={
         ownedOnly
@@ -80,6 +81,6 @@ export default function HomeShoppingSection() {
           </div>
         </div>
       </div>
-    </HomeSection>
+    </Band>
   );
 }

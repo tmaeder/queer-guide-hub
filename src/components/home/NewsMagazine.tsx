@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Eyebrow } from '@/components/ui/Eyebrow';
-import { HomeSection } from './HomeSection';
+import { Band } from './Band';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLatestNews } from '@/hooks/useLatestNews';
 import { useEditorsPick } from '@/hooks/useEditorsPick';
@@ -56,7 +56,7 @@ const NewsMagazine = React.memo(() => {
 
   if (loading && latest.length === 0) {
     return (
-      <HomeSection
+      <Band
         title={t('home.news.title', 'Latest News')}
         seeAllHref="/news"
         seeAllLabel={t('common.allStories', 'All stories')}
@@ -69,7 +69,7 @@ const NewsMagazine = React.memo(() => {
             ))}
           </div>
         </div>
-      </HomeSection>
+      </Band>
     );
   }
 
@@ -84,7 +84,7 @@ const NewsMagazine = React.memo(() => {
   const secondary = rest.slice(0, 4);
 
   return (
-    <HomeSection
+    <Band
       title={t('home.news.title', 'Latest News')}
       seeAllHref="/news"
       seeAllLabel={t('common.allStories', 'All stories')}
@@ -147,7 +147,7 @@ const NewsMagazine = React.memo(() => {
           </div>
         )}
       </div>
-    </HomeSection>
+    </Band>
   );
 });
 NewsMagazine.displayName = 'NewsMagazine';

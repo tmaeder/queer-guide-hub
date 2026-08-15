@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { RouteBullet } from '@/components/transit/RouteBullet';
 import { useDepartureBoard } from '@/hooks/useDepartureBoard';
-import { PageContainer } from '@/components/layout/PageContainer';
+import { Band } from '@/components/home/Band';
 
 const formatBoardTime = (iso: string | null, locale: string) => {
   if (!iso) return '—';
@@ -23,17 +23,13 @@ export function DeparturesBoard() {
   if (!isLoading && rows.length === 0) return null;
 
   return (
-    <section className="border-b-4 border-foreground bg-surface-container">
-      <PageContainer>
-        <div className="mb-6 flex flex-wrap items-baseline justify-between gap-4">
-          <h2 className="font-display text-display">
-            {t('home.departures.title', 'Departures — this week')}
-          </h2>
-          <LocalizedLink to="/events" className="text-15 font-bold no-underline">
-            {t('home.departures.seeAll', 'Full board')} →
-          </LocalizedLink>
-        </div>
-        <div className="border-[3px] border-foreground bg-background">
+    <Band
+      surface="tint"
+      title={t('home.departures.title', 'Departures — this week')}
+      seeAllHref="/events"
+      seeAllLabel={t('home.departures.seeAll', 'Full board')}
+    >
+      <div className="border-[3px] border-foreground bg-background">
           {isLoading
             ? Array.from({ length: 5 }).map((_, i) => (
                 <div key={i} className="h-16 animate-pulse border-b-2 border-foreground/10" />
@@ -70,8 +66,7 @@ export function DeparturesBoard() {
                   />
                 </div>
               ))}
-        </div>
-      </PageContainer>
-    </section>
+      </div>
+    </Band>
   );
 }

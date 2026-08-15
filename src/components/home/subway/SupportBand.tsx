@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useAuth } from '@/hooks/useAuth';
-import { PageContainer } from '@/components/layout/PageContainer';
+import { Band } from '@/components/home/Band';
 
 /** "No ads. No data sales. Just riders." — the closing support band.
  *  Paper band with ink CTAs (template: Support section); auth-adaptive. */
@@ -9,19 +9,14 @@ export function SupportBand() {
   const { t } = useTranslation();
   const { user } = useAuth();
   return (
-    <section className="border-b-4 border-foreground">
-      <PageContainer className="flex flex-wrap items-center justify-between gap-8">
-        <div className="max-w-xl">
-          <h2 className="font-display text-display">
-            {t('home.support.title', 'No ads. No data sales. Just riders.')}
-          </h2>
-          <p className="mt-4 text-15 leading-relaxed">
-            {t(
-              'home.support.subtitle',
-              'The guide is community-funded and community-verified. Verified safe spaces, real reviews, no paywalls.',
-            )}
-          </p>
-        </div>
+    <Band
+      surface="tint"
+      title={t('home.support.title', 'No ads. No data sales. Just riders.')}
+      description={t(
+        'home.support.subtitle',
+        'The guide is community-funded and community-verified. Verified safe spaces, real reviews, no paywalls.',
+      )}
+      action={
         <div className="flex flex-wrap gap-2">
           {user ? (
             <>
@@ -55,7 +50,7 @@ export function SupportBand() {
             </>
           )}
         </div>
-      </PageContainer>
-    </section>
+      }
+    />
   );
 }

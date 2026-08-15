@@ -2,7 +2,7 @@ import { useMemo, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PartyPopper } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { HomeSection } from './HomeSection';
+import { Band } from './Band';
 import { ParticleBurst } from '@/components/joy/ParticleBurst';
 import { useBornThisWeek } from '@/hooks/useBornThisWeek';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
@@ -104,7 +104,7 @@ export default function HomeBornThisWeek() {
   const chips = people.map((p) => <PersonChip key={p.id} person={p} img={imgFor(p)} />);
 
   return (
-    <HomeSection
+    <Band
       eyebrow={t('home.bornThisWeek.eyebrow', 'Community history')}
       title={t('home.bornThisWeek.title', 'Born this week')}
       seeAllHref="/personalities"
@@ -130,6 +130,6 @@ export default function HomeBornThisWeek() {
       ) : (
         <div className="flex gap-4 overflow-x-auto pb-2 snap-x no-scrollbar">{chips}</div>
       )}
-    </HomeSection>
+    </Band>
   );
 }

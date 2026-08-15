@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { HomeSection } from './HomeSection';
+import { Band } from './Band';
 import { MilestoneImpactMarker } from '@/components/milestones/MilestoneImpactMarker';
 import { useMilestonesOnThisDay } from '@/hooks/useMilestones';
 
@@ -18,7 +18,7 @@ export default function HomeOnThisDay() {
   if (isLoading || !data?.length) return null;
 
   return (
-    <HomeSection
+    <Band
       eyebrow={t('milestones.home.eyebrow', 'Queer history')}
       title={t('milestones.home.title', 'On this day')}
       seeAllHref="/history"
@@ -53,6 +53,6 @@ export default function HomeOnThisDay() {
           </li>
         ))}
       </ul>
-    </HomeSection>
+    </Band>
   );
 }

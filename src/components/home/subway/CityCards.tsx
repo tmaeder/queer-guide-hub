@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { fetchTrendingCities } from '@/hooks/usePersonalizedCities';
-import { PageContainer } from '@/components/layout/PageContainer';
+import { Band } from '@/components/home/Band';
 import { CityNetwork } from './CityNetwork';
 import { NETWORK_VIEWBOX } from './cityNetworkGeometry';
 
@@ -19,17 +19,13 @@ export function CityCards() {
   if (!isLoading && cities.length === 0) return null;
 
   return (
-    <section className="border-b-4 border-foreground">
-      <PageContainer>
-        <div className="mb-6 flex flex-wrap items-baseline justify-between gap-4">
-          <h2 className="font-display text-display">
-            {t('home.cities.title', 'Where are you riding?')}
-          </h2>
-          <LocalizedLink to="/cities" className="text-15 font-bold no-underline">
-            {t('home.cities.seeAll', 'All cities')} →
-          </LocalizedLink>
-        </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <Band
+      surface="tint"
+      title={t('home.cities.title', 'Where are you riding?')}
+      seeAllHref="/cities"
+      seeAllLabel={t('home.cities.seeAll', 'All cities')}
+    >
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {isLoading
             ? Array.from({ length: 8 }).map((_, i) => (
                 // Same shell + an empty diagram box, so the skeleton is exactly
@@ -72,8 +68,7 @@ export function CityCards() {
                   />
                 </div>
               ))}
-        </div>
-      </PageContainer>
-    </section>
+      </div>
+    </Band>
   );
 }

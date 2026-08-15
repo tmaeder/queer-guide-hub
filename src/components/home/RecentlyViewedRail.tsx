@@ -3,7 +3,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Image } from '@/components/ui/Image';
-import { HomeSection } from './HomeSection';
+import { Band } from './Band';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { useRecentlyViewedImages } from '@/hooks/useRecentlyViewedImages';
 import { recentlyViewedHref, type RecentlyViewedType } from '@/lib/recentlyViewed';
@@ -42,7 +42,7 @@ export function RecentlyViewedRail() {
   if (items.length === 0) return null;
 
   return (
-    <HomeSection
+    <Band
       title={t('home.recentlyViewed.title', 'Pick up where you left off.')}
     >
       <ScrollArea className="w-full whitespace-nowrap">
@@ -75,6 +75,6 @@ export function RecentlyViewedRail() {
         </div>
         <ScrollBar orientation="horizontal" />
       </ScrollArea>
-    </HomeSection>
+    </Band>
   );
 }

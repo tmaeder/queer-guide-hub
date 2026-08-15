@@ -2,8 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi } from 'vitest';
-import { render } from '@testing-library/react';
-import { MemoryRouter } from 'react-router';
+import { renderWithProviders } from '@/test/test-utils';
 
 vi.mock('@/hooks/useLatestNews', () => ({
   useLatestNews: () => ({ articles: [], loading: false, error: null }),
@@ -16,11 +15,9 @@ import NewsMagazine from '../NewsMagazine';
 
 describe('NewsMagazine', () => {
   it('renders (self-hides when empty)', () => {
-    const { container } = render(
-      <MemoryRouter>
-        <NewsMagazine />
-      </MemoryRouter>,
-    );
+    // renderWithProviders, not a bare MemoryRouter: useEditorsPick is a
+    // react-query hook now, so the band needs a QueryClient in scope.
+    const { container } = renderWithProviders(<NewsMagazine />);
     expect(container).toBeTruthy();
   });
 });
