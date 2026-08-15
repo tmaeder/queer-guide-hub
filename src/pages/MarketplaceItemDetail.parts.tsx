@@ -86,6 +86,8 @@ function TrustChip({ label, title }: { label: string; title: string }) {
 interface BuyBoxProps {
   listing: MarketplaceListing;
   compact?: boolean;
+  /** Curated brand name, so the CTA says "Shop TomboyX", not "Shop tomboyx". */
+  curatedName?: string | null;
 }
 
 /**
@@ -102,7 +104,7 @@ interface BuyBoxProps {
  * the verb names the destination ("Shop Otherwild") rather than promising a
  * basket that does not exist.
  */
-export function MarketplaceBuyBox({ listing, compact = false }: BuyBoxProps) {
+export function MarketplaceBuyBox({ listing, compact = false, curatedName }: BuyBoxProps) {
   const price = formatListingPrice(listing);
   const outbound = getOutboundLink(listing, 'marketplace_detail');
 
@@ -112,7 +114,7 @@ export function MarketplaceBuyBox({ listing, compact = false }: BuyBoxProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [listing.id, compact]);
 
-  const seller = (listing.brand || listing.business_name || '').trim();
+  const seller = (displayBrandOf(listing, curatedName) || listing.business_name || '').trim();
   const ctaLabel = seller
     ? outbound?.isAffiliate
       ? `Shop ${seller}`
@@ -245,7 +247,13 @@ export function ProductStats({
 }
 
 /** Module 01 — the fact strip. */
-export function ProductFacts({ listing }: { listing: MarketplaceListing }) {
+export function ProductFacts({
+  listing,
+  curatedName,
+}: {
+  listing: MarketplaceListing;
+  curatedName?: string | null;
+}) {
   const dept =
     listing.department && listing.department !== 'other'
       ? departmentLabel(listing.department)
@@ -280,7 +288,7 @@ export function ProductFacts({ listing }: { listing: MarketplaceListing }) {
   //                     PEOPLE; marketplace reviews are rated prose, so routing
   //                     them through it would drop the rating and the text.
   const facts = [
-    { label: 'Brand', value: listing.brand },
+    { label: 'Brand', value: displayBrandOf(listing, curatedName) },
     { label: 'Department', value: dept },
     { label: 'Category', value: subcat },
     { label: 'Availability', value: availability },
@@ -465,6 +473,26 @@ export function ProductAdminRow({
 }
 
 /**
+ * `marketplace_listings.brand` is SOURCE data — whatever the merchant feed
+ * called itself, so "tomboyx", "OXBALLS", "CELLBLOCK 13", "Forttroff".
+ * `marketplace_brands.display_name` is CURATED — "TomboyX", "Oxballs",
+ * "CellBlock 13", "Fort Troff". Prefer the curated name wherever we have one.
+ *
+ * Fixed in the display layer, NOT the data, because
+ * `commit_marketplace_staging_item` writes `brand = coalesce(v_brand, brand)`
+ * on every re-sync — the marketplace ingest runs daily at 04:00, so
+ * normalising the column would revert within a day. Measured 2026-08-15:
+ * 1,251 active listings across 7 brands disagree, 1,204 of them by case alone,
+ * and the curated name is better in every single case.
+ */
+export function displayBrandOf(
+  listing: MarketplaceListing,
+  curatedName?: string | null,
+): string | null {
+  return (curatedName ?? listing.brand)?.trim() || null;
+}
+
+/**
  * The spine eyebrow, e.g. `Apparel · Otherwild`.
  *
  * A plain string, not a node, because `SinglePage`/`DetailMasthead` type the
@@ -473,17 +501,23 @@ export function ProductAdminRow({
  * clickable in the rail, where `MakerCard` gives it a whole card instead of
  * four words of tinted text.
  */
-export function productEyebrow(listing: MarketplaceListing): string {
+export function productEyebrow(listing: MarketplaceListing, curatedName?: string | null): string {
   const dept =
     listing.department && listing.department !== 'other'
       ? departmentLabel(listing.department)
       : null;
-  return [dept, listing.brand].filter(Boolean).join(' · ') || 'Marketplace';
+  return [dept, displayBrandOf(listing, curatedName)].filter(Boolean).join(' · ') || 'Marketplace';
 }
 
 /** Module 08 — the maker, in the rail. */
-export function MakerCard({ listing }: { listing: MarketplaceListing }) {
-  const name = (listing.brand || listing.business_name || '').trim();
+export function MakerCard({
+  listing,
+  curatedName,
+}: {
+  listing: MarketplaceListing;
+  curatedName?: string | null;
+}) {
+  const name = (displayBrandOf(listing, curatedName) || listing.business_name || '').trim();
   if (!name) return null;
   const slug = brandSlug(listing.brand ?? '');
   const to = slug
