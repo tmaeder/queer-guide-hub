@@ -186,7 +186,7 @@ export default function MarketplaceCategory() {
         <MarketplaceFilteredView
           filters={filters}
           emptyTitle={`No ${name.toLowerCase()} listings yet.`}
-          emptyDescription="Check back soon or list a business."
+          emptyAction={{ label: 'Browse all departments', to: '/marketplace/categories' }}
         />
       </PageContainer>
       <AdultContentGate active={isAdultCategorySlug(subcategory)} fallbackPath="/marketplace" />

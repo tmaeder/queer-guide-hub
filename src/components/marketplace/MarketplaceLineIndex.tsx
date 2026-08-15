@@ -2,26 +2,60 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useDepartmentCovers, useMarketplaceDepartmentCounts } from '@/hooks/useMarketplaceQueries';
 import { useAdultAcknowledgement } from '@/hooks/useAdultContent';
 import { ADULT_DEPARTMENTS, DEPARTMENT_ORDER, departmentLabel } from '@/lib/marketplaceTaxonomy';
+import { horizontalLine } from '@/components/transit/lineGeometry';
 import { Image } from '@/components/ui/Image';
 import { cn } from '@/lib/utils';
 
 /**
+ * The line running above the stop list.
+ *
+ * DELIBERATELY RINGLESS. A station ring is a claim that the line stops exactly
+ * there, and the tiles below wrap into a different number of columns at every
+ * breakpoint — so any ring I drew would align with a tile at one width and
+ * float between two at the next. `lineGeometry`'s whole point is that a station
+ * is a cubic ENDPOINT rather than something "close enough" to the path
+ * (invariant 1), and faking that here would spend the one guarantee the module
+ * exists to give. The tiles are the stations; this is the track they sit on.
+ *
+ * Stretched, so it needs both escapes: `preserveAspectRatio="none"` to fill the
+ * width, and `vector-effect` so the stroke does not fatten with it.
+ */
+function TrackRule() {
+  const line = horizontalLine(4, { view: { w: 1000, h: 40 }, mid: 20, crest: 13 });
+  return (
+    <svg
+      viewBox={line.viewBox}
+      preserveAspectRatio="none"
+      className="mb-6 hidden h-10 w-full md:block"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path
+        d={line.segments.join(' ')}
+        fill="none"
+        strokeWidth={5}
+        strokeLinecap="round"
+        vectorEffect="non-scaling-stroke"
+        className="stroke-track-yellow"
+      />
+    </svg>
+  );
+}
+
+/**
  * The M line's stop list: every department as a station, with live counts.
  *
- * Replaces DepartmentBento, which was two things this page could not afford.
- * It was an asymmetric magazine bento — a device from a different design
- * language than the one the site now speaks — and it carried nine lucide
- * glyphs (Shirt, Waves, Droplets, Lock…), which would have to go the moment a
- * TransitIcon appeared anywhere on this page: "never mix TransitIcon with
- * lucide in the same surface". Departments are stops, so they get station
- * tiles, and the type name does the work an ambiguous glyph was doing badly.
+ * The important property is not the shape, it is WHEN this renders. An earlier
+ * version sat inside the page's `!hasActiveFilters` block, so choosing a
+ * department made the entire department index vanish — the reader lost the map
+ * at exactly the moment they started using it. This renders in every state and
+ * marks the station you are standing at, which is what makes a filter feel like
+ * a position on a line rather than a different page.
  *
- * The important change is not the shape, it is WHEN this renders. The bento
- * was inside the page's `!hasActiveFilters` block, so choosing a department
- * made the entire department index vanish — the reader lost the map at exactly
- * the moment they started using it. This renders in every state and marks the
- * station you are standing at, which is what makes a filter feel like a
- * position on a line rather than a different page.
+ * Tile titles are Anton (`font-display`), matching the design project's
+ * category hub. That is a rank-4 slot filled with a rank-3 face on purpose —
+ * a station name on a transit map is set in the display face, and the section
+ * heading above still outranks it by size.
  */
 export function MarketplaceLineIndex({ activeDepartment }: { activeDepartment?: string }) {
   // Count what the visitor will actually see: gated to their 18+ state, so a tile's
@@ -41,16 +75,18 @@ export function MarketplaceLineIndex({ activeDepartment }: { activeDepartment?: 
   return (
     <section aria-labelledby="category-tiles">
       <div className="mb-6 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <h2 id="category-tiles" className="font-display text-headline">
+        <h2 id="category-tiles" className="font-display text-display">
           Departments
         </h2>
         <LocalizedLink
           to="/marketplace/categories"
-          className="text-13 font-bold no-underline hover:underline"
+          className="text-15 font-bold no-underline hover:underline"
         >
-          See all categories
+          All categories →
         </LocalizedLink>
       </div>
+
+      <TrackRule />
 
       {loading ? (
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
@@ -86,7 +122,7 @@ export function MarketplaceLineIndex({ activeDepartment }: { activeDepartment?: 
                     </div>
                   ) : null}
                   <div className="flex flex-col gap-1 p-4">
-                    <span className="text-title font-bold leading-tight text-balance">
+                    <span className="font-display text-title leading-tight text-balance">
                       {departmentLabel(tile.slug)}
                     </span>
                     <span
