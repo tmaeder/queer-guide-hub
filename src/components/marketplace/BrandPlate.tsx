@@ -39,12 +39,13 @@ export function BrandPlate({ brand }: { brand: DirectoryBrand }) {
     <div className="card-lift group relative flex h-full flex-col gap-4 border-[3px] border-foreground bg-card p-4">
       <div className="flex items-start gap-4">
         <div className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden border-2 border-foreground bg-background">
+          {/* The monogram is `text-title font-bold`, not the display face:
+              rank 4 is Space Grotesk and `rankFourFace.test.ts` scans for the
+              pairing. The 80px plate on the maker page is rank 3, where Anton
+              is legal. */}
           {brand.logo_url ? (
             <Image src={brand.logo_url} alt="" aspect="square" rounded="none" />
           ) : (
-            {/* `text-title font-bold`, not the display face: rank 4 is Space
-                Grotesk and `rankFourFace.test.ts` scans for the pairing. The
-                80px plate on the maker page is rank 3, where Anton is legal. */}
             <span aria-hidden="true" className="text-title font-bold leading-none">
               {brandMonogram(brand.display_name)}
             </span>
