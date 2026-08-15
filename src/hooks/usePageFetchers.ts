@@ -358,6 +358,24 @@ export async function upsertEmailTemplate(
   return { error };
 }
 
+/**
+ * One curated citation of the law a glossary tag is about.
+ *
+ * Only ever the ~15 rows a human researched and URL-verified — see
+ * `supabase/migrations/20260905100000_tag_sources_legal_citations.sql`.
+ */
+export interface TagLegalSourceRow {
+  id: string;
+  source_type: string;
+  source_url: string | null;
+  official_title: string | null;
+  jurisdiction: string | null;
+  adopted_year: number | null;
+  instrument_status: string | null;
+  claim_summary: string | null;
+  verified_at: string | null;
+}
+
 /** TagDetail.tsx — fetch tag by slug (name fallback) + category assignments. */
 export async function fetchTagWithCategories(name: string) {
   // Tag URLs use the slug (the value stored in entity `tags[]` columns), e.g.
@@ -441,7 +459,24 @@ export async function fetchTagWithCategories(name: string) {
       });
     }
   }
-  return { ...data, categories: cats };
+  // Curated legal citations for law-related tags. `.eq('is_public', true)` is NOT
+  // redundant with RLS: a staff viewer also matches "admin select tag_sources" and
+  // would otherwise pull all ~8,700 wikipedia/wikidata backfill rows onto the
+  // public glossary page.
+  const { data: legalSources } = await supabase
+    .from('tag_sources')
+    .select(
+      'id, source_type, source_url, official_title, jurisdiction, adopted_year, instrument_status, claim_summary, verified_at',
+    )
+    .eq('tag_id', tag.id)
+    .eq('is_public', true)
+    .order('adopted_year', { ascending: true, nullsFirst: false });
+
+  return {
+    ...data,
+    categories: cats,
+    legal_sources: (legalSources ?? []) as unknown as TagLegalSourceRow[],
+  };
 }
 
 /** AdminSubmissions.tsx — promote a submission to its target table. */
