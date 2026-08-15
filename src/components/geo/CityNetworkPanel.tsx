@@ -1,5 +1,4 @@
 import { CityNetwork } from '@/components/home/subway/CityNetwork';
-import { templateIndexFor } from '@/components/home/subway/templateIndex';
 import {
   hasCityNetwork,
   CITY_NETWORKS,
@@ -25,10 +24,10 @@ const MODE_LABEL: Record<NetworkMode, string> = {
  * 1. **It only renders for cities that actually have one.** `CityNetwork` falls
  *    back to a template squiggle so a card grid never has a hole; on a single,
  *    under a heading about getting around, that squiggle would be a false claim
- *    about 99.3% of cities. `hasCityNetwork` is the gate, so the `index` prop
- *    below is never reached — it passes `templateIndexFor` anyway so that
- *    removing the gate degrades to the correct stable shape rather than to
- *    template 0 for every city.
+ *    about 99.3% of cities. `hasCityNetwork` is the gate, and `index` is
+ *    deliberately NOT passed: omitting it is `CityNetwork`'s own opt-out from
+ *    the template line, so even without the gate this surface would render
+ *    nothing rather than a fabricated network.
  * 2. **The line refs render as a legend**, so the diagram says something a
  *    reader can act on ("U1, U2, S7") instead of being decoration. That is also
  *    why this panel is not `aria-hidden` while the card's copy is — the legend
@@ -58,7 +57,7 @@ export function CityNetworkPanel({
         {MODE_LABEL[network.mode]}
       </div>
       <div className="mt-2 border-2 border-foreground px-2 py-2">
-        <CityNetwork slug={slug ?? null} index={templateIndexFor(slug)} />
+        <CityNetwork slug={slug ?? null} />
       </div>
       <p className="mt-2 text-2xs font-bold uppercase tracking-label text-muted-foreground">
         {linesLabel}
