@@ -72,7 +72,7 @@ export function TagIndexCard({ tag, uses, line, categoryLabel, aliasMatch }: Tag
       </div>
 
       <div className="flex flex-1 flex-col gap-1 p-4">
-        <span className="font-display text-title leading-tight">{tag.name}</span>
+        <span className="text-title font-bold leading-tight">{tag.name}</span>
         {categoryLabel && (
           <span className="text-2xs uppercase tracking-label text-muted-foreground">
             {categoryLabel}
@@ -98,7 +98,7 @@ export function TagIndexRow({ tag, uses, categoryLabel, aliasMatch }: TagIndexIt
     >
       <RouteBullet type="tag" size={30} />
       <div className="min-w-0 flex-1">
-        <p className="flex items-center gap-2 font-display text-title leading-tight">
+        <p className="flex items-center gap-2 text-title font-bold leading-tight">
           <span className="truncate">{tag.name}</span>
           {aliasMatch && <AliasPip label={t('tags.alias.badge', 'alias')} />}
         </p>

@@ -251,9 +251,8 @@ export default function TripsDiscoverPage() {
   const drawable = stations.length >= 3;
   const worstCountryId = useMemo(() => {
     if (!stations.length) return null;
-    return [...stations].sort(
-      (a, b) => (a.equalityScore ?? 100) - (b.equalityScore ?? 100),
-    )[0].countryId;
+    return [...stations].sort((a, b) => (a.equalityScore ?? 100) - (b.equalityScore ?? 100))[0]
+      .countryId;
   }, [stations]);
 
   return (
@@ -277,7 +276,10 @@ export default function TripsDiscoverPage() {
       </header>
 
       {/* 2 — The picker */}
-      <section aria-labelledby="picker-h" className="border-b-4 border-foreground bg-surface-container">
+      <section
+        aria-labelledby="picker-h"
+        className="border-b-4 border-foreground bg-surface-container"
+      >
         <PageContainer flush className="py-6 md:py-8">
           <h2 id="picker-h" className="font-display text-headline md:text-display">
             {t('trips.discover.picker.heading', 'Set the line')}
@@ -298,13 +300,16 @@ export default function TripsDiscoverPage() {
                 )}
                 {slow && (
                   <p className="text-13 text-muted-foreground">
-                    {t('trips.discover.loading.slow', 'Still working. The city index is slow right now.')}
+                    {t(
+                      'trips.discover.loading.slow',
+                      'Still working. The city index is slow right now.',
+                    )}
                   </p>
                 )}
               </div>
             ) : isError ? (
               <div className="border-[3px] border-foreground p-4 md:p-6">
-                <p className="font-display text-title">
+                <p className="text-title font-bold">
                   {t('trips.discover.error.poolTitle', 'The station list did not load.')}
                 </p>
                 <Button variant="outline" className="mt-4" onClick={() => void refetch()}>
@@ -363,11 +368,15 @@ export default function TripsDiscoverPage() {
               <p className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-15">
                 <RouteBullet type="trip" size={30} />
                 <span className="font-bold tabular-nums">
-                  {t('trips.discover.route.summary', '{{stops}} stops · {{km}} km · {{countries}} countries', {
-                    stops: stations.length,
-                    km: result.totalKm.toLocaleString(),
-                    countries: result.countryIds.length,
-                  })}
+                  {t(
+                    'trips.discover.route.summary',
+                    '{{stops}} stops · {{km}} km · {{countries}} countries',
+                    {
+                      stops: stations.length,
+                      km: result.totalKm.toLocaleString(),
+                      countries: result.countryIds.length,
+                    },
+                  )}
                 </span>
               </p>
 
@@ -411,7 +420,7 @@ export default function TripsDiscoverPage() {
             !isError && (
               <div className="mt-6">
                 <div className="border-[3px] border-foreground p-4 md:p-6">
-                  <p className="font-display text-title">
+                  <p className="text-title font-bold">
                     {stations.length === 0
                       ? t('trips.discover.degraded.none', 'No cities match those picks.')
                       : t('trips.discover.degraded.title', 'Only {{count}} cities match.', {
@@ -425,7 +434,10 @@ export default function TripsDiscoverPage() {
                           'The nearest match is {{name}}, {{km}} km away — further than this pace goes.',
                           result.nearestRefused,
                         )
-                      : t('trips.discover.degraded.body', 'A line needs three stops. Clear a pick to widen it.')}
+                      : t(
+                          'trips.discover.degraded.body',
+                          'A line needs three stops. Clear a pick to widen it.',
+                        )}
                   </p>
                   <div className="mt-4 flex flex-wrap gap-2">
                     {vibe && (
@@ -488,7 +500,12 @@ export default function TripsDiscoverPage() {
               )}
             </p>
             <div className="mt-6 flex flex-wrap gap-4">
-              <Button variant="accent" size="lg" onClick={() => void rideThisLine()} loading={creating}>
+              <Button
+                variant="accent"
+                size="lg"
+                onClick={() => void rideThisLine()}
+                loading={creating}
+              >
                 {t('trips.discover.cta.primary', 'Make it a trip')}
               </Button>
               <Button

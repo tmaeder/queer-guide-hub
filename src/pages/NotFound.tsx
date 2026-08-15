@@ -105,7 +105,7 @@ function StopRow({
   return (
     <li className="card-lift-sm relative flex items-center gap-4 border-2 border-foreground bg-background px-4 py-4">
       <RouteBullet type={type} size={38} />
-      <span className="min-w-0 flex-1 truncate font-display text-title leading-tight">{title}</span>
+      <span className="min-w-0 flex-1 truncate text-title font-bold leading-tight">{title}</span>
       {meta && <span className="shrink-0 text-15 text-muted-foreground">{meta}</span>}
       <LocalizedLink to={href} aria-label={title} className="absolute inset-0 no-underline" />
     </li>
