@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { Track } from '@/components/transit/routeBulletMap';
 import { CITY_NETWORKS, NETWORK_VIEWBOX } from './cityNetworkGeometry';
 
@@ -33,7 +34,16 @@ const TEMPLATE_SHIFT = (NETWORK_VIEWBOX.h - TEMPLATE_BAND_H) / 2;
 interface Props {
   /** `cities.slug` — the key into the generated geometry. */
   slug: string | null;
-  /** Card position, used to pick a template line when there is no network. */
+  /**
+   * Which template line to draw when this city has no committed network.
+   *
+   * On the homepage this is the card position, which is fine for eight fixed
+   * cards. On /cities it MUST NOT be — `index % 4` across a 4-column grid gives
+   * every card in column 1 the same shape in the same colour, so the page draws
+   * four vertical monochrome stripes; and because filtering and sorting reshuffle
+   * positions, every card's shape and colour would change under the reader.
+   * `templateIndexFor(slug)` from ./templateIndex is the stable alternative.
+   */
   index: number;
 }
 
@@ -68,7 +78,7 @@ function Station({ x, y }: { x: number; y: number }) {
  *
  * Decorative: the card already carries the city name as its label.
  */
-export function CityNetwork({ slug, index }: Props) {
+function CityNetworkImpl({ slug, index }: Props) {
   const network = slug ? CITY_NETWORKS[slug] : undefined;
 
   return (
@@ -96,3 +106,11 @@ export function CityNetwork({ slug, index }: Props) {
     </svg>
   );
 }
+
+/**
+ * Memoized: the homepage draws eight of these, but /cities draws one per card in a
+ * virtualized grid whose row containers re-render on every scroll tick, and whose
+ * parent re-renders on every keystroke in the search box. The props are two
+ * primitives, so the comparison is free and the win is real.
+ */
+export const CityNetwork = memo(CityNetworkImpl);

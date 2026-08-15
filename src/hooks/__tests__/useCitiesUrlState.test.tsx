@@ -31,7 +31,7 @@ describe('useCitiesUrlState — parsing', () => {
     expect(result.current.q).toBe('');
     expect(result.current.continents.size).toBe(0);
     expect(result.current.tiers.size).toBe(0);
-    expect(result.current.sort).toBe('population');
+    expect(result.current.sort).toBe('venues');
     expect(result.current.view).toBe('list');
     expect(result.current.city).toBe('');
   });
@@ -54,7 +54,7 @@ describe('useCitiesUrlState — parsing', () => {
     const { result } = renderHook(useCitiesUrlState, {
       wrapper: wrapper('/cities?sort=garbage&view=elsewhere&equality=nope,very-high'),
     });
-    expect(result.current.sort).toBe('population');
+    expect(result.current.sort).toBe('venues');
     expect(result.current.view).toBe('list');
     expect(Array.from(result.current.tiers)).toEqual(['very-high']);
   });
@@ -93,7 +93,11 @@ describe('useCitiesUrlState — writes', () => {
     const { result, getLocation } = renderWithLocation('/cities');
     act(() => result.current.setSort('equality'));
     expect(getLocation().search).toContain('sort=equality');
+    // population is no longer the default, so it must now be WRITTEN...
     act(() => result.current.setSort('population'));
+    expect(getLocation().search).toContain('sort=population');
+    // ...and venues is what disappears from the URL.
+    act(() => result.current.setSort('venues'));
     expect(getLocation().search).not.toContain('sort=');
   });
 

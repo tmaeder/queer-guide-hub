@@ -2758,7 +2758,29 @@
         "bestTime": "Meilleure période",
         "airport": "Aéroport"
       }
-    }
+    },
+    "capital": "[FR] Capital",
+    "continentClear": "[FR] Clear",
+    "continentsTitle": "[FR] Continents",
+    "counting": "[FR] Counting…",
+    "highRisk": "[FR] Criminalized",
+    "inView": "[FR] {{count}} cities in the directory, ranked by how much of each one we hold.",
+    "lineEyebrow": "[FR] Cities · Green line",
+    "mapTeaserLede": "[FR] Every city as a pin, coloured by its country’s equality score.",
+    "mapTeaserTitle": "[FR] See it on the map",
+    "networkMode": {
+      "subway": "[FR] Metro network",
+      "light_rail": "[FR] Light rail network",
+      "tram": "[FR] Tram network"
+    },
+    "openMap": "[FR] Open the map",
+    "pridePill": "[FR] Pride · {{date}}",
+    "continentCount_one": "[FR] {{count}} city",
+    "continentCount_other": "[FR] {{count}} cities",
+    "venueCount_one": "[FR] {{count}} place",
+    "venueCount_other": "[FR] {{count}} places",
+    "villageCount_one": "[FR] {{count}} district",
+    "villageCount_other": "[FR] {{count}} districts"
   },
   "pride": {
     "eyebrow": "Pride Calendar",
