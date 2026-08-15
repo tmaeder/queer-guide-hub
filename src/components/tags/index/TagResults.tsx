@@ -15,7 +15,7 @@
  * would have needed.
  */
 
-import { useEffect, useState, Suspense, lazy } from 'react';
+import { useState, Suspense, lazy } from 'react';
 import { useTranslation } from 'react-i18next';
 import { VirtualizedGrid } from '@/components/ui/VirtualizedGrid';
 import { useGridColumns } from '@/components/ui/useGridColumns';
@@ -74,7 +74,17 @@ export function TagResults({
 
   // A new result set starts from the top of the chip cloud; keeping the old
   // limit means a narrower search silently renders "show 400 more" over 12 tags.
-  useEffect(() => setChipLimit(CHIP_PAGE), [tags]);
+  //
+  // Adjusted during render rather than in an effect. `useEffect(() => setState(),
+  // [dep])` renders the stale limit, paints it, then re-renders — the cascade
+  // React explicitly warns about, and what `react-hooks/set-state-in-effect`
+  // flagged here. Comparing the previous value in render re-renders before any
+  // paint, so the wrong limit is never shown.
+  const [prevTags, setPrevTags] = useState(tags);
+  if (prevTags !== tags) {
+    setPrevTags(tags);
+    setChipLimit(CHIP_PAGE);
+  }
 
   if (view === 'graph') {
     return (

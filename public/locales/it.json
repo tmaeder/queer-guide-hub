@@ -4227,6 +4227,17 @@
       "interchangeEyebrow": "Coincidenza",
       "interchangeTitle": "Nella tassonomia",
       "inTaxonomy": "Nella tassonomia",
+      "codes": {
+        "eyebrow": "Classificazione",
+        "title": "Codici diagnostici",
+        "general": "Generale",
+        "specialized": "Specializzato",
+        "procedural": "Procedure",
+        "pharmaceutical": "Farmaceutico",
+        "source": "Fonte",
+        "linkLabel": "Codice {{label}} {{code}}",
+        "disclaimer": "Codici di riferimento per questo concetto nei sistemi di classificazione clinica. Non è un consiglio medico né una diagnosi."
+      },
       "changeHereFor": "Coincidenza per",
       "contentNote": "Nota sul contenuto",
       "contentNoteBody": "Questa voce tratta un tema che per alcune persone è difficile. Nulla qui è esplicito: è una definizione, non un consiglio.",

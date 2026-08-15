@@ -193,13 +193,16 @@ export function RouteStrip({
                 </span>
                 <span
                   className={cn(
-                    // The active state fades an ink plate in under the label.
-                    // Mid-fade the pair measures ~3.2:1, which axe catches as a
-                    // serious contrast violation the moment a station goes
-                    // active during a scan. A reader who asked for less motion
-                    // should get the state instantly anyway — so honour the
-                    // preference and the dip cannot occur for them.
-                    'min-w-0 flex-1 px-2 py-1 text-left text-13 leading-snug transition-colors motion-reduce:transition-none',
+                    // NO transition on this pair. The active state swaps the
+                    // label to paper-on-ink, and while that fade runs the two
+                    // interpolate together: at ~17% they are #717170 on
+                    // #d1d1cd, which is 3.19:1 and a serious axe
+                    // color-contrast failure. `motion-reduce:transition-none`
+                    // did not settle it — the nightly still caught the exact
+                    // same pair, so the guard is not reliable here. A hard
+                    // state has no mid-state to sample, and hard states are
+                    // what the subway system does everywhere else anyway.
+                    'min-w-0 flex-1 px-2 py-1 text-left text-13 leading-snug',
                     s.depth === 2 && 'ml-4 text-2xs',
                     isActive
                       ? 'bg-foreground font-bold text-background'

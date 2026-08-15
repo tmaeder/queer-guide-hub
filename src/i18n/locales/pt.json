@@ -4227,6 +4227,17 @@
       "interchangeEyebrow": "Ligação",
       "interchangeTitle": "Na taxonomia",
       "inTaxonomy": "Na taxonomia",
+      "codes": {
+        "eyebrow": "Classificação",
+        "title": "Códigos de diagnóstico",
+        "general": "Geral",
+        "specialized": "Especializado",
+        "procedural": "Procedimentos",
+        "pharmaceutical": "Farmacêutico",
+        "source": "Fonte",
+        "linkLabel": "Código {{label}} {{code}}",
+        "disclaimer": "Códigos de referência para este conceito em sistemas de classificação clínica. Não é aconselhamento médico nem um diagnóstico."
+      },
       "changeHereFor": "Ligação para",
       "contentNote": "Nota de conteúdo",
       "contentNoteBody": "Esta entrada trata um tema que algumas pessoas acham difícil. Nada aqui é explícito: é uma definição, não um conselho.",

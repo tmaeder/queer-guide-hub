@@ -4192,6 +4192,17 @@
       "interchangeEyebrow": "Interchange",
       "interchangeTitle": "In the taxonomy",
       "inTaxonomy": "In the taxonomy",
+      "codes": {
+        "eyebrow": "Classification",
+        "title": "Diagnostic codes",
+        "general": "General",
+        "specialized": "Specialized",
+        "procedural": "Procedural",
+        "pharmaceutical": "Pharmaceutical",
+        "source": "Source",
+        "linkLabel": "{{label}} code {{code}}",
+        "disclaimer": "Reference codes for this concept in clinical classification systems. Not medical advice and not a diagnosis."
+      },
       "changeHereFor": "Change here for",
       "contentNote": "Content note",
       "contentNoteBody": "This entry covers a subject some readers find difficult. Nothing here is graphic, and the page is a definition, not advice.",

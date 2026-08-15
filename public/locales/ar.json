@@ -4235,6 +4235,17 @@
       "interchangeEyebrow": "تبديل",
       "interchangeTitle": "في التصنيف",
       "inTaxonomy": "في التصنيف",
+      "codes": {
+        "eyebrow": "التصنيف",
+        "title": "الرموز التشخيصية",
+        "general": "عام",
+        "specialized": "متخصص",
+        "procedural": "إجرائي",
+        "pharmaceutical": "دوائي",
+        "source": "المصدر",
+        "linkLabel": "رمز {{label}} {{code}}",
+        "disclaimer": "رموز مرجعية لهذا المفهوم في أنظمة التصنيف السريري. ليست نصيحة طبية ولا تشخيصًا."
+      },
       "changeHereFor": "التبديل إلى",
       "contentNote": "تنبيه بشأن المحتوى",
       "contentNoteBody": "يتناول هذا المدخل موضوعًا قد يكون صعبًا على بعض القرّاء. لا يوجد هنا وصف صريح، وهذه صفحة تعريف لا نصيحة.",

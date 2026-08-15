@@ -49,6 +49,7 @@ export const PLATFORM_ICONS: Record<SocialPlatformKey, IconComponent> = {
   recon: Flame,
   pornhub: Video,
   xhamster: Video,
+  xvideos: Video,
   xtube: Video,
   shop: ShoppingBag,
   website: Globe,

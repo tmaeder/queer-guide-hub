@@ -4227,6 +4227,17 @@
       "interchangeEyebrow": "Transbordo",
       "interchangeTitle": "En la taxonomía",
       "inTaxonomy": "En la taxonomía",
+      "codes": {
+        "eyebrow": "Clasificación",
+        "title": "Códigos diagnósticos",
+        "general": "General",
+        "specialized": "Especializado",
+        "procedural": "Procedimientos",
+        "pharmaceutical": "Farmacéutico",
+        "source": "Fuente",
+        "linkLabel": "Código {{label}} {{code}}",
+        "disclaimer": "Códigos de referencia para este concepto en sistemas de clasificación clínica. No es asesoramiento médico ni un diagnóstico."
+      },
       "changeHereFor": "Transbordo a",
       "contentNote": "Aviso de contenido",
       "contentNoteBody": "Esta entrada trata un tema que a algunas personas les resulta difícil. Nada aquí es explícito: es una definición, no un consejo.",

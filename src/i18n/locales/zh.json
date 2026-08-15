@@ -4225,6 +4225,17 @@
       "interchangeEyebrow": "换乘",
       "interchangeTitle": "在分类体系中",
       "inTaxonomy": "在分类体系中",
+      "codes": {
+        "eyebrow": "分类",
+        "title": "诊断编码",
+        "general": "通用",
+        "specialized": "专科",
+        "procedural": "操作",
+        "pharmaceutical": "药品",
+        "source": "来源",
+        "linkLabel": "{{label}} 编码 {{code}}",
+        "disclaimer": "该概念在临床分类系统中的参考编码。不构成医疗建议，也不是诊断。"
+      },
       "changeHereFor": "在此换乘至",
       "contentNote": "内容提示",
       "contentNoteBody": "本词条涉及部分读者会感到沉重的话题。内容并不露骨，这是一则释义，而非建议。",
