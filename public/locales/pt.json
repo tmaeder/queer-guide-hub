@@ -1272,7 +1272,16 @@
     "featured": "[PT] Featured",
     "rsvpEmptyMember": "[PT] No RSVPs yet. Be the first.",
     "rsvpEmptyAnon": "[PT] No RSVPs yet. Sign in to be the first.",
-    "peopleYouMayKnow": "[PT] People you may know"
+    "peopleYouMayKnow": "[PT] People you may know",
+    "detail": {
+      "eyebrow": "[PT] Event",
+      "sections": "[PT] Sections",
+      "section": {
+        "about": "[PT] About this event",
+        "where": "[PT] Getting there",
+        "going": "[PT] Who's going"
+      }
+    }
   },
   "venues": {
     "title": "Locais",
@@ -1399,7 +1408,20 @@
     },
     "closed": "[PT] Closed",
     "openNow": "[PT] Open now",
-    "locationUnknown": "[PT] Location unknown"
+    "locationUnknown": "[PT] Location unknown",
+    "detail": {
+      "eyebrow": "[PT] Venue",
+      "closed": "[PT] Permanently closed",
+      "section": {
+        "about": "[PT] About",
+        "hours": "[PT] Opening hours",
+        "access": "[PT] Access",
+        "whatsOn": "[PT] What's on here",
+        "signals": "[PT] Visitor signals",
+        "reviews": "[PT] Reviews",
+        "photos": "[PT] Photos"
+      }
+    }
   },
   "marketplace": {
     "title": "Mercado",

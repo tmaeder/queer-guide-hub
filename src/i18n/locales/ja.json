@@ -1272,7 +1272,16 @@
     "featured": "[JA] Featured",
     "rsvpEmptyMember": "[JA] No RSVPs yet. Be the first.",
     "rsvpEmptyAnon": "[JA] No RSVPs yet. Sign in to be the first.",
-    "peopleYouMayKnow": "[JA] People you may know"
+    "peopleYouMayKnow": "[JA] People you may know",
+    "detail": {
+      "eyebrow": "[JA] Event",
+      "sections": "[JA] Sections",
+      "section": {
+        "about": "[JA] About this event",
+        "where": "[JA] Getting there",
+        "going": "[JA] Who's going"
+      }
+    }
   },
   "venues": {
     "title": "スポット",
@@ -1399,7 +1408,20 @@
     },
     "closed": "[JA] Closed",
     "openNow": "[JA] Open now",
-    "locationUnknown": "[JA] Location unknown"
+    "locationUnknown": "[JA] Location unknown",
+    "detail": {
+      "eyebrow": "[JA] Venue",
+      "closed": "[JA] Permanently closed",
+      "section": {
+        "about": "[JA] About",
+        "hours": "[JA] Opening hours",
+        "access": "[JA] Access",
+        "whatsOn": "[JA] What's on here",
+        "signals": "[JA] Visitor signals",
+        "reviews": "[JA] Reviews",
+        "photos": "[JA] Photos"
+      }
+    }
   },
   "marketplace": {
     "title": "マーケットプレイス",

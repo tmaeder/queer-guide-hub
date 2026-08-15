@@ -270,9 +270,35 @@ risk badge.
 Geometry is derived from © OpenStreetMap contributors and licensed ODbL;
 the credit sits in the site footer alongside the map's.
 
+### Owner modules that cannot render (measured 2026-08-15)
+
+Two types own a module the corpus cannot fill. Both are absent rather than
+faked, and the numbers are here so the next person does not re-derive them:
+
+| Type | Owner module | Reality |
+|---|---|---|
+| Venue | 02 Hours table | `venues.hours` on **626 of 23,335** live rows (2.7%). Free-form jsonb, only the scraper path fills it. |
+| Event | 03 Occurrence board | **`event_occurrences` has 0 rows.** Specced in `20260429130000` with an expansion function, never populated. `is_recurring` is true on 1,098 of 39,899, but a recurrence PATTERN is not a list of dates. |
+
+Two required modules are in the same position: venue module 04 (access) has
+**6** rows with `accessibility_attributes`, and event module 08 (nested venue)
+resolves for **0.8%** — `events.venue_id` is set on 339 of 39,899.
+
+Rule 2 governs: they do not render. Do not wire an empty `OccurrenceList`, and
+do not synthesise occurrences from an RRULE at render time — that puts times on
+screen nothing has validated.
+
+The inverse is also worth stating, because it is where the value was: the event
+page rendered **none** of `events.tags`, which is populated on **82.5%** of the
+corpus (32,910 rows). Check what IS filled before building for what should be.
+
 ### Geo singles (city / country / queer village)
 
-All three render `SinglePage` with the module stack their type declares in
+Five types now render `SinglePage` — city, country, queer village, venue and
+event. Organisations and milestones are still on `EntityDetailScroll`; a
+descriptor moves when it grows a `single` block (`entityDescriptor.ts`).
+
+The geo three render `SinglePage` with the module stack their type declares in
 `src/config/singleModules.ts` — city owns Map inset, country owns Version
 history, village owns Stop list. Shared pieces live in `src/components/geo/`.
 

@@ -11,8 +11,8 @@ const dismissCookieBanner = async (page: Page) => {
 };
 
 /**
- * The three geo singles — city, country and queer village — after the 2026-08
- * subway rebuild moved them onto `SinglePage`.
+ * The subway singles — city, country, queer village, venue and event — after
+ * the 2026-08 rebuild moved them onto `SinglePage`.
  *
  * `/villages/:slug` had NO end-to-end coverage at all before this file, which
  * is how it stayed on the legacy tab layout, behind an off-by-default flag,
@@ -26,6 +26,11 @@ const ROUTES = [
   { path: '/city/berlin', name: 'Berlin', eyebrow: /City/ },
   { path: '/country/germany', name: 'Germany', eyebrow: /Country/ },
   { path: '/villages/chueca', name: 'Chueca', eyebrow: /District/ },
+  // Venue and event joined the singles after the geo three. The venue is one
+  // of the 626 (2.7%) that actually have opening hours, so its OWNER module
+  // renders; pick another and the `hours` section is legitimately absent.
+  { path: '/venues/scum-and-villainy-cantina', name: 'Scum & Villainy', eyebrow: /Venue/ },
+  { path: '/events/capital-pride-ottawa-2026', name: 'Capital Pride', eyebrow: /Event/ },
 ];
 
 async function open(page: Page, path: string) {
@@ -47,6 +52,14 @@ for (const route of ROUTES) {
       await expect(h1.locator('img')).toHaveCount(0);
       const fontFamily = await h1.evaluate((el) => getComputedStyle(el).fontFamily);
       expect(fontFamily.toLowerCase()).toContain('anton');
+    });
+
+    test('renders exactly one <h1>', async ({ page }) => {
+      await open(page, route.path);
+      // `DetailMasthead` owns the heading. The event page's photo hero used to
+      // emit its own, so porting it without removing that would have produced
+      // two — which `e2e/a11y-event-detail.spec.ts` fails on.
+      await expect(page.locator('article h1')).toHaveCount(1);
     });
 
     test('every route-rail station points at a heading that exists', async ({ page }) => {

@@ -1304,7 +1304,16 @@
     "featured": "[RU] Featured",
     "rsvpEmptyMember": "[RU] No RSVPs yet. Be the first.",
     "rsvpEmptyAnon": "[RU] No RSVPs yet. Sign in to be the first.",
-    "peopleYouMayKnow": "[RU] People you may know"
+    "peopleYouMayKnow": "[RU] People you may know",
+    "detail": {
+      "eyebrow": "[RU] Event",
+      "sections": "[RU] Sections",
+      "section": {
+        "about": "[RU] About this event",
+        "where": "[RU] Getting there",
+        "going": "[RU] Who's going"
+      }
+    }
   },
   "venues": {
     "title": "Места",
@@ -1431,7 +1440,20 @@
     },
     "closed": "[RU] Closed",
     "openNow": "[RU] Open now",
-    "locationUnknown": "[RU] Location unknown"
+    "locationUnknown": "[RU] Location unknown",
+    "detail": {
+      "eyebrow": "[RU] Venue",
+      "closed": "[RU] Permanently closed",
+      "section": {
+        "about": "[RU] About",
+        "hours": "[RU] Opening hours",
+        "access": "[RU] Access",
+        "whatsOn": "[RU] What's on here",
+        "signals": "[RU] Visitor signals",
+        "reviews": "[RU] Reviews",
+        "photos": "[RU] Photos"
+      }
+    }
   },
   "marketplace": {
     "title": "Маркетплейс",

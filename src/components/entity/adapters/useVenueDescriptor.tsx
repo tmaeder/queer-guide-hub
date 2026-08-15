@@ -13,15 +13,30 @@ import { useNearbyMapPoints } from '@/hooks/useNearbyMapPoints';
 import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
 import {
   fetchVenue,
-  VenueHero,
-  VenueOverview,
+  VenueActions,
+  VenueBodyLead,
+  VenueFacts,
+  VenueAbout,
+  VenueRunBy,
+  VenueAmenities,
+  VenueWhatsOn,
+  VenuePhotos,
+  VenueTags,
+  VenueGuides,
+  VenueSignals,
+  VenueReviews,
+  hasUsableHours,
+  formatHours,
   VenueSidebar,
   buildVenueBreadcrumbs,
   type VenueReview,
   type VenueWithRelations,
 } from '@/pages/VenueDetail.parts';
 import { buildVenueJsonLd, buildVenueMeta } from '@/pages/VenueDetail.meta';
-import type { EntityDescriptor, EntityDescriptorResult } from '@/components/entity/entityDescriptor';
+import type {
+  EntityDescriptor,
+  EntityDescriptorResult,
+} from '@/components/entity/entityDescriptor';
 
 /**
  * Venue adapter: turns the raw venue query into a normalised `EntityDescriptor`.
@@ -78,10 +93,6 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
 
     const cityName = venue.cities?.name ?? null;
     const countryName = venue.countries?.name ?? null;
-    const cityLink = venue.cities?.id ? `/city/${venue.cities.slug || venue.cities.id}` : null;
-    const countryLink = venue.countries?.id
-      ? `/country/${venue.countries.slug || venue.countries.id}`
-      : null;
     const isClosed = Boolean(venue.closed_at && new Date(venue.closed_at) <= new Date());
     const venueEvents = events.filter((e) => e.venue_id === venue.id);
     const lat = typeof venue.latitude === 'number' ? venue.latitude : null;
@@ -115,49 +126,106 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
       id: venue.id,
       slug: venue.slug ?? venue.id,
       title: venue.name,
-      hero: (
-        <VenueHero
-          venue={venue}
-          cityName={cityName}
-          countryName={countryName}
-          cityLink={cityLink}
-          countryLink={countryLink}
-          averageRating={averageRating}
-          reviewCount={reviews.length}
-          tripCount={tripStatus?.count}
-          isInTrip={tripStatus?.isInTrip}
-          socialSignal={socialSignals?.get(venue.id)}
-          onAddToTrip={() => setAddToTripOpen(true)}
-          onShare={handleShare}
-          onCheckInSuccess={() => setCheckinRefresh((p) => p + 1)}
-          onContentUpdated={refetch}
-          t={t}
-        />
-      ),
+      // `EntitySingle` builds the masthead from `single`; `hero` is only read
+      // by the legacy scroll shell, which venue no longer uses.
+      hero: null,
+      // Spec module order for `venue`: 01 fact strip, 02 hours (the OWNER
+      // module), 03 occurrences, 04 access, 08 nested entity, 16 map inset.
+      //
+      // Module 02 is the type's owner and renders for 626 of 23,335 live
+      // venues — 2.7%. `venues.hours` is free-form jsonb that only the scraper
+      // path fills. It is not faked for the other 97.3%; the section is simply
+      // absent, and the gap is written down rather than papered over.
+      // Module 04 is worse: 6 venues have `accessibility_attributes` at all.
       sections: [
         {
-          id: 'overview',
-          render: () => (
-            <VenueOverview
-              venue={venue}
-              reviews={reviews}
-              venueEvents={venueEvents}
-              averageRating={averageRating}
-              onContentUpdated={refetch}
-              t={t}
-            />
-          ),
+          id: 'about',
+          title: t('venues.detail.section.about', 'About'),
+          render: () => <VenueAbout venue={venue} onContentUpdated={refetch} />,
+        },
+        {
+          id: 'hours',
+          title: t('venues.detail.section.hours', 'Opening hours'),
+          when: hasUsableHours(venue.hours),
+          render: () => formatHours(venue.hours),
+        },
+        {
+          id: 'access',
+          title: t('venues.detail.section.access', 'Access'),
+          render: () => <VenueAmenities venue={venue} />,
+        },
+        {
+          id: 'whatson',
+          title: t('venues.detail.section.whatsOn', "What's on here"),
+          when: venueEvents.length > 0,
+          render: () => <VenueWhatsOn venue={venue} venueEvents={venueEvents} />,
+        },
+        {
+          id: 'runby',
+          title: t('venues.detail.runBy', 'Run by'),
+          when: Boolean(venue.organizations),
+          render: () => <VenueRunBy venue={venue} t={t} />,
+        },
+        {
+          id: 'signals',
+          title: t('venues.detail.section.signals', 'Visitor signals'),
+          render: () => <VenueSignals venue={venue} />,
+        },
+        {
+          id: 'reviews',
+          title: t('venues.detail.section.reviews', 'Reviews'),
+          when: reviews.length > 0,
+          render: () => <VenueReviews reviews={reviews} averageRating={averageRating} />,
+        },
+        {
+          id: 'photos',
+          title: t('venues.detail.section.photos', 'Photos'),
+          when: (venue.images?.length ?? 0) > 0,
+          render: () => <VenuePhotos venue={venue} onContentUpdated={refetch} />,
         },
       ],
-      sidebar: (
-        <VenueSidebar
-          venue={venue}
-          checkinRefresh={checkinRefresh}
-          onContentUpdated={refetch}
-          nearbyPoints={nearbyPoints}
-        />
-      ),
-      related: { type: 'venue', id: venue.id, title: t('pages.entityDetail.moreVenues', 'More venues') },
+      single: {
+        eyebrow: [t('venues.detail.eyebrow', 'Venue'), cityName].filter(Boolean).join(' · '),
+        status: isClosed ? t('venues.detail.closed', 'Permanently closed') : undefined,
+        track: 'pink',
+        bodyLead: (
+          <>
+            <VenueBodyLead venue={venue} />
+            {/* Self-hides when the venue is in no guide, so it stays out of
+                `sections` — a station pointing at nothing is a dead stop. */}
+            <VenueGuides venue={venue} />
+          </>
+        ),
+        tags: (
+          <div className="flex flex-col gap-4">
+            <VenueFacts venue={venue} t={t} />
+            <VenueTags venue={venue} onContentUpdated={refetch} />
+          </div>
+        ),
+        action: (
+          <VenueActions
+            venue={venue}
+            onAddToTrip={() => setAddToTripOpen(true)}
+            onShare={handleShare}
+            onCheckInSuccess={() => setCheckinRefresh((p) => p + 1)}
+            t={t}
+          />
+        ),
+        rail: (
+          <VenueSidebar
+            venue={venue}
+            checkinRefresh={checkinRefresh}
+            onContentUpdated={refetch}
+            nearbyPoints={nearbyPoints}
+          />
+        ),
+      },
+      sidebar: null,
+      related: {
+        type: 'venue',
+        id: venue.id,
+        title: t('pages.entityDetail.moreVenues', 'More venues'),
+      },
       mobileBar: isClosed ? null : (
         <div className="fixed inset-x-0 bottom-0 z-[1100] flex items-center gap-2 bg-background/95 p-4 backdrop-blur md:hidden">
           <Button className="flex-1" onClick={() => setAddToTripOpen(true)}>

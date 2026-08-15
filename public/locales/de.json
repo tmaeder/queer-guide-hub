@@ -1453,7 +1453,16 @@
     "featured": "[DE] Featured",
     "rsvpEmptyMember": "[DE] No RSVPs yet. Be the first.",
     "rsvpEmptyAnon": "[DE] No RSVPs yet. Sign in to be the first.",
-    "peopleYouMayKnow": "[DE] People you may know"
+    "peopleYouMayKnow": "[DE] People you may know",
+    "detail": {
+      "eyebrow": "[DE] Event",
+      "sections": "[DE] Sections",
+      "section": {
+        "about": "[DE] About this event",
+        "where": "[DE] Getting there",
+        "going": "[DE] Who's going"
+      }
+    }
   },
   "venues": {
     "title": "Orte",
@@ -1580,7 +1589,20 @@
     },
     "closed": "[DE] Closed",
     "openNow": "[DE] Open now",
-    "locationUnknown": "[DE] Location unknown"
+    "locationUnknown": "[DE] Location unknown",
+    "detail": {
+      "eyebrow": "[DE] Venue",
+      "closed": "[DE] Permanently closed",
+      "section": {
+        "about": "[DE] About",
+        "hours": "[DE] Opening hours",
+        "access": "[DE] Access",
+        "whatsOn": "[DE] What's on here",
+        "signals": "[DE] Visitor signals",
+        "reviews": "[DE] Reviews",
+        "photos": "[DE] Photos"
+      }
+    }
   },
   "marketplace": {
     "title": "Marktplatz",

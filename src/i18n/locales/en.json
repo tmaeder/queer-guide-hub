@@ -490,7 +490,16 @@
     "featured": "Featured",
     "rsvpEmptyMember": "No RSVPs yet. Be the first.",
     "rsvpEmptyAnon": "No RSVPs yet. Sign in to be the first.",
-    "peopleYouMayKnow": "People you may know"
+    "peopleYouMayKnow": "People you may know",
+    "detail": {
+      "eyebrow": "Event",
+      "sections": "Sections",
+      "section": {
+        "about": "About this event",
+        "where": "Getting there",
+        "going": "Who's going"
+      }
+    }
   },
   "venues": {
     "title": "Venues",
@@ -610,7 +619,20 @@
     },
     "closed": "Closed",
     "openNow": "Open now",
-    "locationUnknown": "Location unknown"
+    "locationUnknown": "Location unknown",
+    "detail": {
+      "eyebrow": "Venue",
+      "closed": "Permanently closed",
+      "section": {
+        "about": "About",
+        "hours": "Opening hours",
+        "access": "Access",
+        "whatsOn": "What's on here",
+        "signals": "Visitor signals",
+        "reviews": "Reviews",
+        "photos": "Photos"
+      }
+    }
   },
   "marketplace": {
     "title": "Marketplace",

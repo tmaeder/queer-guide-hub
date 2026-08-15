@@ -1272,7 +1272,16 @@
     "featured": "[ZH] Featured",
     "rsvpEmptyMember": "[ZH] No RSVPs yet. Be the first.",
     "rsvpEmptyAnon": "[ZH] No RSVPs yet. Sign in to be the first.",
-    "peopleYouMayKnow": "[ZH] People you may know"
+    "peopleYouMayKnow": "[ZH] People you may know",
+    "detail": {
+      "eyebrow": "[ZH] Event",
+      "sections": "[ZH] Sections",
+      "section": {
+        "about": "[ZH] About this event",
+        "where": "[ZH] Getting there",
+        "going": "[ZH] Who's going"
+      }
+    }
   },
   "venues": {
     "title": "场所",
@@ -1399,7 +1408,20 @@
     },
     "closed": "[ZH] Closed",
     "openNow": "[ZH] Open now",
-    "locationUnknown": "[ZH] Location unknown"
+    "locationUnknown": "[ZH] Location unknown",
+    "detail": {
+      "eyebrow": "[ZH] Venue",
+      "closed": "[ZH] Permanently closed",
+      "section": {
+        "about": "[ZH] About",
+        "hours": "[ZH] Opening hours",
+        "access": "[ZH] Access",
+        "whatsOn": "[ZH] What's on here",
+        "signals": "[ZH] Visitor signals",
+        "reviews": "[ZH] Reviews",
+        "photos": "[ZH] Photos"
+      }
+    }
   },
   "marketplace": {
     "title": "市场",

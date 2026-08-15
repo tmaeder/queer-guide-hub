@@ -1272,7 +1272,16 @@
     "featured": "[IT] Featured",
     "rsvpEmptyMember": "[IT] No RSVPs yet. Be the first.",
     "rsvpEmptyAnon": "[IT] No RSVPs yet. Sign in to be the first.",
-    "peopleYouMayKnow": "[IT] People you may know"
+    "peopleYouMayKnow": "[IT] People you may know",
+    "detail": {
+      "eyebrow": "[IT] Event",
+      "sections": "[IT] Sections",
+      "section": {
+        "about": "[IT] About this event",
+        "where": "[IT] Getting there",
+        "going": "[IT] Who's going"
+      }
+    }
   },
   "venues": {
     "title": "Luoghi",
@@ -1399,7 +1408,20 @@
     },
     "closed": "[IT] Closed",
     "openNow": "[IT] Open now",
-    "locationUnknown": "[IT] Location unknown"
+    "locationUnknown": "[IT] Location unknown",
+    "detail": {
+      "eyebrow": "[IT] Venue",
+      "closed": "[IT] Permanently closed",
+      "section": {
+        "about": "[IT] About",
+        "hours": "[IT] Opening hours",
+        "access": "[IT] Access",
+        "whatsOn": "[IT] What's on here",
+        "signals": "[IT] Visitor signals",
+        "reviews": "[IT] Reviews",
+        "photos": "[IT] Photos"
+      }
+    }
   },
   "marketplace": {
     "title": "Mercato",
