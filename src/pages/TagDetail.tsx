@@ -36,10 +36,12 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { fetchTagWithCategories } from '@/hooks/usePageFetchers';
+import { fetchTagWithCategories, type TagLegalSourceRow } from '@/hooks/usePageFetchers';
+import { TagLegalSource } from '@/components/tags/TagLegalSource';
+import { buildTagJsonLd } from '@/lib/tags/tagJsonLd';
 import type { CentralizedTag } from '@/hooks/useCentralizedTags';
 import { useTagUsageBreakdown, totalUses } from '@/hooks/useTagUsageBreakdown';
-import { useSimilarTags, useTagSources } from '@/hooks/useTagRelationships';
+import { useSimilarTags, useTagReferenceLinks } from '@/hooks/useTagRelationships';
 import { useActiveStation } from '@/hooks/useActiveStation';
 import { useMeta } from '@/hooks/useMeta';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
@@ -64,7 +66,9 @@ import { TagAliasesDisplay } from '@/components/tags/TagAliasesDisplay';
 import { TagSafetyCallout } from '@/components/tags/TagSafetyCallout';
 import { TagWikiContent } from '@/components/tags/TagWikiContent';
 import { TagInterchange } from '@/components/tags/TagInterchange';
+import { TagDiagnosticCodes } from '@/components/tags/TagDiagnosticCodes';
 import { TagLinkedContent } from '@/components/tags/TagLinkedContent';
+import { useTagMedicalCodes, countMedicalCodes } from '@/hooks/useTagMedicalCodes';
 
 /** `entity_kind` is a classification, not a state — which is exactly what
  *  DetailMasthead's bordered ink status chip is for. */
@@ -136,6 +140,14 @@ export default function TagDetail() {
     queryFn: async () => ((await fetchTagWithCategories(slug)) as CentralizedTag | null) ?? null,
   });
 
+  // Curated legal citations, for law tags only. `fetchTagWithCategories` attaches
+  // them; the `CentralizedTag` cast above does not know about them, hence the
+  // local widening — same shape as the `human_reviewed` read further down.
+  const legalSources = useMemo(
+    () => (tag as { legal_sources?: TagLegalSourceRow[] } | null)?.legal_sources ?? [],
+    [tag],
+  );
+
   const primary = tag?.categories?.find((c) => c.is_primary) ?? tag?.categories?.[0];
   const parentName = primary?.parent_name ?? undefined;
   const parentSlug = (primary as { parent_slug?: string | null } | undefined)?.parent_slug;
@@ -143,8 +155,18 @@ export default function TagDetail() {
 
   const { data: usage } = useTagUsageBreakdown(tag?.id);
   const { data: similar } = useSimilarTags(tag?.id ?? null, 15);
-  const { data: tagSources } = useTagSources(tag?.id ?? null);
-  const sources = tagSources ?? [];
+  // Fetched here as well as inside the band so the route strip and the rail can
+  // both react to whether this term is coded at all. React Query dedupes the
+  // request; the band owns the rendering.
+  const { data: medicalCodes } = useTagMedicalCodes(tag?.id ?? null);
+  const medicalCodeCount = countMedicalCodes(medicalCodes);
+  // Plain reference links (saferparty.ch on the substance terms, and anything
+  // else editorial). Distinct from `legalSources` above, which is a legal
+  // INSTRUMENT — official title, jurisdiction, adopted year — and earns its own
+  // band. A reference is just a link, so it belongs in the Elsewhere rail next
+  // to Wikipedia.
+  const { data: referenceLinks } = useTagReferenceLinks(tag?.id ?? null);
+  const references = referenceLinks ?? [];
 
   const relatedByEmbedding = useMemo(
     () => rankSimilarTags(similar ?? [], primary?.name, safeMode.enabled).slice(0, 10),
@@ -170,6 +192,9 @@ export default function TagDetail() {
       s.push({ id: 'about', title: t('tags.detail.about', 'About') });
       s.push(...(wiki?.sections ?? []).map((x) => ({ ...x, depth: 2 as const })));
     }
+    if (medicalCodeCount > 0) {
+      s.push({ id: 'codes', title: t('tags.detail.codes.title', 'Diagnostic codes') });
+    }
     s.push({ id: 'taxonomy', title: t('tags.detail.inTaxonomy', 'In the taxonomy') });
     if (usage?.venue_count) s.push({ id: 'venues', title: t('tags.detail.venues', 'Venues') });
     if (usage?.event_count) s.push({ id: 'events', title: t('tags.detail.events', 'Events') });
@@ -179,7 +204,10 @@ export default function TagDetail() {
       s.push({ id: 'communities', title: t('tags.detail.communities', 'Communities') });
     }
     return s;
-  }, [tag, wiki, usage, t]);
+    // medicalCodeCount belongs here: the codes RPC resolves AFTER the first
+    // render, so omitting it would pin the strip to the pre-fetch value of 0
+    // and the stop would never appear.
+  }, [tag, wiki, usage, medicalCodeCount, t]);
 
   const { activeId, goToStation } = useActiveStation(stations);
 
@@ -225,20 +253,16 @@ export default function TagDetail() {
     // canonical pointing at a redirect and cancelled its own indexing. No
     // name-derived fallback: `unified_tags.slug` is NOT NULL, and a value with
     // spaces in it hard-404s at the Cloudflare edge.
-    const jsonLd: Record<string, unknown> = {
-      '@context': 'https://schema.org',
-      '@type': 'DefinedTerm',
-      name: tag.name,
-      description,
-      url: `https://queer.guide/tags/${tag.slug}`,
-      inDefinedTermSet: {
-        '@type': 'DefinedTermSet',
-        name: 'Queer Guide Glossary',
-        url: 'https://queer.guide/tags',
+    const jsonLd = buildTagJsonLd(
+      {
+        name: tag.name,
+        slug: tag.slug,
+        description,
+        image_url: tag.image_url,
+        wikipedia_url: tag.wikipedia_url,
       },
-    };
-    if (tag.image_url) jsonLd.image = tag.image_url;
-    if (tag.wikipedia_url) jsonLd.sameAs = tag.wikipedia_url;
+      legalSources,
+    );
     return {
       title: tag.name,
       description,
@@ -251,7 +275,10 @@ export default function TagDetail() {
       // a five-line comment about re-asserting noIndex from the parent.
       noIndex: tag.seo_indexable === false || isAdult,
     };
-  }, [tag, isAdult, t]);
+    // `legalSources` MUST stay in this list. It arrives with the same fetch as
+    // `tag`, but omitting it is the useMeta-freezing bug: the memo would keep the
+    // first-computed jsonLd and publish a DefinedTerm with no `citation`.
+  }, [tag, legalSources, isAdult, t]);
   useMeta(meta);
 
   if (isLoading) {
@@ -371,6 +398,8 @@ export default function TagDetail() {
         </section>
       )}
 
+      <TagDiagnosticCodes tagId={tag.id} />
+
       <TagInterchange tagId={tag.id} tagName={tag.name} />
 
       <TagLinkedContent tagId={tag.id} tagName={tag.name} />
@@ -405,8 +434,26 @@ export default function TagDetail() {
         </SidebarCard>
       )}
 
-      {(tag.wikipedia_url || tag.wikidata_id || sources.length > 0) && (
+      {/* Above "Elsewhere" on purpose: the law a term comes from outranks
+          "you can also read about this on Wikipedia". Sits alongside the
+          diagnostic-codes pointer below — a term is either clinical or legal,
+          so in practice only one of the two ever renders. */}
+      <TagLegalSource sources={legalSources} tagSlug={tag.slug} />
+
+      {(tag.wikipedia_url ||
+        tag.wikidata_id ||
+        medicalCodeCount > 0 ||
+        references.length > 0) && (
         <SidebarCard eyebrow={t('tags.detail.elsewhere', 'Elsewhere')}>
+          {/* An in-page anchor rather than the codes themselves: the rail is
+              240px and the band has four groups. This row is a pointer, not a
+              second copy. */}
+          {medicalCodeCount > 0 && (
+            <SidebarRow
+              label={t('tags.detail.codes.title', 'Diagnostic codes')}
+              value={<a href="#codes">{medicalCodeCount}</a>}
+            />
+          )}
           {tag.wikipedia_url && (
             <SidebarRow
               label="Wikipedia"
@@ -431,10 +478,10 @@ export default function TagDetail() {
               }
             />
           )}
-          {/* Curated citations that have no dedicated column. The label is the
-              URL's host rather than `claim_summary`, so nothing the RPC did not
-              vet gets printed. */}
-          {sources.map((s) => (
+          {/* Reference links with no dedicated column — saferparty.ch on the
+              substance terms. The label is the URL's host rather than
+              `claim_summary`, so nothing the RPC did not vet gets printed. */}
+          {references.map((s) => (
             <SidebarRow
               key={s.source_url}
               label={sourceHost(s.source_url)}

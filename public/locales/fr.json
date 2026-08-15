@@ -4209,6 +4209,17 @@
       "interchangeEyebrow": "Correspondance",
       "interchangeTitle": "Dans la taxonomie",
       "inTaxonomy": "Dans la taxonomie",
+      "codes": {
+        "eyebrow": "Classification",
+        "title": "Codes diagnostiques",
+        "general": "Général",
+        "specialized": "Spécialisé",
+        "procedural": "Actes",
+        "pharmaceutical": "Pharmaceutique",
+        "source": "Source",
+        "linkLabel": "Code {{label}} {{code}}",
+        "disclaimer": "Codes de référence pour ce concept dans les systèmes de classification clinique. Ni avis médical ni diagnostic."
+      },
       "changeHereFor": "Correspondance vers",
       "contentNote": "Avertissement",
       "contentNoteBody": "Cette entrée aborde un sujet difficile pour certaines personnes. Rien n’y est explicite : c’est une définition, pas un conseil.",
@@ -4247,7 +4258,18 @@
         "misspelling": "Faute courante",
         "historical": "Historiquement",
         "slang": "Argot"
-      }
+      },
+      "sourceOfLaw": "Source du droit",
+      "lawJurisdiction": "Juridiction",
+      "lawInternational": "International",
+      "lawAdopted": "Adopté",
+      "lawStatus": "Statut",
+      "lawInForce": "En vigueur",
+      "lawRepealed": "Abrogé",
+      "lawSuperseded": "Remplacé",
+      "lawPartlyStruck": "En vigueur, partiellement annulé",
+      "notOneLaw": "Il ne s'agit pas d'une seule loi. Le statut est établi pays par pays.",
+      "seeByCountry": "Voir le statut par pays"
     }
   }
 }

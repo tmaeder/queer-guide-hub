@@ -4205,6 +4205,17 @@
       "interchangeEyebrow": "Transbordo",
       "interchangeTitle": "En la taxonomía",
       "inTaxonomy": "En la taxonomía",
+      "codes": {
+        "eyebrow": "Clasificación",
+        "title": "Códigos diagnósticos",
+        "general": "General",
+        "specialized": "Especializado",
+        "procedural": "Procedimientos",
+        "pharmaceutical": "Farmacéutico",
+        "source": "Fuente",
+        "linkLabel": "Código {{label}} {{code}}",
+        "disclaimer": "Códigos de referencia para este concepto en sistemas de clasificación clínica. No es asesoramiento médico ni un diagnóstico."
+      },
       "changeHereFor": "Transbordo a",
       "contentNote": "Aviso de contenido",
       "contentNoteBody": "Esta entrada trata un tema que a algunas personas les resulta difícil. Nada aquí es explícito: es una definición, no un consejo.",
@@ -4243,7 +4254,18 @@
         "misspelling": "Error frecuente",
         "historical": "Históricamente",
         "slang": "Jerga"
-      }
+      },
+      "sourceOfLaw": "Fuente del derecho",
+      "lawJurisdiction": "Jurisdicción",
+      "lawInternational": "Internacional",
+      "lawAdopted": "Adoptada",
+      "lawStatus": "Estado",
+      "lawInForce": "En vigor",
+      "lawRepealed": "Derogada",
+      "lawSuperseded": "Sustituida",
+      "lawPartlyStruck": "En vigor, parcialmente anulada",
+      "notOneLaw": "No es una sola ley. Se registra país por país.",
+      "seeByCountry": "Ver el estado por país"
     }
   }
 }

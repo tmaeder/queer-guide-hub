@@ -4203,6 +4203,17 @@
       "interchangeEyebrow": "乗換",
       "interchangeTitle": "分類のなかで",
       "inTaxonomy": "分類のなかで",
+      "codes": {
+        "eyebrow": "分類",
+        "title": "診断コード",
+        "general": "一般",
+        "specialized": "専門",
+        "procedural": "処置",
+        "pharmaceutical": "医薬品",
+        "source": "出典",
+        "linkLabel": "{{label}} コード {{code}}",
+        "disclaimer": "臨床分類システムにおけるこの概念の参照コードです。医学的助言でも診断でもありません。"
+      },
       "changeHereFor": "こちらへ乗換",
       "contentNote": "内容についての注意",
       "contentNoteBody": "この項目は、人によってはつらく感じる話題を扱います。露骨な描写はなく、あくまで定義であり助言ではありません。",
@@ -4241,7 +4252,18 @@
         "misspelling": "よくある誤記",
         "historical": "歴史的表現",
         "slang": "スラング"
-      }
+      },
+      "sourceOfLaw": "法的根拠",
+      "lawJurisdiction": "管轄",
+      "lawInternational": "国際",
+      "lawAdopted": "制定",
+      "lawStatus": "状況",
+      "lawInForce": "有効",
+      "lawRepealed": "廃止",
+      "lawSuperseded": "改正・置換",
+      "lawPartlyStruck": "有効（一部無効）",
+      "notOneLaw": "これは単一の法律ではありません。国ごとに記録されています。",
+      "seeByCountry": "国別の状況を見る"
     }
   }
 }

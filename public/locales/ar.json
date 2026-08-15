@@ -4213,6 +4213,17 @@
       "interchangeEyebrow": "تبديل",
       "interchangeTitle": "في التصنيف",
       "inTaxonomy": "في التصنيف",
+      "codes": {
+        "eyebrow": "التصنيف",
+        "title": "الرموز التشخيصية",
+        "general": "عام",
+        "specialized": "متخصص",
+        "procedural": "إجرائي",
+        "pharmaceutical": "دوائي",
+        "source": "المصدر",
+        "linkLabel": "رمز {{label}} {{code}}",
+        "disclaimer": "رموز مرجعية لهذا المفهوم في أنظمة التصنيف السريري. ليست نصيحة طبية ولا تشخيصًا."
+      },
       "changeHereFor": "التبديل إلى",
       "contentNote": "تنبيه بشأن المحتوى",
       "contentNoteBody": "يتناول هذا المدخل موضوعًا قد يكون صعبًا على بعض القرّاء. لا يوجد هنا وصف صريح، وهذه صفحة تعريف لا نصيحة.",
@@ -4251,7 +4262,18 @@
         "misspelling": "خطأ شائع",
         "historical": "تاريخيًا",
         "slang": "عامية"
-      }
+      },
+      "sourceOfLaw": "المصدر القانوني",
+      "lawJurisdiction": "نطاق الاختصاص",
+      "lawInternational": "دولي",
+      "lawAdopted": "سنة الإقرار",
+      "lawStatus": "الحالة",
+      "lawInForce": "ساري",
+      "lawRepealed": "مُلغى",
+      "lawSuperseded": "مُستبدل",
+      "lawPartlyStruck": "ساري، أُلغيت بعض مواده",
+      "notOneLaw": "هذا ليس قانونًا واحدًا، بل يُسجَّل لكل دولة على حدة.",
+      "seeByCountry": "اطّلع على الحالة حسب الدولة"
     }
   }
 }

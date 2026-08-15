@@ -19745,31 +19745,49 @@ export type Database = {
       }
       tag_sources: {
         Row: {
+          adopted_year: number | null
           claim_summary: string | null
           fetched_at: string | null
           id: string
+          instrument_status: string | null
+          is_public: boolean
+          jurisdiction: string | null
+          official_title: string | null
           source_id: string | null
           source_type: string
           source_url: string | null
           tag_id: string
+          verified_at: string | null
         }
         Insert: {
+          adopted_year?: number | null
           claim_summary?: string | null
           fetched_at?: string | null
           id?: string
+          instrument_status?: string | null
+          is_public?: boolean
+          jurisdiction?: string | null
+          official_title?: string | null
           source_id?: string | null
           source_type: string
           source_url?: string | null
           tag_id: string
+          verified_at?: string | null
         }
         Update: {
+          adopted_year?: number | null
           claim_summary?: string | null
           fetched_at?: string | null
           id?: string
+          instrument_status?: string | null
+          is_public?: boolean
+          jurisdiction?: string | null
+          official_title?: string | null
           source_id?: string | null
           source_type?: string
           source_url?: string | null
           tag_id?: string
+          verified_at?: string | null
         }
         Relationships: [
           {
@@ -32286,7 +32304,7 @@ export type Database = {
         Returns: Json
       }
       get_tag_ontology: { Args: { p_tag_id: string }; Returns: Json }
-      get_tag_sources: {
+      get_tag_reference_links: {
         Args: { p_tag_id: string }
         Returns: { source_type: string; source_url: string }[]
       }

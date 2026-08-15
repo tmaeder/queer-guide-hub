@@ -33,55 +33,75 @@ export function SocialCards({ links, className }: SocialCardsProps) {
   if (entries.length === 0) return null;
 
   return (
-    <div className={`grid grid-cols-1 gap-2 sm:grid-cols-2 ${className ?? ''}`}>
-      {entries.map(({ platform, handle, url }) => {
-        const profile = profiles.get(`${platform}:${handle}`);
-        const Icon = platformIcon(platform);
-        const adult = isAdultPlatform(platform);
-        const label = platformLabel(platform);
-        const href = url || buildProfileUrl(platform as SocialPlatformKey, handle);
-        const shownHandle = displayHandle(platform as SocialPlatformKey, handle);
-        const avatar = profile?.avatar_url
-          ? resolveImageUrl({ optimizedUrl: profile.avatar_url, imageUrl: profile.avatar_url })
-          : null;
+    // Container query, NOT a viewport breakpoint. `sm:grid-cols-2` split the
+    // grid in two whenever the WINDOW was >=640px, but on the personality
+    // detail page this renders inside a ~317px sidebar — so each card got
+    // 154px and the label truncated to "P…" with the handle as "@joe…".
+    // Measured live on /personalities/joey-stefano at a 1200px viewport:
+    // "Pornhub" needed 61px and had 26px. Two columns only earn their place
+    // once the CONTAINER can give each card a readable width.
+    <div className={`@container ${className ?? ''}`}>
+      <div className="grid grid-cols-1 gap-2 @[28rem]:grid-cols-2">
+        {entries.map(({ platform, handle, url }) => {
+          const profile = profiles.get(`${platform}:${handle}`);
+          const Icon = platformIcon(platform);
+          const adult = isAdultPlatform(platform);
+          const label = platformLabel(platform);
+          const href = url || buildProfileUrl(platform as SocialPlatformKey, handle);
+          const shownHandle = displayHandle(platform as SocialPlatformKey, handle);
+          const avatar = profile?.avatar_url
+            ? resolveImageUrl({ optimizedUrl: profile.avatar_url, imageUrl: profile.avatar_url })
+            : null;
 
-        return (
-          <a
-            key={`${platform}:${handle}`}
-            href={href}
-            target="_blank"
-            rel="noopener nofollow"
-            className="no-underline flex items-center gap-2.5 rounded-element p-4 transition-colors hover:bg-muted"
-          >
-            {avatar ? (
-              <img
-                src={avatar}
-                alt=""
-                loading="lazy"
-                className="h-10 w-10 shrink-0 rounded-full object-cover"
+          return (
+            <a
+              key={`${platform}:${handle}`}
+              href={href}
+              target="_blank"
+              rel="noopener nofollow"
+              className="no-underline flex items-center gap-2.5 rounded-element p-4 transition-colors hover:bg-muted"
+            >
+              {avatar ? (
+                <img
+                  src={avatar}
+                  alt=""
+                  loading="lazy"
+                  className="h-10 w-10 shrink-0 rounded-full object-cover"
+                />
+              ) : (
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted">
+                  <Icon size={20} />
+                </span>
+              )}
+              <span className="min-w-0 flex-1">
+                <span className="flex items-center gap-1.5 text-15 font-semibold">
+                  <span className="truncate">{profile?.display_name || label}</span>
+                  {adult && <span className="text-2xs text-muted-foreground">18+</span>}
+                </span>
+                <span className="block truncate text-13 text-muted-foreground">
+                  {/*
+                    The `· ${label}` suffix only earns its place when the title
+                    above is showing a cached display_name instead of the
+                    platform. With no cached profile the title IS the label, so
+                    it rendered "Pornhub" over "@joey-stefano · Pornhub" —
+                    repeating itself and overflowing the card.
+                  */}
+                  {profile?.follower_count != null
+                    ? `${formatCount(profile.follower_count)} followers${profile?.display_name ? ` · ${label}` : ''}`
+                    : shownHandle
+                      ? `@${shownHandle}${profile?.display_name ? ` · ${label}` : ''}`
+                      : label}
+                </span>
+              </span>
+              <ExternalLink
+                size={14}
+                className="shrink-0 text-muted-foreground"
+                aria-hidden="true"
               />
-            ) : (
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted">
-                <Icon size={20} />
-              </span>
-            )}
-            <span className="min-w-0 flex-1">
-              <span className="flex items-center gap-1.5 text-15 font-semibold">
-                <span className="truncate">{profile?.display_name || label}</span>
-                {adult && <span className="text-2xs text-muted-foreground">18+</span>}
-              </span>
-              <span className="block truncate text-13 text-muted-foreground">
-                {profile?.follower_count != null
-                  ? `${formatCount(profile.follower_count)} followers · ${label}`
-                  : shownHandle
-                    ? `@${shownHandle} · ${label}`
-                    : label}
-              </span>
-            </span>
-            <ExternalLink size={14} className="shrink-0 text-muted-foreground" aria-hidden="true" />
-          </a>
-        );
-      })}
+            </a>
+          );
+        })}
+      </div>
     </div>
   );
 }

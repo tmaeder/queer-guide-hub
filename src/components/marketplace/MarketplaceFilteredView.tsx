@@ -1,13 +1,17 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useMarketplace, type MarketplaceFiltersInput, type MarketplaceSort } from '@/hooks/useMarketplace';
+import { useTranslation } from 'react-i18next';
+import {
+  useMarketplace,
+  type MarketplaceFiltersInput,
+  type MarketplaceSort,
+} from '@/hooks/useMarketplace';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { MarketplaceCard } from './MarketplaceCard';
 import { AffiliateDisclosure } from './AffiliateDisclosure';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Store } from 'lucide-react';
-import { EmptyState, ErrorState, LoadingTimeout } from '@/components/ui/EmptyState';
+import { ErrorState, LoadingTimeout } from '@/components/ui/EmptyState';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import type { Database } from '@/integrations/supabase/types';
 import type { MarketplaceSurface } from '@/lib/affiliate/marketplace';
 
@@ -16,38 +20,49 @@ type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['
 interface MarketplaceFilteredViewProps {
   filters: MarketplaceFiltersInput;
   emptyTitle?: string;
-  emptyDescription?: string;
+  /** Where the reader should go instead. Rendered as one inline link. */
+  emptyAction?: { label: string; to: string };
   /** Attribution surface passed through to the cards' outbound /go links. */
   surface?: MarketplaceSurface;
 }
 
-const SORT_OPTIONS: Array<{ value: MarketplaceSort; label: string }> = [
-  { value: 'newest', label: 'Newest first' },
-  { value: 'most_loved', label: 'Most loved' },
-  { value: 'best_value', label: 'Best value' },
-  { value: 'editor_choice', label: "Editor's choice" },
-  { value: 'price_asc', label: 'Price: low to high' },
-  { value: 'price_desc', label: 'Price: high to low' },
-];
+const GRID_CLASSES =
+  'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6';
 
+/**
+ * The listing engine behind every secondary marketplace page — maker, merchant,
+ * category, collection.
+ *
+ * Its chrome used to be generic shadcn (a `Select` sized by an inline style, an
+ * illustrated `EmptyState` with a rounded icon halo) with every string
+ * hard-coded in English. Because four pages share this one file, that meant
+ * four pages were simultaneously off the design system and untranslated. The
+ * sort control now matches the one in `MarketplaceControlBar` exactly, so the
+ * hub and its sub-pages read as the same instrument.
+ */
 export function MarketplaceFilteredView({
   filters,
-  emptyTitle = 'No listings yet.',
-  emptyDescription = 'Check back soon.',
+  emptyTitle,
+  emptyAction,
   surface = 'marketplace_grid',
 }: MarketplaceFilteredViewProps) {
-  const {
-    listings,
-    total,
-    pageSize,
-    loading,
-    loadingTimedOut,
-    error,
-    fetchListings,
-  } = useMarketplace();
+  const { t } = useTranslation();
+  const { listings, total, pageSize, loading, loadingTimedOut, error, fetchListings } =
+    useMarketplace();
   const [sortBy, setSortBy] = useState<MarketplaceSort>('newest');
   const [page, setPage] = useState(0);
   const [accumulated, setAccumulated] = useState<MarketplaceListing[]>([]);
+
+  // Built inside the component: these are translated, so they cannot be a
+  // module constant evaluated before i18n has a language.
+  const sortOptions: Array<{ value: MarketplaceSort; label: string }> = [
+    { value: 'newest', label: t('marketplace.sort.newest', 'Newest first') },
+    { value: 'most_loved', label: t('marketplace.sort.mostLoved', 'Most loved') },
+    { value: 'best_value', label: t('marketplace.sort.bestValue', 'Best value') },
+    { value: 'editor_choice', label: t('marketplace.sort.editorChoice', "Editor's choice") },
+    { value: 'price_asc', label: t('marketplace.sort.priceAsc', 'Price: low to high') },
+    { value: 'price_desc', label: t('marketplace.sort.priceDesc', 'Price: high to low') },
+  ];
 
   const filtersKey = JSON.stringify(filters);
   useEffect(() => {
@@ -83,28 +98,43 @@ export function MarketplaceFilteredView({
 
   return (
     <>
-      <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
-        <p className="text-muted-foreground">
-          Showing {accumulated.length.toLocaleString()} of {total.toLocaleString()} listing
-          {total !== 1 ? 's' : ''}
+      {/* Same swatch + tabular count as the masthead, so a sub-page states its
+          size the way the hub does. Rendered in every state for the same
+          anti-flip reason the masthead row is. */}
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+        <p className="flex items-center gap-4 text-13 text-muted-foreground">
+          <span
+            aria-hidden="true"
+            className="h-1.5 w-10 shrink-0 border border-foreground bg-track-yellow"
+          />
+          <span className="tabular-nums">
+            {t('marketplace.showingCount', {
+              defaultValue: '{{shown}} of {{total}} listings',
+              shown: accumulated.length.toLocaleString(),
+              total: total.toLocaleString(),
+            })}
+          </span>
         </p>
-        <Select value={sortBy} onValueChange={(v) => setSortBy(v as MarketplaceSort)}>
-          <SelectTrigger style={{ width: 200 }} aria-label="Sort listings">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {SORT_OPTIONS.map((opt) => (
-              <SelectItem key={opt.value} value={opt.value}>
-                {opt.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value as MarketplaceSort)}
+          aria-label={t('marketplace.sortLabel', 'Sort listings')}
+          className="h-8 border-2 border-foreground bg-background px-2 text-13 font-bold"
+        >
+          {sortOptions.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
       </div>
 
       {error && (
         <ErrorState
-          message="Something went wrong while loading. Please try again."
+          message={t(
+            'marketplace.loadError',
+            'Something went wrong while loading. Please try again.',
+          )}
           onRetry={() => fetchListings(filters, page, sortBy)}
         />
       )}
@@ -114,31 +144,51 @@ export function MarketplaceFilteredView({
       )}
 
       {!error && loading && !loadingTimedOut && accumulated.length === 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6">
+        <div className={GRID_CLASSES}>
           {Array.from({ length: 6 }).map((_, i) => (
             <MarketplaceCard key={i} loading />
           ))}
         </div>
       )}
 
+      {/* One honest sentence and one way onward. The illustrated empty state
+          this replaced was a lucide storefront in a rounded halo — two shapes
+          the design system does not have. */}
       {!error && !loading && accumulated.length === 0 && (
-        <EmptyState icon={Store} title={emptyTitle} description={emptyDescription} mood="neutral" />
+        <p className="text-muted-foreground">
+          {emptyTitle ?? t('marketplace.empty', 'No listings here yet.')}{' '}
+          {emptyAction && (
+            <LocalizedLink to={emptyAction.to} className="underline underline-offset-4">
+              {emptyAction.label}
+            </LocalizedLink>
+          )}
+        </p>
       )}
 
       {!error && accumulated.length > 0 && (
         <>
-          <StaggerGrid className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6">
+          <StaggerGrid className={GRID_CLASSES}>
             {accumulated.map((listing, index) => (
               <div key={listing.id}>
-                <MarketplaceCard listing={listing} imageAsset={assets.get(listing.id)} priority={index < 8} surface={surface} />
+                <MarketplaceCard
+                  listing={listing}
+                  imageAsset={assets.get(listing.id)}
+                  priority={index < 8}
+                  surface={surface}
+                />
               </div>
             ))}
           </StaggerGrid>
 
           {canLoadMore && (
-            <div className="flex items-center justify-center mt-10">
-              <Button onClick={() => setPage((p) => p + 1)} variant="outline" size="lg" disabled={loading}>
-                {loading ? 'Loading…' : 'Load more'}
+            <div className="mt-10 flex items-center justify-center">
+              <Button
+                onClick={() => setPage((p) => p + 1)}
+                variant="outline"
+                size="lg"
+                loading={loading}
+              >
+                {t('common.loadMore', 'Load more')}
               </Button>
             </div>
           )}

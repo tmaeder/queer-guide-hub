@@ -1,9 +1,10 @@
 import { useEffect, useMemo } from 'react';
-import { Store } from 'lucide-react';
-import { EmptyState } from '@/components/ui/EmptyState';
 import { MarketplaceCard } from './MarketplaceCard';
 import { useMarketplace, type MarketplaceFiltersInput } from '@/hooks/useMarketplace';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
+import { FilterChip } from '@/components/transit/FilterChip';
+import { Button } from '@/components/ui/button';
+import { DeadEndTrack } from '@/components/transit/DeadEndTrack';
 import {
   buildEmptyTitle,
   buildLooseningSuggestion,
@@ -20,10 +21,18 @@ interface ZeroResultRescueProps {
   onListBusiness: () => void;
 }
 
+const SECTION_LABEL = 'text-13 font-bold uppercase tracking-label text-muted-foreground';
+
 /**
  * Zero-result state that rescues instead of dead-ending: one-tap
  * relax-a-filter chips plus the closest matches with facets stripped
  * (search term kept).
+ *
+ * The illustrated `EmptyState` this replaced brought a lucide storefront inside
+ * a rounded halo onto a page that is otherwise TransitIcon-only and has a zero
+ * radius — and its "loosen" chips were bare hover-tinted text, not chips. The
+ * line simply ends here, so the artwork is `DeadEndTrack`: the same device
+ * /404 uses, which is what a filtered-to-nothing marketplace actually is.
  */
 export function ZeroResultRescue({
   filters,
@@ -54,43 +63,45 @@ export function ZeroResultRescue({
 
   return (
     <div className="flex flex-col gap-10">
-      <EmptyState
-        icon={Store}
-        title={active ? buildEmptyTitle(filters) : 'No listings yet.'}
-        description={
-          active ? buildLooseningSuggestion(filters) : 'Check back soon or list your business.'
-        }
-        mood="neutral"
-        secondaryAction={
-          didYouMean
-            ? {
-                label: `Did you mean “${didYouMean}”?`,
-                onClick: () => onFiltersChange({ ...filters, search: didYouMean }),
-              }
-            : undefined
-        }
-        primaryAction={
-          active
-            ? { label: 'Clear filters', onClick: onClear }
-            : { label: 'List Your Business', onClick: onListBusiness }
-        }
-      />
+      <div>
+        <h2 className="font-display text-headline leading-tight">
+          {active ? buildEmptyTitle(filters) : 'No listings yet.'}
+        </h2>
+        <p className="mt-2 max-w-reading text-muted-foreground">
+          {active
+            ? buildLooseningSuggestion(filters)
+            : 'Nothing is listed on this line right now.'}
+        </p>
+        <div className="mt-6 flex flex-wrap gap-2">
+          {didYouMean && (
+            <Button
+              variant="outline"
+              onClick={() => onFiltersChange({ ...filters, search: didYouMean })}
+            >
+              Did you mean “{didYouMean}”?
+            </Button>
+          )}
+          {active ? (
+            <Button onClick={onClear}>Clear filters</Button>
+          ) : (
+            <Button onClick={onListBusiness}>List your business</Button>
+          )}
+        </div>
+      </div>
+
+      <DeadEndTrack label={active ? 'Filtered out' : 'No service'} type="marketplace" />
 
       {steps.length > 0 && (
-        <div className="flex flex-col items-center gap-4">
-          <p className="text-2xs uppercase tracking-wider text-muted-foreground">
-            Loosen one filter
-          </p>
-          <div className="flex flex-wrap justify-center gap-2">
+        <div className="flex flex-col gap-4">
+          <p className={SECTION_LABEL}>Loosen one filter</p>
+          <div className="flex flex-wrap gap-2">
             {steps.map((s) => (
-              <button
+              <FilterChip
                 key={s.label}
-                type="button"
+                active={false}
+                label={s.label}
                 onClick={() => onFiltersChange(s.next)}
-                className="rounded-badge px-2 py-1 text-13 transition-colors hover:bg-muted"
-              >
-                {s.label}
-              </button>
+              />
             ))}
           </div>
         </div>
@@ -98,10 +109,7 @@ export function ZeroResultRescue({
 
       {hasFacetsBeyondSearch && nearestFour.length > 0 && (
         <section aria-labelledby="nearest-matches">
-          <h2
-            id="nearest-matches"
-            className="mb-4 text-2xs uppercase tracking-wider text-muted-foreground"
-          >
+          <h2 id="nearest-matches" className={`mb-4 ${SECTION_LABEL}`}>
             Closest matches without your filters
           </h2>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">

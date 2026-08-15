@@ -4205,6 +4205,17 @@
       "interchangeEyebrow": "Umsteigen",
       "interchangeTitle": "In der Taxonomie",
       "inTaxonomy": "In der Taxonomie",
+      "codes": {
+        "eyebrow": "Klassifikation",
+        "title": "Diagnoseschlüssel",
+        "general": "Allgemein",
+        "specialized": "Spezialisiert",
+        "procedural": "Prozeduren",
+        "pharmaceutical": "Arzneimittel",
+        "source": "Quelle",
+        "linkLabel": "{{label}}-Code {{code}}",
+        "disclaimer": "Referenzcodes für diesen Begriff in klinischen Klassifikationssystemen. Keine medizinische Beratung und keine Diagnose."
+      },
       "changeHereFor": "Umsteigen nach",
       "contentNote": "Inhaltshinweis",
       "contentNoteBody": "Dieser Eintrag behandelt ein Thema, das manche Lesende belastet. Nichts hier ist explizit, und die Seite ist eine Definition, keine Beratung.",
@@ -4243,7 +4254,18 @@
         "misspelling": "Häufiger Tippfehler",
         "historical": "Historisch",
         "slang": "Slang"
-      }
+      },
+      "sourceOfLaw": "Rechtsgrundlage",
+      "lawJurisdiction": "Geltungsbereich",
+      "lawInternational": "International",
+      "lawAdopted": "Verabschiedet",
+      "lawStatus": "Status",
+      "lawInForce": "In Kraft",
+      "lawRepealed": "Aufgehoben",
+      "lawSuperseded": "Ersetzt",
+      "lawPartlyStruck": "In Kraft, teilweise aufgehoben",
+      "notOneLaw": "Dies ist kein einzelnes Gesetz. Es wird Land für Land erfasst.",
+      "seeByCountry": "Status nach Land ansehen"
     }
   }
 }

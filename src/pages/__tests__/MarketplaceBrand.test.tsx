@@ -7,11 +7,6 @@ import { Routes, Route } from 'react-router';
 import { brandSlug } from '@/lib/marketplaceTaxonomy';
 
 vi.mock('@/hooks/useMeta', () => ({ useMeta: vi.fn() }));
-vi.mock('@/components/layout/PageHeader', () => ({
-  PageHeader: (p: { title: string; subtitle?: string; actions?: React.ReactNode }) => (
-    <div><h1>{p.title}</h1><span>{p.subtitle}</span>{p.actions}</div>
-  ),
-}));
 vi.mock('@/components/marketplace/MarketplaceFilteredView', () => ({
   MarketplaceFilteredView: (p: { filters: { brandKey?: string } }) => (
     <div data-testid="filtered" data-brand-key={p.filters.brandKey} />
@@ -39,7 +34,18 @@ describe('MarketplaceBrand', () => {
   it('shows not-found for unknown brand', () => {
     brandState.value = null;
     renderAt('/marketplace/brands/nope');
-    expect(screen.getByText(/Brand not found/i)).toBeInTheDocument();
+    expect(screen.getByText(/No maker here/i)).toBeInTheDocument();
+  });
+
+  it('offers the makers directory as the way out of a dead end', () => {
+    // The whole point of adding /marketplace/brands: a missing maker used to
+    // dead-end at "Brand not found" with only the hub to go back to.
+    brandState.value = null;
+    renderAt('/marketplace/brands/nope');
+    expect(screen.getByRole('link', { name: /All makers/i })).toHaveAttribute(
+      'href',
+      '/marketplace/brands',
+    );
   });
 
   it('renders approved brand with ownership badge, story, and brand-keyed grid', () => {

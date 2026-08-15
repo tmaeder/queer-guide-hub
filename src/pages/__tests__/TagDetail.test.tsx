@@ -21,9 +21,11 @@ vi.mock('@/hooks/useTagUsageBreakdown', async () => {
   return { ...actual, useTagUsageBreakdown: () => ({ data: usage }) };
 });
 
+let tagReferences: { source_type: string; source_url: string }[] = [];
 vi.mock('@/hooks/useTagRelationships', () => ({
   useSimilarTags: () => ({ data: [] }),
   useTagOntology: () => ({ data: { broader: [], narrower: [], related: [] } }),
+  useTagReferenceLinks: () => ({ data: tagReferences }),
 }));
 vi.mock('@/hooks/useTagContent', () => ({
   useTagContent: () => ({ data: null, isLoading: true }),
@@ -81,6 +83,7 @@ const lastMeta = () => useMeta.mock.calls.at(-1)?.[0] as Record<string, unknown>
 
 beforeEach(() => {
   useMeta.mockClear();
+  tagReferences = [];
   tagRow = { ...BASE };
   usage = {
     venue_count: 2,
@@ -200,5 +203,28 @@ describe('TagDetail — page', () => {
     tagRow = null;
     renderPage();
     expect(await screen.findByTestId('tag-not-found')).toBeInTheDocument();
+  });
+
+  it('cites an external source by host, and links out to it', async () => {
+    // The label is derived from the URL rather than printed from
+    // `claim_summary`, so an unvetted row cannot put prose on the page.
+    tagReferences = [
+      { source_type: 'editorial', source_url: 'https://en.saferparty.ch/substanzen/mdma' },
+    ];
+    renderPage();
+    expect(await screen.findByText('en.saferparty.ch')).toBeInTheDocument();
+    const link = screen
+      .getAllByRole('link')
+      .find((a) => a.getAttribute('href') === 'https://en.saferparty.ch/substanzen/mdma');
+    expect(link).toBeDefined();
+    expect(link).toHaveAttribute('rel', expect.stringContaining('noopener'));
+  });
+
+  it('renders no Elsewhere card when a tag has neither wiki links nor sources', async () => {
+    // The card must not appear empty: BASE carries no wikipedia_url/wikidata_id
+    // and tagReferences is reset to [] in beforeEach.
+    renderPage();
+    await screen.findByRole('heading', { level: 1, name: 'Bear' });
+    expect(screen.queryByText(/Elsewhere/i)).not.toBeInTheDocument();
   });
 });

@@ -76,7 +76,7 @@ export default function MarketplaceMerchant() {
         <MarketplaceFilteredView
           filters={{ merchantDomain: cleanDomain }}
           emptyTitle="No listings from this merchant yet."
-          emptyDescription="They may have not synced products recently."
+          emptyAction={{ label: 'Browse the marketplace', to: '/marketplace' }}
         />
       </PageContainer>
     </div>

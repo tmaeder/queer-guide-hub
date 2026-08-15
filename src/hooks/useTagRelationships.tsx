@@ -160,7 +160,7 @@ export interface TagOntology {
   related: OntologyTag[];
 }
 
-export interface TagSource {
+export interface TagReferenceLink {
   source_type: string;
   source_url: string;
 }
@@ -174,16 +174,16 @@ export interface TagSource {
  * `claim_summary`, so no unverified `source_type='llm'` prose can reach the page;
  * the visible label is derived from the URL's host instead.
  */
-export function useTagSources(tagId: string | null) {
+export function useTagReferenceLinks(tagId: string | null) {
   return useQuery({
-    queryKey: ['tag-sources', tagId],
+    queryKey: ['tag-reference-links', tagId],
     enabled: !!tagId,
     staleTime: 5 * 60 * 1000,
-    queryFn: async (): Promise<TagSource[]> => {
+    queryFn: async (): Promise<TagReferenceLink[]> => {
       if (!tagId) return [];
-      const { data, error } = await supabase.rpc('get_tag_sources', { p_tag_id: tagId });
+      const { data, error } = await supabase.rpc('get_tag_reference_links', { p_tag_id: tagId });
       if (error) throw error;
-      return (data ?? []) as TagSource[];
+      return (data ?? []) as TagReferenceLink[];
     },
   });
 }
