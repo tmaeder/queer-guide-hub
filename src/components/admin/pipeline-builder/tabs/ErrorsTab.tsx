@@ -49,7 +49,7 @@ export default function ErrorsTab() {
         .select('*')
         .order('last_seen_at', { ascending: false });
       if (error) throw error;
-      return (data || []) as SummaryRow[];
+      return (data || []) as unknown as SummaryRow[];
     },
     refetchInterval: 30_000,
   });

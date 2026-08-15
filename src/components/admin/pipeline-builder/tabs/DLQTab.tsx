@@ -45,7 +45,7 @@ export default function DLQTab() {
         console.warn('dlq_summary view unavailable:', error.message);
         return [];
       }
-      return (data ?? []) as SummaryRow[];
+      return (data ?? []) as unknown as SummaryRow[];
     },
     refetchInterval: 15_000,
   });
