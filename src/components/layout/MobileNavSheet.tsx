@@ -14,7 +14,14 @@ import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 import { CurrencySelector } from '@/components/i18n/CurrencySelector';
 import { AuthDialog } from '@/components/auth/AuthDialog';
 import { Button } from '@/components/ui/button';
-import { DESTINATIONS, NAV_CLUSTERS, LEGAL_ITEMS, INTENT_NAV } from '@/config/navigation';
+import {
+  DESTINATIONS,
+  NAV_CLUSTERS,
+  LEGAL_ITEMS,
+  INTENT_NAV,
+  INTENT_TRACK,
+} from '@/config/navigation';
+import { TrackSwatch } from '@/components/transit/TrackSwatch';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
@@ -157,14 +164,18 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
                       key={intent.to}
                       to={intent.to}
                       onClick={close}
-                      className="flex items-center gap-4 rounded-element p-4 no-underline hover:bg-muted"
+                      className="flex items-center gap-4 border-2 border-foreground p-4 no-underline transition-colors hover:bg-foreground hover:text-background"
                     >
-                      <Icon size={20} className="shrink-0 text-foreground" aria-hidden />
+                      {/* The line, then the icon — the same pair the desktop
+                          tab and the compact bar carry, so a reader arriving
+                          from either recognises the row. */}
+                      <TrackSwatch track={INTENT_TRACK[intent.id] ?? 'pink'} />
+                      <Icon size={20} className="shrink-0" aria-hidden />
                       <span className="flex flex-col">
-                        <span className="text-15 font-medium text-foreground">
+                        <span className="text-15 font-bold">
                           {t(intent.labelKey, intent.fallback)}
                         </span>
-                        <span className="text-2xs leading-tight text-muted-foreground">
+                        <span className="text-2xs leading-tight opacity-70">
                           {t(intent.subtitleKey, intent.subtitleFallback)}
                         </span>
                       </span>
@@ -195,10 +206,10 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
                           key={dest.to}
                           to={dest.to}
                           onClick={close}
-                          className="flex flex-col items-center justify-center gap-2 rounded-element p-4 text-center no-underline hover:bg-muted"
+                          className="flex flex-col items-center justify-center gap-2 border-2 border-foreground p-4 text-center no-underline transition-colors hover:bg-foreground hover:text-background"
                         >
-                          <Icon size={20} className="text-foreground" aria-hidden />
-                          <span className="text-2xs leading-tight text-muted-foreground">
+                          <Icon size={20} aria-hidden />
+                          <span className="text-2xs font-bold leading-tight">
                             {t(dest.labelKey)}
                           </span>
                         </LocalizedLink>

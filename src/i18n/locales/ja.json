@@ -139,7 +139,14 @@
       "recent_city": "In a city you've explored",
       "featured": "Featured"
     },
-    "ariaLabel": "[JA] Search Queer Guide"
+    "ariaLabel": "[JA] Search Queer Guide",
+    "escape": "esc",
+    "jumpTo": "移動先",
+    "recent": "最近",
+    "noStation": "その名前の駅はまだありません",
+    "addToMap": "地図に追加する",
+    "seeOnMap": "{{count}}件を地図で見る",
+    "keyHints": "↑↓ 移動 · ↵ 開く"
   },
   "common": {
     "contentInLanguage": "言語：{{lang}}",
@@ -217,6 +224,13 @@
       "eyebrow": "[JA] In an emergency",
       "title": "[JA] Crisis lines, 24 hours",
       "body": "[JA] Trans helpline, LGBT+ crisis support, and local emergency numbers, listed by country and always one click from any page."
+    },
+    "osmAttribution": "交通図は © OpenStreetMap 貢献者のデータに基づいています (ODbL)",
+    "reportSomething": "報告する",
+    "hotlines": "相談窓口",
+    "antiDiscrimination": {
+      "title": "ここに偏見の居場所はありません。",
+      "body": "人種差別、トランス嫌悪、差別は、プラットフォームからの追放の理由になります。以上です。"
     }
   },
   "trips": {
@@ -1849,7 +1863,10 @@
       "help": "ヘルプ",
       "tags": "タグ",
       "history": "歴史",
-      "guides": "[JA] Guides"
+      "guides": "[JA] Guides",
+      "trips": "旅行",
+      "organizations": "団体",
+      "wishlists": "ウィッシュリスト"
     },
     "intents": {
       "goingOut": {

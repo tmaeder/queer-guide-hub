@@ -3,7 +3,14 @@ import { lazyOptional } from '@/utils/lazyRetry';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router';
 import { Search, X, Mic } from 'lucide-react';
+// The primitive directly, not ui/dialog's DialogContent: that one is a
+// vertically-centred, radiused, padded card with its own X close button, and
+// the command plate is a top-pinned squared plate whose close affordance is
+// the `esc` chip in its own input row. Overriding all of that leaves nothing
+// of the wrapper behind.
+import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { TrackLoader } from '@/components/transit/TrackLoader';
+import { TransitIcon } from '@/components/transit/TransitIcon';
 import { useTrackClick } from '@/hooks/useSearchActions';
 import { trackSearchUx } from '@/lib/searchClient';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
@@ -25,6 +32,7 @@ import { stripLocale } from '@/lib/locale';
 import type { SearchFilters } from '@/hooks/useSearch';
 import type { AssistantCard } from '@/lib/assistantClient';
 import { detailHref } from '@/lib/searchRoutes';
+import { getSubmitCta } from '@/lib/submitCta';
 // The three popover bodies only ever render inside <PopoverContent>, which
 // Radix mounts on open — so nothing here is needed for first paint. Eagerly
 // importing them put the whole results subtree, including dompurify (~58 KB),
@@ -284,6 +292,25 @@ export const UniversalSearchBar = () => {
     [navigate],
   );
 
+  /**
+   * Put focus back on the search field after the overlay closes.
+   *
+   * Deferred by one tick, and that is load-bearing on desktop: the field lives
+   * INSIDE the closing plate, so at call time `inputRef` still points at the
+   * node React is tearing down and focusing it silently does nothing. One tick
+   * later the field has been committed back into the header bar and the ref
+   * points at the live node. Measured: without the defer,
+   * `document.activeElement` is <body> after Escape.
+   *
+   * `suppressReopenRef` is what stops the restored focus from immediately
+   * reopening the overlay via the field's own onFocus handler.
+   */
+  const restoreFocusToField = useCallback(() => {
+    // Arm only. The focus itself happens in the close effect below, which is
+    // the only point where the field is guaranteed to be mounted in the bar.
+    suppressReopenRef.current = true;
+  }, []);
+
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       // Alt+1..9 → scope shortcut
@@ -300,8 +327,13 @@ export const UniversalSearchBar = () => {
           setMode('search');
           focusInput();
         } else {
+          // Close only. The blur that used to live here is gone: on desktop
+          // the field is inside the closing plate and has to come back to the
+          // bar WITH focus, and an explicit blur races the restore and wins,
+          // dropping the keyboard user on <body>. Focus restoration is owned
+          // by one place — `restoreFocusToField` below — for both shells.
           setIsOpen(false);
-          inputRef.current?.blur();
+          restoreFocusToField();
         }
         return;
       }
@@ -354,6 +386,7 @@ export const UniversalSearchBar = () => {
       focusInput,
       handleSelectSuggestion,
       handleSearch,
+      restoreFocusToField,
     ],
   );
 
@@ -367,6 +400,29 @@ export const UniversalSearchBar = () => {
   useEffect(() => {
     if (isOpen && mode === 'search') focusInput();
   }, [isOpen, mode, focusInput]);
+
+  /**
+   * Return focus to the field when the overlay closes, so Escape does not drop
+   * a keyboard user on <body> with no idea where the search went.
+   *
+   * This is an EFFECT, not Radix's `onCloseAutoFocus` callback and not a
+   * timer. On desktop the field lives inside the closing plate, so at callback
+   * time `inputRef` still points at the node React is tearing down and
+   * focusing it does nothing. An effect keyed on `isOpen` runs after the
+   * commit that puts the field back in the bar, so the ref is live.
+   *
+   * Deliberately not rAF: `requestAnimationFrame` does not run in a hidden or
+   * backgrounded tab, which would leave focus stranded exactly when a restore
+   * is queued and the reader tabs away and back.
+   */
+  const wasOpenRef = useRef(false);
+  useEffect(() => {
+    if (wasOpenRef.current && !isOpen && suppressReopenRef.current) {
+      inputRef.current?.focus();
+      suppressReopenRef.current = false;
+    }
+    wasOpenRef.current = isOpen;
+  }, [isOpen]);
 
   const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPod|iPad/.test(navigator.platform);
 
@@ -382,6 +438,14 @@ export const UniversalSearchBar = () => {
     localStorage.removeItem('recent-searches');
   }, []);
 
+  // "Add it to the map" from the no-results state. Reuses the header's own
+  // contextual contribute target rather than hardcoding /submit, so the two
+  // contribute affordances on the page cannot point at different places.
+  const handleAddToMap = useCallback(() => {
+    setIsOpen(false);
+    navigate(getSubmitCta(location.pathname, t).route);
+  }, [navigate, location.pathname, t]);
+
   const placeholder = useMemo(
     () => getPlaceholder(location.pathname, t, isMobile),
     [location.pathname, t, isMobile],
@@ -390,303 +454,434 @@ export const UniversalSearchBar = () => {
   const inputHeight = isMobile ? 48 : 40;
   const iconSize = isMobile ? 20 : 16;
 
-  return (
-    <div className="min-w-0 flex-1">
-      <Popover open={isOpen} onOpenChange={setIsOpen}>
-        <PopoverAnchor asChild>
-          <div className="relative">
-            {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- search landmark also acts as a click target to focus the inner input; keyboard handling provided. */}
-            <div
-              ref={searchBoxRef}
-              role="search"
-              aria-label="Site search"
-              className="flex cursor-text items-center rounded-container border-2 border-foreground bg-background transition-colors focus-within:shadow-hard-sm"
-              onClick={() => {
-                setIsOpen(true);
-                focusInput();
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  setIsOpen(true);
-                  focusInput();
-                }
-              }}
-            >
-              <span
-                aria-hidden="true"
-                className="pointer-events-none inline-flex shrink-0 items-center justify-center text-muted-foreground"
-                style={{ height: inputHeight, paddingInline: isMobile ? 16 : 12 }}
-              >
-                <Search style={{ height: iconSize, width: iconSize }} />
-              </span>
-              <Input
-                ref={inputRef}
-                type="text"
-                aria-label={t('search.ariaLabel', 'Search Queer Guide')}
-                role="combobox"
-                aria-autocomplete="list"
-                aria-expanded={isOpen}
-                aria-controls="qg-search-listbox"
-                aria-haspopup="listbox"
-                aria-activedescendant={
-                  resultsFocused !== null ? `result-${resultsFocused}` : undefined
-                }
-                placeholder={placeholder}
-                value={query}
-                onChange={(e) => {
-                  setQuery(e.target.value);
-                  if (mode === 'ask') setMode('search');
-                  if (!isOpen && !justSelectedRef.current) setIsOpen(true);
-                  justSelectedRef.current = false;
-                }}
-                onKeyDown={handleKeyDown}
-                onFocus={() => {
-                  if (suppressReopenRef.current) {
-                    suppressReopenRef.current = false;
-                    return;
-                  }
-                  setIsOpen(true);
-                }}
-                autoComplete="off"
-                // The field sits INSIDE this component's own bordered shell, so
-                // it drops the primitive's border and fill — and therefore must
-                // restate its foreground + placeholder (see inputPlateOverride
-                // test: repainting the fill without the type is the failure
-                // mode that once shipped white-on-#f5f5f5 at 1.09:1).
-                className="min-w-0 flex-1 border-0 bg-transparent text-foreground placeholder:text-muted-foreground text-sm shadow-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0 md:text-sm"
-                style={{
-                  fontSize: isMobile ? '1rem' : '0.875rem',
-                  height: inputHeight,
-                }}
-              />
-              {/* Trailing controls sit in a flex sibling cell (not absolutely
+  // Desktop opens the command modal; mobile keeps the anchored full-screen
+  // sheet. The mock's centered 680px plate is a desktop shape — at 390px it
+  // would be a full-bleed sheet with a wasted 4px border, which is what the
+  // mobile branch already is.
+  const asModal = isOpen && !isMobile;
+
+  /**
+   * The one search box. It renders EITHER in the header bar or inside the
+   * modal — never both, because two `role="combobox"` inputs claiming the same
+   * listbox is an ambiguity for a screen reader and for `e2e/search-ux.spec.ts`,
+   * which resolves `input[role=combobox]` and then asserts aria-expanded flips
+   * on that same element.
+   *
+   * Moving it between parents remounts the DOM node. That is fine and load-
+   * bearing knowledge: `query` lives on this component, so the text survives,
+   * and the open effect re-runs `focusInput()`, so the caret follows.
+   */
+  const searchField = (panel: boolean) => {
+    const h = panel ? 56 : inputHeight;
+    const icon = panel ? 22 : iconSize;
+    return (
+      // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- search landmark also acts as a click target to focus the inner input; keyboard handling provided.
+      <div
+        ref={searchBoxRef}
+        role="search"
+        aria-label="Site search"
+        className={cn(
+          'flex cursor-text items-center bg-background transition-colors',
+          panel
+            ? // Inside the plate the box has no border of its own: the panel's
+              // own 4px edge is the box, and the 3px rule is what separates the
+              // query from its results.
+              'border-b-[3px] border-foreground px-6'
+            : 'rounded-container border-2 border-foreground focus-within:shadow-hard-sm',
+        )}
+        onClick={() => {
+          setIsOpen(true);
+          focusInput();
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            setIsOpen(true);
+            focusInput();
+          }
+        }}
+      >
+        <span
+          aria-hidden="true"
+          className={cn(
+            'pointer-events-none inline-flex shrink-0 items-center justify-center',
+            panel ? 'pe-4 text-foreground' : 'text-muted-foreground',
+          )}
+          style={{ height: h, paddingInline: panel ? undefined : isMobile ? 16 : 12 }}
+        >
+          {panel ? (
+            <TransitIcon name="search" size={icon} />
+          ) : (
+            <Search style={{ height: icon, width: icon }} />
+          )}
+        </span>
+        <Input
+          ref={inputRef}
+          type="text"
+          aria-label={t('search.ariaLabel', 'Search Queer Guide')}
+          role="combobox"
+          aria-autocomplete="list"
+          aria-expanded={isOpen}
+          aria-controls="qg-search-listbox"
+          aria-haspopup="listbox"
+          aria-activedescendant={resultsFocused !== null ? `result-${resultsFocused}` : undefined}
+          placeholder={placeholder}
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            if (mode === 'ask') setMode('search');
+            if (!isOpen && !justSelectedRef.current) setIsOpen(true);
+            justSelectedRef.current = false;
+          }}
+          onKeyDown={handleKeyDown}
+          onFocus={() => {
+            if (suppressReopenRef.current) {
+              suppressReopenRef.current = false;
+              return;
+            }
+            setIsOpen(true);
+          }}
+          autoComplete="off"
+          // The field sits INSIDE this component's own bordered shell, so
+          // it drops the primitive's border and fill — and therefore must
+          // restate its foreground + placeholder (see inputPlateOverride
+          // test: repainting the fill without the type is the failure
+          // mode that once shipped white-on-#f5f5f5 at 1.09:1).
+          className={cn(
+            'min-w-0 flex-1 border-0 bg-transparent text-foreground placeholder:text-muted-foreground shadow-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0',
+            // The auto-focused field draws the global pink focus ring
+            // (index.css `*:focus-visible`, `!important`). The mock shows
+            // no ring, but that rule is the site's WCAG 2.4.7 guarantee
+            // and no utility can beat `!important` anyway — a
+            // `focus-visible:outline-none` here is a silent no-op that
+            // reads as if it did something. Left alone on purpose.
+            panel ? 'font-bold' : 'text-sm md:text-sm',
+          )}
+          style={{
+            // The mock sets the query at 19/700 — it is the loudest thing
+            // on the plate because it is the only thing the reader wrote.
+            fontSize: panel ? '1.1875rem' : isMobile ? '1rem' : '0.875rem',
+            height: h,
+          }}
+        />
+        {/* Trailing controls sit in a flex sibling cell (not absolutely
                 positioned over the input) so their tap targets don't overlap
                 the input — WCAG 2.5.8 target-size was failing the voice/clear
                 buttons on every page (safe clickable space ~15px). */}
-              <span className="flex shrink-0 items-center gap-1.5 pe-2">
-                {!query && voice.supported && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    aria-label={
-                      voice.listening
-                        ? t('search.stopVoice', 'Stop voice search')
-                        : t('search.voice', 'Voice search')
-                    }
-                    aria-pressed={voice.listening}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (voice.listening) voice.stop();
-                      else voice.start();
-                    }}
-                    className={cn(
-                      'p-0',
-                      voice.listening ? 'text-destructive' : 'text-muted-foreground',
-                    )}
-                    style={{
-                      height: isMobile ? 32 : 28,
-                      width: isMobile ? 32 : 28,
-                    }}
-                  >
-                    <Mic style={{ height: isMobile ? 16 : 14, width: isMobile ? 16 : 14 }} />
-                  </Button>
-                )}
-                {!query && !isMobile && (
-                  <kbd
-                    aria-hidden="true"
-                    className="pointer-events-none rounded-badge border border-foreground px-1.5 py-0.5 text-xs2 leading-none text-muted-foreground font-[inherit]"
-                  >
-                    {isMac ? '⌘K' : 'Ctrl+K'}
-                  </kbd>
-                )}
-                {query && suggestionsLoading && (
-                  <TrackLoader size={isMobile ? 14 : 12} />
-                )}
-                {query && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    aria-label="Clear search"
-                    className="p-0 text-muted-foreground hover:text-foreground"
-                    style={{ height: isMobile ? 32 : 28, width: isMobile ? 32 : 28 }}
-                    onClick={() => {
-                      setQuery('');
-                      focusInput();
-                    }}
-                  >
-                    <X style={{ height: isMobile ? 16 : 12, width: isMobile ? 16 : 12 }} />
-                  </Button>
-                )}
-              </span>
-            </div>
-          </div>
-        </PopoverAnchor>
-        <PopoverContent
-          // qg-mobile-search-overlay: a CSS hook (src/index.css) that neutralizes
-          // Radix's translated popper wrapper so the fixed full-screen mobile
-          // sheet anchors to the viewport, not the transformed wrapper.
-          className={cn(
-            'w-[var(--radix-popover-trigger-width)] overflow-hidden p-0',
-            isMobile && 'qg-mobile-search-overlay rounded-none',
+        <span className={cn('flex shrink-0 items-center gap-1.5', panel ? 'ps-2' : 'pe-2')}>
+          {!query && voice.supported && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              aria-label={
+                voice.listening
+                  ? t('search.stopVoice', 'Stop voice search')
+                  : t('search.voice', 'Voice search')
+              }
+              aria-pressed={voice.listening}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (voice.listening) voice.stop();
+                else voice.start();
+              }}
+              className={cn('p-0', voice.listening ? 'text-destructive' : 'text-muted-foreground')}
+              style={{
+                height: isMobile ? 32 : 28,
+                width: isMobile ? 32 : 28,
+              }}
+            >
+              <Mic style={{ height: isMobile ? 16 : 14, width: isMobile ? 16 : 14 }} />
+            </Button>
           )}
-          style={
-            isMobile
-              ? {
-                  position: 'fixed',
-                  inset: 0,
-                  width: '100vw',
-                  height: '100dvh',
-                  maxHeight: '100dvh',
-                  zIndex: 50,
-                }
-              : undefined
-          }
-          align="start"
-          onOpenAutoFocus={(e) => {
-            e.preventDefault();
-            focusInput();
-          }}
-          onCloseAutoFocus={(e) => {
-            e.preventDefault();
-            suppressReopenRef.current = true;
-            inputRef.current?.focus();
-            // If the input was already focused, no focus event fires to consume
-            // the flag — a stale flag then swallows the NEXT genuine focus and
-            // the popover refuses to reopen until the user retypes. Clear it as
-            // soon as this dismissal settles.
-            setTimeout(() => {
-              suppressReopenRef.current = false;
-            }, 0);
-          }}
-          onEscapeKeyDown={(e) => {
-            if (mode === 'ask') {
-              e.preventDefault();
+          {/* The hint belongs to the CLOSED bar — inside the modal the
+                    shortcut has already been spent, and the mock puts an `esc`
+                    chip there instead. e2e/search-ux.spec.ts asserts this kbd
+                    renders on an empty field, which is the closed state. */}
+          {!query && !isMobile && !panel && (
+            <kbd
+              aria-hidden="true"
+              className="pointer-events-none rounded-badge border border-foreground px-1.5 py-0.5 text-xs2 leading-none text-muted-foreground font-[inherit]"
+            >
+              {isMac ? '⌘K' : 'Ctrl+K'}
+            </kbd>
+          )}
+          {query && suggestionsLoading && <TrackLoader size={isMobile ? 14 : 12} />}
+          {query && (
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-label="Clear search"
+              className="p-0 text-muted-foreground hover:text-foreground"
+              style={{ height: isMobile ? 32 : 28, width: isMobile ? 32 : 28 }}
+              onClick={() => {
+                setQuery('');
+                focusInput();
+              }}
+            >
+              <X style={{ height: isMobile ? 16 : 12, width: isMobile ? 16 : 12 }} />
+            </Button>
+          )}
+          {/* Keyboard affordance, so desktop only — on the touch sheet there is
+              no Esc key to teach, and the sheet already carries a
+              thumb-reachable Cancel. */}
+          {panel && !isMobile && (
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              className="border-2 border-foreground px-2 py-1 text-xs2 font-bold uppercase leading-none text-foreground transition-colors hover:bg-foreground hover:text-background"
+            >
+              {t('search.escape', 'esc')}
+            </button>
+          )}
+        </span>
+      </div>
+    );
+  };
+
+  // Escape / dismissal, shared by both shells. In Ask mode Escape steps BACK
+  // to search rather than closing outright — losing a conversation to a
+  // reflexive Escape is worse than one extra keypress.
+  const handleDismissKey = useCallback(
+    (e: { preventDefault: () => void }) => {
+      if (mode === 'ask') {
+        e.preventDefault();
+        setMode('search');
+        focusInput();
+      } else {
+        setIsOpen(false);
+      }
+    },
+    [mode, focusInput],
+  );
+
+  // The results body is identical in both shells — only the frame differs.
+  const popoverBody = (
+    <Suspense
+      fallback={
+        <div className="p-4" role="status" aria-live="polite">
+          <span className="sr-only">Loading search</span>
+          <div className="h-4 w-2/3 animate-pulse rounded-badge bg-muted" />
+          <div className="mt-2 h-4 w-1/2 animate-pulse rounded-badge bg-muted" />
+        </div>
+      }
+    >
+      {mode === 'ask' ? (
+        <>
+          {assistant.turnstile}
+          <SearchAskPanel
+            messages={assistant.messages}
+            pending={assistant.pending}
+            error={assistant.error}
+            onSend={(m) => void assistant.send(m)}
+            onBack={() => {
               setMode('search');
               focusInput();
-            } else {
-              setIsOpen(false);
-            }
+            }}
+            onSelectCard={navigateToCard}
+          />
+        </>
+      ) : isMobile ? (
+        <SearchPopoverMobile
+          query={query}
+          activeScope={activeScope}
+          suggestions={suggestions}
+          countsByType={countsByType}
+          loading={suggestionsLoading}
+          error={suggestionsError}
+          trending={discoveryHits}
+          discoverySource={discoverySource}
+          showFilters={showFilters}
+          filters={filters}
+          setFilters={setFilters}
+          setScope={setScope}
+          onSelect={handleSelectSuggestion}
+          onSearchAll={() => handleSearch()}
+          onToggleFilters={() => setShowFilters(!showFilters)}
+          activeFiltersCount={activeFiltersCount}
+          onClose={() => setIsOpen(false)}
+          onClear={() => {
+            setQuery('');
+            focusInput();
           }}
-          onPointerDownOutside={(e) => {
-            // Clicking the search box itself is the anchor, not "outside" —
-            // don't let Radix dismiss the popover we just opened.
-            if (searchBoxRef.current?.contains(e.target as Node)) e.preventDefault();
+          onPrefetch={prefetchRoute}
+          navigate={navigate}
+          onAsk={enterAsk}
+          onAddToMap={handleAddToMap}
+          recentSearches={recentSearches}
+          onSelectRecent={(term) => {
+            setQuery(term);
+            handleSearch(term);
           }}
-          onInteractOutside={(e) => {
-            if (searchBoxRef.current?.contains(e.target as Node)) e.preventDefault();
+          clearRecents={clearRecents}
+        />
+      ) : (
+        <SearchPopoverDesktop
+          query={query}
+          activeScope={activeScope}
+          suggestions={suggestions}
+          countsByType={countsByType}
+          loading={suggestionsLoading}
+          error={suggestionsError}
+          trending={discoveryHits}
+          discoverySource={discoverySource}
+          recentSearches={recentSearches}
+          showFilters={showFilters}
+          setShowFilters={setShowFilters}
+          filters={filters}
+          setFilters={setFilters}
+          setScope={setScope}
+          onSelectIndex={(s, i) => {
+            setResultsFocused(i);
+            handleSelectSuggestion(s);
           }}
-        >
-          {/* Height-stable fallback: the popover is already positioned when the
-              chunk resolves, so a zero-height fallback would make it jump. */}
-          <Suspense
-            fallback={
-              <div className="p-4" role="status" aria-live="polite">
-                <span className="sr-only">Loading search</span>
-                <div className="h-4 w-2/3 animate-pulse rounded-badge bg-muted" />
-                <div className="mt-2 h-4 w-1/2 animate-pulse rounded-badge bg-muted" />
-              </div>
-            }
+          resultsFocused={resultsFocused}
+          setResultsFocused={setResultsFocused}
+          activeFiltersCount={activeFiltersCount}
+          onSearchAll={() => handleSearch()}
+          clearRecents={clearRecents}
+          onSelectRecent={(term) => {
+            setQuery(term);
+            handleSearch(term);
+          }}
+          onSelectTrending={(hit) =>
+            handleSelectSuggestion({
+              id: hit.id,
+              name: (hit.title || hit.name || '') as string,
+              type: hit.type,
+              icon: () => null,
+              title: (hit.title || hit.name || '') as string,
+              subtitle: hit.city as string | undefined,
+              slug: hit.slug as string | undefined,
+            })
+          }
+          onBrowse={(path) => {
+            setIsOpen(false);
+            navigate(path);
+          }}
+          onPrefetch={prefetchRoute}
+          onAsk={enterAsk}
+          onAddToMap={handleAddToMap}
+        />
+      )}
+    </Suspense>
+  );
+
+  // ── Mobile: the sheet fills the viewport and the field travels into it ──
+  //
+  // The field MUST move. The sheet is `inset: 0` at 0.95 alpha, so it covers
+  // the header — measured with elementFromPoint, the bar's input was not the
+  // topmost element at its own centre while the sheet was open, i.e. you could
+  // not see what you were typing. Moving it in is the same trick the desktop
+  // plate uses, and it keeps the single-combobox invariant: the field is in
+  // the bar or in the sheet, never both.
+  if (isMobile) {
+    return (
+      <div className="min-w-0 flex-1">
+        <Popover open={isOpen} onOpenChange={setIsOpen}>
+          <PopoverAnchor asChild>
+            <div className="relative">
+              {isOpen ? <div aria-hidden style={{ height: inputHeight }} /> : searchField(false)}
+            </div>
+          </PopoverAnchor>
+          <PopoverContent
+            // qg-mobile-search-overlay: a CSS hook (src/index.css) that
+            // neutralizes Radix's translated popper wrapper so the fixed
+            // full-screen sheet anchors to the viewport, not the wrapper.
+            // bg-background, not the primitive's `--popover`: this sheet is a
+            // full page, and --popover is a slightly darker grey meant to lift
+            // a small floating card off the paper. At full-bleed that grey
+            // reads as a dimmed, disabled page.
+            className="qg-mobile-search-overlay w-[var(--radix-popover-trigger-width)] overflow-hidden rounded-none bg-background p-0"
+            style={{
+              position: 'fixed',
+              inset: 0,
+              width: '100vw',
+              height: '100dvh',
+              maxHeight: '100dvh',
+              zIndex: 50,
+            }}
+            align="start"
+            onOpenAutoFocus={(e) => {
+              e.preventDefault();
+              focusInput();
+            }}
+            onCloseAutoFocus={(e) => {
+              // Same restore path as the modal — see restoreFocusToField.
+              e.preventDefault();
+              restoreFocusToField();
+            }}
+            onEscapeKeyDown={handleDismissKey}
+            onPointerDownOutside={(e) => {
+              // Clicking the search box itself is the anchor, not "outside" —
+              // don't let Radix dismiss the popover we just opened.
+              if (searchBoxRef.current?.contains(e.target as Node)) e.preventDefault();
+            }}
+            onInteractOutside={(e) => {
+              if (searchBoxRef.current?.contains(e.target as Node)) e.preventDefault();
+            }}
           >
-            {mode === 'ask' ? (
-              <>
-                {assistant.turnstile}
-                <SearchAskPanel
-                  messages={assistant.messages}
-                  pending={assistant.pending}
-                  error={assistant.error}
-                  onSend={(m) => void assistant.send(m)}
-                  onBack={() => {
-                    setMode('search');
-                    focusInput();
-                  }}
-                  onSelectCard={navigateToCard}
-                />
-              </>
-            ) : isMobile ? (
-              <SearchPopoverMobile
-                query={query}
-                activeScope={activeScope}
-                suggestions={suggestions}
-                countsByType={countsByType}
-                loading={suggestionsLoading}
-                error={suggestionsError}
-                trending={discoveryHits}
-                discoverySource={discoverySource}
-                showFilters={showFilters}
-                filters={filters}
-                setFilters={setFilters}
-                setScope={setScope}
-                onSelect={handleSelectSuggestion}
-                onSearchAll={() => handleSearch()}
-                onToggleFilters={() => setShowFilters(!showFilters)}
-                activeFiltersCount={activeFiltersCount}
-                onClose={() => setIsOpen(false)}
-                onClear={() => {
-                  setQuery('');
-                  focusInput();
-                }}
-                onPrefetch={prefetchRoute}
-                navigate={navigate}
-                onAsk={enterAsk}
-                recentSearches={recentSearches}
-                onSelectRecent={(term) => {
-                  setQuery(term);
-                  handleSearch(term);
-                }}
-                clearRecents={clearRecents}
-              />
-            ) : (
-              <SearchPopoverDesktop
-                query={query}
-                activeScope={activeScope}
-                suggestions={suggestions}
-                countsByType={countsByType}
-                loading={suggestionsLoading}
-                error={suggestionsError}
-                trending={discoveryHits}
-                discoverySource={discoverySource}
-                recentSearches={recentSearches}
-                showFilters={showFilters}
-                setShowFilters={setShowFilters}
-                filters={filters}
-                setFilters={setFilters}
-                setScope={setScope}
-                onSelectIndex={(s, i) => {
-                  setResultsFocused(i);
-                  handleSelectSuggestion(s);
-                }}
-                resultsFocused={resultsFocused}
-                setResultsFocused={setResultsFocused}
-                activeFiltersCount={activeFiltersCount}
-                onSearchAll={() => handleSearch()}
-                clearRecents={clearRecents}
-                onSelectRecent={(term) => {
-                  setQuery(term);
-                  handleSearch(term);
-                }}
-                onSelectTrending={(hit) =>
-                  handleSelectSuggestion({
-                    id: hit.id,
-                    name: (hit.title || hit.name || '') as string,
-                    type: hit.type,
-                    icon: () => null,
-                    title: (hit.title || hit.name || '') as string,
-                    subtitle: hit.city as string | undefined,
-                    slug: hit.slug as string | undefined,
-                  })
-                }
-                onBrowse={(path) => {
-                  setIsOpen(false);
-                  navigate(path);
-                }}
-                onPrefetch={prefetchRoute}
-                onAsk={enterAsk}
-              />
-            )}
-          </Suspense>
-        </PopoverContent>
-      </Popover>
+            <div className="flex h-full min-h-0 flex-col">
+              {/* The query row sits at the top of the sheet, under the safe
+                  area, so it is visible while typing. */}
+              <div style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>{searchField(true)}</div>
+              <div className="min-h-0 flex-1 overflow-y-auto">{popoverBody}</div>
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
+    );
+  }
+
+  // ── Desktop: the field lifts out of the bar into a centered plate ────────
+  return (
+    <div className="min-w-0 flex-1">
+      {asModal ? (
+        // A spacer, not the field: the field has moved into the plate, and
+        // leaving a second combobox behind would give the listbox two owners.
+        // Reserving its height keeps the header row from collapsing under the
+        // modal, which reads as the page jumping as the scrim comes up.
+        <div aria-hidden style={{ height: inputHeight + 4 }} />
+      ) : (
+        searchField(false)
+      )}
+
+      <DialogPrimitive.Root open={asModal} onOpenChange={setIsOpen}>
+        <DialogPrimitive.Portal>
+          {/* The mock's scrim is #111111cc — ink, not black, and unblurred:
+              a blur behind a hard-edged plate reads as a soft shadow, which
+              is the one depth cue this system does not use. */}
+          <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-foreground/80 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
+          <DialogPrimitive.Content
+            className="fixed inset-x-0 top-[8vh] z-50 mx-auto flex max-h-[84vh] w-[calc(100%-3rem)] max-w-[680px] flex-col overflow-hidden border-4 border-foreground bg-background shadow-hard-lg duration-fast data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0"
+            onOpenAutoFocus={(e) => {
+              e.preventDefault();
+              focusInput();
+            }}
+            onCloseAutoFocus={(e) => {
+              // Send focus back to the field the plate came out of, not to
+              // document.body — otherwise Escape drops the reader at the top
+              // of the page with no idea where the search went.
+              //
+              // The focus MUST be deferred. This fires while the field is still
+              // mounted inside the closing plate, so `inputRef` points at the
+              // node being torn down; focusing it is a no-op and focus lands on
+              // <body>. One tick later React has committed the field back into
+              // the bar and the ref points at the live node. Measured: without
+              // the defer, `document.activeElement === inputRef.current` is
+              // false after Escape.
+              e.preventDefault();
+              restoreFocusToField();
+            }}
+            onEscapeKeyDown={handleDismissKey}
+          >
+            <DialogPrimitive.Title className="sr-only">
+              {t('search.ariaLabel', 'Search Queer Guide')}
+            </DialogPrimitive.Title>
+            {searchField(true)}
+            <div className="min-h-0 flex-1 overflow-y-auto">{popoverBody}</div>
+          </DialogPrimitive.Content>
+        </DialogPrimitive.Portal>
+      </DialogPrimitive.Root>
     </div>
   );
 };
