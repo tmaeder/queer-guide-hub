@@ -110,11 +110,13 @@ test.describe('homepage sections', () => {
     const headings = page.locator('main h2');
     const texts = (await headings.allTextContents()).map((t) => t.trim());
 
-    // Events — the DeparturesBoard band. Asserted strictly on purpose: it
-    // `return null`s when the query yields no rows, which is exactly the shape
-    // a broken query takes, so "absent" is a signal rather than an empty week.
-    // (The pre-rebrand section had a pride-season fallback that guaranteed
-    // presence; the subway rebuild dropped it, so this assertion IS the guard.)
+    // Events — the "Near you" band. Asserted strictly on purpose: a band that
+    // `return null`s is exactly the shape a broken query takes, so "absent" is
+    // a signal rather than an empty week. The band now guarantees content via
+    // its region ladder (city -> country -> "Worth the trip") and renders its
+    // chrome even when empty, so this guard is stronger than before.
+    // The heading is region-scoped ("Departures — Berlin" / "— Germany" /
+    // "— across the network"); the shared word is what this matches.
     expect(
       texts.some((t) => /departures/i.test(t)),
       `events section missing; h2s: ${texts.join(' | ')}`,
@@ -177,11 +179,15 @@ test.describe('homepage sections', () => {
     await gotoHome(page, DESKTOP);
     await scrollThrough(page);
 
-    // Section may legitimately self-hide on a thin week — skip, don't fail.
-    const heading = page.locator('main h2', { hasText: /born this week/i });
-    test.skip((await heading.count()) === 0, 'no birthdays in the ±3-day window');
+    // "Born this week" is now a COLUMN inside the merged "From the archive"
+    // band, not its own h2 — the two history rails were merged so a quiet day
+    // loses a column instead of two whole sections.
+    const heading = page.locator('main h2', { hasText: /from the archive/i });
+    test.skip((await heading.count()) === 0, 'no archive content today');
 
     await heading.scrollIntoViewIfNeeded();
+    const column = page.getByRole('region', { name: /born this week/i });
+    test.skip((await column.count()) === 0, 'no birthdays in the ±3-day window');
     // The PartyPopper celebrate affordance is present and enabled (its gating —
     // one celebration per chip — is covered in HomeBornThisWeek.test). We don't
     // click here: the strip is a live marquee/rail with lazy-loading avatars, so
