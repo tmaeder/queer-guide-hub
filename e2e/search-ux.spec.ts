@@ -77,7 +77,12 @@ test.describe('search UX — universal searchbar', () => {
       // listens for.
       await page.evaluate(() => {
         window.dispatchEvent(
-          new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true, cancelable: true }),
+          new KeyboardEvent('keydown', {
+            key: 'k',
+            ctrlKey: true,
+            bubbles: true,
+            cancelable: true,
+          }),
         );
       });
     }
@@ -103,10 +108,7 @@ test.describe('search UX — results page', () => {
   });
 
   test('LoadMoreSentinel appends page 2 results without pagination buttons', async ({ page }) => {
-    await page.route(
-      SEARCH_HOST_RE,
-      mockSearch({ 1: page1Venues, 2: page2Venues }, 25),
-    );
+    await page.route(SEARCH_HOST_RE, mockSearch({ 1: page1Venues, 2: page2Venues }, 25));
     await page.goto('/search?q=berlin');
     await expect(page.getByText('Venue 1', { exact: true })).toBeVisible();
     // No paginated "Next page" button — this UI is infinite-scroll only.
@@ -145,11 +147,14 @@ test.describe('search UX — results page', () => {
     await page.getByRole('button', { name: /^Save$/i }).click();
     // Confirm via localStorage so we don't race against Radix's re-render.
     await expect
-      .poll(async () => {
-        return await page.evaluate(() =>
-          (localStorage.getItem('qg.marketplace.savedSearches') || '').includes('Berlin venues'),
-        );
-      }, { timeout: 5_000 })
+      .poll(
+        async () => {
+          return await page.evaluate(() =>
+            (localStorage.getItem('qg.marketplace.savedSearches') || '').includes('Berlin venues'),
+          );
+        },
+        { timeout: 5_000 },
+      )
       .toBe(true);
     // And the entry appears in the popover list.
     await expect(page.locator('button').filter({ hasText: /^Berlin venues$/ })).toBeVisible({
@@ -167,10 +172,19 @@ test.describe('search UX — results page', () => {
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     const btn = page.getByRole('button', { name: /Back to top/i });
     await expect(btn).toBeVisible();
-    // The "Share feedback" floating button can overlap; force the click
-    // since visibility and presence are what we're actually verifying.
-    await btn.click({ force: true });
-    await page.waitForFunction(() => window.scrollY === 0, null, { timeout: 5_000 });
+    // A REAL click, deliberately not `force: true`. The force was hiding a
+    // product bug rather than working around a test quirk: this button and the
+    // feedback FAB were both fixed to the bottom-right corner with overlapping
+    // boxes, and the FAB (z-1200) covered this one's centre (z-40), so the
+    // click opened the feedback dialog and the page never scrolled. `force`
+    // skips the actionability CHECK but still dispatches at the centre point,
+    // so it never actually helped — it just made the failure intermittent,
+    // passing whenever the lazy-mounted FAB had not appeared yet.
+    // An unforced click is now the assertion that the two stay unstacked.
+    await btn.click();
+    // Smooth scroll: settle at the top rather than demanding an exact 0, which
+    // a sub-pixel landing can miss.
+    await page.waitForFunction(() => window.scrollY < 4, null, { timeout: 5_000 });
   });
 
   test('Did you mean banner surfaces on a zero-result query', async ({ page }) => {
