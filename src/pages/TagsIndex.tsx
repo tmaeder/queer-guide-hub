@@ -462,7 +462,7 @@ export default function TagsIndex() {
             <div className="mt-6">
               {primaryResults.length === 0 && state.view !== 'graph' ? (
                 <div className="border-[3px] border-foreground p-6">
-                  <h2 className="font-display text-title">
+                  <h2 className="text-title font-bold">
                     {t('tags.empty.title', 'No terms match.')}
                   </h2>
                   <p className="mt-2 text-13 text-muted-foreground">
