@@ -4254,7 +4254,18 @@
         "misspelling": "Errore comune",
         "historical": "Storicamente",
         "slang": "Gergo"
-      }
+      },
+      "sourceOfLaw": "Fonte del diritto",
+      "lawJurisdiction": "Giurisdizione",
+      "lawInternational": "Internazionale",
+      "lawAdopted": "Adottata",
+      "lawStatus": "Stato",
+      "lawInForce": "In vigore",
+      "lawRepealed": "Abrogata",
+      "lawSuperseded": "Sostituita",
+      "lawPartlyStruck": "In vigore, parzialmente annullata",
+      "notOneLaw": "Non è una singola legge. Viene registrata paese per paese.",
+      "seeByCountry": "Vedi lo stato per paese"
     }
   }
 }

@@ -4254,7 +4254,18 @@
         "misspelling": "Häufiger Tippfehler",
         "historical": "Historisch",
         "slang": "Slang"
-      }
+      },
+      "sourceOfLaw": "Rechtsgrundlage",
+      "lawJurisdiction": "Geltungsbereich",
+      "lawInternational": "International",
+      "lawAdopted": "Verabschiedet",
+      "lawStatus": "Status",
+      "lawInForce": "In Kraft",
+      "lawRepealed": "Aufgehoben",
+      "lawSuperseded": "Ersetzt",
+      "lawPartlyStruck": "In Kraft, teilweise aufgehoben",
+      "notOneLaw": "Dies ist kein einzelnes Gesetz. Es wird Land für Land erfasst.",
+      "seeByCountry": "Status nach Land ansehen"
     }
   }
 }

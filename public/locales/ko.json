@@ -4252,7 +4252,18 @@
         "misspelling": "흔한 오기",
         "historical": "역사적 표현",
         "slang": "속어"
-      }
+      },
+      "sourceOfLaw": "법적 근거",
+      "lawJurisdiction": "관할",
+      "lawInternational": "국제",
+      "lawAdopted": "제정",
+      "lawStatus": "상태",
+      "lawInForce": "시행 중",
+      "lawRepealed": "폐지됨",
+      "lawSuperseded": "대체됨",
+      "lawPartlyStruck": "시행 중, 일부 무효",
+      "notOneLaw": "이것은 하나의 법률이 아닙니다. 국가별로 기록됩니다.",
+      "seeByCountry": "국가별 상태 보기"
     }
   }
 }

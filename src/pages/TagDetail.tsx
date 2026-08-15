@@ -36,7 +36,9 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { fetchTagWithCategories } from '@/hooks/usePageFetchers';
+import { fetchTagWithCategories, type TagLegalSourceRow } from '@/hooks/usePageFetchers';
+import { TagLegalSource } from '@/components/tags/TagLegalSource';
+import { buildTagJsonLd } from '@/lib/tags/tagJsonLd';
 import type { CentralizedTag } from '@/hooks/useCentralizedTags';
 import { useTagUsageBreakdown, totalUses } from '@/hooks/useTagUsageBreakdown';
 import { useSimilarTags } from '@/hooks/useTagRelationships';
@@ -124,6 +126,14 @@ export default function TagDetail() {
     staleTime: 5 * 60 * 1000,
     queryFn: async () => ((await fetchTagWithCategories(slug)) as CentralizedTag | null) ?? null,
   });
+
+  // Curated legal citations, for law tags only. `fetchTagWithCategories` attaches
+  // them; the `CentralizedTag` cast above does not know about them, hence the
+  // local widening — same shape as the `human_reviewed` read further down.
+  const legalSources = useMemo(
+    () => (tag as { legal_sources?: TagLegalSourceRow[] } | null)?.legal_sources ?? [],
+    [tag],
+  );
 
   const primary = tag?.categories?.find((c) => c.is_primary) ?? tag?.categories?.[0];
   const parentName = primary?.parent_name ?? undefined;
@@ -223,20 +233,16 @@ export default function TagDetail() {
     // canonical pointing at a redirect and cancelled its own indexing. No
     // name-derived fallback: `unified_tags.slug` is NOT NULL, and a value with
     // spaces in it hard-404s at the Cloudflare edge.
-    const jsonLd: Record<string, unknown> = {
-      '@context': 'https://schema.org',
-      '@type': 'DefinedTerm',
-      name: tag.name,
-      description,
-      url: `https://queer.guide/tags/${tag.slug}`,
-      inDefinedTermSet: {
-        '@type': 'DefinedTermSet',
-        name: 'Queer Guide Glossary',
-        url: 'https://queer.guide/tags',
+    const jsonLd = buildTagJsonLd(
+      {
+        name: tag.name,
+        slug: tag.slug,
+        description,
+        image_url: tag.image_url,
+        wikipedia_url: tag.wikipedia_url,
       },
-    };
-    if (tag.image_url) jsonLd.image = tag.image_url;
-    if (tag.wikipedia_url) jsonLd.sameAs = tag.wikipedia_url;
+      legalSources,
+    );
     return {
       title: tag.name,
       description,
@@ -249,7 +255,10 @@ export default function TagDetail() {
       // a five-line comment about re-asserting noIndex from the parent.
       noIndex: tag.seo_indexable === false || isAdult,
     };
-  }, [tag, isAdult, t]);
+    // `legalSources` MUST stay in this list. It arrives with the same fetch as
+    // `tag`, but omitting it is the useMeta-freezing bug: the memo would keep the
+    // first-computed jsonLd and publish a DefinedTerm with no `citation`.
+  }, [tag, legalSources, isAdult, t]);
   useMeta(meta);
 
   if (isLoading) {
@@ -404,6 +413,12 @@ export default function TagDetail() {
           <StatLine stats={stats.map((s) => ({ label: s.label, value: s.value }))} />
         </SidebarCard>
       )}
+
+      {/* Above "Elsewhere" on purpose: the law a term comes from outranks
+          "you can also read about this on Wikipedia". Sits alongside the
+          diagnostic-codes pointer below — a term is either clinical or legal,
+          so in practice only one of the two ever renders. */}
+      <TagLegalSource sources={legalSources} tagSlug={tag.slug} />
 
       {(tag.wikipedia_url || tag.wikidata_id || medicalCodeCount > 0) && (
         <SidebarCard eyebrow={t('tags.detail.elsewhere', 'Elsewhere')}>

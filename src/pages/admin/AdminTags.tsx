@@ -40,6 +40,7 @@ import { TagMergeReviewQueue } from '@/components/admin/TagMergeReviewQueue';
 import { TagImageUpload } from '@/components/admin/TagImageUpload';
 import BulkCreateAITags from '@/components/admin/BulkCreateAITags';
 import { TagAliasesSection } from '@/components/admin/TagAliasesSection';
+import { TagLegalSourcesSection } from '@/components/admin/TagLegalSourcesSection';
 import { normalizeTagName } from '@/utils/tagNormalization';
 import BatchGeoLinkDialog from '@/components/admin/BatchGeoLinkDialog';
 import { AdminEntityTable } from '@/components/admin/data-table';
@@ -443,6 +444,7 @@ export default function AdminTags() {
                   tagName={formData.name}
                 />
                 {editingTag && <TagAliasesSection tagId={editingTag.id} />}
+                {editingTag && <TagLegalSourcesSection tagId={editingTag.id} />}
                 <Button type="submit" className="w-full">
                   {editingTag ? 'Update Tag' : 'Create Tag'}
                 </Button>

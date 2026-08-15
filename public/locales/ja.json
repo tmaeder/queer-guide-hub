@@ -4252,7 +4252,18 @@
         "misspelling": "よくある誤記",
         "historical": "歴史的表現",
         "slang": "スラング"
-      }
+      },
+      "sourceOfLaw": "法的根拠",
+      "lawJurisdiction": "管轄",
+      "lawInternational": "国際",
+      "lawAdopted": "制定",
+      "lawStatus": "状況",
+      "lawInForce": "有効",
+      "lawRepealed": "廃止",
+      "lawSuperseded": "改正・置換",
+      "lawPartlyStruck": "有効（一部無効）",
+      "notOneLaw": "これは単一の法律ではありません。国ごとに記録されています。",
+      "seeByCountry": "国別の状況を見る"
     }
   }
 }
