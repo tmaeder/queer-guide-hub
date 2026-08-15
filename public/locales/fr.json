@@ -4247,7 +4247,18 @@
         "misspelling": "Faute courante",
         "historical": "Historiquement",
         "slang": "Argot"
-      }
+      },
+      "sourceOfLaw": "Source du droit",
+      "lawJurisdiction": "Juridiction",
+      "lawInternational": "International",
+      "lawAdopted": "Adopté",
+      "lawStatus": "Statut",
+      "lawInForce": "En vigueur",
+      "lawRepealed": "Abrogé",
+      "lawSuperseded": "Remplacé",
+      "lawPartlyStruck": "En vigueur, partiellement annulé",
+      "notOneLaw": "Il ne s'agit pas d'une seule loi. Le statut est établi pays par pays.",
+      "seeByCountry": "Voir le statut par pays"
     }
   }
 }

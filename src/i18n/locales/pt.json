@@ -4243,7 +4243,18 @@
         "misspelling": "Erro comum",
         "historical": "Historicamente",
         "slang": "Calão"
-      }
+      },
+      "sourceOfLaw": "Fonte do direito",
+      "lawJurisdiction": "Jurisdição",
+      "lawInternational": "Internacional",
+      "lawAdopted": "Adotada",
+      "lawStatus": "Estado",
+      "lawInForce": "Em vigor",
+      "lawRepealed": "Revogada",
+      "lawSuperseded": "Substituída",
+      "lawPartlyStruck": "Em vigor, parcialmente anulada",
+      "notOneLaw": "Não é uma única lei. É registada país a país.",
+      "seeByCountry": "Ver o estado por país"
     }
   }
 }

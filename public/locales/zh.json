@@ -4241,7 +4241,18 @@
         "misspelling": "常见误写",
         "historical": "历史用法",
         "slang": "俚语"
-      }
+      },
+      "sourceOfLaw": "法律依据",
+      "lawJurisdiction": "适用范围",
+      "lawInternational": "国际",
+      "lawAdopted": "通过年份",
+      "lawStatus": "状态",
+      "lawInForce": "现行有效",
+      "lawRepealed": "已废止",
+      "lawSuperseded": "已被取代",
+      "lawPartlyStruck": "现行有效，部分条款被撤销",
+      "notOneLaw": "这不是单一法律，而是逐国记录的。",
+      "seeByCountry": "查看各国状态"
     }
   }
 }

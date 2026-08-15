@@ -4243,7 +4243,18 @@
         "misspelling": "Error frecuente",
         "historical": "Históricamente",
         "slang": "Jerga"
-      }
+      },
+      "sourceOfLaw": "Fuente del derecho",
+      "lawJurisdiction": "Jurisdicción",
+      "lawInternational": "Internacional",
+      "lawAdopted": "Adoptada",
+      "lawStatus": "Estado",
+      "lawInForce": "En vigor",
+      "lawRepealed": "Derogada",
+      "lawSuperseded": "Sustituida",
+      "lawPartlyStruck": "En vigor, parcialmente anulada",
+      "notOneLaw": "No es una sola ley. Se registra país por país.",
+      "seeByCountry": "Ver el estado por país"
     }
   }
 }

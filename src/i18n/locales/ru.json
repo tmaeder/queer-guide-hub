@@ -4277,7 +4277,18 @@
         "misspelling": "Частая ошибка",
         "historical": "Исторически",
         "slang": "Сленг"
-      }
+      },
+      "sourceOfLaw": "Источник права",
+      "lawJurisdiction": "Юрисдикция",
+      "lawInternational": "Международный",
+      "lawAdopted": "Принят",
+      "lawStatus": "Статус",
+      "lawInForce": "Действует",
+      "lawRepealed": "Отменён",
+      "lawSuperseded": "Заменён",
+      "lawPartlyStruck": "Действует, частично отменён",
+      "notOneLaw": "Это не один закон. Статус фиксируется по каждой стране отдельно.",
+      "seeByCountry": "Посмотреть статус по странам"
     }
   }
 }

@@ -4251,7 +4251,18 @@
         "misspelling": "خطأ شائع",
         "historical": "تاريخيًا",
         "slang": "عامية"
-      }
+      },
+      "sourceOfLaw": "المصدر القانوني",
+      "lawJurisdiction": "نطاق الاختصاص",
+      "lawInternational": "دولي",
+      "lawAdopted": "سنة الإقرار",
+      "lawStatus": "الحالة",
+      "lawInForce": "ساري",
+      "lawRepealed": "مُلغى",
+      "lawSuperseded": "مُستبدل",
+      "lawPartlyStruck": "ساري، أُلغيت بعض مواده",
+      "notOneLaw": "هذا ليس قانونًا واحدًا، بل يُسجَّل لكل دولة على حدة.",
+      "seeByCountry": "اطّلع على الحالة حسب الدولة"
     }
   }
 }
