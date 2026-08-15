@@ -139,7 +139,14 @@
       "recent_city": "In a city you've explored",
       "featured": "Featured"
     },
-    "ariaLabel": "[ES] Search Queer Guide"
+    "ariaLabel": "[ES] Search Queer Guide",
+    "escape": "esc",
+    "jumpTo": "Ir a",
+    "recent": "Reciente",
+    "noStation": "Ninguna estación con ese nombre — todavía",
+    "addToMap": "Añádela al mapa",
+    "seeOnMap": "Ver {{count}} resultados en el mapa",
+    "keyHints": "↑↓ navegar · ↵ abrir"
   },
   "common": {
     "contentInLanguage": "En {{lang}}",
@@ -217,6 +224,13 @@
       "eyebrow": "[ES] In an emergency",
       "title": "[ES] Crisis lines, 24 hours",
       "body": "[ES] Trans helpline, LGBT+ crisis support, and local emergency numbers, listed by country and always one click from any page."
+    },
+    "osmAttribution": "Diagramas de transporte derivados de © colaboradores de OpenStreetMap (ODbL)",
+    "reportSomething": "Reportar algo",
+    "hotlines": "Líneas de ayuda",
+    "antiDiscrimination": {
+      "title": "Aquí no hay lugar para la intolerancia.",
+      "body": "El racismo, la transfobia y la discriminación son motivo automático de expulsión de la plataforma. Punto."
     }
   },
   "trips": {
@@ -1258,7 +1272,16 @@
     "featured": "[ES] Featured",
     "rsvpEmptyMember": "[ES] No RSVPs yet. Be the first.",
     "rsvpEmptyAnon": "[ES] No RSVPs yet. Sign in to be the first.",
-    "peopleYouMayKnow": "[ES] People you may know"
+    "peopleYouMayKnow": "[ES] People you may know",
+    "detail": {
+      "eyebrow": "[ES] Event",
+      "sections": "[ES] Sections",
+      "section": {
+        "about": "[ES] About this event",
+        "where": "[ES] Getting there",
+        "going": "[ES] Who's going"
+      }
+    }
   },
   "venues": {
     "title": "Lugares",
@@ -1385,7 +1408,20 @@
     },
     "closed": "[ES] Closed",
     "openNow": "[ES] Open now",
-    "locationUnknown": "[ES] Location unknown"
+    "locationUnknown": "[ES] Location unknown",
+    "detail": {
+      "eyebrow": "[ES] Venue",
+      "closed": "[ES] Permanently closed",
+      "section": {
+        "about": "[ES] About",
+        "hours": "[ES] Opening hours",
+        "access": "[ES] Access",
+        "whatsOn": "[ES] What's on here",
+        "signals": "[ES] Visitor signals",
+        "reviews": "[ES] Reviews",
+        "photos": "[ES] Photos"
+      }
+    }
   },
   "marketplace": {
     "title": "Mercado",
@@ -1849,7 +1885,10 @@
       "help": "Ayuda",
       "tags": "Etiquetas",
       "history": "Historia",
-      "guides": "[ES] Guides"
+      "guides": "[ES] Guides",
+      "trips": "Viajes",
+      "organizations": "Organizaciones",
+      "wishlists": "Listas de deseos"
     },
     "intents": {
       "goingOut": {
@@ -2753,8 +2792,93 @@
         "currency": "Moneda",
         "bestTime": "Mejor época",
         "airport": "Aeropuerto"
+      },
+      "eyebrow": "[ES] City",
+      "sections": "[ES] Sections",
+      "loadingVenues": "[ES] Loading venues",
+      "openEvent": "[ES] Open",
+      "openMap": "[ES] Open the full map",
+      "createTrip": "[ES] Create trip",
+      "officialWebsite": "[ES] Official website",
+      "favorite": "[ES] Save to favorites",
+      "favorited": "[ES] Saved to favorites",
+      "census": {
+        "stops": "[ES] {{n}} stops",
+        "districts": "[ES] {{n}} districts",
+        "departures": "[ES] {{n}} departures"
+      },
+      "section": {
+        "rights": "[ES] Safety & rights",
+        "rightsNote": "[ES] Know before you go.",
+        "venues": "[ES] Where to go",
+        "districts": "[ES] Queer districts",
+        "districtsNote": "[ES] Walkable clusters of bars, cafés and community spaces.",
+        "events": "[ES] Next departures",
+        "overview": "[ES] About {{city}}",
+        "travel": "[ES] Getting there",
+        "news": "[ES] In the news",
+        "nearby": "[ES] Nearby"
+      },
+      "stats": {
+        "venues": "[ES] Venues",
+        "districts": "[ES] Districts",
+        "events": "[ES] Upcoming events"
+      },
+      "about": {
+        "status": "[ES] Status",
+        "capital": "[ES] Capital city",
+        "majorCity": "[ES] Major city",
+        "region": "[ES] Region",
+        "timezone": "[ES] Timezone",
+        "founded": "[ES] Founded",
+        "area": "[ES] Area",
+        "elevation": "[ES] Elevation",
+        "mayor": "[ES] Mayor",
+        "postalCodes": "[ES] Postal codes",
+        "costOfLiving": "[ES] Cost of living",
+        "universities": "[ES] Universities",
+        "sisterCities": "[ES] Sister cities"
+      },
+      "travel": {
+        "majorAirport": "[ES] Major airport",
+        "nearestAirport": "[ES] Nearest airport",
+        "allCodes": "[ES] All airport codes",
+        "lines": "[ES] Lines",
+        "networkCaption": "[ES] Rapid-transit lines, drawn from OpenStreetMap. Schematic, not to scale.",
+        "gettingAround": "[ES] Getting around",
+        "noDealsTitle": "[ES] We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
+        "noDealsBody": "[ES] If you need to travel to {{city}}, read the safety and rights section first and use the trip planner — it includes a safety briefing for high-risk destinations."
+      },
+      "endOfLine": {
+        "eyebrow": "[ES] End of line",
+        "title": "[ES] Riding on?",
+        "body": "[ES] Every city on the guide carries the same modules: safety and rights first, then the places.",
+        "allCities": "[ES] All cities",
+        "country": "[ES] More in {{country}}"
       }
-    }
+    },
+    "capital": "[ES] Capital",
+    "continentClear": "[ES] Clear",
+    "continentsTitle": "[ES] Continents",
+    "counting": "[ES] Counting…",
+    "highRisk": "[ES] Criminalized",
+    "inView": "[ES] {{count}} cities in the directory, ranked by how much of each one we hold.",
+    "lineEyebrow": "[ES] Cities · Green line",
+    "mapTeaserLede": "[ES] Every city as a pin, coloured by its country’s equality score.",
+    "mapTeaserTitle": "[ES] See it on the map",
+    "networkMode": {
+      "subway": "[ES] Metro network",
+      "light_rail": "[ES] Light rail network",
+      "tram": "[ES] Tram network"
+    },
+    "openMap": "[ES] Open the map",
+    "pridePill": "[ES] Pride · {{date}}",
+    "continentCount_one": "[ES] {{count}} city",
+    "continentCount_other": "[ES] {{count}} cities",
+    "venueCount_one": "[ES] {{count}} place",
+    "venueCount_other": "[ES] {{count}} places",
+    "villageCount_one": "[ES] {{count}} district",
+    "villageCount_other": "[ES] {{count}} districts"
   },
   "pride": {
     "eyebrow": "Pride Calendar",
@@ -2890,7 +3014,9 @@
       "personalities": "Voces",
       "nearby": "Cerca",
       "news": "Noticias",
-      "map": "Mapa"
+      "map": "Mapa",
+      "history": "[ES] Legal record",
+      "historyNote": "[ES] What changed and when. Safety information without a date is not safety information."
     },
     "practical": {
       "languages": "Idiomas",
@@ -2909,7 +3035,10 @@
       "hdi": "IDH",
       "lifeExpectancy": "Esperanza de vida",
       "literacy": "Alfabetización",
-      "income": "Nivel de ingresos"
+      "income": "Nivel de ingresos",
+      "venues": "[ES] Venues",
+      "events": "[ES] Upcoming events",
+      "weather": "[ES] Now in {{city}}"
     },
     "cities": {
       "emptyTitle": "Aún no hay ciudades",
@@ -2925,7 +3054,9 @@
     },
     "travel": {
       "activities": "Actividades y tours",
-      "activitiesBody": "Experiencias en {{country}}"
+      "activitiesBody": "Experiencias en {{country}}",
+      "noDealsTitle": "[ES] We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
+      "noDealsBody": "[ES] If you need to travel to {{country}}, read the rights section on this page first and use the trip planner — it includes a safety briefing for high-risk destinations."
     },
     "news": {
       "emptyTitle": "Aún no hay noticias locales",
@@ -2972,7 +3103,24 @@
       "ilgaLink": "ILGA World Database",
       "deathPenaltyPossible": "[ES] death penalty possible, no legal certainty"
     },
-    "planTripHighRisk": "[ES] Plan carefully — safety briefing included"
+    "planTripHighRisk": "[ES] Plan carefully — safety briefing included",
+    "eyebrow": "[ES] Country",
+    "sections": "[ES] Sections",
+    "openMap": "[ES] Open the full map",
+    "census": {
+      "cities": "[ES] {{n}} cities",
+      "stops": "[ES] {{n}} stops",
+      "departures": "[ES] {{n}} departures"
+    },
+    "history": {
+      "seeAll": "[ES] Full timeline"
+    },
+    "endOfLine": {
+      "eyebrow": "[ES] End of line",
+      "title": "[ES] Compare the law elsewhere",
+      "body": "[ES] Every country page carries the same legal breakdown, from the same sources, with the date it was checked.",
+      "rights": "[ES] Rights across the world"
+    }
   },
   "inbox": {
     "title": "Bandeja de entrada",
@@ -4265,7 +4413,73 @@
       "lawSuperseded": "Sustituida",
       "lawPartlyStruck": "En vigor, parcialmente anulada",
       "notOneLaw": "No es una sola ley. Se registra país por país.",
-      "seeByCountry": "Ver el estado por país"
+      "seeByCountry": "Ver el estado por país",
+      "spansAllRights": "Esto abarca todo un ámbito del derecho, no una sola ley. Registramos 18 derechos distintos, país por país.",
+      "seeAllRights": "Ver los 18 derechos por país"
+    }
+  },
+  "village": {
+    "eyebrow": "[ES] District · Green line",
+    "loading": "[ES] Loading this district",
+    "loadingVenues": "[ES] Loading the stop list",
+    "sections": "[ES] Sections",
+    "planTrip": "[ES] Plan a trip to {{name}}",
+    "relatedByTag": "[ES] Related by tag",
+    "notFound": {
+      "title": "[ES] No such district.",
+      "body": "[ES] This stop is not on the line.",
+      "cta": "[ES] All queer villages"
+    },
+    "toast": {
+      "errorTitle": "[ES] Error",
+      "loadFailed": "[ES] Failed to load village details"
+    },
+    "facts": {
+      "city": "[ES] City",
+      "country": "[ES] Country",
+      "venues": "[ES] Venues",
+      "events": "[ES] Upcoming events",
+      "editorsPick": "[ES] Editor’s pick"
+    },
+    "census": {
+      "stops": "[ES] {{n}} stops",
+      "departures": "[ES] {{n}} departures"
+    },
+    "section": {
+      "about": "[ES] About {{name}}",
+      "walk": "[ES] The walk",
+      "walkNote": "[ES] Stops in order, with the straight-line gap between them.",
+      "events": "[ES] Next departures",
+      "photos": "[ES] Photos",
+      "city": "[ES] On the same line"
+    },
+    "action": {
+      "website": "[ES] Website",
+      "favorite": "[ES] Save to favorites",
+      "favorited": "[ES] Saved to favorites"
+    },
+    "events": {
+      "open": "[ES] Open"
+    },
+    "landmarks": {
+      "title": "[ES] Notable landmarks"
+    },
+    "photo": {
+      "caption": "[ES] {{village}}, {{city}}",
+      "alt": "[ES] {{name}}, photo {{n}}"
+    },
+    "parentCity": {
+      "body": "[ES] The wider city this district sits in.",
+      "action": "[ES] Open"
+    },
+    "map": {
+      "caption": "[ES] Walking distance in {{city}}."
+    },
+    "endOfLine": {
+      "eyebrow": "[ES] End of line",
+      "title": "[ES] Looking for another district?",
+      "body": "[ES] Queer villages are walkable clusters of bars, cafés and community spaces. There are more of them.",
+      "city": "[ES] More in {{city}}"
     }
   }
 }

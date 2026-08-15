@@ -1,9 +1,18 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { HomeSection } from './HomeSection';
+import { Band } from './Band';
 import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
 import { useBrandSafeRow, useMarketplaceSpotlight } from '@/hooks/useMarketplaceRows';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
+import { timeBucket, rotateWindow } from '@/lib/rotation';
+
+/** A day, not six hours. Merchandise has no news cycle, and the brand-safe
+ *  pool is small enough that a faster turn would visibly cycle the whole thing
+ *  — which reads as instability rather than freshness. */
+const SHOP_ROTATION_HOURS = 24;
+const SHOWN = 8;
+/** Over-fetch so the window has somewhere to move, at no extra request. */
+const POOL = 24;
 
 /**
  * Homepage shopping band: one spotlight lead + a queer-owned rail.
@@ -11,15 +20,23 @@ import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
  * /go with their own surfaces (home_spotlight / home_rail) so shopping
  * CTR from the homepage is separable in /admin/affiliate. Self-hides
  * when the marketplace has nothing to show.
+ *
+ * Rotated on a daily bucket over a cached superset, never by varying the
+ * request — a seed in the query would fragment the cache key and buy nothing.
+ *
+ * Deliberately NOT personalized: this band renders to first-time visitors
+ * before any consent surface, so it stays a function of the clock alone.
  */
 export default function HomeShoppingSection() {
   const { t } = useTranslation();
-  const { listing: spotlight, loading: spotlightLoading } = useMarketplaceSpotlight();
-  const { data: rowItems, loading: rowLoading, ownedOnly } = useBrandSafeRow(9);
+  // Once on mount — a bucket read per render could swap the rail mid-scroll.
+  const [bucket] = useState(() => timeBucket(Date.now(), SHOP_ROTATION_HOURS));
+  const { listing: spotlight, loading: spotlightLoading } = useMarketplaceSpotlight(bucket);
+  const { data: rowItems, loading: rowLoading, ownedOnly } = useBrandSafeRow(POOL);
 
   const items = useMemo(
-    () => rowItems.filter((l) => l.id !== spotlight?.id).slice(0, 8),
-    [rowItems, spotlight?.id],
+    () => rotateWindow(rowItems.filter((l) => l.id !== spotlight?.id), SHOWN, bucket),
+    [rowItems, spotlight?.id, bucket],
   );
   const assetIds = useMemo(
     () => [...(spotlight ? [spotlight.id] : []), ...items.map((l) => l.id)],
@@ -31,7 +48,8 @@ export default function HomeShoppingSection() {
   if (!loading && !spotlight && items.length === 0) return null;
 
   return (
-    <HomeSection
+    <Band
+      surface="tint"
       eyebrow={t('home.shop.eyebrow', 'Marketplace')}
       title={
         ownedOnly
@@ -80,6 +98,6 @@ export default function HomeShoppingSection() {
           </div>
         </div>
       </div>
-    </HomeSection>
+    </Band>
   );
 }

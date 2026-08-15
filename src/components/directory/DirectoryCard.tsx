@@ -6,10 +6,26 @@ import { useState, useEffect } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { supabase } from '@/integrations/supabase/client';
 import { useCityImages } from '@/hooks/useCityImages';
+import { CityNetwork } from '@/components/home/subway/CityNetwork';
+import { hasCityNetwork } from '@/components/home/subway/cityNetworkGeometry';
+/** The fields this card actually reads. `Country | City | unknown` collapses to
+ *  `unknown`, so every property access on it was an error the ratchet was
+ *  carrying; naming the handful of fields used here removes them outright. */
+interface DirectoryCardData {
+  id?: string;
+  slug?: string | null;
+  image_url?: string | null;
+  population?: number | null;
+  is_capital?: boolean | null;
+  countries?: { name?: string | null } | null;
+  country_name?: string | null;
+  [key: string]: unknown;
+}
+
 interface DirectoryCardProps {
   type: 'continent' | 'country' | 'city';
   name: string;
-  data?: Country | City | unknown;
+  data?: DirectoryCardData;
   onClick?: () => void;
 }
 export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps) => {
@@ -94,9 +110,9 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
       const loadCityImage = async () => {
         try {
           const result = await fetchCityImage(
-            data.id,
+            data?.id ?? '',
             name,
-            data.countries?.name || data.country_name,
+            data?.countries?.name || data?.country_name || undefined,
           );
           if (result?.image_url) {
             setCityImageUrl(result.image_url);
@@ -286,6 +302,12 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               onError={() => setCityImageError(true)}
             />
+          ) : hasCityNetwork(data?.slug) ? (
+            // The generic image glyph says "no picture". The city's own network
+            // says which city — better placeholder, same empty-image branch.
+            <div className="flex h-full w-full items-center justify-center bg-background p-2">
+              <CityNetwork slug={data?.slug} variant="thumb" className="h-full" />
+            </div>
           ) : (
             <div
               style={{

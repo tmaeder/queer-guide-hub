@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { LogOut, Shield, UserRound } from 'lucide-react';
 import { TransitIcon } from '@/components/transit/TransitIcon';
+import { TrackSwatch } from '@/components/transit/TrackSwatch';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -109,31 +110,31 @@ export function Header() {
     </Link>
   );
 
+  // Contribute — the mock's ink-filled CTA. It carries its label from `lg:` up
+  // and collapses to a square icon below that: at 768–1023px the tab row, the
+  // search field and this button share one line, and a labelled button there
+  // pushed the six tabs into a wrap. The accessible name is the label either
+  // way, so the collapse is visual only.
+  const contributeLabel = user
+    ? submitCta.label
+    : t('header.signInToContribute', 'Sign in to contribute');
+  const contribute = (
+    <Button
+      variant="default"
+      size="sm"
+      onClick={() => (user ? navigate(submitCta.route) : setAuthDialogOpen(true))}
+      aria-label={contributeLabel}
+      title={contributeLabel}
+      className="h-10 w-10 shrink-0 gap-2 p-0 lg:w-auto lg:px-4"
+    >
+      <TransitIcon name="add-station" size={20} />
+      <span className="hidden lg:inline">{contributeLabel}</span>
+    </Button>
+  );
+
   const rightCluster = (
-    <div className="flex items-center gap-1 flex-shrink-0">
-      {user ? (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate(submitCta.route)}
-          aria-label={submitCta.label}
-          title={submitCta.label}
-          style={{ height: 40, width: 40, padding: 0 }}
-        >
-          <TransitIcon name="add-station" size={20} />
-        </Button>
-      ) : (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setAuthDialogOpen(true)}
-          aria-label={t('header.signInToContribute', 'Sign in to contribute')}
-          title={t('header.signInToContribute', 'Sign in to contribute')}
-          style={{ height: 40, width: 40, padding: 0 }}
-        >
-          <TransitIcon name="add-station" size={20} />
-        </Button>
-      )}
+    <div className="flex items-center gap-2 flex-shrink-0">
+      {contribute}
 
       {/* "Mine" — the second axis. Intents answer WHAT I WANT TO DO; this
           answers WHERE MY THINGS ARE (trips, saved, messages, plans). /hub was
@@ -255,11 +256,6 @@ export function Header() {
     </div>
   );
 
-  // ── Desktop primary nav — the Intent Router row.
-  // Single-sourced from INTENT_NAV in src/config/navigation.ts. This array used
-  // to be hardcoded here and had silently diverged from the config's
-  // PRIMARY_NAV, leaving /venues (the largest catalog) and /people unreachable
-  // from desktop chrome. Never re-inline it.
   // ── Desktop primary nav — the Intent Router row, as TRACK TABS.
   // Single-sourced from INTENT_NAV in src/config/navigation.ts. This array used
   // to be hardcoded here and had silently diverged from the config's
@@ -280,7 +276,7 @@ export function Header() {
       className="hidden items-stretch md:flex"
     >
       {INTENT_NAV.map((intent) => {
-        const { to, labelKey, fallback, id } = intent;
+        const { to, labelKey, fallback, id, icon: Icon } = intent;
         const active = isIntentActive(intent, path);
         const label = t(labelKey, fallback);
         const track = INTENT_TRACK[id] ?? 'pink';
@@ -297,7 +293,11 @@ export function Header() {
                 : 'text-foreground hover:bg-surface-container',
             )}
           >
-            <span className="whitespace-nowrap px-4 pb-2 pt-4 text-15 font-bold lg:px-6">
+            {/* Icon + label, per the mock's nav row. The icon is a TransitIcon
+                binding (see INTENT_NAV) drawing in currentColor, so it inverts
+                with the active tab's ink fill for free — no active variant. */}
+            <span className="flex items-center gap-2 whitespace-nowrap px-4 pb-2 pt-4 text-15 font-bold lg:px-6">
+              <Icon size={18} className="shrink-0" />
               {label}
             </span>
             <span
@@ -327,12 +327,7 @@ export function Header() {
   // Nothing else survives the collapse."
   const activeIntent = INTENT_NAV.find((i) => isIntentActive(i, path));
   const activeTrack = activeIntent ? (INTENT_TRACK[activeIntent.id] ?? 'pink') : 'pink';
-  const trackSwatch = {
-    pink: 'bg-track-pink',
-    blue: 'bg-track-blue',
-    green: 'bg-track-green',
-    yellow: 'bg-track-yellow',
-  }[activeTrack];
+  const ActiveIntentIcon = activeIntent?.icon;
 
   return (
     <header
@@ -367,9 +362,14 @@ export function Header() {
           <Link to="/" className="no-underline" aria-label={siteName}>
             <Wordmark className="text-title text-background" />
           </Link>
-          {activeIntent && (
+          {activeIntent && ActiveIntentIcon && (
+            /* The collapsed bar carries the same two signals as the expanded
+               tab — the line and the job — so scrolling never costs the reader
+               their position in the network. On ink the swatch drops its rim:
+               a paper hairline around an 8px pill reads as a second pill. */
             <span className="flex items-center gap-2 text-15 font-bold">
-              <span aria-hidden className={cn('h-2 w-5 rounded-full', trackSwatch)} />
+              <TrackSwatch track={activeTrack} tone="ink" />
+              <ActiveIntentIcon size={18} className="shrink-0" />
               {t(activeIntent.labelKey, activeIntent.fallback)}
             </span>
           )}

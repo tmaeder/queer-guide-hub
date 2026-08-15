@@ -3,7 +3,7 @@
  */
 import { describe, it, expect } from 'vitest';
 
-import { productEyebrow } from '../MarketplaceItemDetail.parts';
+import { productEyebrow, displayBrandOf } from '../MarketplaceItemDetail.parts';
 import type { MarketplaceListing } from '../MarketplaceItemDetail.parts';
 
 /**
@@ -30,5 +30,37 @@ describe('productEyebrow', () => {
 
   it('falls back to the surface name rather than an empty kicker', () => {
     expect(productEyebrow(base)).toBe('Marketplace');
+  });
+
+  it('prefers the curated brand name over the raw feed value', () => {
+    expect(productEyebrow({ ...base, department: 'apparel', brand: 'tomboyx' }, 'TomboyX')).toBe(
+      'Apparel · TomboyX',
+    );
+  });
+});
+
+/**
+ * The real rows this exists for, measured 2026-08-15: 1,251 active listings
+ * across 7 brands whose feed `brand` disagrees with the curated
+ * `display_name`, 1,204 of them by case alone.
+ */
+describe('displayBrandOf', () => {
+  it.each([
+    ['tomboyx', 'TomboyX'],
+    ['OXBALLS', 'Oxballs'],
+    ['CELLBLOCK 13', 'CellBlock 13'],
+    ['Forttroff', 'Fort Troff'],
+  ])('prefers curated "%s" → "%s"', (raw, curated) => {
+    expect(displayBrandOf({ ...base, brand: raw }, curated)).toBe(curated);
+  });
+
+  it('falls back to the feed value when no brand row is curated', () => {
+    // 53,822 of the 59,239 listings with a brand have no approved brand row —
+    // the fallback is the common path, not an edge case.
+    expect(displayBrandOf({ ...base, brand: 'Some Indie Label' }, null)).toBe('Some Indie Label');
+  });
+
+  it('returns null rather than an empty string when neither exists', () => {
+    expect(displayBrandOf(base, null)).toBeNull();
   });
 });

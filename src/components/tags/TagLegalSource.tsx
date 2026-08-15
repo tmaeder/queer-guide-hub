@@ -3,7 +3,11 @@ import { ExternalLink } from 'lucide-react';
 import { SidebarCard, SidebarRow } from '@/components/transit/SidebarCard';
 import { SourceLine } from '@/components/rights/SourceLine';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { rightTopicForTag, rightTopicHref } from '@/lib/rights/tagRightTopics';
+import {
+  rightTopicForTag,
+  rightTopicHref,
+  isUmbrellaRightsTag,
+} from '@/lib/rights/tagRightTopics';
 import type { TagLegalSourceRow } from '@/hooks/usePageFetchers';
 
 /**
@@ -49,8 +53,9 @@ export function TagLegalSource({
   // exists to avoid.
   const cited = sources.filter((s) => s.official_title && s.source_url);
   const topic = rightTopicForTag(tagSlug);
+  const umbrella = isUmbrellaRightsTag(tagSlug);
 
-  if (cited.length === 0 && !topic) return null;
+  if (cited.length === 0 && !topic && !umbrella) return null;
 
   return (
     <SidebarCard eyebrow={t('tags.detail.sourceOfLaw', 'Source of law')}>
@@ -103,6 +108,25 @@ export function TagLegalSource({
           </p>
           <LocalizedLink to={rightTopicHref(topic)} className="mt-1 inline-block text-13 font-bold">
             {t('tags.detail.seeByCountry', 'See status by country')}
+          </LocalizedLink>
+          <SourceLine className="mt-2" />
+        </div>
+      )}
+
+      {/* Whole-field tags. Deliberately NOT collapsed into the branch above:
+          "this one right is recorded country by country" and "this term covers
+          every right we track" are different claims, and saying the first about
+          `lgbtqia-rights` would understate what the tag actually spans. */}
+      {umbrella && !topic && (
+        <div className={cited.length > 0 ? 'mt-4 border-t-2 border-foreground/15 pt-4' : ''}>
+          <p className="text-13">
+            {t(
+              'tags.detail.spansAllRights',
+              'This covers a whole field of law, not one statute. We track 18 separate rights, country by country.',
+            )}
+          </p>
+          <LocalizedLink to="/rights" className="mt-1 inline-block text-13 font-bold">
+            {t('tags.detail.seeAllRights', 'See all 18 rights by country')}
           </LocalizedLink>
           <SourceLine className="mt-2" />
         </div>

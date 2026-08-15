@@ -126,6 +126,12 @@ interface SearchResponse {
  */
 function hasBrowseFilters(f: SearchFilters): boolean {
   return !!(
+    // `types` counts. It was omitted, so `useSearch('', { types: ['event'] })`
+    // fired no request at all and rendered an empty list with no error — a
+    // type-scoped browse looked identical to a broken one. The worker accepts
+    // an empty query with a types filter (validation.ts FILTER_KEYS), so this
+    // was a client-side gate, not a backend limitation.
+    f.types?.length ||
     f.tags?.length ||
     f.categories?.length ||
     f.target_groups?.length ||

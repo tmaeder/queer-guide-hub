@@ -39,7 +39,28 @@ export const PLATFORM_KEYS: PlatformKey[] = ['pornhub', 'xhamster', 'xvideos']
  * never have `last_attempt_at` stamped — pinning it to the head of the queue
  * forever. That is the same starvation shape the city engine hit.
  */
-export const DEFAULT_PLATFORMS: PlatformKey[] = ['pornhub', 'xvideos']
+export const DEFAULT_PLATFORMS: PlatformKey[] = ['pornhub']
+
+/**
+ * Wikidata occupations (P106) that make encyclopedic provenance CORROBORATING
+ * rather than a warning sign.
+ *
+ * The encyclopedic gate exists because a Wikidata/Wikipedia-sourced row is
+ * likely to hold a person's REAL name, where a name-only match against a porn
+ * directory is defamation-adjacent. But when Wikidata itself documents the
+ * person's occupation as pornographic, their adult career IS their public
+ * notability — the encyclopedic source is evidence FOR the link, not against.
+ *
+ * Measured over the 431 distinct QIDs sitting in the encyclopedic review
+ * queue: 408 (95%) carry Q488111. The other frequent occupations were `model`,
+ * `actor`, `film actor`, `erotic photography model`, `go-go dancer` — none of
+ * which establish adult performance, so they stay gated. Only the two whose
+ * label is explicitly "pornographic" are accepted.
+ */
+export const ADULT_OCCUPATION_QIDS = new Set([
+  'Q488111', // pornographic actor
+  'Q17456089', // pornographic film director
+])
 
 /** Circuit-breaker name per host — seeded in the engine migration. */
 export const BREAKER: Record<PlatformKey, string> = {
@@ -217,6 +238,12 @@ export interface TierInput {
   name: string
   /** Row has a wikidata/wikipedia source — i.e. a REAL name, not a stage name. */
   encyclopedic: boolean
+  /**
+   * Wikidata's own P106 documents this person as a pornographic actor or
+   * director. When true, encyclopedic provenance corroborates the link instead
+   * of warning against it — see ADULT_OCCUPATION_QIDS.
+   */
+  documentedAdultPerformer?: boolean
   /** Name is a single token ("Lukas") — far too weak to identify a person. */
   singleToken: boolean
   probe: ProbeResult
@@ -239,7 +266,7 @@ export interface TierDecision {
  * suggests we are holding a real name rather than a stage name.
  */
 export function decideTier(input: TierInput): TierDecision {
-  const { name, encyclopedic, singleToken, probe } = input
+  const { name, encyclopedic, documentedAdultPerformer, singleToken, probe } = input
 
   if (!probe.hit) return { tier: 'miss', reason: 'not_found', confidence: 0 }
 
@@ -247,12 +274,15 @@ export function decideTier(input: TierInput): TierDecision {
   const theirs = probe.displayName ? normalizeName(probe.displayName) : ''
   const nameMatches = theirs.length > 0 && theirs === ours
 
+  // ── Order matters ─────────────────────────────────────────────────────────
+  // The encyclopedic check is LAST. It used to sit second and short-circuit,
+  // which meant an encyclopedic row was never tested for an ambiguous name or
+  // a self-registered profile — so relaxing it in place would have let those
+  // two weaker cases through unchecked. Every row now clears the identity
+  // checks before provenance is even considered.
+
   if (!nameMatches) {
     return { tier: 'review', reason: 'display_name_mismatch', confidence: 0.4 }
-  }
-  if (encyclopedic) {
-    // Wikidata/Wikipedia provenance means this is very likely a real name.
-    return { tier: 'review', reason: 'encyclopedic_provenance', confidence: 0.6 }
   }
   if (singleToken || ours.replace(/\s/g, '').length < 4) {
     return { tier: 'review', reason: 'ambiguous_name', confidence: 0.5 }
@@ -261,7 +291,96 @@ export function decideTier(input: TierInput): TierDecision {
     // Self-registered account — could be a fan or an uploader, not the person.
     return { tier: 'review', reason: 'self_registered_profile', confidence: 0.6 }
   }
-  return { tier: 'auto', reason: 'exact_name_match_curated_directory', confidence: 0.95 }
+  if (encyclopedic && !documentedAdultPerformer) {
+    // Wikidata/Wikipedia provenance with NO documented adult occupation: this
+    // is very likely a real name, where a name-only match is defamatory if
+    // wrong. Wikidata saying "pornographic actor" is what lifts this.
+    return { tier: 'review', reason: 'encyclopedic_provenance', confidence: 0.6 }
+  }
+  return {
+    tier: 'auto',
+    reason: documentedAdultPerformer
+      ? 'exact_name_match_curated_directory_wikidata_corroborated'
+      : 'exact_name_match_curated_directory',
+    confidence: documentedAdultPerformer ? 0.97 : 0.95,
+  }
+}
+
+/**
+ * Fetch P106 occupations for a batch of QIDs and return the subset Wikidata
+ * documents as adult performers.
+ *
+ * Fails CLOSED: any error yields an empty set, so those rows keep the
+ * encyclopedic gate and go to review rather than auto-applying on a network
+ * hiccup.
+ */
+export interface QidCandidate {
+  qid: string
+  /** Our stored name — the QID must actually be ABOUT this person. */
+  name: string
+}
+
+/**
+ * Return the QIDs Wikidata documents as adult performers AND whose own
+ * label/alias matches the name we hold.
+ *
+ * The name check is not decoration. A 2026-08 audit measured **59.7% of
+ * adult-cohort QIDs as the wrong human**, and a wrong QID that happens to also
+ * be a porn performer would otherwise "corroborate" the gate away for someone
+ * it is not about. Requiring one of the entity's own labels/aliases (ANY
+ * language — measured: all 408 corroborating entities have at least one) to
+ * normalize-match our name makes a mis-attached QID inert instead of harmful.
+ *
+ * Fails CLOSED: any error yields an empty set, so those rows keep the
+ * encyclopedic gate and go to review rather than auto-applying.
+ */
+export async function fetchAdultPerformerQids(
+  candidates: QidCandidate[],
+  fetchJson: (url: string) => Promise<unknown> = async (url) =>
+    await (await fetch(url, { headers: { 'User-Agent': 'queer-guide/1.0' } })).json(),
+): Promise<Set<string>> {
+  const out = new Set<string>()
+  const wanted = new Map<string, string>()
+  for (const c of candidates) {
+    if (/^Q\d+$/.test(c.qid) && c.name) wanted.set(c.qid, normalizeName(c.name))
+  }
+  const ids = [...wanted.keys()]
+  for (let i = 0; i < ids.length; i += 50) {
+    const batch = ids.slice(i, i + 50)
+    try {
+      const data = (await fetchJson(
+        `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${batch.join('|')}` +
+          `&props=claims%7Clabels%7Caliases&format=json`,
+      )) as {
+        entities?: Record<string, {
+          claims?: Record<string, Array<{ mainsnak?: { datavalue?: { value?: { id?: string } } } }>>
+          labels?: Record<string, { value?: string }>
+          aliases?: Record<string, Array<{ value?: string }>>
+        }>
+      }
+      for (const [qid, ent] of Object.entries(data?.entities ?? {})) {
+        const ours = wanted.get(qid)
+        if (!ours) continue
+
+        const occupations = (ent?.claims?.['P106'] ?? [])
+          .map((c) => c?.mainsnak?.datavalue?.value?.id)
+          .filter((v): v is string => typeof v === 'string')
+        if (!occupations.some((o) => ADULT_OCCUPATION_QIDS.has(o))) continue
+
+        const names = new Set<string>()
+        for (const l of Object.values(ent?.labels ?? {})) {
+          if (l?.value) names.add(normalizeName(l.value))
+        }
+        for (const group of Object.values(ent?.aliases ?? {})) {
+          for (const a of group ?? []) if (a?.value) names.add(normalizeName(a.value))
+        }
+        if (names.has(ours)) out.add(qid)
+      }
+    } catch {
+      // fail closed — leave this batch out, they stay review-gated
+    }
+  }
+  return out
 }
 
 /**

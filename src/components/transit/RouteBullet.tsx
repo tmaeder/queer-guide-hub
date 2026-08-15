@@ -12,6 +12,9 @@ interface RouteBulletProps {
   track?: Track | 'ink';
   /** Override the map's accessible label. */
   label?: string;
+  /** Which surface the bullet sits on. `ink` reverses the ring, and the
+   *  unmapped/ink bullet inverts so it stays legible on an ink plate. */
+  tone?: 'paper' | 'ink';
 }
 
 /** NYC-style route bullet: letter = content type, color = its line. Falls
@@ -31,19 +34,25 @@ export function RouteBullet({
   letter,
   track,
   label,
+  tone = 'paper',
 }: RouteBulletProps) {
   const def = ROUTE_BULLET_MAP[type];
   const resolved = track ?? def?.track;
   const useInk = resolved === undefined || resolved === 'ink';
-  const bg = useInk ? 'bg-foreground' : TRACK_BG[resolved];
-  const text = useInk ? 'text-background' : TRACK_TEXT[resolved];
+  const onInk = tone === 'ink';
+  // The achromatic bullet inverts with the plate; a track bullet never does —
+  // its fill already clears both surfaces and flipping it would break the
+  // line-colour contract that ROUTE_BULLET_MAP exists to hold.
+  const bg = useInk ? (onInk ? 'bg-background' : 'bg-foreground') : TRACK_BG[resolved];
+  const text = useInk ? (onInk ? 'text-foreground' : 'text-background') : TRACK_TEXT[resolved];
   return (
     <span
       role="img"
       aria-label={label ?? def?.label ?? type}
       style={{ width: size, height: size, fontSize: Math.round(size * 0.45) }}
       className={cn(
-        'grid shrink-0 place-items-center rounded-full border-2 border-foreground font-bold',
+        'grid shrink-0 place-items-center rounded-full border-2 font-bold',
+        onInk ? 'border-background' : 'border-foreground',
         bg,
         text,
         className,

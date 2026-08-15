@@ -27,6 +27,16 @@ export type DetailResult = {
 
 const TITLE_SUFFIX = ' | Queer Guide';
 const MAX_TITLE = 60;
+
+/** Mirrors STATUS_LABEL in src/components/tags/TagLegalSource.tsx. A repeal
+ *  marker is not decoration — "adopted 1993" alone is a wrong claim about what
+ *  the law is today, and the crawler view must not make it. */
+const LAW_STATUS_LABEL: Record<string, string> = {
+  in_force: 'In force',
+  repealed: 'Repealed',
+  superseded: 'Superseded',
+  partially_invalidated: 'In force, partly struck down',
+};
 const MAX_DESC = 155;
 
 /**
@@ -919,9 +929,40 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
     'unified_tags',
     'slug',
     slug,
-    'name,slug,description,short_description,long_description,image_url,category,wikipedia_url,wikidata_id,updated_at',
+    'id,name,slug,description,short_description,long_description,image_url,category,wikipedia_url,wikidata_id,updated_at',
   );
   if (!row) return null;
+
+  // Curated legal citations for law tags. The SPA renders these into its own
+  // DefinedTerm, but a crawler that does not run JS only ever sees THIS one, so
+  // it has to be built here too or the citation is invisible to exactly the
+  // consumer JSON-LD exists for.
+  //
+  // `is_public=eq.true` is MANDATORY and is not a duplicate of the RLS policy:
+  // fetchRows authenticates with the service role, which bypasses RLS entirely,
+  // so without it this would publish all ~8,700 wikipedia/wikidata backfill rows
+  // as legal citations. Same trap as the draft-personalities leak.
+  const tagId = stringField(row, 'id');
+  const legalRows = tagId
+    ? await fetchRows(
+        env,
+        'tag_sources',
+        'official_title,source_url,jurisdiction,adopted_year,instrument_status',
+        `tag_id=eq.${encodeURIComponent(tagId)}&is_public=eq.true`,
+        10,
+      )
+    : [];
+  const citations = legalRows
+    .map((r) => ({
+      title: stringField(r, 'official_title'),
+      url: stringField(r, 'source_url'),
+      juris: stringField(r, 'jurisdiction'),
+      status: stringField(r, 'instrument_status'),
+      year: numField(r, 'adopted_year'),
+    }))
+    .filter((c): c is typeof c & { title: string; url: string } =>
+      Boolean(c.title && c.url),
+    );
 
   const name = stringField(row, 'name') ?? slug;
   const description =
@@ -949,6 +990,20 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
       <h1>${escape(name)}</h1>
       ${category ? `<p><strong>Category:</strong> ${escape(category)}</p>` : ''}
       ${description ? paragraphsHtml(description) : `<p>Browse content tagged ${escape(name)} on Queer Guide.</p>`}
+      ${
+        citations.length
+          ? `<section><h2>Source of law</h2><ul>${citations
+              .map(
+                (c) =>
+                  `<li><a href="${escape(c.url)}" rel="noopener">${escape(c.title)}</a>${
+                    c.juris ? ` — ${escape(c.juris === 'INT' ? 'International' : c.juris)}` : ''
+                  }${c.year ? ` (${c.year})` : ''}${
+                    c.status ? ` — ${escape(LAW_STATUS_LABEL[c.status] ?? c.status)}` : ''
+                  }</li>`,
+              )
+              .join('')}</ul></section>`
+          : ''
+      }
       ${stringField(row, 'wikipedia_url') ? `<p><a href="${escape(stringField(row, 'wikipedia_url')!)}" rel="noopener">Read more on Wikipedia</a></p>` : ''}
     </article>
     <nav aria-label="Site sections">
@@ -967,8 +1022,22 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
     description: description || undefined,
     image,
     url: `${SITE_ORIGIN}${pathname}`,
-    sameAs: stringField(row, 'wikipedia_url') ? [stringField(row, 'wikipedia_url')] : undefined,
+    sameAs: [stringField(row, 'wikipedia_url'), ...citations.map((c) => c.url)].filter(Boolean)
+      .length
+      ? [stringField(row, 'wikipedia_url'), ...citations.map((c) => c.url)].filter(Boolean)
+      : undefined,
     identifier: stringField(row, 'wikidata_id'),
+    // No `legislationDate`: schema.org types it as a Date and only a year is
+    // held, so emitting one would assert a precision we do not have. Kept
+    // deliberately identical to src/lib/tags/tagJsonLd.ts.
+    citation: citations.length
+      ? citations.map((c) => ({
+          '@type': 'Legislation',
+          name: c.title,
+          url: c.url,
+          legislationJurisdiction: c.juris || undefined,
+        }))
+      : undefined,
   };
 
   return { meta, body, jsonLd: renderLd(prune(thingLd)) };

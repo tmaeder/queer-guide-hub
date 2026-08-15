@@ -48,7 +48,11 @@ export function EventsResultBar({
 }: EventsResultBarProps) {
   const { t, i18n } = useTranslation();
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4">
+    // gap-2 below md and a sort control that never claims a full row: this bar is
+    // STICKY, so every row it wraps to is subtracted from every screen of results
+    // for the whole session. Measured on prod at 390x844 it stood at 235px, which
+    // with the 60px header is 35% of the viewport — the same defect /cities had.
+    <div className="flex flex-wrap items-center justify-between gap-2 md:gap-4">
       <p className="text-sm text-muted-foreground" aria-live="polite">
         {/* D7: show "Showing N of M events" whenever the true total
             exceeds what's currently rendered, so users aren't misled
@@ -97,7 +101,7 @@ export function EventsResultBar({
         </Button>
         <Select value={sort} onValueChange={(v) => onSortChange(v as EventSort)}>
           <SelectTrigger
-            className="w-full sm:w-[160px]"
+            className="w-[132px] sm:w-[160px]"
             aria-label={t('pages.events.sortLabel', 'Sort events')}
           >
             <SelectValue />

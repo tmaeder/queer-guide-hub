@@ -75,6 +75,25 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
     ],
   },
 
+  // '/cities' had a STATIC_ROUTE_META entry and NO body entry, and _middleware.ts
+  // gates the crawler body on both — so the site's canonical city index served
+  // bots a title, a description and nothing else. Every other route in this file
+  // links TO /cities; /cities itself was the gap.
+  '/cities': {
+    h1: 'LGBTQ+ cities — where the map is thickest',
+    paragraphs: [
+      'A directory of cities worldwide ranked by how much queer life we actually hold for each one: bars, clubs, saunas, cafés, bookshops and community spaces, the queer districts they cluster in, and the Pride events coming up. Berlin, San Francisco, New York, London, Paris, Barcelona, Madrid and Amsterdam lead, but so do Brighton, Sitges, Palm Springs, Puerto Vallarta and West Hollywood — small places with dense queer life that a population ranking buries.',
+      'Every city carries its country’s equality score and, where the law criminalises us, says so plainly on the card rather than leaving you to work it out at the airport. Filter by continent or by legal climate, search by name, or open the map to see the whole world coloured by rights.',
+    ],
+    links: [
+      { href: '/travel', label: 'Plan a trip' },
+      { href: '/map', label: 'The world map' },
+      { href: '/venues', label: 'Venues by city' },
+      { href: '/events', label: 'Events by city' },
+      { href: '/rights', label: 'LGBTQ+ rights by country' },
+    ],
+  },
+
   '/travel': {
     h1: 'Plan LGBTQ+ trips — destinations, itineraries and bookings',
     paragraphs: [

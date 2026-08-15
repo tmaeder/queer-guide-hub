@@ -152,9 +152,7 @@ function MakersEntry() {
       aria-labelledby="makers-entry"
       className="border-[3px] border-foreground bg-foreground p-6 text-background md:p-8"
     >
-      <p className="text-2xs font-bold uppercase tracking-label text-background/70">
-        End of line
-      </p>
+      <p className="text-2xs font-bold uppercase tracking-label text-background/70">End of line</p>
       <h2 id="makers-entry" className="mt-1 font-display text-headline leading-tight">
         Every maker on this line
       </h2>
@@ -482,7 +480,10 @@ const Marketplace = () => {
         <section
           className={`sticky ${STICKY_UNDER_HEADER} z-20 border-b-4 border-foreground bg-surface-container-low`}
         >
-          <PageContainer flush className="py-4 md:py-6">
+          {/* py-2 below md: this band is sticky, so its padding is subtracted from
+              every screen of results. Measured 260px total chrome at 390x844 —
+              31% of the viewport, worse than /cities before its fix. */}
+          <PageContainer flush className="py-2 md:py-6">
             <MarketplaceControlBar
               filters={filters}
               onFiltersChange={handleFiltersChange}

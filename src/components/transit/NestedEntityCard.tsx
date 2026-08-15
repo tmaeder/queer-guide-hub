@@ -19,6 +19,7 @@ export function NestedEntityCard({
   description,
   href,
   actionLabel,
+  media,
   className,
 }: {
   type: string;
@@ -35,6 +36,10 @@ export function NestedEntityCard({
    *  interaction that does not exist. */
   href?: string;
   actionLabel?: string;
+  /** Optional graphic for the card's trailing edge. Kept as a slot rather than
+   *  a type-specific branch so this primitive stays type-agnostic — a city
+   *  passes its transit diagram, another type can pass something else. */
+  media?: React.ReactNode;
   className?: string;
 }) {
   return (
@@ -60,6 +65,7 @@ export function NestedEntityCard({
             </p>
           )}
         </div>
+        {media && <div className="hidden h-12 w-16 shrink-0 sm:block">{media}</div>}
         {actionLabel && (
           <span className="hidden shrink-0 border-2 border-foreground px-4 py-2 text-xs2 font-bold sm:block">
             {actionLabel}

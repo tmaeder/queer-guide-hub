@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
 import { SFW_RATINGS } from '@/hooks/useMarketplace';
@@ -125,37 +126,31 @@ interface BrandSafeRowState extends RowState {
  * owned set is too thin (< 4 items).
  */
 export function useBrandSafeRow(limit = 12): BrandSafeRowState {
-  const [state, setState] = useState<BrandSafeRowState>({ ...initial, ownedOnly: true });
-  useEffect(() => {
-    let cancelled = false;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-    setState({ data: [], loading: true, error: null, ownedOnly: true });
-    (async () => {
+  // react-query: this feeds the homepage rail, which remounts on every
+  // navigation back to `/`. Callers over-fetch (a superset) and rotate a
+  // window of it client-side — rotating by a request parameter instead would
+  // fragment the cache key for no gain. See src/lib/rotation.ts.
+  const query = useQuery({
+    queryKey: ['marketplace-brand-safe-row', limit],
+    staleTime: 30 * 60 * 1000,
+    queryFn: async (): Promise<{ rows: MarketplaceListing[]; ownedOnly: boolean }> => {
       const owned = await brandSafeQuery(limit, true);
       if (owned.error) throw owned.error;
-      let rows = (owned.data ?? []) as MarketplaceListing[];
-      let ownedOnly = true;
-      if (rows.length < 4) {
-        const wide = await brandSafeQuery(limit, false);
-        if (wide.error) throw wide.error;
-        rows = (wide.data ?? []) as MarketplaceListing[];
-        ownedOnly = false;
-      }
-      if (!cancelled) setState({ data: rows, loading: false, error: null, ownedOnly });
-    })().catch((err: unknown) => {
-      if (cancelled) return;
-      setState({
-        data: [],
-        loading: false,
-        error: err instanceof Error ? err.message : 'Failed to load',
-        ownedOnly: true,
-      });
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [limit]);
-  return state;
+      const ownedRows = (owned.data ?? []) as MarketplaceListing[];
+      if (ownedRows.length >= 4) return { rows: ownedRows, ownedOnly: true };
+
+      const wide = await brandSafeQuery(limit, false);
+      if (wide.error) throw wide.error;
+      return { rows: (wide.data ?? []) as MarketplaceListing[], ownedOnly: false };
+    },
+  });
+
+  return {
+    data: query.data?.rows ?? [],
+    loading: query.isLoading,
+    error: query.error ? ((query.error as Error).message ?? 'Failed to load') : null,
+    ownedOnly: query.data?.ownedOnly ?? true,
+  };
 }
 
 export function useMarketplaceRow(key: CuratedRowKey, limit = 12): RowState {
@@ -181,39 +176,41 @@ export function useMarketplaceRow(key: CuratedRowKey, limit = 12): RowState {
 }
 
 /**
- * Single random featured listing for the hero spotlight.
- * Picks the most recently updated featured listing for stability across renders.
+ * Featured listing for the homepage spotlight.
+ *
+ * Fetches a POOL of candidates rather than one row and lets the caller pick by
+ * a time bucket, so the spotlight changes between visits. The old `.limit(1)`
+ * ordered by `updated_at` pinned the same product until a merchant happened to
+ * edit it — the homepage's single most-static element.
+ *
+ * `pick` is an index into the pool (see src/lib/rotation.ts). Out-of-range and
+ * negative values wrap, so a caller can pass a raw bucket number.
  */
-export function useMarketplaceSpotlight(): { listing: MarketplaceListing | null; loading: boolean } {
-  const [listing, setListing] = useState<MarketplaceListing | null>(null);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const { data, error } = await supabase
-          .from('marketplace_listings')
-          .select(BASE_SELECT)
-          .eq('status', 'active')
-          .eq('featured', true)
-          .not('images', 'is', null)
-          // Homepage-only surface: strictly sfw + brand-safe departments.
-          .eq('content_rating', 'sfw')
-          .in('department', BRAND_SAFE_DEPARTMENTS)
-          .order('updated_at', { ascending: false })
-          .limit(1);
-        if (error) throw error;
-        if (cancelled) return;
-        setListing(((data ?? [])[0] as MarketplaceListing | undefined) ?? null);
-      } catch {
-        if (!cancelled) setListing(null);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-  return { listing, loading };
+export function useMarketplaceSpotlight(
+  pick = 0,
+  poolSize = 12,
+): { listing: MarketplaceListing | null; loading: boolean } {
+  const query = useQuery({
+    queryKey: ['marketplace-spotlight', poolSize],
+    staleTime: 30 * 60 * 1000,
+    queryFn: async (): Promise<MarketplaceListing[]> => {
+      const { data, error } = await supabase
+        .from('marketplace_listings')
+        .select(BASE_SELECT)
+        .eq('status', 'active')
+        .eq('featured', true)
+        .not('images', 'is', null)
+        // Homepage-only surface: strictly sfw + brand-safe departments.
+        .eq('content_rating', 'sfw')
+        .in('department', BRAND_SAFE_DEPARTMENTS)
+        .order('updated_at', { ascending: false })
+        .limit(poolSize);
+      if (error) throw error;
+      return (data ?? []) as MarketplaceListing[];
+    },
+  });
+
+  const pool = query.data ?? [];
+  const listing = pool.length ? pool[((pick % pool.length) + pool.length) % pool.length] : null;
+  return { listing, loading: query.isLoading };
 }

@@ -123,9 +123,11 @@ const Events = () => {
         size="md"
       />
       <PageContainer>
-        <GuidesRail filters={{ entityType: 'event', limit: 6 }} />
         {/* Filters — first interactive surface after hero */}
-        <div className="flex flex-col gap-4 p-4 bg-card rounded-container mb-6">
+        {/* Tighter below md. Measured on prod at 390x844: this block is 392px and the
+            sticky result bar under it another 175px, so the first event sat 1,098px
+            down. gap/padding/margin at the mobile step recover 48px of that. */}
+        <div className="mb-4 flex flex-col gap-2 rounded-container bg-card px-4 py-2 md:mb-6 md:gap-4 md:p-4">
           {/* Search Bar */}
           <EventSearchBar
             search={f.search}
@@ -230,7 +232,7 @@ const Events = () => {
         {/* Result-meta row: count + view toggle + sort + past toggle */}
         {!loading && !error && (
           <div
-            className={`sticky ${STICKY_UNDER_HEADER} z-20 ${PAGE_BLEED_MOBILE} py-2 mb-4 border-b-[3px] border-foreground bg-background`}
+            className={`sticky ${STICKY_UNDER_HEADER} z-20 ${PAGE_BLEED_MOBILE} py-2 mb-2 md:mb-4 border-b-[3px] border-foreground bg-background`}
           >
             <EventsResultBar
               eventsCount={events.length}
@@ -394,6 +396,19 @@ const Events = () => {
             )}
           </div>
         )}
+
+        {/* Editorial cross-links go AFTER the events, not before them.
+         *
+         *  This rail used to sit between the hero and the filters — the comment
+         *  above the filter block still called that block "first interactive
+         *  surface after hero", which had not been true for some time. Measured
+         *  on prod at 390x844: the rail was 527px, and the first event card sat
+         *  1,789px down — 2.12 viewport heights of hero, guides, filters and
+         *  result header before a single event. On a page whose entire job is
+         *  events, editorial about events outranked the events.
+         *
+         *  Same placement `/cities` uses for its tail cards. */}
+        <GuidesRail filters={{ entityType: 'event', limit: 6 }} />
       </PageContainer>
     </div>
   );

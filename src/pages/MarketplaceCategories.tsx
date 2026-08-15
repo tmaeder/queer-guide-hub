@@ -1,8 +1,6 @@
-import { ArrowLeft, ArrowUpRight, Tag } from 'lucide-react';
 import { useMeta } from '@/hooks/useMeta';
-import { PageHeader } from '@/components/layout/PageHeader';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { Button } from '@/components/ui/button';
+import { MarketplaceMasthead } from '@/components/marketplace/MarketplaceMasthead';
 import { useMarketplaceSubcategoryTiles } from '@/hooks/useMarketplaceQueries';
 import { PageContainer } from '@/components/layout/PageContainer';
 
@@ -10,6 +8,17 @@ function prettify(slug: string): string {
   return slug.replace(/[_-]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+/**
+ * Every stop on the line, not just the departments the hub shows.
+ *
+ * Tiles match `MarketplaceLineIndex` exactly — same 3px ink border, same
+ * `card-lift-sm`, same `text-title font-bold` name over a `tracking-label`
+ * count. They were `rounded-container bg-card hover:bg-muted` cards carrying a
+ * lucide `Tag` and an `ArrowUpRight`, which is two icon sets and a radius the
+ * design system no longer has. There is no icon now: the category name does
+ * the work an ambiguous generic glyph was doing badly, and it was the SAME
+ * glyph on every tile, so it distinguished nothing.
+ */
 export default function MarketplaceCategories() {
   const { data: tiles, loading } = useMarketplaceSubcategoryTiles(null);
 
@@ -21,65 +30,55 @@ export default function MarketplaceCategories() {
 
   return (
     <div className="min-h-screen">
-      <PageContainer>
-        <div className="mb-4">
-          {/* asChild, not a Link wrapping a Button — that nests a <button>
-              inside an <a>, which is invalid HTML. */}
-          <Button asChild variant="ghost" size="sm">
-            <LocalizedLink to="/marketplace" className="no-underline">
-              <ArrowLeft size={14} className="mr-1.5" />
-              All marketplace
-            </LocalizedLink>
-          </Button>
-        </div>
-        <PageHeader
-          title="All categories"
-          subtitle="Every queer-friendly marketplace category, ranked by active listings."
-        />
+      <MarketplaceMasthead
+        size="page"
+        backTo={{ label: 'Marketplace', to: '/marketplace' }}
+        eyebrow="Marketplace · Every stop"
+        title="All categories."
+        lede="Every queer-friendly marketplace category, ranked by active listings."
+        count={
+          loading
+            ? 'Counting…'
+            : `${tiles.length.toLocaleString()} categor${tiles.length === 1 ? 'y' : 'ies'}`
+        }
+      />
 
+      <PageContainer>
         {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <ul className="m-0 grid list-none grid-cols-2 gap-4 p-0 md:grid-cols-3 lg:grid-cols-4">
             {Array.from({ length: 12 }).map((_, i) => (
-              <div
+              <li
                 key={i}
                 aria-hidden="true"
-                className="rounded-container bg-muted/30 min-h-[120px] animate-pulse"
+                className="h-[120px] animate-pulse border-[3px] border-foreground/20 bg-muted"
               />
             ))}
-          </div>
+          </ul>
         ) : tiles.length === 0 ? (
-          <p className="text-muted-foreground">No categories yet.</p>
+          <p className="text-muted-foreground">
+            No categories yet.{' '}
+            <LocalizedLink to="/marketplace" className="underline underline-offset-4">
+              Browse the marketplace
+            </LocalizedLink>
+          </p>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <ul className="m-0 grid list-none grid-cols-2 gap-4 p-0 md:grid-cols-3 lg:grid-cols-4">
             {tiles.map((tile) => (
-              <LocalizedLink
-                key={tile.slug}
-                to={`/marketplace/category/${tile.slug}`}
-                className="group relative flex flex-col justify-between rounded-container bg-card p-4 sm:p-6 min-h-[120px] hover:bg-muted transition-colors"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <Tag
-                    style={{ width: 22, height: 22 }}
-                    className="text-foreground"
-                    aria-hidden="true"
-                  />
-                  <ArrowUpRight
-                    size={14}
-                    className="text-muted-foreground group-hover:text-foreground transition-colors"
-                    aria-hidden="true"
-                  />
-                </div>
-                <div className="flex flex-col gap-1 mt-4">
-                  <span className="text-sm font-semibold leading-tight text-balance">
+              <li key={tile.slug}>
+                <LocalizedLink
+                  to={`/marketplace/category/${tile.slug}`}
+                  className="card-lift flex h-full min-h-[120px] flex-col justify-between border-[3px] border-foreground bg-card p-4 no-underline sm:p-6"
+                >
+                  <span className="text-title font-bold leading-tight text-balance">
                     {prettify(tile.slug)}
                   </span>
-                  <span className="text-xs2 uppercase tracking-[0.14em] text-muted-foreground">
+                  <span className="mt-4 text-2xs uppercase tracking-label tabular-nums text-muted-foreground">
                     {tile.count.toLocaleString()} listing{tile.count !== 1 ? 's' : ''}
                   </span>
-                </div>
-              </LocalizedLink>
+                </LocalizedLink>
+              </li>
             ))}
-          </div>
+          </ul>
         )}
       </PageContainer>
     </div>

@@ -59,6 +59,10 @@ const berlin: DirectoryCity = {
   latitude: 52.5,
   longitude: 13.4,
   population: 3_700_000,
+  venue_count: 870,
+  upcoming_event_count: 4,
+  village_count: 2,
+  high_risk: false,
   countries: {
     id: 'de',
     name: 'Germany',
@@ -75,8 +79,6 @@ describe('CitiesMapPane', () => {
   });
 
   it('mounts cleanly with an empty city list', () => {
-    expect(() =>
-      render(<CitiesMapPane cities={[]} onSelectCity={() => {}} />),
-    ).not.toThrow();
+    expect(() => render(<CitiesMapPane cities={[]} onSelectCity={() => {}} />)).not.toThrow();
   });
 });

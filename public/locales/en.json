@@ -238,7 +238,14 @@
       "resources": "Search resources",
       "personalities": "Meet personalities…"
     },
-    "ariaLabel": "Search Queer Guide"
+    "ariaLabel": "Search Queer Guide",
+    "escape": "esc",
+    "jumpTo": "Jump to",
+    "recent": "Recent",
+    "noStation": "No station by that name — yet",
+    "addToMap": "Add it to the map",
+    "seeOnMap": "See {{count}} results on the map",
+    "keyHints": "↑↓ navigate · ↵ open"
   },
   "common": {
     "back": "Back",
@@ -310,6 +317,13 @@
       "eyebrow": "In an emergency",
       "title": "Crisis lines, 24 hours",
       "body": "Trans helpline, LGBT+ crisis support, and local emergency numbers, listed by country and always one click from any page."
+    },
+    "osmAttribution": "Transit diagrams derived from © OpenStreetMap contributors (ODbL)",
+    "reportSomething": "Report something",
+    "hotlines": "Hotlines",
+    "antiDiscrimination": {
+      "title": "We don't do bigotry here.",
+      "body": "Racism, transphobia, and discrimination are automatic grounds for getting booted off the platform. Period."
     }
   },
   "auth": {
@@ -476,7 +490,16 @@
     "featured": "Featured",
     "rsvpEmptyMember": "No RSVPs yet. Be the first.",
     "rsvpEmptyAnon": "No RSVPs yet. Sign in to be the first.",
-    "peopleYouMayKnow": "People you may know"
+    "peopleYouMayKnow": "People you may know",
+    "detail": {
+      "eyebrow": "Event",
+      "sections": "Sections",
+      "section": {
+        "about": "About this event",
+        "where": "Getting there",
+        "going": "Who's going"
+      }
+    }
   },
   "venues": {
     "title": "Venues",
@@ -596,7 +619,20 @@
     },
     "closed": "Closed",
     "openNow": "Open now",
-    "locationUnknown": "Location unknown"
+    "locationUnknown": "Location unknown",
+    "detail": {
+      "eyebrow": "Venue",
+      "closed": "Permanently closed",
+      "section": {
+        "about": "About",
+        "hours": "Opening hours",
+        "access": "Access",
+        "whatsOn": "What's on here",
+        "signals": "Visitor signals",
+        "reviews": "Reviews",
+        "photos": "Photos"
+      }
+    }
   },
   "marketplace": {
     "title": "Marketplace",
@@ -1929,7 +1965,10 @@
       "hotels": "Hotels",
       "help": "Crisis support",
       "history": "History",
-      "guides": "Guides"
+      "guides": "Guides",
+      "trips": "Trips",
+      "organizations": "Organizations",
+      "wishlists": "Wishlists"
     },
     "intents": {
       "goingOut": {
@@ -2778,39 +2817,13 @@
     }
   },
   "cities": {
-    "metaTitle": "Cities",
-    "metaDescription": "Browse LGBTQ+ friendly cities around the world.",
-    "eyebrow": "Destinations",
-    "title": "Cities.",
-    "subtitle": "LGBTQ+ friendly cities around the world.",
-    "planTrip": "Plan a trip",
-    "openDirectory": "Open the directory",
-    "searchAriaLabel": "Search cities",
-    "searchPlaceholder": "Search cities…",
-    "resultCount": "{{shown}} of {{total}} cities",
-    "filtersAriaLabel": "Filter cities",
+    "capital": "Capital",
+    "continentClear": "Clear",
+    "continentCount_one": "{{count}} city",
+    "continentCount_other": "{{count}} cities",
     "continentsAriaLabel": "Filter by continent",
-    "equalityAriaLabel": "Filter by equality score",
-    "sortLabel": "Sort",
-    "sortAriaLabel": "Sort cities",
-    "sort": {
-      "population": "Population",
-      "name": "Name (A–Z)",
-      "equality": "Equality",
-      "venues": "Venues"
-    },
-    "reset": "Reset",
-    "resetFilters": "Reset filters",
-    "viewToggleAriaLabel": "Toggle list and map",
-    "viewList": "List",
-    "viewMap": "Map",
-    "listLabel": "Cities",
-    "emptyTitle": "No cities found",
-    "empty": "No cities are currently listed.",
-    "emptyFiltered": "Try removing a filter or clearing the search.",
-    "suggestTitle": "Missing a city?",
-    "suggestLede": "Suggest one — adds to the directory after review.",
-    "suggestCta": "Suggest a city",
+    "continentsTitle": "Continents",
+    "counting": "Counting…",
     "detail": {
       "seeAll": "See all",
       "planTrip": "Plan a trip to {{city}}",
@@ -2827,8 +2840,114 @@
         "currency": "Currency",
         "bestTime": "Best time",
         "airport": "Airport"
+      },
+      "eyebrow": "City",
+      "sections": "Sections",
+      "loadingVenues": "Loading venues",
+      "openEvent": "Open",
+      "openMap": "Open the full map",
+      "createTrip": "Create trip",
+      "officialWebsite": "Official website",
+      "favorite": "Save to favorites",
+      "favorited": "Saved to favorites",
+      "census": {
+        "stops": "{{n}} stops",
+        "districts": "{{n}} districts",
+        "departures": "{{n}} departures"
+      },
+      "section": {
+        "rights": "Safety & rights",
+        "rightsNote": "Know before you go.",
+        "venues": "Where to go",
+        "districts": "Queer districts",
+        "districtsNote": "Walkable clusters of bars, cafés and community spaces.",
+        "events": "Next departures",
+        "overview": "About {{city}}",
+        "travel": "Getting there",
+        "news": "In the news",
+        "nearby": "Nearby"
+      },
+      "stats": {
+        "venues": "Venues",
+        "districts": "Districts",
+        "events": "Upcoming events"
+      },
+      "about": {
+        "status": "Status",
+        "capital": "Capital city",
+        "majorCity": "Major city",
+        "region": "Region",
+        "timezone": "Timezone",
+        "founded": "Founded",
+        "area": "Area",
+        "elevation": "Elevation",
+        "mayor": "Mayor",
+        "postalCodes": "Postal codes",
+        "costOfLiving": "Cost of living",
+        "universities": "Universities",
+        "sisterCities": "Sister cities"
+      },
+      "travel": {
+        "majorAirport": "Major airport",
+        "nearestAirport": "Nearest airport",
+        "allCodes": "All airport codes",
+        "lines": "Lines",
+        "networkCaption": "Rapid-transit lines, drawn from OpenStreetMap. Schematic, not to scale.",
+        "gettingAround": "Getting around",
+        "noDealsTitle": "We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
+        "noDealsBody": "If you need to travel to {{city}}, read the safety and rights section first and use the trip planner — it includes a safety briefing for high-risk destinations."
+      },
+      "endOfLine": {
+        "eyebrow": "End of line",
+        "title": "Riding on?",
+        "body": "Every city on the guide carries the same modules: safety and rights first, then the places.",
+        "allCities": "All cities",
+        "country": "More in {{country}}"
       }
-    }
+    },
+    "empty": "No cities are currently listed.",
+    "emptyFiltered": "Try removing a filter or clearing the search.",
+    "emptyTitle": "No cities found",
+    "equalityAriaLabel": "Filter by equality score",
+    "filtersAriaLabel": "Filter cities",
+    "highRisk": "Criminalized",
+    "inView": "{{count}} cities in the directory, ranked by how much of each one we hold.",
+    "lineEyebrow": "Cities · Green line",
+    "listLabel": "Cities",
+    "mapTeaserLede": "Every city as a pin, coloured by its country’s equality score.",
+    "mapTeaserTitle": "See it on the map",
+    "metaDescription": "Browse LGBTQ+ friendly cities around the world.",
+    "metaTitle": "Cities",
+    "networkMode": {
+      "subway": "Metro network",
+      "light_rail": "Light rail network",
+      "tram": "Tram network"
+    },
+    "openMap": "Open the map",
+    "planTrip": "Plan a trip",
+    "pridePill": "Pride · {{date}}",
+    "reset": "Reset",
+    "resetFilters": "Reset filters",
+    "resultCount": "{{shown}} of {{total}} cities",
+    "searchAriaLabel": "Search cities",
+    "searchPlaceholder": "Search cities…",
+    "sort": {
+      "venues": "Most places",
+      "population": "Population",
+      "name": "Name (A–Z)",
+      "equality": "Equality"
+    },
+    "sortAriaLabel": "Sort cities",
+    "sortLabel": "Sort",
+    "suggestCta": "Suggest a city",
+    "suggestLede": "Suggest one — adds to the directory after review.",
+    "suggestTitle": "Missing a city?",
+    "title": "Cities.",
+    "venueCount_one": "{{count}} place",
+    "venueCount_other": "{{count}} places",
+    "viewList": "List",
+    "villageCount_one": "{{count}} district",
+    "villageCount_other": "{{count}} districts"
   },
   "pride": {
     "eyebrow": "Pride Calendar",
@@ -2964,7 +3083,9 @@
       "personalities": "Voices",
       "nearby": "Nearby",
       "news": "News",
-      "map": "Map"
+      "map": "Map",
+      "history": "Legal record",
+      "historyNote": "What changed and when. Safety information without a date is not safety information."
     },
     "practical": {
       "languages": "Languages",
@@ -2983,7 +3104,10 @@
       "hdi": "HDI",
       "lifeExpectancy": "Life expectancy",
       "literacy": "Literacy",
-      "income": "Income level"
+      "income": "Income level",
+      "venues": "Venues",
+      "events": "Upcoming events",
+      "weather": "Now in {{city}}"
     },
     "cities": {
       "emptyTitle": "No cities yet",
@@ -2999,7 +3123,9 @@
     },
     "travel": {
       "activities": "Activities & tours",
-      "activitiesBody": "Experiences in {{country}}"
+      "activitiesBody": "Experiences in {{country}}",
+      "noDealsTitle": "We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
+      "noDealsBody": "If you need to travel to {{country}}, read the rights section on this page first and use the trip planner — it includes a safety briefing for high-risk destinations."
     },
     "news": {
       "emptyTitle": "No local news yet",
@@ -3046,7 +3172,24 @@
       "ilgaLink": "ILGA World Database",
       "deathPenaltyPossible": "death penalty possible, no legal certainty"
     },
-    "planTripHighRisk": "Plan carefully — safety briefing included"
+    "planTripHighRisk": "Plan carefully — safety briefing included",
+    "eyebrow": "Country",
+    "sections": "Sections",
+    "openMap": "Open the full map",
+    "census": {
+      "cities": "{{n}} cities",
+      "stops": "{{n}} stops",
+      "departures": "{{n}} departures"
+    },
+    "history": {
+      "seeAll": "Full timeline"
+    },
+    "endOfLine": {
+      "eyebrow": "End of line",
+      "title": "Compare the law elsewhere",
+      "body": "Every country page carries the same legal breakdown, from the same sources, with the date it was checked.",
+      "rights": "Rights across the world"
+    }
   },
   "extension": {
     "signInGate": {
@@ -4235,7 +4378,73 @@
         "misspelling": "Common misspelling",
         "historical": "Historically",
         "slang": "Slang"
-      }
+      },
+      "spansAllRights": "This covers a whole field of law, not one statute. We track 18 separate rights, country by country.",
+      "seeAllRights": "See all 18 rights by country"
+    }
+  },
+  "village": {
+    "eyebrow": "District · Green line",
+    "loading": "Loading this district",
+    "loadingVenues": "Loading the stop list",
+    "sections": "Sections",
+    "planTrip": "Plan a trip to {{name}}",
+    "relatedByTag": "Related by tag",
+    "notFound": {
+      "title": "No such district.",
+      "body": "This stop is not on the line.",
+      "cta": "All queer villages"
+    },
+    "toast": {
+      "errorTitle": "Error",
+      "loadFailed": "Failed to load village details"
+    },
+    "facts": {
+      "city": "City",
+      "country": "Country",
+      "venues": "Venues",
+      "events": "Upcoming events",
+      "editorsPick": "Editor’s pick"
+    },
+    "census": {
+      "stops": "{{n}} stops",
+      "departures": "{{n}} departures"
+    },
+    "section": {
+      "about": "About {{name}}",
+      "walk": "The walk",
+      "walkNote": "Stops in order, with the straight-line gap between them.",
+      "events": "Next departures",
+      "photos": "Photos",
+      "city": "On the same line"
+    },
+    "action": {
+      "website": "Website",
+      "favorite": "Save to favorites",
+      "favorited": "Saved to favorites"
+    },
+    "events": {
+      "open": "Open"
+    },
+    "landmarks": {
+      "title": "Notable landmarks"
+    },
+    "photo": {
+      "caption": "{{village}}, {{city}}",
+      "alt": "{{name}}, photo {{n}}"
+    },
+    "parentCity": {
+      "body": "The wider city this district sits in.",
+      "action": "Open"
+    },
+    "map": {
+      "caption": "Walking distance in {{city}}."
+    },
+    "endOfLine": {
+      "eyebrow": "End of line",
+      "title": "Looking for another district?",
+      "body": "Queer villages are walkable clusters of bars, cafés and community spaces. There are more of them.",
+      "city": "More in {{city}}"
     }
   }
 }

@@ -91,3 +91,24 @@ describe('TagLegalSource', () => {
     expect(cite.compareDocumentPosition(text) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 });
+
+describe('TagLegalSource — whole-field tags', () => {
+  it('tells an umbrella tag it spans the whole corpus, not one right', () => {
+    renderWithProviders(<TagLegalSource sources={[]} tagSlug="lgbtqia-rights" />);
+    expect(screen.getByText(/whole field of law/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /See all 18 rights by country/i })).toHaveAttribute(
+      'href',
+      '/rights',
+    );
+    // Must NOT also claim to be a single right — that is the contradiction the
+    // umbrella branch exists to avoid.
+    expect(screen.queryByText(/not a single law/i)).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /ILGA World Database/i })).toBeInTheDocument();
+  });
+
+  it('links the /rights index, never a topic anchor', () => {
+    renderWithProviders(<TagLegalSource sources={[]} tagSlug="transgender-rights" />);
+    const link = screen.getByRole('link', { name: /See all 18 rights by country/i });
+    expect(link.getAttribute('href')).not.toContain('#');
+  });
+});

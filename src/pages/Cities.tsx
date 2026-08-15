@@ -7,19 +7,17 @@ import { usePrideCalendar } from '@/hooks/usePrideCalendar';
 import { buildPrideByCity } from '@/utils/prideForCity';
 import { ErrorState } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/button';
-import { PageHero } from '@/components/discovery';
-import { cn } from '@/lib/utils';
+import { RouteBullet } from '@/components/transit/RouteBullet';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { ArrowRight } from 'lucide-react';
-import { CitiesFilterBar } from './cities/CitiesFilterBar';
-import { CityListPane } from './cities/CityListPane';
-import { PageContainer } from '@/components/layout/PageContainer';
+import { cn } from '@/lib/utils';
+import { CitiesControlBar } from './cities/CitiesControlBar';
+import { CitiesLineIndex } from './cities/CitiesLineIndex';
+import { CityCardGrid } from './cities/CityCardGrid';
+import { PageContainer, PAGE_BLEED, STICKY_UNDER_HEADER } from '@/components/layout/PageContainer';
 
-// Map pane is lazy-mounted: maplibre-gl is ~1.1 s of scripting on first
-// load (Lighthouse #1094). Importing it via React.lazy keeps the maplibre
-// chunk parsed off the critical path until after first paint; the
-// `mapReady` flag below additionally defers React mount until requestIdle
-// / 200 ms post-paint so TBT stays low for the list-first interaction.
+// Map pane stays lazy: maplibre-gl is ~1.1 s of scripting on first load
+// (Lighthouse #1094). It is now behind ?view=map, so the overwhelming majority of
+// visits never parse the chunk at all.
 const CitiesMapPane = lazy(() =>
   import('./cities/CitiesMapPane').then((m) => ({ default: m.CitiesMapPane })),
 );
@@ -31,7 +29,6 @@ function MapPaneFallback() {
 export default function Cities() {
   const { t } = useTranslation();
   const url = useCitiesUrlState();
-  const [hoveredCityId, setHoveredCityId] = useState<string | null>(null);
 
   const filterParams = useMemo(
     () => ({
@@ -43,12 +40,11 @@ export default function Cities() {
     [url.q, url.continents, url.tiers, url.sort],
   );
 
-  const { cities, filtered, continents, venueCounts, loading, error } =
+  const { cities, filtered, continents, continentFacets, loading, error } =
     useCitiesDirectory(filterParams);
 
-  // Pride-soon pill data — fetch current year, plus next year only when the
-  // 90-day window from today crosses into January, so we don't double-fetch
-  // for most of the year.
+  // Pride-soon pill data — current year, plus next year only when the 90-day
+  // window from today crosses into January.
   const today = useMemo(() => new Date(), []);
   const currentYear = today.getFullYear();
   const needsNextYear = today.getMonth() >= 9; // Oct (0-indexed) and later
@@ -70,167 +66,202 @@ export default function Cities() {
       description: 'Browse LGBTQ+ friendly cities around the world.',
       url: 'https://queer.guide/cities',
       isPartOf: { '@type': 'WebSite', name: 'Queer Guide', url: 'https://queer.guide' },
+      // The page is a list of named, linked things; saying so is free and is
+      // what the grid has always earned. Capped so the payload stays a hint to a
+      // crawler rather than a second copy of the directory.
+      mainEntity: {
+        '@type': 'ItemList',
+        numberOfItems: filtered.length,
+        itemListElement: filtered.slice(0, 20).map((city, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          name: city.name,
+          url: `https://queer.guide/city/${city.slug || city.id}`,
+        })),
+      },
     },
   });
 
   const hasActiveFilters = url.q.length > 0 || url.continents.size > 0 || url.tiers.size > 0;
-  const showList = url.view === 'list';
   const showMap = url.view === 'map';
 
-  // Defer the map mount until after first paint to keep maplibre-gl off
-  // the initial critical path. On mobile when the user switches to the
-  // Map tab, mount immediately since they're explicitly asking for it.
-  // Setting state inside the effect is the whole point — no defer, no win.
+  // Defer the map mount until after first paint. When the user has explicitly
+  // asked for the map view, mount on the next tick instead of waiting for idle.
   const [mapReady, setMapReady] = useState(false);
   useEffect(() => {
-    if (mapReady) return;
-    const w = window as Window & {
-      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
-      cancelIdleCallback?: (id: number) => void;
-    };
-    const mount = () => setMapReady(true);
-    if (showMap) {
-      // User asked for the map — mount on the next tick so we don't block
-      // the current render.
-      const id = window.setTimeout(mount, 0);
-      return () => window.clearTimeout(id);
-    }
-    if (typeof w.requestIdleCallback === 'function') {
-      const id = w.requestIdleCallback(mount, { timeout: 1500 });
-      return () => w.cancelIdleCallback?.(id);
-    }
-    const id = window.setTimeout(mount, 200);
+    if (!showMap || mapReady) return;
+    const id = window.setTimeout(() => setMapReady(true), 0);
     return () => window.clearTimeout(id);
-  }, [mapReady, showMap]);
+  }, [showMap, mapReady]);
 
   return (
     <div className="relative">
-      <PageHero
-        title={t('cities.title', 'Cities.')}
-        lede={t('cities.subtitle', 'LGBTQ+ friendly cities around the world.')}
-        primaryCta={{ label: t('cities.planTrip', 'Plan a trip'), href: '/travel' }}
-        secondaryCta={{
-          label: t('cities.openDirectory', 'Open the directory'),
-          href: '/directory',
-        }}
-        size="sm"
-      />
-      <PageContainer className="relative">
-        <CitiesFilterBar
-          q={url.q}
-          onQChange={url.setQ}
-          continents={continents}
-          selectedContinents={url.continents}
-          onToggleContinent={url.toggleContinent}
-          selectedTiers={url.tiers}
-          onToggleTier={url.toggleTier}
-          sort={url.sort}
-          onSortChange={url.setSort}
-          totalCount={cities.length}
-          filteredCount={filtered.length}
-          onReset={url.reset}
-        />
-
-        {error ? (
-          <div className="py-6">
-            <ErrorState message={error} />
+      {/* ---- Masthead ------------------------------------------------------ */}
+      {/* Not PageHero: it ships rounded-full pill CTAs and a spotlight effect,
+          the one primitive the rebrand has not reached. */}
+      <header className="border-b-4 border-foreground">
+        <PageContainer flush className="pb-6 pt-6 md:pb-12 md:pt-16">
+          <div className="flex items-center gap-4">
+            <RouteBullet type="city" size={44} />
+            <span className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
+              {t('cities.lineEyebrow', 'Cities · Green line')}
+            </span>
           </div>
-        ) : (
-          <>
-            {/* Mobile-only list/map toggle. A segmented button group (not Tabs)
-              because there are no tab panels — the list/map content renders
-              below via showList/showMap. Tabs here left aria-controls dangling
-              (axe aria-valid-attr-value). */}
-            <div className="lg:hidden pt-4">
-              <div
-                role="group"
-                aria-label={t('cities.viewToggleAriaLabel', 'Toggle list and map')}
-                className="flex items-center gap-1 rounded-element bg-muted p-1"
-              >
-                <Button
-                  variant={showList ? 'default' : 'ghost'}
-                  size="sm"
-                  className="flex-1"
-                  aria-pressed={showList}
-                  onClick={() => url.setView('list')}
-                >
-                  {t('cities.viewList', 'List')}
-                </Button>
-                <Button
-                  variant={showMap ? 'default' : 'ghost'}
-                  size="sm"
-                  className="flex-1"
-                  aria-pressed={showMap}
-                  onClick={() => url.setView('map')}
-                >
-                  {t('cities.viewMap', 'Map')}
-                </Button>
-              </div>
-            </div>
+          {/* Anton comes from the global h1 rule; adding font-bold would ask a
+              single-weight face to synthesize one.
+              Rank 1 is `text-hero`, but 76px flat on a 390px screen is 84px of
+              one word — `PageHero` steps its own sizes for the same reason. The
+              rank is preserved at the width the ladder was measured for. */}
+          <h1 className="mt-4 font-display text-display leading-[0.95] text-foreground md:text-hero">
+            {t('cities.title', 'Cities.')}
+          </h1>
+          <p className="mt-4 max-w-reading text-body-lg text-muted-foreground">
+            {loading
+              ? t('cities.counting', 'Counting…')
+              : t(
+                  'cities.inView',
+                  '{{count}} cities in the directory, ranked by how much of each one we hold.',
+                  {
+                    count: cities.length,
+                  },
+                )}
+          </p>
+          <div className="mt-6 flex flex-wrap items-center gap-4 md:mt-8">
+            <Button asChild>
+              <LocalizedLink to="/travel">{t('cities.planTrip', 'Plan a trip')}</LocalizedLink>
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => url.setView(showMap ? 'list' : 'map')}
+              aria-pressed={showMap}
+            >
+              {showMap ? t('cities.viewList', 'List') : t('cities.openMap', 'Open the map')}
+            </Button>
+          </div>
+        </PageContainer>
+      </header>
 
-            <div className="grid grid-cols-1 lg:grid-cols-[440px_minmax(0,1fr)] lg:gap-6 py-6">
-              <div
-                className={cn(
-                  'lg:max-h-[calc(100vh-200px)] lg:overflow-y-auto lg:pr-2 lg:block',
-                  !showList && 'hidden',
-                )}
-              >
-                <CityListPane
-                  cities={filtered}
-                  loading={loading}
-                  venueCounts={venueCounts}
-                  prideByCity={prideByCity}
-                  selectedCityId={url.city || null}
-                  onHoverCity={setHoveredCityId}
-                  hasActiveFilters={hasActiveFilters}
-                />
-              </div>
-              <div
-                className={cn(
-                  'lg:block lg:sticky lg:top-[200px] lg:self-start lg:h-[calc(100vh-220px)] rounded-container overflow-hidden bg-muted',
-                  // On mobile, take ~60vh when map view is active.
-                  showMap ? 'h-[60vh]' : 'hidden',
-                )}
-              >
-                {mapReady ? (
-                  <Suspense fallback={<MapPaneFallback />}>
-                    <CitiesMapPane
-                      cities={filtered}
-                      selectedCityId={url.city || null}
-                      hoveredCityId={hoveredCityId}
-                      onSelectCity={url.setCity}
-                      onHoverCity={setHoveredCityId}
-                    />
-                  </Suspense>
-                ) : (
-                  <MapPaneFallback />
-                )}
-              </div>
-            </div>
-
-            {/* Footer CTA: route browsers to the submission flow. */}
-            <div className="py-8 mb-4">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div>
-                  <p className="text-title font-semibold m-0">
-                    {t('cities.suggestTitle', 'Missing a city?')}
-                  </p>
-                  <p className="text-13 text-muted-foreground mt-1 m-0">
-                    {t('cities.suggestLede', 'Suggest one — adds to the directory after review.')}
-                  </p>
-                </div>
-                <LocalizedLink
-                  to="/submit"
-                  className="inline-flex items-center gap-2 rounded-full border border-foreground px-6 py-2.5 text-sm font-bold tracking-tight text-foreground hover:bg-foreground hover:text-background transition-colors no-underline shrink-0"
-                >
-                  {t('cities.suggestCta', 'Suggest a city')}
-                  <ArrowRight size={16} aria-hidden="true" />
-                </LocalizedLink>
-              </div>
-            </div>
-          </>
+      {/* ---- Control band --------------------------------------------------- */}
+      <div
+        className={cn(
+          'sticky z-20 border-b-4 border-foreground bg-background',
+          STICKY_UNDER_HEADER,
         )}
-      </PageContainer>
+      >
+        <PageContainer flush className="py-2 md:py-6">
+          <CitiesControlBar
+            q={url.q}
+            onQChange={url.setQ}
+            selectedTiers={url.tiers}
+            onToggleTier={url.toggleTier}
+            sort={url.sort}
+            onSortChange={url.setSort}
+            totalCount={cities.length}
+            filteredCount={filtered.length}
+            onReset={url.reset}
+            hasFilters={hasActiveFilters}
+          />
+        </PageContainer>
+      </div>
+
+      {error ? (
+        <PageContainer>
+          <ErrorState message={error} />
+        </PageContainer>
+      ) : showMap ? (
+        /* ---- Map view ----------------------------------------------------- */
+        <PageContainer>
+          <section
+            className={cn('h-[70vh] overflow-hidden border-y-4 border-foreground', PAGE_BLEED)}
+          >
+            {mapReady ? (
+              <Suspense fallback={<MapPaneFallback />}>
+                <CitiesMapPane
+                  cities={filtered}
+                  selectedCityId={url.city || null}
+                  onSelectCity={url.setCity}
+                />
+              </Suspense>
+            ) : (
+              <MapPaneFallback />
+            )}
+          </section>
+        </PageContainer>
+      ) : (
+        <>
+          {/* ---- Continent line index --------------------------------------- */}
+          <div className="border-b-4 border-foreground">
+            <PageContainer flush className="py-6 md:py-12">
+              <CitiesLineIndex
+                continents={continents}
+                facetCounts={continentFacets}
+                selected={url.continents}
+                onToggle={url.toggleContinent}
+                onClear={url.clearContinents}
+                loading={loading}
+              />
+            </PageContainer>
+          </div>
+
+          {/* ---- The grid ---------------------------------------------------- */}
+          <PageContainer>
+            {/* The heading is sr-only: the band above it is the visible "where am
+                I". Its existence is what replaces the old role="list" landmark,
+                which a virtualized grid of <div> rows cannot carry without
+                failing axe's aria-required-children. */}
+            <section aria-labelledby="cities-grid-heading">
+              <h2 id="cities-grid-heading" className="sr-only">
+                {t('cities.listLabel', 'Cities')}
+              </h2>
+              <CityCardGrid
+                cities={filtered}
+                loading={loading}
+                prideByCity={prideByCity}
+                selectedCityId={url.city || null}
+                hasActiveFilters={hasActiveFilters}
+              />
+            </section>
+          </PageContainer>
+        </>
+      )}
+
+      {/* ---- Tail ----------------------------------------------------------- */}
+      <section className="border-t-4 border-foreground">
+        <PageContainer flush className="py-6 md:py-12">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="card-lift group relative border-[3px] border-foreground p-6">
+              <h3 className="m-0 font-display text-headline">
+                {t('cities.mapTeaserTitle', 'See it on the map')}
+              </h3>
+              <p className="mt-2 text-13 text-muted-foreground">
+                {t(
+                  'cities.mapTeaserLede',
+                  'Every city as a pin, coloured by its country’s equality score.',
+                )}
+              </p>
+              <button
+                type="button"
+                onClick={() => url.setView('map')}
+                aria-label={t('cities.mapTeaserTitle', 'See it on the map')}
+                className="absolute inset-0"
+              />
+            </div>
+            <div className="card-lift group relative border-[3px] border-foreground p-6">
+              <h3 className="m-0 font-display text-headline">
+                {t('cities.suggestTitle', 'Missing a city?')}
+              </h3>
+              <p className="mt-2 text-13 text-muted-foreground">
+                {t('cities.suggestLede', 'Suggest one — adds to the directory after review.')}
+              </p>
+              <LocalizedLink
+                to="/submit"
+                aria-label={t('cities.suggestCta', 'Suggest a city')}
+                className="absolute inset-0 no-underline"
+              />
+            </div>
+          </div>
+        </PageContainer>
+      </section>
     </div>
   );
 }

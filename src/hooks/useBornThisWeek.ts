@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Personality } from '@/hooks/usePersonalities';
 
@@ -45,11 +45,14 @@ function dayOfYear(d: Date): number {
  * `.not('is_adult', 'is', true)` over relaxing the check.
  */
 export function useBornThisWeek(limit = 6, mode: 'born' | 'died' = 'born') {
-  const [state, setState] = useState<State>({ items: [], loading: true });
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
+  // react-query, not useEffect: this pulls 500 rows to filter a ±3-day window
+  // client-side, and it used to do that on EVERY mount — including every
+  // navigation back to the homepage. The window only turns over at midnight,
+  // so an hour of cache costs nothing and saves 500 rows per remount.
+  const query = useQuery({
+    queryKey: ['born-this-week', limit, mode],
+    staleTime: 60 * 60 * 1000,
+    queryFn: async (): Promise<Personality[]> => {
       const dateCol = mode === 'born' ? 'birth_date' : 'death_date';
       const { data, error } = await supabase
         .from('personalities')
@@ -61,11 +64,8 @@ export function useBornThisWeek(limit = 6, mode: 'born' | 'died' = 'born') {
         .order('view_count', { ascending: false })
         .limit(500);
 
-      if (cancelled) return;
-      if (error || !data) {
-        setState({ items: [], loading: false });
-        return;
-      }
+      if (error) throw error;
+      if (!data) return [];
 
       const today = new Date();
       const todayDoy = dayOfYear(today);
@@ -101,14 +101,12 @@ export function useBornThisWeek(limit = 6, mode: 'born' | 'died' = 'born') {
           view_count: row.view_count ?? 0,
         })) as unknown as Personality[];
 
-      setState({ items: filtered, loading: false });
-    })().catch(() => {
-      if (!cancelled) setState((s) => ({ ...s, loading: false }));
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [limit, mode]);
+      return filtered;
+    },
+  });
 
-  return state;
+  // Same `{ items, loading }` shape the callers already destructure. A failed
+  // query reads as "nothing this week", which is the correct render for a
+  // self-hiding rail.
+  return { items: query.data ?? [], loading: query.isLoading } satisfies State;
 }

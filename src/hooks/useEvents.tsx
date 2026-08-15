@@ -62,6 +62,15 @@ export function useEvents(autoFetch: boolean = true, opts?: { skipDatasetTotal?:
         city?: string;
         cities?: string[];
         countryId?: string;
+        /**
+         * Events held at one of these venues. The only way to scope events to a
+         * queer village: `events` has no village FK, so a village's events are
+         * the events at the venues linked to it. `/villages/:slug` previously
+         * asked for the whole PARENT CITY's events, so Chueca advertised
+         * everything happening anywhere in Madrid as if it were on the strip.
+         * Forces the client-query path — `search_events` takes no venue filter.
+         */
+        venueIds?: string[];
         eventType?: string;
         eventTypes?: string[];
         dateRange?: { start: string; end: string };
@@ -104,6 +113,7 @@ export function useEvents(autoFetch: boolean = true, opts?: { skipDatasetTotal?:
           !filters?.cities?.length &&
           !filters?.countryId &&
           !filters?.eventTypes?.length &&
+          !filters?.venueIds?.length &&
           !filters?.languages?.length &&
           !filters?.ageRestriction &&
           !filters?.organizerId &&
@@ -215,6 +225,13 @@ export function useEvents(autoFetch: boolean = true, opts?: { skipDatasetTotal?:
 
           if (filters?.countryId) {
             query = query.eq('country_id', filters.countryId);
+          }
+
+          if (filters?.venueIds?.length) {
+            // Capped: a PostgREST `in()` is serialised into the URL and starts
+            // failing silently somewhere past ~600 ids. A village with more
+            // venues than this is not a walkable cluster anyway.
+            query = query.in('venue_id', filters.venueIds.slice(0, 400));
           }
 
           if (filters?.cities?.length) {

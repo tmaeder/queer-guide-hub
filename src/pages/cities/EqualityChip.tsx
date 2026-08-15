@@ -7,6 +7,24 @@ interface EqualityChipProps {
   className?: string;
   /** Show the human label (Very High, High, …) instead of the numeric score. */
   showLabel?: boolean;
+  /**
+   * `plate` (default) is the original tinted chip with the coloured tier dot.
+   *
+   * `ink` drops the dot and the plate entirely and inherits its colour from the
+   * parent. It exists for the /cities card, which sits directly under a city's
+   * transit diagram — and the two colour systems collide there, measurably:
+   * `--track-green` (#2BE05A, hue 136) is 6.5° from the very-high tier's #22c55e
+   * (hue 142), and `--track-yellow` (#FFD500, hue 50) is 4.7° from moderate's
+   * #eab308. Twenty pixels apart, one of those marks means "the third-longest
+   * metro line" and the other means "this country is safe for you". The design
+   * system's rule is explicit — track colours never reach the equality scale —
+   * and nothing in CI can catch this particular breach, because an SVG stroke has
+   * no background-color for the sanctioned-ink sweep to read.
+   *
+   * Inheriting rather than setting a colour is what lets the same chip stay
+   * legible on a card that fills ink when selected.
+   */
+  variant?: 'plate' | 'ink';
 }
 
 const TIER_LABEL: Record<EqualityTier, string> = {
@@ -31,7 +49,12 @@ const TIER_LABEL: Record<EqualityTier, string> = {
  * border deletion. This one component rendered 1,218 of the site's borders,
  * because it repeats per row on every city list (/cities, /africa, /europe).
  */
-export function EqualityChip({ score, className, showLabel = false }: EqualityChipProps) {
+export function EqualityChip({
+  score,
+  className,
+  showLabel = false,
+  variant = 'plate',
+}: EqualityChipProps) {
   const tier = tierFor(score);
   const label = showLabel || score == null ? TIER_LABEL[tier] : `${Math.round(score)}`;
   const dotColor = getScoreRingColor(score);
@@ -39,6 +62,28 @@ export function EqualityChip({ score, className, showLabel = false }: EqualityCh
     score == null
       ? `Equality score unknown`
       : `Equality score ${Math.round(score)}, ${TIER_LABEL[tier]}`;
+
+  if (variant === 'ink') {
+    return (
+      <span
+        className={cn('inline-flex items-baseline gap-1.5', className)}
+        aria-label={ariaLabel}
+        data-tier={tier}
+      >
+        <span className="text-13 font-bold tabular-nums">{label}</span>
+        {/* The tier word carries the meaning a bare number does not — but only
+            when the label IS a number. With `showLabel` the label already is the
+            tier, and rendering both printed "Very High Very High". `opacity`
+            rather than a muted token, so it survives the inverted (ink-filled)
+            card without needing a second colour rule. */}
+        {score != null && !showLabel && (
+          <span aria-hidden className="text-2xs uppercase tracking-label opacity-70">
+            {TIER_LABEL[tier]}
+          </span>
+        )}
+      </span>
+    );
+  }
 
   return (
     <span

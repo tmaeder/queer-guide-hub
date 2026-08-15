@@ -6,6 +6,8 @@ import { cn } from '@/lib/utils';
 import { INTENT_NAV, INTENT_TRACK, isIntentActive } from '@/config/navigation';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { MasterSymbol } from '@/components/brand/MasterSymbol';
+import { TrackSwatch } from '@/components/transit/TrackSwatch';
+import { PAGE_GUTTER } from '@/components/layout/PageContainer';
 import { FooterTracks } from './FooterTracks';
 
 /**
@@ -37,13 +39,6 @@ const legalLinks = [
   { href: '/donate', labelKey: 'footer.supportUs', fallback: 'Support Us' },
 ];
 
-const TRACK_SWATCH: Record<string, string> = {
-  pink: 'bg-track-pink',
-  blue: 'bg-track-blue',
-  green: 'bg-track-green',
-  yellow: 'bg-track-yellow',
-};
-
 export function Footer() {
   const { t } = useTranslation();
   const { pathname } = useLocation();
@@ -52,43 +47,74 @@ export function Footer() {
 
   return (
     <footer className="mt-auto bg-foreground text-background">
-      <div className="mx-auto w-full max-w-page px-4 pt-8 sm:px-6 md:px-8">
+      {/* FULL-BLEED, deliberately outside the page cap and the gutter. A track
+          runs to the edge of the map or it is not a track — capping it at
+          max-w-page and then insetting it by the gutter left a margin of dead
+          ink on both sides and made the lines read as a decorative graphic
+          dropped into a column rather than as the network the page sits on.
+          This is the same rule the header's own edge-to-edge rules follow:
+          full-bleed bands stay full-bleed, only their CONTENT takes the cap. */}
+      <div className="pt-8">
         <FooterTracks />
       </div>
 
-      {/* ── Track columns. One per intent, single-sourced from INTENT_NAV so
-           the footer can never drift from the topbar (the defect class that
-           put /venues and /people out of reach of desktop chrome). ────── */}
-      <nav
-        aria-label="Footer navigation"
-        className="mx-auto grid w-full max-w-page grid-cols-2 gap-6 px-4 pb-8 pt-4 sm:px-6 md:grid-cols-3 md:px-8 lg:grid-cols-6"
+      {/* ── Brand + track columns. One column per intent, single-sourced from
+           INTENT_NAV so the footer can never drift from the topbar (the defect
+           class that put /venues and /people out of reach of desktop chrome).
+           The columns LINK now rather than describe: a footer's job is to be
+           the site's index, and a subtitle paragraph under a heading is the
+           one thing in a footer nobody has ever clicked. ─────────────── */}
+      <div
+        className={cn(
+          'mx-auto grid w-full max-w-page grid-cols-2 gap-8 pb-8 pt-4 md:grid-cols-4 lg:grid-cols-8',
+          PAGE_GUTTER,
+        )}
       >
-        {INTENT_NAV.map((intent) => {
-          const active = isIntentActive(intent, localePath);
-          const track = INTENT_TRACK[intent.id] ?? 'pink';
-          return (
-            <div key={intent.to}>
-              <div className="mb-2 flex items-center gap-2">
-                <span aria-hidden className={cn('h-2 w-5 rounded-full', TRACK_SWATCH[track])} />
-                <LocalizedLink
-                  to={intent.to}
-                  aria-current={active ? 'page' : undefined}
-                  className="text-title font-bold text-background no-underline hover:underline underline-offset-4"
-                >
-                  {t(intent.labelKey, intent.fallback)}
-                </LocalizedLink>
+        <div className="col-span-2">
+          <MasterSymbol className="w-28 text-background" />
+          <p className="mt-4 max-w-[16rem] text-15 font-bold leading-snug">
+            {t('footer.tagline', 'Every track. Every station. Everyone.')}
+          </p>
+        </div>
+
+        <nav aria-label="Footer navigation" className="contents">
+          {INTENT_NAV.map((intent) => {
+            const active = isIntentActive(intent, localePath);
+            const track = INTENT_TRACK[intent.id] ?? 'pink';
+            return (
+              <div key={intent.to}>
+                <div className="mb-2 flex items-center gap-2">
+                  <TrackSwatch track={track} tone="ink" />
+                  <LocalizedLink
+                    to={intent.to}
+                    aria-current={active ? 'page' : undefined}
+                    className="text-15 font-bold text-background no-underline underline-offset-4 hover:underline"
+                  >
+                    {t(intent.labelKey, intent.fallback)}
+                  </LocalizedLink>
+                </div>
+                <ul>
+                  {intent.children.map((child) => (
+                    <li key={child.to}>
+                      <LocalizedLink
+                        to={child.to}
+                        aria-current={localePath === child.to ? 'page' : undefined}
+                        className="block py-1 text-13 leading-relaxed text-background/80 no-underline underline-offset-4 hover:text-background hover:underline"
+                      >
+                        {t(child.labelKey, child.fallback)}
+                      </LocalizedLink>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <p className="text-13 leading-relaxed text-background/70">
-                {t(intent.subtitleKey, intent.subtitleFallback)}
-              </p>
-            </div>
-          );
-        })}
-      </nav>
+            );
+          })}
+        </nav>
+      </div>
 
       {/* ── Policy + crisis. Above the legal row on purpose. ──────────── */}
       <div className="border-t-[3px] border-background">
-        <div className="mx-auto grid w-full max-w-page gap-8 px-4 py-8 sm:px-6 md:grid-cols-2 md:px-8">
+        <div className="mx-auto grid w-full max-w-page gap-8 py-8 md:grid-cols-2">
           <div>
             <h2 className="max-w-md font-display text-headline leading-tight">
               {t('footer.antiDiscrimination.title', "We don't do bigotry here.")}
@@ -139,15 +165,17 @@ export function Footer() {
         </div>
       </div>
 
-      {/* ── Legal + tagline ───────────────────────────────────────────── */}
-      <div className="border-t-[3px] border-background">
-        <div className="mx-auto flex w-full max-w-page flex-wrap items-center justify-between gap-4 px-4 py-6 sm:px-6 md:px-8">
-          <div className="flex flex-wrap items-center gap-4">
-            <MasterSymbol className="w-14 text-background" />
-            <span className="text-13">
-              {t('footer.tagline', 'Every track. Every station. Everyone.')}
-            </span>
-          </div>
+      {/* ── Legal row. The mock closes on a light hairline, not another heavy
+           rule: by here the plate has already been divided twice and a third
+           3px band reads as a fourth section rather than a footnote. The mark
+           and tagline are NOT repeated — they open the plate now. ────── */}
+      <div className="border-t border-background/25">
+        <div
+          className={cn(
+            'mx-auto flex w-full max-w-page flex-wrap items-center justify-between gap-4 py-6',
+            PAGE_GUTTER,
+          )}
+        >
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
             {legalLinks.map((link) => (
               <LocalizedLink
@@ -176,7 +204,12 @@ export function Footer() {
             </span>
           </div>
         </div>
-        <div className="mx-auto flex w-full max-w-page flex-wrap items-center gap-2 px-4 pb-6 sm:px-6 md:px-8">
+        <div
+          className={cn(
+            'mx-auto flex w-full max-w-page flex-wrap items-center gap-2 pb-6',
+            PAGE_GUTTER,
+          )}
+        >
           <LanguageSwitcher />
           <CurrencySelector />
         </div>

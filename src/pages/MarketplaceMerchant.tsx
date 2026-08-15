@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
 import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Globe } from 'lucide-react';
 import { useMeta } from '@/hooks/useMeta';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
-import { PageHeader } from '@/components/layout/PageHeader';
+import { MarketplaceMasthead } from '@/components/marketplace/MarketplaceMasthead';
+import { DeadEndTrack } from '@/components/transit/DeadEndTrack';
 import { MarketplaceFilteredView } from '@/components/marketplace/MarketplaceFilteredView';
 import { GuidesRail } from '@/components/guides/GuidesRail';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -43,35 +43,43 @@ export default function MarketplaceMerchant() {
 
   if (!cleanDomain) {
     return (
-      <PageContainer className="text-center">
-        <h1 className="text-2xl font-bold mb-4">Merchant not found</h1>
-        {/* asChild, not a Link wrapping a Button — that nests a <button>
-            inside an <a>, which is invalid HTML. */}
-        <Button asChild>
-          <LocalizedLink to="/marketplace" className="no-underline">
-            <ArrowLeft size={16} className="mr-2" />
-            Back to Marketplace
-          </LocalizedLink>
-        </Button>
+      <PageContainer>
+        <h1 className="font-display text-display leading-[0.95]">No such merchant.</h1>
+        <p className="mt-4 max-w-reading text-body-lg text-muted-foreground">
+          That seller is not listed on this line.
+        </p>
+        <DeadEndTrack className="mt-10" label="Unknown" type="marketplace" />
+        <div className="mt-8">
+          <Button asChild>
+            <LocalizedLink to="/marketplace/brands" className="no-underline">
+              All makers
+            </LocalizedLink>
+          </Button>
+        </div>
       </PageContainer>
     );
   }
 
   return (
     <div className="min-h-screen">
+      <MarketplaceMasthead
+        size="page"
+        backTo={{ label: 'All makers', to: '/marketplace/brands' }}
+        eyebrow="Marketplace · Merchant"
+        title={displayName.charAt(0).toUpperCase() + displayName.slice(1)}
+        lede={cleanDomain}
+        // The listing count belongs to the grid below, which owns the query.
+        count={null}
+        actions={
+          <Button asChild variant="outline">
+            <a href={`https://${cleanDomain}`} target="_blank" rel="noopener noreferrer">
+              Visit merchant site
+            </a>
+          </Button>
+        }
+      />
+
       <PageContainer>
-        <PageHeader
-          title={displayName.charAt(0).toUpperCase() + displayName.slice(1)}
-          subtitle={cleanDomain}
-          actions={
-            <Button asChild variant="outline">
-              <a href={`https://${cleanDomain}`} target="_blank" rel="noopener noreferrer">
-                <Globe size={16} className="mr-2" aria-hidden="true" />
-                Visit merchant site
-              </a>
-            </Button>
-          }
-        />
         <GuidesRail filters={{ entityType: 'marketplace', limit: 3 }} />
         <MarketplaceFilteredView
           filters={{ merchantDomain: cleanDomain }}

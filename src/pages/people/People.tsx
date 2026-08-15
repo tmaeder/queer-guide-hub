@@ -26,6 +26,8 @@ import {
   useDestinationCities,
 } from '@/hooks/useIntentData';
 import type { SectionDef } from '@/components/entity/editorial';
+import { CityNetwork } from '@/components/home/subway/CityNetwork';
+import { hasCityNetwork } from '@/components/home/subway/cityNetworkGeometry';
 
 /**
  * `/people` — the "Meet people" intent.
@@ -359,6 +361,9 @@ export default function People() {
                 eyebrow={c.countries?.name}
                 name={c.name}
                 href={c.slug ? `/city/${c.slug}` : undefined}
+                media={
+                  hasCityNetwork(c.slug) ? <CityNetwork slug={c.slug} variant="thumb" /> : undefined
+                }
               />
             </li>
           ))}

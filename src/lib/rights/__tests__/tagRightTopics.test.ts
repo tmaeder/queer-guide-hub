@@ -1,7 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { TAG_RIGHT_TOPIC, rightTopicForTag, rightTopicHref } from '../tagRightTopics';
+import {
+  TAG_RIGHT_TOPIC,
+  UMBRELLA_RIGHTS_TAGS,
+  isUmbrellaRightsTag,
+  rightTopicForTag,
+  rightTopicHref,
+} from '../tagRightTopics';
 import { RIGHT_TOPICS } from '../rightsCatalog';
 
 describe('TAG_RIGHT_TOPIC', () => {
@@ -51,5 +57,24 @@ describe('rightTopicHref', () => {
     // card. Without that line the links are silently inert.
     const page = readFileSync(resolve(__dirname, '../../../pages/intent/Rights.tsx'), 'utf8');
     expect(page).toMatch(/id=\{topic\.slug\}/);
+  });
+});
+
+describe('umbrella rights tags', () => {
+  it('recognises the whole-field tags and nothing else', () => {
+    expect(isUmbrellaRightsTag('lgbtqia-rights')).toBe(true);
+    expect(isUmbrellaRightsTag('transgender-rights')).toBe(true);
+    expect(isUmbrellaRightsTag('marriage-equality')).toBe(false);
+    expect(isUmbrellaRightsTag('bear-bar')).toBe(false);
+    expect(isUmbrellaRightsTag(null)).toBe(false);
+  });
+
+  it('never also maps an umbrella tag to a single right', () => {
+    // The two answers contradict each other: "this IS gender recognition" vs
+    // "this spans all 18 rights". If a future edit adds `transgender-rights` to
+    // TAG_RIGHT_TOPIC, the page would assert both.
+    for (const slug of UMBRELLA_RIGHTS_TAGS) {
+      expect(TAG_RIGHT_TOPIC[slug], `${slug} is both umbrella and single-topic`).toBeUndefined();
+    }
   });
 });

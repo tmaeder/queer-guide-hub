@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { RouteBullet } from '@/components/transit/RouteBullet';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { cn } from '@/lib/utils';
 import { MarketplaceLineArt } from './MarketplaceLineArt';
 
 interface MarketplaceMastheadProps {
@@ -9,11 +11,23 @@ interface MarketplaceMastheadProps {
   title: string;
   lede?: ReactNode;
   /**
-   * The count row. ALWAYS rendered, even while loading or at zero — pass the
-   * "Counting…" string rather than omitting the prop. See the note below.
+   * The count row. ALWAYS rendered when the surface HAS a count, even while
+   * loading or at zero — pass "Counting…" rather than omitting it.
+   *
+   * Required-but-nullable on purpose: `null` is a decision ("this surface has
+   * no count"), where an optional prop would let one be forgotten. See the
+   * anti-flip note below for why that distinction earns its keep.
    */
-  count: ReactNode;
+  count: ReactNode | null;
   actions?: ReactNode;
+  /**
+   * `hub` is the rank-1 flat `text-hero` used by /marketplace and /brands.
+   * `page` steps down for the secondary surfaces hanging off them, so a
+   * category never shouts as loudly as the index that lists it.
+   */
+  size?: 'hub' | 'page';
+  /** Optional "back up one level" link rendered above the bullet. */
+  backTo?: { label: string; to: string };
   /** Extra content below the actions (affiliate disclosure, filters…). */
   children?: ReactNode;
 }
@@ -42,11 +56,21 @@ export function MarketplaceMasthead({
   lede,
   count,
   actions,
+  size = 'hub',
+  backTo,
   children,
 }: MarketplaceMastheadProps) {
   return (
     <header className="border-b-4 border-foreground">
       <PageContainer flush className="pb-8 pt-8 md:pb-12 md:pt-16">
+        {backTo && (
+          <LocalizedLink
+            to={backTo.to}
+            className="mb-6 inline-block text-13 font-bold no-underline hover:underline"
+          >
+            ← {backTo.label}
+          </LocalizedLink>
+        )}
         <div className="flex flex-wrap items-end justify-between gap-8">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-4">
@@ -57,15 +81,24 @@ export function MarketplaceMasthead({
             </div>
             {/* `text-hero` flat, no md:text-hero-xl — that rank is for
                 marketing covers, not a listing index. */}
-            <h1 className="mt-4 font-display text-hero leading-[0.95]">{title}</h1>
+            <h1
+              className={cn(
+                'mt-4 font-display leading-[0.95]',
+                size === 'hub' ? 'text-hero' : 'text-display md:text-hero',
+              )}
+            >
+              {title}
+            </h1>
             {lede && <p className="mt-4 max-w-reading text-body-lg">{lede}</p>}
-            <p className="mt-6 flex items-center gap-4 text-13 text-muted-foreground">
-              <span
-                aria-hidden="true"
-                className="h-1.5 w-10 shrink-0 border border-foreground bg-track-yellow"
-              />
-              <span className="tabular-nums">{count}</span>
-            </p>
+            {count !== null && (
+              <p className="mt-6 flex items-center gap-4 text-13 text-muted-foreground">
+                <span
+                  aria-hidden="true"
+                  className="h-1.5 w-10 shrink-0 border border-foreground bg-track-yellow"
+                />
+                <span className="tabular-nums">{count}</span>
+              </p>
+            )}
           </div>
           {/* Decorative, and last in the DOM so a screen reader reaches the
               lede and the count before anything ornamental. */}

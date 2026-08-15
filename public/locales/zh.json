@@ -139,7 +139,14 @@
       "recent_city": "In a city you've explored",
       "featured": "Featured"
     },
-    "ariaLabel": "[ZH] Search Queer Guide"
+    "ariaLabel": "[ZH] Search Queer Guide",
+    "escape": "esc",
+    "jumpTo": "快速前往",
+    "recent": "最近",
+    "noStation": "还没有这个名字的车站",
+    "addToMap": "把它加到地图上",
+    "seeOnMap": "在地图上查看 {{count}} 条结果",
+    "keyHints": "↑↓ 导航 · ↵ 打开"
   },
   "common": {
     "contentInLanguage": "语言：{{lang}}",
@@ -217,6 +224,13 @@
       "eyebrow": "[ZH] In an emergency",
       "title": "[ZH] Crisis lines, 24 hours",
       "body": "[ZH] Trans helpline, LGBT+ crisis support, and local emergency numbers, listed by country and always one click from any page."
+    },
+    "osmAttribution": "交通示意图源自 © OpenStreetMap 贡献者数据（ODbL）",
+    "reportSomething": "举报",
+    "hotlines": "求助热线",
+    "antiDiscrimination": {
+      "title": "这里容不下偏见。",
+      "body": "种族歧视、跨性别恐惧和各种歧视，都会被直接踢出平台。没有例外。"
     }
   },
   "trips": {
@@ -1258,7 +1272,16 @@
     "featured": "[ZH] Featured",
     "rsvpEmptyMember": "[ZH] No RSVPs yet. Be the first.",
     "rsvpEmptyAnon": "[ZH] No RSVPs yet. Sign in to be the first.",
-    "peopleYouMayKnow": "[ZH] People you may know"
+    "peopleYouMayKnow": "[ZH] People you may know",
+    "detail": {
+      "eyebrow": "[ZH] Event",
+      "sections": "[ZH] Sections",
+      "section": {
+        "about": "[ZH] About this event",
+        "where": "[ZH] Getting there",
+        "going": "[ZH] Who's going"
+      }
+    }
   },
   "venues": {
     "title": "场所",
@@ -1385,7 +1408,20 @@
     },
     "closed": "[ZH] Closed",
     "openNow": "[ZH] Open now",
-    "locationUnknown": "[ZH] Location unknown"
+    "locationUnknown": "[ZH] Location unknown",
+    "detail": {
+      "eyebrow": "[ZH] Venue",
+      "closed": "[ZH] Permanently closed",
+      "section": {
+        "about": "[ZH] About",
+        "hours": "[ZH] Opening hours",
+        "access": "[ZH] Access",
+        "whatsOn": "[ZH] What's on here",
+        "signals": "[ZH] Visitor signals",
+        "reviews": "[ZH] Reviews",
+        "photos": "[ZH] Photos"
+      }
+    }
   },
   "marketplace": {
     "title": "市场",
@@ -1849,7 +1885,10 @@
       "help": "帮助",
       "tags": "标签",
       "history": "历史",
-      "guides": "[ZH] Guides"
+      "guides": "[ZH] Guides",
+      "trips": "行程",
+      "organizations": "组织",
+      "wishlists": "心愿单"
     },
     "intents": {
       "goingOut": {
@@ -2751,8 +2790,93 @@
         "currency": "货币",
         "bestTime": "最佳时间",
         "airport": "机场"
+      },
+      "eyebrow": "[ZH] City",
+      "sections": "[ZH] Sections",
+      "loadingVenues": "[ZH] Loading venues",
+      "openEvent": "[ZH] Open",
+      "openMap": "[ZH] Open the full map",
+      "createTrip": "[ZH] Create trip",
+      "officialWebsite": "[ZH] Official website",
+      "favorite": "[ZH] Save to favorites",
+      "favorited": "[ZH] Saved to favorites",
+      "census": {
+        "stops": "[ZH] {{n}} stops",
+        "districts": "[ZH] {{n}} districts",
+        "departures": "[ZH] {{n}} departures"
+      },
+      "section": {
+        "rights": "[ZH] Safety & rights",
+        "rightsNote": "[ZH] Know before you go.",
+        "venues": "[ZH] Where to go",
+        "districts": "[ZH] Queer districts",
+        "districtsNote": "[ZH] Walkable clusters of bars, cafés and community spaces.",
+        "events": "[ZH] Next departures",
+        "overview": "[ZH] About {{city}}",
+        "travel": "[ZH] Getting there",
+        "news": "[ZH] In the news",
+        "nearby": "[ZH] Nearby"
+      },
+      "stats": {
+        "venues": "[ZH] Venues",
+        "districts": "[ZH] Districts",
+        "events": "[ZH] Upcoming events"
+      },
+      "about": {
+        "status": "[ZH] Status",
+        "capital": "[ZH] Capital city",
+        "majorCity": "[ZH] Major city",
+        "region": "[ZH] Region",
+        "timezone": "[ZH] Timezone",
+        "founded": "[ZH] Founded",
+        "area": "[ZH] Area",
+        "elevation": "[ZH] Elevation",
+        "mayor": "[ZH] Mayor",
+        "postalCodes": "[ZH] Postal codes",
+        "costOfLiving": "[ZH] Cost of living",
+        "universities": "[ZH] Universities",
+        "sisterCities": "[ZH] Sister cities"
+      },
+      "travel": {
+        "majorAirport": "[ZH] Major airport",
+        "nearestAirport": "[ZH] Nearest airport",
+        "allCodes": "[ZH] All airport codes",
+        "lines": "[ZH] Lines",
+        "networkCaption": "[ZH] Rapid-transit lines, drawn from OpenStreetMap. Schematic, not to scale.",
+        "gettingAround": "[ZH] Getting around",
+        "noDealsTitle": "[ZH] We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
+        "noDealsBody": "[ZH] If you need to travel to {{city}}, read the safety and rights section first and use the trip planner — it includes a safety briefing for high-risk destinations."
+      },
+      "endOfLine": {
+        "eyebrow": "[ZH] End of line",
+        "title": "[ZH] Riding on?",
+        "body": "[ZH] Every city on the guide carries the same modules: safety and rights first, then the places.",
+        "allCities": "[ZH] All cities",
+        "country": "[ZH] More in {{country}}"
       }
-    }
+    },
+    "capital": "[ZH] Capital",
+    "continentClear": "[ZH] Clear",
+    "continentsTitle": "[ZH] Continents",
+    "counting": "[ZH] Counting…",
+    "highRisk": "[ZH] Criminalized",
+    "inView": "[ZH] {{count}} cities in the directory, ranked by how much of each one we hold.",
+    "lineEyebrow": "[ZH] Cities · Green line",
+    "mapTeaserLede": "[ZH] Every city as a pin, coloured by its country’s equality score.",
+    "mapTeaserTitle": "[ZH] See it on the map",
+    "networkMode": {
+      "subway": "[ZH] Metro network",
+      "light_rail": "[ZH] Light rail network",
+      "tram": "[ZH] Tram network"
+    },
+    "openMap": "[ZH] Open the map",
+    "pridePill": "[ZH] Pride · {{date}}",
+    "continentCount_one": "[ZH] {{count}} city",
+    "continentCount_other": "[ZH] {{count}} cities",
+    "venueCount_one": "[ZH] {{count}} place",
+    "venueCount_other": "[ZH] {{count}} places",
+    "villageCount_one": "[ZH] {{count}} district",
+    "villageCount_other": "[ZH] {{count}} districts"
   },
   "pride": {
     "eyebrow": "Pride Calendar",
@@ -2888,7 +3012,9 @@
       "personalities": "声音",
       "nearby": "附近",
       "news": "新闻",
-      "map": "地图"
+      "map": "地图",
+      "history": "[ZH] Legal record",
+      "historyNote": "[ZH] What changed and when. Safety information without a date is not safety information."
     },
     "practical": {
       "languages": "语言",
@@ -2907,7 +3033,10 @@
       "hdi": "人类发展指数",
       "lifeExpectancy": "预期寿命",
       "literacy": "识字率",
-      "income": "收入水平"
+      "income": "收入水平",
+      "venues": "[ZH] Venues",
+      "events": "[ZH] Upcoming events",
+      "weather": "[ZH] Now in {{city}}"
     },
     "cities": {
       "emptyTitle": "暂无城市",
@@ -2923,7 +3052,9 @@
     },
     "travel": {
       "activities": "活动与导览",
-      "activitiesBody": "{{country}}的体验"
+      "activitiesBody": "{{country}}的体验",
+      "noDealsTitle": "[ZH] We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
+      "noDealsBody": "[ZH] If you need to travel to {{country}}, read the rights section on this page first and use the trip planner — it includes a safety briefing for high-risk destinations."
     },
     "news": {
       "emptyTitle": "暂无本地新闻",
@@ -2970,7 +3101,24 @@
       "ilgaLink": "ILGA World Database",
       "deathPenaltyPossible": "[ZH] death penalty possible, no legal certainty"
     },
-    "planTripHighRisk": "[ZH] Plan carefully — safety briefing included"
+    "planTripHighRisk": "[ZH] Plan carefully — safety briefing included",
+    "eyebrow": "[ZH] Country",
+    "sections": "[ZH] Sections",
+    "openMap": "[ZH] Open the full map",
+    "census": {
+      "cities": "[ZH] {{n}} cities",
+      "stops": "[ZH] {{n}} stops",
+      "departures": "[ZH] {{n}} departures"
+    },
+    "history": {
+      "seeAll": "[ZH] Full timeline"
+    },
+    "endOfLine": {
+      "eyebrow": "[ZH] End of line",
+      "title": "[ZH] Compare the law elsewhere",
+      "body": "[ZH] Every country page carries the same legal breakdown, from the same sources, with the date it was checked.",
+      "rights": "[ZH] Rights across the world"
+    }
   },
   "inbox": {
     "title": "收件箱",
@@ -4263,7 +4411,73 @@
       "lawSuperseded": "已被取代",
       "lawPartlyStruck": "现行有效，部分条款被撤销",
       "notOneLaw": "这不是单一法律，而是逐国记录的。",
-      "seeByCountry": "查看各国状态"
+      "seeByCountry": "查看各国状态",
+      "spansAllRights": "这涵盖整个法律领域，而非单一法律。我们逐国记录 18 项独立权利。",
+      "seeAllRights": "查看各国的 18 项权利"
+    }
+  },
+  "village": {
+    "eyebrow": "[ZH] District · Green line",
+    "loading": "[ZH] Loading this district",
+    "loadingVenues": "[ZH] Loading the stop list",
+    "sections": "[ZH] Sections",
+    "planTrip": "[ZH] Plan a trip to {{name}}",
+    "relatedByTag": "[ZH] Related by tag",
+    "notFound": {
+      "title": "[ZH] No such district.",
+      "body": "[ZH] This stop is not on the line.",
+      "cta": "[ZH] All queer villages"
+    },
+    "toast": {
+      "errorTitle": "[ZH] Error",
+      "loadFailed": "[ZH] Failed to load village details"
+    },
+    "facts": {
+      "city": "[ZH] City",
+      "country": "[ZH] Country",
+      "venues": "[ZH] Venues",
+      "events": "[ZH] Upcoming events",
+      "editorsPick": "[ZH] Editor’s pick"
+    },
+    "census": {
+      "stops": "[ZH] {{n}} stops",
+      "departures": "[ZH] {{n}} departures"
+    },
+    "section": {
+      "about": "[ZH] About {{name}}",
+      "walk": "[ZH] The walk",
+      "walkNote": "[ZH] Stops in order, with the straight-line gap between them.",
+      "events": "[ZH] Next departures",
+      "photos": "[ZH] Photos",
+      "city": "[ZH] On the same line"
+    },
+    "action": {
+      "website": "[ZH] Website",
+      "favorite": "[ZH] Save to favorites",
+      "favorited": "[ZH] Saved to favorites"
+    },
+    "events": {
+      "open": "[ZH] Open"
+    },
+    "landmarks": {
+      "title": "[ZH] Notable landmarks"
+    },
+    "photo": {
+      "caption": "[ZH] {{village}}, {{city}}",
+      "alt": "[ZH] {{name}}, photo {{n}}"
+    },
+    "parentCity": {
+      "body": "[ZH] The wider city this district sits in.",
+      "action": "[ZH] Open"
+    },
+    "map": {
+      "caption": "[ZH] Walking distance in {{city}}."
+    },
+    "endOfLine": {
+      "eyebrow": "[ZH] End of line",
+      "title": "[ZH] Looking for another district?",
+      "body": "[ZH] Queer villages are walkable clusters of bars, cafés and community spaces. There are more of them.",
+      "city": "[ZH] More in {{city}}"
     }
   }
 }
