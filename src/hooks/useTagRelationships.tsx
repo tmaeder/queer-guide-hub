@@ -165,6 +165,40 @@ export interface TagReferenceLink {
   source_url: string;
 }
 
+export interface SubstanceInteraction {
+  other_id: string;
+  other_slug: string;
+  other_name: string;
+  status: string;
+  severity: number;
+  note: string | null;
+  source: string;
+  source_url: string;
+}
+
+/**
+ * Everything one substance interacts with, worst first.
+ *
+ * The RPC does the ordering (`substance_interaction_rank`) rather than the
+ * client, so the per-substance band and the full matrix cannot disagree about
+ * what "most dangerous" means.
+ */
+export function useSubstanceInteractions(tagId: string | null) {
+  return useQuery({
+    queryKey: ['substance-interactions', tagId],
+    enabled: !!tagId,
+    staleTime: 30 * 60 * 1000,
+    queryFn: async (): Promise<SubstanceInteraction[]> => {
+      if (!tagId) return [];
+      const { data, error } = await supabase.rpc('get_substance_interactions', {
+        p_tag_id: tagId,
+      });
+      if (error) throw error;
+      return (data ?? []) as SubstanceInteraction[];
+    },
+  });
+}
+
 /**
  * External citations for a tag, from `tag_sources`.
  *

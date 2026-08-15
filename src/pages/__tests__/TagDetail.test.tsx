@@ -22,10 +22,15 @@ vi.mock('@/hooks/useTagUsageBreakdown', async () => {
 });
 
 let tagReferences: { source_type: string; source_url: string }[] = [];
+let substanceInteractions: Record<string, unknown>[] = [];
 vi.mock('@/hooks/useTagRelationships', () => ({
   useSimilarTags: () => ({ data: [] }),
   useTagOntology: () => ({ data: { broader: [], narrower: [], related: [] } }),
   useTagReferenceLinks: () => ({ data: tagReferences }),
+  // Added when the interaction band landed. A partial mock of this module is
+  // why the whole suite broke last time an export was added here — every hook
+  // TagDetail imports from it has to be present.
+  useSubstanceInteractions: () => ({ data: substanceInteractions }),
 }));
 vi.mock('@/hooks/useTagContent', () => ({
   useTagContent: () => ({ data: null, isLoading: true }),
@@ -84,6 +89,7 @@ const lastMeta = () => useMeta.mock.calls.at(-1)?.[0] as Record<string, unknown>
 beforeEach(() => {
   useMeta.mockClear();
   tagReferences = [];
+  substanceInteractions = [];
   tagRow = { ...BASE };
   usage = {
     venue_count: 2,

@@ -32308,6 +32308,30 @@ export type Database = {
         Args: { p_tag_id: string }
         Returns: { source_type: string; source_url: string }[]
       }
+      get_substance_interactions: {
+        Args: { p_tag_id: string }
+        Returns: {
+          other_id: string
+          other_slug: string
+          other_name: string
+          status: string
+          severity: number
+          note: string | null
+          source: string
+          source_url: string
+        }[]
+      }
+      get_substance_interaction_pair: {
+        Args: { p_a: string; p_b: string }
+        Returns: {
+          status: string
+          severity: number
+          note: string | null
+          source: string
+          source_url: string
+        }[]
+      }
+      substance_interaction_matrix: { Args: Record<string, never>; Returns: Json }
       get_translated_content: {
         Args: {
           p_fields?: string[]
