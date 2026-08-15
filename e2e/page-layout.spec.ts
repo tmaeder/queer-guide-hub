@@ -187,3 +187,99 @@ test.describe('page layout — detail routes', () => {
     }
   }
 });
+
+/**
+ * Vertical density on a phone — the axis the invariant above does NOT measure.
+ *
+ * The alignment spec passed on `/cities` at 390px for the entire life of the
+ * 2026-08 rebuild while the page was, in fact, unusable there: the sticky filter
+ * band was 238px (28% of an 844px viewport, permanently) and the first result
+ * card sat 1,271px down, a screen and a half of chrome before a single city.
+ * Nothing was misaligned and nothing overflowed, so every automated gate was
+ * green. A page can satisfy the whole layout contract and still be bad to use.
+ *
+ * Both budgets are RATIOS of the viewport, not pixel constants, so they survive
+ * a change to the gutter ladder, the type scale or the test viewport itself —
+ * the same reason the alignment check asserts a relationship rather than values.
+ *
+ * These are deliberately loose. They are not a design opinion about how tall a
+ * masthead should be; they are a floor that catches "the chrome ate the page".
+ */
+/**
+ * `/events` is NOT in this list and that is a recorded debt, not an oversight.
+ * It measures **1,460px / 1.73 screens** to first content at 390px — worse than
+ * the `/cities` regression this guard was written for. It is someone else's
+ * surface and fixing it is not this change; adding it here now would ship a
+ * check that is red on arrival, which teaches everyone to ignore it. Add the
+ * route back in the same PR that fixes it.
+ */
+const DENSITY_ROUTES = ['/cities', '/venues', '/marketplace', '/tags'];
+
+/** Sticky chrome (site header + any sticky bar under it) may not exceed this
+ *  share of the viewport. At 844px tall that is ~253px. */
+const MAX_STICKY_RATIO = 0.3;
+/** The first real content of the page must begin within this many viewports. */
+const MAX_SCREENS_TO_CONTENT = 1.25;
+/** A link into a detail page — the first thing on these routes that is content
+ *  rather than chrome. */
+const CARD_LINK_SELECTOR =
+  'main a[href*="/city/"], main a[href*="/venues/"], main a[href*="/events/"], main a[href*="/marketplace/"], main a[href*="/tags/"]';
+
+test.describe('page layout — mobile density', () => {
+  for (const route of DENSITY_ROUTES) {
+    test(`${route} does not bury its content under chrome at 390px`, async ({ page }) => {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.goto(route);
+      await page.waitForLoadState('domcontentloaded');
+      // Wait for the CARD to exist rather than sleeping a fixed interval. These
+      // routes are data-driven, and a fixed wait measures whatever happens to be
+      // on screen when it elapses — which made this assertion swing between 0.9
+      // and 2.4 screens on the same build depending on how warm the dev server
+      // was. Measuring a layout before its content exists is measuring nothing.
+      await page
+        .locator(CARD_LINK_SELECTOR)
+        .first()
+        .waitFor({ state: 'attached', timeout: 25_000 })
+        .catch(() => {});
+      await page.waitForTimeout(400);
+
+      const r = await page.evaluate((SEL) => {
+        const vh = window.innerHeight;
+        // Every element that is pinned to the top and therefore costs its height
+        // on EVERY screen, not just the first.
+        const sticky = Array.from(document.querySelectorAll('body *')).filter((n) => {
+          const cs = getComputedStyle(n);
+          if (cs.position !== 'sticky' && cs.position !== 'fixed') return false;
+          const rect = n.getBoundingClientRect();
+          // Top-pinned only: a bottom nav or a floating action button is not
+          // chrome the reader scrolls past.
+          return rect.height > 0 && rect.top <= 1 && rect.bottom < vh * 0.6;
+        });
+        // Outermost only, so a sticky child inside a sticky bar is not counted twice.
+        const outer = sticky.filter((n) => !sticky.some((o) => o !== n && o.contains(n)));
+        const stickyPx = outer.reduce((sum, n) => sum + n.getBoundingClientRect().height, 0);
+
+        // First content: the first card-like link into a detail page.
+        const first = document.querySelector(SEL);
+        const firstTop = first
+          ? Math.round(first.getBoundingClientRect().top + window.scrollY)
+          : null;
+        return { vh, stickyPx: Math.round(stickyPx), firstTop };
+      }, CARD_LINK_SELECTOR);
+
+      expect(
+        r.stickyPx / r.vh,
+        `${route}: sticky chrome is ${r.stickyPx}px of a ${r.vh}px viewport`,
+      ).toBeLessThanOrEqual(MAX_STICKY_RATIO);
+
+      // A route that renders no card links (empty state, cold cache) proves
+      // nothing here — skip rather than fail on absence.
+      if (r.firstTop !== null) {
+        expect(
+          r.firstTop / r.vh,
+          `${route}: first content is ${r.firstTop}px down (${(r.firstTop / r.vh).toFixed(2)} screens)`,
+        ).toBeLessThanOrEqual(MAX_SCREENS_TO_CONTENT);
+      }
+    });
+  }
+});
