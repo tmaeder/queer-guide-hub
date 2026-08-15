@@ -70,22 +70,54 @@ Deno.test('only explicitly pornographic occupations corroborate', () => {
   }
 })
 
-Deno.test('fetchAdultPerformerQids maps P106 to the corroborated set', async () => {
+const porn = { mainsnak: { datavalue: { value: { id: 'Q488111' } } } }
+
+Deno.test('corroboration needs the occupation AND the right person', async () => {
   const fake = (_url: string) =>
     Promise.resolve({
       entities: {
-        Q1443300: { claims: { P106: [{ mainsnak: { datavalue: { value: { id: 'Q488111' } } } }] } },
-        Q999: { claims: { P106: [{ mainsnak: { datavalue: { value: { id: 'Q33999' } } } }] } },
-        Q555: { claims: {} },
+        // porn occupation + label matches our name -> corroborated
+        Q1443300: { claims: { P106: [porn] }, labels: { en: { value: 'Joey Stefano' } } },
+        // porn occupation but the entity is a DIFFERENT person -> rejected.
+        // This is the 59.7%-wrong-QID guard: a mis-attached QID that happens
+        // to also be a performer must not lift the gate.
+        Q222: { claims: { P106: [porn] }, labels: { en: { value: 'Danny Starr' } } },
+        // right person, but not documented as a performer -> rejected
+        Q333: {
+          claims: { P106: [{ mainsnak: { datavalue: { value: { id: 'Q33999' } } } }] },
+          labels: { en: { value: 'Real Person' } },
+        },
       },
     })
-  const got = await fetchAdultPerformerQids(['Q1443300', 'Q999', 'Q555'], fake)
+  const got = await fetchAdultPerformerQids(
+    [
+      { qid: 'Q1443300', name: 'Joey Stefano' },
+      { qid: 'Q222', name: 'Danny Star' },
+      { qid: 'Q333', name: 'Real Person' },
+    ],
+    fake,
+  )
   assertEquals([...got], ['Q1443300'])
+})
+
+Deno.test('an alias in any language satisfies the name check', async () => {
+  const fake = (_url: string) =>
+    Promise.resolve({
+      entities: {
+        Q1: {
+          claims: { P106: [porn] },
+          labels: { de: { value: 'Ein Anderer Name' } },
+          aliases: { en: [{ value: 'Rocco Steele' }] },
+        },
+      },
+    })
+  const got = await fetchAdultPerformerQids([{ qid: 'Q1', name: 'Rocco-Steele' }], fake)
+  assertEquals([...got], ['Q1'])
 })
 
 Deno.test('fetchAdultPerformerQids fails CLOSED on a network error', async () => {
   const boom = (_url: string) => Promise.reject(new Error('network down'))
-  const got = await fetchAdultPerformerQids(['Q1443300'], boom)
+  const got = await fetchAdultPerformerQids([{ qid: 'Q1443300', name: 'Joey Stefano' }], boom)
   // Empty set => the encyclopedic gate still applies => review, not auto.
   assertEquals(got.size, 0)
 })

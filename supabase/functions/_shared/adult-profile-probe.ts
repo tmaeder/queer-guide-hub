@@ -314,25 +314,67 @@ export function decideTier(input: TierInput): TierDecision {
  * encyclopedic gate and go to review rather than auto-applying on a network
  * hiccup.
  */
+export interface QidCandidate {
+  qid: string
+  /** Our stored name — the QID must actually be ABOUT this person. */
+  name: string
+}
+
+/**
+ * Return the QIDs Wikidata documents as adult performers AND whose own
+ * label/alias matches the name we hold.
+ *
+ * The name check is not decoration. A 2026-08 audit measured **59.7% of
+ * adult-cohort QIDs as the wrong human**, and a wrong QID that happens to also
+ * be a porn performer would otherwise "corroborate" the gate away for someone
+ * it is not about. Requiring one of the entity's own labels/aliases (ANY
+ * language — measured: all 408 corroborating entities have at least one) to
+ * normalize-match our name makes a mis-attached QID inert instead of harmful.
+ *
+ * Fails CLOSED: any error yields an empty set, so those rows keep the
+ * encyclopedic gate and go to review rather than auto-applying.
+ */
 export async function fetchAdultPerformerQids(
-  qids: string[],
+  candidates: QidCandidate[],
   fetchJson: (url: string) => Promise<unknown> = async (url) =>
     await (await fetch(url, { headers: { 'User-Agent': 'queer-guide/1.0' } })).json(),
 ): Promise<Set<string>> {
   const out = new Set<string>()
-  const valid = [...new Set(qids.filter((q) => /^Q\d+$/.test(q)))]
-  for (let i = 0; i < valid.length; i += 50) {
-    const batch = valid.slice(i, i + 50)
+  const wanted = new Map<string, string>()
+  for (const c of candidates) {
+    if (/^Q\d+$/.test(c.qid) && c.name) wanted.set(c.qid, normalizeName(c.name))
+  }
+  const ids = [...wanted.keys()]
+  for (let i = 0; i < ids.length; i += 50) {
+    const batch = ids.slice(i, i + 50)
     try {
       const data = (await fetchJson(
         `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${batch.join('|')}` +
-          `&props=claims&format=json`,
-      )) as { entities?: Record<string, { claims?: Record<string, Array<{ mainsnak?: { datavalue?: { value?: { id?: string } } } }>> }> }
+          `&props=claims%7Clabels%7Caliases&format=json`,
+      )) as {
+        entities?: Record<string, {
+          claims?: Record<string, Array<{ mainsnak?: { datavalue?: { value?: { id?: string } } } }>>
+          labels?: Record<string, { value?: string }>
+          aliases?: Record<string, Array<{ value?: string }>>
+        }>
+      }
       for (const [qid, ent] of Object.entries(data?.entities ?? {})) {
+        const ours = wanted.get(qid)
+        if (!ours) continue
+
         const occupations = (ent?.claims?.['P106'] ?? [])
           .map((c) => c?.mainsnak?.datavalue?.value?.id)
           .filter((v): v is string => typeof v === 'string')
-        if (occupations.some((o) => ADULT_OCCUPATION_QIDS.has(o))) out.add(qid)
+        if (!occupations.some((o) => ADULT_OCCUPATION_QIDS.has(o))) continue
+
+        const names = new Set<string>()
+        for (const l of Object.values(ent?.labels ?? {})) {
+          if (l?.value) names.add(normalizeName(l.value))
+        }
+        for (const group of Object.values(ent?.aliases ?? {})) {
+          for (const a of group ?? []) if (a?.value) names.add(normalizeName(a.value))
+        }
+        if (names.has(ours)) out.add(qid)
       }
     } catch {
       // fail closed — leave this batch out, they stay review-gated

@@ -295,7 +295,9 @@ Deno.serve(async (req) => {
   // source documents it as a pornographic actor is corroborated by that
   // source, not threatened by it — see ADULT_OCCUPATION_QIDS. Fails closed.
   const adultPerformerQids = await fetchAdultPerformerQids(
-    [...state.values()].map((v) => v.qid).filter((q): q is string => !!q && /^Q\d+$/.test(q)),
+    due
+      .map((d) => ({ qid: state.get(d.id)?.qid ?? '', name: d.name }))
+      .filter((c) => /^Q\d+$/.test(c.qid)),
   )
 
   const fetcher = makeFetcher()
