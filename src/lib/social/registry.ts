@@ -45,9 +45,23 @@ export type SocialPlatformKey =
   | 'recon'
   | 'pornhub'
   | 'xhamster'
+  | 'xvideos'
   | 'xtube'
   | 'shop'
   | 'website';
+
+/**
+ * Adult video hosts run several profile namespaces side by side, and the same
+ * handle in two of them is usually two DIFFERENT people —
+ * `pornhub.com/model/chris-allen` redirects to `/users/chris-allen` while
+ * `/pornstar/chris-allen` is a separate, live pornstar page. So the namespace
+ * is part of the handle (`pornstar/chris-allen`) and is preserved verbatim
+ * through canonicalization; only a bare handle gets the curated default.
+ */
+function withNamespace(handle: string, fallback: string): string {
+  const h = handle.replace(/^@/, '').replace(/^\/+/, '');
+  return h.includes('/') ? h : `${fallback}/${h}`;
+}
 
 export interface PlatformDef {
   key: SocialPlatformKey;
@@ -246,15 +260,25 @@ export const PLATFORMS: PlatformDef[] = [
   {
     key: 'pornhub',
     label: 'Pornhub',
-    detect: /^https?:\/\/(?:[a-z]+\.)?pornhub\.com\/(?:model|pornstar|users)\/([a-z0-9._-]{2,50})\/?/i,
-    build: (h) => `https://www.pornhub.com/model/${h.replace(/^@/, '')}`,
+    detect:
+      /^https?:\/\/(?:[a-z]+\.)?pornhub\.com\/((?:model|pornstar|users)\/[a-z0-9._%-]{2,50})\/?/i,
+    build: (h) => `https://www.pornhub.com/${withNamespace(h, 'pornstar')}`,
     adult: true,
   },
   {
     key: 'xhamster',
     label: 'xHamster',
-    detect: /^https?:\/\/(?:[a-z]+\.)?xhamster\.com\/(?:creators|users)\/([a-z0-9._-]{2,50})\/?/i,
-    build: (h) => `https://xhamster.com/creators/${h.replace(/^@/, '')}`,
+    detect:
+      /^https?:\/\/(?:[a-z]+\.)?xhamster\.com\/((?:creators|pornstars|users)\/[a-z0-9._%-]{2,50})\/?/i,
+    build: (h) => `https://xhamster.com/${withNamespace(h, 'pornstars')}`,
+    adult: true,
+  },
+  {
+    key: 'xvideos',
+    label: 'xVideos',
+    detect:
+      /^https?:\/\/(?:[a-z]+\.)?xvideos\.com\/((?:models|profiles|pornstars)\/[a-z0-9._%-]{2,50})\/?/i,
+    build: (h) => `https://www.xvideos.com/${withNamespace(h, 'models')}`,
     adult: true,
   },
   {
@@ -295,7 +319,7 @@ const BY_KEY = new Map(PLATFORMS.map((p) => [p.key, p]));
 
 /** Hosts that should NOT be misread as a generic mastodon `/@user` profile. */
 const KNOWN_HOSTS =
-  /(instagram|tiktok|youtube|facebook|twitter|x|threads|bsky|linkedin|t\.me|telegram|github|reddit|twitch|spotify|soundcloud|pinterest|snapchat|discord|medium|patreon|ko-fi|onlyfans|fansly|fetlife|joyclub|romeo|planetromeo|gayromeo|grindr|scruff|recon|pornhub|xhamster|xtube)\./i;
+  /(instagram|tiktok|youtube|facebook|twitter|x|threads|bsky|linkedin|t\.me|telegram|github|reddit|twitch|spotify|soundcloud|pinterest|snapchat|discord|medium|patreon|ko-fi|onlyfans|fansly|fetlife|joyclub|romeo|planetromeo|gayromeo|grindr|scruff|recon|pornhub|xhamster|xvideos|xtube)\./i;
 
 /**
  * Share-button / widget / post-permalink paths that are NOT profile links.
@@ -395,7 +419,12 @@ export function platformLabel(platform: string): string {
 export function displayHandle(platform: SocialPlatformKey, handle: string): string | null {
   if (!handle) return null;
   let h = handle.replace(/^@/, '');
-  const m = h.match(/^(?:channel|c|user|company|in|profile)\/(.+)$/i);
+  // Strip a leading namespace segment. The adult video hosts keep the
+  // namespace IN the handle (`pornstar/jay-magnus`) because it disambiguates
+  // two different people, but it is noise to a reader.
+  const m = h.match(
+    /^(?:channel|c|user|users|company|in|profile|profiles|model|models|pornstar|pornstars|creators)\/(.+)$/i,
+  );
   if (m) h = m[1];
   // Opaque YouTube channel id — no readable handle.
   if (/^UC[\w-]{20,}$/.test(h)) return null;

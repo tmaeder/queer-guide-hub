@@ -70,9 +70,14 @@ test.describe('@smoke /tags happy path', () => {
     // against a dev server there is no edge, so the SPA's own not-found branch
     // renders. What must NEVER happen — and what this actually guards — is
     // silently falling back to the glossary index.
+    // The heading is "No stop here." on BOTH surfaces — `functions/_middleware.ts`
+    // and `pages.notFound.heading` in the locales are the same string, and
+    // tags-not-found.spec.ts already asserts it. The wording this test used to
+    // look for ("doesn't exist" / "page not found" / "no such term") exists
+    // nowhere in the product, so it could only ever have passed by accident.
     await page.goto('/tags/asdfgibberish-not-real');
     await expect(
-      page.getByRole('heading', { name: /doesn'?t exist|page not found|no such term/i }).first(),
+      page.getByRole('heading', { name: /no stop here|page not found/i }).first(),
     ).toBeVisible({ timeout: 15_000 });
     await expect(page.getByRole('searchbox', { name: /search the glossary/i })).toHaveCount(0);
   });
