@@ -164,6 +164,16 @@ export function Footer() {
                 text once the header wordmark became a graphic — dropping it
                 left the page with no machine-readable owner. */}
             <span className="text-13 text-background/60">&copy; {currentYear} Queer Guide</span>
+            {/* ODbL attribution for the city-card transit diagrams, which are a
+                derived work of OSM route relations. The map canvas carries its
+                own attribution control; the diagrams render outside any map, so
+                the credit has to live somewhere on the page. */}
+            <span className="text-13 text-background/60">
+              {t(
+                'footer.osmAttribution',
+                'Transit diagrams derived from © OpenStreetMap contributors (ODbL)',
+              )}
+            </span>
           </div>
         </div>
         <div className="mx-auto flex w-full max-w-page flex-wrap items-center gap-2 px-4 pb-6 sm:px-6 md:px-8">
