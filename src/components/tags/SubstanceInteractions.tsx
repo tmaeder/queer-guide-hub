@@ -112,6 +112,14 @@ export function SubstanceInteractions({ tagId, tagName }: Props) {
             'A combination that is not listed is one this chart says nothing about — that is not the same as safe.',
           )}
         </p>
+        {/* The only route into the full grid. Without this the page exists but
+            is reachable solely by typing the URL. */}
+        <LocalizedLink
+          to="/tags/interactions"
+          className="mt-4 inline-block border-2 border-foreground px-4 py-2 text-13 font-bold text-foreground no-underline transition-colors hover:bg-foreground hover:text-background"
+        >
+          {t('tags.interactions.seeAll', 'See the full interaction chart')}
+        </LocalizedLink>
         <p className="mt-2 text-2xs uppercase tracking-label text-muted-foreground">
           {t('tags.interactions.credit', 'Interaction data by')}{' '}
           <a href={attribution.source_url} target="_blank" rel="noopener noreferrer">
