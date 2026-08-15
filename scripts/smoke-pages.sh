@@ -721,12 +721,32 @@ probe /sitemap.xml xml
 probe /brand/tokens.css text/css
 probe /api/geo application/json
 
-# The edge middleware rewrites the shell <head> per route. No canonical means
-# the middleware did not run, whatever the Function routes returned.
-if curl -sS "${CURL_TIMEOUT[@]}" "$SITE/" | grep -q 'rel="canonical"'; then
+# The edge middleware rewrites the shell <head> per route.
+#
+# RETRIED, unlike the probes above. This script runs immediately after a deploy
+# and often immediately after this script's own `purge_everything`, and a single
+# cold-miss on `/` was reporting the middleware as dead while /sitemap.xml,
+# /brand/tokens.css and /api/geo — all Function-only routes with no static file
+# behind them — had just answered correctly in the very same run (deploy run
+# 31888622990, 2026-08-15). That combination is impossible if the middleware is
+# not running, so the one-shot check was the thing that was wrong.
+canonical_ok=""
+for attempt in 1 2 3; do
+	if curl -sS "${CURL_TIMEOUT[@]}" "$SITE/" | grep -q 'rel="canonical"'; then
+		canonical_ok="yes"
+		break
+	fi
+	[ "$attempt" -lt 3 ] && sleep 4
+done
+if [ -n "$canonical_ok" ]; then
 	echo "  ok   / has middleware-injected <link rel=canonical>"
 else
-	echo "  DEAD / has no canonical — functions/_middleware.ts is not running"
+	# Only trustworthy alongside the probes above: if those returned their
+	# generated bodies and this still fails after three tries, the middleware
+	# runs but is not injecting — a different bug from "Functions are dead".
+	echo "  DEAD / has no canonical after 3 tries — check the probes above before"
+	echo "       concluding Functions are dead; if they passed, this is the"
+	echo "       <head> injection, not execution."
 	degraded=$((degraded+1))
 fi
 
