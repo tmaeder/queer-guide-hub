@@ -123,7 +123,6 @@ const Events = () => {
         size="md"
       />
       <PageContainer>
-        <GuidesRail filters={{ entityType: 'event', limit: 6 }} />
         {/* Filters — first interactive surface after hero */}
         <div className="flex flex-col gap-4 p-4 bg-card rounded-container mb-6">
           {/* Search Bar */}
@@ -394,6 +393,19 @@ const Events = () => {
             )}
           </div>
         )}
+
+        {/* Editorial cross-links go AFTER the events, not before them.
+         *
+         *  This rail used to sit between the hero and the filters — the comment
+         *  above the filter block still called that block "first interactive
+         *  surface after hero", which had not been true for some time. Measured
+         *  on prod at 390x844: the rail was 527px, and the first event card sat
+         *  1,789px down — 2.12 viewport heights of hero, guides, filters and
+         *  result header before a single event. On a page whose entire job is
+         *  events, editorial about events outranked the events.
+         *
+         *  Same placement `/cities` uses for its tail cards. */}
+        <GuidesRail filters={{ entityType: 'event', limit: 6 }} />
       </PageContainer>
     </div>
   );

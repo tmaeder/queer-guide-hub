@@ -217,14 +217,12 @@ test.describe('page layout — detail routes', () => {
  * masthead should be; they are a floor that catches "the chrome ate the page".
  */
 /**
- * `/events` is NOT in this list and that is a recorded debt, not an oversight.
- * It measures **1,460px / 1.73 screens** to first content at 390px — worse than
- * the `/cities` regression this guard was written for. It is someone else's
- * surface and fixing it is not this change; adding it here now would ship a
- * check that is red on arrival, which teaches everyone to ignore it. Add the
- * route back in the same PR that fixes it.
+ * `/events` was excluded when this guard landed — it measured 1,789px / 2.12
+ * screens to first content, worse than the `/cities` regression the guard was
+ * written for, because a 527px editorial Guides rail sat between the hero and
+ * the filters. That rail moved below the results, so the route is back in.
  */
-const DENSITY_ROUTES = ['/cities', '/venues', '/marketplace', '/tags'];
+const DENSITY_ROUTES = ['/cities', '/events', '/venues', '/marketplace', '/tags'];
 
 /** Sticky chrome (site header + any sticky bar under it) may not exceed this
  *  share of the viewport. At 844px tall that is ~253px. */
