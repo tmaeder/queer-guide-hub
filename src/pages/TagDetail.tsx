@@ -41,7 +41,11 @@ import { TagLegalSource } from '@/components/tags/TagLegalSource';
 import { buildTagJsonLd } from '@/lib/tags/tagJsonLd';
 import type { CentralizedTag } from '@/hooks/useCentralizedTags';
 import { useTagUsageBreakdown, totalUses } from '@/hooks/useTagUsageBreakdown';
-import { useSimilarTags, useTagReferenceLinks } from '@/hooks/useTagRelationships';
+import {
+  useSimilarTags,
+  useTagReferenceLinks,
+  useSubstanceInteractions,
+} from '@/hooks/useTagRelationships';
 import { useActiveStation } from '@/hooks/useActiveStation';
 import { useMeta } from '@/hooks/useMeta';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
@@ -66,6 +70,7 @@ import { TagAliasesDisplay } from '@/components/tags/TagAliasesDisplay';
 import { TagSafetyCallout } from '@/components/tags/TagSafetyCallout';
 import { TagWikiContent } from '@/components/tags/TagWikiContent';
 import { TagInterchange } from '@/components/tags/TagInterchange';
+import { SubstanceInteractions } from '@/components/tags/SubstanceInteractions';
 import { TagDiagnosticCodes } from '@/components/tags/TagDiagnosticCodes';
 import { TagLinkedContent } from '@/components/tags/TagLinkedContent';
 import { useTagMedicalCodes, countMedicalCodes } from '@/hooks/useTagMedicalCodes';
@@ -160,6 +165,10 @@ export default function TagDetail() {
   // request; the band owns the rendering.
   const { data: medicalCodes } = useTagMedicalCodes(tag?.id ?? null);
   const medicalCodeCount = countMedicalCodes(medicalCodes);
+  // Same reason as the codes above: the strip needs the count, the band owns
+  // the rendering, and React Query dedupes the two calls.
+  const { data: interactions } = useSubstanceInteractions(tag?.id ?? null);
+  const interactionCount = interactions?.length ?? 0;
   // Plain reference links (saferparty.ch on the substance terms, and anything
   // else editorial). Distinct from `legalSources` above, which is a legal
   // INSTRUMENT — official title, jurisdiction, adopted year — and earns its own
@@ -195,6 +204,11 @@ export default function TagDetail() {
     if (medicalCodeCount > 0) {
       s.push({ id: 'codes', title: t('tags.detail.codes.title', 'Diagnostic codes') });
     }
+    // Above the taxonomy on purpose. Someone on /tags/ghb who is about to
+    // combine something needs this before they need the ontology.
+    if (interactionCount > 0) {
+      s.push({ id: 'combinations', title: t('tags.interactions.eyebrow', 'Combinations') });
+    }
     s.push({ id: 'taxonomy', title: t('tags.detail.inTaxonomy', 'In the taxonomy') });
     if (usage?.venue_count) s.push({ id: 'venues', title: t('tags.detail.venues', 'Venues') });
     if (usage?.event_count) s.push({ id: 'events', title: t('tags.detail.events', 'Events') });
@@ -206,8 +220,8 @@ export default function TagDetail() {
     return s;
     // medicalCodeCount belongs here: the codes RPC resolves AFTER the first
     // render, so omitting it would pin the strip to the pre-fetch value of 0
-    // and the stop would never appear.
-  }, [tag, wiki, usage, medicalCodeCount, t]);
+    // and the stop would never appear. interactionCount is the same shape.
+  }, [tag, wiki, usage, medicalCodeCount, interactionCount, t]);
 
   const { activeId, goToStation } = useActiveStation(stations);
 
@@ -399,6 +413,12 @@ export default function TagDetail() {
       )}
 
       <TagDiagnosticCodes tagId={tag.id} />
+
+      {interactionCount > 0 && (
+        <div id="combinations" className="scroll-mt-24">
+          <SubstanceInteractions tagId={tag.id} tagName={tag.name} />
+        </div>
+      )}
 
       <TagInterchange tagId={tag.id} tagName={tag.name} />
 
