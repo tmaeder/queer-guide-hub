@@ -2788,7 +2788,29 @@
         "bestTime": "Лучшее время",
         "airport": "Аэропорт"
       }
-    }
+    },
+    "capital": "[RU] Capital",
+    "continentClear": "[RU] Clear",
+    "continentsTitle": "[RU] Continents",
+    "counting": "[RU] Counting…",
+    "highRisk": "[RU] Criminalized",
+    "inView": "[RU] {{count}} cities in the directory, ranked by how much of each one we hold.",
+    "lineEyebrow": "[RU] Cities · Green line",
+    "mapTeaserLede": "[RU] Every city as a pin, coloured by its country’s equality score.",
+    "mapTeaserTitle": "[RU] See it on the map",
+    "networkMode": {
+      "subway": "[RU] Metro network",
+      "light_rail": "[RU] Light rail network",
+      "tram": "[RU] Tram network"
+    },
+    "openMap": "[RU] Open the map",
+    "pridePill": "[RU] Pride · {{date}}",
+    "continentCount_one": "[RU] {{count}} city",
+    "continentCount_other": "[RU] {{count}} cities",
+    "venueCount_one": "[RU] {{count}} place",
+    "venueCount_other": "[RU] {{count}} places",
+    "villageCount_one": "[RU] {{count}} district",
+    "villageCount_other": "[RU] {{count}} districts"
   },
   "pride": {
     "eyebrow": "Pride Calendar",

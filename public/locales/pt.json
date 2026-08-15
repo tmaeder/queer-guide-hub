@@ -2754,7 +2754,29 @@
         "bestTime": "Melhor época",
         "airport": "Aeroporto"
       }
-    }
+    },
+    "capital": "[PT] Capital",
+    "continentClear": "[PT] Clear",
+    "continentsTitle": "[PT] Continents",
+    "counting": "[PT] Counting…",
+    "highRisk": "[PT] Criminalized",
+    "inView": "[PT] {{count}} cities in the directory, ranked by how much of each one we hold.",
+    "lineEyebrow": "[PT] Cities · Green line",
+    "mapTeaserLede": "[PT] Every city as a pin, coloured by its country’s equality score.",
+    "mapTeaserTitle": "[PT] See it on the map",
+    "networkMode": {
+      "subway": "[PT] Metro network",
+      "light_rail": "[PT] Light rail network",
+      "tram": "[PT] Tram network"
+    },
+    "openMap": "[PT] Open the map",
+    "pridePill": "[PT] Pride · {{date}}",
+    "continentCount_one": "[PT] {{count}} city",
+    "continentCount_other": "[PT] {{count}} cities",
+    "venueCount_one": "[PT] {{count}} place",
+    "venueCount_other": "[PT] {{count}} places",
+    "villageCount_one": "[PT] {{count}} district",
+    "villageCount_other": "[PT] {{count}} districts"
   },
   "pride": {
     "eyebrow": "Pride Calendar",

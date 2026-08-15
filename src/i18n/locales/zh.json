@@ -2752,7 +2752,29 @@
         "bestTime": "最佳时间",
         "airport": "机场"
       }
-    }
+    },
+    "capital": "[ZH] Capital",
+    "continentClear": "[ZH] Clear",
+    "continentsTitle": "[ZH] Continents",
+    "counting": "[ZH] Counting…",
+    "highRisk": "[ZH] Criminalized",
+    "inView": "[ZH] {{count}} cities in the directory, ranked by how much of each one we hold.",
+    "lineEyebrow": "[ZH] Cities · Green line",
+    "mapTeaserLede": "[ZH] Every city as a pin, coloured by its country’s equality score.",
+    "mapTeaserTitle": "[ZH] See it on the map",
+    "networkMode": {
+      "subway": "[ZH] Metro network",
+      "light_rail": "[ZH] Light rail network",
+      "tram": "[ZH] Tram network"
+    },
+    "openMap": "[ZH] Open the map",
+    "pridePill": "[ZH] Pride · {{date}}",
+    "continentCount_one": "[ZH] {{count}} city",
+    "continentCount_other": "[ZH] {{count}} cities",
+    "venueCount_one": "[ZH] {{count}} place",
+    "venueCount_other": "[ZH] {{count}} places",
+    "villageCount_one": "[ZH] {{count}} district",
+    "villageCount_other": "[ZH] {{count}} districts"
   },
   "pride": {
     "eyebrow": "Pride Calendar",

@@ -2752,7 +2752,29 @@
         "bestTime": "ベストシーズン",
         "airport": "空港"
       }
-    }
+    },
+    "capital": "[JA] Capital",
+    "continentClear": "[JA] Clear",
+    "continentsTitle": "[JA] Continents",
+    "counting": "[JA] Counting…",
+    "highRisk": "[JA] Criminalized",
+    "inView": "[JA] {{count}} cities in the directory, ranked by how much of each one we hold.",
+    "lineEyebrow": "[JA] Cities · Green line",
+    "mapTeaserLede": "[JA] Every city as a pin, coloured by its country’s equality score.",
+    "mapTeaserTitle": "[JA] See it on the map",
+    "networkMode": {
+      "subway": "[JA] Metro network",
+      "light_rail": "[JA] Light rail network",
+      "tram": "[JA] Tram network"
+    },
+    "openMap": "[JA] Open the map",
+    "pridePill": "[JA] Pride · {{date}}",
+    "continentCount_one": "[JA] {{count}} city",
+    "continentCount_other": "[JA] {{count}} cities",
+    "venueCount_one": "[JA] {{count}} place",
+    "venueCount_other": "[JA] {{count}} places",
+    "villageCount_one": "[JA] {{count}} district",
+    "villageCount_other": "[JA] {{count}} districts"
   },
   "pride": {
     "eyebrow": "Pride Calendar",

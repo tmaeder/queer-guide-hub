@@ -28,7 +28,12 @@ const NESTED_SELECTOR = 'a a, a button, a [role="button"]';
 const CARD_LINK =
   'a[href*="/venues/"], a[href*="/events/"], a[href*="/news/"], a[href*="/city/"], a[href*="/country/"]';
 
-const CARD_ROUTES = ['/city/berlin', '/events', '/venues', '/news', '/places'];
+// `/cities` was missing here until the 2026-08 rebuild. It was safe by accident —
+// its rows were a single link with no interactive children — but the redesigned
+// card is a `relative` article with a sibling overlay link, which is exactly the
+// shape that produces `a button` the moment someone adds a favourite or compare
+// control to it.
+const CARD_ROUTES = ['/city/berlin', '/cities', '/events', '/venues', '/news', '/places'];
 
 // Routes covering the converted `<Button asChild>` sites. These render static
 // chrome rather than data-driven cards, so they only need `main` to be present.

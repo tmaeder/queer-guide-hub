@@ -2762,7 +2762,29 @@
         "bestTime": "أفضل وقت",
         "airport": "المطار"
       }
-    }
+    },
+    "capital": "[AR] Capital",
+    "continentClear": "[AR] Clear",
+    "continentsTitle": "[AR] Continents",
+    "counting": "[AR] Counting…",
+    "highRisk": "[AR] Criminalized",
+    "inView": "[AR] {{count}} cities in the directory, ranked by how much of each one we hold.",
+    "lineEyebrow": "[AR] Cities · Green line",
+    "mapTeaserLede": "[AR] Every city as a pin, coloured by its country’s equality score.",
+    "mapTeaserTitle": "[AR] See it on the map",
+    "networkMode": {
+      "subway": "[AR] Metro network",
+      "light_rail": "[AR] Light rail network",
+      "tram": "[AR] Tram network"
+    },
+    "openMap": "[AR] Open the map",
+    "pridePill": "[AR] Pride · {{date}}",
+    "continentCount_one": "[AR] {{count}} city",
+    "continentCount_other": "[AR] {{count}} cities",
+    "venueCount_one": "[AR] {{count}} place",
+    "venueCount_other": "[AR] {{count}} places",
+    "villageCount_one": "[AR] {{count}} district",
+    "villageCount_other": "[AR] {{count}} districts"
   },
   "pride": {
     "eyebrow": "Pride Calendar",

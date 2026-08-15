@@ -2752,7 +2752,29 @@
         "bestTime": "가기 좋은 시기",
         "airport": "공항"
       }
-    }
+    },
+    "capital": "[KO] Capital",
+    "continentClear": "[KO] Clear",
+    "continentsTitle": "[KO] Continents",
+    "counting": "[KO] Counting…",
+    "highRisk": "[KO] Criminalized",
+    "inView": "[KO] {{count}} cities in the directory, ranked by how much of each one we hold.",
+    "lineEyebrow": "[KO] Cities · Green line",
+    "mapTeaserLede": "[KO] Every city as a pin, coloured by its country’s equality score.",
+    "mapTeaserTitle": "[KO] See it on the map",
+    "networkMode": {
+      "subway": "[KO] Metro network",
+      "light_rail": "[KO] Light rail network",
+      "tram": "[KO] Tram network"
+    },
+    "openMap": "[KO] Open the map",
+    "pridePill": "[KO] Pride · {{date}}",
+    "continentCount_one": "[KO] {{count}} city",
+    "continentCount_other": "[KO] {{count}} cities",
+    "venueCount_one": "[KO] {{count}} place",
+    "venueCount_other": "[KO] {{count}} places",
+    "villageCount_one": "[KO] {{count}} district",
+    "villageCount_other": "[KO] {{count}} districts"
   },
   "pride": {
     "eyebrow": "Pride Calendar",

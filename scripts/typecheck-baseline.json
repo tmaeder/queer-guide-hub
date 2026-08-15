@@ -1,6 +1,6 @@
 {
   "project": "tsconfig.app.json",
-  "total": 896,
+  "total": 890,
   "files": {
     "src/assets/intimate/pictograms.tsx": {
       "TS2503": 2
@@ -622,9 +622,6 @@
       "TS2345": 3,
       "TS2352": 1
     },
-    "src/hooks/useCitiesDirectory.ts": {
-      "TS2339": 2
-    },
     "src/hooks/useCockpitRealtime.ts": {
       "TS2578": 1
     },
@@ -980,9 +977,6 @@
     "src/pages/Venues.tsx": {
       "TS2322": 1
     },
-    "src/pages/__tests__/Cities.test.tsx": {
-      "TS2353": 2
-    },
     "src/pages/__tests__/NewsArchive.test.tsx": {
       "TS2304": 1
     },
@@ -1016,12 +1010,6 @@
     },
     "src/pages/admin/feedback/index.tsx": {
       "TS2322": 1
-    },
-    "src/pages/cities/__tests__/CitiesMapPane.test.tsx": {
-      "TS2353": 1
-    },
-    "src/pages/cities/__tests__/CityListRow.test.tsx": {
-      "TS2353": 1
     },
     "src/pages/intimate/IntimateOnboard.tsx": {
       "TS2503": 1,
