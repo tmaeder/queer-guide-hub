@@ -229,7 +229,7 @@ const Events = () => {
         {/* Result-meta row: count + view toggle + sort + past toggle */}
         {!loading && !error && (
           <div
-            className={`sticky ${STICKY_UNDER_HEADER} z-20 ${PAGE_BLEED_MOBILE} py-2 mb-4 border-b-[3px] border-foreground bg-background`}
+            className={`sticky ${STICKY_UNDER_HEADER} z-20 ${PAGE_BLEED_MOBILE} py-2 mb-2 md:mb-4 border-b-[3px] border-foreground bg-background`}
           >
             <EventsResultBar
               eventsCount={events.length}
