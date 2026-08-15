@@ -13,6 +13,7 @@ import { useSlugRedirect, type SlugRedirectConfig } from '@/hooks/useSlugRedirec
 import { GatedDetailFallback } from '@/components/safety/GatedDetailFallback';
 import { NotFoundMeta } from '@/components/seo/NotFoundMeta';
 import { EntityDetailScroll } from '@/components/entity/EntityDetailScroll';
+import { EntitySingle } from '@/components/entity/EntitySingle';
 import { useVenueDescriptor } from '@/components/entity/adapters/useVenueDescriptor';
 import { useOrganizationDescriptor } from '@/components/entity/adapters/useOrganizationDescriptor';
 import { useMilestoneDescriptor } from '@/components/entity/adapters/useMilestoneDescriptor';
@@ -117,7 +118,15 @@ function EntityDetailView({
     return <GatedDetailFallback entityType={source} slug={slug} notFound={notFoundNode} />;
   }
 
-  return <EntityDetailScroll descriptor={descriptor} loading={isLoading} error={error} />;
+  // A descriptor that carries `single` has moved to the subway shell; the rest
+  // stay on the legacy scroll. Venue moved first (#2777 follow-up);
+  // organisations and milestones follow, and then both this branch and
+  // `EntityDetailScroll` go.
+  return descriptor?.single || source === 'venue' ? (
+    <EntitySingle descriptor={descriptor} loading={isLoading} error={error} />
+  ) : (
+    <EntityDetailScroll descriptor={descriptor} loading={isLoading} error={error} />
+  );
 }
 
 // Merged-duplicate slug-redirect config per source (venue is handled inside

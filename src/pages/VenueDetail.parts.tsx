@@ -7,8 +7,6 @@ import {
   Clock,
   Luggage,
   Navigation2,
-  Tag as TagIcon,
-  DollarSign,
   Sparkles,
 } from 'lucide-react';
 import { Instagram } from '@/components/icons/brand';
@@ -19,13 +17,11 @@ import { ShareMenu } from '@/components/share/ShareMenu';
 import { TagChipRow } from '@/components/tags/TagChipRow';
 import { Button } from '@/components/ui/button';
 import { Eyebrow } from '@/components/ui/Eyebrow';
-import { RouteBullet } from '@/components/transit/RouteBullet';
 import { FactGrid } from '@/components/transit/FactGrid';
 import { HoursTable, type HoursRow } from '@/components/transit/HoursTable';
 import { NestedEntityCard } from '@/components/transit/NestedEntityCard';
 import { MapInset } from '@/components/transit/MapInset';
-import { SingleSection } from '@/components/transit/SinglePage';
-import { Image } from '@/components/ui/Image';
+import { PhotoInset } from '@/components/transit/PhotoInset';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
@@ -38,17 +34,11 @@ import { VenueSafetySignalDisplay } from '@/components/venues/VenueSafetySignalD
 import { FeaturedInGuides } from '@/components/guides/FeaturedInGuides';
 import { AmenityDisplay } from '@/components/venues/AmenityDisplay';
 import { DestinationSafetyCard } from '@/components/safety/DestinationSafetyCard';
-import EqualityScoreBadge from '@/components/country/EqualityScoreBadge';
 import { EntityMap, type EntityMapMarker } from '@/components/map/EntityMap';
 import { NearbyMapLegend } from '@/components/map/NearbyMapLegend';
 import { MarkVisitedButton } from '@/components/marks/MarkVisitedButton';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
-import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { SocialSignalBadges } from '@/components/trips/SocialSignalBadges';
 import { buildPlaceChain } from '@/config/breadcrumbs';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { entityImageTreatment } from '@/lib/imageTreatment';
-import { getVenueVisual } from '@/lib/venueVisual';
 import type { TFunction } from 'i18next';
 import type { useVenueSocialSignals } from '@/hooks/useVenueSocialSignals';
 import type { Database } from '@/integrations/supabase/types';
@@ -206,7 +196,10 @@ export function hasUsableHours(hours: unknown): boolean {
   return HOURS_DAYS.some((day) => renderHoursRow(rec[day]) !== null);
 }
 
-export function formatHours(hours: Record<string, unknown>) {
+// `unknown`, matching `hasUsableHours` above: the column is free-form jsonb
+// (`Json` in the generated types), and `asHoursShape` is the narrowing step.
+// Typing the parameter tighter only pushed a cast to each call site.
+export function formatHours(hours: unknown) {
   const shape = asHoursShape(hours);
   if (!shape) return <p className="text-sm text-muted-foreground">Hours not available</p>;
 
@@ -248,477 +241,299 @@ export function formatHours(hours: Record<string, unknown>) {
 
 /* ───────────────────────────── Hero ───────────────────────────── */
 
-interface VenueHeroProps {
+/**
+ * The masthead action row (spine S5), lifted out of the photo hero.
+ *
+ * `VenueHero` used to own the masthead, the cover photo, the safety banner, a
+ * bespoke `FactCell` bar that duplicated `FactGrid`, and this row. The single
+ * takes the first from `DetailMasthead`, the second from `PhotoInset`, the
+ * third from the body, and the fourth is deleted — one fact strip per page.
+ */
+export function VenueActions({
+  venue,
+  onAddToTrip,
+  onShare,
+  onCheckInSuccess,
+  t,
+}: {
   venue: VenueWithRelations;
-  cityName: string | null;
-  countryName: string | null;
-  cityLink: string | null;
-  countryLink: string | null;
-  averageRating: number;
-  reviewCount: number;
-  tripCount?: number;
-  isInTrip?: boolean;
-  socialSignal: NonNullable<SocialSignals> extends Map<string, infer V> ? V | undefined : undefined;
   onAddToTrip: () => void;
   onShare: () => void;
   onCheckInSuccess: () => void;
-  onContentUpdated?: () => void;
-  t: (key: string, fallback?: string) => string;
-}
-
-function FactCell({
-  icon: Icon,
-  label,
-  value,
-  className,
-}: {
-  icon: typeof Star;
-  label: string;
-  value: React.ReactNode;
-  className?: string;
+  t: TFunction;
 }) {
-  return (
-    <div className={`bg-background p-4 ${className ?? ''}`}>
-      <span className="flex items-center gap-1.5 text-muted-foreground">
-        <Icon size={13} aria-hidden="true" />
-        <Eyebrow as="span">{label}</Eyebrow>
-      </span>
-      <span className="mt-1 block font-mono text-15 font-medium tabular-nums">{value}</span>
-    </div>
-  );
-}
-
-export function VenueHero({
-  venue,
-  cityName,
-  countryName,
-  cityLink,
-  countryLink,
-  averageRating,
-  reviewCount,
-  tripCount,
-  isInTrip,
-  socialSignal,
-  onAddToTrip,
-  onCheckInSuccess,
-  onContentUpdated,
-  t,
-}: VenueHeroProps) {
-  const isMobile = useIsMobile();
-  const isClosed = Boolean(venue.closed_at && new Date(venue.closed_at) <= new Date());
-  const openNow = isClosed ? null : getOpenNow(venue.hours);
-  const hasFlag = isClosed || venue.is_featured || venue.verified;
-  const visual = getVenueVisual(venue);
-
-  // Adaptive fact bar — only cells with real data.
-  const facts: Array<{ icon: typeof Star; label: string; value: React.ReactNode }> = [];
-  if (venue.category)
-    facts.push({
-      icon: TagIcon,
-      label: 'Type',
-      value: <span className="capitalize">{venue.category}</span>,
-    });
-  if (venue.price_range)
-    facts.push({ icon: DollarSign, label: 'Price', value: getPriceRange(venue.price_range) });
-  if (averageRating > 0)
-    facts.push({
-      icon: Star,
-      label: 'Rating',
-      value: `${averageRating.toFixed(1)} · ${reviewCount}`,
-    });
-  if (openNow !== null)
-    facts.push({ icon: Clock, label: 'Right now', value: openNow ? 'Open' : 'Closed' });
-  const factCols = Math.min(facts.length, 4);
-  const factColClass =
-    factCols >= 4 ? 'sm:grid-cols-4' : factCols === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-2';
-
+  const isClosed = Boolean(venue.closed_at);
   return (
     <>
-      {/* Editorial cover */}
-      <div className="group relative mb-6">
-        <Image
-          src={visual.src}
-          fit={visual.fit}
-          alt={venue.name}
-          heightPx={isMobile ? 220 : 360}
-          imageRole="hero"
-          rounded="container"
-          scrim={!visual.isLogo && hasFlag ? 'readable' : 'none'}
-          // Editor-set, default none. A venue cover also falls back to the
-          // operator's logo (`fit="contain"`), which Image refuses to separate
-          // regardless — so a mistaken opt-in still cannot duotone a brand mark.
-          treatment={entityImageTreatment(venue)}
-          priority
-          fallbackEntityType="venue"
-          fallbackKey={venue.id}
-        >
-          {hasFlag && (
-            <div className="absolute right-4 top-4 flex flex-wrap justify-end gap-2">
-              {isClosed && <Badge variant="destructive">Permanently closed</Badge>}
-              {venue.is_featured && <Badge>Featured</Badge>}
-              {venue.verified && (
-                <Badge variant="secondary">{t('pages.venueDetail.verified', 'Verified')}</Badge>
-              )}
-            </div>
-          )}
-        </Image>
-      </div>
-
-      {/* Safety Alert Banner */}
-      {venue.countries?.lgbti_criminalization && (
-        <SafetyAlertBanner
-          criminalization={venue.countries.lgbti_criminalization}
-          countryName={venue.countries.name}
+      {!isClosed && (
+        <Button onClick={onAddToTrip}>
+          <Luggage size={16} className="mr-2" />
+          {t('pages.venueDetail.addToTrip', 'Add to trip')}
+        </Button>
+      )}
+      <FavoriteButton itemId={venue.id} type="venue" size="md" />
+      {!isClosed && (
+        <VenueCheckInButton
+          venueId={venue.id}
+          venueName={venue.name}
+          venueLatitude={venue.latitude}
+          venueLongitude={venue.longitude}
+          onCheckInSuccess={onCheckInSuccess}
         />
       )}
-
-      {/* Permanently closed banner */}
-      {isClosed && (
-        <div className="mb-6 flex items-center gap-2 bg-destructive px-4 py-4 text-destructive-foreground">
-          <p className="text-sm font-semibold">
-            Permanently closed
-            {' · '}
-            {new Date(venue.closed_at!).toLocaleDateString(undefined, {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })}
-          </p>
-        </div>
+      {venue.website && venue.url_status !== 'broken' && (
+        <Button variant="outline" size="sm" asChild>
+          <a href={venue.website} target="_blank" rel="noopener noreferrer nofollow">
+            <Globe size={14} className="mr-1.5" />
+            {t('venues.detail.website', 'Website')}
+          </a>
+        </Button>
       )}
-
-      {/* Editorial header — masthead opener (PHOTOCOPY): 2px rule + kicker. */}
-      <div className="mb-6 rule-heavy pt-2">
-        {/* Spec masthead: the typed route bullet leads, then the kicker and
-            any status. The bullet is what makes a mixed row (search results,
-            boards, admin tables) readable, so the single-page header states
-            the same type the row would have shown. */}
-        <div className="mb-2 flex flex-wrap items-center gap-2">
-            <RouteBullet type="venue" size={44} />
-            {venue.category && (
-              <Eyebrow as="span" variant="kicker" className="capitalize">
-                {venue.category}
-              </Eyebrow>
-            )}
-            {venue.countries?.equality_score != null && (
-              <EqualityScoreBadge score={venue.countries.equality_score} size="sm" />
-            )}
-            <SocialSignalBadges signal={socialSignal} tripUsageThreshold={1} />
-        </div>
-
-        <h1
-          className="m-0 font-display text-display md:text-hero leading-[1] tracking-tight"
-          style={{ overflowWrap: 'anywhere' }}
-        >
-          <Editable
-            contentType="venues"
-            recordId={venue.id}
-            field="name"
-            value={venue.name}
-            onSaved={onContentUpdated}
-          >
-            {venue.name}
-          </Editable>
-        </h1>
-
-        {(cityName || venue.address) && (
-          <div className="mt-4 flex items-center gap-1.5 text-body-lg text-muted-foreground">
-            <MapPin size={16} className="shrink-0" aria-hidden="true" />
-            <span>
-              {cityLink ? (
-                <LocalizedLink to={cityLink} className="hover:underline">
-                  {cityName}
-                </LocalizedLink>
-              ) : (
-                cityName
-              )}
-              {countryName && (
-                <>
-                  {cityName ? ', ' : ''}
-                  {countryLink ? (
-                    <LocalizedLink to={countryLink} className="hover:underline">
-                      {countryName}
-                    </LocalizedLink>
-                  ) : (
-                    countryName
-                  )}
-                </>
-              )}
-            </span>
-          </div>
-        )}
-      </div>
-
-      {/* Fact bar */}
-      {facts.length > 0 && (
-        <div
-          className={`mb-6 grid grid-cols-2 gap-px overflow-hidden rounded-element bg-border ${factColClass}`}
-        >
-          {facts.map((f, i) => (
-            <FactCell
-              key={f.label}
-              icon={f.icon}
-              label={f.label}
-              value={f.value}
-              // Odd count leaves an empty cell on the 2-col mobile grid — let
-              // the last fact fill the row. Resets to a single column at sm+.
-              className={
-                facts.length % 2 === 1 && i === facts.length - 1 ? 'col-span-2 sm:col-span-1' : ''
-              }
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Actions — one primary, the rest quiet */}
-      <div className="mb-2 flex flex-wrap items-center gap-2">
-        {!isClosed && (
-          <Button onClick={onAddToTrip}>
-            <Luggage size={16} className="mr-2" />
-            Add to trip
-          </Button>
-        )}
-        <FavoriteButton itemId={venue.id} type="venue" size="md" />
-        {isInTrip && (
-          <Badge variant="soft">
-            In {tripCount} trip{tripCount !== 1 ? 's' : ''}
-          </Badge>
-        )}
-        {!isClosed && (
-          <VenueCheckInButton
-            venueId={venue.id}
-            venueName={venue.name}
-            venueLatitude={venue.latitude}
-            venueLongitude={venue.longitude}
-            onCheckInSuccess={onCheckInSuccess}
-          />
-        )}
-        {venue.website && venue.url_status !== 'broken' && (
-          <Button variant="outline" size="sm" asChild>
-            <a href={venue.website} target="_blank" rel="noopener noreferrer nofollow">
-              <Globe size={14} className="mr-1.5" />
-              Website
-            </a>
-          </Button>
-        )}
-        {/* Directions live once, in the sidebar Location & contact card. */}
-        <ShareMenu
-          url={
-            typeof window !== 'undefined'
-              ? window.location.href
-              : `https://queer.guide/venues/${venue.slug ?? venue.id}`
-          }
-          title={venue.name}
-        />
-        <MarkVisitedButton entityType="venue" entityId={venue.id} kind="visited" />
-        <ReportButton contentType="venues" contentId={venue.id} contentName={venue.name} />
-        <AdminEditButton
-          contentType="venues"
-          contentId={venue.id}
-          contentName={venue.name}
-          currentData={venue as Record<string, unknown>}
-          onSaved={() => window.location.reload()}
-        />
-      </div>
+      <ShareMenu
+        url={
+          typeof window !== 'undefined'
+            ? window.location.href
+            : `https://queer.guide/venues/${venue.slug ?? venue.id}`
+        }
+        title={venue.name}
+      />
+      <button type="button" onClick={onShare} className="sr-only">
+        {t('pages.venueDetail.share', 'Share')}
+      </button>
+      <MarkVisitedButton entityType="venue" entityId={venue.id} kind="visited" />
+      <ReportButton contentType="venues" contentId={venue.id} contentName={venue.name} />
+      <AdminEditButton
+        contentType="venues"
+        contentId={venue.id}
+        contentName={venue.name}
+        currentData={venue as Record<string, unknown>}
+        onSaved={() => window.location.reload()}
+      />
     </>
   );
 }
 
-/* ─────────────────────────── Overview ─────────────────────────── */
-
-interface VenueOverviewProps {
-  venue: VenueWithRelations;
-  reviews: VenueReview[];
-  venueEvents: Array<{ id: string; venue_id?: string | null }>;
-  averageRating: number;
-  onContentUpdated?: () => void;
-  t: (key: string, fallback?: string) => string;
+/** Cover photo + the country's criminalisation banner — the two things the
+ *  hero carried that are not the masthead. Rendered at the top of the body. */
+export function VenueBodyLead({ venue }: { venue: VenueWithRelations }) {
+  return (
+    <>
+      {venue.countries?.lgbti_criminalization && (
+        <SafetyAlertBanner
+          criminalization={venue.countries.lgbti_criminalization as Record<string, unknown>}
+          countryName={venue.countries.name ?? ''}
+        />
+      )}
+      <PhotoInset
+        src={venue.images?.[0] ?? venue.logo_url ?? null}
+        alt={venue.name}
+        fallbackEntityType="venue"
+        fallbackKey={venue.id}
+        priority
+        caption={[venue.cities?.name, venue.countries?.name].filter(Boolean).join(', ') || null}
+      />
+    </>
+  );
 }
 
-export function VenueOverview({
+/* ──────────────────────────── Body blocks ─────────────────────── */
+
+/**
+ * The venue single's body, as named blocks rather than one `overview` blob.
+ *
+ * It was a single 200-line `VenueOverview` inside a one-section descriptor, so
+ * the route rail had exactly one station and nothing to navigate. Each block is
+ * now its own section, and `singleSections` drops the ones with no data — which
+ * on this corpus is most of them for most venues: amenities are set on 8.9% of
+ * the 23,335 live rows and `accessibility_attributes` on **6 of them**.
+ */
+export function VenueFacts({ venue, t }: { venue: VenueWithRelations; t: TFunction }) {
+  const cityLabel = [venue.cities?.name, venue.countries?.name].filter(Boolean).join(', ');
+  return (
+    <FactGrid
+      facts={[
+        { label: t('venues.detail.address', 'Address'), value: venue.address },
+        { label: t('venues.detail.city', 'City'), value: cityLabel },
+        { label: t('venues.detail.category', 'Category'), value: venue.category },
+        {
+          label: t('venues.detail.price', 'Price'),
+          value: getPriceRange(venue.price_range ?? null),
+        },
+        { label: t('venues.detail.phone', 'Phone'), value: venue.phone },
+        {
+          label: t('venues.detail.website', 'Website'),
+          value: venue.website ? (
+            <a href={venue.website} target="_blank" rel="noopener noreferrer">
+              {venue.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+            </a>
+          ) : null,
+        },
+      ]}
+    />
+  );
+}
+
+export function VenueAbout({
   venue,
-  reviews,
-  venueEvents,
-  averageRating,
   onContentUpdated,
-  t,
-}: VenueOverviewProps) {
-  const hasAmenities =
+}: {
+  venue: VenueWithRelations;
+  onContentUpdated?: () => void;
+}) {
+  if (!venue.description) return null;
+  return (
+    <Editable
+      contentType="venues"
+      recordId={venue.id}
+      field="description"
+      value={venue.description}
+      onSaved={onContentUpdated}
+      fieldOverride={{ type: 'textarea' }}
+      as="div"
+    >
+      <p className="max-w-reading whitespace-pre-wrap text-body-lg leading-relaxed">
+        {venue.description}
+      </p>
+    </Editable>
+  );
+}
+
+/** Spec module 08 — leads with the ORGANISATION's bullet, not the venue's. */
+export function VenueRunBy({ venue, t }: { venue: VenueWithRelations; t: TFunction }) {
+  if (!venue.organizations) return null;
+  return (
+    <NestedEntityCard
+      type="organization"
+      eyebrow={t('venues.detail.business', 'Business')}
+      name={venue.organizations.name}
+      description={[
+        venue.organizations.roles?.includes('publisher')
+          ? t('venues.detail.alsoPublishes', 'Also publishes news')
+          : null,
+        venue.organizations.roles?.includes('seller')
+          ? t('venues.detail.alsoSells', 'Also sells online')
+          : null,
+      ]
+        .filter(Boolean)
+        .join(' · ')}
+      href={`/organizations/${venue.organizations.slug}`}
+      actionLabel={t('venues.detail.openBusiness', 'Open business')}
+    />
+  );
+}
+
+/** Spec module 04. Renders for ~6 venues; see the note on `VenueFacts`. */
+export function VenueAmenities({ venue }: { venue: VenueWithRelations }) {
+  const has =
     (venue.amenities?.length ?? 0) > 0 ||
     (venue.accessibility_attributes?.length ?? 0) > 0 ||
     Boolean(venue.accessibility_notes);
-  const hasImages = (venue.images?.length ?? 0) > 0;
-  const hasTags = (venue.tags?.length ?? 0) > 0;
-
-  const cityLabel = [venue.cities?.name, venue.countries?.name].filter(Boolean).join(', ');
-
+  if (!has) return null;
   return (
-    <div className="flex flex-col gap-10">
-      {/* Spec module: the bordered fact grid every single opens with. Empty
-          columns are dropped by FactGrid itself, so a thin record collapses to
-          a shorter grid rather than rendering blank cells. */}
-      <FactGrid
-        facts={[
-          { label: t('venues.detail.address', 'Address'), value: venue.address },
-          { label: t('venues.detail.city', 'City'), value: cityLabel },
-          { label: t('venues.detail.category', 'Category'), value: venue.category },
-          {
-            label: t('venues.detail.price', 'Price'),
-            value: getPriceRange(venue.price_range ?? null),
-          },
-          { label: t('venues.detail.phone', 'Phone'), value: venue.phone },
-          {
-            label: t('venues.detail.website', 'Website'),
-            value: venue.website ? (
-              <a href={venue.website} target="_blank" rel="noopener noreferrer">
-                {venue.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
-              </a>
-            ) : null,
-          },
-        ]}
-      />
+    <AmenityDisplay
+      amenities={venue.amenities}
+      accessibility={venue.accessibility_attributes}
+      accessibilityNotes={venue.accessibility_notes}
+    />
+  );
+}
 
-      <FeaturedInGuides entityType="venue" entityId={venue.id} />
+export function VenueWhatsOn({
+  venue,
+  venueEvents,
+}: {
+  venue: VenueWithRelations;
+  venueEvents: unknown[];
+}) {
+  if (venueEvents.length === 0) return null;
+  return (
+    <VenueEvents
+      venueId={venue.id}
+      venueName={venue.name}
+      events={venueEvents as Parameters<typeof VenueEvents>[0]['events']}
+      compact={false}
+    />
+  );
+}
 
-      {venue.organizations && (
-        // Spec module 08, "Run by" — REQUIRED on venues. It was a bespoke
-        // inline link; as a NestedEntityCard it now leads with the
-        // organization's OWN route bullet, which is rule 4: "cross-type links
-        // use the other type's bullet and colour, so the network is legible
-        // from inside any page." A rider seeing the business bullet here
-        // learns the type before they click.
-        <SingleSection title={t('venues.detail.runBy', 'Run by')}>
-          <NestedEntityCard
-            type="organization"
-            eyebrow={t('venues.detail.business', 'Business')}
-            name={venue.organizations.name}
-            description={[
-              venue.organizations.roles?.includes('publisher')
-                ? t('venues.detail.alsoPublishes', 'Also publishes news')
-                : null,
-              venue.organizations.roles?.includes('seller')
-                ? t('venues.detail.alsoSells', 'Also sells online')
-                : null,
-            ]
-              .filter(Boolean)
-              .join(' · ')}
-            href={`/organizations/${venue.organizations.slug}`}
-            actionLabel={t('venues.detail.openBusiness', 'Open business')}
-          />
-        </SingleSection>
-      )}
-
-      {venue.description && (
-        <section>
-          <Eyebrow as="div" className="mb-2">
-            {t('pages.venueDetail.about', 'About')}
-          </Eyebrow>
-          <Editable
-            contentType="venues"
-            recordId={venue.id}
-            field="description"
-            value={venue.description}
-            onSaved={onContentUpdated}
-            fieldOverride={{ type: 'textarea' }}
-            as="div"
+export function VenuePhotos({
+  venue,
+  onContentUpdated,
+}: {
+  venue: VenueWithRelations;
+  onContentUpdated?: () => void;
+}) {
+  if (!venue.images?.length) return null;
+  return (
+    <Editable
+      contentType="venues"
+      recordId={venue.id}
+      field="images"
+      value={venue.images}
+      onSaved={onContentUpdated}
+      as="div"
+    >
+      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
+        {venue.images.map((imageUrl, index) => (
+          <button
+            type="button"
+            key={imageUrl}
+            className="group block aspect-square w-full overflow-hidden border-2 border-foreground bg-muted p-0"
+            onClick={() => window.open(imageUrl, '_blank')}
+            aria-label={`Open ${venue.name} photo ${index + 1} in a new tab`}
           >
-            <p
-              className="max-w-[68ch] whitespace-pre-wrap text-body-lg text-foreground/90"
-              style={{ lineHeight: 1.7 }}
-            >
-              {venue.description}
-            </p>
-          </Editable>
-        </section>
-      )}
+            <img
+              src={imageUrl}
+              alt={`${venue.name} ${index + 1}`}
+              role="presentation"
+              referrerPolicy="no-referrer"
+              className="h-full w-full cursor-pointer object-cover"
+              onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                (e.target as HTMLImageElement).src = '/placeholder.svg';
+              }}
+            />
+          </button>
+        ))}
+      </div>
+    </Editable>
+  );
+}
 
-      {hasTags && (
-        <Editable
-          contentType="venues"
-          recordId={venue.id}
-          field="tags"
-          value={venue.tags}
-          onSaved={onContentUpdated}
-          as="div"
-        >
-          <TagChipRow tags={venue.tags!} max={TAG_DISPLAY_LIMIT} icon more="expand" />
-        </Editable>
-      )}
+/** Guides this venue appears in. Self-hides; kept out of `sections`. */
+export function VenueGuides({ venue }: { venue: VenueWithRelations }) {
+  return <FeaturedInGuides entityType="venue" entityId={venue.id} />;
+}
 
-      {hasAmenities && (
-        <AmenityDisplay
-          amenities={venue.amenities}
-          accessibility={venue.accessibility_attributes}
-          accessibilityNotes={venue.accessibility_notes}
-        />
-      )}
+/** Visitor-reported signals. Renders its own "Visitor signals" title. */
+export function VenueSignals({ venue }: { venue: VenueWithRelations }) {
+  return <VenueSafetySignalDisplay venueId={venue.id} />;
+}
 
-      {venueEvents.length > 0 && (
-        <section>
-          <Eyebrow as="div" className="mb-4">
-            What's on here
-          </Eyebrow>
-          <VenueEvents
-            venueId={venue.id}
-            venueName={venue.name}
-            events={venueEvents as Parameters<typeof VenueEvents>[0]['events']}
-            compact={false}
-          />
-        </section>
-      )}
-
-      {/* No eyebrow: the card renders its own "Visitor signals" title. */}
-      <section>
-        <VenueSafetySignalDisplay venueId={venue.id} />
-      </section>
-
-      <VenueReviews reviews={reviews} averageRating={averageRating} />
-
-      {hasImages && (
-        <section>
-          <Eyebrow as="div" className="mb-4">
-            Photos
-          </Eyebrow>
-          <Editable
-            contentType="venues"
-            recordId={venue.id}
-            field="images"
-            value={venue.images}
-            onSaved={onContentUpdated}
-            as="div"
-          >
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
-              {venue.images!.map((imageUrl, index) => (
-                <button
-                  type="button"
-                  key={index}
-                  className="group block aspect-square w-full overflow-hidden rounded-element border-0 bg-muted p-0"
-                  onClick={() => window.open(imageUrl, '_blank')}
-                  aria-label={`Open ${venue.name} photo ${index + 1} in a new tab`}
-                >
-                  <img
-                    src={imageUrl}
-                    alt={`${venue.name} ${index + 1}`}
-                    role="presentation"
-                    referrerPolicy="no-referrer"
-                    className="h-full w-full cursor-pointer object-cover transition-transform duration-slow ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]"
-                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                      (e.target as HTMLImageElement).src = '/placeholder.svg';
-                    }}
-                  />
-                </button>
-              ))}
-            </div>
-          </Editable>
-        </section>
-      )}
-    </div>
+export function VenueTags({
+  venue,
+  onContentUpdated,
+}: {
+  venue: VenueWithRelations;
+  onContentUpdated?: () => void;
+}) {
+  if (!venue.tags?.length) return null;
+  return (
+    <Editable
+      contentType="venues"
+      recordId={venue.id}
+      field="tags"
+      value={venue.tags}
+      onSaved={onContentUpdated}
+      as="div"
+    >
+      <TagChipRow tags={venue.tags} max={TAG_DISPLAY_LIMIT} icon more="expand" />
+    </Editable>
   );
 }
 
 /* ──────────────────────────── Reviews ─────────────────────────── */
 
-function VenueReviews({
+export function VenueReviews({
   reviews,
   averageRating,
 }: {

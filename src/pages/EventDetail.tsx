@@ -28,7 +28,9 @@ import { MarketplaceForEvent } from '@/components/marketplace/MarketplaceForEven
 import { MilestonesForEntity } from '@/components/discovery/MilestonesForEntity';
 import {
   type EventWithRelations,
-  EventHero,
+  EventMasthead,
+  EventActions,
+  eventStatusLabel,
   EventFactStrip,
   EventForYou,
   EventDecisionCard,
@@ -41,6 +43,17 @@ import {
   formatEventDate,
 } from './EventDetail.parts';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { SinglePage } from '@/components/transit/SinglePage';
+import { PhotoInset } from '@/components/transit/PhotoInset';
+import { ProvenanceLine } from '@/components/transit/ProvenanceLine';
+import { SingleSectionList, SingleRouteRail } from '@/components/transit/SingleSections';
+import {
+  singleSections,
+  useSingleActiveSection,
+  type SingleSectionDef,
+} from '@/components/transit/singleSectionModel';
+import { TagChipRow } from '@/components/tags/TagChipRow';
+import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
 
 export default function EventDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -249,6 +262,55 @@ export default function EventDetail() {
 
   // ---- render states -------------------------------------------------
 
+  const heroImage = event ? resolveEntityImage('event', event).url : undefined;
+  const isPast = event ? new Date(event.end_date || event.start_date) < new Date() : false;
+
+  // Spec module order for `event`: 01 fact strip, 03 occurrences, 04 access,
+  // 08 nested entity, 15 stat line.
+  //
+  // Module 03 (occurrence board) is the OWNER module for this type and is NOT
+  // rendered: `event_occurrences` is an empty table. It was specced in
+  // 20260429130000, given an expansion function, and never populated — 0 rows
+  // against 39,899 events. `is_recurring` is true on 1,098 of them, but a
+  // recurrence PATTERN is not a list of dates, and inventing occurrences from
+  // an RRULE at render time would put times on screen that nothing has
+  // validated. Rule 2: a module with no data does not render.
+  //
+  // Module 15 (stat line) is absent for the same reason: `max_attendees` is set
+  // on 14 rows of 39,899, and `event_attendees` is aggregate-only behind an RPC.
+  const sections: SingleSectionDef[] = event
+    ? singleSections([
+        {
+          id: 'about',
+          title: t('events.detail.section.about', 'About this event'),
+          content: <EventAbout event={event} onContentUpdated={refetch} />,
+        },
+        {
+          id: 'where',
+          title: t('events.detail.section.where', 'Getting there'),
+          content: (
+            <EventWhere
+              event={event}
+              venueRef={venueRef}
+              countryId={effectiveCountry?.id ?? event.country_id}
+              onOrganizerClick={(organizer) =>
+                navigate(`/events?organizer=${encodeURIComponent(organizer)}`)
+              }
+            />
+          ),
+        },
+        {
+          id: 'going',
+          title: t('events.detail.section.going', "Who's going"),
+          content: <EventWhoIsGoing event={event} user={user} isPast={isPast} />,
+        },
+      ])
+    : [];
+
+  // Built above the early returns so the hook order is stable and the route
+  // rail's stations come from the same filtered array the body renders.
+  const { activeId, select } = useSingleActiveSection(sections);
+
   if (error) {
     return (
       <PageContainer data-testid="event-detail-error">
@@ -291,9 +353,6 @@ export default function EventDetail() {
     return <GatedDetailFallback entityType="event" slug={slug} notFound={eventNotFound} />;
   }
 
-  const heroImage = resolveEntityImage('event', event).url;
-  const isPast = new Date(event.end_date || event.start_date) < new Date();
-
   const decisionCard = (
     <EventDecisionCard
       event={event}
@@ -309,26 +368,46 @@ export default function EventDetail() {
 
   return (
     <>
-      <PageContainer data-testid="event-detail-layout">
-        {/* Per-section guards: one bad field degrades a module, never the route. */}
-        <ErrorBoundary
-          section="event-hero"
-          fallback={<h1 className="text-display font-display font-bold">{event.title}</h1>}
-        >
-          <EventHero
-            event={event}
-            cityName={cityName}
-            countryName={countryName}
-            cityLink={cityLink}
-            countryLink={countryLink}
-            heroImage={heroImage}
-            onContentUpdated={refetch}
-          />
-        </ErrorBoundary>
-
-        <div className="mt-8 grid grid-cols-1 gap-8 md:grid-cols-[2fr_1fr]">
-          {/* Main column */}
-          <div className="flex flex-col gap-8">
+      <SinglePage
+        type="event"
+        eyebrow={[t('events.detail.eyebrow', 'Event'), cityName].filter(Boolean).join(' · ')}
+        title={event.title}
+        status={eventStatusLabel(event)}
+        // No lead: the standfirst below carries where-and-whether-it-is-on,
+        // and `events.description` is long-form (98.8% populated) — it belongs
+        // in the About section, not squeezed under the title.
+        tags={
+          <div className="flex flex-col gap-4">
+            <EventMasthead
+              event={event}
+              cityName={cityName}
+              countryName={countryName}
+              cityLink={cityLink}
+              countryLink={countryLink}
+            />
+            {/* `events.tags` is populated on 82.5% of the corpus (32,910 of
+                39,899) and was rendered NOWHERE — the single biggest piece of
+                already-collected data missing from this page. */}
+            {event.tags && event.tags.length > 0 && (
+              <TagChipRow tags={event.tags} max={16} more="expand" />
+            )}
+          </div>
+        }
+        action={<EventActions event={event} onShare={() => setSendEventOpen(true)} />}
+        body={
+          <>
+            {/* The city-resolved country, not `event.countries`. The page has
+                always computed `effectiveCountry` because cities are
+                coordinate-anchored and win when the two disagree — but the
+                banner read the denormalised FK, so a disagreement would have
+                stated the wrong country's law. 0 events disagree today; the
+                fix is for the next time a relink moves one. */}
+            {effectiveCountry?.lgbti_criminalization && (
+              <SafetyAlertBanner
+                criminalization={effectiveCountry.lgbti_criminalization as Record<string, unknown>}
+                countryName={effectiveCountry.name}
+              />
+            )}
             <ErrorBoundary section="event-fact-strip" fallback={null}>
               <EventFactStrip
                 event={event}
@@ -336,6 +415,14 @@ export default function EventDetail() {
                 setShowEventTz={setShowEventTz}
               />
             </ErrorBoundary>
+            <PhotoInset
+              src={heroImage}
+              alt={event.title}
+              fallbackEntityType="event"
+              fallbackKey={event.id}
+              priority
+              caption={cityName}
+            />
             <ErrorBoundary section="event-for-you" fallback={null}>
               <EventForYou
                 event={event}
@@ -343,52 +430,58 @@ export default function EventDetail() {
                 tripCount={tripStatus?.count}
               />
             </ErrorBoundary>
-
-            {/* Decision card inline on mobile (rail hides it on md+) */}
-            <div className="md:hidden">
-              <ErrorBoundary section="event-decision-card" fallback={null}>
-                {decisionCard}
-              </ErrorBoundary>
-            </div>
-
-            <ErrorBoundary section="event-about" fallback={null}>
-              <EventAbout event={event} onContentUpdated={refetch} />
-            </ErrorBoundary>
-            <ErrorBoundary section="event-where" fallback={null}>
-              <EventWhere
-                event={event}
-                venueRef={venueRef}
-                countryId={effectiveCountry?.id ?? event.country_id}
-                onOrganizerClick={(organizer) =>
-                  navigate(`/events?organizer=${encodeURIComponent(organizer)}`)
-                }
-              />
-            </ErrorBoundary>
-          </div>
-
-          {/* Sticky decision rail (desktop) */}
-          <div className="hidden md:block">
+            <SingleRouteRail
+              sections={sections}
+              activeId={activeId}
+              onNavigate={select}
+              orientation="horizontal"
+              track="blue"
+              label={t('events.detail.sections', 'Sections')}
+              className="lg:hidden"
+            />
+            <SingleSectionList sections={sections} />
+          </>
+        }
+        rail={
+          <>
+            {/* ONE copy. This was `hidden md:block` in the rail with a
+                duplicate `md:hidden` copy inside the body — so a phone got the
+                inline one and the rail's contents were dropped outright.
+                `SinglePage`'s rail is a sibling that reflows under the body,
+                which is the whole reason the duplication existed. */}
             <ErrorBoundary section="event-decision-card" fallback={null}>
               {decisionCard}
             </ErrorBoundary>
+            <SingleRouteRail
+              sections={sections}
+              activeId={activeId}
+              onNavigate={select}
+              orientation="vertical"
+              track="blue"
+              label={t('events.detail.sections', 'Sections')}
+              className="hidden lg:block"
+            />
+            <ProvenanceLine
+              addedAt={event.created_at}
+              checkedAt={event.last_verified_at ?? null}
+              correctHref="/contact"
+            />
+          </>
+        }
+        footer={
+          <div className="flex flex-col gap-12 pb-28 md:pb-12">
+            <ErrorBoundary section="event-milestones" fallback={null}>
+              <MilestonesForEntity entityType="event" entityId={event.id} />
+            </ErrorBoundary>
+            <ErrorBoundary section="event-marketplace" fallback={null}>
+              <MarketplaceForEvent eventType={event.event_type} eventTitle={event.title} />
+            </ErrorBoundary>
+            <ErrorBoundary section="event-more-events" fallback={null}>
+              <EventMoreEvents eventId={event.id} city={cityName} />
+            </ErrorBoundary>
           </div>
-        </div>
-
-        <div className="mt-12 flex flex-col gap-12 pb-28 md:pb-12">
-          <ErrorBoundary section="event-milestones" fallback={null}>
-            <MilestonesForEntity entityType="event" entityId={event.id} />
-          </ErrorBoundary>
-          <ErrorBoundary section="event-who-is-going" fallback={null}>
-            <EventWhoIsGoing event={event} user={user} isPast={isPast} />
-          </ErrorBoundary>
-          <ErrorBoundary section="event-marketplace" fallback={null}>
-            <MarketplaceForEvent eventType={event.event_type} eventTitle={event.title} />
-          </ErrorBoundary>
-          <ErrorBoundary section="event-more-events" fallback={null}>
-            <EventMoreEvents eventId={event.id} city={cityName} />
-          </ErrorBoundary>
-        </div>
-      </PageContainer>
+        }
+      />
 
       <AddToTripDialog
         open={addToTripOpen}

@@ -1278,7 +1278,16 @@
     "featured": "[AR] Featured",
     "rsvpEmptyMember": "[AR] No RSVPs yet. Be the first.",
     "rsvpEmptyAnon": "[AR] No RSVPs yet. Sign in to be the first.",
-    "peopleYouMayKnow": "[AR] People you may know"
+    "peopleYouMayKnow": "[AR] People you may know",
+    "detail": {
+      "eyebrow": "[AR] Event",
+      "sections": "[AR] Sections",
+      "section": {
+        "about": "[AR] About this event",
+        "where": "[AR] Getting there",
+        "going": "[AR] Who's going"
+      }
+    }
   },
   "venues": {
     "title": "الأماكن",
@@ -1405,7 +1414,20 @@
     },
     "closed": "[AR] Closed",
     "openNow": "[AR] Open now",
-    "locationUnknown": "[AR] Location unknown"
+    "locationUnknown": "[AR] Location unknown",
+    "detail": {
+      "eyebrow": "[AR] Venue",
+      "closed": "[AR] Permanently closed",
+      "section": {
+        "about": "[AR] About",
+        "hours": "[AR] Opening hours",
+        "access": "[AR] Access",
+        "whatsOn": "[AR] What's on here",
+        "signals": "[AR] Visitor signals",
+        "reviews": "[AR] Reviews",
+        "photos": "[AR] Photos"
+      }
+    }
   },
   "marketplace": {
     "title": "السوق",

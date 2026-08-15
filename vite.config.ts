@@ -1,11 +1,11 @@
-import { defineConfig, type Plugin } from "vite";
-import react from "@vitejs/plugin-react";
-import tailwindcss from "@tailwindcss/vite";
-import { sentryVitePlugin } from "@sentry/vite-plugin";
-import { visualizer } from "rollup-plugin-visualizer";
-import path from "path";
-import fs from "fs";
-import { fileURLToPath } from "url";
+import { defineConfig, type Plugin } from 'vite';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
+import { sentryVitePlugin } from '@sentry/vite-plugin';
+import { visualizer } from 'rollup-plugin-visualizer';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -56,6 +56,20 @@ export default defineConfig(({ mode }) => ({
     // same gap that hid 38 of 45 edge-function tests until 2026-08-02.
     include: ['src/**/*.{test,spec}.{ts,tsx}', 'functions/**/*.{test,spec}.ts'],
     setupFiles: ['./src/test/setup.ts'],
+    // maplibre asks for its worker as `?worker&url`, which Vite's test
+    // transform refuses to resolve ("Denied ID"). The failure is a COLLECTION
+    // error, so the whole suite reports 0 tests — eight files across the repo
+    // (VenueDetail.parts, EventDetail, EntityDetail, SearchResults, Venues,
+    // HotelDetail…) had been silently contributing nothing, and the count
+    // looked healthy because vitest reports "N passed" for the files that did
+    // collect. Aliasing the worker to a stub fixes the class rather than
+    // adding a per-file `vi.mock` each time someone trips over it.
+    alias: [
+      {
+        find: /maplibre-gl\/dist\/maplibre-gl-worker\.mjs\?worker&url$/,
+        replacement: path.resolve(__dirname, './src/test/stubs/emptyWorkerUrl.ts'),
+      },
+    ],
     // 5s default flakes under parallel load (saturated CI workers /
     // concurrent local suites); headroom above asyncUtilTimeout (5s)
     // set in src/test/setup.ts.
@@ -88,33 +102,35 @@ export default defineConfig(({ mode }) => ({
     },
   },
   server: {
-    host: "127.0.0.1",
-    port: parseInt(process.env.PORT || "8080"),
+    host: '127.0.0.1',
+    port: parseInt(process.env.PORT || '8080'),
   },
   plugins: [
     react(),
     tailwindcss(),
     cfRocketLoaderBypass(),
     emitBuildIdFile(),
-    mode === 'production' && sentryVitePlugin({
-      org: process.env.SENTRY_ORG || 'maedertobiassimon',
-      project: process.env.SENTRY_PROJECT || 'javascript-react',
-      authToken: process.env.SENTRY_AUTH_TOKEN,
-      release: {
-        name: process.env.CF_PAGES_COMMIT_SHA || undefined,
-      },
-      sourcemaps: {
-        filesToDeleteAfterUpload: ['./dist/assets/js/*.map'],
-      },
-      telemetry: false,
-    }),
-    process.env.BUNDLE_STATS === '1' && visualizer({
-      filename: 'bundle-baselines/stats.html',
-      template: 'treemap',
-      gzipSize: true,
-      brotliSize: true,
-      sourcemap: false,
-    }),
+    mode === 'production' &&
+      sentryVitePlugin({
+        org: process.env.SENTRY_ORG || 'maedertobiassimon',
+        project: process.env.SENTRY_PROJECT || 'javascript-react',
+        authToken: process.env.SENTRY_AUTH_TOKEN,
+        release: {
+          name: process.env.CF_PAGES_COMMIT_SHA || undefined,
+        },
+        sourcemaps: {
+          filesToDeleteAfterUpload: ['./dist/assets/js/*.map'],
+        },
+        telemetry: false,
+      }),
+    process.env.BUNDLE_STATS === '1' &&
+      visualizer({
+        filename: 'bundle-baselines/stats.html',
+        template: 'treemap',
+        gzipSize: true,
+        brotliSize: true,
+        sourcemap: false,
+      }),
   ].filter(Boolean),
   define: {
     'import.meta.env.VITE_SENTRY_RELEASE': JSON.stringify(process.env.CF_PAGES_COMMIT_SHA || ''),
@@ -122,7 +138,7 @@ export default defineConfig(({ mode }) => ({
   },
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      '@': path.resolve(__dirname, './src'),
     },
     // P0 audit follow-up: boneyard-js/react bundles its own React, which
     // ends up in a separate Vite optimizeDeps cache bucket from the app's
@@ -162,10 +178,13 @@ export default defineConfig(({ mode }) => ({
       output: { minify: mode === 'production' },
     },
   },
-  esbuild: mode === 'production' ? {
-    drop: ['console', 'debugger'],
-    legalComments: 'none',
-  } : {},
+  esbuild:
+    mode === 'production'
+      ? {
+          drop: ['console', 'debugger'],
+          legalComments: 'none',
+        }
+      : {},
   build: {
     rollupOptions: {
       output: {
@@ -203,12 +222,18 @@ export default defineConfig(({ mode }) => ({
             // See docs/perf/recharts-cross-route-leak.md. NOTE: this is the
             // ordered-group variant, NOT the priority-100 group that failed in
             // #1122 — measured entry sizes below before merging.
-            { name: 'utils', test: /node_modules\/(clsx|tailwind-merge|class-variance-authority|use-sync-external-store)\// },
+            {
+              name: 'utils',
+              test: /node_modules\/(clsx|tailwind-merge|class-variance-authority|use-sync-external-store)\//,
+            },
             { name: 'utils', test: /node_modules\/date-fns\// },
             { name: 'graph', test: /node_modules\/(react-force-graph|force-graph|d3-)/ },
             { name: 'exceljs', test: /node_modules\/exceljs\// },
             { name: 'maplibre', test: /node_modules\/(maplibre-gl|@protomaps)\// },
-            { name: 'tiptap', test: /node_modules\/(@tiptap|lowlight|prosemirror-|highlight\.js)\// },
+            {
+              name: 'tiptap',
+              test: /node_modules\/(@tiptap|lowlight|prosemirror-|highlight\.js)\//,
+            },
             { name: 'pdfjs', test: /node_modules\/pdfjs-dist\// },
             { name: 'mammoth', test: /node_modules\/mammoth\// },
             { name: 'boneyard', test: /node_modules\/boneyard-js\// },

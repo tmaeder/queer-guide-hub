@@ -39,6 +39,9 @@ export interface EntityTrackView {
  */
 export interface EntitySection {
   id: string;
+  /** Heading for the subway single. `EntityDetailScroll` ignores it — that
+   *  shell lets each section render its own heading. */
+  title?: string;
   when?: boolean;
   render: () => ReactNode;
 }
@@ -64,6 +67,33 @@ export interface EntityRelatedSource {
   title: string;
 }
 
+/**
+ * Masthead + rail shape for a type that has moved to the subway `SinglePage`.
+ *
+ * Additive and optional on purpose: `EntityDetailView` picks `EntitySingle`
+ * when a descriptor carries this and `EntityDetailScroll` when it does not, so
+ * venue could move without dragging organisations and milestones with it.
+ * When those two follow, the old shell and this flag both go.
+ */
+export interface EntitySingleShape {
+  /** Uppercase line above the title, e.g. "Venue · Berlin". */
+  eyebrow?: string;
+  /** Bordered ink chip — a STATE ("Open now", "Permanently closed"). */
+  status?: string;
+  lead?: ReactNode;
+  /** S4 tag array + any standfirst that carries links (the `lead` slot is a `<p>`). */
+  tags?: ReactNode;
+  /** S5 — one concrete verb, plus report/admin. */
+  action?: ReactNode;
+  /** Rendered at the TOP of the body, above the route rail and the sections —
+   *  the cover photo and any banner that must precede everything. */
+  bodyLead?: ReactNode;
+  /** Rail-slot modules, top to bottom. The rail reflows UNDER the body on mobile. */
+  rail?: ReactNode;
+  /** Which line the route rail draws in. */
+  track?: 'pink' | 'blue' | 'green' | 'yellow';
+}
+
 export interface EntityDescriptor {
   source: EntitySource;
   id: string;
@@ -85,6 +115,8 @@ export interface EntityDescriptor {
   /** Null when the entity has nothing to personalise on. */
   personalization: EntityPersonalization | null;
   trackView: EntityTrackView;
+  /** Present = render on `SinglePage`; absent = the legacy scroll shell. */
+  single?: EntitySingleShape;
 }
 
 /** Result returned by every adapter hook. */

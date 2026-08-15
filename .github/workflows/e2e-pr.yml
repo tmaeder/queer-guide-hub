@@ -79,9 +79,9 @@ jobs:
             e2e/help-locale.spec.ts \
             e2e/hotels-filters.spec.ts \
             e2e/nested-interactive.spec.ts \
-            e2e/geo-singles.spec.ts \
+            e2e/singles.spec.ts \
             --reporter=line
-          # geo-singles is in the list above rather than left to the nightly
+          # singles.spec.ts is in the list above rather than left to the nightly
           # run for the reason it exists: /villages/:slug shipped for months on
           # a dead layout branch with no safety gating because NOTHING
           # exercised it. A spec written to close that gap, parked behind a

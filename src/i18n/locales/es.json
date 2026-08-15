@@ -1272,7 +1272,16 @@
     "featured": "[ES] Featured",
     "rsvpEmptyMember": "[ES] No RSVPs yet. Be the first.",
     "rsvpEmptyAnon": "[ES] No RSVPs yet. Sign in to be the first.",
-    "peopleYouMayKnow": "[ES] People you may know"
+    "peopleYouMayKnow": "[ES] People you may know",
+    "detail": {
+      "eyebrow": "[ES] Event",
+      "sections": "[ES] Sections",
+      "section": {
+        "about": "[ES] About this event",
+        "where": "[ES] Getting there",
+        "going": "[ES] Who's going"
+      }
+    }
   },
   "venues": {
     "title": "Lugares",
@@ -1399,7 +1408,20 @@
     },
     "closed": "[ES] Closed",
     "openNow": "[ES] Open now",
-    "locationUnknown": "[ES] Location unknown"
+    "locationUnknown": "[ES] Location unknown",
+    "detail": {
+      "eyebrow": "[ES] Venue",
+      "closed": "[ES] Permanently closed",
+      "section": {
+        "about": "[ES] About",
+        "hours": "[ES] Opening hours",
+        "access": "[ES] Access",
+        "whatsOn": "[ES] What's on here",
+        "signals": "[ES] Visitor signals",
+        "reviews": "[ES] Reviews",
+        "photos": "[ES] Photos"
+      }
+    }
   },
   "marketplace": {
     "title": "Mercado",

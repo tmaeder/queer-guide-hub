@@ -51,6 +51,8 @@ const ROUTES = [
   '/city/berlin',
   '/country/germany',
   '/villages/chueca',
+  '/venues/scum-and-villainy-cantina',
+  '/events/capital-pride-ottawa-2026',
 ];
 
 const WIDTHS = [390, 768, 1440, 1920];
