@@ -35,7 +35,8 @@ import {
   productEyebrow,
 } from './MarketplaceItemDetail.parts';
 import { MarketplaceGallery } from '@/components/marketplace/MarketplaceGallery';
-import { useBrandMoreFrom } from '@/hooks/useMarketplaceBrands';
+import { useBrandMoreFrom, useMarketplaceBrand } from '@/hooks/useMarketplaceBrands';
+import { brandSlug } from '@/lib/marketplaceTaxonomy';
 import { formatListingPrice } from '@/components/marketplace/marketplaceHelpers';
 import type { ListingTag } from '@/hooks/usePageFetchers';
 import { FeaturedInGuides } from '@/components/guides/FeaturedInGuides';
@@ -135,6 +136,15 @@ export default function MarketplaceItemDetail() {
   // Powers the one honest count in the rail's StatLine (module 15).
   const { data: siblings } = useBrandMoreFrom(listing?.brand, listing?.id ?? '', 24);
 
+  // The curated brand name. Costs NO extra request: BrandStoryBlock further
+  // down this same page already calls `useMarketplaceBrand` with this exact
+  // slug, so react-query serves both from one cache entry. Without it the page
+  // contradicts itself — "Take me to tomboyx" beside a "TomboyX" heading.
+  const { data: curatedBrand } = useMarketplaceBrand(
+    listing?.brand ? (brandSlug(listing.brand) ?? undefined) : undefined,
+  );
+  const curatedName = curatedBrand?.display_name ?? null;
+
   const productJsonLd = listing
     ? {
         '@context': 'https://schema.org',
@@ -143,9 +153,10 @@ export default function MarketplaceItemDetail() {
         description: listing.description ?? undefined,
         image: listing.images && listing.images.length > 0 ? listing.images : undefined,
         sku: listing.id,
+        // Curated name here too — this is what Google indexes as the brand.
         brand:
-          listing.brand || listing.business_name
-            ? { '@type': 'Brand', name: listing.brand || listing.business_name }
+          curatedName || listing.brand || listing.business_name
+            ? { '@type': 'Brand', name: curatedName || listing.brand || listing.business_name }
             : undefined,
         ...(reviews.length > 0
           ? {
@@ -311,22 +322,22 @@ export default function MarketplaceItemDetail() {
   const body = (
     <>
       <MarketplaceGallery listingId={listing.id} images={listing.images} title={listing.title} />
-      <ProductFacts listing={listing} />
+      <ProductFacts listing={listing} curatedName={curatedName} />
       <MarketplaceContent listing={listing} reviews={reviews} onContentUpdated={refetch} />
       <FeaturedInGuides entityType="marketplace" entityId={listing.id} />
       {/* NOT wrapped in a SingleSection: BrandStoryBlock renders its own
           `#brand-story` h2, and nesting it would put two headings on one
           block — the second one silently outranking the first. */}
       <BrandStoryBlock listing={listing} />
-      <BrandMoreFrom listing={listing} />
+      <BrandMoreFrom listing={listing} curatedName={curatedName} />
       <PairsWithRail listing={listing} />
     </>
   );
 
   const rail = (
     <>
-      <MarketplaceBuyBox listing={listing} />
-      <MakerCard listing={listing} />
+      <MarketplaceBuyBox listing={listing} curatedName={curatedName} />
+      <MakerCard listing={listing} curatedName={curatedName} />
       <ProductStats listing={listing} siblingCount={siblings?.length ?? null} />
       {/* Spine S6. These listings are machine-ingested from merchant feeds, so
           saying who added the row and when we last checked it is the honest
@@ -343,7 +354,7 @@ export default function MarketplaceItemDetail() {
   return (
     <SinglePage
       type="marketplace"
-      eyebrow={productEyebrow(listing)}
+      eyebrow={productEyebrow(listing, curatedName)}
       title={listing.title}
       status={status}
       lead={
@@ -370,7 +381,7 @@ export default function MarketplaceItemDetail() {
       action={
         <>
           <div className="w-full sm:w-auto">
-            <MarketplaceBuyBox listing={listing} compact />
+            <MarketplaceBuyBox listing={listing} compact curatedName={curatedName} />
           </div>
           <Button variant="outline" onClick={handleToggleFavorite}>
             {isFavorited ? t('common.saved', 'Saved') : t('common.save', 'Save')}
