@@ -125,7 +125,11 @@ Deno.serve(async (req) => {
   }
 
   // ── Work list ─────────────────────────────────────────────────────────────
-  let due: DueRow[] = []
+  // No `= []` initializer: both branches below assign `due`, so the empty array
+  // was a dead store (`no-useless-assignment`). Declaring it unassigned makes
+  // the compiler prove that instead — if a third branch ever forgets to write
+  // it, that is a type error rather than a silent empty batch.
+  let due: DueRow[]
   if (body.personality_ids?.length) {
     const { data, error } = await supabase
       .from('personalities')

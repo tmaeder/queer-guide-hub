@@ -19,6 +19,22 @@ import { waitForAppReady } from './support/appReady';
 // contrast failures and unstable scroll positions.
 test.use({ reducedMotion: 'reduce' });
 
+/**
+ * axe reads computed styles, so a running transition is sampled at whatever
+ * fraction it happens to be at — and an interpolated colour matches no token.
+ * The /accessibility scan failed on `#717170` over `#d1d1cd` (3.19:1): both are
+ * the same transition ~17% in, from `--muted-foreground`→`--background` and
+ * `--background`→`--foreground`. `reducedMotion: 'reduce'` above did not stop
+ * it. Wait for the page to actually stop moving before measuring it.
+ */
+async function settleAnimations(page: Page) {
+  await page
+    .waitForFunction(() => document.getAnimations().every((a) => a.playState !== 'running'), null, {
+      timeout: 5_000,
+    })
+    .catch(() => {});
+}
+
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 const RAIL = 'nav[aria-label="Sections of this policy"]';
 const POLICIES = ['/terms', '/privacy', '/cookies', '/dmca'];
@@ -175,6 +191,7 @@ test.describe('Policy pages — automated a11y', () => {
       await page.goto(route);
       await waitForAppReady(page);
       await page.waitForSelector('main', { timeout: 30_000 }).catch(() => {});
+      await settleAnimations(page);
 
       const results = await new AxeBuilder({ page })
         .exclude('footer')

@@ -1,5 +1,6 @@
 {
   "project": "tsconfig.app.json",
+  "total": 1252,
   "total": 896,
   "files": {
     "src/assets/intimate/pictograms.tsx": {
