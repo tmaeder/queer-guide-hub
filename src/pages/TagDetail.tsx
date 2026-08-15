@@ -41,7 +41,7 @@ import { TagLegalSource } from '@/components/tags/TagLegalSource';
 import { buildTagJsonLd } from '@/lib/tags/tagJsonLd';
 import type { CentralizedTag } from '@/hooks/useCentralizedTags';
 import { useTagUsageBreakdown, totalUses } from '@/hooks/useTagUsageBreakdown';
-import { useSimilarTags } from '@/hooks/useTagRelationships';
+import { useSimilarTags, useTagReferenceLinks } from '@/hooks/useTagRelationships';
 import { useActiveStation } from '@/hooks/useActiveStation';
 import { useMeta } from '@/hooks/useMeta';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
@@ -78,6 +78,19 @@ const ENTITY_KIND_LABELS: Record<string, string> = {
   practice: 'Practice',
   aesthetic: 'Aesthetic',
 };
+
+/**
+ * Label a citation by its host. `URL` throws on a malformed string and these
+ * rows are operator-entered, so fall back to the raw value rather than letting
+ * one bad row blank the whole rail.
+ */
+function sourceHost(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '');
+  } catch {
+    return url;
+  }
+}
 
 function isHtml(text: string): boolean {
   return /<[a-z][\s\S]*>/i.test(text);
@@ -147,6 +160,13 @@ export default function TagDetail() {
   // request; the band owns the rendering.
   const { data: medicalCodes } = useTagMedicalCodes(tag?.id ?? null);
   const medicalCodeCount = countMedicalCodes(medicalCodes);
+  // Plain reference links (saferparty.ch on the substance terms, and anything
+  // else editorial). Distinct from `legalSources` above, which is a legal
+  // INSTRUMENT — official title, jurisdiction, adopted year — and earns its own
+  // band. A reference is just a link, so it belongs in the Elsewhere rail next
+  // to Wikipedia.
+  const { data: referenceLinks } = useTagReferenceLinks(tag?.id ?? null);
+  const references = referenceLinks ?? [];
 
   const relatedByEmbedding = useMemo(
     () => rankSimilarTags(similar ?? [], primary?.name, safeMode.enabled).slice(0, 10),
@@ -420,7 +440,10 @@ export default function TagDetail() {
           so in practice only one of the two ever renders. */}
       <TagLegalSource sources={legalSources} tagSlug={tag.slug} />
 
-      {(tag.wikipedia_url || tag.wikidata_id || medicalCodeCount > 0) && (
+      {(tag.wikipedia_url ||
+        tag.wikidata_id ||
+        medicalCodeCount > 0 ||
+        references.length > 0) && (
         <SidebarCard eyebrow={t('tags.detail.elsewhere', 'Elsewhere')}>
           {/* An in-page anchor rather than the codes themselves: the rail is
               240px and the band has four groups. This row is a pointer, not a
@@ -455,6 +478,20 @@ export default function TagDetail() {
               }
             />
           )}
+          {/* Reference links with no dedicated column — saferparty.ch on the
+              substance terms. The label is the URL's host rather than
+              `claim_summary`, so nothing the RPC did not vet gets printed. */}
+          {references.map((s) => (
+            <SidebarRow
+              key={s.source_url}
+              label={sourceHost(s.source_url)}
+              value={
+                <a href={s.source_url} target="_blank" rel="noopener noreferrer">
+                  {t('tags.detail.readThere', 'Read')}
+                </a>
+              }
+            />
+          ))}
         </SidebarCard>
       )}
 

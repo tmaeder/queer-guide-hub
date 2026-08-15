@@ -32304,6 +32304,10 @@ export type Database = {
         Returns: Json
       }
       get_tag_ontology: { Args: { p_tag_id: string }; Returns: Json }
+      get_tag_reference_links: {
+        Args: { p_tag_id: string }
+        Returns: { source_type: string; source_url: string }[]
+      }
       get_translated_content: {
         Args: {
           p_fields?: string[]
