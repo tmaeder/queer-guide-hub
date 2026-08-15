@@ -4302,7 +4302,9 @@
       "lawSuperseded": "已被取代",
       "lawPartlyStruck": "现行有效，部分条款被撤销",
       "notOneLaw": "这不是单一法律，而是逐国记录的。",
-      "seeByCountry": "查看各国状态"
+      "seeByCountry": "查看各国状态",
+      "spansAllRights": "这涵盖整个法律领域，而非单一法律。我们逐国记录 18 项独立权利。",
+      "seeAllRights": "查看各国的 18 项权利"
     }
   }
 }

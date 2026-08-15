@@ -4269,7 +4269,9 @@
         "misspelling": "Common misspelling",
         "historical": "Historically",
         "slang": "Slang"
-      }
+      },
+      "spansAllRights": "This covers a whole field of law, not one statute. We track 18 separate rights, country by country.",
+      "seeAllRights": "See all 18 rights by country"
     }
   }
 }
