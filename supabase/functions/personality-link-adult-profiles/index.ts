@@ -38,6 +38,7 @@ import {
   type PlatformKey,
 } from '../_shared/adult-profile-probe.ts'
 
+const AUTOMATION_SLUG = 'personality_adult_links'
 const DEFAULT_BATCH = 40
 const REQUEST_TIMEOUT_MS = 12_000
 const POLITE_DELAY_MS = 350
@@ -45,6 +46,69 @@ const UA =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36'
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
+/**
+ * Record the run against admin_automations / admin_automation_runs.
+ *
+ * `type:'cron'` automations fire through `net.http_post`, and NOTHING on that
+ * path writes back — measured across the registry, almost every net.http_post
+ * cron sits at `last_run_at = null` with zero rows in admin_automation_runs,
+ * including ones that have been live for months. The consequence is not just a
+ * blank admin column: `consecutive_failures` never increments, so the
+ * auto-pause safety net (3 failures disables the job) can never fire and a
+ * nightly job can fail forever in silence.
+ *
+ * So the function reports its own run. Best-effort by construction — a
+ * bookkeeping failure must never fail the actual work, and a dry run is not a
+ * real run and is not recorded.
+ */
+async function recordRun(
+  supabase: ReturnType<typeof getServiceClient>,
+  startedAt: string,
+  status: 'success' | 'error',
+  examined: number,
+  changed: number,
+  summary: Record<string, unknown>,
+  error?: string,
+): Promise<void> {
+  try {
+    const { data: automation } = await supabase
+      .from('admin_automations')
+      .select('id, consecutive_failures')
+      .eq('slug', AUTOMATION_SLUG)
+      .maybeSingle()
+
+    await supabase.from('admin_automation_runs').insert({
+      automation_id: automation?.id ?? null,
+      automation_slug: AUTOMATION_SLUG,
+      started_at: startedAt,
+      finished_at: new Date().toISOString(),
+      status,
+      items_examined: examined,
+      items_changed: changed,
+      summary,
+      error: error ?? null,
+    })
+
+    // Reset on success, INCREMENT on failure — this counter is the input the
+    // auto-pause threshold reads, so it has to be written explicitly. (A
+    // `? 0 : undefined` here would be dropped from the JSON body and failures
+    // would never accumulate.)
+    const failures =
+      status === 'success' ? 0 : Number(automation?.consecutive_failures ?? 0) + 1
+
+    await supabase
+      .from('admin_automations')
+      .update({
+        last_run_at: new Date().toISOString(),
+        last_run_status: status,
+        consecutive_failures: failures,
+      })
+      .eq('slug', AUTOMATION_SLUG)
+  } catch (e) {
+    console.error(`run bookkeeping failed: ${e instanceof Error ? e.message : String(e)}`)
+  }
+}
 
 interface DueRow {
   id: string
@@ -97,7 +161,20 @@ Deno.serve(async (req) => {
     platforms?: PlatformKey[]
   }
 
+  const startedAt = new Date().toISOString()
   const dryRun = body.dry_run === true
+  // A dry run is not a real run; recording one would reset the failure counter
+  // and make the job look healthy without having done anything.
+  const report = (
+    status: 'success' | 'error',
+    examined: number,
+    changed: number,
+    summary: Record<string, unknown>,
+    error?: string,
+  ) =>
+    dryRun
+      ? Promise.resolve()
+      : recordRun(supabase, startedAt, status, examined, changed, summary, error)
   const batchSize = Math.max(1, Math.min(Number(body.batch_size) || DEFAULT_BATCH, 200))
 
   // An explicit `platforms` list is passed through to the SELECTOR too, so an
@@ -117,6 +194,7 @@ Deno.serve(async (req) => {
   }
   const active = wanted.filter((p) => !open.has(p))
   if (active.length === 0) {
+    await report('error', 0, 0, { circuits_open: [...open] }, 'all circuits open')
     return jsonResponse(
       { success: true, circuit_open: true, examined: 0, linked: 0, queued: 0, skipped_reason: 'all_circuits_open' },
       200,
@@ -136,7 +214,10 @@ Deno.serve(async (req) => {
       .select('id, name, slug, is_living, social_links, enrichment_status')
       .in('id', body.personality_ids.slice(0, 200))
       .eq('is_adult', true)
-    if (error) return jsonResponse({ success: false, error: error.message }, 500, req)
+    if (error) {
+      await report('error', 0, 0, {}, error.message)
+      return jsonResponse({ success: false, error: error.message }, 500, req)
+    }
     due = (data ?? []).map((r) => ({
       id: r.id as string,
       name: r.name as string,
@@ -154,11 +235,15 @@ Deno.serve(async (req) => {
       p_limit: batchSize,
       ...(explicitPlatforms ? { p_platforms: explicitPlatforms } : {}),
     })
-    if (error) return jsonResponse({ success: false, error: error.message }, 500, req)
+    if (error) {
+      await report('error', 0, 0, {}, error.message)
+      return jsonResponse({ success: false, error: error.message }, 500, req)
+    }
     due = (data ?? []) as DueRow[]
   }
 
   if (due.length === 0) {
+    await report('success', 0, 0, { note: 'nothing due' })
     return jsonResponse({ success: true, examined: 0, linked: 0, queued: 0 }, 200, req)
   }
 
@@ -168,7 +253,10 @@ Deno.serve(async (req) => {
     .from('personalities')
     .select('id, is_adult, social_links, enrichment_status, field_provenance')
     .in('id', due.map((d) => d.id))
-  if (curErr) return jsonResponse({ success: false, error: curErr.message }, 500, req)
+  if (curErr) {
+    await report('error', 0, 0, {}, curErr.message)
+    return jsonResponse({ success: false, error: curErr.message }, 500, req)
+  }
 
   const state = new Map(
     (current ?? []).map((r) => [
@@ -193,7 +281,10 @@ Deno.serve(async (req) => {
     .eq('entity_type', 'personality')
     .eq('status', 'open')
     .in('entity_id', due.map((d) => d.id))
-  if (openErr) return jsonResponse({ success: false, error: openErr.message }, 500, req)
+  if (openErr) {
+    await report('error', 0, 0, {}, openErr.message)
+    return jsonResponse({ success: false, error: openErr.message }, 500, req)
+  }
   const alreadyQueued = new Set(
     (openRows ?? []).map((r) => `${r.entity_id}:${r.field}`),
   )
@@ -332,6 +423,14 @@ Deno.serve(async (req) => {
       if (qErr) console.error(`queue insert failed for ${row.id}: ${qErr.message}`)
     }
   }
+
+  await report('success', summary.examined, summary.linked + summary.queued, {
+    linked: summary.linked,
+    queued: summary.queued,
+    missed: summary.missed,
+    retired: summary.retired,
+    by_platform: summary.by_platform,
+  })
 
   return jsonResponse(
     {
