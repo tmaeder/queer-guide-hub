@@ -80,13 +80,21 @@ for (const route of ROUTES) {
       // the model cannot express.
       const empty = await page.evaluate(() =>
         [...document.querySelectorAll('article section[id]')]
-          .map((el) => {
-            const h = el.querySelector('h2')?.textContent?.trim() ?? '';
-            return { id: el.id, body: el.textContent?.replace(h, '').trim().length ?? 0 };
+          .filter((el) => {
+            const h = el.querySelector('h2');
+            const text = (el.textContent ?? '').replace(h?.textContent ?? '', '').trim();
+            if (text.length > 0) return false;
+            // Text is not the only content. `VenuePhotos` renders a grid of
+            // <img> and nothing else, so a textContent-only check flagged it —
+            // a false positive that would have taught everyone to ignore this
+            // assertion. Media and controls count as a body.
+            return (
+              el.querySelectorAll('img, svg, video, canvas, iframe, picture, input').length === 0
+            );
           })
-          .filter((s) => s.body === 0)
-          .map((s) => s.id),
+          .map((el) => el.id),
       );
+
       expect(empty, `sections rendered with a heading and no body: ${empty.join(', ')}`).toEqual(
         [],
       );
