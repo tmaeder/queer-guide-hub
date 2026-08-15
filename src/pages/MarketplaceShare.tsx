@@ -40,7 +40,15 @@ export default function MarketplaceShare() {
         backTo={{ label: 'Marketplace', to: '/marketplace' }}
         eyebrow="Marketplace · Shared list"
         title={title}
-        count={`${ids.length.toLocaleString()} listing${ids.length === 1 ? '' : 's'} shared`}
+        // Phrasing kept verbatim from the subtitle this masthead replaced.
+        // `e2e/marketplace.spec.ts` derives listing ids by matching
+        // /shared list of N listing/i here, and the unit tests match
+        // "No listings selected" — the wording is a contract, not prose.
+        count={
+          ids.length > 0
+            ? `Shared list of ${ids.length} listing${ids.length === 1 ? '' : 's'}.`
+            : 'No listings selected.'
+        }
       />
 
       <PageContainer>
