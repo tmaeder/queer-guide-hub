@@ -47,7 +47,14 @@ export function Footer() {
 
   return (
     <footer className="mt-auto bg-foreground text-background">
-      <div className={cn('mx-auto w-full max-w-page pt-8', PAGE_GUTTER)}>
+      {/* FULL-BLEED, deliberately outside the page cap and the gutter. A track
+          runs to the edge of the map or it is not a track — capping it at
+          max-w-page and then insetting it by the gutter left a margin of dead
+          ink on both sides and made the lines read as a decorative graphic
+          dropped into a column rather than as the network the page sits on.
+          This is the same rule the header's own edge-to-edge rules follow:
+          full-bleed bands stay full-bleed, only their CONTENT takes the cap. */}
+      <div className="pt-8">
         <FooterTracks />
       </div>
 
