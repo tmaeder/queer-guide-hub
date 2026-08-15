@@ -40,8 +40,17 @@ export function DeadEndTrack({ label, type, caption, className }: DeadEndTrackPr
   const track = type ? ROUTE_BULLET_MAP[type]?.track : undefined;
   const live = track ? TRACK_STROKE[track] : 'text-foreground';
 
+  // The PANEL carries the cap, not the SVG inside it: the viewBox scales the
+  // stroke with the width, so at the full 1600px page frame an uncapped track
+  // renders as a grotesquely fat line — but capping only the artwork leaves a
+  // band of dead paper to its right.
   return (
-    <div className={cn('border-[3px] border-foreground bg-background p-4 sm:p-6', className)}>
+    <div
+      className={cn(
+        'max-w-[56rem] border-[3px] border-foreground bg-background p-4 sm:p-6',
+        className,
+      )}
+    >
       <svg
         viewBox="0 0 300 100"
         role="presentation"
@@ -79,11 +88,11 @@ export function DeadEndTrack({ label, type, caption, className }: DeadEndTrackPr
 
       <p className="mt-4 flex flex-wrap items-baseline gap-x-2 gap-y-1">
         {caption && (
-          <span className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
+          <span className="text-13 font-bold uppercase tracking-label text-muted-foreground">
             {caption}
           </span>
         )}
-        <span className="min-w-0 break-all font-display text-title leading-tight">{label}</span>
+        <span className="min-w-0 break-all font-display text-headline leading-tight">{label}</span>
       </p>
     </div>
   );
