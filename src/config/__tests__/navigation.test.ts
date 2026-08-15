@@ -104,6 +104,44 @@ describe('INTENT_NAV', () => {
     }
   });
 
+  it('gives every intent child link a real route it is allowed to claim', () => {
+    // The footer's track columns render `children`. This is the guard that
+    // keeps them a VIEW over DESTINATIONS rather than a second, hand-kept nav
+    // source — the exact shape that once left /venues and /people unreachable
+    // from desktop chrome. A child must be either an existing browse
+    // destination or a route inside its own intent's active prefixes; anything
+    // else is a link the rest of the nav does not know about.
+    const destinationRoutes = new Set(DESTINATIONS.map((d) => d.to));
+    for (const intent of INTENT_NAV) {
+      expect(intent.children.length, `${intent.id} has no column links`).toBeGreaterThan(0);
+      for (const child of intent.children) {
+        const known = destinationRoutes.has(child.to) || isIntentActive(intent, child.to);
+        expect(known, `${intent.id} → ${child.to} is not a known route`).toBe(true);
+        expect(child.labelKey).toMatch(/^header\.nav\./);
+        expect(child.fallback.length).toBeGreaterThan(0);
+        // A route the router does not serve renders a dead footer link.
+        expect(routesSrc, `${child.to} has no route`).toContain(`path="${child.to.slice(1)}"`);
+      }
+      // Duplicates inside one column read as a rendering bug.
+      const seen = new Set(intent.children.map((c) => c.to));
+      expect(seen.size).toBe(intent.children.length);
+    }
+  });
+
+  it('renders the wayfinding icon set, never lucide, on the intent row', () => {
+    // Hard rule: "never mix TransitIcon and lucide in the same surface". The
+    // intent row is rendered by the header, the mobile sheet, the search modal
+    // and the footer, so a lucide binding here leaks into all four at once.
+    // lucide icons are ForwardRefExoticComponents and carry `$$typeof`;
+    // transitIcon() returns a plain function component.
+    for (const intent of INTENT_NAV) {
+      expect(
+        Object.prototype.hasOwnProperty.call(intent.icon, '$$typeof'),
+        `${intent.id} still carries a lucide icon`,
+      ).toBe(false);
+    }
+  });
+
   it('matches active state by path prefix, not by exact equality', () => {
     const travelling = INTENT_NAV.find((i) => i.id === 'travelling')!;
     expect(isIntentActive(travelling, '/travel')).toBe(true);

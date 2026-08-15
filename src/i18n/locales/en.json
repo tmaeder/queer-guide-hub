@@ -238,7 +238,14 @@
       "resources": "Search resources",
       "personalities": "Meet personalities…"
     },
-    "ariaLabel": "Search Queer Guide"
+    "ariaLabel": "Search Queer Guide",
+    "escape": "esc",
+    "jumpTo": "Jump to",
+    "recent": "Recent",
+    "noStation": "No station by that name — yet",
+    "addToMap": "Add it to the map",
+    "seeOnMap": "See {{count}} results on the map",
+    "keyHints": "↑↓ navigate · ↵ open"
   },
   "common": {
     "back": "Back",
@@ -310,6 +317,13 @@
       "eyebrow": "In an emergency",
       "title": "Crisis lines, 24 hours",
       "body": "Trans helpline, LGBT+ crisis support, and local emergency numbers, listed by country and always one click from any page."
+    },
+    "osmAttribution": "Transit diagrams derived from © OpenStreetMap contributors (ODbL)",
+    "reportSomething": "Report something",
+    "hotlines": "Hotlines",
+    "antiDiscrimination": {
+      "title": "We don't do bigotry here.",
+      "body": "Racism, transphobia, and discrimination are automatic grounds for getting booted off the platform. Period."
     }
   },
   "auth": {
@@ -1929,7 +1943,10 @@
       "hotels": "Hotels",
       "help": "Crisis support",
       "history": "History",
-      "guides": "Guides"
+      "guides": "Guides",
+      "trips": "Trips",
+      "organizations": "Organizations",
+      "wishlists": "Wishlists"
     },
     "intents": {
       "goingOut": {

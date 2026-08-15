@@ -36,6 +36,8 @@ export interface SearchPopoverDesktopProps {
   onBrowse: (path: string) => void;
   onPrefetch: (s: SearchSuggestion) => void;
   onAsk: () => void;
+  /** Contribute flow, offered from the no-results state. */
+  onAddToMap?: () => void;
 }
 
 export function SearchPopoverDesktop(props: SearchPopoverDesktopProps) {
@@ -65,6 +67,7 @@ export function SearchPopoverDesktop(props: SearchPopoverDesktopProps) {
     onBrowse,
     onPrefetch,
     onAsk,
+    onAddToMap,
   } = props;
 
   return (
@@ -105,6 +108,7 @@ export function SearchPopoverDesktop(props: SearchPopoverDesktopProps) {
             onSearchAll={onSearchAll}
             onClearScope={() => setScope(null)}
             onAsk={onAsk}
+            onAddToMap={onAddToMap}
           />
         </>
       )}

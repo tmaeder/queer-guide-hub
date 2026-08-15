@@ -53,7 +53,7 @@
 @source inline("{,hover:,focus:,group-hover:,dark:}{bg,text,decoration}-ink-{pink,blue,over}");
 @source inline("{,dark:}{bg,text}-ink-{pink,blue,over}-foreground");
 @source inline("{,hover:,focus:,group-hover:}{bg,text,border,decoration}-track-{pink,blue,green,yellow}");
-@source inline("shadow-{hard,hard-sm}");
+@source inline("shadow-{hard,hard-sm,hard-lg}");
 
 @theme {
   /* ── Font families ─────────────────────────────────────────────── */
@@ -242,6 +242,11 @@
   --shadow-hairline: 0 1px 0 hsl(var(--border));
   --shadow-hard: 6px 6px 0 hsl(var(--foreground));
   --shadow-hard-sm: 5px 5px 0 hsl(var(--foreground));
+  /* The search command modal only. The mock draws the popover at a heavier
+     offset than any card (12px vs 6px) because it floats over a scrim rather
+     than sitting on the page — at 6px it reads as a card that has come loose,
+     not as a plate lifted off the whole document. */
+  --shadow-hard-lg: 12px 12px 0 hsl(var(--foreground));
   --shadow-hard-accent: 6px 6px 0 hsl(var(--track-pink));
 }
 

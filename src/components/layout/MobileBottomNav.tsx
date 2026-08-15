@@ -126,7 +126,12 @@ export function MobileBottomNav() {
             : `transform ${duration.normal}s cubic-bezier(0.22,1,0.36,1)`,
         }}
       >
-        <ul className="mx-4 mb-2 flex items-stretch gap-1 rounded-container bg-background/90 px-2 backdrop-blur-md">
+        {/* Squared, ruled and opaque. The translucent blurred capsule this
+            replaces was the mobile counterpart of the frosted top bar the
+            header explicitly rejects: over a paper page a 90%-opaque blur
+            reads as a third, muddier surface, and the active tab's ink fill
+            has nothing solid to sit against. Same box as the header's. */}
+        <ul className="mx-4 mb-2 flex items-stretch gap-1 border-[3px] border-foreground bg-background px-2">
           {BOTTOM_NAV_TABS.map((tab) => {
             const isExplore = tab.id === 'explore';
             const anonGated = tab.authGated && !user;

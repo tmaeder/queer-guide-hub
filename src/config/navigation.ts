@@ -25,7 +25,6 @@ import {
   Scale,
   History,
   BookOpen,
-  Martini,
 } from 'lucide-react';
 import type { ComponentType } from 'react';
 import { transitIcon } from '@/components/transit/navTransitIcon';
@@ -196,23 +195,40 @@ export interface IntentDestination {
   subtitleFallback: string;
   /** Locale-stripped prefixes that light this entry. */
   activePrefixes: string[];
+  /**
+   * The three or four browse routes this job actually lands on — the footer's
+   * track columns.
+   *
+   * These are a VIEW over DESTINATIONS, not a second nav source: every `to`
+   * here must already exist as a DESTINATIONS entry or fall inside this
+   * intent's own `activePrefixes`, which navigation.test.ts asserts. That is
+   * the whole reason the field lives on the intent instead of in Footer.tsx —
+   * a hand-kept list in a component is exactly what left /venues and /people
+   * unreachable from desktop chrome the last time.
+   */
+  children: { to: string; labelKey: string; fallback: string }[];
 }
 
 export const INTENT_NAV: IntentDestination[] = [
   {
     id: 'going-out',
     to: '/going-out',
-    icon: Martini,
+    icon: transitIcon('after-dark'),
     labelKey: 'header.intents.goingOut.label',
     fallback: 'Going out',
     subtitleKey: 'header.intents.goingOut.subtitle',
     subtitleFallback: 'Bars, clubs and what is on tonight',
     activePrefixes: ['/going-out', '/venues', '/map'],
+    children: [
+      { to: '/venues', labelKey: 'header.nav.venues', fallback: 'Venues' },
+      { to: '/events', labelKey: 'header.nav.events', fallback: 'Events' },
+      { to: '/map', labelKey: 'header.nav.map', fallback: 'Map' },
+    ],
   },
   {
     id: 'travelling',
     to: '/travel',
-    icon: Plane,
+    icon: transitIcon('route'),
     labelKey: 'header.intents.travelling.label',
     fallback: 'Travelling',
     subtitleKey: 'header.intents.travelling.subtitle',
@@ -227,6 +243,11 @@ export const INTENT_NAV: IntentDestination[] = [
       '/villages',
       '/trips',
     ],
+    children: [
+      { to: '/cities', labelKey: 'header.nav.cities', fallback: 'Cities' },
+      { to: '/hotels', labelKey: 'header.nav.hotels', fallback: 'Stays' },
+      { to: '/trips', labelKey: 'header.nav.trips', fallback: 'Trips' },
+    ],
   },
   {
     // The one job the Intent Router shipped without. /people, /community and
@@ -239,22 +260,34 @@ export const INTENT_NAV: IntentDestination[] = [
     // intent's home and links across to the community surfaces.
     id: 'meet',
     to: '/people',
-    icon: UsersRound,
+    icon: transitIcon('community'),
     labelKey: 'header.intents.meet.label',
     fallback: 'Meet people',
     subtitleKey: 'header.intents.meet.subtitle',
     subtitleFallback: 'Friends, dates, travel buddies and groups',
     activePrefixes: ['/people', '/community', '/groups', '/friends', '/dating'],
+    children: [
+      { to: '/people', labelKey: 'header.nav.people', fallback: 'People' },
+      { to: '/community/groups', labelKey: 'header.nav.groups', fallback: 'Groups' },
+      { to: '/community/feed', labelKey: 'header.nav.feed', fallback: 'Feed' },
+    ],
   },
   {
     id: 'rights',
     to: '/rights',
-    icon: Scale,
+    icon: transitIcon('library'),
     labelKey: 'header.intents.rights.label',
     fallback: 'Rights',
     subtitleKey: 'header.intents.rights.subtitle',
     subtitleFallback: 'LGBTQ+ law and safety, country by country',
     activePrefixes: ['/rights'],
+    // /rights owns no browse routes of its own — it is one composite page over
+    // countries. Its column points at the two surfaces that carry the same
+    // subject over time rather than padding to three with something unrelated.
+    children: [
+      { to: '/history', labelKey: 'header.nav.history', fallback: 'History' },
+      { to: '/news', labelKey: 'header.nav.news', fallback: 'News' },
+    ],
   },
   {
     id: 'support',
@@ -263,12 +296,16 @@ export const INTENT_NAV: IntentDestination[] = [
     // it owns the CMS hotline corpus, per-country routes, QuickExit and the
     // EmergencyService JSON-LD. /support still resolves, as a redirect.
     to: '/help',
-    icon: LifeBuoy,
+    icon: transitIcon('helpline'),
     labelKey: 'header.intents.support.label',
     fallback: 'Support',
     subtitleKey: 'header.intents.support.subtitle',
     subtitleFallback: 'Helplines and organizations near you',
     activePrefixes: ['/support', '/help', '/organizations'],
+    children: [
+      { to: '/help', labelKey: 'header.nav.help', fallback: 'Helplines' },
+      { to: '/organizations', labelKey: 'header.nav.organizations', fallback: 'Organizations' },
+    ],
   },
   {
     id: 'shop',
@@ -280,7 +317,7 @@ export const INTENT_NAV: IntentDestination[] = [
     // entity and the M-yellow bullet. Same call as support → /help above.
     // The label stays "Shop"; `to` and `labelKey` are independent.
     to: '/marketplace',
-    icon: Store,
+    icon: transitIcon('shop'),
     labelKey: 'header.intents.shop.label',
     fallback: 'Shop',
     subtitleKey: 'header.intents.shop.subtitle',
@@ -289,6 +326,11 @@ export const INTENT_NAV: IntentDestination[] = [
     // inert off Cloudflare, so in dev, `vite preview` and e2e the path reaches
     // the router first and the tab would go dark for a frame without it.
     activePrefixes: ['/shop', '/marketplace', '/wishlists'],
+    children: [
+      { to: '/marketplace', labelKey: 'header.nav.marketplace', fallback: 'Marketplace' },
+      { to: '/guides', labelKey: 'header.nav.guides', fallback: 'Guides' },
+      { to: '/wishlists', labelKey: 'header.nav.wishlists', fallback: 'Wishlists' },
+    ],
   },
 ];
 
@@ -351,7 +393,13 @@ export interface BottomNavTab {
 }
 
 export const BOTTOM_NAV_TABS: BottomNavTab[] = [
-  { id: 'home', to: '/', icon: transitIcon('home-base'), labelKey: 'header.mobileNav.home', activePrefixes: ['/'] },
+  {
+    id: 'home',
+    to: '/',
+    icon: transitIcon('home-base'),
+    labelKey: 'header.mobileNav.home',
+    activePrefixes: ['/'],
+  },
   {
     id: 'explore',
     to: '/search',

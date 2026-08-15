@@ -139,7 +139,14 @@
       "recent_city": "In a city you've explored",
       "featured": "Featured"
     },
-    "ariaLabel": "[ES] Search Queer Guide"
+    "ariaLabel": "[ES] Search Queer Guide",
+    "escape": "esc",
+    "jumpTo": "Ir a",
+    "recent": "Reciente",
+    "noStation": "Ninguna estación con ese nombre — todavía",
+    "addToMap": "Añádela al mapa",
+    "seeOnMap": "Ver {{count}} resultados en el mapa",
+    "keyHints": "↑↓ navegar · ↵ abrir"
   },
   "common": {
     "contentInLanguage": "En {{lang}}",
@@ -217,6 +224,13 @@
       "eyebrow": "[ES] In an emergency",
       "title": "[ES] Crisis lines, 24 hours",
       "body": "[ES] Trans helpline, LGBT+ crisis support, and local emergency numbers, listed by country and always one click from any page."
+    },
+    "osmAttribution": "Diagramas de transporte derivados de © colaboradores de OpenStreetMap (ODbL)",
+    "reportSomething": "Reportar algo",
+    "hotlines": "Líneas de ayuda",
+    "antiDiscrimination": {
+      "title": "Aquí no hay lugar para la intolerancia.",
+      "body": "El racismo, la transfobia y la discriminación son motivo automático de expulsión de la plataforma. Punto."
     }
   },
   "trips": {
@@ -1849,7 +1863,10 @@
       "help": "Ayuda",
       "tags": "Etiquetas",
       "history": "Historia",
-      "guides": "[ES] Guides"
+      "guides": "[ES] Guides",
+      "trips": "Viajes",
+      "organizations": "Organizaciones",
+      "wishlists": "Listas de deseos"
     },
     "intents": {
       "goingOut": {

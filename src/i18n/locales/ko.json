@@ -139,7 +139,14 @@
       "recent_city": "In a city you've explored",
       "featured": "Featured"
     },
-    "ariaLabel": "[KO] Search Queer Guide"
+    "ariaLabel": "[KO] Search Queer Guide",
+    "escape": "esc",
+    "jumpTo": "바로 가기",
+    "recent": "최근",
+    "noStation": "아직 그런 이름의 역이 없습니다",
+    "addToMap": "지도에 추가하기",
+    "seeOnMap": "지도에서 {{count}}개 결과 보기",
+    "keyHints": "↑↓ 이동 · ↵ 열기"
   },
   "common": {
     "contentInLanguage": "{{lang}}(으)로",
@@ -217,6 +224,13 @@
       "eyebrow": "[KO] In an emergency",
       "title": "[KO] Crisis lines, 24 hours",
       "body": "[KO] Trans helpline, LGBT+ crisis support, and local emergency numbers, listed by country and always one click from any page."
+    },
+    "osmAttribution": "교통 다이어그램은 © OpenStreetMap 기여자 데이터를 기반으로 합니다 (ODbL)",
+    "reportSomething": "신고하기",
+    "hotlines": "상담 전화",
+    "antiDiscrimination": {
+      "title": "여기에 편견이 설 자리는 없습니다.",
+      "body": "인종차별, 트랜스포비아, 차별은 플랫폼에서 즉시 퇴출되는 사유입니다. 예외는 없습니다."
     }
   },
   "trips": {
@@ -1849,7 +1863,10 @@
       "help": "도움말",
       "tags": "태그",
       "history": "역사",
-      "guides": "[KO] Guides"
+      "guides": "[KO] Guides",
+      "trips": "여행",
+      "organizations": "단체",
+      "wishlists": "위시리스트"
     },
     "intents": {
       "goingOut": {
