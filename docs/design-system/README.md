@@ -326,6 +326,57 @@ to report, so after a jump to section 11 the rail stayed pinned to section 1.
   `node scripts/generate-brand-assets.mjs` — playwright, no `sharp` (which was
   never installed, so the script could not run and the icons drifted).
 
+## Site chrome (`src/components/layout/`, `src/components/search/`)
+
+Header, search and footer moved onto the map 2026-08-15 (#2775, #2781).
+
+- **Header** — brand · search · actions on one row, then the six intent tabs as
+  TRACK TABS under a 3px rule. Each tab is `TransitIcon` + label; the icon draws
+  in `currentColor`, so it inverts with the active tab's ink fill for free.
+  Colour appears once, as the 6px rule under the active tab — inactive rules are
+  transparent, never a muted tint. `nav[aria-label="Primary"]` is unique
+  (`MobileBottomNav` owns `"Navigation"`) and stays `md:`-gated, because
+  `useIsMobile` flips at 768 and `lg:` would leave 768–1023px with no nav.
+  `z-index` stays **40**: every portal renders at 50, and the 1100 this once
+  carried painted the bar over its own menus.
+
+- **Search is a command plate**, not a dropdown: centred, `max-w-[680px]`, top
+  `8vh`, 4px ink border, `shadow-hard-lg`. Mobile keeps a full-screen sheet.
+
+  **There is exactly ONE `role="combobox"` at any moment.** The field is *moved*
+  between the bar and the overlay, never duplicated — two inputs claiming one
+  listbox is ambiguous for a screen reader, and `e2e/search-ux.spec.ts` resolves
+  the input first and then asserts `aria-expanded` flips on that same element.
+  Both shells do this; on mobile it is also what makes the query visible at all,
+  since the sheet is `inset:0` and covered the bar's field.
+
+  **Focus restoration is a `useEffect` keyed on `isOpen`** — not Radix's
+  `onCloseAutoFocus`, not a timer, not rAF. At callback time the field is still
+  inside the *closing* overlay, so the ref points at a node being torn down and
+  focus lands on `<body>`. An effect runs after the commit that puts the field
+  back. rAF was tried and is wrong: it does not run in a hidden tab, which is
+  exactly when a queued restore would strand focus.
+
+  Rows are `[RouteBullet] [name / subtitle] [kind]` — a mixed-type list is what
+  the bullet exists to type, and half the corpus (cities, tags, people, guides,
+  news) has no usable image, so the thumbnail well it replaced was mostly an
+  empty grey square acting as a lookup key.
+
+- **Footer** — the tracks band is **full-bleed**, outside the cap and the
+  gutter; the columns, policy band and legal row keep `PAGE_GUTTER`. A track
+  that stops in a margin reads as a graphic in a column, not as the network.
+  Its four lines converge on one interchange, and each ring sits on a middle
+  ANCHOR of its own path so it is exactly on the line at any width. Columns are
+  one per intent, single-sourced from `INTENT_NAV` (including `children`), so
+  the footer cannot drift from the topbar — the defect that once put `/venues`
+  and `/people` out of reach of desktop chrome.
+
+Two mock deviations, both deliberate: the results footer hovers to an underline
+rather than pink (pink text on paper is 3.43:1, and track colour is fill-only),
+and the plate keeps the global focus ring — `index.css` sets `*:focus-visible`
+`!important` as the WCAG 2.4.7 guarantee, so a `focus-visible:outline-none`
+there is a silent no-op that reads as if it did something.
+
 ## Crisis surfaces (`/help`, `/safety`, `/report-*`)
 
 The canonical build is `/help` (`src/pages/HelpHotlines.tsx` +
