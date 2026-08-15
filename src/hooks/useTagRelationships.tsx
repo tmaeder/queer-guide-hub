@@ -160,6 +160,34 @@ export interface TagOntology {
   related: OntologyTag[];
 }
 
+export interface TagSource {
+  source_type: string;
+  source_url: string;
+}
+
+/**
+ * External citations for a tag, from `tag_sources`.
+ *
+ * The RPC deliberately omits `wikipedia` and `wikidata` rows — those render from
+ * `unified_tags.wikipedia_url` / `.wikidata_id` in the same card, and returning
+ * them here would print every tag's Wikipedia link twice. It also omits
+ * `claim_summary`, so no unverified `source_type='llm'` prose can reach the page;
+ * the visible label is derived from the URL's host instead.
+ */
+export function useTagSources(tagId: string | null) {
+  return useQuery({
+    queryKey: ['tag-sources', tagId],
+    enabled: !!tagId,
+    staleTime: 5 * 60 * 1000,
+    queryFn: async (): Promise<TagSource[]> => {
+      if (!tagId) return [];
+      const { data, error } = await supabase.rpc('get_tag_sources', { p_tag_id: tagId });
+      if (error) throw error;
+      return (data ?? []) as TagSource[];
+    },
+  });
+}
+
 /**
  * Fetch the governed ontology graph (curated tag_relations: broader parents,
  * narrower children, curated related) for a tag. Distinct from useSimilarTags,

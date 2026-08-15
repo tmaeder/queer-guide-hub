@@ -39,7 +39,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { fetchTagWithCategories } from '@/hooks/usePageFetchers';
 import type { CentralizedTag } from '@/hooks/useCentralizedTags';
 import { useTagUsageBreakdown, totalUses } from '@/hooks/useTagUsageBreakdown';
-import { useSimilarTags } from '@/hooks/useTagRelationships';
+import { useSimilarTags, useTagSources } from '@/hooks/useTagRelationships';
 import { useActiveStation } from '@/hooks/useActiveStation';
 import { useMeta } from '@/hooks/useMeta';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
@@ -74,6 +74,19 @@ const ENTITY_KIND_LABELS: Record<string, string> = {
   practice: 'Practice',
   aesthetic: 'Aesthetic',
 };
+
+/**
+ * Label a citation by its host. `URL` throws on a malformed string and these
+ * rows are operator-entered, so fall back to the raw value rather than letting
+ * one bad row blank the whole rail.
+ */
+function sourceHost(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '');
+  } catch {
+    return url;
+  }
+}
 
 function isHtml(text: string): boolean {
   return /<[a-z][\s\S]*>/i.test(text);
@@ -130,6 +143,8 @@ export default function TagDetail() {
 
   const { data: usage } = useTagUsageBreakdown(tag?.id);
   const { data: similar } = useSimilarTags(tag?.id ?? null, 15);
+  const { data: tagSources } = useTagSources(tag?.id ?? null);
+  const sources = tagSources ?? [];
 
   const relatedByEmbedding = useMemo(
     () => rankSimilarTags(similar ?? [], primary?.name, safeMode.enabled).slice(0, 10),
@@ -390,7 +405,7 @@ export default function TagDetail() {
         </SidebarCard>
       )}
 
-      {(tag.wikipedia_url || tag.wikidata_id) && (
+      {(tag.wikipedia_url || tag.wikidata_id || sources.length > 0) && (
         <SidebarCard eyebrow={t('tags.detail.elsewhere', 'Elsewhere')}>
           {tag.wikipedia_url && (
             <SidebarRow
@@ -416,6 +431,20 @@ export default function TagDetail() {
               }
             />
           )}
+          {/* Curated citations that have no dedicated column. The label is the
+              URL's host rather than `claim_summary`, so nothing the RPC did not
+              vet gets printed. */}
+          {sources.map((s) => (
+            <SidebarRow
+              key={s.source_url}
+              label={sourceHost(s.source_url)}
+              value={
+                <a href={s.source_url} target="_blank" rel="noopener noreferrer">
+                  {t('tags.detail.readThere', 'Read')}
+                </a>
+              }
+            />
+          ))}
         </SidebarCard>
       )}
 
