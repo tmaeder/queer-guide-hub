@@ -47,7 +47,7 @@ describe('two search mounts on one page', () => {
   it('adds NO extra global keydown listener for a mount that does not own the hotkey', () => {
     // Other libraries (Radix) bind keydown too, so count the DIFFERENCE a
     // second mount makes rather than the absolute total.
-    const countKeydown = () => addSpy.mock.calls.filter(([evt]) => evt === 'keydown').length;
+    const countKeydown = () => addSpy.mock.calls.filter((call: unknown[]) => call[0] === 'keydown').length;
 
     renderWithProviders(<UniversalSearchBar />);
     const withOne = countKeydown();
