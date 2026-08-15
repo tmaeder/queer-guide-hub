@@ -252,7 +252,21 @@ test.describe('page layout — mobile density', () => {
         .catch(() => {});
       await page.waitForTimeout(400);
 
-      const r = await page.evaluate((SEL) => {
+      // Measure first content BEFORE scrolling — it is a document position.
+      const firstTop = await page.evaluate((SEL) => {
+        const first = document.querySelector(SEL);
+        return first ? Math.round(first.getBoundingClientRect().top + window.scrollY) : null;
+      }, CARD_LINK_SELECTOR);
+
+      // Then scroll, and measure sticky chrome THERE. A bar that sits below the
+      // fold at rest is not pinned yet, so measuring at scrollY=0 reports 0 for
+      // it — which is exactly how the first version of this guard missed the
+      // 235px sticky result bar on /events while it was written to catch that
+      // very defect. Sticky cost is a property of the SCROLLED page.
+      await page.evaluate(() => window.scrollTo(0, 1500));
+      await page.waitForTimeout(300);
+
+      const r = await page.evaluate(() => {
         const vh = window.innerHeight;
         // Every element that is pinned to the top and therefore costs its height
         // on EVERY screen, not just the first.
@@ -262,19 +276,21 @@ test.describe('page layout — mobile density', () => {
           const rect = n.getBoundingClientRect();
           // Top-pinned only: a bottom nav or a floating action button is not
           // chrome the reader scrolls past.
-          return rect.height > 0 && rect.top <= 1 && rect.bottom < vh * 0.6;
+          //
+          // The threshold is a FRACTION of the viewport, not `top <= 1`. Chrome
+          // stacks: a result bar pinned under a 60px header sits at top: 60, so
+          // an exact-zero test excludes the very thing being measured — that is
+          // how the first version of this guard scored /events at 60px while a
+          // 235px sticky bar sat right under the header.
+          return rect.height > 0 && rect.top <= vh * 0.2 && rect.bottom < vh * 0.6;
         });
         // Outermost only, so a sticky child inside a sticky bar is not counted twice.
         const outer = sticky.filter((n) => !sticky.some((o) => o !== n && o.contains(n)));
         const stickyPx = outer.reduce((sum, n) => sum + n.getBoundingClientRect().height, 0);
 
         // First content: the first card-like link into a detail page.
-        const first = document.querySelector(SEL);
-        const firstTop = first
-          ? Math.round(first.getBoundingClientRect().top + window.scrollY)
-          : null;
-        return { vh, stickyPx: Math.round(stickyPx), firstTop };
-      }, CARD_LINK_SELECTOR);
+        return { vh, stickyPx: Math.round(stickyPx) };
+      });
 
       expect(
         r.stickyPx / r.vh,
@@ -283,10 +299,10 @@ test.describe('page layout — mobile density', () => {
 
       // A route that renders no card links (empty state, cold cache) proves
       // nothing here — skip rather than fail on absence.
-      if (r.firstTop !== null) {
+      if (firstTop !== null) {
         expect(
-          r.firstTop / r.vh,
-          `${route}: first content is ${r.firstTop}px down (${(r.firstTop / r.vh).toFixed(2)} screens)`,
+          firstTop / r.vh,
+          `${route}: first content is ${firstTop}px down (${(firstTop / r.vh).toFixed(2)} screens)`,
         ).toBeLessThanOrEqual(MAX_SCREENS_TO_CONTENT);
       }
     });
