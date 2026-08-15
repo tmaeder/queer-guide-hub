@@ -1,6 +1,7 @@
 import { createElement } from 'react';
 import { Tag } from 'lucide-react';
 import { TagAliasesSection } from '@/components/admin/TagAliasesSection';
+import { TagMedicalCodesSection } from '@/components/admin/TagMedicalCodesSection';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 
 export const tagFields: FieldConfig[] = [
@@ -16,7 +17,13 @@ export const tagFields: FieldConfig[] = [
   { name: 'slug', label: 'Slug', type: 'text', required: true, group: 'basic' },
   { name: 'description', label: 'Description', type: 'textarea', group: 'basic', colSpan: 2 },
   { name: 'short_description', label: 'Short Description', type: 'text', group: 'basic' },
-  { name: 'long_description', label: 'Long Description', type: 'richtext', group: 'basic', colSpan: 2 },
+  {
+    name: 'long_description',
+    label: 'Long Description',
+    type: 'richtext',
+    group: 'basic',
+    colSpan: 2,
+  },
   { name: 'category', label: 'Category', type: 'text', group: 'basic', filterable: true },
   {
     name: 'status',
@@ -39,10 +46,24 @@ export const tagFields: FieldConfig[] = [
     sortable: true,
   },
   { name: 'wikipedia_url', label: 'Wikipedia URL', type: 'url', group: 'details' },
-  { name: 'wikidata_id', label: 'Wikidata ID', type: 'text', group: 'details', placeholder: 'Q12345' },
+  {
+    name: 'wikidata_id',
+    label: 'Wikidata ID',
+    type: 'text',
+    group: 'details',
+    placeholder: 'Q12345',
+  },
   { name: 'is_sensitive', label: 'Sensitive', type: 'boolean', group: 'details' },
   { name: 'sensitive_topics', label: 'Sensitive Topics', type: 'tags', group: 'details' },
-  { name: 'confidence_score', label: 'Confidence Score', type: 'number', group: 'details', readOnly: true, min: 0, max: 1 },
+  {
+    name: 'confidence_score',
+    label: 'Confidence Score',
+    type: 'number',
+    group: 'details',
+    readOnly: true,
+    min: 0,
+    max: 1,
+  },
   {
     name: 'verification_status',
     label: 'Verification',
@@ -86,6 +107,11 @@ export const unifiedTagsContentType: ContentTypeConfig = {
       id: 'aliases',
       label: 'Aliases',
       render: (contentId: string) => createElement(TagAliasesSection, { tagId: contentId }),
+    },
+    {
+      id: 'medical-codes',
+      label: 'Diagnostic codes',
+      render: (contentId: string) => createElement(TagMedicalCodesSection, { tagId: contentId }),
     },
   ],
 };

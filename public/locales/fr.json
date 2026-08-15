@@ -4209,6 +4209,17 @@
       "interchangeEyebrow": "Correspondance",
       "interchangeTitle": "Dans la taxonomie",
       "inTaxonomy": "Dans la taxonomie",
+      "codes": {
+        "eyebrow": "Classification",
+        "title": "Codes diagnostiques",
+        "general": "Général",
+        "specialized": "Spécialisé",
+        "procedural": "Actes",
+        "pharmaceutical": "Pharmaceutique",
+        "source": "Source",
+        "linkLabel": "Code {{label}} {{code}}",
+        "disclaimer": "Codes de référence pour ce concept dans les systèmes de classification clinique. Ni avis médical ni diagnostic."
+      },
       "changeHereFor": "Correspondance vers",
       "contentNote": "Avertissement",
       "contentNoteBody": "Cette entrée aborde un sujet difficile pour certaines personnes. Rien n’y est explicite : c’est une définition, pas un conseil.",

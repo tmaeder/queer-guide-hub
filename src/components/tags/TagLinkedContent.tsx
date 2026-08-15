@@ -70,7 +70,9 @@ function shortDate(iso: string | null): string {
     : d.toLocaleDateString(undefined, { day: '2-digit', month: 'short' });
 }
 
-const GRID = 'grid grid-cols-1 gap-3 sm:grid-cols-2';
+// gap-4, not gap-3: the 8 pt grid admits only even steps (plus .5 for
+// icon-level offsets), and `no-restricted-syntax` flags the odd ones.
+const GRID = 'grid grid-cols-1 gap-4 sm:grid-cols-2';
 
 export function TagLinkedContent({ tagId, tagName }: { tagId: string; tagName: string }) {
   const { t } = useTranslation();
