@@ -28,6 +28,37 @@ test.describe('Header a11y', () => {
   });
 });
 
+test.describe('Search a11y wiring', () => {
+  test.setTimeout(120_000);
+
+  test('the open search panel IS the element the input points at', async ({ page }) => {
+    // `aria-controls` and the panel id are set in two different places, so they
+    // can drift apart silently — a rebase once dropped the prop on the panel
+    // and left the homepage hero input referencing an id that did not exist.
+    // A dangling aria-controls is invisible in every visual check.
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto('/');
+    await page.locator('main h1').waitFor({ timeout: 30_000 });
+    await page.waitForTimeout(1000);
+
+    // Addressed by its own mount, never `.first()`: opening a search MOVES its
+    // field into the modal, so document order changes mid-test and `.first()`
+    // silently switches to the other mount.
+    const input = page.locator('input[aria-controls="qg-search-listbox-hero"]');
+    await input.click();
+    await input.fill('berlin');
+    await page.waitForTimeout(2500);
+
+    await expect(page.locator('#qg-search-listbox-hero')).toHaveCount(1);
+
+    // And no id is claimed twice, whichever mounts are on the page.
+    const ids = await page.evaluate(() =>
+      Array.from(document.querySelectorAll('[id^="qg-search-listbox"]')).map((e) => e.id),
+    );
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+});
+
 test.describe('Header mobile a11y', () => {
   test.setTimeout(120_000);
 

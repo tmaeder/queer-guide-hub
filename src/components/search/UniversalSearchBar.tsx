@@ -771,6 +771,10 @@ export const UniversalSearchBar = ({
         />
       ) : (
         <SearchPopoverDesktop
+          // Must match the input's `aria-controls`. Both mounts render this
+          // body, so a hardcoded id would put a duplicate on the page AND
+          // leave the hero input pointing at an element that is not its own.
+          listboxId={listboxId}
           query={query}
           activeScope={activeScope}
           suggestions={suggestions}
