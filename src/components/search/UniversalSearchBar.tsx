@@ -75,7 +75,21 @@ function prefetchRoute(suggestion: SearchSuggestion) {
   }
 }
 
-function getPlaceholder(pathname: string, t: (k: string, d?: string) => string, isMobile: boolean) {
+function getPlaceholder(
+  pathname: string,
+  t: (k: string, d?: string) => string,
+  isMobile: boolean,
+  surface: 'header' | 'hero' = 'header',
+) {
+  // The homepage carries BOTH search fields on desktop — the header's (chrome,
+  // available everywhere) and the hero's (the front door). They were shipping
+  // the SAME placeholder, so two differently-sized fields 450px apart read as
+  // one control rendered twice. The hero asks by EXAMPLE instead, which is the
+  // design's own copy and the thing that tells a first-time reader what this
+  // search can actually do.
+  if (surface === 'hero') {
+    return t('home.hero.searchPlaceholder', 'Try "sober rave berlin" or "trans healthcare"');
+  }
   if (pathname.startsWith('/admin')) return t('search.placeholders.generic', 'Search...');
   if (pathname.startsWith('/hotels')) return t('search.placeholders.hotels', 'Search hotels...');
   if (pathname.startsWith('/events')) return t('search.placeholders.events', 'Find events...');
@@ -490,8 +504,8 @@ export const UniversalSearchBar = ({
   }, [navigate, location.pathname, t]);
 
   const placeholder = useMemo(
-    () => getPlaceholder(location.pathname, t, isMobile),
-    [location.pathname, t, isMobile],
+    () => getPlaceholder(location.pathname, t, isMobile, surface),
+    [location.pathname, t, isMobile, surface],
   );
 
   const hero = size === 'hero';
