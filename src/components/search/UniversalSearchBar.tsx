@@ -620,7 +620,10 @@ export const UniversalSearchBar = () => {
               <X style={{ height: isMobile ? 16 : 12, width: isMobile ? 16 : 12 }} />
             </Button>
           )}
-          {panel && (
+          {/* Keyboard affordance, so desktop only — on the touch sheet there is
+              no Esc key to teach, and the sheet already carries a
+              thumb-reachable Cancel. */}
+          {panel && !isMobile && (
             <button
               type="button"
               onClick={() => setIsOpen(false)}
@@ -762,19 +765,32 @@ export const UniversalSearchBar = () => {
     </Suspense>
   );
 
-  // ── Mobile: the field stays in the bar and the sheet fills the viewport ──
+  // ── Mobile: the sheet fills the viewport and the field travels into it ──
+  //
+  // The field MUST move. The sheet is `inset: 0` at 0.95 alpha, so it covers
+  // the header — measured with elementFromPoint, the bar's input was not the
+  // topmost element at its own centre while the sheet was open, i.e. you could
+  // not see what you were typing. Moving it in is the same trick the desktop
+  // plate uses, and it keeps the single-combobox invariant: the field is in
+  // the bar or in the sheet, never both.
   if (isMobile) {
     return (
       <div className="min-w-0 flex-1">
         <Popover open={isOpen} onOpenChange={setIsOpen}>
           <PopoverAnchor asChild>
-            <div className="relative">{searchField(false)}</div>
+            <div className="relative">
+              {isOpen ? <div aria-hidden style={{ height: inputHeight }} /> : searchField(false)}
+            </div>
           </PopoverAnchor>
           <PopoverContent
             // qg-mobile-search-overlay: a CSS hook (src/index.css) that
             // neutralizes Radix's translated popper wrapper so the fixed
             // full-screen sheet anchors to the viewport, not the wrapper.
-            className="qg-mobile-search-overlay w-[var(--radix-popover-trigger-width)] overflow-hidden rounded-none p-0"
+            // bg-background, not the primitive's `--popover`: this sheet is a
+            // full page, and --popover is a slightly darker grey meant to lift
+            // a small floating card off the paper. At full-bleed that grey
+            // reads as a dimmed, disabled page.
+            className="qg-mobile-search-overlay w-[var(--radix-popover-trigger-width)] overflow-hidden rounded-none bg-background p-0"
             style={{
               position: 'fixed',
               inset: 0,
@@ -789,10 +805,7 @@ export const UniversalSearchBar = () => {
               focusInput();
             }}
             onCloseAutoFocus={(e) => {
-              // Same one-tick defer as the modal. On mobile the field never
-              // leaves the bar, but the flag dance is identical: without the
-              // deferred clear a stale flag swallows the NEXT genuine focus and
-              // the sheet refuses to reopen until the user retypes.
+              // Same restore path as the modal — see restoreFocusToField.
               e.preventDefault();
               restoreFocusToField();
             }}
@@ -806,7 +819,12 @@ export const UniversalSearchBar = () => {
               if (searchBoxRef.current?.contains(e.target as Node)) e.preventDefault();
             }}
           >
-            {popoverBody}
+            <div className="flex h-full min-h-0 flex-col">
+              {/* The query row sits at the top of the sheet, under the safe
+                  area, so it is visible while typing. */}
+              <div style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>{searchField(true)}</div>
+              <div className="min-h-0 flex-1 overflow-y-auto">{popoverBody}</div>
+            </div>
           </PopoverContent>
         </Popover>
       </div>
