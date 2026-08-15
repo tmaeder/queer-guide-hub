@@ -67,10 +67,17 @@ export function CitiesControlBar({
     <div
       role="group"
       aria-label={t('cities.filtersAriaLabel', 'Filter cities')}
-      className="flex flex-col gap-4"
+      className="flex flex-col gap-2 md:gap-4"
     >
-      <div className="flex items-center gap-4">
-        <div className="max-w-[480px] flex-1">
+      {/* Sort sits on the SEARCH row, not with the chips.
+       *
+       *  It used to share a `flex-wrap` row with the tier chips, and at 390px
+       *  that row wrapped to two lines — 108px instead of ~32. Since this whole
+       *  bar is sticky, those 76px were subtracted from every screen of results
+       *  for the entire session. Pairing sort with the search field keeps both
+       *  rows single-line at every width. */}
+      <div className="flex items-center gap-2 md:gap-4">
+        <div className="min-w-0 flex-1 md:max-w-[480px]">
           <Input
             aria-label={t('cities.searchAriaLabel', 'Search cities')}
             placeholder={t('cities.searchPlaceholder', 'Search cities…')}
@@ -78,6 +85,30 @@ export function CitiesControlBar({
             onChange={(e) => onQChange(e.target.value)}
           />
         </div>
+        <label
+          htmlFor="cities-sort"
+          className="hidden shrink-0 text-13 text-muted-foreground md:inline"
+        >
+          {t('cities.sortLabel', 'Sort')}
+        </label>
+        {/* A native select styled to the chip's DNA. The shadcn Select trigger is
+            still on pre-rebrand tokens and renders as a permanently ink-filled
+            chip, which reads as an always-active filter sitting in a row of
+            filters. The visible label is desktop-only; the select carries its own
+            aria-label, so hiding it costs nothing to a screen reader. */}
+        <select
+          id="cities-sort"
+          aria-label={t('cities.sortAriaLabel', 'Sort cities')}
+          value={sort}
+          onChange={(e) => onSortChange(e.target.value as CitiesSortKey)}
+          className="h-10 max-w-[9rem] shrink-0 border-2 border-foreground bg-background px-2 text-13 font-bold text-foreground md:h-8"
+        >
+          {CITIES_SORT_KEYS.map((k) => (
+            <option key={k} value={k}>
+              {t(`cities.sort.${k}`, SORT_LABEL[k])}
+            </option>
+          ))}
+        </select>
         {hasFilters && (
           <button
             type="button"
@@ -90,55 +121,32 @@ export function CitiesControlBar({
         )}
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div
-          role="group"
-          aria-label={t('cities.equalityAriaLabel', 'Filter by equality score')}
-          className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1"
-        >
-          {EQUALITY_TIERS.map((tier) => (
-            <FilterChip
-              key={tier}
-              active={selectedTiers.has(tier)}
-              onClick={() => onToggleTier(tier)}
-              // Passed explicitly: the chip's visible content is an EqualityChip
-              // whose own aria-label sits on a bare <span>, which axe flags as
-              // aria-prohibited-attr. The button needs its own accessible name.
-              aria-label={TIER_LABEL[tier]}
-              label={
-                <EqualityChip
-                  score={TIER_SCORE_HINT[tier]}
-                  showLabel
-                  variant="ink"
-                  className="pointer-events-none"
-                />
-              }
-            />
-          ))}
-        </div>
-
-        <div className="flex shrink-0 items-center gap-2">
-          <label htmlFor="cities-sort" className="text-13 text-muted-foreground">
-            {t('cities.sortLabel', 'Sort')}
-          </label>
-          {/* A native select styled to the chip's DNA. The shadcn Select trigger is
-              still on pre-rebrand tokens and renders as a permanently ink-filled
-              chip, which reads as an always-active filter sitting in a row of
-              filters. */}
-          <select
-            id="cities-sort"
-            aria-label={t('cities.sortAriaLabel', 'Sort cities')}
-            value={sort}
-            onChange={(e) => onSortChange(e.target.value as CitiesSortKey)}
-            className="h-8 border-2 border-foreground bg-background px-2 text-13 font-bold text-foreground"
-          >
-            {CITIES_SORT_KEYS.map((k) => (
-              <option key={k} value={k}>
-                {t(`cities.sort.${k}`, SORT_LABEL[k])}
-              </option>
-            ))}
-          </select>
-        </div>
+      {/* One scrollable line at every width — never `flex-wrap`, which is what
+          doubled this row's height on mobile. */}
+      <div
+        role="group"
+        aria-label={t('cities.equalityAriaLabel', 'Filter by equality score')}
+        className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1"
+      >
+        {EQUALITY_TIERS.map((tier) => (
+          <FilterChip
+            key={tier}
+            active={selectedTiers.has(tier)}
+            onClick={() => onToggleTier(tier)}
+            // Passed explicitly: the chip's visible content is an EqualityChip
+            // whose own aria-label sits on a bare <span>, which axe flags as
+            // aria-prohibited-attr. The button needs its own accessible name.
+            aria-label={TIER_LABEL[tier]}
+            label={
+              <EqualityChip
+                score={TIER_SCORE_HINT[tier]}
+                showLabel
+                variant="ink"
+                className="pointer-events-none"
+              />
+            }
+          />
+        ))}
       </div>
 
       <p className="m-0 text-13 text-muted-foreground" aria-live="polite" role="status">

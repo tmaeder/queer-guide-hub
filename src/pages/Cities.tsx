@@ -100,7 +100,7 @@ export default function Cities() {
       {/* Not PageHero: it ships rounded-full pill CTAs and a spotlight effect,
           the one primitive the rebrand has not reached. */}
       <header className="border-b-4 border-foreground">
-        <PageContainer flush className="pb-8 pt-8 md:pb-12 md:pt-16">
+        <PageContainer flush className="pb-6 pt-6 md:pb-12 md:pt-16">
           <div className="flex items-center gap-4">
             <RouteBullet type="city" size={44} />
             <span className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
@@ -108,8 +108,11 @@ export default function Cities() {
             </span>
           </div>
           {/* Anton comes from the global h1 rule; adding font-bold would ask a
-              single-weight face to synthesize one. */}
-          <h1 className="mt-4 font-display text-hero leading-[0.95] text-foreground">
+              single-weight face to synthesize one.
+              Rank 1 is `text-hero`, but 76px flat on a 390px screen is 84px of
+              one word — `PageHero` steps its own sizes for the same reason. The
+              rank is preserved at the width the ladder was measured for. */}
+          <h1 className="mt-4 font-display text-display leading-[0.95] text-foreground md:text-hero">
             {t('cities.title', 'Cities.')}
           </h1>
           <p className="mt-4 max-w-reading text-body-lg text-muted-foreground">
@@ -123,7 +126,7 @@ export default function Cities() {
                   },
                 )}
           </p>
-          <div className="mt-8 flex flex-wrap items-center gap-4">
+          <div className="mt-6 flex flex-wrap items-center gap-4 md:mt-8">
             <Button asChild>
               <LocalizedLink to="/travel">{t('cities.planTrip', 'Plan a trip')}</LocalizedLink>
             </Button>
@@ -145,7 +148,7 @@ export default function Cities() {
           STICKY_UNDER_HEADER,
         )}
       >
-        <PageContainer flush className="py-4 md:py-6">
+        <PageContainer flush className="py-2 md:py-6">
           <CitiesControlBar
             q={url.q}
             onQChange={url.setQ}
@@ -188,7 +191,7 @@ export default function Cities() {
         <>
           {/* ---- Continent line index --------------------------------------- */}
           <div className="border-b-4 border-foreground">
-            <PageContainer flush className="py-8 md:py-12">
+            <PageContainer flush className="py-6 md:py-12">
               <CitiesLineIndex
                 continents={continents}
                 facetCounts={continentFacets}
@@ -224,7 +227,7 @@ export default function Cities() {
 
       {/* ---- Tail ----------------------------------------------------------- */}
       <section className="border-t-4 border-foreground">
-        <PageContainer flush className="py-8 md:py-12">
+        <PageContainer flush className="py-6 md:py-12">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="card-lift group relative border-[3px] border-foreground p-6">
               <h3 className="m-0 font-display text-headline">

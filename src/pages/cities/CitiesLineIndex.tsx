@@ -29,6 +29,11 @@ interface CitiesLineIndexProps {
  * why the compare tool lives at the singular `/city/compare`. Continents therefore
  * live in `?continent=`, which is also what keeps the whole index inside one
  * `role="group"` the way the filter contract expects.
+ *
+ * THIRD, BELOW `sm` IT IS A SCROLLABLE RAIL, NOT A GRID. Six tiles two-up at
+ * 108px cost 437px — half a phone screen spent before a single city, on top of
+ * an already-sticky filter bar. One 84px line costs a fifth of that, and stops
+ * strung along a line is the more honest shape for this anyway.
  */
 export function CitiesLineIndex({
   continents,
@@ -44,8 +49,8 @@ export function CitiesLineIndex({
 
   return (
     <section aria-labelledby="cities-continents">
-      <div className="mb-6 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <h2 id="cities-continents" className="m-0 font-display text-display">
+      <div className="mb-4 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 md:mb-6">
+        <h2 id="cities-continents" className="m-0 font-display text-headline md:text-display">
           {t('cities.continentsTitle', 'Continents')}
         </h2>
         {selected.size > 0 && (
@@ -63,12 +68,12 @@ export function CitiesLineIndex({
         // Fixed height, not a collapsed placeholder. VirtualizedGrid reads its
         // scroll offset ONCE from offsetTop, so a band that grows after mount
         // shifts every virtual row below it by the delta.
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
+        <div className="flex gap-4 overflow-hidden sm:grid sm:grid-cols-3 lg:grid-cols-6">
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
               aria-hidden="true"
-              className="h-[108px] animate-pulse border-[3px] border-foreground/20 bg-muted"
+              className="h-[84px] w-[140px] shrink-0 animate-pulse border-[3px] border-foreground/20 bg-muted sm:h-[108px] sm:w-auto"
             />
           ))}
         </div>
@@ -76,7 +81,7 @@ export function CitiesLineIndex({
         <div
           role="group"
           aria-label={t('cities.continentsAriaLabel', 'Filter by continent')}
-          className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6"
+          className="-mx-1 flex gap-4 overflow-x-auto px-1 pb-2 sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-6"
         >
           {continents.map((c) => {
             const code = c.code.toLowerCase();
@@ -92,7 +97,7 @@ export function CitiesLineIndex({
                   // A station tile FILLS ink when it is the one you are standing
                   // at, and lifts when it is somewhere you could go. Never both —
                   // card-lift-sm is dropped on the active tile.
-                  'flex h-[108px] flex-col justify-between border-[3px] border-foreground p-4 text-left',
+                  'flex h-[84px] w-[140px] shrink-0 flex-col justify-between border-[3px] border-foreground p-4 text-left sm:h-[108px] sm:w-auto',
                   active
                     ? 'bg-foreground text-background'
                     : 'bg-background text-foreground card-lift-sm',
