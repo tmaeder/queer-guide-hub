@@ -41,7 +41,7 @@ export function SocialCards({ links, className }: SocialCardsProps) {
     // "Pornhub" needed 61px and had 26px. Two columns only earn their place
     // once the CONTAINER can give each card a readable width.
     <div className={`@container ${className ?? ''}`}>
-      <div className="grid grid-cols-1 gap-2 @[24rem]:grid-cols-2">
+      <div className="grid grid-cols-1 gap-2 @[28rem]:grid-cols-2">
         {entries.map(({ platform, handle, url }) => {
           const profile = profiles.get(`${platform}:${handle}`);
           const Icon = platformIcon(platform);
@@ -79,10 +79,17 @@ export function SocialCards({ links, className }: SocialCardsProps) {
                   {adult && <span className="text-2xs text-muted-foreground">18+</span>}
                 </span>
                 <span className="block truncate text-13 text-muted-foreground">
+                  {/*
+                    The `· ${label}` suffix only earns its place when the title
+                    above is showing a cached display_name instead of the
+                    platform. With no cached profile the title IS the label, so
+                    it rendered "Pornhub" over "@joey-stefano · Pornhub" —
+                    repeating itself and overflowing the card.
+                  */}
                   {profile?.follower_count != null
-                    ? `${formatCount(profile.follower_count)} followers · ${label}`
+                    ? `${formatCount(profile.follower_count)} followers${profile?.display_name ? ` · ${label}` : ''}`
                     : shownHandle
-                      ? `@${shownHandle} · ${label}`
+                      ? `@${shownHandle}${profile?.display_name ? ` · ${label}` : ''}`
                       : label}
                 </span>
               </span>
