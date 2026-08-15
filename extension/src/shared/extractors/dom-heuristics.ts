@@ -42,7 +42,7 @@ export function extractDomHeuristics(doc: Document, sourceUrl: string): Detected
 
   // Social profile links anywhere on the page (footer / header / contact).
   const socialHosts =
-    /(instagram\.com|tiktok\.com|(?:twitter|x)\.com|facebook\.com|youtube\.com|linkedin\.com|threads\.net|bsky\.app|t\.me\/|mastodon|patreon\.com|ko-fi\.com|twitch\.tv|open\.spotify\.com|onlyfans\.com|fansly\.com|fetlife\.com|joyclub\.|(?:planet|gay)?romeo\.com|grindr\.com|scruff\.com|recon\.com|pornhub\.com|xhamster\.com|xtube\.com)/i;
+    /(instagram\.com|tiktok\.com|(?:twitter|x)\.com|facebook\.com|youtube\.com|linkedin\.com|threads\.net|bsky\.app|t\.me\/|mastodon|patreon\.com|ko-fi\.com|twitch\.tv|open\.spotify\.com|onlyfans\.com|fansly\.com|fetlife\.com|joyclub\.|(?:planet|gay)?romeo\.com|grindr\.com|scruff\.com|recon\.com|pornhub\.com|xhamster\.com|xvideos\.com|xtube\.com)/i;
   // Share-button / widget / post-permalink paths are not profile links.
   const shareWidget =
     /\/(?:sharer?\.php|sharer|share\/url|share|intent|dialog|reels?|p|watch|hashtag|explore|stories)(?:[/?#]|$)/i;
