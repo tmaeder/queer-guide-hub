@@ -1,22 +1,44 @@
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { fetchTrendingCities } from '@/hooks/usePersonalizedCities';
+import {
+  fetchTrendingCities,
+  fetchPersonalizedCitiesByIds,
+} from '@/hooks/usePersonalizedCities';
 import { Band } from '@/components/home/Band';
+import { useHomeRegionContext } from '@/components/home/HomeRegionProvider';
 import { CityNetwork } from './CityNetwork';
 import { NETWORK_VIEWBOX } from './cityNetworkGeometry';
 
+const CARDS = 8;
+
 /** "Where are you riding?" — city cards, each carrying an octilinear
- *  abstraction of that city's own transit network. */
+ *  abstraction of that city's own transit network.
+ *
+ *  The visitor's own city leads when we know it, then the editorial set. The
+ *  band used to render the same fixed whitelist in the same order for every
+ *  visitor forever, which made "where are you riding" a question it never
+ *  actually asked. It still never self-hides — the homepage e2e asserts this
+ *  heading is present, because a self-hiding band and a broken query look
+ *  identical. */
 export function CityCards() {
   const { t } = useTranslation();
+  const region = useHomeRegionContext();
+
   const { data: cities = [], isLoading } = useQuery({
-    queryKey: ['home-destinations'],
-    queryFn: () => fetchTrendingCities(200000, 8),
+    queryKey: ['home-destinations', region.cityId],
+    enabled: !region.loading,
+    queryFn: async () => {
+      const trending = await fetchTrendingCities(200000, CARDS);
+      if (!region.cityId) return trending;
+      // Already in the editorial set — promote rather than fetch it twice.
+      const found = trending.find((c) => c.id === region.cityId);
+      if (found) return [found, ...trending.filter((c) => c.id !== region.cityId)];
+      const [home] = await fetchPersonalizedCitiesByIds([region.cityId]);
+      return home ? [home, ...trending].slice(0, CARDS) : trending;
+    },
     staleTime: 30 * 60_000,
   });
-
-  if (!isLoading && cities.length === 0) return null;
 
   return (
     <Band

@@ -39,8 +39,8 @@ vi.mock('@/hooks/useVisitorLocation', () => ({
 vi.mock('@/components/map/MapShell', () => ({
   default: () => <div data-testid="map-shell" />,
 }));
-vi.mock('@/components/home/RecentlyViewedRail', () => ({
-  RecentlyViewedRail: () => null,
+vi.mock('@/components/home/YourLines', () => ({
+  YourLines: () => null,
 }));
 
 import Index from '../Index';

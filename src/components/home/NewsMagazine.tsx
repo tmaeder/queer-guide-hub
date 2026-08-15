@@ -1,11 +1,13 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { Band } from './Band';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useLatestNews } from '@/hooks/useLatestNews';
+import { useNewsFront, useForYouNews } from '@/hooks/useNewsFront';
+import { useHomeRegionContext } from './HomeRegionProvider';
+import { timeBucket, rotateWindow } from '@/lib/rotation';
 import { useEditorsPick } from '@/hooks/useEditorsPick';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { ExternalImg } from '@/components/ui/ExternalImg';
@@ -22,7 +24,16 @@ type Article = {
   image_url?: string | null;
   published_at: string;
   publisher_name?: string | null;
+  /** Present on the ranked feed; absent on the editors' pick row. */
+  is_read?: boolean;
 };
+
+/** Four turns a day: a same-day return sees a different set, while a reload or
+ *  a second tab within the window still agrees with itself. */
+const NEWS_ROTATION_HOURS = 6;
+const SHOWN = 5;
+/** Ask for a superset so the window has somewhere to move. */
+const POOL = 24;
 
 function meta(a: Article, dateFmt: string): string {
   return [
@@ -37,18 +48,53 @@ function meta(a: Article, dateFmt: string): string {
  * Editorial magazine grid for the latest news: one large lead story beside a
  * 2×2 of smaller image cards. Asymmetric and image-forward — deliberately
  * different from the date-grouped Events agenda above it.
+ *
+ * The source is the RANKED feed, not `published_at desc`. Rotation is not
+ * expressible over a recency-ordered list — a window over "newest first" is
+ * just older news, which is worse content rather than different content.
+ * `get_news_front` ranks by hotness (recency × quality × trending) and re-decays
+ * on every refetch, and for signed-in readers the personalized variant adds
+ * followed tags, profile interests and geo, and demotes what they have read.
+ *
+ * Two things make a return visit visibly different:
+ *   - the 6-hour bucket moves the window over the pool
+ *   - a story already read is pushed to the tail before the window is taken,
+ *     so the piece you just opened is not still the lead
+ *
+ * Within one bucket, with nothing newly read, this renders IDENTICALLY — that
+ * is the point. Do not "fix" it with Math.random(): it would break hydration
+ * and make the rotation untestable (see src/lib/rotation.ts).
  */
 const NewsMagazine = React.memo(() => {
-  const { articles, loading, error } = useLatestNews(6);
-  const editorsPick = useEditorsPick();
   const { t } = useTranslation();
+  const region = useHomeRegionContext();
+  const countryIds = region.countryId ? [region.countryId] : null;
 
-  // Editors' pick takes the lead slot when one is flagged; latest fill the rest.
+  // Signed-in readers get the personalized feed; it returns [] when signed out
+  // or when a reader has no interests yet, and the global front is the floor.
+  const forYou = useForYouNews(POOL, countryIds);
+  const front = useNewsFront(POOL);
+  const personalized = forYou.articles.length > 0;
+  const articles = personalized ? forYou.articles : front.articles;
+  const loading = personalized ? forYou.loading : front.loading && forYou.loading;
+  const error = personalized ? forYou.error : front.error;
+
+  const editorsPick = useEditorsPick();
+
+  // Read ONCE on mount. Reading it per render would let useNewsFront's 5-minute
+  // poll reorder the page under someone mid-read.
+  const [bucket] = useState(() => timeBucket(Date.now(), NEWS_ROTATION_HOURS));
+
   const latest = useMemo<Article[]>(() => {
     const pick = editorsPick as Article | null;
     const rest = (articles as unknown as Article[]).filter((a) => a.id !== pick?.id);
-    return [...(pick ? [pick] : []), ...rest].slice(0, 5);
-  }, [articles, editorsPick]);
+    // Already-read stories sink before the window is taken, so rotation and
+    // "you've seen this" pull in the same direction instead of fighting.
+    const ranked = [...rest].sort((a, b) => Number(a.is_read ?? false) - Number(b.is_read ?? false));
+    // The editors' pick is pinned: rotating a flagged lead out of the lead slot
+    // would defeat the flag.
+    return rotateWindow([...(pick ? [pick] : []), ...ranked], SHOWN, bucket, pick ? 1 : 0);
+  }, [articles, editorsPick, bucket]);
   const ids = useMemo(() => latest.map((a) => a.id), [latest]);
   const { assets } = useEntityImageAssets('news_article', ids);
 
