@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -65,7 +66,7 @@ function EqualityLine({ score }: { score: number | null | undefined }) {
 function equalityAriaLabel(
   name: string,
   score: number | null | undefined,
-  t: (k: string, d?: string, o?: Record<string, unknown>) => string,
+  t: TFunction,
 ): string {
   if (score == null) return name;
   return t(
