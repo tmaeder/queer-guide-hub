@@ -405,10 +405,21 @@ BEGIN
       COUNT(req.request_id)                                        AS n_req,
       COUNT(resp.id)                                               AS n_resp,
       COALESCE(MAX(req.timeout_ms), 5000)                          AS max_timeout_ms,
+      -- A real failure: the target answered and said no, or the transport
+      -- broke in a way that is not a client-side give-up.
       COUNT(*) FILTER (
         WHERE resp.id IS NOT NULL
-          AND (resp.status_code >= 400 OR resp.timed_out OR resp.error_msg IS NOT NULL)
+          AND NOT COALESCE(resp.timed_out, false)
+          AND (resp.status_code >= 400 OR resp.error_msg IS NOT NULL)
       )                                                            AS n_bad,
+      -- NOT a failure: pg_net gave up client-side. Measured on the first live
+      -- pass -- 2 of 41 requests, both jobs whose registered command omits
+      -- timeout_milliseconds and so inherits pg_net's 5s default while the
+      -- edge function keeps running server-side. The request is abandoned;
+      -- the work very likely completed. Counting that as an error would have
+      -- auto-paused workflow_dispatcher_1min, a core every-minute job, within
+      -- three minutes of this landing.
+      COUNT(*) FILTER (WHERE COALESCE(resp.timed_out, false))      AS n_timeout,
       jsonb_agg(
         jsonb_build_object(
           'request_id',  req.request_id,
@@ -445,33 +456,47 @@ BEGIN
       END IF;
 
     ELSIF r.n_resp = r.n_req THEN
+      -- Three-way, and the middle one is the whole point: 'partial' records
+      -- the run and stamps last_run_at but does NOT touch
+      -- consecutive_failures, so an unverifiable job stays visible without
+      -- being auto-paused on absence of evidence. Fix the cause by raising
+      -- the registered timeout_milliseconds; then a genuine hang becomes a
+      -- countable failure instead of an unknown.
       UPDATE public.admin_automation_runs
-      SET status = CASE WHEN r.n_bad > 0 THEN 'error' ELSE 'success' END,
+      SET status = CASE WHEN r.n_bad > 0 THEN 'error'
+                        WHEN r.n_timeout > 0 THEN 'partial'
+                        ELSE 'success' END,
           finished_at = now(),
           error = CASE WHEN r.n_bad > 0
                        THEN r.n_bad || ' of ' || r.n_req || ' request(s) failed'
+                       WHEN r.n_timeout > 0
+                       THEN r.n_timeout || ' of ' || r.n_req
+                            || ' request(s) timed out client-side — outcome unknown, raise timeout_milliseconds'
                        ELSE NULL END,
           summary = jsonb_build_object('requests', r.detail)
+                    || CASE WHEN r.n_bad = 0 AND r.n_timeout > 0
+                            THEN jsonb_build_object('unverifiable', true) ELSE '{}'::jsonb END
       WHERE id = r.id;
       v_finalized := v_finalized + 1;
       IF r.n_bad > 0 THEN v_failed := v_failed + 1; END IF;
 
     -- Responses missing past the request's OWN timeout plus grace. pg_net
-    -- writes a timed_out response row of its own accord, so absence this late
-    -- means the request vanished (worker restart) or the target never
-    -- answered. Failing it deliberately is the only way a
-    -- never-responds target ever reaches the auto-pause counter -- and is the
-    -- one thing no per-edge-function helper can do, since a function that
-    -- never runs cannot report on itself.
+    -- normally writes a timed_out row of its own accord, so absence this late
+    -- means the request vanished (worker restart) rather than that the target
+    -- failed. Closed as 'partial', not 'error', for the same reason as the
+    -- timeout branch: this is our bookkeeping losing the thread, and a job
+    -- must not be auto-paused for pg_net's fault. It is still RECORDED and
+    -- counted in the abandoned metric, which is the part no per-edge-function
+    -- helper can do at all -- a function that never runs cannot report on
+    -- itself.
     ELSIF r.started_at + make_interval(secs => (r.max_timeout_ms / 1000.0) + p_grace_seconds) < now() THEN
       UPDATE public.admin_automation_runs
-      SET status = 'error', finished_at = now(),
+      SET status = 'partial', finished_at = now(),
           error = 'no response recorded for ' || (r.n_req - r.n_resp) || ' of ' || r.n_req
-                  || ' request(s) within timeout + grace',
-          summary = jsonb_build_object('requests', r.detail, 'abandoned', true)
+                  || ' request(s) within timeout + grace — outcome unknown',
+          summary = jsonb_build_object('requests', r.detail, 'abandoned', true, 'unverifiable', true)
       WHERE id = r.id;
       v_finalized := v_finalized + 1;
-      v_failed := v_failed + 1;
       v_abandoned := v_abandoned + 1;
 
     ELSE
@@ -899,7 +924,24 @@ AS $$
     'open_runs_over_1h', (
       SELECT count(*) FROM public.admin_automation_runs
       WHERE status = 'running' AND started_at < now() - interval '1 hour'
-    )
+    ),
+    -- Jobs whose every recent run ended unverifiable (client-side timeout or a
+    -- lost request). These deliberately do NOT auto-pause -- absence of
+    -- evidence is not evidence of failure -- so without this metric they would
+    -- read as healthy while nobody has ever seen one of their outcomes. The
+    -- fix is per-job: raise timeout_milliseconds in the registered command
+    -- until the response fits inside it.
+    'unverifiable_automations', COALESCE((
+      SELECT jsonb_agg(automation_slug ORDER BY automation_slug)
+      FROM (
+        SELECT automation_slug
+        FROM public.admin_automation_runs
+        WHERE started_at > now() - interval '24 hours' AND finished_at IS NOT NULL
+        GROUP BY automation_slug
+        HAVING count(*) >= 3
+           AND count(*) FILTER (WHERE (summary->>'unverifiable')::boolean) = count(*)
+      ) u
+    ), '[]'::jsonb)
   );
 $$;
 

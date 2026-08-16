@@ -149,6 +149,20 @@ if (!hygieneRes.ok) {
       process.exit(1)
     }
 
+    // A client-side pg_net timeout is absence of evidence, not evidence of
+    // failure, so it is recorded as 'partial' and deliberately does NOT
+    // auto-pause. That makes this warning the only thing standing between an
+    // unverifiable job and looking healthy: nobody has ever seen one of its
+    // outcomes. Fix per job by raising timeout_milliseconds in the registered
+    // command until the response fits inside it.
+    const unverifiable = gaps.unverifiable_automations ?? []
+    if (unverifiable.length > 0) {
+      console.warn(
+        `⚠ ${unverifiable.length} automation(s) whose every run in 24h was unverifiable ` +
+          `(client-side timeout / lost request): ${unverifiable.join(', ')} — raise timeout_milliseconds`,
+      )
+    }
+
     const silent = gaps.silent_automations ?? []
     if (silent.length > 0) {
       console.warn(`⚠ ${silent.length} at-most-daily automation(s) with no recorded run in 48h: ${silent.slice(0, 15).join(', ')}${silent.length > 15 ? ', …' : ''}`)
