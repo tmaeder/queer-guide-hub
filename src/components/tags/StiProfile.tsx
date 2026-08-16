@@ -78,12 +78,15 @@ export function StiProfile({ tagId, tagName }: Props) {
                     aria-hidden="true"
                   />
                 )}
-                <span className="sr-only">
-                  : {v.label}
-                  {route.blood
-                    ? ` — ${t('tags.sti.bloodNote', 'risk rises when blood is involved')}`
-                    : ''}
-                </span>
+                {/* The level is already visible text below, so the sr-only
+                    span carries ONLY the blood modifier — repeating the label
+                    here made every chip announce "High risk High risk". */}
+                {route.blood && (
+                  <span className="sr-only">
+                    {' — '}
+                    {t('tags.sti.bloodNote', 'risk rises when blood is involved')}
+                  </span>
+                )}
                 <span className="text-2xs font-bold uppercase tracking-label opacity-70">
                   {v.label}
                 </span>
