@@ -4368,6 +4368,26 @@
         "linkLabel": "Code {{label}} {{code}}",
         "disclaimer": "Codes de référence pour ce concept dans les systèmes de classification clinique. Ni avis médical ni diagnostic."
       },
+      "flag": {
+        "eyebrow": "Symbole",
+        "title": "Le drapeau",
+        "designer": "Créé par",
+        "year": "Année",
+        "stripes": "La signification des bandes",
+        "railSingular": "Drapeau",
+        "railPlural": "Drapeaux"
+      },
+      "hanky": {
+        "eyebrow": "Référence",
+        "title": "Le code",
+        "intro": "Un foulard porté dans la poche arrière signalait un intérêt précis — poche gauche pour le côté donneur, poche droite pour le côté receveur. Documenté tel que publié dans les années 1980 ; les significations variaient selon la ville et la décennie.",
+        "safeMode": "Le tableau des couleurs couvre des pratiques sexuelles explicites et reste masqué tant que le Mode sûr est activé.",
+        "gateBody": "Le tableau des couleurs nomme des pratiques sexuelles explicites. Confirmez que vous avez 18 ans ou plus pour le lire.",
+        "gateCta": "Afficher le code (18+)",
+        "classic": "Noyau classique (Townsend, 1983)",
+        "extended": "Ajouts ultérieurs courants",
+        "disclaimer": "Référence historique, pas une approbation d'une pratique. Des dizaines d'autres couleurs ont circulé ; aucune liste publiée ne concorde entièrement avec une autre."
+      },
       "changeHereFor": "Correspondance vers",
       "contentNote": "Avertissement",
       "contentNoteBody": "Cette entrée aborde un sujet difficile pour certaines personnes. Rien n’y est explicite : c’est une définition, pas un conseil.",
@@ -4420,6 +4440,10 @@
       "seeByCountry": "Voir le statut par pays",
       "spansAllRights": "Il s'agit de tout un domaine du droit, pas d'une seule loi. Nous suivons 18 droits distincts, pays par pays.",
       "seeAllRights": "Voir les 18 droits par pays"
+    },
+    "flagWall": {
+      "eyebrow": "Symboles",
+      "title": "Les drapeaux"
     }
   },
   "village": {

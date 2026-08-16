@@ -4329,6 +4329,26 @@
         "linkLabel": "{{label}} code {{code}}",
         "disclaimer": "Reference codes for this concept in clinical classification systems. Not medical advice and not a diagnosis."
       },
+      "flag": {
+        "eyebrow": "Symbol",
+        "title": "The flag",
+        "designer": "Designed by",
+        "year": "Year",
+        "stripes": "What the stripes mean",
+        "railSingular": "Flag",
+        "railPlural": "Flags"
+      },
+      "hanky": {
+        "eyebrow": "Reference",
+        "title": "The code",
+        "intro": "A colour worn in the back pocket signalled a specific interest — left pocket for the giving side, right pocket for the receiving side. Documented here as it was published in the 1980s; meanings varied by city and decade.",
+        "safeMode": "The colour table covers explicit sexual practices and is hidden while Safe Mode is on.",
+        "gateBody": "The colour table names explicit sexual practices. Confirm you are 18 or older to read it.",
+        "gateCta": "Show the code (18+)",
+        "classic": "Classic core (Townsend, 1983)",
+        "extended": "Common later additions",
+        "disclaimer": "Historical reference, not an endorsement of any practice. Dozens of further colours circulated; no two published lists fully agree."
+      },
       "changeHereFor": "Change here for",
       "contentNote": "Content note",
       "contentNoteBody": "This entry covers a subject some readers find difficult. Nothing here is graphic, and the page is a definition, not advice.",
@@ -4381,6 +4401,10 @@
       },
       "spansAllRights": "This covers a whole field of law, not one statute. We track 18 separate rights, country by country.",
       "seeAllRights": "See all 18 rights by country"
+    },
+    "flagWall": {
+      "eyebrow": "Symbols",
+      "title": "The flags"
     }
   },
   "village": {

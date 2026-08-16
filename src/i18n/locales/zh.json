@@ -4362,6 +4362,26 @@
         "linkLabel": "{{label}} 编码 {{code}}",
         "disclaimer": "该概念在临床分类系统中的参考编码。不构成医疗建议，也不是诊断。"
       },
+      "flag": {
+        "eyebrow": "符号",
+        "title": "旗帜",
+        "designer": "设计者",
+        "year": "年份",
+        "stripes": "条纹的含义",
+        "railSingular": "旗帜",
+        "railPlural": "旗帜"
+      },
+      "hanky": {
+        "eyebrow": "参考",
+        "title": "暗号",
+        "intro": "后裤袋里的彩色手帕曾用来示意特定的兴趣——左袋代表给予方，右袋代表接受方。此处按 1980 年代出版的版本记录；含义因城市和年代而异。",
+        "safeMode": "颜色表涉及露骨的性实践，安全模式开启时将隐藏。",
+        "gateBody": "颜色表列出了露骨的性实践。请确认你已年满 18 岁再阅读。",
+        "gateCta": "显示暗号（18+）",
+        "classic": "经典核心（Townsend，1983）",
+        "extended": "常见的后期补充",
+        "disclaimer": "仅为历史参考，并非对任何实践的认可。流传的颜色还有数十种；没有两份公开列表完全一致。"
+      },
       "changeHereFor": "在此换乘至",
       "contentNote": "内容提示",
       "contentNoteBody": "本词条涉及部分读者会感到沉重的话题。内容并不露骨，这是一则释义，而非建议。",
@@ -4414,6 +4434,10 @@
       "seeByCountry": "查看各国状态",
       "spansAllRights": "这涵盖整个法律领域，而非单一法律。我们逐国记录 18 项独立权利。",
       "seeAllRights": "查看各国的 18 项权利"
+    },
+    "flagWall": {
+      "eyebrow": "符号",
+      "title": "旗帜一览"
     }
   },
   "village": {

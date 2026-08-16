@@ -4364,6 +4364,26 @@
         "linkLabel": "Código {{label}} {{code}}",
         "disclaimer": "Códigos de referência para este conceito em sistemas de classificação clínica. Não é aconselhamento médico nem um diagnóstico."
       },
+      "flag": {
+        "eyebrow": "Símbolo",
+        "title": "A bandeira",
+        "designer": "Desenhada por",
+        "year": "Ano",
+        "stripes": "O que significam as faixas",
+        "railSingular": "Bandeira",
+        "railPlural": "Bandeiras"
+      },
+      "hanky": {
+        "eyebrow": "Referência",
+        "title": "O código",
+        "intro": "Um lenço no bolso de trás sinalizava um interesse específico — bolso esquerdo para o lado ativo, direito para o lado receptivo. Documentado como publicado nos anos 1980; os significados variavam por cidade e década.",
+        "safeMode": "A tabela de cores cobre práticas sexuais explícitas e fica oculta enquanto o Modo Seguro está ativado.",
+        "gateBody": "A tabela de cores nomeia práticas sexuais explícitas. Confirme que tem 18 anos ou mais para lê-la.",
+        "gateCta": "Mostrar o código (18+)",
+        "classic": "Núcleo clássico (Townsend, 1983)",
+        "extended": "Adições posteriores comuns",
+        "disclaimer": "Referência histórica, não um endosso de qualquer prática. Circularam dezenas de outras cores; não há duas listas publicadas totalmente coincidentes."
+      },
       "changeHereFor": "Ligação para",
       "contentNote": "Nota de conteúdo",
       "contentNoteBody": "Esta entrada trata um tema que algumas pessoas acham difícil. Nada aqui é explícito: é uma definição, não um conselho.",
@@ -4416,6 +4436,10 @@
       "seeByCountry": "Ver o estado por país",
       "spansAllRights": "Isto abrange todo um domínio do direito, não uma única lei. Registamos 18 direitos distintos, país a país.",
       "seeAllRights": "Ver os 18 direitos por país"
+    },
+    "flagWall": {
+      "eyebrow": "Símbolos",
+      "title": "As bandeiras"
     }
   },
   "village": {

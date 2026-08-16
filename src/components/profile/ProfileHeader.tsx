@@ -10,6 +10,7 @@ import { UserRelationshipActions } from '@/components/profile/UserRelationshipAc
 import { SocialAccountsDisplay } from '@/components/profile/SocialAccountsDisplay';
 import { readAccounts } from '@/lib/socialAccounts';
 import { StatusBar } from '@/components/status/StatusBar';
+import { FlagChipRow } from '@/components/profile/FlagChip';
 import { ScoreLevelChip } from '@/components/score/ScoreLevelChip';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { publicDisplayName } from '@/lib/displayName';
@@ -103,6 +104,11 @@ export function ProfileHeader({
                   </span>
                 )}
               </div>
+
+              <FlagChipRow
+                flagIds={profile.identity_flags as string[] | undefined}
+                className="mb-4 justify-center md:justify-start"
+              />
 
               {!!profile.bio && (
                 <p className="text-muted-foreground mb-4 max-w-2xl">{profile.bio as string}</p>

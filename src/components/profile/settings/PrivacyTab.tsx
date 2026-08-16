@@ -77,6 +77,13 @@ export function PrivacyTab({ formData, hasPasskey, onPrivacyChange }: PrivacyTab
               onChange={(v) => onPrivacyChange('pronouns_visibility', v)}
             />
             <VisibilityRow
+              id="flags_visibility"
+              label="Pride flags"
+              description="Who can see the flags on your profile"
+              value={normalizeVisibility(ps.flags_visibility, 'public')}
+              onChange={(v) => onPrivacyChange('flags_visibility', v)}
+            />
+            <VisibilityRow
               id="location_visibility"
               label="Location"
               description="Who can see your location"

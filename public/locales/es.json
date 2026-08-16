@@ -4364,6 +4364,26 @@
         "linkLabel": "Código {{label}} {{code}}",
         "disclaimer": "Códigos de referencia para este concepto en sistemas de clasificación clínica. No es asesoramiento médico ni un diagnóstico."
       },
+      "flag": {
+        "eyebrow": "Símbolo",
+        "title": "La bandera",
+        "designer": "Diseñada por",
+        "year": "Año",
+        "stripes": "Qué significan las franjas",
+        "railSingular": "Bandera",
+        "railPlural": "Banderas"
+      },
+      "hanky": {
+        "eyebrow": "Referencia",
+        "title": "El código",
+        "intro": "Un pañuelo en el bolsillo trasero señalaba un interés concreto: el bolsillo izquierdo para el lado activo, el derecho para el receptivo. Documentado tal como se publicó en los años 80; los significados variaban según la ciudad y la década.",
+        "safeMode": "La tabla de colores cubre prácticas sexuales explícitas y está oculta mientras el Modo Seguro está activado.",
+        "gateBody": "La tabla de colores nombra prácticas sexuales explícitas. Confirma que tienes 18 años o más para leerla.",
+        "gateCta": "Mostrar el código (18+)",
+        "classic": "Núcleo clásico (Townsend, 1983)",
+        "extended": "Adiciones posteriores comunes",
+        "disclaimer": "Referencia histórica, no un respaldo de ninguna práctica. Circularon docenas de colores más; no hay dos listas publicadas que coincidan del todo."
+      },
       "changeHereFor": "Transbordo a",
       "contentNote": "Aviso de contenido",
       "contentNoteBody": "Esta entrada trata un tema que a algunas personas les resulta difícil. Nada aquí es explícito: es una definición, no un consejo.",
@@ -4416,6 +4436,10 @@
       "seeByCountry": "Ver el estado por país",
       "spansAllRights": "Esto abarca todo un ámbito del derecho, no una sola ley. Registramos 18 derechos distintos, país por país.",
       "seeAllRights": "Ver los 18 derechos por país"
+    },
+    "flagWall": {
+      "eyebrow": "Símbolos",
+      "title": "Las banderas"
     }
   },
   "village": {

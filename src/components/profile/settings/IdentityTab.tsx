@@ -2,7 +2,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { SelectField, FormField } from './fields';
 import { Heart } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { cn } from '@/lib/utils';
+import { PRIDE_FLAGS } from '@/lib/flags';
+import { FlagSwatch } from '@/components/tags/FlagSwatch';
 import type { ProfileFormData, ComingOutStatus } from '@/types/profileForm';
+
+const MAX_IDENTITY_FLAGS = 8;
 
 const GENDER_OPTIONS = [
   { value: 'woman', label: 'Woman' },
@@ -86,11 +92,70 @@ interface IdentityTabProps {
   formData: ProfileFormData;
   onChange: (field: string, value: string) => void;
   onComingOutChange: (area: keyof ComingOutStatus, value: string) => void;
+  onFlagsChange: (flags: string[]) => void;
 }
 
-export function IdentityTab({ formData, onChange, onComingOutChange }: IdentityTabProps) {
+function FlagPicker({
+  selected,
+  onChange,
+}: {
+  selected: string[];
+  onChange: (flags: string[]) => void;
+}) {
+  const { t } = useTranslation();
+  const atCap = selected.length >= MAX_IDENTITY_FLAGS;
+
+  const toggle = (id: string) => {
+    if (selected.includes(id)) {
+      onChange(selected.filter((f) => f !== id));
+    } else if (!atCap) {
+      onChange([...selected, id]);
+    }
+  };
+
+  return (
+    <div className="flex flex-wrap gap-2" role="group" aria-label="Pride flags">
+      {PRIDE_FLAGS.map((flag) => {
+        const active = selected.includes(flag.id);
+        const disabled = !active && atCap;
+        return (
+          <button
+            key={flag.id}
+            type="button"
+            aria-pressed={active}
+            disabled={disabled}
+            onClick={() => toggle(flag.id)}
+            className={cn(
+              'inline-flex items-center gap-2 border-2 border-foreground px-2 py-1 text-13 font-bold transition-colors',
+              active ? 'bg-foreground text-background' : 'hover:bg-muted',
+              disabled && 'opacity-40',
+            )}
+          >
+            <FlagSwatch flag={flag} decorative className="h-4 w-6 border" />
+            {t(flag.nameKey, flag.nameEn)}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+export function IdentityTab({ formData, onChange, onComingOutChange, onFlagsChange }: IdentityTabProps) {
   return (
     <div className="flex flex-col gap-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Flags</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Pride flags shown on your profile. Public by default — change who sees them under
+            Privacy. Up to {MAX_IDENTITY_FLAGS}.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <FlagPicker selected={formData.identity_flags} onChange={onFlagsChange} />
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle>LGBTQ+ Identity</CardTitle>

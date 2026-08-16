@@ -26,6 +26,8 @@ export interface PrivacySettings {
   // not the dead *_public booleans). Tiers: public | community | friends | private.
   /** Who sees pronouns (default public — core identity expression). */
   pronouns_visibility?: string;
+  /** Who sees chosen pride flags (default public — same rationale as pronouns). */
+  flags_visibility?: string;
   /** Who sees location (default public). */
   location_visibility?: string;
   /** Who sees website + social links (default friends). */
@@ -50,6 +52,8 @@ export interface ProfileFormData {
   pronouns: string;
   /** Ordered pronoun sets — source of truth; `pronouns` is the derived display string. */
   pronoun_tags: string[];
+  /** Pride flag ids from src/lib/flags (TS is the vocabulary; cap 8, DB CHECK). */
+  identity_flags: string[];
   bio: string;
   location: string;
   date_of_birth: string;
@@ -99,6 +103,7 @@ const DEFAULT_PRIVACY: PrivacySettings = {
   coming_out_visibility: 'private',
   appear_in_recognition: false,
   pronouns_visibility: 'public',
+  flags_visibility: 'public',
   location_visibility: 'public',
   contact_visibility: 'friends',
   interests_visibility: 'community',
@@ -117,7 +122,8 @@ export function initFormData(profile: Profile | null | undefined): ProfileFormDa
   if (!profile) {
     return {
       display_name: '', first_name: '', last_name: '', chosen_name: '',
-      name_pronunciation: '', pronouns: '', pronoun_tags: [], bio: '', location: '',
+      name_pronunciation: '', pronouns: '', pronoun_tags: [], identity_flags: [],
+      bio: '', location: '',
       date_of_birth: '', age_range: '', occupation: '', education: '',
       phone: '', website: '',
       gender_identity: '', sexual_orientation: '',
@@ -147,6 +153,7 @@ export function initFormData(profile: Profile | null | undefined): ProfileFormDa
       : str(p.pronouns).trim()
         ? [str(p.pronouns).trim()]
         : [],
+    identity_flags: strArr(p.identity_flags),
     bio: str(p.bio),
     location: str(p.location),
     date_of_birth: str(p.date_of_birth),
