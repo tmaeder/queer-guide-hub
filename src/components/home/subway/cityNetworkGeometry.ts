@@ -41,12 +41,7 @@ export type NetworkMode = 'subway' | 'light_rail' | 'tram';
 export interface NetworkLine {
   /** Track color, assigned by core-length rank. */
   track: Track;
-  /**
-   * The line's own OSM `ref` (e.g. "U1"). Not rendered on the homepage card,
-   * where the diagram is decorative and `aria-hidden`; the city single's
-   * `CityNetworkPanel` DOES render it as a legend, which is what turns the
-   * same geometry from ornament into information.
-   */
+  /** The line's own OSM `ref` (e.g. "U1") — debugging aid, never rendered. */
   ref: string;
   /** Path data. `M`/`L` only, integer coordinates. */
   d: string;
@@ -654,19 +649,6 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
     interchange: { x: 82, y: 64 },
     crop: { x: 57, y: 7, w: 86, h: 97 },
   },
-  manila: {
-    mode: 'light_rail',
-    lines: [
-      { track: 'pink', ref: '1', d: 'M 107 11 L 83 11 L 83 72 L 79 76 L 79 90 L 82 93 L 82 100' },
-      {
-        track: 'blue',
-        ref: '3',
-        d: 'M 96 76 L 105 76 L 116 65 L 116 59 L 121 54 L 121 44 L 100 23',
-      },
-    ],
-    interchange: { x: 79, y: 76 },
-    crop: { x: 75, y: 7, w: 50, h: 97 },
-  },
   seoul: {
     mode: 'subway',
     lines: [
@@ -685,6 +667,19 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
     ],
     interchange: { x: 129, y: 75 },
     crop: { x: 24, y: 7, w: 153, h: 96 },
+  },
+  manila: {
+    mode: 'light_rail',
+    lines: [
+      { track: 'pink', ref: '1', d: 'M 107 11 L 83 11 L 83 72 L 79 76 L 79 90 L 82 93 L 82 100' },
+      {
+        track: 'blue',
+        ref: '3',
+        d: 'M 96 76 L 105 76 L 116 65 L 116 59 L 121 54 L 121 44 L 100 23',
+      },
+    ],
+    interchange: { x: 79, y: 76 },
+    crop: { x: 75, y: 7, w: 50, h: 97 },
   },
   's-o-paulo': {
     mode: 'subway',
@@ -771,26 +766,26 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
       {
         track: 'pink',
         ref: 'Blue',
-        d: 'M 87 13 L 100 13 L 100 29 L 81 48 L 81 84 L 94 97 L 103 97 L 103 95',
+        d: 'M 93 11 L 106 11 L 106 28 L 86 48 L 86 86 L 99 99 L 109 99 L 109 97',
       },
       {
         track: 'blue',
-        ref: 'Green',
-        d: 'M 87 54 L 87 47 L 80 47 L 89 56 L 92 53 L 109 53 L 109 47 L 113 43 L 118 48',
+        ref: 'Blue Line (Kavi Subhash → Dakshineshwar)',
+        d: 'M 113 98 L 113 100 L 103 100 L 90 87 L 90 49 L 110 29 L 110 12 L 97 12',
       },
       {
         track: 'green',
-        ref: 'Orange',
-        d: 'M 101 99 L 98 96 L 98 95 L 103 90 L 103 81 L 98 76 L 98 67 L 100 65',
+        ref: 'Green',
+        d: 'M 86 57 L 86 49 L 79 49 L 89 59 L 92 56 L 110 56 L 110 50 L 115 45 L 121 51',
       },
       {
         track: 'yellow',
-        ref: 'Yellow',
-        d: 'M 121 12 L 121 14 L 117 18 L 112 18 L 109 21 L 105 17 L 105 15',
+        ref: 'Orange',
+        d: 'M 112 93 L 109 90 L 109 89 L 115 83 L 115 74 L 110 69 L 110 60 L 112 58',
       },
     ],
-    interchange: { x: 100, y: 13 },
-    crop: { x: 76, y: 8, w: 49, h: 95 },
+    interchange: { x: 86, y: 48 },
+    crop: { x: 75, y: 7, w: 50, h: 97 },
   },
   tehran: {
     mode: 'subway',
@@ -864,33 +859,6 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
     ],
     interchange: { x: 83, y: 40 },
     crop: { x: 34, y: 7, w: 132, h: 96 },
-  },
-  untitled: {
-    mode: 'subway',
-    lines: [
-      {
-        track: 'pink',
-        ref: 'KS-AE',
-        d: 'M 155 63 L 152 60 L 97 60 L 83 74 L 83 84 L 88 84 L 88 57',
-      },
-      {
-        track: 'blue',
-        ref: 'E',
-        d: 'M 76 70 L 87 70 L 87 75 L 81 75 L 79 73 L 75 73 L 75 68 L 70 63',
-      },
-      {
-        track: 'green',
-        ref: 'DT;Z;TS;TN',
-        d: 'M 46 99 L 75 70 L 83 70 L 83 63 L 78 58 L 78 15 L 78 32',
-      },
-      {
-        track: 'yellow',
-        ref: 'TS;H',
-        d: 'M 78 12 L 78 23 L 84 29 L 84 54 L 87 57 L 87 69 L 81 75 L 81 30',
-      },
-    ],
-    interchange: { x: 83, y: 74 },
-    crop: { x: 42, y: 8, w: 117, h: 95 },
   },
   'rio-de-janeiro': {
     mode: 'subway',
@@ -1011,6 +979,15 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
     interchange: { x: 102, y: 65 },
     crop: { x: 43, y: 8, w: 115, h: 95 },
   },
+  lima: {
+    mode: 'subway',
+    lines: [
+      { track: 'pink', ref: 'L1', d: 'M 101 10 L 90 21 L 90 30 L 86 34 L 86 71 L 115 100' },
+      { track: 'blue', ref: 'L2', d: 'M 104 38 L 108 34 L 115 34' },
+    ],
+    interchange: { x: 86, y: 34 },
+    crop: { x: 82, y: 6, w: 37, h: 98 },
+  },
   chennai: {
     mode: 'subway',
     lines: [
@@ -1027,15 +1004,6 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
     ],
     interchange: { x: 129, y: 16 },
     crop: { x: 66, y: 7, w: 69, h: 97 },
-  },
-  lima: {
-    mode: 'subway',
-    lines: [
-      { track: 'pink', ref: 'L1', d: 'M 101 10 L 90 21 L 90 30 L 86 34 L 86 71 L 115 100' },
-      { track: 'blue', ref: 'L2', d: 'M 104 38 L 108 34 L 115 34' },
-    ],
-    interchange: { x: 86, y: 34 },
-    crop: { x: 82, y: 6, w: 37, h: 98 },
   },
   'untitled-34': {
     mode: 'subway',
@@ -1213,42 +1181,6 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
     interchange: { x: 62, y: 60 },
     crop: { x: 46, y: 8, w: 109, h: 95 },
   },
-  hanoi: {
-    mode: 'subway',
-    lines: [
-      { track: 'pink', ref: 'T2A', d: 'M 76 98 L 127 47 L 127 39 L 134 32 L 134 23' },
-      { track: 'blue', ref: 'T3', d: 'M 66 12 L 72 18 L 115 18 L 120 23' },
-    ],
-    interchange: { x: 127, y: 39 },
-    crop: { x: 62, y: 8, w: 76, h: 94 },
-  },
-  baghdad: {
-    mode: 'subway',
-    lines: [
-      {
-        track: 'pink',
-        ref: '17186146',
-        d: 'M 72 92 L 53 92 L 53 35 L 72 16 L 72 92 L 72 17 L 64 17',
-      },
-      {
-        track: 'blue',
-        ref: '17186142',
-        d: 'M 83 11 L 83 21 L 110 48 L 80 18 L 75 18 L 84 18 L 95 29 L 108 29 L 143 64',
-      },
-      {
-        track: 'green',
-        ref: '17186144',
-        d: 'M 148 43 L 106 85 L 97 85 L 90 92 L 81 92 L 76 87 L 76 32',
-      },
-      {
-        track: 'yellow',
-        ref: '17186147',
-        d: 'M 118 99 L 82 99 L 82 87 L 77 82 L 108 51 L 113 56 L 122 47',
-      },
-    ],
-    interchange: { x: 72, y: 16 },
-    crop: { x: 49, y: 7, w: 103, h: 96 },
-  },
   'kuala-lumpur': {
     mode: 'subway',
     lines: [
@@ -1265,6 +1197,38 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
     ],
     interchange: { x: 75, y: 27 },
     crop: { x: 71, y: 8, w: 59, h: 95 },
+  },
+  baghdad: {
+    mode: 'subway',
+    lines: [
+      { track: 'pink', ref: 'white', d: 'M 72 92 L 53 92 L 53 35 L 72 16 L 72 92 L 72 17 L 64 17' },
+      {
+        track: 'blue',
+        ref: 'red',
+        d: 'M 83 11 L 83 21 L 110 48 L 80 18 L 75 18 L 84 18 L 95 29 L 108 29 L 143 64',
+      },
+      {
+        track: 'green',
+        ref: 'yellow',
+        d: 'M 148 43 L 106 85 L 97 85 L 90 92 L 81 92 L 76 87 L 76 32',
+      },
+      {
+        track: 'yellow',
+        ref: 'green',
+        d: 'M 118 99 L 82 99 L 82 87 L 77 82 L 108 51 L 113 56 L 122 47',
+      },
+    ],
+    interchange: { x: 72, y: 16 },
+    crop: { x: 49, y: 7, w: 103, h: 96 },
+  },
+  hanoi: {
+    mode: 'subway',
+    lines: [
+      { track: 'pink', ref: 'T2A', d: 'M 76 98 L 127 47 L 127 39 L 134 32 L 134 23' },
+      { track: 'blue', ref: 'T3', d: 'M 66 12 L 72 18 L 115 18 L 120 23' },
+    ],
+    interchange: { x: 127, y: 39 },
+    crop: { x: 62, y: 8, w: 76, h: 94 },
   },
   'hong-kong-hk-2hvf2': {
     mode: 'subway',
@@ -1315,21 +1279,6 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
     interchange: { x: 100, y: 50 },
     crop: { x: 66, y: 7, w: 68, h: 97 },
   },
-  santiago: {
-    mode: 'subway',
-    lines: [
-      { track: 'pink', ref: 'L5', d: 'M 112 72 L 105 65 L 105 37 L 70 37 L 70 48 L 62 56 L 62 63' },
-      {
-        track: 'blue',
-        ref: 'L2',
-        d: 'M 97 38 L 101 38 L 101 20 L 100 19 L 100 55 L 102 57 L 102 100',
-      },
-      { track: 'green', ref: 'L3', d: 'M 128 55 L 98 55 L 98 35 L 90 27 L 90 21 L 76 21' },
-      { track: 'yellow', ref: 'L7', d: 'M 70 27 L 70 35 L 108 35 L 121 22 L 128 22 L 139 11' },
-    ],
-    interchange: { x: 105, y: 37 },
-    crop: { x: 58, y: 7, w: 85, h: 97 },
-  },
   taipei: {
     mode: 'subway',
     lines: [
@@ -1379,6 +1328,21 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
     ],
     interchange: { x: 83, y: 31 },
     crop: { x: 55, y: 6, w: 91, h: 98 },
+  },
+  santiago: {
+    mode: 'subway',
+    lines: [
+      { track: 'pink', ref: 'L5', d: 'M 112 72 L 105 65 L 105 37 L 70 37 L 70 48 L 62 56 L 62 63' },
+      {
+        track: 'blue',
+        ref: 'L2',
+        d: 'M 97 38 L 101 38 L 101 20 L 100 19 L 100 55 L 102 57 L 102 100',
+      },
+      { track: 'green', ref: 'L3', d: 'M 128 55 L 98 55 L 98 35 L 90 27 L 90 21 L 76 21' },
+      { track: 'yellow', ref: 'L7', d: 'M 70 27 L 70 35 L 108 35 L 121 22 L 128 22 L 139 11' },
+    ],
+    interchange: { x: 105, y: 37 },
+    crop: { x: 58, y: 7, w: 85, h: 97 },
   },
   'washington-d-c': {
     mode: 'subway',
@@ -1453,6 +1417,25 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
     interchange: { x: 108, y: 87 },
     crop: { x: 35, y: 7, w: 131, h: 97 },
   },
+  ankara: {
+    mode: 'subway',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'M5 (Kızılay – İlkbahar Mahallesi) Metro ',
+        d: 'M 162 74 L 136 100 L 153 100 L 153 64 L 127 90 L 144 90 L 144 65 L 144 92 L 156 92',
+      },
+      { track: 'blue', ref: 'M3', d: 'M 105 34 L 99 34 L 91 26 L 36 26' },
+      { track: 'green', ref: 'M1', d: 'M 144 64 L 144 54 L 135 45 L 132 45 L 119 32 L 99 32' },
+      {
+        track: 'yellow',
+        ref: 'M4',
+        d: 'M 156 55 L 156 49 L 151 44 L 160 35 L 160 25 L 164 21 L 164 11 L 158 11',
+      },
+    ],
+    interchange: { x: 144, y: 65 },
+    crop: { x: 32, y: 7, w: 136, h: 97 },
+  },
   yangon: {
     mode: 'light_rail',
     lines: [
@@ -1479,25 +1462,6 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
     ],
     interchange: { x: 82, y: 58 },
     crop: { x: 66, y: 7, w: 68, h: 96 },
-  },
-  ankara: {
-    mode: 'subway',
-    lines: [
-      {
-        track: 'pink',
-        ref: 'M5 (Kızılay – İlkbahar Mahallesi) Metro ',
-        d: 'M 162 74 L 136 100 L 153 100 L 153 64 L 127 90 L 144 90 L 144 65 L 144 92 L 156 92',
-      },
-      { track: 'blue', ref: 'M3', d: 'M 105 34 L 99 34 L 91 26 L 36 26' },
-      { track: 'green', ref: 'M1', d: 'M 144 64 L 144 54 L 135 45 L 132 45 L 119 32 L 99 32' },
-      {
-        track: 'yellow',
-        ref: 'M4',
-        d: 'M 156 55 L 156 49 L 151 44 L 160 35 L 160 25 L 164 21 L 164 11 L 158 11',
-      },
-    ],
-    interchange: { x: 144, y: 65 },
-    crop: { x: 32, y: 7, w: 136, h: 97 },
   },
   'saint-petersburg': {
     mode: 'subway',
@@ -1648,33 +1612,6 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
     interchange: { x: 110, y: 17 },
     crop: { x: 34, y: 9, w: 133, h: 93 },
   },
-  giza: {
-    mode: 'subway',
-    lines: [
-      { track: 'pink', ref: '1', d: 'M 114 99 L 75 60 L 75 44 L 108 11' },
-      { track: 'blue', ref: '2', d: 'M 76 53 L 76 60 L 76 44 L 89 44 L 90 43 L 90 22 L 88 20' },
-      {
-        track: 'green',
-        ref: '3',
-        d: 'M 68 22 L 74 28 L 74 35 L 84 45 L 93 36 L 103 36 L 103 31 L 111 23 L 132 23',
-      },
-    ],
-    interchange: { x: 75, y: 60 },
-    crop: { x: 64, y: 7, w: 72, h: 96 },
-  },
-  salvador: {
-    mode: 'subway',
-    lines: [
-      { track: 'pink', ref: '1', d: 'M 74 10 L 69 10 L 45 34 L 45 99 L 37 99 L 26 88 L 18 96' },
-      {
-        track: 'blue',
-        ref: '2',
-        d: 'M 47 92 L 55 100 L 75 100 L 139 36 L 176 36 L 176 23 L 182 17',
-      },
-    ],
-    interchange: { x: 45, y: 99 },
-    crop: { x: 14, y: 6, w: 172, h: 98 },
-  },
   'medell-n': {
     mode: 'subway',
     lines: [
@@ -1691,6 +1628,55 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
     ],
     interchange: { x: 108, y: 45 },
     crop: { x: 85, y: 7, w: 31, h: 97 },
+  },
+  salvador: {
+    mode: 'subway',
+    lines: [
+      { track: 'pink', ref: '1', d: 'M 74 10 L 69 10 L 45 34 L 45 99 L 37 99 L 26 88 L 18 96' },
+      {
+        track: 'blue',
+        ref: '2',
+        d: 'M 47 92 L 55 100 L 75 100 L 139 36 L 176 36 L 176 23 L 182 17',
+      },
+    ],
+    interchange: { x: 45, y: 99 },
+    crop: { x: 14, y: 6, w: 172, h: 98 },
+  },
+  giza: {
+    mode: 'subway',
+    lines: [
+      { track: 'pink', ref: '1', d: 'M 114 99 L 75 60 L 75 44 L 108 11' },
+      { track: 'blue', ref: '2', d: 'M 76 53 L 76 60 L 76 44 L 89 44 L 90 43 L 90 22 L 88 20' },
+      {
+        track: 'green',
+        ref: '3',
+        d: 'M 68 22 L 74 28 L 74 35 L 84 45 L 93 36 L 103 36 L 103 31 L 111 23 L 132 23',
+      },
+    ],
+    interchange: { x: 75, y: 60 },
+    crop: { x: 64, y: 7, w: 72, h: 96 },
+  },
+  athens: {
+    mode: 'subway',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'Μ3',
+        d: 'M 151 69 L 143 77 L 133 77 L 133 27 L 121 27 L 91 57 L 62 57 L 49 70 L 49 79',
+      },
+      {
+        track: 'blue',
+        ref: 'Μ1',
+        d: 'M 56 74 L 64 74 L 83 55 L 83 46 L 80 43 L 80 33 L 92 21 L 103 21 L 113 11',
+      },
+      {
+        track: 'green',
+        ref: 'Μ2',
+        d: 'M 63 43 L 68 48 L 76 48 L 76 55 L 81 60 L 75 66 L 79 70 L 79 100',
+      },
+    ],
+    interchange: { x: 83, y: 55 },
+    crop: { x: 45, y: 7, w: 110, h: 97 },
   },
   yokohama: {
     mode: 'subway',
@@ -1714,28 +1700,6 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
     ],
     interchange: { x: 84, y: 57 },
     crop: { x: 50, y: 8, w: 100, h: 95 },
-  },
-  athens: {
-    mode: 'subway',
-    lines: [
-      {
-        track: 'pink',
-        ref: 'Μ3',
-        d: 'M 151 69 L 143 77 L 133 77 L 133 27 L 121 27 L 91 57 L 62 57 L 49 70 L 49 79',
-      },
-      {
-        track: 'blue',
-        ref: 'Μ1',
-        d: 'M 56 74 L 64 74 L 83 55 L 83 46 L 80 43 L 80 33 L 92 21 L 103 21 L 113 11',
-      },
-      {
-        track: 'green',
-        ref: 'Μ2',
-        d: 'M 63 43 L 68 48 L 76 48 L 76 55 L 81 60 L 75 66 L 79 70 L 79 100',
-      },
-    ],
-    interchange: { x: 83, y: 55 },
-    crop: { x: 45, y: 7, w: 110, h: 97 },
   },
   dubai: {
     mode: 'subway',
@@ -1888,15 +1852,6 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
     interchange: { x: 79, y: 76 },
     crop: { x: 75, y: 6, w: 50, h: 98 },
   },
-  pyongyang: {
-    mode: 'subway',
-    lines: [
-      { track: 'pink', ref: '2', d: 'M 162 31 L 87 31 L 67 51 L 67 58 L 58 67 L 39 48' },
-      { track: 'blue', ref: '1', d: 'M 51 99 L 60 99 L 65 94 L 75 94 L 86 83 L 86 12' },
-    ],
-    interchange: { x: 67, y: 58 },
-    crop: { x: 35, y: 8, w: 131, h: 95 },
-  },
   kyiv: {
     mode: 'subway',
     lines: [
@@ -1914,23 +1869,6 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
     ],
     interchange: { x: 87, y: 60 },
     crop: { x: 31, y: 7, w: 139, h: 96 },
-  },
-  mashhad: {
-    mode: 'subway',
-    lines: [
-      {
-        track: 'pink',
-        ref: '3',
-        d: 'M 114 59 L 92 37 L 78 37 L 78 29 L 60 11 L 117 68 L 104 81 L 123 100',
-      },
-      {
-        track: 'blue',
-        ref: '2',
-        d: 'M 114 55 L 122 55 L 124 57 L 125 57 L 141 41 L 107 75 L 104 75 L 102 73 L 97 73',
-      },
-    ],
-    interchange: { x: 114, y: 59 },
-    crop: { x: 56, y: 7, w: 89, h: 97 },
   },
   'izmir-tr-w86ke': {
     mode: 'tram',
@@ -2076,20 +2014,6 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
     interchange: { x: 81, y: 40 },
     crop: { x: 60, y: 7, w: 80, h: 97 },
   },
-  doha: {
-    mode: 'subway',
-    lines: [
-      {
-        track: 'pink',
-        ref: 'Red',
-        d: 'M 110 12 L 110 30 L 125 30 L 125 56 L 118 63 L 118 73 L 144 99 L 159 84',
-      },
-      { track: 'blue', ref: 'Green', d: 'M 127 79 L 117 69 L 103 69 L 86 52 L 47 52 L 41 46' },
-      { track: 'green', ref: 'Gold', d: 'M 145 79 L 142 76 L 108 76 L 103 81 L 84 81' },
-    ],
-    interchange: { x: 118, y: 73 },
-    crop: { x: 37, y: 8, w: 126, h: 95 },
-  },
   tashkent: {
     mode: 'subway',
     lines: [
@@ -2116,6 +2040,20 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
     ],
     interchange: { x: 103, y: 49 },
     crop: { x: 67, y: 7, w: 66, h: 97 },
+  },
+  doha: {
+    mode: 'subway',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'Red',
+        d: 'M 110 12 L 110 30 L 125 30 L 125 56 L 118 63 L 118 73 L 144 99 L 159 84',
+      },
+      { track: 'blue', ref: 'Green', d: 'M 127 79 L 117 69 L 103 69 L 86 52 L 47 52 L 41 46' },
+      { track: 'green', ref: 'Gold', d: 'M 145 79 L 142 76 L 108 76 L 103 81 L 84 81' },
+    ],
+    interchange: { x: 118, y: 73 },
+    crop: { x: 37, y: 8, w: 126, h: 95 },
   },
   fortaleza: {
     mode: 'light_rail',
@@ -2179,29 +2117,6 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
     interchange: { x: 79, y: 64 },
     crop: { x: 44, y: 7, w: 113, h: 96 },
   },
-  tunis: {
-    mode: 'light_rail',
-    lines: [
-      { track: 'pink', ref: '4', d: 'M 95 55 L 89 55 L 89 48 L 85 44 L 82 47 L 41 47 L 38 44' },
-      {
-        track: 'blue',
-        ref: 'تونس - حلق الوادي - المرسى',
-        d: 'M 94 50 L 135 50 L 162 23 L 162 18 L 160 16',
-      },
-      {
-        track: 'green',
-        ref: '6',
-        d: 'M 102 100 L 99 97 L 99 90 L 93 84 L 93 73 L 89 69 L 89 57 L 95 57 L 95 56',
-      },
-      {
-        track: 'yellow',
-        ref: 'خط تونس-حلق الوادي-المرسى',
-        d: 'M 159 11 L 161 13 L 161 18 L 134 45 L 93 45',
-      },
-    ],
-    interchange: { x: 95, y: 55 },
-    crop: { x: 34, y: 7, w: 132, h: 97 },
-  },
   lyon: {
     mode: 'subway',
     lines: [
@@ -2231,6 +2146,29 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
     ],
     interchange: { x: 65, y: 88 },
     crop: { x: 12, y: 7, w: 177, h: 96 },
+  },
+  tunis: {
+    mode: 'light_rail',
+    lines: [
+      { track: 'pink', ref: '4', d: 'M 95 55 L 89 55 L 89 48 L 85 44 L 82 47 L 41 47 L 38 44' },
+      {
+        track: 'blue',
+        ref: 'تونس - حلق الوادي - المرسى',
+        d: 'M 94 50 L 135 50 L 162 23 L 162 18 L 160 16',
+      },
+      {
+        track: 'green',
+        ref: '6',
+        d: 'M 102 100 L 99 97 L 99 90 L 93 84 L 93 73 L 89 69 L 89 57 L 95 57 L 95 56',
+      },
+      {
+        track: 'yellow',
+        ref: 'خط تونس-حلق الوادي-المرسى',
+        d: 'M 159 11 L 161 13 L 161 18 L 134 45 L 93 45',
+      },
+    ],
+    interchange: { x: 95, y: 55 },
+    crop: { x: 34, y: 7, w: 132, h: 97 },
   },
   taoyuan: {
     mode: 'subway',
@@ -2351,32 +2289,6 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
     interchange: { x: 62, y: 88 },
     crop: { x: 50, y: 8, w: 101, h: 95 },
   },
-  warsaw: {
-    mode: 'subway',
-    lines: [
-      { track: 'pink', ref: 'M1', d: 'M 116 100 L 102 86 L 102 76 L 99 73 L 99 27 L 82 10' },
-      {
-        track: 'blue',
-        ref: 'M2',
-        d: 'M 72 44 L 88 44 L 92 48 L 116 48 L 116 40 L 128 28 L 124 24 L 115 24',
-      },
-    ],
-    interchange: { x: 99, y: 73 },
-    crop: { x: 68, y: 6, w: 64, h: 98 },
-  },
-  marseille: {
-    mode: 'subway',
-    lines: [
-      { track: 'pink', ref: 'M1', d: 'M 131 12 L 85 58 L 79 52 L 75 56 L 89 70 L 123 36' },
-      {
-        track: 'blue',
-        ref: 'M2',
-        d: 'M 109 98 L 102 98 L 84 80 L 84 58 L 75 58 L 70 53 L 77 46 L 77 22',
-      },
-    ],
-    interchange: { x: 85, y: 58 },
-    crop: { x: 66, y: 8, w: 69, h: 94 },
-  },
   sharjah: {
     mode: 'subway',
     lines: [
@@ -2417,6 +2329,32 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
     ],
     interchange: { x: 86, y: 55 },
     crop: { x: 62, y: 9, w: 77, h: 93 },
+  },
+  warsaw: {
+    mode: 'subway',
+    lines: [
+      { track: 'pink', ref: 'M1', d: 'M 116 100 L 102 86 L 102 76 L 99 73 L 99 27 L 82 10' },
+      {
+        track: 'blue',
+        ref: 'M2',
+        d: 'M 72 44 L 88 44 L 92 48 L 116 48 L 116 40 L 128 28 L 124 24 L 115 24',
+      },
+    ],
+    interchange: { x: 99, y: 73 },
+    crop: { x: 68, y: 6, w: 64, h: 98 },
+  },
+  marseille: {
+    mode: 'subway',
+    lines: [
+      { track: 'pink', ref: 'M1', d: 'M 131 12 L 85 58 L 79 52 L 75 56 L 89 70 L 123 36' },
+      {
+        track: 'blue',
+        ref: 'M2',
+        d: 'M 109 98 L 102 98 L 84 80 L 84 58 L 75 58 L 70 53 L 77 46 L 77 22',
+      },
+    ],
+    interchange: { x: 85, y: 58 },
+    crop: { x: 66, y: 8, w: 69, h: 94 },
   },
   belgrade: {
     mode: 'tram',
@@ -2676,19 +2614,6 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
     interchange: { x: 55, y: 25 },
     crop: { x: 48, y: 9, w: 104, h: 93 },
   },
-  ottawa: {
-    mode: 'light_rail',
-    lines: [
-      {
-        track: 'pink',
-        ref: '1',
-        d: 'M 125 12 L 118 19 L 108 19 L 104 23 L 102 23 L 92 13 L 75 30',
-      },
-      { track: 'blue', ref: '2', d: 'M 110 98 L 124 84 L 124 75 L 88 39 L 88 33 L 76 21' },
-    ],
-    interchange: { x: 104, y: 23 },
-    crop: { x: 71, y: 8, w: 58, h: 94 },
-  },
   dublin: {
     mode: 'tram',
     lines: [
@@ -2705,6 +2630,19 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
     ],
     interchange: { x: 129, y: 82 },
     crop: { x: 36, y: 7, w: 128, h: 97 },
+  },
+  ottawa: {
+    mode: 'light_rail',
+    lines: [
+      {
+        track: 'pink',
+        ref: '1',
+        d: 'M 125 12 L 118 19 L 108 19 L 104 23 L 102 23 L 92 13 L 75 30',
+      },
+      { track: 'blue', ref: '2', d: 'M 110 98 L 124 84 L 124 75 L 88 39 L 88 33 L 76 21' },
+    ],
+    interchange: { x: 104, y: 23 },
+    crop: { x: 71, y: 8, w: 58, h: 94 },
   },
   kharkiv: {
     mode: 'subway',
@@ -2842,23 +2780,6 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
     interchange: { x: 85, y: 67 },
     crop: { x: 55, y: 9, w: 91, h: 92 },
   },
-  oran: {
-    mode: 'tram',
-    lines: [
-      {
-        track: 'pink',
-        ref: "Tramway d'Oran Retour",
-        d: 'M 87 20 L 38 20 L 38 31 L 103 96 L 103 10 L 154 10 L 162 18 L 154 26 L 160 32',
-      },
-      {
-        track: 'blue',
-        ref: "Tramway d'Oran Aller",
-        d: 'M 106 100 L 52 46 L 52 19 L 111 19 L 119 11 L 153 11 L 161 19 L 153 27 L 159 33',
-      },
-    ],
-    interchange: { x: 103, y: 96 },
-    crop: { x: 34, y: 6, w: 132, h: 98 },
-  },
   prague: {
     mode: 'subway',
     lines: [
@@ -2877,6 +2798,23 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
     interchange: { x: 88, y: 60 },
     crop: { x: 16, y: 7, w: 169, h: 97 },
   },
+  oran: {
+    mode: 'tram',
+    lines: [
+      {
+        track: 'pink',
+        ref: "Tramway d'Oran Retour",
+        d: 'M 87 20 L 38 20 L 38 31 L 103 96 L 103 10 L 154 10 L 162 18 L 154 26 L 160 32',
+      },
+      {
+        track: 'blue',
+        ref: "Tramway d'Oran Aller",
+        d: 'M 106 100 L 52 46 L 52 19 L 111 19 L 119 11 L 153 11 L 161 19 L 153 27 L 159 33',
+      },
+    ],
+    interchange: { x: 103, y: 96 },
+    crop: { x: 34, y: 6, w: 132, h: 98 },
+  },
   tbilisi: {
     mode: 'subway',
     lines: [
@@ -2893,48 +2831,6 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
     ],
     interchange: { x: 105, y: 72 },
     crop: { x: 52, y: 8, w: 97, h: 94 },
-  },
-  'untitled-23': {
-    mode: 'tram',
-    lines: [
-      {
-        track: 'pink',
-        ref: '9L',
-        d: 'M 162 94 L 169 87 L 119 37 L 89 67 L 66 44 L 66 53 L 31 53 L 18 66',
-      },
-      {
-        track: 'blue',
-        ref: '7L',
-        d: 'M 183 70 L 137 24 L 100 61 L 77 38 L 77 47 L 42 47 L 31 58 L 36 63',
-      },
-      {
-        track: 'green',
-        ref: '11',
-        d: 'M 28 65 L 23 60 L 34 49 L 69 49 L 69 40 L 92 63 L 122 33 L 108 19 L 116 11',
-      },
-      {
-        track: 'yellow',
-        ref: '14',
-        d: 'M 181 78 L 138 35 L 132 41 L 132 63 L 162 93 L 162 100 L 156 100',
-      },
-    ],
-    interchange: { x: 31, y: 53 },
-    crop: { x: 14, y: 7, w: 173, h: 97 },
-  },
-  guarulhos: {
-    mode: 'subway',
-    lines: [
-      {
-        track: 'pink',
-        ref: '3',
-        d: 'M 67 26 L 70 26 L 84 40 L 145 40 L 151 46 L 155 46 L 158 49 L 164 49',
-      },
-      { track: 'blue', ref: '2', d: 'M 62 52 L 76 52 L 95 71 L 99 71 L 102 74 L 109 74 L 117 66' },
-      { track: 'green', ref: '4', d: 'M 37 75 L 52 60 L 66 60 L 85 41' },
-      { track: 'yellow', ref: '1', d: 'M 102 12 L 92 22 L 92 35 L 87 40 L 87 62 L 92 67 L 92 98' },
-    ],
-    interchange: { x: 84, y: 40 },
-    crop: { x: 33, y: 8, w: 135, h: 94 },
   },
   omsk: {
     mode: 'tram',
@@ -3000,23 +2896,6 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
     ],
     interchange: { x: 92, y: 74 },
     crop: { x: 7, y: 11, w: 187, h: 88 },
-  },
-  'untitled-20': {
-    mode: 'subway',
-    lines: [
-      {
-        track: 'pink',
-        ref: '1',
-        d: 'M 95 37 L 120 12 L 91 41 L 105 55 L 105 72 L 97 80 L 115 98 L 145 98',
-      },
-      {
-        track: 'blue',
-        ref: '2',
-        d: 'M 104 73 L 104 69 L 102 67 L 100 67 L 100 72 L 97 75 L 93 75 L 87 69 L 56 69',
-      },
-    ],
-    interchange: { x: 105, y: 72 },
-    crop: { x: 52, y: 8, w: 97, h: 94 },
   },
   'krasnoyarsk-ru-9pdvf': {
     mode: 'tram',
@@ -3492,25 +3371,6 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
     interchange: { x: 93, y: 45 },
     crop: { x: 84, y: 7, w: 33, h: 97 },
   },
-  osasco: {
-    mode: 'subway',
-    lines: [
-      {
-        track: 'pink',
-        ref: '3',
-        d: 'M 74 24 L 76 24 L 90 38 L 148 38 L 153 43 L 156 43 L 159 46 L 165 46',
-      },
-      {
-        track: 'blue',
-        ref: '5',
-        d: 'M 100 68 L 97 71 L 87 71 L 61 97 L 52 97 L 52 92 L 47 87 L 35 99',
-      },
-      { track: 'green', ref: '4', d: 'M 45 71 L 59 57 L 72 57 L 90 39' },
-      { track: 'yellow', ref: '6', d: 'M 77 32 L 67 22 L 67 12' },
-    ],
-    interchange: { x: 90, y: 38 },
-    crop: { x: 31, y: 8, w: 138, h: 95 },
-  },
   'okayama-jp-7gqfi': {
     mode: 'tram',
     lines: [
@@ -3536,33 +3396,6 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
     ],
     interchange: { x: 114, y: 34 },
     crop: { x: 9, y: 28, w: 183, h: 54 },
-  },
-  'untitled-21': {
-    mode: 'tram',
-    lines: [
-      {
-        track: 'pink',
-        ref: 'Тр7',
-        d: 'M 70 30 L 86 46 L 100 46 L 97 43 L 87 43 L 114 43 L 108 49 L 113 49 L 76 12',
-      },
-      {
-        track: 'blue',
-        ref: 'Тр4',
-        d: 'M 117 90 L 111 84 L 111 67 L 101 57 L 84 57 L 89 57 L 78 46 L 131 99 L 131 85',
-      },
-      {
-        track: 'green',
-        ref: 'Тр6',
-        d: 'M 115 30 L 98 47 L 75 47 L 91 31 L 91 37 L 107 21 L 91 37 L 69 37',
-      },
-      {
-        track: 'yellow',
-        ref: 'Тр9',
-        d: 'M 77 38 L 87 48 L 100 48 L 100 37 L 93 30 L 93 15 L 93 46 L 108 46 L 108 19',
-      },
-    ],
-    interchange: { x: 100, y: 46 },
-    crop: { x: 65, y: 8, w: 70, h: 95 },
   },
   denver: {
     mode: 'light_rail',
@@ -3590,16 +3423,6 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
     ],
     interchange: { x: 154, y: 36 },
     crop: { x: 43, y: 8, w: 115, h: 95 },
-  },
-  'jaboat-o': {
-    mode: 'subway',
-    lines: [
-      { track: 'pink', ref: '2', d: 'M 56 59 L 72 59 L 84 47 L 112 47 L 114 45 L 136 45 L 138 43' },
-      { track: 'blue', ref: 'Sul', d: 'M 121 99 L 132 88 L 132 42 L 137 37 L 143 37 L 145 35' },
-      { track: 'green', ref: '1', d: 'M 71 12 L 80 21 L 80 48 L 87 55 L 138 55 L 140 53' },
-    ],
-    interchange: { x: 84, y: 47 },
-    crop: { x: 52, y: 8, w: 97, h: 95 },
   },
   'washington-us-6cos0': {
     mode: 'subway',
@@ -3795,28 +3618,6 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
     interchange: { x: 92, y: 74 },
     crop: { x: 56, y: 6, w: 88, h: 98 },
   },
-  'untitled-28': {
-    mode: 'subway',
-    lines: [
-      {
-        track: 'pink',
-        ref: 'Μ3',
-        d: 'M 151 69 L 143 77 L 133 77 L 133 27 L 121 27 L 91 57 L 62 57 L 49 70 L 49 79',
-      },
-      {
-        track: 'blue',
-        ref: 'Μ1',
-        d: 'M 55 73 L 63 73 L 82 54 L 82 45 L 79 42 L 79 32 L 91 20 L 102 20 L 112 10',
-      },
-      {
-        track: 'green',
-        ref: 'Μ2',
-        d: 'M 63 43 L 68 48 L 76 48 L 76 55 L 81 60 L 75 66 L 79 70 L 79 100',
-      },
-    ],
-    interchange: { x: 121, y: 27 },
-    crop: { x: 45, y: 6, w: 110, h: 98 },
-  },
   athen: {
     mode: 'subway',
     lines: [
@@ -3940,26 +3741,26 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
       {
         track: 'pink',
         ref: 'Blue',
-        d: 'M 87 13 L 100 13 L 100 29 L 81 48 L 81 84 L 94 97 L 103 97 L 103 95',
+        d: 'M 93 11 L 106 11 L 106 28 L 86 48 L 86 86 L 99 99 L 109 99 L 109 97',
       },
       {
         track: 'blue',
-        ref: 'Green',
-        d: 'M 87 53 L 87 46 L 80 46 L 89 55 L 92 52 L 109 52 L 109 46 L 113 42 L 118 47',
+        ref: 'Blue Line (Kavi Subhash → Dakshineshwar)',
+        d: 'M 113 98 L 113 100 L 103 100 L 90 87 L 90 49 L 110 29 L 110 12 L 97 12',
       },
       {
         track: 'green',
-        ref: 'Orange',
-        d: 'M 101 99 L 98 96 L 98 95 L 103 90 L 103 81 L 98 76 L 98 67 L 100 65',
+        ref: 'Green',
+        d: 'M 86 57 L 86 49 L 79 49 L 89 59 L 92 56 L 110 56 L 110 50 L 115 45 L 121 51',
       },
       {
         track: 'yellow',
-        ref: 'Yellow',
-        d: 'M 121 12 L 121 14 L 117 18 L 112 18 L 109 21 L 105 17 L 105 15',
+        ref: 'Orange',
+        d: 'M 112 93 L 109 90 L 109 89 L 115 83 L 115 74 L 110 69 L 110 60 L 112 58',
       },
     ],
-    interchange: { x: 100, y: 13 },
-    crop: { x: 76, y: 8, w: 49, h: 95 },
+    interchange: { x: 86, y: 48 },
+    crop: { x: 75, y: 7, w: 50, h: 97 },
   },
   'irkutsk-ru-no1ql': {
     mode: 'tram',
@@ -4028,33 +3829,6 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
     ],
     interchange: { x: 90, y: 44 },
     crop: { x: 84, y: 8, w: 32, h: 95 },
-  },
-  'untitled-17': {
-    mode: 'tram',
-    lines: [
-      {
-        track: 'pink',
-        ref: '5',
-        d: 'M 94 57 L 82 45 L 72 55 L 109 92 L 188 92 L 167 92 L 150 75 L 126 75 L 94 43',
-      },
-      {
-        track: 'blue',
-        ref: '1',
-        d: 'M 93 85 L 109 85 L 109 52 L 88 31 L 62 57 L 38 33 L 17 33 L 17 97',
-      },
-      {
-        track: 'green',
-        ref: '4a',
-        d: 'M 165 21 L 115 21 L 106 12 L 61 57 L 50 46 L 47 46 L 35 34 L 13 34 L 13 48',
-      },
-      {
-        track: 'yellow',
-        ref: '6',
-        d: 'M 100 86 L 100 50 L 88 38 L 98 28 L 119 49 L 119 82 L 144 82 L 161 99 L 182 99',
-      },
-    ],
-    interchange: { x: 62, y: 57 },
-    crop: { x: 9, y: 8, w: 183, h: 95 },
   },
   'kryvyy-rih-ua-1fm50': {
     mode: 'light_rail',
@@ -4153,6 +3927,23 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
     interchange: { x: 59, y: 63 },
     crop: { x: 8, y: 7, w: 185, h: 96 },
   },
+  rabat: {
+    mode: 'tram',
+    lines: [
+      {
+        track: 'pink',
+        ref: '2',
+        d: 'M 77 60 L 63 60 L 39 84 L 78 45 L 78 52 L 83 52 L 96 39 L 162 39',
+      },
+      {
+        track: 'blue',
+        ref: '1',
+        d: 'M 80 53 L 74 59 L 74 78 L 54 98 L 96 56 L 96 49 L 101 49 L 101 31 L 120 12',
+      },
+    ],
+    interchange: { x: 77, y: 60 },
+    crop: { x: 35, y: 8, w: 131, h: 94 },
+  },
   gothenburg: {
     mode: 'tram',
     lines: [
@@ -4179,23 +3970,6 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
     ],
     interchange: { x: 116, y: 31 },
     crop: { x: 66, y: 6, w: 68, h: 98 },
-  },
-  rabat: {
-    mode: 'tram',
-    lines: [
-      {
-        track: 'pink',
-        ref: '2',
-        d: 'M 77 60 L 63 60 L 39 84 L 78 45 L 78 52 L 83 52 L 96 39 L 162 39',
-      },
-      {
-        track: 'blue',
-        ref: '1',
-        d: 'M 80 53 L 74 59 L 74 78 L 54 98 L 96 56 L 96 49 L 101 49 L 101 31 L 120 12',
-      },
-    ],
-    interchange: { x: 77, y: 60 },
-    crop: { x: 35, y: 8, w: 131, h: 94 },
   },
   milwaukee: {
     mode: 'tram',
@@ -4573,6 +4347,2051 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
     interchange: { x: 103, y: 65 },
     crop: { x: 11, y: 15, w: 179, h: 80 },
   },
+  atlanta: {
+    mode: 'subway',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'Blue',
+        d: 'M 58 94 L 85 94 L 91 100 L 100 91 L 108 91 L 116 83 L 143 83',
+      },
+      {
+        track: 'blue',
+        ref: 'Green',
+        d: 'M 82 85 L 82 92 L 92 92 L 96 96 L 118 96 L 125 89 L 132 89',
+      },
+      {
+        track: 'green',
+        ref: 'Red',
+        d: 'M 92 64 L 97 59 L 92 54 L 92 36 L 101 27 L 101 21 L 97 17 L 97 11',
+      },
+    ],
+    interchange: { x: 85, y: 94 },
+    crop: { x: 54, y: 7, w: 93, h: 97 },
+  },
+  'gdansk-pl-8himo': {
+    mode: 'tram',
+    lines: [
+      {
+        track: 'pink',
+        ref: '4',
+        d: 'M 93 40 L 83 30 L 92 21 L 92 36 L 105 49 L 105 57 L 114 66 L 114 74 L 90 98',
+      },
+      {
+        track: 'blue',
+        ref: '12',
+        d: 'M 94 87 L 94 67 L 103 76 L 122 76 L 90 44 L 90 33 L 99 24 L 99 40',
+      },
+      {
+        track: 'green',
+        ref: '2',
+        d: 'M 89 47 L 79 37 L 88 28 L 88 43 L 118 73 L 109 82 L 109 87 L 87 87',
+      },
+      {
+        track: 'yellow',
+        ref: '6',
+        d: 'M 101 90 L 101 80 L 110 80 L 110 75 L 121 75 L 121 67 L 88 34 L 88 23 L 98 13',
+      },
+    ],
+    interchange: { x: 90, y: 33 },
+    crop: { x: 75, y: 9, w: 51, h: 93 },
+  },
+  'mykolayiv-ua-zxgee': {
+    mode: 'tram',
+    lines: [
+      {
+        track: 'pink',
+        ref: '1',
+        d: 'M 35 20 L 49 20 L 60 31 L 60 50 L 65 55 L 75 55 L 75 57 L 113 57 L 113 95',
+      },
+      {
+        track: 'blue',
+        ref: '6',
+        d: 'M 52 46 L 71 46 L 74 43 L 115 43 L 115 47 L 120 52 L 126 46 L 142 62 L 165 39',
+      },
+      {
+        track: 'green',
+        ref: '7',
+        d: 'M 49 51 L 68 51 L 71 48 L 113 48 L 113 52 L 118 57 L 114 61 L 114 99',
+      },
+      {
+        track: 'yellow',
+        ref: '11',
+        d: 'M 50 38 L 60 38 L 60 45 L 65 50 L 102 50 L 102 27 L 105 24 L 103 22 L 113 12',
+      },
+    ],
+    interchange: { x: 68, y: 51 },
+    crop: { x: 31, y: 8, w: 138, h: 95 },
+  },
+  zuerich: {
+    mode: 'tram',
+    lines: [
+      {
+        track: 'pink',
+        ref: '50',
+        d: 'M 116 40 L 111 35 L 106 40 L 104 40 L 101 43 L 101 65 L 89 53 L 69 53',
+      },
+      {
+        track: 'blue',
+        ref: '9',
+        d: 'M 82 71 L 100 71 L 106 77 L 110 73 L 110 53 L 119 44 L 122 47 L 129 47 L 131 49',
+      },
+      {
+        track: 'green',
+        ref: '7',
+        d: 'M 95 99 L 95 79 L 99 75 L 99 70 L 101 70 L 101 54 L 110 45 L 121 56',
+      },
+      {
+        track: 'yellow',
+        ref: '10',
+        d: 'M 102 63 L 107 63 L 107 36 L 116 27 L 112 23 L 119 16 L 115 12 L 119 12',
+      },
+    ],
+    interchange: { x: 101, y: 65 },
+    crop: { x: 65, y: 8, w: 70, h: 95 },
+  },
+  oakland: {
+    mode: 'subway',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'Orange',
+        d: 'M 132 97 L 132 69 L 92 29 L 92 18 L 90 18 L 84 12 L 80 12',
+      },
+      {
+        track: 'blue',
+        ref: 'Blue',
+        d: 'M 70 41 L 75 36 L 75 31 L 78 28 L 97 28 L 112 43 L 139 43',
+      },
+      {
+        track: 'green',
+        ref: 'Green',
+        d: 'M 62 43 L 68 37 L 68 32 L 73 27 L 82 27 L 124 69 L 124 98',
+      },
+    ],
+    interchange: { x: 92, y: 29 },
+    crop: { x: 58, y: 8, w: 85, h: 94 },
+  },
+  'palma-es-sjz9c': {
+    mode: 'light_rail',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'M1',
+        d: 'M 56 12 L 56 15 L 56 11 L 59 11 L 77 29 L 77 47 L 94 64 L 94 81 L 80 95',
+      },
+      { track: 'blue', ref: 'M2', d: 'M 145 35 L 145 39 L 113 71 L 106 71 L 78 99' },
+    ],
+    interchange: { x: 80, y: 95 },
+    crop: { x: 52, y: 7, w: 97, h: 96 },
+  },
+  'machida-jp-p1fp9': {
+    mode: 'subway',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'OT',
+        d: 'M 113 18 L 129 18 L 134 13 L 110 37 L 118 29 L 119 29 L 113 29 L 110 32 L 116 26',
+      },
+      {
+        track: 'blue',
+        ref: 'OH',
+        d: 'M 140 13 L 116 37 L 103 37 L 98 42 L 93 42 L 69 66 L 69 77 L 48 98',
+      },
+      { track: 'green', ref: 'DT;Z', d: 'M 70 91 L 135 26 L 135 21 L 153 21 L 153 12' },
+      { track: 'yellow', ref: 'G', d: 'M 101 62 L 116 47 L 118 47 L 120 49 L 131 49' },
+    ],
+    interchange: { x: 134, y: 13 },
+    crop: { x: 44, y: 8, w: 113, h: 94 },
+  },
+  bratislava: {
+    mode: 'tram',
+    lines: [
+      { track: 'pink', ref: '4', d: 'M 69 29 L 69 62 L 74 67 L 102 67 L 102 63 L 139 26' },
+      {
+        track: 'blue',
+        ref: '3',
+        d: 'M 99 100 L 99 80 L 106 73 L 106 63 L 103 60 L 116 47 L 116 35 L 141 10',
+      },
+      {
+        track: 'green',
+        ref: '9',
+        d: 'M 59 55 L 70 66 L 76 66 L 80 70 L 95 70 L 105 60 L 108 63 L 131 63',
+      },
+      {
+        track: 'yellow',
+        ref: '1',
+        d: 'M 101 65 L 104 65 L 102 63 L 102 62 L 99 62 L 104 57 L 100 53 L 100 51',
+      },
+    ],
+    interchange: { x: 102, y: 63 },
+    crop: { x: 55, y: 6, w: 90, h: 98 },
+  },
+  tallinn: {
+    mode: 'tram',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'T2',
+        d: 'M 47 10 L 59 22 L 78 22 L 100 44 L 125 44 L 125 60 L 151 86 L 151 100',
+      },
+      {
+        track: 'blue',
+        ref: 'T5',
+        d: 'M 51 15 L 63 27 L 82 27 L 104 49 L 122 49 L 122 60 L 110 72 L 110 84',
+      },
+      {
+        track: 'green',
+        ref: 'T1',
+        d: 'M 142 64 L 142 61 L 114 61 L 114 50 L 97 50 L 75 28 L 56 28 L 45 17',
+      },
+      {
+        track: 'yellow',
+        ref: 'T4',
+        d: 'M 112 96 L 116 96 L 116 58 L 123 51 L 142 70 L 147 65 L 156 74 L 156 88',
+      },
+    ],
+    interchange: { x: 122, y: 49 },
+    crop: { x: 41, y: 6, w: 119, h: 98 },
+  },
+  minneapolis: {
+    mode: 'light_rail',
+    lines: [
+      { track: 'pink', ref: '901', d: 'M 76 99 L 84 99 L 84 85 L 91 85 L 96 80 L 96 70 L 43 17' },
+      {
+        track: 'blue',
+        ref: '902',
+        d: 'M 157 47 L 154 47 L 149 42 L 109 42 L 90 23 L 89 24 L 74 24 L 62 12',
+      },
+    ],
+    interchange: { x: 91, y: 85 },
+    crop: { x: 39, y: 8, w: 122, h: 95 },
+  },
+  eyuepsultan: {
+    mode: 'subway',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'M1A',
+        d: 'M 121 89 L 111 79 L 107 79 L 105 77 L 105 92 L 91 92 L 87 96 L 87 98',
+      },
+      {
+        track: 'blue',
+        ref: 'M2',
+        d: 'M 124 92 L 134 82 L 134 73 L 139 68 L 139 58 L 142 55 L 142 46 L 144 44',
+      },
+      {
+        track: 'green',
+        ref: 'M11',
+        d: 'M 66 95 L 66 60 L 75 51 L 56 32 L 56 12 L 87 12 L 120 45 L 120 58 L 131 69',
+      },
+      {
+        track: 'yellow',
+        ref: 'M7',
+        d: 'M 90 68 L 96 68 L 105 59 L 109 59 L 111 57 L 115 61 L 126 61 L 130 65 L 133 65',
+      },
+    ],
+    interchange: { x: 131, y: 69 },
+    crop: { x: 52, y: 8, w: 96, h: 94 },
+  },
+  bern: {
+    mode: 'tram',
+    lines: [
+      { track: 'pink', ref: '6', d: 'M 187 75 L 131 75 L 121 85 L 90 54 L 75 54 L 69 60 L 65 60' },
+      { track: 'blue', ref: '8', d: 'M 13 52 L 13 48 L 30 48 L 39 57 L 77 57 L 89 69 L 114 69' },
+      {
+        track: 'green',
+        ref: '7',
+        d: 'M 97 62 L 92 67 L 85 67 L 78 60 L 78 55 L 74 55 L 69 60 L 32 60 L 22 70',
+      },
+      {
+        track: 'yellow',
+        ref: '9',
+        d: 'M 99 25 L 102 28 L 102 36 L 93 36 L 82 47 L 73 47 L 70 50 L 70 62 L 82 74',
+      },
+    ],
+    interchange: { x: 75, y: 54 },
+    crop: { x: 9, y: 21, w: 182, h: 68 },
+  },
+  'kowloon-city-hk-5v0hs': {
+    mode: 'subway',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'TML',
+        d: 'M 50 56 L 65 41 L 80 41 L 124 85 L 136 73 L 126 63 L 145 44 L 150 44',
+      },
+      {
+        track: 'blue',
+        ref: 'EAL',
+        d: 'M 95 12 L 99 16 L 112 16 L 121 25 L 121 35 L 136 50 L 119 67 L 119 94 L 114 99',
+      },
+      {
+        track: 'green',
+        ref: 'KTL',
+        d: 'M 122 87 L 118 87 L 118 78 L 127 78 L 131 82 L 131 87 L 139 95 L 143 91',
+      },
+      {
+        track: 'yellow',
+        ref: 'TWL',
+        d: 'M 104 56 L 109 61 L 109 67 L 111 69 L 118 69 L 122 73 L 122 87 L 120 89 L 117 89',
+      },
+    ],
+    interchange: { x: 120, y: 89 },
+    crop: { x: 46, y: 8, w: 108, h: 95 },
+  },
+  'toyama-jp-p6i6r': {
+    mode: 'tram',
+    lines: [
+      {
+        track: 'pink',
+        ref: '富山地方鉄道富山市内軌道線',
+        d: 'M 106 99 L 81 74 L 100 74 L 100 82 L 86 68 L 95 77 L 101 71 L 101 97 L 101 69',
+      },
+      {
+        track: 'blue',
+        ref: '富山地方鉄道 富山駅北 - 岩瀬浜',
+        d: 'M 103 69 L 105 67 L 112 67 L 112 33 L 112 67 L 112 25 L 119 18 L 119 15',
+      },
+      {
+        track: 'green',
+        ref: '富山地方鉄道富山港線',
+        d: 'M 113 18 L 113 21 L 106 28 L 106 70 L 99 70 L 97 72',
+      },
+      {
+        track: 'yellow',
+        ref: '5',
+        d: 'M 118 13 L 118 11 L 118 14 L 111 21 L 111 63 L 107 63 L 105 61 L 103 63',
+      },
+    ],
+    interchange: { x: 103, y: 69 },
+    crop: { x: 77, y: 7, w: 46, h: 96 },
+  },
+  'panama-pa-h1ky7': {
+    mode: 'subway',
+    lines: [
+      { track: 'pink', ref: 'L1', d: 'M 52 31 L 63 42 L 63 60 L 55 68 L 55 83 L 39 99 L 33 93' },
+      { track: 'blue', ref: 'L2', d: 'M 167 11 L 148 11 L 115 44 L 102 44 L 88 58 L 81 58' },
+      {
+        track: 'green',
+        ref: 'Ramal línea 2 : Aeropuerto → Corredor Su',
+        d: 'M 126 40 L 128 40 L 130 42 L 120 42',
+      },
+    ],
+    interchange: { x: 115, y: 44 },
+    crop: { x: 29, y: 7, w: 142, h: 96 },
+  },
+  sarajevo: {
+    mode: 'tram',
+    lines: [
+      { track: 'pink', ref: '3', d: 'M 25 71 L 26 71 L 26 68 L 45 49 L 187 49 L 184 46' },
+      { track: 'blue', ref: '6', d: 'M 17 75 L 18 75 L 18 72 L 37 53 L 151 53 L 152 52 L 152 49' },
+      { track: 'green', ref: '4', d: 'M 13 76 L 13 74 L 31 56 L 131 56 L 131 50 L 130 49' },
+      { track: 'yellow', ref: '5', d: 'M 56 44 L 120 44 L 126 38 L 174 38 L 171 35' },
+    ],
+    interchange: { x: 17, y: 75 },
+    crop: { x: 9, y: 31, w: 182, h: 49 },
+  },
+  dayrah: {
+    mode: 'subway',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'Red1',
+        d: 'M 125 20 L 140 20 L 125 20 L 125 17 L 121 17 L 67 71 L 77 81 L 77 97',
+      },
+      {
+        track: 'blue',
+        ref: 'Red2',
+        d: 'M 125 25 L 140 25 L 125 25 L 125 22 L 121 22 L 61 82 L 61 98',
+      },
+      {
+        track: 'green',
+        ref: 'Green',
+        d: 'M 116 21 L 120 25 L 123 25 L 126 28 L 113 15 L 116 12 L 119 15 L 131 15 L 140 24',
+      },
+    ],
+    interchange: { x: 125, y: 20 },
+    crop: { x: 57, y: 8, w: 87, h: 94 },
+  },
+  christchurch: {
+    mode: 'tram',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'City Heritage Tram Loop',
+        d: 'M 50 22 L 50 17 L 36 17 L 36 12 L 53 12 L 53 16 L 46 16 L 51 21',
+      },
+      {
+        track: 'blue',
+        ref: 'Ferrymead Heritage Tramway',
+        d: 'M 156 93 L 156 98 L 155 97 L 155 93 L 162 93 L 162 86 L 164 86 L 153 97 L 162 88',
+      },
+    ],
+    interchange: { x: 53, y: 12 },
+    crop: { x: 32, y: 8, w: 136, h: 94 },
+  },
+  'bochum-de-cjyua': {
+    mode: 'subway',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'U35',
+        d: 'M 167 11 L 176 20 L 163 33 L 163 54 L 168 59 L 168 67 L 180 79 L 183 79 L 188 74',
+      },
+      {
+        track: 'blue',
+        ref: 'U11',
+        d: 'M 66 99 L 71 94 L 71 79 L 66 74 L 66 61 L 72 55 L 72 24 L 81 15',
+      },
+      {
+        track: 'green',
+        ref: 'U18',
+        d: 'M 13 95 L 16 98 L 20 94 L 34 94 L 41 87 L 68 87 L 68 83 L 64 79',
+      },
+      { track: 'yellow', ref: 'U17', d: 'M 71 41 L 71 54 L 66 59 L 66 72 L 71 77 L 55 93 L 55 97' },
+    ],
+    interchange: { x: 71, y: 79 },
+    crop: { x: 9, y: 7, w: 183, h: 96 },
+  },
+  tampa: {
+    mode: 'tram',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'TECO',
+        d: 'M 188 58 L 179 58 L 179 91 L 178 92 L 170 92 L 170 94 L 164 94 L 163 93 L 163 86',
+      },
+      { track: 'blue', ref: 'SKY', d: 'M 24 16 L 24 23 L 12 35 L 12 39 L 16 39 L 17 40 L 17 51' },
+    ],
+    interchange: { x: 170, y: 92 },
+    crop: { x: 8, y: 12, w: 184, h: 86 },
+  },
+  'new-orleans': {
+    mode: 'tram',
+    lines: [
+      {
+        track: 'pink',
+        ref: '47',
+        d: 'M 77 14 L 77 12 L 77 14 L 88 25 L 76 13 L 77 12 L 129 64 L 89 24 L 129 64',
+      },
+      { track: 'blue', ref: '12', d: 'M 72 53 L 55 70 L 83 98 L 99 98 L 124 73 L 122 71 L 122 58' },
+      { track: 'green', ref: '48', d: 'M 98 12 L 86 24 L 126 64 L 127 64' },
+      {
+        track: 'yellow',
+        ref: '46',
+        d: 'M 146 29 L 142 29 L 126 45 L 125 45 L 123 47 L 123 58 L 122 59 L 121 59',
+      },
+    ],
+    interchange: { x: 88, y: 25 },
+    crop: { x: 51, y: 8, w: 99, h: 94 },
+  },
+  'brno-cz-02q4w': {
+    mode: 'tram',
+    lines: [
+      {
+        track: 'pink',
+        ref: '1',
+        d: 'M 35 40 L 41 34 L 51 44 L 78 44 L 78 67 L 110 67 L 116 61 L 67 12',
+      },
+      {
+        track: 'blue',
+        ref: '8',
+        d: 'M 72 89 L 72 98 L 94 98 L 115 77 L 154 77 L 161 70 L 161 61 L 175 47 L 181 53',
+      },
+      {
+        track: 'green',
+        ref: '3',
+        d: 'M 19 47 L 27 47 L 27 36 L 35 36 L 46 47 L 88 47 L 103 62 L 115 50 L 131 50',
+      },
+      {
+        track: 'yellow',
+        ref: '10',
+        d: 'M 63 47 L 91 47 L 114 70 L 152 70 L 159 63 L 159 55 L 163 51',
+      },
+    ],
+    interchange: { x: 35, y: 40 },
+    crop: { x: 15, y: 8, w: 170, h: 94 },
+  },
+  'utrecht-nl-psk47': {
+    mode: 'light_rail',
+    lines: [
+      {
+        track: 'pink',
+        ref: '21',
+        d: 'M 145 12 L 122 35 L 97 10 L 86 21 L 86 49 L 73 62 L 73 90 L 44 90 L 54 100',
+      },
+      {
+        track: 'blue',
+        ref: '20',
+        d: 'M 74 98 L 74 68 L 92 50 L 92 22 L 104 10 L 128 34 L 140 22 L 156 22 L 151 17',
+      },
+      {
+        track: 'green',
+        ref: '22',
+        d: 'M 94 17 L 116 39 L 118 37 L 118 29 L 124 23 L 140 23 L 140 18 L 137 18',
+      },
+    ],
+    interchange: { x: 122, y: 35 },
+    crop: { x: 40, y: 6, w: 120, h: 98 },
+  },
+  cleveland: {
+    mode: 'light_rail',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'Blue',
+        d: 'M 152 86 L 125 86 L 107 68 L 49 68 L 24 43 L 18 43 L 12 37 L 25 24',
+      },
+      {
+        track: 'blue',
+        ref: '67AX Blue',
+        d: 'M 29 25 L 16 38 L 22 44 L 28 44 L 53 69 L 111 69 L 129 87 L 157 87',
+      },
+      { track: 'green', ref: '67AX', d: 'M 40 34 L 27 47 L 33 53 L 39 53 L 64 78 L 184 78' },
+      { track: 'yellow', ref: 'Green', d: 'M 189 70 L 69 70 L 44 45 L 38 45 L 32 39 L 45 26' },
+    ],
+    interchange: { x: 24, y: 43 },
+    crop: { x: 8, y: 20, w: 185, h: 71 },
+  },
+  'keelung-tw-x6yyx': {
+    mode: 'subway',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'BL',
+        d: 'M 162 32 L 147 32 L 141 38 L 95 38 L 88 45 L 69 45 L 42 72 L 42 84 L 26 100',
+      },
+      {
+        track: 'blue',
+        ref: 'BR',
+        d: 'M 143 74 L 129 74 L 129 59 L 120 50 L 120 19 L 127 19 L 118 10 L 157 10 L 174 27',
+      },
+    ],
+    interchange: { x: 88, y: 45 },
+    crop: { x: 22, y: 6, w: 156, h: 98 },
+  },
+  nizza: {
+    mode: 'tram',
+    lines: [
+      { track: 'pink', ref: 'L3', d: 'M 48 38 L 48 89 L 58 99 L 68 99 L 111 56 L 134 56 L 141 63' },
+      {
+        track: 'blue',
+        ref: 'L1',
+        d: 'M 130 11 L 130 32 L 135 32 L 135 63 L 144 54 L 144 40 L 153 40 L 153 20 L 146 20',
+      },
+    ],
+    interchange: { x: 141, y: 63 },
+    crop: { x: 44, y: 7, w: 113, h: 96 },
+  },
+  'sar-yer': {
+    mode: 'subway',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'M5',
+        d: 'M 186 94 L 172 94 L 157 79 L 111 79 L 104 86 L 93 75 L 85 75 L 164 75',
+      },
+      {
+        track: 'blue',
+        ref: 'M1A',
+        d: 'M 65 81 L 51 67 L 44 67 L 41 64 L 41 87 L 20 87 L 15 92 L 15 95',
+      },
+      {
+        track: 'green',
+        ref: 'M2',
+        d: 'M 89 15 L 85 19 L 85 30 L 80 35 L 80 51 L 72 59 L 72 72 L 57 87',
+      },
+      {
+        track: 'yellow',
+        ref: 'M1B',
+        d: 'M 21 66 L 23 64 L 31 64 L 36 59 L 40 63 L 40 57 L 40 60 L 47 60 L 61 74',
+      },
+    ],
+    interchange: { x: 44, y: 67 },
+    crop: { x: 11, y: 11, w: 179, h: 88 },
+  },
+  shinjuku: {
+    mode: 'subway',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'DT;Z;TS;TN',
+        d: 'M 102 10 L 102 57 L 107 62 L 107 69 L 99 69 L 68 100 L 120 48',
+      },
+      {
+        track: 'blue',
+        ref: 'E',
+        d: 'M 99 77 L 111 77 L 111 82 L 105 82 L 103 80 L 99 80 L 99 75 L 94 70',
+      },
+      { track: 'green', ref: 'TJ', d: 'M 58 32 L 60 34 L 60 45 L 65 50 L 69 50 L 86 67' },
+      {
+        track: 'yellow',
+        ref: 'JL',
+        d: 'M 114 61 L 122 61 L 126 57 L 126 54 L 133 47 L 140 47 L 143 44',
+      },
+    ],
+    interchange: { x: 99, y: 69 },
+    crop: { x: 54, y: 6, w: 93, h: 98 },
+  },
+  'alicante-es-3mzpw': {
+    mode: 'tram',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'L1',
+        d: 'M 148 10 L 134 10 L 127 17 L 127 21 L 84 64 L 84 82 L 66 100',
+      },
+      { track: 'blue', ref: 'L3', d: 'M 60 93 L 63 90 L 66 90 L 79 77 L 81 77 L 82 76 L 82 58' },
+      {
+        track: 'green',
+        ref: 'L4',
+        d: 'M 75 81 L 73 81 L 73 86 L 70 86 L 67 83 L 58 92 L 55 92 L 52 95',
+      },
+      { track: 'yellow', ref: 'L5', d: 'M 64 83 L 69 78 L 70 78 L 73 75 L 76 78 L 81 78 L 81 74' },
+    ],
+    interchange: { x: 84, y: 82 },
+    crop: { x: 48, y: 6, w: 104, h: 98 },
+  },
+  nice: {
+    mode: 'tram',
+    lines: [
+      { track: 'pink', ref: 'L2', d: 'M 50 89 L 54 89 L 64 99 L 74 99 L 117 56 L 140 56 L 147 63' },
+      {
+        track: 'blue',
+        ref: 'L1',
+        d: 'M 127 12 L 127 33 L 132 33 L 132 64 L 141 55 L 141 41 L 150 41 L 150 21 L 143 21',
+      },
+    ],
+    interchange: { x: 140, y: 56 },
+    crop: { x: 46, y: 8, w: 108, h: 95 },
+  },
+  'bilbao-es-tlwm6': {
+    mode: 'subway',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'L2',
+        d: 'M 79 45 L 60 26 L 81 47 L 81 63 L 91 63 L 105 77 L 121 77 L 137 93 L 132 98',
+      },
+      { track: 'blue', ref: 'L1', d: 'M 140 84 L 130 74 L 113 74 L 75 36 L 75 23 L 67 15 L 70 12' },
+      {
+        track: 'green',
+        ref: 'L3',
+        d: 'M 116 79 L 118 81 L 116 83 L 116 85 L 121 80 L 124 83 L 131 83 L 131 88',
+      },
+    ],
+    interchange: { x: 116, y: 79 },
+    crop: { x: 56, y: 8, w: 88, h: 94 },
+  },
+  'nakano-jp-n6m27': {
+    mode: 'subway',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'DT;Z;TS;TN',
+        d: 'M 109 10 L 109 57 L 114 62 L 114 69 L 106 69 L 75 100 L 126 49',
+      },
+      {
+        track: 'blue',
+        ref: 'TS',
+        d: 'M 111 33 L 117 39 L 117 66 L 120 69 L 118 71 L 120 73 L 120 77 L 120 38',
+      },
+      {
+        track: 'green',
+        ref: 'E',
+        d: 'M 95 73 L 100 78 L 100 83 L 104 83 L 106 85 L 112 85 L 112 80 L 100 80',
+      },
+      {
+        track: 'yellow',
+        ref: 'OT',
+        d: 'M 93 78 L 100 78 L 102 76 L 91 87 L 95 83 L 96 83 L 93 83 L 92 84 L 94 82',
+      },
+    ],
+    interchange: { x: 114, y: 62 },
+    crop: { x: 71, y: 6, w: 59, h: 98 },
+  },
+  'bielefeld-de-jqije': {
+    mode: 'subway',
+    lines: [
+      { track: 'pink', ref: '2', d: 'M 103 69 L 93 69 L 84 60 L 84 42 L 110 42 L 136 16 L 148 16' },
+      {
+        track: 'blue',
+        ref: '4',
+        d: 'M 122 83 L 107 68 L 107 64 L 91 64 L 91 61 L 87 61 L 87 49 L 76 49 L 53 26',
+      },
+      {
+        track: 'green',
+        ref: '1',
+        d: 'M 65 99 L 66 98 L 54 86 L 74 66 L 80 66 L 81 65 L 81 50 L 91 40 L 91 23',
+      },
+      { track: 'yellow', ref: '3', d: 'M 90 54 L 84 54 L 84 43 L 78 37 L 78 11' },
+    ],
+    interchange: { x: 84, y: 60 },
+    crop: { x: 49, y: 7, w: 103, h: 96 },
+  },
+  'nottingham-gb-04sfx': {
+    mode: 'tram',
+    lines: [
+      { track: 'pink', ref: '1', d: 'M 81 13 L 81 81 L 94 81 L 108 67 L 119 67 L 96 44 L 96 19' },
+      {
+        track: 'blue',
+        ref: '2',
+        d: 'M 94 47 L 100 47 L 105 52 L 105 56 L 117 68 L 117 91 L 112 91 L 112 98 L 108 98',
+      },
+    ],
+    interchange: { x: 119, y: 67 },
+    crop: { x: 77, y: 9, w: 46, h: 93 },
+  },
+  'sisli-tr-khs0c': {
+    mode: 'subway',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'M5',
+        d: 'M 189 92 L 176 92 L 162 78 L 120 78 L 114 84 L 104 74 L 97 74 L 170 74',
+      },
+      {
+        track: 'blue',
+        ref: 'M1A',
+        d: 'M 79 80 L 66 67 L 60 67 L 57 64 L 57 85 L 38 85 L 33 90 L 33 92',
+      },
+      {
+        track: 'green',
+        ref: 'M2',
+        d: 'M 72 85 L 85 72 L 85 60 L 92 53 L 92 38 L 97 33 L 97 21 L 100 18',
+      },
+      {
+        track: 'yellow',
+        ref: 'M9',
+        d: 'M 11 45 L 22 45 L 24 47 L 24 56 L 29 61 L 29 83 L 34 83 L 38 87 L 42 87',
+      },
+    ],
+    interchange: { x: 38, y: 85 },
+    crop: { x: 7, y: 14, w: 186, h: 82 },
+  },
+  'mannheim-de-3hr06': {
+    mode: 'tram',
+    lines: [
+      {
+        track: 'pink',
+        ref: '5',
+        d: 'M 189 20 L 189 91 L 175 91 L 144 60 L 116 60 L 116 66 L 149 33 L 176 33',
+      },
+      {
+        track: 'blue',
+        ref: '4',
+        d: 'M 129 32 L 126 35 L 133 35 L 114 54 L 83 54 L 73 64 L 58 64 L 58 71 L 20 71',
+      },
+      {
+        track: 'green',
+        ref: '9',
+        d: 'M 122 56 L 101 56 L 96 61 L 75 61 L 65 71 L 50 71 L 50 78 L 12 78',
+      },
+      {
+        track: 'yellow',
+        ref: '4A',
+        d: 'M 123 33 L 123 48 L 119 48 L 116 51 L 116 55 L 113 52 L 85 52 L 82 55',
+      },
+    ],
+    interchange: { x: 116, y: 55 },
+    crop: { x: 8, y: 16, w: 185, h: 79 },
+  },
+  graz: {
+    mode: 'tram',
+    lines: [
+      {
+        track: 'pink',
+        ref: '1',
+        d: 'M 136 11 L 115 32 L 115 48 L 106 57 L 101 52 L 72 52 L 66 46 L 69 43',
+      },
+      {
+        track: 'blue',
+        ref: '5',
+        d: 'M 89 100 L 91 100 L 91 87 L 95 83 L 95 70 L 106 70 L 106 44 L 93 31 L 93 22',
+      },
+      {
+        track: 'green',
+        ref: '4',
+        d: 'M 65 77 L 65 62 L 88 62 L 108 82 L 114 82 L 117 85 L 114 88 L 117 88',
+      },
+      {
+        track: 'yellow',
+        ref: '16',
+        d: 'M 79 36 L 79 50 L 93 50 L 99 56 L 105 56 L 112 63 L 128 63 L 132 67 L 136 67',
+      },
+    ],
+    interchange: { x: 106, y: 57 },
+    crop: { x: 61, y: 7, w: 79, h: 97 },
+  },
+  pittsburgh: {
+    mode: 'light_rail',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'Red',
+        d: 'M 87 68 L 96 59 L 96 52 L 89 45 L 89 37 L 96 30 L 101 30 L 111 20 L 104 13',
+      },
+      {
+        track: 'blue',
+        ref: 'Blue',
+        d: 'M 107 12 L 114 19 L 105 28 L 112 35 L 112 45 L 104 53 L 99 53 L 99 60 L 91 68',
+      },
+      {
+        track: 'green',
+        ref: 'Silver',
+        d: 'M 107 14 L 114 21 L 105 30 L 105 48 L 92 61 L 92 83 L 88 87 L 88 96 L 91 99',
+      },
+    ],
+    interchange: { x: 96, y: 59 },
+    crop: { x: 83, y: 8, w: 35, h: 95 },
+  },
+  'nantes-france': {
+    mode: 'light_rail',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'TER T1',
+        d: 'M 98 13 L 98 22 L 88 32 L 88 52 L 85 55 L 85 73 L 88 76 L 86 78',
+      },
+      {
+        track: 'blue',
+        ref: 'TER T2',
+        d: 'M 91 79 L 93 79 L 97 83 L 99 83 L 101 85 L 103 85 L 116 98',
+      },
+    ],
+    interchange: { x: 88, y: 76 },
+    crop: { x: 81, y: 9, w: 39, h: 93 },
+  },
+  stockport: {
+    mode: 'tram',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'Shaw and Crompton - East Didsbury',
+        d: 'M 89 100 L 75 86 L 75 78 L 91 62 L 105 62 L 116 51 L 126 51 L 126 36',
+      },
+      {
+        track: 'blue',
+        ref: 'Rochdale - East Didsbury',
+        d: 'M 101 94 L 82 75 L 98 59 L 112 59 L 123 48 L 133 48 L 133 23 L 120 10',
+      },
+      {
+        track: 'green',
+        ref: 'Rochdale Town Centre - East Didsbury',
+        d: 'M 115 14 L 127 26 L 127 51 L 117 51 L 106 62 L 92 62 L 76 78 L 95 97',
+      },
+      {
+        track: 'yellow',
+        ref: 'Ashton-under-Lyne – Eccles',
+        d: 'M 129 59 L 122 66 L 93 66 L 84 75 L 81 72 L 78 72 L 78 68 L 68 68',
+      },
+    ],
+    interchange: { x: 91, y: 62 },
+    crop: { x: 64, y: 6, w: 73, h: 98 },
+  },
+  'noida-in-mjvkq': {
+    mode: 'subway',
+    lines: [
+      {
+        track: 'pink',
+        ref: '6',
+        d: 'M 85 62 L 85 67 L 83 67 L 82 68 L 85 71 L 85 74 L 91 80 L 91 100',
+      },
+      {
+        track: 'blue',
+        ref: '7',
+        d: 'M 94 59 L 94 55 L 94 61 L 98 65 L 90 73 L 83 73 L 75 65 L 83 57 L 90 64',
+      },
+      {
+        track: 'green',
+        ref: '3',
+        d: 'M 94 73 L 94 78 L 91 81 L 84 74 L 81 74 L 74 67 L 62 67 L 67 72 L 67 75',
+      },
+      {
+        track: 'yellow',
+        ref: 'Delhi–Meerut RapidX',
+        d: 'M 91 65 L 95 65 L 98 62 L 98 58 L 102 54 L 105 54 L 139 20 L 139 11',
+      },
+    ],
+    interchange: { x: 85, y: 71 },
+    crop: { x: 58, y: 7, w: 85, h: 97 },
+  },
+  strassburg: {
+    mode: 'tram',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'A',
+        d: 'M 85 98 L 88 95 L 100 95 L 100 57 L 91 48 L 88 51 L 81 44 L 66 44 L 61 39',
+      },
+      {
+        track: 'blue',
+        ref: 'B',
+        d: 'M 76 78 L 89 78 L 89 67 L 95 61 L 95 48 L 106 48 L 106 18 L 100 12',
+      },
+      {
+        track: 'green',
+        ref: 'E',
+        d: 'M 98 98 L 98 63 L 104 63 L 109 58 L 101 50 L 101 42 L 117 42 L 117 34',
+      },
+      {
+        track: 'yellow',
+        ref: 'D',
+        d: 'M 139 54 L 139 50 L 123 50 L 117 56 L 106 56 L 89 39 L 74 39 L 69 44',
+      },
+    ],
+    interchange: { x: 100, y: 95 },
+    crop: { x: 57, y: 8, w: 86, h: 94 },
+  },
+  'jersey-city': {
+    mode: 'subway',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'N',
+        d: 'M 99 40 L 93 46 L 85 38 L 85 49 L 79 55 L 86 62 L 74 74 L 82 82 L 82 94',
+      },
+      {
+        track: 'blue',
+        ref: 'R',
+        d: 'M 78 82 L 78 76 L 90 64 L 83 57 L 89 51 L 89 40 L 96 47 L 100 43 L 114 57',
+      },
+      {
+        track: 'green',
+        ref: 'F',
+        d: 'M 83 99 L 83 73 L 79 69 L 79 55 L 76 52 L 85 43 L 101 43 L 119 61 L 127 61',
+      },
+      {
+        track: 'yellow',
+        ref: 'D',
+        d: 'M 89 85 L 82 78 L 82 66 L 79 63 L 87 55 L 78 46 L 100 24 L 104 24 L 116 12',
+      },
+    ],
+    interchange: { x: 78, y: 76 },
+    crop: { x: 70, y: 8, w: 61, h: 95 },
+  },
+  strasbourg: {
+    mode: 'tram',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'A',
+        d: 'M 86 98 L 89 95 L 101 95 L 101 57 L 92 48 L 89 51 L 82 44 L 67 44 L 62 39',
+      },
+      {
+        track: 'blue',
+        ref: 'B',
+        d: 'M 76 79 L 89 79 L 89 68 L 95 62 L 95 49 L 106 49 L 106 19 L 100 13',
+      },
+      {
+        track: 'green',
+        ref: 'E',
+        d: 'M 98 98 L 98 63 L 104 63 L 109 58 L 101 50 L 101 42 L 117 42 L 117 34',
+      },
+      {
+        track: 'yellow',
+        ref: 'D',
+        d: 'M 139 54 L 139 50 L 123 50 L 117 56 L 106 56 L 89 39 L 74 39 L 69 44',
+      },
+    ],
+    interchange: { x: 106, y: 56 },
+    crop: { x: 58, y: 9, w: 85, h: 93 },
+  },
+  'hospitalet-de-llobregat-spain': {
+    mode: 'subway',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'L9S',
+        d: 'M 72 100 L 67 95 L 80 82 L 80 73 L 86 79 L 96 69 L 87 60 L 87 49',
+      },
+      {
+        track: 'blue',
+        ref: 'L5',
+        d: 'M 76 62 L 86 52 L 100 52 L 122 30 L 118 26 L 111 26 L 111 30 L 108 27',
+      },
+      {
+        track: 'green',
+        ref: 'L3',
+        d: 'M 87 47 L 93 47 L 96 50 L 99 50 L 103 54 L 113 54 L 94 35 L 110 19',
+      },
+      {
+        track: 'yellow',
+        ref: 'L1',
+        d: 'M 91 61 L 93 59 L 86 52 L 106 52 L 119 39 L 119 20 L 122 17 L 122 11 L 133 11',
+      },
+    ],
+    interchange: { x: 87, y: 49 },
+    crop: { x: 63, y: 7, w: 74, h: 97 },
+  },
+  'city-of-nottingham': {
+    mode: 'tram',
+    lines: [
+      { track: 'pink', ref: '1', d: 'M 81 12 L 81 80 L 94 80 L 108 66 L 119 66 L 96 43 L 96 18' },
+      {
+        track: 'blue',
+        ref: '2',
+        d: 'M 93 47 L 99 47 L 104 52 L 104 56 L 116 68 L 116 91 L 111 91 L 111 98 L 107 98',
+      },
+    ],
+    interchange: { x: 119, y: 66 },
+    crop: { x: 77, y: 8, w: 46, h: 94 },
+  },
+  'katowice-pl-uwlux': {
+    mode: 'tram',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'T7',
+        d: 'M 35 25 L 33 27 L 41 35 L 41 64 L 56 79 L 76 79 L 85 88 L 111 88',
+      },
+      {
+        track: 'blue',
+        ref: 'T15',
+        d: 'M 88 87 L 116 87 L 122 81 L 131 90 L 162 59 L 174 59 L 170 63 L 164 63',
+      },
+      {
+        track: 'green',
+        ref: 'T9',
+        d: 'M 27 20 L 16 31 L 16 55 L 10 61 L 10 77 L 28 77 L 33 72 L 39 72 L 51 84',
+      },
+      {
+        track: 'yellow',
+        ref: 'T27',
+        d: 'M 138 29 L 144 29 L 144 64 L 137 71 L 158 71 L 166 63 L 179 63 L 190 52',
+      },
+    ],
+    interchange: { x: 85, y: 88 },
+    crop: { x: 6, y: 16, w: 188, h: 78 },
+  },
+  'karlsruhe-de-i0jl7': {
+    mode: 'light_rail',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'S11',
+        d: 'M 101 81 L 101 78 L 96 73 L 100 69 L 86 69 L 86 55 L 82 55 L 82 37 L 86 37',
+      },
+      {
+        track: 'blue',
+        ref: 'S1',
+        d: 'M 90 34 L 87 34 L 87 44 L 85 46 L 85 53 L 89 53 L 89 67 L 96 74 L 96 99',
+      },
+      {
+        track: 'green',
+        ref: 'S51',
+        d: 'M 129 81 L 115 67 L 108 67 L 100 59 L 76 59 L 65 48 L 65 18 L 74 18 L 74 11',
+      },
+      {
+        track: 'yellow',
+        ref: 'S5',
+        d: 'M 68 41 L 74 47 L 79 47 L 83 51 L 107 51 L 115 59 L 122 59 L 135 72',
+      },
+    ],
+    interchange: { x: 86, y: 55 },
+    crop: { x: 61, y: 7, w: 78, h: 96 },
+  },
+  bergen: {
+    mode: 'light_rail',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'Bybanen til Fyllingsdalen',
+        d: 'M 94 43 L 116 43 L 116 34 L 123 27 L 113 17 L 87 43 L 109 43 L 121 31 L 111 21',
+      },
+      { track: 'blue', ref: '1', d: 'M 74 99 L 86 99 L 93 92 L 116 92 L 127 81 L 127 44 L 106 23' },
+      {
+        track: 'green',
+        ref: '2',
+        d: 'M 93 57 L 97 57 L 108 46 L 112 46 L 112 36 L 119 29 L 106 16',
+      },
+      {
+        track: 'yellow',
+        ref: 'Bybanen til Fyllingsdalen, deltrinn 1',
+        d: 'M 115 12 L 125 22 L 119 28 L 119 20 L 113 14 L 113 12 L 123 22 L 117 28',
+      },
+    ],
+    interchange: { x: 123, y: 27 },
+    crop: { x: 70, y: 8, w: 61, h: 95 },
+  },
+  'ostrava-cz-fakvq': {
+    mode: 'tram',
+    lines: [
+      {
+        track: 'pink',
+        ref: '19',
+        d: 'M 76 10 L 76 36 L 121 36 L 121 95 L 57 31 L 95 69 L 95 90 L 73 68 L 103 98',
+      },
+      {
+        track: 'blue',
+        ref: '9',
+        d: 'M 98 49 L 61 49 L 135 49 L 100 49 L 138 49 L 129 40 L 113 56 L 129 40 L 129 52',
+      },
+      { track: 'green', ref: '4', d: 'M 136 97 L 136 72 L 143 65 L 128 50 L 61 50 L 61 25' },
+      {
+        track: 'yellow',
+        ref: '3',
+        d: 'M 58 47 L 112 47 L 121 56 L 111 66 L 108 63 L 108 89 L 97 100',
+      },
+    ],
+    interchange: { x: 61, y: 49 },
+    crop: { x: 53, y: 6, w: 94, h: 98 },
+  },
+  'wiesbaden-de-v4159': {
+    mode: 'tram',
+    lines: [
+      {
+        track: 'pink',
+        ref: '51',
+        d: 'M 80 79 L 106 79 L 118 67 L 103 52 L 124 31 L 106 13 L 96 23 L 69 23 L 55 37',
+      },
+      {
+        track: 'blue',
+        ref: '50',
+        d: 'M 146 92 L 141 87 L 141 41 L 119 19 L 112 19 L 112 30 L 67 30',
+      },
+      {
+        track: 'green',
+        ref: '53',
+        d: 'M 132 98 L 127 93 L 127 43 L 96 43 L 111 58 L 111 69 L 100 80 L 82 80',
+      },
+      {
+        track: 'yellow',
+        ref: '59',
+        d: 'M 123 12 L 117 18 L 129 30 L 126 33 L 102 33 L 101 34 L 101 38 L 104 38',
+      },
+    ],
+    interchange: { x: 80, y: 79 },
+    crop: { x: 51, y: 8, w: 99, h: 94 },
+  },
+  'chula-vista': {
+    mode: 'light_rail',
+    lines: [
+      { track: 'pink', ref: '510', d: 'M 101 100 L 90 89 L 90 63 L 71 44 L 71 10 L 75 10 L 75 13' },
+      {
+        track: 'blue',
+        ref: '520',
+        d: 'M 129 40 L 126 43 L 123 40 L 119 44 L 119 49 L 110 58 L 87 58 L 87 55 L 84 55',
+      },
+    ],
+    interchange: { x: 90, y: 63 },
+    crop: { x: 67, y: 6, w: 66, h: 98 },
+  },
+  'montpellier-france': {
+    mode: 'tram',
+    lines: [
+      {
+        track: 'pink',
+        ref: '5',
+        d: 'M 83 49 L 65 49 L 65 57 L 47 57 L 82 57 L 82 21 L 87 21 L 87 15 L 90 12',
+      },
+      {
+        track: 'blue',
+        ref: '2',
+        d: 'M 112 12 L 121 21 L 121 31 L 91 31 L 91 62 L 87 58 L 87 71 L 76 82 L 67 82',
+      },
+      { track: 'green', ref: '3', d: 'M 154 99 L 113 58 L 71 58 L 71 50 L 64 57 L 53 57' },
+      {
+        track: 'yellow',
+        ref: '1',
+        d: 'M 120 53 L 104 53 L 104 45 L 95 45 L 95 36 L 81 22 L 57 22 L 49 30 L 49 42',
+      },
+    ],
+    interchange: { x: 65, y: 57 },
+    crop: { x: 43, y: 8, w: 115, h: 95 },
+  },
+  moenchengladbach: {
+    mode: 'tram',
+    lines: [
+      { track: 'pink', ref: '042', d: 'M 150 12 L 150 44 L 109 44 L 109 53 L 94 68 L 94 82' },
+      {
+        track: 'blue',
+        ref: '041',
+        d: 'M 51 68 L 52 67 L 69 67 L 73 63 L 103 63 L 103 73 L 102 74 L 127 99 L 135 99',
+      },
+    ],
+    interchange: { x: 109, y: 53 },
+    crop: { x: 47, y: 8, w: 107, h: 95 },
+  },
+  'bordeaux-france': {
+    mode: 'tram',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'Tram B : Bordeaux Berges de la Garonne →',
+        d: 'M 133 31 L 133 42 L 119 56 L 119 64 L 84 99 L 78 93 L 128 43',
+      },
+      {
+        track: 'blue',
+        ref: 'A',
+        d: 'M 86 50 L 86 59 L 92 59 L 92 68 L 103 68 L 114 57 L 125 57 L 145 37 L 145 21',
+      },
+      {
+        track: 'green',
+        ref: 'E',
+        d: 'M 149 52 L 149 56 L 149 51 L 140 42 L 121 61 L 116 56 L 116 38 L 102 38 L 102 12',
+      },
+      { track: 'yellow', ref: 'F', d: 'M 52 57 L 108 57 L 108 55 L 118 55 L 128 65 L 128 80' },
+    ],
+    interchange: { x: 119, y: 56 },
+    crop: { x: 48, y: 8, w: 105, h: 95 },
+  },
+  gent: {
+    mode: 'tram',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'T3',
+        d: 'M 111 67 L 90 46 L 73 46 L 78 51 L 78 62 L 90 74 L 90 88 L 79 99',
+      },
+      {
+        track: 'blue',
+        ref: 'T1',
+        d: 'M 116 66 L 95 45 L 80 45 L 78 47 L 81 50 L 81 76 L 77 80 L 73 76',
+      },
+      {
+        track: 'green',
+        ref: 'T4',
+        d: 'M 84 37 L 90 31 L 90 22 L 73 39 L 73 63 L 77 67 L 74 70 L 83 79',
+      },
+      { track: 'yellow', ref: 'T2', d: 'M 128 74 L 88 34 L 82 34 L 82 29 L 75 22 L 75 16 L 80 11' },
+    ],
+    interchange: { x: 111, y: 67 },
+    crop: { x: 69, y: 7, w: 63, h: 96 },
+  },
+  'venice-italy': {
+    mode: 'tram',
+    lines: [
+      { track: 'pink', ref: 'T1', d: 'M 127 11 L 93 11 L 81 23 L 101 43 L 101 55 L 145 99' },
+      {
+        track: 'blue',
+        ref: 'T2',
+        d: 'M 56 57 L 55 57 L 57 57 L 57 62 L 60 62 L 60 39 L 68 39 L 80 27 L 83 27',
+      },
+    ],
+    interchange: { x: 81, y: 23 },
+    crop: { x: 51, y: 7, w: 98, h: 96 },
+  },
+  'fuchu-jp-06b4i': {
+    mode: 'subway',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'DT;Z;TS;TN',
+        d: 'M 118 11 L 118 46 L 122 50 L 122 55 L 116 55 L 94 77 L 131 40',
+      },
+      {
+        track: 'blue',
+        ref: 'B',
+        d: 'M 100 92 L 102 90 L 109 90 L 113 86 L 110 83 L 110 78 L 107 78 L 107 76 L 105 74',
+      },
+      { track: 'green', ref: 'OH', d: 'M 70 99 L 75 99 L 86 88 L 86 85 L 98 73 L 101 73 L 109 65' },
+      { track: 'yellow', ref: 'M', d: 'M 119 51 L 123 55 L 123 57 L 121 57 L 120 56 L 110 56' },
+    ],
+    interchange: { x: 118, y: 46 },
+    crop: { x: 66, y: 7, w: 69, h: 96 },
+  },
+  'minato-city-jp-aac3n': {
+    mode: 'subway',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'KS-AE',
+        d: 'M 162 67 L 159 64 L 100 64 L 85 79 L 85 90 L 91 90 L 91 61',
+      },
+      {
+        track: 'blue',
+        ref: 'SI',
+        d: 'M 71 72 L 60 72 L 52 64 L 51 65 L 46 60 L 46 55 L 41 55 L 38 52',
+      },
+      {
+        track: 'green',
+        ref: 'E',
+        d: 'M 71 78 L 83 78 L 83 83 L 77 83 L 75 81 L 71 81 L 71 76 L 66 71',
+      },
+      { track: 'yellow', ref: 'DT;Z;TS;TN', d: 'M 49 100 L 80 69 L 88 69 L 88 62 L 83 57 L 83 10' },
+    ],
+    interchange: { x: 85, y: 79 },
+    crop: { x: 34, y: 6, w: 132, h: 98 },
+  },
+  hull: {
+    mode: 'subway',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'Central',
+        d: 'M 134 30 L 134 46 L 111 46 L 104 53 L 108 57 L 97 68 L 41 68 L 28 55 L 20 63',
+      },
+      {
+        track: 'blue',
+        ref: 'Circle',
+        d: 'M 45 79 L 45 72 L 51 66 L 76 66 L 88 78 L 56 78 L 49 71 L 56 64',
+      },
+      {
+        track: 'green',
+        ref: 'District',
+        d: 'M 189 70 L 139 70 L 133 64 L 78 64 L 68 74 L 31 74 L 19 86',
+      },
+      {
+        track: 'yellow',
+        ref: 'Jubilee',
+        d: 'M 11 25 L 22 36 L 22 47 L 54 47 L 73 66 L 113 66 L 117 62 L 117 46',
+      },
+    ],
+    interchange: { x: 76, y: 66 },
+    crop: { x: 7, y: 21, w: 186, h: 69 },
+  },
+  'augsburg-de-z4rnf': {
+    mode: 'tram',
+    lines: [
+      { track: 'pink', ref: '3', d: 'M 95 90 L 95 97 L 98 100 L 98 30 L 92 24' },
+      {
+        track: 'blue',
+        ref: '2',
+        d: 'M 108 65 L 108 33 L 103 28 L 105 26 L 105 19 L 75 19 L 75 24',
+      },
+      {
+        track: 'green',
+        ref: '6',
+        d: 'M 70 28 L 80 28 L 80 30 L 96 30 L 96 34 L 105 34 L 111 40 L 130 40',
+      },
+      {
+        track: 'yellow',
+        ref: '1',
+        d: 'M 129 23 L 117 11 L 111 17 L 105 17 L 105 20 L 89 36 L 84 36 L 86 38',
+      },
+    ],
+    interchange: { x: 98, y: 30 },
+    crop: { x: 66, y: 7, w: 68, h: 97 },
+  },
+  'l-hospitalet-de-llobregat-es-xau0d': {
+    mode: 'subway',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'L9S',
+        d: 'M 72 100 L 67 95 L 80 82 L 80 73 L 86 79 L 96 69 L 87 60 L 87 49',
+      },
+      {
+        track: 'blue',
+        ref: 'L5',
+        d: 'M 76 62 L 86 52 L 100 52 L 122 30 L 118 26 L 111 26 L 111 30 L 108 27',
+      },
+      {
+        track: 'green',
+        ref: 'L3',
+        d: 'M 110 19 L 94 35 L 113 54 L 103 54 L 99 50 L 96 50 L 93 47 L 87 47',
+      },
+      {
+        track: 'yellow',
+        ref: 'L1',
+        d: 'M 91 61 L 93 59 L 86 52 L 106 52 L 119 39 L 119 20 L 122 17 L 122 11 L 133 11',
+      },
+    ],
+    interchange: { x: 87, y: 49 },
+    crop: { x: 63, y: 7, w: 74, h: 97 },
+  },
+  ghent: {
+    mode: 'subway',
+    lines: [
+      {
+        track: 'pink',
+        ref: '5',
+        d: 'M 25 91 L 43 91 L 80 54 L 87 54 L 104 71 L 134 71 L 134 99 L 153 99',
+      },
+      {
+        track: 'blue',
+        ref: '6',
+        d: 'M 95 12 L 103 12 L 103 33 L 74 62 L 92 80 L 104 68 L 104 52 L 84 32',
+      },
+      {
+        track: 'green',
+        ref: '1',
+        d: 'M 176 64 L 168 56 L 164 60 L 149 60 L 135 74 L 100 74 L 83 57 L 76 57 L 76 67',
+      },
+      {
+        track: 'yellow',
+        ref: '2',
+        d: 'M 90 29 L 110 49 L 110 64 L 100 74 L 95 74 L 78 57 L 78 49 L 86 41',
+      },
+    ],
+    interchange: { x: 104, y: 71 },
+    crop: { x: 21, y: 8, w: 159, h: 95 },
+  },
+  venedig: {
+    mode: 'tram',
+    lines: [
+      { track: 'pink', ref: 'T1', d: 'M 127 11 L 93 11 L 81 23 L 101 43 L 101 55 L 145 99' },
+      {
+        track: 'blue',
+        ref: 'T2',
+        d: 'M 56 58 L 55 58 L 57 58 L 57 63 L 60 63 L 60 40 L 68 40 L 80 28 L 83 28',
+      },
+    ],
+    interchange: { x: 81, y: 23 },
+    crop: { x: 51, y: 7, w: 98, h: 96 },
+  },
+  venezia: {
+    mode: 'tram',
+    lines: [
+      { track: 'pink', ref: 'T1', d: 'M 127 11 L 93 11 L 81 23 L 101 43 L 101 55 L 145 99' },
+      {
+        track: 'blue',
+        ref: 'T2',
+        d: 'M 56 57 L 55 57 L 57 57 L 57 62 L 60 62 L 60 39 L 68 39 L 80 27 L 83 27',
+      },
+    ],
+    interchange: { x: 81, y: 23 },
+    crop: { x: 51, y: 7, w: 98, h: 96 },
+  },
+  beykoz: {
+    mode: 'subway',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'M5',
+        d: 'M 167 78 L 148 78 L 128 58 L 68 58 L 59 67 L 44 52 L 34 52 L 138 52',
+      },
+      { track: 'blue', ref: 'M6', d: 'M 52 10 L 49 10 L 44 15 L 36 15' },
+      {
+        track: 'green',
+        ref: 'M8',
+        d: 'M 73 100 L 73 95 L 68 90 L 71 87 L 92 87 L 103 76 L 103 64 L 93 54',
+      },
+    ],
+    interchange: { x: 59, y: 67 },
+    crop: { x: 30, y: 6, w: 141, h: 98 },
+  },
+  'city-of-westminster-gb-9eccg': {
+    mode: 'subway',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'Northern',
+        d: 'M 63 94 L 63 90 L 67 90 L 97 60 L 97 52 L 85 52 L 50 17',
+      },
+      {
+        track: 'blue',
+        ref: 'Jubilee',
+        d: 'M 40 30 L 49 39 L 49 48 L 76 48 L 92 64 L 125 64 L 128 61 L 128 47',
+      },
+      {
+        track: 'green',
+        ref: 'Piccadilly',
+        d: 'M 60 17 L 83 40 L 83 63 L 72 74 L 47 74 L 47 56 L 30 39 L 11 58',
+      },
+      {
+        track: 'yellow',
+        ref: 'District',
+        d: 'M 49 70 L 60 59 L 89 59 L 98 50 L 144 50 L 148 54 L 190 54',
+      },
+    ],
+    interchange: { x: 97, y: 52 },
+    crop: { x: 7, y: 13, w: 187, h: 85 },
+  },
+  'chemnitz-de-65zhy': {
+    mode: 'light_rail',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'C13',
+        d: 'M 85 37 L 92 44 L 105 44 L 105 55 L 111 61 L 111 71 L 97 71 L 68 100',
+      },
+      {
+        track: 'blue',
+        ref: 'C14',
+        d: 'M 115 11 L 115 33 L 110 38 L 110 51 L 108 53 L 114 59 L 114 69 L 104 69 L 95 78',
+      },
+      { track: 'green', ref: 'C15', d: 'M 132 17 L 117 32 L 117 37 L 120 40 L 106 40 L 106 51' },
+      {
+        track: 'yellow',
+        ref: 'C11',
+        d: 'M 106 42 L 106 51 L 108 53 L 108 57 L 90 57 L 88 59 L 88 64',
+      },
+    ],
+    interchange: { x: 105, y: 55 },
+    crop: { x: 64, y: 7, w: 72, h: 97 },
+  },
+  'braunschweig-de-lzwc9': {
+    mode: 'tram',
+    lines: [
+      {
+        track: 'pink',
+        ref: '1',
+        d: 'M 94 98 L 94 87 L 101 80 L 97 80 L 97 64 L 101 64 L 95 58 L 95 12',
+      },
+      {
+        track: 'blue',
+        ref: '3',
+        d: 'M 122 40 L 116 46 L 104 46 L 98 52 L 98 56 L 85 69 L 79 69 L 79 73',
+      },
+      { track: 'green', ref: '2', d: 'M 102 42 L 92 42 L 92 61 L 98 67 L 94 67 L 94 83 L 98 83' },
+      { track: 'yellow', ref: '10', d: 'M 102 56 L 96 50 L 96 41 L 95 40 L 95 14 L 93 12' },
+    ],
+    interchange: { x: 95, y: 58 },
+    crop: { x: 75, y: 8, w: 51, h: 94 },
+  },
+  'vitoria-gasteiz': {
+    mode: 'tram',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'T1',
+        d: 'M 141 63 L 141 87 L 113 87 L 98 72 L 98 45 L 85 45 L 69 29 L 60 29',
+      },
+      {
+        track: 'blue',
+        ref: 'T2',
+        d: 'M 97 11 L 101 15 L 93 15 L 102 24 L 94 32 L 94 63 L 119 88 L 108 99',
+      },
+    ],
+    interchange: { x: 98, y: 45 },
+    crop: { x: 56, y: 7, w: 89, h: 96 },
+  },
+  scottsdale: {
+    mode: 'light_rail',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'B',
+        d: 'M 37 11 L 40 11 L 40 14 L 45 14 L 45 40 L 54 40 L 55 41 L 55 100',
+      },
+      { track: 'blue', ref: 'A', d: 'M 164 82 L 114 82 L 106 74 L 106 70 L 101 65 L 56 65' },
+      { track: 'green', ref: 'DPH 3rd', d: 'M 50 70 L 54 70 L 54 69 L 50 69' },
+      { track: 'yellow', ref: 'DPH 5th', d: 'M 55 62 L 59 62 L 59 61 L 55 61' },
+    ],
+    interchange: { x: 56, y: 65 },
+    crop: { x: 33, y: 7, w: 135, h: 97 },
+  },
+  'freiburg-im-breisgau': {
+    mode: 'tram',
+    lines: [
+      {
+        track: 'pink',
+        ref: '3',
+        d: 'M 61 67 L 61 59 L 65 59 L 72 52 L 81 52 L 92 63 L 102 63 L 102 12',
+      },
+      {
+        track: 'blue',
+        ref: '1',
+        d: 'M 77 21 L 77 31 L 70 38 L 94 62 L 106 62 L 106 66 L 109 69 L 140 69',
+      },
+      {
+        track: 'green',
+        ref: '4',
+        d: 'M 97 37 L 86 48 L 92 54 L 88 58 L 98 68 L 98 76 L 88 76 L 77 87 L 68 87',
+      },
+      {
+        track: 'yellow',
+        ref: '2',
+        d: 'M 112 34 L 98 48 L 96 46 L 92 50 L 103 61 L 103 89 L 112 98',
+      },
+    ],
+    interchange: { x: 102, y: 63 },
+    crop: { x: 57, y: 8, w: 87, h: 94 },
+  },
+  'magdeburg-de-c6x2e': {
+    mode: 'tram',
+    lines: [
+      {
+        track: 'pink',
+        ref: '10',
+        d: 'M 85 75 L 90 70 L 100 70 L 97 67 L 97 41 L 105 33 L 105 16 L 101 12',
+      },
+      { track: 'blue', ref: '8', d: 'M 100 35 L 98 37 L 98 61 L 95 61 L 95 69 L 121 95 L 121 98' },
+      {
+        track: 'green',
+        ref: '9',
+        d: 'M 82 87 L 79 90 L 86 90 L 86 73 L 91 73 L 91 66 L 98 59 L 98 38 L 100 36',
+      },
+      {
+        track: 'yellow',
+        ref: '4',
+        d: 'M 109 60 L 102 53 L 93 53 L 93 66 L 90 66 L 90 50 L 83 50 L 83 42 L 81 42',
+      },
+    ],
+    interchange: { x: 90, y: 70 },
+    crop: { x: 75, y: 8, w: 50, h: 94 },
+  },
+  'shibuya-japan': {
+    mode: 'subway',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'KS-AE',
+        d: 'M 157 72 L 154 69 L 95 69 L 80 84 L 80 95 L 86 95 L 86 66',
+      },
+      {
+        track: 'blue',
+        ref: 'E',
+        d: 'M 72 80 L 84 80 L 84 85 L 78 85 L 76 83 L 72 83 L 72 78 L 67 73',
+      },
+      {
+        track: 'green',
+        ref: 'OT',
+        d: 'M 54 89 L 61 89 L 63 87 L 52 98 L 56 94 L 57 94 L 54 94 L 53 95 L 55 93',
+      },
+      {
+        track: 'yellow',
+        ref: 'DT;Z;TS;TN',
+        d: 'M 78 10 L 78 57 L 83 62 L 83 69 L 75 69 L 44 100 L 96 48',
+      },
+    ],
+    interchange: { x: 80, y: 84 },
+    crop: { x: 40, y: 6, w: 121, h: 98 },
+  },
+  'lille-france': {
+    mode: 'subway',
+    lines: [
+      {
+        track: 'pink',
+        ref: '2',
+        d: 'M 62 56 L 89 83 L 100 83 L 100 72 L 122 72 L 122 55 L 139 38 L 123 22 L 134 11',
+      },
+      {
+        track: 'blue',
+        ref: '1',
+        d: 'M 126 100 L 126 92 L 122 92 L 122 89 L 106 73 L 101 73 L 92 82 L 87 82 L 87 87',
+      },
+    ],
+    interchange: { x: 89, y: 83 },
+    crop: { x: 58, y: 7, w: 85, h: 97 },
+  },
+  krefeld: {
+    mode: 'subway',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'U75',
+        d: 'M 99 91 L 103 87 L 103 84 L 118 84 L 118 87 L 124 87 L 131 94',
+      },
+      {
+        track: 'blue',
+        ref: 'U79',
+        d: 'M 122 12 L 122 23 L 118 27 L 121 30 L 121 88 L 126 93 L 126 99 L 123 99',
+      },
+      {
+        track: 'green',
+        ref: 'U76',
+        d: 'M 126 97 L 116 87 L 111 87 L 111 85 L 105 85 L 93 73 L 83 73 L 70 60',
+      },
+      {
+        track: 'yellow',
+        ref: 'U70',
+        d: 'M 125 80 L 120 80 L 120 77 L 114 77 L 102 65 L 92 65 L 82 55 L 79 55 L 79 53',
+      },
+    ],
+    interchange: { x: 118, y: 84 },
+    crop: { x: 66, y: 8, w: 69, h: 95 },
+  },
+  'kosice-sk-4q3k3': {
+    mode: 'light_rail',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'R2',
+        d: 'M 130 60 L 118 48 L 107 48 L 107 40 L 102 35 L 86 51 L 86 83 L 77 92 L 80 95',
+      },
+      {
+        track: 'blue',
+        ref: 'R3',
+        d: 'M 107 12 L 114 19 L 107 19 L 103 23 L 103 36 L 87 52 L 87 84 L 78 93 L 81 96',
+      },
+      {
+        track: 'green',
+        ref: 'R4',
+        d: 'M 99 18 L 104 23 L 101 23 L 96 28 L 96 39 L 80 55 L 80 87 L 71 96 L 74 99',
+      },
+      {
+        track: 'yellow',
+        ref: 'R8',
+        d: 'M 114 52 L 114 44 L 110 44 L 110 36 L 105 31 L 89 47 L 89 79 L 80 88 L 83 91',
+      },
+    ],
+    interchange: { x: 77, y: 92 },
+    crop: { x: 67, y: 8, w: 67, h: 95 },
+  },
+  burnaby: {
+    mode: 'subway',
+    lines: [
+      { track: 'pink', ref: 'Expo Line', d: 'M 117 42 L 131 56 L 115 72 L 99 72 L 99 63 L 47 11' },
+      {
+        track: 'blue',
+        ref: 'Millennium Line',
+        d: 'M 170 22 L 165 27 L 136 27 L 125 38 L 125 45 L 60 45 L 52 37',
+      },
+      {
+        track: 'green',
+        ref: 'Canada Line',
+        d: 'M 36 30 L 31 35 L 37 41 L 37 56 L 38 57 L 38 80 L 30 88 L 30 99',
+      },
+    ],
+    interchange: { x: 99, y: 72 },
+    crop: { x: 26, y: 7, w: 148, h: 96 },
+  },
+  'mainz-de-5at7w': {
+    mode: 'tram',
+    lines: [
+      {
+        track: 'pink',
+        ref: '51',
+        d: 'M 80 83 L 108 83 L 121 70 L 104 53 L 127 30 L 107 10 L 96 21 L 66 21 L 51 36',
+      },
+      {
+        track: 'blue',
+        ref: '53',
+        d: 'M 77 71 L 105 71 L 118 58 L 101 41 L 130 41 L 135 36 L 141 42 L 141 93 L 146 98',
+      },
+      {
+        track: 'green',
+        ref: '50',
+        d: 'M 59 33 L 108 33 L 108 20 L 116 20 L 139 43 L 139 95 L 144 100',
+      },
+      {
+        track: 'yellow',
+        ref: '52',
+        d: 'M 124 47 L 127 44 L 127 30 L 134 23 L 140 29 L 140 63 L 150 73',
+      },
+    ],
+    interchange: { x: 127, y: 30 },
+    crop: { x: 47, y: 6, w: 107, h: 98 },
+  },
+  'freiburg-de-rmir8': {
+    mode: 'tram',
+    lines: [
+      {
+        track: 'pink',
+        ref: '3',
+        d: 'M 61 67 L 61 59 L 65 59 L 72 52 L 81 52 L 92 63 L 102 63 L 102 12',
+      },
+      {
+        track: 'blue',
+        ref: '1',
+        d: 'M 77 22 L 77 32 L 70 39 L 94 63 L 106 63 L 106 67 L 109 70 L 140 70',
+      },
+      {
+        track: 'green',
+        ref: '4',
+        d: 'M 96 37 L 85 48 L 91 54 L 87 58 L 97 68 L 97 76 L 87 76 L 76 87 L 67 87',
+      },
+      {
+        track: 'yellow',
+        ref: '2',
+        d: 'M 111 34 L 97 48 L 95 46 L 91 50 L 102 61 L 102 89 L 111 98',
+      },
+    ],
+    interchange: { x: 102, y: 63 },
+    crop: { x: 57, y: 8, w: 87, h: 94 },
+  },
+  'longgang-cn-ry9gl': {
+    mode: 'subway',
+    lines: [
+      {
+        track: 'pink',
+        ref: '8',
+        d: 'M 37 99 L 25 99 L 47 77 L 82 77 L 93 66 L 113 66 L 122 57 L 151 57',
+      },
+      {
+        track: 'blue',
+        ref: '2',
+        d: 'M 154 58 L 125 58 L 116 67 L 96 67 L 85 78 L 50 78 L 41 87 L 41 99 L 30 99',
+      },
+      {
+        track: 'green',
+        ref: '10',
+        d: 'M 69 79 L 69 52 L 71 50 L 85 50 L 85 38 L 88 35 L 58 65 L 58 79',
+      },
+      {
+        track: 'yellow',
+        ref: '16',
+        d: 'M 120 47 L 120 42 L 124 38 L 124 12 L 141 12 L 157 28 L 175 28',
+      },
+    ],
+    interchange: { x: 37, y: 99 },
+    crop: { x: 21, y: 8, w: 158, h: 95 },
+  },
+  'erfurt-de-1m40t': {
+    mode: 'tram',
+    lines: [
+      {
+        track: 'pink',
+        ref: '3',
+        d: 'M 62 26 L 101 65 L 109 65 L 116 72 L 116 87 L 140 87 L 152 99 L 160 91',
+      },
+      {
+        track: 'blue',
+        ref: '4',
+        d: 'M 40 68 L 44 64 L 90 64 L 90 72 L 101 72 L 135 38 L 141 44 L 136 49',
+      },
+      {
+        track: 'green',
+        ref: '2',
+        d: 'M 65 89 L 79 75 L 91 75 L 102 64 L 112 74 L 112 89 L 138 89 L 131 96',
+      },
+      {
+        track: 'yellow',
+        ref: '1',
+        d: 'M 72 11 L 85 24 L 92 17 L 96 21 L 103 21 L 103 47 L 117 61 L 112 66 L 112 79',
+      },
+    ],
+    interchange: { x: 112, y: 74 },
+    crop: { x: 36, y: 7, w: 128, h: 96 },
+  },
+  'santa-cruz-de-tenerife-es-atq7n': {
+    mode: 'tram',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'L1',
+        d: 'M 154 61 L 154 49 L 128 49 L 93 84 L 81 84 L 81 59 L 44 22 L 44 13',
+      },
+      {
+        track: 'blue',
+        ref: 'Tranvía Línea 1: La Trinidad → Intercamb',
+        d: 'M 48 14 L 48 24 L 85 61 L 85 86 L 97 86 L 132 51 L 157 51 L 157 63',
+      },
+      {
+        track: 'green',
+        ref: 'Tranvia Línea 2: La Cuesta → Tincer',
+        d: 'M 90 56 L 79 67 L 79 79 L 60 98',
+      },
+      { track: 'yellow', ref: 'T2', d: 'M 66 91 L 83 74 L 83 62 L 94 51' },
+    ],
+    interchange: { x: 81, y: 84 },
+    crop: { x: 40, y: 9, w: 121, h: 93 },
+  },
+  'rennes-france': {
+    mode: 'subway',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'b',
+        d: 'M 160 11 L 134 37 L 110 13 L 95 28 L 76 28 L 97 49 L 44 49 L 60 65 L 51 74',
+      },
+      {
+        track: 'blue',
+        ref: 'a',
+        d: 'M 40 21 L 70 21 L 87 38 L 87 55 L 97 65 L 89 73 L 89 100 L 134 100',
+      },
+    ],
+    interchange: { x: 76, y: 28 },
+    crop: { x: 36, y: 7, w: 128, h: 97 },
+  },
+  'arlington-us-imfac': {
+    mode: 'subway',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'B',
+        d: 'M 98 97 L 106 89 L 132 89 L 132 75 L 120 63 L 144 63 L 149 58 L 183 58',
+      },
+      {
+        track: 'blue',
+        ref: 'S',
+        d: 'M 13 27 L 20 34 L 20 46 L 89 46 L 107 64 L 149 64 L 154 59 L 188 59',
+      },
+      {
+        track: 'green',
+        ref: 'O',
+        d: 'M 167 46 L 140 73 L 128 73 L 128 67 L 98 67 L 87 56 L 77 66 L 67 66',
+      },
+      {
+        track: 'yellow',
+        ref: 'Y',
+        d: 'M 117 91 L 126 82 L 126 68 L 134 60 L 134 43 L 141 36 L 151 36 L 160 27 L 160 13',
+      },
+    ],
+    interchange: { x: 128, y: 73 },
+    crop: { x: 9, y: 9, w: 183, h: 92 },
+  },
+  linz: {
+    mode: 'tram',
+    lines: [
+      {
+        track: 'pink',
+        ref: '2',
+        d: 'M 120 11 L 104 11 L 100 15 L 105 20 L 100 25 L 100 41 L 113 54 L 113 81 L 129 65',
+      },
+      {
+        track: 'blue',
+        ref: 'N82',
+        d: 'M 124 12 L 108 12 L 104 16 L 109 21 L 104 26 L 104 42 L 117 55 L 117 82 L 133 66',
+      },
+      {
+        track: 'green',
+        ref: '1',
+        d: 'M 104 80 L 110 74 L 110 58 L 97 45 L 97 29 L 102 24 L 97 19 L 102 14 L 118 14',
+      },
+      { track: 'yellow', ref: '4', d: 'M 95 31 L 97 29 L 104 36 L 104 45 L 68 81 L 68 100' },
+    ],
+    interchange: { x: 100, y: 25 },
+    crop: { x: 64, y: 7, w: 73, h: 97 },
+  },
+  favoriten: {
+    mode: 'subway',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'U6',
+        d: 'M 101 21 L 101 27 L 94 34 L 85 34 L 78 41 L 78 63 L 75 66 L 75 100',
+      },
+      { track: 'blue', ref: 'U1', d: 'M 131 10 L 129 12 L 129 21 L 97 53 L 97 94 L 102 99' },
+      { track: 'green', ref: 'U4', d: 'M 85 30 L 85 39 L 99 53 L 95 57 L 91 57 L 78 70 L 47 70' },
+      {
+        track: 'yellow',
+        ref: 'U2',
+        d: 'M 154 33 L 154 28 L 143 28 L 122 49 L 114 41 L 96 41 L 90 47 L 95 52',
+      },
+    ],
+    interchange: { x: 97, y: 53 },
+    crop: { x: 43, y: 6, w: 115, h: 98 },
+  },
+  charleroi: {
+    mode: 'light_rail',
+    lines: [
+      { track: 'pink', ref: 'M2', d: 'M 14 82 L 21 89 L 27 83 L 142 83 L 142 97 L 136 97' },
+      { track: 'blue', ref: 'M1', d: 'M 141 98 L 147 98 L 147 84 L 32 84 L 26 90 L 19 83' },
+      {
+        track: 'green',
+        ref: 'M3',
+        d: 'M 140 12 L 140 27 L 136 31 L 136 80 L 146 80 L 146 85 L 139 92 L 134 92',
+      },
+      {
+        track: 'yellow',
+        ref: 'M4',
+        d: 'M 140 83 L 146 83 L 153 76 L 153 70 L 155 72 L 158 69 L 167 69 L 177 59 L 187 59',
+      },
+    ],
+    interchange: { x: 142, y: 83 },
+    crop: { x: 10, y: 8, w: 181, h: 94 },
+  },
+  'rostock-de-he41q': {
+    mode: 'tram',
+    lines: [
+      {
+        track: 'pink',
+        ref: '1',
+        d: 'M 73 11 L 73 45 L 81 53 L 76 58 L 101 83 L 108 76 L 108 64 L 97 64',
+      },
+      {
+        track: 'blue',
+        ref: '5',
+        d: 'M 74 17 L 74 51 L 82 59 L 77 64 L 87 74 L 109 74 L 95 88 L 95 100',
+      },
+      {
+        track: 'green',
+        ref: '3',
+        d: 'M 82 88 L 82 83 L 101 83 L 101 91 L 105 91 L 117 79 L 117 68 L 124 75 L 127 72',
+      },
+      {
+        track: 'yellow',
+        ref: '2',
+        d: 'M 126 57 L 120 63 L 120 71 L 106 85 L 105 84 L 105 76 L 98 69 L 92 69 L 83 60',
+      },
+    ],
+    interchange: { x: 101, y: 83 },
+    crop: { x: 69, y: 7, w: 62, h: 97 },
+  },
+  'glendale-united-states': {
+    mode: 'subway',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'B',
+        d: 'M 50 12 L 66 28 L 66 35 L 83 52 L 118 52 L 118 81 L 136 99 L 144 91 L 150 91',
+      },
+      { track: 'blue', ref: 'D', d: 'M 55 86 L 116 86 L 129 99 L 137 91 L 141 91 L 143 93' },
+    ],
+    interchange: { x: 118, y: 81 },
+    crop: { x: 46, y: 8, w: 108, h: 95 },
+  },
+  'holon-il-j7b7x': {
+    mode: 'light_rail',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'R1',
+        d: 'M 167 25 L 82 25 L 67 40 L 46 40 L 46 63 L 35 74 L 46 85 L 36 95',
+      },
+      {
+        track: 'blue',
+        ref: 'R2',
+        d: 'M 142 14 L 126 30 L 81 30 L 66 45 L 45 45 L 45 68 L 34 79 L 45 90 L 35 100',
+      },
+      {
+        track: 'green',
+        ref: 'R3',
+        d: 'M 131 11 L 118 11 L 118 21 L 96 21 L 88 29 L 75 29 L 60 44 L 41 44',
+      },
+    ],
+    interchange: { x: 45, y: 45 },
+    crop: { x: 30, y: 7, w: 141, h: 97 },
+  },
+  'kassel-de-f87c7': {
+    mode: 'tram',
+    lines: [
+      {
+        track: 'pink',
+        ref: '4',
+        d: 'M 136 90 L 136 88 L 130 82 L 130 73 L 124 67 L 118 67 L 108 57 L 97 57 L 96 58',
+      },
+      {
+        track: 'blue',
+        ref: 'RT1',
+        d: 'M 102 12 L 99 15 L 99 34 L 103 38 L 103 51 L 107 55 L 104 58 L 108 62 L 108 56',
+      },
+      {
+        track: 'green',
+        ref: 'RT4',
+        d: 'M 64 60 L 75 49 L 80 54 L 85 49 L 90 54 L 97 54 L 97 62 L 101 66 L 101 60',
+      },
+      { track: 'yellow', ref: 'RT5', d: 'M 116 98 L 116 92 L 103 79 L 103 58 L 109 58 L 109 62' },
+    ],
+    interchange: { x: 104, y: 58 },
+    crop: { x: 60, y: 8, w: 80, h: 94 },
+  },
+  croydon: {
+    mode: 'subway',
+    lines: [
+      {
+        track: 'pink',
+        ref: 'Central',
+        d: 'M 12 70 L 67 70 L 67 75 L 114 75 L 123 66 L 120 63 L 153 30 L 153 12',
+      },
+      {
+        track: 'blue',
+        ref: 'Piccadilly',
+        d: 'M 17 76 L 36 57 L 53 74 L 53 92 L 79 92 L 90 81 L 90 58 L 67 35',
+      },
+      {
+        track: 'green',
+        ref: 'District',
+        d: 'M 188 85 L 146 85 L 141 80 L 95 80 L 86 89 L 55 89 L 45 99',
+      },
+      {
+        track: 'yellow',
+        ref: 'Jubilee',
+        d: 'M 128 64 L 128 78 L 125 81 L 91 81 L 75 65 L 48 65 L 48 56 L 38 46',
+      },
+    ],
+    interchange: { x: 90, y: 81 },
+    crop: { x: 8, y: 8, w: 184, h: 95 },
+  },
+  sacaba: {
+    mode: 'light_rail',
+    lines: [
+      { track: 'pink', ref: 'V', d: 'M 153 31 L 153 38 L 149 38 L 134 23 L 18 23 L 11 30 L 11 85' },
+      {
+        track: 'blue',
+        ref: 'A',
+        d: 'M 142 41 L 137 46 L 145 38 L 151 38 L 155 34 L 162 41 L 166 41 L 166 42 L 166 35',
+      },
+      { track: 'green', ref: 'R', d: 'M 186 84 L 190 88 L 159 57 L 159 37' },
+    ],
+    interchange: { x: 155, y: 34 },
+    crop: { x: 7, y: 19, w: 187, h: 73 },
+  },
 };
 
 /**
@@ -4582,13 +6401,6 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
  * it commits: the diagram REPLACES a meaningless placeholder (an initial-letter
  * tile, a type glyph, a stock skyline belonging to no particular city) and must
  * never replace a real photograph of the place. Most cities have no geometry.
- *
- * 22 of ~3,070 cities have one. The card grid may fall back to a template
- * squiggle — fine at 200px as an ornament in a grid that must not have holes —
- * but a city SINGLE may not: a fabricated network drawn under a heading that
- * says "Getting around" is a claim about that city's transit, and for 99.3% of
- * cities it would be false. `CityNetworkPanel` gates on this and renders
- * nothing when it returns false (spec rule 2).
  */
 export function hasCityNetwork(slug: string | null | undefined): boolean {
   return !!slug && slug in CITY_NETWORKS;

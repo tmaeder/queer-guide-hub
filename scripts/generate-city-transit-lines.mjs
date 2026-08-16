@@ -40,6 +40,14 @@ const CACHE_DIR = resolve(ROOT, 'scripts/output/.overpass-cache');
 
 const DRY_RUN = process.argv.includes('--dry-run');
 const ONLY = (process.argv.find((a) => a.startsWith('--only=')) || '').slice(7);
+/** Re-derive from what is already on disk, fetching nothing.
+ *
+ *  The sweep is population-ordered and Overpass throttles a long run down to a
+ *  crawl, so it is normal to stop partway and ship the prefix. This turns the
+ *  cache into the input: every city already fetched is re-parsed with the
+ *  current simplification and keying rules, and every city that was never
+ *  reached is skipped rather than queued behind a rate limit. */
+const CACHED_ONLY = process.argv.includes('--cached-only');
 
 // ---------------------------------------------------------------- tunables
 
@@ -57,7 +65,14 @@ const SEARCH_RADIUS_M = 15000;
 // Population floor for the bulk run. Deliberately low: population is a poor
 // proxy for "has a metro" in Europe (Copenhagen 640k has four lines, plenty of
 // 2M cities have none), and a city with no network costs one empty query.
-const MIN_POPULATION = Number(process.env.MIN_POPULATION || 500000);
+//
+// 20k rather than 0. Below that a tram is vanishingly rare and the few that
+// exist are heritage lines the tourism/length filters drop anyway, so the last
+// 396 rows would buy ~4 diagrams for three hours of load on free
+// infrastructure. Rows with NO recorded population are INCLUDED regardless —
+// a numeric floor silently excludes every NULL, and 289 listable cities have
+// one, several of them real places with real networks.
+const MIN_POPULATION = Number(process.env.MIN_POPULATION || 20000);
 // Lines are ranked by how much of them falls inside this radius, not by total
 // length — see coreLength().
 const CORE_RADIUS_M = 12000;
@@ -84,6 +99,10 @@ const SLEEP_MS = Number(process.env.SLEEP_MS || 3000);
 // the number of mirrors deliberately — this is a one-shot against free
 // infrastructure, not a scraper.
 const CONCURRENCY = Number(process.env.CONCURRENCY || OVERPASS_ENDPOINTS.length);
+/** Probe retries. Generous, because the alternative to waiting is a run that
+ *  aborts on a transient 504 after the mirrors were worked hard. */
+const PROBE_ATTEMPTS = Number(process.env.PROBE_ATTEMPTS || 4);
+const PROBE_BACKOFF_MS = Number(process.env.PROBE_BACKOFF_MS || 30000);
 
 /** Length rank → track. The flagship line is pink. */
 const TRACKS = ['pink', 'blue', 'green', 'yellow'];
@@ -146,18 +165,25 @@ async function fetchCities() {
   const names = CITY_NAMES.map((n) => `"${n}"`).join(',');
   const whitelisted = await get(`name=in.(${encodeURIComponent(names)})&slug=not.like.tmp-*`);
 
-  // Then everything big enough to plausibly run rapid transit. Population is a
-  // poor proxy in Europe (Copenhagen has a metro at 640k, plenty of 2M cities
-  // have none), so the floor is deliberately low and cities without a network
-  // simply produce nothing.
+  // Then every listable city big enough to plausibly run rapid transit, plus
+  // the ones whose population is simply unknown. Restricted to `seo_indexable`
+  // rows so the archived non-places ('Indonesien', '—N/a') and merge shells do
+  // not each cost two Overpass queries.
   const rows = [];
-  for (let offset = 0; ; offset += 1000) {
-    const page = await get(
-      `population=gte.${MIN_POPULATION}&slug=not.like.tmp-*` +
-        `&order=population.desc&limit=1000&offset=${offset}`,
-    );
-    rows.push(...page);
-    if (page.length < 1000) break;
+  for (const filter of [
+    `population=gte.${MIN_POPULATION}&order=population.desc`,
+    // NULL never satisfies a numeric comparison, so these need their own pass.
+    'population=is.null&order=name.asc',
+  ]) {
+    for (let offset = 0; ; offset += 1000) {
+      const page = await get(
+        `${filter.split('&order')[0]}&slug=not.like.tmp-*&seo_indexable=is.true` +
+          `&latitude=not.is.null&order=${filter.split('&order=')[1]}` +
+          `&limit=1000&offset=${offset}`,
+      );
+      rows.push(...page);
+      if (page.length < 1000) break;
+    }
   }
 
   // Several DB rows can share a name (Berlin DE vs Berlin US) — keep the most
@@ -208,26 +234,45 @@ async function probeEndpoints() {
   const healthy = [];
   for (const endpoint of OVERPASS_ENDPOINTS) {
     const host = new URL(endpoint).host;
-    try {
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': UA },
-        body: `data=${encodeURIComponent(control)}`,
-      });
-      if (!res.ok) { log(`  ! ${host}: control query HTTP ${res.status} — skipped`); continue; }
+    // A 504 means BUSY, an empty 200 means REGIONAL EXTRACT. Only the second is
+    // a property of the endpoint, so transport failures get retried with a long
+    // backoff before the endpoint is condemned — after a heavy run both mirrors
+    // answer 504 for a while, and treating that as "unhealthy" aborts a run that
+    // would have been fine ten minutes later.
+    for (let attempt = 0; attempt < PROBE_ATTEMPTS; attempt++) {
+      if (attempt) await sleep(PROBE_BACKOFF_MS * attempt);
+      let res;
+      try {
+        res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': UA },
+          body: `data=${encodeURIComponent(control)}`,
+        });
+      } catch (e) {
+        log(`  · ${host}: control attempt ${attempt + 1} failed (${e.message})`);
+        continue;
+      }
+      if (!res.ok) {
+        log(`  · ${host}: control attempt ${attempt + 1} HTTP ${res.status}`);
+        continue;
+      }
       const json = await res.json();
       const n = (json.elements || []).length;
       if (n < 5) {
+        // Not retried: this is what the endpoint IS, not how busy it is.
         log(`  ! ${host}: control found ${n} Berlin subway relations — NOT a planet mirror, skipped`);
-        continue;
+        break;
       }
       log(`  ✓ ${host}: control ok (${n} relations)`);
       healthy.push(endpoint);
-    } catch (e) {
-      log(`  ! ${host}: control query failed (${e.message}) — skipped`);
+      break;
     }
   }
-  if (!healthy.length) throw new Error('no healthy Overpass endpoint');
+  if (!healthy.length) {
+    throw new Error(
+      'no healthy Overpass endpoint after retries — the mirrors are busy, wait and re-run',
+    );
+  }
   return healthy;
 }
 
@@ -238,7 +283,12 @@ async function fetchRoutes(lat, lon, mode, slug, endpointOffset = 0) {
   const cacheFile = resolve(CACHE_DIR, `${slug}-${mode}.json`);
   if (existsSync(cacheFile)) return JSON.parse(readFileSync(cacheFile, 'utf8'));
 
-  const filter = mode === 'rail' ? `["route"~"^(subway|light_rail)$"]` : `["route"="${mode}"]`;
+  const filter =
+    mode === 'rail'
+      ? `["route"~"^(subway|light_rail)$"]`
+      : mode === 'all'
+        ? `["route"~"^(subway|light_rail|tram)$"]`
+        : `["route"="${mode}"]`;
   const query =
     `[out:json][timeout:180];` +
     `rel(around:${SEARCH_RADIUS_M},${lat},${lon})` +
@@ -277,6 +327,12 @@ async function fetchRoutes(lat, lon, mode, slug, endpointOffset = 0) {
     await sleep(SLEEP_MS * (1 + attempt));
   }
   throw lastErr;
+}
+
+/** Is this (city, mode) already on disk? Lets buildCity pick the cheap path
+ *  without spending a request to find out. */
+function isCached(slug, mode) {
+  return existsSync(resolve(CACHE_DIR, `${slug}-${mode}.json`));
 }
 
 /**
@@ -588,7 +644,14 @@ function isNotCityTransit(tags = {}) {
  * arrow onward is dropped, and `<F>` (New York's F express) collapses onto F.
  */
 function lineKey(tags = {}, id) {
-  let key = (tags.ref || tags.name || String(id)).trim();
+  // `colour` before `name`. Systems that carry no `ref` are usually named for
+  // their endpoints — Manchester Metrolink gave "Shaw and Crompton - East
+  // Didsbury", "Rochdale - East Didsbury" and "Rochdale Town Centre - East
+  // Didsbury", which are ONE line with three terminal variants, so Stockport
+  // drew a two-line system in four colours. No amount of string surgery
+  // recovers identity from those; the colour does, because on a network map
+  // the colour IS the line.
+  let key = (tags.ref || tags.colour || tags.color || tags.name || String(id)).trim();
   key = key.replace(/^[<(]|[>)]$/g, '').trim();
   key = key.split(/\s*[:;]\s*/)[0];
   key = key.split(/\s*(?:=>|->|→|—>)\s*/)[0];
@@ -626,6 +689,7 @@ function groupLines(elements, city) {
 }
 
 async function buildCity(city, endpointOffset = 0) {
+  if (CACHED_ONLY && !isCached(city.slug, 'rail') && !isCached(city.slug, 'all')) return null;
   // ONE request covers subway + light_rail; tram is only asked for when that
   // came back with less than a network. A city with a metro therefore never
   // pays for its tram query, which is by far the expensive one — across ~490
@@ -633,26 +697,44 @@ async function buildCity(city, endpointOffset = 0) {
   let chosen = null;
   let fallback = null;
 
-  const rail = groupLines(
-    await fetchRoutes(city.latitude, city.longitude, 'rail', city.slug, endpointOffset),
-    city,
-  );
-  // Split the combined answer back into its two modes so the preference order
-  // still holds: a real metro beats a light-rail line that happens to be longer.
-  for (const mode of RAIL_MODES) {
-    const ofMode = new Map([...rail].filter(([, l]) => l.mode === mode));
-    if (ofMode.size >= MIN_LINES_FOR_MODE) { chosen = { mode, lines: ofMode }; break; }
-    if (!fallback && ofMode.size >= 1) fallback = { mode, lines: ofMode };
-  }
-
-  if (!chosen) {
-    await sleep(SLEEP_MS);
-    const tram = groupLines(
-      await fetchRoutes(city.latitude, city.longitude, 'tram', city.slug, endpointOffset),
+  // Two shapes, same answer. A city already fetched under the old rail/tram
+  // split keeps using those cached files; a fresh city asks for all three modes
+  // in ONE request. Roughly 85% of small towns have no rail at all and so used
+  // to pay a rail query AND a tram query to learn it, which was the dominant
+  // cost of the sub-500k sweep — combining them halves the round trips without
+  // invalidating a single cached response.
+  let byMode;
+  if (isCached(city.slug, 'rail')) {
+    byMode = groupLines(
+      await fetchRoutes(city.latitude, city.longitude, 'rail', city.slug, endpointOffset),
       city,
     );
-    if (tram.size >= MIN_LINES_FOR_MODE) chosen = { mode: 'tram', lines: tram };
-    else if (!fallback && tram.size >= 1) fallback = { mode: 'tram', lines: tram };
+    for (const mode of RAIL_MODES) {
+      const ofMode = new Map([...byMode].filter(([, l]) => l.mode === mode));
+      if (ofMode.size >= MIN_LINES_FOR_MODE) { chosen = { mode, lines: ofMode }; break; }
+      if (!fallback && ofMode.size >= 1) fallback = { mode, lines: ofMode };
+    }
+    if (!chosen) {
+      await sleep(SLEEP_MS);
+      const tram = groupLines(
+        await fetchRoutes(city.latitude, city.longitude, 'tram', city.slug, endpointOffset),
+        city,
+      );
+      if (tram.size >= MIN_LINES_FOR_MODE) chosen = { mode: 'tram', lines: tram };
+      else if (!fallback && tram.size >= 1) fallback = { mode: 'tram', lines: tram };
+    }
+  } else {
+    byMode = groupLines(
+      await fetchRoutes(city.latitude, city.longitude, 'all', city.slug, endpointOffset),
+      city,
+    );
+    // Preference order still holds: a real metro beats a tram line that happens
+    // to be longer, so the modes are tried in order rather than pooled.
+    for (const mode of MODES) {
+      const ofMode = new Map([...byMode].filter(([, l]) => l.mode === mode));
+      if (ofMode.size >= MIN_LINES_FOR_MODE) { chosen = { mode, lines: ofMode }; break; }
+      if (!fallback && ofMode.size >= 1) fallback = { mode, lines: ofMode };
+    }
   }
 
   chosen = chosen || fallback;
@@ -874,16 +956,23 @@ async function main() {
     log('--dry-run: data file not written.');
     return;
   }
-  // The write is unconditional and total, so a run that produced little is a
-  // DELETE of everything it did not reproduce. `--only=nonsense` resolved zero
-  // cities once and silently replaced 224 diagrams with an empty record; a
-  // poisoned endpoint would do the same, more plausibly. Refuse unless the run
-  // covered the whole list, or the caller says it meant it.
-  if (ONLY || built.length < cities.length * 0.25) {
+  // The write is unconditional and total, so a run that produced less than the
+  // committed file holds is a DELETE of the difference. `--only=nonsense`
+  // resolved zero cities once and silently replaced 224 diagrams with an empty
+  // record; a poisoned endpoint would do the same, more plausibly.
+  //
+  // The test is "did this run SHRINK what is committed", not "what share of the
+  // input yielded a diagram" — the yield rate is meaningless across population
+  // bands (46% above 500k, a few percent below 100k), so gating on it would
+  // block every legitimate expansion into smaller cities.
+  const committed = existsSync(OUT_FILE)
+    ? (readFileSync(OUT_FILE, 'utf8').match(/^ {4}mode: '/gm) || []).length
+    : 0;
+  if (ONLY || built.length < committed * 0.9) {
     log(
-      `REFUSING to write: ${built.length} diagram(s) from ${cities.length} cities` +
-        `${ONLY ? ' (--only run)' : ''}. The data file is replaced wholesale, so a ` +
-        'partial run would delete the rest. Re-run without --only, or pass --force.',
+      `REFUSING to write: ${built.length} diagram(s) against ${committed} already ` +
+        `committed${ONLY ? ' (--only run)' : ''}. The data file is replaced wholesale, ` +
+        'so this would delete the difference. Re-run over the full list, or pass --force.',
     );
     if (!process.argv.includes('--force')) return;
   }
