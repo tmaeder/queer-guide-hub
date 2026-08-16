@@ -111,6 +111,53 @@ if (!hygieneRes.ok) {
   console.log(`✓ Cron hygiene clean (${hygiene.cron_total} active jobs); staging pending_review=${pending}, stale_pending=${staleTotal}`)
 }
 
+// 5b. Automation run-tracking gaps (2026-09). Until this landed, 142 of 144
+//     enabled cron automations had never recorded a run, so consecutive_failures
+//     never moved and auto-pause could not fire. These two checks keep it that
+//     way only if it stays true.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/admin_automation_tracking_gaps`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    console.warn(`⚠ admin_automation_tracking_gaps → HTTP ${res.status} (RPC missing?)`)
+  } else {
+    const gaps = await res.json()
+
+    // A cron command that reaches net.http_post through a helper we have NOT
+    // patched would be projected from cron.job_run_details as a success the
+    // moment the request is enqueued — a false green that also resets
+    // consecutive_failures. That is strictly worse than the blank column this
+    // system replaced, so it fails the build rather than warning.
+    const untracked = gaps.untracked_http_dispatchers ?? []
+    if (untracked.length > 0) {
+      console.error(
+        `✗ Automations dispatching HTTP through an untracked helper: ${untracked.join(', ')} — ` +
+          `route the helper through public.automation_http_post and add it to admin_automation_tracked_callers`,
+      )
+      process.exit(1)
+    }
+
+    // Runs left open long past any pg_net timeout mean the reaper is not
+    // running; net._http_response is only retained ~6h, so a stalled reaper
+    // loses the evidence permanently rather than catching up later.
+    const openRuns = Number(gaps.open_runs_over_1h ?? 0)
+    if (openRuns > 50) {
+      console.error(`✗ ${openRuns} automation runs open >1h — admin_automation_reap is not running`)
+      process.exit(1)
+    }
+
+    const silent = gaps.silent_automations ?? []
+    if (silent.length > 0) {
+      console.warn(`⚠ ${silent.length} at-most-daily automation(s) with no recorded run in 48h: ${silent.slice(0, 15).join(', ')}${silent.length > 15 ? ', …' : ''}`)
+    } else {
+      console.log('✓ Every at-most-daily automation recorded a run in the last 48h')
+    }
+  }
+}
+
 // 6. Search reindex queue (P1 overhaul, 2026-08): entity writes enqueue here;
 //    search_reindex_drain applies them every minute. A deep AND old queue means
 //    the drain is broken — search results are then frozen at their last index.
