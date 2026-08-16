@@ -139,7 +139,7 @@
       "recent_city": "In a city you've explored",
       "featured": "Featured"
     },
-    "ariaLabel": "[RU] Search Queer Guide",
+    "ariaLabel": "Поиск по Queer Guide",
     "escape": "esc",
     "jumpTo": "Перейти к",
     "recent": "Недавние",
@@ -218,12 +218,12 @@
     "contact": "Контакты",
     "supportUs": "Поддержать нас",
     "history": "История",
-    "tagline": "[RU] Every track. Every station. Everyone.",
-    "contributors": "[RU] Contributors",
+    "tagline": "Каждая линия. Каждая станция. Каждый и каждая.",
+    "contributors": "Участники и участницы",
     "emergency": {
       "eyebrow": "[RU] In an emergency",
-      "title": "[RU] Crisis lines, 24 hours",
-      "body": "[RU] Trans helpline, LGBT+ crisis support, and local emergency numbers, listed by country and always one click from any page."
+      "title": "Кризисные линии, круглосуточно",
+      "body": "Транс-линия поддержки, кризисная помощь ЛГБТ+ и местные экстренные номера — по странам и всегда в одном клике с любой страницы."
     },
     "osmAttribution": "Транспортные схемы созданы на основе данных © участников OpenStreetMap (ODbL)",
     "reportSomething": "Сообщить о проблеме",
@@ -1917,7 +1917,7 @@
       "help": "Помощь",
       "tags": "Теги",
       "history": "История",
-      "guides": "[RU] Guides",
+      "guides": "Гиды",
       "trips": "Поездки",
       "organizations": "Организации",
       "wishlists": "Списки желаний"
@@ -2014,7 +2014,7 @@
       "hub": "Хаб"
     },
     "primaryNavigation": "[RU] Primary",
-    "signInToContribute": "[RU] Sign in to contribute"
+    "signInToContribute": "Войдите, чтобы внести вклад"
   },
   "pages": {
     "venues": {
@@ -3331,7 +3331,7 @@
     "wishlists": "Списки желаний",
     "tags": "Теги",
     "organizations": "[RU] Organizations",
-    "guides": "[RU] Guides",
+    "guides": "Гиды",
     "people": "Знакомства"
   },
   "chat": {

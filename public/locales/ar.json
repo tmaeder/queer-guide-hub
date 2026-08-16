@@ -139,7 +139,7 @@
       "recent_city": "In a city you've explored",
       "featured": "Featured"
     },
-    "ariaLabel": "[AR] Search Queer Guide",
+    "ariaLabel": "البحث في Queer Guide",
     "escape": "esc",
     "jumpTo": "انتقل إلى",
     "recent": "الأخيرة",
@@ -218,12 +218,12 @@
     "contact": "تواصل معنا",
     "supportUs": "ادعمنا",
     "history": "التاريخ",
-    "tagline": "[AR] Every track. Every station. Everyone.",
-    "contributors": "[AR] Contributors",
+    "tagline": "كل خط. كل محطة. الجميع.",
+    "contributors": "المساهمون والمساهمات",
     "emergency": {
       "eyebrow": "[AR] In an emergency",
-      "title": "[AR] Crisis lines, 24 hours",
-      "body": "[AR] Trans helpline, LGBT+ crisis support, and local emergency numbers, listed by country and always one click from any page."
+      "title": "خطوط الأزمات، على مدار ٢٤ ساعة",
+      "body": "خط دعم للأشخاص العابرين، ودعم الأزمات لمجتمع الميم، وأرقام الطوارئ المحلية، مرتّبة حسب البلد وعلى بُعد نقرة واحدة من أي صفحة."
     },
     "osmAttribution": "مخططات النقل مشتقة من © مساهمي OpenStreetMap (ODbL)",
     "reportSomething": "الإبلاغ عن شيء",
@@ -1895,7 +1895,7 @@
       "help": "مساعدة",
       "tags": "الوسوم",
       "history": "التاريخ",
-      "guides": "[AR] Guides",
+      "guides": "الأدلة",
       "trips": "الرحلات",
       "organizations": "المنظمات",
       "wishlists": "قوائم الرغبات"
@@ -1992,7 +1992,7 @@
       "hub": "المركز"
     },
     "primaryNavigation": "[AR] Primary",
-    "signInToContribute": "[AR] Sign in to contribute"
+    "signInToContribute": "سجّل الدخول للمساهمة"
   },
   "pages": {
     "venues": {
@@ -3305,7 +3305,7 @@
     "wishlists": "قوائم الرغبات",
     "tags": "الوسوم",
     "organizations": "[AR] Organizations",
-    "guides": "[AR] Guides",
+    "guides": "الأدلة",
     "people": "تعرّف على أشخاص"
   },
   "chat": {
