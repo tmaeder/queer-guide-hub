@@ -22,4 +22,42 @@ test.describe('@p1-4 /tags/[slug] 404', () => {
     const robots = await page.locator('meta[name="robots"]').first().getAttribute('content');
     expect(robots ?? '').toMatch(/noindex/);
   });
+
+  // A merged tag is NOT an unknown tag — the concept still exists, one hop on.
+  // `/tags/rack` used to answer 200 with `<title>Rack | Queer Guide</title>` over
+  // the SPA's "No such term" empty state: a soft 404 that got the page indexed
+  // and left a human at a dead end. It must 301 to the canonical instead.
+  //
+  // Asserted on the FINAL url rather than the redirect status so this also
+  // passes on a preview build where the middleware doesn't run and the SPA does
+  // the hop client-side. Both surfaces resolve through the same
+  // tag_slug_redirects rows; this pins the outcome they must agree on.
+  const MERGED = [
+    { from: 'rack', to: 'risk-aware-consensual-kink' },
+    { from: 'crystal-meth', to: 'methamphetamine' },
+    { from: 'monkeypox', to: 'mpox' },
+  ];
+
+  for (const { from, to } of MERGED) {
+    test(`merged /tags/${from} lands on /tags/${to}`, async ({ page }) => {
+      const res = await page.goto(`/tags/${from}`);
+      expect(res?.status(), `/tags/${from} must not be a 404`).toBeLessThan(400);
+      await expect(page).toHaveURL(new RegExp(`/tags/${to}(?:[?#]|$)`), { timeout: 10_000 });
+      // The canonical page really rendered — not the empty state wearing a title.
+      await expect(
+        page.getByRole('heading', { name: /no stop here|doesn'?t exist|not found|no such term/i }),
+      ).toHaveCount(0);
+    });
+  }
+
+  // A tag merged into a target that was ITSELF later deprecated has no live
+  // concept to reach, so 404 is the correct answer — a 301 there would just be a
+  // redirect into a 404. Measured on prod: 57 of 195 redirect rows are this shape.
+  test('a tag whose canonical was since deprecated 404s rather than redirecting', async ({
+    page,
+  }) => {
+    const res = await page.goto('/tags/alex-j-rgen');
+    expect(res?.status()).toBe(404);
+    await expect(page).toHaveURL(/\/tags\/alex-j-rgen/);
+  });
 });
