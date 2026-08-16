@@ -19,6 +19,13 @@ SITE="${SITE_URL:-https://queer.guide}"
 
 pass=0; fail=0
 
+# Assets that answered text/html on BOTH the real cache key and a throwaway
+# ?cb= key, i.e. the object is missing at origin rather than poisoned at a
+# colo. Counted separately from `fail` because it is the ONE verdict here that
+# a re-upload can fix and a purge cannot — the caller (deploy-pages.yml) reads
+# it to decide whether re-running `wrangler pages deploy` is worth a try.
+ORIGIN_BROKEN=0
+
 # Paths proven to be poisoned edge-cache entries (plain URL wrong, ?cb= right).
 # Collected rather than only printed, because this is the one failure class a
 # redeploy can never fix — see purge_poisoned() at the bottom.
@@ -215,6 +222,13 @@ ORIGIN_RECHECKED=""
 REPROBE_CT=""
 REPROBE_BUDGET=${REPROBE_BUDGET:-120}
 REPROBE_SPENT=0
+# MUST be initialised. `set -u` is on, and an unbound expansion is FATAL to a
+# non-interactive bash — it does not warn and continue, it exits 127 on the
+# spot. This flag is read only when the re-probe budget is exhausted, i.e. only
+# during a genuine origin-broken incident, so the crash was invisible in every
+# green run and would have fired exactly when the diagnostics were needed:
+# no summary line, no purge, no per-asset verdicts, just a bare exit.
+ORIGIN_BUDGET_SPENT_REPORTED=""
 reprobe_origin() {
 	local path=$1 want=$2
 	# One free re-read for everybody: cheap, and enough once origin is up.
@@ -278,6 +292,7 @@ expect_asset_type() {
 			echo "    Static-asset serving is being shadowed. Check public/_redirects for"
 			echo "    a 200-rewrite (see the do-not-add-a-catch-all block in that file)"
 			echo "    and re-read the wrangler rule-parser output of the last deploy."
+			ORIGIN_BROKEN=$((ORIGIN_BROKEN+1))
 			;;
 	esac
 }
@@ -865,6 +880,35 @@ echo "  · checked from a single colo: $(curl -sS "${CURL_TIMEOUT[@]}" -o /dev/n
 
 echo
 echo "smoke: $pass passed, $fail failed"
+
+# Hand the origin-broken verdict to the caller as a step output. deploy-pages.yml
+# re-runs `wrangler pages deploy` ONCE on this and then re-runs this script.
+#
+# Only this verdict triggers a re-upload, and only this one should. A poisoned
+# colo is already remediated above by the purge, and re-uploading cannot evict
+# a cached object; an origin that does not have the file is the one state where
+# uploading again is the actual remedy.
+#
+# Reported even when the re-probe cleared it (ORIGIN_BROKEN counts the assets
+# that were STILL broken after reprobe_origin spent its budget), so a lingering
+# propagation race costs one extra upload and nothing worse. That matters,
+# because this verdict has a measured false-positive history: run 31912682120
+# called 52 assets origin-broken and the very next deploy was green with no
+# intervention — it healed on its own. The re-upload is chosen to be safe
+# under exactly that error: uploading a build Pages already has is a no-op, and
+# the second smoke run is what decides the job's outcome either way.
+if [ -n "${GITHUB_OUTPUT:-}" ]; then
+	if [ "$ORIGIN_BROKEN" -gt 0 ]; then
+		echo "origin_broken=true" >> "$GITHUB_OUTPUT"
+	else
+		echo "origin_broken=false" >> "$GITHUB_OUTPUT"
+	fi
+	echo "failures=$fail" >> "$GITHUB_OUTPUT"
+fi
+if [ "$ORIGIN_BROKEN" -gt 0 ]; then
+	echo "  ! $ORIGIN_BROKEN asset(s) missing at ORIGIN (not a cache fault, not purgeable)."
+fi
+
 if [ "$degraded" -gt 0 ]; then
 	echo "::warning::Pages Functions still not executing ($degraded checks) — sitemaps, /api/*, /brand/* and all crawler meta are dead. Not a regression from this deploy; needs Cloudflare-side investigation (see CLAUDE.md)."
 fi
