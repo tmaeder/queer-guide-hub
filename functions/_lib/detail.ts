@@ -924,13 +924,22 @@ async function villageDetail(
 // Tags — /tags/:slug
 
 async function tagDetail(env: Env, slug: string, pathname: string): Promise<DetailResult | null> {
-  const row = await fetchOne(
+  // status=eq.active mirrors fetchTagWithCategories in src/hooks/usePageFetchers.ts,
+  // and is the same trick as venueDetail's duplicate_of_id=is.null above: a merged
+  // or deprecated tag keeps its row at its old slug, so without this filter the
+  // edge happily titled `<title>Rack | Queer Guide</title>` while the SPA rendered
+  // "No such term" underneath it — a soft 404 on every one of the 144 merged and
+  // 5,802 deprecated tags. Excluding them here lets the caller's `!detail` check
+  // fall through to resolveSlugRedirect (301 for the 127 that have a live
+  // canonical) and then to the hard 404 (correct for a retired concept).
+  const rows = await fetchRows(
     env,
     'unified_tags',
-    'slug',
-    slug,
     'id,name,slug,description,short_description,long_description,image_url,category,wikipedia_url,wikidata_id,updated_at',
+    `slug=eq.${encodeURIComponent(slug)}&status=eq.active`,
+    1,
   );
+  const row = rows[0] ?? null;
   if (!row) return null;
 
   // Curated legal citations for law tags. The SPA renders these into its own
@@ -1246,15 +1255,24 @@ export function isDetailPath(pathname: string): boolean {
 // `<redirectTable>` (old_slug → <redirectIdColumn>); this drives the generic
 // lookup below. Marketplace and organizations aren't here — they have no edge
 // SSR detail route at all (not in DETAIL_ROUTE_RE), so an edge 301 isn't
-// architecturally possible for them yet. Tags are skipped too — their public
-// routes are topic/category pages, not a single `/tags/:slug` detail page, so
-// the redirect target isn't a simple slug swap.
+// architecturally possible for them yet.
+//
+// Tags used to be excluded here, on the reasoning that "their public routes are
+// topic/category pages, not a single /tags/:slug detail page, so the redirect
+// target isn't a simple slug swap". That stopped being true when TagDetail.tsx
+// lifted /tags/:slug out of the index page into a real detail route, and the
+// stale comment is why 144 merged tags stayed soft-404s for months: the
+// mechanism that fixes them was sitting right here, already built, with a note
+// on it saying it did not apply. tag_slug_redirects is old_slug → tag_id, which
+// is exactly the shape this lookup wants.
 const SLUG_REDIRECT_KINDS: Array<{
   test: (kindRaw: string) => boolean;
   redirectTable: string;
   redirectIdColumn: string;
   entityTable: string;
   routePrefix: string;
+  /** Extra PostgREST filter on the CANONICAL row lookup. See the tags entry. */
+  entityFilter?: string;
 }> = [
   {
     test: (k) => k.startsWith('venue'),
@@ -1319,6 +1337,23 @@ const SLUG_REDIRECT_KINDS: Array<{
     entityTable: 'guides',
     routePrefix: '/guides',
   },
+  {
+    test: (k) => k.startsWith('tag'),
+    redirectTable: 'tag_slug_redirects',
+    redirectIdColumn: 'tag_id',
+    entityTable: 'unified_tags',
+    routePrefix: '/tags',
+    // status=eq.active is load-bearing, not belt-and-braces. Measured on prod
+    // 2026-08-16: 57 of the 195 tag_slug_redirects rows point at a tag that is
+    // itself deprecated (the diacritic-repair cohort — `alex-j-rgen` →
+    // `alex-jurgen`, now retired). Without this filter each of those becomes a
+    // 301 into a hard 404, which is worse for a crawler than the 404 it
+    // replaces. With it, resolveSlugRedirect returns null and the middleware
+    // falls through to the 404 — the right answer for a retired concept.
+    // resolve_tag_slug() in Postgres joins `status = 'active'` for the same
+    // reason; this keeps the two resolvers telling one story.
+    entityFilter: 'status=eq.active',
+  },
 ];
 
 /**
@@ -1348,7 +1383,17 @@ export async function resolveSlugRedirect(env: Env, pathname: string): Promise<s
     );
     const canonicalId = stringField(redirectRows[0] ?? {}, kind.redirectIdColumn);
     if (!canonicalId) return null;
-    const canonicalRows = await fetchRows(env, kind.entityTable, 'slug', `id=eq.${canonicalId}`, 1);
+    // Resolve the target through `<redirectIdColumn>` rather than trusting a
+    // `new_slug` column: prod has a redirect row whose new_slug still reads
+    // `munchen` while the tag it points at was since renamed to `munich`. The
+    // id is the durable pointer, the denormalized slug is not.
+    const canonicalRows = await fetchRows(
+      env,
+      kind.entityTable,
+      'slug',
+      `id=eq.${canonicalId}${kind.entityFilter ? `&${kind.entityFilter}` : ''}`,
+      1,
+    );
     const newSlug = stringField(canonicalRows[0] ?? {}, 'slug');
     if (!newSlug || newSlug === slug) return null;
     return `${kind.routePrefix}/${newSlug}`;

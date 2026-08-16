@@ -155,6 +155,24 @@ export default function TagDetail() {
     queryFn: async () => ((await fetchTagWithCategories(slug)) as CentralizedTag | null) ?? null,
   });
 
+  // Same SPA-301 as the case fix above, for the case where the row we got back
+  // is filed under a DIFFERENT slug than the URL asked for. Two ways that
+  // happens: `fetchTagWithCategories` followed a merge redirect (/tags/rack →
+  // risk-aware-consensual-kink), or it fell back to matching on display name.
+  //
+  // This only fires on a client-side navigation. A hard load of a merged slug
+  // never reaches React — functions/_middleware.ts answers it with a real 301,
+  // which is the version crawlers and link equity actually need. The two paths
+  // have to agree, and the shared resolver they agree through is
+  // resolve_tag_slug(): the SPA calls the RPC, the edge reads the same
+  // tag_slug_redirects rows with the same status='active' constraint on the
+  // target. Change one and you must change the other.
+  useEffect(() => {
+    if (tag?.slug && tag.slug !== slug) {
+      navigate(`/tags/${encodeURIComponent(tag.slug)}`, { replace: true });
+    }
+  }, [tag?.slug, slug, navigate]);
+
   // Curated legal citations, for law tags only. `fetchTagWithCategories` attaches
   // them; the `CentralizedTag` cast above does not know about them, hence the
   // local widening — same shape as the `human_reviewed` read further down.
@@ -186,7 +204,10 @@ export default function TagDetail() {
   const hasStiProfile = !!stiProfile;
   const { data: mythFacts } = useTagMythFacts(tag?.id ?? null);
   const mythFactCount = mythFacts?.length ?? 0;
-  const diagrams = useMemo(() => (tag ? (TAG_DIAGRAMS[tag.slug] ?? EMPTY_DIAGRAMS) : EMPTY_DIAGRAMS), [tag]);
+  const diagrams = useMemo(
+    () => (tag ? (TAG_DIAGRAMS[tag.slug] ?? EMPTY_DIAGRAMS) : EMPTY_DIAGRAMS),
+    [tag],
+  );
   // Plain reference links (saferparty.ch on the substance terms, and anything
   // else editorial). Distinct from `legalSources` above, which is a legal
   // INSTRUMENT — official title, jurisdiction, adopted year — and earns its own
@@ -257,7 +278,17 @@ export default function TagDetail() {
     // render, so omitting it would pin the strip to the pre-fetch value of 0
     // and the stop would never appear. interactionCount, hasStiProfile and
     // mythFactCount are the same shape.
-  }, [tag, wiki, usage, medicalCodeCount, interactionCount, hasStiProfile, mythFactCount, diagrams, t]);
+  }, [
+    tag,
+    wiki,
+    usage,
+    medicalCodeCount,
+    interactionCount,
+    hasStiProfile,
+    mythFactCount,
+    diagrams,
+    t,
+  ]);
 
   const { activeId, goToStation } = useActiveStation(stations);
 
