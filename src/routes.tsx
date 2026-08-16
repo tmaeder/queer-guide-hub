@@ -42,6 +42,7 @@ const RightsSources = lazyRetry(() => import('./pages/rights/RightsSources'));
 const TagsIndex = lazyRetry(() => import('./pages/TagsIndex'));
 const TagDetail = lazyRetry(() => import('./pages/TagDetail'));
 const SubstanceInteractionsPage = lazyRetry(() => import('./pages/SubstanceInteractionsPage'));
+const StiGuidePage = lazyRetry(() => import('./pages/StiGuidePage'));
 const ConnectionsExplorer = lazyRetry(() => import('./pages/explore/ConnectionsExplorer'));
 const Personalities = lazyRetry(() => import('./pages/Personalities'));
 const PersonalityDetail = lazyRetry(() => import('./pages/PersonalityDetail'));
@@ -839,6 +840,7 @@ export const AppRoutes = () => {
                       day someone creates a tag slugged "interactions" —
                       none exists today and this route is what reserves it. */}
                   <Route path="tags/interactions" element={<SubstanceInteractionsPage />} />
+                  <Route path="tags/sti-guide" element={<StiGuidePage />} />
                   <Route path="tags/:tagName" element={<TagDetail />} />
                   {/* The topic hubs are gone — 8 curated tag clusters that
                       duplicated what the taxonomy already expresses. 301'd in

@@ -231,6 +231,9 @@ export default tseslint.config(
       // that formatting choice. Colour is never the only signal: every level
       // also carries a distinct icon and label. See src/lib/substanceRisk.ts.
       'src/lib/substanceRisk.ts',
+      // STI transmission risk scale (high/medium/low) — same exception class
+      // and containment as substanceRisk.ts; gated by stiRisk.test.ts.
+      'src/lib/stiRisk.ts',
       // Deterministic avatar SVG fallback — monochrome dark-gray steps; concrete
       // hex is required by the SVG data-URI (CSS vars don't resolve there).
       'src/lib/avatar.ts',
@@ -503,6 +506,8 @@ export default tseslint.config(
       'src/lib/avatar.ts',
       // Locked drug-interaction risk scale — see the note in the block above.
       'src/lib/substanceRisk.ts',
+      // Locked STI transmission risk scale — see the note in the block above.
+      'src/lib/stiRisk.ts',
       'src/config/mapStyle.ts',
       'src/config/contentTypeRegistry.ts',
       'src/config/submissionRegistry.ts',
