@@ -96,6 +96,18 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'Browse and search LGBTQ+ terms — identities, practices, history and community language, each linked to the venues, events, people and news that use it.',
   },
+  // Needs an exact entry for the same reason /tags/c/:slug needed a branch in
+  // dynamicMeta: the generic `/(tag|tags)/([^/]+)` matcher reads this as
+  // kind=tag, slug="interactions" and served crawlers
+  // "Interactions — Tag | Queer Guide" plus a templated "Tag listing curated by
+  // the LGBTQ+ community" description. Adding it to RESERVED_DETAIL_SLUGS
+  // (functions/_lib/detail.ts) only stopped the hard 404 — the meta table is a
+  // separate surface and still mis-titled the page.
+  '/tags/interactions': {
+    title: 'Drug Interaction Chart | Queer Guide',
+    description:
+      'Which substances are dangerous to combine — 421 combinations across 31 drugs, with harm-reduction data researched by TripSit.',
+  },
   '/news': {
     title: 'LGBTQ+ News — Curated Daily | Queer Guide',
     description:
