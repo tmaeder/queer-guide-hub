@@ -1220,6 +1220,9 @@ const RESERVED_DETAIL_SLUGS = new Set([
   // /tags/interactions — the drug interaction chart. Not a tag slug; the SPA
   // route also reserves the name so no tag can ever claim it.
   'interactions',
+  // /tags/sti-guide — the STI transmission/testing/protection guide. Same
+  // shape as interactions: a static page under the tag namespace.
+  'sti-guide',
 ]);
 
 function matchDetailPath(pathname: string): RegExpMatchArray | null {
