@@ -108,6 +108,13 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'Which substances are dangerous to combine — 421 combinations across 31 drugs, with harm-reduction data researched by TripSit.',
   },
+  // Same reason as /tags/interactions above: without an exact entry the
+  // generic tag matcher would title this "Sti-guide — Tag".
+  '/tags/sti-guide': {
+    title: 'STI Guide — Transmission, Testing, Protection | Queer Guide',
+    description:
+      'How STIs spread, when a test can detect them, and which prevention method protects against which infection — a harm-reduction reference.',
+  },
   '/news': {
     title: 'LGBTQ+ News — Curated Daily | Queer Guide',
     description:
