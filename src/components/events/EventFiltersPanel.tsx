@@ -28,7 +28,7 @@ import { useEventTypeOptions } from '@/lib/eventTypes';
  */
 type Option = { name: string; id: string; slug?: string | null };
 
-interface EventFiltersPanelProps {
+export interface EventFiltersPanelProps {
   availableCities: string[];
   cities: string[];
   setCities: (v: string[]) => void;
@@ -53,6 +53,13 @@ interface EventFiltersPanelProps {
   hasActiveFilters: boolean | string | number | null | undefined;
   onApply: () => void;
   onClear: () => void;
+  /**
+   * Stack every picker in one column. The responsive grid below steps to 2
+   * columns at md and 4 at lg, and those are VIEWPORT queries — inside the
+   * ~448px filter sheet on a desktop they would try to lay four pickers across
+   * the sheet's width.
+   */
+  singleColumn?: boolean;
 }
 
 /** Events extended-filters panel (cities, types, dates, a11y, audience, lang, age, tags). */
@@ -81,12 +88,16 @@ export function EventFiltersPanel({
   hasActiveFilters,
   onApply,
   onClear,
+  singleColumn = false,
 }: EventFiltersPanelProps) {
   const { t } = useTranslation();
   const eventTypeOptions = useEventTypeOptions();
+  const gridClass = singleColumn
+    ? 'grid grid-cols-1 gap-4'
+    : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4';
   return (
     <nav aria-label="Event filters" className="flex flex-col gap-4 pt-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className={gridClass}>
         <div className="flex flex-col gap-2">
           <Label htmlFor="city">{t('pages.events.cities', 'Cities')}</Label>
           <MultiCombobox
@@ -175,7 +186,7 @@ export function EventFiltersPanel({
       </div>
 
       {/* Accessibility + Target groups + Language + Age */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className={gridClass}>
         <div className="flex flex-col gap-2">
           <Label htmlFor="accessibility">{t('pages.events.accessibility', 'Accessibility')}</Label>
           <MultiCombobox
