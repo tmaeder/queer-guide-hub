@@ -12,7 +12,7 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { useBreadcrumbState, type BreadcrumbItem as Crumb } from '@/contexts/BreadcrumbContext';
-import { getRouteBreadcrumbs, homeCrumb, localeFromPath } from '@/config/breadcrumbs';
+import { getRouteBreadcrumbs, homeCrumb } from '@/config/breadcrumbs';
 import { breadcrumbJsonLd } from '@/lib/breadcrumbJsonLd';
 import { PAGE_GUTTER } from '@/components/layout/PageContainer';
 
@@ -27,10 +27,19 @@ export function BreadcrumbBar() {
   const { pathname } = useLocation();
   const { t } = useTranslation();
   const published = useBreadcrumbState();
-  // LocalizedLink can't read the locale here (bar is outside the :locale? Routes),
-  // so prefix hrefs ourselves from the path.
-  const locale = localeFromPath(pathname);
-  const loc = (href: string) => (locale && href.startsWith('/') ? `/${locale}${href}` : href);
+  // Crumb hrefs are passed to LocalizedLink RAW. There used to be a `loc()`
+  // helper here that prefixed the locale itself, on the premise that
+  // "LocalizedLink can't read the locale here (bar is outside the :locale?
+  // Routes)". That premise no longer holds, and the two prefixes stacked:
+  // measured on production 2026-08-16, every crumb on a French detail page
+  // pointed at `/fr/fr/…` (`/fr/fr/`, `/fr/fr/news`,
+  // `/fr/fr/news?category=rights-legal`), which 404s. It was reaching the
+  // error board as a steady trickle of `[404] /:locale/fr/*` reports across
+  // six sections.
+  //
+  // If LocalizedLink ever stops resolving the locale here, the fix is to make
+  // it resolve — not to re-add a second prefixer. Two things that both prefix
+  // cannot be made correct by tuning either one.
 
   // Page trails are entity-only; prepend the shared Home crumb so every trail
   // is anchored consistently (and starts with a clickable Home).
@@ -107,7 +116,7 @@ export function BreadcrumbBar() {
                       <BreadcrumbPage className="block truncate">{crumb.label}</BreadcrumbPage>
                     ) : crumb.href ? (
                       <BreadcrumbLink asChild>
-                        <LocalizedLink to={loc(crumb.href)}>{crumb.label}</LocalizedLink>
+                        <LocalizedLink to={crumb.href}>{crumb.label}</LocalizedLink>
                       </BreadcrumbLink>
                     ) : (
                       <span>{crumb.label}</span>

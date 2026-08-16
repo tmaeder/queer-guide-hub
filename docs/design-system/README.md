@@ -252,7 +252,7 @@ identical pixels and only the last color drawn was visible.
 Cities with no rail network fall back to the bending template line, which is why
 hard rule #1 still governs the single-line case.
 
-**224 cities have committed geometry, against 2,142 in the directory, so the
+**307 cities have committed geometry, against 2,142 in the directory, so the
 fallback is still the common case and the difference has to be VISIBLE.** A real network
 is captioned with its mode ("Metro network" / "Light rail network" / "Tram
 network"); a template line is captioned with nothing at all, and that absence is
@@ -301,6 +301,15 @@ rather than decoration, and it is why the panel is not `aria-hidden` while the
 card's copy is. It sits in the travel section, deliberately far from the safety
 verdict in the rail: the four-hue vocabulary must never share a viewport with a
 risk badge.
+
+**Coverage is a population-ordered PREFIX, not a threshold.** The sweep walks
+cities biggest-first, so it can be stopped at any point and the result is still
+the best available set — which matters because Overpass throttles a long run
+down to a crawl (measured: 2/min falling to 0.39/min after a few thousand
+requests). Everything listable down to ~180k is covered. To extend it, re-run
+the generator: every city already fetched is served from
+`scripts/output/.overpass-cache/`, so only the new tail costs anything, and
+`--cached-only` re-derives the committed file from disk without fetching at all.
 
 Geometry is derived from © OpenStreetMap contributors and licensed ODbL;
 the credit sits in the site footer alongside the map's.
