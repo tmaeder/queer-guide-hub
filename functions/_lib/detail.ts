@@ -974,10 +974,29 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
     );
 
   const name = stringField(row, 'name') ?? slug;
-  const description =
+  // TWO FIELDS, NOT ONE — they had been the same variable, with
+  // `long_description` first, so the 155-char meta description was a
+  // mid-sentence slice of the wiki body ("…the average survival time…") on
+  // every tag that has one. Worse, src/pages/TagDetail.tsx's useMeta picks
+  // `description` FIRST, so the crawler and the reader were served different
+  // fields for the same URL — the inverse of the byte-identical-title fix
+  // noted above, and invisible unless the two are compared directly.
+  //
+  // On /tags/hiv that meant humans read "with effective treatment … cannot be
+  // transmitted sexually" while Google indexed "without treatment, the average
+  // survival time … is 9 to 11 years". A stigma difference, not a cosmetic one.
+  const article =
     stringField(row, 'long_description') ??
     stringField(row, 'description') ??
     stringField(row, 'short_description') ??
+    '';
+  // Precedence mirrors the SPA's useMeta exactly. A meta description wants the
+  // curated one-liner; the crawler-visible <article> below still gets the long
+  // prose, which is what it is for.
+  const summary =
+    stringField(row, 'description') ??
+    stringField(row, 'short_description') ??
+    stringField(row, 'long_description') ??
     '';
   const image = stringField(row, 'image_url');
   const category = stringField(row, 'category');
@@ -988,7 +1007,7 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
     // for the same URL.
     title: truncate(`${name}${TITLE_SUFFIX}`, MAX_TITLE),
     description: truncate(
-      description || `Articles, venues and events about ${name} on Queer Guide.`,
+      summary || `Articles, venues and events about ${name} on Queer Guide.`,
       MAX_DESC,
     ),
     ogImage: safeOgImage(image ?? DEFAULT_OG_IMAGE),
@@ -998,7 +1017,7 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
     <article>
       <h1>${escape(name)}</h1>
       ${category ? `<p><strong>Category:</strong> ${escape(category)}</p>` : ''}
-      ${description ? paragraphsHtml(description) : `<p>Browse content tagged ${escape(name)} on Queer Guide.</p>`}
+      ${article ? paragraphsHtml(article) : `<p>Browse content tagged ${escape(name)} on Queer Guide.</p>`}
       ${
         citations.length
           ? `<section><h2>Source of law</h2><ul>${citations
@@ -1028,7 +1047,10 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
     '@context': 'https://schema.org',
     '@type': 'DefinedTerm',
     name,
-    description: description || undefined,
+    // Summary, not the article: src/lib/tags/tagJsonLd.ts is fed the SPA's
+    // summary-first `description`, and the two DefinedTerm documents for one
+    // URL must not disagree.
+    description: summary || undefined,
     image,
     url: `${SITE_ORIGIN}${pathname}`,
     sameAs: [stringField(row, 'wikipedia_url'), ...citations.map((c) => c.url)].filter(Boolean)
