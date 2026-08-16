@@ -572,8 +572,18 @@ export const UniversalSearchBar = ({
         <span
           aria-hidden="true"
           className={cn(
-            'pointer-events-none inline-flex shrink-0 items-center justify-center',
-            panel ? 'pe-4 text-foreground' : 'text-muted-foreground',
+            'pointer-events-none shrink-0 items-center justify-center',
+            // In the BAR, the magnifier is dropped below `sm`. It is pure
+            // decoration — aria-hidden, pointer-events-none — and it was the
+            // single most expensive thing in the box: 20px glyph plus 32px of
+            // padding, 52px of a box that measures 99px at 320. With it and
+            // the mic both present the input itself was 3px wide, i.e. you
+            // could not see what you were typing. The placeholder and the 2px
+            // border already say this is a search field. Same trade the
+            // wordmark makes at the same breakpoint, for the same reason.
+            panel
+              ? 'inline-flex pe-4 text-foreground'
+              : 'hidden text-muted-foreground sm:inline-flex',
           )}
           style={{ height: h, paddingInline: panel ? undefined : isMobile ? 16 : 12 }}
         >
@@ -616,7 +626,21 @@ export const UniversalSearchBar = ({
           // test: repainting the fill without the type is the failure
           // mode that once shipped white-on-#f5f5f5 at 1.09:1).
           className={cn(
-            'min-w-0 flex-1 border-0 bg-transparent text-foreground placeholder:text-muted-foreground shadow-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0',
+            // px-0 is load-bearing at 390px. The Input primitive ships `px-4`,
+            // i.e. 32px of padding this field cannot afford: the header row
+            // gives the search box 169px on a 390px viewport, the leading icon
+            // and the mic take ~96px of that, and the remaining 73px was then
+            // halved to ~41px of content box — so the placeholder rendered as
+            // a clipped "Searc". The wrapper already owns the icon inset on
+            // both sides, so the primitive's padding was only ever doubling it.
+            // text-ellipsis so a placeholder that still does not fit ends in
+            // "…" rather than a hard cut mid-word. Chrome applies it to the
+            // placeholder, which is what turns a field reading "Searc" into
+            // one reading "Search…" — the difference between looking broken
+            // and looking deliberately abbreviated. Matters at 320, and at the
+            // md boundary where the long universal hint wants 266px and the
+            // row can spare 238.
+            'min-w-0 flex-1 truncate border-0 bg-transparent px-0 text-foreground placeholder:text-muted-foreground shadow-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0',
             // The auto-focused field draws the global pink focus ring
             // (index.css `*:focus-visible`, `!important`). The mock shows
             // no ring, but that rule is the site's WCAG 2.4.7 guarantee
