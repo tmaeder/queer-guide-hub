@@ -30,6 +30,11 @@ const ROUTES = [
   // of the 626 (2.7%) that actually have opening hours, so its OWNER module
   // renders; pick another and the `hours` section is legitimately absent.
   { path: '/venues/scum-and-villainy-cantina', name: 'Scum & Villainy', eyebrow: /Venue/ },
+  // The SPARSE venue, deliberately. Without a thin record in this list the
+  // empty-section test above passes vacuously — every rich page fills its
+  // sections. Lehighton has no hours, no amenities and no organisation, so it
+  // is the page that exposed the empty "Access" heading.
+  { path: '/venues/lehighton', name: 'Lehighton', eyebrow: /Venue/ },
   { path: '/events/capital-pride-ottawa-2026', name: 'Capital Pride', eyebrow: /Event/ },
 ];
 
@@ -60,6 +65,39 @@ for (const route of ROUTES) {
       // emit its own, so porting it without removing that would have produced
       // two — which `e2e/a11y-event-detail.spec.ts` fails on.
       await expect(page.locator('article h1')).toHaveCount(1);
+    });
+
+    test('no section renders as a bare heading with no content', async ({ page }) => {
+      await open(page, route.path);
+      // The station/section invariant catches a station pointing at nothing.
+      // It CANNOT catch the inverse: a section whose component returns `null`
+      // from its own body still renders its `<h2>`, so the id exists and the
+      // rail looks healthy while the reader gets an empty heading.
+      //
+      // That shipped. `/venues/lehighton` served an "Access" heading with zero
+      // characters under it because `VenueAmenities` self-hides and the
+      // section had no `when` guard — on 91% of venues. This asserts the thing
+      // the model cannot express.
+      const empty = await page.evaluate(() =>
+        [...document.querySelectorAll('article section[id]')]
+          .filter((el) => {
+            const h = el.querySelector('h2');
+            const text = (el.textContent ?? '').replace(h?.textContent ?? '', '').trim();
+            if (text.length > 0) return false;
+            // Text is not the only content. `VenuePhotos` renders a grid of
+            // <img> and nothing else, so a textContent-only check flagged it —
+            // a false positive that would have taught everyone to ignore this
+            // assertion. Media and controls count as a body.
+            return (
+              el.querySelectorAll('img, svg, video, canvas, iframe, picture, input').length === 0
+            );
+          })
+          .map((el) => el.id),
+      );
+
+      expect(empty, `sections rendered with a heading and no body: ${empty.join(', ')}`).toEqual(
+        [],
+      );
     });
 
     test('every route-rail station points at a heading that exists', async ({ page }) => {
