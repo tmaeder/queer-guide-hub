@@ -44,9 +44,22 @@ interface PresetChipsProps {
    * broken promise into an honest one, and costs a `head: true` count.
    */
   counts?: Partial<Record<EventPresetId, number>>;
+  /**
+   * Rendered after the tabs, inside the SAME scroll container but OUTSIDE the
+   * `role="tablist"` — a `role="tab"` sibling is the only thing allowed in
+   * there. Lets the page hang a non-preset toggle (past events) on the end of
+   * this row instead of spending a whole extra line on it.
+   */
+  trailing?: React.ReactNode;
 }
 
-export function PresetChips({ active, onSelect, disabled = [], counts }: PresetChipsProps) {
+export function PresetChips({
+  active,
+  onSelect,
+  disabled = [],
+  counts,
+  trailing,
+}: PresetChipsProps) {
   const { t } = useTranslation();
 
   const presets: EventPreset[] = [
@@ -73,44 +86,55 @@ export function PresetChips({ active, onSelect, disabled = [], counts }: PresetC
   ];
 
   return (
-    <div
-      className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 snap-x snap-mandatory scrollbar-thin"
-      role="tablist"
-      aria-label={t('pages.events.preset.label', 'Quick filters')}
-    >
-      {presets.map(({ id, label, icon: Icon }) => {
-        const isActive = active === id;
-        const count = counts?.[id];
-        // A preset that can only return an empty grid is not a filter, it is a
-        // dead end. Disable it rather than letting the reader discover that by
-        // clicking — but never hide it, so the absence stays visible and
-        // legible as thin coverage rather than a missing feature.
-        const isDisabled = disabled.includes(id) || count === 0;
-        return (
-          <button
-            key={id}
-            type="button"
-            role="tab"
-            aria-selected={isActive}
-            disabled={isDisabled}
-            onClick={() => onSelect(isActive ? null : id)}
-            className={cn(
-              'shrink-0 snap-start inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-colors bg-surface-container',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-              isActive
-                ? 'bg-foreground text-background border-foreground'
-                : 'bg-background text-foreground border-border hover:bg-muted',
-              isDisabled && 'opacity-50 cursor-not-allowed',
-            )}
-          >
-            <Icon className="w-4 h-4" />
-            {label}
-            {typeof count === 'number' ? (
-              <span className="tabular-nums text-13 opacity-70">{count}</span>
-            ) : null}
-          </button>
-        );
-      })}
+    // One scrollable LINE, never `flex-wrap`. This row sits in the sticky
+    // control band, so a second line is subtracted from every screen of results
+    // for the whole session — the same reason /cities pinned its tier chips to
+    // one line. The chips are `h-8` square-cornered ink boxes (FilterChip's DNA)
+    // rather than the pre-rebrand `rounded-full py-2` pills, which stood 44px
+    // tall and carried a radius the subway-map system had already retired.
+    <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 snap-x scrollbar-thin">
+      <div
+        className="flex gap-2"
+        role="tablist"
+        aria-label={t('pages.events.preset.label', 'Quick filters')}
+      >
+        {presets.map(({ id, label, icon: Icon }) => {
+          const isActive = active === id;
+          const count = counts?.[id];
+          // A preset that can only return an empty grid is not a filter, it is a
+          // dead end. Disable it rather than letting the reader discover that by
+          // clicking — but never hide it, so the absence stays visible and
+          // legible as thin coverage rather than a missing feature.
+          const isDisabled = disabled.includes(id) || count === 0;
+          return (
+            <button
+              key={id}
+              type="button"
+              role="tab"
+              aria-selected={isActive}
+              disabled={isDisabled}
+              onClick={() => onSelect(isActive ? null : id)}
+              className={cn(
+                'inline-flex h-8 shrink-0 snap-start items-center gap-1.5 border-2 border-foreground px-2.5 text-13 font-bold',
+                'transition-colors duration-fast',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+                isActive
+                  ? 'bg-foreground text-background'
+                  : 'bg-background text-foreground hover:bg-foreground hover:text-background',
+                isDisabled &&
+                  'cursor-not-allowed opacity-50 hover:bg-background hover:text-foreground',
+              )}
+            >
+              <Icon className="h-3.5 w-3.5" />
+              {label}
+              {typeof count === 'number' ? (
+                <span className="tabular-nums opacity-70">{count}</span>
+              ) : null}
+            </button>
+          );
+        })}
+      </div>
+      {trailing}
     </div>
   );
 }

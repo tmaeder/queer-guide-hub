@@ -8,11 +8,7 @@ import { useSearchParams } from 'react-router';
 import { useDebounce } from '@/hooks/useDebounce';
 import { getPresetDateRange, type EventPresetId } from '@/components/events/PresetChips';
 import { dedupeCitiesByNormalized } from '@/utils/dateRange';
-import {
-  parseFilterState,
-  serializeFilterState,
-  type EventSort,
-} from '@/utils/eventsQueryString';
+import { parseFilterState, serializeFilterState, type EventSort } from '@/utils/eventsQueryString';
 import type { useEvents } from '@/hooks/useEvents';
 
 type EventsApi = ReturnType<typeof useEvents>;
@@ -28,7 +24,10 @@ const PAGE_SIZE = 24;
  * `fetchEvents` and `events` are injected from the page's useEvents() instance
  * so the data layer stays owned by the page.
  */
-export function useEventFilters(fetchEvents: EventsApi['fetchEvents'], events: EventsApi['events']) {
+export function useEventFilters(
+  fetchEvents: EventsApi['fetchEvents'],
+  events: EventsApi['events'],
+) {
   const { t } = useTranslation();
   const { toast } = useToast();
 
@@ -62,7 +61,10 @@ export function useEventFilters(fetchEvents: EventsApi['fetchEvents'], events: E
   const { targetGroups: tgOptions } = useTargetGroups();
 
   // Timeline viewport drives a parallel date-range fetch when timeline view is active.
-  const [timelineViewport, setTimelineViewport] = useState<{ startMs: number; endMs: number } | null>(null);
+  const [timelineViewport, setTimelineViewport] = useState<{
+    startMs: number;
+    endMs: number;
+  } | null>(null);
   const debouncedViewport = useDebounce(timelineViewport, 350);
 
   // Get unique cities from events for auto-suggest
@@ -171,8 +173,7 @@ export function useEventFilters(fetchEvents: EventsApi['fetchEvents'], events: E
       {
         search: search || undefined,
         cities: cities.length > 0 ? cities : undefined,
-        eventTypes:
-          preset === 'pride' ? ['pride'] : eventTypes.length > 0 ? eventTypes : undefined,
+        eventTypes: preset === 'pride' ? ['pride'] : eventTypes.length > 0 ? eventTypes : undefined,
         tags: selectedTags.length > 0 ? selectedTags : undefined,
         dateRange: range
           ? { start: range.start.toISOString(), end: range.end.toISOString() }
@@ -279,6 +280,24 @@ export function useEventFilters(fetchEvents: EventsApi['fetchEvents'], events: E
     featuredOnly ||
     activePreset;
 
+  /**
+   * How many of the FILTER SHEET's own dimensions are set — the number on the
+   * "Filters" badge in the control band. Deliberately narrower than
+   * `hasActiveFilters`: search, the presets and the past-events toggle each have
+   * their own visible control in the band, so counting them here would badge the
+   * sheet for state the reader can already see and clear without opening it.
+   */
+  const sheetFilterCount =
+    cities.length +
+    eventTypes.length +
+    selectedTags.length +
+    accessibilityAttrs.length +
+    targetGroupsFilter.length +
+    languages.length +
+    (ageRestriction ? 1 : 0) +
+    (startDate ? 1 : 0) +
+    (endDate ? 1 : 0);
+
   const autoInitDone = useRef(false);
   useEffect(() => {
     if (autoInitDone.current) return;
@@ -349,7 +368,19 @@ export function useEventFilters(fetchEvents: EventsApi['fetchEvents'], events: E
     }
     handleFiltersChange();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [eventTypes, startDate, endDate, isFree, featuredOnly, nearMe, selectedTags, accessibilityAttrs, targetGroupsFilter, languages, ageRestriction]);
+  }, [
+    eventTypes,
+    startDate,
+    endDate,
+    isFree,
+    featuredOnly,
+    nearMe,
+    selectedTags,
+    accessibilityAttrs,
+    targetGroupsFilter,
+    languages,
+    ageRestriction,
+  ]);
 
   // Debounced search — apply ~300ms after the user stops typing so the
   // list filters live. Enter still flushes immediately via onKeyDown.
@@ -512,6 +543,7 @@ export function useEventFilters(fetchEvents: EventsApi['fetchEvents'], events: E
     availableCities,
     // derived
     hasActiveFilters,
+    sheetFilterCount,
     // handlers
     handleFiltersChange,
     handlePresetSelect,

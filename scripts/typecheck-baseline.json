@@ -1,6 +1,6 @@
 {
   "project": "tsconfig.app.json",
-  "total": 874,
+  "total": 847,
   "files": {
     "src/assets/intimate/pictograms.tsx": {
       "TS2503": 2
@@ -203,9 +203,6 @@
     },
     "src/components/effects/__tests__/ParallaxHero.test.tsx": {
       "TS2322": 1
-    },
-    "src/components/entity/adapters/useVenueDescriptor.tsx": {
-      "TS2322": 2
     },
     "src/components/error/OptimizedErrorBoundary.tsx": {
       "TS2339": 3,
@@ -907,17 +904,8 @@
     "src/pages/Auth.tsx": {
       "TS2339": 4
     },
-    "src/pages/CityDetail.tsx": {
-      "TS2339": 21
-    },
     "src/pages/ClaimUsername.tsx": {
       "TS2352": 1
-    },
-    "src/pages/CountryDetail.tsx": {
-      "TS2339": 1
-    },
-    "src/pages/EventDetail.tsx": {
-      "TS2322": 1
     },
     "src/pages/Events.tsx": {
       "TS2322": 1,
@@ -954,10 +942,6 @@
     "src/pages/ProfessionDetail.tsx": {
       "TS2345": 2,
       "TS2769": 1
-    },
-    "src/pages/QueerVillageDetail.tsx": {
-      "TS2339": 1,
-      "TS2551": 1
     },
     "src/pages/Settings.tsx": {
       "TS2322": 2,

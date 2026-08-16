@@ -151,6 +151,41 @@ the ladder plus a `max-w-page` inner wrapper, and admin **pages render bare
 content** — adding their own `p-6` on top is what produced 48px gutters on some
 pages and 16px on others across six different content widths.
 
+### Sticky control bands — what may live in one
+
+Alignment is not the only axis a page can fail on. `e2e/page-layout.spec.ts`
+carries a second describe block (`mobile density`) with two viewport-relative
+budgets at 390×844: sticky chrome ≤ **0.30** of the viewport, first content
+within **1.25** screens. `/cities` satisfied the whole alignment contract while
+its sticky filter band stood at 238px and the first card sat 1,271px down — a
+page can pass every automated gate and still be unusable on a phone.
+
+**A row in a sticky band is charged against every screen of results for the
+whole session.** So:
+
+- **Nothing in a sticky band may `flex-wrap`.** One scrollable line
+  (`overflow-x-auto`), never two stacked ones. `/events`' result bar measured
+  175px for content 44px tall purely because it wrapped to three lines.
+- **A control earns its row or it moves out.** Not "should it be reachable" —
+  everything should — but "is it worth a permanent tax". Search and a Filters
+  door earn it; chips that are the page's primary navigation earn it. A result
+  count, a sort select and a view toggle do not: none is re-reached while
+  scrolling, so they belong in a non-sticky header above the grid
+  (`EventsResultHeader`). The long tail belongs in a Sheet
+  (`MarketplaceFilterSheet`, `EventsFilterSheet`) — never an inline panel,
+  which pushes the results down by its full height on the one interaction that
+  means "show me more".
+- **Budget every control at 44px, whatever the `h-*` says.** `src/index.css`
+  sets a global `min-height: 44px` on `a, button, input, select, textarea,
+  summary` for WCAG 2.5.5, and min-height beats the height utility at the
+  box-model level. `h-8` chips and `h-10` inputs all render 44 tall. Only
+  `.rounded-badge` opts down (to 24px, WCAG 2.5.8). A band budgeted on the
+  class names comes in ~30% over.
+- **How many rows fit depends on the hero above it.** `/marketplace` carries
+  three rows in its band and passes; `/events` carries two, because its
+  `PageHero size="md"` is 333px at 390px wide and the two pages are spending
+  from the same 1.25 screens.
+
 ## Depth
 
 Soft elevation shadows stay banned (`shadow-md/lg/xl/2xl` are ESLint errors).
