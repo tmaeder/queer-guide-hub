@@ -583,7 +583,13 @@ export const UniversalSearchBar = ({
             // wordmark makes at the same breakpoint, for the same reason.
             panel
               ? 'inline-flex pe-4 text-foreground'
-              : 'hidden text-muted-foreground sm:inline-flex',
+              : hero
+                ? // The hero spans its column and IS the page's primary target,
+                  // so it has the room — and there the magnifier is part of the
+                  // drawn design rather than chrome decoration. It keeps the
+                  // icon at every width.
+                  'inline-flex text-muted-foreground'
+                : 'hidden text-muted-foreground sm:inline-flex',
           )}
           style={{ height: h, paddingInline: panel ? undefined : isMobile ? 16 : 12 }}
         >
