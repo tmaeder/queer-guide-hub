@@ -42,14 +42,44 @@ describe('smoke-pages.sh reprobe_origin latch', () => {
     expect(src).toContain('busted=$REPROBE_CT')
   })
 
-  it('latches so the sleep is paid once per run, not once per asset', () => {
+  it('latches only on a SUCCESSFUL probe, never on having tried', () => {
     const fn = src.slice(src.indexOf('reprobe_origin() {'))
     const body = fn.slice(0, fn.indexOf('\n}\n'))
-    expect(body).toContain('ORIGIN_RECHECKED')
-    // The sleep must sit inside the guarded first-time branch only.
-    const guarded = body.slice(body.indexOf('if [ -z "$ORIGIN_RECHECKED" ]'), body.indexOf('else'))
-    expect(guarded).toContain('sleep')
-    expect(body.slice(body.indexOf('else'))).not.toContain('sleep')
+    // Every assignment of the latch must sit on a line that also matched the
+    // wanted content type. Latching after a failed wait is what made run
+    // 31912682120 report 52 assets as ORIGIN IS BROKEN 0.4s apart: the first
+    // one consumed the only wait, and nothing had proven the origin was up.
+    const lines = body.split('\n')
+    const WANT_ARM = /\*"\$want"\*\)/
+    // Walk back to the nearest control-flow boundary. If it is the want-arm,
+    // the assignment is inside a successful-probe branch; if it is anything
+    // else (esac / ;; / else / fi) the assignment escaped that branch.
+    const BOUNDARY = /(^|\s)(esac|;;|else|fi)(\s|$)|\*"\$want"\*\)/
+    let checked = 0
+    for (const [i, line] of lines.entries()) {
+      if (!/ORIGIN_RECHECKED=1/.test(line)) continue
+      checked++
+      if (WANT_ARM.test(line)) continue // same-line case arm
+      const prior = lines.slice(0, i).reverse().find((l) => BOUNDARY.test(l)) ?? ''
+      expect(prior, `ORIGIN_RECHECKED=1 on line ${i} is not inside a *"$want"*) arm`).toMatch(
+        WANT_ARM,
+      )
+    }
+    expect(checked, 'no ORIGIN_RECHECKED=1 found — the assertion would be vacuous').toBeGreaterThan(0)
+  })
+
+  it('bounds the total wait with one budget for the whole run', () => {
+    const fn = src.slice(src.indexOf('reprobe_origin() {'))
+    const body = fn.slice(0, fn.indexOf('\n}\n'))
+    // Unbounded waiting per asset is the 18m43s regression (#2747, #2756). The
+    // sleep must be governed by a run-wide budget that it also decrements,
+    // otherwise the loop is only bounded by the number of failing assets.
+    expect(body).toMatch(/while \[ "\$REPROBE_SPENT" -lt "\$REPROBE_BUDGET" \]/)
+    expect(body).toContain('REPROBE_SPENT=$((REPROBE_SPENT + 5))')
+    expect(body).toContain('sleep')
+    // And a proven-ready origin must short-circuit before any budget is spent.
+    const beforeLoop = body.slice(0, body.indexOf('while ['))
+    expect(beforeLoop).toContain('[ -n "$ORIGIN_RECHECKED" ] && return')
   })
 
   it('re-probes the origin before any asset is called ORIGIN IS BROKEN', () => {

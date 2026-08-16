@@ -197,19 +197,49 @@ wait_for_origin() {
 # returns and every failing asset pays the full wait again — which is precisely
 # how this job reached 18m43s before. Caught by testing the latch rather than
 # reading it: the second call still slept.
+# LATCH ON SUCCESS, NOT ON HAVING TRIED. The first version latched either way,
+# and run 31912682120 shows why that is wrong: the CSS passed at 22:39:57, the
+# first JS chunk waited its 15s and still read text/html at 22:40:13, latched —
+# and the remaining 51 chunks then got one no-wait retry each, 0.4s apart, and
+# all 52 were called ORIGIN IS BROKEN. Origin was serving the stylesheet and the
+# entry chunk but not the rest, ~60s after publish; the very next deploy was
+# green, so it healed on its own.
+#
+# "We have already waited once" is not evidence about the origin. "A probe
+# succeeded" is. So the latch is only set when origin actually answers, and
+# until then every asset may keep waiting — bounded by ONE budget for the whole
+# run so this can never walk back toward the 18m43s job (#2747, #2756). Worst
+# case is REPROBE_BUDGET seconds plus one curl per failing asset, no matter how
+# many assets fail.
 ORIGIN_RECHECKED=""
 REPROBE_CT=""
+REPROBE_BUDGET=${REPROBE_BUDGET:-120}
+REPROBE_SPENT=0
 reprobe_origin() {
 	local path=$1 want=$2
-	if [ -z "$ORIGIN_RECHECKED" ]; then
-		for _ in 1 2 3; do
-			sleep 5
-			REPROBE_CT=$(curl -sS "${CURL_TIMEOUT[@]}" -o /dev/null -w '%{content_type}' "$SITE$path?cb=$$-${SECONDS}-${RANDOM}")
-			case "$REPROBE_CT" in *"$want"*) break ;; esac
-		done
-		ORIGIN_RECHECKED=1
-	else
+	# One free re-read for everybody: cheap, and enough once origin is up.
+	REPROBE_CT=$(curl -sS "${CURL_TIMEOUT[@]}" -o /dev/null -w '%{content_type}' "$SITE$path?cb=$$-${SECONDS}-${RANDOM}")
+	case "$REPROBE_CT" in
+		*"$want"*) ORIGIN_RECHECKED=1; return ;;
+	esac
+	# Origin has been PROVEN ready earlier in this run, so a miss now is about
+	# this object, not about propagation. Don't spend budget on it.
+	[ -n "$ORIGIN_RECHECKED" ] && return
+	while [ "$REPROBE_SPENT" -lt "$REPROBE_BUDGET" ]; do
+		sleep 5
+		REPROBE_SPENT=$((REPROBE_SPENT + 5))
 		REPROBE_CT=$(curl -sS "${CURL_TIMEOUT[@]}" -o /dev/null -w '%{content_type}' "$SITE$path?cb=$$-${SECONDS}-${RANDOM}")
+		case "$REPROBE_CT" in
+			*"$want"*)
+				echo "  · origin caught up after ${REPROBE_SPENT}s of waiting ($path)"
+				ORIGIN_RECHECKED=1
+				return
+				;;
+		esac
+	done
+	if [ "$REPROBE_SPENT" -ge "$REPROBE_BUDGET" ] && [ -z "$ORIGIN_BUDGET_SPENT_REPORTED" ]; then
+		echo "  ! origin still missing objects after ${REPROBE_SPENT}s — reporting them as broken"
+		ORIGIN_BUDGET_SPENT_REPORTED=1
 	fi
 }
 
