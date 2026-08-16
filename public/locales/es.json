@@ -4436,6 +4436,10 @@
       "seeByCountry": "Ver el estado por país",
       "spansAllRights": "Esto abarca todo un ámbito del derecho, no una sola ley. Registramos 18 derechos distintos, país por país.",
       "seeAllRights": "Ver los 18 derechos por país"
+    },
+    "flagWall": {
+      "eyebrow": "Símbolos",
+      "title": "Las banderas"
     }
   },
   "village": {
