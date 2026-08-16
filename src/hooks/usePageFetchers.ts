@@ -399,6 +399,35 @@ export async function fetchTagWithCategories(name: string) {
       .maybeSingle();
     data = byName.data as Record<string, unknown> | null;
   }
+  // Merged tag → its canonical. `merge_tag_concept` flips status to 'merged' and
+  // records the absorbed slug in tag_slug_redirects; both filters above then miss,
+  // which is how /tags/crystal-meth rendered "No such term" instead of
+  // Methamphetamine. resolve_tag_slug() is the resolver that already encodes the
+  // right precedence — direct active hit first, redirect only as a fallback, and
+  // the target joined on status='active' so a redirect into a since-deprecated
+  // tag correctly resolves to nothing. It has existed (and been anon-granted)
+  // since 2026-08-02 with no caller at all; this is that caller.
+  //
+  // Only reached on a miss, so the happy path still costs exactly one query.
+  // A single hop is sufficient: merge_tag_concept walks the canonical to its
+  // terminal before writing, and the only two multi-hop chains left on prod both
+  // end at a deprecated tag, which must resolve to nothing anyway.
+  if (!data) {
+    const { data: resolved } = await supabase
+      .rpc('resolve_tag_slug', { p_slug: name.toLowerCase() })
+      .maybeSingle();
+    const canonicalSlug = (resolved as { slug?: string } | null)?.slug;
+    if (canonicalSlug && canonicalSlug !== name.toLowerCase()) {
+      const byRedirect = await supabase
+        .from('unified_tags')
+        .select('*')
+        .eq('slug', canonicalSlug)
+        .eq('status', 'active')
+        .limit(1)
+        .maybeSingle();
+      data = byRedirect.data as Record<string, unknown> | null;
+    }
+  }
   if (!data) return null;
 
   const tag = data as { id: string };

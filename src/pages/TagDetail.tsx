@@ -77,7 +77,11 @@ import { TagFlagRailCard } from '@/components/tags/TagFlagRailCard';
 import { TagHankyCodeBand } from '@/components/tags/TagHankyCodeBand';
 import { flagByTagSlug, HANKY_CODE_TAG_SLUG } from '@/lib/flags';
 import { TagLinkedContent } from '@/components/tags/TagLinkedContent';
+import { StiProfile } from '@/components/tags/StiProfile';
+import { TagMythFacts } from '@/components/tags/TagMythFacts';
+import { TAG_DIAGRAMS } from '@/components/tags/tagDiagrams';
 import { useTagMedicalCodes, countMedicalCodes } from '@/hooks/useTagMedicalCodes';
+import { useStiProfile, useTagMythFacts } from '@/hooks/useStiProfile';
 
 /** `entity_kind` is a classification, not a state — which is exactly what
  *  DetailMasthead's bordered ink status chip is for. */
@@ -100,6 +104,8 @@ function sourceHost(url: string): string {
     return url;
   }
 }
+
+const EMPTY_DIAGRAMS: (typeof TAG_DIAGRAMS)[string] = [];
 
 function isHtml(text: string): boolean {
   return /<[a-z][\s\S]*>/i.test(text);
@@ -149,6 +155,24 @@ export default function TagDetail() {
     queryFn: async () => ((await fetchTagWithCategories(slug)) as CentralizedTag | null) ?? null,
   });
 
+  // Same SPA-301 as the case fix above, for the case where the row we got back
+  // is filed under a DIFFERENT slug than the URL asked for. Two ways that
+  // happens: `fetchTagWithCategories` followed a merge redirect (/tags/rack →
+  // risk-aware-consensual-kink), or it fell back to matching on display name.
+  //
+  // This only fires on a client-side navigation. A hard load of a merged slug
+  // never reaches React — functions/_middleware.ts answers it with a real 301,
+  // which is the version crawlers and link equity actually need. The two paths
+  // have to agree, and the shared resolver they agree through is
+  // resolve_tag_slug(): the SPA calls the RPC, the edge reads the same
+  // tag_slug_redirects rows with the same status='active' constraint on the
+  // target. Change one and you must change the other.
+  useEffect(() => {
+    if (tag?.slug && tag.slug !== slug) {
+      navigate(`/tags/${encodeURIComponent(tag.slug)}`, { replace: true });
+    }
+  }, [tag?.slug, slug, navigate]);
+
   // Curated legal citations, for law tags only. `fetchTagWithCategories` attaches
   // them; the `CentralizedTag` cast above does not know about them, hence the
   // local widening — same shape as the `human_reviewed` read further down.
@@ -173,6 +197,17 @@ export default function TagDetail() {
   // the rendering, and React Query dedupes the two calls.
   const { data: interactions } = useSubstanceInteractions(tag?.id ?? null);
   const interactionCount = interactions?.length ?? 0;
+  // Same count-fetch shape again: the page needs to know whether the STI and
+  // myth/fact bands will render so their stations appear; the bands own the
+  // rendering and React Query dedupes the duplicate requests.
+  const { data: stiProfile } = useStiProfile(tag?.id ?? null);
+  const hasStiProfile = !!stiProfile;
+  const { data: mythFacts } = useTagMythFacts(tag?.id ?? null);
+  const mythFactCount = mythFacts?.length ?? 0;
+  const diagrams = useMemo(
+    () => (tag ? (TAG_DIAGRAMS[tag.slug] ?? EMPTY_DIAGRAMS) : EMPTY_DIAGRAMS),
+    [tag],
+  );
   // Plain reference links (saferparty.ch on the substance terms, and anything
   // else editorial). Distinct from `legalSources` above, which is a legal
   // INSTRUMENT — official title, jurisdiction, adopted year — and earns its own
@@ -216,10 +251,19 @@ export default function TagDetail() {
     if (medicalCodeCount > 0) {
       s.push({ id: 'codes', title: t('tags.detail.codes.title', 'Diagnostic codes') });
     }
+    if (hasStiProfile) {
+      s.push({ id: 'sexual-health', title: t('tags.sti.eyebrow', 'Sexual health') });
+    }
     // Above the taxonomy on purpose. Someone on /tags/ghb who is about to
     // combine something needs this before they need the ontology.
     if (interactionCount > 0) {
       s.push({ id: 'combinations', title: t('tags.interactions.eyebrow', 'Combinations') });
+    }
+    for (const d of diagrams) {
+      s.push({ id: d.id, title: t(`tags.diagrams.${d.id}`, d.title) });
+    }
+    if (mythFactCount > 0) {
+      s.push({ id: 'myths', title: t('tags.myths.eyebrow', 'Check the facts') });
     }
     s.push({ id: 'taxonomy', title: t('tags.detail.inTaxonomy', 'In the taxonomy') });
     if (usage?.venue_count) s.push({ id: 'venues', title: t('tags.detail.venues', 'Venues') });
@@ -232,8 +276,19 @@ export default function TagDetail() {
     return s;
     // medicalCodeCount belongs here: the codes RPC resolves AFTER the first
     // render, so omitting it would pin the strip to the pre-fetch value of 0
-    // and the stop would never appear. interactionCount is the same shape.
-  }, [tag, wiki, usage, medicalCodeCount, interactionCount, t]);
+    // and the stop would never appear. interactionCount, hasStiProfile and
+    // mythFactCount are the same shape.
+  }, [
+    tag,
+    wiki,
+    usage,
+    medicalCodeCount,
+    interactionCount,
+    hasStiProfile,
+    mythFactCount,
+    diagrams,
+    t,
+  ]);
 
   const { activeId, goToStation } = useActiveStation(stations);
 
@@ -430,9 +485,27 @@ export default function TagDetail() {
 
       <TagDiagnosticCodes tagId={tag.id} />
 
+      {hasStiProfile && (
+        <div id="sexual-health" className="scroll-mt-24">
+          <StiProfile tagId={tag.id} tagName={tag.name} />
+        </div>
+      )}
+
       {interactionCount > 0 && (
         <div id="combinations" className="scroll-mt-24">
           <SubstanceInteractions tagId={tag.id} tagName={tag.name} />
+        </div>
+      )}
+
+      {diagrams.map((d) => (
+        <div key={d.id} id={d.id} className="scroll-mt-24">
+          <d.Component />
+        </div>
+      ))}
+
+      {mythFactCount > 0 && (
+        <div id="myths" className="scroll-mt-24">
+          <TagMythFacts tagId={tag.id} tagName={tag.name} />
         </div>
       )}
 
