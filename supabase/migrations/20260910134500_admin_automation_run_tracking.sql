@@ -536,10 +536,24 @@ DECLARE
   v_successes  int := 0;
   v_rows       int := 0;
 BEGIN
+  -- Keyed on HAVING A CRON JOB, not on action->>'type' = 'cron'. That filter
+  -- describes only 147 of the 240 enabled registry rows that actually have a
+  -- live pg_cron job: 93 more are typed rpc/edge/delete/edge_function/
+  -- run_function/sql/set_status and store no command, yet pg_cron fires them
+  -- all the same. Eighteen of those post to edge functions and exactly ONE of
+  -- them was recording anything. Scoping this to the declared type would have
+  -- left a blind spot of the same shape as the one being fixed, one filter
+  -- clause further in.
+  -- Table alias is `au`, not `a`: the loop variable is also `a`, and PL/pgSQL
+  -- resolves a qualified name to the record variable first, failing with
+  -- "record a is not assigned yet" before the query ever runs.
   FOR a IN
-    SELECT id, slug, last_cron_runid, COALESCE(action->>'jobname', slug) AS jobname
-    FROM public.admin_automations
-    WHERE action->>'type' = 'cron'
+    SELECT au.id, au.slug, au.last_cron_runid, COALESCE(au.action->>'jobname', au.slug) AS jobname
+    FROM public.admin_automations au
+    WHERE EXISTS (
+      SELECT 1 FROM cron.job j
+      WHERE j.jobname = COALESCE(au.action->>'jobname', au.slug)
+    )
   LOOP
     SELECT jobid, command ILIKE '%admin\_automation\_run\_begin%'
     INTO v_jobid, v_is_tracked
@@ -593,10 +607,19 @@ BEGIN
         -- and the projector would otherwise add ~10k rows/day to a
         -- disk-constrained database. Failures are always kept; successes keep
         -- an hourly trail, which is all the audit log needs to show liveness.
+        -- Windowed on the PROJECTED row's own start_time, not now(). Against
+        -- now() the guard silently stops holding the moment the projector has
+        -- any backlog to replay: every historical row is older than the
+        -- window, so none of them ever "sees" the previous insert and each one
+        -- writes a row. Measured the hard way — widening the loop's scope gave
+        -- 93 automations a zero cursor, and one pass wrote 22,345 success rows
+        -- replaying seven days of history, which is precisely the row
+        -- explosion the sampling exists to prevent.
         IF NOT EXISTS (
           SELECT 1 FROM public.admin_automation_runs
           WHERE automation_slug = a.slug AND status = 'success'
-            AND started_at > now() - interval '1 hour'
+            AND started_at > COALESCE(d.start_time, now()) - interval '1 hour'
+            AND started_at <= COALESCE(d.start_time, now())
         ) THEN
           INSERT INTO public.admin_automation_runs
             (automation_id, automation_slug, status, started_at, finished_at, cron_runid, summary)
@@ -880,10 +903,18 @@ END $$;
 -- via execute_sql (which does not record schema_migrations), so CI re-runs it.
 -- Without the guard the second run would jump every cursor to the then-current
 -- head and silently discard whatever the projector recorded in between.
-UPDATE public.admin_automations
+-- Scoped to EVERY row the projector will visit, which is "has a cron job",
+-- not action->>'type' = 'cron'. Seeding only the 147 typed rows left 93 at a
+-- zero cursor; the first pass after the loop widened replayed seven days of
+-- their history in one go and auto-paused a job off it. The two scopes must
+-- match exactly or the seeding does not seed.
+UPDATE public.admin_automations a
 SET last_cron_runid = COALESCE((SELECT max(runid) FROM cron.job_run_details), 0)
-WHERE action->>'type' = 'cron'
-  AND last_cron_runid = 0;
+WHERE a.last_cron_runid = 0
+  AND EXISTS (
+    SELECT 1 FROM cron.job j
+    WHERE j.jobname = COALESCE(a.action->>'jobname', a.slug)
+  );
 
 -- ---------------------------------------------------------------------------
 -- 11. Hygiene: a job that records nothing is now itself a detectable fault
@@ -931,6 +962,22 @@ AS $$
     -- read as healthy while nobody has ever seen one of their outcomes. The
     -- fix is per-job: raise timeout_milliseconds in the registered command
     -- until the response fits inside it.
+    -- Active crons that post HTTP but carry no command in the registry, so
+    -- there is nothing for admin_automation_effective_command() to wrap. They
+    -- get DISPATCH truth from the projector (a raised exception is recorded)
+    -- but never RESPONSE truth — a 500 from their edge function stays
+    -- invisible. All 18 are rows typed edge/edge_function by an older
+    -- convention. Warn, don't fail: the remedy is to store their command in
+    -- action.command, which is a per-row migration, not something to infer
+    -- from the live cron here.
+    'unwrapped_http_crons', COALESCE((
+      SELECT jsonb_agg(a.slug ORDER BY a.slug)
+      FROM public.admin_automations a
+      JOIN cron.job j ON j.jobname = COALESCE(a.action->>'jobname', a.slug)
+      WHERE a.enabled AND j.active
+        AND j.command ~ '\mnet\.http_post\M'
+        AND j.command NOT ILIKE '%admin\_automation\_run\_begin%'
+    ), '[]'::jsonb),
     'unverifiable_automations', COALESCE((
       SELECT jsonb_agg(automation_slug ORDER BY automation_slug)
       FROM (
