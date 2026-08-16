@@ -74,6 +74,9 @@ export function previewFilterProfile(
   if (tierVisible(resolveFieldVis(ps, 'pronouns_visibility', 'pronouns_public', 'public'), lens)) {
     out.pronouns = profile.pronouns;
   }
+  if (tierVisible(resolveFieldVis(ps, 'flags_visibility', 'flags_public', 'public'), lens)) {
+    out.identity_flags = profile.identity_flags;
+  }
   if (tierVisible(resolveFieldVis(ps, 'contact_visibility', 'contact_public', 'friends'), lens)) {
     out.website = profile.website;
     out.social_links = profile.social_links;
