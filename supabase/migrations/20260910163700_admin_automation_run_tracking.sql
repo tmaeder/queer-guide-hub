@@ -882,15 +882,26 @@ ON CONFLICT (slug) DO UPDATE
 DO $$
 DECLARE r record;
 BEGIN
+  -- Reschedule ONLY on an actual difference. cron.unschedule() DELETES the
+  -- job's cron.job_run_details history and the next schedule() gets a fresh
+  -- jobid -- and that history is now load-bearing, because it is exactly what
+  -- admin_automation_project_cron_runs() reads. An unconditional
+  -- unschedule+schedule therefore discards run evidence on every apply, which
+  -- is easy to miss because the job itself keeps working.
   FOR r IN
-    SELECT slug, schedule, action->>'command' AS command
-    FROM public.admin_automations
-    WHERE slug IN ('admin_automation_reap', 'admin_automation_project', 'admin_automation_runs_purge')
+    SELECT a.slug, a.schedule, a.action->>'command' AS command,
+           j.jobid, j.schedule AS have_schedule, j.command AS have_command
+    FROM public.admin_automations a
+    LEFT JOIN cron.job j ON j.jobname = a.slug
+    WHERE a.slug IN ('admin_automation_reap', 'admin_automation_project', 'admin_automation_runs_purge')
   LOOP
-    IF EXISTS (SELECT 1 FROM cron.job WHERE jobname = r.slug) THEN
-      PERFORM cron.unschedule(r.slug);
+    IF r.jobid IS NULL THEN
+      PERFORM cron.schedule(r.slug, r.schedule, r.command);
+    ELSIF r.have_schedule IS DISTINCT FROM r.schedule
+       OR r.have_command IS DISTINCT FROM r.command THEN
+      -- alter_job edits in place, so the history survives.
+      PERFORM cron.alter_job(r.jobid, schedule => r.schedule, command => r.command);
     END IF;
-    PERFORM cron.schedule(r.slug, r.schedule, r.command);
   END LOOP;
 END $$;
 
