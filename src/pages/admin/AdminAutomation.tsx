@@ -61,7 +61,10 @@ interface AutomationRun {
   automation_slug: string;
   started_at: string;
   finished_at: string | null;
-  status: 'success' | 'partial' | 'error' | 'dry_run';
+  // 'running' is the open state of an async cron dispatch: the row is written
+  // when the request is issued and finalized by admin_automation_reap_runs
+  // once net._http_response has an answer for it.
+  status: 'success' | 'partial' | 'error' | 'dry_run' | 'running';
   items_examined: number;
   items_changed: number;
   summary: Record<string, unknown> | null;
@@ -91,7 +94,8 @@ async function fetchRecentRuns(slugFilter: string | null): Promise<AutomationRun
 function StatusIcon({ status }: { status: AutomationRun['status'] }) {
   if (status === 'success') return <CheckCircle2 size={14} className="text-foreground" />;
   if (status === 'error') return <XCircle size={14} className="text-destructive" />;
-  if (status === 'dry_run') return <Clock size={14} className="text-muted-foreground" />;
+  if (status === 'dry_run') return <FlaskConical size={14} className="text-muted-foreground" />;
+  if (status === 'running') return <Clock size={14} className="text-muted-foreground" />;
   return <AlertCircle size={14} className="text-muted-foreground" />;
 }
 

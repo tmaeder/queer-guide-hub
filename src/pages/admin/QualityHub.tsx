@@ -24,6 +24,7 @@ import { DedupPendingLink } from '@/components/admin/DedupPendingLink';
 import { OrgLinkReviewQueue } from '@/components/admin/business/OrgLinkReviewQueue';
 import { GeoAddressQualityPanel } from '@/components/admin/GeoAddressQualityPanel';
 import { CategoryCoveragePanel } from '@/components/admin/CategoryCoveragePanel';
+import { VenueReviewQueuePanel } from '@/components/admin/VenueReviewQueuePanel';
 import type { FreigabeStufe } from '@/lib/personalityStatus';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
@@ -172,7 +173,15 @@ const SECTIONS: EngineSection[] = [
     title: 'Categories — venue & event coverage',
     editRoute: '/admin/content/venues',
     editLabel: 'Open Venues',
-    render: () => <CategoryCoveragePanel />,
+    /* Coverage first (how much is unknown), then the queue that actually moves
+       it. The engine holds back everything under 85% measured agreement, so the
+       numbers above only fall when a human works this list. */
+    render: () => (
+      <>
+        <CategoryCoveragePanel />
+        <VenueReviewQueuePanel />
+      </>
+    ),
   },
 ];
 
