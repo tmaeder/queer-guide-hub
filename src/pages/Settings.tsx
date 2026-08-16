@@ -32,6 +32,7 @@ import { UsernamePanel } from '@/components/profile/UsernamePanel';
 import { PreferencesMirrorCard } from '@/components/profile/PreferencesMirrorCard';
 import { userModeLabel } from '@/lib/userMode';
 import { pronounDisplay } from '@/components/ui/pronoun-utils';
+import { flagById } from '@/lib/flags';
 import { shortLocation } from '@/lib/shortLocation';
 import { initFormData, calculateCompletion } from '@/types/profileForm';
 import type { ProfileFormData, ComingOutStatus } from '@/types/profileForm';
@@ -323,6 +324,12 @@ function ProfileSettingsContent({
     setSaveStatus('unsaved');
   };
 
+  const handleIdentityFlagsChange = (flags: string[]) => {
+    setFormData((prev) => ({ ...prev, identity_flags: flags }));
+    setHasUnsavedChanges(true);
+    setSaveStatus('unsaved');
+  };
+
   const handleComingOutChange = (area: keyof ComingOutStatus, value: string) => {
     setFormData((prev) => ({
       ...prev,
@@ -368,6 +375,9 @@ function ProfileSettingsContent({
         location: formData.location,
         pronouns: formData.pronouns,
         pronoun_tags: formData.pronoun_tags,
+        // Filter to the known vocabulary on save — TS is the vocabulary, the
+        // DB only caps cardinality.
+        identity_flags: formData.identity_flags.filter((id) => flagById(id)).slice(0, 8),
         phone: formData.phone,
         website: formData.website,
         date_of_birth: formData.date_of_birth || null,
@@ -438,6 +448,8 @@ function ProfileSettingsContent({
         username={username}
         pronouns={formData.pronouns}
         pronounsVisibility={formData.privacy_settings.pronouns_visibility}
+        identityFlags={formData.identity_flags}
+        flagsVisibility={formData.privacy_settings.flags_visibility}
         profileVisibility={formData.privacy_settings.profile_visibility}
         occupation={formData.occupation}
         bio={formData.bio}
@@ -533,6 +545,7 @@ function ProfileSettingsContent({
               formData={formData}
               onChange={handleInputChange}
               onComingOutChange={handleComingOutChange}
+              onFlagsChange={handleIdentityFlagsChange}
             />
             <IntimateTab />
           </div>

@@ -6,6 +6,7 @@ import { Eye, EyeOff, Pencil } from 'lucide-react';
 import { AvatarDisplay } from '@/components/profile/AvatarDisplay';
 import type { AvatarConfig } from '@/components/profile/avatarConfig';
 import { cn } from '@/lib/utils';
+import { FlagChipRow } from '@/components/profile/FlagChip';
 
 export type VisibilityLens = 'public' | 'friends' | 'private';
 
@@ -30,6 +31,8 @@ interface IdentityPreviewCardProps {
   username: string | null;
   pronouns: string;
   pronounsVisibility?: string;
+  identityFlags?: string[];
+  flagsVisibility?: string;
   /** privacy_settings.profile_visibility — gates name, occupation and bio in the lens preview. */
   profileVisibility?: string;
   occupation: string;
@@ -54,6 +57,8 @@ export function IdentityPreviewCard(props: IdentityPreviewCardProps) {
 
   const profileVisible = visibleAt(props.profileVisibility, lens);
   const pronounsVisible = profileVisible && visibleAt(props.pronounsVisibility, lens);
+  const flagsVisible = profileVisible && visibleAt(props.flagsVisibility, lens);
+  const flags = props.identityFlags ?? [];
   const hasPronouns = props.pronouns.trim().length > 0;
   const hasOccupation = props.occupation.trim().length > 0;
 
@@ -152,6 +157,22 @@ export function IdentityPreviewCard(props: IdentityPreviewCardProps) {
               </button>
             )}
           </div>
+
+          {flags.length > 0 && (
+            <button
+              type="button"
+              onClick={props.onEditProfile}
+              aria-label="Edit pride flags"
+              className={cn('mt-2 text-left', !flagsVisible && 'opacity-50')}
+            >
+              <FlagChipRow flagIds={flags} />
+              {!flagsVisible && (
+                <span className="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground">
+                  <EyeOff size={12} aria-hidden="true" /> Hidden in this view
+                </span>
+              )}
+            </button>
+          )}
 
           {props.bio.trim() && (
             <button

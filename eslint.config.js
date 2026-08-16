@@ -234,6 +234,11 @@ export default tseslint.config(
       // STI transmission risk scale (high/medium/low) — same exception class
       // and containment as substanceRisk.ts; gated by stiRisk.test.ts.
       'src/lib/stiRisk.ts',
+      // Pride-flag stripes + hanky-code swatches — the colour IS the content
+      // (a monochrome trans flag is wrong information). Hexes live ONLY in
+      // this data module; components take them as props. Same class of
+      // exception as the OAuth brand SVGs.
+      'src/lib/flags/**',
       // Deterministic avatar SVG fallback — monochrome dark-gray steps; concrete
       // hex is required by the SVG data-URI (CSS vars don't resolve there).
       'src/lib/avatar.ts',
@@ -508,6 +513,8 @@ export default tseslint.config(
       'src/lib/substanceRisk.ts',
       // Locked STI transmission risk scale — see the note in the block above.
       'src/lib/stiRisk.ts',
+      // Pride-flag + hanky-code data — see the note in the block above.
+      'src/lib/flags/**',
       'src/config/mapStyle.ts',
       'src/config/contentTypeRegistry.ts',
       'src/config/submissionRegistry.ts',

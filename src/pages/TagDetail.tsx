@@ -72,6 +72,10 @@ import { TagWikiContent } from '@/components/tags/TagWikiContent';
 import { TagInterchange } from '@/components/tags/TagInterchange';
 import { SubstanceInteractions } from '@/components/tags/SubstanceInteractions';
 import { TagDiagnosticCodes } from '@/components/tags/TagDiagnosticCodes';
+import { TagFlagBand } from '@/components/tags/TagFlagBand';
+import { TagFlagRailCard } from '@/components/tags/TagFlagRailCard';
+import { TagHankyCodeBand } from '@/components/tags/TagHankyCodeBand';
+import { flagByTagSlug, HANKY_CODE_TAG_SLUG } from '@/lib/flags';
 import { TagLinkedContent } from '@/components/tags/TagLinkedContent';
 import { StiProfile } from '@/components/tags/StiProfile';
 import { TagMythFacts } from '@/components/tags/TagMythFacts';
@@ -214,6 +218,14 @@ export default function TagDetail() {
     if (tag.description || tag.long_description) {
       s.push({ id: 'about', title: t('tags.detail.about', 'About') });
       s.push(...(wiki?.sections ?? []).map((x) => ({ ...x, depth: 2 as const })));
+    }
+    // Both flag presence and the hanky slug are synchronous TS data, so unlike
+    // the async counts below they need no extra memo deps beyond `tag`.
+    if (flagByTagSlug.has(tag.slug)) {
+      s.push({ id: 'flag', title: t('tags.detail.flag.title', 'The flag') });
+    }
+    if (tag.slug === HANKY_CODE_TAG_SLUG) {
+      s.push({ id: 'hanky-code', title: t('tags.detail.hanky.title', 'The code') });
     }
     if (medicalCodeCount > 0) {
       s.push({ id: 'codes', title: t('tags.detail.codes.title', 'Diagnostic codes') });
@@ -436,6 +448,10 @@ export default function TagDetail() {
         </section>
       )}
 
+      <TagFlagBand tagSlug={tag.slug} />
+
+      <TagHankyCodeBand tagSlug={tag.slug} />
+
       <TagDiagnosticCodes tagId={tag.id} />
 
       {hasStiProfile && (
@@ -502,10 +518,11 @@ export default function TagDetail() {
           so in practice only one of the two ever renders. */}
       <TagLegalSource sources={legalSources} tagSlug={tag.slug} />
 
-      {(tag.wikipedia_url ||
-        tag.wikidata_id ||
-        medicalCodeCount > 0 ||
-        references.length > 0) && (
+      {/* The flag an identity HAS (lesbian → lesbian flag). The tag that IS a
+          flag gets the full band in the body instead — never both. */}
+      <TagFlagRailCard tagSlug={tag.slug} />
+
+      {(tag.wikipedia_url || tag.wikidata_id || medicalCodeCount > 0 || references.length > 0) && (
         <SidebarCard eyebrow={t('tags.detail.elsewhere', 'Elsewhere')}>
           {/* An in-page anchor rather than the codes themselves: the rail is
               240px and the band has four groups. This row is a pointer, not a
