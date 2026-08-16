@@ -4434,6 +4434,10 @@
       "seeByCountry": "국가별 상태 보기",
       "spansAllRights": "이것은 하나의 법률이 아니라 법 분야 전체를 가리킵니다. 18개 권리를 국가별로 기록합니다.",
       "seeAllRights": "18개 권리를 국가별로 보기"
+    },
+    "flagWall": {
+      "eyebrow": "상징",
+      "title": "깃발 모음"
     }
   },
   "village": {

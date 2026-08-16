@@ -62,6 +62,7 @@ import { CategoryTreeRail } from '@/components/tags/index/CategoryTreeRail';
 import { TagAlphabetRail } from '@/components/tags/index/TagAlphabetRail';
 import { TagResults } from '@/components/tags/index/TagResults';
 import { TagsEndOfLine } from '@/components/tags/index/TagsEndOfLine';
+import { FlagWall } from '@/components/tags/FlagWall';
 
 /** One pass over the corpus. Every filter afterwards is a field read. */
 interface TagIndexEntry {
@@ -415,6 +416,10 @@ export default function TagsIndex() {
           />
 
           <div className="min-w-0">
+            {/* The one sanctioned chromatic surface in the tag system — see
+                FlagWall's header comment. */}
+            {categorySlug?.toLowerCase() === 'symbols-flags' && <FlagWall />}
+
             <TagsFilterSpine
               q={state.q}
               onQ={(q) => patch({ q })}

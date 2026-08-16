@@ -4434,6 +4434,10 @@
       "seeByCountry": "查看各国状态",
       "spansAllRights": "这涵盖整个法律领域，而非单一法律。我们逐国记录 18 项独立权利。",
       "seeAllRights": "查看各国的 18 项权利"
+    },
+    "flagWall": {
+      "eyebrow": "符号",
+      "title": "旗帜一览"
     }
   },
   "village": {
