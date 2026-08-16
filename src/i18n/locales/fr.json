@@ -139,7 +139,7 @@
       "recent_city": "In a city you've explored",
       "featured": "Featured"
     },
-    "ariaLabel": "[FR] Search Queer Guide",
+    "ariaLabel": "Rechercher dans Queer Guide",
     "escape": "échap",
     "jumpTo": "Aller à",
     "recent": "Récent",
@@ -218,12 +218,12 @@
     "contact": "Contact",
     "supportUs": "Nous soutenir",
     "history": "Histoire",
-    "tagline": "[FR] Every track. Every station. Everyone.",
-    "contributors": "[FR] Contributors",
+    "tagline": "Chaque ligne. Chaque station. Tout le monde.",
+    "contributors": "Contributeurs et contributrices",
     "emergency": {
       "eyebrow": "[FR] In an emergency",
-      "title": "[FR] Crisis lines, 24 hours",
-      "body": "[FR] Trans helpline, LGBT+ crisis support, and local emergency numbers, listed by country and always one click from any page."
+      "title": "Lignes d'écoute, 24 h/24",
+      "body": "Écoute trans, soutien de crise LGBT+ et numéros d'urgence locaux, classés par pays et toujours à un clic depuis n'importe quelle page."
     },
     "osmAttribution": "Diagrammes de transport dérivés des © contributeurs OpenStreetMap (ODbL)",
     "reportSomething": "Signaler quelque chose",
@@ -1889,7 +1889,7 @@
       "help": "Aide",
       "tags": "Tags",
       "history": "Histoire",
-      "guides": "[FR] Guides",
+      "guides": "Guides",
       "trips": "Voyages",
       "organizations": "Organisations",
       "wishlists": "Listes de souhaits"
@@ -1986,7 +1986,7 @@
       "hub": "Hub"
     },
     "primaryNavigation": "[FR] Primary",
-    "signInToContribute": "[FR] Sign in to contribute"
+    "signInToContribute": "Se connecter pour contribuer"
   },
   "pages": {
     "venues": {
@@ -3301,7 +3301,7 @@
     "wishlists": "Listes de souhaits",
     "tags": "Tags",
     "organizations": "[FR] Organizations",
-    "guides": "[FR] Guides",
+    "guides": "Guides",
     "people": "Rencontrer"
   },
   "chat": {

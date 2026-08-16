@@ -139,7 +139,7 @@
       "recent_city": "In a city you've explored",
       "featured": "Featured"
     },
-    "ariaLabel": "[JA] Search Queer Guide",
+    "ariaLabel": "Queer Guide を検索",
     "escape": "esc",
     "jumpTo": "移動先",
     "recent": "最近",
@@ -218,12 +218,12 @@
     "contact": "お問い合わせ",
     "supportUs": "サポートする",
     "history": "歴史",
-    "tagline": "[JA] Every track. Every station. Everyone.",
-    "contributors": "[JA] Contributors",
+    "tagline": "すべての路線を。すべての駅を。すべての人に。",
+    "contributors": "協力者",
     "emergency": {
       "eyebrow": "[JA] In an emergency",
-      "title": "[JA] Crisis lines, 24 hours",
-      "body": "[JA] Trans helpline, LGBT+ crisis support, and local emergency numbers, listed by country and always one click from any page."
+      "title": "24時間対応の相談窓口",
+      "body": "トランスジェンダー向け相談窓口、LGBT+の危機支援、各地の緊急連絡先を国別に掲載。どのページからもワンクリックで開けます。"
     },
     "osmAttribution": "交通図は © OpenStreetMap 貢献者のデータに基づいています (ODbL)",
     "reportSomething": "報告する",
@@ -1885,7 +1885,7 @@
       "help": "ヘルプ",
       "tags": "タグ",
       "history": "歴史",
-      "guides": "[JA] Guides",
+      "guides": "ガイド",
       "trips": "旅行",
       "organizations": "団体",
       "wishlists": "ウィッシュリスト"
@@ -1982,7 +1982,7 @@
       "hub": "ハブ"
     },
     "primaryNavigation": "[JA] Primary",
-    "signInToContribute": "[JA] Sign in to contribute"
+    "signInToContribute": "ログインして参加する"
   },
   "pages": {
     "venues": {
@@ -3295,7 +3295,7 @@
     "wishlists": "ウィッシュリスト",
     "tags": "タグ",
     "organizations": "[JA] Organizations",
-    "guides": "[JA] Guides",
+    "guides": "ガイド",
     "people": "出会う"
   },
   "chat": {

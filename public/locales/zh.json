@@ -139,7 +139,7 @@
       "recent_city": "In a city you've explored",
       "featured": "Featured"
     },
-    "ariaLabel": "[ZH] Search Queer Guide",
+    "ariaLabel": "搜索 Queer Guide",
     "escape": "esc",
     "jumpTo": "快速前往",
     "recent": "最近",
@@ -218,12 +218,12 @@
     "contact": "联系",
     "supportUs": "支持我们",
     "history": "历史",
-    "tagline": "[ZH] Every track. Every station. Everyone.",
-    "contributors": "[ZH] Contributors",
+    "tagline": "每一条线路。每一个站点。每一个人。",
+    "contributors": "贡献者",
     "emergency": {
       "eyebrow": "[ZH] In an emergency",
-      "title": "[ZH] Crisis lines, 24 hours",
-      "body": "[ZH] Trans helpline, LGBT+ crisis support, and local emergency numbers, listed by country and always one click from any page."
+      "title": "24 小时危机热线",
+      "body": "跨性别支持热线、LGBT+ 危机援助与当地紧急电话，按国家分类，任何页面均可一键直达。"
     },
     "osmAttribution": "交通示意图源自 © OpenStreetMap 贡献者数据（ODbL）",
     "reportSomething": "举报",
@@ -1885,7 +1885,7 @@
       "help": "帮助",
       "tags": "标签",
       "history": "历史",
-      "guides": "[ZH] Guides",
+      "guides": "指南",
       "trips": "行程",
       "organizations": "组织",
       "wishlists": "心愿单"
@@ -1982,7 +1982,7 @@
       "hub": "中心"
     },
     "primaryNavigation": "[ZH] Primary",
-    "signInToContribute": "[ZH] Sign in to contribute"
+    "signInToContribute": "登录后参与贡献"
   },
   "pages": {
     "venues": {
@@ -3295,7 +3295,7 @@
     "wishlists": "心愿单",
     "tags": "标签",
     "organizations": "[ZH] Organizations",
-    "guides": "[ZH] Guides",
+    "guides": "指南",
     "people": "认识朋友"
   },
   "chat": {
