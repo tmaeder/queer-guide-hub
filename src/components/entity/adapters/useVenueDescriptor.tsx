@@ -69,8 +69,13 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
     [reviews],
   );
 
-  const { data: tripStatus } = useEntityTripStatus('venue', venue?.id);
-  const { data: socialSignals } = useVenueSocialSignals(venue?.id ? [venue.id] : []);
+  // Called for the fetch, not the value: these warm the react-query cache so the
+  // trip-status and social-signal children read it instead of refetching. The
+  // descriptor below never reads either one, so they are deliberately not bound
+  // and not listed as memo dependencies — listing them recomputed the whole
+  // descriptor every time a signal refreshed.
+  useEntityTripStatus('venue', venue?.id);
+  useVenueSocialSignals(venue?.id ? [venue.id] : []);
   const nearbyPoints = useNearbyMapPoints({
     lat: typeof venue?.latitude === 'number' ? venue.latitude : null,
     lng: typeof venue?.longitude === 'number' ? venue.longitude : null,
@@ -288,8 +293,6 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
     events,
     reviews,
     averageRating,
-    tripStatus,
-    socialSignals,
     nearbyPoints,
     checkinRefresh,
     addToTripOpen,
