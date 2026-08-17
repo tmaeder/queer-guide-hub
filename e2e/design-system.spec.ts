@@ -83,10 +83,15 @@ test.describe('design system: semantic radius (token-derived)', () => {
   // Assertions read the token rather than a literal px value: the semantic trio
   // is re-tuned by design passes (and is runtime-overridable via /admin/design),
   // so hardcoding the px froze these tests at the 16/4px era and they went stale.
+  // `[data-slot="card"]` and NOT `.bg-card`. The latter is a utility, not the
+  // component: the soft re-skin put `bg-card` on ~70 more elements, so "the
+  // first .bg-card on the page" stopped meaning "a Card" and began resolving
+  // differently under the dev server and the CI build — these three guards
+  // failed against an element that was never a card.
   test('cards use --radius-container', async ({ page }) => {
-    const cards = page.locator('.bg-card').first();
-    await expect(cards).toBeVisible();
-    const radius = await cards.evaluate((el) => getComputedStyle(el).borderRadius);
+    const card = page.locator('[data-slot="card"]').first();
+    await expect(card).toBeVisible();
+    const radius = await card.evaluate((el) => getComputedStyle(el).borderRadius);
     expect(radius).toBe(await resolveRadius(page, '--radius-container'));
   });
 
@@ -97,7 +102,7 @@ test.describe('design system: semantic radius (token-derived)', () => {
   // load-bearing: a card with neither border nor shadow is invisible against
   // a page just 1.12:1 away from it.
   test('cards carry the soft elevation at rest', async ({ page }) => {
-    const card = page.locator('.bg-card').first();
+    const card = page.locator('[data-slot="card"]').first();
     await expect(card).toBeVisible();
     const shadow = await card.evaluate((el) => getComputedStyle(el).boxShadow);
     expect(shadow).not.toBe('none');
@@ -107,7 +112,7 @@ test.describe('design system: semantic radius (token-derived)', () => {
   });
 
   test('cards have no frame (surfaces without cages)', async ({ page }) => {
-    const card = page.locator('.bg-card').first();
+    const card = page.locator('[data-slot="card"]').first();
     await expect(card).toBeVisible();
     const width = await card.evaluate((el) => getComputedStyle(el).borderTopWidth);
     expect(width).toBe('0px');

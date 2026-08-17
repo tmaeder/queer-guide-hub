@@ -40,6 +40,13 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className, children, hoverable, ...props }, ref) => (
     <div
       ref={ref}
+      // A stable hook for the design guards. e2e/design-system.spec.ts used to
+      // probe `.bg-card`, which is a UTILITY, not this component — and the soft
+      // re-skin put `bg-card` on ~70 more elements, so "the first .bg-card on
+      // the page" stopped meaning "a Card" and started differing between the
+      // dev server and the CI build. Three guards failed on an element that was
+      // never a card. Assert on the component, not on one of its classes.
+      data-slot="card"
       className={cn(
         'bg-card text-card-foreground rounded-container shadow-soft transition-all duration-fast ease-[cubic-bezier(0.22,1,0.36,1)]',
         hoverable === 'group' && 'group-hover:bg-surface-container-low',
