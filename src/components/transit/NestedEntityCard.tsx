@@ -44,11 +44,7 @@ export function NestedEntityCard({
 }) {
   return (
     <div
-      className={cn(
-        'group relative border-[3px] border-foreground p-4',
-        href && 'card-lift',
-        className,
-      )}
+      className={cn('group relative bg-muted rounded-element p-4', href && 'card-lift', className)}
     >
       <div className="flex items-start gap-4">
         <RouteBullet type={type} size={34} />
@@ -67,7 +63,7 @@ export function NestedEntityCard({
         </div>
         {media && <div className="hidden h-12 w-16 shrink-0 sm:block">{media}</div>}
         {actionLabel && (
-          <span className="hidden shrink-0 border-2 border-foreground px-4 py-2 text-xs2 font-bold sm:block">
+          <span className="hidden shrink-0 bg-muted rounded-element px-4 py-2 text-xs2 font-bold sm:block">
             {actionLabel}
           </span>
         )}

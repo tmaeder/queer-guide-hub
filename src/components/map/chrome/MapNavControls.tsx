@@ -64,7 +64,7 @@ export const MapNavControls = ({ handle, className }: MapNavControlsProps) => {
   return (
     <div
       className={cn(
-        'absolute right-3 z-10 flex flex-col overflow-hidden rounded-element border-[3px] border-foreground bg-background gap-px',
+        'absolute right-3 z-10 flex flex-col overflow-hidden rounded-element bg-card gap-px shadow-soft',
         // Mobile: bottom-right thumb zone, lifted above the spotlight rail.
         'bottom-[calc(var(--map-rail-clearance,4.5rem)+0.75rem)] md:bottom-auto md:top-16',
         className,

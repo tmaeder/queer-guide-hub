@@ -19,7 +19,10 @@ const normalize = (v: string) => v.replace(/\s+/g, ' ').trim();
  * The catalog keeps a `dark` field for BrandingDoc shape-compat — it must
  * simply mirror `light`. */
 function cssValues(key: string): string[] {
-  const re = new RegExp(`(?<![\\w-])--${key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:\\s*([^;]+);`, 'g');
+  const re = new RegExp(
+    `(?<![\\w-])--${key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:\\s*([^;]+);`,
+    'g',
+  );
   return [...css.matchAll(re)].map((m) => normalize(m[1]));
 }
 
@@ -48,9 +51,13 @@ describe('tokenCatalog drift guard (defaults must match src/index.css)', () => {
 
 describe('sparse doc helpers', () => {
   it('resolveColor prefers the override and falls back to the default', () => {
-    expect(resolveColor({}, 'background', 'light')).toBe('60 33% 97%');
-    expect(resolveColor({ tokens: { light: { background: '0 0% 90%' } } }, 'background', 'light')).toBe('0 0% 90%');
-    expect(resolveColor({ tokens: { light: { background: '0 0% 90%' } } }, 'background', 'dark')).toBe('60 33% 97%');
+    expect(resolveColor({}, 'background', 'light')).toBe('60 16.3% 91.6%');
+    expect(
+      resolveColor({ tokens: { light: { background: '0 0% 90%' } } }, 'background', 'light'),
+    ).toBe('0 0% 90%');
+    expect(
+      resolveColor({ tokens: { light: { background: '0 0% 90%' } } }, 'background', 'dark'),
+    ).toBe('60 16.3% 91.6%');
   });
 
   it('countOverrides counts every section', () => {

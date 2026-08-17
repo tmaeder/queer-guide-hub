@@ -122,7 +122,7 @@ export function Footer() {
            as cluttered. The policy is the quiet half now and the crisis card
            is the loud one, because only one of them is something a reader
            might need in the next thirty seconds. ────────────────────────── */}
-      <div className="mt-10 border-t-[3px] border-background">
+      <div className="mt-10 border-t border-background">
         <div
           className={cn(
             'mx-auto grid w-full max-w-page items-start gap-8 py-8 md:grid-cols-2',
@@ -144,7 +144,7 @@ export function Footer() {
             </p>
             <LocalizedLink
               to="/report"
-              className="mt-4 inline-block border-2 border-background px-4 py-2 text-xs2 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
+              className="border mt-4 inline-block border-background px-4 py-2 text-xs2 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
             >
               {t('footer.reportSomething', 'Report something')}
             </LocalizedLink>
@@ -156,7 +156,7 @@ export function Footer() {
               that sat above it was a third heading saying the same thing. */}
           <LocalizedLink
             to="/help"
-            className="block border-[3px] border-background p-6 text-background no-underline transition-colors hover:bg-background hover:text-foreground"
+            className="border block border-background p-6 text-background no-underline transition-colors hover:bg-background hover:text-foreground"
           >
             <span className="block font-display text-headline leading-tight">
               {t('footer.emergency.title', 'Crisis lines, 24 hours')}

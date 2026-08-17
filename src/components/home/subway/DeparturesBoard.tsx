@@ -20,9 +20,10 @@ const formatBoardTime = (iso: string | null, locale: string) => {
 };
 
 function BoardRow({ row, locale }: { row: NearYouRow; locale: string }) {
-  const href = row.kind === 'event' ? `/events/${row.slug || row.id}` : `/venues/${row.slug || row.id}`;
+  const href =
+    row.kind === 'event' ? `/events/${row.slug || row.id}` : `/venues/${row.slug || row.id}`;
   return (
-    <div className="group relative border-b-2 border-foreground/10 last:border-b-0">
+    <div className="group relative border-b border-foreground/10 last:border-b-0">
       <div className="grid grid-cols-[42px_1fr_auto] items-center gap-4 px-4 py-4 transition-colors group-hover:bg-surface-container md:grid-cols-[52px_120px_1fr_28px] md:px-6">
         <RouteBullet type={row.kind} size={42} />
         {/* Blank, not an em-dash. A standing place has no departure time, and a
@@ -93,13 +94,16 @@ export function DeparturesBoard() {
       seeAllLabel={t('home.departures.seeAll', 'Full board')}
       action={<RegionChip region={region} />}
     >
-      <div className="border-[3px] border-foreground bg-background">
+      <div className="bg-card rounded-container shadow-soft">
         {isLoading ? (
           // Skeletons at the loaded row's real height (a two-line title/via
           // stack at py-4), not a flat h-16 that is shorter than the content
           // it stands in for — that difference is a homepage CLS source.
           Array.from({ length: ROWS }).map((_, i) => (
-            <div key={i} className="h-[74px] animate-pulse border-b-2 border-foreground/10 last:border-b-0" />
+            <div
+              key={i}
+              className="h-[74px] animate-pulse border-b border-foreground/10 last:border-b-0"
+            />
           ))
         ) : rows.length === 0 ? (
           <p className="px-4 py-8 text-15 text-muted-foreground md:px-6">
@@ -113,8 +117,10 @@ export function DeparturesBoard() {
             {trip.length > 0 && (
               <>
                 {local.length > 0 && (
-                  <div className="border-t-4 border-foreground px-4 py-2 md:px-6">
-                    <Eyebrow as="div">{t('home.departures.worthTheTrip', 'Worth the trip')}</Eyebrow>
+                  <div className="border-t border-border-hairline px-4 py-2 md:px-6">
+                    <Eyebrow as="div">
+                      {t('home.departures.worthTheTrip', 'Worth the trip')}
+                    </Eyebrow>
                   </div>
                 )}
                 {trip.map((r) => (

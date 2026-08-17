@@ -18,11 +18,15 @@ function formatDuration(ms: number | null): string {
 }
 
 const statusStyles: Record<string, string> = {
-  completed: 'bg-muted dark:bg-foreground/30 text-foreground dark:text-foreground border-foreground/40 dark:border-foreground/40',
-  failed: 'bg-destructive/10 dark:bg-destructive/30 text-destructive dark:text-destructive border-destructive dark:border-destructive',
-  running: 'bg-muted dark:bg-foreground/30 text-foreground dark:text-foreground border-foreground/40 dark:border-foreground/40',
+  completed:
+    'border bg-muted dark:bg-foreground/30 text-foreground dark:text-foreground border-foreground/40 dark:border-foreground/40',
+  failed:
+    'border bg-destructive/10 dark:bg-destructive/30 text-destructive dark:text-destructive border-destructive dark:border-destructive',
+  running:
+    'border bg-muted dark:bg-foreground/30 text-foreground dark:text-foreground border-foreground/40 dark:border-foreground/40',
   pending: 'bg-muted text-muted-foreground',
-  cancelled: 'bg-muted dark:bg-foreground/30 text-foreground dark:text-foreground border-border dark:border-border',
+  cancelled:
+    'bg-muted dark:bg-foreground/30 text-foreground dark:text-foreground border-border dark:border-border',
 };
 
 export default function RunStatsBar({ runId, onClose }: RunStatsBarProps) {
@@ -69,9 +73,14 @@ export default function RunStatsBar({ runId, onClose }: RunStatsBarProps) {
 
       <div className="h-4 w-px bg-border" />
 
-      <span className="flex items-center gap-1" title={started ? format(new Date(started), 'PPpp') : ''}>
+      <span
+        className="flex items-center gap-1"
+        title={started ? format(new Date(started), 'PPpp') : ''}
+      >
         <Clock className="h-3 w-3 text-muted-foreground" />
-        <span className="font-medium">{formatDistanceToNow(new Date(started), { addSuffix: true })}</span>
+        <span className="font-medium">
+          {formatDistanceToNow(new Date(started), { addSuffix: true })}
+        </span>
         <span className="text-muted-foreground">·</span>
         <span className="font-mono">{formatDuration(run.duration_ms)}</span>
       </span>
@@ -83,7 +92,9 @@ export default function RunStatsBar({ runId, onClose }: RunStatsBarProps) {
         <span className="text-muted-foreground">/ {total}</span>
         {failed > 0 && <span className="text-destructive font-semibold">· {failed} failed</span>}
         {total > 0 && (
-          <span className={`ml-1 font-mono ${successRate >= 95 ? 'text-foreground dark:text-foreground' : successRate >= 80 ? 'text-foreground dark:text-foreground' : 'text-destructive'}`}>
+          <span
+            className={`ml-1 font-mono ${successRate >= 95 ? 'text-foreground dark:text-foreground' : successRate >= 80 ? 'text-foreground dark:text-foreground' : 'text-destructive'}`}
+          >
             {successRate}%
           </span>
         )}
@@ -105,7 +116,13 @@ export default function RunStatsBar({ runId, onClose }: RunStatsBarProps) {
         </>
       )}
 
-      <Button size="sm" variant="ghost" className="h-6 w-6 p-0 ml-auto" onClick={onClose} title="Return to latest">
+      <Button
+        size="sm"
+        variant="ghost"
+        className="h-6 w-6 p-0 ml-auto"
+        onClick={onClose}
+        title="Return to latest"
+      >
         <X className="h-3.5 w-3.5" />
       </Button>
     </div>

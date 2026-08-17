@@ -36,7 +36,7 @@ export function MembershipState({
 }) {
   const c = COPY[state];
   return (
-    <div className={cn('border-[3px] border-foreground p-4', className)}>
+    <div className={cn('bg-muted rounded-element p-4', className)}>
       <div className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
         Membership
       </div>

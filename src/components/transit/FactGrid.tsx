@@ -25,7 +25,7 @@ export function FactGrid({ facts, className }: { facts: Fact[]; className?: stri
   return (
     <dl
       className={cn(
-        'grid grid-cols-1 border-[3px] border-foreground sm:grid-cols-2 lg:grid-cols-3',
+        'grid grid-cols-1 border border-border-hairline sm:grid-cols-2 lg:grid-cols-3',
         // Dividers are drawn on the TOP of each cell, with the first row
         // suppressed — not on the bottom. A bottom border leaves a stub on a
         // partly-filled last row (4 facts in 3 columns ends the line mid-width),
@@ -41,7 +41,7 @@ export function FactGrid({ facts, className }: { facts: Fact[]; className?: stri
       {shown.map((f) => (
         <div
           key={f.label}
-          className="border-t-2 border-r-2 border-foreground/15 px-4 py-4 last:border-r-0"
+          className="border-t border-r border-foreground/15 px-4 py-4 last:border-r-0"
         >
           <dt className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
             {f.label}

@@ -228,7 +228,7 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
     return null;
   };
   const cardContent = (
-    <Card className="group overflow-hidden transition-colors duration-normal hover:border-foreground/40 cursor-pointer">
+    <Card className="border group overflow-hidden transition-colors duration-normal hover:border-foreground/40 cursor-pointer">
       {/* Country Image */}
       {type === 'country' && (
         <div

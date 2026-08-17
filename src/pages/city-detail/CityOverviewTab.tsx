@@ -40,7 +40,8 @@ export function CityOverviewTab({ city }: CityOverviewTabProps) {
     : city.is_major_city
       ? t('cities.detail.about.majorCity', 'Major city')
       : null;
-  if (civicStatus) facts.push({ label: t('cities.detail.about.status', 'Status'), value: civicStatus });
+  if (civicStatus)
+    facts.push({ label: t('cities.detail.about.status', 'Status'), value: civicStatus });
   if (city.region_name)
     facts.push({ label: t('cities.detail.about.region', 'Region'), value: city.region_name });
   if (city.timezone)
@@ -83,11 +84,11 @@ export function CityOverviewTab({ city }: CityOverviewTabProps) {
           <h3 className="text-title font-bold">
             {t('cities.detail.about.costOfLiving', 'Cost of living')}
           </h3>
-          <dl className="mt-2 border-[3px] border-foreground">
+          <dl className="mt-2 bg-muted rounded-element">
             {costOfLiving.map(([key, value]) => (
               <div
                 key={key}
-                className="flex flex-wrap items-baseline justify-between gap-4 border-b-2 border-foreground/15 px-4 py-2 last:border-b-0"
+                className="flex flex-wrap items-baseline justify-between gap-4 border-b border-foreground/15 px-4 py-2 last:border-b-0"
               >
                 <dt className="text-13 capitalize text-muted-foreground">
                   {key.replace(/_/g, ' ')}
@@ -122,7 +123,7 @@ function ChipList({ heading, items }: { heading: string; items: string[] }): Rea
       <h3 className="text-title font-bold">{heading}</h3>
       <ul className="mt-2 flex list-none flex-wrap gap-2 p-0">
         {items.map((item) => (
-          <li key={item} className="border-2 border-foreground px-2 py-1 text-13 font-bold">
+          <li key={item} className="bg-muted rounded-element px-2 py-1 text-13 font-bold">
             {item}
           </li>
         ))}

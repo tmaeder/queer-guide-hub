@@ -19,7 +19,12 @@ function formatDateRange(start: string, end: string | null) {
   const s = new Date(start);
   const e = end ? new Date(end) : null;
   const sameDay = e && s.toDateString() === e.toDateString();
-  const opts: Intl.DateTimeFormatOptions = { weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' };
+  const opts: Intl.DateTimeFormatOptions = {
+    weekday: 'short',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  };
   if (!e || sameDay) return s.toLocaleDateString(undefined, opts);
   return `${s.toLocaleDateString(undefined, opts)} — ${e.toLocaleDateString(undefined, opts)}`;
 }
@@ -58,7 +63,7 @@ export function PrideSpotlight({ event, onDismiss, onOpenMap }: PrideSpotlightPr
   return (
     <article
       aria-labelledby="spotlight-title"
-      className="relative rounded-container border border-foreground bg-background overflow-hidden"
+      className="relative rounded-container border border-border-hairline bg-background overflow-hidden"
     >
       {onDismiss && (
         <button
@@ -104,7 +109,10 @@ export function PrideSpotlight({ event, onDismiss, onOpenMap }: PrideSpotlightPr
           )}
         </div>
 
-        <h2 id="spotlight-title" className="text-headline lg:text-display font-medium leading-tight">
+        <h2
+          id="spotlight-title"
+          className="text-headline lg:text-display font-medium leading-tight"
+        >
           <Link to={`/events/${event.slug}`} className="hover:underline">
             {event.title}
           </Link>

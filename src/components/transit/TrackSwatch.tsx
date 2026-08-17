@@ -36,7 +36,7 @@ export function TrackSwatch({ track, tone = 'paper', className }: TrackSwatchPro
       className={cn(
         'inline-block h-2 w-5 shrink-0 rounded-full',
         TRACK_BG[track],
-        tone === 'paper' && 'border border-foreground',
+        tone === 'paper' && 'border border-track-ring',
         className,
       )}
     />

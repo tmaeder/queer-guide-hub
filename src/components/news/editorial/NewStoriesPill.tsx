@@ -18,7 +18,7 @@ export function NewStoriesPill({ count, onRefresh, cap = 25 }: NewStoriesPillPro
       <button
         type="button"
         onClick={onRefresh}
-        className="pointer-events-auto inline-flex items-center gap-2 rounded-element border border-foreground bg-background px-4 py-2 text-13 font-semibold hover:bg-foreground hover:text-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="pointer-events-auto inline-flex items-center gap-2 rounded-element border border-border-hairline bg-background px-4 py-2 text-13 font-semibold hover:bg-foreground hover:text-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         aria-live="polite"
         aria-atomic="true"
       >

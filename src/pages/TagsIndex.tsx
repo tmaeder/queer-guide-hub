@@ -329,12 +329,12 @@ export default function TagsIndex() {
   if (error) {
     return (
       <PageContainer>
-        <div className="border-[3px] border-foreground p-6">
+        <div className="bg-muted rounded-container p-6">
           <h1 className="font-display text-headline">{t('tags.error', 'The glossary is down')}</h1>
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="mt-4 border-2 border-foreground px-4 py-2 text-13 font-bold transition-colors hover:bg-foreground hover:text-background"
+            className="mt-4 px-4 py-2 text-13 font-bold transition-colors hover:bg-foreground hover:text-background"
           >
             {t('tags.retry', 'Try again')}
           </button>
@@ -474,7 +474,7 @@ export default function TagsIndex() {
 
             <div className="mt-6">
               {primaryResults.length === 0 && state.view !== 'graph' ? (
-                <div className="border-[3px] border-foreground p-6">
+                <div className="bg-muted rounded-container p-6">
                   <h2 className="text-title font-bold">
                     {t('tags.empty.title', 'No terms match.')}
                   </h2>

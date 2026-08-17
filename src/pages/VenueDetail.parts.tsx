@@ -478,7 +478,7 @@ export function VenuePhotos({
           <button
             type="button"
             key={imageUrl}
-            className="group block aspect-square w-full overflow-hidden border-2 border-foreground bg-muted p-0"
+            className="group block aspect-square w-full overflow-hidden bg-muted p-0"
             onClick={() => window.open(imageUrl, '_blank')}
             aria-label={`Open ${venue.name} photo ${index + 1} in a new tab`}
           >

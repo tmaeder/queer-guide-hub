@@ -112,7 +112,7 @@ export function NetworkDiagram({ label, className }: { label: string; className?
             'pointer-events-none absolute block h-4 w-4 -translate-x-1/2 -translate-y-1/2',
             // Ink ring border-gates the fill: blue, green and yellow all measure
             // under 3:1 against paper on their own.
-            'rounded-full border-[3px] border-foreground',
+            'rounded-full border border-border-hairline',
             line.fill,
           )}
         />
@@ -121,7 +121,7 @@ export function NetworkDiagram({ label, className }: { label: string; className?
       <span
         aria-hidden="true"
         style={{ left: pct(mx(JUNCTION.x), VIEW_W), top: pct(JUNCTION.y, VIEW_H) }}
-        className="intersection-gradient pointer-events-none absolute block h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-foreground md:h-12 md:w-12"
+        className="intersection-gradient pointer-events-none absolute block h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full border border-border-hairline md:h-12 md:w-12"
       />
     </div>
   );

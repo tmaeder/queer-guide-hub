@@ -34,7 +34,7 @@ function HexField({
           onChange={(e) => onChange(e.target.value)}
           placeholder={`${placeholder} (default)`}
           maxLength={7}
-          className={`w-32 font-mono text-13 ${error ? 'border-destructive' : ''}`}
+          className={`w-32 font-mono text-13 ${error ? 'border border-destructive' : ''}`}
         />
       </div>
       {error && <p className="text-2xs text-destructive">{error}</p>}

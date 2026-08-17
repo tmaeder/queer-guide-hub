@@ -54,8 +54,8 @@ export function KinkRatingControl({
                     'inline-flex min-h-0 items-center justify-center rounded-element transition-colors bg-surface-container',
                     btn,
                     selected
-                      ? 'border-foreground bg-foreground text-background'
-                      : 'border-border bg-background text-muted-foreground hover:border-foreground hover:text-foreground',
+                      ? 'bg-foreground text-background'
+                      : 'border-border bg-card text-muted-foreground hover:border-border-hairline hover:text-foreground rounded-container shadow-soft',
                   )}
                 >
                   <Icon className={icon} />
@@ -78,8 +78,8 @@ export function KinkRatingControl({
                 'ml-1 inline-flex min-h-0 items-center justify-center rounded-element transition-colors bg-surface-container',
                 btn,
                 needsDiscussion
-                  ? 'border-foreground bg-muted text-foreground'
-                  : 'border-dashed border-border bg-background text-muted-foreground hover:border-foreground hover:text-foreground',
+                  ? 'bg-muted text-foreground'
+                  : 'border-dashed border-border bg-card text-muted-foreground hover:border-border-hairline hover:text-foreground rounded-container shadow-soft',
               )}
             >
               <MessageCircle className={icon} />

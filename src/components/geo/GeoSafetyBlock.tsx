@@ -124,7 +124,7 @@ export function GeoSafetyVerdict({
     </>
   );
 
-  const frame = 'block border-[3px] border-foreground p-4';
+  const frame = 'block bg-muted rounded-element p-4';
 
   // The testid scopes the "no track colour on a risk badge" guard to this
   // module. Asserting over the whole rail would be wrong: the route rail lives

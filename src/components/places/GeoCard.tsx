@@ -95,7 +95,7 @@ export const GeoCard = memo(function GeoCard(props: GeoCardProps) {
               the place than someone else's cityscape. A REAL photo always wins. */}
           {showNetwork ? (
             <div
-              className="flex items-center justify-center border-b-[3px] border-foreground bg-background px-4"
+              className="flex items-center justify-center border-b border-border-hairline bg-background px-4"
               style={{ height: 180 }}
             >
               <CityNetwork slug={slug} variant="thumb" className="h-full" />

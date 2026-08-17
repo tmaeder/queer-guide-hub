@@ -151,10 +151,10 @@ function StationNode({ station, path, rtl }: { station: Station; path: string; r
       >
         <span
           className={cn(
-            'block rounded-full border-[3px] border-foreground',
+            'block rounded-full border border-border-hairline',
             'transition-colors group-hover:bg-foreground group-focus-within:bg-foreground',
             interchange
-              ? 'intersection-gradient h-11 w-11 border-[4px] lg:h-12 lg:w-12'
+              ? 'intersection-gradient h-11 w-11 lg:h-12 lg:w-12'
               : cn('h-8 w-8', TRACK_BG[station.track]),
           )}
         />
@@ -168,7 +168,7 @@ function StationNode({ station, path, rtl }: { station: Station; path: string; r
           // `li a:not(.no-underline)` rule in index.css sets `display: inline`,
           // which collapses the plate and silently kills every `lg:` position
           // below it. Asserted in the unit test.
-          'card-lift flex min-w-0 flex-1 flex-col gap-1 border-2 border-foreground bg-background p-4 no-underline',
+          'card-lift flex min-w-0 flex-1 flex-col gap-1 bg-card p-4 no-underline rounded-container shadow-soft',
           'lg:absolute lg:left-1/2 lg:w-40 lg:flex-none lg:-translate-x-1/2 xl:w-48',
           station.lane === 'above' ? 'lg:bottom-full lg:mb-4' : 'lg:top-full lg:mt-4',
         )}

@@ -45,8 +45,8 @@ export function PhotoInset({
   if (!src) return null;
 
   return (
-    <figure className={cn('m-0 border-[3px] border-foreground p-4', className)}>
-      <div className="border-2 border-foreground">
+    <figure className={cn('m-0 bg-muted rounded-element p-4', className)}>
+      <div className="border border-border-hairline">
         <Image
           src={src}
           alt={alt}

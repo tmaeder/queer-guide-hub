@@ -67,7 +67,7 @@ function SectionLabel({ children, count }: { children: React.ReactNode; count?: 
  *  fills ink when it is on. The soft grey `bg-surface-container` pill this
  *  replaced read as disabled next to them. */
 const chip =
-  'inline-flex h-9 items-center gap-1.5 border-2 border-foreground px-4 text-xs font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:opacity-50';
+  'inline-flex h-9 items-center gap-1.5 bg-muted rounded-element px-4 text-xs font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:opacity-50';
 const chipOn = 'bg-foreground text-background';
 const chipOff = 'bg-background text-foreground hover:bg-foreground hover:text-background';
 
@@ -207,7 +207,7 @@ export const MapFiltersPanel = ({
       {showTags && (
         <div className="flex flex-col gap-2">
           <SectionLabel count={selectedTags.length}>Tags</SectionLabel>
-          <Command className="border-2 border-foreground bg-background">
+          <Command className="bg-card rounded-container shadow-soft">
             <CommandInput placeholder="Search tags…" className="h-9" />
             <CommandList className="max-h-44">
               <CommandEmpty>No tags found.</CommandEmpty>

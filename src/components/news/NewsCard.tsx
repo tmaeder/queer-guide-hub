@@ -381,7 +381,7 @@ const NewsCardImpl = ({
     return (
       <div className="relative flex flex-col md:flex-row gap-6 cursor-pointer transition-opacity hover:opacity-90">
         <div className="md:flex-[0_0_45%] rounded-container overflow-hidden">
-          { }
+          {}
           <img
             loading={priority ? 'eager' : 'lazy'}
             fetchPriority={priority ? 'high' : 'auto'}
@@ -507,7 +507,7 @@ const NewsCardImpl = ({
       {/* No inline borderColor: an inline style beats every class, so it
           silently killed the hover border below. Card already defaults to
           `border-border`. */}
-      <Card className="transition-colors duration-normal group-hover:border-foreground/40 cursor-pointer">
+      <Card className="border transition-colors duration-normal group-hover:border-foreground/40 cursor-pointer">
         <CardHeader style={{ flexDirection: 'column' }} className="flex gap-2 p-0">
           <div className="relative overflow-hidden rounded-container rounded-b-none">
             <img

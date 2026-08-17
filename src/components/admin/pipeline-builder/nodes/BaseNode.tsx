@@ -2,15 +2,33 @@ import { memo } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
-import { resolvePipelineIcon, AlertCircle, ArrowDownToLine, ArrowUpFromLine, Timer } from '../icon-registry';
+import {
+  resolvePipelineIcon,
+  AlertCircle,
+  ArrowDownToLine,
+  ArrowUpFromLine,
+  Timer,
+} from '../icon-registry';
 import type { BaseNodeType } from '../types';
 
 const statusConfig: Record<string, { className: string; icon: string }> = {
-  pending:   { className: 'bg-muted text-muted-foreground', icon: 'Clock' },
-  running:   { className: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground animate-pulse', icon: 'Loader2' },
-  completed: { className: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground', icon: 'CheckCircle2' },
-  failed:    { className: 'bg-destructive/10 dark:bg-destructive/40 text-destructive dark:text-destructive', icon: 'XCircle' },
-  skipped:   { className: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground', icon: 'SkipForward' },
+  pending: { className: 'bg-muted text-muted-foreground', icon: 'Clock' },
+  running: {
+    className: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground animate-pulse',
+    icon: 'Loader2',
+  },
+  completed: {
+    className: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground',
+    icon: 'CheckCircle2',
+  },
+  failed: {
+    className: 'bg-destructive/10 dark:bg-destructive/40 text-destructive dark:text-destructive',
+    icon: 'XCircle',
+  },
+  skipped: {
+    className: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground',
+    icon: 'SkipForward',
+  },
 };
 
 function portPosition(index: number, total: number): string {
@@ -34,9 +52,9 @@ function BaseNode({ data: d, selected }: NodeProps<BaseNodeType>) {
   return (
     <TooltipProvider delayDuration={300}>
       <div
-        className={`rounded-element border-2 bg-background min-w-[200px] max-w-[280px] transition-all ${
-          selected ? 'ring-2 ring-ring scale-[1.02]' : 'hover:border-foreground/40'
-        } ${status === 'failed' ? 'border-destructive' : ''}`}
+        className={`rounded-element bg-background min-w-[200px] max-w-[280px] transition-all ${
+          selected ? 'ring-2 ring-ring scale-[1.02]' : 'border hover:border-foreground/40'
+        } ${status === 'failed' ? 'border border-destructive' : ''}`}
         style={{ borderColor: status === 'failed' ? undefined : color }}
       >
         {/* Input handles */}
@@ -56,7 +74,9 @@ function BaseNode({ data: d, selected }: NodeProps<BaseNodeType>) {
                 }}
               />
             </TooltipTrigger>
-            <TooltipContent side="left" className="text-xs">{port.label || port.id}</TooltipContent>
+            <TooltipContent side="left" className="text-xs">
+              {port.label || port.id}
+            </TooltipContent>
           </Tooltip>
         ))}
 
@@ -87,7 +107,10 @@ function BaseNode({ data: d, selected }: NodeProps<BaseNodeType>) {
             </Tooltip>
           )}
           {sc && (
-            <Badge variant="outline" className={`ml-auto text-2xs px-1.5 py-0 gap-1 ${sc.className}`}>
+            <Badge
+              variant="outline"
+              className={`ml-auto text-2xs px-1.5 py-0 gap-1 ${sc.className}`}
+            >
               {/* eslint-disable-next-line react-hooks/static-components -- component-like reference resolved from a registry/factory; not redefined per render despite the rule's heuristic. */}
               {StatusIcon && <StatusIcon className="h-2.5 w-2.5" />}
               {status}
@@ -100,17 +123,20 @@ function BaseNode({ data: d, selected }: NodeProps<BaseNodeType>) {
           <div className="flex items-center gap-4 px-4 py-1.5 text-xs2 font-mono border-t border-border/50">
             {d.itemsIn !== undefined && (
               <span className="text-muted-foreground" title="items in">
-                <ArrowDownToLine className="h-3 w-3 inline mr-0.5" />{d.itemsIn}
+                <ArrowDownToLine className="h-3 w-3 inline mr-0.5" />
+                {d.itemsIn}
               </span>
             )}
             {d.itemsOut !== undefined && (
               <span className="font-semibold" style={{ color }} title="items out">
-                <ArrowUpFromLine className="h-3 w-3 inline mr-0.5" />{d.itemsOut}
+                <ArrowUpFromLine className="h-3 w-3 inline mr-0.5" />
+                {d.itemsOut}
               </span>
             )}
             {d.durationMs !== undefined && d.durationMs > 0 && (
               <span className="ml-auto text-muted-foreground" title="duration">
-                <Timer className="h-3 w-3 inline mr-0.5" />{formatDuration(d.durationMs)}
+                <Timer className="h-3 w-3 inline mr-0.5" />
+                {formatDuration(d.durationMs)}
               </span>
             )}
           </div>
@@ -147,7 +173,9 @@ function BaseNode({ data: d, selected }: NodeProps<BaseNodeType>) {
                 }}
               />
             </TooltipTrigger>
-            <TooltipContent side="right" className="text-xs">{port.label || port.id}</TooltipContent>
+            <TooltipContent side="right" className="text-xs">
+              {port.label || port.id}
+            </TooltipContent>
           </Tooltip>
         ))}
       </div>

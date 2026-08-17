@@ -105,7 +105,7 @@ export function RouteStrip({
            a 4px slot on mobile for content to slide through). Restating
            either here is how the two drift apart. */
         className={cn(
-          `sticky ${STICKY_UNDER_HEADER} z-30 border-b-2 border-foreground bg-background`,
+          `sticky ${STICKY_UNDER_HEADER} z-30 border-b border-border-hairline bg-background`,
           PAGE_BLEED,
           className,
         )}
@@ -124,7 +124,7 @@ export function RouteStrip({
                   aria-current={isActive ? 'true' : undefined}
                   onClick={(e) => handleClick(e, s.id)}
                   className={cn(
-                    'inline-flex items-center gap-2 whitespace-nowrap border-2 border-foreground px-2 py-1 text-13 font-bold no-underline transition-colors',
+                    'inline-flex items-center gap-2 whitespace-nowrap bg-muted rounded-element px-2 py-1 text-13 font-bold no-underline transition-colors',
                     isActive
                       ? 'bg-foreground text-background'
                       : 'bg-background hover:bg-surface-container',
@@ -185,7 +185,7 @@ export function RouteStrip({
                     <span
                       aria-hidden
                       className={cn(
-                        'mt-1 inline-block h-2.5 w-2.5 rounded-full border-2 border-foreground',
+                        'mt-1 inline-block h-2.5 w-2.5 rounded-full bg-muted',
                         isActive || isPast ? 'bg-foreground' : 'bg-background',
                       )}
                     />

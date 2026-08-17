@@ -5,11 +5,36 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import type { GroupNodeData, GroupNodeType } from '../types';
 
 const COLORS = [
-  { name: 'indigo', bg: 'hsl(var(--muted-foreground) / 0.08)', border: 'hsl(var(--muted-foreground) / 0.4)', accent: 'hsl(var(--muted-foreground))' },
-  { name: 'emerald', bg: 'hsl(var(--foreground) / 0.08)', border: 'hsl(var(--foreground) / 0.4)', accent: 'hsl(var(--foreground))' },
-  { name: 'rose', bg: 'hsl(var(--destructive) / 0.08)', border: 'hsl(var(--destructive) / 0.4)', accent: 'hsl(var(--destructive))' },
-  { name: 'amber', bg: 'hsl(var(--foreground) / 0.08)', border: 'hsl(var(--foreground) / 0.4)', accent: 'hsl(var(--foreground) / 0.55)' },
-  { name: 'slate', bg: 'hsl(var(--muted-foreground) / 0.08)', border: 'hsl(var(--muted-foreground) / 0.4)', accent: 'hsl(var(--muted-foreground))' },
+  {
+    name: 'indigo',
+    bg: 'hsl(var(--muted-foreground) / 0.08)',
+    border: 'hsl(var(--muted-foreground) / 0.4)',
+    accent: 'hsl(var(--muted-foreground))',
+  },
+  {
+    name: 'emerald',
+    bg: 'hsl(var(--foreground) / 0.08)',
+    border: 'hsl(var(--foreground) / 0.4)',
+    accent: 'hsl(var(--foreground))',
+  },
+  {
+    name: 'rose',
+    bg: 'hsl(var(--destructive) / 0.08)',
+    border: 'hsl(var(--destructive) / 0.4)',
+    accent: 'hsl(var(--destructive))',
+  },
+  {
+    name: 'amber',
+    bg: 'hsl(var(--foreground) / 0.08)',
+    border: 'hsl(var(--foreground) / 0.4)',
+    accent: 'hsl(var(--foreground) / 0.55)',
+  },
+  {
+    name: 'slate',
+    bg: 'hsl(var(--muted-foreground) / 0.08)',
+    border: 'hsl(var(--muted-foreground) / 0.4)',
+    accent: 'hsl(var(--muted-foreground))',
+  },
 ];
 
 function GroupNode({ data: d, selected, id }: NodeProps<GroupNodeType>) {
@@ -18,7 +43,7 @@ function GroupNode({ data: d, selected, id }: NodeProps<GroupNodeType>) {
   const [color, setColor] = useState(d.color || 'indigo');
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const scheme = COLORS.find(c => c.name === color) || COLORS[0];
+  const scheme = COLORS.find((c) => c.name === color) || COLORS[0];
 
   useEffect(() => {
     if (editing) inputRef.current?.focus();
@@ -51,7 +76,10 @@ function GroupNode({ data: d, selected, id }: NodeProps<GroupNodeType>) {
         handleStyle={{ background: scheme.accent, width: 8, height: 8 }}
       />
 
-      <div className="flex items-center gap-1.5 px-4 py-1.5 rounded-t-element" style={{ backgroundColor: `${scheme.accent}15` }}>
+      <div
+        className="flex items-center gap-1.5 px-4 py-1.5 rounded-t-element"
+        style={{ backgroundColor: `${scheme.accent}15` }}
+      >
         <Folder className="h-3.5 w-3.5 shrink-0" style={{ color: scheme.accent }} />
         {editing ? (
           <input
@@ -102,10 +130,10 @@ function GroupNode({ data: d, selected, id }: NodeProps<GroupNodeType>) {
           </PopoverTrigger>
           <PopoverContent className="w-auto p-1.5" side="top">
             <div className="flex gap-1">
-              {COLORS.map(c => (
+              {COLORS.map((c) => (
                 <button
                   key={c.name}
-                  className={`w-5 h-5 rounded-full border-2 transition-transform hover:scale-110 ${color === c.name ? 'ring-2 ring-ring' : ''}`}
+                  className={`w-5 h-5 rounded-full transition-transform hover:scale-110 ${color === c.name ? 'ring-2 ring-ring' : ''}`}
                   style={{ backgroundColor: c.accent }}
                   onClick={() => {
                     setColor(c.name);

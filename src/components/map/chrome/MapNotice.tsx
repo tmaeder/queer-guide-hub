@@ -140,7 +140,7 @@ export function MapNotice({
     <div className="pointer-events-none absolute inset-x-0 top-1/2 z-30 flex -translate-y-1/2 justify-center px-4">
       <div
         role="status"
-        className="pointer-events-auto flex items-center gap-2 border-[3px] border-foreground bg-background py-1.5 pl-4 pr-2 text-13 text-foreground"
+        className="pointer-events-auto flex items-center gap-2 bg-card py-1.5 pl-4 pr-2 text-13 text-foreground rounded-container shadow-soft"
       >
         {body}
         {dismiss && (

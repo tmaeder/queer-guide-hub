@@ -21,10 +21,7 @@ interface EditorialEntriesProps {
  * primary navigation metaphor vanished at the moment it was engaged. It now
  * renders from the page itself, above the filter bar, and stays lit.
  */
-export function EditorialEntries({
-  activeProfession,
-  onProfessionSelect,
-}: EditorialEntriesProps) {
+export function EditorialEntries({ activeProfession, onProfessionSelect }: EditorialEntriesProps) {
   const { t } = useTranslation();
   const { facets } = useProfessionFacets(8);
   const { items: bornThisWeek } = useBornThisWeek(8, 'born');
@@ -45,9 +42,9 @@ export function EditorialEntries({
           <li key={p.id} className="w-32 shrink-0">
             <LocalizedLink
               to={`/personalities/${p.slug ?? p.id}`}
-              className="card-lift-sm group block border-[3px] border-foreground bg-background no-underline text-inherit"
+              className="card-lift-sm group block bg-card no-underline text-inherit rounded-container shadow-soft"
             >
-              <div className="flex h-32 w-full items-center justify-center overflow-hidden border-b-[3px] border-foreground bg-muted">
+              <div className="flex h-32 w-full items-center justify-center overflow-hidden border-b border-border-hairline bg-muted">
                 {p.image_url ? (
                   <img
                     src={p.image_url}
@@ -118,7 +115,7 @@ export function EditorialEntries({
                   onClick={() => onProfessionSelect(active ? undefined : f.profession)}
                   aria-pressed={active}
                   className={cn(
-                    'flex items-center justify-between gap-2 border-2 border-foreground px-4 py-2 text-left transition-colors',
+                    'flex items-center justify-between gap-2 bg-muted rounded-element px-4 py-2 text-left transition-colors',
                     active
                       ? 'bg-foreground text-background'
                       : 'bg-background hover:bg-surface-container',

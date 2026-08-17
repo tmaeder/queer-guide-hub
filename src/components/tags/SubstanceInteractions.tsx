@@ -3,11 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { useSubstanceInteractions } from '@/hooks/useTagRelationships';
-import {
-  interactionVisual,
-  INTERACTION_ORDER,
-  type InteractionStatus,
-} from '@/lib/substanceRisk';
+import { interactionVisual, INTERACTION_ORDER, type InteractionStatus } from '@/lib/substanceRisk';
 
 /**
  * What this substance must not be combined with.
@@ -59,8 +55,8 @@ export function SubstanceInteractions({ tagId, tagName }: Props) {
   const attribution = rows[0];
 
   return (
-    <section className="border-[3px] border-foreground">
-      <header className="border-b-[3px] border-foreground bg-foreground px-4 py-4 text-background">
+    <section className="border border-border-hairline">
+      <header className="border-b border-border-hairline bg-foreground px-4 py-4 text-background">
         <Eyebrow className="text-background/70">
           {t('tags.interactions.eyebrow', 'Combinations')}
         </Eyebrow>
@@ -76,7 +72,7 @@ export function SubstanceInteractions({ tagId, tagName }: Props) {
           return (
             <div key={status} className="p-4">
               <div
-                className="mb-4 inline-flex items-center gap-2 border-2 border-foreground px-2 py-1.5"
+                className="mb-4 inline-flex items-center gap-2 bg-muted rounded-element px-2 py-1.5"
                 style={{ backgroundColor: `hsl(${v.tint})`, color: `hsl(${v.ink})` }}
               >
                 <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
@@ -87,7 +83,7 @@ export function SubstanceInteractions({ tagId, tagName }: Props) {
 
               <ul className="flex list-none flex-col gap-2 p-0">
                 {list.map((r) => (
-                  <li key={r.other_id} className="border-2 border-foreground/15 p-2">
+                  <li key={r.other_id} className="border border-foreground/15 p-2">
                     <LocalizedLink
                       to={`/tags/${encodeURIComponent(r.other_slug)}`}
                       className="text-13 font-bold text-foreground no-underline hover:underline"
@@ -105,7 +101,7 @@ export function SubstanceInteractions({ tagId, tagName }: Props) {
         })}
       </div>
 
-      <footer className="border-t-[3px] border-foreground p-4">
+      <footer className="border-t border-border-hairline p-4">
         <p className="text-13 leading-relaxed text-muted-foreground">
           {t(
             'tags.interactions.absence',
@@ -116,7 +112,7 @@ export function SubstanceInteractions({ tagId, tagName }: Props) {
             is reachable solely by typing the URL. */}
         <LocalizedLink
           to="/tags/interactions"
-          className="mt-4 inline-block border-2 border-foreground px-4 py-2 text-13 font-bold text-foreground no-underline transition-colors hover:bg-foreground hover:text-background"
+          className="mt-4 inline-block px-4 py-2 text-13 font-bold text-foreground no-underline transition-colors hover:bg-foreground hover:text-background"
         >
           {t('tags.interactions.seeAll', 'See the full interaction chart')}
         </LocalizedLink>

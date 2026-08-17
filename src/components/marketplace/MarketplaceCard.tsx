@@ -128,8 +128,8 @@ function MarketplaceCardImpl({
     // A bordered pulse plate in the real card's shape, not a generic skeleton:
     // the grid should not change its geometry when the data lands.
     return (
-      <div className="border-[3px] border-foreground/20 bg-card" aria-hidden="true">
-        <div className="aspect-[3/4] animate-pulse border-b-[3px] border-foreground/20 bg-muted" />
+      <div className="border border-foreground/20 bg-card" aria-hidden="true">
+        <div className="aspect-[3/4] animate-pulse border-b border-foreground/20 bg-muted" />
         <div className="flex flex-col gap-2 p-4">
           <div className="h-2.5 w-1/3 animate-pulse bg-muted" />
           <div className="h-4 w-5/6 animate-pulse bg-muted" />
@@ -170,7 +170,7 @@ function MarketplaceCardImpl({
           device ("depth from borders and surfaces, never shadows") that the
           subway spec reversed. A rule under the image separates it from the
           text block the same way a band separates two sections of the page. */}
-      <div className="border-b-[3px] border-foreground">
+      <div className="border-b border-border-hairline">
         <LocalizedLink
           to={`/marketplace/${listing.slug}`}
           className="block"
@@ -215,7 +215,7 @@ function MarketplaceCardImpl({
           className="group flex flex-row items-stretch gap-4 p-2"
           onMouseEnter={() => setHovered(true)}
         >
-          <div className="relative w-28 shrink-0 overflow-hidden border-2 border-foreground sm:w-32">
+          <div className="relative w-28 shrink-0 overflow-hidden border border-border-hairline sm:w-32">
             <LocalizedLink
               to={`/marketplace/${listing.slug}`}
               className="block"

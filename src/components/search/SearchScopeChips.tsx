@@ -88,7 +88,7 @@ function ScopeChip({
       aria-selected={active}
       onClick={onClick}
       className={cn(
-        'inline-flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap border-2 border-foreground py-1 text-13 font-bold transition-colors',
+        'inline-flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap bg-muted rounded-element py-1 text-13 font-bold transition-colors',
         // A bullet is a circle inside a squared chip: it needs its own optical
         // inset on the leading edge or it kisses the border.
         type ? 'ps-1 pe-4' : 'px-4',

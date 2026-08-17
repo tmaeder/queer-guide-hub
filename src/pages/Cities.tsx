@@ -99,7 +99,7 @@ export default function Cities() {
       {/* ---- Masthead ------------------------------------------------------ */}
       {/* Not PageHero: it ships rounded-full pill CTAs and a spotlight effect,
           the one primitive the rebrand has not reached. */}
-      <header className="border-b-4 border-foreground">
+      <header className="border-b border-border-hairline">
         <PageContainer flush className="pb-6 pt-6 md:pb-12 md:pt-16">
           <div className="flex items-center gap-4">
             <RouteBullet type="city" size={44} />
@@ -144,7 +144,7 @@ export default function Cities() {
       {/* ---- Control band --------------------------------------------------- */}
       <div
         className={cn(
-          'sticky z-20 border-b-4 border-foreground bg-background',
+          'sticky z-20 border-b border-border-hairline bg-background',
           STICKY_UNDER_HEADER,
         )}
       >
@@ -172,7 +172,7 @@ export default function Cities() {
         /* ---- Map view ----------------------------------------------------- */
         <PageContainer>
           <section
-            className={cn('h-[70vh] overflow-hidden border-y-4 border-foreground', PAGE_BLEED)}
+            className={cn('h-[70vh] overflow-hidden border-y border-border-hairline', PAGE_BLEED)}
           >
             {mapReady ? (
               <Suspense fallback={<MapPaneFallback />}>
@@ -190,7 +190,7 @@ export default function Cities() {
       ) : (
         <>
           {/* ---- Continent line index --------------------------------------- */}
-          <div className="border-b-4 border-foreground">
+          <div className="border-b border-border-hairline">
             <PageContainer flush className="py-6 md:py-12">
               <CitiesLineIndex
                 continents={continents}
@@ -226,10 +226,10 @@ export default function Cities() {
       )}
 
       {/* ---- Tail ----------------------------------------------------------- */}
-      <section className="border-t-4 border-foreground">
+      <section className="border-t border-border-hairline">
         <PageContainer flush className="py-6 md:py-12">
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="card-lift group relative border-[3px] border-foreground p-6">
+            <div className="card-lift group relative bg-muted rounded-container p-6">
               <h3 className="m-0 font-display text-headline">
                 {t('cities.mapTeaserTitle', 'See it on the map')}
               </h3>
@@ -246,7 +246,7 @@ export default function Cities() {
                 className="absolute inset-0"
               />
             </div>
-            <div className="card-lift group relative border-[3px] border-foreground p-6">
+            <div className="card-lift group relative bg-muted rounded-container p-6">
               <h3 className="m-0 font-display text-headline">
                 {t('cities.suggestTitle', 'Missing a city?')}
               </h3>

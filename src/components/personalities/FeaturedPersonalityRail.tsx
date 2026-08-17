@@ -53,7 +53,7 @@ function FeaturedItem({
     >
       {/* A station ring at portrait scale — `rounded-full` is sanctioned for
           avatars, and the 3px ink ring is the same one StationRing draws. */}
-      <div className="featured-avatar relative mb-2 flex h-40 w-40 items-center justify-center overflow-hidden rounded-full border-[3px] border-foreground bg-muted transition-colors group-hover:bg-surface-container">
+      <div className="featured-avatar relative mb-2 flex h-40 w-40 items-center justify-center overflow-hidden rounded-full bg-muted transition-colors group-hover:bg-surface-container">
         {resolvedSrc ? (
           <img
             src={resolvedSrc}
@@ -104,7 +104,7 @@ export function FeaturedPersonalityRail() {
         {loading
           ? Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="w-40 flex-none">
-                <div className="mb-2 h-40 w-40 animate-pulse rounded-full border-[3px] border-foreground bg-muted" />
+                <div className="mb-2 h-40 w-40 animate-pulse rounded-full bg-muted" />
                 <div className="mb-1 h-4 animate-pulse bg-muted" />
                 <div className="mx-auto h-4 w-3/4 animate-pulse bg-muted" />
               </div>

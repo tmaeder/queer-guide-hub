@@ -67,7 +67,9 @@ function Evidence({ c }: { c: VenueReviewCandidate }) {
           name alone ("Cine Hoyts") cannot. */}
       {c.source_tags && (
         <div className="mt-1.5 truncate text-13">
-          <span className="text-2xs uppercase tracking-label text-muted-foreground">Source tags</span>{' '}
+          <span className="text-2xs uppercase tracking-label text-muted-foreground">
+            Source tags
+          </span>{' '}
           {c.source_tags}
         </div>
       )}
@@ -84,7 +86,7 @@ function CategoryRow({ c }: { c: VenueReviewCandidate }) {
   const busy = decide.isPending;
 
   return (
-    <li className="grid gap-4 border-b-2 border-foreground/10 py-4 last:border-b-0 md:grid-cols-[1fr_auto] md:items-start">
+    <li className="grid gap-4 border-b border-foreground/10 py-4 last:border-b-0 md:grid-cols-[1fr_auto] md:items-start">
       <Evidence c={c} />
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-13 font-bold tabular-nums">
@@ -102,7 +104,7 @@ function CategoryRow({ c }: { c: VenueReviewCandidate }) {
           aria-label={`Category for ${c.name}`}
           value={override}
           onChange={(e) => setOverride(e.target.value)}
-          className="h-8 border-2 border-foreground bg-background px-2 text-13"
+          className="h-8 bg-card px-2 text-13 rounded-container shadow-soft"
         >
           <option value="">Use suggestion</option>
           {CATEGORIES.map((cat) => (
@@ -136,7 +138,7 @@ function NonvenueRow({ c }: { c: VenueReviewCandidate }) {
   const busy = decide.isPending;
 
   return (
-    <li className="grid gap-4 border-b-2 border-foreground/10 py-4 last:border-b-0 md:grid-cols-[1fr_auto] md:items-start">
+    <li className="grid gap-4 border-b border-foreground/10 py-4 last:border-b-0 md:grid-cols-[1fr_auto] md:items-start">
       <Evidence c={c} />
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-13 text-muted-foreground">
@@ -221,8 +223,8 @@ export function VenueReviewQueuePanel() {
           <AdminTableSkeleton rows={5} columns={3} />
         ) : rows.length === 0 ? (
           <p className="py-6 text-13 text-muted-foreground">
-            Nothing waiting. The engine leaves rows it cannot judge as
-            {' '}&lsquo;other&rsquo; rather than guessing.
+            Nothing waiting. The engine leaves rows it cannot judge as &lsquo;other&rsquo; rather
+            than guessing.
           </p>
         ) : (
           <ul className="m-0 list-none p-0">

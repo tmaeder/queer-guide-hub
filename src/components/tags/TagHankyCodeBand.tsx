@@ -25,10 +25,10 @@ import { HANKY_CODE, HANKY_CODE_TAG_SLUG, type HankyCodeEntry } from '@/lib/flag
 function CodeRow({ entry }: { entry: HankyCodeEntry }) {
   const { t } = useTranslation();
   return (
-    <li className="flex items-center gap-4 border-b-2 border-foreground/15 py-2 last:border-b-0">
+    <li className="flex items-center gap-4 border-b border-foreground/15 py-2 last:border-b-0">
       <span
         aria-hidden="true"
-        className="h-4 w-8 shrink-0 border-2 border-foreground"
+        className="h-4 w-8 shrink-0 border border-border-hairline"
         style={{ backgroundColor: entry.hex }}
       />
       <span className="w-28 shrink-0 text-13 font-bold">{t(entry.colorKey, entry.colorEn)}</span>
@@ -52,7 +52,7 @@ export function TagHankyCodeBand({ tagSlug }: { tagSlug: string }) {
     <section
       id="hanky-code"
       aria-labelledby="hanky-code-heading"
-      className="scroll-mt-24 border-y-4 border-foreground py-8"
+      className="scroll-mt-24 border-y border-border-hairline py-8"
     >
       <Eyebrow as="p">{t('tags.detail.hanky.eyebrow', 'Reference')}</Eyebrow>
       <h2
@@ -69,14 +69,14 @@ export function TagHankyCodeBand({ tagSlug }: { tagSlug: string }) {
       </p>
 
       {safeMode.enabled ? (
-        <p className="mt-6 border-[3px] border-foreground p-4 text-13">
+        <p className="mt-6 bg-muted rounded-element p-4 text-13">
           {t(
             'tags.detail.hanky.safeMode',
             'The colour table covers explicit sexual practices and is hidden while Safe Mode is on.',
           )}
         </p>
       ) : !affirmed ? (
-        <div className="mt-6 border-[3px] border-foreground bg-foreground p-6 text-background">
+        <div className="mt-6 bg-foreground p-6 text-background">
           <p className="text-13 leading-relaxed">
             {t(
               'tags.detail.hanky.gateBody',
@@ -85,7 +85,7 @@ export function TagHankyCodeBand({ tagSlug }: { tagSlug: string }) {
           </p>
           <Button
             variant="outline"
-            className="mt-4 border-2 border-background bg-transparent text-background hover:bg-background hover:text-foreground"
+            className="border mt-4 border-background bg-transparent text-background hover:bg-background hover:text-foreground"
             onClick={() => setRequested(true)}
             data-testid="hanky-code-reveal"
           >

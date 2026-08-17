@@ -66,7 +66,7 @@ export function TagInterchange({ tagId, tagName }: { tagId: string; tagName: str
     <section
       id="taxonomy"
       aria-labelledby="taxonomy-heading"
-      className="border-y-4 border-foreground py-8"
+      className="border-y border-border-hairline py-8"
     >
       <Eyebrow as="p">{t('tags.detail.interchangeEyebrow', 'Interchange')}</Eyebrow>
       <h2
@@ -106,7 +106,7 @@ export function TagInterchange({ tagId, tagName }: { tagId: string; tagName: str
                   <LocalizedLink
                     to={`/tags/${encodeURIComponent(tag.slug)}`}
                     className={cn(
-                      'inline-flex items-center gap-2 border-2 border-foreground px-2 py-1 text-13 font-bold no-underline transition-colors',
+                      'inline-flex items-center gap-2 bg-muted rounded-element px-2 py-1 text-13 font-bold no-underline transition-colors',
                       'hover:bg-foreground hover:text-background',
                     )}
                   >

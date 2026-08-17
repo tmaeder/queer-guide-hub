@@ -65,7 +65,7 @@ export function CityMapTab({ city, venues = [], caption, openLabel }: CityMapTab
       {openLabel && (
         <LocalizedLink
           to={`/map?city=${encodeURIComponent(city.name)}`}
-          className="block border-t-2 border-foreground px-2 py-2 text-2xs font-bold uppercase tracking-label no-underline transition-colors hover:bg-foreground hover:text-background"
+          className="block border-t border-border-hairline px-2 py-2 text-2xs font-bold uppercase tracking-label no-underline transition-colors hover:bg-foreground hover:text-background"
         >
           {openLabel}
         </LocalizedLink>

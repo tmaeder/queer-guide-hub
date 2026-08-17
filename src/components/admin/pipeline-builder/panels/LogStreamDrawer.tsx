@@ -1,7 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
-import { Terminal, X, Pause, Play, ChevronDown, AlertCircle, CheckCircle2, Filter } from 'lucide-react';
+import {
+  Terminal,
+  X,
+  Pause,
+  Play,
+  ChevronDown,
+  AlertCircle,
+  CheckCircle2,
+  Filter,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -84,10 +93,12 @@ export default function LogStreamDrawer({ pipelineRunId, onClose }: LogStreamDra
         { event: 'INSERT', schema: 'public', table: 'ingestion_events' },
         () => {
           // Let the query refetch pick it up — just nudge the cache
-        }
+        },
       )
       .subscribe();
-    return () => { void supabase.removeChannel(channel); };
+    return () => {
+      void supabase.removeChannel(channel);
+    };
   }, [pipelineRunId, paused]);
 
   // Auto-scroll to bottom on new events, unless paused
@@ -96,11 +107,14 @@ export default function LogStreamDrawer({ pipelineRunId, onClose }: LogStreamDra
     scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [events, paused]);
 
-  const filtered = filter === 'errors'
-    ? events.filter(e => ['rejected', 'failed', 'error'].includes(e.new_status))
-    : events;
+  const filtered =
+    filter === 'errors'
+      ? events.filter((e) => ['rejected', 'failed', 'error'].includes(e.new_status))
+      : events;
 
-  const errorCount = events.filter(e => ['rejected', 'failed', 'error'].includes(e.new_status)).length;
+  const errorCount = events.filter((e) =>
+    ['rejected', 'failed', 'error'].includes(e.new_status),
+  ).length;
 
   if (!pipelineRunId) return null;
 
@@ -109,10 +123,17 @@ export default function LogStreamDrawer({ pipelineRunId, onClose }: LogStreamDra
       <div className="px-4 py-2 border-b border-border flex items-center gap-2 bg-muted/30">
         <Terminal className="h-3.5 w-3.5 text-muted-foreground" />
         <span className="text-xs font-semibold">Run log stream</span>
-        <Badge variant="outline" className="text-2xs px-1.5 py-0 font-mono">{pipelineRunId.slice(0, 8)}</Badge>
-        <Badge variant="outline" className="text-2xs px-1.5 py-0">{events.length} events</Badge>
+        <Badge variant="outline" className="text-2xs px-1.5 py-0 font-mono">
+          {pipelineRunId.slice(0, 8)}
+        </Badge>
+        <Badge variant="outline" className="text-2xs px-1.5 py-0">
+          {events.length} events
+        </Badge>
         {errorCount > 0 && (
-          <Badge variant="outline" className="text-2xs px-1.5 py-0 bg-destructive/10 dark:bg-destructive/30 text-destructive dark:text-destructive border-destructive dark:border-destructive">
+          <Badge
+            variant="outline"
+            className="border text-2xs px-1.5 py-0 bg-destructive/10 dark:bg-destructive/30 text-destructive dark:text-destructive border-destructive dark:border-destructive"
+          >
             {errorCount} errors
           </Badge>
         )}
@@ -123,30 +144,50 @@ export default function LogStreamDrawer({ pipelineRunId, onClose }: LogStreamDra
           <button
             onClick={() => setFilter('all')}
             className={`text-2xs px-2 py-0.5 rounded-badge border transition-colors ${
-              filter === 'all' ? 'bg-primary text-primary-foreground border-primary' : 'bg-background text-muted-foreground border-border hover:bg-accent'
+              filter === 'all'
+                ? 'bg-primary text-primary-foreground border-primary'
+                : 'bg-background text-muted-foreground border-border hover:bg-accent'
             }`}
-          >All</button>
+          >
+            All
+          </button>
           <button
             onClick={() => setFilter('errors')}
             className={`text-2xs px-2 py-0.5 rounded-badge border transition-colors ${
-              filter === 'errors' ? 'bg-primary text-primary-foreground border-primary' : 'bg-background text-muted-foreground border-border hover:bg-accent'
+              filter === 'errors'
+                ? 'bg-primary text-primary-foreground border-primary'
+                : 'bg-background text-muted-foreground border-border hover:bg-accent'
             }`}
-          >Errors</button>
+          >
+            Errors
+          </button>
         </div>
 
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setPaused(p => !p)}>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 w-7 p-0"
+              onClick={() => setPaused((p) => !p)}
+            >
               {paused ? <Play className="h-3.5 w-3.5" /> : <Pause className="h-3.5 w-3.5" />}
             </Button>
           </TooltipTrigger>
-          <TooltipContent className="text-xs">{paused ? 'Resume' : 'Pause'} auto-refresh</TooltipContent>
+          <TooltipContent className="text-xs">
+            {paused ? 'Resume' : 'Pause'} auto-refresh
+          </TooltipContent>
         </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => {
-              if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-            }}>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 w-7 p-0"
+              onClick={() => {
+                if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+              }}
+            >
               <ChevronDown className="h-3.5 w-3.5" />
             </Button>
           </TooltipTrigger>
@@ -171,38 +212,53 @@ export default function LogStreamDrawer({ pipelineRunId, onClose }: LogStreamDra
           </div>
         ) : (
           <div className="p-2">
-            {filtered.slice().reverse().map(e => {
-              const stageClass = stageColor[e.stage] || 'text-muted-foreground';
-              const isError = ['rejected', 'failed', 'error'].includes(e.new_status);
-              const errorMsg = (e.payload as Record<string, unknown>)?.error
-                || (e.payload as Record<string, unknown>)?.crash;
-              return (
-                <div key={e.id} className={`flex items-start gap-2 py-0.5 px-2 rounded-element hover:bg-muted/30 ${isError ? 'bg-destructive/10 dark:bg-destructive/20' : ''}`}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span className="text-muted-foreground text-2xs whitespace-nowrap cursor-help">
-                        {formatDistanceToNow(new Date(e.created_at), { addSuffix: false })}
+            {filtered
+              .slice()
+              .reverse()
+              .map((e) => {
+                const stageClass = stageColor[e.stage] || 'text-muted-foreground';
+                const isError = ['rejected', 'failed', 'error'].includes(e.new_status);
+                const errorMsg =
+                  (e.payload as Record<string, unknown>)?.error ||
+                  (e.payload as Record<string, unknown>)?.crash;
+                return (
+                  <div
+                    key={e.id}
+                    className={`flex items-start gap-2 py-0.5 px-2 rounded-element hover:bg-muted/30 ${isError ? 'bg-destructive/10 dark:bg-destructive/20' : ''}`}
+                  >
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="text-muted-foreground text-2xs whitespace-nowrap cursor-help">
+                          {formatDistanceToNow(new Date(e.created_at), { addSuffix: false })}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent className="text-xs font-mono">
+                        {format(new Date(e.created_at), 'HH:mm:ss.SSS')}
+                      </TooltipContent>
+                    </Tooltip>
+                    <span className={`${stageClass} font-semibold whitespace-nowrap min-w-[90px]`}>
+                      {e.stage}
+                    </span>
+                    <span className="flex items-center gap-1 min-w-[80px] whitespace-nowrap">
+                      {statusIcon[e.new_status]}
+                      <span className={isError ? 'text-destructive' : ''}>{e.new_status}</span>
+                    </span>
+                    {e.staging_id && (
+                      <span className="text-muted-foreground text-2xs">
+                        {e.staging_id.slice(0, 8)}
                       </span>
-                    </TooltipTrigger>
-                    <TooltipContent className="text-xs font-mono">{format(new Date(e.created_at), 'HH:mm:ss.SSS')}</TooltipContent>
-                  </Tooltip>
-                  <span className={`${stageClass} font-semibold whitespace-nowrap min-w-[90px]`}>{e.stage}</span>
-                  <span className="flex items-center gap-1 min-w-[80px] whitespace-nowrap">
-                    {statusIcon[e.new_status]}
-                    <span className={isError ? 'text-destructive' : ''}>{e.new_status}</span>
-                  </span>
-                  {e.staging_id && (
-                    <span className="text-muted-foreground text-2xs">{e.staging_id.slice(0, 8)}</span>
-                  )}
-                  {typeof errorMsg === 'string' && (
-                    <span className="text-destructive truncate flex-1" title={errorMsg}>{errorMsg}</span>
-                  )}
-                  {e.actor && (
-                    <span className="text-muted-foreground text-2xs ml-auto">{e.actor}</span>
-                  )}
-                </div>
-              );
-            })}
+                    )}
+                    {typeof errorMsg === 'string' && (
+                      <span className="text-destructive truncate flex-1" title={errorMsg}>
+                        {errorMsg}
+                      </span>
+                    )}
+                    {e.actor && (
+                      <span className="text-muted-foreground text-2xs ml-auto">{e.actor}</span>
+                    )}
+                  </div>
+                );
+              })}
           </div>
         )}
       </div>

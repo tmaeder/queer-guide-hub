@@ -64,10 +64,7 @@ export default function MarketplaceBrands() {
       <MarketplaceMasthead
         eyebrow="Marketplace · Makers"
         title={t('marketplace.makersTitle', 'Makers.')}
-        lede={t(
-          'marketplace.makersLede',
-          'Every brand with something listed on the marketplace.',
-        )}
+        lede={t('marketplace.makersLede', 'Every brand with something listed on the marketplace.')}
         count={
           isLoading && total === 0
             ? t('common.counting', 'Counting…')
@@ -79,9 +76,9 @@ export default function MarketplaceBrands() {
       />
 
       {/* Control band — same grammar as the hub's, one row shorter. */}
-      <section className="border-b-4 border-foreground bg-surface-container-low">
+      <section className="border-b border-border-hairline bg-surface-container-low">
         <PageContainer flush className="flex flex-col gap-4 py-4 md:py-6">
-          <label className="flex h-12 items-center gap-2 border-[3px] border-foreground bg-background px-4 shadow-hard">
+          <label className="flex h-12 items-center gap-2 bg-card px-4 shadow-soft rounded-container">
             <TransitIcon name="search" size={20} />
             <span className="sr-only">{t('marketplace.searchMakers', 'Search makers')}</span>
             <input
@@ -122,7 +119,7 @@ export default function MarketplaceBrands() {
               <li
                 key={i}
                 aria-hidden="true"
-                className="h-[152px] animate-pulse border-[3px] border-foreground/20 bg-muted"
+                className="border h-[152px] animate-pulse border-foreground/20 bg-muted"
               />
             ))}
           </ul>

@@ -24,7 +24,7 @@ export function StatLine({ stats, className }: { stats: Stat[]; className?: stri
       {shown.map((s) => (
         <div
           key={s.label}
-          className="flex items-baseline justify-between gap-4 border-b-2 border-foreground/15 py-2 last:border-b-0 last:pb-0"
+          className="flex items-baseline justify-between gap-4 border-b border-foreground/15 py-2 last:border-b-0 last:pb-0"
         >
           <dt className="text-13 opacity-75">{s.label}</dt>
           <dd className="m-0 text-13 font-bold tabular-nums">{s.value}</dd>

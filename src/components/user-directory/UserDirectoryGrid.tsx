@@ -110,7 +110,7 @@ export const UserDirectoryGrid = ({
                       {profile.verified_identity && (
                         <span
                           aria-label="Verified"
-                          className="absolute -top-1 -right-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-foreground text-background border-2 border-background"
+                          className="border-2 absolute -top-1 -right-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-foreground text-background border-background"
                         >
                           <Check size={12} />
                         </span>

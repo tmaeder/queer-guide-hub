@@ -39,14 +39,11 @@ export function AccessGrid({ items, className }: { items: AccessItem[]; classNam
   return (
     <ul className={cn('grid list-none grid-cols-1 gap-2 p-0 sm:grid-cols-2', className)}>
       {items.map((a) => (
-        <li
-          key={a.label}
-          className="flex items-center gap-2 border-2 border-foreground px-4 py-2"
-        >
+        <li key={a.label} className="flex items-center gap-2 bg-muted rounded-element px-4 py-2">
           <span
             aria-hidden
             className={cn(
-              'h-4 w-4 shrink-0 rounded-full border-[3px] border-foreground',
+              'h-4 w-4 shrink-0 rounded-full border border-border-hairline',
               STATE_DOT[a.state],
             )}
           />

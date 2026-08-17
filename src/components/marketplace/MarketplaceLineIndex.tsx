@@ -94,7 +94,7 @@ export function MarketplaceLineIndex({ activeDepartment }: { activeDepartment?: 
             <div
               key={i}
               aria-hidden="true"
-              className="h-[132px] animate-pulse border-[3px] border-foreground/20 bg-muted"
+              className="border h-[132px] animate-pulse border-foreground/20 bg-muted"
             />
           ))}
         </div>
@@ -112,12 +112,12 @@ export function MarketplaceLineIndex({ activeDepartment }: { activeDepartment?: 
                     // A station tile FILLS ink when it is the one you are at,
                     // and lifts when it is somewhere you could go. Never both:
                     // card-lift-sm is dropped on the active tile.
-                    'group flex h-full flex-col justify-between border-[3px] border-foreground no-underline',
+                    'group flex h-full flex-col justify-between border border-border-hairline no-underline',
                     active ? 'bg-foreground text-background' : 'bg-card card-lift-sm',
                   )}
                 >
                   {cover ? (
-                    <div className="border-b-[3px] border-foreground">
+                    <div className="border-b border-border-hairline">
                       <Image src={cover} alt="" aspect="card" rounded="none" />
                     </div>
                   ) : null}

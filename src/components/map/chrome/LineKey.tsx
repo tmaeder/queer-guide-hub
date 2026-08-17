@@ -101,7 +101,7 @@ export function LineKey({
           <span
             aria-hidden
             className={cn(
-              'grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 border-foreground text-2xs font-bold',
+              'grid h-5 w-5 shrink-0 place-items-center rounded-full border border-border-hairline text-2xs font-bold',
               on && track ? TRACK_BG[track] : 'bg-background',
               on ? 'text-foreground' : 'text-muted-foreground',
             )}
@@ -112,7 +112,7 @@ export function LineKey({
           {/* A length of the line itself. Hollow when the line is off. */}
           <span aria-hidden className="relative flex h-4 w-6 shrink-0 items-center">
             <span
-              className={cn('h-1.5 w-full border-y-2 border-foreground')}
+              className={cn('h-1.5 w-full border-y border-border-hairline')}
               style={on ? { backgroundColor: LAYER_COLORS[type] } : undefined}
             />
           </span>
@@ -141,7 +141,7 @@ export function LineKey({
 
       {areaRows.length > 0 && (
         <>
-          <p className="mt-2 border-t-2 border-foreground px-2 pb-1 pt-2 text-2xs uppercase tracking-wider text-muted-foreground">
+          <p className="mt-2 border-t border-border-hairline px-2 pb-1 pt-2 text-2xs uppercase tracking-wider text-muted-foreground">
             {t('map.key.areas', { defaultValue: 'Areas' })}
           </p>
           <ul className="flex flex-col">{areaRows.map((d) => renderRow(d.type))}</ul>
@@ -149,13 +149,13 @@ export function LineKey({
       )}
 
       {(showPins || showHeat) && (
-        <div className="mt-2 flex flex-col gap-2 border-t-2 border-foreground px-2 pt-2">
+        <div className="mt-2 flex flex-col gap-2 border-t border-border-hairline px-2 pt-2">
           {showPins && (
             <>
               <p className="flex items-center gap-2 text-2xs text-muted-foreground">
                 <span
                   aria-hidden
-                  className="grid h-4 w-4 shrink-0 place-items-center rounded-full border-2 border-foreground"
+                  className="grid h-4 w-4 shrink-0 place-items-center rounded-full border border-border-hairline"
                 >
                   <span className="h-1.5 w-1.5 rounded-full bg-foreground" />
                 </span>
@@ -175,7 +175,7 @@ export function LineKey({
               </p>
               <div
                 aria-hidden
-                className="h-2 w-full border-2 border-foreground"
+                className="h-2 w-full border border-border-hairline"
                 style={{
                   backgroundImage: `linear-gradient(to right, ${monoHeatStops()
                     .map(([, c]) => c)

@@ -208,7 +208,7 @@ export default function HelpHotlines() {
 
       {/* The seam. Everything above answers "what do I do now"; everything
           below is for browsing, and the rule says so out loud. */}
-      <section className="mt-12 border-t-4 border-foreground pt-8" aria-labelledby="help-browse">
+      <section className="mt-12 border-t border-border-hairline pt-8" aria-labelledby="help-browse">
         <h2 id="help-browse" className="font-display text-display leading-tight">
           {t('help.browse_title', 'Browse every line')}
         </h2>
@@ -229,7 +229,7 @@ export default function HelpHotlines() {
             {t('help.loading', 'Loading the directory…')}
           </p>
         ) : callNow.length === 0 && directories.length === 0 ? (
-          <div className="mt-6 border-[3px] border-foreground p-6">
+          <div className="mt-6 bg-muted rounded-container p-6">
             <h3 className="text-title font-bold leading-tight">
               {t('help.no_results_title', 'No lines match these filters')}
             </h3>
@@ -242,7 +242,7 @@ export default function HelpHotlines() {
             <button
               type="button"
               onClick={resetFilters}
-              className="mt-4 border-2 border-foreground px-4 py-2 text-13 font-bold transition-colors hover:bg-foreground hover:text-background"
+              className="mt-4 px-4 py-2 text-13 font-bold transition-colors hover:bg-foreground hover:text-background"
             >
               {t('help.reset_filters', 'Reset filters')}
             </button>
@@ -284,7 +284,7 @@ export default function HelpHotlines() {
 
       <MoreSupportBand orgs={supportOrgs} />
 
-      <p className="mt-12 border-t-4 border-foreground pt-6 text-13 text-muted-foreground">
+      <p className="mt-12 border-t border-border-hairline pt-6 text-13 text-muted-foreground">
         {t('help.disclaimer', 'Queer Guide does not replace professional help.')}
       </p>
     </PageContainer>

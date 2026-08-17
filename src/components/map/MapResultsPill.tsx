@@ -24,7 +24,7 @@ export function MapResultsPill({
     <div
       role="status"
       aria-live="polite"
-      className="absolute z-10 flex items-center gap-1.5 rounded-element border-[3px] border-foreground bg-background px-4 py-1.5 pointer-events-none transition-opacity duration-fast"
+      className="absolute z-10 flex items-center gap-1.5 rounded-element bg-card px-4 py-1.5 pointer-events-none transition-opacity duration-fast shadow-soft"
       style={{
         bottom: 40,
         right: 8,

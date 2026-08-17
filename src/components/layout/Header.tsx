@@ -335,7 +335,7 @@ export function Header() {
       // edge. No backdrop blur: the compact state is a solid ink flood, and a
       // blurred translucent bar under it reads as a third, muddier surface.
       className={cn(
-        'sticky top-0 border-b-4 border-foreground',
+        'sticky top-0 border-b border-border-hairline',
         compact && !isMobile ? 'bg-foreground text-background' : 'bg-background',
       )}
       // z-40, NOT the 1100 this carried before. Every portaled overlay in the
@@ -406,7 +406,7 @@ export function Header() {
             /* The 3px rule spans the viewport (it is the bar's edge); the tabs
                inside it take the page cap so tab 1 starts on the same vertical
                as the page content below. */
-            <div className="border-t-[3px] border-foreground">
+            <div className="border-t border-border-hairline">
               <div className={cn('mx-auto flex w-full max-w-page items-stretch', PAGE_GUTTER)}>
                 {desktopNav}
               </div>

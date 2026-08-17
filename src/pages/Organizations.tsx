@@ -118,9 +118,7 @@ export default function Organizations() {
               type="button"
               onClick={() => onTab(tab.id)}
               className={`inline-flex items-center gap-2 rounded-element border px-4 py-2 text-15 transition-colors ${
-                active === tab.id
-                  ? 'border-foreground bg-foreground text-background'
-                  : 'border-border hover:bg-muted'
+                active === tab.id ? 'bg-foreground text-background' : 'border-border hover:bg-muted'
               }`}
             >
               {Icon && <Icon size={15} aria-hidden="true" />}

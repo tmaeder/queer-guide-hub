@@ -28,12 +28,48 @@ interface Effect {
 }
 
 const EFFECTS: Effect[] = [
-  { key: 'stimulation', label: 'Stimulation', meaning: 'Energy and drive — keeping going, staying awake.', angle: 0, filled: true },
-  { key: 'empathy', label: 'Empathy', meaning: 'Openness and connection with the people you are with.', angle: 60, filled: false },
-  { key: 'sensory', label: 'Sensory perception', meaning: 'Heightened senses — touch, sound and sensation feel bigger.', angle: 120, filled: true },
-  { key: 'chill', label: 'Chill', meaning: 'Relaxation — letting tension and negative feelings drop away.', angle: 180, filled: false },
-  { key: 'disinhibition', label: 'Disinhibition', meaning: 'Fewer brakes — more confidence, fewer reservations.', angle: 240, filled: true },
-  { key: 'euphoria', label: 'Euphoria', meaning: 'Intense well-being and pleasure.', angle: 300, filled: false },
+  {
+    key: 'stimulation',
+    label: 'Stimulation',
+    meaning: 'Energy and drive — keeping going, staying awake.',
+    angle: 0,
+    filled: true,
+  },
+  {
+    key: 'empathy',
+    label: 'Empathy',
+    meaning: 'Openness and connection with the people you are with.',
+    angle: 60,
+    filled: false,
+  },
+  {
+    key: 'sensory',
+    label: 'Sensory perception',
+    meaning: 'Heightened senses — touch, sound and sensation feel bigger.',
+    angle: 120,
+    filled: true,
+  },
+  {
+    key: 'chill',
+    label: 'Chill',
+    meaning: 'Relaxation — letting tension and negative feelings drop away.',
+    angle: 180,
+    filled: false,
+  },
+  {
+    key: 'disinhibition',
+    label: 'Disinhibition',
+    meaning: 'Fewer brakes — more confidence, fewer reservations.',
+    angle: 240,
+    filled: true,
+  },
+  {
+    key: 'euphoria',
+    label: 'Euphoria',
+    meaning: 'Intense well-being and pleasure.',
+    angle: 300,
+    filled: false,
+  },
 ];
 
 interface MapSubstance {
@@ -47,7 +83,13 @@ interface MapSubstance {
 
 const SUBSTANCES: MapSubstance[] = [
   { name: 'Cocaine', slug: 'cocaine', between: 'stimulation', left: 50, top: 25 },
-  { name: '(Meth)amphetamine', slug: 'methamphetamine', between: 'euphoria & stimulation', left: 36, top: 33 },
+  {
+    name: '(Meth)amphetamine',
+    slug: 'methamphetamine',
+    between: 'euphoria & stimulation',
+    left: 36,
+    top: 33,
+  },
   { name: '3,4-MMC', slug: '3-mmc', between: 'stimulation & empathy', left: 63, top: 33 },
   { name: 'MDMA / XTC', slug: 'mdma', between: 'empathy', left: 67, top: 42 },
   { name: 'GHB / GBL', slug: 'ghb', between: 'euphoria & disinhibition', left: 32, top: 44 },
@@ -92,7 +134,7 @@ export function PharmacosexMap() {
   const triB = [verts[1], verts[3], verts[5]].map((v) => `${v.x},${v.y}`).join(' ');
 
   return (
-    <section className="border-y-4 border-foreground py-8">
+    <section className="border-y border-border-hairline py-8">
       <Eyebrow as="p">{t('tags.pharmacosex.eyebrow', 'Why people mix')}</Eyebrow>
       <h2 className="mt-2 font-display text-headline leading-tight md:text-display">
         {t('tags.pharmacosex.title', 'The pharmacosex model')}
@@ -128,7 +170,7 @@ export function PharmacosexMap() {
               <span
                 key={e.key}
                 aria-hidden="true"
-                className={`absolute flex aspect-square w-[19%] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-[3px] border-foreground p-2 text-center text-2xs font-bold uppercase leading-tight tracking-label ${
+                className={`absolute flex aspect-square w-[19%] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-border-hairline p-2 text-center text-2xs font-bold uppercase leading-tight tracking-label ${
                   e.filled ? 'bg-foreground text-background' : 'bg-background text-foreground'
                 }`}
                 style={{ left: `${left}%`, top: `${top}%` }}
@@ -144,7 +186,7 @@ export function PharmacosexMap() {
               to={`/tags/${s.slug}`}
               tabIndex={-1}
               aria-hidden="true"
-              className="absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap border border-foreground bg-background px-1.5 py-0.5 text-3xs font-bold text-foreground no-underline hover:bg-foreground hover:text-background"
+              className="absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap border border-border-hairline bg-background px-1.5 py-0.5 text-3xs font-bold text-foreground no-underline hover:bg-foreground hover:text-background"
               style={{ left: `${s.left}%`, top: `${s.top}%` }}
             >
               {s.name}
@@ -155,7 +197,7 @@ export function PharmacosexMap() {
             <span
               key={m.label}
               aria-hidden="true"
-              className="absolute max-w-[18%] -translate-x-1/2 -translate-y-1/2 border-2 border-dashed border-foreground/50 px-1.5 py-1 text-center text-3xs font-bold uppercase leading-tight tracking-label text-muted-foreground"
+              className="border absolute max-w-[18%] -translate-x-1/2 -translate-y-1/2 border-dashed border-foreground/50 px-1.5 py-1 text-center text-3xs font-bold uppercase leading-tight tracking-label text-muted-foreground"
               style={{ left: `${m.left}%`, top: `${m.top}%` }}
             >
               {m.label}
@@ -172,7 +214,7 @@ export function PharmacosexMap() {
           </h3>
           <ul className="mt-2 list-none p-0">
             {EFFECTS.map((e) => (
-              <li key={e.key} className="border-b-2 border-foreground/15 py-2 last:border-b-0">
+              <li key={e.key} className="border-b border-foreground/15 py-2 last:border-b-0">
                 <span className="text-13 font-bold">{e.label}</span>
                 <p className="mt-1 text-13 leading-relaxed text-muted-foreground">{e.meaning}</p>
               </li>
@@ -185,7 +227,7 @@ export function PharmacosexMap() {
             {MOTIVATIONS.map((m) => (
               <li
                 key={m.label}
-                className="border-2 border-dashed border-foreground/50 px-2 py-1 text-13 text-muted-foreground"
+                className="border border-dashed border-foreground/50 px-2 py-1 text-13 text-muted-foreground"
               >
                 {m.label}
               </li>
@@ -200,7 +242,7 @@ export function PharmacosexMap() {
             {SUBSTANCES.map((s) => (
               <li
                 key={s.slug}
-                className="flex items-baseline justify-between gap-4 border-b-2 border-foreground/15 py-2 last:border-b-0"
+                className="flex items-baseline justify-between gap-4 border-b border-foreground/15 py-2 last:border-b-0"
               >
                 <LocalizedLink
                   to={`/tags/${s.slug}`}

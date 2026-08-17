@@ -7,7 +7,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useSearchParams } from 'react-router';
-import { History, Clock, User} from 'lucide-react';
+import { History, Clock, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCMSAudit } from '@/hooks/useCMSAudit';
 import { formatRelativeTime, formatAction } from '@/lib/audit-format';
@@ -34,13 +34,13 @@ import {
 /** Tailwind classes for action type chips */
 function getActionClasses(action: string): string {
   if (action.includes('publish') || action.includes('approved'))
-    return 'border-foreground/40 text-foreground';
+    return 'border border-foreground/40 text-foreground';
   if (action.includes('archive') || action.includes('delete'))
-    return 'border-destructive text-destructive';
+    return 'border border-destructive text-destructive';
   if (action.includes('review') || action.includes('change_request'))
     return 'border-border text-foreground';
   if (action.includes('create') || action.includes('restore'))
-    return 'border-foreground/40 text-foreground';
+    return 'border border-foreground/40 text-foreground';
   if (action.includes('workflow')) return 'border-primary text-primary';
   return 'border-border text-foreground';
 }
@@ -111,7 +111,16 @@ export function AuditLog({ sourceTable, sourceId }: AuditLogProps) {
         since: sinceIso,
       });
     }
-  }, [isContentSpecific, sourceTable, sourceId, page, actionFilter, sinceIso, loadForContent, loadGlobal]);
+  }, [
+    isContentSpecific,
+    sourceTable,
+    sourceId,
+    page,
+    actionFilter,
+    sinceIso,
+    loadForContent,
+    loadGlobal,
+  ]);
 
   const setSince = useCallback(
     (opt: SinceOption) => {
@@ -185,11 +194,7 @@ export function AuditLog({ sourceTable, sourceId }: AuditLogProps) {
         </div>
 
         {!isContentSpecific && (
-          <div
-            role="radiogroup"
-            aria-label="Filter by date"
-            className="flex items-center gap-1"
-          >
+          <div role="radiogroup" aria-label="Filter by date" className="flex items-center gap-1">
             {(['all', '24h', '7d', '30d'] as const).map((opt) => (
               <Button
                 key={opt}
@@ -223,8 +228,7 @@ export function AuditLog({ sourceTable, sourceId }: AuditLogProps) {
         <>
           <div className="flex flex-col divide-y divide-border">
             {paginatedEntries.map((entry) => {
-              const actorName =
-                entry.actor?.display_name || entry.actor?.email || 'System';
+              const actorName = entry.actor?.display_name || entry.actor?.email || 'System';
               const initials = actorName
                 .split(/[\s@]/)
                 .filter(Boolean)
@@ -233,10 +237,7 @@ export function AuditLog({ sourceTable, sourceId }: AuditLogProps) {
                 .join('');
 
               return (
-                <div
-                  key={entry.id}
-                  className="flex gap-2 py-4 px-1 hover:bg-muted rounded-element"
-                >
+                <div key={entry.id} className="flex gap-2 py-4 px-1 hover:bg-muted rounded-element">
                   <Avatar className="w-7 h-7 mt-0.5">
                     <AvatarFallback className="bg-border text-2xs">
                       {initials || <User size={14} />}

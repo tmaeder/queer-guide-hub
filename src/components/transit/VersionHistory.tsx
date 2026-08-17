@@ -38,11 +38,11 @@ export function VersionHistory({
   };
 
   return (
-    <ol className={cn('list-none border-[3px] border-foreground p-0', className)}>
+    <ol className={cn('list-none bg-muted rounded-element p-0', className)}>
       {revisions.map((r) => (
         <li
           key={r.id}
-          className="grid grid-cols-[110px_1fr] items-baseline gap-4 border-b-2 border-foreground/15 px-4 py-4 last:border-b-0 sm:grid-cols-[130px_1fr_auto]"
+          className="grid grid-cols-[110px_1fr] items-baseline gap-4 border-b border-foreground/15 px-4 py-4 last:border-b-0 sm:grid-cols-[130px_1fr_auto]"
         >
           <time dateTime={r.date} className="text-13 font-bold tabular-nums">
             {fmt(r.date)}

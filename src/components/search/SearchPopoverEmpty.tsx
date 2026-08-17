@@ -31,7 +31,7 @@ function Eyebrow({ children }: { children: ReactNode }) {
  *  It fills rather than lifts: at chip scale a 5px hard shadow is larger than
  *  the chip's own padding and the row turns into a stack of dominoes. */
 const CHIP =
-  'inline-flex cursor-pointer items-center gap-2 border-2 border-foreground bg-transparent px-4 py-1.5 text-13 font-bold text-foreground transition-colors hover:bg-foreground hover:text-background';
+  'inline-flex cursor-pointer items-center gap-2 bg-transparent px-4 py-1.5 text-13 font-bold text-foreground transition-colors hover:bg-foreground hover:text-background';
 
 export function SearchPopoverEmpty({
   trending,
@@ -142,7 +142,7 @@ export function SearchPopoverEmpty({
       <button
         type="button"
         onClick={onAsk}
-        className="flex w-full items-center gap-2 border-y-2 border-foreground px-6 py-4 text-left text-13 font-bold transition-colors hover:bg-foreground hover:text-background"
+        className="flex w-full items-center gap-2 border-y border-border-hairline px-6 py-4 text-left text-13 font-bold transition-colors hover:bg-foreground hover:text-background"
       >
         {t('search.ask.entry', 'Ask the guide a question')}
         <span className="ml-auto shrink-0" aria-hidden>

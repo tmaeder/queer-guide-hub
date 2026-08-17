@@ -81,8 +81,8 @@ export function RegionChip({ region }: { region: HomeRegionApi }) {
           aria-label={t('home.region.change', 'Change region')}
         />
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-72 border-2 border-foreground p-0">
-        <div className="border-b-2 border-foreground p-2">
+      <PopoverContent align="end" className="w-72 bg-muted rounded-element p-0">
+        <div className="border-b border-border-hairline p-2">
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}

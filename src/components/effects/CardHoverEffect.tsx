@@ -5,20 +5,22 @@ interface CardHoverEffectProps {
   children: React.ReactNode;
   className?: string;
   /**
-   * Shadow accent for the hard lift. `'accent'` casts the pink track shadow
-   * (live/urgent cards); `'none'` opts out for cards that are containers
-   * rather than click targets. The old drum names ('pink' | 'blue' | 'over')
-   * are accepted and collapse to the ink shadow, so the ~40 existing call
-   * sites keep compiling until the Public phase retunes them.
+   * Shadow accent for the lift. `'accent'` tints the hover elevation toward
+   * the pink track (live/urgent cards); `'none'` opts out for cards that are
+   * containers rather than click targets. The old drum names ('pink' | 'blue'
+   * | 'over') are accepted and collapse to the neutral elevation, so the ~40
+   * existing call sites keep compiling until they are retuned.
    */
   ink?: 'pink' | 'blue' | 'over' | 'accent' | 'none';
 }
 
 /**
- * Interactive-card wrapper — subway-map edition. Applies `.card-lift`: 3px
- * ink border at rest; hover/focus translates −3,−3 and casts the hard ink
- * shadow (6px 6px 0, no blur). Replaces the PASTE-UP `.plate-offset`
- * misregistration plate (removed 2026-08-09).
+ * Interactive-card wrapper — subway-map edition. Applies `.card-lift`: on
+ * hover/focus the surface translates −3,−3 and its elevation deepens from
+ * `--shadow-soft` to `--shadow-soft-hover`. The REST elevation and the
+ * surface tint belong to `Card` itself; this wrapper only adds the
+ * interaction. (Until the 2026-08-17 soft re-skin the rest state was a 3px
+ * ink border and the hover cast a hard `6px 6px 0` offset.)
  *
  * Carries `group` because these cards put their click target in an
  * absolutely-positioned overlay link that is a SIBLING of the card (see the

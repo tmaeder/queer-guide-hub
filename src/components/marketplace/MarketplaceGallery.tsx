@@ -16,7 +16,7 @@ interface MarketplaceGalleryProps {
 function NoImage({ label }: { label: string }) {
   return (
     <div
-      className="flex aspect-square w-full items-center justify-center border-[3px] border-foreground bg-muted"
+      className="flex aspect-square w-full items-center justify-center bg-muted"
       role="img"
       aria-label={label}
     >
@@ -74,7 +74,7 @@ export function MarketplaceGallery({ listingId, images, title }: MarketplaceGall
   return (
     <div className="flex flex-col gap-4">
       {current && !failed.has(safeActive) ? (
-        <div className="overflow-hidden border-[3px] border-foreground bg-muted">
+        <div className="overflow-hidden bg-muted">
           {/* onError is a standard non-interactive image fallback handler, not a
               mouse/keyboard interaction. */}
           <img
@@ -102,14 +102,16 @@ export function MarketplaceGallery({ listingId, images, title }: MarketplaceGall
               aria-label={`Show image ${i + 1} of ${gallery.length}`}
               aria-current={i === safeActive}
               className={cn(
-                'h-16 w-16 flex-shrink-0 snap-start overflow-hidden bg-muted transition-colors md:h-20 md:w-20',
-                // The selected thumb takes the full 3px ink border; the rest sit
-                // back at 2px translucent. Same fill-or-lift logic as a station
-                // tile, expressed in border weight because a 64px square has no
-                // room to lift.
+                'h-16 w-16 flex-shrink-0 snap-start overflow-hidden rounded-element bg-muted transition-colors md:h-20 md:w-20',
+                // Selection is still expressed in border weight, because a 64px
+                // square has no room to lift — and unlike a card frame, a
+                // selected state IS something WCAG 1.4.11 covers, so this
+                // border survives the de-caging. It only thins to the soft
+                // system's weights: ink at 2px for the active thumb, a hairline
+                // for the rest.
                 i === safeActive
-                  ? 'border-[3px] border-foreground'
-                  : 'border-2 border-foreground/30 hover:border-foreground',
+                  ? 'border-2 border-foreground'
+                  : 'border border-border-hairline hover:border-foreground',
               )}
             >
               {failed.has(i) ? (

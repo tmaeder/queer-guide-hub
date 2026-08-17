@@ -17,7 +17,7 @@ import { PageContainer } from '@/components/layout/PageContainer';
 export function SubwayHero() {
   const { t } = useTranslation();
   return (
-    <header className="border-b-4 border-foreground relative overflow-hidden">
+    <header className="border-b border-border-hairline relative overflow-hidden">
       {/* `flush` — the hero owns an asymmetric rhythm: a tall top and no bottom
           padding, because IntentMap fills that space. Tighter above `md` than
           the desktop hero — the intent map is the primary navigation on mobile
@@ -37,7 +37,7 @@ export function SubwayHero() {
           <HeroSearch />
           <LocalizedLink
             to="/map"
-            className="flex items-center gap-2 border-2 border-foreground px-4 py-4 text-15 font-bold no-underline hover:bg-foreground hover:text-background"
+            className="flex items-center gap-2 px-4 py-4 text-15 font-bold no-underline hover:bg-foreground hover:text-background"
           >
             <TransitIcon name="map" size={20} />
             {t('home.hero.openMap', 'Open the map')}

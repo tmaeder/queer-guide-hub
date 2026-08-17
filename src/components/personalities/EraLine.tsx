@@ -101,7 +101,7 @@ export function EraLine({ activeEra, onEraSelect, className }: EraLineProps) {
               }}
               className={cn(
                 'pointer-events-none absolute block h-6 w-6 -translate-x-1/2 -translate-y-1/2',
-                'rounded-full border-[3px] border-foreground transition-colors',
+                'rounded-full border border-border-hairline transition-colors',
                 // The ink ring border-gates the fill — pink alone clears 3:1
                 // on paper, but the set has to read as one system.
                 activeEra === key ? 'bg-track-pink' : 'bg-background',

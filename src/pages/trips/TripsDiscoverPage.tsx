@@ -258,7 +258,7 @@ export default function TripsDiscoverPage() {
   return (
     <>
       {/* 1 — Masthead */}
-      <header className="border-b-4 border-foreground">
+      <header className="border-b border-border-hairline">
         <PageContainer flush className="pb-8 pt-8 md:pb-12 md:pt-16">
           <Eyebrow variant="kicker" as="div">
             {t('trips.discover.eyebrowRoute', 'Route builder')}
@@ -278,7 +278,7 @@ export default function TripsDiscoverPage() {
       {/* 2 — The picker */}
       <section
         aria-labelledby="picker-h"
-        className="border-b-4 border-foreground bg-surface-container"
+        className="border-b border-border-hairline bg-surface-container"
       >
         <PageContainer flush className="py-6 md:py-8">
           <h2 id="picker-h" className="font-display text-headline md:text-display">
@@ -308,7 +308,7 @@ export default function TripsDiscoverPage() {
                 )}
               </div>
             ) : isError ? (
-              <div className="border-[3px] border-foreground p-4 md:p-6">
+              <div className="bg-muted rounded-container p-4 md:p-6">
                 <p className="text-title font-bold">
                   {t('trips.discover.error.poolTitle', 'The station list did not load.')}
                 </p>
@@ -333,7 +333,7 @@ export default function TripsDiscoverPage() {
       </section>
 
       {/* 3 — The line */}
-      <section aria-labelledby="route-h" className="border-b-4 border-foreground">
+      <section aria-labelledby="route-h" className="border-b border-border-hairline">
         <PageContainer flush className="py-8 md:py-12">
           <div className="flex flex-wrap items-baseline justify-between gap-4">
             <h2 id="route-h" className="font-display text-headline md:text-display">
@@ -349,7 +349,7 @@ export default function TripsDiscoverPage() {
                 // static aria-controls would point at nothing (axe
                 // aria-valid-attr-value, critical). Reroll still works there.
                 aria-controls={drawable ? 'route-stations' : undefined}
-                className="inline-flex h-10 items-center gap-2 border-2 border-foreground px-4 text-15 font-bold transition-colors duration-fast hover:bg-foreground hover:text-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                className="inline-flex h-10 items-center gap-2 px-4 text-15 font-bold transition-colors duration-fast hover:bg-foreground hover:text-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
                 <TransitIcon name="route" size={18} />
                 {t('trips.discover.route.reroll', 'Draw another')}
@@ -419,7 +419,7 @@ export default function TripsDiscoverPage() {
             !isLoading &&
             !isError && (
               <div className="mt-6">
-                <div className="border-[3px] border-foreground p-4 md:p-6">
+                <div className="bg-muted rounded-container p-4 md:p-6">
                   <p className="text-title font-bold">
                     {stations.length === 0
                       ? t('trips.discover.degraded.none', 'No cities match those picks.')
@@ -488,7 +488,7 @@ export default function TripsDiscoverPage() {
 
       {/* 4 — CTA */}
       {drawable && (
-        <section className="border-b-4 border-foreground bg-foreground text-background">
+        <section className="border-b border-border-hairline bg-foreground text-background">
           <PageContainer flush className="py-8 md:py-12">
             <h2 className="font-display text-headline md:text-display">
               {t('trips.discover.cta.heading', 'Ride this line.')}
@@ -515,7 +515,7 @@ export default function TripsDiscoverPage() {
                 // variant carries `bg-background`, so paper fill plus the paper
                 // text this override sets rendered a white box with white text —
                 // measured 1:1 contrast, completely invisible.
-                className="border-background bg-transparent text-background hover:bg-background hover:text-foreground"
+                className="border border-background bg-transparent text-background hover:bg-background hover:text-foreground"
                 onClick={bump}
               >
                 {t('trips.discover.cta.secondary', 'Draw another')}

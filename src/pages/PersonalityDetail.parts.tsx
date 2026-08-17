@@ -182,7 +182,7 @@ export function PersonalityHero({
         {/* Portrait as a station ring — the same 3px ink circle the P-line
             cards and the featured rail draw. `rounded-full` is the sanctioned
             circle case. */}
-        <Avatar className="h-24 w-24 shrink-0 border-[3px] border-foreground">
+        <Avatar className="h-24 w-24 shrink-0 border border-border-hairline">
           <AvatarImage
             src={personality.image_url || ''}
             alt={personality.name}
@@ -200,7 +200,7 @@ export function PersonalityHero({
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <RouteBullet type="personality" size={34} />
             {personality.is_featured && (
-              <span className="inline-flex items-center gap-1 border-2 border-foreground px-2 py-1 text-2xs font-bold uppercase tracking-label">
+              <span className="inline-flex items-center gap-1 bg-muted rounded-element px-2 py-1 text-2xs font-bold uppercase tracking-label">
                 <Star size={12} aria-hidden="true" />
                 Featured
               </span>
@@ -346,14 +346,14 @@ function RelatedContent({ personality }: { personality: Personality }) {
                 <li key={n.id}>
                   <LocalizedLink
                     to={`/news/${n.slug}`}
-                    className="-mx-2 flex items-start gap-4 border-b-2 border-foreground/10 px-2 py-4 text-inherit no-underline transition-colors hover:bg-surface-container"
+                    className="-mx-2 flex items-start gap-4 border-b border-foreground/10 px-2 py-4 text-inherit no-underline transition-colors hover:bg-surface-container"
                   >
                     {n.image_url && (
                       <img
                         src={n.image_url}
                         alt=""
                         loading="lazy"
-                        className="h-16 w-16 shrink-0 border-2 border-foreground bg-muted object-cover"
+                        className="h-16 w-16 shrink-0 bg-muted object-cover"
                       />
                     )}
                     <div className="min-w-0 flex-1">
@@ -390,14 +390,14 @@ function RelatedContent({ personality }: { personality: Personality }) {
                 <li key={e.id}>
                   <LocalizedLink
                     to={`/events/${e.slug ?? e.id}`}
-                    className="card-lift-sm flex items-start gap-4 border-2 border-foreground bg-background p-2 text-inherit no-underline"
+                    className="card-lift-sm flex items-start gap-4 bg-card p-2 text-inherit no-underline rounded-container shadow-soft"
                   >
                     {e.image_url && (
                       <img
                         src={e.image_url}
                         alt=""
                         loading="lazy"
-                        className="h-14 w-14 shrink-0 border-2 border-foreground bg-muted object-cover"
+                        className="h-14 w-14 shrink-0 bg-muted object-cover"
                       />
                     )}
                     <div className="min-w-0 flex-1">

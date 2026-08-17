@@ -276,7 +276,7 @@ export default function RightsIntent() {
                         // link here rather than citing a statute that does not exist
                         // — see src/lib/rights/tagRightTopics.ts.
                         id={topic.slug}
-                        className="flex items-start gap-4 border-2 border-foreground p-4 rounded-container scroll-mt-24"
+                        className="flex items-start gap-4 bg-muted p-4 rounded-container scroll-mt-24"
                       >
                         <Icon size={20} aria-hidden="true" className="mt-0.5 shrink-0" />
                         <div className="min-w-0">
@@ -465,13 +465,13 @@ export default function RightsIntent() {
         <div className="flex flex-wrap gap-4">
           <LocalizedLink
             to="/support"
-            className="border-2 border-foreground px-6 py-2 font-medium no-underline rounded-element"
+            className="bg-muted px-6 py-2 font-medium no-underline rounded-element"
           >
             Find support near you
           </LocalizedLink>
           <LocalizedLink
             to="/help"
-            className="border-2 border-foreground px-6 py-2 font-medium no-underline rounded-element"
+            className="bg-muted px-6 py-2 font-medium no-underline rounded-element"
           >
             Crisis hotlines
           </LocalizedLink>

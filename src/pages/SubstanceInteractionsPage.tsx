@@ -65,7 +65,7 @@ const pairKey = (a: string, b: string) => (a < b ? `${a}|${b}` : `${b}|${a}`);
 function Legend() {
   const { t } = useTranslation();
   return (
-    <div className="border-[3px] border-foreground p-4">
+    <div className="bg-muted rounded-element p-4">
       <Eyebrow>{t('interactions.legend', 'What the colours mean')}</Eyebrow>
       <ul className="mt-4 flex list-none flex-col gap-2 p-0">
         {INTERACTION_ORDER.map((s) => {
@@ -74,7 +74,7 @@ function Legend() {
           return (
             <li key={s} className="flex items-start gap-2">
               <span
-                className="mt-0.5 inline-flex shrink-0 items-center gap-2 border-2 border-foreground px-2 py-1.5"
+                className="mt-0.5 inline-flex shrink-0 items-center gap-2 bg-muted rounded-element px-2 py-1.5"
                 style={{ backgroundColor: `hsl(${v.tint})`, color: `hsl(${v.ink})` }}
               >
                 <Icon className="h-4 w-4" aria-hidden="true" />
@@ -140,7 +140,7 @@ export default function SubstanceInteractionsPage() {
       </p>
 
       {/* ── Pair checker ─────────────────────────────────────────────── */}
-      <section className="mt-8 border-[3px] border-foreground p-4" aria-labelledby="checker-h">
+      <section className="mt-8 bg-muted rounded-element p-4" aria-labelledby="checker-h">
         <h2 id="checker-h" className="text-title font-bold">
           {t('interactions.checkTitle', 'Check a combination')}
         </h2>
@@ -158,7 +158,7 @@ export default function SubstanceInteractionsPage() {
               <select
                 value={value}
                 onChange={(e) => set(e.target.value)}
-                className="border-2 border-foreground bg-background p-2 text-13 font-bold"
+                className="bg-card p-2 text-13 font-bold rounded-container shadow-soft"
               >
                 <option value="">{t('interactions.choose', 'Choose…')}</option>
                 {axis.map((s) => (
@@ -179,7 +179,7 @@ export default function SubstanceInteractionsPage() {
           )}
           {a && b && a !== b && !selected && (
             // Not in the data is its own answer, and it is not "safe".
-            <p className="border-2 border-foreground p-4 text-13 leading-relaxed">
+            <p className="bg-muted rounded-element p-4 text-13 leading-relaxed">
               {t(
                 'interactions.noData',
                 'This chart has no entry for that pair. That means no information, not a clean bill of health.',
@@ -193,7 +193,7 @@ export default function SubstanceInteractionsPage() {
               const Icon = v.Icon;
               return (
                 <div
-                  className="border-2 border-foreground p-4"
+                  className="bg-muted rounded-element p-4"
                   style={{ backgroundColor: `hsl(${v.tint})`, color: `hsl(${v.ink})` }}
                 >
                   <div className="flex items-center gap-2">
@@ -203,9 +203,7 @@ export default function SubstanceInteractionsPage() {
                     </p>
                   </div>
                   <p className="mt-2 text-13 leading-relaxed">{v.meaning}</p>
-                  {selected.note && (
-                    <p className="mt-2 text-13 leading-relaxed">{selected.note}</p>
-                  )}
+                  {selected.note && <p className="mt-2 text-13 leading-relaxed">{selected.note}</p>}
                 </div>
               );
             })()}
@@ -227,7 +225,7 @@ export default function SubstanceInteractionsPage() {
             c: data?.cells.length ?? 0,
           })}
         </p>
-        <div className="mt-4 overflow-x-auto border-[3px] border-foreground">
+        <div className="mt-4 overflow-x-auto bg-muted rounded-element">
           <table className="border-collapse text-2xs">
             <caption className="sr-only">
               {t(
@@ -244,7 +242,7 @@ export default function SubstanceInteractionsPage() {
                   <th
                     key={c.id}
                     scope="col"
-                    className="h-28 whitespace-nowrap border-b-2 border-foreground p-1 align-bottom"
+                    className="h-28 whitespace-nowrap border-b border-border-hairline p-1 align-bottom"
                   >
                     <span className="block origin-bottom-left translate-x-4 -rotate-45 text-left font-bold">
                       {c.name}
@@ -258,7 +256,7 @@ export default function SubstanceInteractionsPage() {
                 <tr key={row.id}>
                   <th
                     scope="row"
-                    className="sticky left-0 z-10 whitespace-nowrap border-r-2 border-foreground bg-background p-2 text-left font-bold"
+                    className="sticky left-0 z-10 whitespace-nowrap border-r border-border-hairline bg-background p-2 text-left font-bold"
                   >
                     <LocalizedLink
                       to={`/tags/${encodeURIComponent(row.slug)}`}
@@ -283,8 +281,7 @@ export default function SubstanceInteractionsPage() {
                       return (
                         <td key={col.id} className="border border-foreground/20 p-2">
                           <span className="sr-only">
-                            {row.name}, {col.name}:{' '}
-                            {t('interactions.noEntry', 'no entry')}
+                            {row.name}, {col.name}: {t('interactions.noEntry', 'no entry')}
                           </span>
                         </td>
                       );
@@ -294,7 +291,7 @@ export default function SubstanceInteractionsPage() {
                     return (
                       <td
                         key={col.id}
-                        className="border-2 border-foreground p-2 text-center"
+                        className="bg-muted rounded-element p-2 text-center"
                         style={{ backgroundColor: `hsl(${v.tint})`, color: `hsl(${v.ink})` }}
                       >
                         {/* The status is text in the accessible name; the tint
@@ -315,10 +312,15 @@ export default function SubstanceInteractionsPage() {
 
       <p className="mt-8 text-13 leading-relaxed text-muted-foreground">
         {t('interactions.credit', 'Interaction data researched and published by')}{' '}
-        <a href={data?.source_url ?? 'https://combo.tripsit.me/'} target="_blank" rel="noopener noreferrer">
+        <a
+          href={data?.source_url ?? 'https://combo.tripsit.me/'}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           TripSit
         </a>
-        . {t('interactions.creditTail', 'Reproduced with attribution as a harm-reduction reference.')}
+        .{' '}
+        {t('interactions.creditTail', 'Reproduced with attribution as a harm-reduction reference.')}
       </p>
     </PageContainer>
   );

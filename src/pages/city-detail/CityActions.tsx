@@ -29,7 +29,7 @@ export interface CityActionsProps {
  */
 export function CityActions({ city, refetchCity, t }: CityActionsProps) {
   const OUTLINE =
-    'inline-flex items-center gap-2 border-2 border-foreground px-4 py-2 text-13 font-bold no-underline transition-colors hover:bg-foreground hover:text-background';
+    'inline-flex items-center gap-2 px-4 py-2 text-13 font-bold no-underline transition-colors hover:bg-foreground hover:text-background';
   return (
     <>
       {city.official_website && (

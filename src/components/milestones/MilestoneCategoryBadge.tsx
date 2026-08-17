@@ -46,7 +46,7 @@ export function MilestoneCategoryBadge({
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 border-2 border-foreground bg-background px-1.5 py-0.5 text-2xs uppercase tracking-label text-foreground',
+        'inline-flex items-center gap-1 bg-card px-1.5 py-0.5 text-2xs uppercase tracking-label text-foreground rounded-container shadow-soft',
         className,
       )}
     >

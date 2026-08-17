@@ -1,12 +1,19 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * Design system enforcement tests (subway-map rebrand 2026-08).
+ * Design system enforcement tests (subway-map rebrand 2026-08, softened
+ * 2026-08-17).
  *
- * Verify the semantic radius tokens (zeroed — squared corners), the hard-shadow
- * rule (none at rest, hard ink shadow on .card-lift hover), fonts (Anton +
- * Space Grotesk, no Inter), and that public pages only ever paint sanctioned
- * color (paper/ink + the four track colors + destructive).
+ * Verify the semantic radius ladder (26/18/12/9 — "nothing square"), the
+ * elevation rule (one soft shadow at rest, a deeper one on .card-lift hover,
+ * and NO container border), fonts (Anton + Space Grotesk, no Inter), and that
+ * public pages only ever paint sanctioned color (ink/paper/frame + the four
+ * track colors + destructive).
+ *
+ * Two assertions in here are the inverse of what they said before the soft
+ * re-skin — cards now HAVE a rest shadow and DO NOT have a border. If you are
+ * reading this because one of them failed, check whether the design system
+ * changed under you before changing the component.
  *
  * Radius assertions resolve --radius-{container,element,badge} through a probe
  * element at runtime instead of hardcoding px. They used to assert 16/8/4
@@ -76,40 +83,71 @@ test.describe('design system: semantic radius (token-derived)', () => {
   // Assertions read the token rather than a literal px value: the semantic trio
   // is re-tuned by design passes (and is runtime-overridable via /admin/design),
   // so hardcoding the px froze these tests at the 16/4px era and they went stale.
+  // `[data-slot="card"]` and NOT `.bg-card`. The latter is a utility, not the
+  // component: the soft re-skin put `bg-card` on ~70 more elements, so "the
+  // first .bg-card on the page" stopped meaning "a Card" and began resolving
+  // differently under the dev server and the CI build — these three guards
+  // failed against an element that was never a card.
   test('cards use --radius-container', async ({ page }) => {
-    const cards = page.locator('.bg-card').first();
-    await expect(cards).toBeVisible();
-    const radius = await cards.evaluate((el) => getComputedStyle(el).borderRadius);
+    const card = page.locator('[data-slot="card"]').first();
+    await expect(card).toBeVisible();
+    const radius = await card.evaluate((el) => getComputedStyle(el).borderRadius);
     expect(radius).toBe(await resolveRadius(page, '--radius-container'));
   });
 
-  test('cards have no box-shadow at rest', async ({ page }) => {
-    const card = page.locator('.bg-card').first();
+  // Both of these INVERTED with the 2026-08-17 soft re-skin, and the pair has
+  // to be read together. The old suite asserted a card has no shadow at rest
+  // and a 3px ink border — correct while the cage was what separated a card
+  // from a paper page. The cage is gone, so the rest shadow is now
+  // load-bearing: a card with neither border nor shadow is invisible against
+  // a page just 1.12:1 away from it.
+  test('cards carry the soft elevation at rest', async ({ page }) => {
+    const card = page.locator('[data-slot="card"]').first();
     await expect(card).toBeVisible();
     const shadow = await card.evaluate((el) => getComputedStyle(el).boxShadow);
-    expect(shadow).toBe('none');
+    expect(shadow).not.toBe('none');
+    // 0 16px 40px — offset and blur identify the token; the colour serialises
+    // as rgba(...) and is not worth pinning.
+    expect(shadow).toMatch(/0px 16px 40px/);
   });
 
-  test('interactive cards lift with the hard ink shadow on hover', async ({ page }) => {
-    // Foundation ships the .card-lift utility; surfaces adopt it in the
-    // Public phase. Zero elements => explicit skip, never a vacuous pass.
+  test('cards have no frame (surfaces without cages)', async ({ page }) => {
+    const card = page.locator('[data-slot="card"]').first();
+    await expect(card).toBeVisible();
+    const width = await card.evaluate((el) => getComputedStyle(el).borderTopWidth);
+    expect(width).toBe('0px');
+  });
+
+  test('interactive cards lift with a deeper soft shadow on hover', async ({ page }) => {
+    // Zero elements => explicit skip, never a vacuous pass.
     const probe = page.locator('.card-lift, .card-lift-sm').first();
     if ((await probe.count()) === 0) {
-      test.skip(true, 'no .card-lift on /events yet — wired in the Public phase');
+      test.skip(true, 'no .card-lift on /events');
       return;
     }
     await probe.hover();
     await page.waitForTimeout(200);
     const shadow = await probe.evaluate((el) => getComputedStyle(el).boxShadow);
-    expect(shadow).toMatch(/[56]px [56]px 0(px)?/);
+    expect(shadow).toMatch(/0px 12px 30px/);
   });
 
-  test('badges use --radius-badge', async ({ page }) => {
-    const badge = page.locator('[class*="badge"]').first();
-    if ((await badge.count()) > 0) {
-      const radius = await badge.evaluate((el) => getComputedStyle(el).borderRadius);
-      expect(radius).toBe(await resolveRadius(page, '--radius-badge'));
+  // The chip moved from --radius-badge (9px) to --radius-element (12px) in
+  // the soft re-skin: the design system's badge rank is for count marks and
+  // swatches, and the mocks draw chips at 12. This probe selected on
+  // `[class*="badge"]`, which the Badge component no longer emits — so it
+  // would now match nothing and pass vacuously, which this file's own header
+  // calls out as the failure mode to avoid. The radius contract for Badge is
+  // asserted directly on the component in
+  // src/components/ui/__tests__/token-compliance.test.tsx instead, where the
+  // selector cannot rot.
+  test('chips consume a semantic radius token', async ({ page }) => {
+    const chip = page.locator('main [class*="rounded-element"]').first();
+    if ((await chip.count()) === 0) {
+      test.skip(true, 'no chip on /events');
+      return;
     }
+    const radius = await chip.evaluate((el) => getComputedStyle(el).borderRadius);
+    expect(radius).toBe(await resolveRadius(page, '--radius-element'));
   });
 });
 
@@ -140,7 +178,7 @@ test.describe('design system: buttons', () => {
 });
 
 test.describe('design system: dialog', () => {
-  test('dialog uses --radius-container', async ({ page }) => {
+  test('dialog uses --radius-panel', async ({ page }) => {
     await page.goto('/trips');
     // Wait for the app to paint, not for the network to fall idle. These guards
     // read computed styles under #root, and `networkidle` (500ms of zero
@@ -160,7 +198,7 @@ test.describe('design system: dialog', () => {
           const panel = el.querySelector('[class*="DialogContent"], [class*="dialog"]') || el;
           return getComputedStyle(panel).borderRadius;
         });
-        expect(radius).toBe(await resolveRadius(page, '--radius-container'));
+        expect(radius).toBe(await resolveRadius(page, '--radius-panel'));
       }
     }
   });

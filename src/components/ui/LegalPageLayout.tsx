@@ -62,7 +62,7 @@ export const LegalPageLayout = ({
 
   return (
     <PageContainer className="max-w-[1100px]">
-      <header className="border-b-4 border-foreground pb-6">
+      <header className="border-b border-border-hairline pb-6">
         <div className="flex items-center gap-4">
           {line && (
             <RouteBullet
@@ -135,7 +135,7 @@ export const LegalPageLayout = ({
           {footer}
 
           <section
-            className="mt-16 border-[3px] border-foreground bg-foreground p-6 text-background"
+            className="mt-16 bg-foreground p-6 text-background"
             aria-labelledby="end-of-line"
           >
             <p className="text-2xs font-bold uppercase tracking-label text-background/70">
@@ -165,7 +165,7 @@ export const LegalPageLayout = ({
                         <LocalizedLink
                           to={`/${s}`}
                           className={cn(
-                            'inline-flex items-center gap-2 border-2 border-background px-2 py-1 text-13 font-bold text-background no-underline transition-colors',
+                            'border inline-flex items-center gap-2 border-background px-2 py-1 text-13 font-bold text-background no-underline transition-colors',
                             'hover:bg-background hover:text-foreground',
                           )}
                         >

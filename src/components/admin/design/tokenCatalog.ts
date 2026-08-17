@@ -95,9 +95,11 @@ export const FONT_SLOTS: Array<{
 ];
 
 export const COLOR_TOKENS: ColorTokenDef[] = [
-  // Core — paper (#FAFAF5) / ink (#111). Light-only: dark mirrors light
-  // (dark mode removed 2026-08, subway-map rebrand).
-  { key: 'background', group: 'core', light: '60 33% 97%', dark: '60 33% 97%' },
+  // Core — frame #EDEDE6 (page) / paper #FAFAF5 (card) / ink #111.
+  // Light-only: dark mirrors light (dark mode removed 2026-08, subway-map
+  // rebrand). NOTE the page is NOT paper since the 2026-08-17 soft re-skin —
+  // the page/card step is what separates a card now that keylines are gone.
+  { key: 'background', group: 'core', light: '60 16.3% 91.6%', dark: '60 16.3% 91.6%' },
   { key: 'foreground', group: 'core', light: '0 0% 6.7%', dark: '0 0% 6.7%' },
   { key: 'card', group: 'core', light: '60 33% 97%', dark: '60 33% 97%' },
   { key: 'card-foreground', group: 'core', light: '0 0% 6.7%', dark: '0 0% 6.7%' },
@@ -107,20 +109,28 @@ export const COLOR_TOKENS: ColorTokenDef[] = [
   { key: 'primary-foreground', group: 'core', light: '60 33% 97%', dark: '60 33% 97%' },
   { key: 'secondary', group: 'core', light: '0 0% 6.7%', dark: '0 0% 6.7%' },
   { key: 'secondary-foreground', group: 'core', light: '60 33% 97%', dark: '60 33% 97%' },
-  { key: 'muted', group: 'core', light: '60 9% 93%', dark: '60 9% 93%' },
+  { key: 'muted', group: 'core', light: '60 22.2% 92.9%', dark: '60 22.2% 92.9%' },
   { key: 'muted-foreground', group: 'core', light: '0 0% 33%', dark: '0 0% 33%' },
-  { key: 'accent', group: 'core', light: '60 9% 93%', dark: '60 9% 93%' },
+  { key: 'accent', group: 'core', light: '60 22.2% 92.9%', dark: '60 22.2% 92.9%' },
   { key: 'accent-foreground', group: 'core', light: '0 0% 6.7%', dark: '0 0% 6.7%' },
-  { key: 'border', group: 'core', light: '0 0% 6.7%', dark: '0 0% 6.7%' },
-  { key: 'input', group: 'core', light: '0 0% 6.7%', dark: '0 0% 6.7%' },
+  // A divider, not a component boundary — cards separate by tint + shadow.
+  { key: 'border', group: 'core', light: '60 7.4% 81.4%', dark: '60 7.4% 81.4%' },
+  // A form control's boundary IS required to clear 3:1 (WCAG 1.4.11).
+  { key: 'input', group: 'core', light: '60 4.8% 44.9%', dark: '60 4.8% 44.9%' },
   { key: 'input-bg', group: 'core', light: '60 33% 97%', dark: '60 33% 97%' },
   { key: 'ring', group: 'core', light: '330 100% 56%', dark: '330 100% 56%' },
   // Track colors — SEMANTIC wayfinding lines. Fill-only, never body text;
-  // filled shapes carry a 2-3px ink border. See src/index.css for the rules.
-  { key: 'track-pink', group: 'core', light: '330 100% 56%', dark: '330 100% 56%' , ink: true },
-  { key: 'track-blue', group: 'core', light: '193 100% 45%', dark: '193 100% 45%' , ink: true },
-  { key: 'track-green', group: 'core', light: '135.6 74.5% 52.4%', dark: '135.6 74.5% 52.4%' , ink: true },
-  { key: 'track-yellow', group: 'core', light: '50.1 100% 50%', dark: '50.1 100% 50%' , ink: true },
+  // a track-coloured MARK carries the ink `--track-ring`. See src/index.css.
+  { key: 'track-pink', group: 'core', light: '330 100% 56%', dark: '330 100% 56%', ink: true },
+  { key: 'track-blue', group: 'core', light: '193 100% 45%', dark: '193 100% 45%', ink: true },
+  {
+    key: 'track-green',
+    group: 'core',
+    light: '135.6 74.5% 52.4%',
+    dark: '135.6 74.5% 52.4%',
+    ink: true,
+  },
+  { key: 'track-yellow', group: 'core', light: '50.1 100% 50%', dark: '50.1 100% 50%', ink: true },
   // Feedback — destructive is the only chromatic hue; warning + success are neutral
   { key: 'destructive', group: 'feedback', light: '0 70% 38%', dark: '0 70% 38%' },
   { key: 'destructive-foreground', group: 'feedback', light: '60 33% 97%', dark: '60 33% 97%' },
@@ -145,41 +155,62 @@ export const COLOR_TOKENS: ColorTokenDef[] = [
   { key: 'text-primary', group: 'text', light: '0 0% 6.7%', dark: '0 0% 6.7%' },
   { key: 'text-secondary', group: 'text', light: '0 0% 30%', dark: '0 0% 30%' },
   { key: 'text-muted', group: 'text', light: '0 0% 40%', dark: '0 0% 40%' },
+  // Channels only — the 12% alpha lives in `--hairline-alpha`, because
+  // branding_validate's HSL_RE forbids an alpha component in a token value.
   { key: 'border-hairline', group: 'text', light: '0 0% 6.7%', dark: '0 0% 6.7%' },
   // Surface elevation ladder — paper-tinted neutral steps
   { key: 'surface', group: 'surface', light: '60 33% 97%', dark: '60 33% 97%' },
   { key: 'surface-container-lowest', group: 'surface', light: '60 33% 97%', dark: '60 33% 97%' },
-  { key: 'surface-container-low', group: 'surface', light: '60 20% 95%', dark: '60 20% 95%' },
-  { key: 'surface-container', group: 'surface', light: '60 9% 93%', dark: '60 9% 93%' },
-  { key: 'surface-container-high', group: 'surface', light: '60 6% 90%', dark: '60 6% 90%' },
-  { key: 'surface-container-highest', group: 'surface', light: '60 4% 87%', dark: '60 4% 87%' },
-  { key: 'surface-dim', group: 'surface', light: '60 4% 85%', dark: '60 4% 85%' },
+  {
+    key: 'surface-container-low',
+    group: 'surface',
+    light: '60 22.2% 92.9%',
+    dark: '60 22.2% 92.9%',
+  },
+  { key: 'surface-container', group: 'surface', light: '60 16.3% 91.6%', dark: '60 16.3% 91.6%' },
+  {
+    key: 'surface-container-high',
+    group: 'surface',
+    light: '60 13.2% 89.6%',
+    dark: '60 13.2% 89.6%',
+  },
+  { key: 'surface-container-highest', group: 'surface', light: '60 12% 87%', dark: '60 12% 87%' },
+  { key: 'surface-dim', group: 'surface', light: '60 11% 85%', dark: '60 11% 85%' },
   { key: 'inverse-surface', group: 'surface', light: '0 0% 6.7%', dark: '0 0% 6.7%' },
   // Sidebar
   { key: 'sidebar-background', group: 'sidebar', light: '60 33% 97%', dark: '60 33% 97%' },
   { key: 'sidebar-foreground', group: 'sidebar', light: '0 0% 6.7%', dark: '0 0% 6.7%' },
   { key: 'sidebar-primary', group: 'sidebar', light: '0 0% 6.7%', dark: '0 0% 6.7%' },
   { key: 'sidebar-primary-foreground', group: 'sidebar', light: '60 33% 97%', dark: '60 33% 97%' },
-  { key: 'sidebar-accent', group: 'sidebar', light: '60 9% 93%', dark: '60 9% 93%' },
+  { key: 'sidebar-accent', group: 'sidebar', light: '60 22.2% 92.9%', dark: '60 22.2% 92.9%' },
   { key: 'sidebar-accent-foreground', group: 'sidebar', light: '0 0% 6.7%', dark: '0 0% 6.7%' },
-  { key: 'sidebar-border', group: 'sidebar', light: '0 0% 6.7%', dark: '0 0% 6.7%' },
+  { key: 'sidebar-border', group: 'sidebar', light: '60 7.4% 81.4%', dark: '60 7.4% 81.4%' },
   { key: 'sidebar-ring', group: 'sidebar', light: '0 0% 6.7%', dark: '0 0% 6.7%' },
 ];
 
 export const GLOBAL_TOKENS: GlobalTokenDef[] = [
+  // The radius ladder. `--radius-panel` (26px, dialogs + page-level shells)
+  // is deliberately NOT cataloged: it is compile-time only, following the
+  // --radius-full precedent, which keeps this change free of a
+  // branding_validate migration and off the 150-key cap.
   {
     key: 'radius-container',
     kind: 'radius',
-    default: '0rem',
-    label: 'Container (cards, sheets, dialogs)',
+    default: '1.125rem',
+    label: 'Container (cards, panels, fields)',
   },
   {
     key: 'radius-element',
     kind: 'radius',
-    default: '0rem',
-    label: 'Element (buttons, inputs, rows)',
+    default: '0.75rem',
+    label: 'Element (buttons, inputs, rows, chips)',
   },
-  { key: 'radius-badge', kind: 'radius', default: '0rem', label: 'Badge (tags, chips, pills)' },
+  {
+    key: 'radius-badge',
+    kind: 'radius',
+    default: '0.5625rem',
+    label: 'Badge (count marks, swatches)',
+  },
   { key: 'text-hero-xl', kind: 'size', default: '6rem', label: 'Hero XL' },
   {
     key: 'text-hero-xl--line-height',

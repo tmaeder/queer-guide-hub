@@ -45,7 +45,7 @@ const SORT_LABELS: Record<TagSort, { key: string; fallback: string }> = {
 /** The one chip recipe on this page. Shared with CategoryTreeRail's mobile row
  *  and RouteStrip's horizontal stations so every chip on the surface matches. */
 export const CHIP =
-  'shrink-0 border-2 border-foreground px-4 py-1 text-13 font-bold transition-colors';
+  'shrink-0 bg-muted rounded-element px-4 py-1 text-13 font-bold transition-colors';
 export const CHIP_ON = 'bg-foreground text-background';
 export const CHIP_OFF = 'bg-background hover:bg-surface-container';
 
@@ -84,7 +84,7 @@ export function TagsFilterSpine({
     <>
       <div
         className={cn(
-          `sticky ${STICKY_UNDER_HEADER} z-30 border-b-2 border-foreground bg-background`,
+          `sticky ${STICKY_UNDER_HEADER} z-30 border-b border-border-hairline bg-background`,
           PAGE_BLEED,
         )}
       >
@@ -110,7 +110,7 @@ export function TagsFilterSpine({
           <div
             role="tablist"
             aria-label={t('tags.view.label', 'Display')}
-            className="inline-flex border-2 border-foreground"
+            className="inline-flex border border-border-hairline"
           >
             {VIEW_TABS.map(({ key, icon, labelKey, fallback }, i) => (
               <button
@@ -122,7 +122,7 @@ export function TagsFilterSpine({
                 title={t(labelKey, fallback)}
                 className={cn(
                   'flex items-center gap-1.5 px-4 py-2 text-13 font-bold transition-colors',
-                  i > 0 && 'border-l-2 border-foreground',
+                  i > 0 && 'border-l border-border-hairline',
                   view === key ? CHIP_ON : CHIP_OFF,
                 )}
               >

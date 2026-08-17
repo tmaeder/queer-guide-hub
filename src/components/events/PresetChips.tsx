@@ -115,7 +115,7 @@ export function PresetChips({
               disabled={isDisabled}
               onClick={() => onSelect(isActive ? null : id)}
               className={cn(
-                'inline-flex h-8 shrink-0 snap-start items-center gap-1.5 border-2 border-foreground px-2.5 text-13 font-bold',
+                'inline-flex h-8 shrink-0 snap-start items-center gap-1.5 bg-muted rounded-element px-2.5 text-13 font-bold',
                 'transition-colors duration-fast',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
                 isActive

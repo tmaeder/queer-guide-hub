@@ -45,10 +45,11 @@ export function BrandUploadField({
   const upload = async (file: File) => {
     // OS pickers often report application/octet-stream for .woff2, so for fonts
     // we validate by extension and force the content type on upload.
-    const okType =
-      kind === 'font' ? /\.woff2$/i.test(file.name) : accept.includes(file.type);
+    const okType = kind === 'font' ? /\.woff2$/i.test(file.name) : accept.includes(file.type);
     if (!okType) {
-      toast.error(kind === 'font' ? 'Only .woff2 fonts allowed' : 'Only PNG, JPEG, WebP or SVG allowed');
+      toast.error(
+        kind === 'font' ? 'Only .woff2 fonts allowed' : 'Only PNG, JPEG, WebP or SVG allowed',
+      );
       return;
     }
     if (file.size > MAX_BYTES) {
@@ -59,13 +60,11 @@ export function BrandUploadField({
     try {
       const ext = kind === 'font' ? 'woff2' : (file.name.split('.').pop()?.toLowerCase() ?? 'png');
       const path = `${pathPrefix}${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-      const { data, error: upErr } = await supabase.storage
-        .from('brand')
-        .upload(path, file, {
-          cacheControl: '3600',
-          upsert: false,
-          contentType: contentType ?? (kind === 'font' ? 'font/woff2' : undefined),
-        });
+      const { data, error: upErr } = await supabase.storage.from('brand').upload(path, file, {
+        cacheControl: '3600',
+        upsert: false,
+        contentType: contentType ?? (kind === 'font' ? 'font/woff2' : undefined),
+      });
       if (upErr) throw upErr;
       const {
         data: { publicUrl },
@@ -94,8 +93,10 @@ export function BrandUploadField({
           value={value}
           aria-invalid={!!error}
           onChange={(e) => onChange(e.target.value)}
-          placeholder={kind === 'font' ? 'Upload a .woff2 file' : 'https://… (leave empty for default)'}
-          className={`font-mono text-13 ${error ? 'border-destructive' : ''}`}
+          placeholder={
+            kind === 'font' ? 'Upload a .woff2 file' : 'https://… (leave empty for default)'
+          }
+          className={`font-mono text-13 ${error ? 'border border-destructive' : ''}`}
         />
         <Button
           type="button"
@@ -125,7 +126,7 @@ export function BrandUploadField({
           </p>
         ) : (
           // onError is the honest "broken URL" signal (no CORS-broken HEAD probe).
-          // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+           
           <img
             key={value}
             src={value}

@@ -67,7 +67,7 @@ export function CategoryTreeRail({
     return (
       <nav
         aria-label={t('tags.rail.label', 'Topic lines')}
-        className={cn('border-b-2 border-foreground bg-background', PAGE_BLEED, className)}
+        className={cn('border-b border-border-hairline bg-background', PAGE_BLEED, className)}
       >
         <div className="flex items-center gap-2 overflow-x-auto px-4 py-2 sm:px-6 md:px-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <LocalizedLink
@@ -193,7 +193,7 @@ export function CategoryTreeRail({
                             line: getCategoryShortName(p.name),
                           })
                     }
-                    className="mt-0.5 shrink-0 border-2 border-foreground px-1.5 py-0.5 text-2xs font-bold leading-none transition-colors hover:bg-foreground hover:text-background"
+                    className="mt-0.5 shrink-0 px-1.5 py-0.5 text-2xs font-bold leading-none transition-colors hover:bg-foreground hover:text-background"
                   >
                     {isOpen ? '–' : '+'}
                   </button>
@@ -217,7 +217,7 @@ export function CategoryTreeRail({
                             <span
                               aria-hidden
                               className={cn(
-                                'inline-block h-2.5 w-2.5 rounded-full border-2 border-foreground',
+                                'inline-block h-2.5 w-2.5 rounded-full border border-border-hairline',
                                 childActive ? 'bg-foreground' : 'bg-background',
                               )}
                             />

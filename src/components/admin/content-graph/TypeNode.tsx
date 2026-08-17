@@ -24,7 +24,7 @@ function TypeNode({ data: d }: NodeProps<TypeFlowNode>) {
   return (
     <div
       className={`w-40 rounded-element border bg-background overflow-hidden transition-colors cursor-pointer hover:border-foreground/50 ${
-        d.selected ? 'ring-2 ring-ring border-foreground' : 'border-border'
+        d.selected ? 'ring-2 ring-ring border border-border-hairline' : 'border-border'
       }`}
       data-testid={`type-node-${d.type}`}
     >

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { Download, Trash2} from 'lucide-react';
+import { Download, Trash2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,7 +38,8 @@ export function DangerZone({ username }: DangerZoneProps) {
 
   // Re-typed value must match username, or email if no username is set.
   const expected = (username ?? user?.email ?? '').trim();
-  const canDelete = expected.length > 0 && confirmText.trim().toLowerCase() === expected.toLowerCase();
+  const canDelete =
+    expected.length > 0 && confirmText.trim().toLowerCase() === expected.toLowerCase();
 
   const handleExport = async () => {
     setExporting(true);
@@ -76,13 +77,16 @@ export function DangerZone({ username }: DangerZoneProps) {
       window.location.assign('/');
     } catch (e) {
       console.error('delete failed', e);
-      toast({ title: "Couldn't delete your account. Please contact support.", variant: 'destructive' });
+      toast({
+        title: "Couldn't delete your account. Please contact support.",
+        variant: 'destructive',
+      });
       setDeleting(false);
     }
   };
 
   return (
-    <Card className="border-destructive/40">
+    <Card className="border border-destructive/40">
       <CardContent className="pt-6 flex flex-col gap-6">
         <div>
           <p className="font-semibold">Your data</p>
@@ -99,7 +103,11 @@ export function DangerZone({ username }: DangerZoneProps) {
           </p>
           <div>
             <Button variant="outline" onClick={handleExport} disabled={exporting}>
-              {exporting ? <TrackLoader size={16} className="mr-2" /> : <Download className="mr-2 h-4 w-4" />}
+              {exporting ? (
+                <TrackLoader size={16} className="mr-2" />
+              ) : (
+                <Download className="mr-2 h-4 w-4" />
+              )}
               {exporting ? 'Preparing your data…' : 'Download my data'}
             </Button>
           </div>
@@ -112,7 +120,13 @@ export function DangerZone({ username }: DangerZoneProps) {
             Permanently delete your account and all personal data. This cannot be undone.
           </p>
           <div>
-            <Button variant="destructive" onClick={() => { setConfirmText(''); setDialogOpen(true); }}>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                setConfirmText('');
+                setDialogOpen(true);
+              }}
+            >
               <Trash2 className="mr-2 h-4 w-4" />
               Delete my account
             </Button>
@@ -120,7 +134,12 @@ export function DangerZone({ username }: DangerZoneProps) {
         </div>
       </CardContent>
 
-      <AlertDialog open={dialogOpen} onOpenChange={(o) => { if (!deleting) setDialogOpen(o); }}>
+      <AlertDialog
+        open={dialogOpen}
+        onOpenChange={(o) => {
+          if (!deleting) setDialogOpen(o);
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Permanently delete your account?</AlertDialogTitle>

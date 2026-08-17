@@ -337,7 +337,7 @@ export function AddPlaceDialog({
             <button
               type="button"
               onClick={() => setSelected(r)}
-              className={`w-full text-left min-h-[52px] px-4 py-2.5 rounded-container border ${isSelected ? 'bg-muted border-foreground/40' : 'border-transparent hover:bg-muted/60 hover:border-border'}`}
+              className={`w-full text-left min-h-[52px] px-4 py-2.5 rounded-container border ${isSelected ? 'border bg-muted border-foreground/40' : 'border-transparent hover:bg-muted/60 hover:border-border'}`}
             >
               <div className="flex items-center gap-1.5 flex-wrap">
                 <span className="font-medium">{r.name}</span>
@@ -501,7 +501,11 @@ export function AddPlaceDialog({
                 className="pl-10 pr-10 h-11 rounded-container"
               />
               {searching && (
-                <TrackLoader size={16} label="Loading" className="absolute right-3 top-1/2 -translate-y-1/2" />
+                <TrackLoader
+                  size={16}
+                  label="Loading"
+                  className="absolute right-3 top-1/2 -translate-y-1/2"
+                />
               )}
             </div>
 
@@ -674,9 +678,7 @@ export function AddPlaceDialog({
             {t('common.cancel', 'Cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={!canSubmit || addPlace.isPending}>
-            {addPlace.isPending && (
-              <TrackLoader size={16} label="Loading" className="mr-1" />
-            )}
+            {addPlace.isPending && <TrackLoader size={16} label="Loading" className="mr-1" />}
             {t('trips.addPlace.title', 'Add Place')}
           </Button>
         </DialogFooter>

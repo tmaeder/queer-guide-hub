@@ -52,11 +52,11 @@ export function CityNetworkPanel({
   const network = CITY_NETWORKS[slug as string];
 
   return (
-    <div className="border-[3px] border-foreground p-4">
+    <div className="bg-muted rounded-element p-4">
       <div className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
         {MODE_LABEL[network.mode]}
       </div>
-      <div className="mt-2 border-2 border-foreground px-2 py-2">
+      <div className="mt-2 bg-muted rounded-element px-2 py-2">
         <CityNetwork slug={slug ?? null} />
       </div>
       <p className="mt-2 text-2xs font-bold uppercase tracking-label text-muted-foreground">
@@ -67,7 +67,7 @@ export function CityNetworkPanel({
           <li key={line.ref} className="flex items-center gap-2 text-13 font-bold">
             <span
               aria-hidden="true"
-              className={`h-1.5 w-6 shrink-0 border border-foreground ${TRACK_BG[line.track as Track]}`}
+              className={`h-1.5 w-6 shrink-0 border border-border-hairline ${TRACK_BG[line.track as Track]}`}
             />
             {line.ref}
           </li>
