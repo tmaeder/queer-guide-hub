@@ -64,13 +64,19 @@ export function MilestoneImpactMarker({
       className={cn(
         'rounded-full',
         box,
-        // This is a MARK, not a container, so it keeps its ring through the
-        // de-caging — same rule as StationRing, and in the same `--track-ring`
-        // ink so the two stay identical on a shared rail (pinned by
-        // milestoneRow.test.tsx). The sweep briefly collapsed both branches to
-        // an identical 1px hairline, which erased the station/inline size
-        // distinction as well as the weight.
-        station ? 'border-[3px] border-track-ring' : 'border-2 border-track-ring',
+        // A MARK, not a container, so it keeps its ring through the de-caging.
+        // Its geometry matches StationRing (pinned by milestoneRow.test.tsx),
+        // but the colour token deliberately does NOT: `--foreground`, never
+        // `--track-ring`.
+        //
+        // `--track-ring` exists to gate a TRACK-COLOURED fill, and this marker
+        // may never carry one — impact is a state. Using it here also put a
+        // `border-track-*` class on a component whose negative branch returns a
+        // different glyph entirely, so the track-class set started varying with
+        // impact and MilestoneDetail.parts.test.tsx caught it. Both tokens are
+        // the same ink; only the namespace differs, and the namespace is the
+        // part that carries the rule.
+        station ? 'border-[3px] border-foreground' : 'border-2 border-foreground',
         impact === 'positive' ? 'bg-foreground' : 'bg-background',
         className,
       )}

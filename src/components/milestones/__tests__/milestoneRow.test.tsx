@@ -146,12 +146,18 @@ describe('MilestoneImpactMarker', () => {
   it('matches StationRing\'s box model at size="station"', () => {
     const { container: marker } = render(<MilestoneImpactMarker impact="neutral" size="station" />);
     const { container: ring } = render(<StationRing state="open" />);
+    // GEOMETRY only. The two draw the same box but deliberately name their
+    // ink differently: StationRing takes `--track-ring` because it gates a
+    // track-coloured fill, while the impact marker takes `--foreground`
+    // because it may never carry one. Same ink, different rule — asserting the
+    // colour class here would force one of them to break its own invariant.
     const box = (el: Element | null) =>
-      ['h-4', 'w-4', 'rounded-full', 'border-[3px]', 'border-track-ring'].filter((c) =>
-        el?.className.includes(c),
-      );
-    expect(box(marker.firstElementChild)).toHaveLength(5);
-    expect(box(ring.firstElementChild)).toHaveLength(5);
+      ['h-4', 'w-4', 'rounded-full', 'border-[3px]'].filter((c) => el?.className.includes(c));
+    expect(box(marker.firstElementChild)).toHaveLength(4);
+    expect(box(ring.firstElementChild)).toHaveLength(4);
+    // Both edges are ink, via their respective tokens.
+    expect(marker.firstElementChild?.className).toContain('border-foreground');
+    expect(ring.firstElementChild?.className).toContain('border-track-ring');
   });
 
   it.each(['positive', 'neutral', 'negative'] as const)(
