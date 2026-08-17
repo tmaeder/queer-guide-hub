@@ -64,9 +64,13 @@ export function MilestoneImpactMarker({
       className={cn(
         'rounded-full',
         box,
-        // Ink, not grey: hairline borders in --muted-foreground are the
-        // pre-rebrand system. Ink borders ARE the system.
-        station ? 'border border-border-hairline' : 'border border-border-hairline',
+        // This is a MARK, not a container, so it keeps its ring through the
+        // de-caging — same rule as StationRing, and in the same `--track-ring`
+        // ink so the two stay identical on a shared rail (pinned by
+        // milestoneRow.test.tsx). The sweep briefly collapsed both branches to
+        // an identical 1px hairline, which erased the station/inline size
+        // distinction as well as the weight.
+        station ? 'border-[3px] border-track-ring' : 'border-2 border-track-ring',
         impact === 'positive' ? 'bg-foreground' : 'bg-background',
         className,
       )}

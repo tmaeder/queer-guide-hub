@@ -147,7 +147,7 @@ describe('MilestoneImpactMarker', () => {
     const { container: marker } = render(<MilestoneImpactMarker impact="neutral" size="station" />);
     const { container: ring } = render(<StationRing state="open" />);
     const box = (el: Element | null) =>
-      ['h-4', 'w-4', 'rounded-full', 'border-[3px]', 'border-foreground'].filter((c) =>
+      ['h-4', 'w-4', 'rounded-full', 'border-[3px]', 'border-track-ring'].filter((c) =>
         el?.className.includes(c),
       );
     expect(box(marker.firstElementChild)).toHaveLength(5);
