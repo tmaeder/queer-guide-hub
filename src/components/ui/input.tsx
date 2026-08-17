@@ -17,7 +17,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         // type on a light surface at 1.09:1, which shipped and failed axe.
         // Ink-on-paper is the safe default: overriding the fill with any light
         // surface keeps the type readable.
-        'border-2 border-foreground bg-background text-foreground placeholder:text-muted-foreground',
+        'border border-input bg-muted text-foreground placeholder:text-muted-foreground',
         'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background',
         'disabled:cursor-not-allowed disabled:opacity-50',
         className,

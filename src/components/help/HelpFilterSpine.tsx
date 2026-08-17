@@ -46,7 +46,7 @@ export function HelpFilterSpine({
 
   return (
     <>
-      <div className="sticky top-16 z-30 -mx-4 border-b-2 border-foreground bg-background sm:-mx-6 md:-mx-8">
+      <div className="sticky top-16 z-30 -mx-4 border-b border-border-hairline bg-background sm:-mx-6 md:-mx-8">
         <div className="mx-auto flex max-w-page flex-wrap items-center gap-x-6 gap-y-2 px-4 py-2 sm:px-6 md:px-8">
           <p className="flex items-center gap-2 whitespace-nowrap text-13">
             <span className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
@@ -89,7 +89,7 @@ export function HelpFilterSpine({
                 type="button"
                 onClick={() => onTopic('ALL')}
                 aria-pressed={topic === 'ALL'}
-                className={`shrink-0 border-2 border-foreground px-4 py-1 text-13 font-bold transition-colors ${
+                className={`shrink-0 border-border-hairline px-4 py-1 text-13 font-bold transition-colors ${
                   topic === 'ALL'
                     ? 'bg-foreground text-background'
                     : 'bg-background hover:bg-surface-container'
@@ -103,7 +103,7 @@ export function HelpFilterSpine({
                   type="button"
                   onClick={() => onTopic(tp)}
                   aria-pressed={topic === tp}
-                  className={`shrink-0 border-2 border-foreground px-4 py-1 text-13 font-bold transition-colors ${
+                  className={`shrink-0 border-border-hairline px-4 py-1 text-13 font-bold transition-colors ${
                     topic === tp
                       ? 'bg-foreground text-background'
                       : 'bg-background hover:bg-surface-container'

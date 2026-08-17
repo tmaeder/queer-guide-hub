@@ -79,7 +79,7 @@ const Guides = () => {
       <PageContainer>
         <ActiveQuestBanner />
         <div
-          className={`sticky ${STICKY_UNDER_HEADER} z-20 ${PAGE_BLEED_MOBILE} py-2 mb-8 border-b-[3px] border-foreground bg-background`}
+          className={`sticky ${STICKY_UNDER_HEADER} z-20 ${PAGE_BLEED_MOBILE} py-2 mb-8 border-b border-border-hairline bg-background`}
         >
           <GuidesFilterBar filters={filters} onChange={setFilters} />
         </div>

@@ -45,7 +45,7 @@ export function AnchorMilestoneCard({
         // to respond to the pointer reads as broken, not as sombre. Only the
         // treatment is documentary: no image, no poster year.
         className={cn(
-          'card-lift group flex items-start gap-4 border-[3px] border-foreground bg-background p-4 no-underline',
+          'card-lift group flex items-start gap-4 bg-card p-4 no-underline rounded-container shadow-soft',
           className,
         )}
       >
@@ -85,13 +85,13 @@ export function AnchorMilestoneCard({
     <LocalizedLink
       to={`/history/${milestone.slug}`}
       className={cn(
-        'card-lift group block border-[3px] border-foreground bg-background no-underline',
+        'card-lift group block bg-card no-underline rounded-container shadow-soft',
         className,
       )}
     >
       {imageUrl ? (
-        <span className="block aspect-[16/10] overflow-hidden border-b-[3px] border-foreground bg-muted">
-          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */}
+        <span className="block aspect-[16/10] overflow-hidden border-b border-border-hairline bg-muted">
+          { }
           <img
             src={imageUrl}
             alt=""
@@ -106,7 +106,7 @@ export function AnchorMilestoneCard({
         // 3px plate around it.
         <span
           aria-hidden
-          className="block select-none border-b-[3px] border-foreground px-4 py-6 font-display text-hero leading-none"
+          className="block select-none border-b border-border-hairline px-4 py-6 font-display text-hero leading-none"
         >
           {milestoneYear(milestone.date)}
         </span>

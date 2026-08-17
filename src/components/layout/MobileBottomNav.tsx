@@ -131,7 +131,7 @@ export function MobileBottomNav() {
             header explicitly rejects: over a paper page a 90%-opaque blur
             reads as a third, muddier surface, and the active tab's ink fill
             has nothing solid to sit against. Same box as the header's. */}
-        <ul className="mx-4 mb-2 flex items-stretch gap-1 border-[3px] border-foreground bg-background px-2">
+        <ul className="mx-4 mb-2 flex items-stretch gap-1 bg-card px-2 rounded-container shadow-soft">
           {BOTTOM_NAV_TABS.map((tab) => {
             const isExplore = tab.id === 'explore';
             const anonGated = tab.authGated && !user;

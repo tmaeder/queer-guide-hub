@@ -18,7 +18,7 @@ export function FlagChip({ flagId, className }: { flagId: string; className?: st
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-2 border-2 border-foreground px-2 py-0.5 text-2xs font-bold',
+        'inline-flex items-center gap-2 bg-muted rounded-element px-2 py-0.5 text-2xs font-bold',
         className,
       )}
     >

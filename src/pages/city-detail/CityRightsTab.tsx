@@ -84,7 +84,7 @@ function CityMilestones({ cityId, cityName }: { cityId: string; cityName: string
   return (
     // Matches CountryLegalHistory, which this block is a copy of minus the
     // see-all link.
-    <section className="border-[3px] border-foreground p-4">
+    <section className="bg-muted rounded-element p-4">
       <h3 className="mb-4 text-2xs uppercase tracking-label text-muted-foreground">
         {t('milestones.city.title', 'Queer history in {{city}}', { city: cityName })}
       </h3>

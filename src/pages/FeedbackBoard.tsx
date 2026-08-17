@@ -121,7 +121,7 @@ export default function FeedbackBoard() {
             <div key={col.id}>
               {/* Column header */}
               <div
-                className="flex items-center gap-2 mb-4 pb-2 border-b-2"
+                className="flex items-center gap-2 mb-4 pb-2 border-b"
                 style={{ borderColor: col.color }}
               >
                 <p className="text-sm font-bold">{col.label}</p>

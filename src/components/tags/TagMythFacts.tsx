@@ -23,7 +23,7 @@ export function TagMythFacts({ tagId, tagName }: { tagId: string; tagName: strin
   const attribution = rows[0];
 
   return (
-    <section className="border-y-4 border-foreground py-8">
+    <section className="border-y border-border-hairline py-8">
       <Eyebrow as="p">{t('tags.myths.eyebrow', 'Check the facts')}</Eyebrow>
       <h2 className="mt-2 font-display text-headline leading-tight md:text-display">
         {t('tags.myths.title', 'Myths & facts about {{name}}', { name: tagName })}
@@ -34,7 +34,7 @@ export function TagMythFacts({ tagId, tagName }: { tagId: string; tagName: strin
           const isMyth = row.kind === 'myth';
           const Icon = isMyth ? X : Check;
           return (
-            <li key={i} className="border-2 border-foreground p-4">
+            <li key={i} className="bg-muted rounded-element p-4">
               <p className="flex items-start gap-2 text-13 font-bold leading-relaxed">
                 <Icon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
                 <span>

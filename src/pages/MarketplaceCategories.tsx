@@ -50,7 +50,7 @@ export default function MarketplaceCategories() {
               <li
                 key={i}
                 aria-hidden="true"
-                className="h-[120px] animate-pulse border-[3px] border-foreground/20 bg-muted"
+                className="border h-[120px] animate-pulse border-foreground/20 bg-muted"
               />
             ))}
           </ul>
@@ -67,7 +67,7 @@ export default function MarketplaceCategories() {
               <li key={tile.slug}>
                 <LocalizedLink
                   to={`/marketplace/category/${tile.slug}`}
-                  className="card-lift flex h-full min-h-[120px] flex-col justify-between border-[3px] border-foreground bg-card p-4 no-underline sm:p-6"
+                  className="card-lift flex h-full min-h-[120px] flex-col justify-between bg-card p-4 no-underline sm:p-6 shadow-soft"
                 >
                   <span className="text-title font-bold leading-tight text-balance">
                     {prettify(tile.slug)}

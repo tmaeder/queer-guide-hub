@@ -105,7 +105,7 @@ export function MarketplaceFilteredView({
         <p className="flex items-center gap-4 text-13 text-muted-foreground">
           <span
             aria-hidden="true"
-            className="h-1.5 w-10 shrink-0 border border-foreground bg-track-yellow"
+            className="h-1.5 w-10 shrink-0 border border-border-hairline bg-track-yellow"
           />
           <span className="tabular-nums">
             {t('marketplace.showingCount', {
@@ -119,7 +119,7 @@ export function MarketplaceFilteredView({
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as MarketplaceSort)}
           aria-label={t('marketplace.sortLabel', 'Sort listings')}
-          className="h-8 border-2 border-foreground bg-background px-2 text-13 font-bold"
+          className="h-8 bg-card px-2 text-13 font-bold rounded-container shadow-soft"
         >
           {sortOptions.map((opt) => (
             <option key={opt.value} value={opt.value}>

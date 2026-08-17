@@ -73,7 +73,7 @@ export function CitiesLineIndex({
             <div
               key={i}
               aria-hidden="true"
-              className="h-[84px] w-[140px] shrink-0 animate-pulse border-[3px] border-foreground/20 bg-muted sm:h-[108px] sm:w-auto"
+              className="border h-[84px] w-[140px] shrink-0 animate-pulse border-foreground/20 bg-muted sm:h-[108px] sm:w-auto"
             />
           ))}
         </div>
@@ -97,7 +97,7 @@ export function CitiesLineIndex({
                   // A station tile FILLS ink when it is the one you are standing
                   // at, and lifts when it is somewhere you could go. Never both —
                   // card-lift-sm is dropped on the active tile.
-                  'flex h-[84px] w-[140px] shrink-0 flex-col justify-between border-[3px] border-foreground p-4 text-left sm:h-[108px] sm:w-auto',
+                  'flex h-[84px] w-[140px] shrink-0 flex-col justify-between bg-muted rounded-element p-4 text-left sm:h-[108px] sm:w-auto',
                   active
                     ? 'bg-foreground text-background'
                     : 'bg-background text-foreground card-lift-sm',

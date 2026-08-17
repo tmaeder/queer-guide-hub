@@ -7,16 +7,21 @@ import { renderWithProviders, expectNoNestedInteractive } from '@/test/test-util
 import { Band } from '../Band';
 
 describe('Band', () => {
-  it('emits the 4px ink rule that separates every homepage band', () => {
-    const { container } = renderWithProviders(
-      <Band title="Departures">rows</Band>,
-    );
+  it('emits the rule that separates every homepage band', () => {
+    const { container } = renderWithProviders(<Band title="Departures">rows</Band>);
     const section = container.querySelector('section');
     // HomeSection, which this replaces, only emitted the rule when a `tinted`
     // prop was passed — and no caller ever passed it, so five bands rendered
     // no rule at all. The rule is mandatory here; only the tint is optional.
-    expect(section?.className).toContain('border-b-4');
-    expect(section?.className).toContain('border-foreground');
+    //
+    // It thinned from a 4px ink bar to a 12%-ink hairline in the 2026-08-17
+    // soft re-skin — Brand Guidelines §02b allows exactly one line between
+    // surfaces and that is the hairline. What this test guards is that a rule
+    // is emitted unconditionally, which is the bug it was written for; the
+    // weight is the design system's business, so assert the semantic token
+    // rather than a px width and this survives the next re-tune.
+    expect(section?.className).toContain('border-b');
+    expect(section?.className).toContain('border-border-hairline');
   });
 
   it('paints the tint only on the tint surface', () => {
@@ -54,7 +59,12 @@ describe('Band', () => {
 
   it('keeps the action slot a SIBLING of the see-all link, not nested in it', () => {
     const { container } = renderWithProviders(
-      <Band title="Near you" seeAllHref="/events" seeAllLabel="Full board" action={<button>Berlin</button>}>
+      <Band
+        title="Near you"
+        seeAllHref="/events"
+        seeAllLabel="Full board"
+        action={<button>Berlin</button>}
+      >
         x
       </Band>,
     );

@@ -197,7 +197,7 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
               </div>
 
               {!isOwnProfile && isAdmin && (
-                <div className="mt-4 p-4 bg-destructive/10 border-destructive rounded-element">
+                <div className="border mt-4 p-4 bg-destructive/10 border-destructive rounded-element">
                   <p className="text-sm text-destructive font-medium">
                     Admin Access: This sensitive information is logged and monitored for security
                     compliance.

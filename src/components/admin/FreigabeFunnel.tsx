@@ -51,7 +51,7 @@ function StageCard({
   const inner = (
     <div
       className={`flex min-w-[8rem] flex-1 flex-col gap-1 rounded-container border p-4 text-left ${
-        active ? 'border-foreground' : 'border-border'
+        active ? 'border border-border-hairline' : 'border-border'
       }`}
       title={meta.hint}
     >

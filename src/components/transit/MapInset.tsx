@@ -22,11 +22,11 @@ export function MapInset({
   className?: string;
 }) {
   return (
-    <section className={cn('border-[3px] border-foreground p-4', className)}>
+    <section className={cn('bg-muted rounded-element p-4', className)}>
       <div className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
         Around this station
       </div>
-      <div className="mt-2 border-2 border-foreground">{children}</div>
+      <div className="mt-2 bg-muted rounded-element">{children}</div>
       {caption && <p className="mt-2 text-13 leading-relaxed">{caption}</p>}
     </section>
   );

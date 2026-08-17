@@ -47,7 +47,7 @@ const CHANNEL_ICON: Record<HotlineChannel['kind'], typeof Phone> = {
   email: Mail,
 };
 
-const CHIP = 'border-2 border-foreground px-2 py-1 text-2xs font-bold uppercase tracking-label';
+const CHIP = 'bg-muted rounded-element px-2 py-1 text-2xs font-bold uppercase tracking-label';
 
 export function HotlineCard({
   hotline,
@@ -69,8 +69,8 @@ export function HotlineCard({
   const verified = hotline.verified_at ? new Date(hotline.verified_at) : null;
 
   return (
-    <article className="flex h-full flex-col border-[3px] border-foreground bg-background">
-      <header className="border-b-2 border-foreground/10 p-4">
+    <article className="flex h-full flex-col bg-card rounded-container shadow-soft">
+      <header className="border-b border-foreground/10 p-4">
         <div className="flex items-start justify-between gap-4">
           <h3 className="min-w-0 text-title font-bold leading-tight">{hotline.name}</h3>
           <div className="flex shrink-0 items-center gap-2">
@@ -84,7 +84,7 @@ export function HotlineCard({
                   ? t('help.unkeep', 'Stop keeping this line')
                   : t('help.keep', 'Keep this line')
               }
-              className="border-2 border-foreground p-1 transition-colors hover:bg-foreground hover:text-background"
+              className="p-1 transition-colors hover:bg-foreground hover:text-background"
             >
               <Bookmark size={14} fill={isKept ? 'currentColor' : 'none'} aria-hidden />
             </button>
@@ -118,7 +118,7 @@ export function HotlineCard({
             `false` is ink because it is a reassurance and red would flatten the
             difference. Absent renders nothing at all — we do not imply either. */}
         {hotline.reports_to_police === true && (
-          <p className="flex items-start gap-2 border-2 border-destructive bg-destructive p-4 text-13 font-bold leading-relaxed text-destructive-foreground">
+          <p className="border flex items-start gap-2 border-destructive bg-destructive p-4 text-13 font-bold leading-relaxed text-destructive-foreground">
             <ShieldAlert size={16} aria-hidden className="mt-0.5 shrink-0" />
             {t(
               'help.reports_police_warning',
@@ -127,7 +127,7 @@ export function HotlineCard({
           </p>
         )}
         {hotline.reports_to_police === false && (
-          <p className="flex items-start gap-2 border-2 border-foreground p-4 text-13 font-bold leading-relaxed">
+          <p className="flex items-start gap-2 bg-muted rounded-element p-4 text-13 font-bold leading-relaxed">
             <ShieldCheck size={16} aria-hidden className="mt-0.5 shrink-0" />
             {t(
               'help.no_police_policy',
@@ -157,12 +157,12 @@ export function HotlineCard({
               <LocalizedLink
                 key={tp}
                 to={`/resources?category=${encodeURIComponent(cat)}`}
-                className="border-2 border-foreground/20 px-2 py-1 text-2xs font-bold no-underline transition-colors hover:border-foreground"
+                className="border border-foreground/20 px-2 py-1 text-2xs font-bold no-underline transition-colors hover:border-border-hairline"
               >
                 {label}
               </LocalizedLink>
             ) : (
-              <span key={tp} className="border-2 border-foreground/20 px-2 py-1 text-2xs font-bold">
+              <span key={tp} className="border border-foreground/20 px-2 py-1 text-2xs font-bold">
                 {label}
               </span>
             );
@@ -195,7 +195,7 @@ export function HotlineCard({
           {primaryPhone && (
             <a
               href={channelHref(primaryPhone)}
-              className="flex items-center justify-between gap-4 border-2 border-foreground bg-foreground px-4 py-4 text-background no-underline transition-opacity hover:opacity-90"
+              className="flex items-center justify-between gap-4 bg-foreground px-4 py-4 text-background no-underline transition-opacity hover:opacity-90"
               aria-label={t('help.call_aria', 'Call {{name}} {{phone}}', {
                 name: hotline.name,
                 phone: primaryPhone.value,
@@ -219,7 +219,7 @@ export function HotlineCard({
                     href={channelHref(c)}
                     target={c.kind === 'chat' ? '_blank' : undefined}
                     rel={c.kind === 'chat' ? 'noopener noreferrer' : undefined}
-                    className="flex flex-1 items-center justify-center gap-2 border-2 border-foreground px-4 py-2 text-13 font-bold no-underline transition-colors hover:bg-foreground hover:text-background"
+                    className="flex flex-1 items-center justify-center gap-2 px-4 py-2 text-13 font-bold no-underline transition-colors hover:bg-foreground hover:text-background"
                     aria-label={`${hotline.name} — ${c.label ?? c.kind}`}
                   >
                     <Icon size={14} aria-hidden />
@@ -232,7 +232,7 @@ export function HotlineCard({
                   href={hotline.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 border-2 border-foreground px-4 py-2 text-13 font-bold no-underline transition-colors hover:bg-foreground hover:text-background"
+                  className="flex items-center justify-center gap-2 px-4 py-2 text-13 font-bold no-underline transition-colors hover:bg-foreground hover:text-background"
                   aria-label={`${hotline.name} — ${t('help.visit_site', 'Website')}`}
                 >
                   <ExternalLink size={14} aria-hidden />
@@ -244,7 +244,7 @@ export function HotlineCard({
         </div>
       </div>
 
-      <footer className="flex justify-end border-t-2 border-foreground/10 px-4 py-2">
+      <footer className="flex justify-end border-t border-foreground/10 px-4 py-2">
         <ReportHotline hotlineId={hotline.id} />
       </footer>
     </article>

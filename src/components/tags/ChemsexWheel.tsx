@@ -134,7 +134,7 @@ export function ChemsexWheel() {
   );
 
   return (
-    <section className="border-y-4 border-foreground py-8">
+    <section className="border-y border-border-hairline py-8">
       <Eyebrow as="p">{t('tags.wheel.eyebrow', 'Know what you take')}</Eyebrow>
       <h2 className="mt-2 font-display text-headline leading-tight md:text-display">
         {t('tags.wheel.title', 'The chemsex wheel')}
@@ -149,14 +149,28 @@ export function ChemsexWheel() {
       {/* ── The wheel ───────────────────────────────────────────────────── */}
       <div className="mt-8 overflow-x-auto">
         <div className="relative mx-auto aspect-square w-full min-w-[560px] max-w-[720px]">
-          <svg
-            viewBox="0 0 400 400"
-            className="absolute inset-0 h-full w-full"
-            aria-hidden="true"
-          >
-            <circle cx="200" cy="200" r="192" className="fill-none stroke-foreground" strokeWidth="3" />
-            <circle cx="200" cy="200" r="128" className="fill-none stroke-foreground" strokeWidth="1.5" />
-            <circle cx="200" cy="200" r="46" className="fill-none stroke-foreground" strokeWidth="3" />
+          <svg viewBox="0 0 400 400" className="absolute inset-0 h-full w-full" aria-hidden="true">
+            <circle
+              cx="200"
+              cy="200"
+              r="192"
+              className="fill-none stroke-foreground"
+              strokeWidth="3"
+            />
+            <circle
+              cx="200"
+              cy="200"
+              r="128"
+              className="fill-none stroke-foreground"
+              strokeWidth="1.5"
+            />
+            <circle
+              cx="200"
+              cy="200"
+              r="46"
+              className="fill-none stroke-foreground"
+              strokeWidth="3"
+            />
             {spokes.map((s, i) => (
               <line
                 key={i}
@@ -184,7 +198,7 @@ export function ChemsexWheel() {
               <div key={cat.key} aria-hidden="true">
                 {/* Category name in the outer band */}
                 <span
-                  className="absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap border-2 border-foreground bg-background px-2 py-0.5 text-2xs font-bold uppercase tracking-label"
+                  className="absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap bg-card px-2 py-0.5 text-2xs font-bold uppercase tracking-label rounded-container shadow-soft"
                   style={pos(mid, 0.8)}
                 >
                   {cat.label}
@@ -199,7 +213,7 @@ export function ChemsexWheel() {
                       key={s.slug}
                       to={`/tags/${s.slug}`}
                       tabIndex={-1}
-                      className="whitespace-nowrap border border-foreground/40 bg-background px-1.5 py-0.5 text-3xs font-bold text-foreground no-underline hover:border-foreground hover:bg-foreground hover:text-background"
+                      className="whitespace-nowrap border border-foreground/40 bg-background px-1.5 py-0.5 text-3xs font-bold text-foreground no-underline hover:border-border-hairline hover:bg-foreground hover:text-background"
                     >
                       {s.name}
                     </LocalizedLink>
@@ -214,7 +228,7 @@ export function ChemsexWheel() {
       {/* ── The same content, readable ──────────────────────────────────── */}
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
         {CATEGORIES.map((cat) => (
-          <div key={cat.key} className="border-2 border-foreground p-4">
+          <div key={cat.key} className="bg-muted rounded-element p-4">
             <h3 className="text-2xs font-bold uppercase tracking-label">{cat.label}</h3>
             <p className="mt-2 text-13 leading-relaxed text-muted-foreground">{cat.effects}</p>
             <ul className="mt-2 flex list-none flex-wrap gap-2 p-0">
@@ -222,7 +236,7 @@ export function ChemsexWheel() {
                 <li key={s.slug}>
                   <LocalizedLink
                     to={`/tags/${s.slug}`}
-                    className="border border-foreground/40 px-1.5 py-0.5 text-13 font-bold text-foreground no-underline hover:border-foreground hover:bg-foreground hover:text-background"
+                    className="border border-foreground/40 px-1.5 py-0.5 text-13 font-bold text-foreground no-underline hover:border-border-hairline hover:bg-foreground hover:text-background"
                   >
                     {s.name}
                   </LocalizedLink>
@@ -238,7 +252,10 @@ export function ChemsexWheel() {
         <a href="https://www.thedrugswheel.com/" target="_blank" rel="noopener noreferrer">
           The Drugs Wheel
         </a>{' '}
-        {t('tags.wheel.creditTail', 'by Mark Adley (CC BY-NC-SA 4.0), via Kink Responsibly, Darklands.')}
+        {t(
+          'tags.wheel.creditTail',
+          'by Mark Adley (CC BY-NC-SA 4.0), via Kink Responsibly, Darklands.',
+        )}
       </p>
     </section>
   );

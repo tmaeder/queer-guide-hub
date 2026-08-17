@@ -118,7 +118,7 @@ export const MapSearchField = ({
             // and a search field that only looks like one inside a particular
             // parent is a field that will lose its edges the next time it
             // moves.
-            'relative flex h-10 w-56 shrink-0 items-center border-2 border-foreground bg-background',
+            'relative flex h-10 w-56 shrink-0 items-center bg-card rounded-container shadow-soft',
             'focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-1',
             className,
           )}

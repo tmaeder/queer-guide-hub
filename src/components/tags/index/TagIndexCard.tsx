@@ -38,7 +38,7 @@ export interface TagIndexItemProps {
 
 function AliasPip({ label }: { label: string }) {
   return (
-    <span className="inline-block shrink-0 border-2 border-foreground px-1.5 py-0.5 text-2xs font-bold uppercase tracking-label">
+    <span className="inline-block shrink-0 bg-muted rounded-element px-1.5 py-0.5 text-2xs font-bold uppercase tracking-label">
       {label}
     </span>
   );
@@ -51,9 +51,9 @@ export function TagIndexCard({ tag, uses, line, categoryLabel, aliasMatch }: Tag
   return (
     <LocalizedLink
       to={`/tags/${encodeURIComponent(tag.slug)}`}
-      className="card-lift group flex h-full flex-col border-[3px] border-foreground bg-background text-inherit no-underline"
+      className="card-lift group flex h-full flex-col bg-card text-inherit no-underline rounded-container shadow-soft"
     >
-      <div className="relative aspect-[4/3] w-full border-b-[3px] border-foreground bg-muted">
+      <div className="relative aspect-[4/3] w-full border-b border-border-hairline bg-muted">
         {hasImage ? (
           <img
             src={tag.image_url}
@@ -94,7 +94,7 @@ export function TagIndexRow({ tag, uses, categoryLabel, aliasMatch }: TagIndexIt
   return (
     <LocalizedLink
       to={`/tags/${encodeURIComponent(tag.slug)}`}
-      className="card-lift-sm flex items-center gap-4 border-[3px] border-foreground bg-background p-4 text-inherit no-underline"
+      className="card-lift-sm flex items-center gap-4 bg-card p-4 text-inherit no-underline rounded-container shadow-soft"
     >
       <RouteBullet type="tag" size={30} />
       <div className="min-w-0 flex-1">
@@ -110,7 +110,7 @@ export function TagIndexRow({ tag, uses, categoryLabel, aliasMatch }: TagIndexIt
       {categoryLabel && (
         <span
           className={cn(
-            'hidden shrink-0 border-2 border-foreground px-2 py-0.5 text-2xs font-bold uppercase tracking-label md:block',
+            'hidden shrink-0 bg-muted rounded-element px-2 py-0.5 text-2xs font-bold uppercase tracking-label md:block',
           )}
         >
           {categoryLabel}

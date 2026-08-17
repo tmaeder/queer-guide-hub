@@ -60,7 +60,7 @@ export function CityTravelTab({
   return (
     <div className="flex flex-col gap-8">
       {highRisk ? (
-        <div className="flex gap-4 border-[3px] border-destructive p-4 sm:p-6">
+        <div className="border flex gap-4 border-destructive p-4 sm:p-6">
           <ShieldAlert size={18} aria-hidden="true" className="mt-0.5 shrink-0 text-destructive" />
           <div className="flex flex-col gap-2">
             <p className="text-body-lg font-bold">
@@ -103,11 +103,11 @@ export function CityTravelTab({
           <h3 className="text-title font-bold">
             {t('cities.detail.travel.gettingAround', 'Getting around')}
           </h3>
-          <dl className="mt-2 border-[3px] border-foreground">
+          <dl className="mt-2 bg-muted rounded-element">
             {transport.map(([key, value]) => (
               <div
                 key={key}
-                className="flex flex-wrap items-baseline justify-between gap-4 border-b-2 border-foreground/15 px-4 py-2 last:border-b-0"
+                className="flex flex-wrap items-baseline justify-between gap-4 border-b border-foreground/15 px-4 py-2 last:border-b-0"
               >
                 <dt className="text-13 capitalize text-muted-foreground">
                   {key.replace(/_/g, ' ')}

@@ -50,7 +50,7 @@ const JOIN_SPEC =
   '*, cities:city_id(id, slug, name), countries:country_id(id, slug, name, code, flag_emoji, equality_score, lgbti_criminalization)';
 
 const OUTLINE_ON_INK =
-  'inline-flex items-center gap-2 border-2 border-background px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground';
+  'border inline-flex items-center gap-2 border-background px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground';
 
 export default function QueerVillageDetail() {
   const { t, i18n } = useTranslation();
@@ -238,7 +238,7 @@ export default function QueerVillageDetail() {
         </p>
         <LocalizedLink
           to="/villages"
-          className="mt-6 inline-flex items-center gap-2 border-2 border-foreground px-4 py-2 text-13 font-bold no-underline transition-colors hover:bg-foreground hover:text-background"
+          className="mt-6 inline-flex items-center gap-2 px-4 py-2 text-13 font-bold no-underline transition-colors hover:bg-foreground hover:text-background"
         >
           {t('village.notFound.cta', 'All queer villages')}
         </LocalizedLink>
@@ -388,7 +388,7 @@ export default function QueerVillageDetail() {
           />
           <section
             aria-labelledby="village-end-of-line"
-            className="border-[3px] border-foreground bg-foreground p-6 text-background md:p-8"
+            className="bg-foreground p-6 text-background md:p-8"
           >
             <p className="text-2xs font-bold uppercase tracking-label text-background/70">
               {t('village.endOfLine.eyebrow', 'End of line')}
@@ -421,7 +421,7 @@ export default function QueerVillageDetail() {
           <button
             type="button"
             onClick={handleFavoriteToggle}
-            className="self-start border-2 border-foreground px-4 py-2 text-13 font-bold transition-colors hover:bg-foreground hover:text-background"
+            className="self-start px-4 py-2 text-13 font-bold transition-colors hover:bg-foreground hover:text-background"
           >
             {isFavorited(village.id)
               ? t('village.action.favorited', 'Saved to favorites')

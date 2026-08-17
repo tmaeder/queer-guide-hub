@@ -76,7 +76,7 @@ function TrustChip({ label, title }: { label: string; title: string }) {
   return (
     <span
       title={title}
-      className="inline-flex items-center border-2 border-foreground px-2 py-0.5 text-2xs font-bold uppercase tracking-label"
+      className="inline-flex items-center bg-muted rounded-element px-2 py-0.5 text-2xs font-bold uppercase tracking-label"
     >
       {label}
     </span>
@@ -166,7 +166,7 @@ export function MarketplaceBuyBox({ listing, compact = false, curatedName }: Buy
         )}
 
         {linkState === 'broken' && (
-          <p className="border-2 border-foreground p-2 text-13">
+          <p className="bg-muted rounded-element p-2 text-13">
             This merchant link appears to be broken. Try the contact options below.
           </p>
         )}
@@ -199,7 +199,7 @@ export function MarketplaceBuyBox({ listing, compact = false, curatedName }: Buy
         </div>
 
         {listing.shipping_available && (
-          <p className="border-2 border-foreground p-2 text-13">Shipping available</p>
+          <p className="bg-muted rounded-element p-2 text-13">Shipping available</p>
         )}
 
         {outbound?.isAffiliate && <AffiliateDisclosure compact />}
@@ -324,7 +324,7 @@ export function ProductTags({ tags }: { tags: ListingTag[] }) {
       key={name}
       type="button"
       onClick={() => navigate(tagHref(name))}
-      className="inline-flex h-8 items-center border-2 border-foreground px-2.5 text-13 font-bold transition-colors hover:bg-foreground hover:text-background"
+      className="inline-flex h-8 items-center px-2.5 text-13 font-bold transition-colors hover:bg-foreground hover:text-background"
     >
       {name}
     </button>
@@ -405,11 +405,11 @@ export function MarketplaceContent({ listing, reviews, onContentUpdated }: Conte
 
       <SingleSection title={`Reviews (${reviews.length})`}>
         {reviews.length > 0 ? (
-          <ul className="m-0 list-none border-[3px] border-foreground p-0">
+          <ul className="m-0 list-none bg-muted rounded-element p-0">
             {reviews.slice(0, 5).map((review) => (
               <li
                 key={review.id}
-                className="border-b-2 border-foreground/15 px-4 py-4 last:border-b-0"
+                className="border-b border-foreground/15 px-4 py-4 last:border-b-0"
               >
                 <div className="flex flex-wrap items-baseline justify-between gap-4">
                   <div className="flex items-center gap-4">
@@ -531,7 +531,7 @@ export function MakerCard({
       {to && (
         <LocalizedLink
           to={to}
-          className="mt-2 inline-block border-2 border-foreground px-4 py-2 text-xs2 font-bold no-underline transition-colors hover:bg-foreground hover:text-background"
+          className="mt-2 inline-block px-4 py-2 text-xs2 font-bold no-underline transition-colors hover:bg-foreground hover:text-background"
         >
           Everything from {name} →
         </LocalizedLink>

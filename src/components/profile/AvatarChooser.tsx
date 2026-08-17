@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {Upload, Globe, Palette, RefreshCw } from 'lucide-react';
+import { Upload, Globe, Palette, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -328,7 +328,7 @@ export function AvatarChooser({ email, currentUrl, currentConfig, onSave }: Avat
         {/* ---------- Upload ---------- */}
         <TabsContent value="upload" className="mt-4 flex flex-col gap-4">
           {!cropSrc ? (
-            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-muted-foreground rounded-element cursor-pointer transition-colors hover:bg-muted">
+            <label className="flex flex-col items-center justify-center w-full h-32 border-dashed border-muted-foreground rounded-element cursor-pointer transition-colors hover:bg-muted">
               <Upload size={32} className="mb-2 text-muted-foreground" />
               <p className="text-sm">
                 <span className="font-semibold">Choose a photo</span>
@@ -506,10 +506,8 @@ export function AvatarChooser({ email, currentUrl, currentConfig, onSave }: Avat
                 aria-pressed={styleIdx === i}
                 aria-label={`Style ${i + 1}`}
                 className={cn(
-                  'aspect-square rounded-element border-2 flex items-center justify-center transition-colors',
-                  styleIdx === i
-                    ? 'border-foreground bg-accent'
-                    : 'border-border hover:border-foreground/50',
+                  'aspect-square rounded-element flex items-center justify-center transition-colors',
+                  styleIdx === i ? 'bg-accent' : 'border border-border hover:border-foreground/50',
                 )}
               >
                 <div className="w-16 h-16">

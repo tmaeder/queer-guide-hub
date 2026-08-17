@@ -31,7 +31,7 @@ const LENS_ICONS: Record<MapLens, TransitIconName> = {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="flex flex-col gap-2 border-t-2 border-foreground pt-4 first:border-t-0 first:pt-0">
+    <section className="flex flex-col gap-2 border-t border-border-hairline pt-4 first:border-t-0 first:pt-0">
       <h3 className="text-2xs uppercase tracking-wider text-muted-foreground">{title}</h3>
       {children}
     </section>
@@ -39,7 +39,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 const chip =
-  'inline-flex h-9 items-center gap-1.5 border-2 border-foreground px-4 text-xs font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1';
+  'inline-flex h-9 items-center gap-1.5 bg-muted rounded-element px-4 text-xs font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1';
 const chipOn = 'bg-foreground text-background';
 const chipOff = 'bg-background text-foreground hover:bg-foreground hover:text-background';
 
@@ -134,10 +134,7 @@ export function MapControls({
           >
             <span
               aria-hidden
-              className={cn(
-                'h-2 w-2 rounded-full border-2 border-current',
-                filters.openNow && 'bg-current',
-              )}
+              className={cn('h-2 w-2 rounded-full border-current', filters.openNow && 'bg-current')}
             />
             {t('map.filters.openNow', { defaultValue: 'Open now' })}
           </button>

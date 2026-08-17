@@ -570,7 +570,7 @@ export default function NewsArchive() {
           <div
             role="tablist"
             aria-label={t('pages.news.categoriesLabel', 'News categories')}
-            className={`flex gap-2 mb-6 overflow-x-auto pb-2 sticky ${STICKY_UNDER_HEADER} z-20 bg-surface-container-low border-b-[3px] border-foreground ${PAGE_BLEED} ${PAGE_GUTTER} pt-2`}
+            className={`flex gap-2 mb-6 overflow-x-auto pb-2 sticky ${STICKY_UNDER_HEADER} z-20 bg-surface-container-low border-b border-border-hairline ${PAGE_BLEED} ${PAGE_GUTTER} pt-2`}
             style={{ scrollbarWidth: 'none' }}
           >
             <button
@@ -644,7 +644,7 @@ export default function NewsArchive() {
             pinned layer would hold ~186px — 23% of an 812px phone — before a
             single article is visible. The tabs are the scroll-status bar; this
             panel scrolls with the content. */}
-        <div className="rounded-element border-[3px] border-foreground p-4 mb-6 bg-surface-container">
+        <div className="rounded-element p-4 mb-6 bg-surface-container">
           <div className="flex flex-col md:flex-row gap-4 md:items-center">
             <div className="flex items-center gap-2 flex-1 md:max-w-[26rem]">
               <NewsSearchInput

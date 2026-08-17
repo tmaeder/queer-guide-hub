@@ -36,11 +36,14 @@ export function MarketplaceGallery({ listingId, images, title }: MarketplaceGall
 
   const NoImage = ({ label }: { label: string }) => (
     <div
-      className="flex aspect-square w-full items-center justify-center border-[3px] border-foreground bg-muted"
+      className="flex aspect-square w-full items-center justify-center bg-muted"
       role="img"
       aria-label={label}
     >
-      <span aria-hidden="true" className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
+      <span
+        aria-hidden="true"
+        className="text-2xs font-bold uppercase tracking-label text-muted-foreground"
+      >
         No photo
       </span>
     </div>
@@ -64,10 +67,10 @@ export function MarketplaceGallery({ listingId, images, title }: MarketplaceGall
   return (
     <div className="flex flex-col gap-4">
       {current && !failed.has(safeActive) ? (
-        <div className="overflow-hidden border-[3px] border-foreground bg-muted">
+        <div className="overflow-hidden bg-muted">
           {/* onError is a standard non-interactive image fallback handler, not a
               mouse/keyboard interaction. */}
-          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
+          { }
           <img
             src={current.full}
             alt={current.alt || title}
@@ -99,8 +102,8 @@ export function MarketplaceGallery({ listingId, images, title }: MarketplaceGall
                 // tile, expressed in border weight because a 64px square has no
                 // room to lift.
                 i === safeActive
-                  ? 'border-[3px] border-foreground'
-                  : 'border-2 border-foreground/30 hover:border-foreground',
+                  ? 'border border-border-hairline'
+                  : 'border border-foreground/30 hover:border-border-hairline',
               )}
             >
               {failed.has(i) ? (

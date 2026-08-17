@@ -121,8 +121,7 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
   const tripCtx = ignoreTripContext ? null : tripContext;
   const urlOverridesTrip = !!initialCity || !!initialTo;
   const tripSeeding = !!tripCtx?.cityName && !urlOverridesTrip;
-  const tripDates =
-    tripCtx?.checkIn ? formatEventDateLabel(tripCtx.checkIn, tripCtx.checkOut) : '';
+  const tripDates = tripCtx?.checkIn ? formatEventDateLabel(tripCtx.checkIn, tripCtx.checkOut) : '';
 
   const { originIata, originCity, loading: originLoading } = useVisitorOrigin();
 
@@ -286,7 +285,10 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
       {open && (
         <div className="">
           {tripSeeding && (
-            <p className="px-6 pb-2 text-13 text-muted-foreground" data-testid="trip-context-banner">
+            <p
+              className="px-6 pb-2 text-13 text-muted-foreground"
+              data-testid="trip-context-banner"
+            >
               {t('pages.travel.bookNow.tripContext', 'Searching for your {{city}} trip', {
                 city: tripCtx!.cityName,
               })}
@@ -308,7 +310,7 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
                   key={value}
                   type="button"
                   onClick={() => handleTabChange(value)}
-                  className={`flex-1 px-4 py-4 inline-flex items-center justify-center gap-2 text-sm font-medium border-b-2 ${active ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                  className={`flex-1 px-4 py-4 inline-flex items-center justify-center gap-2 text-sm font-medium border-b ${active ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
                 >
                   <Icon style={{ height: 18, width: 18 }} />
                   {label}
@@ -322,28 +324,32 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
               <FlightSearchForm
                 // Remount when the trip seed lands so the one-shot useState
                 // initializers pick it up (URL params still win).
-                key={initialTo ?? (tripSeeding ? tripCtx!.destinationIata ?? 'trip' : 'none')}
-                initialDestination={initialTo ?? (tripSeeding ? tripCtx!.destinationIata ?? undefined : undefined)}
+                key={initialTo ?? (tripSeeding ? (tripCtx!.destinationIata ?? 'trip') : 'none')}
+                initialDestination={
+                  initialTo ?? (tripSeeding ? (tripCtx!.destinationIata ?? undefined) : undefined)
+                }
                 initialDestinationLabel={
-                  !initialTo && tripSeeding ? tripCtx!.destinationLabel ?? undefined : undefined
+                  !initialTo && tripSeeding ? (tripCtx!.destinationLabel ?? undefined) : undefined
                 }
                 initialDepartureDate={
-                  !initialTo && tripSeeding ? tripCtx!.checkIn ?? undefined : undefined
+                  !initialTo && tripSeeding ? (tripCtx!.checkIn ?? undefined) : undefined
                 }
                 initialReturnDate={
-                  !initialTo && tripSeeding ? tripCtx!.checkOut ?? undefined : undefined
+                  !initialTo && tripSeeding ? (tripCtx!.checkOut ?? undefined) : undefined
                 }
               />
             )}
             {activeTab === 'hotels' && (
               <HotelSearchForm
-                key={initialCity ?? (tripSeeding ? tripCtx!.cityName ?? 'trip' : 'none')}
-                initialCity={initialCity ?? (tripSeeding ? tripCtx!.cityName ?? undefined : undefined)}
+                key={initialCity ?? (tripSeeding ? (tripCtx!.cityName ?? 'trip') : 'none')}
+                initialCity={
+                  initialCity ?? (tripSeeding ? (tripCtx!.cityName ?? undefined) : undefined)
+                }
                 initialCheckIn={
-                  initialCheckIn ?? (tripSeeding ? tripCtx!.checkIn ?? undefined : undefined)
+                  initialCheckIn ?? (tripSeeding ? (tripCtx!.checkIn ?? undefined) : undefined)
                 }
                 initialCheckOut={
-                  initialCheckOut ?? (tripSeeding ? tripCtx!.checkOut ?? undefined : undefined)
+                  initialCheckOut ?? (tripSeeding ? (tripCtx!.checkOut ?? undefined) : undefined)
                 }
                 initialGuests={initialGuests}
                 initialHotelType={initialHotelType}

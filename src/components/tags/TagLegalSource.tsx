@@ -3,11 +3,7 @@ import { ExternalLink } from 'lucide-react';
 import { SidebarCard, SidebarRow } from '@/components/transit/SidebarCard';
 import { SourceLine } from '@/components/rights/SourceLine';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import {
-  rightTopicForTag,
-  rightTopicHref,
-  isUmbrellaRightsTag,
-} from '@/lib/rights/tagRightTopics';
+import { rightTopicForTag, rightTopicHref, isUmbrellaRightsTag } from '@/lib/rights/tagRightTopics';
 import type { TagLegalSourceRow } from '@/hooks/usePageFetchers';
 
 /**
@@ -99,7 +95,7 @@ export function TagLegalSource({
       })}
 
       {topic && (
-        <div className={cited.length > 0 ? 'mt-4 border-t-2 border-foreground/15 pt-4' : ''}>
+        <div className={cited.length > 0 ? 'mt-4 border-t border-foreground/15 pt-4' : ''}>
           <p className="text-13">
             {t(
               'tags.detail.notOneLaw',
@@ -118,7 +114,7 @@ export function TagLegalSource({
           every right we track" are different claims, and saying the first about
           `lgbtqia-rights` would understate what the tag actually spans. */}
       {umbrella && !topic && (
-        <div className={cited.length > 0 ? 'mt-4 border-t-2 border-foreground/15 pt-4' : ''}>
+        <div className={cited.length > 0 ? 'mt-4 border-t border-foreground/15 pt-4' : ''}>
           <p className="text-13">
             {t(
               'tags.detail.spansAllRights',

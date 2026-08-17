@@ -30,7 +30,7 @@ export function StationRing({
       aria-hidden
       className={cn(
         'inline-block h-4 w-4 rounded-full border-[3px]',
-        onInk ? 'border-background' : 'border-foreground',
+        onInk ? 'border border-background' : 'border-track-ring',
         state === 'open' && (onInk ? 'bg-foreground' : 'bg-background'),
         state === 'typed' && TRACK_BG[track],
         state === 'done' && (onInk ? 'bg-background' : 'bg-foreground'),

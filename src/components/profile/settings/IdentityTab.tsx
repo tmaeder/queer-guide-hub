@@ -126,7 +126,7 @@ function FlagPicker({
             disabled={disabled}
             onClick={() => toggle(flag.id)}
             className={cn(
-              'inline-flex items-center gap-2 border-2 border-foreground px-2 py-1 text-13 font-bold transition-colors',
+              'inline-flex items-center gap-2 bg-muted rounded-element px-2 py-1 text-13 font-bold transition-colors',
               active ? 'bg-foreground text-background' : 'hover:bg-muted',
               disabled && 'opacity-40',
             )}
@@ -140,7 +140,12 @@ function FlagPicker({
   );
 }
 
-export function IdentityTab({ formData, onChange, onComingOutChange, onFlagsChange }: IdentityTabProps) {
+export function IdentityTab({
+  formData,
+  onChange,
+  onComingOutChange,
+  onFlagsChange,
+}: IdentityTabProps) {
   return (
     <div className="flex flex-col gap-6">
       <Card>
@@ -163,14 +168,44 @@ export function IdentityTab({ formData, onChange, onComingOutChange, onFlagsChan
         <CardContent>
           <div className="flex flex-col gap-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <SelectField id="gender_identity" label="Gender Identity" value={formData.gender_identity} onChange={(v) => onChange('gender_identity', v)} options={GENDER_OPTIONS} />
-              <SelectField id="sexual_orientation" label="Sexual Orientation" value={formData.sexual_orientation} onChange={(v) => onChange('sexual_orientation', v)} options={ORIENTATION_OPTIONS} />
+              <SelectField
+                id="gender_identity"
+                label="Gender Identity"
+                value={formData.gender_identity}
+                onChange={(v) => onChange('gender_identity', v)}
+                options={GENDER_OPTIONS}
+              />
+              <SelectField
+                id="sexual_orientation"
+                label="Sexual Orientation"
+                value={formData.sexual_orientation}
+                onChange={(v) => onChange('sexual_orientation', v)}
+                options={ORIENTATION_OPTIONS}
+              />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <SelectField id="chosen_family_status" label="Chosen Family" value={formData.chosen_family_status} onChange={(v) => onChange('chosen_family_status', v)} options={CHOSEN_FAMILY_OPTIONS} />
-              <FormField id="disability_status" label="Disability Status" value={formData.disability_status} onChange={(v) => onChange('disability_status', v)} placeholder="Optional" />
+              <SelectField
+                id="chosen_family_status"
+                label="Chosen Family"
+                value={formData.chosen_family_status}
+                onChange={(v) => onChange('chosen_family_status', v)}
+                options={CHOSEN_FAMILY_OPTIONS}
+              />
+              <FormField
+                id="disability_status"
+                label="Disability Status"
+                value={formData.disability_status}
+                onChange={(v) => onChange('disability_status', v)}
+                placeholder="Optional"
+              />
             </div>
-            <FormField id="neurodivergent_status" label="Neurodivergent Status" value={formData.neurodivergent_status} onChange={(v) => onChange('neurodivergent_status', v)} placeholder="Optional — e.g., ADHD, autism, dyslexia" />
+            <FormField
+              id="neurodivergent_status"
+              label="Neurodivergent Status"
+              value={formData.neurodivergent_status}
+              onChange={(v) => onChange('neurodivergent_status', v)}
+              placeholder="Optional — e.g., ADHD, autism, dyslexia"
+            />
           </div>
         </CardContent>
       </Card>
@@ -185,10 +220,28 @@ export function IdentityTab({ formData, onChange, onComingOutChange, onFlagsChan
         <CardContent>
           <div className="flex flex-col gap-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <SelectField id="romantic_orientation" label="Romantic Orientation" value={formData.romantic_orientation} onChange={(v) => onChange('romantic_orientation', v)} options={ROMANTIC_ORIENTATION_OPTIONS} />
-              <SelectField id="current_relationship_status" label="Current Status" value={formData.current_relationship_status} onChange={(v) => onChange('current_relationship_status', v)} options={RELATIONSHIP_STATUS_OPTIONS} />
+              <SelectField
+                id="romantic_orientation"
+                label="Romantic Orientation"
+                value={formData.romantic_orientation}
+                onChange={(v) => onChange('romantic_orientation', v)}
+                options={ROMANTIC_ORIENTATION_OPTIONS}
+              />
+              <SelectField
+                id="current_relationship_status"
+                label="Current Status"
+                value={formData.current_relationship_status}
+                onChange={(v) => onChange('current_relationship_status', v)}
+                options={RELATIONSHIP_STATUS_OPTIONS}
+              />
             </div>
-            <SelectField id="relationship_style" label="Relationship Style" value={formData.relationship_style} onChange={(v) => onChange('relationship_style', v)} options={RELATIONSHIP_STYLE_OPTIONS} />
+            <SelectField
+              id="relationship_style"
+              label="Relationship Style"
+              value={formData.relationship_style}
+              onChange={(v) => onChange('relationship_style', v)}
+              options={RELATIONSHIP_STYLE_OPTIONS}
+            />
           </div>
         </CardContent>
       </Card>
@@ -205,16 +258,45 @@ export function IdentityTab({ formData, onChange, onComingOutChange, onFlagsChan
             <Alert>
               <Heart size={16} />
               <AlertDescription>
-                Coming out is a deeply personal journey. All fields here are optional and private by default.
+                Coming out is a deeply personal journey. All fields here are optional and private by
+                default.
               </AlertDescription>
             </Alert>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <SelectField id="coming_out_family" label="Family" placeholder="Not answered" value={formData.coming_out_status.family} onChange={(v) => onComingOutChange('family', v)} options={COMING_OUT_OPTIONS} />
-              <SelectField id="coming_out_friends" label="Friends" placeholder="Not answered" value={formData.coming_out_status.friends} onChange={(v) => onComingOutChange('friends', v)} options={COMING_OUT_OPTIONS} />
+              <SelectField
+                id="coming_out_family"
+                label="Family"
+                placeholder="Not answered"
+                value={formData.coming_out_status.family}
+                onChange={(v) => onComingOutChange('family', v)}
+                options={COMING_OUT_OPTIONS}
+              />
+              <SelectField
+                id="coming_out_friends"
+                label="Friends"
+                placeholder="Not answered"
+                value={formData.coming_out_status.friends}
+                onChange={(v) => onComingOutChange('friends', v)}
+                options={COMING_OUT_OPTIONS}
+              />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <SelectField id="coming_out_work" label="Work / School" placeholder="Not answered" value={formData.coming_out_status.work} onChange={(v) => onComingOutChange('work', v)} options={COMING_OUT_OPTIONS} />
-              <SelectField id="coming_out_public" label="Public" placeholder="Not answered" value={formData.coming_out_status.public} onChange={(v) => onComingOutChange('public', v)} options={COMING_OUT_OPTIONS} />
+              <SelectField
+                id="coming_out_work"
+                label="Work / School"
+                placeholder="Not answered"
+                value={formData.coming_out_status.work}
+                onChange={(v) => onComingOutChange('work', v)}
+                options={COMING_OUT_OPTIONS}
+              />
+              <SelectField
+                id="coming_out_public"
+                label="Public"
+                placeholder="Not answered"
+                value={formData.coming_out_status.public}
+                onChange={(v) => onComingOutChange('public', v)}
+                options={COMING_OUT_OPTIONS}
+              />
             </div>
           </div>
         </CardContent>

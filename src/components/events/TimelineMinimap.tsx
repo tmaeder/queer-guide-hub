@@ -169,7 +169,7 @@ export function TimelineMinimap({
         {/* Viewport rect */}
         <div
           className={cn(
-            'absolute top-0 bottom-0 bg-foreground/10 border border-foreground rounded-element cursor-grab active:cursor-grabbing',
+            'absolute top-0 bottom-0 bg-foreground/10 border border-border-hairline rounded-element cursor-grab active:cursor-grabbing',
           )}
           style={{
             left: `${Math.max(0, vpLeftPct)}%`,

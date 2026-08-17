@@ -142,7 +142,7 @@ export function PrideTimeline({
                   i % 2 === 1 && 'bg-muted/30',
                 )}
               >
-                <div className="sticky top-0 z-10 px-2 py-1 text-xs2 font-medium tracking-wide text-foreground/70 bg-background border-b-2 border-foreground">
+                <div className="sticky top-0 z-10 px-2 py-1 text-xs2 font-medium tracking-wide text-foreground/70 bg-background border-b border-border-hairline">
                   {m}
                 </div>
               </div>
@@ -196,7 +196,7 @@ export function PrideTimeline({
                     >
                       <span
                         className={cn(
-                          'shrink-0 rounded-full border border-foreground transition-all',
+                          'shrink-0 rounded-full border border-border-hairline transition-all',
                           isSelected
                             ? 'bg-foreground w-3 h-3'
                             : p.event.is_featured

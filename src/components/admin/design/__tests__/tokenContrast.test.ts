@@ -1,6 +1,22 @@
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { contrastVerdict } from '@/lib/wcagContrast';
 import { COLOR_TOKENS, CONTRAST_PAIRS } from '../tokenCatalog';
+
+/**
+ * `--track-ring` is declared in src/index.css but deliberately NOT cataloged
+ * (compile-time only, like --radius-panel and --radius-full), so it is read
+ * straight from the stylesheet rather than from COLOR_TOKENS. Reading it —
+ * instead of hardcoding ink here — keeps the border-gate guard honest if the
+ * ring value ever moves.
+ */
+const TRACK_RING = (() => {
+  const css = readFileSync(resolve(__dirname, '../../../../index.css'), 'utf8');
+  const m = css.match(/(?<![\w-])--track-ring:\s*([^;]+);/);
+  if (!m) throw new Error('--track-ring is not declared in src/index.css');
+  return m[1].replace(/\s+/g, ' ').trim();
+})();
 
 /**
  * Derived, never hardcoded (adopted from #2659): the guards below used to read
@@ -29,15 +45,40 @@ const hueOf = (v: string) => Number(v.split(' ')[0]);
  *    the far more common TEXT role (`text-destructive`, 236 usages vs 16 button
  *    fills) was invisible to every check. Darkening `--destructive` to fix the
  *    button dropped red-on-dark-page text to 4.06:1. TEXT_ON_PAGE covers that.
- * 2. Non-text contrast (WCAG 1.4.11) was measured by nothing at all, and since
- *    shadows are disabled these 1px borders carry every structural boundary in
- *    the app — they had drifted to 1.32:1. NON_TEXT_ON_PAGE covers that.
+ * 2. Non-text contrast (WCAG 1.4.11) was measured by nothing at all, and had
+ *    drifted to 1.32:1. CONTROL_BOUNDARIES covers that.
  * 3. Track colors (subway-map rebrand) are FILL-ONLY and mostly sit below
- *    3:1 against paper on their own (blue 2.25, green 1.64, yellow 1.34).
- *    They are BORDER-GATED: every filled shape carries a 2-3px ink border,
- *    and 1.4.11 is satisfied by fill-vs-ink. Pink is the one track that also
- *    clears 3:1 against the page bare, which is why it alone may draw
- *    borderless marks (focus ring, active-nav underline, ::selection).
+ *    3:1 against any light surface on their own (blue 2.25, green 1.64,
+ *    yellow 1.34). They are BORDER-GATED: every track-coloured MARK carries
+ *    an ink ring, and 1.4.11 is satisfied by fill-vs-ring.
+ *
+ * Revised 2026-08-17 (soft re-skin), and the revision is the interesting part:
+ *
+ * - `--border` LEFT the 3:1 guard. The old guard's stated premise was that
+ *   "since shadows are disabled these 1px borders carry every structural
+ *   boundary in the app". That premise is now false: containers have no
+ *   border at all, and a card separates from the page by surface tint plus
+ *   --shadow-soft. Under WCAG 1.4.11 a card frame is neither a component
+ *   boundary nor a graphic required to understand content — it is decoration,
+ *   which the SC explicitly exempts. So `border`, `border-hairline` and
+ *   `sidebar-border` are no longer held to 3:1. What IS still held there is
+ *   the set of real control boundaries and the focus ring.
+ * - SURFACE_SEPARATION replaces the deleted coverage. It is a house rule, not
+ *   a WCAG one, and it exists because deleting the border guard would
+ *   otherwise leave nothing to notice if a future token nudge flattened card
+ *   into page — which in this system is an invisible card, not a subtle one.
+ * - BORDER_GATED_FILLS is anchored to `--track-ring` rather than to
+ *   `--foreground`. The ring belongs to the MARK, not to the theme (every
+ *   station circle in the design mocks is `fill:paper; stroke:#111`), so it
+ *   stays ink in both modes and this guard is mode-independent by
+ *   construction. Anchoring to --foreground would silently invert the moment
+ *   dark mode lands and paper became the "border".
+ *
+ * WCAG 1.4.1 (use of colour) is NOT satisfiable by any of this and is a
+ * separate obligation: a track-coloured mark that encodes a state must also
+ * carry a glyph or a text label. That is enforced in the components
+ * (RouteBullet requires a letter and a label; AccessGrid pairs every dot with
+ * its written value), not here — arithmetic on tokens cannot see it.
  */
 
 const value = (key: string, mode: 'light' | 'dark'): string => {
@@ -61,20 +102,40 @@ const TEXT_ON_PAGE = [
 ];
 
 /**
- * Tokens that only ever draw non-text marks — borders, rings, the pink track.
- * WCAG 1.4.11 bar is 3:1 against the page. Only fills that can appear WITHOUT
- * an ink border belong here (the focus ring, ::selection, the active-nav
- * underline — all pink).
+ * Real WCAG 1.4.11 obligations: the boundary of a form control, and the focus
+ * indicator. Both are measured against BOTH surfaces they can sit on — inputs
+ * and buttons live inside cards at least as often as on the page, and a guard
+ * that only knew about the page would miss the tighter of the two.
+ *
+ * Container borders are deliberately absent — see the header. `spot` and
+ * `track-pink` are here because pink is the one track that draws borderless
+ * marks (focus ring, ::selection, the active-nav underline).
  */
-const NON_TEXT_ON_PAGE = ['border', 'input', 'border-hairline', 'sidebar-border', 'ring', 'spot', 'track-pink'];
+const CONTROL_BOUNDARIES = ['input', 'ring', 'spot', 'track-pink'];
+const CONTROL_SURFACES = ['background', 'card'] as const;
 
 /**
- * BORDER-GATED fills (subway-map rebrand): blue/green/yellow track fills
- * measure under 3:1 against paper on their own (2.25 / 1.64 / 1.34), so
- * every filled shape using them MUST carry a 2-3px ink border — and 1.4.11
- * is satisfied by fill-vs-ink, which is what this asserts. The route
- * bullet, station ring and swatch components all follow this rule; a
- * borderless blue/green/yellow fill is a design-system violation.
+ * House rule replacing the deleted border guard: adjacent surfaces must stay
+ * told apart by their own luminance. These are LUMINANCE-RATIO floors, far
+ * below any WCAG threshold — the point is not legibility, it is that a card
+ * with no frame and no tint is not a card at all. Measured today: 1.12 / 1.09
+ * / 1.12.
+ */
+const SURFACE_SEPARATION: Array<[string, string, number]> = [
+  ['card', 'background', 1.06],
+  ['muted', 'card', 1.04],
+  ['popover', 'background', 1.1],
+];
+
+/**
+ * BORDER-GATED fills: blue/green/yellow track fills measure under 3:1 against
+ * any light surface on their own (2.25 / 1.64 / 1.34), so every track-coloured
+ * MARK carries the ink `--track-ring` — 1.4.11 is satisfied by fill-vs-ring,
+ * which is what this asserts. RouteBullet, StationRing and TrackSwatch all
+ * follow the rule; a borderless blue/green/yellow mark is a design-system
+ * violation. (A borderless track-coloured *line* on a diagram is a different
+ * case: it is sized well past the 3:1-exempt threshold and reads as
+ * illustration, which is why the mocks draw route lines with no casing.)
  */
 const BORDER_GATED_FILLS = ['track-blue', 'track-green', 'track-yellow', 'ink-blue', 'ink-over'];
 
@@ -84,7 +145,10 @@ describe('design tokens: contrast guards', () => {
     (_label, fg, bg, mode) => {
       const v = contrastVerdict(value(fg, mode), value(bg, mode));
       expect(v, `unparseable token value for ${fg}/${bg}`).not.toBeNull();
-      expect(v!.ratio, `${fg} on ${bg} (${mode}) is ${v!.ratio}:1, needs >= 4.5`).toBeGreaterThanOrEqual(4.5);
+      expect(
+        v!.ratio,
+        `${fg} on ${bg} (${mode}) is ${v!.ratio}:1, needs >= 4.5`,
+      ).toBeGreaterThanOrEqual(4.5);
     },
   );
 
@@ -101,28 +165,44 @@ describe('design tokens: contrast guards', () => {
     },
   );
 
-  it.each(NON_TEXT_ON_PAGE.flatMap((key) => MODES.map((mode) => [key, mode] as const)))(
-    '--%s meets the 3:1 non-text bar (WCAG 1.4.11) in %s mode',
-    (key, mode) => {
-      const v = contrastVerdict(value(key, mode), value('background', mode));
+  it.each(
+    CONTROL_BOUNDARIES.flatMap((key) =>
+      CONTROL_SURFACES.flatMap((surface) => MODES.map((mode) => [key, surface, mode] as const)),
+    ),
+  )('--%s meets the 3:1 non-text bar on --%s (WCAG 1.4.11) in %s mode', (key, surface, mode) => {
+    const v = contrastVerdict(value(key, mode), value(surface, mode));
+    expect(v).not.toBeNull();
+    expect(
+      v!.ratio,
+      `--${key} vs --${surface} (${mode}) is ${v!.ratio}:1, needs >= 3. ` +
+        'Control boundaries and the focus ring are the marks 1.4.11 actually covers; ' +
+        'container frames were removed and are exempt as decoration.',
+    ).toBeGreaterThanOrEqual(3);
+  });
+
+  it.each(SURFACE_SEPARATION.flatMap((s) => MODES.map((mode) => [...s, mode] as const)))(
+    '--%s stays distinguishable from --%s (>= %s:1) in %s mode',
+    (fg, bg, floor, mode) => {
+      const v = contrastVerdict(value(fg, mode), value(bg, mode));
       expect(v).not.toBeNull();
       expect(
         v!.ratio,
-        `--${key} vs --background (${mode}) is ${v!.ratio}:1, needs >= 3. ` +
-          'Borders carry all depth in this system (shadows are disabled).',
-      ).toBeGreaterThanOrEqual(3);
+        `--${fg} vs --${bg} (${mode}) is ${v!.ratio}:1, needs >= ${floor}. ` +
+          'Nothing draws a frame around a card any more, so this tonal step IS the ' +
+          'card edge. Flatten it and the card stops existing rather than getting subtle.',
+      ).toBeGreaterThanOrEqual(floor);
     },
   );
 
-  it.each(BORDER_GATED_FILLS)(
-    '--%s clears 3:1 against the ink border that gates it (WCAG 1.4.11)',
-    (key) => {
-      const v = contrastVerdict(value(key, 'light'), value('foreground', 'light'));
+  it.each(BORDER_GATED_FILLS.flatMap((key) => MODES.map((mode) => [key, mode] as const)))(
+    '--%s clears 3:1 against the ink ring that gates it (WCAG 1.4.11) in %s mode',
+    (key, mode) => {
+      const v = contrastVerdict(value(key, mode), TRACK_RING);
       expect(v).not.toBeNull();
       expect(
         v!.ratio,
-        `--${key} vs --foreground is ${v!.ratio}:1, needs >= 3. ` +
-          'Border-gated fills are perceivable via their mandatory ink border.',
+        `--${key} vs --track-ring is ${v!.ratio}:1, needs >= 3. ` +
+          "Border-gated fills are perceivable via the mark's own ink ring.",
       ).toBeGreaterThanOrEqual(3);
     },
   );
@@ -206,8 +286,14 @@ describe('design tokens: contrast guards', () => {
 
   it('audits every token that CONTRAST_PAIRS references', () => {
     for (const p of CONTRAST_PAIRS) {
-      expect(COLOR_TOKENS.some((t) => t.key === p.fg), `unknown fg --${p.fg}`).toBe(true);
-      expect(COLOR_TOKENS.some((t) => t.key === p.bg), `unknown bg --${p.bg}`).toBe(true);
+      expect(
+        COLOR_TOKENS.some((t) => t.key === p.fg),
+        `unknown fg --${p.fg}`,
+      ).toBe(true);
+      expect(
+        COLOR_TOKENS.some((t) => t.key === p.bg),
+        `unknown bg --${p.bg}`,
+      ).toBe(true);
     }
   });
 });

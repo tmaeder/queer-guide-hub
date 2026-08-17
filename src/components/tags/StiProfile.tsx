@@ -40,11 +40,9 @@ export function StiProfile({ tagId, tagName }: Props) {
   };
 
   return (
-    <section className="border-[3px] border-foreground">
-      <header className="border-b-[3px] border-foreground bg-foreground px-4 py-4 text-background">
-        <Eyebrow className="text-background/70">
-          {t('tags.sti.eyebrow', 'Sexual health')}
-        </Eyebrow>
+    <section className="border border-border-hairline">
+      <header className="border-b border-border-hairline bg-foreground px-4 py-4 text-background">
+        <Eyebrow className="text-background/70">{t('tags.sti.eyebrow', 'Sexual health')}</Eyebrow>
         <h2 className="mt-1 text-title font-bold">
           {t('tags.sti.title', '{{name}}: spread, testing, protection', { name: tagName })}
         </h2>
@@ -67,17 +65,12 @@ export function StiProfile({ tagId, tagName }: Props) {
             return (
               <li
                 key={route.practice}
-                className="inline-flex items-center gap-2 border-2 border-foreground px-2 py-1.5"
+                className="inline-flex items-center gap-2 bg-muted rounded-element px-2 py-1.5"
                 style={{ backgroundColor: `hsl(${v.tint})`, color: `hsl(${v.ink})` }}
               >
                 <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
                 <span className="text-13 font-bold">{route.label}</span>
-                {route.blood && (
-                  <BloodIcon
-                    className="h-3.5 w-3.5 shrink-0"
-                    aria-hidden="true"
-                  />
-                )}
+                {route.blood && <BloodIcon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />}
                 {/* The level is already visible text below, so the sr-only
                     span carries ONLY the blood modifier — repeating the label
                     here made every chip announce "High risk High risk". */}
@@ -108,7 +101,7 @@ export function StiProfile({ tagId, tagName }: Props) {
       </div>
 
       {/* ── When to test ────────────────────────────────────────────────── */}
-      <div className="border-t-2 border-foreground/15 p-4">
+      <div className="border-t border-foreground/15 p-4">
         <h3 className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
           {t('tags.sti.testing', 'When to test')}
         </h3>
@@ -116,7 +109,7 @@ export function StiProfile({ tagId, tagName }: Props) {
           {profile.testing.map((w, i) => (
             <li
               key={i}
-              className="flex flex-wrap items-baseline justify-between gap-2 border-b-2 border-foreground/15 py-2 last:border-b-0"
+              className="flex flex-wrap items-baseline justify-between gap-2 border-b border-foreground/15 py-2 last:border-b-0"
             >
               <span className="text-13 font-bold">{w.test_kind}</span>
               <span className="text-13 text-muted-foreground">
@@ -137,20 +130,21 @@ export function StiProfile({ tagId, tagName }: Props) {
           ))}
         </ul>
         {profile.vaccine_note && (
-          <p className="mt-4 border-2 border-foreground p-2 text-13 font-bold">
-            {t('tags.sti.vaccine', 'Vaccine')}: <span className="font-normal">{profile.vaccine_note}</span>
+          <p className="mt-4 bg-muted rounded-element p-2 text-13 font-bold">
+            {t('tags.sti.vaccine', 'Vaccine')}:{' '}
+            <span className="font-normal">{profile.vaccine_note}</span>
           </p>
         )}
       </div>
 
       {/* ── Protection ──────────────────────────────────────────────────── */}
-      <div className="border-t-2 border-foreground/15 p-4">
+      <div className="border-t border-foreground/15 p-4">
         <h3 className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
           {t('tags.sti.protection', 'What protects against it')}
         </h3>
         <ul className="mt-2 list-none p-0">
           {profile.protection.map((m) => (
-            <li key={m.slug} className="border-b-2 border-foreground/15 py-2 last:border-b-0">
+            <li key={m.slug} className="border-b border-foreground/15 py-2 last:border-b-0">
               <span className="text-13 font-bold">{m.label}</span>
               <p className="mt-1 text-13 leading-relaxed text-muted-foreground">{m.description}</p>
             </li>
@@ -158,10 +152,10 @@ export function StiProfile({ tagId, tagName }: Props) {
         </ul>
       </div>
 
-      <footer className="border-t-[3px] border-foreground p-4">
+      <footer className="border-t border-border-hairline p-4">
         <LocalizedLink
           to="/tags/sti-guide"
-          className="inline-block border-2 border-foreground px-4 py-2 text-13 font-bold text-foreground no-underline transition-colors hover:bg-foreground hover:text-background"
+          className="inline-block px-4 py-2 text-13 font-bold text-foreground no-underline transition-colors hover:bg-foreground hover:text-background"
         >
           {t('tags.sti.seeAll', 'See the full STI guide')}
         </LocalizedLink>

@@ -3,10 +3,16 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const badgeVariants = cva(
-  // Subway-map: a badge is a stamped chip — squared, 2px ink border, flat
-  // fill. The border is what border-gates a track-colour fill (WCAG 1.4.11,
-  // see tokenContrast.test.ts), so it belongs in the BASE, not per-variant.
-  'inline-flex items-center rounded-badge border-2 border-foreground px-2 py-0.5 text-xs2 font-bold uppercase tracking-tight transition-all focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+  // Subway-map: a badge is a stamped chip — 12px corners, a 1px ink ring,
+  // flat fill. The ring is what border-gates a track-colour fill (WCAG
+  // 1.4.11, see tokenContrast.test.ts), so it belongs in the BASE, not
+  // per-variant — and it is why a badge keeps an edge when cards lost
+  // theirs: a card frame is decoration, a track fill's ring is not.
+  //
+  // `rounded-element` (12px) rather than `rounded-badge` (9px): the design
+  // system's badge rank is for count marks and swatches; this component is
+  // the chip, which the mocks draw at 12.
+  'inline-flex items-center rounded-element border border-track-ring px-2 py-0.5 text-xs2 font-bold uppercase tracking-tight transition-all focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
   {
     variants: {
       variant: {

@@ -378,11 +378,11 @@ export default function TagDetail() {
         </h1>
         <p className="mt-2 text-13 text-muted-foreground">
           {t('tags.detail.notFound.body', 'Nothing in the glossary is filed under')}{' '}
-          <code className="border-2 border-foreground px-1">/{decoded}</code>
+          <code className="bg-muted rounded-element px-1">/{decoded}</code>
         </p>
         <LocalizedLink
           to="/tags"
-          className="mt-6 inline-block border-2 border-foreground px-4 py-2 text-13 font-bold no-underline transition-colors hover:bg-foreground hover:text-background"
+          className="mt-6 inline-block px-4 py-2 text-13 font-bold no-underline transition-colors hover:bg-foreground hover:text-background"
         >
           {t('tags.detail.notFound.browse', 'Browse the glossary')}
         </LocalizedLink>
@@ -437,7 +437,7 @@ export default function TagDetail() {
       )}
 
       {tag.image_url && (
-        <figure className="m-0 border-[3px] border-foreground">
+        <figure className="m-0 bg-muted rounded-element">
           <img
             src={tag.image_url}
             alt={(tag as { image_alt?: string | null }).image_alt ?? ''}
@@ -451,7 +451,7 @@ export default function TagDetail() {
             }}
           />
           {tag.image_attribution && (
-            <figcaption className="border-t-2 border-foreground px-4 py-2 text-2xs text-muted-foreground">
+            <figcaption className="border-t border-border-hairline px-4 py-2 text-2xs text-muted-foreground">
               {tag.image_attribution}
             </figcaption>
           )}
@@ -626,10 +626,7 @@ export default function TagDetail() {
   );
 
   const footer = (
-    <section
-      aria-labelledby="tag-end-of-line"
-      className="border-[3px] border-foreground bg-foreground p-6 text-background md:p-8"
-    >
+    <section aria-labelledby="tag-end-of-line" className="bg-foreground p-6 text-background md:p-8">
       <p className="text-2xs font-bold uppercase tracking-label text-background/70">
         {t('tags.endOfLine.eyebrow', 'End of line')}
       </p>
@@ -643,7 +640,7 @@ export default function TagDetail() {
       </p>
       <LocalizedLink
         to={`/search?tags=${encodeURIComponent(tag.slug)}`}
-        className="mt-4 inline-flex items-center gap-2 border-2 border-background px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
+        className="border mt-4 inline-flex items-center gap-2 border-background px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
       >
         <TransitIcon name="search" size={18} />
         {t('tags.detail.searchTagged', 'Search everything tagged {{name}}', { name: tag.name })}
@@ -659,7 +656,7 @@ export default function TagDetail() {
               <li key={r.tag_id}>
                 <LocalizedLink
                   to={`/tags/${encodeURIComponent(r.slug || r.name)}`}
-                  className="inline-flex items-center gap-2 border-2 border-background px-2 py-1 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
+                  className="border inline-flex items-center gap-2 border-background px-2 py-1 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
                 >
                   <RouteBullet type="tag" size={20} />
                   {r.name}

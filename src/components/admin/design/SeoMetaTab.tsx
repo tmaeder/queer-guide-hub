@@ -39,7 +39,7 @@ function Field({
           placeholder={`${placeholder} (default)`}
           maxLength={300}
           rows={3}
-          className={error ? 'border-destructive' : ''}
+          className={error ? 'border border-destructive' : ''}
           onChange={(e) => onChange(e.target.value)}
         />
       ) : (
@@ -48,7 +48,7 @@ function Field({
           aria-invalid={!!error}
           placeholder={`${placeholder} (default)`}
           maxLength={300}
-          className={error ? 'border-destructive' : ''}
+          className={error ? 'border border-destructive' : ''}
           onChange={(e) => onChange(e.target.value)}
         />
       )}
@@ -113,8 +113,12 @@ export function SeoMetaTab({ controller }: { controller: DesignSettingsControlle
               value={sameas}
               rows={4}
               aria-invalid={!!controller.validationErrors['meta.org_sameas']}
-              className={controller.validationErrors['meta.org_sameas'] ? 'border-destructive' : ''}
-              placeholder={'https://www.instagram.com/queer.guide\nhttps://www.linkedin.com/company/queer-guide'}
+              className={
+                controller.validationErrors['meta.org_sameas'] ? 'border border-destructive' : ''
+              }
+              placeholder={
+                'https://www.instagram.com/queer.guide\nhttps://www.linkedin.com/company/queer-guide'
+              }
               onChange={(e) =>
                 controller.setField(
                   'meta',
@@ -177,7 +181,9 @@ export function SeoMetaTab({ controller }: { controller: DesignSettingsControlle
                   {effective.site_name}
                 </p>
                 <p className="truncate text-15 font-medium">{effective.title}</p>
-                <p className="line-clamp-1 text-13 text-muted-foreground">{effective.description}</p>
+                <p className="line-clamp-1 text-13 text-muted-foreground">
+                  {effective.description}
+                </p>
               </div>
             </div>
           </CardContent>

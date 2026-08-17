@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
-import {Luggage, Check, Plus, Users, Calendar } from 'lucide-react';
+import { Luggage, Check, Plus, Users, Calendar } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -308,7 +308,7 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
                     tabIndex={0}
                     aria-checked={selectedTripId === trip.id}
                     className={cn(
-                      'flex items-center justify-between p-4 rounded-element border-2 cursor-pointer transition-colors',
+                      'flex items-center justify-between p-4 rounded-element cursor-pointer transition-colors',
                       selectedTripId === trip.id
                         ? 'border-primary'
                         : 'border-border hover:border-muted-foreground',
@@ -451,9 +451,7 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
             </Button>
           ) : (
             <Button onClick={handleAddToTrip} disabled={!selectedTripId || addPlace.isPending}>
-              {addPlace.isPending && (
-                <TrackLoader size={16} label="Loading" className="mr-1" />
-              )}
+              {addPlace.isPending && <TrackLoader size={16} label="Loading" className="mr-1" />}
               {t('trips.addTo.title', 'Add to Trip')}
             </Button>
           )}

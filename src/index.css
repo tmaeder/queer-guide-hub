@@ -42,9 +42,9 @@
 /* Force-generate the semantic 3-tier radius + text-hierarchy utilities even
    before they appear in source files — they're the public API of the design
    system and must be applicable to any Aceternity / shadcn component. */
-@source inline("{,hover:,focus:,dark:}rounded-{container,element,badge}");
+@source inline("{,hover:,focus:,dark:}rounded-{container,element,badge,panel}");
 @source inline("text-{hero-xl,hero,display,headline,title,body-lg,13,15}");
-@source inline("rounded-{t,b,l,r,tl,tr,bl,br}-{container,element,badge}");
+@source inline("rounded-{t,b,l,r,tl,tr,bl,br}-{container,element,badge,panel}");
 @source inline("{,hover:,dark:}{text,bg,border}-text-{primary,secondary,muted}");
 @source inline("{,dark:}border-border-hairline");
 /* PASTE-UP inks (deprecated aliases) + subway-map track colors. Safelisted
@@ -53,7 +53,8 @@
 @source inline("{,hover:,focus:,group-hover:,dark:}{bg,text,decoration}-ink-{pink,blue,over}");
 @source inline("{,dark:}{bg,text}-ink-{pink,blue,over}-foreground");
 @source inline("{,hover:,focus:,group-hover:}{bg,text,border,decoration}-track-{pink,blue,green,yellow}");
-@source inline("shadow-{hard,hard-sm,hard-lg}");
+@source inline("border-track-ring");
+@source inline("shadow-{soft,soft-hover,soft-lg}");
 
 @theme {
   /* ── Font families ─────────────────────────────────────────────── */
@@ -151,11 +152,27 @@
      of this file had 3 overlapping --radius-element declarations
      (admin 0.25rem, strict-flat 0, sensitive 2px) all at global @theme
      scope, fighting via CSS last-wins. Scoped variants are now expressed
-     via class selectors below (.admin-shell, .sensitive-controls). */
+     via class selectors below (.admin-shell, .sensitive-controls).
+
+     Re-valued 2026-08-17 (soft re-skin). The design system reversed its
+     squared-corners-everywhere rule to a four-rank ladder — Brand
+     Guidelines §02b: 26 for page-level panels, 18 for cards and fields,
+     12 for chips and small controls, nothing square. Because 1,164 call
+     sites already use the semantic tokens, this is a value flip, not a
+     sweep.
+
+     --radius-panel is declared HERE ONLY. It is deliberately absent from
+     tokenCatalog.ts / functions/_lib/branding.ts / branding_validate,
+     following the --radius-full precedent: a token may be compile-time
+     only. That keeps this change at zero Supabase migrations and avoids
+     branding_validate's 150-key cap, which a full override is already
+     within 5 keys of. If it is ever made operator-tunable, raise that cap
+     in the same migration. */
   --radius-none: 0;
-  --radius-container: 0rem; /* squared — subway-map identity */
-  --radius-element: 0rem; /* squared */
-  --radius-badge: 0rem; /* squared */
+  --radius-panel: 1.625rem; /* 26px — dialogs, sheets, page-level shells */
+  --radius-container: 1.125rem; /* 18px — cards, panels, fields */
+  --radius-element: 0.75rem; /* 12px — buttons, inputs, rows, chips */
+  --radius-badge: 0.5625rem; /* 9px — count badges, swatches, micro marks */
   --radius-full: 9999px; /* circles ONLY: station rings, route bullets, avatars, dots */
 
   /* ── Colors — CSS-variable-based monochrome ────────────────────── */
@@ -186,6 +203,14 @@
   --color-track-green: hsl(var(--track-green));
   --color-track-yellow: hsl(var(--track-yellow));
 
+  /* The ring a track-coloured mark wears. Ink in BOTH modes, because it
+     belongs to the mark and not to the theme — every station circle in the
+     design mocks is drawn `fill:paper; stroke:#111`. Anchoring the
+     border-gate contrast guard to this instead of --foreground is what
+     makes that guard mode-independent: measured against ink the four
+     tracks clear 5.26 / 7.80 / 10.71 / 13.28:1. */
+  --color-track-ring: hsl(var(--track-ring));
+
   /* ── DEPRECATED PASTE-UP ink aliases (now point at track values) ──
      `ink-pink` is an ALIAS of --spot, not a second declaration: one value,
      one runtime override in /admin/design, no drift. That also keeps it out
@@ -212,7 +237,13 @@
   --color-text-primary: hsl(var(--text-primary));
   --color-text-secondary: hsl(var(--text-secondary));
   --color-text-muted: hsl(var(--text-muted));
-  --color-border-hairline: hsl(var(--border-hairline));
+  /* The one line allowed between surfaces (Brand Guidelines §02b: "Dense
+     tables may divide rows at 7-13% ink. That is the only line allowed
+     between surfaces."). The token keeps HSL *channels* — ink in light,
+     paper in dark — and the alpha lives in a separate scalar, because
+     branding_validate's HSL_RE forbids an alpha component in a token
+     value, so 12%-ink cannot be expressed as a channel triple. */
+  --color-border-hairline: hsl(var(--border-hairline) / var(--hairline-alpha));
 
   /* ── Surface elevation ladder (monochrome depth, no shadows) ─────
      Paper-tinted neutral steps, defined in :root below. */
@@ -234,20 +265,28 @@
   --color-sidebar-border: hsl(var(--sidebar-border));
   --color-sidebar-ring: hsl(var(--sidebar-ring));
 
-  /* ── Box shadow — hard poster shadows (subway-map rebrand 2026-08).
-     Soft elevation shadows stay banned; the ONLY sanctioned shadows are
-     the hard-edged ink offsets below (flat print shadow, no blur),
-     applied via .card-lift on interactive surfaces. */
+  /* ── Box shadow — ONE soft elevation (soft re-skin 2026-08-17) ────────
+     Brand Guidelines §02b: "Elevation: One shadow only: 0 16px 40px at 6%
+     ink. No hard offset shadows, no stacked depth." This replaces the hard
+     poster offsets (--shadow-hard*) that the 2026-08-09 rebrand shipped.
+     Together with --card sitting a step above --background, it is what
+     replaces the 3px ink cage as the card's separation from the page.
+
+     Tailwind's own shadow-md/lg/xl ramp stays ESLint-banned: it is a
+     COMPETING elevation system, and soft depth being legal here does not
+     make a second ladder legal.
+
+     Deliberately NOT written as hsl(var(--foreground) / 0.06): in dark
+     mode --foreground is paper, which would silently turn every shadow
+     into a white glow. Shadows are black in both modes; the .dark block
+     only deepens the alpha. */
   --shadow-none: none;
   --shadow-hairline: 0 1px 0 hsl(var(--border));
-  --shadow-hard: 6px 6px 0 hsl(var(--foreground));
-  --shadow-hard-sm: 5px 5px 0 hsl(var(--foreground));
-  /* The search command modal only. The mock draws the popover at a heavier
-     offset than any card (12px vs 6px) because it floats over a scrim rather
-     than sitting on the page — at 6px it reads as a card that has come loose,
-     not as a plate lifted off the whole document. */
-  --shadow-hard-lg: 12px 12px 0 hsl(var(--foreground));
-  --shadow-hard-accent: 6px 6px 0 hsl(var(--track-pink));
+  --shadow-soft: 0 16px 40px rgba(17, 17, 17, 0.06);
+  --shadow-soft-hover: 0 12px 30px rgba(17, 17, 17, 0.13);
+  /* Dialogs, sheets and the search command plate: they float over a scrim
+     rather than sitting on the page, so they carry more depth than a card. */
+  --shadow-soft-lg: 0 24px 60px rgba(17, 17, 17, 0.1);
 }
 
 /* ── Self-hosted fonts (subway-map rebrand 2026-08) ──────────────────
@@ -305,9 +344,16 @@
 }
 
 /* ── CSS Variables — Subway-map identity (paper/ink + 4 track colors) ──
-   Paper #FAFAF5 + ink #111, plus four SEMANTIC track colors (wayfinding
-   lines, one accent per context) and the destructive red. Light-only:
-   dark mode was removed 2026-08 (fixed poster identity). */
+   Ink #111 plus four SEMANTIC track colors (wayfinding lines, one accent
+   per context) and the destructive red.
+
+   Surfaces re-valued 2026-08-17 (soft re-skin). The neutral ladder is now
+   frame #EDEDE6 (the page) < wash #F1F1E9 (insets) < paper #FAFAF5 (the
+   card). THE PAGE IS NO LONGER PAPER. That one step is load-bearing: it
+   is what separates a card from the page now that container keylines are
+   gone, and every other surface value follows from it. Do not "restore"
+   --background to paper without also restoring the 3px ink cage — the two
+   are a pair, and paper-on-paper with no border is an invisible card. */
 
 :root {
   /* Bump this integer to force a new stylesheet content hash — the deploy-only
@@ -318,7 +364,8 @@
      index-BWI3mGiS.css to index-Bt7ko9Qm.css. */
   --asset-rev: 1;
 
-  --background: 60 33% 97%;
+  /* Page = frame #EDEDE6. Card = paper #FAFAF5, one rung above it. */
+  --background: 60 16.3% 91.6%;
   --foreground: 0 0% 6.7%;
 
   --card: 60 33% 97%;
@@ -333,10 +380,12 @@
   --secondary: 0 0% 6.7%;
   --secondary-foreground: 60 33% 97%;
 
-  --muted: 60 9% 93%;
+  /* Wash #F1F1E9 — the inset. Recessed against a card, raised against the
+     page, so it reads correctly in both positions. Also the card hover tint. */
+  --muted: 60 22.2% 92.9%;
   --muted-foreground: 0 0% 33%;
 
-  --accent: 60 9% 93%;
+  --accent: 60 22.2% 92.9%;
   --accent-foreground: 0 0% 6.7%;
 
   /* Sole permitted hue: error semantics. `--warning` was a literal duplicate of
@@ -357,12 +406,18 @@
   --success-foreground: 60 33% 97%;
 
   /* ── Track colors — SEMANTIC wayfinding lines (subway-map rebrand).
-     One accent per context. FILL-ONLY: never body text. Filled shapes
-     carry a 2-3px ink border (that border is the WCAG 1.4.11 story for
-     yellow, which cannot clear 3:1 against paper on its own).
-     Text ON a fill: ink for blue/green/yellow, paper for pink
-     (paper-on-blue measures ~2.3:1 and is NOT used, deviating from the
-     source design mock on a11y grounds).
+     One accent per context. FILL-ONLY: never body text.
+     A track-coloured MARK (station ring, route bullet, status dot) wears
+     the ink --track-ring below; that ring is the WCAG 1.4.11 story for
+     yellow, which cannot clear 3:1 against any light surface on its own.
+     Container keylines are gone (soft re-skin) but the mark's own ring is
+     not a container keyline — it is part of the mark.
+     Separately, WCAG 1.4.1: a track colour never carries meaning alone.
+     Every mark that encodes a state also carries a glyph or a text label;
+     a bare coloured dot is decorative only.
+     Text ON a fill: ink for all four (paper-on-pink is 3.43:1 and
+     paper-on-blue ~2.3:1, so paper is NOT used, deviating from the source
+     design mock on a11y grounds).
      Track colors never reach /help, /safety, /report-*, the trip-safety
      briefing, the equality scale or any risk badge — red stays the only
      danger signal (all four hues sit >25° from hue 0). */
@@ -370,6 +425,7 @@
   --track-blue: 193 100% 45%;
   --track-green: 135.6 74.5% 52.4%;
   --track-yellow: 50.1 100% 50%;
+  --track-ring: 0 0% 6.7%;
 
   /* DEPRECATED aliases — old PASTE-UP ink names kept so existing bg-spot /
      bg-ink-blue / bg-ink-over call sites keep rendering until the Public and
@@ -381,19 +437,28 @@
   --ink-over: 135.6 74.5% 52.4%;
   --ink-over-foreground: 0 0% 6.7%;
 
-  /* Ink borders ARE the system: every rule, divider and card edge is ink. */
-  --border: 0 0% 6.7%;
-  --input: 0 0% 6.7%;
+  /* --border is a DIVIDER, not a component boundary (soft re-skin). Cards
+     and panels have no frame; they separate by surface tint + shadow. What
+     is left for this token is row rules inside dense lists, so it drops
+     from ink to a 12%-ink composite over the page. It has to stay a solid
+     colour: @layer base sets `border-color: hsl(var(--border))` globally
+     and that reset cannot carry an alpha channel.
+     --input is different and stays high-contrast: a form control's
+     boundary IS required to clear 3:1 (WCAG 1.4.11), against both the page
+     and the card it may sit on. */
+  --border: 60 7.4% 81.4%;
+  --input: 60 4.8% 44.9%;
   --input-bg: 60 33% 97%;
   --ring: 330 100% 56%;
+  --hairline-alpha: 0.12;
 
   --sidebar-background: 60 33% 97%;
   --sidebar-foreground: 0 0% 6.7%;
   --sidebar-primary: 0 0% 6.7%;
   --sidebar-primary-foreground: 60 33% 97%;
-  --sidebar-accent: 60 9% 93%;
+  --sidebar-accent: 60 22.2% 92.9%;
   --sidebar-accent-foreground: 0 0% 6.7%;
-  --sidebar-border: 0 0% 6.7%;
+  --sidebar-border: 60 7.4% 81.4%;
   --sidebar-ring: 0 0% 6.7%;
 
   --radius: var(--radius-element);
@@ -408,14 +473,17 @@
   --border-hairline: 0 0% 6.7%;
   --transition-smooth: all 0.18s cubic-bezier(0.22, 1, 0.36, 1);
 
-  /* Surface tonal layering — paper-tinted neutral steps. */
+  /* Surface tonal layering. The design system names four: paper #FAFAF5
+     (the card), wash #F1F1E9 (insets), frame #EDEDE6 (the page), well
+     #E8E8E1 (image wells). They land on the first five rungs; the last two
+     are derived continuations of the same ramp, not spec'd values. */
   --surface: 60 33% 97%;
   --surface-container-lowest: 60 33% 97%;
-  --surface-container-low: 60 20% 95%;
-  --surface-container: 60 9% 93%;
-  --surface-container-high: 60 6% 90%;
-  --surface-container-highest: 60 4% 87%;
-  --surface-dim: 60 4% 85%;
+  --surface-container-low: 60 22.2% 92.9%;
+  --surface-container: 60 16.3% 91.6%;
+  --surface-container-high: 60 13.2% 89.6%;
+  --surface-container-highest: 60 12% 87%;
+  --surface-dim: 60 11% 85%;
   --inverse-surface: 0 0% 6.7%;
 
   --z-dropdown: 50;
@@ -1207,15 +1275,18 @@ h2,
 
 /* ── Card lift ─────────────────────────────────────────────────────────
    The interactive-card MOTION: on hover/focus the surface translates up-left
-   and casts a HARD ink shadow (flat poster shadow, no blur). Never combine
-   with a hover ink-fill on the same element — a card fills ink or lifts,
-   never both.
+   and its soft elevation deepens. Never combine with a hover ink-fill on the
+   same element — a card fills ink or lifts, never both.
 
-   Deliberately NO border here. The border belongs to the surface itself
-   (`Card` carries `border-[3px] border-foreground`), and putting one on the
-   wrapper too rendered every entity card with a doubled 6px edge — the
-   wrapper's border around the card's own. Standalone lifted surfaces that
-   are not a `Card` declare their own border utility. */
+   Deliberately NO border here, and since the soft re-skin no border on the
+   `Card` either: a card separates from the page by surface tint plus
+   --shadow-soft. This wrapper only adds the interaction.
+
+   The REST shadow lives on the surface (`Card` applies --shadow-soft), not
+   here, so a lifted wrapper around a non-Card surface should declare its
+   own rest elevation. That is also why :active below returns to
+   --shadow-soft rather than to `none`: collapsing the shadow entirely on
+   press would drop a card flat into the page mid-tap. */
 .card-lift {
   transition:
     transform var(--motion-instant) ease-out,
@@ -1225,25 +1296,25 @@ h2,
 .card-lift:focus-visible,
 .card-lift:focus-within {
   transform: translate(-3px, -3px);
-  box-shadow: var(--shadow-hard);
+  box-shadow: var(--shadow-soft-hover);
 }
 /* Press. Hover does not exist on touch, and this product is mobile-first, so
    without an :active state the primary interactive surface gives a tapping
    user no feedback whatsoever — the lift is a pointer-only affordance.
-   Pressing SEATS the card: it returns to the page and the shadow collapses,
-   the inverse of the lift rather than a second, competing motion. Listed
-   after :hover so it wins on a device that reports both. */
+   Pressing SEATS the card: it returns to the page and the elevation drops
+   back to rest, the inverse of the lift rather than a second, competing
+   motion. Listed after :hover so it wins on a device that reports both. */
 .card-lift:active {
   transform: translate(0, 0);
-  box-shadow: none;
+  box-shadow: var(--shadow-soft);
 }
 /* Small-tile variant — a COMPLETE lift, not a modifier. The docs and
    e2e/design-system.spec.ts (which probes `.card-lift, .card-lift-sm` and may
    match this one first) both prescribed it from the rebrand onward, but no
-   rule ever defined it: `--shadow-hard-sm` sat unused and applying the class
-   was a silent no-op — no transition, no lift, no shadow. Shorter throw and a
-   shorter shadow so a 5-across tile grid does not read as a stack of full
-   cards. Do NOT combine with `.card-lift`; pick one per surface. */
+   rule ever defined it: the shadow token sat unused and applying the class
+   was a silent no-op — no transition, no lift, no shadow. Shorter throw so a
+   5-across tile grid does not read as a stack of full cards. Do NOT combine
+   with `.card-lift`; pick one per surface. */
 .card-lift-sm {
   transition:
     transform var(--motion-instant) ease-out,
@@ -1253,34 +1324,22 @@ h2,
 .card-lift-sm:focus-visible,
 .card-lift-sm:focus-within {
   transform: translate(-2px, -2px);
-  box-shadow: var(--shadow-hard-sm);
+  box-shadow: var(--shadow-soft-hover);
 }
 .card-lift-sm:active {
   transform: translate(0, 0);
-  box-shadow: none;
+  box-shadow: var(--shadow-soft);
 }
-/* Live/urgent variant — the shadow prints in the accent instead of ink.
-   A MODIFIER: it overrides only the shadow colour, so it must sit alongside
-   `.card-lift` (or `-sm`), which owns the transition and the transform. */
+/* Live/urgent variant — the elevation tints toward the accent instead of
+   neutral ink. A MODIFIER: it overrides only the shadow colour, so it must
+   sit alongside `.card-lift` (or `-sm`), which owns the transition and the
+   transform. */
 .card-lift-accent:hover,
 .card-lift-accent:focus-visible {
-  box-shadow: var(--shadow-hard-accent);
+  box-shadow: 0 12px 30px hsl(var(--track-pink) / 0.28);
 }
 .card-lift-accent:active {
-  box-shadow: none;
-}
-/* Reversed variant — the shadow prints in paper instead of ink, for cards that
-   sit ON an ink band (`bg-foreground`). Same MODIFIER contract as
-   `-accent`: pair it with `.card-lift` (or `-sm`), which owns the transform.
-   Without it a lifted card on ink casts an ink shadow onto ink and the whole
-   depth cue silently disappears — the card just slides. */
-.card-lift-invert:hover,
-.card-lift-invert:focus-visible,
-.card-lift-invert:focus-within {
-  box-shadow: 6px 6px 0 hsl(var(--background));
-}
-.card-lift-invert:active {
-  box-shadow: none;
+  box-shadow: var(--shadow-soft);
 }
 @media (prefers-reduced-motion: reduce) {
   .card-lift,

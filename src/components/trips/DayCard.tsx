@@ -200,7 +200,7 @@ export function DayCard({
   const walkingKm = useMemo(() => totalWalkingKm(legs), [legs]);
 
   const dimClass = isPast ? 'opacity-60' : '';
-  const cardBorder = isToday ? 'border-foreground' : 'border-border/70';
+  const cardBorder = isToday ? 'border border-border-hairline' : 'border-border/70';
 
   return (
     <Card

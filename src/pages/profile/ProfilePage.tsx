@@ -228,9 +228,7 @@ export default function ProfilePage({ tab: tabProp }: { tab?: string } = {}) {
                           }}
                           className={
                             'rounded-element p-4 text-left transition-colors bg-surface-container' +
-                            (lens === value
-                              ? 'border-foreground bg-muted/40'
-                              : 'border-border hover:bg-muted/30')
+                            (lens === value ? 'bg-muted/40' : 'border-border hover:bg-muted/30')
                           }
                         >
                           <span className="block text-sm font-medium">{label}</span>
@@ -288,7 +286,7 @@ export default function ProfilePage({ tab: tabProp }: { tab?: string } = {}) {
               <TabsTrigger
                 key={v}
                 value={v}
-                className="h-10 shrink-0 snap-start whitespace-nowrap rounded-none border-b-2 border-transparent bg-transparent px-4 shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-foreground data-[state=active]:shadow-none"
+                className="h-10 shrink-0 snap-start whitespace-nowrap rounded-none border-b border-transparent bg-transparent px-4 shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-border-hairline data-[state=active]:shadow-none"
               >
                 {l}
               </TabsTrigger>

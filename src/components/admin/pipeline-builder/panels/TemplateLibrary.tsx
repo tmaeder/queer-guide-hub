@@ -5,11 +5,25 @@ import { formatDistanceToNow } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom, untypedSupabase } from '@/integrations/supabase/untyped';
 import { toast } from 'sonner';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { AppNode, AppEdge } from '../types';
@@ -37,9 +51,23 @@ interface TemplateLibraryProps {
   initialMode?: 'browse' | 'save';
 }
 
-const CATEGORIES = ['common', 'source', 'processing', 'commit', 'error-handling', 'custom'] as const;
+const CATEGORIES = [
+  'common',
+  'source',
+  'processing',
+  'commit',
+  'error-handling',
+  'custom',
+] as const;
 
-export default function TemplateLibrary({ selectedNodes, selectedEdges, onApply, open, onOpenChange, initialMode }: TemplateLibraryProps) {
+export default function TemplateLibrary({
+  selectedNodes,
+  selectedEdges,
+  onApply,
+  open,
+  onOpenChange,
+  initialMode,
+}: TemplateLibraryProps) {
   const [mode, setMode] = useState<'browse' | 'save'>(initialMode ?? 'browse');
 
   // Sync tab with the caller's intent each time the dialog opens
@@ -110,10 +138,14 @@ export default function TemplateLibrary({ selectedNodes, selectedEdges, onApply,
     onOpenChange(false);
   };
 
-  const filtered = templates.filter(t => {
+  const filtered = templates.filter((t) => {
     if (category !== 'all' && t.category !== category) return false;
-    if (search && !t.name.toLowerCase().includes(search.toLowerCase())
-               && !(t.description || '').toLowerCase().includes(search.toLowerCase())) return false;
+    if (
+      search &&
+      !t.name.toLowerCase().includes(search.toLowerCase()) &&
+      !(t.description || '').toLowerCase().includes(search.toLowerCase())
+    )
+      return false;
     return true;
   });
 
@@ -144,16 +176,20 @@ export default function TemplateLibrary({ selectedNodes, selectedEdges, onApply,
         <div className="flex gap-1 border-b border-border">
           <button
             onClick={() => setMode('browse')}
-            className={`px-4 py-1.5 text-xs border-b-2 transition-colors ${
-              mode === 'browse' ? 'border-primary text-primary font-semibold' : 'border-transparent text-muted-foreground hover:text-foreground'
+            className={`px-4 py-1.5 text-xs border-b transition-colors ${
+              mode === 'browse'
+                ? 'border-primary text-primary font-semibold'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
             }`}
           >
             Browse ({templates.length})
           </button>
           <button
             onClick={() => setMode('save')}
-            className={`px-4 py-1.5 text-xs border-b-2 transition-colors ${
-              mode === 'save' ? 'border-primary text-primary font-semibold' : 'border-transparent text-muted-foreground hover:text-foreground'
+            className={`px-4 py-1.5 text-xs border-b transition-colors ${
+              mode === 'save'
+                ? 'border-primary text-primary font-semibold'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
             }`}
           >
             <Plus className="h-3 w-3 inline mr-1" />
@@ -171,10 +207,16 @@ export default function TemplateLibrary({ selectedNodes, selectedEdges, onApply,
                 className="h-8 text-xs flex-1"
               />
               <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger className="h-8 text-xs w-40"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-8 text-xs w-40">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All categories</SelectItem>
-                  {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  {CATEGORIES.map((c) => (
+                    <SelectItem key={c} value={c}>
+                      {c}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -184,37 +226,52 @@ export default function TemplateLibrary({ selectedNodes, selectedEdges, onApply,
               {!isLoading && filtered.length === 0 && (
                 <div className="p-8 text-xs text-muted-foreground text-center">
                   <AdminEmpty
-                  variant="inline"
-                  noun="templates"
-                  filtered={templates.length > 0}
-                  description="Select nodes on canvas and save your first template."
-                  className="text-xs"
-                />
+                    variant="inline"
+                    noun="templates"
+                    filtered={templates.length > 0}
+                    description="Select nodes on canvas and save your first template."
+                    className="text-xs"
+                  />
                 </div>
               )}
-              {filtered.map(t => (
-                <div key={t.id} className="p-4 border-b border-border/50 flex items-start gap-4 hover:bg-accent transition-colors">
+              {filtered.map((t) => (
+                <div
+                  key={t.id}
+                  className="p-4 border-b border-border/50 flex items-start gap-4 hover:bg-accent transition-colors"
+                >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
                       <span className="font-medium text-sm">{t.name}</span>
-                      <Badge variant="outline" className="text-2xs px-1 py-0">{t.category}</Badge>
+                      <Badge variant="outline" className="text-2xs px-1 py-0">
+                        {t.category}
+                      </Badge>
                       {t.use_count > 0 && (
                         <span className="text-2xs text-muted-foreground">used {t.use_count}×</span>
                       )}
                     </div>
-                    {t.description && <div className="text-xs text-muted-foreground mb-1">{t.description}</div>}
+                    {t.description && (
+                      <div className="text-xs text-muted-foreground mb-1">{t.description}</div>
+                    )}
                     <div className="text-2xs text-muted-foreground">
-                      {t.nodes.length} nodes, {t.edges.length} edges • created {formatDistanceToNow(new Date(t.created_at), { addSuffix: true })}
+                      {t.nodes.length} nodes, {t.edges.length} edges • created{' '}
+                      {formatDistanceToNow(new Date(t.created_at), { addSuffix: true })}
                     </div>
                   </div>
-                  <Button size="sm" variant="default" className="h-7 text-xs" onClick={() => handleApply(t)}>
+                  <Button
+                    size="sm"
+                    variant="default"
+                    className="h-7 text-xs"
+                    onClick={() => handleApply(t)}
+                  >
                     Apply
                   </Button>
                   <Button
                     size="sm"
                     variant="ghost"
                     className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                    onClick={() => { if (confirm(`Delete template "${t.name}"?`)) deleteMutation.mutate(t.id); }}
+                    onClick={() => {
+                      if (confirm(`Delete template "${t.name}"?`)) deleteMutation.mutate(t.id);
+                    }}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
@@ -227,15 +284,19 @@ export default function TemplateLibrary({ selectedNodes, selectedEdges, onApply,
             <div className="space-y-4 flex-1">
               {selectedNodes.length === 0 ? (
                 <div className="p-6 text-center text-xs text-muted-foreground border border-dashed border-border rounded-element">
-                  Select one or more nodes on the canvas first (click to select, shift-click to add).
+                  Select one or more nodes on the canvas first (click to select, shift-click to
+                  add).
                 </div>
               ) : (
                 <>
                   <div className="text-xs text-muted-foreground">
-                    Saving <strong>{selectedNodes.length}</strong> nodes and <strong>{selectedEdges.length}</strong> edges as a reusable template.
+                    Saving <strong>{selectedNodes.length}</strong> nodes and{' '}
+                    <strong>{selectedEdges.length}</strong> edges as a reusable template.
                   </div>
                   <div className="space-y-1.5">
-                    <label htmlFor="tpl-name" className="text-xs font-medium">Name <span className="text-destructive">*</span></label>
+                    <label htmlFor="tpl-name" className="text-xs font-medium">
+                      Name <span className="text-destructive">*</span>
+                    </label>
                     <Input
                       id="tpl-name"
                       value={saveName}
@@ -245,7 +306,9 @@ export default function TemplateLibrary({ selectedNodes, selectedEdges, onApply,
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label htmlFor="tpl-desc" className="text-xs font-medium">Description</label>
+                    <label htmlFor="tpl-desc" className="text-xs font-medium">
+                      Description
+                    </label>
                     <Textarea
                       id="tpl-desc"
                       value={saveDesc}
@@ -255,11 +318,23 @@ export default function TemplateLibrary({ selectedNodes, selectedEdges, onApply,
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label htmlFor="tpl-category" className="text-xs font-medium">Category</label>
+                    <label htmlFor="tpl-category" className="text-xs font-medium">
+                      Category
+                    </label>
                     <Select value={saveCategory} onValueChange={setSaveCategory}>
-                      <SelectTrigger id="tpl-category" aria-label="Category" className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                      <SelectTrigger
+                        id="tpl-category"
+                        aria-label="Category"
+                        className="h-8 text-xs"
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
-                        {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                        {CATEGORIES.map((c) => (
+                          <SelectItem key={c} value={c}>
+                            {c}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>

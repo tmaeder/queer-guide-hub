@@ -70,9 +70,9 @@ function TabButton({
       type="button"
       onClick={() => onSelect(id)}
       className={
-        'flex items-center gap-2 border-b-2 px-2 py-2 text-13 ' +
+        'flex items-center gap-2 border-b px-2 py-2 text-13 ' +
         (activeTab === id
-          ? 'border-foreground font-semibold'
+          ? 'border border-border-hairline font-semibold'
           : 'border-transparent text-muted-foreground')
       }
     >

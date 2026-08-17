@@ -44,10 +44,7 @@ export function TagAliasesDisplay({ tagId }: { tagId: string }) {
             {t(`tags.detail.alias.${type}`, TYPE_LABELS[type] ?? TYPE_LABELS.synonym)}
           </Eyebrow>
           {list.map((alias) => (
-            <span
-              key={alias.id}
-              className="border-2 border-foreground px-2 py-0.5 text-13 font-bold"
-            >
+            <span key={alias.id} className="bg-muted rounded-element px-2 py-0.5 text-13 font-bold">
               {alias.alias_name}
             </span>
           ))}

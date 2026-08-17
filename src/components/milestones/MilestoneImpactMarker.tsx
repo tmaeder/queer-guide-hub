@@ -66,7 +66,7 @@ export function MilestoneImpactMarker({
         box,
         // Ink, not grey: hairline borders in --muted-foreground are the
         // pre-rebrand system. Ink borders ARE the system.
-        station ? 'border-[3px] border-foreground' : 'border-2 border-foreground',
+        station ? 'border border-border-hairline' : 'border border-border-hairline',
         impact === 'positive' ? 'bg-foreground' : 'bg-background',
         className,
       )}

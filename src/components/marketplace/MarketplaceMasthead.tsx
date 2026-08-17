@@ -61,7 +61,7 @@ export function MarketplaceMasthead({
   children,
 }: MarketplaceMastheadProps) {
   return (
-    <header className="border-b-4 border-foreground">
+    <header className="border-b border-border-hairline">
       <PageContainer flush className="pb-8 pt-8 md:pb-12 md:pt-16">
         {backTo && (
           <LocalizedLink
@@ -94,7 +94,7 @@ export function MarketplaceMasthead({
               <p className="mt-6 flex items-center gap-4 text-13 text-muted-foreground">
                 <span
                   aria-hidden="true"
-                  className="h-1.5 w-10 shrink-0 border border-foreground bg-track-yellow"
+                  className="h-1.5 w-10 shrink-0 border border-border-hairline bg-track-yellow"
                 />
                 <span className="tabular-nums">{count}</span>
               </p>

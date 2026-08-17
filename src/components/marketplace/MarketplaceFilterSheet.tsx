@@ -258,7 +258,7 @@ export function MarketplaceFilterSheet({
                               aria-pressed={active}
                               className={`rounded-badge border px-2 py-1 text-xs transition-colors ${
                                 active
-                                  ? 'border-foreground bg-foreground text-background'
+                                  ? 'bg-foreground text-background'
                                   : 'border-border bg-background text-foreground hover:bg-muted'
                               }`}
                             >

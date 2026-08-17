@@ -312,7 +312,7 @@ export default function People() {
               <LocalizedLink
                 key={to}
                 to={to}
-                className="card-lift flex items-center gap-4 border-[3px] border-foreground bg-background p-4 no-underline"
+                className="card-lift flex items-center gap-4 bg-card p-4 no-underline rounded-container shadow-soft"
               >
                 <TransitIcon name={icon} size={28} className="shrink-0 text-foreground" />
                 <span className="flex min-w-0 flex-col">

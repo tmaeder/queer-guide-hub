@@ -4,7 +4,18 @@
 
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { X, RotateCcw, Eye, Pencil, Sparkles, ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown, FileText } from 'lucide-react';
+import {
+  X,
+  RotateCcw,
+  Eye,
+  Pencil,
+  Sparkles,
+  ChevronLeft,
+  ChevronRight,
+  ThumbsUp,
+  ThumbsDown,
+  FileText,
+} from 'lucide-react';
 import type { ContentTypeConfig, EditorState } from '@/types/cms';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -254,7 +265,7 @@ export function EditorHeader({
                     variant="outline"
                     size="sm"
                     disabled={isTransitioning || state.isSaving}
-                    className="font-medium normal-case border-destructive text-destructive hover:bg-destructive/10"
+                    className="border font-medium normal-case border-destructive text-destructive hover:bg-destructive/10"
                   >
                     <ThumbsDown className="h-4 w-4 mr-1" />
                     Request changes

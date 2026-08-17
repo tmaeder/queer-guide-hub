@@ -46,13 +46,11 @@ export function ProvenanceLine({
   if (checked) parts.push(`Last checked ${checked}`);
 
   return (
-    <div className={cn('border-[3px] border-foreground p-4', className)}>
+    <div className={cn('bg-muted rounded-element p-4', className)}>
       <div className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
         Provenance
       </div>
-      {parts.length > 0 && (
-        <p className="mt-2 text-13 leading-relaxed">{parts.join('. ')}.</p>
-      )}
+      {parts.length > 0 && <p className="mt-2 text-13 leading-relaxed">{parts.join('. ')}.</p>}
       {!checked && parts.length > 0 && (
         // Saying "never checked" out loud beats implying freshness by omission.
         <p className="mt-1 text-13 text-muted-foreground">Not independently checked yet.</p>
@@ -60,7 +58,7 @@ export function ProvenanceLine({
       {correctHref && (
         <LocalizedLink
           to={correctHref}
-          className="mt-4 inline-block border-2 border-foreground px-4 py-2 text-xs2 font-bold no-underline hover:bg-foreground hover:text-background"
+          className="mt-4 inline-block px-4 py-2 text-xs2 font-bold no-underline hover:bg-foreground hover:text-background"
         >
           Correct this page
         </LocalizedLink>

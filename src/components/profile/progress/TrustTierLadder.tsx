@@ -139,9 +139,9 @@ export function TrustTierLadder() {
               <span
                 aria-hidden
                 className={
-                  'relative z-10 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 ' +
+                  'relative z-10 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full ' +
                   (reached
-                    ? 'bg-foreground border-foreground text-background'
+                    ? 'bg-foreground text-background'
                     : 'bg-background border-border text-muted-foreground')
                 }
               >
@@ -150,7 +150,7 @@ export function TrustTierLadder() {
               <div
                 className={
                   'flex-1 rounded-element p-4 bg-surface-container' +
-                  (active ? 'border-foreground' : 'border-border')
+                  (active ? 'border border-border-hairline' : 'border-border')
                 }
               >
                 <div className="font-medium flex items-center gap-2">

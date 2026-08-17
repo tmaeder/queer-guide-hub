@@ -33,7 +33,7 @@ export function DepartureRow({
   return (
     <div
       className={cn(
-        'relative grid grid-cols-[34px_76px_1fr_auto] items-center gap-2 border-2 border-foreground px-2 py-2',
+        'relative grid grid-cols-[34px_76px_1fr_auto] items-center gap-2 bg-muted rounded-element px-2 py-2',
         href && 'card-lift-sm',
         className,
       )}
@@ -43,7 +43,7 @@ export function DepartureRow({
       <span className="truncate font-display text-15">{title}</span>
       {status ? (
         <span className="flex items-center gap-1 text-xs2 font-bold text-foreground">
-          {urgent && <StationRing state="typed" track="pink" className="h-2 w-2 border-2" />}
+          {urgent && <StationRing state="typed" track="pink" className="h-2 w-2" />}
           {status}
         </span>
       ) : (

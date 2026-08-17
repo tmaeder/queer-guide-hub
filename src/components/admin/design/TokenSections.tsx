@@ -27,7 +27,7 @@ function GlobalTokenInput({
           value={value}
           aria-invalid={!!error}
           onChange={(e) => controller.setTokenOverride('global', token.key, e.target.value)}
-          className={`h-8 font-mono text-13 ${token.kind === 'transition' ? 'w-72' : 'w-28'} ${error ? 'border-destructive' : ''}`}
+          className={`h-8 font-mono text-13 ${token.kind === 'transition' ? 'w-72' : 'w-28'} ${error ? 'border border-destructive' : ''}`}
           aria-label={`--${token.key}`}
         />
         {overridden ? (

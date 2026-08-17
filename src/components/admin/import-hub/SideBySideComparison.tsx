@@ -128,7 +128,7 @@ export function SideBySideComparison({
       <Card>
         <CardContent>
           {/* Column Headers */}
-          <div className="grid border-b-2 border-border bg-muted" style={gridCols}>
+          <div className="grid border-b border-border bg-muted" style={gridCols}>
             <div className="p-4 font-semibold text-xs uppercase text-muted-foreground">Field</div>
             <div className="p-4 font-semibold text-xs uppercase text-muted-foreground">
               {leftLabel}

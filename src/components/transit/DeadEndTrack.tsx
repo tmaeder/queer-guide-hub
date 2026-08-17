@@ -46,10 +46,7 @@ export function DeadEndTrack({ label, type, caption, className }: DeadEndTrackPr
   // band of dead paper to its right.
   return (
     <div
-      className={cn(
-        'max-w-[56rem] border-[3px] border-foreground bg-background p-4 sm:p-6',
-        className,
-      )}
+      className={cn('max-w-[56rem] bg-card p-4 sm:p-6 rounded-container shadow-soft', className)}
     >
       <svg
         viewBox="0 0 300 100"

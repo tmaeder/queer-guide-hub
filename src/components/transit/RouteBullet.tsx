@@ -52,7 +52,7 @@ export function RouteBullet({
       style={{ width: size, height: size, fontSize: Math.round(size * 0.45) }}
       className={cn(
         'grid shrink-0 place-items-center rounded-full border-2 font-bold',
-        onInk ? 'border-background' : 'border-foreground',
+        onInk ? 'border border-background' : 'border-track-ring',
         bg,
         text,
         className,

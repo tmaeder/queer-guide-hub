@@ -2,7 +2,25 @@ import { useMemo, useState, lazy, Suspense } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { MapPin, Shield, Wallet, Ticket, CheckSquare, MessageCircle, Share2, ArrowLeft, Plus, Hotel, Sparkles, MessagesSquare, FileText, Download, Check, Lightbulb, NotebookPen } from 'lucide-react';
+import {
+  MapPin,
+  Shield,
+  Wallet,
+  Ticket,
+  CheckSquare,
+  MessageCircle,
+  Share2,
+  ArrowLeft,
+  Plus,
+  Hotel,
+  Sparkles,
+  MessagesSquare,
+  FileText,
+  Download,
+  Check,
+  Lightbulb,
+  NotebookPen,
+} from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { useTrip, canEditTrip, type TripWithDetails } from '@/hooks/useTrips';
@@ -416,7 +434,7 @@ export default function TripPlannerPage() {
                   <Shield size={16} />
                   {safetyAlert && (
                     <span
-                      className="absolute rounded-full border-2 border-background"
+                      className="border-2 absolute rounded-full border-background"
                       style={{
                         top: -3,
                         right: -4,

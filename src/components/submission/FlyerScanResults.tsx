@@ -166,7 +166,7 @@ function ItemRow({
 
   return (
     <div
-      className={`rounded-element overflow-hidden border ${expanded ? 'border-foreground' : 'border-border'}`}
+      className={`rounded-element overflow-hidden border ${expanded ? 'border border-border-hairline' : 'border-border'}`}
     >
       {/* Header */}
       <div className="flex items-center gap-2 p-4">

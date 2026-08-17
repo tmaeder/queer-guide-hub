@@ -32,7 +32,7 @@ const ESTIMATE_ROW_HEIGHT = 336;
 
 function CardSkeleton() {
   return (
-    <div aria-hidden="true" className="animate-pulse border-[3px] border-foreground/20 p-4">
+    <div aria-hidden="true" className="border animate-pulse border-foreground/20 p-4">
       <div className="h-8 w-2/3 bg-muted" />
       {/* The same empty diagram box the real card reserves, so the skeleton is
           exactly as tall as the loaded card at EVERY breakpoint rather than at one
@@ -72,7 +72,7 @@ export function CityCardGrid({
     // Deliberately not `EmptyState`: that primitive requires a lucide icon, and
     // lucide must not appear on a surface that speaks the transit vocabulary.
     return (
-      <div className="border-[3px] border-foreground p-8 text-center">
+      <div className="bg-muted rounded-container p-8 text-center">
         <p className="m-0 font-display text-headline">
           {t('cities.emptyTitle', 'No cities found')}
         </p>

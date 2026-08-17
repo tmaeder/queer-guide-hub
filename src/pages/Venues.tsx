@@ -462,7 +462,7 @@ const Venues = () => {
         {/* Toolbar */}
         <div
           className={cn(
-            `sticky ${STICKY_UNDER_HEADER} z-20 py-2 mb-4 border-b-[3px] border-foreground bg-background`,
+            `sticky ${STICKY_UNDER_HEADER} z-20 py-2 mb-4 border-b border-border-hairline bg-background`,
             PAGE_BLEED_MOBILE,
             'flex flex-wrap items-center justify-between gap-4',
           )}

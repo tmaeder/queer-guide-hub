@@ -132,7 +132,7 @@ export function DiscoverFilters({ value, onChange }: Props) {
                     className={`text-xs font-semibold px-4 py-1.5 rounded-full border transition-colors ${
                       selected
                         ? 'bg-foreground text-background border-transparent'
-                        : 'bg-background text-foreground border-border hover:border-foreground/40'
+                        : 'border bg-background text-foreground border-border hover:border-foreground/40'
                     }`}
                   >
                     {t(`trips.discover.travelerType.${tt}`, travelerLabel(tt))}
@@ -158,7 +158,7 @@ export function DiscoverFilters({ value, onChange }: Props) {
                     className={`text-left text-sm font-medium px-4 py-2 rounded-element border transition-colors ${
                       selected
                         ? 'bg-foreground text-background border-transparent'
-                        : 'bg-background text-foreground border-border hover:border-foreground/40'
+                        : 'border bg-background text-foreground border-border hover:border-foreground/40'
                     }`}
                   >
                     {t(`trips.discover.duration.${d}`, durationLabel(d))}
@@ -187,13 +187,8 @@ export function DiscoverFilters({ value, onChange }: Props) {
               max={100}
               step={5}
               value={[value.minEqualityScore]}
-              onValueChange={(v) =>
-                onChange({ ...value, minEqualityScore: v[0] ?? 0 })
-              }
-              aria-label={t(
-                'trips.discover.filters.minEqualityAria',
-                'Minimum equality score',
-              )}
+              onValueChange={(v) => onChange({ ...value, minEqualityScore: v[0] ?? 0 })}
+              aria-label={t('trips.discover.filters.minEqualityAria', 'Minimum equality score')}
             />
             <p className="text-xs2 text-muted-foreground mt-2 leading-relaxed">
               {t(
@@ -211,9 +206,7 @@ export function DiscoverFilters({ value, onChange }: Props) {
               <input
                 type="checkbox"
                 checked={value.hasCover}
-                onChange={(e) =>
-                  onChange({ ...value, hasCover: e.target.checked })
-                }
+                onChange={(e) => onChange({ ...value, hasCover: e.target.checked })}
                 className="h-4 w-4 accent-foreground"
               />
               <span className="text-sm">
@@ -224,16 +217,11 @@ export function DiscoverFilters({ value, onChange }: Props) {
               <input
                 type="checkbox"
                 checked={value.hasOwnerProfile}
-                onChange={(e) =>
-                  onChange({ ...value, hasOwnerProfile: e.target.checked })
-                }
+                onChange={(e) => onChange({ ...value, hasOwnerProfile: e.target.checked })}
                 className="h-4 w-4 accent-foreground"
               />
               <span className="text-sm">
-                {t(
-                  'trips.discover.filters.hasOwnerProfile',
-                  'Owner has a profile',
-                )}
+                {t('trips.discover.filters.hasOwnerProfile', 'Owner has a profile')}
               </span>
             </label>
           </section>

@@ -5,11 +5,36 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import type { CommentNodeData, CommentNodeType } from '../types';
 
 const COLORS = [
-  { name: 'yellow', bg: 'hsl(var(--muted))', border: 'hsl(var(--foreground) / 0.55)', text: 'hsl(var(--foreground) / 0.7)' },
-  { name: 'blue', bg: 'hsl(var(--muted))', border: 'hsl(var(--muted-foreground))', text: 'hsl(var(--foreground) / 0.7)' },
-  { name: 'green', bg: 'hsl(var(--muted))', border: 'hsl(var(--foreground))', text: 'hsl(var(--foreground) / 0.7)' },
-  { name: 'pink', bg: 'hsl(var(--muted))', border: 'hsl(var(--foreground))', text: 'hsl(var(--foreground) / 0.7)' },
-  { name: 'gray', bg: 'hsl(var(--muted))', border: 'hsl(var(--muted-foreground))', text: 'hsl(var(--foreground))' },
+  {
+    name: 'yellow',
+    bg: 'hsl(var(--muted))',
+    border: 'hsl(var(--foreground) / 0.55)',
+    text: 'hsl(var(--foreground) / 0.7)',
+  },
+  {
+    name: 'blue',
+    bg: 'hsl(var(--muted))',
+    border: 'hsl(var(--muted-foreground))',
+    text: 'hsl(var(--foreground) / 0.7)',
+  },
+  {
+    name: 'green',
+    bg: 'hsl(var(--muted))',
+    border: 'hsl(var(--foreground))',
+    text: 'hsl(var(--foreground) / 0.7)',
+  },
+  {
+    name: 'pink',
+    bg: 'hsl(var(--muted))',
+    border: 'hsl(var(--foreground))',
+    text: 'hsl(var(--foreground) / 0.7)',
+  },
+  {
+    name: 'gray',
+    bg: 'hsl(var(--muted))',
+    border: 'hsl(var(--muted-foreground))',
+    text: 'hsl(var(--foreground))',
+  },
 ];
 
 function CommentNode({ data: d, selected, id }: NodeProps<CommentNodeType>) {
@@ -18,7 +43,7 @@ function CommentNode({ data: d, selected, id }: NodeProps<CommentNodeType>) {
   const [color, setColor] = useState(d.color || 'yellow');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const scheme = COLORS.find(c => c.name === color) || COLORS[0];
+  const scheme = COLORS.find((c) => c.name === color) || COLORS[0];
 
   useEffect(() => {
     if (editing) textareaRef.current?.focus();
@@ -52,7 +77,10 @@ function CommentNode({ data: d, selected, id }: NodeProps<CommentNodeType>) {
         handleStyle={{ background: scheme.border, width: 8, height: 8 }}
       />
 
-      <div className="flex items-center gap-1.5 px-2 py-1 border-b" style={{ borderColor: `${scheme.border}50` }}>
+      <div
+        className="flex items-center gap-1.5 px-2 py-1 border-b"
+        style={{ borderColor: `${scheme.border}50` }}
+      >
         <StickyNote className="h-3 w-3 opacity-60" />
         <span className="text-2xs font-medium opacity-60">comment</span>
         <div className="ml-auto">
@@ -68,10 +96,10 @@ function CommentNode({ data: d, selected, id }: NodeProps<CommentNodeType>) {
             </PopoverTrigger>
             <PopoverContent className="w-auto p-1.5" side="top">
               <div className="flex gap-1">
-                {COLORS.map(c => (
+                {COLORS.map((c) => (
                   <button
                     key={c.name}
-                    className={`w-5 h-5 rounded-badge border-2 transition-transform hover:scale-110 ${color === c.name ? 'ring-2 ring-ring' : ''}`}
+                    className={`w-5 h-5 rounded-badge transition-transform hover:scale-110 ${color === c.name ? 'ring-2 ring-ring' : ''}`}
                     style={{ backgroundColor: c.bg, borderColor: c.border }}
                     onClick={() => {
                       setColor(c.name);

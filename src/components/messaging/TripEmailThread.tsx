@@ -223,7 +223,7 @@ export function TripEmailThread({ itemId }: { itemId: string }) {
               className={cn(
                 'max-w-[85%] rounded-element px-4 py-2 text-sm bg-surface-container',
                 turn.role === 'user'
-                  ? 'self-end border-foreground bg-foreground text-background'
+                  ? 'self-end bg-foreground text-background'
                   : 'self-start border-border',
               )}
             >

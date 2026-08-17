@@ -137,7 +137,7 @@ export function AddDayNoteDialog({ open, onClose, tripId, dayId, nextSortOrder }
                     onClick={() => setIcon(slug)}
                     className={`flex items-center justify-center w-9 h-9 rounded-element border transition-colors ${
                       selected
-                        ? 'border-foreground bg-foreground text-background'
+                        ? 'bg-foreground text-background'
                         : 'border-border text-muted-foreground hover:bg-muted'
                     }`}
                   >

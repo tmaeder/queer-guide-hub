@@ -24,8 +24,21 @@ document is prose; where the two disagree, the catalog is right.
 - Track colors are wayfinding, not decoration — one accent per context; the
   intersection gradient (`.intersection-gradient`) only where lines meet.
 - Anton for display, Space Grotesk for everything else. One icon stroke weight.
-- Squared corners everywhere except circles: rings, bullets, avatars.
-- A card fills ink on hover or lifts with the hard shadow — never both.
+- **Nothing square.** Four radius ranks — 26 page-level shells, 18 cards and
+  fields, 12 chips and controls, 9 count marks — plus `rounded-full` for true
+  circles: rings, bullets, avatars, dots.
+- **Surfaces without cages.** A container never carries a frame. It separates
+  from what surrounds it by sitting a tonal rung above (page → card → wash)
+  plus one soft shadow. The only line permitted *between* surfaces is a
+  hairline at 7–13% ink, dividing rows in a dense list.
+- **One elevation.** `--shadow-soft` at rest, `--shadow-soft-hover` on lift.
+  No hard offset shadows, no stacked depth — and Tailwind's own
+  `shadow-md/lg/xl/2xl` ramp stays ESLint-banned as a *competing* ladder.
+- A card fills ink on hover or lifts — never both.
+- The exceptions to "no frame" are the boundaries a user has to be able to
+  find: form controls (`border-input`) and the ink ring on a track-coloured
+  mark (`border-track-ring`). Both are WCAG 1.4.11 obligations, not styling,
+  and neither is negotiable.
 
 ## Tokens (src/index.css)
 
@@ -33,20 +46,39 @@ All colors are HSL channel values used via `hsl(var(--token))`. Light-only.
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| `--background` | `60 33% 97%` (#FAFAF5 paper) | Page + card background |
-| `--foreground` | `0 0% 7%` (#111 ink) | Type, rules, borders, station rings |
-| `--border` / `--input` | `0 0% 7%` | Ink borders ARE the system |
-| `--muted` | `60 9% 93%` | Subtle paper-tinted fills |
+| `--background` | `60 16.3% 91.6%` (#EDEDE6 frame) | **The page. Not paper.** |
+| `--card` / `--popover` | `60 33% 97%` (#FAFAF5 paper) | The sheet, one rung above the page |
+| `--muted` / `--accent` | `60 22.2% 92.9%` (#F1F1E9 wash) | Insets, chips, card hover tint |
+| `--surface-container-high` | `60 13.2% 89.6%` (#E8E8E1) | Image wells |
+| `--foreground` | `0 0% 6.7%` (#111 ink) | Type, marks, station rings |
+| `--border` | `60 7.4% 81.4%` | Row **dividers**, never a container frame |
+| `--border-hairline` | ink channels @ `--hairline-alpha` (12%) | The one line allowed between surfaces |
+| `--input` | `60 4.8% 44.9%` | Form-control boundary — 3:1 on page *and* card |
+| `--track-ring` | `0 0% 6.7%` | The ink ring a track-coloured mark wears |
 | `--muted-foreground` | `0 0% 33%` | Secondary text |
 | `--destructive` | `0 70% 38%` | **Danger. The only non-track semantic hue.** |
 | `--ring` | `330 100% 56%` | Focus ring (pink track) |
-| `--radius-container/element/badge` | `0rem` | Squared. `rounded-full` for circles only |
+| `--radius-panel/container/element/badge` | `26 / 18 / 12 / 9 px` | `rounded-full` for circles only |
+| `--shadow-soft` / `-hover` / `-lg` | `0 16px 40px .06` / `0 12px 30px .13` / `0 24px 60px .10` | Rest / lift / floats over a scrim |
+
+**`--background` is not paper, and that is the load-bearing fact of the whole
+system.** The page is a rung *below* the card, and that step plus the soft
+shadow is what replaced the 3px ink cage. Restoring `--background` to paper
+without also restoring the cage yields an invisible card, not a subtler one.
+
+`--radius-panel` and `--hairline-alpha` are declared in `@theme` only — they
+are deliberately absent from `tokenCatalog.ts`, `functions/_lib/branding.ts`
+and `branding_validate`, following the `--radius-full` precedent. That is what
+keeps the re-skin free of a Supabase migration, and it matters: a full
+`/admin/design` override is already within a handful of keys of
+`branding_validate`'s 150-key ceiling. Cataloguing either one means raising
+that cap in the same migration.
 
 ### Track colors — SEMANTIC wayfinding lines
 
 | Token | Value | Hex | Line | Text on the fill |
 |-------|-------|-----|------|------------------|
-| `--track-pink` | `330 100% 56%` | #FF1F8F | Feminine spectrum | **paper** (3.4:1) |
+| `--track-pink` | `330 100% 56%` | #FF1F8F | Feminine spectrum | **ink** (5.2:1) |
 | `--track-blue` | `193 100% 45%` | #00B4E6 | Masculine spectrum | **ink** (7.7:1) |
 | `--track-green` | `136 75% 52%` | #2BE05A | Non-binary | **ink** (10.4:1) |
 | `--track-yellow` | `50 100% 50%` | #FFD500 | Agender / other | **ink** (13.5:1) |
@@ -54,12 +86,22 @@ All colors are HSL channel values used via `hsl(var(--token))`. Light-only.
 Rules (gated by `tokenContrast.test.ts`):
 
 - **Fill-only.** A track color is never body text.
-- **Border-gated.** Blue/green/yellow measure under 3:1 against paper, so every
-  filled shape carries a 2–3px ink border — WCAG 1.4.11 is satisfied by
-  fill-vs-ink. Pink alone clears 3:1 bare and may draw borderless marks
-  (focus ring, active-nav underline, ::selection).
-- **Text-on-fill** deviates from the source mock on a11y grounds: ink on
-  blue/green/yellow, paper on pink (the mock's paper-on-cyan is 2.3:1).
+- **Ring-gated.** Blue/green/yellow measure under 3:1 against any light
+  surface, so every track-coloured *mark* carries a 1px `--track-ring` — WCAG
+  1.4.11 is satisfied by fill-vs-ring. This is why a badge and a track-filled
+  button keep an edge when cards lost theirs: a card frame is decoration, a
+  track fill's ring is not. It is anchored to `--track-ring` rather than to
+  `--foreground` so it stays ink in both modes and cannot invert.
+  A track-coloured *line* on a diagram is a different case — it is far past
+  the size at which 1.4.11 applies and reads as illustration, which is why
+  the mocks draw route lines with no casing.
+- **Text-on-fill is ink on all four**, deviating from the source mock on a11y
+  grounds: the mock puts paper on pink and cyan, which measure 3.4:1 and
+  2.3:1. (This table said "paper" for pink until 2026-08-17 while the code
+  and the test both said ink — the code was right.)
+- **Colour is never the only cue** (WCAG 1.4.1). A track-coloured mark that
+  encodes a state also carries a glyph or a text label; a bare coloured dot is
+  decorative. No token guard can see this — it lives in the components.
 - **One accent per context.** Never a rainbow of fills in one component; the
   four blend only in `.intersection-gradient` (master-symbol moments). The one
   exception is a *city network diagram* (below), where the four colors are the
@@ -188,16 +230,35 @@ whole session.** So:
 
 ## Depth
 
-Soft elevation shadows stay banned (`shadow-md/lg/xl/2xl` are ESLint errors).
-The sanctioned depth treatment is the **hard poster shadow**:
+There is exactly **one** elevation, and it does two jobs.
 
-- Every bordered surface: 3px ink border, zero radius (`Card` does this).
-- Interactive cards add `.card-lift`: hover/focus translates −3,−3 and casts
-  `--shadow-hard` (`6px 6px 0` ink, no blur). Small tiles: `.card-lift-sm`
-  (5px/−2). Live/urgent: `.card-lift-accent` casts in pink.
+- **Rest.** Every card carries `--shadow-soft` (`0 16px 40px` at 6% ink) —
+  baked into `Card`, not opt-in. Together with `bg-card` sitting a rung above
+  `--background`, that pair *is* the card's edge. Remove either and the card
+  stops existing rather than getting flatter.
+- **Lift.** Interactive cards add `.card-lift`: hover/focus translates −3,−3
+  and deepens to `--shadow-soft-hover` (`0 12px 30px` at 13%). Small tiles:
+  `.card-lift-sm` (−2). Live/urgent: `.card-lift-accent` tints the lift pink.
+  Pressing seats the card back to `--shadow-soft` — **not** to `none`, which
+  would drop it flat into the page mid-tap.
+- **Floats.** Dialogs, sheets and the search command plate take
+  `--shadow-soft-lg` (`0 24px 60px`) because they sit over a scrim rather
+  than on the page.
+- `shadow-md/lg/xl/2xl` remain ESLint errors. Soft depth being legal here does
+  **not** make Tailwind's ramp legal — it is a second, competing ladder.
+- `.card-lift-invert` was deleted with the hard shadows. A card on an ink band
+  cannot use the shared elevation at all: a black blur is invisible on ink and
+  a paper-coloured blur reads as a halo, not depth. Such a tile separates by
+  surface tint (`bg-background/10`) and deepens that tint on hover — see
+  `src/pages/About.tsx`.
 - The PASTE-UP `.plate-offset` misregistration layer, halftone screens,
   deckle, duotone and paper grain were deleted; their class names are inert
-  until the Public/Admin phases remove the call sites.
+  until the remaining phases remove the call sites.
+
+Until 2026-08-17 this section described the opposite system — a hard `6px 6px
+0` ink offset, no shadow at rest, and a 3px ink border on every surface. If
+you find a component still drawing that, it is a straggler from the sweep, not
+a second sanctioned treatment.
 
 ## Core patterns (`src/components/transit/`)
 

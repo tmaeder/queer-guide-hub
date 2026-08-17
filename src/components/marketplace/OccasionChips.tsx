@@ -56,8 +56,8 @@ export function OccasionChips({
                   aria-pressed={active}
                   className={`inline-flex items-center gap-2 rounded-element border px-4 py-2 text-sm transition-colors ${
                     active
-                      ? 'border-foreground bg-foreground text-background'
-                      : 'border-border hover:border-foreground/40'
+                      ? 'bg-foreground text-background'
+                      : 'border border-border hover:border-foreground/40'
                   }`}
                 >
                   <span className="font-medium">{c.label}</span>

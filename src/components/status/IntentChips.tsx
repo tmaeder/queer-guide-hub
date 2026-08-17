@@ -7,7 +7,7 @@ const intentChip = (active: boolean) =>
   cn(
     'inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-element px-2.5 py-2 text-xs transition-colors bg-surface-container',
     active
-      ? 'border-foreground bg-foreground text-background'
+      ? 'bg-foreground text-background'
       : 'border-border text-muted-foreground hover:text-foreground',
   );
 
