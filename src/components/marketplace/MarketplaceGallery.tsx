@@ -9,6 +9,28 @@ interface MarketplaceGalleryProps {
 }
 
 /**
+ * Declared at module scope, not inside `MarketplaceGallery`. A component defined
+ * in a render body is a NEW type on every render, so React unmounts and remounts
+ * the subtree instead of updating it.
+ */
+function NoImage({ label }: { label: string }) {
+  return (
+    <div
+      className="flex aspect-square w-full items-center justify-center border-[3px] border-foreground bg-muted"
+      role="img"
+      aria-label={label}
+    >
+      <span
+        aria-hidden="true"
+        className="text-2xs font-bold uppercase tracking-label text-muted-foreground"
+      >
+        No photo
+      </span>
+    </div>
+  );
+}
+
+/**
  * Product gallery: one bordered image plate with a strip of square thumbnails
  * that swap it. R2-optimized URLs via useListingImages.
  *
@@ -34,18 +56,6 @@ export function MarketplaceGallery({ listingId, images, title }: MarketplaceGall
   const current = gallery[safeActive];
   const usable = gallery.filter((_, i) => !failed.has(i));
 
-  const NoImage = ({ label }: { label: string }) => (
-    <div
-      className="flex aspect-square w-full items-center justify-center border-[3px] border-foreground bg-muted"
-      role="img"
-      aria-label={label}
-    >
-      <span aria-hidden="true" className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
-        No photo
-      </span>
-    </div>
-  );
-
   if (gallery.length === 0 || usable.length === 0) {
     return <NoImage label={`No image for ${title}`} />;
   }
@@ -67,7 +77,6 @@ export function MarketplaceGallery({ listingId, images, title }: MarketplaceGall
         <div className="overflow-hidden border-[3px] border-foreground bg-muted">
           {/* onError is a standard non-interactive image fallback handler, not a
               mouse/keyboard interaction. */}
-          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
           <img
             src={current.full}
             alt={current.alt || title}
