@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useParams, useNavigate, Link } from 'react-router';
 import { useMediaDetail } from '@/hooks/useMediaDetail';
@@ -34,8 +35,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ArrowLeft, Star, Trash2, ExternalLink, Copy, Zap, Flag, Image as ImageIcon, X, Crown } from 'lucide-react';
-import { getOptimizationStatusBadge, formatFileSize, entityTypeLabel, entityAdminPath, getImageUrl } from './utils';
+import {
+  ArrowLeft,
+  Star,
+  Trash2,
+  ExternalLink,
+  Copy,
+  Zap,
+  Flag,
+  Image as ImageIcon,
+  X,
+  Crown,
+} from 'lucide-react';
+import {
+  getOptimizationStatusBadge,
+  formatFileSize,
+  entityTypeLabel,
+  entityAdminPath,
+  getImageUrl,
+} from './utils';
 import { GovernancePanel } from './GovernancePanel';
 import { AssetVersionSidebar } from './AssetVersionSidebar';
 import { SimilarImagesPanel } from './SimilarImagesPanel';
@@ -123,56 +141,67 @@ export function MediaDetailPage() {
   const imageUrl = getImageUrl(detail as UnifiedMediaItem) || signed.url;
 
   return (
-    <div className="max-w-screen-lg mx-auto p-6 flex flex-col gap-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/admin/media')}>
-            <ArrowLeft size={16} />
-          </Button>
-          <div>
-            <h4 className="text-xl font-bold">{detail.display_name}</h4>
-            <p className="text-sm text-muted-foreground">
-              {detail.source_type === 'image_asset' ? 'Image Asset' : 'CMS Media'}
-              {detail.format && ` · ${detail.format.toUpperCase()}`}
-              {detail.file_size ? ` · ${formatFileSize(detail.file_size)}` : ''}
-            </p>
-          </div>
-        </div>
+    <div className="flex flex-col gap-6">
+      {/* Archetype B — record editor. Title was <h4 className="text-xl
+        font-bold">; the format/size line is record IDENTITY, so it goes to the
+        filter row. The back arrow becomes a labelled action, because an
+        icon-only button was the only way back and gave a screen reader nothing
+        to read.
 
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => mutations.toggleStar.mutate(detail as UnifiedMediaItem)}
-          >
-            <Star size={16} style={{ fill: detail.starred ? 'currentColor' : 'none' }} />
-          </Button>
-          {imageUrl && (
-            <Button variant="outline" size="sm" asChild>
-              <a href={imageUrl} target="_blank" rel="noopener noreferrer">
-                <ExternalLink size={14} className="mr-1" />
-                Open
-              </a>
+        `max-w-screen-lg mx-auto p-6` is gone: a SECOND, narrower cap inside
+        AdminShell's <main>, same defect as MediaLibrary had. */}
+      <AdminArchetypeHeader
+        title={detail.display_name}
+        filters={
+          <span className="text-13 text-muted-foreground">
+            {detail.source_type === 'image_asset' ? 'Image Asset' : 'CMS Media'}
+            {detail.format && ` · ${detail.format.toUpperCase()}`}
+            {detail.file_size ? ` · ${formatFileSize(detail.file_size)}` : ''}
+          </span>
+        }
+        actions={
+          <>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/admin/media')}>
+              <ArrowLeft size={16} aria-hidden />
+              <span className="ml-1">Back to Media</span>
             </Button>
-          )}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setDeleteDialogOpen(true)}
-            disabled={detail.usage_count > 0}
-          >
-            <Trash2 size={14} className="mr-1" />
-            Delete
-          </Button>
-        </div>
-      </div>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => mutations.toggleStar.mutate(detail as UnifiedMediaItem)}
+            >
+              <Star size={16} style={{ fill: detail.starred ? 'currentColor' : 'none' }} />
+            </Button>
+            {imageUrl && (
+              <Button variant="outline" size="sm" asChild>
+                <a href={imageUrl} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink size={14} className="mr-1" />
+                  Open
+                </a>
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setDeleteDialogOpen(true)}
+              disabled={detail.usage_count > 0}
+            >
+              <Trash2 size={14} className="mr-1" />
+              Delete
+            </Button>
+          </>
+        }
+      />
 
       {/* Preview */}
       <Card>
         <CardContent className="p-0">
           {detail.mime_type.startsWith('image/') && imageUrl ? (
-            <div className="relative bg-muted flex items-center justify-center" style={{ minHeight: 200, maxHeight: 500 }}>
+            <div
+              className="relative bg-muted flex items-center justify-center"
+              style={{ minHeight: 200, maxHeight: 500 }}
+            >
               <img
                 src={imageUrl}
                 alt={detail.alt_text || detail.display_name}
@@ -209,7 +238,10 @@ export function MediaDetailPage() {
               <p className="text-sm font-medium mb-1">Alt Text</p>
               <Input
                 value={editAltText}
-                onChange={(e) => { setAltText(e.target.value); setMetaDirty(true); }}
+                onChange={(e) => {
+                  setAltText(e.target.value);
+                  setMetaDirty(true);
+                }}
                 placeholder="Describe this image..."
               />
             </div>
@@ -217,7 +249,10 @@ export function MediaDetailPage() {
               <p className="text-sm font-medium mb-1">Attribution</p>
               <Input
                 value={editAttribution}
-                onChange={(e) => { setAttribution(e.target.value); setMetaDirty(true); }}
+                onChange={(e) => {
+                  setAttribution(e.target.value);
+                  setMetaDirty(true);
+                }}
                 placeholder="Photo by..."
               />
             </div>
@@ -225,7 +260,10 @@ export function MediaDetailPage() {
               <p className="text-sm font-medium mb-1">License</p>
               <Select
                 value={editLicense || 'none'}
-                onValueChange={(v) => { setLicense(v === 'none' ? '' : v); setMetaDirty(true); }}
+                onValueChange={(v) => {
+                  setLicense(v === 'none' ? '' : v);
+                  setMetaDirty(true);
+                }}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -270,9 +308,7 @@ export function MediaDetailPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base">
-              Usage ({detail.entity_links.length})
-            </CardTitle>
+            <CardTitle className="text-base">Usage ({detail.entity_links.length})</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
@@ -315,11 +351,13 @@ export function MediaDetailPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => mutations.setAsCover.mutate({
-                              assetId: detail.id,
-                              entityType: link.entity_type,
-                              entityId: link.entity_id,
-                            })}
+                            onClick={() =>
+                              mutations.setAsCover.mutate({
+                                assetId: detail.id,
+                                entityType: link.entity_type,
+                                entityId: link.entity_id,
+                              })
+                            }
                             title="Set as cover"
                           >
                             <Crown size={14} />
@@ -329,12 +367,14 @@ export function MediaDetailPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => mutations.removeEntityLink.mutate({
-                              assetId: detail.id,
-                              entityType: link.entity_type,
-                              entityId: link.entity_id,
-                              role: link.role,
-                            })}
+                            onClick={() =>
+                              mutations.removeEntityLink.mutate({
+                                assetId: detail.id,
+                                entityType: link.entity_type,
+                                entityId: link.entity_id,
+                                role: link.role,
+                              })
+                            }
                             title="Remove link"
                           >
                             <X size={14} />
@@ -407,7 +447,11 @@ export function MediaDetailPage() {
                   <span className="text-muted-foreground">Perceptual Hash</span>
                   <span className="flex items-center gap-1 font-mono text-xs">
                     {detail.phash.slice(0, 16)}
-                    <Button variant="ghost" size="sm" onClick={() => copyToClipboard(detail.phash!)}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard(detail.phash!)}
+                    >
                       <Copy size={12} />
                     </Button>
                   </span>
@@ -418,7 +462,11 @@ export function MediaDetailPage() {
                   <span className="text-muted-foreground">Content Hash</span>
                   <span className="flex items-center gap-1 font-mono text-xs">
                     {detail.content_hash.slice(0, 16)}
-                    <Button variant="ghost" size="sm" onClick={() => copyToClipboard(detail.content_hash!)}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard(detail.content_hash!)}
+                    >
                       <Copy size={12} />
                     </Button>
                   </span>
@@ -561,7 +609,9 @@ function ExifDataSection({ metadata }: { metadata: Record<string, unknown> }) {
         {fields.map(({ label, value }) => (
           <div key={label} className="flex flex-col">
             <span className="text-muted-foreground text-xs">{label}</span>
-            <span className="truncate" title={value}>{value}</span>
+            <span className="truncate" title={value}>
+              {value}
+            </span>
           </div>
         ))}
       </div>

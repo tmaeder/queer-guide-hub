@@ -149,7 +149,7 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
 
   // ── B · Record editor ─────────────────────────────────────────────────
   { path: 'business/:id', archetype: 'B', adopted: true },
-  { path: 'media/:id', archetype: 'B' },
+  { path: 'media/:id', archetype: 'B', adopted: true },
   {
     path: 'content/personalities/:id/datasheet',
     archetype: null,
@@ -222,6 +222,7 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
     path: 'feedback',
     archetype: 'F',
     title: 'Feedback',
+    adopted: true,
     caveat: 'Queue tab is F; the Kanban and Roadmap tabs are A with a board view.',
   },
 
