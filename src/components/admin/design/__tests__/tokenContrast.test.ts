@@ -122,9 +122,18 @@ const CONTROL_SURFACES = ['background', 'card'] as const;
  * / 1.12.
  */
 const SURFACE_SEPARATION: Array<[string, string, number]> = [
-  ['card', 'background', 1.06],
+  // `card` vs `background` is DELIBERATELY ABSENT, and that is the whole
+  // change. Both are paper #FAFAF5: the brand update separates a card from
+  // the page with the GROUND LAYER (the tiled bezier field on `body`, see
+  // src/index.css) plus the soft shadow — a card reads because it COVERS the
+  // pattern, not because it is a lighter tone.
+  //
+  // Asserting a tonal step here would now fail on correct code, and silently
+  // pressure someone into re-tinting the page. What replaces it is the pair of
+  // guards below: the ground must exist, and the card must keep its shadow
+  // (e2e/design-system.spec.ts asserts the shadow on the rendered card).
   ['muted', 'card', 1.04],
-  ['popover', 'background', 1.1],
+  ['surface-container-high', 'card', 1.1],
 ];
 
 /**
@@ -178,6 +187,24 @@ describe('design tokens: contrast guards', () => {
         'Control boundaries and the focus ring are the marks 1.4.11 actually covers; ' +
         'container frames were removed and are exempt as decoration.',
     ).toBeGreaterThanOrEqual(3);
+  });
+
+  it('keeps the ground layer, which is what separates a card from the page', () => {
+    // Load-bearing, not decoration: --background and --card are the same paper,
+    // so the tiled bezier field on `body` is the only thing making a card
+    // legible as a surface. If someone deletes it as "decorative texture",
+    // every card in the product goes invisible — this is the guard that says so.
+    const css = readFileSync(resolve(__dirname, '../../../../index.css'), 'utf8');
+    const body = css.slice(css.indexOf('\nbody {'));
+    expect(body, 'body lost its ground layer').toContain('background-image: url("data:image/svg+xml');
+    // All four tracks, and no straight runs (hard rule #1: every track bends).
+    for (const track of ['%23FF1F8F', '%2300B4E6', '%232BE05A', '%23FFD500']) {
+      expect(body.slice(0, 4000), `ground layer is missing ${track}`).toContain(track);
+    }
+    expect(
+      value('card', 'light'),
+      'card and page are the same paper by design — if this changes, revisit the ground layer',
+    ).toBe(value('background', 'light'));
   });
 
   it.each(SURFACE_SEPARATION.flatMap((s) => MODES.map((mode) => [...s, mode] as const)))(
