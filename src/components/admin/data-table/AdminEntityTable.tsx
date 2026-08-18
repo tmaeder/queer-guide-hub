@@ -2,7 +2,9 @@ import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
-import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { Link } from 'react-router';
+import { ArrowLeft } from 'lucide-react';
+import { AdminIndexFrame } from '@/components/admin/frames/AdminIndexFrame';
 import { AdminCardSkeleton } from '@/components/admin/primitives/AdminLoading';
 import { AdminDataTable } from './AdminDataTable';
 import type { AdminTableConfig } from './types';
@@ -53,29 +55,50 @@ export function AdminEntityTable<TData extends { id: string }>({
     }
   }
 
-  return (
-    <div className="w-full p-6">
-      {/* AdminPageHeader supplies the route eyebrow, typography tokens and back
-          link. Adopting it here gives every AdminEntityTable consumer — the 8
-          taxonomy pages included — the standard header in one edit, replacing a
-          hand-rolled <h4 className="text-2xl font-bold"> that bypassed the type
-          scale. AdminPageHeader prefixes "Back to", so labels are bare nouns. */}
-      <AdminPageHeader
-        title={title}
-        subtitle={subtitle}
-        actions={headerActions}
-        backTo={
-          backHref === null
-            ? undefined
-            : { route: backHref, label: backLabel.replace(/^back\s*(to\s*)?/i, '') || 'Cockpit' }
-        }
-      />
+  const backTo = backHref === null ? null : backHref;
+  const backText = backLabel.replace(/^back\s*(to\s*)?/i, '') || 'Cockpit';
 
+  return (
+    /* Archetype A — the index frame. Adopting it HERE rather than per page is
+       the highest-leverage edit in the migration: every AdminEntityTable
+       consumer gets the fixed header grammar in one change.
+
+       `p-6` is gone. AdminShell's <main> is documented as "the ONE owner of
+       admin page spacing" and already applies the gutter, so this wrapper was
+       double-padding every consumer — the exact defect that rule was written
+       to end.
+
+       The back link survives as a secondary ACTION. The archetype grammar has
+       no back slot, and the mock omits one, but a migrated route also loses the
+       shell's breadcrumb bar — so on these pages the link is more useful after
+       the migration, not less. Dropping it to match the mock would be a
+       silent navigation regression. */
+    <AdminIndexFrame
+      title={title}
+      countLine={subtitle}
+      actions={
+        <>
+          {backTo && (
+            <Link
+              to={backTo}
+              className="inline-flex items-center gap-1 text-13 font-bold no-underline hover:underline"
+            >
+              <ArrowLeft size={14} aria-hidden />
+              {/* "Back to X". AdminPageHeader used to add the prefix, so
+                 callers pass a bare noun and the visible string must stay
+                 identical — this is a layout migration, not a copy change. */}
+              Back to {backText}
+            </Link>
+          )}
+          {headerActions}
+        </>
+      }
+    >
       {beforeTable}
 
       <AdminDataTable config={config} />
 
       {afterTable}
-    </div>
+    </AdminIndexFrame>
   );
 }
