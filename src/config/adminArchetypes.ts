@@ -122,10 +122,10 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
   },
 
   // ── A · Index (the archetype the claim lives or dies on) ───────────────
-  { path: 'content', archetype: 'A', title: 'Content' },
-  { path: 'content/:type', archetype: 'A' },
-  { path: 'content/personalities', archetype: 'A', title: 'Personalities' },
-  { path: 'content/milestones', archetype: 'A', title: 'Milestones' },
+  { path: 'content', archetype: 'A', title: 'Content', adopted: true },
+  { path: 'content/:type', archetype: 'A', adopted: true },
+  { path: 'content/personalities', archetype: 'A', title: 'Personalities', adopted: true },
+  { path: 'content/milestones', archetype: 'A', title: 'Milestones', adopted: true },
   { path: 'users', archetype: 'A', title: 'Users' },
   { path: 'business', archetype: 'A', title: 'Business' },
   { path: 'audit', archetype: 'A', title: 'Audit log' },
