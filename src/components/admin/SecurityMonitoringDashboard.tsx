@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
 import { listFrom, countRows } from '@/hooks/usePageFetchers';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -93,10 +94,18 @@ export function SecurityMonitoringDashboard() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center gap-2">
-        <Shield size={24} />
-        <h2 className="text-2xl font-bold">Security Monitoring Dashboard</h2>
-      </div>
+      {/* Was <h2 className="text-2xl font-bold"> — an h2 as the page title, so
+        the route had no h1, plus an arbitrary size off the scale. Same defect
+        as ContentListPanel's h5, EmailTemplates' h4 and AuditLog's <p>. */}
+      <AdminArchetypeHeader
+        className="mb-0"
+        title={
+          <span className="flex items-center gap-2">
+            <Shield size={24} aria-hidden />
+            Security Monitoring
+          </span>
+        }
+      />
 
       {criticalEvents.length > 0 && (
         <Alert variant="destructive">
