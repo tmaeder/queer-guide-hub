@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Waypoints } from 'lucide-react';
-import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -78,10 +78,15 @@ export default function ContentGraph() {
 
   return (
     <div className="flex flex-col gap-4">
-      <AdminPageHeader
-        title="Content Graph"
-        subtitle="How every content type and attribute links together. Node size = record count; edge thickness = real link count."
-      />
+      <AdminArchetypeHeader title="Content Graph" />
+
+      {/* A LEGEND, not orientation. "Node size = record count; edge
+        thickness = real link count" is how the diagram is read at all —
+        drop it and the visualisation becomes decorative. */}
+      <p className="m-0 max-w-reading text-13 leading-relaxed text-muted-foreground">
+        How every content type and attribute links together. Node size = record count; edge
+        thickness = real link count.
+      </p>
 
       <div className="flex flex-wrap items-center justify-between gap-2">
         <Legend />

@@ -409,6 +409,8 @@ export function HotelsManager() {
 
   return (
     <AdminEntityTable
+      /* Embedded in AdminBusiness, which owns the page title. */
+      hideHeader
       title="Hotels & BnBs"
       subtitle="Manage LGBTQ+ friendly accommodations"
       backHref={null}
@@ -574,7 +576,13 @@ export function HotelsManager() {
                 <div className="flex items-center justify-between gap-2">
                   <Label htmlFor="hotel-safety">Queer Safety Notes</Label>
                   {editingHotel && (
-                    <Button type="button" size="sm" variant="outline" disabled={regenBusy} onClick={handleRegenerateSafety}>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={regenBusy}
+                      onClick={handleRegenerateSafety}
+                    >
                       <RefreshCw size={13} className="mr-1" /> Regenerate from signals
                     </Button>
                   )}

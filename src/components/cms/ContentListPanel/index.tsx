@@ -38,6 +38,17 @@ const BulkActionsBar = lazy(() =>
 );
 
 interface ContentListPanelProps {
+  /**
+   * Suppress this panel's own archetype header.
+   *
+   * Set by a page that embeds the panel AND owns the page title — otherwise
+   * the route renders TWO h1s, which is both an a11y defect (a screen reader
+   * announces two page titles) and the exact invariant
+   * e2e/admin-route-baseline.spec.ts asserts. Introduced after adopting the
+   * header here silently gave /admin/content/milestones a second one.
+   */
+  hideHeader?: boolean;
+
   contentTypeId?: string;
   onEdit?: (contentType: string, itemId: string) => void;
   onCreate?: (contentType: string) => void;
@@ -138,61 +149,65 @@ function ContentListPanelBody(props: ContentListPanelProps) {
         wired through useContentList; restructuring that in the same change as
         the header would put a behavioural rewrite inside a layout diff. The
         count rides with the title. */}
-      <AdminArchetypeHeader
-        title={
-          <span className="flex items-center gap-4">
-            {Icon && (
-              <span
-                className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-                style={{ backgroundColor: tintOf(typeColor) }}
-              >
-                <Icon size={16} style={{ color: typeColor }} />
-              </span>
-            )}
-            {c.config ? c.config.label.plural : 'All Content'}
-            {/* The record count sits with the title, not in a countLine slot:
+      {!props.hideHeader && (
+        <AdminArchetypeHeader
+          title={
+            <span className="flex items-center gap-4">
+              {Icon && (
+                <span
+                  className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                  style={{ backgroundColor: tintOf(typeColor) }}
+                >
+                  <Icon size={16} style={{ color: typeColor }} />
+                </span>
+              )}
+              {c.config ? c.config.label.plural : 'All Content'}
+              {/* The record count sits with the title, not in a countLine slot:
               AdminArchetypeHeader has no such slot (that is AdminIndexFrame's,
               and adopting the full body contract here would mean restructuring
               five view modes in a layout diff). */}
-            {!c.loading && (
-              <Badge
-                variant="secondary"
-                className="h-[22px] text-xs font-semibold"
-                style={{ backgroundColor: tintOf(typeColor), color: typeColor }}
-              >
-                {c.totalCount.toLocaleString()}
-              </Badge>
-            )}
-          </span>
-        }
-        actions={
-          <>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 w-7 p-0"
-                  onClick={() => c.loadItems()}
+              {!c.loading && (
+                <Badge
+                  variant="secondary"
+                  className="h-[22px] text-xs font-semibold"
+                  style={{ backgroundColor: tintOf(typeColor), color: typeColor }}
                 >
-                  <RefreshCw size={16} />
+                  {c.totalCount.toLocaleString()}
+                </Badge>
+              )}
+            </span>
+          }
+          actions={
+            <>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0"
+                    onClick={() => c.loadItems()}
+                  >
+                    <RefreshCw size={16} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Refresh</TooltipContent>
+              </Tooltip>
+              {c.config?.toolbarActions?.()}
+              {c.config && c.allListColumns.length > 0 && (
+                <ExportExcelButton
+                  onExport={() => exportContentType(c.config!, c.allListColumns)}
+                />
+              )}
+              {c.config && (
+                <Button size="sm" onClick={() => c.onCreate(c.config!.id)}>
+                  <Plus size={16} className="mr-1" />
+                  New {c.config.label.singular}
                 </Button>
-              </TooltipTrigger>
-              <TooltipContent>Refresh</TooltipContent>
-            </Tooltip>
-            {c.config?.toolbarActions?.()}
-            {c.config && c.allListColumns.length > 0 && (
-              <ExportExcelButton onExport={() => exportContentType(c.config!, c.allListColumns)} />
-            )}
-            {c.config && (
-              <Button size="sm" onClick={() => c.onCreate(c.config!.id)}>
-                <Plus size={16} className="mr-1" />
-                New {c.config.label.singular}
-              </Button>
-            )}
-          </>
-        }
-      />
+              )}
+            </>
+          }
+        />
+      )}
 
       {c.contentTypeId && (
         <ViewBar

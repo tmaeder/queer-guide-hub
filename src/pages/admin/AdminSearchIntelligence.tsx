@@ -6,7 +6,7 @@ import { AuditTab } from '@/components/admin/search-intelligence/AuditTab';
 import { IngestionQualityTab } from '@/components/admin/search-intelligence/IngestionQualityTab';
 import { SuggestionsTab } from '@/components/admin/search-intelligence/SuggestionsTab';
 import { SetupTab } from '@/components/admin/search-intelligence/SetupTab';
-import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
 
 export default function AdminSearchIntelligence() {
   // The Meili Search-Debugger / Settings / Reindexing / Consistency tabs were
@@ -26,11 +26,11 @@ export default function AdminSearchIntelligence() {
 
   return (
     <div>
-      <AdminPageHeader
-        eyebrow="Data"
-        title="Search Intelligence"
-        subtitle="Admin surface for tags, topics, suggestions, ingestion quality, and audit."
-      />
+      {/* No `eyebrow`: that was AdminPageHeader's API, where each page typed
+        its own context string. AdminArchetypeHeader DERIVES the equivalent
+        route line from the registry, so the two cannot disagree — which is the
+        whole reason the line is derived rather than passed. */}
+      <AdminArchetypeHeader title="Search Intelligence" />
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
