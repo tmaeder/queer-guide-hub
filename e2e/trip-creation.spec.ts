@@ -12,12 +12,23 @@ import { test, expect } from '@playwright/test';
  */
 
 test.describe('/trips create dialog (signed out)', () => {
+  // The chromium project carries the admin storageState whenever
+  // E2E_ADMIN_EMAIL/PASSWORD are set, so "signed out" has to be asked for
+  // explicitly — a spec that merely never signs in is signed IN here. This
+  // passed for as long as the credentials were missing and started failing the
+  // day they were added, which is the tell: it was never testing anonymity,
+  // it was testing that the session was broken.
+  test.use({ storageState: { cookies: [], origins: [] } });
+
   test('signed-out users see the auth CTA, not the create dialog', async ({ page }) => {
     await page.goto('/trips');
 
     // Primary CTA opens auth, not the create trip dialog
     await expect(
-      page.getByRole('button').filter({ hasText: /sign in|anmelden|connexion|iniciar/i }).first(),
+      page
+        .getByRole('button')
+        .filter({ hasText: /sign in|anmelden|connexion|iniciar/i })
+        .first(),
     ).toBeVisible({ timeout: 15000 });
 
     // Trip creation form is NOT rendered for signed-out users

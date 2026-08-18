@@ -453,6 +453,7 @@ export function NewsSourcesManager() {
 
                         <div className="flex items-center gap-2">
                           <Switch
+                            aria-label={`Enable ${source.name}`}
                             checked={source.is_active}
                             onCheckedChange={() => handleToggleActive(source.id, source.is_active)}
                           />

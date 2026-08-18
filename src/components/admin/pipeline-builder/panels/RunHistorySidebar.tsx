@@ -118,7 +118,7 @@ export default function RunHistorySidebar({
             }`}
           >
             {f}
-            {counts[f] > 0 && <span className="ml-1 opacity-70">{counts[f]}</span>}
+            {counts[f] > 0 && <span className="ml-1 font-semibold">{counts[f]}</span>}
           </button>
         ))}
       </div>

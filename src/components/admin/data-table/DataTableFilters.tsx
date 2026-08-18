@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   Select,
@@ -46,14 +46,20 @@ interface FilterControlProps {
 }
 
 function FilterControl({ config, value, onChange }: FilterControlProps) {
+  const switchId = useId();
   if (config.type === 'boolean') {
     return (
       <div className="flex items-center gap-2">
+        {/* The Label sat beside the Switch with no `htmlFor`, so it named
+          nothing: the switch was unlabelled (axe button-name) AND the visible
+          text was not a click target. Associating them fixes both, and is
+          better than an aria-label that would duplicate the visible string. */}
         <Switch
+          id={switchId}
           checked={value === true}
           onCheckedChange={(checked) => onChange(checked || undefined)}
         />
-        <Label style={{ fontSize: 13 }} className="whitespace-nowrap">
+        <Label htmlFor={switchId} style={{ fontSize: 13 }} className="whitespace-nowrap">
           {config.label}
         </Label>
       </div>
@@ -102,7 +108,13 @@ function SelectFilter({ config, value, onChange }: SelectFilterProps) {
         value={(value as string) || 'all'}
         onValueChange={(v) => onChange(v === 'all' ? undefined : v)}
       >
-        <SelectTrigger style={{ height: 36, fontSize: 13 }}>
+        {/* The placeholder is not a name — it disappears as soon as a value
+          is picked, so the control loses its label exactly when it starts
+          carrying state (axe button-name on the combobox). */}
+        <SelectTrigger
+          aria-label={`Filter by ${config.label}`}
+          style={{ height: 36, fontSize: 13 }}
+        >
           <SelectValue placeholder={config.label} />
         </SelectTrigger>
         <SelectContent>
