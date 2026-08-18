@@ -56,13 +56,6 @@ const ROUTES = ADMIN_ARCHETYPES.filter(
 /** Anything that could mutate production. Aborted, never sent. */
 const BLOCKED = /\/rpc\/(branding_|admin_automation_set_enabled|.*_upsert|.*_delete)/i;
 
-/** Map tiles, glyphs and sprites. This baseline asserts STRUCTURE — an h1, some
- *  content, no page errors, no horizontal overflow — and none of that needs a
- *  rendered basemap. /admin/pipelines mounts a MapLibre canvas and was blowing
- *  even the raised 75s budget three attempts running, with every tile paying
- *  the cost of the `page.route('**\/*')` interceptor on a single worker. */
-const MAP_ASSET = /(\.pbf|\.mvt|tiles?\/|sprite|glyphs|basemap|maptiler|openfreemap)/i;
-
 type Shape = { endpoints: string[]; h1: string; errors: string[] };
 
 test.describe('admin routes stay healthy through the archetype migration', () => {
@@ -84,15 +77,27 @@ test.describe('admin routes stay healthy through the archetype migration', () =>
       const endpoints = new Set<string>();
       const errors: string[] = [];
 
-      await page.route('**/*', (r) => {
+      // Intercept ONLY the API calls this spec reasons about — never `**/*`.
+      //
+      // Every intercepted request round-trips to Node and back. With `**/*`
+      // that is every JS chunk, font, image and map tile, and on
+      // /admin/pipelines it saturated the same CDP channel that `evaluate`
+      // and `innerText` need: the page loaded, the h1 read fine, and then the
+      // NEXT evaluate never returned — three attempts at 75s, twice, through
+      // two different rewrites of that one assertion. The route is healthy;
+      // the axe suite scans it on the same commit. The interceptor was the
+      // cost, which is why aborting the basemap (only reachable via `**/*`)
+      // bought 0.9m and fixed nothing.
+      await page.route(/supabase|\/rest\/v1|\/rpc\//, (r) => {
         const url = r.request().url();
         const method = r.request().method();
-        if (MAP_ASSET.test(url)) return r.abort();
-        if (BLOCKED.test(url) || (method !== 'GET' && /supabase|rest\/v1/.test(url))) {
+        if (BLOCKED.test(url) || method !== 'GET') {
           endpoints.add(`BLOCKED ${new URL(url).pathname}`);
           return r.abort();
         }
-        if (/rest\/v1|\/rpc\//.test(url)) endpoints.add(new URL(url).pathname);
+        // Recorded shape stays what it was: rest/v1 + rpc paths only, so a
+        // baseline captured before this change still compares.
+        if (/\/rest\/v1|\/rpc\//.test(url)) endpoints.add(new URL(url).pathname);
         return r.continue();
       });
       page.on('pageerror', (e) => errors.push(e.message.slice(0, 120)));
