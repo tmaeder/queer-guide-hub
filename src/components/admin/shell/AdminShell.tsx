@@ -38,6 +38,7 @@ import { AdminSidebar } from './AdminSidebar';
 import { OPEN_COMMAND_PALETTE_EVENT } from '@/components/admin/command-palette/commandPaletteBus';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { getBreadcrumbsForRoute, getRouteMinRole } from '@/config/adminNavigation';
+import { hasAdoptedFrame } from '@/config/adminArchetypes';
 import { roleAtLeast } from '@/config/adminRoles';
 import { useGranularRoles } from '@/hooks/useGranularRoles';
 import { Lock } from 'lucide-react';
@@ -186,6 +187,25 @@ export function AdminShell() {
   // Build breadcrumbs from current route
   const breadcrumbs = getBreadcrumbsForRoute(location.pathname);
 
+  /**
+   * The archetype migration switch.
+   *
+   * A page on a frame emits its own header — route line, title, filter row,
+   * primary action — so the legacy breadcrumb bar and area hint above it would
+   * be a THIRD and FOURTH heading band stacked on the same screen. ADOPTING
+   * the header therefore retires those bands for that route.
+   *
+   * Keyed on adoption, NOT on registry membership: the registry already
+   * describes all forty routes, so gating on membership would strip the
+   * breadcrumbs from 35 unmigrated pages at once. Migration proceeds one
+   * route at a time, and the app is shippable at every commit.
+   *
+   * Deliberately a PURE function of the pathname, not a context flag written
+   * from a child's effect: `react-hooks/set-state-in-effect` is an ERROR
+   * across the admin tree, and a render-phase read has no ordering hazard.
+   */
+  const onArchetypeFrame = hasAdoptedFrame(location.pathname);
+
   // Sidebar component
   const sidebar = <AdminSidebar />;
 
@@ -247,7 +267,7 @@ export function AdminShell() {
             )}
 
             {/* Breadcrumb bar (hidden under sm on mobile to avoid doubling the top-bar title) */}
-            {breadcrumbs.length > 1 && (
+            {breadcrumbs.length > 1 && !onArchetypeFrame && (
               <div
                 className={`${isMobile ? 'hidden sm:flex' : 'flex'} ${PAGE_GUTTER} py-2.5 bg-background border-b border-border items-center min-h-11`}
               >
@@ -280,8 +300,10 @@ export function AdminShell() {
               </div>
             )}
 
-            {/* Area hint — one-line "what is this area" under the breadcrumb */}
-            {!editor && <AdminAreaHint />}
+            {/* Area hint — one-line "what is this area" under the breadcrumb.
+              Retired per-route by the archetype header, which carries the same
+              context in its route line. */}
+            {!editor && !onArchetypeFrame && <AdminAreaHint />}
 
             {/* Content area */}
             {/* The ONE owner of admin page spacing. Pages render bare content —
