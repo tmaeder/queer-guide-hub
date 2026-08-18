@@ -228,17 +228,19 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
 
   // ── H · Registry ──────────────────────────────────────────────────────
   { path: 'automation', archetype: 'H', title: 'Automations', adopted: true },
-  { path: 'recognition', archetype: 'H', title: 'Recognition' },
+  { path: 'recognition', archetype: 'H', title: 'Recognition', adopted: true },
   {
     path: 'email-templates',
     archetype: 'H',
     title: 'Email templates',
+    adopted: true,
     caveat: 'H registry plus a rich editor; the editor half is really B.',
   },
   {
     path: 'quality',
     archetype: 'H',
     title: 'Quality',
+    adopted: true,
     caveat:
       'Genuinely ambiguous E vs H. Filed as H: QUALITY_GATES are named rules, the pending count ' +
       'is the fired-count, and the link-to-queue takes the toggle slot. E would demand a chart ' +

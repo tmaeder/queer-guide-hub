@@ -26,7 +26,7 @@ import { GeoAddressQualityPanel } from '@/components/admin/GeoAddressQualityPane
 import { CategoryCoveragePanel } from '@/components/admin/CategoryCoveragePanel';
 import { VenueReviewQueuePanel } from '@/components/admin/VenueReviewQueuePanel';
 import type { FreigabeStufe } from '@/lib/personalityStatus';
-import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
 
 interface QualityEngine {
   /** get_admin_counts key for pending review items; null = engine has no gate. */
@@ -267,22 +267,24 @@ export default function QualityHub() {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* mb-0: the parent already spaces children with gap-6. */}
-      <AdminPageHeader
-        className="mb-0"
+      {/* Archetype H — a registry of named quality gates, each with a pending
+        count. The pending total is the archetype's fired-count, so it moves out
+        of the subtitle and into the header's action slot where a number that
+        implies work belongs; the rest of the old subtitle was orientation the
+        route line now carries. */}
+      <AdminArchetypeHeader
         title={
           <span className="flex items-center gap-2">
             <ShieldCheck size={22} aria-hidden />
             Quality
           </span>
         }
-        subtitle={
-          <>
-            Truth Engine review gates and dashboards. Review happens in the inbox.{' '}
+        actions={
+          <span className="text-13 text-muted-foreground">
             {counts
-              ? `${totalPending} item${totalPending === 1 ? '' : 's'} awaiting review.`
+              ? `${totalPending} item${totalPending === 1 ? '' : 's'} awaiting review`
               : 'Loading counts…'}
-          </>
+          </span>
         }
       />
 
