@@ -410,7 +410,9 @@ export default function AdminTags() {
                     value={formData.category}
                     onValueChange={(v) => setFormData((p) => ({ ...p, category: v }))}
                   >
-                    <SelectTrigger>
+                    {/* The Label above says htmlFor="category"; without this
+                      id it pointed at nothing and named nothing. */}
+                    <SelectTrigger id="category">
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>

@@ -160,7 +160,7 @@ export function EmailBrandingTab({ controller }: { controller: DesignSettingsCon
             <div className="rounded-element bg-white p-4 text-sm text-black">
               Template content renders here — this wrapper frames every templated email.
             </div>
-            <p className="mt-4 text-2xs opacity-70">© Queer Guide · queer.guide</p>
+            <p className="mt-4 text-2xs text-muted-foreground">© Queer Guide · queer.guide</p>
           </div>
         </CardContent>
       </Card>

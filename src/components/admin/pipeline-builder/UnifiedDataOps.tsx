@@ -212,25 +212,32 @@ export default function UnifiedDataOps() {
         className="flex items-stretch border-b border-border overflow-x-auto"
         style={{ marginBottom: activeTab === 'builder' ? 0 : 20 }}
       >
-        {TABS.map(({ key, label, icon: Icon }) => {
-          const isActive = activeTab === key;
-          return (
-            <button
-              key={key}
-              role="tab"
-              aria-selected={isActive}
-              onClick={() => switchTab(key)}
-              className={`flex items-center gap-1.5 px-4 py-2.5 text-sm whitespace-nowrap border-b transition-colors ${
-                isActive
-                  ? 'border-primary text-primary font-semibold'
-                  : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/30'
-              }`}
-            >
-              <Icon className="h-[15px] w-[15px]" />
-              {label}
-            </button>
-          );
-        })}
+        {/* The tablist wraps ONLY the tabs. The "Inbox" link below is a
+          navigation escape hatch that happens to sit in the same bar; inside
+          the tablist it is an illegal child (axe aria-required-children) and
+          is announced as one of N tabs. Previously there was no tablist at
+          all, so every tab reported aria-required-parent instead. */}
+        <div role="tablist" aria-label="Data ops sections" className="flex items-stretch">
+          {TABS.map(({ key, label, icon: Icon }) => {
+            const isActive = activeTab === key;
+            return (
+              <button
+                key={key}
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => switchTab(key)}
+                className={`flex items-center gap-1.5 px-4 py-2.5 text-sm whitespace-nowrap border-b transition-colors ${
+                  isActive
+                    ? 'border-primary text-primary font-semibold'
+                    : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/30'
+                }`}
+              >
+                <Icon className="h-[15px] w-[15px]" />
+                {label}
+              </button>
+            );
+          })}
+        </div>
         <Link
           to="/admin/inbox"
           className="flex items-center gap-1.5 px-4 py-2.5 text-sm whitespace-nowrap text-muted-foreground hover:text-foreground transition-colors ml-auto"
