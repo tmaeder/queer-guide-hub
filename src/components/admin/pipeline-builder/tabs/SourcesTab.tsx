@@ -11,9 +11,17 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { AdminTableRowSkeleton } from '@/components/admin/primitives/AdminLoading';
 
-const IngestionSourcesManager = lazy(() => import('@/components/admin/IngestionSourcesManager').then(m => ({ default: m.IngestionSourcesManager })));
-const NewsSourcesManager = lazy(() => import('@/components/admin/NewsSourcesManager').then(m => ({ default: m.NewsSourcesManager })));
-const ApiKeysManager = lazy(() => import('@/components/admin/ApiKeysManager').then(m => ({ default: m.ApiKeysManager })));
+const IngestionSourcesManager = lazy(() =>
+  import('@/components/admin/IngestionSourcesManager').then((m) => ({
+    default: m.IngestionSourcesManager,
+  })),
+);
+const NewsSourcesManager = lazy(() =>
+  import('@/components/admin/NewsSourcesManager').then((m) => ({ default: m.NewsSourcesManager })),
+);
+const ApiKeysManager = lazy(() =>
+  import('@/components/admin/ApiKeysManager').then((m) => ({ default: m.ApiKeysManager })),
+);
 
 const panelFallback = (
   <div className="p-4 space-y-2">
@@ -43,13 +51,32 @@ interface ScrapeSource {
 type StatusKey = 'healthy' | 'stale' | 'failing' | 'disabled' | 'never';
 type HealthFilter = 'all' | StatusKey;
 
-function statusFor(s: ScrapeSource): { key: StatusKey; icon: React.ComponentType<{ className?: string }>; className: string; label: string } {
-  if (!s.is_enabled) return { key: 'disabled', icon: Power, className: 'text-muted-foreground', label: 'disabled' };
-  if (s.consecutive_failures >= 3) return { key: 'failing', icon: AlertTriangle, className: 'text-destructive', label: `${s.consecutive_failures} failures` };
-  if (!s.last_success_at) return { key: 'never', icon: Clock, className: 'text-muted-foreground', label: 'never run' };
+function statusFor(s: ScrapeSource): {
+  key: StatusKey;
+  icon: React.ComponentType<{ className?: string }>;
+  className: string;
+  label: string;
+} {
+  if (!s.is_enabled)
+    return { key: 'disabled', icon: Power, className: 'text-muted-foreground', label: 'disabled' };
+  if (s.consecutive_failures >= 3)
+    return {
+      key: 'failing',
+      icon: AlertTriangle,
+      className: 'text-destructive',
+      label: `${s.consecutive_failures} failures`,
+    };
+  if (!s.last_success_at)
+    return { key: 'never', icon: Clock, className: 'text-muted-foreground', label: 'never run' };
   const hrs = (Date.now() - new Date(s.last_success_at).getTime()) / 3_600_000;
-  if (hrs > 48) return { key: 'stale', icon: AlertTriangle, className: 'text-foreground dark:text-foreground', label: `stale ${Math.round(hrs)}h` };
-  return { key: 'healthy', icon: CheckCircle, className: 'text-foreground dark:text-foreground', label: 'healthy' };
+  if (hrs > 48)
+    return {
+      key: 'stale',
+      icon: AlertTriangle,
+      className: 'text-foreground',
+      label: `stale ${Math.round(hrs)}h`,
+    };
+  return { key: 'healthy', icon: CheckCircle, className: 'text-foreground', label: 'healthy' };
 }
 
 export default function SourcesTab() {
@@ -72,7 +99,9 @@ export default function SourcesTab() {
 
   const toggle = useMutation({
     mutationFn: async ({ id, enabled }: { id: string; enabled: boolean }) => {
-      const { error } = await untypedFrom('scrape_sources').update({ is_enabled: enabled }).eq('id', id);
+      const { error } = await untypedFrom('scrape_sources')
+        .update({ is_enabled: enabled })
+        .eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['scrape-sources'] }),
@@ -81,7 +110,9 @@ export default function SourcesTab() {
 
   const bulkToggle = useMutation({
     mutationFn: async ({ ids, enabled }: { ids: string[]; enabled: boolean }) => {
-      const { error } = await untypedFrom('scrape_sources').update({ is_enabled: enabled }).in('id', ids);
+      const { error } = await untypedFrom('scrape_sources')
+        .update({ is_enabled: enabled })
+        .in('id', ids);
       if (error) throw error;
     },
     onSuccess: (_, { ids, enabled }) => {
@@ -101,9 +132,12 @@ export default function SourcesTab() {
       if (filter !== 'all' && st.key !== filter) continue;
       if (search) {
         const q = search.toLowerCase();
-        if (!s.name.toLowerCase().includes(q)
-            && !s.slug.toLowerCase().includes(q)
-            && !(s.target_table || '').toLowerCase().includes(q)) continue;
+        if (
+          !s.name.toLowerCase().includes(q) &&
+          !s.slug.toLowerCase().includes(q) &&
+          !(s.target_table || '').toLowerCase().includes(q)
+        )
+          continue;
       }
       result.push({ ...s, _status: st });
     }
@@ -117,7 +151,7 @@ export default function SourcesTab() {
           <div className="px-4 py-2.5 border-b border-border flex items-center gap-2 flex-wrap">
             <div className="font-semibold text-sm">Ingest Sources</div>
             <Badge variant="outline" className="text-2xs px-1.5 py-0">
-              {counts.all} total · {(counts.healthy)} healthy
+              {counts.all} total · {counts.healthy} healthy
             </Badge>
 
             <div className="relative flex-1 max-w-xs ml-2">
@@ -131,7 +165,7 @@ export default function SourcesTab() {
             </div>
 
             <div className="flex gap-1 flex-wrap">
-              {(['all', 'healthy', 'stale', 'failing', 'disabled', 'never'] as const).map(f => (
+              {(['all', 'healthy', 'stale', 'failing', 'disabled', 'never'] as const).map((f) => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
@@ -141,7 +175,8 @@ export default function SourcesTab() {
                       : 'bg-background text-muted-foreground border-border hover:bg-accent'
                   }`}
                 >
-                  {f}{counts[f] > 0 && <span className="ml-1 opacity-70">{counts[f]}</span>}
+                  {f}
+                  {counts[f] > 0 && <span className="ml-1 opacity-70">{counts[f]}</span>}
                 </button>
               ))}
             </div>
@@ -152,7 +187,9 @@ export default function SourcesTab() {
                   size="sm"
                   variant="outline"
                   className="h-7 text-xs"
-                  onClick={() => bulkToggle.mutate({ ids: filtered.map(s => s.id), enabled: true })}
+                  onClick={() =>
+                    bulkToggle.mutate({ ids: filtered.map((s) => s.id), enabled: true })
+                  }
                   disabled={bulkToggle.isPending}
                 >
                   Enable all ({filtered.length})
@@ -163,7 +200,7 @@ export default function SourcesTab() {
                   className="h-7 text-xs"
                   onClick={() => {
                     if (window.confirm(`Disable ${filtered.length} sources?`)) {
-                      bulkToggle.mutate({ ids: filtered.map(s => s.id), enabled: false });
+                      bulkToggle.mutate({ ids: filtered.map((s) => s.id), enabled: false });
                     }
                   }}
                   disabled={bulkToggle.isPending}
@@ -178,8 +215,22 @@ export default function SourcesTab() {
             <table className="w-full text-sm">
               <thead className="bg-muted/40 sticky top-0 z-10">
                 <tr className="border-b border-border">
-                  {['Source', 'Target', 'Health', 'Last success', 'Last run', 'Runs / Items', 'Schedule', ''].map((h, i) => (
-                    <th key={i} className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
+                  {[
+                    'Source',
+                    'Target',
+                    'Health',
+                    'Last success',
+                    'Last run',
+                    'Runs / Items',
+                    'Schedule',
+                    '',
+                  ].map((h, i) => (
+                    <th
+                      key={i}
+                      className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider"
+                    >
+                      {h}
+                    </th>
                   ))}
                 </tr>
               </thead>
@@ -187,70 +238,95 @@ export default function SourcesTab() {
                 {isLoading ? (
                   <AdminTableRowSkeleton columns={8} />
                 ) : filtered.length === 0 ? (
-                  <tr><td colSpan={8} className="p-6 text-center text-muted-foreground text-xs">
-                    {counts.all === 0 ? 'No sources configured' : 'No sources match filters'}
-                  </td></tr>
-                ) : filtered.map(s => {
-                  const StIcon = s._status.icon;
-                  return (
-                    <tr key={s.id} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
-                      <td className="px-4 py-2.5 align-top">
-                        <div className="font-medium truncate max-w-[240px]" title={s.name}>{s.name}</div>
-                        <div className="text-xs2 text-muted-foreground font-mono truncate max-w-[240px]">{s.slug}</div>
-                      </td>
-                      <td className="px-4 py-2.5 align-top">
-                        {s.target_table ? (
-                          <Badge variant="outline" className="text-2xs px-1.5 py-0 font-mono">{s.target_table}</Badge>
-                        ) : <span className="text-muted-foreground">—</span>}
-                      </td>
-                      <td className="px-4 py-2.5 align-top">
-                        <div className={`flex items-center gap-1.5 text-xs ${s._status.className}`}>
-                          <StIcon className="h-3 w-3" />
-                          {s._status.label}
-                        </div>
-                        {s.last_error && (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <div className="text-2xs text-destructive mt-1 truncate max-w-[280px] cursor-help">
+                  <tr>
+                    <td colSpan={8} className="p-6 text-center text-muted-foreground text-xs">
+                      {counts.all === 0 ? 'No sources configured' : 'No sources match filters'}
+                    </td>
+                  </tr>
+                ) : (
+                  filtered.map((s) => {
+                    const StIcon = s._status.icon;
+                    return (
+                      <tr
+                        key={s.id}
+                        className="border-b border-border/40 hover:bg-muted/30 transition-colors"
+                      >
+                        <td className="px-4 py-2.5 align-top">
+                          <div className="font-medium truncate max-w-[240px]" title={s.name}>
+                            {s.name}
+                          </div>
+                          <div className="text-xs2 text-muted-foreground font-mono truncate max-w-[240px]">
+                            {s.slug}
+                          </div>
+                        </td>
+                        <td className="px-4 py-2.5 align-top">
+                          {s.target_table ? (
+                            <Badge variant="outline" className="text-2xs px-1.5 py-0 font-mono">
+                              {s.target_table}
+                            </Badge>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-2.5 align-top">
+                          <div
+                            className={`flex items-center gap-1.5 text-xs ${s._status.className}`}
+                          >
+                            <StIcon className="h-3 w-3" />
+                            {s._status.label}
+                          </div>
+                          {s.last_error && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="text-2xs text-destructive mt-1 truncate max-w-[280px] cursor-help">
+                                  {s.last_error}
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent className="text-xs max-w-[400px] whitespace-pre-wrap">
                                 {s.last_error}
-                              </div>
-                            </TooltipTrigger>
-                            <TooltipContent className="text-xs max-w-[400px] whitespace-pre-wrap">
-                              {s.last_error}
-                            </TooltipContent>
-                          </Tooltip>
-                        )}
-                      </td>
-                      <td className="px-4 py-2.5 align-top text-xs2 text-muted-foreground"
-                          title={s.last_success_at ? new Date(s.last_success_at).toISOString() : ''}>
-                        {s.last_success_at ? formatDistanceToNow(new Date(s.last_success_at), { addSuffix: true }) : '—'}
-                      </td>
-                      <td className="px-4 py-2.5 align-top text-xs2 text-muted-foreground"
-                          title={s.last_run_at ? new Date(s.last_run_at).toISOString() : ''}>
-                        {s.last_run_at ? formatDistanceToNow(new Date(s.last_run_at), { addSuffix: true }) : '—'}
-                      </td>
-                      <td className="px-4 py-2.5 align-top text-xs tabular-nums">
-                        <span className="text-foreground">{s.total_runs}</span>
-                        <span className="text-muted-foreground"> / </span>
-                        <span className="text-muted-foreground">{s.total_items_fetched}</span>
-                      </td>
-                      <td className="px-4 py-2.5 align-top text-xs2 text-muted-foreground font-mono">
-                        {s.schedule_cron ?? '—'}
-                      </td>
-                      <td className="px-4 py-2.5 align-top">
-                        <Button
-                          size="sm"
-                          variant={s.is_enabled ? 'outline' : 'default'}
-                          className="h-7 text-xs"
-                          onClick={() => toggle.mutate({ id: s.id, enabled: !s.is_enabled })}
-                          disabled={toggle.isPending}
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                        </td>
+                        <td
+                          className="px-4 py-2.5 align-top text-xs2 text-muted-foreground"
+                          title={s.last_success_at ? new Date(s.last_success_at).toISOString() : ''}
                         >
-                          {s.is_enabled ? 'Disable' : 'Enable'}
-                        </Button>
-                      </td>
-                    </tr>
-                  );
-                })}
+                          {s.last_success_at
+                            ? formatDistanceToNow(new Date(s.last_success_at), { addSuffix: true })
+                            : '—'}
+                        </td>
+                        <td
+                          className="px-4 py-2.5 align-top text-xs2 text-muted-foreground"
+                          title={s.last_run_at ? new Date(s.last_run_at).toISOString() : ''}
+                        >
+                          {s.last_run_at
+                            ? formatDistanceToNow(new Date(s.last_run_at), { addSuffix: true })
+                            : '—'}
+                        </td>
+                        <td className="px-4 py-2.5 align-top text-xs tabular-nums">
+                          <span className="text-foreground">{s.total_runs}</span>
+                          <span className="text-muted-foreground"> / </span>
+                          <span className="text-muted-foreground">{s.total_items_fetched}</span>
+                        </td>
+                        <td className="px-4 py-2.5 align-top text-xs2 text-muted-foreground font-mono">
+                          {s.schedule_cron ?? '—'}
+                        </td>
+                        <td className="px-4 py-2.5 align-top">
+                          <Button
+                            size="sm"
+                            variant={s.is_enabled ? 'outline' : 'default'}
+                            className="h-7 text-xs"
+                            onClick={() => toggle.mutate({ id: s.id, enabled: !s.is_enabled })}
+                            disabled={toggle.isPending}
+                          >
+                            {s.is_enabled ? 'Disable' : 'Enable'}
+                          </Button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>
@@ -262,9 +338,15 @@ export default function SourcesTab() {
           )}
         </div>
 
-        <Suspense fallback={panelFallback}><IngestionSourcesManager /></Suspense>
-        <Suspense fallback={panelFallback}><NewsSourcesManager /></Suspense>
-        <Suspense fallback={panelFallback}><ApiKeysManager /></Suspense>
+        <Suspense fallback={panelFallback}>
+          <IngestionSourcesManager />
+        </Suspense>
+        <Suspense fallback={panelFallback}>
+          <NewsSourcesManager />
+        </Suspense>
+        <Suspense fallback={panelFallback}>
+          <ApiKeysManager />
+        </Suspense>
       </div>
     </TooltipProvider>
   );

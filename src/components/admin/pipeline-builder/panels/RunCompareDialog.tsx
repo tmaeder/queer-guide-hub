@@ -2,10 +2,23 @@ import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
 import { GitCompare, CheckCircle2, XCircle, Clock } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@/components/ui/select';
 import { usePipelineRun } from '../hooks/usePipelineHistory';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 
@@ -36,9 +49,9 @@ const statusIcon: Record<string, React.ComponentType<{ className?: string }>> = 
 };
 
 const statusClass: Record<string, string> = {
-  completed: 'text-foreground dark:text-foreground',
+  completed: 'text-foreground',
   failed: 'text-destructive',
-  running: 'text-foreground dark:text-foreground',
+  running: 'text-foreground',
 };
 
 function RunColumn({
@@ -57,17 +70,24 @@ function RunColumn({
       <div className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
         Run {label}
       </div>
-      <Select value={run?.id || '__none__'} onValueChange={(v) => onSelect(v === '__none__' ? undefined : v)}>
+      <Select
+        value={run?.id || '__none__'}
+        onValueChange={(v) => onSelect(v === '__none__' ? undefined : v)}
+      >
         <SelectTrigger className="h-8 text-xs">
           <SelectValue placeholder="Select a run..." />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="__none__" className="text-xs italic text-muted-foreground">— Select run —</SelectItem>
-          {options.map(o => (
+          <SelectItem value="__none__" className="text-xs italic text-muted-foreground">
+            — Select run —
+          </SelectItem>
+          {options.map((o) => (
             <SelectItem key={o.id} value={o.id} className="text-xs">
               <span className="font-mono">{o.id.slice(0, 8)}</span>
-              {' · '}{o.status}
-              {' · '}{formatDistanceToNow(new Date(o.started_at), { addSuffix: true })}
+              {' · '}
+              {o.status}
+              {' · '}
+              {formatDistanceToNow(new Date(o.started_at), { addSuffix: true })}
             </SelectItem>
           ))}
         </SelectContent>
@@ -76,30 +96,41 @@ function RunColumn({
       {run && (
         <div className="border border-border rounded-element bg-background p-4 text-xs space-y-1.5">
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className={`text-2xs px-1.5 py-0 ${statusClass[run.status] || ''}`}>
+            <Badge
+              variant="outline"
+              className={`text-2xs px-1.5 py-0 ${statusClass[run.status] || ''}`}
+            >
               {run.status}
             </Badge>
             {run.pipeline_version != null && (
-              <Badge variant="outline" className="text-2xs px-1.5 py-0 font-mono">v{run.pipeline_version}</Badge>
+              <Badge variant="outline" className="text-2xs px-1.5 py-0 font-mono">
+                v{run.pipeline_version}
+              </Badge>
             )}
           </div>
           <div className="flex items-center justify-between text-muted-foreground">
             <span>duration</span>
-            <span className="font-mono tabular-nums text-foreground">{formatDuration(run.duration_ms)}</span>
+            <span className="font-mono tabular-nums text-foreground">
+              {formatDuration(run.duration_ms)}
+            </span>
           </div>
           <div className="flex items-center justify-between text-muted-foreground">
             <span>items</span>
             <span className="font-mono tabular-nums text-foreground">
-              <span className="text-foreground dark:text-foreground">{run.items_succeeded ?? 0}</span>
+              <span className="text-foreground">{run.items_succeeded ?? 0}</span>
               <span className="mx-1">/</span>
               {run.items_total ?? 0}
-              {run.items_failed > 0 && <span className="text-destructive ml-1">·{run.items_failed}</span>}
+              {run.items_failed > 0 && (
+                <span className="text-destructive ml-1">·{run.items_failed}</span>
+              )}
             </span>
           </div>
           <div className="flex items-center justify-between text-muted-foreground">
             <span>started</span>
             <span className="font-mono text-xs2 text-foreground" title={run.started_at || ''}>
-              {run.started_at ? formatDistanceToNow(new Date(run.started_at), { addSuffix: true }) : '—'}
+              {run.started_at
+                ? formatDistanceToNow(new Date(run.started_at), { addSuffix: true })
+                : '—'}
             </span>
           </div>
           {run.triggered_by && (
@@ -122,12 +153,24 @@ function RunColumn({
             Per-node
           </div>
           <div className="max-h-[300px] overflow-y-auto">
-            {Object.entries(run.node_states as Record<string, { status: string; items_out: number; duration_ms?: number; error?: string }>).map(([nodeId, state]) => {
+            {Object.entries(
+              run.node_states as Record<
+                string,
+                { status: string; items_out: number; duration_ms?: number; error?: string }
+              >,
+            ).map(([nodeId, state]) => {
               const Icon = statusIcon[state.status] || Clock;
               return (
-                <div key={nodeId} className="flex items-center gap-2 px-4 py-1.5 border-b border-border/40 last:border-0">
-                  <Icon className={`h-3 w-3 shrink-0 ${statusClass[state.status] || 'text-muted-foreground'}`} />
-                  <span className="font-mono text-xs2 truncate flex-1" title={nodeId}>{nodeId.slice(0, 24)}</span>
+                <div
+                  key={nodeId}
+                  className="flex items-center gap-2 px-4 py-1.5 border-b border-border/40 last:border-0"
+                >
+                  <Icon
+                    className={`h-3 w-3 shrink-0 ${statusClass[state.status] || 'text-muted-foreground'}`}
+                  />
+                  <span className="font-mono text-xs2 truncate flex-1" title={nodeId}>
+                    {nodeId.slice(0, 24)}
+                  </span>
                   <span className="font-mono tabular-nums text-xs2 text-muted-foreground whitespace-nowrap">
                     {state.items_out ?? 0}
                     {state.duration_ms && <span> · {formatDuration(state.duration_ms)}</span>}
@@ -151,7 +194,9 @@ export default function RunCompareDialog() {
     queryKey: ['recent-runs-for-compare'],
     queryFn: async () => {
       const { data, error } = await untypedFrom('pipeline_runs')
-        .select('id, status, started_at, items_succeeded, items_total, duration_ms, pipeline_version, pipeline_id, pipeline_name')
+        .select(
+          'id, status, started_at, items_succeeded, items_total, duration_ms, pipeline_version, pipeline_id, pipeline_name',
+        )
         .order('started_at', { ascending: false })
         .limit(100);
       if (error) throw error;
@@ -178,7 +223,8 @@ export default function RunCompareDialog() {
             Compare two runs
           </DialogTitle>
           <DialogDescription>
-            Side-by-side comparison of any two pipeline runs — compare versions, regressions, or successful runs against failed ones.
+            Side-by-side comparison of any two pipeline runs — compare versions, regressions, or
+            successful runs against failed ones.
           </DialogDescription>
         </DialogHeader>
 
@@ -189,15 +235,21 @@ export default function RunCompareDialog() {
 
         {runA && runB && (
           <div className="border-t border-border pt-4 mt-4">
-            <div className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Diff summary</div>
+            <div className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+              Diff summary
+            </div>
             <div className="grid grid-cols-3 gap-2 text-xs">
               <div className="border border-border rounded-element p-2">
                 <div className="text-2xs text-muted-foreground">Duration Δ</div>
-                <div className={`text-sm font-mono tabular-nums font-semibold ${
-                  (runA.duration_ms || 0) < (runB.duration_ms || 0) ? 'text-foreground dark:text-foreground'
-                  : (runA.duration_ms || 0) > (runB.duration_ms || 0) ? 'text-destructive'
-                  : ''
-                }`}>
+                <div
+                  className={`text-sm font-mono tabular-nums font-semibold ${
+                    (runA.duration_ms || 0) < (runB.duration_ms || 0)
+                      ? 'text-foreground'
+                      : (runA.duration_ms || 0) > (runB.duration_ms || 0)
+                        ? 'text-destructive'
+                        : ''
+                  }`}
+                >
                   {formatDuration(Math.abs((runA.duration_ms || 0) - (runB.duration_ms || 0)))}
                 </div>
               </div>

@@ -43,12 +43,7 @@ interface QualityRow {
 
 function PctCell({ v }: { v: number | null }) {
   if (v == null) return <span className="text-muted-foreground">—</span>;
-  const colorClass =
-    v >= 80
-      ? 'text-foreground dark:text-foreground'
-      : v >= 50
-        ? 'text-foreground dark:text-foreground'
-        : 'text-destructive';
+  const colorClass = v >= 80 ? 'text-foreground' : v >= 50 ? 'text-foreground' : 'text-destructive';
   return <span className={`font-mono tabular-nums ${colorClass}`}>{v.toFixed(1)}%</span>;
 }
 
@@ -123,7 +118,7 @@ export default function ScraperHealthTab() {
             totalOrphans > 0 ? (
               <Badge
                 variant="outline"
-                className="border text-2xs px-1.5 py-0 bg-destructive/10 dark:bg-destructive/30 text-destructive dark:text-destructive border-destructive dark:border-destructive"
+                className="border text-2xs px-1.5 py-0 bg-destructive/10 dark:bg-destructive/30 text-destructive border-destructive dark:border-destructive"
               >
                 {totalOrphans} total
               </Badge>
@@ -132,8 +127,8 @@ export default function ScraperHealthTab() {
         />
         {totalOrphans === 0 ? (
           <div className="p-6 text-center">
-            <CheckCircle className="h-5 w-5 text-foreground dark:text-foreground inline mr-1" />
-            <span className="text-sm text-foreground dark:text-foreground font-medium">
+            <CheckCircle className="h-5 w-5 text-foreground inline mr-1" />
+            <span className="text-sm text-foreground font-medium">
               No orphans — entity_map is clean
             </span>
           </div>

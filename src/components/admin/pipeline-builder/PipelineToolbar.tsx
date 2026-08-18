@@ -225,9 +225,7 @@ export default function PipelineToolbar(p: Props) {
             onClick={p.handleSave}
             disabled={p.isSaving}
             className={
-              p.showSavedPulse
-                ? 'border bg-muted dark:bg-foreground/30 text-foreground dark:text-foreground border-foreground/40 dark:border-foreground/40'
-                : ''
+              p.showSavedPulse ? 'border bg-muted text-foreground border-foreground/40' : ''
             }
           >
             {p.isSaving ? (
@@ -407,7 +405,7 @@ export default function PipelineToolbar(p: Props) {
       {p.activeRunId && p.runStatus && (
         <Badge
           variant="outline"
-          className={`text-xs ${p.runStatus === 'running' ? 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground animate-pulse' : p.runStatus === 'completed' ? 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground' : p.runStatus === 'failed' ? 'bg-destructive/10 dark:bg-destructive/40 text-destructive dark:text-destructive' : ''}`}
+          className={`text-xs ${p.runStatus === 'running' ? 'bg-muted text-foreground animate-pulse' : p.runStatus === 'completed' ? 'bg-muted text-foreground' : p.runStatus === 'failed' ? 'bg-destructive/10 dark:bg-destructive/40 text-destructive' : ''}`}
         >
           {p.runStatus}
         </Badge>
@@ -448,7 +446,7 @@ export default function PipelineToolbar(p: Props) {
         {p.viewingRunId && (
           <Badge
             variant="outline"
-            className="border text-xs gap-1 bg-muted dark:bg-foreground/30 text-foreground dark:text-foreground border-foreground/40 dark:border-foreground/40"
+            className="border text-xs gap-1 bg-muted text-foreground border-foreground/40"
           >
             <Clock className="h-3 w-3" />
             viewing historical
@@ -462,11 +460,11 @@ export default function PipelineToolbar(p: Props) {
             variant="outline"
             className={`text-xs gap-1 ${
               p.latestRun.status === 'completed'
-                ? 'border bg-muted dark:bg-foreground/30 text-foreground dark:text-foreground border-foreground/40 dark:border-foreground/40'
+                ? 'border bg-muted text-foreground border-foreground/40'
                 : p.latestRun.status === 'failed'
-                  ? 'border bg-destructive/10 dark:bg-destructive/30 text-destructive dark:text-destructive border-destructive dark:border-destructive'
+                  ? 'border bg-destructive/10 dark:bg-destructive/30 text-destructive border-destructive dark:border-destructive'
                   : p.latestRun.status === 'running'
-                    ? 'border bg-muted dark:bg-foreground/30 text-foreground dark:text-foreground border-foreground/40 dark:border-foreground/40 animate-pulse'
+                    ? 'border bg-muted text-foreground border-foreground/40 animate-pulse'
                     : 'bg-muted text-muted-foreground'
             }`}
             title={`Run ${p.latestRun.id.slice(0, 8)} • ${p.latestRun.items_succeeded ?? 0}/${p.latestRun.items_total ?? 0} succeeded${p.latestRun.error_message ? ` • ${p.latestRun.error_message}` : ''}`}
@@ -489,7 +487,7 @@ export default function PipelineToolbar(p: Props) {
             <TooltipTrigger asChild>
               <Badge
                 variant="outline"
-                className="text-xs gap-1 bg-muted dark:bg-foreground/30 text-foreground dark:text-foreground border-border dark:border-border cursor-help"
+                className="text-xs gap-1 bg-muted text-foreground border-border cursor-help"
               >
                 <AlertCircle className="h-3 w-3" />
                 {p.validationCount} incomplete
@@ -502,10 +500,7 @@ export default function PipelineToolbar(p: Props) {
           </Tooltip>
         )}
         {p.isDirty && (
-          <Badge
-            variant="outline"
-            className="text-xs bg-muted dark:bg-foreground/30 text-foreground dark:text-foreground border-border dark:border-border"
-          >
+          <Badge variant="outline" className="text-xs bg-muted text-foreground border-border">
             unsaved
           </Badge>
         )}
@@ -516,7 +511,7 @@ export default function PipelineToolbar(p: Props) {
           return (
             <Badge
               variant="outline"
-              className="text-xs gap-1 bg-muted dark:bg-foreground/30 text-foreground dark:text-foreground border-border dark:border-border"
+              className="text-xs gap-1 bg-muted text-foreground border-border"
             >
               v{p.latestRun.pipeline_version}→v{def.version}
             </Badge>

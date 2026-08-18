@@ -1,14 +1,6 @@
-import * as React from "react";
+import * as React from 'react';
 
-/**
- * Dark mode was removed 2026-08 (subway-map rebrand): the identity is a fixed
- * paper/ink poster, so the app is light-only. The provider keeps its old API
- * shape — `theme` / `resolvedTheme` / `setTheme` — because maps, sonner and a
- * few chart components still read `resolvedTheme`; it now always reports
- * "light", strips any persisted dark class, and `setTheme` is a no-op.
- */
-
-type Theme = "dark" | "light" | "system";
+type Theme = 'dark' | 'light' | 'system';
 
 type ThemeProviderProps = {
   children: React.ReactNode;
@@ -18,37 +10,80 @@ type ThemeProviderProps = {
 
 type ThemeProviderState = {
   theme: Theme;
-  resolvedTheme: "light" | "dark";
+  /** `theme` with "system" resolved to the actual light/dark mode. */
+  resolvedTheme: 'light' | 'dark';
   setTheme: (theme: Theme) => void;
 };
 
-const LIGHT_STATE: ThemeProviderState = {
-  theme: "light",
-  resolvedTheme: "light",
+const initialState: ThemeProviderState = {
+  theme: 'system',
+  resolvedTheme: 'light',
   setTheme: () => null,
 };
 
-const ThemeProviderContext = React.createContext<ThemeProviderState>(LIGHT_STATE);
+const ThemeProviderContext = React.createContext<ThemeProviderState>(initialState);
 
-export function ThemeProvider({ children, storageKey = "ui-theme" }: ThemeProviderProps) {
+export function ThemeProvider({
+  children,
+  defaultTheme = 'system',
+  storageKey = 'ui-theme',
+  ...props
+}: ThemeProviderProps) {
+  const [theme, setThemeState] = React.useState<Theme>(
+    () =>
+      (typeof window !== 'undefined' && (localStorage.getItem(storageKey) as Theme)) ||
+      defaultTheme,
+  );
+
+  const [systemMode, setSystemMode] = React.useState<'light' | 'dark'>(() => {
+    if (typeof window !== 'undefined') {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    return 'light';
+  });
+
+  // Listen for system theme changes
+  React.useEffect(() => {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = (e: MediaQueryListEvent) => {
+      setSystemMode(e.matches ? 'dark' : 'light');
+    };
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
+  // Resolve "system" to actual light/dark
+  const resolvedMode = theme === 'system' ? systemMode : theme;
+
+  // Keep HTML class and theme-color meta tag in sync
   React.useEffect(() => {
     const root = window.document.documentElement;
-    root.classList.remove("dark");
-    root.classList.add("light");
-    try {
-      localStorage.removeItem(storageKey);
-    } catch {
-      /* private mode — fine */
-    }
-    document
-      .querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')
-      .forEach((meta) => {
-        meta.content = "#FAFAF5";
-      });
-  }, [storageKey]);
+    root.classList.remove('light', 'dark');
+    root.classList.add(resolvedMode);
+
+    // Update theme-color meta tags for browser chrome
+    const themeColor = resolvedMode === 'dark' ? '#111111' : '#EDEDE6';
+    document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]').forEach((meta) => {
+      meta.content = themeColor;
+    });
+  }, [resolvedMode]);
+
+  const value = React.useMemo(
+    () => ({
+      theme,
+      resolvedTheme: resolvedMode,
+      setTheme: (newTheme: Theme) => {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(storageKey, newTheme);
+        }
+        setThemeState(newTheme);
+      },
+    }),
+    [theme, resolvedMode, storageKey],
+  );
 
   return (
-    <ThemeProviderContext.Provider value={LIGHT_STATE}>
+    <ThemeProviderContext.Provider {...props} value={value}>
       {children}
     </ThemeProviderContext.Provider>
   );
@@ -58,8 +93,7 @@ export function ThemeProvider({ children, storageKey = "ui-theme" }: ThemeProvid
 export const useTheme = () => {
   const context = React.useContext(ThemeProviderContext);
 
-  if (context === undefined)
-    throw new Error("useTheme must be used within a ThemeProvider");
+  if (context === undefined) throw new Error('useTheme must be used within a ThemeProvider');
 
   return context;
 };

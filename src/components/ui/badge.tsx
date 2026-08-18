@@ -24,7 +24,7 @@ const badgeVariants = cva(
         soft: 'bg-background text-foreground',
         // Pink track chip. INK type: paper-on-pink measures 3.43:1 and a
         // badge is 11px, nowhere near the large-text threshold.
-        ink: 'bg-track-pink text-foreground',
+        ink: 'bg-track-pink text-track-ring',
         // Legacy alias.
         secondary: 'bg-surface-container text-foreground',
         destructive: 'bg-destructive text-destructive-foreground',

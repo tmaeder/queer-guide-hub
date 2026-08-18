@@ -20,9 +20,9 @@ const DuplicatesPanel = lazy(() =>
 );
 
 const cbClass: Record<string, string> = {
-  closed: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground',
-  open: 'bg-destructive/10 dark:bg-destructive/40 text-destructive dark:text-destructive',
-  half_open: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground',
+  closed: 'bg-muted text-foreground',
+  open: 'bg-destructive/10 dark:bg-destructive/40 text-destructive',
+  half_open: 'bg-muted text-foreground',
 };
 
 const dispositionColors: Record<string, string> = {
@@ -252,10 +252,10 @@ export default function HealthTab() {
               <div className="font-semibold text-muted-foreground uppercase tracking-wider text-2xs">
                 Stage
               </div>
-              <div className="font-semibold text-foreground dark:text-foreground uppercase tracking-wider text-2xs text-right">
+              <div className="font-semibold text-foreground uppercase tracking-wider text-2xs text-right">
                 Success
               </div>
-              <div className="font-semibold text-foreground dark:text-foreground uppercase tracking-wider text-2xs text-right">
+              <div className="font-semibold text-foreground uppercase tracking-wider text-2xs text-right">
                 Partial
               </div>
               <div className="font-semibold text-destructive uppercase tracking-wider text-2xs text-right">
@@ -268,7 +268,7 @@ export default function HealthTab() {
                     {s.success}
                   </div>
                   <div
-                    className={`py-1 border-t border-border/40 text-right tabular-nums ${s.partial > 0 ? 'text-foreground dark:text-foreground' : ''}`}
+                    className={`py-1 border-t border-border/40 text-right tabular-nums ${s.partial > 0 ? 'text-foreground' : ''}`}
                   >
                     {s.partial}
                   </div>
@@ -291,7 +291,7 @@ export default function HealthTab() {
             {openCircuits > 0 && (
               <Badge
                 variant="outline"
-                className="border text-2xs px-1.5 py-0 bg-destructive/10 dark:bg-destructive/30 text-destructive dark:text-destructive border-destructive dark:border-destructive"
+                className="border text-2xs px-1.5 py-0 bg-destructive/10 dark:bg-destructive/30 text-destructive border-destructive dark:border-destructive"
               >
                 {openCircuits} open
               </Badge>
@@ -360,7 +360,7 @@ export default function HealthTab() {
             ].map(({ label, value }) => (
               <div key={label} className="border border-border rounded-element p-4">
                 <div
-                  className={`text-2xl font-bold tabular-nums ${(value ?? 0) > 0 ? 'text-primary' : 'text-foreground dark:text-foreground'}`}
+                  className={`text-2xl font-bold tabular-nums ${(value ?? 0) > 0 ? 'text-primary' : 'text-foreground'}`}
                 >
                   {value ?? '–'}
                 </div>
@@ -388,9 +388,7 @@ export default function HealthTab() {
                         Depth:{' '}
                         <strong
                           className={
-                            (q.queue_length as number) > 0
-                              ? 'text-foreground dark:text-foreground'
-                              : 'text-foreground dark:text-foreground'
+                            (q.queue_length as number) > 0 ? 'text-foreground' : 'text-foreground'
                           }
                         >
                           {q.queue_length as number}
@@ -513,7 +511,7 @@ export default function HealthTab() {
                       <span
                         className={`inline-block text-2xs font-semibold px-2 py-0.5 rounded-full ${
                           def.is_enabled
-                            ? 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground'
+                            ? 'bg-muted text-foreground'
                             : 'bg-muted text-muted-foreground'
                         }`}
                       >
@@ -542,7 +540,7 @@ export default function HealthTab() {
                       <span
                         className={`inline-block text-2xs font-semibold px-2 py-0.5 rounded-full ${
                           def.is_enabled
-                            ? 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground'
+                            ? 'bg-muted text-foreground'
                             : 'bg-muted text-muted-foreground'
                         }`}
                       >

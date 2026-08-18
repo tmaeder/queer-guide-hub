@@ -3,11 +3,24 @@ import { TrackLoader } from '@/components/transit/TrackLoader';
 import { formatDistanceToNow } from 'date-fns';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Users, UserPlus, Trash2, Shield, Eye, Pencil, Play } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom } from '@/integrations/supabase/untyped';
@@ -28,10 +41,13 @@ interface AccessDialogProps {
   pipelineName: string;
 }
 
-const PERM_CONFIG: Record<string, { icon: React.ComponentType<{ className?: string }>; label: string; className: string }> = {
-  view: { icon: Eye, label: 'View', className: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground' },
-  run: { icon: Play, label: 'Run', className: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground' },
-  edit: { icon: Pencil, label: 'Edit', className: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground' },
+const PERM_CONFIG: Record<
+  string,
+  { icon: React.ComponentType<{ className?: string }>; label: string; className: string }
+> = {
+  view: { icon: Eye, label: 'View', className: 'bg-muted text-foreground' },
+  run: { icon: Play, label: 'Run', className: 'bg-muted text-foreground' },
+  edit: { icon: Pencil, label: 'Edit', className: 'bg-muted text-foreground' },
 };
 
 export default function AccessDialog({ pipelineId, pipelineName }: AccessDialogProps) {
@@ -123,7 +139,9 @@ export default function AccessDialog({ pipelineId, pipelineName }: AccessDialogP
 
           <div className="flex gap-2 items-end">
             <div className="flex-1">
-              <label htmlFor="access-dialog-email" className="text-xs font-medium">User email</label>
+              <label htmlFor="access-dialog-email" className="text-xs font-medium">
+                User email
+              </label>
               <Input
                 id="access-dialog-email"
                 value={email}
@@ -134,9 +152,17 @@ export default function AccessDialog({ pipelineId, pipelineName }: AccessDialogP
               />
             </div>
             <div className="w-28">
-              <label htmlFor="access-dialog-perm" className="text-xs font-medium">Permission</label>
+              <label htmlFor="access-dialog-perm" className="text-xs font-medium">
+                Permission
+              </label>
               <Select value={perm} onValueChange={(v) => setPerm(v as 'view' | 'edit' | 'run')}>
-                <SelectTrigger id="access-dialog-perm" aria-label="Permission" className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+                <SelectTrigger
+                  id="access-dialog-perm"
+                  aria-label="Permission"
+                  className="h-8 text-xs mt-1"
+                >
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="view">View</SelectItem>
                   <SelectItem value="run">Run</SelectItem>
@@ -144,8 +170,17 @@ export default function AccessDialog({ pipelineId, pipelineName }: AccessDialogP
                 </SelectContent>
               </Select>
             </div>
-            <Button size="sm" className="h-8" onClick={() => addGrant.mutate()} disabled={!email || addGrant.isPending}>
-              {addGrant.isPending ? <TrackLoader size={14} /> : <UserPlus className="h-3.5 w-3.5" />}
+            <Button
+              size="sm"
+              className="h-8"
+              onClick={() => addGrant.mutate()}
+              disabled={!email || addGrant.isPending}
+            >
+              {addGrant.isPending ? (
+                <TrackLoader size={14} />
+              ) : (
+                <UserPlus className="h-3.5 w-3.5" />
+              )}
             </Button>
           </div>
 
@@ -159,12 +194,18 @@ export default function AccessDialog({ pipelineId, pipelineName }: AccessDialogP
               </div>
             ) : (
               <div className="divide-y divide-border/40">
-                {grants.map(g => {
+                {grants.map((g) => {
                   const pc = PERM_CONFIG[g.permission];
                   const PIcon = pc.icon;
                   return (
-                    <div key={g.id} className="p-2.5 flex items-center gap-2 hover:bg-muted/30 transition-colors">
-                      <Badge variant="outline" className={`text-2xs px-1.5 py-0 gap-1 ${pc.className}`}>
+                    <div
+                      key={g.id}
+                      className="p-2.5 flex items-center gap-2 hover:bg-muted/30 transition-colors"
+                    >
+                      <Badge
+                        variant="outline"
+                        className={`text-2xs px-1.5 py-0 gap-1 ${pc.className}`}
+                      >
                         <PIcon className="h-2.5 w-2.5" />
                         {pc.label}
                       </Badge>

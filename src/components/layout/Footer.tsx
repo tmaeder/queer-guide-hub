@@ -2,6 +2,7 @@ import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 import { CurrencySelector } from '@/components/i18n/CurrencySelector';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { cn } from '@/lib/utils';
 import { INTENT_NAV, INTENT_TRACK, isIntentActive } from '@/config/navigation';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -205,6 +206,7 @@ export function Footer() {
           <span className="ms-auto flex flex-wrap items-center gap-2 [&_button]:text-background [&_button:hover]:bg-background [&_button:hover]:text-foreground">
             <LanguageSwitcher />
             <CurrencySelector />
+            <ThemeToggle />
           </span>
         </div>
 
