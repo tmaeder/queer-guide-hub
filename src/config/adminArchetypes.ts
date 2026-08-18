@@ -204,11 +204,11 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
 
   // ── F · Inbox ─────────────────────────────────────────────────────────
   { path: 'inbox', archetype: 'F', title: 'Inbox' },
-  { path: 'postfach', archetype: 'F', title: 'Mailbox' },
-  { path: 'content/group-requests', archetype: 'F', title: 'Group requests' },
-  { path: 'content/twenty-crm', archetype: 'F', title: 'CRM' },
-  { path: 'content/liveness', archetype: 'F', title: 'Liveness' },
-  { path: 'places-editorial', archetype: 'F', title: 'Places editorial' },
+  { path: 'postfach', archetype: 'F', title: 'Mailbox', adopted: true },
+  { path: 'content/group-requests', archetype: 'F', title: 'Group requests', adopted: true },
+  { path: 'content/twenty-crm', archetype: 'F', title: 'CRM', adopted: true },
+  { path: 'content/liveness', archetype: 'F', title: 'Liveness', adopted: true },
+  { path: 'places-editorial', archetype: 'F', title: 'Places editorial', adopted: true },
   {
     path: 'feedback',
     archetype: 'F',
