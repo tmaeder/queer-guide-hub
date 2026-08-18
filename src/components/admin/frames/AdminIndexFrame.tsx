@@ -73,16 +73,16 @@ export function AdminIndexFrame({
       />
 
       {viewSwitch && (
-        <div className="flex flex-wrap items-center justify-end gap-2 px-6 pb-4">{viewSwitch}</div>
+        <div className="flex flex-wrap items-center justify-end gap-2 pb-4">{viewSwitch}</div>
       )}
 
       {/* The records. `min-w-0` so a wide table scrolls inside the frame
         instead of widening the page — e2e/page-layout.spec.ts asserts zero
         horizontal overflow on the document. */}
-      <div className="min-w-0 overflow-x-auto px-6">{children}</div>
+      <div className="min-w-0 overflow-x-auto">{children}</div>
 
       {(countLine || pagination) && (
-        <div className="flex flex-wrap items-center justify-between gap-4 px-6 py-4 text-13 font-bold text-muted-foreground">
+        <div className="flex flex-wrap items-center justify-between gap-4 py-4 text-13 font-bold text-muted-foreground">
           {countLine ? <span>{countLine}</span> : <span />}
           {pagination}
         </div>

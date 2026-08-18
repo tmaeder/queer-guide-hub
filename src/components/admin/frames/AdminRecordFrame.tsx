@@ -49,7 +49,7 @@ export function AdminRecordFrame({
 
       <div
         className={cn(
-          'grid min-w-0 gap-6 px-6 pb-6',
+          'grid min-w-0 gap-6 pb-6',
           rail ? 'lg:grid-cols-[170px_minmax(0,1fr)_330px]' : 'lg:grid-cols-[170px_minmax(0,1fr)]',
         )}
       >

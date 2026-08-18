@@ -55,7 +55,7 @@ export function AdminOpsFrame({
       />
       <div
         className={cn(
-          'grid min-w-0 gap-6 px-6 pb-6',
+          'grid min-w-0 gap-6 pb-6',
           rail ? 'lg:grid-cols-[minmax(0,1fr)_380px]' : 'lg:grid-cols-1',
         )}
       >
