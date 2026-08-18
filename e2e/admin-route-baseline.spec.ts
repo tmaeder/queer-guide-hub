@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { ADMIN_ARCHETYPES } from '../src/config/adminArchetypes';
 
 /**
@@ -32,7 +33,12 @@ import { ADMIN_ARCHETYPES } from '../src/config/adminArchetypes';
  * documents the same hazard.
  */
 
-const BASELINE = resolve(__dirname, '__baselines__/admin-routes.json');
+// `__dirname` does not exist here: package.json is `"type": "module"`, so this
+// file loads as ESM and a bare __dirname throws at IMPORT time — which takes
+// the whole Playwright run down, not just this spec. No other e2e spec needed a
+// path before, so there was no precedent to copy.
+const HERE = dirname(fileURLToPath(import.meta.url));
+const BASELINE = resolve(HERE, '__baselines__/admin-routes.json');
 const RECORDING = process.env.ADMIN_BASELINE === 'record';
 
 /** Registered, real, non-redirect routes with no param segment to invent. */
