@@ -8,7 +8,8 @@ import { useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Link, useParams } from 'react-router';
 import { ExternalLink, Link2, Unlink } from 'lucide-react';
-import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { ArrowLeft } from 'lucide-react';
+import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
 import { AffiliatePartnersManager } from '@/components/admin/AffiliatePartnersManager';
 import { MerchantsManager } from '@/components/admin/affiliate/MerchantsManager';
 import { OrgEntityPickerDialog } from '@/components/admin/business/OrgEntityPickerDialog';
@@ -107,8 +108,15 @@ export default function AdminBusinessDetail() {
 
   return (
     <div>
-      <AdminPageHeader
-        eyebrow="COCKPIT · BUSINESS"
+      {/* Archetype B — record editor. The role badges, domain and claim status
+        were the old `subtitle`; they are record IDENTITY, not prose, so they
+        move to the header's filter row (the slot that sits directly under the
+        title) rather than being dropped with the slot.
+
+        The back link keeps its exact text and becomes a secondary action, for
+        the same reason as AdminEntityTable: a migrated route loses the shell's
+        breadcrumb bar, so on a DETAIL page it is the only way back up. */}
+      <AdminArchetypeHeader
         title={
           <span className="flex items-center gap-2">
             {org.logo_url && (
@@ -117,26 +125,36 @@ export default function AdminBusinessDetail() {
             {org.name}
           </span>
         }
-        subtitle={
-          <span className="flex flex-wrap items-center gap-2">
+        filters={
+          <>
             {org.roles.map((r) => (
               <Badge key={r} variant="outline" className="font-normal">
                 {ORG_ROLE_LABELS[r] ?? r}
               </Badge>
             ))}
-            {org.website_domain && <span>{org.website_domain}</span>}
+            {org.website_domain && (
+              <span className="text-13 text-muted-foreground">{org.website_domain}</span>
+            )}
             {org.claim_status !== 'unclaimed' && (
               <Badge variant="secondary" className="font-normal">
                 claim: {org.claim_status}
               </Badge>
             )}
-          </span>
+          </>
         }
-        backTo={{ label: 'Business', route: '/admin/business' }}
         actions={
-          <Button variant="outline" size="sm" asChild>
-            <Link to="/admin/content/organizations">Edit fields in CMS</Link>
-          </Button>
+          <>
+            <Link
+              to="/admin/business"
+              className="inline-flex items-center gap-1 text-13 font-bold no-underline hover:underline"
+            >
+              <ArrowLeft size={14} aria-hidden />
+              Back to Business
+            </Link>
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/admin/content/organizations">Edit fields in CMS</Link>
+            </Button>
+          </>
         }
       />
 

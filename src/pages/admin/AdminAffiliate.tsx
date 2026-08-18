@@ -12,7 +12,7 @@
 
 import { useState } from 'react';
 import { Navigate, useSearchParams } from 'react-router';
-import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
@@ -69,10 +69,8 @@ export default function AdminAffiliate() {
 
   return (
     <div>
-      <AdminPageHeader
-        eyebrow="COCKPIT · AFFILIATE"
+      <AdminArchetypeHeader
         title={HEADERS[tab].title}
-        subtitle={HEADERS[tab].subtitle}
         actions={
           <div className="flex gap-2">
             {tab === 'performance' && (
@@ -104,6 +102,15 @@ export default function AdminAffiliate() {
           </div>
         }
       />
+
+      {/* Kept as body copy, per tab. These are not orientation: they state
+        PROVENANCE and CADENCE — "reconciled from Awin, Travelpayouts and
+        Amazon", "swept daily", "clicks attributed by surface". Someone reading
+        commission figures needs to know which networks they came from and how
+        fresh they are. */}
+      <p className="m-0 max-w-reading text-13 leading-relaxed text-muted-foreground">
+        {HEADERS[tab].subtitle}
+      </p>
 
       <Tabs
         value={tab}

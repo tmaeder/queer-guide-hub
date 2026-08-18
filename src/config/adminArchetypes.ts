@@ -148,7 +148,7 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
   },
 
   // ── B · Record editor ─────────────────────────────────────────────────
-  { path: 'business/:id', archetype: 'B' },
+  { path: 'business/:id', archetype: 'B', adopted: true },
   { path: 'media/:id', archetype: 'B' },
   {
     path: 'content/personalities/:id/datasheet',
@@ -171,7 +171,7 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
 
   // ── D · Ops monitor ───────────────────────────────────────────────────
   { path: 'cloudflare', archetype: 'D', title: 'Cloudflare' },
-  { path: 'security', archetype: 'D', title: 'Security' },
+  { path: 'security', archetype: 'D', title: 'Security', adopted: true },
   {
     path: 'pipelines',
     archetype: 'D',
@@ -187,7 +187,7 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
 
   // ── E · Analytics board ───────────────────────────────────────────────
   { path: 'analytics', archetype: 'E', title: 'Analytics' },
-  { path: 'affiliate', archetype: 'E', title: 'Affiliate' },
+  { path: 'affiliate', archetype: 'E', title: 'Affiliate', adopted: true },
   {
     path: 'content/event-quality',
     archetype: 'E',
@@ -226,6 +226,7 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
     path: 'maps',
     archetype: 'G',
     title: 'Maps',
+    adopted: true,
     caveat:
       'Full-bleed MapShell with no tree today; the layer/filter panel is promoted into the 320px ' +
       'column. MapShell itself must NOT be modified — it is shared with the public /map.',
