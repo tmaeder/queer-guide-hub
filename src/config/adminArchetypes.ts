@@ -126,8 +126,8 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
   { path: 'content/:type', archetype: 'A' },
   { path: 'content/personalities', archetype: 'A', title: 'Personalities' },
   { path: 'content/milestones', archetype: 'A', title: 'Milestones' },
-  { path: 'users', archetype: 'A', title: 'Users' },
-  { path: 'business', archetype: 'A', title: 'Business' },
+  { path: 'users', archetype: 'A', title: 'Users', adopted: true },
+  { path: 'business', archetype: 'A', title: 'Business', adopted: true },
   { path: 'audit', archetype: 'A', title: 'Audit log' },
   { path: 'imports/email-ingestions', archetype: 'A', title: 'Email ingestions' },
   {
@@ -140,6 +140,7 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
     path: 'settings',
     archetype: 'A',
     title: 'Vocabularies',
+    adopted: true,
     caveat:
       'An A table with seven quality panels bolted on. The panels belong on /admin/quality or ' +
       'behind an F drawer; until they move this route is A-plus-extras.',
