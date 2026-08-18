@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -108,33 +109,37 @@ export function CloudflareDashboard() {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div
-            className="p-2 rounded-element"
-            style={{ backgroundColor: 'hsl(var(--foreground) / 0.55)' }}
-          >
-            <Cloud size={24} style={{ color: 'white' }} />
-          </div>
-          <div>
-            <h2 className="font-bold text-headline">Cloudflare Dashboard</h2>
+      {/* Was <h2 className="font-bold text-headline"> — an h2 as the page
+        title, so this route had no h1. The zone name is record IDENTITY, so it
+        moves to the filter row rather than staying as prose. */}
+      <AdminArchetypeHeader
+        className="mb-0"
+        title={
+          <span className="flex items-center gap-4">
+            <Cloud size={24} aria-hidden />
+            Cloudflare
+          </span>
+        }
+        filters={
+          <span className="text-13 text-muted-foreground">
             {/* An em dash, not "Loading...": this is a fallback VALUE for a
-                field, and the repo renders unknown values as —. */}
-            <p className="text-muted-foreground">Zone: {zoneInfo?.result?.name || '—'}</p>
-          </div>
-        </div>
-        <Button onClick={handleRefresh} disabled={refreshing}>
-          <RefreshCw
-            style={{
-              height: 16,
-              width: 16,
-              ...(refreshing ? { animation: 'spin 1s linear infinite' } : {}),
-            }}
-          />
-          Refresh
-        </Button>
-      </div>
+              field, and the repo renders unknown values as —. */}
+            Zone: {zoneInfo?.result?.name || '—'}
+          </span>
+        }
+        actions={
+          <Button onClick={handleRefresh} disabled={refreshing}>
+            <RefreshCw
+              style={{
+                height: 16,
+                width: 16,
+                ...(refreshing ? { animation: 'spin 1s linear infinite' } : {}),
+              }}
+            />
+            Refresh
+          </Button>
+        }
+      />
 
       {/* Zone Status */}
       {zoneInfo && (

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -57,18 +58,18 @@ export default function AdminAnalytics() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h4 className="text-2xl font-bold">Analytics Dashboard</h4>
-          <p className="text-sm text-muted-foreground">
-            Monitor platform performance and user engagement
-          </p>
-        </div>
-        <Badge variant="outline" className="flex gap-2 items-center">
-          <Activity size={12} />
-          Live Data
-        </Badge>
-      </div>
+      {/* Was <h4 className="text-2xl font-bold">. The subtitle was orientation
+        the route line and title already carry, so it goes. */}
+      <AdminArchetypeHeader
+        className="mb-8"
+        title="Analytics"
+        actions={
+          <Badge variant="outline" className="flex gap-2 items-center">
+            <Activity size={12} />
+            Live Data
+          </Badge>
+        }
+      />
 
       <Tabs defaultValue="platform" className="flex flex-col gap-6">
         <TabsList className="grid w-full grid-cols-3">

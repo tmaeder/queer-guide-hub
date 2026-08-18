@@ -152,8 +152,14 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
   { path: 'media/:id', archetype: 'B' },
   {
     path: 'content/personalities/:id/datasheet',
-    archetype: 'B',
-    caveat: 'Read-mostly: no quality panel in the right rail, so the third column is optional.',
+    archetype: null,
+    exempt:
+      'A PRINT document, not a console page. It is styled by the .pds stylesheet for paper output ' +
+      'and already carries a correct <h1>; its source even holds an eslint-disable saying "Admin ' +
+      'chrome (route eyebrow, back link) must not appear in the PDF". Adopting the archetype ' +
+      'header would put a route line and a back link into a printed datasheet. Filed as B with a ' +
+      'caveat when the registry was first written — corrected on reaching it, which is what the ' +
+      'per-route migration pass is for.',
   },
 
   // ── C · Compare ───────────────────────────────────────────────────────
@@ -170,7 +176,7 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
   },
 
   // ── D · Ops monitor ───────────────────────────────────────────────────
-  { path: 'cloudflare', archetype: 'D', title: 'Cloudflare' },
+  { path: 'cloudflare', archetype: 'D', title: 'Cloudflare', adopted: true },
   { path: 'security', archetype: 'D', title: 'Security', adopted: true },
   {
     path: 'pipelines',
@@ -186,7 +192,7 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
   },
 
   // ── E · Analytics board ───────────────────────────────────────────────
-  { path: 'analytics', archetype: 'E', title: 'Analytics' },
+  { path: 'analytics', archetype: 'E', title: 'Analytics', adopted: true },
   { path: 'affiliate', archetype: 'E', title: 'Affiliate', adopted: true },
   {
     path: 'content/event-quality',
