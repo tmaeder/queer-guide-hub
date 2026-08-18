@@ -649,7 +649,7 @@ function notFoundHtml(pathname: string): string {
   @font-face { font-family: 'Anton'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/anton/anton-latin-ext-wght-normal.woff2') format('woff2'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
   @font-face { font-family: 'Space Grotesk'; font-style: normal; font-weight: 300 700; font-display: swap; src: url('/fonts/space-grotesk/space-grotesk-latin-wght-normal.woff2') format('woff2'); }
   @font-face { font-family: 'Space Grotesk'; font-style: normal; font-weight: 300 700; font-display: swap; src: url('/fonts/space-grotesk/space-grotesk-latin-ext-wght-normal.woff2') format('woff2'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
-  :root { --paper: 60 16.3% 91.6%; --ink: 0 0% 6.7%; --muted: 0 0% 33%; --track: ${track}; }
+  :root { --paper: 60 33% 97%; --ink: 0 0% 6.7%; --muted: 0 0% 33%; --track: ${track}; }
   * { box-sizing: border-box; }
   html, body { height: 100%; }
   body { font-family: 'Space Grotesk', system-ui, sans-serif; margin: 0; min-height: 100vh; display: flex; flex-direction: column; background: hsl(var(--paper)); color: hsl(var(--ink)); }

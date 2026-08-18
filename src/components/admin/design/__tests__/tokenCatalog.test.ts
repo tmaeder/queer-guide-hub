@@ -58,7 +58,7 @@ describe('tokenCatalog drift guard (defaults must match src/index.css)', () => {
 
 describe('sparse doc helpers', () => {
   it('resolveColor prefers the override and falls back to the default', () => {
-    expect(resolveColor({}, 'background', 'light')).toBe('60 16.3% 91.6%');
+    expect(resolveColor({}, 'background', 'light')).toBe('60 33% 97%');
     expect(
       resolveColor({ tokens: { light: { background: '0 0% 90%' } } }, 'background', 'light'),
     ).toBe('0 0% 90%');

@@ -95,11 +95,9 @@ export const FONT_SLOTS: Array<{
 ];
 
 export const COLOR_TOKENS: ColorTokenDef[] = [
-  // Core — frame #EDEDE6 (page) / paper #FAFAF5 (card) / ink #111.
-  // Light-only: dark mirrors light (dark mode removed 2026-08, subway-map
-  // rebrand). NOTE the page is NOT paper since the 2026-08-17 soft re-skin —
-  // the page/card step is what separates a card now that keylines are gone.
-  { key: 'background', group: 'core', light: '60 16.3% 91.6%', dark: '0 0% 6.7%' },
+  // Core — paper #FAFAF5 is BOTH page and card; the ground layer on `body`
+  // (src/index.css) is what separates them. See tokenContrast.test.ts.
+  { key: 'background', group: 'core', light: '60 33% 97%', dark: '0 0% 6.7%' },
   { key: 'foreground', group: 'core', light: '0 0% 6.7%', dark: '60 33% 97%' },
   { key: 'card', group: 'core', light: '60 33% 97%', dark: '60 6.1% 12.9%' },
   { key: 'card-foreground', group: 'core', light: '0 0% 6.7%', dark: '60 33% 97%' },
@@ -109,9 +107,9 @@ export const COLOR_TOKENS: ColorTokenDef[] = [
   { key: 'primary-foreground', group: 'core', light: '60 33% 97%', dark: '0 0% 6.7%' },
   { key: 'secondary', group: 'core', light: '0 0% 6.7%', dark: '60 33% 97%' },
   { key: 'secondary-foreground', group: 'core', light: '60 33% 97%', dark: '0 0% 6.7%' },
-  { key: 'muted', group: 'core', light: '60 22.2% 92.9%', dark: '60 5.7% 10.4%' },
+  { key: 'muted', group: 'core', light: '60 22.2% 89.4%', dark: '60 5.7% 10.4%' },
   { key: 'muted-foreground', group: 'core', light: '0 0% 33%', dark: '60 6% 66%' },
-  { key: 'accent', group: 'core', light: '60 22.2% 92.9%', dark: '60 5.6% 14.1%' },
+  { key: 'accent', group: 'core', light: '60 22.2% 89.4%', dark: '60 5.6% 14.1%' },
   { key: 'accent-foreground', group: 'core', light: '0 0% 6.7%', dark: '60 33% 97%' },
   // A divider, not a component boundary — cards separate by tint + shadow.
   { key: 'border', group: 'core', light: '60 7.4% 81.4%', dark: '60 1.1% 17.5%' },
@@ -164,14 +162,14 @@ export const COLOR_TOKENS: ColorTokenDef[] = [
   {
     key: 'surface-container-low',
     group: 'surface',
-    light: '60 22.2% 92.9%',
+    light: '60 22.2% 89.4%',
     dark: '60 6.1% 12.9%',
   },
-  { key: 'surface-container', group: 'surface', light: '60 16.3% 91.6%', dark: '60 5.6% 14.1%' },
+  { key: 'surface-container', group: 'surface', light: '60 15.8% 88.8%', dark: '60 5.6% 14.1%' },
   {
     key: 'surface-container-high',
     group: 'surface',
-    light: '60 13.2% 89.6%',
+    light: '60 15% 84.3%',
     dark: '60 5.5% 16.5%',
   },
   { key: 'surface-container-highest', group: 'surface', light: '60 12% 87%', dark: '60 5.4% 19%' },
@@ -182,7 +180,7 @@ export const COLOR_TOKENS: ColorTokenDef[] = [
   { key: 'sidebar-foreground', group: 'sidebar', light: '0 0% 6.7%', dark: '60 33% 97%' },
   { key: 'sidebar-primary', group: 'sidebar', light: '0 0% 6.7%', dark: '60 33% 97%' },
   { key: 'sidebar-primary-foreground', group: 'sidebar', light: '60 33% 97%', dark: '0 0% 6.7%' },
-  { key: 'sidebar-accent', group: 'sidebar', light: '60 22.2% 92.9%', dark: '60 5.6% 14.1%' },
+  { key: 'sidebar-accent', group: 'sidebar', light: '60 22.2% 89.4%', dark: '60 5.6% 14.1%' },
   { key: 'sidebar-accent-foreground', group: 'sidebar', light: '0 0% 6.7%', dark: '60 33% 97%' },
   { key: 'sidebar-border', group: 'sidebar', light: '60 7.4% 81.4%', dark: '60 1.1% 17.5%' },
   { key: 'sidebar-ring', group: 'sidebar', light: '0 0% 6.7%', dark: '60 33% 97%' },
