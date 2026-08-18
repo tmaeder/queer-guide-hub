@@ -89,11 +89,31 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
   },
   // The tag glossary lives at /tags; /resources is a legacy redirect to it, so
   // the canonical page — and the route the SEO check samples — is /tags. Copy
-  // mirrors the client-side OVERVIEW_META in src/pages/Resources.tsx.
+  // mirrors the client-side `useMeta` call in src/pages/TagsIndex.tsx.
+  // Category pages (/tags/c/:slug) are handled by dynamicMeta below.
   '/tags': {
-    title: 'LGBTQ+ Resource Hub & Tag Glossary | Queer Guide',
+    title: 'LGBTQ+ Glossary & Tag Index | Queer Guide',
     description:
-      'Browse LGBTQ+ topics, identities, and support resources by tag — venues, events, people, and crisis help across the glossary.',
+      'Browse and search LGBTQ+ terms — identities, practices, history and community language, each linked to the venues, events, people and news that use it.',
+  },
+  // Needs an exact entry for the same reason /tags/c/:slug needed a branch in
+  // dynamicMeta: the generic `/(tag|tags)/([^/]+)` matcher reads this as
+  // kind=tag, slug="interactions" and served crawlers
+  // "Interactions — Tag | Queer Guide" plus a templated "Tag listing curated by
+  // the LGBTQ+ community" description. Adding it to RESERVED_DETAIL_SLUGS
+  // (functions/_lib/detail.ts) only stopped the hard 404 — the meta table is a
+  // separate surface and still mis-titled the page.
+  '/tags/interactions': {
+    title: 'Drug Interaction Chart | Queer Guide',
+    description:
+      'Which substances are dangerous to combine — 421 combinations across 31 drugs, with harm-reduction data researched by TripSit.',
+  },
+  // Same reason as /tags/interactions above: without an exact entry the
+  // generic tag matcher would title this "Sti-guide — Tag".
+  '/tags/sti-guide': {
+    title: 'STI Guide — Transmission, Testing, Protection | Queer Guide',
+    description:
+      'How STIs spread, when a test can detect them, and which prevention method protects against which infection — a harm-reduction reference.',
   },
   '/news': {
     title: 'LGBTQ+ News — Curated Daily | Queer Guide',
@@ -116,7 +136,8 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
   },
   '/feedback': {
     title: 'Send Feedback | Queer Guide',
-    description: 'Tell us what to fix, what to add, and what is missing. Your feedback shapes the guide.',
+    description:
+      'Tell us what to fix, what to add, and what is missing. Your feedback shapes the guide.',
   },
   // P4.3 — /help is the live canonical for the crisis hub (HelpHotlines
   // renders both /help and /help/:country). /help-hotlines is the legacy
@@ -130,7 +151,8 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
   },
   '/about-hub': {
     title: 'About Hub | Queer Guide',
-    description: 'Learn about Queer Guide — our mission, values, vision, press, and the team behind it.',
+    description:
+      'Learn about Queer Guide — our mission, values, vision, press, and the team behind it.',
   },
   '/about': {
     title: 'About Queer Guide — Our Mission',
@@ -139,7 +161,8 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
   },
   '/contact': {
     title: 'Contact Queer Guide',
-    description: 'Get in touch with the Queer Guide team — partnerships, press, corrections, or just to say hi.',
+    description:
+      'Get in touch with the Queer Guide team — partnerships, press, corrections, or just to say hi.',
   },
   '/vision': {
     title: 'Our Vision | Queer Guide',
@@ -174,7 +197,8 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
   },
   '/privacy': {
     title: 'Privacy Policy | Queer Guide',
-    description: 'How Queer Guide collects, uses, and protects your data — written in plain language.',
+    description:
+      'How Queer Guide collects, uses, and protects your data — written in plain language.',
   },
   '/cookies': {
     title: 'Cookie Policy | Queer Guide',
@@ -182,7 +206,8 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
   },
   '/dmca': {
     title: 'DMCA & Takedown Policy | Queer Guide',
-    description: 'How to report copyright infringement on Queer Guide and how we respond to takedown notices.',
+    description:
+      'How to report copyright infringement on Queer Guide and how we respond to takedown notices.',
   },
   '/accessibility': {
     title: 'Accessibility Statement | Queer Guide',
@@ -233,11 +258,10 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'Support organizations, advocacy groups and crisis helplines for LGBTQ+ people, listed by country with direct links.',
   },
-  '/shop': {
-    title: 'Shop — Books, Apparel, Art and Gifts',
-    description:
-      'Books, fashion, art and gifts for and about the LGBTQ+ community, with queer-owned brands labelled where ownership is verified.',
-  },
+  // No '/shop' entry: it 301s to /marketplace at the edge. A meta entry for a
+  // redirect source is dead code AND puts the URL in sitemap-static.xml (which
+  // is Object.keys(STATIC_ROUTE_META).filter(isIndexable)), i.e. a sitemap that
+  // advertises a redirect. routeMetaContract.test.ts fails on it.
   // Backfill (2026-08): these five are linked from nav, the mobile sheet or the
   // footer but had no entry here, so resolveMeta fell through to DEFAULT_META —
   // whose title is byte-identical to the homepage's — and sitemap-static.xml,
@@ -331,6 +355,22 @@ const titlecase = (s: string) =>
     .replace(/Lgbtq\+?/i, 'LGBTQ+');
 
 function dynamicMeta(pathname: string): RouteMeta | null {
+  // Glossary category pages, ahead of the generic matcher below — which would
+  // otherwise read `/tags/c/health-wellness` as kind=tag, slug="c" and title
+  // all 56 of them "C — Tag | Queer Guide". These URLs became indexable when
+  // the category moved from a query param into the path.
+  const category = /^\/tags\/c\/([^/?#]+)/.exec(pathname);
+  if (category) {
+    const nice = titlecase(decodeURIComponent(category[1]));
+    return {
+      title: truncate(`${nice} — LGBTQ+ Glossary${TITLE_SUFFIX}`, MAX_TITLE),
+      description: truncate(
+        `Every ${nice.toLowerCase()} term in the Queer Guide glossary, linked to the venues, events, people and news that use it.`,
+        MAX_DESC,
+      ),
+    };
+  }
+
   const match =
     /^\/(venue|venues|event|events|hotel|hotels|news|blog|personality|personalities|tag|tags|city|cities|country|countries|place|places|article|user|users)\/([^/?#]+)/.exec(
       pathname,
@@ -404,17 +444,29 @@ export function isIndexable(pathname: string): boolean {
     /^\/people\/(friends|dating|travel|nearby)(\/|$)/,
     // The signed-in friends list. Nothing public to render, same class as /hub.
     /^\/community\/friends(\/|$)/,
-    // `/shop/*` is a React `Navigate` to /marketplace with no edge redirect, so
-    // every path under it returned 200 + the homepage title + the generic
-    // fallback body — an unbounded indexable URL space. `/shop` itself stays
-    // indexable and is excluded by the negative lookahead.
-    /^\/shop\/.+/,
+    // /shop folded into /marketplace. public/_redirects 301s the whole subtree
+    // at the edge, so this is the defensive second layer — it matters off
+    // Cloudflare (dev, `vite preview`, e2e) and for localized `/de/shop`, which
+    // the unprefixed edge rule cannot catch and which the router redirects only
+    // after serving a 200. Now covers `/shop` itself as well as its children:
+    // before the fold, the bare path was a real indexable page.
+    /^\/shop(\/|$)/,
   ];
   return !noindex.some((r) => r.test(pathname));
 }
 
 export const SUPPORTED_LOCALES = [
-  'en', 'es', 'fr', 'de', 'pt', 'it', 'ru', 'zh', 'ja', 'ko', 'ar',
+  'en',
+  'es',
+  'fr',
+  'de',
+  'pt',
+  'it',
+  'ru',
+  'zh',
+  'ja',
+  'ko',
+  'ar',
 ] as const;
 export const DEFAULT_LOCALE = 'en';
 

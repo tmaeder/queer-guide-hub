@@ -37,7 +37,9 @@ export function EmailBrandingTab({ controller }: { controller: DesignSettingsCon
               <Input
                 value={email.from_name ?? ''}
                 aria-invalid={!!controller.validationErrors['email.from_name']}
-                className={controller.validationErrors['email.from_name'] ? 'border-destructive' : ''}
+                className={
+                  controller.validationErrors['email.from_name'] ? 'border border-destructive' : ''
+                }
                 placeholder={`${DEFAULTS.from_name} (default)`}
                 maxLength={100}
                 onChange={(e) => controller.setField('email', 'from_name', e.target.value)}
@@ -55,7 +57,11 @@ export function EmailBrandingTab({ controller }: { controller: DesignSettingsCon
               <Input
                 value={email.from_address ?? ''}
                 aria-invalid={!!controller.validationErrors['email.from_address']}
-                className={controller.validationErrors['email.from_address'] ? 'border-destructive' : ''}
+                className={
+                  controller.validationErrors['email.from_address']
+                    ? 'border border-destructive'
+                    : ''
+                }
                 placeholder={`${DEFAULTS.from_address} (default)`}
                 maxLength={100}
                 onChange={(e) => controller.setField('email', 'from_address', e.target.value)}
@@ -94,7 +100,9 @@ export function EmailBrandingTab({ controller }: { controller: DesignSettingsCon
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
-                      value={/^#[0-9a-fA-F]{6}$/.test(email[key] ?? '') ? email[key]! : DEFAULTS[key]}
+                      value={
+                        /^#[0-9a-fA-F]{6}$/.test(email[key] ?? '') ? email[key]! : DEFAULTS[key]
+                      }
                       onChange={(e) => controller.setField('email', key, e.target.value)}
                       className="h-9 w-12 cursor-pointer rounded-element border bg-background p-1"
                       aria-label={key}
@@ -104,7 +112,7 @@ export function EmailBrandingTab({ controller }: { controller: DesignSettingsCon
                       aria-invalid={!!controller.validationErrors[`email.${key}`]}
                       placeholder={`${DEFAULTS[key]} (default)`}
                       maxLength={7}
-                      className={`w-32 font-mono text-13 ${controller.validationErrors[`email.${key}`] ? 'border-destructive' : ''}`}
+                      className={`w-32 font-mono text-13 ${controller.validationErrors[`email.${key}`] ? 'border border-destructive' : ''}`}
                       onChange={(e) => controller.setField('email', key, e.target.value)}
                     />
                   </div>
@@ -137,7 +145,8 @@ export function EmailBrandingTab({ controller }: { controller: DesignSettingsCon
         </CardHeader>
         <CardContent>
           <p className="mb-2 text-13 text-muted-foreground">
-            From: <span className="font-mono">{`${effective.from_name} <${effective.from_address}>`}</span>
+            From:{' '}
+            <span className="font-mono">{`${effective.from_name} <${effective.from_address}>`}</span>
           </p>
           <div
             className="rounded-element border p-6"

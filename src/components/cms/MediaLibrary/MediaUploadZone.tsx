@@ -20,9 +20,15 @@ import type { AccessLevel, BrandCategory } from './types';
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024;
 const ALLOWED_TYPES = [
-  'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif',
-  'video/mp4', 'video/webm',
-  'audio/mpeg', 'audio/wav',
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+  'image/avif',
+  'video/mp4',
+  'video/webm',
+  'audio/mpeg',
+  'audio/wav',
 ];
 
 interface UploadFile {
@@ -41,63 +47,79 @@ export function MediaUploadZone() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const uploadFile = useCallback(async (uf: UploadFile, tier: AccessLevel, category: BrandCategory | 'none') => {
-    setFiles(prev => prev.map(f => f.id === uf.id ? { ...f, status: 'uploading' as const, progress: 10 } : f));
+  const uploadFile = useCallback(
+    async (uf: UploadFile, tier: AccessLevel, category: BrandCategory | 'none') => {
+      setFiles((prev) =>
+        prev.map((f) =>
+          f.id === uf.id ? { ...f, status: 'uploading' as const, progress: 10 } : f,
+        ),
+      );
 
-    try {
-      const ext = uf.file.name.split('.').pop() || 'bin';
-      const bucket = bucketForTier(tier);
-      // Public bytes go to cms-media (flat); private bytes to dam-private under a tier prefix.
-      const path = objectKeyForTier(tier, `${crypto.randomUUID()}.${ext}`);
+      try {
+        const ext = uf.file.name.split('.').pop() || 'bin';
+        const bucket = bucketForTier(tier);
+        // Public bytes go to cms-media (flat); private bytes to dam-private under a tier prefix.
+        const path = objectKeyForTier(tier, `${crypto.randomUUID()}.${ext}`);
 
-      setFiles(prev => prev.map(f => f.id === uf.id ? { ...f, progress: 30 } : f));
+        setFiles((prev) => prev.map((f) => (f.id === uf.id ? { ...f, progress: 30 } : f)));
 
-      const { error: storageError } = await supabase.storage
-        .from(bucket)
-        .upload(path, uf.file, { contentType: uf.file.type });
+        const { error: storageError } = await supabase.storage
+          .from(bucket)
+          .upload(path, uf.file, { contentType: uf.file.type });
 
-      if (storageError) throw storageError;
+        if (storageError) throw storageError;
 
-      setFiles(prev => prev.map(f => f.id === uf.id ? { ...f, progress: 70 } : f));
+        setFiles((prev) => prev.map((f) => (f.id === uf.id ? { ...f, progress: 70 } : f)));
 
-      const { error: dbError } = await untypedFrom('cms_media').insert({
-        filename: path,
-        original_filename: uf.file.name,
-        mime_type: uf.file.type,
-        file_size: uf.file.size,
-        storage_path: path,
-        storage_bucket: bucket,
-        access_level: tier,
-        brand_category: category === 'none' ? null : category,
-      });
+        const { error: dbError } = await untypedFrom('cms_media').insert({
+          filename: path,
+          original_filename: uf.file.name,
+          mime_type: uf.file.type,
+          file_size: uf.file.size,
+          storage_path: path,
+          storage_bucket: bucket,
+          access_level: tier,
+          brand_category: category === 'none' ? null : category,
+        });
 
-      if (dbError) throw dbError;
+        if (dbError) throw dbError;
 
-      setFiles(prev => prev.map(f => f.id === uf.id ? { ...f, status: 'done' as const, progress: 100 } : f));
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Upload failed';
-      setFiles(prev => prev.map(f => f.id === uf.id ? { ...f, status: 'error' as const, error: message } : f));
-    }
-  }, []);
+        setFiles((prev) =>
+          prev.map((f) => (f.id === uf.id ? { ...f, status: 'done' as const, progress: 100 } : f)),
+        );
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Upload failed';
+        setFiles((prev) =>
+          prev.map((f) =>
+            f.id === uf.id ? { ...f, status: 'error' as const, error: message } : f,
+          ),
+        );
+      }
+    },
+    [],
+  );
 
-  const onDrop = useCallback((accepted: File[]) => {
-    const newFiles: UploadFile[] = accepted.map(file => ({
-      file,
-      id: crypto.randomUUID(),
-      progress: 0,
-      status: 'pending' as const,
-    }));
+  const onDrop = useCallback(
+    (accepted: File[]) => {
+      const newFiles: UploadFile[] = accepted.map((file) => ({
+        file,
+        id: crypto.randomUUID(),
+        progress: 0,
+        status: 'pending' as const,
+      }));
 
-    setFiles(prev => [...prev, ...newFiles]);
-    setExpanded(true);
+      setFiles((prev) => [...prev, ...newFiles]);
+      setExpanded(true);
 
-    for (const uf of newFiles) {
-      uploadFile(uf, access, brandCategory);
-    }
-  }, [uploadFile, access, brandCategory]);
+      for (const uf of newFiles) {
+        uploadFile(uf, access, brandCategory);
+      }
+    },
+    [uploadFile, access, brandCategory],
+  );
 
   const onDropEnd = useCallback(() => {
-    const allDone = files.every(f => f.status === 'done' || f.status === 'error');
+    const allDone = files.every((f) => f.status === 'done' || f.status === 'error');
     if (allDone && files.length > 0) {
       queryClient.invalidateQueries({ queryKey: ['unified-media'] });
     }
@@ -116,15 +138,17 @@ export function MediaUploadZone() {
   });
 
   const clearCompleted = () => {
-    setFiles(prev => prev.filter(f => f.status !== 'done'));
+    setFiles((prev) => prev.filter((f) => f.status !== 'done'));
     queryClient.invalidateQueries({ queryKey: ['unified-media'] });
-    if (files.every(f => f.status === 'done')) {
+    if (files.every((f) => f.status === 'done')) {
       setExpanded(false);
     }
   };
 
-  const activeCount = files.filter(f => f.status === 'uploading' || f.status === 'pending').length;
-  const doneCount = files.filter(f => f.status === 'done').length;
+  const activeCount = files.filter(
+    (f) => f.status === 'uploading' || f.status === 'pending',
+  ).length;
+  const doneCount = files.filter((f) => f.status === 'done').length;
 
   return (
     <div className="flex flex-col gap-2">
@@ -137,18 +161,25 @@ export function MediaUploadZone() {
           </SelectTrigger>
           <SelectContent>
             {ACCESS_LEVELS.map((a) => (
-              <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>
+              <SelectItem key={a.value} value={a.value}>
+                {a.label}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
-        <Select value={brandCategory} onValueChange={(v) => setBrandCategory(v as BrandCategory | 'none')}>
+        <Select
+          value={brandCategory}
+          onValueChange={(v) => setBrandCategory(v as BrandCategory | 'none')}
+        >
           <SelectTrigger style={{ width: 150 }} className="text-13">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="none">No category</SelectItem>
             {BRAND_CATEGORIES.map((c) => (
-              <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+              <SelectItem key={c.value} value={c.value}>
+                {c.label}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -156,7 +187,7 @@ export function MediaUploadZone() {
       <div
         {...getRootProps()}
         className={`border border-dashed p-4 text-center cursor-pointer transition-colors ${
-          isDragActive ? 'border-foreground bg-muted' : 'border-border hover:border-foreground/50'
+          isDragActive ? 'bg-muted' : 'border border-border hover:border-foreground/50'
         }`}
       >
         <input {...getInputProps()} />
@@ -182,7 +213,10 @@ export function MediaUploadZone() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => { setExpanded(false); onDropEnd(); }}
+                onClick={() => {
+                  setExpanded(false);
+                  onDropEnd();
+                }}
               >
                 <X size={14} />
               </Button>
@@ -190,7 +224,7 @@ export function MediaUploadZone() {
           </div>
 
           <div className="flex flex-col gap-1 max-h-40 overflow-y-auto">
-            {files.map(f => (
+            {files.map((f) => (
               <div key={f.id} className="flex items-center gap-2 text-xs">
                 {f.status === 'done' && <CheckCircle size={12} />}
                 {f.status === 'error' && <AlertTriangle size={12} />}
@@ -198,9 +232,7 @@ export function MediaUploadZone() {
                 {(f.status === 'uploading' || f.status === 'pending') && (
                   <Progress value={f.progress} className="w-20 h-1" />
                 )}
-                {f.status === 'error' && (
-                  <span className="text-muted-foreground">{f.error}</span>
-                )}
+                {f.status === 'error' && <span className="text-muted-foreground">{f.error}</span>}
               </div>
             ))}
           </div>

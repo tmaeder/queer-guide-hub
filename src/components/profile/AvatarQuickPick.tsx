@@ -33,12 +33,7 @@ export function AvatarQuickPick({ value, onChange, count = 6 }: Props) {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <Label>Pick an avatar</Label>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={() => setSeed((s) => s + 1)}
-        >
+        <Button type="button" variant="ghost" size="sm" onClick={() => setSeed((s) => s + 1)}>
           <RefreshCw className="w-4 h-4 mr-2" />
           Reroll
         </Button>
@@ -52,10 +47,8 @@ export function AvatarQuickPick({ value, onChange, count = 6 }: Props) {
               type="button"
               onClick={() => onChange(cfg)}
               aria-pressed={selected}
-              className={`aspect-square rounded-element border-2 flex items-center justify-center transition-colors ${
-                selected
-                  ? 'border-foreground bg-accent'
-                  : 'border-border hover:border-foreground/50'
+              className={`aspect-square rounded-element flex items-center justify-center transition-colors ${
+                selected ? 'bg-accent' : 'border border-border hover:border-foreground/50'
               }`}
             >
               <div className="w-20 h-20">

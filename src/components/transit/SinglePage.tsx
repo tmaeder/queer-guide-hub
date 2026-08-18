@@ -49,7 +49,7 @@ export function SinglePage({
        on those edges, so a container-level `py-*` would double the first and
        last gap. */
     <PageContainer as="article" flush className={className}>
-      <div className="border-b-4 border-foreground py-8">
+      <div className="border-b border-border-hairline py-8">
         <DetailMasthead type={type} eyebrow={eyebrow} title={title} status={status} lead={lead} />
         {tags && <div className="mt-6">{tags}</div>}
         {action && <div className="mt-6 flex flex-wrap gap-2">{action}</div>}
@@ -60,7 +60,7 @@ export function SinglePage({
         {rail && <aside className="flex flex-col gap-4">{rail}</aside>}
       </div>
 
-      {footer && <div className="border-t-4 border-foreground py-8">{footer}</div>}
+      {footer && <div className="border-t border-border-hairline py-8">{footer}</div>}
     </PageContainer>
   );
 }
@@ -70,18 +70,22 @@ export function SinglePage({
  * under one of these, so the h2 level and spacing cannot drift per page.
  */
 export function SingleSection({
+  id,
   title,
   note,
   children,
   className,
 }: {
+  /** Anchor target, so a RouteStrip station can link straight to this band
+   *  without the caller wrapping it in a div just to hold the id. */
+  id?: string;
   title: string;
   note?: string;
   children: React.ReactNode;
   className?: string;
 }) {
   return (
-    <section className={className}>
+    <section id={id} className={className}>
       <h2 className="font-display text-headline leading-tight">{title}</h2>
       {note && <p className="mt-1 text-13 leading-relaxed text-muted-foreground">{note}</p>}
       <div className="mt-4">{children}</div>

@@ -1,140 +1,93 @@
-import {
-  Tag,
-  Heart,
-  Flame,
-  HeartHandshake,
-  Stethoscope,
-  ShieldCheck,
-  Users,
-  BookOpen,
-  Scale,
-  MapPin,
-  LifeBuoy,
-  User,
-  Venus,
-  Sparkles,
-  Circle,
-  HelpCircle,
-  Crown,
-  Drama,
-  Hand,
-  Shirt,
-  PersonStanding,
-  Infinity as InfinityIcon,
-  Calendar as CalendarIcon,
-  Home,
-  UsersRound,
-  Activity,
-  Brain,
-  Leaf,
-  Pill,
-  Hospital,
-  Handshake,
-  Shield,
-  Lock,
-  AlertTriangle,
-  MessageCircle,
-  Film,
-  Palette,
-  PartyPopper,
-  Globe2,
-  Landmark,
-  Star,
-  Map as MapIcon,
-  Flag,
-  Gavel,
-  Megaphone,
-  Briefcase,
-  Building2,
-  Plane,
-  Bed,
-  Phone,
-  HandHelping,
-  Newspaper,
-  type LucideIcon,
-} from 'lucide-react';
-
-type CategoryInfo = { short: string; icon: LucideIcon };
+/**
+ * Short display names for the taxonomy.
+ *
+ * The per-category lucide icon that used to live here went with the resource
+ * hub: the glossary is a TransitIcon surface (a surface never mixes the two
+ * icon sets), and the ten parents' transit identity is in
+ * src/lib/tags/categoryIdentity.ts. Deleting it took a 54-icon lucide import
+ * off every page that only wanted a short name.
+ */
+type CategoryInfo = { short: string };
 
 // Taxonomy v2 — 10 parents × ~5 children. Matches slugs seeded in migration
 // 20260411160000_resources_taxonomy_v2.sql.
 const categoryMeta: Record<string, CategoryInfo> = {
   // Parents
-  'Identity & Expression': { short: 'Identity', icon: Heart },
-  'Sexuality & Kink': { short: 'Sex & Kink', icon: Flame },
-  'Relationships & Connection': { short: 'Relationships', icon: HeartHandshake },
-  'Health & Wellness': { short: 'Health', icon: Stethoscope },
-  'Safety & Practices': { short: 'Safety', icon: ShieldCheck },
-  'Community & Culture': { short: 'Community', icon: Users },
-  'History & Heritage': { short: 'History', icon: BookOpen },
-  'Rights & Activism': { short: 'Rights', icon: Scale },
-  'Places & Travel': { short: 'Places', icon: MapPin },
-  'Support & News': { short: 'Support', icon: LifeBuoy },
+  'Identity & Expression': { short: 'Identity' },
+  'Sexuality & Kink': { short: 'Sex & Kink' },
+  'Relationships & Connection': { short: 'Relationships' },
+  'Health & Wellness': { short: 'Health' },
+  'Safety & Practices': { short: 'Safety' },
+  'Community & Culture': { short: 'Community' },
+  'History & Heritage': { short: 'History' },
+  'Rights & Activism': { short: 'Rights' },
+  'Places & Travel': { short: 'Places' },
+  'Support & News': { short: 'Support' },
 
   // Identity & Expression
-  'Sexual Orientation': { short: 'Orientation', icon: Heart },
-  'Gender Identity': { short: 'Gender', icon: Venus },
-  'Expression & Presentation': { short: 'Expression', icon: Sparkles },
-  'Intersex & Bodies': { short: 'Intersex', icon: Circle },
-  'Questioning & Labels': { short: 'Questioning', icon: HelpCircle },
+  'Sexual Orientation': { short: 'Orientation' },
+  'Gender Identity': { short: 'Gender' },
+  'Expression & Presentation': { short: 'Expression' },
+  'Intersex & Bodies': { short: 'Intersex' },
+  'Questioning & Labels': { short: 'Questioning' },
 
   // Sexuality & Kink
-  'Sexual Roles': { short: 'Roles', icon: User },
-  'BDSM & Power Exchange': { short: 'BDSM', icon: Crown },
-  'Fetishes & Interests': { short: 'Fetishes', icon: Flame },
-  'Practices & Play': { short: 'Play', icon: Hand },
-  'Gear & Aesthetics': { short: 'Gear', icon: Shirt },
-  'Body Types & Archetypes': { short: 'Archetypes', icon: PersonStanding },
+  'Sexual Roles': { short: 'Roles' },
+  'BDSM & Power Exchange': { short: 'BDSM' },
+  'Fetishes & Interests': { short: 'Fetishes' },
+  'Practices & Play': { short: 'Play' },
+  'Gear & Aesthetics': { short: 'Gear' },
+  'Body Types & Archetypes': { short: 'Archetypes' },
 
   // Relationships & Connection
-  'Relationship Structures': { short: 'Structures', icon: InfinityIcon },
-  'Dating & Courtship': { short: 'Dating', icon: CalendarIcon },
-  'Family & Chosen Family': { short: 'Family', icon: Home },
-  'Friendship & Community': { short: 'Friendship', icon: UsersRound },
+  'Relationship Structures': { short: 'Structures' },
+  'Dating & Courtship': { short: 'Dating' },
+  'Family & Chosen Family': { short: 'Family' },
+  'Friendship & Community': { short: 'Friendship' },
 
   // Health & Wellness
-  'Sexual Health': { short: 'Sexual', icon: Activity },
-  'Mental Health': { short: 'Mental', icon: Brain },
-  'Physical & Reproductive': { short: 'Physical', icon: Leaf },
-  'Substances & Harm Reduction': { short: 'Substances', icon: Pill },
-  'Care Access': { short: 'Care', icon: Hospital },
+  'Sexual Health': { short: 'Sexual' },
+  'Mental Health': { short: 'Mental' },
+  'Physical & Reproductive': { short: 'Physical' },
+  'Substances & Harm Reduction': { short: 'Substances' },
+  'Care Access': { short: 'Care' },
 
   // Safety & Practices
-  'Consent & Negotiation': { short: 'Consent', icon: Handshake },
-  'Safer Sex': { short: 'Safer Sex', icon: Shield },
-  'Physical & Digital Safety': { short: 'Safety', icon: Lock },
-  'Risk-Aware Play': { short: 'RACK', icon: AlertTriangle },
+  'Consent & Negotiation': { short: 'Consent' },
+  'Safer Sex': { short: 'Safer Sex' },
+  'Physical & Digital Safety': { short: 'Safety' },
+  'Risk-Aware Play': { short: 'RACK' },
 
   // Community & Culture
-  'Slang & Terminology': { short: 'Slang', icon: MessageCircle },
-  'Media, Film & Music': { short: 'Media', icon: Film },
-  'Art, Literature & Zines': { short: 'Art', icon: Palette },
-  'Events & Scene': { short: 'Events', icon: PartyPopper },
-  Subcultures: { short: 'Scenes', icon: Globe2 },
+  'Slang & Terminology': { short: 'Slang' },
+  'Media, Film & Music': { short: 'Media' },
+  'Art, Literature & Zines': { short: 'Art' },
+  'Events & Scene': { short: 'Events' },
+  Subcultures: { short: 'Scenes' },
 
   // History & Heritage
-  'Movements & Milestones': { short: 'Movements', icon: Landmark },
-  'Figures & Icons': { short: 'Figures', icon: Star },
-  'Queer History by Region': { short: 'Regional', icon: MapIcon },
-  'Symbols & Flags': { short: 'Symbols', icon: Flag },
+  'Movements & Milestones': { short: 'Movements' },
+  'Figures & Icons': { short: 'Figures' },
+  'Queer History by Region': { short: 'Regional' },
+  'Symbols & Flags': { short: 'Symbols' },
 
   // Rights & Activism
-  'Legal Rights': { short: 'Legal', icon: Gavel },
-  'Political Activism': { short: 'Activism', icon: Megaphone },
-  'Workplace, Education & Policy': { short: 'Workplace', icon: Briefcase },
-  'Global & Regional Rights': { short: 'Global', icon: Globe2 },
+  'Legal Rights': { short: 'Legal' },
+  'Political Activism': { short: 'Activism' },
+  'Workplace, Education & Policy': { short: 'Workplace' },
+  'Global & Regional Rights': { short: 'Global' },
 
   // Places & Travel
-  'Venues & Nightlife': { short: 'Venues', icon: Building2 },
-  'Travel & Destinations': { short: 'Travel', icon: Plane },
-  'Safe Spaces': { short: 'Safe', icon: ShieldCheck },
-  Accommodation: { short: 'Stays', icon: Bed },
+  'Venues & Nightlife': { short: 'Venues' },
+  'Travel & Destinations': { short: 'Travel' },
+  'Safe Spaces': { short: 'Safe' },
+  Accommodation: { short: 'Stays' },
 
   // Support & News
-  'Helplines & Hotlines': { short: 'Helplines', icon: Phone },
-  'Support Services & NGOs': { short: 'Services', icon: HandHelping },
-  'Current Affairs': { short: 'News', icon: Newspaper },
-  'Professions & Allies': { short: 'Professions', icon: Drama },
+  'Helplines & Hotlines': { short: 'Helplines' },
+  'Support Services & NGOs': { short: 'Services' },
+  'Current Affairs': { short: 'News' },
+  'Professions & Allies': { short: 'Professions' },
 };
 
 // Stable display order for parents — used by Overview and the filter bar.
@@ -190,10 +143,6 @@ export function isAdultCategoryName(name: string | null | undefined): boolean {
  */
 export function isAdultTag(tag: { is_adult?: boolean | null; category?: string | null }): boolean {
   return tag.is_adult === true || isAdultCategoryName(tag.category);
-}
-
-export function getCategoryIcon(category: string): LucideIcon {
-  return categoryMeta[category]?.icon || Tag;
 }
 
 export function getCategoryShortName(category: string): string {

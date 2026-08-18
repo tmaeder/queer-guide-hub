@@ -160,4 +160,51 @@ describe('MarketplaceCard', () => {
     expect(approxLine.textContent).toMatch(/£|GBP/);
     expect(approxLine.textContent).not.toMatch(/\$/);
   });
+  it('lifts but never also fills — the one hard rule of the card', () => {
+    // MarketplaceCard imported `MotionCard` (a borderless plate that
+    // hover-tints) AND wrapped it in CardHoverEffect (`.card-lift`), so every
+    // card on the app's largest grid did both. Asserted rather than commented,
+    // because the violation was invisible for months and ~12 call sites
+    // inherit whatever this component does.
+    const { container } = render(
+      wrap(
+        <MarketplaceCard
+          listing={{ id: 'm3', title: 'Rule', slug: 'rule', price: 10, currency: 'USD' } as never}
+        />,
+      ),
+    );
+    const lift = container.querySelector('.card-lift');
+    expect(lift, 'card must carry the lift').toBeTruthy();
+    const card = lift!.querySelector(':scope > div') as HTMLElement;
+    // The rest state is the soft elevation, not a 3px ink cage — the card's
+    // separation from the page moved from the frame to `shadow-soft` plus the
+    // page/card tonal step (soft re-skin 2026-08-17).
+    expect(card.className).toContain('shadow-soft');
+    expect(card.className).not.toContain('border-[3px]');
+    expect(card.className).not.toMatch(/hover:bg-/);
+    expect(card.className).not.toMatch(/hover:border-/);
+  });
+
+  it('keeps the 18+ marker out of the heading accessible name', () => {
+    // It used to render inside the <h3>, so screen readers announced every
+    // adult listing as "18+ Some Product". It is a status, not part of a title.
+    const { getByRole, getByText } = render(
+      wrap(
+        <MarketplaceCard
+          listing={
+            {
+              id: 'm4',
+              title: 'Discreet Thing',
+              slug: 'discreet-thing',
+              price: 20,
+              currency: 'USD',
+              content_rating: 'adult',
+            } as never
+          }
+        />,
+      ),
+    );
+    expect(getByText('18+')).toBeTruthy();
+    expect(getByRole('heading', { level: 3 }).textContent).toBe('Discreet Thing');
+  });
 });

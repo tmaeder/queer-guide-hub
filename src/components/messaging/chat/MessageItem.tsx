@@ -2,12 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -138,10 +133,11 @@ export const MessageItem = ({
             <button
               type="button"
               onClick={() => onScrollToMessage(replyingTo.id)}
-              className="mb-1 flex w-full flex-col items-start gap-0.5 rounded-element border-l-2 border-foreground bg-muted/60 px-2 py-1 text-left"
+              className="mb-1 flex w-full flex-col items-start gap-0.5 rounded-element border-l border-border-hairline bg-muted/60 px-2 py-1 text-left"
             >
               <span className="text-2xs font-medium text-foreground">
-                {replyingTo.sender?.display_name || t('chat.reply.someone', { defaultValue: 'Someone' })}
+                {replyingTo.sender?.display_name ||
+                  t('chat.reply.someone', { defaultValue: 'Someone' })}
               </span>
               <span className="line-clamp-1 text-xs text-muted-foreground">
                 {replyingTo.deleted_at
@@ -159,11 +155,17 @@ export const MessageItem = ({
               sending={message.status === 'sending'}
               highlighted={highlighted}
             />
-          ) : !isDeleted && message.message_type === 'entity_share' && isEntityShareMeta(message.metadata) ? (
+          ) : !isDeleted &&
+            message.message_type === 'entity_share' &&
+            isEntityShareMeta(message.metadata) ? (
             <EntityShareCard meta={message.metadata} note={message.content} />
-          ) : !isDeleted && message.message_type === 'itinerary' && isItineraryMeta(message.metadata) ? (
+          ) : !isDeleted &&
+            message.message_type === 'itinerary' &&
+            isItineraryMeta(message.metadata) ? (
             <ItineraryChatCard meta={message.metadata} />
-          ) : !isDeleted && message.message_type === 'submission' && isSubmissionMeta(message.metadata) ? (
+          ) : !isDeleted &&
+            message.message_type === 'submission' &&
+            isSubmissionMeta(message.metadata) ? (
             <SubmissionChatCard messageId={message.id} meta={message.metadata} />
           ) : jumbo > 0 && !isDeleted ? (
             <div
@@ -173,7 +175,10 @@ export const MessageItem = ({
                 textAlign: isOwn ? 'right' : 'left',
                 opacity: message.status === 'sending' ? 0.6 : 1,
                 ...(highlighted
-                  ? { outline: '2px solid hsl(var(--foreground))', borderRadius: 'var(--radius-element)' }
+                  ? {
+                      outline: '2px solid hsl(var(--foreground))',
+                      borderRadius: 'var(--radius-element)',
+                    }
                   : {}),
               }}
             >
@@ -212,7 +217,10 @@ export const MessageItem = ({
             </div>
           )}
 
-          <div style={{ alignItems: 'center', justifyContent: 'space-between' }} className="flex mt-1">
+          <div
+            style={{ alignItems: 'center', justifyContent: 'space-between' }}
+            className="flex mt-1"
+          >
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">
                 {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
@@ -233,7 +241,12 @@ export const MessageItem = ({
                   side="top"
                   align={isOwn ? 'end' : 'start'}
                   trigger={
-                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0" aria-label={t('chat.react', { defaultValue: 'React' })}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0"
+                      aria-label={t('chat.react', { defaultValue: 'React' })}
+                    >
                       <Smile size={13} />
                     </Button>
                   }
@@ -250,7 +263,12 @@ export const MessageItem = ({
                 {isOwn && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0" aria-label={t('common.more', { defaultValue: 'More' })}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0"
+                        aria-label={t('common.more', { defaultValue: 'More' })}
+                      >
                         <MoreVertical size={13} />
                       </Button>
                     </DropdownMenuTrigger>
@@ -300,9 +318,7 @@ export const MessageItem = ({
                         type="button"
                         onClick={() => react(g.emoji)}
                         className={`rounded-badge border px-1.5 py-0.5 text-xs transition-colors ${
-                          g.mine
-                            ? 'border-foreground bg-muted'
-                            : 'border-border bg-muted hover:bg-muted/70'
+                          g.mine ? 'bg-muted' : 'border-border bg-muted hover:bg-muted/70'
                         }`}
                       >
                         {g.emoji} {g.count}

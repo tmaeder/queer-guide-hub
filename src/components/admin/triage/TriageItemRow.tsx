@@ -81,8 +81,8 @@ export function TriageItemRow({
       className={cn(
         'flex items-start gap-2.5 px-4 py-2.5 border-b cursor-pointer transition-colors',
         isActive
-          ? 'bg-foreground/[0.06] border-l-2 border-l-foreground'
-          : 'hover:bg-muted/50 border-l-2 border-l-transparent',
+          ? 'bg-foreground/[0.06] border-l border-l-foreground'
+          : 'hover:bg-muted/50 border-l border-l-transparent',
         isSelected && !isActive && 'bg-muted/30',
       )}
     >
@@ -95,16 +95,20 @@ export function TriageItemRow({
 
       <div className="min-w-0 flex-1 space-y-0.5">
         {/* Title row */}
-        <p className={cn('text-sm truncate', isActive && 'font-medium')}>
-          {item.title}
-        </p>
+        <p className={cn('text-sm truncate', isActive && 'font-medium')}>{item.title}</p>
 
         {/* Meta row */}
         <div className="flex items-center gap-1.5 flex-wrap">
-          <Badge variant="outline" className="shrink-0 text-2xs font-normal normal-case px-1.5 py-0 h-4">
+          <Badge
+            variant="outline"
+            className="shrink-0 text-2xs font-normal normal-case px-1.5 py-0 h-4"
+          >
             {QUEUE_LABELS[item.queue_type] ?? humanize(item.queue_type)}
           </Badge>
-          <Badge variant="secondary" className="shrink-0 text-2xs font-normal normal-case px-1.5 py-0 h-4">
+          <Badge
+            variant="secondary"
+            className="shrink-0 text-2xs font-normal normal-case px-1.5 py-0 h-4"
+          >
             {contentLabel}
           </Badge>
           {item.has_diff && (
@@ -125,11 +129,7 @@ export function TriageItemRow({
         <span className="text-2xs text-muted-foreground tabular-nums">
           {formatAge(item.created_at)}
         </span>
-        {conf && (
-          <span className={cn('text-2xs tabular-nums', conf.className)}>
-            {conf.text}
-          </span>
-        )}
+        {conf && <span className={cn('text-2xs tabular-nums', conf.className)}>{conf.text}</span>}
       </div>
     </div>
   );

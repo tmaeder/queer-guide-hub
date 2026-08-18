@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { Check, ChevronsUpDown} from 'lucide-react';
+import { Check, ChevronsUpDown } from 'lucide-react';
 import { FieldWrapper } from './FieldWrapper';
 import type { FieldProps } from './FieldRenderer';
 import { Button } from '@/components/ui/button';
@@ -56,42 +56,45 @@ export function VenueAutocompleteField({
     const q = search.trim();
     const valid = !disabled && (q.length >= 2 || !!currentCityId);
     let cancelled = false;
-    const timer = setTimeout(async () => {
-      if (!valid) {
-        if (!cancelled) setVenues([]);
-        return;
-      }
-      setLoading(true);
-      try {
-        const filters: Array<{ col: string; val: unknown; op?: 'eq' | 'ilike' }> = [];
-        if (currentCityId) filters.push({ col: 'city_id', val: currentCityId });
-        if (q) filters.push({ col: 'name', val: `%${q}%`, op: 'ilike' });
-        const rows = await listFromWhere<Record<string, unknown>>(
-          'venues',
-          'id, name, address, city, country, city_id, country_id, latitude, longitude',
-          filters,
-          { order: { col: 'name', ascending: true }, limit: 20 },
-        );
-        if (cancelled) return;
-        setVenues(
-          rows.map((v) => ({
-            id: v.id as string,
-            name: v.name as string,
-            address: (v.address as string) ?? null,
-            city: (v.city as string) ?? null,
-            country: (v.country as string) ?? null,
-            city_id: (v.city_id as string) ?? null,
-            country_id: (v.country_id as string) ?? null,
-            latitude: (v.latitude as number) ?? null,
-            longitude: (v.longitude as number) ?? null,
-          })),
-        );
-      } catch (err) {
-        console.error('Error fetching venues:', err);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }, valid ? 250 : 0);
+    const timer = setTimeout(
+      async () => {
+        if (!valid) {
+          if (!cancelled) setVenues([]);
+          return;
+        }
+        setLoading(true);
+        try {
+          const filters: Array<{ col: string; val: unknown; op?: 'eq' | 'ilike' }> = [];
+          if (currentCityId) filters.push({ col: 'city_id', val: currentCityId });
+          if (q) filters.push({ col: 'name', val: `%${q}%`, op: 'ilike' });
+          const rows = await listFromWhere<Record<string, unknown>>(
+            'venues',
+            'id, name, address, city, country, city_id, country_id, latitude, longitude',
+            filters,
+            { order: { col: 'name', ascending: true }, limit: 20 },
+          );
+          if (cancelled) return;
+          setVenues(
+            rows.map((v) => ({
+              id: v.id as string,
+              name: v.name as string,
+              address: (v.address as string) ?? null,
+              city: (v.city as string) ?? null,
+              country: (v.country as string) ?? null,
+              city_id: (v.city_id as string) ?? null,
+              country_id: (v.country_id as string) ?? null,
+              latitude: (v.latitude as number) ?? null,
+              longitude: (v.longitude as number) ?? null,
+            })),
+          );
+        } catch (err) {
+          console.error('Error fetching venues:', err);
+        } finally {
+          if (!cancelled) setLoading(false);
+        }
+      },
+      valid ? 250 : 0,
+    );
     return () => {
       cancelled = true;
       clearTimeout(timer);
@@ -130,7 +133,9 @@ export function VenueAutocompleteField({
     [onChange, setFields, field.relatedFields],
   );
 
-  const exactMatch = search ? venues.some((v) => v.name.toLowerCase() === search.toLowerCase()) : true;
+  const exactMatch = search
+    ? venues.some((v) => v.name.toLowerCase() === search.toLowerCase())
+    : true;
   const showFreeText = search.trim() !== '' && !exactMatch;
 
   return (
@@ -149,10 +154,12 @@ export function VenueAutocompleteField({
             className={cn(
               'w-full justify-between font-normal',
               !currentLabel && 'text-muted-foreground',
-              error && 'border-destructive',
+              error && 'border border-destructive',
             )}
           >
-            <span className="truncate">{currentLabel || field.placeholder || 'Search or enter a venue…'}</span>
+            <span className="truncate">
+              {currentLabel || field.placeholder || 'Search or enter a venue…'}
+            </span>
             {loading ? (
               <TrackLoader size={16} label="Loading" className="ml-2 shrink-0 opacity-50" />
             ) : (
@@ -177,7 +184,10 @@ export function VenueAutocompleteField({
                     }}
                   >
                     <Check
-                      className={cn('mr-2 h-4 w-4', currentLabel === venue.name ? 'opacity-100' : 'opacity-0')}
+                      className={cn(
+                        'mr-2 h-4 w-4',
+                        currentLabel === venue.name ? 'opacity-100' : 'opacity-0',
+                      )}
                     />
                     <div className="flex flex-col">
                       <span className="text-sm font-medium">{venue.name}</span>

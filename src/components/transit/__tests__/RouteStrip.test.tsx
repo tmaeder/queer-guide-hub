@@ -80,7 +80,7 @@ describe('RouteStrip', () => {
       <RouteStrip stations={STATIONS} activeId="types" orientation="horizontal" />,
     );
     const nav = container.querySelector('nav')!;
-    for (const cls of ['sticky', 'border-b-2']) {
+    for (const cls of ['sticky', 'border-b', 'border-border-hairline']) {
       expect(nav.className).toContain(cls);
     }
     // Sourced from PageContainer rather than restated: this asserts the strip

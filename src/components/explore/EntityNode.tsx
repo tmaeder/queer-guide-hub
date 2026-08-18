@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
 import { Handle, Position, type NodeProps, type Node } from '@xyflow/react';
-import { ArrowUpRight} from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Image } from '@/components/ui/Image';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -24,30 +24,44 @@ export type EgoFlowNode = Node<EgoNodeData, 'entityNode'>;
 
 function fallbackTheme(type: string): FallbackTheme {
   switch (type) {
-    case 'venue': return 'venue';
-    case 'event': return 'event';
-    case 'hotel': return 'hotel';
-    case 'news': return 'news';
-    case 'marketplace': return 'marketplace';
-    case 'personality': case 'person': return 'person';
-    default: return 'place';
+    case 'venue':
+      return 'venue';
+    case 'event':
+      return 'event';
+    case 'hotel':
+      return 'hotel';
+    case 'news':
+      return 'news';
+    case 'marketplace':
+      return 'marketplace';
+    case 'personality':
+    case 'person':
+      return 'person';
+    default:
+      return 'place';
   }
 }
 
 /** Centered, invisible handles so edges radiate from card centers. */
-const handleClass = '!opacity-0 !pointer-events-none !left-1/2 !top-1/2 !-translate-x-1/2 !-translate-y-1/2';
+const handleClass =
+  '!opacity-0 !pointer-events-none !left-1/2 !top-1/2 !-translate-x-1/2 !-translate-y-1/2';
 
 function EntityNode({ data: d, id }: NodeProps<EgoFlowNode>) {
   const { t } = useTranslation();
   return (
     <div
       className={`w-44 rounded-element border bg-background overflow-hidden transition-all cursor-pointer hover:border-foreground/40 ${
-        d.isCenter ? 'ring-2 ring-ring border-foreground' : ''
+        d.isCenter ? 'ring-2 ring-ring border border-border-hairline' : ''
       } ${d.expanded ? '' : 'border-dashed'}`}
       data-testid={`ego-node-${id}`}
     >
       <Handle type="target" position={Position.Top} className={handleClass} isConnectable={false} />
-      <Handle type="source" position={Position.Bottom} className={handleClass} isConnectable={false} />
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        className={handleClass}
+        isConnectable={false}
+      />
 
       <Image
         src={d.imageUrl}
@@ -81,9 +95,7 @@ function EntityNode({ data: d, id }: NodeProps<EgoFlowNode>) {
           <Badge variant="outline" className="text-3xs px-1 py-0 shrink-0">
             {d.entityType}
           </Badge>
-          {d.place && (
-            <span className="text-2xs text-muted-foreground truncate">{d.place}</span>
-          )}
+          {d.place && <span className="text-2xs text-muted-foreground truncate">{d.place}</span>}
         </div>
       </div>
     </div>

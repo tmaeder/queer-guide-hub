@@ -150,7 +150,9 @@ export function useStagingStats() {
 
       const counts: Record<string, number> = {};
       for (const row of data || []) {
-        const status = row.disposition || 'unknown';
+        // `untypedFrom` rows carry `unknown` values, and an object key has to
+        // be a string — this says so instead of relying on an implicit coercion.
+        const status = typeof row.disposition === 'string' ? row.disposition : 'unknown';
         counts[status] = (counts[status] || 0) + 1;
       }
       return Object.entries(counts).map(([status, count]) => ({ status, count })) as StagingStats[];
@@ -184,7 +186,7 @@ export function useEventIngestStats(days = 14) {
         .gte('day', cutoff)
         .order('day', { ascending: false });
       if (error) throw error;
-      return (data || []) as EventIngestRow[];
+      return (data || []) as unknown as EventIngestRow[];
     },
     refetchInterval: 30_000,
   });
@@ -201,7 +203,7 @@ function useIngestStatsView(view: string, days: number) {
         .gte('day', cutoff)
         .order('day', { ascending: false });
       if (error) throw error;
-      return (data || []) as EventIngestRow[];
+      return (data || []) as unknown as EventIngestRow[];
     },
     refetchInterval: 30_000,
   });

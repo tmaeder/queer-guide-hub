@@ -65,27 +65,27 @@ export function HubShell({ active, children }: { active: HubModuleId; children: 
           aria-label={t('hub.nav', 'Hub modules')}
           className="flex gap-1 overflow-x-auto px-4"
         >
-        {HUB_MODULES.map((m) => {
-          const Icon = m.icon;
-          const isActive = m.id === active;
-          return (
-            <LocalizedLink
-              key={m.id}
-              to={m.path}
-              aria-current={isActive ? 'page' : undefined}
-              className={cn(
-                'flex h-10 shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-4 text-sm no-underline transition-colors',
-                isActive
-                  ? 'border-foreground font-medium text-foreground'
-                  : 'border-transparent text-muted-foreground',
-              )}
-            >
-              <Icon className="h-4 w-4" aria-hidden />
-              {t(m.labelKey, m.defaultLabel)}
-              {badge(m)}
-            </LocalizedLink>
-          );
-        })}
+          {HUB_MODULES.map((m) => {
+            const Icon = m.icon;
+            const isActive = m.id === active;
+            return (
+              <LocalizedLink
+                key={m.id}
+                to={m.path}
+                aria-current={isActive ? 'page' : undefined}
+                className={cn(
+                  'flex h-10 shrink-0 items-center gap-1.5 whitespace-nowrap border-b px-4 text-sm no-underline transition-colors',
+                  isActive
+                    ? 'border border-border-hairline font-medium text-foreground'
+                    : 'border-transparent text-muted-foreground',
+                )}
+              >
+                <Icon className="h-4 w-4" aria-hidden />
+                {t(m.labelKey, m.defaultLabel)}
+                {badge(m)}
+              </LocalizedLink>
+            );
+          })}
         </div>
         <div
           aria-hidden

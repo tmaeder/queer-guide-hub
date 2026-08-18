@@ -59,10 +59,7 @@ export function AdvancedFiltersPanel(props: AdvancedFiltersPanelProps) {
       </Sheet>
 
       {/* Desktop: inline */}
-      <nav
-        aria-label="Venue filters"
-        className="hidden md:flex flex-col gap-6 pt-6 mt-1"
-      >
+      <nav aria-label="Venue filters" className="hidden md:flex flex-col gap-6 pt-6 mt-1">
         <PanelBody {...props} />
       </nav>
     </>
@@ -101,7 +98,7 @@ function PanelBody({
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <span className="inline-flex items-center gap-1.5 rounded-badge border-2 border-foreground px-4 py-2 text-xs2 font-bold uppercase tracking-label text-foreground mb-4">
+        <span className="inline-flex items-center gap-1.5 rounded-badge bg-muted px-4 py-2 text-xs2 font-bold uppercase tracking-label text-foreground mb-4">
           <span className="w-1.5 h-1.5 rounded-full bg-foreground" aria-hidden="true" />
           Refine
         </span>

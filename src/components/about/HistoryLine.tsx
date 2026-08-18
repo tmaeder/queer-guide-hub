@@ -93,7 +93,7 @@ export function HistoryLine({ stops, className }: { stops: HistoryStop[]; classN
                 left: `${(mx(STATIONS[i].x) / VIEW_W) * 100}%`,
                 top: `${(STATIONS[i].y / VIEW_H) * 100}%`,
               }}
-              className="pointer-events-none absolute block h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-foreground bg-track-blue"
+              className="pointer-events-none absolute block h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full bg-track-blue"
             />
           ))}
         </div>
@@ -111,7 +111,7 @@ export function HistoryLine({ stops, className }: { stops: HistoryStop[]; classN
       {/* Stacked station plates — below md. */}
       <ol className="m-0 flex list-none flex-col gap-4 p-0 md:hidden">
         {shown.map((stop) => (
-          <li key={stop.year} className="border-[3px] border-foreground p-4">
+          <li key={stop.year} className="bg-muted rounded-element p-4">
             <p className="flex items-center gap-2">
               <StationRing state="typed" track="blue" />
               <span className="font-display text-headline leading-none tabular-nums">

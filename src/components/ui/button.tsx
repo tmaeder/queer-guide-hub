@@ -9,13 +9,19 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        // Subway-map primary: solid ink, squared, 2px ink border so it sits
-        // flush next to `outline` in a row.
-        default: 'border-2 border-foreground bg-foreground text-background font-bold hover:opacity-90',
-        // Secondary: 2px ink border on paper. Hover FILLS ink — a button
-        // fills or lifts, never both (design-system hard rule).
+        // Subway-map primary: solid ink block, 12px corners. No border — a
+        // solid ink fill on a frame-grey page is its own boundary at 16:1,
+        // and the soft re-skin removed the 2px cage that used to make it sit
+        // flush beside `outline`. Both are now the same height and radius, so
+        // they still line up in a row.
+        default: 'bg-foreground text-background font-bold hover:opacity-90',
+        // Secondary. The ONE border that survives on a button: an outline
+        // button has no fill, so its edge IS the control boundary and WCAG
+        // 1.4.11 requires it — hence `border-input` (3.8:1 on the page,
+        // 4.3:1 on a card) rather than the 12%-ink divider hairline.
+        // Hover FILLS ink — a button fills or lifts, never both.
         outline:
-          'border-2 border-foreground bg-background text-foreground font-bold hover:bg-foreground hover:text-background',
+          'border border-input bg-card text-foreground font-bold hover:bg-foreground hover:text-background hover:border-foreground',
         // No chrome until hover — useful in headers / menus.
         ghost: 'bg-transparent text-foreground hover:bg-muted',
         // Inline link styling.
@@ -27,19 +33,24 @@ const buttonVariants = cva(
         soft: 'bg-surface-container text-foreground hover:bg-surface-container-high',
         // Pink track conversion action. INK type, not paper: measured
         // paper-on-pink at 3.43:1, which fails AA for 14px bold (large text
-        // starts at 18.66px bold). Ink-on-pink is 5.22:1. The 2px ink border
-        // gates the fill for WCAG 1.4.11.
+        // starts at 18.66px bold). Ink-on-pink is 5.22:1.
+        //
+        // These two KEEP a border where `default` lost one, and it is the
+        // same rule as the badge: a track fill is not perceivable on its own
+        // (blue measures 2.25:1 against a light page) so the mark's own ink
+        // ring is what satisfies 1.4.11. It thins from 2px to 1px with the
+        // soft re-skin, but it cannot go away.
         //
         // The `.ink-bleed` press feedback is deliberately NOT baked in here.
         // `accent`/`brand` are used across src/components/trips/**, and
         // CLAUDE.md keeps travel content motion-free because it is
         // safety-adjacent. Opt in per call site with className="ink-bleed".
-        accent: 'border-2 border-foreground bg-track-pink text-foreground font-bold hover:opacity-90',
+        accent: 'border border-track-ring bg-track-pink text-track-ring font-bold hover:opacity-90',
         // Blue track. Ink type (paper-on-blue fails 3:1 — see tokenContrast).
-        brand: 'border-2 border-foreground bg-track-blue text-foreground font-bold hover:opacity-90',
+        brand: 'border border-track-ring bg-track-blue text-track-ring font-bold hover:opacity-90',
         // Legacy alias retained for compat (2026-05-19) — collapses to
         // `default`. Use variant="default".
-        secondary: 'border-2 border-foreground bg-foreground text-background font-bold hover:opacity-85',
+        secondary: 'bg-foreground text-background font-bold hover:opacity-85',
       },
       size: {
         default: 'h-10 px-6',

@@ -139,7 +139,14 @@
       "recent_city": "In a city you've explored",
       "featured": "Featured"
     },
-    "ariaLabel": "[JA] Search Queer Guide"
+    "ariaLabel": "Queer Guide を検索",
+    "escape": "esc",
+    "jumpTo": "移動先",
+    "recent": "最近",
+    "noStation": "その名前の駅はまだありません",
+    "addToMap": "地図に追加する",
+    "seeOnMap": "{{count}}件を地図で見る",
+    "keyHints": "↑↓ 移動 · ↵ 開く"
   },
   "common": {
     "contentInLanguage": "言語：{{lang}}",
@@ -211,12 +218,19 @@
     "contact": "お問い合わせ",
     "supportUs": "サポートする",
     "history": "歴史",
-    "tagline": "[JA] Every track. Every station. Everyone.",
-    "contributors": "[JA] Contributors",
+    "tagline": "すべての路線を。すべての駅を。すべての人に。",
+    "contributors": "協力者",
     "emergency": {
       "eyebrow": "[JA] In an emergency",
-      "title": "[JA] Crisis lines, 24 hours",
-      "body": "[JA] Trans helpline, LGBT+ crisis support, and local emergency numbers, listed by country and always one click from any page."
+      "title": "24時間対応の相談窓口",
+      "body": "トランスジェンダー向け相談窓口、LGBT+の危機支援、各地の緊急連絡先を国別に掲載。どのページからもワンクリックで開けます。"
+    },
+    "osmAttribution": "交通図は © OpenStreetMap 貢献者のデータに基づいています (ODbL)",
+    "reportSomething": "報告する",
+    "hotlines": "相談窓口",
+    "antiDiscrimination": {
+      "title": "ここに偏見の居場所はありません。",
+      "body": "人種差別、トランス嫌悪、差別は、プラットフォームからの追放の理由になります。以上です。"
     }
   },
   "trips": {
@@ -689,12 +703,12 @@
       }
     },
     "discover": {
-      "title": "場所を探す",
-      "button": "マーケットを見る",
+      "title": "ルートをつくる",
+      "button": "ルートをつくる",
       "eyebrow": "Real travelers",
       "subtitle": "Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
       "searchPlaceholder": "Filter by city…",
-      "aria": "Discover public trips",
+      "aria": "実在の都市をつなぐルートをつくる",
       "sortAria": "Sort trips",
       "viewAria": "View mode",
       "filterAria": "Filter trips",
@@ -774,7 +788,81 @@
       "signalsAria": "Trip activity",
       "forkCount": "{{count}} forks",
       "saveCount": "{{count}} saves",
-      "filtersButton": "Filters"
+      "filtersButton": "Filters",
+      "meta": {
+        "title": "ルートをつくる | Queer Guide",
+        "description": "雰囲気・季節・ペースを選ぶと、実在の都市をつないだルートができます。スポット数、法的状況、滞在中に開かれるイベントも表示します。"
+      },
+      "eyebrowRoute": "ルートビルダー",
+      "titleRoute": "3つの都市。1本の路線。",
+      "ledeRoute": "何を求めていて、どれくらいのペースで動くかを教えてください。実在の都市をつなぐ路線を引きます。スポット数、法的状況、滞在中のイベントつきで。",
+      "picker": {
+        "heading": "路線を決める",
+        "hint": "雰囲気・季節・ペースを選ぶと、路線が引き直されます。",
+        "vibeGroup": "何を求めているか",
+        "seasonGroup": "いつ",
+        "paceGroup": "どれくらいのペースで",
+        "stationCount": "{{count}}駅",
+        "stopCount": "{{count}}停車",
+        "tooFew": "{{count}}駅のみ",
+        "thin": "{{count}}駅。路線を組めるほど近い駅がありません",
+        "vibe": {
+          "nightlife": "夜遊び",
+          "sauna": "サウナ",
+          "slow": "ゆっくりした朝",
+          "community": "コミュニティ",
+          "outdoors": "アウトドア"
+        },
+        "season": {
+          "now": "まもなく",
+          "autumn": "秋",
+          "winter": "冬",
+          "pride": "プライドシーズン"
+        },
+        "pace": {
+          "slow": "ゆっくり",
+          "steady": "ほどよく",
+          "sprint": "たくさん回る"
+        }
+      },
+      "route": {
+        "heading": "あなたの路線",
+        "reroll": "もう一度引く",
+        "summary": "{{stops}}停車・{{km}} km・{{countries}}か国",
+        "snapped": "{{name}}から{{km}} kmの地点が起点です。十分な情報がある最寄りの都市です。",
+        "short": "この路線は{{requested}}ではなく{{delivered}}停車です。条件に合う都市は{{eligible}}件で、残りはこのペースで行ける距離を超えています。",
+        "announced": "路線を引きました：{{stations}}。{{count}}停車。",
+        "stopsAria": "この路線の停車地（順番どおり）",
+        "stopAria": "{{n}}番目：{{city}}、{{country}}",
+        "swapStopAria": "{{n}}番目の{{city}}を入れ替える",
+        "tripTitle": "{{cities}}ライン"
+      },
+      "station": {
+        "venues": "{{count}}スポット"
+      },
+      "loading": {
+        "pool": "駅リストを読み込み中",
+        "slow": "まだ処理中です。都市インデックスが今は遅くなっています。"
+      },
+      "degraded": {
+        "none": "その条件に合う都市はありません。",
+        "title": "合う都市は{{count}}件だけです。",
+        "body": "路線には3停車が必要です。条件をひとつ外すと広がります。",
+        "terminus": "最も近いのは{{km}} km先の{{name}}で、このペースで行ける距離を超えています。",
+        "clearVibe": "雰囲気は問わない",
+        "goFurther": "もっと回る"
+      },
+      "error": {
+        "title": "旅程を作成できませんでした",
+        "poolTitle": "駅リストを読み込めませんでした。",
+        "retry": "再試行"
+      },
+      "cta": {
+        "heading": "この路線で行く。",
+        "body": "すべての停車地が入った、あなたの旅程になります。あとから自由に変更できます。",
+        "primary": "旅程にする",
+        "secondary": "もう一度引く"
+      }
     },
     "polls": {
       "createdToast": "Poll created",
@@ -999,6 +1087,15 @@
       "openThread": "チャットで確認",
       "forwardHint": "[JA] Forward Booking.com, Airbnb or airline confirmations to {{address}} — they appear in your Travel Inbox, ready to add to a trip. Or paste one here to add it straight to this trip.",
       "forwardHintNoAddress": "[JA] Forward booking confirmations to your queer.guide address and they appear in your Travel Inbox. Or paste one here to add it straight to this trip."
+    },
+    "templates": {
+      "heading": "テンプレートから始める",
+      "subheading": "出発点になるLGBTQ+の旅程",
+      "days": "{{count}}日",
+      "use": "テンプレートを使う",
+      "created": "旅程を作成しました",
+      "createdDescription": "ここから停車地を追加できます。",
+      "error": "旅程を作成できませんでした"
     }
   },
   "auth": {
@@ -1175,7 +1272,16 @@
     "featured": "[JA] Featured",
     "rsvpEmptyMember": "[JA] No RSVPs yet. Be the first.",
     "rsvpEmptyAnon": "[JA] No RSVPs yet. Sign in to be the first.",
-    "peopleYouMayKnow": "[JA] People you may know"
+    "peopleYouMayKnow": "[JA] People you may know",
+    "detail": {
+      "eyebrow": "[JA] Event",
+      "sections": "[JA] Sections",
+      "section": {
+        "about": "[JA] About this event",
+        "where": "[JA] Getting there",
+        "going": "[JA] Who's going"
+      }
+    }
   },
   "venues": {
     "title": "スポット",
@@ -1302,7 +1408,20 @@
     },
     "closed": "[JA] Closed",
     "openNow": "[JA] Open now",
-    "locationUnknown": "[JA] Location unknown"
+    "locationUnknown": "[JA] Location unknown",
+    "detail": {
+      "eyebrow": "[JA] Venue",
+      "closed": "[JA] Permanently closed",
+      "section": {
+        "about": "[JA] About",
+        "hours": "[JA] Opening hours",
+        "access": "[JA] Access",
+        "whatsOn": "[JA] What's on here",
+        "signals": "[JA] Visitor signals",
+        "reviews": "[JA] Reviews",
+        "photos": "[JA] Photos"
+      }
+    }
   },
   "marketplace": {
     "title": "マーケットプレイス",
@@ -1766,7 +1885,10 @@
       "help": "ヘルプ",
       "tags": "タグ",
       "history": "歴史",
-      "guides": "[JA] Guides"
+      "guides": "ガイド",
+      "trips": "旅行",
+      "organizations": "団体",
+      "wishlists": "ウィッシュリスト"
     },
     "intents": {
       "goingOut": {
@@ -1860,7 +1982,7 @@
       "hub": "ハブ"
     },
     "primaryNavigation": "[JA] Primary",
-    "signInToContribute": "[JA] Sign in to contribute"
+    "signInToContribute": "ログインして参加する"
   },
   "pages": {
     "venues": {
@@ -2358,23 +2480,29 @@
     },
     "notFound": {
       "title": "ページが見つかりません",
-      "description": "お探しのページは存在しないか、移動されました。",
+      "kicker": "運行のお知らせ · 404",
+      "heading": "ここに駅はありません。",
+      "description": "{{path}} には何もありません。移動、削除、または最初から存在しません。",
+      "noStop": "駅なし",
       "goBack": "戻る",
       "returnHome": "ホームに戻る",
-      "suggestionsLabel": "Or jump to",
-      "didYouMean": "Did you mean",
-      "recentlyViewed": "Pick up where you left off",
-      "searchPlaceholder": "Search venues, events, cities…",
+      "searchLabel": "別のルートを調べる",
+      "searchPlaceholder": "スポット、イベント、都市を検索…",
+      "searchSubmit": "検索",
+      "didYouMean": "近くの駅",
+      "recentlyViewed": "最近の停車駅",
+      "suggestionsLabel": "終点",
+      "endOfLineTitle": "別の路線に乗り換える。",
       "kind": {
-        "venue": "We couldn't find that venue.",
-        "event": "We couldn't find that event.",
-        "city": "We couldn't find that city.",
-        "country": "We couldn't find that country.",
-        "personality": "We couldn't find that person.",
-        "hotel": "We couldn't find that hotel.",
-        "village": "We couldn't find that place.",
-        "marketplace": "We couldn't find that product.",
-        "news": "We couldn't find that article."
+        "venue": "この駅にスポットはありません。",
+        "event": "この駅にイベントはありません。",
+        "city": "この駅に都市はありません。",
+        "country": "この駅に国はありません。",
+        "personality": "この駅に該当する人はいません。",
+        "hotel": "この駅にホテルはありません。",
+        "village": "この駅にエリアはありません。",
+        "marketplace": "この駅に商品はありません。",
+        "news": "この駅に記事はありません。"
       }
     },
     "bookings": {
@@ -2612,145 +2740,6 @@
       "tags_other": "[JA] {{count}} tags"
     }
   },
-  "resources": {
-    "hero": {
-      "eyebrow": "サポート",
-      "title": "ヘルプとリソース。",
-      "lede": "危機支援、実用ガイド、その背後にある人々と団体。"
-    },
-    "errorLoading": "リソースの読み込みに失敗しました。後ほどお試しください。",
-    "disclosure": "すべてのトピックと検索",
-    "disclosureAria": "すべてのトピック、検索、詳細フィルター",
-    "browseAllTopics": "すべてのトピック",
-    "professions": {
-      "title": "職業",
-      "description": "職業で LGBTQ+ パーソナリティを探す",
-      "back": "戻る"
-    },
-    "category": {
-      "back": "戻る",
-      "viewAll": "すべて見る →",
-      "comingSoon": "近日公開",
-      "tagCount": "タグ {{count}} 件",
-      "tagCountTotal": "タグ {{count}} 件（全サブカテゴリ）",
-      "tagCountTotalAria": "全サブカテゴリで {{count}} 件のタグ",
-      "totalChildHint": "各サブカテゴリの数は直接割り当てられたタグの数です",
-      "supportNewsAlert": "今すぐ助けが必要ですか？危機ホットラインの一覧を見る。",
-      "crisisHotlines": "危機ホットライン",
-      "emptyTitle": "このカテゴリにはまだタグがありません",
-      "emptyDescription": "まもなく追加されます。",
-      "subcategoryEmptyTitle": "まだタグがありません",
-      "subcategoryEmptyDescription": "このサブカテゴリは追加中です。"
-    },
-    "crisis": {
-      "heading": "危機と安全",
-      "badge": "無料・匿名",
-      "chooseCountryAria": "国を選択",
-      "callEmergencyPrefix": "今すぐ危険ですか？ ",
-      "callEmergencySuffix": "に電話（{{country}}）。",
-      "callEmergencySuffixInt": "に電話。",
-      "noLocal": "{{country}} のホットラインはまだ登録されていません — 国際版を表示。",
-      "callAria": "{{name}}（{{phone}}）に電話",
-      "noHotlinesLoaded": "ホットラインはまだ読み込まれていません。",
-      "listAria": "危機ホットライン",
-      "seeAll": "すべてのホットラインを見る"
-    },
-    "topicHubs": {
-      "heading": "トピック"
-    },
-    "topic": {
-      "back": "リソース",
-      "notFound": "トピックが見つかりません",
-      "backToResources": "リソースに戻る",
-      "metaSuffix": "リソース",
-      "metaNotFound": "トピックが見つかりません",
-      "stats": "ガイド {{guides}} · 団体 {{orgs}} · 記事 {{news}}",
-      "guidesHeading": "ガイド",
-      "guidesEmpty": "このトピックのガイドはまだ公開されていません。",
-      "orgsHeading": "団体",
-      "orgsEmpty": "このトピックの団体はまだ登録されていません。",
-      "newsHeading": "最新ニュース",
-      "newsEmpty": "このトピックの最新記事はまだありません。",
-      "moreTopics": "他のトピック"
-    },
-    "orgs": {
-      "heading": "支援団体",
-      "filterAria": "国で団体を絞り込む",
-      "noLocal": "{{country}} の団体はまだ登録されていません — グローバル団体を表示。",
-      "browseAll": "すべての団体を見る",
-      "emptyPrefix": "支援団体はまだ登録されていません。Chrome 拡張で送るか ",
-      "emptyLink": "お問い合わせ",
-      "emptySuffix": "。"
-    },
-    "filter": {
-      "searchPlaceholder": "タグ、カテゴリ、説明を検索…",
-      "searchAria": "リソースを検索",
-      "filterAria": "カテゴリで絞り込む",
-      "categoryPlaceholder": "カテゴリ",
-      "allCategories": "すべてのカテゴリ",
-      "sortAria": "並び替え",
-      "sortPlaceholder": "並び替え",
-      "sortMostUsed": "使用順",
-      "sortAlphabetical": "アルファベット順",
-      "sortNewest": "新着順",
-      "advanced": "詳細",
-      "usageAria": "使用状況で絞り込む",
-      "usagePlaceholder": "使用状況",
-      "usageAll": "すべてのタグ",
-      "usageUsed": "使用中",
-      "usageUnused": "未使用",
-      "hasImage": "画像あり",
-      "hasImageTitle": "画像のあるタグだけ表示",
-      "sortDirAsc": "昇順",
-      "sortDirDesc": "降順",
-      "active": "アクティブ:",
-      "clearAll": "すべてクリア",
-      "view": {
-        "chips": "チップ",
-        "grid": "グリッド",
-        "list": "リスト",
-        "ariaSuffix": " ビュー"
-      },
-      "graph": "タグ関係グラフ"
-    },
-    "search": {
-      "resultsHeading": "検索結果",
-      "categoryTagsHeading": "{{category}} のタグ",
-      "filteredHeading": "絞り込みタグ",
-      "countBadge": "{{visible}} / {{total}}",
-      "countAria": "一致するタグ {{count}} 件",
-      "showMore": "さらに {{count}} 件表示",
-      "empty": {
-        "title": "結果なし",
-        "description": "範囲を広げるか、フィルターをクリアしてください。"
-      }
-    },
-    "tagNotFound": {
-      "title": "タグが見つかりません",
-      "bodyPrefix": "次のタグが見つかりませんでした：",
-      "browse": "すべてのリソースを見る"
-    },
-    "tagDetail": {
-      "breadcrumbHome": "リソース",
-      "noDefinition": "この用語にはまだ定義がありません。",
-      "alsoKnownAs": "別名",
-      "readOnWikipedia": "Wikipediaで読む",
-      "searchTagged": "{{name}}のタグが付いたすべてを検索",
-      "seeAlso": "関連項目",
-      "sensitiveContentBody": "このトピックにはセンシティブな内容が含まれる場合があります。サポートが必要な場合は、危機ホットラインのページをご覧ください。",
-      "sensitiveContentTitle": "センシティブなトピック",
-      "tableOfContents": "目次",
-      "viewAsGraph": "グラフで表示",
-      "hierarchy": "[JA] In the taxonomy",
-      "broader": "[JA] Broader",
-      "narrower": "[JA] More specific",
-      "related": "[JA] Related"
-    },
-    "graph": {
-      "title": "タグ関係グラフ",
-      "description": "意味的類似度と共起でタグの関係を探る"
-    }
-  },
   "cities": {
     "metaTitle": "都市",
     "metaDescription": "世界中のLGBTQ+フレンドリーな都市を探そう。",
@@ -2801,8 +2790,93 @@
         "currency": "通貨",
         "bestTime": "ベストシーズン",
         "airport": "空港"
+      },
+      "eyebrow": "[JA] City",
+      "sections": "[JA] Sections",
+      "loadingVenues": "[JA] Loading venues",
+      "openEvent": "[JA] Open",
+      "openMap": "[JA] Open the full map",
+      "createTrip": "[JA] Create trip",
+      "officialWebsite": "[JA] Official website",
+      "favorite": "[JA] Save to favorites",
+      "favorited": "[JA] Saved to favorites",
+      "census": {
+        "stops": "[JA] {{n}} stops",
+        "districts": "[JA] {{n}} districts",
+        "departures": "[JA] {{n}} departures"
+      },
+      "section": {
+        "rights": "[JA] Safety & rights",
+        "rightsNote": "[JA] Know before you go.",
+        "venues": "[JA] Where to go",
+        "districts": "[JA] Queer districts",
+        "districtsNote": "[JA] Walkable clusters of bars, cafés and community spaces.",
+        "events": "[JA] Next departures",
+        "overview": "[JA] About {{city}}",
+        "travel": "[JA] Getting there",
+        "news": "[JA] In the news",
+        "nearby": "[JA] Nearby"
+      },
+      "stats": {
+        "venues": "[JA] Venues",
+        "districts": "[JA] Districts",
+        "events": "[JA] Upcoming events"
+      },
+      "about": {
+        "status": "[JA] Status",
+        "capital": "[JA] Capital city",
+        "majorCity": "[JA] Major city",
+        "region": "[JA] Region",
+        "timezone": "[JA] Timezone",
+        "founded": "[JA] Founded",
+        "area": "[JA] Area",
+        "elevation": "[JA] Elevation",
+        "mayor": "[JA] Mayor",
+        "postalCodes": "[JA] Postal codes",
+        "costOfLiving": "[JA] Cost of living",
+        "universities": "[JA] Universities",
+        "sisterCities": "[JA] Sister cities"
+      },
+      "travel": {
+        "majorAirport": "[JA] Major airport",
+        "nearestAirport": "[JA] Nearest airport",
+        "allCodes": "[JA] All airport codes",
+        "lines": "[JA] Lines",
+        "networkCaption": "[JA] Rapid-transit lines, drawn from OpenStreetMap. Schematic, not to scale.",
+        "gettingAround": "[JA] Getting around",
+        "noDealsTitle": "[JA] We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
+        "noDealsBody": "[JA] If you need to travel to {{city}}, read the safety and rights section first and use the trip planner — it includes a safety briefing for high-risk destinations."
+      },
+      "endOfLine": {
+        "eyebrow": "[JA] End of line",
+        "title": "[JA] Riding on?",
+        "body": "[JA] Every city on the guide carries the same modules: safety and rights first, then the places.",
+        "allCities": "[JA] All cities",
+        "country": "[JA] More in {{country}}"
       }
-    }
+    },
+    "capital": "[JA] Capital",
+    "continentClear": "[JA] Clear",
+    "continentsTitle": "[JA] Continents",
+    "counting": "[JA] Counting…",
+    "highRisk": "[JA] Criminalized",
+    "inView": "[JA] {{count}} cities in the directory, ranked by how much of each one we hold.",
+    "lineEyebrow": "[JA] Cities · Green line",
+    "mapTeaserLede": "[JA] Every city as a pin, coloured by its country’s equality score.",
+    "mapTeaserTitle": "[JA] See it on the map",
+    "networkMode": {
+      "subway": "[JA] Metro network",
+      "light_rail": "[JA] Light rail network",
+      "tram": "[JA] Tram network"
+    },
+    "openMap": "[JA] Open the map",
+    "pridePill": "[JA] Pride · {{date}}",
+    "continentCount_one": "[JA] {{count}} city",
+    "continentCount_other": "[JA] {{count}} cities",
+    "venueCount_one": "[JA] {{count}} place",
+    "venueCount_other": "[JA] {{count}} places",
+    "villageCount_one": "[JA] {{count}} district",
+    "villageCount_other": "[JA] {{count}} districts"
   },
   "pride": {
     "eyebrow": "Pride Calendar",
@@ -2938,7 +3012,9 @@
       "personalities": "声",
       "nearby": "近く",
       "news": "ニュース",
-      "map": "地図"
+      "map": "地図",
+      "history": "[JA] Legal record",
+      "historyNote": "[JA] What changed and when. Safety information without a date is not safety information."
     },
     "practical": {
       "languages": "言語",
@@ -2957,7 +3033,10 @@
       "hdi": "HDI",
       "lifeExpectancy": "平均寿命",
       "literacy": "識字率",
-      "income": "所得水準"
+      "income": "所得水準",
+      "venues": "[JA] Venues",
+      "events": "[JA] Upcoming events",
+      "weather": "[JA] Now in {{city}}"
     },
     "cities": {
       "emptyTitle": "まだ都市がありません",
@@ -2973,7 +3052,9 @@
     },
     "travel": {
       "activities": "アクティビティ＆ツアー",
-      "activitiesBody": "{{country}}での体験"
+      "activitiesBody": "{{country}}での体験",
+      "noDealsTitle": "[JA] We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
+      "noDealsBody": "[JA] If you need to travel to {{country}}, read the rights section on this page first and use the trip planner — it includes a safety briefing for high-risk destinations."
     },
     "news": {
       "emptyTitle": "まだ現地ニュースがありません",
@@ -3020,7 +3101,24 @@
       "ilgaLink": "ILGA World Database",
       "deathPenaltyPossible": "[JA] death penalty possible, no legal certainty"
     },
-    "planTripHighRisk": "[JA] Plan carefully — safety briefing included"
+    "planTripHighRisk": "[JA] Plan carefully — safety briefing included",
+    "eyebrow": "[JA] Country",
+    "sections": "[JA] Sections",
+    "openMap": "[JA] Open the full map",
+    "census": {
+      "cities": "[JA] {{n}} cities",
+      "stops": "[JA] {{n}} stops",
+      "departures": "[JA] {{n}} departures"
+    },
+    "history": {
+      "seeAll": "[JA] Full timeline"
+    },
+    "endOfLine": {
+      "eyebrow": "[JA] End of line",
+      "title": "[JA] Compare the law elsewhere",
+      "body": "[JA] Every country page carries the same legal breakdown, from the same sources, with the date it was checked.",
+      "rights": "[JA] Rights across the world"
+    }
   },
   "inbox": {
     "title": "受信箱",
@@ -3197,7 +3295,7 @@
     "wishlists": "ウィッシュリスト",
     "tags": "タグ",
     "organizations": "[JA] Organizations",
-    "guides": "[JA] Guides",
+    "guides": "ガイド",
     "people": "出会う"
   },
   "chat": {
@@ -4157,6 +4255,253 @@
         "title": "支援する",
         "desc": "このプラットフォームを、みんなに無料のままで。"
       }
+    }
+  },
+  "tags": {
+    "meta": {
+      "title": "LGBTQ+ 用語集",
+      "categoryTitle": "{{name}} — LGBTQ+ 用語集",
+      "description": "LGBTQ+ の用語 {{count}} 件を検索・閲覧できます。アイデンティティ、実践、歴史、コミュニティの言葉を、それを使う店舗・イベント・人物・ニュースとひも付けています。"
+    },
+    "hero": {
+      "eyebrow": "用語集",
+      "title": "用語集",
+      "lede": "このガイドが使うすべての言葉の説明と、そのタグが付いたすべて。",
+      "legend": "用語 {{terms}} 件 · 路線 {{lines}} 本 · 駅 {{stops}} 個"
+    },
+    "stats": {
+      "kicker": "収録内容",
+      "terms": "用語",
+      "lines": "路線",
+      "stops": "駅",
+      "illustrated": "画像あり"
+    },
+    "rail": {
+      "label": "テーマ路線",
+      "all": "すべての用語",
+      "expandAria": "{{line}} の駅を表示",
+      "collapseAria": "{{line}} の駅を隠す"
+    },
+    "spine": {
+      "searchLabel": "用語集を検索",
+      "searchPlaceholder": "用語または同義語"
+    },
+    "view": {
+      "label": "表示",
+      "grid": "グリッド",
+      "list": "リスト",
+      "chips": "チップ",
+      "graph": "グラフ"
+    },
+    "sort": {
+      "label": "並び替え",
+      "usage": "使用数順",
+      "alphabetical": "A–Z",
+      "recent": "新着順",
+      "dirAsc": "昇順 — 降順に切り替え",
+      "dirDesc": "降順 — 昇順に切り替え"
+    },
+    "filter": {
+      "used": "使用中",
+      "unused": "未使用",
+      "withImage": "画像あり",
+      "reset": "フィルターをリセット",
+      "includeAdult": "18歳以上向けの用語を表示"
+    },
+    "letters": {
+      "label": "頭文字へ移動",
+      "all": "すべて",
+      "other": "数字とその他の文字",
+      "jump": "{{letter}} で始まる用語"
+    },
+    "alias": {
+      "heading": "別名でも見つかりました",
+      "description": "用語そのものではなく、同義語または近い綴りに一致しています。",
+      "badge": "別名"
+    },
+    "card": {
+      "uses": "{{count}} 件で使用"
+    },
+    "count": "{{count}} 件の用語",
+    "showMore": "さらに {{count}} 件表示",
+    "searching": "検索中…",
+    "loading": "用語集を読み込み中",
+    "error": "用語集を表示できません",
+    "retry": "再試行",
+    "empty": {
+      "title": "一致する用語はありません。",
+      "description": "別の頭文字・路線・検索語をお試しください。"
+    },
+    "category": {
+      "lede": "{{name}} に分類されたすべての用語。"
+    },
+    "endOfLine": {
+      "eyebrow": "終点",
+      "title": "お探しのものは別ですか？",
+      "body": "用語集は言葉を説明します。こちらはその言葉が使われている場所です。",
+      "helpCta": "相談窓口とサポート",
+      "orgsCta": "団体",
+      "guidesCta": "ガイド"
+    },
+    "detail": {
+      "loading": "読み込み中",
+      "about": "概要",
+      "sections": "セクション",
+      "noDefinition": "この用語の説明はまだ書かれていません。",
+      "interchangeEyebrow": "乗換",
+      "interchangeTitle": "分類のなかで",
+      "inTaxonomy": "分類のなかで",
+      "codes": {
+        "eyebrow": "分類",
+        "title": "診断コード",
+        "general": "一般",
+        "specialized": "専門",
+        "procedural": "処置",
+        "pharmaceutical": "医薬品",
+        "source": "出典",
+        "linkLabel": "{{label}} コード {{code}}",
+        "disclaimer": "臨床分類システムにおけるこの概念の参照コードです。医学的助言でも診断でもありません。"
+      },
+      "flag": {
+        "eyebrow": "シンボル",
+        "title": "フラッグ",
+        "designer": "デザイン",
+        "year": "年",
+        "stripes": "ストライプの意味",
+        "railSingular": "フラッグ",
+        "railPlural": "フラッグ"
+      },
+      "hanky": {
+        "eyebrow": "リファレンス",
+        "title": "コード",
+        "intro": "後ろポケットの色付きハンカチは特定の関心を示す合図でした。左ポケットは与える側、右ポケットは受ける側。1980年代に出版された形で記録しています。意味は都市や年代によって異なりました。",
+        "safeMode": "カラーテーブルは露骨な性的実践を扱うため、セーフモードが有効な間は非表示です。",
+        "gateBody": "カラーテーブルには露骨な性的実践が記載されています。閲覧するには18歳以上であることを確認してください。",
+        "gateCta": "コードを表示（18+）",
+        "classic": "クラシックコア（タウンゼント、1983）",
+        "extended": "後年の一般的な追加",
+        "disclaimer": "歴史的な参考資料であり、いかなる実践の推奨でもありません。ほかにも数十色が流通し、完全に一致する公開リストは存在しません。"
+      },
+      "changeHereFor": "こちらへ乗換",
+      "contentNote": "内容についての注意",
+      "contentNoteBody": "この項目は、人によってはつらく感じる話題を扱います。露骨な描写はなく、あくまで定義であり助言ではありません。",
+      "findSupport": "サポートを探す",
+      "whereItAppears": "使われている場所",
+      "elsewhere": "外部リンク",
+      "readThere": "読む",
+      "editors": "Queer Guide 編集部",
+      "factLine": "路線",
+      "factTagged": "タグ付け数",
+      "venues": "店舗",
+      "venuesNote": "{{count}} 件",
+      "events": "イベント",
+      "eventsNote": "{{count}} 件",
+      "people": "人物",
+      "peopleNote": "{{count}} 件",
+      "news": "ニュース",
+      "newsNote": "{{count}} 本",
+      "newsNoteMore": "{{count}} 本中 {{shown}} 本",
+      "villages": "クィアの街",
+      "shop": "ショップ",
+      "communities": "コミュニティ",
+      "everythingTagged": "{{name}} が付いたすべて",
+      "everythingTaggedBody": "ガイド内の {{count}} 件にこのタグが付いています。",
+      "searchTagged": "{{name}} が付いたものをすべて検索",
+      "moreOnThisLine": "この路線の他の駅",
+      "notFound": {
+        "title": "その用語はありません",
+        "body": "用語集にこの項目はありません:",
+        "browse": "用語集を見る"
+      },
+      "alias": {
+        "synonym": "別名",
+        "abbreviation": "略称",
+        "plural": "複数形",
+        "misspelling": "よくある誤記",
+        "historical": "歴史的表現",
+        "slang": "スラング"
+      },
+      "sourceOfLaw": "法的根拠",
+      "lawJurisdiction": "管轄",
+      "lawInternational": "国際",
+      "lawAdopted": "制定",
+      "lawStatus": "状況",
+      "lawInForce": "有効",
+      "lawRepealed": "廃止",
+      "lawSuperseded": "改正・置換",
+      "lawPartlyStruck": "有効（一部無効）",
+      "notOneLaw": "これは単一の法律ではありません。国ごとに記録されています。",
+      "seeByCountry": "国別の状況を見る",
+      "spansAllRights": "これは単一の法律ではなく、法分野全体を指します。18の権利を国ごとに記録しています。",
+      "seeAllRights": "18の権利を国別に見る"
+    },
+    "flagWall": {
+      "eyebrow": "シンボル",
+      "title": "フラッグ一覧"
+    }
+  },
+  "village": {
+    "eyebrow": "[JA] District · Green line",
+    "loading": "[JA] Loading this district",
+    "loadingVenues": "[JA] Loading the stop list",
+    "sections": "[JA] Sections",
+    "planTrip": "[JA] Plan a trip to {{name}}",
+    "relatedByTag": "[JA] Related by tag",
+    "notFound": {
+      "title": "[JA] No such district.",
+      "body": "[JA] This stop is not on the line.",
+      "cta": "[JA] All queer villages"
+    },
+    "toast": {
+      "errorTitle": "[JA] Error",
+      "loadFailed": "[JA] Failed to load village details"
+    },
+    "facts": {
+      "city": "[JA] City",
+      "country": "[JA] Country",
+      "venues": "[JA] Venues",
+      "events": "[JA] Upcoming events",
+      "editorsPick": "[JA] Editor’s pick"
+    },
+    "census": {
+      "stops": "[JA] {{n}} stops",
+      "departures": "[JA] {{n}} departures"
+    },
+    "section": {
+      "about": "[JA] About {{name}}",
+      "walk": "[JA] The walk",
+      "walkNote": "[JA] Stops in order, with the straight-line gap between them.",
+      "events": "[JA] Next departures",
+      "photos": "[JA] Photos",
+      "city": "[JA] On the same line"
+    },
+    "action": {
+      "website": "[JA] Website",
+      "favorite": "[JA] Save to favorites",
+      "favorited": "[JA] Saved to favorites"
+    },
+    "events": {
+      "open": "[JA] Open"
+    },
+    "landmarks": {
+      "title": "[JA] Notable landmarks"
+    },
+    "photo": {
+      "caption": "[JA] {{village}}, {{city}}",
+      "alt": "[JA] {{name}}, photo {{n}}"
+    },
+    "parentCity": {
+      "body": "[JA] The wider city this district sits in.",
+      "action": "[JA] Open"
+    },
+    "map": {
+      "caption": "[JA] Walking distance in {{city}}."
+    },
+    "endOfLine": {
+      "eyebrow": "[JA] End of line",
+      "title": "[JA] Looking for another district?",
+      "body": "[JA] Queer villages are walkable clusters of bars, cafés and community spaces. There are more of them.",
+      "city": "[JA] More in {{city}}"
     }
   }
 }

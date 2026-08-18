@@ -15,6 +15,8 @@ import {
   useDestinationCities,
 } from '@/hooks/useIntentData';
 import type { SectionDef } from '@/components/entity/editorial';
+import { CityNetwork } from '@/components/home/subway/CityNetwork';
+import { hasCityNetwork } from '@/components/home/subway/cityNetworkGeometry';
 
 /**
  * `/going-out` — bars, clubs and what is actually on.
@@ -29,7 +31,6 @@ import type { SectionDef } from '@/components/entity/editorial';
  * 23,484 venues (2.6%), so filtering on them would discard 97% of the catalogue
  * on arrival.
  */
-
 
 export default function GoingOut() {
   const { t } = useTranslation();
@@ -134,7 +135,7 @@ export default function GoingOut() {
           </p>
           <LocalizedLink
             to="/rights"
-            className="border-2 border-foreground px-6 py-2 font-medium no-underline rounded-element inline-block"
+            className="bg-muted px-6 py-2 font-medium no-underline rounded-element inline-block"
           >
             LGBTQ+ rights by country
           </LocalizedLink>
@@ -148,8 +149,8 @@ export default function GoingOut() {
       content: (
         <ul className="list-none p-0 m-0 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {(cities ?? []).map((c) => (
-            <li key={c.id} className="border-2 border-foreground p-4 rounded-container">
-              <h3 className="font-display text-title">
+            <li key={c.id} className="bg-muted p-4 rounded-container">
+              <h3 className="text-title font-bold">
                 {c.slug ? (
                   <LocalizedLink to={`/city/${c.slug}`} className="no-underline hover:underline">
                     {c.name}
@@ -161,6 +162,9 @@ export default function GoingOut() {
               {c.countries?.name ? (
                 <p className="text-13 text-muted-foreground">{c.countries.name}</p>
               ) : null}
+              {hasCityNetwork(c.slug) && (
+                <CityNetwork slug={c.slug} variant="thumb" className="mt-4 h-16" />
+              )}
             </li>
           ))}
         </ul>

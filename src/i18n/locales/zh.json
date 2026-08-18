@@ -139,7 +139,14 @@
       "recent_city": "In a city you've explored",
       "featured": "Featured"
     },
-    "ariaLabel": "[ZH] Search Queer Guide"
+    "ariaLabel": "搜索 Queer Guide",
+    "escape": "esc",
+    "jumpTo": "快速前往",
+    "recent": "最近",
+    "noStation": "还没有这个名字的车站",
+    "addToMap": "把它加到地图上",
+    "seeOnMap": "在地图上查看 {{count}} 条结果",
+    "keyHints": "↑↓ 导航 · ↵ 打开"
   },
   "common": {
     "contentInLanguage": "语言：{{lang}}",
@@ -211,12 +218,19 @@
     "contact": "联系",
     "supportUs": "支持我们",
     "history": "历史",
-    "tagline": "[ZH] Every track. Every station. Everyone.",
-    "contributors": "[ZH] Contributors",
+    "tagline": "每一条线路。每一个站点。每一个人。",
+    "contributors": "贡献者",
     "emergency": {
       "eyebrow": "[ZH] In an emergency",
-      "title": "[ZH] Crisis lines, 24 hours",
-      "body": "[ZH] Trans helpline, LGBT+ crisis support, and local emergency numbers, listed by country and always one click from any page."
+      "title": "24 小时危机热线",
+      "body": "跨性别支持热线、LGBT+ 危机援助与当地紧急电话，按国家分类，任何页面均可一键直达。"
+    },
+    "osmAttribution": "交通示意图源自 © OpenStreetMap 贡献者数据（ODbL）",
+    "reportSomething": "举报",
+    "hotlines": "求助热线",
+    "antiDiscrimination": {
+      "title": "这里容不下偏见。",
+      "body": "种族歧视、跨性别恐惧和各种歧视，都会被直接踢出平台。没有例外。"
     }
   },
   "trips": {
@@ -689,12 +703,12 @@
       }
     },
     "discover": {
-      "title": "发现地点",
-      "button": "浏览市场",
+      "title": "规划路线",
+      "button": "规划路线",
       "eyebrow": "Real travelers",
       "subtitle": "Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
       "searchPlaceholder": "Filter by city…",
-      "aria": "Discover public trips",
+      "aria": "规划一条穿过真实城市的路线",
       "sortAria": "Sort trips",
       "viewAria": "View mode",
       "filterAria": "Filter trips",
@@ -774,7 +788,81 @@
       "signalsAria": "Trip activity",
       "forkCount": "{{count}} forks",
       "saveCount": "{{count}} saves",
-      "filtersButton": "Filters"
+      "filtersButton": "Filters",
+      "meta": {
+        "title": "规划路线 | Queer Guide",
+        "description": "选择氛围、季节和节奏，生成一条串联真实城市的路线，附带场所数量、法律状况以及你在时正在举办的活动。"
+      },
+      "eyebrowRoute": "路线生成器",
+      "titleRoute": "三座城市。一条线。",
+      "ledeRoute": "告诉我们你想要什么、走得多快。我们为你画一条穿过真实城市的线，附带场所数量、法律状况，以及你在时正在举办的活动。",
+      "picker": {
+        "heading": "设定这条线",
+        "hint": "选择氛围、季节和节奏，线路会重新绘制。",
+        "vibeGroup": "你想要什么",
+        "seasonGroup": "什么时候",
+        "paceGroup": "多快",
+        "stationCount": "{{count}} 个站点",
+        "stopCount": "{{count}} 站",
+        "tooFew": "仅 {{count}} 个站点",
+        "thin": "{{count}} 个站点，没有足够接近的可以连成一条线",
+        "vibe": {
+          "nightlife": "夜生活",
+          "sauna": "桑拿",
+          "slow": "慢早晨",
+          "community": "社群",
+          "outdoors": "户外"
+        },
+        "season": {
+          "now": "近期",
+          "autumn": "秋季",
+          "winter": "冬季",
+          "pride": "骄傲季"
+        },
+        "pace": {
+          "slow": "慢慢来",
+          "steady": "平稳",
+          "sprint": "多走几地"
+        }
+      },
+      "route": {
+        "heading": "你的线路",
+        "reroll": "再画一条",
+        "summary": "{{stops}} 站 · {{km}} 公里 · {{countries}} 个国家",
+        "snapped": "起点距 {{name}} {{km}} 公里，这是我们资料足够的最近城市。",
+        "short": "这条线是 {{delivered}} 站，不是 {{requested}} 站。有 {{eligible}} 座城市符合条件，其余的距离超出了这个节奏能走的范围。",
+        "announced": "线路已生成：{{stations}}。共 {{count}} 站。",
+        "stopsAria": "本线路的站点，按顺序",
+        "stopAria": "第 {{n}} 站：{{city}}，{{country}}",
+        "swapStopAria": "更换第 {{n}} 站，{{city}}",
+        "tripTitle": "{{cities}} 线"
+      },
+      "station": {
+        "venues": "{{count}} 个场所"
+      },
+      "loading": {
+        "pool": "正在加载站点列表",
+        "slow": "仍在处理。城市索引目前较慢。"
+      },
+      "degraded": {
+        "none": "没有城市符合这些选择。",
+        "title": "只有 {{count}} 座城市符合。",
+        "body": "一条线需要三站。取消一项选择可以放宽范围。",
+        "terminus": "最近的是 {{name}}，{{km}} 公里外，超出了这个节奏能走的范围。",
+        "clearVibe": "不限氛围",
+        "goFurther": "走得更远"
+      },
+      "error": {
+        "title": "无法创建行程",
+        "poolTitle": "站点列表未能加载。",
+        "retry": "重试"
+      },
+      "cta": {
+        "heading": "就走这条线。",
+        "body": "会变成属于你的行程，所有站点都已加入。之后你可以随意修改。",
+        "primary": "生成行程",
+        "secondary": "再画一条"
+      }
     },
     "polls": {
       "createdToast": "Poll created",
@@ -999,6 +1087,15 @@
       "openThread": "在聊天中核对",
       "forwardHint": "[ZH] Forward Booking.com, Airbnb or airline confirmations to {{address}} — they appear in your Travel Inbox, ready to add to a trip. Or paste one here to add it straight to this trip.",
       "forwardHintNoAddress": "[ZH] Forward booking confirmations to your queer.guide address and they appear in your Travel Inbox. Or paste one here to add it straight to this trip."
+    },
+    "templates": {
+      "heading": "从模板开始",
+      "subheading": "可作为起点的 LGBTQ+ 行程",
+      "days": "{{count}} 天",
+      "use": "使用模板",
+      "created": "行程已创建",
+      "createdDescription": "从这里添加你的站点。",
+      "error": "无法创建行程"
     }
   },
   "auth": {
@@ -1175,7 +1272,16 @@
     "featured": "[ZH] Featured",
     "rsvpEmptyMember": "[ZH] No RSVPs yet. Be the first.",
     "rsvpEmptyAnon": "[ZH] No RSVPs yet. Sign in to be the first.",
-    "peopleYouMayKnow": "[ZH] People you may know"
+    "peopleYouMayKnow": "[ZH] People you may know",
+    "detail": {
+      "eyebrow": "[ZH] Event",
+      "sections": "[ZH] Sections",
+      "section": {
+        "about": "[ZH] About this event",
+        "where": "[ZH] Getting there",
+        "going": "[ZH] Who's going"
+      }
+    }
   },
   "venues": {
     "title": "场所",
@@ -1302,7 +1408,20 @@
     },
     "closed": "[ZH] Closed",
     "openNow": "[ZH] Open now",
-    "locationUnknown": "[ZH] Location unknown"
+    "locationUnknown": "[ZH] Location unknown",
+    "detail": {
+      "eyebrow": "[ZH] Venue",
+      "closed": "[ZH] Permanently closed",
+      "section": {
+        "about": "[ZH] About",
+        "hours": "[ZH] Opening hours",
+        "access": "[ZH] Access",
+        "whatsOn": "[ZH] What's on here",
+        "signals": "[ZH] Visitor signals",
+        "reviews": "[ZH] Reviews",
+        "photos": "[ZH] Photos"
+      }
+    }
   },
   "marketplace": {
     "title": "市场",
@@ -1766,7 +1885,10 @@
       "help": "帮助",
       "tags": "标签",
       "history": "历史",
-      "guides": "[ZH] Guides"
+      "guides": "指南",
+      "trips": "行程",
+      "organizations": "组织",
+      "wishlists": "心愿单"
     },
     "intents": {
       "goingOut": {
@@ -1860,7 +1982,7 @@
       "hub": "中心"
     },
     "primaryNavigation": "[ZH] Primary",
-    "signInToContribute": "[ZH] Sign in to contribute"
+    "signInToContribute": "登录后参与贡献"
   },
   "pages": {
     "venues": {
@@ -2358,23 +2480,29 @@
     },
     "notFound": {
       "title": "页面未找到",
-      "description": "你寻找的页面不存在或已被移动。",
+      "kicker": "运营通告 · 404",
+      "heading": "这里没有站点。",
+      "description": "地图上 {{path}} 没有任何内容。已移动、已删除，或从未存在。",
+      "noStop": "无站点",
       "goBack": "返回",
       "returnHome": "返回首页",
-      "suggestionsLabel": "Or jump to",
-      "didYouMean": "Did you mean",
-      "recentlyViewed": "Pick up where you left off",
-      "searchPlaceholder": "Search venues, events, cities…",
+      "searchLabel": "规划另一条路线",
+      "searchPlaceholder": "搜索场所、活动、城市…",
+      "searchSubmit": "搜索",
+      "didYouMean": "最近的站点",
+      "recentlyViewed": "你最近到过的站",
+      "suggestionsLabel": "终点站",
+      "endOfLineTitle": "换一条线路。",
       "kind": {
-        "venue": "We couldn't find that venue.",
-        "event": "We couldn't find that event.",
-        "city": "We couldn't find that city.",
-        "country": "We couldn't find that country.",
-        "personality": "We couldn't find that person.",
-        "hotel": "We couldn't find that hotel.",
-        "village": "We couldn't find that place.",
-        "marketplace": "We couldn't find that product.",
-        "news": "We couldn't find that article."
+        "venue": "这一站没有场所。",
+        "event": "这一站没有活动。",
+        "city": "这一站没有城市。",
+        "country": "这一站没有国家。",
+        "personality": "这一站没有这个人。",
+        "hotel": "这一站没有酒店。",
+        "village": "这一站没有街区。",
+        "marketplace": "这一站没有商品。",
+        "news": "这一站没有文章。"
       }
     },
     "bookings": {
@@ -2612,145 +2740,6 @@
       "tags_other": "[ZH] {{count}} tags"
     }
   },
-  "resources": {
-    "hero": {
-      "eyebrow": "帮助",
-      "title": "帮助与资源。",
-      "lede": "危机支援、实用指南，以及背后的人和组织。"
-    },
-    "errorLoading": "加载资源时出错，请稍后再试。",
-    "disclosure": "所有主题与搜索",
-    "disclosureAria": "所有主题、搜索与进阶筛选",
-    "browseAllTopics": "所有主题",
-    "professions": {
-      "title": "职业",
-      "description": "按职业浏览 LGBTQ+ 人物",
-      "back": "返回"
-    },
-    "category": {
-      "back": "返回",
-      "viewAll": "查看全部 →",
-      "comingSoon": "即将上线",
-      "tagCount": "{{count}} 个标签",
-      "tagCountTotal": "共 {{count}} 个标签（所有子分类）",
-      "tagCountTotalAria": "所有子分类共 {{count}} 个标签",
-      "totalChildHint": "每个子分类的数字代表直接归属的标签数",
-      "supportNewsAlert": "需要立即帮助？查看精选危机热线目录。",
-      "crisisHotlines": "危机热线",
-      "emptyTitle": "此分类暂无标签",
-      "emptyDescription": "稍后再来 — 正在填充中。",
-      "subcategoryEmptyTitle": "此处暂无标签",
-      "subcategoryEmptyDescription": "此子分类正在填充。"
-    },
-    "crisis": {
-      "heading": "危机与安全",
-      "badge": "免费，匿名",
-      "chooseCountryAria": "选择国家",
-      "callEmergencyPrefix": "紧急危险？请拨打 ",
-      "callEmergencySuffix": "（{{country}}）。",
-      "callEmergencySuffixInt": "。",
-      "noLocal": "{{country}} 暂无收录的热线 — 显示国际热线。",
-      "callAria": "拨打 {{name}}：{{phone}}",
-      "noHotlinesLoaded": "热线尚未加载。",
-      "listAria": "危机热线",
-      "seeAll": "查看所有热线"
-    },
-    "topicHubs": {
-      "heading": "主题"
-    },
-    "topic": {
-      "back": "资源",
-      "notFound": "未找到主题",
-      "backToResources": "返回资源",
-      "metaSuffix": "资源",
-      "metaNotFound": "未找到主题",
-      "stats": "{{guides}} 篇指南 · {{orgs}} 个组织 · {{news}} 篇文章",
-      "guidesHeading": "指南",
-      "guidesEmpty": "此主题暂无发布的指南。",
-      "orgsHeading": "组织",
-      "orgsEmpty": "此主题暂无收录的组织。",
-      "newsHeading": "最新新闻",
-      "newsEmpty": "此主题暂无最新文章。",
-      "moreTopics": "更多主题"
-    },
-    "orgs": {
-      "heading": "支援组织",
-      "filterAria": "按国家筛选组织",
-      "noLocal": "{{country}} 暂无收录的组织 — 显示全球组织。",
-      "browseAll": "查看所有组织",
-      "emptyPrefix": "尚无支援组织。通过 Chrome 扩展提交，或 ",
-      "emptyLink": "联系我们",
-      "emptySuffix": "。"
-    },
-    "filter": {
-      "searchPlaceholder": "搜索标签、分类、描述…",
-      "searchAria": "搜索资源",
-      "filterAria": "按分类筛选",
-      "categoryPlaceholder": "分类",
-      "allCategories": "全部分类",
-      "sortAria": "排序方式",
-      "sortPlaceholder": "排序方式",
-      "sortMostUsed": "最常用",
-      "sortAlphabetical": "字母顺序",
-      "sortNewest": "最新",
-      "advanced": "进阶",
-      "usageAria": "按使用情况筛选",
-      "usagePlaceholder": "使用情况",
-      "usageAll": "全部标签",
-      "usageUsed": "已使用",
-      "usageUnused": "未使用",
-      "hasImage": "有图片",
-      "hasImageTitle": "只显示带图片的标签",
-      "sortDirAsc": "升序",
-      "sortDirDesc": "降序",
-      "active": "已启用：",
-      "clearAll": "全部清除",
-      "view": {
-        "chips": "标签",
-        "grid": "网格",
-        "list": "列表",
-        "ariaSuffix": "视图"
-      },
-      "graph": "标签关系图"
-    },
-    "search": {
-      "resultsHeading": "搜索结果",
-      "categoryTagsHeading": "{{category}} 标签",
-      "filteredHeading": "已筛选标签",
-      "countBadge": "{{visible}} / {{total}}",
-      "countAria": "{{count}} 个匹配标签",
-      "showMore": "再显示 {{count}} 个",
-      "empty": {
-        "title": "无结果",
-        "description": "试试更宽松的查询，或清除筛选条件。"
-      }
-    },
-    "tagNotFound": {
-      "title": "未找到标签",
-      "bodyPrefix": "未找到匹配的标签：",
-      "browse": "浏览所有资源"
-    },
-    "tagDetail": {
-      "breadcrumbHome": "资源",
-      "noDefinition": "此条目暂无定义。",
-      "alsoKnownAs": "又称",
-      "readOnWikipedia": "在维基百科上阅读",
-      "searchTagged": "搜索所有带有 {{name}} 标签的内容",
-      "seeAlso": "参见",
-      "sensitiveContentBody": "该主题可能包含敏感内容。如果你需要支持，请访问我们的危机热线页面。",
-      "sensitiveContentTitle": "敏感主题",
-      "tableOfContents": "目录",
-      "viewAsGraph": "以图谱形式查看",
-      "hierarchy": "[ZH] In the taxonomy",
-      "broader": "[ZH] Broader",
-      "narrower": "[ZH] More specific",
-      "related": "[ZH] Related"
-    },
-    "graph": {
-      "title": "标签关系图",
-      "description": "通过语义相似度和共现关系了解标签如何相互关联"
-    }
-  },
   "cities": {
     "metaTitle": "城市",
     "metaDescription": "探索全球LGBTQ+友好城市。",
@@ -2801,8 +2790,93 @@
         "currency": "货币",
         "bestTime": "最佳时间",
         "airport": "机场"
+      },
+      "eyebrow": "[ZH] City",
+      "sections": "[ZH] Sections",
+      "loadingVenues": "[ZH] Loading venues",
+      "openEvent": "[ZH] Open",
+      "openMap": "[ZH] Open the full map",
+      "createTrip": "[ZH] Create trip",
+      "officialWebsite": "[ZH] Official website",
+      "favorite": "[ZH] Save to favorites",
+      "favorited": "[ZH] Saved to favorites",
+      "census": {
+        "stops": "[ZH] {{n}} stops",
+        "districts": "[ZH] {{n}} districts",
+        "departures": "[ZH] {{n}} departures"
+      },
+      "section": {
+        "rights": "[ZH] Safety & rights",
+        "rightsNote": "[ZH] Know before you go.",
+        "venues": "[ZH] Where to go",
+        "districts": "[ZH] Queer districts",
+        "districtsNote": "[ZH] Walkable clusters of bars, cafés and community spaces.",
+        "events": "[ZH] Next departures",
+        "overview": "[ZH] About {{city}}",
+        "travel": "[ZH] Getting there",
+        "news": "[ZH] In the news",
+        "nearby": "[ZH] Nearby"
+      },
+      "stats": {
+        "venues": "[ZH] Venues",
+        "districts": "[ZH] Districts",
+        "events": "[ZH] Upcoming events"
+      },
+      "about": {
+        "status": "[ZH] Status",
+        "capital": "[ZH] Capital city",
+        "majorCity": "[ZH] Major city",
+        "region": "[ZH] Region",
+        "timezone": "[ZH] Timezone",
+        "founded": "[ZH] Founded",
+        "area": "[ZH] Area",
+        "elevation": "[ZH] Elevation",
+        "mayor": "[ZH] Mayor",
+        "postalCodes": "[ZH] Postal codes",
+        "costOfLiving": "[ZH] Cost of living",
+        "universities": "[ZH] Universities",
+        "sisterCities": "[ZH] Sister cities"
+      },
+      "travel": {
+        "majorAirport": "[ZH] Major airport",
+        "nearestAirport": "[ZH] Nearest airport",
+        "allCodes": "[ZH] All airport codes",
+        "lines": "[ZH] Lines",
+        "networkCaption": "[ZH] Rapid-transit lines, drawn from OpenStreetMap. Schematic, not to scale.",
+        "gettingAround": "[ZH] Getting around",
+        "noDealsTitle": "[ZH] We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
+        "noDealsBody": "[ZH] If you need to travel to {{city}}, read the safety and rights section first and use the trip planner — it includes a safety briefing for high-risk destinations."
+      },
+      "endOfLine": {
+        "eyebrow": "[ZH] End of line",
+        "title": "[ZH] Riding on?",
+        "body": "[ZH] Every city on the guide carries the same modules: safety and rights first, then the places.",
+        "allCities": "[ZH] All cities",
+        "country": "[ZH] More in {{country}}"
       }
-    }
+    },
+    "capital": "[ZH] Capital",
+    "continentClear": "[ZH] Clear",
+    "continentsTitle": "[ZH] Continents",
+    "counting": "[ZH] Counting…",
+    "highRisk": "[ZH] Criminalized",
+    "inView": "[ZH] {{count}} cities in the directory, ranked by how much of each one we hold.",
+    "lineEyebrow": "[ZH] Cities · Green line",
+    "mapTeaserLede": "[ZH] Every city as a pin, coloured by its country’s equality score.",
+    "mapTeaserTitle": "[ZH] See it on the map",
+    "networkMode": {
+      "subway": "[ZH] Metro network",
+      "light_rail": "[ZH] Light rail network",
+      "tram": "[ZH] Tram network"
+    },
+    "openMap": "[ZH] Open the map",
+    "pridePill": "[ZH] Pride · {{date}}",
+    "continentCount_one": "[ZH] {{count}} city",
+    "continentCount_other": "[ZH] {{count}} cities",
+    "venueCount_one": "[ZH] {{count}} place",
+    "venueCount_other": "[ZH] {{count}} places",
+    "villageCount_one": "[ZH] {{count}} district",
+    "villageCount_other": "[ZH] {{count}} districts"
   },
   "pride": {
     "eyebrow": "Pride Calendar",
@@ -2938,7 +3012,9 @@
       "personalities": "声音",
       "nearby": "附近",
       "news": "新闻",
-      "map": "地图"
+      "map": "地图",
+      "history": "[ZH] Legal record",
+      "historyNote": "[ZH] What changed and when. Safety information without a date is not safety information."
     },
     "practical": {
       "languages": "语言",
@@ -2957,7 +3033,10 @@
       "hdi": "人类发展指数",
       "lifeExpectancy": "预期寿命",
       "literacy": "识字率",
-      "income": "收入水平"
+      "income": "收入水平",
+      "venues": "[ZH] Venues",
+      "events": "[ZH] Upcoming events",
+      "weather": "[ZH] Now in {{city}}"
     },
     "cities": {
       "emptyTitle": "暂无城市",
@@ -2973,7 +3052,9 @@
     },
     "travel": {
       "activities": "活动与导览",
-      "activitiesBody": "{{country}}的体验"
+      "activitiesBody": "{{country}}的体验",
+      "noDealsTitle": "[ZH] We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
+      "noDealsBody": "[ZH] If you need to travel to {{country}}, read the rights section on this page first and use the trip planner — it includes a safety briefing for high-risk destinations."
     },
     "news": {
       "emptyTitle": "暂无本地新闻",
@@ -3020,7 +3101,24 @@
       "ilgaLink": "ILGA World Database",
       "deathPenaltyPossible": "[ZH] death penalty possible, no legal certainty"
     },
-    "planTripHighRisk": "[ZH] Plan carefully — safety briefing included"
+    "planTripHighRisk": "[ZH] Plan carefully — safety briefing included",
+    "eyebrow": "[ZH] Country",
+    "sections": "[ZH] Sections",
+    "openMap": "[ZH] Open the full map",
+    "census": {
+      "cities": "[ZH] {{n}} cities",
+      "stops": "[ZH] {{n}} stops",
+      "departures": "[ZH] {{n}} departures"
+    },
+    "history": {
+      "seeAll": "[ZH] Full timeline"
+    },
+    "endOfLine": {
+      "eyebrow": "[ZH] End of line",
+      "title": "[ZH] Compare the law elsewhere",
+      "body": "[ZH] Every country page carries the same legal breakdown, from the same sources, with the date it was checked.",
+      "rights": "[ZH] Rights across the world"
+    }
   },
   "inbox": {
     "title": "收件箱",
@@ -3197,7 +3295,7 @@
     "wishlists": "心愿单",
     "tags": "标签",
     "organizations": "[ZH] Organizations",
-    "guides": "[ZH] Guides",
+    "guides": "指南",
     "people": "认识朋友"
   },
   "chat": {
@@ -4157,6 +4255,253 @@
         "title": "支持我们",
         "desc": "让平台对所有人保持免费。"
       }
+    }
+  },
+  "tags": {
+    "meta": {
+      "title": "LGBTQ+ 词汇表",
+      "categoryTitle": "{{name}} — LGBTQ+ 词汇表",
+      "description": "浏览并搜索 {{count}} 个 LGBTQ+ 词条——身份、实践、历史与社群用语，每一条都关联着使用它的场所、活动、人物与新闻。"
+    },
+    "hero": {
+      "eyebrow": "词汇表",
+      "title": "词汇表",
+      "lede": "本指南使用的每一个词，都有解释——以及所有带这个标签的内容。",
+      "legend": "{{terms}} 个词条 · {{lines}} 条线路 · {{stops}} 个站点"
+    },
+    "stats": {
+      "kicker": "收录范围",
+      "terms": "词条",
+      "lines": "线路",
+      "stops": "站点",
+      "illustrated": "有配图"
+    },
+    "rail": {
+      "label": "主题线路",
+      "all": "全部词条",
+      "expandAria": "显示 {{line}} 的站点",
+      "collapseAria": "隐藏 {{line}} 的站点"
+    },
+    "spine": {
+      "searchLabel": "搜索词汇表",
+      "searchPlaceholder": "输入词条或同义词"
+    },
+    "view": {
+      "label": "视图",
+      "grid": "网格",
+      "list": "列表",
+      "chips": "标签",
+      "graph": "图谱"
+    },
+    "sort": {
+      "label": "排序",
+      "usage": "最常用",
+      "alphabetical": "A–Z",
+      "recent": "最新",
+      "dirAsc": "升序——切换为降序",
+      "dirDesc": "降序——切换为升序"
+    },
+    "filter": {
+      "used": "使用中",
+      "unused": "未使用",
+      "withImage": "有配图",
+      "reset": "重置筛选",
+      "includeAdult": "显示 18+ 词条"
+    },
+    "letters": {
+      "label": "跳到字母",
+      "all": "全部",
+      "other": "数字与其他文字",
+      "jump": "以 {{letter}} 开头的词条"
+    },
+    "alias": {
+      "heading": "也以其他名称找到",
+      "description": "这些匹配的是同义词或相近拼写，而非词条本身。",
+      "badge": "同义词"
+    },
+    "card": {
+      "uses": "使用 {{count}} 次"
+    },
+    "count": "{{count}} 个词条",
+    "showMore": "再显示 {{count}} 个",
+    "searching": "搜索中…",
+    "loading": "正在加载词汇表",
+    "error": "词汇表暂时无法访问",
+    "retry": "重试",
+    "empty": {
+      "title": "没有匹配的词条。",
+      "description": "换一个字母、线路或搜索词试试。"
+    },
+    "category": {
+      "lede": "归入 {{name}} 的所有词条。"
+    },
+    "endOfLine": {
+      "eyebrow": "终点站",
+      "title": "在找别的？",
+      "body": "词汇表解释这些词。而这些是使用它们的地方。",
+      "helpCta": "危机热线与支持",
+      "orgsCta": "组织",
+      "guidesCta": "指南"
+    },
+    "detail": {
+      "loading": "加载中",
+      "about": "简介",
+      "sections": "章节",
+      "noDefinition": "这个词条还没有写解释。",
+      "interchangeEyebrow": "换乘",
+      "interchangeTitle": "在分类体系中",
+      "inTaxonomy": "在分类体系中",
+      "codes": {
+        "eyebrow": "分类",
+        "title": "诊断编码",
+        "general": "通用",
+        "specialized": "专科",
+        "procedural": "操作",
+        "pharmaceutical": "药品",
+        "source": "来源",
+        "linkLabel": "{{label}} 编码 {{code}}",
+        "disclaimer": "该概念在临床分类系统中的参考编码。不构成医疗建议，也不是诊断。"
+      },
+      "flag": {
+        "eyebrow": "符号",
+        "title": "旗帜",
+        "designer": "设计者",
+        "year": "年份",
+        "stripes": "条纹的含义",
+        "railSingular": "旗帜",
+        "railPlural": "旗帜"
+      },
+      "hanky": {
+        "eyebrow": "参考",
+        "title": "暗号",
+        "intro": "后裤袋里的彩色手帕曾用来示意特定的兴趣——左袋代表给予方，右袋代表接受方。此处按 1980 年代出版的版本记录；含义因城市和年代而异。",
+        "safeMode": "颜色表涉及露骨的性实践，安全模式开启时将隐藏。",
+        "gateBody": "颜色表列出了露骨的性实践。请确认你已年满 18 岁再阅读。",
+        "gateCta": "显示暗号（18+）",
+        "classic": "经典核心（Townsend，1983）",
+        "extended": "常见的后期补充",
+        "disclaimer": "仅为历史参考，并非对任何实践的认可。流传的颜色还有数十种；没有两份公开列表完全一致。"
+      },
+      "changeHereFor": "在此换乘至",
+      "contentNote": "内容提示",
+      "contentNoteBody": "本词条涉及部分读者会感到沉重的话题。内容并不露骨，这是一则释义，而非建议。",
+      "findSupport": "寻找支持",
+      "whereItAppears": "出现在哪里",
+      "elsewhere": "外部链接",
+      "readThere": "阅读",
+      "editors": "Queer Guide 编辑部",
+      "factLine": "线路",
+      "factTagged": "被标记次数",
+      "venues": "场所",
+      "venuesNote": "{{count}} 个",
+      "events": "活动",
+      "eventsNote": "{{count}} 个",
+      "people": "人物",
+      "peopleNote": "{{count}} 位",
+      "news": "新闻",
+      "newsNote": "{{count}} 篇",
+      "newsNoteMore": "{{count}} 篇中的 {{shown}} 篇",
+      "villages": "酷儿街区",
+      "shop": "商店",
+      "communities": "社群",
+      "everythingTagged": "所有带 {{name}} 标签的内容",
+      "everythingTaggedBody": "指南中有 {{count}} 条内容带这个标签。",
+      "searchTagged": "搜索所有带 {{name}} 标签的内容",
+      "moreOnThisLine": "这条线路上的更多站点",
+      "notFound": {
+        "title": "没有这个词条",
+        "body": "词汇表中没有以下条目：",
+        "browse": "浏览词汇表"
+      },
+      "alias": {
+        "synonym": "又称",
+        "abbreviation": "缩写自",
+        "plural": "复数",
+        "misspelling": "常见误写",
+        "historical": "历史用法",
+        "slang": "俚语"
+      },
+      "sourceOfLaw": "法律依据",
+      "lawJurisdiction": "适用范围",
+      "lawInternational": "国际",
+      "lawAdopted": "通过年份",
+      "lawStatus": "状态",
+      "lawInForce": "现行有效",
+      "lawRepealed": "已废止",
+      "lawSuperseded": "已被取代",
+      "lawPartlyStruck": "现行有效，部分条款被撤销",
+      "notOneLaw": "这不是单一法律，而是逐国记录的。",
+      "seeByCountry": "查看各国状态",
+      "spansAllRights": "这涵盖整个法律领域，而非单一法律。我们逐国记录 18 项独立权利。",
+      "seeAllRights": "查看各国的 18 项权利"
+    },
+    "flagWall": {
+      "eyebrow": "符号",
+      "title": "旗帜一览"
+    }
+  },
+  "village": {
+    "eyebrow": "[ZH] District · Green line",
+    "loading": "[ZH] Loading this district",
+    "loadingVenues": "[ZH] Loading the stop list",
+    "sections": "[ZH] Sections",
+    "planTrip": "[ZH] Plan a trip to {{name}}",
+    "relatedByTag": "[ZH] Related by tag",
+    "notFound": {
+      "title": "[ZH] No such district.",
+      "body": "[ZH] This stop is not on the line.",
+      "cta": "[ZH] All queer villages"
+    },
+    "toast": {
+      "errorTitle": "[ZH] Error",
+      "loadFailed": "[ZH] Failed to load village details"
+    },
+    "facts": {
+      "city": "[ZH] City",
+      "country": "[ZH] Country",
+      "venues": "[ZH] Venues",
+      "events": "[ZH] Upcoming events",
+      "editorsPick": "[ZH] Editor’s pick"
+    },
+    "census": {
+      "stops": "[ZH] {{n}} stops",
+      "departures": "[ZH] {{n}} departures"
+    },
+    "section": {
+      "about": "[ZH] About {{name}}",
+      "walk": "[ZH] The walk",
+      "walkNote": "[ZH] Stops in order, with the straight-line gap between them.",
+      "events": "[ZH] Next departures",
+      "photos": "[ZH] Photos",
+      "city": "[ZH] On the same line"
+    },
+    "action": {
+      "website": "[ZH] Website",
+      "favorite": "[ZH] Save to favorites",
+      "favorited": "[ZH] Saved to favorites"
+    },
+    "events": {
+      "open": "[ZH] Open"
+    },
+    "landmarks": {
+      "title": "[ZH] Notable landmarks"
+    },
+    "photo": {
+      "caption": "[ZH] {{village}}, {{city}}",
+      "alt": "[ZH] {{name}}, photo {{n}}"
+    },
+    "parentCity": {
+      "body": "[ZH] The wider city this district sits in.",
+      "action": "[ZH] Open"
+    },
+    "map": {
+      "caption": "[ZH] Walking distance in {{city}}."
+    },
+    "endOfLine": {
+      "eyebrow": "[ZH] End of line",
+      "title": "[ZH] Looking for another district?",
+      "body": "[ZH] Queer villages are walkable clusters of bars, cafés and community spaces. There are more of them.",
+      "city": "[ZH] More in {{city}}"
     }
   }
 }

@@ -63,7 +63,10 @@ export const MessagingInterface = ({ filter, className }: MessagingInterfaceProp
           <SheetHeader className="mb-4">
             <SheetTitle>{t('inbox.compose.email', { defaultValue: 'New email' })}</SheetTitle>
           </SheetHeader>
-          <ComposeEmail onSent={() => setComposeEmailOpen(false)} onCancel={() => setComposeEmailOpen(false)} />
+          <ComposeEmail
+            onSent={() => setComposeEmailOpen(false)}
+            onCancel={() => setComposeEmailOpen(false)}
+          />
         </SheetContent>
       </Sheet>
 
@@ -109,7 +112,7 @@ export const MessagingInterface = ({ filter, className }: MessagingInterfaceProp
           {loading ? (
             <div className="flex items-center justify-center py-16">
               <div className="text-center">
-                <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4 animate-spin" />
+                <div className="w-8 h-8 border-primary border-t-transparent rounded-full mx-auto mb-4 animate-spin" />
                 <p className="text-muted-foreground">
                   {t('inbox.loading', { defaultValue: 'Loading…' })}
                 </p>
@@ -117,7 +120,11 @@ export const MessagingInterface = ({ filter, className }: MessagingInterfaceProp
             </div>
           ) : visibleItems.length === 0 ? (
             <div className="text-center py-8">
-              <MessageCircle size={48} style={{ margin: '0 auto 16px' }} className="text-muted-foreground" />
+              <MessageCircle
+                size={48}
+                style={{ margin: '0 auto 16px' }}
+                className="text-muted-foreground"
+              />
               <p className="text-muted-foreground">
                 {search.trim()
                   ? t('inbox.searchEmpty', { defaultValue: 'No matches.' })
@@ -178,7 +185,11 @@ export const MessagingInterface = ({ filter, className }: MessagingInterfaceProp
             }}
           >
             <div className="text-center px-4">
-              <MessageCircle size={64} style={{ margin: '0 auto 16px' }} className="text-muted-foreground" />
+              <MessageCircle
+                size={64}
+                style={{ margin: '0 auto 16px' }}
+                className="text-muted-foreground"
+              />
               <h6 className="text-lg font-medium mb-2">
                 {t('inbox.selectPrompt.title', { defaultValue: 'Select an item' })}
               </h6>

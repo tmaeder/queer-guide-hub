@@ -77,9 +77,16 @@ jobs:
             e2e/admin-pipelines.spec.ts \
             e2e/venues/detail-content.spec.ts \
             e2e/help-locale.spec.ts \
+            e2e/locale-prefix.spec.ts \
             e2e/hotels-filters.spec.ts \
             e2e/nested-interactive.spec.ts \
+            e2e/singles.spec.ts \
             --reporter=line
+          # singles.spec.ts is in the list above rather than left to the nightly
+          # run for the reason it exists: /villages/:slug shipped for months on
+          # a dead layout branch with no safety gating because NOTHING
+          # exercised it. A spec written to close that gap, parked behind a
+          # hardcoded list it is not on, closes nothing.
           # Design-system guards (radius tiers + monochrome) used to run ONLY in
           # the nightly suite, so the PHOTOCOPY radius retune passed every PR
           # check and turned nightly red the next morning. Second invocation

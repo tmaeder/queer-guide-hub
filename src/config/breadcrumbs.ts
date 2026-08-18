@@ -44,7 +44,9 @@ const SEGMENT_SECTIONS: Record<string, { path: string; key: string; fallback: st
   community: { path: '/people', key: 'breadcrumb.people', fallback: 'Meet people' },
   rights: { path: '/rights', key: 'breadcrumb.rights', fallback: 'Rights' },
   support: { path: '/support', key: 'breadcrumb.support', fallback: 'Support' },
-  shop: { path: '/shop', key: 'breadcrumb.shop', fallback: 'Shop' },
+  // No `shop` row: /shop now redirects to /marketplace and nothing renders
+  // under that segment, so a section entry for it could never be reached.
+  // `marketplace` above is the row that covers this surface.
   travel: { path: '/travel', key: 'breadcrumb.travel', fallback: 'Travelling' },
   organizations: {
     path: '/organizations',

@@ -48,7 +48,7 @@ export function SectionNav({ items, activeId, onSelect, className }: SectionNavP
          lines up with the page content above it — at a flat `-mx-4` the rule
          stopped 16px short of the gutter from `sm` up. */
       className={cn(
-        'sticky z-30 -mx-4 mb-8 border-b-2 border-foreground bg-background sm:-mx-6 md:-mx-8',
+        'sticky z-30 -mx-4 mb-8 border-b border-border-hairline bg-background sm:-mx-6 md:-mx-8',
         STICKY_UNDER_HEADER,
         className,
       )}
@@ -76,10 +76,10 @@ export function SectionNav({ items, activeId, onSelect, className }: SectionNavP
                 className={cn(
                   'relative inline-flex h-12 items-center whitespace-nowrap text-13 font-bold transition-colors no-underline',
                   isActive
-                    // Sits ON the nav's own rule and is thicker than it, so the
-                    // active station reads as a stop on the line rather than a
-                    // tint difference.
-                    ? 'text-foreground after:absolute after:inset-x-0 after:-bottom-0.5 after:h-1 after:bg-foreground'
+                    ? // Sits ON the nav's own rule and is thicker than it, so the
+                      // active station reads as a stop on the line rather than a
+                      // tint difference.
+                      'text-foreground after:absolute after:inset-x-0 after:-bottom-0.5 after:h-1 after:bg-foreground'
                     : 'text-muted-foreground hover:text-foreground',
                 )}
               >

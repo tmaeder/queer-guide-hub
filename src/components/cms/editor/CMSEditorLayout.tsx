@@ -9,7 +9,17 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { FileText, List, MapPin, Image, Search, Settings, Heart, ExternalLink, Sparkles } from 'lucide-react';
+import {
+  FileText,
+  List,
+  MapPin,
+  Image,
+  Search,
+  Settings,
+  Heart,
+  ExternalLink,
+  Sparkles,
+} from 'lucide-react';
 import { useCMSEditor } from '@/hooks/useCMSEditor';
 import { useCMSWorkflow } from '@/hooks/useCMSWorkflow';
 import {
@@ -360,7 +370,7 @@ export function CMSEditorLayout({
                   >
                     <div
                       className={`p-4 rounded-element border bg-background transition-colors focus-within:border-primary focus-within:shadow-[0_0_0_2px_hsl(var(--primary)/0.2)] ${
-                        state.errors[field.name] ? 'border-destructive' : 'border-border'
+                        state.errors[field.name] ? 'border border-destructive' : 'border-border'
                       }`}
                     >
                       <FieldRenderer

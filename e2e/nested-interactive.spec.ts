@@ -25,10 +25,33 @@ const NESTED_SELECTOR = 'a a, a button, a [role="button"]';
 // Routes that render at least one of the shared cards. Waiting on a card link
 // (rather than `networkidle`) keeps this deterministic — /city/berlin polls and
 // never reaches network idle.
+// Every CARD_ROUTE waits for one of these before snapshotting, so a route whose
+// cards link somewhere unlisted hangs the full 120s and then fails on an empty
+// page rather than a real violation. Extend this WITH the route, never after.
 const CARD_LINK =
-  'a[href*="/venues/"], a[href*="/events/"], a[href*="/news/"], a[href*="/city/"], a[href*="/country/"]';
+  'a[href*="/venues/"], a[href*="/events/"], a[href*="/news/"], a[href*="/city/"], a[href*="/country/"], a[href*="/marketplace/brands/"]';
 
-const CARD_ROUTES = ['/city/berlin', '/events', '/venues', '/news', '/places'];
+// `/cities` was missing here until the 2026-08 rebuild. It was safe by accident —
+// its rows were a single link with no interactive children — but the redesigned
+// card is a `relative` article with a sibling overlay link, which is exactly the
+// shape that produces `a button` the moment someone adds a favourite or compare
+// control to it.
+//
+// `/marketplace/brands` (the makers directory, #2770) is the same shape and
+// shipped with coverage in NO sweep — every route list in e2e/ is static, so a
+// new route joins none of them by default. Its `BrandPlate` holds ownership
+// `Badge`s beside a sibling overlay link, exactly what this file guards.
+// Verified 0 violations across its 26 plates on prod before adding, so this
+// pins the pattern rather than reporting a known bug.
+const CARD_ROUTES = [
+  '/city/berlin',
+  '/cities',
+  '/events',
+  '/venues',
+  '/news',
+  '/places',
+  '/marketplace/brands',
+];
 
 // Routes covering the converted `<Button asChild>` sites. These render static
 // chrome rather than data-driven cards, so they only need `main` to be present.

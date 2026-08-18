@@ -139,7 +139,14 @@
       "recent_city": "In a city you've explored",
       "featured": "Featured"
     },
-    "ariaLabel": "[PT] Search Queer Guide"
+    "ariaLabel": "Pesquisar no Queer Guide",
+    "escape": "esc",
+    "jumpTo": "Ir para",
+    "recent": "Recentes",
+    "noStation": "Nenhuma estação com esse nome — ainda",
+    "addToMap": "Adicione-a ao mapa",
+    "seeOnMap": "Ver {{count}} resultados no mapa",
+    "keyHints": "↑↓ navegar · ↵ abrir"
   },
   "common": {
     "contentInLanguage": "Em {{lang}}",
@@ -211,12 +218,19 @@
     "contact": "Contato",
     "supportUs": "Apoie-nos",
     "history": "História",
-    "tagline": "[PT] Every track. Every station. Everyone.",
-    "contributors": "[PT] Contributors",
+    "tagline": "Cada linha. Cada estação. Toda a gente.",
+    "contributors": "Quem contribuiu",
     "emergency": {
       "eyebrow": "[PT] In an emergency",
-      "title": "[PT] Crisis lines, 24 hours",
-      "body": "[PT] Trans helpline, LGBT+ crisis support, and local emergency numbers, listed by country and always one click from any page."
+      "title": "Linhas de crise, 24 horas",
+      "body": "Linha de apoio trans, apoio em crise LGBT+ e números de emergência locais, organizados por país e sempre a um clique de qualquer página."
+    },
+    "osmAttribution": "Diagramas de transporte derivados de © colaboradores do OpenStreetMap (ODbL)",
+    "reportSomething": "Denunciar algo",
+    "hotlines": "Linhas de apoio",
+    "antiDiscrimination": {
+      "title": "Aqui não há lugar para intolerância.",
+      "body": "Racismo, transfobia e discriminação são motivo automático de expulsão da plataforma. Ponto final."
     }
   },
   "trips": {
@@ -689,12 +703,12 @@
       }
     },
     "discover": {
-      "title": "Descobrir lugares",
-      "button": "Explorar mercado",
+      "title": "Criar uma rota",
+      "button": "Criar uma rota",
       "eyebrow": "Real travelers",
       "subtitle": "Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
       "searchPlaceholder": "Filter by city…",
-      "aria": "Discover public trips",
+      "aria": "Criar uma rota por cidades reais",
       "sortAria": "Sort trips",
       "viewAria": "View mode",
       "filterAria": "Filter trips",
@@ -774,7 +788,81 @@
       "signalsAria": "Trip activity",
       "forkCount": "{{count}} forks",
       "saveCount": "{{count}} saves",
-      "filtersButton": "Filters"
+      "filtersButton": "Filters",
+      "meta": {
+        "title": "Criar uma rota | Queer Guide",
+        "description": "Escolhe um ambiente, uma estação e um ritmo. Recebes uma rota de cidades reais com o número de locais, a situação legal e o que há enquanto lá estiveres."
+      },
+      "eyebrowRoute": "Construtor de rotas",
+      "titleRoute": "Três cidades. Uma linha.",
+      "ledeRoute": "Diz-nos o que procuras e a que ritmo te moves. Traçamos uma linha por cidades reais, com o número de locais, a situação legal e o que há enquanto lá estiveres.",
+      "picker": {
+        "heading": "Define a linha",
+        "hint": "Escolhe um ambiente, uma estação e um ritmo. A linha é redesenhada.",
+        "vibeGroup": "O que procuras",
+        "seasonGroup": "Quando",
+        "paceGroup": "A que ritmo",
+        "stationCount": "{{count}} estações",
+        "stopCount": "{{count}} paragens",
+        "tooFew": "apenas {{count}} estações",
+        "thin": "{{count}} estações, nenhuma perto o suficiente para formar uma linha",
+        "vibe": {
+          "nightlife": "Noites longas",
+          "sauna": "Sauna",
+          "slow": "Manhãs calmas",
+          "community": "Comunidade",
+          "outdoors": "Ao ar livre"
+        },
+        "season": {
+          "now": "Em breve",
+          "autumn": "Outono",
+          "winter": "Inverno",
+          "pride": "Época do Orgulho"
+        },
+        "pace": {
+          "slow": "Com calma",
+          "steady": "Constante",
+          "sprint": "Percorrer muito"
+        }
+      },
+      "route": {
+        "heading": "A tua linha",
+        "reroll": "Traçar outra",
+        "summary": "{{stops}} paragens · {{km}} km · {{countries}} países",
+        "snapped": "Começa a {{km}} km de {{name}} — a cidade mais próxima sobre a qual temos o suficiente.",
+        "short": "Esta linha tem {{delivered}} paragens, não {{requested}}. {{eligible}} cidades correspondem e as restantes estão mais longe do que este ritmo permite.",
+        "announced": "Linha traçada: {{stations}}. {{count}} paragens.",
+        "stopsAria": "Paragens desta linha, por ordem",
+        "stopAria": "Paragem {{n}}: {{city}}, {{country}}",
+        "swapStopAria": "Trocar a paragem {{n}}, {{city}}",
+        "tripTitle": "Linha {{cities}}"
+      },
+      "station": {
+        "venues": "{{count}} locais"
+      },
+      "loading": {
+        "pool": "A carregar a lista de estações",
+        "slow": "Ainda a trabalhar. O índice de cidades está lento neste momento."
+      },
+      "degraded": {
+        "none": "Nenhuma cidade corresponde a essas escolhas.",
+        "title": "Apenas {{count}} cidades correspondem.",
+        "body": "Uma linha precisa de três paragens. Retira uma escolha para a alargar.",
+        "terminus": "A mais próxima é {{name}}, a {{km}} km — mais longe do que este ritmo vai.",
+        "clearVibe": "Qualquer ambiente",
+        "goFurther": "Percorrer mais"
+      },
+      "error": {
+        "title": "Não foi possível criar a viagem",
+        "poolTitle": "A lista de estações não carregou.",
+        "retry": "Tentar de novo"
+      },
+      "cta": {
+        "heading": "Segue esta linha.",
+        "body": "Torna-se uma viagem tua, com todas as paragens já lá. Depois podes mudar o que quiseres.",
+        "primary": "Transformar em viagem",
+        "secondary": "Traçar outra"
+      }
     },
     "polls": {
       "createdToast": "Poll created",
@@ -999,6 +1087,15 @@
       "openThread": "Revisar no chat",
       "forwardHint": "[PT] Forward Booking.com, Airbnb or airline confirmations to {{address}} — they appear in your Travel Inbox, ready to add to a trip. Or paste one here to add it straight to this trip.",
       "forwardHintNoAddress": "[PT] Forward booking confirmations to your queer.guide address and they appear in your Travel Inbox. Or paste one here to add it straight to this trip."
+    },
+    "templates": {
+      "heading": "Começar com um modelo",
+      "subheading": "Itinerários LGBTQ+ para desenvolver",
+      "days": "{{count}} dias",
+      "use": "Usar modelo",
+      "created": "Viagem criada",
+      "createdDescription": "Adiciona as tuas paragens a partir daqui.",
+      "error": "Não foi possível criar a viagem"
     }
   },
   "auth": {
@@ -1175,7 +1272,16 @@
     "featured": "[PT] Featured",
     "rsvpEmptyMember": "[PT] No RSVPs yet. Be the first.",
     "rsvpEmptyAnon": "[PT] No RSVPs yet. Sign in to be the first.",
-    "peopleYouMayKnow": "[PT] People you may know"
+    "peopleYouMayKnow": "[PT] People you may know",
+    "detail": {
+      "eyebrow": "[PT] Event",
+      "sections": "[PT] Sections",
+      "section": {
+        "about": "[PT] About this event",
+        "where": "[PT] Getting there",
+        "going": "[PT] Who's going"
+      }
+    }
   },
   "venues": {
     "title": "Locais",
@@ -1302,7 +1408,20 @@
     },
     "closed": "[PT] Closed",
     "openNow": "[PT] Open now",
-    "locationUnknown": "[PT] Location unknown"
+    "locationUnknown": "[PT] Location unknown",
+    "detail": {
+      "eyebrow": "[PT] Venue",
+      "closed": "[PT] Permanently closed",
+      "section": {
+        "about": "[PT] About",
+        "hours": "[PT] Opening hours",
+        "access": "[PT] Access",
+        "whatsOn": "[PT] What's on here",
+        "signals": "[PT] Visitor signals",
+        "reviews": "[PT] Reviews",
+        "photos": "[PT] Photos"
+      }
+    }
   },
   "marketplace": {
     "title": "Mercado",
@@ -1766,7 +1885,10 @@
       "help": "Ajuda",
       "tags": "Tags",
       "history": "História",
-      "guides": "[PT] Guides"
+      "guides": "Guias",
+      "trips": "Viagens",
+      "organizations": "Organizações",
+      "wishlists": "Listas de desejos"
     },
     "intents": {
       "goingOut": {
@@ -1860,7 +1982,7 @@
       "hub": "Hub"
     },
     "primaryNavigation": "[PT] Primary",
-    "signInToContribute": "[PT] Sign in to contribute"
+    "signInToContribute": "Inicia sessão para contribuir"
   },
   "pages": {
     "venues": {
@@ -2360,23 +2482,29 @@
     },
     "notFound": {
       "title": "Página não encontrada",
-      "description": "A página que você procura não existe ou foi movida.",
+      "kicker": "Aviso de serviço · 404",
+      "heading": "Aqui não tem parada.",
+      "description": "Não há nada no mapa em {{path}}. Foi movido, removido ou nunca existiu.",
+      "noStop": "Sem parada",
       "goBack": "Voltar",
       "returnHome": "Voltar ao início",
-      "suggestionsLabel": "Or jump to",
-      "didYouMean": "Did you mean",
-      "recentlyViewed": "Pick up where you left off",
-      "searchPlaceholder": "Search venues, events, cities…",
+      "searchLabel": "Planeje outra rota",
+      "searchPlaceholder": "Busque lugares, eventos, cidades…",
+      "searchSubmit": "Buscar",
+      "didYouMean": "Paradas mais próximas",
+      "recentlyViewed": "Suas últimas paradas",
+      "suggestionsLabel": "Fim da linha",
+      "endOfLineTitle": "Pegue outra linha.",
       "kind": {
-        "venue": "We couldn't find that venue.",
-        "event": "We couldn't find that event.",
-        "city": "We couldn't find that city.",
-        "country": "We couldn't find that country.",
-        "personality": "We couldn't find that person.",
-        "hotel": "We couldn't find that hotel.",
-        "village": "We couldn't find that place.",
-        "marketplace": "We couldn't find that product.",
-        "news": "We couldn't find that article."
+        "venue": "Nenhum lugar nesta parada.",
+        "event": "Nenhum evento nesta parada.",
+        "city": "Nenhuma cidade nesta parada.",
+        "country": "Nenhum país nesta parada.",
+        "personality": "Ninguém nesta parada.",
+        "hotel": "Nenhum hotel nesta parada.",
+        "village": "Nenhum bairro nesta parada.",
+        "marketplace": "Nenhum produto nesta parada.",
+        "news": "Nenhum artigo nesta parada."
       }
     },
     "bookings": {
@@ -2614,145 +2742,6 @@
       "tags_other": "[PT] {{count}} tags"
     }
   },
-  "resources": {
-    "hero": {
-      "eyebrow": "Ajuda",
-      "title": "Ajuda e recursos.",
-      "lede": "Apoio em crise, guias práticos, e as pessoas e organizações por trás."
-    },
-    "errorLoading": "Algo deu errado ao carregar. Tenta de novo mais tarde.",
-    "disclosure": "Todos os temas e busca",
-    "disclosureAria": "Todos os temas, busca e filtros avançados",
-    "browseAllTopics": "Todos os temas",
-    "professions": {
-      "title": "Profissões",
-      "description": "Personalidades LGBTQ+ por profissão",
-      "back": "Voltar"
-    },
-    "category": {
-      "back": "Voltar",
-      "viewAll": "Ver todos →",
-      "comingSoon": "Em breve",
-      "tagCount": "{{count}} tags",
-      "tagCountTotal": "{{count}} tags no total (em todas as subcategorias)",
-      "tagCountTotalAria": "{{count}} tags no total em todas as subcategorias",
-      "totalChildHint": "O número de cada subcategoria mostra os tags atribuídos diretamente",
-      "supportNewsAlert": "Precisa de ajuda imediata? Consulta o diretório de linhas de crise.",
-      "crisisHotlines": "Linhas de crise",
-      "emptyTitle": "Ainda sem tags nesta categoria",
-      "emptyDescription": "Volta em breve — está a ser preenchida.",
-      "subcategoryEmptyTitle": "Ainda sem tags aqui",
-      "subcategoryEmptyDescription": "Esta subcategoria está a ser preenchida."
-    },
-    "crisis": {
-      "heading": "Crise e segurança",
-      "badge": "Grátis, anónimo",
-      "chooseCountryAria": "Escolher país",
-      "callEmergencyPrefix": "Em perigo imediato? Liga para ",
-      "callEmergencySuffix": " ({{country}}).",
-      "callEmergencySuffixInt": ".",
-      "noLocal": "Ainda sem linhas para {{country}} — a mostrar internacionais.",
-      "callAria": "Ligar para {{name}} no {{phone}}",
-      "noHotlinesLoaded": "Ainda sem linhas carregadas.",
-      "listAria": "Linhas de crise",
-      "seeAll": "Ver todas as linhas"
-    },
-    "topicHubs": {
-      "heading": "Temas"
-    },
-    "topic": {
-      "back": "Recursos",
-      "notFound": "Tema não encontrado",
-      "backToResources": "Voltar aos recursos",
-      "metaSuffix": "Recursos",
-      "metaNotFound": "Tema não encontrado",
-      "stats": "{{guides}} guias · {{orgs}} orgs · {{news}} artigos",
-      "guidesHeading": "Guias",
-      "guidesEmpty": "Ainda sem guias publicados para este tema.",
-      "orgsHeading": "Organizações",
-      "orgsEmpty": "Ainda sem organizações para este tema.",
-      "newsHeading": "Notícias recentes",
-      "newsEmpty": "Ainda sem artigos recentes sobre este tema.",
-      "moreTopics": "Mais temas"
-    },
-    "orgs": {
-      "heading": "Organizações de apoio",
-      "filterAria": "Filtrar organizações por país",
-      "noLocal": "Ainda sem organizações em {{country}} — a mostrar globais.",
-      "browseAll": "Ver todas as organizações",
-      "emptyPrefix": "Ainda sem organizações de apoio. Submete uma pela extensão Chrome ou ",
-      "emptyLink": "fala connosco",
-      "emptySuffix": "."
-    },
-    "filter": {
-      "searchPlaceholder": "Procurar tags, categorias, descrições…",
-      "searchAria": "Procurar nos recursos",
-      "filterAria": "Filtrar por categoria",
-      "categoryPlaceholder": "Categoria",
-      "allCategories": "Todas as categorias",
-      "sortAria": "Ordenar por",
-      "sortPlaceholder": "Ordenar por",
-      "sortMostUsed": "Mais usados",
-      "sortAlphabetical": "Alfabético",
-      "sortNewest": "Mais recentes",
-      "advanced": "Avançado",
-      "usageAria": "Filtrar por uso",
-      "usagePlaceholder": "Uso",
-      "usageAll": "Todos os tags",
-      "usageUsed": "Usados",
-      "usageUnused": "Não usados",
-      "hasImage": "Com imagem",
-      "hasImageTitle": "Mostrar só tags com imagem",
-      "sortDirAsc": "Ordem crescente",
-      "sortDirDesc": "Ordem decrescente",
-      "active": "Ativo:",
-      "clearAll": "Limpar tudo",
-      "view": {
-        "chips": "Chips",
-        "grid": "Grelha",
-        "list": "Lista",
-        "ariaSuffix": " vista"
-      },
-      "graph": "Grafo de relações"
-    },
-    "search": {
-      "resultsHeading": "Resultados",
-      "categoryTagsHeading": "Tags {{category}}",
-      "filteredHeading": "Tags filtrados",
-      "countBadge": "{{visible}} de {{total}}",
-      "countAria": "{{count}} tags correspondentes",
-      "showMore": "Mostrar mais {{count}}",
-      "empty": {
-        "title": "Sem resultados",
-        "description": "Tenta uma busca mais ampla ou remove os filtros."
-      }
-    },
-    "tagNotFound": {
-      "title": "Tag não encontrado",
-      "bodyPrefix": "Não encontrámos um tag para ",
-      "browse": "Ver todos os recursos"
-    },
-    "tagDetail": {
-      "breadcrumbHome": "Recursos",
-      "noDefinition": "Ainda sem definição para este termo.",
-      "alsoKnownAs": "Também conhecido como",
-      "readOnWikipedia": "Ler na Wikipédia",
-      "searchTagged": "Pesquisar tudo com a tag {{name}}",
-      "seeAlso": "Ver também",
-      "sensitiveContentBody": "Este tópico pode conter conteúdo sensível. Se precisar de apoio, visite a nossa página de linhas de apoio em crise.",
-      "sensitiveContentTitle": "Tópico sensível",
-      "tableOfContents": "Conteúdo",
-      "viewAsGraph": "Ver como grafo",
-      "hierarchy": "[PT] In the taxonomy",
-      "broader": "[PT] Broader",
-      "narrower": "[PT] More specific",
-      "related": "[PT] Related"
-    },
-    "graph": {
-      "title": "Grafo de relações",
-      "description": "Como os tags se relacionam por semelhança semântica e co-ocorrência"
-    }
-  },
   "cities": {
     "metaTitle": "Cidades",
     "metaDescription": "Explore cidades LGBTQ+ friendly em todo o mundo.",
@@ -2803,8 +2792,93 @@
         "currency": "Moeda",
         "bestTime": "Melhor época",
         "airport": "Aeroporto"
+      },
+      "eyebrow": "[PT] City",
+      "sections": "[PT] Sections",
+      "loadingVenues": "[PT] Loading venues",
+      "openEvent": "[PT] Open",
+      "openMap": "[PT] Open the full map",
+      "createTrip": "[PT] Create trip",
+      "officialWebsite": "[PT] Official website",
+      "favorite": "[PT] Save to favorites",
+      "favorited": "[PT] Saved to favorites",
+      "census": {
+        "stops": "[PT] {{n}} stops",
+        "districts": "[PT] {{n}} districts",
+        "departures": "[PT] {{n}} departures"
+      },
+      "section": {
+        "rights": "[PT] Safety & rights",
+        "rightsNote": "[PT] Know before you go.",
+        "venues": "[PT] Where to go",
+        "districts": "[PT] Queer districts",
+        "districtsNote": "[PT] Walkable clusters of bars, cafés and community spaces.",
+        "events": "[PT] Next departures",
+        "overview": "[PT] About {{city}}",
+        "travel": "[PT] Getting there",
+        "news": "[PT] In the news",
+        "nearby": "[PT] Nearby"
+      },
+      "stats": {
+        "venues": "[PT] Venues",
+        "districts": "[PT] Districts",
+        "events": "[PT] Upcoming events"
+      },
+      "about": {
+        "status": "[PT] Status",
+        "capital": "[PT] Capital city",
+        "majorCity": "[PT] Major city",
+        "region": "[PT] Region",
+        "timezone": "[PT] Timezone",
+        "founded": "[PT] Founded",
+        "area": "[PT] Area",
+        "elevation": "[PT] Elevation",
+        "mayor": "[PT] Mayor",
+        "postalCodes": "[PT] Postal codes",
+        "costOfLiving": "[PT] Cost of living",
+        "universities": "[PT] Universities",
+        "sisterCities": "[PT] Sister cities"
+      },
+      "travel": {
+        "majorAirport": "[PT] Major airport",
+        "nearestAirport": "[PT] Nearest airport",
+        "allCodes": "[PT] All airport codes",
+        "lines": "[PT] Lines",
+        "networkCaption": "[PT] Rapid-transit lines, drawn from OpenStreetMap. Schematic, not to scale.",
+        "gettingAround": "[PT] Getting around",
+        "noDealsTitle": "[PT] We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
+        "noDealsBody": "[PT] If you need to travel to {{city}}, read the safety and rights section first and use the trip planner — it includes a safety briefing for high-risk destinations."
+      },
+      "endOfLine": {
+        "eyebrow": "[PT] End of line",
+        "title": "[PT] Riding on?",
+        "body": "[PT] Every city on the guide carries the same modules: safety and rights first, then the places.",
+        "allCities": "[PT] All cities",
+        "country": "[PT] More in {{country}}"
       }
-    }
+    },
+    "capital": "[PT] Capital",
+    "continentClear": "[PT] Clear",
+    "continentsTitle": "[PT] Continents",
+    "counting": "[PT] Counting…",
+    "highRisk": "[PT] Criminalized",
+    "inView": "[PT] {{count}} cities in the directory, ranked by how much of each one we hold.",
+    "lineEyebrow": "[PT] Cities · Green line",
+    "mapTeaserLede": "[PT] Every city as a pin, coloured by its country’s equality score.",
+    "mapTeaserTitle": "[PT] See it on the map",
+    "networkMode": {
+      "subway": "[PT] Metro network",
+      "light_rail": "[PT] Light rail network",
+      "tram": "[PT] Tram network"
+    },
+    "openMap": "[PT] Open the map",
+    "pridePill": "[PT] Pride · {{date}}",
+    "continentCount_one": "[PT] {{count}} city",
+    "continentCount_other": "[PT] {{count}} cities",
+    "venueCount_one": "[PT] {{count}} place",
+    "venueCount_other": "[PT] {{count}} places",
+    "villageCount_one": "[PT] {{count}} district",
+    "villageCount_other": "[PT] {{count}} districts"
   },
   "pride": {
     "eyebrow": "Pride Calendar",
@@ -2940,7 +3014,9 @@
       "personalities": "Vozes",
       "nearby": "Por perto",
       "news": "Notícias",
-      "map": "Mapa"
+      "map": "Mapa",
+      "history": "[PT] Legal record",
+      "historyNote": "[PT] What changed and when. Safety information without a date is not safety information."
     },
     "practical": {
       "languages": "Idiomas",
@@ -2959,7 +3035,10 @@
       "hdi": "IDH",
       "lifeExpectancy": "Esperança de vida",
       "literacy": "Alfabetização",
-      "income": "Nível de rendimento"
+      "income": "Nível de rendimento",
+      "venues": "[PT] Venues",
+      "events": "[PT] Upcoming events",
+      "weather": "[PT] Now in {{city}}"
     },
     "cities": {
       "emptyTitle": "Ainda sem cidades",
@@ -2975,7 +3054,9 @@
     },
     "travel": {
       "activities": "Atividades e tours",
-      "activitiesBody": "Experiências em {{country}}"
+      "activitiesBody": "Experiências em {{country}}",
+      "noDealsTitle": "[PT] We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
+      "noDealsBody": "[PT] If you need to travel to {{country}}, read the rights section on this page first and use the trip planner — it includes a safety briefing for high-risk destinations."
     },
     "news": {
       "emptyTitle": "Ainda sem notícias locais",
@@ -3022,7 +3103,24 @@
       "ilgaLink": "ILGA World Database",
       "deathPenaltyPossible": "[PT] death penalty possible, no legal certainty"
     },
-    "planTripHighRisk": "[PT] Plan carefully — safety briefing included"
+    "planTripHighRisk": "[PT] Plan carefully — safety briefing included",
+    "eyebrow": "[PT] Country",
+    "sections": "[PT] Sections",
+    "openMap": "[PT] Open the full map",
+    "census": {
+      "cities": "[PT] {{n}} cities",
+      "stops": "[PT] {{n}} stops",
+      "departures": "[PT] {{n}} departures"
+    },
+    "history": {
+      "seeAll": "[PT] Full timeline"
+    },
+    "endOfLine": {
+      "eyebrow": "[PT] End of line",
+      "title": "[PT] Compare the law elsewhere",
+      "body": "[PT] Every country page carries the same legal breakdown, from the same sources, with the date it was checked.",
+      "rights": "[PT] Rights across the world"
+    }
   },
   "inbox": {
     "title": "Caixa de entrada",
@@ -3199,7 +3297,7 @@
     "wishlists": "Listas de desejos",
     "tags": "Tags",
     "organizations": "[PT] Organizations",
-    "guides": "[PT] Guides",
+    "guides": "Guias",
     "people": "Conhecer"
   },
   "chat": {
@@ -4159,6 +4257,253 @@
         "title": "Apoie a gente",
         "desc": "Para a plataforma seguir gratuita para todo mundo."
       }
+    }
+  },
+  "tags": {
+    "meta": {
+      "title": "Glossário LGBTQ+",
+      "categoryTitle": "{{name}} — glossário LGBTQ+",
+      "description": "Explore e pesquise {{count}} termos LGBTQ+ — identidades, práticas, história e linguagem da comunidade, cada um ligado aos locais, eventos, pessoas e notícias que o usam."
+    },
+    "hero": {
+      "eyebrow": "Glossário",
+      "title": "O glossário",
+      "lede": "Cada palavra que o guia usa, explicada — e tudo o que leva essa etiqueta.",
+      "legend": "{{terms}} termos · {{lines}} linhas · {{stops}} paragens"
+    },
+    "stats": {
+      "kicker": "O acervo",
+      "terms": "Termos",
+      "lines": "Linhas",
+      "stops": "Paragens",
+      "illustrated": "Ilustrados"
+    },
+    "rail": {
+      "label": "Linhas temáticas",
+      "all": "Todos os termos",
+      "expandAria": "Mostrar paragens da {{line}}",
+      "collapseAria": "Ocultar paragens da {{line}}"
+    },
+    "spine": {
+      "searchLabel": "Pesquisar no glossário",
+      "searchPlaceholder": "Um termo, ou um sinónimo"
+    },
+    "view": {
+      "label": "Vista",
+      "grid": "Grelha",
+      "list": "Lista",
+      "chips": "Fichas",
+      "graph": "Grafo"
+    },
+    "sort": {
+      "label": "Ordenar",
+      "usage": "Mais usados",
+      "alphabetical": "A–Z",
+      "recent": "Mais recentes",
+      "dirAsc": "Crescente — mudar para decrescente",
+      "dirDesc": "Decrescente — mudar para crescente"
+    },
+    "filter": {
+      "used": "Em uso",
+      "unused": "Sem uso",
+      "withImage": "Ilustrados",
+      "reset": "Limpar filtros",
+      "includeAdult": "Incluir termos 18+"
+    },
+    "letters": {
+      "label": "Ir para uma letra",
+      "all": "Todas",
+      "other": "Números e outras escritas",
+      "jump": "Termos começados por {{letter}}"
+    },
+    "alias": {
+      "heading": "Também encontrados com outros nomes",
+      "description": "Correspondem a um sinónimo ou a uma grafia próxima, não ao termo em si.",
+      "badge": "sinónimo"
+    },
+    "card": {
+      "uses": "{{count}} usos"
+    },
+    "count": "{{count}} termos",
+    "showMore": "Mostrar mais {{count}}",
+    "searching": "A pesquisar…",
+    "loading": "A carregar o glossário",
+    "error": "O glossário está indisponível",
+    "retry": "Tentar de novo",
+    "empty": {
+      "title": "Nenhum termo corresponde.",
+      "description": "Experimente outra letra, outra linha ou outra pesquisa."
+    },
+    "category": {
+      "lede": "Todos os termos sob {{name}}."
+    },
+    "endOfLine": {
+      "eyebrow": "Fim de linha",
+      "title": "Procura outra coisa?",
+      "body": "O glossário define as palavras. Estes são os sítios que as usam.",
+      "helpCta": "Linhas de crise e apoio",
+      "orgsCta": "Organizações",
+      "guidesCta": "Guias"
+    },
+    "detail": {
+      "loading": "A carregar",
+      "about": "Sobre",
+      "sections": "Secções",
+      "noDefinition": "Ainda não foi escrita uma definição para este termo.",
+      "interchangeEyebrow": "Ligação",
+      "interchangeTitle": "Na taxonomia",
+      "inTaxonomy": "Na taxonomia",
+      "codes": {
+        "eyebrow": "Classificação",
+        "title": "Códigos de diagnóstico",
+        "general": "Geral",
+        "specialized": "Especializado",
+        "procedural": "Procedimentos",
+        "pharmaceutical": "Farmacêutico",
+        "source": "Fonte",
+        "linkLabel": "Código {{label}} {{code}}",
+        "disclaimer": "Códigos de referência para este conceito em sistemas de classificação clínica. Não é aconselhamento médico nem um diagnóstico."
+      },
+      "flag": {
+        "eyebrow": "Símbolo",
+        "title": "A bandeira",
+        "designer": "Desenhada por",
+        "year": "Ano",
+        "stripes": "O que significam as faixas",
+        "railSingular": "Bandeira",
+        "railPlural": "Bandeiras"
+      },
+      "hanky": {
+        "eyebrow": "Referência",
+        "title": "O código",
+        "intro": "Um lenço no bolso de trás sinalizava um interesse específico — bolso esquerdo para o lado ativo, direito para o lado receptivo. Documentado como publicado nos anos 1980; os significados variavam por cidade e década.",
+        "safeMode": "A tabela de cores cobre práticas sexuais explícitas e fica oculta enquanto o Modo Seguro está ativado.",
+        "gateBody": "A tabela de cores nomeia práticas sexuais explícitas. Confirme que tem 18 anos ou mais para lê-la.",
+        "gateCta": "Mostrar o código (18+)",
+        "classic": "Núcleo clássico (Townsend, 1983)",
+        "extended": "Adições posteriores comuns",
+        "disclaimer": "Referência histórica, não um endosso de qualquer prática. Circularam dezenas de outras cores; não há duas listas publicadas totalmente coincidentes."
+      },
+      "changeHereFor": "Ligação para",
+      "contentNote": "Nota de conteúdo",
+      "contentNoteBody": "Esta entrada trata um tema que algumas pessoas acham difícil. Nada aqui é explícito: é uma definição, não um conselho.",
+      "findSupport": "Encontrar apoio",
+      "whereItAppears": "Onde aparece",
+      "elsewhere": "Noutros sítios",
+      "readThere": "Ler",
+      "editors": "Redação do Queer Guide",
+      "factLine": "Linha",
+      "factTagged": "Etiquetado em",
+      "venues": "Locais",
+      "venuesNote": "{{count}} etiquetados",
+      "events": "Eventos",
+      "eventsNote": "{{count}} etiquetados",
+      "people": "Pessoas",
+      "peopleNote": "{{count}} etiquetadas",
+      "news": "Notícias",
+      "newsNote": "{{count}} artigos",
+      "newsNoteMore": "{{shown}} de {{count}} artigos",
+      "villages": "Bairros queer",
+      "shop": "Loja",
+      "communities": "Comunidades",
+      "everythingTagged": "Tudo etiquetado com {{name}}",
+      "everythingTaggedBody": "{{count}} entradas do guia levam esta etiqueta.",
+      "searchTagged": "Pesquisar tudo etiquetado com {{name}}",
+      "moreOnThisLine": "Mais nesta linha",
+      "notFound": {
+        "title": "Termo inexistente",
+        "body": "No glossário não há nada sob",
+        "browse": "Explorar o glossário"
+      },
+      "alias": {
+        "synonym": "Também chamado",
+        "abbreviation": "Abreviatura de",
+        "plural": "Plural",
+        "misspelling": "Erro comum",
+        "historical": "Historicamente",
+        "slang": "Calão"
+      },
+      "sourceOfLaw": "Fonte do direito",
+      "lawJurisdiction": "Jurisdição",
+      "lawInternational": "Internacional",
+      "lawAdopted": "Adotada",
+      "lawStatus": "Estado",
+      "lawInForce": "Em vigor",
+      "lawRepealed": "Revogada",
+      "lawSuperseded": "Substituída",
+      "lawPartlyStruck": "Em vigor, parcialmente anulada",
+      "notOneLaw": "Não é uma única lei. É registada país a país.",
+      "seeByCountry": "Ver o estado por país",
+      "spansAllRights": "Isto abrange todo um domínio do direito, não uma única lei. Registamos 18 direitos distintos, país a país.",
+      "seeAllRights": "Ver os 18 direitos por país"
+    },
+    "flagWall": {
+      "eyebrow": "Símbolos",
+      "title": "As bandeiras"
+    }
+  },
+  "village": {
+    "eyebrow": "[PT] District · Green line",
+    "loading": "[PT] Loading this district",
+    "loadingVenues": "[PT] Loading the stop list",
+    "sections": "[PT] Sections",
+    "planTrip": "[PT] Plan a trip to {{name}}",
+    "relatedByTag": "[PT] Related by tag",
+    "notFound": {
+      "title": "[PT] No such district.",
+      "body": "[PT] This stop is not on the line.",
+      "cta": "[PT] All queer villages"
+    },
+    "toast": {
+      "errorTitle": "[PT] Error",
+      "loadFailed": "[PT] Failed to load village details"
+    },
+    "facts": {
+      "city": "[PT] City",
+      "country": "[PT] Country",
+      "venues": "[PT] Venues",
+      "events": "[PT] Upcoming events",
+      "editorsPick": "[PT] Editor’s pick"
+    },
+    "census": {
+      "stops": "[PT] {{n}} stops",
+      "departures": "[PT] {{n}} departures"
+    },
+    "section": {
+      "about": "[PT] About {{name}}",
+      "walk": "[PT] The walk",
+      "walkNote": "[PT] Stops in order, with the straight-line gap between them.",
+      "events": "[PT] Next departures",
+      "photos": "[PT] Photos",
+      "city": "[PT] On the same line"
+    },
+    "action": {
+      "website": "[PT] Website",
+      "favorite": "[PT] Save to favorites",
+      "favorited": "[PT] Saved to favorites"
+    },
+    "events": {
+      "open": "[PT] Open"
+    },
+    "landmarks": {
+      "title": "[PT] Notable landmarks"
+    },
+    "photo": {
+      "caption": "[PT] {{village}}, {{city}}",
+      "alt": "[PT] {{name}}, photo {{n}}"
+    },
+    "parentCity": {
+      "body": "[PT] The wider city this district sits in.",
+      "action": "[PT] Open"
+    },
+    "map": {
+      "caption": "[PT] Walking distance in {{city}}."
+    },
+    "endOfLine": {
+      "eyebrow": "[PT] End of line",
+      "title": "[PT] Looking for another district?",
+      "body": "[PT] Queer villages are walkable clusters of bars, cafés and community spaces. There are more of them.",
+      "city": "[PT] More in {{city}}"
     }
   }
 }

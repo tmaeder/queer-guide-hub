@@ -1,4 +1,17 @@
-import { MessageCircle, Heart, Mail, Bell, Ticket, Pin, PinOff, BellOff, Bell as BellOn, Archive, CheckCheck, MoreVertical } from 'lucide-react';
+import {
+  MessageCircle,
+  Heart,
+  Mail,
+  Bell,
+  Ticket,
+  Pin,
+  PinOff,
+  BellOff,
+  Bell as BellOn,
+  Archive,
+  CheckCheck,
+  MoreVertical,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -87,7 +100,7 @@ export function InboxRailItem({
             </Avatar>
             {isMatch && (
               <span
-                className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full border-2 border-background bg-foreground"
+                className="border-2 absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full border-background bg-foreground"
                 aria-hidden
               >
                 <Heart className="h-2.5 w-2.5 fill-background text-background" />
@@ -95,7 +108,7 @@ export function InboxRailItem({
             )}
             {online && (
               <span
-                className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-background bg-foreground"
+                className="border-2 absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-background bg-foreground"
                 role="status"
                 aria-label={t('chat.activeNow', { defaultValue: 'Active now' })}
               />
@@ -106,9 +119,18 @@ export function InboxRailItem({
         )}
         <span className="min-w-0 flex-1">
           <span className="flex items-center justify-between gap-2">
-            <span className={cn('flex min-w-0 items-center gap-1 truncate text-15', item.unread && 'font-semibold')}>
-              {item.is_pinned && <Pin className="h-3 w-3 shrink-0 text-muted-foreground" aria-hidden />}
-              {item.is_muted && <BellOff className="h-3 w-3 shrink-0 text-muted-foreground" aria-hidden />}
+            <span
+              className={cn(
+                'flex min-w-0 items-center gap-1 truncate text-15',
+                item.unread && 'font-semibold',
+              )}
+            >
+              {item.is_pinned && (
+                <Pin className="h-3 w-3 shrink-0 text-muted-foreground" aria-hidden />
+              )}
+              {item.is_muted && (
+                <BellOff className="h-3 w-3 shrink-0 text-muted-foreground" aria-hidden />
+              )}
               <span className="truncate">{item.title}</span>
               {isMatch && (
                 <span className="shrink-0 rounded-badge bg-muted px-1.5 py-0.5 text-2xs font-medium text-muted-foreground">
@@ -153,13 +175,21 @@ export function InboxRailItem({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
             <DropdownMenuItem onClick={() => actions.togglePin(conversationId, !item.is_pinned)}>
-              {item.is_pinned ? <PinOff className="mr-2 h-4 w-4" /> : <Pin className="mr-2 h-4 w-4" />}
+              {item.is_pinned ? (
+                <PinOff className="mr-2 h-4 w-4" />
+              ) : (
+                <Pin className="mr-2 h-4 w-4" />
+              )}
               {item.is_pinned
                 ? t('inbox.action.unpin', { defaultValue: 'Unpin' })
                 : t('inbox.action.pin', { defaultValue: 'Pin' })}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => actions.toggleMute(conversationId, !item.is_muted)}>
-              {item.is_muted ? <BellOn className="mr-2 h-4 w-4" /> : <BellOff className="mr-2 h-4 w-4" />}
+              {item.is_muted ? (
+                <BellOn className="mr-2 h-4 w-4" />
+              ) : (
+                <BellOff className="mr-2 h-4 w-4" />
+              )}
               {item.is_muted
                 ? t('inbox.action.unmute', { defaultValue: 'Unmute' })
                 : t('inbox.action.mute', { defaultValue: 'Mute' })}

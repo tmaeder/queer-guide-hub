@@ -26,6 +26,8 @@ import {
   useDestinationCities,
 } from '@/hooks/useIntentData';
 import type { SectionDef } from '@/components/entity/editorial';
+import { CityNetwork } from '@/components/home/subway/CityNetwork';
+import { hasCityNetwork } from '@/components/home/subway/cityNetworkGeometry';
 
 /**
  * `/people` — the "Meet people" intent.
@@ -58,7 +60,6 @@ import type { SectionDef } from '@/components/entity/editorial';
  * row's horizontal overflow pushed "Nearby" and the intent button off-screen
  * at 375px.
  */
-
 
 /** The community surfaces this intent also covers. Links, not tabs. */
 const COMMUNITY_BRIDGE = [
@@ -311,11 +312,11 @@ export default function People() {
               <LocalizedLink
                 key={to}
                 to={to}
-                className="card-lift flex items-center gap-4 border-[3px] border-foreground bg-background p-4 no-underline"
+                className="card-lift flex items-center gap-4 bg-card p-4 no-underline rounded-container shadow-soft"
               >
                 <TransitIcon name={icon} size={28} className="shrink-0 text-foreground" />
                 <span className="flex min-w-0 flex-col">
-                  <span className="font-display text-title text-foreground">{t(key, fallback)}</span>
+                  <span className="text-title font-bold text-foreground">{t(key, fallback)}</span>
                   <span className="text-2xs leading-tight text-muted-foreground">
                     {t(blurbKey, blurb)}
                   </span>
@@ -360,6 +361,9 @@ export default function People() {
                 eyebrow={c.countries?.name}
                 name={c.name}
                 href={c.slug ? `/city/${c.slug}` : undefined}
+                media={
+                  hasCityNetwork(c.slug) ? <CityNetwork slug={c.slug} variant="thumb" /> : undefined
+                }
               />
             </li>
           ))}

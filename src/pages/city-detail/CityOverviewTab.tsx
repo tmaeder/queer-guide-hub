@@ -1,142 +1,133 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Badge } from '@/components/ui/badge';
+import { FactGrid, type Fact } from '@/components/transit/FactGrid';
 import { WeatherForecast } from '@/components/weather/WeatherForecast';
-import { PeopleHereRail } from '@/components/people/PeopleHereRail';
 import type { CityRelation } from './types';
 
 export interface CityOverviewTabProps {
   city: CityRelation;
 }
 
-function FactRow({ label, value }: { label: string; value: ReactNode }) {
-  return (
-    <div className="flex items-baseline justify-between gap-4 py-2.5">
-      <dt className="text-13 text-muted-foreground">{label}</dt>
-      <dd className="text-right text-15 font-medium text-foreground">{value}</dd>
-    </div>
-  );
-}
-
-function ChipCluster({ heading, items }: { heading: string; items: string[] }) {
-  if (!items?.length) return null;
-  return (
-    <div>
-      <h3 className="mb-4 text-title font-semibold tracking-tight">{heading}</h3>
-      <div className="flex flex-wrap gap-2">
-        {items.map((item, i) => (
-          <Badge key={`${item}-${i}`} variant="outline">
-            {item}
-          </Badge>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function DefinitionGrid({ heading, entries }: { heading: string; entries: [string, unknown][] }) {
-  if (!entries.length) return null;
-  return (
-    <div>
-      <h3 className="mb-4 text-title font-semibold tracking-tight">{heading}</h3>
-      <dl className="grid grid-cols-1 gap-x-8 sm:grid-cols-2">
-        {entries.map(([key, value]) => (
-          <div key={key} className="flex items-baseline justify-between gap-4 py-2">
-            <dt className="text-13 capitalize text-muted-foreground">{key.replace(/_/g, ' ')}</dt>
-            <dd className="text-right text-15 font-medium">{String(value)}</dd>
-          </div>
-        ))}
-      </dl>
-    </div>
-  );
-}
-
 /**
- * The encyclopedic "About" section — every city field the headline strip doesn't
- * already surface. A flat two-column reading layout (lead essay + facts aside),
- * not the old card-in-card soup. No fact repeats what At-a-glance already shows.
+ * "About the city" — the description plus the encyclopaedic facts the masthead
+ * does not already carry.
+ *
+ * SIX blocks were deleted from this component in the subway rebuild, and the
+ * reason is measurement, not taste. Against production `cities` (3,070 live
+ * rows) these columns are populated at:
+ *
+ *   notable_landmarks 0.0%   demographics 0.0%   economy_sectors 0.0%
+ *   best_time_to_visit 0.0%  local_customs 0.2%  climate_type 3.1%
+ *
+ * Each had a dedicated heading and chip cluster here, so on essentially every
+ * city page they rendered nothing while the code implied a section existed.
+ * Spec rule 2: "a module with no data does not render. No empty shells, no
+ * coming soon, no zero states pretending to be content." Restore a block here
+ * only when its column is actually filled — not because the field exists.
+ *
+ * `cost_of_living` is the one jsonb kept, and it renders EVERY key including
+ * `scope` ("Country-level estimate, not city-specific"). That string is the
+ * honesty guard: the value is derived from the country's GDP per capita, not
+ * from city data, and cherry-picking `.band` would silently upgrade a
+ * country-level estimate into a claim about this city.
  */
 export function CityOverviewTab({ city }: CityOverviewTabProps) {
   const { t } = useTranslation();
-  const facts: { label: string; value: ReactNode }[] = [];
-  const civicStatus = city.is_capital ? 'Capital city' : city.is_major_city ? 'Major city' : null;
-  if (civicStatus) facts.push({ label: 'Status', value: civicStatus });
-  if (city.region_name) facts.push({ label: 'Region', value: city.region_name });
-  if (city.timezone) facts.push({ label: 'Timezone', value: city.timezone });
-  if (city.founded_year) facts.push({ label: 'Founded', value: String(city.founded_year) });
-  if (city.area_km2) facts.push({ label: 'Area', value: `${city.area_km2} km²` });
-  if (city.elevation_m) facts.push({ label: 'Elevation', value: `${city.elevation_m} m` });
-  if (city.climate_type) facts.push({ label: 'Climate', value: city.climate_type });
-  if (city.mayor) facts.push({ label: 'Mayor', value: city.mayor });
-  if (typeof city.latitude === 'number' && typeof city.longitude === 'number')
-    facts.push({
-      label: 'Coordinates',
-      value: `${city.latitude.toFixed(3)}, ${city.longitude.toFixed(3)}`,
-    });
-  if (city.postal_codes?.length)
-    facts.push({ label: 'Postal codes', value: city.postal_codes.slice(0, 4).join(', ') });
-  if (city.area_codes?.length)
-    facts.push({ label: 'Area codes', value: city.area_codes.join(', ') });
 
-  const demographics = city.demographics ? Object.entries(city.demographics) : [];
-  const costOfLiving = city.cost_of_living ? Object.entries(city.cost_of_living) : [];
+  const facts: Fact[] = [];
+  const civicStatus = city.is_capital
+    ? t('cities.detail.about.capital', 'Capital city')
+    : city.is_major_city
+      ? t('cities.detail.about.majorCity', 'Major city')
+      : null;
+  if (civicStatus)
+    facts.push({ label: t('cities.detail.about.status', 'Status'), value: civicStatus });
+  if (city.region_name)
+    facts.push({ label: t('cities.detail.about.region', 'Region'), value: city.region_name });
+  if (city.timezone)
+    facts.push({ label: t('cities.detail.about.timezone', 'Timezone'), value: city.timezone });
+  if (city.founded_year)
+    facts.push({
+      label: t('cities.detail.about.founded', 'Founded'),
+      value: String(city.founded_year),
+    });
+  if (city.area_km2)
+    facts.push({ label: t('cities.detail.about.area', 'Area'), value: `${city.area_km2} km²` });
+  if (city.elevation_m)
+    facts.push({
+      label: t('cities.detail.about.elevation', 'Elevation'),
+      value: `${city.elevation_m} m`,
+    });
+  if (city.mayor) facts.push({ label: t('cities.detail.about.mayor', 'Mayor'), value: city.mayor });
+  if (city.postal_codes?.length)
+    facts.push({
+      label: t('cities.detail.about.postalCodes', 'Postal codes'),
+      value: city.postal_codes.slice(0, 4).join(', '),
+    });
+
+  const costOfLiving: [string, unknown][] = city.cost_of_living
+    ? Object.entries(city.cost_of_living)
+    : [];
+  const universities: string[] = city.universities ?? [];
+  const sisterCities: string[] = city.sister_cities ?? [];
 
   return (
-    <div className="flex flex-col gap-12">
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-[1.5fr_1fr] md:gap-12">
-        {/* Lead essay + cultural detail */}
-        <div className="flex flex-col gap-8">
-          <p className="text-body-lg leading-relaxed text-muted-foreground">
-            {city.description || `Venues, events, and neighborhoods in ${city.name}.`}
-          </p>
+    <div className="flex flex-col gap-8">
+      {city.description && (
+        <p className="max-w-reading text-body-lg leading-relaxed">{city.description}</p>
+      )}
 
-          {city.local_customs && (
-            <div>
-              <h3 className="mb-4 text-title font-semibold tracking-tight">Local customs</h3>
-              <p className="text-body-lg leading-relaxed text-muted-foreground">
-                {city.local_customs}
-              </p>
-            </div>
-          )}
+      <FactGrid facts={facts} />
 
-          <ChipCluster heading="Economy" items={city.economy_sectors ?? []} />
-          <ChipCluster heading="Universities" items={city.universities ?? []} />
-          <ChipCluster heading="Notable landmarks" items={city.notable_landmarks ?? []} />
-          <ChipCluster heading="Sister cities" items={city.sister_cities ?? []} />
-          <DefinitionGrid heading="Demographics" entries={demographics} />
-          <DefinitionGrid heading="Cost of living" entries={costOfLiving} />
+      {costOfLiving.length > 0 && (
+        <div>
+          <h3 className="text-title font-bold">
+            {t('cities.detail.about.costOfLiving', 'Cost of living')}
+          </h3>
+          <dl className="mt-2 bg-muted rounded-element">
+            {costOfLiving.map(([key, value]) => (
+              <div
+                key={key}
+                className="flex flex-wrap items-baseline justify-between gap-4 border-b border-foreground/15 px-4 py-2 last:border-b-0"
+              >
+                <dt className="text-13 capitalize text-muted-foreground">
+                  {key.replace(/_/g, ' ')}
+                </dt>
+                <dd className="m-0 text-13 font-bold">{String(value)}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
+      )}
 
-        {/* Facts aside */}
-        {facts.length > 0 && (
-          <aside className="md:sticky md:top-32 md:self-start">
-            <h3 className="mb-4 text-2xs uppercase tracking-[0.18em] text-muted-foreground">
-              City facts
-            </h3>
-            <dl className="rounded-container bg-surface-container px-4 py-1">
-              {facts.map((f) => (
-                <FactRow key={f.label} label={f.label} value={f.value} />
-              ))}
-            </dl>
-          </aside>
-        )}
-      </div>
+      <ChipList
+        heading={t('cities.detail.about.universities', 'Universities')}
+        items={universities}
+      />
+      <ChipList
+        heading={t('cities.detail.about.sisterCities', 'Sister cities')}
+        items={sisterCities}
+      />
 
       {typeof city.latitude === 'number' && typeof city.longitude === 'number' && (
         <WeatherForecast latitude={city.latitude} longitude={city.longitude} cityName={city.name} />
       )}
+    </div>
+  );
+}
 
-      {city.id && (
-        <PeopleHereRail
-          mode="locals"
-          cityId={city.id}
-          title={t('city.localsToMeet', {
-            defaultValue: 'Locals and travellers to meet in {{city}}',
-            city: city.name,
-          })}
-          seeAllHref="/community/members"
-        />
-      )}
+function ChipList({ heading, items }: { heading: string; items: string[] }): ReactNode {
+  if (!items.length) return null;
+  return (
+    <div>
+      <h3 className="text-title font-bold">{heading}</h3>
+      <ul className="mt-2 flex list-none flex-wrap gap-2 p-0">
+        {items.map((item) => (
+          <li key={item} className="bg-muted rounded-element px-2 py-1 text-13 font-bold">
+            {item}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

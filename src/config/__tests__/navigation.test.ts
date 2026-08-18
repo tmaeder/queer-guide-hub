@@ -15,6 +15,7 @@ import {
   MODE_SCOPE_BIAS,
   isIntentActive,
 } from '../navigation';
+import { ROUTE_BULLET_MAP } from '@/components/transit/routeBulletMap';
 
 const routesSrc = readFileSync(resolve(__dirname, '../../routes.tsx'), 'utf8');
 
@@ -100,6 +101,44 @@ describe('INTENT_NAV', () => {
         intent.fallback.length,
         `"${intent.fallback}" is too long for the row`,
       ).toBeLessThanOrEqual(11);
+    }
+  });
+
+  it('gives every intent child link a real route it is allowed to claim', () => {
+    // The footer's track columns render `children`. This is the guard that
+    // keeps them a VIEW over DESTINATIONS rather than a second, hand-kept nav
+    // source — the exact shape that once left /venues and /people unreachable
+    // from desktop chrome. A child must be either an existing browse
+    // destination or a route inside its own intent's active prefixes; anything
+    // else is a link the rest of the nav does not know about.
+    const destinationRoutes = new Set(DESTINATIONS.map((d) => d.to));
+    for (const intent of INTENT_NAV) {
+      expect(intent.children.length, `${intent.id} has no column links`).toBeGreaterThan(0);
+      for (const child of intent.children) {
+        const known = destinationRoutes.has(child.to) || isIntentActive(intent, child.to);
+        expect(known, `${intent.id} → ${child.to} is not a known route`).toBe(true);
+        expect(child.labelKey).toMatch(/^header\.nav\./);
+        expect(child.fallback.length).toBeGreaterThan(0);
+        // A route the router does not serve renders a dead footer link.
+        expect(routesSrc, `${child.to} has no route`).toContain(`path="${child.to.slice(1)}"`);
+      }
+      // Duplicates inside one column read as a rendering bug.
+      const seen = new Set(intent.children.map((c) => c.to));
+      expect(seen.size).toBe(intent.children.length);
+    }
+  });
+
+  it('renders the wayfinding icon set, never lucide, on the intent row', () => {
+    // Hard rule: "never mix TransitIcon and lucide in the same surface". The
+    // intent row is rendered by the header, the mobile sheet, the search modal
+    // and the footer, so a lucide binding here leaks into all four at once.
+    // lucide icons are ForwardRefExoticComponents and carry `$$typeof`;
+    // transitIcon() returns a plain function component.
+    for (const intent of INTENT_NAV) {
+      expect(
+        Object.prototype.hasOwnProperty.call(intent.icon, '$$typeof'),
+        `${intent.id} still carries a lucide icon`,
+      ).toBe(false);
     }
   });
 
@@ -211,10 +250,25 @@ describe('INTENT_TRACK', () => {
     // The homepage draws all four tracks. A line with no station on it is a
     // stripe of colour that leads nowhere.
     for (const track of TRACKS) {
+      expect(Object.values(INTENT_TRACK), `no intent rides the ${track} line`).toContain(track);
+    }
+  });
+
+  it('agrees with ROUTE_BULLET_MAP wherever an intent maps 1:1 to a content type', () => {
+    // Most intents span several types (going-out is venue+event, travelling is
+    // city+country+hotel), so their line is a free choice. `shop` is the one
+    // that resolves to exactly one type, and it read 'blue' against a yellow
+    // marketplace bullet until 2026-08-12 — the nav tab and the page it opened
+    // were different colours, which is the one thing a wayfinding system may
+    // not do. Add a row here only for a genuinely 1:1 intent.
+    const ONE_TO_ONE: Record<string, keyof typeof ROUTE_BULLET_MAP> = {
+      shop: 'marketplace',
+    };
+    for (const [intentId, type] of Object.entries(ONE_TO_ONE)) {
       expect(
-        Object.values(INTENT_TRACK),
-        `no intent rides the ${track} line`,
-      ).toContain(track);
+        INTENT_TRACK[intentId],
+        `intent "${intentId}" rides the ${INTENT_TRACK[intentId]} line but its content type "${type}" is ${ROUTE_BULLET_MAP[type].track}`,
+      ).toBe(ROUTE_BULLET_MAP[type].track);
     }
   });
 });

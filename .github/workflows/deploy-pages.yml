@@ -9,17 +9,70 @@ on:
     branches: [main]
   workflow_dispatch: {}
 
+# NEVER set cancel-in-progress: true here. It is right for build/test workflows
+# and wrong for a deploy: it aborts work that is already changing production.
+#
+# What it actually broke, measured on 2026-08-15 (8 cancelled runs, 13:26-19:35,
+# during two bursts of merges). NOT ONE was cancelled inside `wrangler pages
+# deploy` — every cancellation landed in checkout / setup-node / npm ci, or, in
+# runs 31887227563, 31887297926 and 31888323366, in the SMOKE STEP, with
+# "Deploy to Cloudflare Pages: success" directly above it. So the theory this
+# comment first carried — "cancelling kills the upload mid-flight and leaves
+# chunks missing" — is NOT what the run history shows, and is not the reason
+# this is false. Do not re-derive it from the outage alone.
+#
+# The demonstrated harm is the step that was killed: the smoke test is not a
+# report, it is the REPAIR layer. It is what detects a poisoned edge entry and
+# purges it, and a purge is the only fix for that class — the content hash does
+# not move, so no later deploy evicts it. Killing it ships the deploy and
+# discards the repair. Run 31888622990, minutes after one such cancellation,
+# found 11 poisoned chunks and purged 10 of them; the 11th needed
+# purge_everything. Those would have gone unpurged had that run been cancelled
+# too, and each one is a route that renders BLANK (a module script served as
+# text/html is rejected by MIME checking, so #root stays empty).
+#
+# Cost of `false`, accepted deliberately: a burst of merges serializes, so the
+# last one lands later. GitHub keeps at most ONE pending run per group and
+# cancels earlier PENDING ones — which is harmless, they never touched
+# production — and the surviving run checks out the tip of main, so every
+# merged commit still ships. A slow deploy beats a half-repaired one.
 concurrency:
   group: deploy-pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # 20 previously, raised because the job now has a bounded second smoke run
+    # after a re-upload. Not slack for a slow smoke step: this cap has KILLED a
+    # fully-shipped deploy before (run of d9f5a26dd, 19m25s in the smoke step,
+    # painted green-and-shipped as red), so the retry path must not push a
+    # normal run anywhere near it.
+    timeout-minutes: 25
     permissions:
       contents: read
       deployments: write
+    # Shared by both smoke invocations (the initial one and the post-re-upload
+    # re-check). Job-level so the two cannot drift apart — a re-check running
+    # without CLOUDFLARE_PURGE_TOKEN would silently lose the purge half of the
+    # remediation while still reporting a verdict.
+    env:
+      SITE_URL: https://queer.guide
+      # Lets the smoke test evict an edge entry it has PROVEN is poisoned
+      # (plain URL serves HTML, ?cb= serves the real object). That failure
+      # class cannot be fixed by redeploying — the content hash does not
+      # move — so without this the pipeline stays red until a human purges,
+      # and /fonts, /icons and /images cannot be hash-rotated at all.
+      # If the token lacks the Cache Purge permission the script says so
+      # and leaves the checks failing; it never silently passes.
+      CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+      # Purging is a ZONE operation and CLOUDFLARE_API_TOKEN is the
+      # account-scoped Pages:Edit token used by the deploy step below — it
+      # has no permission on the queer.guide zone, so every purge failed
+      # with code 10000. CLOUDFLARE_PURGE_TOKEN is the dedicated
+      # Zone:Cache Purge token; the script prefers it and falls back.
+      CLOUDFLARE_PURGE_TOKEN: ${{ secrets.CLOUDFLARE_PURGE_TOKEN }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -64,22 +117,56 @@ jobs:
       # first every SPA deep route 404'd, then every static asset was served
       # as HTML. Nothing in this workflow looked at the deployed site. Now it
       # does — a broken routing config fails the deploy instead of the users.
+      #
+      # continue-on-error, so the re-upload below can run. The job is still
+      # gated: the "Fail the deploy" step at the bottom is the real verdict,
+      # and it fails on ANY smoke failure that the retry did not clear. This
+      # step's `outcome` is what it reports; `conclusion` is forced to success
+      # by continue-on-error and must NOT be branched on.
       - name: Smoke-test the deployed site
+        id: smoke
+        continue-on-error: true
         run: bash scripts/smoke-pages.sh
-        env:
-          SITE_URL: https://queer.guide
-          # Lets the smoke test evict an edge entry it has PROVEN is poisoned
-          # (plain URL serves HTML, ?cb= serves the real object). That failure
-          # class cannot be fixed by redeploying — the content hash does not
-          # move — so without this the pipeline stays red until a human purges,
-          # and /fonts, /icons and /images cannot be hash-rotated at all.
-          # If the token lacks the Cache Purge permission the script says so
-          # and leaves the checks failing; it never silently passes.
-          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
-          # Purging is a ZONE operation and CLOUDFLARE_API_TOKEN is the
-          # account-scoped Pages:Edit token used by the deploy step above — it
-          # has no permission on the queer.guide zone, so every purge failed
-          # with code 10000. CLOUDFLARE_PURGE_TOKEN is the dedicated
-          # Zone:Cache Purge token; the script prefers it and falls back.
-          CLOUDFLARE_PURGE_TOKEN: ${{ secrets.CLOUDFLARE_PURGE_TOKEN }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+      # ORIGIN IS BROKEN is the one smoke verdict a re-upload can fix and a
+      # purge cannot: the asset answers text/html on the real cache key AND on
+      # a throwaway ?cb= key, so the object is missing at origin rather than
+      # cached wrong at a colo. That is what "the site is blank on every route"
+      # looks like — a module script served as text/html is rejected by MIME
+      # checking, so #root never mounts.
+      #
+      # Retried IN-JOB rather than by re-dispatching this workflow. A workflow
+      # that redeploys itself on failure can loop, and with the queueing
+      # concurrency above it would also contend with the real deploy of the
+      # next merge. One extra upload, bounded, no recursion.
+      #
+      # Safe on a false positive, which matters because this verdict has a
+      # measured false-positive history (run 31912682120 called 52 assets
+      # origin-broken; the very next deploy was green with no intervention).
+      # Re-uploading a build Pages already has is a no-op, and the re-check
+      # below is what decides the job either way.
+      - name: Re-upload the build if origin is missing assets
+        if: steps.smoke.outputs.origin_broken == 'true'
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '4.119.0'
+          command: pages deploy dist --project-name=queer-guide --branch=main --commit-hash=${{ github.sha }} --commit-message="re-upload ${{ github.sha }}" --commit-dirty=true
+
+      # Hard-gated, unlike the first run: if the re-upload did not fix it, the
+      # deploy fails here and a human looks at it.
+      - name: Re-check after the re-upload
+        id: smoke_retry
+        if: steps.smoke.outputs.origin_broken == 'true'
+        run: bash scripts/smoke-pages.sh
+
+      # The gate. Reached whenever the first smoke run failed for a reason the
+      # re-upload path did not already handle — a poisoned entry that survived
+      # purge_everything, a stale route, a 404ing SPA route. Without this the
+      # continue-on-error above would turn every one of those green.
+      - name: Fail the deploy if the smoke test did not pass
+        if: steps.smoke.outcome == 'failure' && steps.smoke.outputs.origin_broken != 'true'
+        run: |
+          echo "::error::Smoke test failed (${{ steps.smoke.outputs.failures }} check(s)) and it was not an origin-broken fault, so no re-upload was attempted. Read the smoke step above: a POISONED EDGE CACHE line needs a purge, a STALE cached document needs a route purge, and neither is fixed by redeploying."
+          exit 1

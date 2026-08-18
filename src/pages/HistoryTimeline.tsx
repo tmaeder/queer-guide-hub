@@ -116,7 +116,7 @@ export default function HistoryTimeline() {
 
   return (
     <>
-      <header className="border-b-4 border-foreground">
+      <header className="border-b border-border-hairline">
         <PageContainer flush className="pb-8 pt-8 md:pb-12 md:pt-16">
           <p className="text-2xs uppercase tracking-label text-muted-foreground">
             {t('milestones.eyebrow', 'Queer history')}
@@ -153,7 +153,7 @@ export default function HistoryTimeline() {
 
       <section
         aria-label={t('milestones.filter.heading', 'Filter the timeline')}
-        className="border-b-4 border-foreground bg-surface-container"
+        className="border-b border-border-hairline bg-surface-container"
       >
         <PageContainer flush className="flex flex-col gap-4 py-4 md:py-6">
           <div
@@ -222,7 +222,7 @@ export default function HistoryTimeline() {
               onChange={(e) => setParam('country', e.target.value || null)}
               aria-label={t('milestones.filter.country', 'Country')}
               className={cn(
-                'h-8 border-2 border-foreground px-2 text-13 font-bold',
+                'h-8 bg-muted rounded-element px-2 text-13 font-bold',
                 '[&>option]:bg-background [&>option]:text-foreground',
                 country ? 'bg-foreground text-background' : 'bg-background text-foreground',
               )}
@@ -251,7 +251,7 @@ export default function HistoryTimeline() {
         {isLoading ? (
           <HistorySkeleton />
         ) : visibleEras.length === 0 ? (
-          <div className="border-[3px] border-foreground p-8 text-center">
+          <div className="bg-muted rounded-container p-8 text-center">
             <p className="font-display text-headline">
               {t('milestones.emptyTitle', 'No service on this stretch of the line')}
             </p>
@@ -310,14 +310,14 @@ function HistorySkeleton() {
     <div className="space-y-12" role="status" aria-label={t('common.loading', 'Loading…')}>
       {Array.from({ length: 3 }).map((_, i) => (
         <div key={i}>
-          <div className="border-t-4 border-foreground pt-8">
+          <div className="border-t border-border-hairline pt-8">
             <div className="h-3 w-24 animate-pulse bg-muted" />
             <div className="mt-2 h-12 w-80 max-w-full animate-pulse bg-muted" />
             <div className="mt-4 h-4 w-full max-w-reading animate-pulse bg-muted" />
           </div>
           <div className="mt-8 grid gap-8 md:grid-cols-2">
             {Array.from({ length: 2 }).map((_, j) => (
-              <div key={j} className="h-56 animate-pulse border-[3px] border-foreground/20" />
+              <div key={j} className="border h-56 animate-pulse border-foreground/20" />
             ))}
           </div>
           <div className="relative mt-8">

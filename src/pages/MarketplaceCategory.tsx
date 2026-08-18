@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft } from 'lucide-react';
 import { useMeta } from '@/hooks/useMeta';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
-import { PageHeader } from '@/components/layout/PageHeader';
+import { MarketplaceMasthead } from '@/components/marketplace/MarketplaceMasthead';
+import { FilterChip } from '@/components/transit/FilterChip';
+import { DeadEndTrack } from '@/components/transit/DeadEndTrack';
 import { MarketplaceFilteredView } from '@/components/marketplace/MarketplaceFilteredView';
 import { AdultContentGate } from '@/components/marketplace/AdultContentGate';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -21,28 +22,19 @@ function prettify(slug: string): string {
   return slug.replace(/[_-]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function Chip({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
+/**
+ * Chip counts are dimmed INSIDE the label rather than beside it, and flip to
+ * `text-background/70` when the chip fills — a muted foreground on an ink fill
+ * is unreadable, which is what the previous hand-rolled chip did.
+ */
+function chipLabel(text: string, count: number, active: boolean) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={`rounded-badge border px-2.5 py-1.5 text-13 transition-colors ${
-        active
-          ? 'border-foreground bg-foreground text-background'
-          : 'border-border bg-card text-foreground hover:bg-muted'
-      }`}
-    >
-      {children}
-    </button>
+    <>
+      {text}{' '}
+      <span className={active ? 'text-background/70' : 'text-muted-foreground'}>
+        {count.toLocaleString()}
+      </span>
+    </>
   );
 }
 
@@ -132,38 +124,48 @@ export default function MarketplaceCategory() {
 
   if (!subcategory) {
     return (
-      <PageContainer className="text-center">
-        <h1 className="text-2xl font-bold mb-4">Category not found</h1>
-        {/* asChild, not a Link wrapping a Button — that nests a <button>
-            inside an <a>, which is invalid HTML. */}
-        <Button asChild>
-          <LocalizedLink to="/marketplace" className="no-underline">
-            <ArrowLeft size={16} className="mr-2" />
-            Back to Marketplace
-          </LocalizedLink>
-        </Button>
+      <PageContainer>
+        <h1 className="font-display text-display leading-[0.95]">No such category.</h1>
+        <p className="mt-4 max-w-reading text-body-lg text-muted-foreground">
+          That category does not exist on this line.
+        </p>
+        <DeadEndTrack className="mt-10" label="Unknown" type="marketplace" />
+        <div className="mt-8">
+          <Button asChild>
+            <LocalizedLink to="/marketplace/categories" className="no-underline">
+              All categories
+            </LocalizedLink>
+          </Button>
+        </div>
       </PageContainer>
     );
   }
 
   return (
     <div className="min-h-screen">
-      <PageContainer>
-        <PageHeader
-          title={name}
-          subtitle="Queer-friendly products and services in this category."
-        />
+      <MarketplaceMasthead
+        size="page"
+        backTo={{ label: 'All categories', to: '/marketplace/categories' }}
+        eyebrow="Marketplace · Station"
+        title={name}
+        lede="Queer-friendly products and services in this category."
+        // The count lives in MarketplaceFilteredView's own swatch row below,
+        // where it tracks the group + tag chips. Repeating it here would show
+        // two different numbers the moment a chip is pressed.
+        count={null}
+      />
 
+      <PageContainer>
         {isDepartment && groupTiles.length > 1 && (
           <div className="mb-6 flex flex-wrap gap-2" aria-label="Filter by subcategory">
-            <Chip active={!activeGroup} onClick={() => setGroup('')}>
-              All
-            </Chip>
+            <FilterChip active={!activeGroup} label="All" onClick={() => setGroup('')} />
             {groupTiles.map((g) => (
-              <Chip key={g.slug} active={activeGroup === g.slug} onClick={() => setGroup(g.slug)}>
-                {groupLabel(g.slug)}{' '}
-                <span className="text-muted-foreground">{g.count.toLocaleString()}</span>
-              </Chip>
+              <FilterChip
+                key={g.slug}
+                active={activeGroup === g.slug}
+                label={chipLabel(groupLabel(g.slug), g.count, activeGroup === g.slug)}
+                onClick={() => setGroup(g.slug)}
+              />
             ))}
           </div>
         )}
@@ -171,14 +173,12 @@ export default function MarketplaceCategory() {
         {isDepartment && tagFacets.length > 0 && (
           <div className="mb-8 flex flex-wrap gap-2" aria-label="Refine by tag">
             {tagFacets.map((tag) => (
-              <Chip
+              <FilterChip
                 key={tag.slug}
                 active={selectedTags.includes(tag.slug)}
+                label={chipLabel(tag.name, tag.count, selectedTags.includes(tag.slug))}
                 onClick={() => toggleTag(tag.slug)}
-              >
-                {tag.name}{' '}
-                <span className="text-muted-foreground">{tag.count.toLocaleString()}</span>
-              </Chip>
+              />
             ))}
           </div>
         )}
@@ -186,7 +186,7 @@ export default function MarketplaceCategory() {
         <MarketplaceFilteredView
           filters={filters}
           emptyTitle={`No ${name.toLowerCase()} listings yet.`}
-          emptyDescription="Check back soon or list a business."
+          emptyAction={{ label: 'Browse all departments', to: '/marketplace/categories' }}
         />
       </PageContainer>
       <AdultContentGate active={isAdultCategorySlug(subcategory)} fallbackPath="/marketplace" />

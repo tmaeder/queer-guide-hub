@@ -15,13 +15,30 @@ document is prose; where the two disagree, the catalog is right.
 
 ## Hard rules
 
-- Illustrative transit lines are never straight — every line bends.
+- A **single** illustrative transit line is never straight — every line bends.
+  Octilinear network diagrams (segments snapped to 0/45/90°) are the documented
+  exception: a whole network bends constantly, and it is the straight runs
+  between bends that make it read as a map rather than a squiggle. See
+  *City network diagrams* below.
 - The master symbol is black-only: ink on paper, or reversed.
 - Track colors are wayfinding, not decoration — one accent per context; the
   intersection gradient (`.intersection-gradient`) only where lines meet.
 - Anton for display, Space Grotesk for everything else. One icon stroke weight.
-- Squared corners everywhere except circles: rings, bullets, avatars.
-- A card fills ink on hover or lifts with the hard shadow — never both.
+- **Nothing square.** Four radius ranks — 26 page-level shells, 18 cards and
+  fields, 12 chips and controls, 9 count marks — plus `rounded-full` for true
+  circles: rings, bullets, avatars, dots.
+- **Surfaces without cages.** A container never carries a frame. It separates
+  from what surrounds it by sitting a tonal rung above (page → card → wash)
+  plus one soft shadow. The only line permitted *between* surfaces is a
+  hairline at 7–13% ink, dividing rows in a dense list.
+- **One elevation.** `--shadow-soft` at rest, `--shadow-soft-hover` on lift.
+  No hard offset shadows, no stacked depth — and Tailwind's own
+  `shadow-md/lg/xl/2xl` ramp stays ESLint-banned as a *competing* ladder.
+- A card fills ink on hover or lifts — never both.
+- The exceptions to "no frame" are the boundaries a user has to be able to
+  find: form controls (`border-input`) and the ink ring on a track-coloured
+  mark (`border-track-ring`). Both are WCAG 1.4.11 obligations, not styling,
+  and neither is negotiable.
 
 ## Tokens (src/index.css)
 
@@ -29,20 +46,39 @@ All colors are HSL channel values used via `hsl(var(--token))`. Light-only.
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| `--background` | `60 33% 97%` (#FAFAF5 paper) | Page + card background |
-| `--foreground` | `0 0% 7%` (#111 ink) | Type, rules, borders, station rings |
-| `--border` / `--input` | `0 0% 7%` | Ink borders ARE the system |
-| `--muted` | `60 9% 93%` | Subtle paper-tinted fills |
+| `--background` | `60 16.3% 91.6%` (#EDEDE6 frame) | **The page. Not paper.** |
+| `--card` / `--popover` | `60 33% 97%` (#FAFAF5 paper) | The sheet, one rung above the page |
+| `--muted` / `--accent` | `60 22.2% 92.9%` (#F1F1E9 wash) | Insets, chips, card hover tint |
+| `--surface-container-high` | `60 13.2% 89.6%` (#E8E8E1) | Image wells |
+| `--foreground` | `0 0% 6.7%` (#111 ink) | Type, marks, station rings |
+| `--border` | `60 7.4% 81.4%` | Row **dividers**, never a container frame |
+| `--border-hairline` | ink channels @ `--hairline-alpha` (12%) | The one line allowed between surfaces |
+| `--input` | `60 4.8% 44.9%` | Form-control boundary — 3:1 on page *and* card |
+| `--track-ring` | `0 0% 6.7%` | The ink ring a track-coloured mark wears |
 | `--muted-foreground` | `0 0% 33%` | Secondary text |
 | `--destructive` | `0 70% 38%` | **Danger. The only non-track semantic hue.** |
 | `--ring` | `330 100% 56%` | Focus ring (pink track) |
-| `--radius-container/element/badge` | `0rem` | Squared. `rounded-full` for circles only |
+| `--radius-panel/container/element/badge` | `26 / 18 / 12 / 9 px` | `rounded-full` for circles only |
+| `--shadow-soft` / `-hover` / `-lg` | `0 16px 40px .06` / `0 12px 30px .13` / `0 24px 60px .10` | Rest / lift / floats over a scrim |
+
+**`--background` is not paper, and that is the load-bearing fact of the whole
+system.** The page is a rung *below* the card, and that step plus the soft
+shadow is what replaced the 3px ink cage. Restoring `--background` to paper
+without also restoring the cage yields an invisible card, not a subtler one.
+
+`--radius-panel` and `--hairline-alpha` are declared in `@theme` only — they
+are deliberately absent from `tokenCatalog.ts`, `functions/_lib/branding.ts`
+and `branding_validate`, following the `--radius-full` precedent. That is what
+keeps the re-skin free of a Supabase migration, and it matters: a full
+`/admin/design` override is already within a handful of keys of
+`branding_validate`'s 150-key ceiling. Cataloguing either one means raising
+that cap in the same migration.
 
 ### Track colors — SEMANTIC wayfinding lines
 
 | Token | Value | Hex | Line | Text on the fill |
 |-------|-------|-----|------|------------------|
-| `--track-pink` | `330 100% 56%` | #FF1F8F | Feminine spectrum | **paper** (3.4:1) |
+| `--track-pink` | `330 100% 56%` | #FF1F8F | Feminine spectrum | **ink** (5.2:1) |
 | `--track-blue` | `193 100% 45%` | #00B4E6 | Masculine spectrum | **ink** (7.7:1) |
 | `--track-green` | `136 75% 52%` | #2BE05A | Non-binary | **ink** (10.4:1) |
 | `--track-yellow` | `50 100% 50%` | #FFD500 | Agender / other | **ink** (13.5:1) |
@@ -50,14 +86,26 @@ All colors are HSL channel values used via `hsl(var(--token))`. Light-only.
 Rules (gated by `tokenContrast.test.ts`):
 
 - **Fill-only.** A track color is never body text.
-- **Border-gated.** Blue/green/yellow measure under 3:1 against paper, so every
-  filled shape carries a 2–3px ink border — WCAG 1.4.11 is satisfied by
-  fill-vs-ink. Pink alone clears 3:1 bare and may draw borderless marks
-  (focus ring, active-nav underline, ::selection).
-- **Text-on-fill** deviates from the source mock on a11y grounds: ink on
-  blue/green/yellow, paper on pink (the mock's paper-on-cyan is 2.3:1).
+- **Ring-gated.** Blue/green/yellow measure under 3:1 against any light
+  surface, so every track-coloured *mark* carries a 1px `--track-ring` — WCAG
+  1.4.11 is satisfied by fill-vs-ring. This is why a badge and a track-filled
+  button keep an edge when cards lost theirs: a card frame is decoration, a
+  track fill's ring is not. It is anchored to `--track-ring` rather than to
+  `--foreground` so it stays ink in both modes and cannot invert.
+  A track-coloured *line* on a diagram is a different case — it is far past
+  the size at which 1.4.11 applies and reads as illustration, which is why
+  the mocks draw route lines with no casing.
+- **Text-on-fill is ink on all four**, deviating from the source mock on a11y
+  grounds: the mock puts paper on pink and cyan, which measure 3.4:1 and
+  2.3:1. (This table said "paper" for pink until 2026-08-17 while the code
+  and the test both said ink — the code was right.)
+- **Colour is never the only cue** (WCAG 1.4.1). A track-coloured mark that
+  encodes a state also carries a glyph or a text label; a bare coloured dot is
+  decorative. No token guard can see this — it lives in the components.
 - **One accent per context.** Never a rainbow of fills in one component; the
-  four blend only in `.intersection-gradient` (master-symbol moments).
+  four blend only in `.intersection-gradient` (master-symbol moments). The one
+  exception is a *city network diagram* (below), where the four colors are the
+  artifact's own wayfinding vocabulary rather than decoration.
 - **Never a state.** Track colors never reach /help, /safety, /report-*, the
   trip-safety briefing, the equality scale or any risk badge; all four hues
   sit >25° from the destructive red (hue-gated in the test).
@@ -145,18 +193,72 @@ the ladder plus a `max-w-page` inner wrapper, and admin **pages render bare
 content** — adding their own `p-6` on top is what produced 48px gutters on some
 pages and 16px on others across six different content widths.
 
+### Sticky control bands — what may live in one
+
+Alignment is not the only axis a page can fail on. `e2e/page-layout.spec.ts`
+carries a second describe block (`mobile density`) with two viewport-relative
+budgets at 390×844: sticky chrome ≤ **0.30** of the viewport, first content
+within **1.25** screens. `/cities` satisfied the whole alignment contract while
+its sticky filter band stood at 238px and the first card sat 1,271px down — a
+page can pass every automated gate and still be unusable on a phone.
+
+**A row in a sticky band is charged against every screen of results for the
+whole session.** So:
+
+- **Nothing in a sticky band may `flex-wrap`.** One scrollable line
+  (`overflow-x-auto`), never two stacked ones. `/events`' result bar measured
+  175px for content 44px tall purely because it wrapped to three lines.
+- **A control earns its row or it moves out.** Not "should it be reachable" —
+  everything should — but "is it worth a permanent tax". Search and a Filters
+  door earn it; chips that are the page's primary navigation earn it. A result
+  count, a sort select and a view toggle do not: none is re-reached while
+  scrolling, so they belong in a non-sticky header above the grid
+  (`EventsResultHeader`). The long tail belongs in a Sheet
+  (`MarketplaceFilterSheet`, `EventsFilterSheet`) — never an inline panel,
+  which pushes the results down by its full height on the one interaction that
+  means "show me more".
+- **Budget every control at 44px, whatever the `h-*` says.** `src/index.css`
+  sets a global `min-height: 44px` on `a, button, input, select, textarea,
+  summary` for WCAG 2.5.5, and min-height beats the height utility at the
+  box-model level. `h-8` chips and `h-10` inputs all render 44 tall. Only
+  `.rounded-badge` opts down (to 24px, WCAG 2.5.8). A band budgeted on the
+  class names comes in ~30% over.
+- **How many rows fit depends on the hero above it.** `/marketplace` carries
+  three rows in its band and passes; `/events` carries two, because its
+  `PageHero size="md"` is 333px at 390px wide and the two pages are spending
+  from the same 1.25 screens.
+
 ## Depth
 
-Soft elevation shadows stay banned (`shadow-md/lg/xl/2xl` are ESLint errors).
-The sanctioned depth treatment is the **hard poster shadow**:
+There is exactly **one** elevation, and it does two jobs.
 
-- Every bordered surface: 3px ink border, zero radius (`Card` does this).
-- Interactive cards add `.card-lift`: hover/focus translates −3,−3 and casts
-  `--shadow-hard` (`6px 6px 0` ink, no blur). Small tiles: `.card-lift-sm`
-  (5px/−2). Live/urgent: `.card-lift-accent` casts in pink.
+- **Rest.** Every card carries `--shadow-soft` (`0 16px 40px` at 6% ink) —
+  baked into `Card`, not opt-in. Together with `bg-card` sitting a rung above
+  `--background`, that pair *is* the card's edge. Remove either and the card
+  stops existing rather than getting flatter.
+- **Lift.** Interactive cards add `.card-lift`: hover/focus translates −3,−3
+  and deepens to `--shadow-soft-hover` (`0 12px 30px` at 13%). Small tiles:
+  `.card-lift-sm` (−2). Live/urgent: `.card-lift-accent` tints the lift pink.
+  Pressing seats the card back to `--shadow-soft` — **not** to `none`, which
+  would drop it flat into the page mid-tap.
+- **Floats.** Dialogs, sheets and the search command plate take
+  `--shadow-soft-lg` (`0 24px 60px`) because they sit over a scrim rather
+  than on the page.
+- `shadow-md/lg/xl/2xl` remain ESLint errors. Soft depth being legal here does
+  **not** make Tailwind's ramp legal — it is a second, competing ladder.
+- `.card-lift-invert` was deleted with the hard shadows. A card on an ink band
+  cannot use the shared elevation at all: a black blur is invisible on ink and
+  a paper-coloured blur reads as a halo, not depth. Such a tile separates by
+  surface tint (`bg-background/10`) and deepens that tint on hover — see
+  `src/pages/About.tsx`.
 - The PASTE-UP `.plate-offset` misregistration layer, halftone screens,
   deckle, duotone and paper grain were deleted; their class names are inert
-  until the Public/Admin phases remove the call sites.
+  until the remaining phases remove the call sites.
+
+Until 2026-08-17 this section described the opposite system — a hard `6px 6px
+0` ink offset, no shadow at rest, and a 3px ink border on every surface. If
+you find a component still drawing that, it is a straggler from the sweep, not
+a second sanctioned treatment.
 
 ## Core patterns (`src/components/transit/`)
 
@@ -176,6 +278,162 @@ The sanctioned depth treatment is the **hard poster shadow**:
   `SectionNav`). Stations are `<a href="#id">`, never buttons — see below.
 - **Buttons** — `default` (ink fill), `outline` (2px ink border, hover fills
   ink), `accent` (pink), `brand` (blue), `destructive` unchanged.
+
+### City network diagrams
+
+City cards — on the homepage and across the `/cities` directory — carry an
+octilinear abstraction of that city's **real** rapid-transit network — Berlin's
+U-Bahn, Lisbon's Metro, Melbourne's trams — instead of a decorative squiggle.
+`src/components/home/subway/CityNetwork.tsx` renders it; `cityNetworkGeometry.ts`
+is generated by `scripts/generate-city-transit-lines.mjs` from OpenStreetMap
+route relations and committed, so nothing is fetched at runtime and every
+diagram is reviewed once by eye.
+
+Two rules bend here, both on purpose:
+
+- **All four track colors appear at once**, assigned by line length rank
+  (flagship = pink). Here the four colors ARE the wayfinding vocabulary — the
+  same job they do on a real network map — so "one accent per context" would
+  make the artifact unreadable rather than calmer. This is the only sanctioned
+  four-track surface outside `.intersection-gradient`.
+- **Segments run straight** between 45° bends. Coordinates sit on an integer
+  lattice, so a diagonal step of *k* is exactly (±k, ±k) and "every bearing is
+  a multiple of 45°" is exact arithmetic in `cityNetworkGeometry.test.ts`, not
+  a tolerance.
+
+Lines are **bare strokes — no ink casing** (design decision, 2026-08-14): a
+black outline reads as a border around a shape rather than as a route, which is
+the one thing the diagram must not look like. The border-gating rule still
+governs filled shapes; a route line is not one. Trunk-sharing lines are instead
+separated by small **integer** nudges, and no difference between two nudges is
+axis-aligned or diagonal, so two lines can never re-converge along any heading
+they are allowed to run in — without that, New York's R/N/F/M landed on
+identical pixels and only the last color drawn was visible.
+
+Cities with no rail network fall back to the bending template line, which is why
+hard rule #1 still governs the single-line case.
+
+**307 cities have committed geometry, against 2,142 in the directory, so the
+fallback is still the common case and the difference has to be VISIBLE.** A real network
+is captioned with its mode ("Metro network" / "Light rail network" / "Tram
+network"); a template line is captioned with nothing at all, and that absence is
+the signal. Never caption the fallback — a page that tells a reader every city has
+a metro is lying at scale, and the four track colours plus a named mode are what
+make the real ones read as a map of something.
+
+**Which template a city gets is derived from a hash of its slug**
+(`templateIndexFor`), never from its position in a grid. `index % 4` across a
+four-column layout gives every card in a column the same shape in the same colour
+— the page draws vertical monochrome stripes — and because sorting and filtering
+reshuffle positions, each card's shape would also change under the reader.
+
+The card that carries a diagram must not also carry a chromatic equality dot: the
+green track is 6.5° from the very-high tier's green and the yellow track 4.7° from
+moderate's, so two colour systems twenty pixels apart would be saying "line 3" and
+"this country is safe" in nearly the same hue. `EqualityChip variant="ink"` exists
+for that surface. **No automated check can catch this** — an SVG stroke has no
+`background-color`, so the sanctioned-ink sweep in `e2e/design-system.spec.ts` is
+blind to track colour drawn as a line.
+
+**Two variants.** `card` draws the full 200×110 frame and is sized by width —
+the homepage tiles, a destination card's cover. `thumb` crops to that city's own
+bounding box and fits the container, with `vector-effect: non-scaling-stroke` so
+the line lands at the same weight whatever the crop; use it for square boxes,
+64–96px thumbs and anything embedded in another card. The station ring is scaled
+off the crop rather than fixed, or it would be a dot on a sprawling network and a
+blob on a compact one.
+
+**`hasCityNetwork(slug)` is the integration point.** Most cities have no
+geometry, so a surface must ask before it commits: the diagram *replaces a
+meaningless placeholder* — the initial-letter tile on `/cities`, the generic
+`Globe` glyph in search, the deterministic stock skyline that belongs to no
+particular city — and never replaces a real photograph of the place. Only the
+homepage passes `index`, which opts into the template line; everywhere else a
+city we have no geometry for keeps whatever placeholder it already had.
+
+**On a city SINGLE the fallback is forbidden outright** — the caption rule above
+governs the CARD, where a hole in the grid would be worse. `CityNetworkPanel`
+(`src/components/geo/`) gates on `hasCityNetwork(slug)` and renders nothing
+otherwise. A template squiggle is a fine ornament in a card grid that must have
+no holes; drawn under a heading that says "Getting around" it is a claim about
+that city's transit, and 22 of ~3,070 cities have one. The panel also renders
+the line refs as a legend — that is what makes the same geometry information
+rather than decoration, and it is why the panel is not `aria-hidden` while the
+card's copy is. It sits in the travel section, deliberately far from the safety
+verdict in the rail: the four-hue vocabulary must never share a viewport with a
+risk badge.
+
+**Coverage is a population-ordered PREFIX, not a threshold.** The sweep walks
+cities biggest-first, so it can be stopped at any point and the result is still
+the best available set — which matters because Overpass throttles a long run
+down to a crawl (measured: 2/min falling to 0.39/min after a few thousand
+requests). Everything listable down to ~180k is covered. To extend it, re-run
+the generator: every city already fetched is served from
+`scripts/output/.overpass-cache/`, so only the new tail costs anything, and
+`--cached-only` re-derives the committed file from disk without fetching at all.
+
+Geometry is derived from © OpenStreetMap contributors and licensed ODbL;
+the credit sits in the site footer alongside the map's.
+
+### Owner modules that cannot render (measured 2026-08-15)
+
+Two types own a module the corpus cannot fill. Both are absent rather than
+faked, and the numbers are here so the next person does not re-derive them:
+
+| Type | Owner module | Reality |
+|---|---|---|
+| Venue | 02 Hours table | `venues.hours` on **626 of 23,335** live rows (2.7%). Free-form jsonb, only the scraper path fills it. |
+| Event | 03 Occurrence board | **`event_occurrences` has 0 rows.** Specced in `20260429130000` with an expansion function, never populated. `is_recurring` is true on 1,098 of 39,899, but a recurrence PATTERN is not a list of dates. |
+
+Two required modules are in the same position: venue module 04 (access) has
+**6** rows with `accessibility_attributes`, and event module 08 (nested venue)
+resolves for **0.8%** — `events.venue_id` is set on 339 of 39,899.
+
+Rule 2 governs: they do not render. Do not wire an empty `OccurrenceList`, and
+do not synthesise occurrences from an RRULE at render time — that puts times on
+screen nothing has validated.
+
+The inverse is also worth stating, because it is where the value was: the event
+page rendered **none** of `events.tags`, which is populated on **82.5%** of the
+corpus (32,910 rows). Check what IS filled before building for what should be.
+
+### Geo singles (city / country / queer village)
+
+Five types now render `SinglePage` — city, country, queer village, venue and
+event. Organisations and milestones are still on `EntityDetailScroll`; a
+descriptor moves when it grows a `single` block (`entityDescriptor.ts`).
+
+The geo three render `SinglePage` with the module stack their type declares in
+`src/config/singleModules.ts` — city owns Map inset, country owns Version
+history, village owns Stop list. Shared pieces live in `src/components/geo/`.
+
+Four rules, each of which was a bug before it was a rule:
+
+- **Sections and route-rail stations come from one array.** `geoSections()`
+  filters the definitions and `geoStations()` reads the filtered result, so a
+  station cannot outlive the section it points at. The filter sees `null` /
+  `undefined` / `false` / `[]`; it cannot see a component that returns `null`
+  from its own body.
+- **A self-hiding composite rail is never a section.** `PersonalitiesForEntity`,
+  `NearbyTriptych`, `TrendingStrip`, `GuidesRail` and friends decide internally
+  whether they have data, so each one used as a section leaves a dead station.
+  They render in the page footer, which has no stations.
+- **The route rail renders twice**, horizontal at the top of the body and
+  vertical in the rail, because `SinglePage`'s 360px rail reflows *under* the
+  body on mobile — a rail-only TOC lands below the content it indexes. Same
+  two-render pattern as `/tags`' `CategoryTreeRail`.
+- **The census strip renders unconditionally**, zeros included. Gating it on a
+  non-zero count unmounts a masthead row and shifts the page under the reader
+  (`/marketplace` learned this one).
+
+Safety composes rather than restyles: `GeoSafetyBanner` wraps the unmodified
+`SafetyAlertBanner` + `GatedContentNotice`, and `GeoSafetyVerdict` is the shared
+verdict tile. It stays monochrome + `--destructive`, gates on `useTripSafety`'s
+settled status, and is deliberately **not** a `SidebarCard tone="ink"` even
+though the spec reserves that inversion for safety blocks — `bg-destructive/10
+text-destructive` on flooded ink is unreadable. The country single keeps its own
+richer `SafetyVerdict` instead; six assertions in `rights-safety.spec.ts` bind
+to its copy.
 
 ### The policy line
 
@@ -237,6 +495,57 @@ to report, so after a jump to section 11 the rail stayed pinned to section 1.
 - Icons / maskables / favicon.ico / OG regenerate via
   `node scripts/generate-brand-assets.mjs` — playwright, no `sharp` (which was
   never installed, so the script could not run and the icons drifted).
+
+## Site chrome (`src/components/layout/`, `src/components/search/`)
+
+Header, search and footer moved onto the map 2026-08-15 (#2775, #2781).
+
+- **Header** — brand · search · actions on one row, then the six intent tabs as
+  TRACK TABS under a 3px rule. Each tab is `TransitIcon` + label; the icon draws
+  in `currentColor`, so it inverts with the active tab's ink fill for free.
+  Colour appears once, as the 6px rule under the active tab — inactive rules are
+  transparent, never a muted tint. `nav[aria-label="Primary"]` is unique
+  (`MobileBottomNav` owns `"Navigation"`) and stays `md:`-gated, because
+  `useIsMobile` flips at 768 and `lg:` would leave 768–1023px with no nav.
+  `z-index` stays **40**: every portal renders at 50, and the 1100 this once
+  carried painted the bar over its own menus.
+
+- **Search is a command plate**, not a dropdown: centred, `max-w-[680px]`, top
+  `8vh`, 4px ink border, `shadow-hard-lg`. Mobile keeps a full-screen sheet.
+
+  **There is exactly ONE `role="combobox"` at any moment.** The field is *moved*
+  between the bar and the overlay, never duplicated — two inputs claiming one
+  listbox is ambiguous for a screen reader, and `e2e/search-ux.spec.ts` resolves
+  the input first and then asserts `aria-expanded` flips on that same element.
+  Both shells do this; on mobile it is also what makes the query visible at all,
+  since the sheet is `inset:0` and covered the bar's field.
+
+  **Focus restoration is a `useEffect` keyed on `isOpen`** — not Radix's
+  `onCloseAutoFocus`, not a timer, not rAF. At callback time the field is still
+  inside the *closing* overlay, so the ref points at a node being torn down and
+  focus lands on `<body>`. An effect runs after the commit that puts the field
+  back. rAF was tried and is wrong: it does not run in a hidden tab, which is
+  exactly when a queued restore would strand focus.
+
+  Rows are `[RouteBullet] [name / subtitle] [kind]` — a mixed-type list is what
+  the bullet exists to type, and half the corpus (cities, tags, people, guides,
+  news) has no usable image, so the thumbnail well it replaced was mostly an
+  empty grey square acting as a lookup key.
+
+- **Footer** — the tracks band is **full-bleed**, outside the cap and the
+  gutter; the columns, policy band and legal row keep `PAGE_GUTTER`. A track
+  that stops in a margin reads as a graphic in a column, not as the network.
+  Its four lines converge on one interchange, and each ring sits on a middle
+  ANCHOR of its own path so it is exactly on the line at any width. Columns are
+  one per intent, single-sourced from `INTENT_NAV` (including `children`), so
+  the footer cannot drift from the topbar — the defect that once put `/venues`
+  and `/people` out of reach of desktop chrome.
+
+Two mock deviations, both deliberate: the results footer hovers to an underline
+rather than pink (pink text on paper is 3.43:1, and track colour is fill-only),
+and the plate keeps the global focus ring — `index.css` sets `*:focus-visible`
+`!important` as the WCAG 2.4.7 guarantee, so a `focus-visible:outline-none`
+there is a silent no-op that reads as if it did something.
 
 ## Crisis surfaces (`/help`, `/safety`, `/report-*`)
 

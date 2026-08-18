@@ -28,6 +28,7 @@ const MarketplaceCategory = lazyRetry(() => import('./pages/MarketplaceCategory'
 const MarketplaceCategories = lazyRetry(() => import('./pages/MarketplaceCategories'));
 const MarketplaceMerchant = lazyRetry(() => import('./pages/MarketplaceMerchant'));
 const MarketplaceBrand = lazyRetry(() => import('./pages/MarketplaceBrand'));
+const MarketplaceBrands = lazyRetry(() => import('./pages/MarketplaceBrands'));
 const Organizations = lazyRetry(() => import('./pages/Organizations'));
 const HistoryTimeline = lazyRetry(() => import('./pages/HistoryTimeline'));
 const MarketplaceShare = lazyRetry(() => import('./pages/MarketplaceShare'));
@@ -38,10 +39,11 @@ const Wishlists = lazyRetry(() => import('./pages/Wishlists'));
 const GoingOut = lazyRetry(() => import('./pages/intent/GoingOut'));
 const RightsIntent = lazyRetry(() => import('./pages/intent/Rights'));
 const RightsSources = lazyRetry(() => import('./pages/rights/RightsSources'));
-const ShopIntent = lazyRetry(() => import('./pages/intent/Shop'));
-const Resources = lazyRetry(() => import('./pages/Resources'));
+const TagsIndex = lazyRetry(() => import('./pages/TagsIndex'));
+const TagDetail = lazyRetry(() => import('./pages/TagDetail'));
+const SubstanceInteractionsPage = lazyRetry(() => import('./pages/SubstanceInteractionsPage'));
+const StiGuidePage = lazyRetry(() => import('./pages/StiGuidePage'));
 const ConnectionsExplorer = lazyRetry(() => import('./pages/explore/ConnectionsExplorer'));
-const ResourceTopic = lazyRetry(() => import('./pages/resources/ResourceTopic'));
 const Personalities = lazyRetry(() => import('./pages/Personalities'));
 const PersonalityDetail = lazyRetry(() => import('./pages/PersonalityDetail'));
 // CMS-managed pages (content from cms_pages table)
@@ -699,6 +701,11 @@ export const AppRoutes = () => {
                     element={<SlugAliasRedirect toBase="guides" />}
                   />
                   <Route path="marketplace/merchants/:domain" element={<MarketplaceMerchant />} />
+                  {/* The index MUST stay above `marketplace/:slug` — the
+                      catch-all would otherwise swallow `/marketplace/brands`
+                      and render "item not found", which is what it did for as
+                      long as this route was missing. */}
+                  <Route path="marketplace/brands" element={<MarketplaceBrands />} />
                   <Route path="marketplace/brands/:slug" element={<MarketplaceBrand />} />
                   <Route path="marketplace/:slug" element={<MarketplaceItemDetail />} />
                   <Route path="wishlists" element={<Wishlists />} />
@@ -734,9 +741,22 @@ export const AppRoutes = () => {
                     (coverage note, "know the law") now live on /help. The URL stays
                     so the Support track keeps its identity and inbound links work. */}
                   <Route path="support" element={<LocalizedRedirect to="/help" />} />
-                  {/* `shop` MUST stay declared before `shop/*` so the static
-                    sibling wins the /shop tie, same precedent as `p/:slug`. */}
-                  <Route path="shop" element={<ShopIntent />} />
+                  {/* /shop was /marketplace twice. Two of its three sections were
+                    duplicates — an occasions grid pointing at the same ?tags=occ-*
+                    filters the marketplace control bar exposes, and the very same
+                    <DepartmentBento /> instance — while /marketplace's unfiltered
+                    landing was already the editorial front door. /marketplace is the
+                    superset: it owns all ten deep routes, marketplace_slug_redirects,
+                    the `marketplace` search entity and the M-yellow bullet. Same shape
+                    as /support → /help above. The nav still says "Shop"; labels are
+                    decoupled from paths.
+
+                    public/_redirects 301s this at the edge, but that is a Cloudflare
+                    Pages feature and is inert in local dev, `vite preview` and the PR
+                    e2e run — and it is unprefixed-only, so this route is also the ONLY
+                    layer that carries /de/shop → /de/marketplace. `shop` stays declared
+                    before `shop/*` so the static sibling wins the /shop tie. */}
+                  <Route path="shop" element={<LocalizedRedirect to="/marketplace" />} />
                   {/* /places retired: it duplicated /cities and the Travelling
                     intent, kept client-side viewMode state instead of routes
                     (no deep links, broken Back), and shipped dead filters. The
@@ -808,14 +828,28 @@ export const AppRoutes = () => {
                   <Route path="africa" element={<LocalizedRedirect to="/cities" />} />
                   <Route path="quests" element={<LocalizedRedirect to="/guides?format=quest" />} />
                   <Route path="quests/:slug" element={<SlugAliasRedirect toBase="guides" />} />
-                  <Route path="tags" element={<Resources />} />
-                  <Route path="tags/topic/:slug" element={<ResourceTopic />} />
-                  <Route path="tags/c/:categorySlug" element={<Resources />} />
-                  <Route path="tags/:tagName" element={<Resources />} />
+                  <Route path="tags" element={<TagsIndex />} />
+                  {/* Same component: the category comes from the PATH. Three
+                      spellings of that filter used to coexist (?cat=, ?category=
+                      and this route); the query forms are now legacy inputs
+                      that resolve to a redirect. */}
+                  <Route path="tags/c/:categorySlug" element={<TagsIndex />} />
+                  {/* Static segment, declared before the :tagName catch-all.
+                      React Router ranks static over dynamic regardless of
+                      order, but relying on that silently would break the
+                      day someone creates a tag slugged "interactions" —
+                      none exists today and this route is what reserves it. */}
+                  <Route path="tags/interactions" element={<SubstanceInteractionsPage />} />
+                  <Route path="tags/sti-guide" element={<StiGuidePage />} />
+                  <Route path="tags/:tagName" element={<TagDetail />} />
+                  {/* The topic hubs are gone — 8 curated tag clusters that
+                      duplicated what the taxonomy already expresses. 301'd in
+                      public/_redirects; this SPA route is the fallback. */}
+                  <Route path="tags/topic/:slug" element={<Navigate to="/tags" replace />} />
                   <Route path="professions/:professionName" element={<ProfessionDetail />} />
                   {/* Legacy redirects → /tags */}
                   <Route path="resources" element={<Navigate to="/tags" replace />} />
-                  <Route path="resources/topic/:slug" element={<ResourceTopic />} />
+                  <Route path="resources/topic/:slug" element={<Navigate to="/tags" replace />} />
                   <Route
                     path="resources/c/:categorySlug"
                     element={<Navigate to="/tags" replace />}

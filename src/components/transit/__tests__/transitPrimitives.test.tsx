@@ -1,5 +1,7 @@
+import { createRef } from 'react';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+import { FilterChip } from '@/components/transit/FilterChip';
 import { StationRing } from '@/components/transit/StationRing';
 import { RouteBullet } from '@/components/transit/RouteBullet';
 import { ROUTE_BULLET_MAP } from '@/components/transit/routeBulletMap';
@@ -22,16 +24,34 @@ describe('RouteBullet', () => {
     // Ink on EVERY track fill — paper-on-pink measures 3.43:1 and the bullet
     // letter is 17px, well under the large-text threshold. See the
     // text-on-track lock in tokenContrast.test.ts.
+    // `--track-ring`, not `--foreground`: the two are the same ink in light
+    // mode, but `--foreground` flips to paper in dark and this letter would
+    // have gone paper-on-cyan at 2.32:1 in exactly one theme. A track fill is
+    // identity, not theme, so its type is ink in BOTH modes.
     render(<RouteBullet type="venue" />);
     const bullet = screen.getByText('V');
     expect(bullet.className).toContain('bg-track-pink');
-    expect(bullet.className).toContain('text-foreground');
+    expect(bullet.className).toContain('text-track-ring');
     render(<RouteBullet type="event" />);
-    expect(screen.getByText('E').className).toContain('text-foreground');
+    expect(screen.getByText('E').className).toContain('text-track-ring');
   });
 
   it('covers the search entity vocabulary', () => {
-    for (const t of ['venue', 'event', 'city', 'country', 'queer_village', 'personality', 'news', 'marketplace', 'guide', 'group', 'hotel', 'organization', 'landmark']) {
+    for (const t of [
+      'venue',
+      'event',
+      'city',
+      'country',
+      'queer_village',
+      'personality',
+      'news',
+      'marketplace',
+      'guide',
+      'group',
+      'hotel',
+      'organization',
+      'landmark',
+    ]) {
       expect(ROUTE_BULLET_MAP[t], t).toBeDefined();
     }
   });
@@ -46,7 +66,15 @@ describe('RouteBullet', () => {
 
 describe('DepartureRow', () => {
   it('lays out bullet / time / title / status', () => {
-    render(<DepartureRow type="event" time="FRI 21:00" title="Ballroom Is Burning" status="Selling fast" urgent />);
+    render(
+      <DepartureRow
+        type="event"
+        time="FRI 21:00"
+        title="Ballroom Is Burning"
+        status="Selling fast"
+        urgent
+      />,
+    );
     expect(screen.getByText('FRI 21:00')).toBeInTheDocument();
     expect(screen.getByText('Ballroom Is Burning')).toBeInTheDocument();
     expect(screen.getByText('Selling fast')).toBeInTheDocument();
@@ -55,11 +83,49 @@ describe('DepartureRow', () => {
 
 describe('LineStepper', () => {
   it('renders one station circle per step, filled up to current', () => {
-    const { container } = render(<LineStepper steps={['Basics', 'Details', 'Review']} current={1} />);
+    const { container } = render(
+      <LineStepper steps={['Basics', 'Details', 'Review']} current={1} />,
+    );
     const circles = container.querySelectorAll('circle');
     expect(circles).toHaveLength(3);
     expect(circles[0].getAttribute('fill')).toBe('hsl(var(--foreground))'); // done
     expect(circles[1].getAttribute('fill')).toBe('hsl(var(--foreground))'); // current
     expect(circles[2].getAttribute('fill')).toBe('hsl(var(--background))'); // ahead
+  });
+});
+
+describe('FilterChip', () => {
+  it('fills ink when active and never casts the hard shadow', () => {
+    // "A card fills ink on hover or lifts with the hard shadow — never both."
+    // A chip is too small to carry a 6px offset legibly, so it is always the
+    // fill side of that rule; card-lift on a chip is the violation to catch.
+    const { container } = render(<FilterChip active label="Pride" />);
+    const button = container.querySelector('button')!;
+    expect(button.className).toContain('bg-foreground');
+    expect(button.className).not.toContain('card-lift');
+    expect(button.className).not.toContain('shadow-hard');
+    expect(button.getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('forwards a ref and arbitrary props to the button', () => {
+    // Radix `asChild` triggers clone their child with a ref plus
+    // aria-expanded / aria-haspopup / data-state. A chip that swallowed them
+    // rendered a popover that never opened and announced nothing — which is
+    // why MarketplaceControlBar kept a private copy instead of using this.
+    const ref = createRef<HTMLButtonElement>();
+    render(
+      <FilterChip
+        ref={ref}
+        active={false}
+        label="Department"
+        aria-expanded="false"
+        aria-haspopup="dialog"
+        data-state="closed"
+      />,
+    );
+    expect(ref.current).toBeInstanceOf(HTMLButtonElement);
+    expect(ref.current!.getAttribute('aria-haspopup')).toBe('dialog');
+    expect(ref.current!.getAttribute('aria-expanded')).toBe('false');
+    expect(ref.current!.getAttribute('data-state')).toBe('closed');
   });
 });

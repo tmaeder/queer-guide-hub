@@ -169,7 +169,21 @@ export function FeedbackButton() {
             aria-label="Share feedback"
             onClick={handleOpenClick}
             disabled={capturing}
-            className="fixed right-6 z-[1200] flex h-12 w-12 items-center justify-center bg-foreground text-background transition-opacity hover:opacity-80 disabled:opacity-50"
+            // z-45: ABOVE the chrome layer (header and MobileBottomNav are
+            // both z-40) and BELOW the portal layer (every Radix overlay —
+            // dialog, sheet, popover, and the search sheet — renders at z-50
+            // on document.body).
+            //
+            // This carried z-[1200], which is the exact bug Header.tsx
+            // documents having had at z-1100: it painted over every z-50
+            // portal. Measured on the mobile search sheet — overlay z-50, FAB
+            // z-1200, elementFromPoint at the FAB's centre returned the FAB,
+            // i.e. it floated on top of the full-screen sheet and covered the
+            // mode chips. A page-chrome affordance must not sit above a modal.
+            // z-[45] and not `z-45`: Tailwind's default scale is
+            // 0/10/20/30/40/50, so a bare `z-45` compiles to nothing and the
+            // element falls back to `auto`.
+            className="fixed right-6 z-[45] flex h-12 w-12 items-center justify-center bg-foreground text-background transition-opacity hover:opacity-80 disabled:opacity-50"
             style={{
               visibility: capturing ? 'hidden' : 'visible',
               // On mobile, clear the floating bottom-nav island (h-14 bar +

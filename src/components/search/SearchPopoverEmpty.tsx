@@ -1,9 +1,9 @@
-import React from 'react';
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { TrendingUp, Sparkles, Clock, X } from 'lucide-react';
 import { type SearchHit } from '@/lib/searchClient';
-import { TYPE_ICONS } from '@/hooks/useSearchSuggestions';
-import { DESTINATIONS, INTENT_NAV, NAV_CLUSTERS } from '@/config/navigation';
+import { DESTINATIONS, INTENT_NAV, INTENT_TRACK, NAV_CLUSTERS } from '@/config/navigation';
+import { RouteBullet } from '@/components/transit/RouteBullet';
+import { StationRing } from '@/components/transit/StationRing';
 import { ModeSwitcher } from './ModeSwitcher';
 
 export interface SearchPopoverEmptyProps {
@@ -17,6 +17,21 @@ export interface SearchPopoverEmptyProps {
   onSelectRecent?: (term: string) => void;
   onClearRecents?: () => void;
 }
+
+/** The mock's eyebrow: small, loud, and the one sanctioned wide-tracked type. */
+function Eyebrow({ children }: { children: ReactNode }) {
+  return (
+    <div className="px-6 pb-2 pt-4 text-2xs font-bold uppercase tracking-label text-muted-foreground">
+      {children}
+    </div>
+  );
+}
+
+/** Bordered chip that inverts to ink on hover — the mock's only chip state.
+ *  It fills rather than lifts: at chip scale a 5px hard shadow is larger than
+ *  the chip's own padding and the row turns into a stack of dominoes. */
+const CHIP =
+  'inline-flex cursor-pointer items-center gap-2 bg-transparent px-4 py-1.5 text-13 font-bold text-foreground transition-colors hover:bg-foreground hover:text-background';
 
 export function SearchPopoverEmpty({
   trending,
@@ -35,116 +50,90 @@ export function SearchPopoverEmpty({
     source === 'recommended' ? t('search.forYou', 'For you') : t('search.trending', 'Trending');
 
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto md:max-h-[560px]">
+    <div className="min-h-0 flex-1">
       {recentItems.length > 0 && onSelectRecent && (
-        <div className="flex flex-wrap items-center gap-1.5 px-4 py-2">
-          <Clock className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-          {recentItems.map((term, i) => (
-            <span
-              key={`recent-${i}`}
-              className="inline-flex items-center gap-1 rounded-badge px-2 py-1 text-xs bg-surface-container"
-            >
+        <>
+          <Eyebrow>{t('search.recent', 'Recent')}</Eyebrow>
+          <div className="flex flex-wrap items-center gap-2 px-6 pb-2">
+            {recentItems.map((term, i) => (
               <button
+                key={`recent-${i}`}
                 type="button"
                 onClick={() => onSelectRecent(term)}
-                className="max-w-[140px] cursor-pointer truncate bg-transparent p-0 text-foreground"
+                className={`${CHIP} max-w-[200px]`}
               >
-                {term}
+                <span className="truncate">{term}</span>
               </button>
-            </span>
-          ))}
-          {onClearRecents && (
-            <button
-              type="button"
-              onClick={onClearRecents}
-              className="ml-1 inline-flex cursor-pointer items-center gap-1 bg-transparent p-1 text-xs text-muted-foreground hover:text-foreground"
-              aria-label={t('search.clearRecent', 'Clear')}
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
-          )}
-        </div>
+            ))}
+            {onClearRecents && (
+              <button
+                type="button"
+                onClick={onClearRecents}
+                aria-label={t('search.clearRecent', 'Clear')}
+                className="cursor-pointer bg-transparent p-1 text-13 text-muted-foreground underline underline-offset-4 hover:text-foreground"
+              >
+                {t('search.clearRecent', 'Clear')}
+              </button>
+            )}
+          </div>
+        </>
       )}
 
       {/* Intents lead. An empty query means the person has not decided what to
-          type, and the most useful thing to hand them is the five jobs — not a
+          type, and the most useful thing to hand them is the six jobs — not a
           content-type index. This block used to be absent entirely, so the
           site's highest-frequency discovery surface (⌘K on desktop, the whole
           header row on mobile) taught only the model the Intent Router
-          replaced. Subtitles are carried because, unlike the nouns in the
-          browse grid, a job is not self-explanatory from its label. */}
-      <div className="px-4 pt-4">
-        <div className="mb-1.5 text-13 font-semibold uppercase tracking-wider text-muted-foreground">
-          {t('header.intents.sheetHeading', 'What are you here for?')}
-        </div>
-        {INTENT_NAV.map((intent) => {
-          const Icon = intent.icon;
-          return (
-            <button
-              key={intent.id}
-              type="button"
-              onClick={() => onBrowse(intent.to)}
-              className="flex w-full cursor-pointer items-center gap-2.5 rounded-element border-0 bg-transparent px-2 py-2 text-left transition-colors hover:bg-accent"
-            >
-              <Icon className="h-4 w-4 shrink-0 text-foreground" aria-hidden />
-              <span className="min-w-0">
-                <span className="block truncate text-sm font-semibold">
-                  {t(intent.labelKey, intent.fallback)}
-                </span>
-                <span className="block truncate text-xs text-muted-foreground">
-                  {t(intent.subtitleKey, intent.subtitleFallback)}
-                </span>
-              </span>
-            </button>
-          );
-        })}
+          replaced. Each chip carries its own line's station ring, so the same
+          colour that names the job in the topbar names it here. */}
+      <Eyebrow>{t('search.jumpTo', 'Jump to')}</Eyebrow>
+      <div className="flex flex-wrap gap-2 px-6 pb-2">
+        {INTENT_NAV.map((intent) => (
+          <button
+            key={intent.id}
+            type="button"
+            onClick={() => onBrowse(intent.to)}
+            className={CHIP}
+            title={t(intent.subtitleKey, intent.subtitleFallback)}
+          >
+            <StationRing
+              state="typed"
+              track={INTENT_TRACK[intent.id] ?? 'pink'}
+              className="h-3 w-3"
+            />
+            {t(intent.labelKey, intent.fallback)}
+          </button>
+        ))}
       </div>
 
       {tiles.length > 0 && (
-        <div className="px-4 pb-2 pt-4">
-          <div className="mb-2 flex items-center gap-1.5 text-13 font-semibold uppercase tracking-wider text-muted-foreground">
-            <TrendingUp className="h-3.5 w-3.5" />
-            {heading}
-          </div>
-          <div className="grid grid-cols-3 gap-2">
+        <>
+          <Eyebrow>{heading}</Eyebrow>
+          <ul className="px-6 pb-2">
             {tiles.map((hit) => {
               const name = (hit.title || hit.name || '') as string;
               if (!name) return null;
-              const Icon = (TYPE_ICONS[hit.type] || TrendingUp) as React.ComponentType<{
-                className?: string;
-              }>;
-              const image = (hit.image_url || hit.cover_image_url || hit.hero_image_url) as
-                string | undefined;
+              const meta = [hit.city, hit.country].filter(Boolean).join(' · ');
               return (
-                <button
-                  key={`trend-${hit.type}-${hit.id}`}
-                  type="button"
-                  onClick={() => onSelectTrending(hit)}
-                  className="flex cursor-pointer flex-col overflow-hidden rounded-element bg-transparent p-0 text-left transition-colors hover:bg-accent"
-                >
-                  <div className="flex h-24 items-center justify-center overflow-hidden bg-muted">
-                    {image ? (
-                      <img
-                        src={image}
-                        alt=""
-                        loading="lazy"
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <Icon className="h-6 w-6 text-muted-foreground" />
-                    )}
-                  </div>
-                  <div className="px-2 py-2">
-                    <div className="truncate text-13 font-semibold">{name}</div>
-                    <div className="truncate text-xs text-muted-foreground">
-                      {[hit.city, hit.country].filter(Boolean).join(' · ') || hit.type}
-                    </div>
-                  </div>
-                </button>
+                <li key={`trend-${hit.type}-${hit.id}`}>
+                  <button
+                    type="button"
+                    onClick={() => onSelectTrending(hit)}
+                    className="flex w-full cursor-pointer items-center gap-4 border-0 bg-transparent px-0 py-2 text-left transition-colors hover:bg-surface-container"
+                  >
+                    <RouteBullet type={hit.type} size={30} />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-15 font-bold">{name}</span>
+                      {meta && (
+                        <span className="block truncate text-13 text-muted-foreground">{meta}</span>
+                      )}
+                    </span>
+                  </button>
+                </li>
               );
             })}
-          </div>
-        </div>
+          </ul>
+        </>
       )}
 
       {/* The mode row sits right under the tiles it re-biases. */}
@@ -153,18 +142,19 @@ export function SearchPopoverEmpty({
       <button
         type="button"
         onClick={onAsk}
-        className="flex w-full items-center gap-2 border-y border-border px-4 py-2 text-left text-sm font-medium transition-colors hover:bg-accent"
+        className="flex w-full items-center gap-2 border-y border-border-hairline px-6 py-4 text-left text-13 font-bold transition-colors hover:bg-foreground hover:text-background"
       >
-        <Sparkles className="h-4 w-4 shrink-0" />
         {t('search.ask.entry', 'Ask the guide a question')}
-        <span className="ml-auto shrink-0 text-muted-foreground">→</span>
+        <span className="ml-auto shrink-0" aria-hidden>
+          →
+        </span>
       </button>
 
       {/* Every browse route stays reachable — the intent row is additive, never
           a replacement — but it is demoted behind a disclosure so the two
           models are not presented as peers. */}
-      <details className="px-4 pb-4 pt-2">
-        <summary className="cursor-pointer list-none text-13 font-semibold uppercase tracking-wider text-muted-foreground">
+      <details className="px-6 pb-6 pt-2">
+        <summary className="cursor-pointer list-none text-2xs font-bold uppercase tracking-label text-muted-foreground">
           {t('header.intents.browseHeading', 'Browse everything')}
         </summary>
         <div className="pt-2">
@@ -173,24 +163,20 @@ export function SearchPopoverEmpty({
             if (items.length === 0) return null;
             return (
               <div key={cluster.id} className="mb-4 last:mb-0">
-                <div className="mb-1.5 text-13 font-semibold uppercase tracking-wider text-muted-foreground">
+                <div className="mb-2 text-2xs font-bold uppercase tracking-label text-muted-foreground">
                   {t(cluster.labelKey)}
                 </div>
-                <div className="grid grid-cols-2 gap-1">
-                  {items.map((item) => {
-                    const Icon = item.icon;
-                    return (
-                      <button
-                        key={item.to}
-                        type="button"
-                        onClick={() => onBrowse(item.to)}
-                        className="flex w-full cursor-pointer items-center gap-2 rounded-element border-0 bg-transparent px-2 py-2 text-left transition-colors hover:bg-accent"
-                      >
-                        <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
-                        <span className="truncate text-sm font-medium">{t(item.labelKey)}</span>
-                      </button>
-                    );
-                  })}
+                <div className="flex flex-wrap gap-2">
+                  {items.map((item) => (
+                    <button
+                      key={item.to}
+                      type="button"
+                      onClick={() => onBrowse(item.to)}
+                      className={CHIP}
+                    >
+                      {t(item.labelKey)}
+                    </button>
+                  ))}
                 </div>
               </div>
             );

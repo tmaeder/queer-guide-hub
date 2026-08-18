@@ -47,7 +47,7 @@ export function TripTravelBuddiesCTA({
     <button
       type="button"
       onClick={go}
-      className="mb-6 flex w-full items-center gap-2 rounded-element border border-border px-4 py-2.5 text-left text-sm transition-colors hover:border-foreground"
+      className="mb-6 flex w-full items-center gap-2 rounded-element border border-border px-4 py-2.5 text-left text-sm transition-colors hover:border-border-hairline"
     >
       <Users size={16} className="text-muted-foreground" aria-hidden />
       <span>

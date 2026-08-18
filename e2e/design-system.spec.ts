@@ -1,12 +1,19 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * Design system enforcement tests (subway-map rebrand 2026-08).
+ * Design system enforcement tests (subway-map rebrand 2026-08, softened
+ * 2026-08-17).
  *
- * Verify the semantic radius tokens (zeroed — squared corners), the hard-shadow
- * rule (none at rest, hard ink shadow on .card-lift hover), fonts (Anton +
- * Space Grotesk, no Inter), and that public pages only ever paint sanctioned
- * color (paper/ink + the four track colors + destructive).
+ * Verify the semantic radius ladder (26/18/12/9 — "nothing square"), the
+ * elevation rule (one soft shadow at rest, a deeper one on .card-lift hover,
+ * and NO container border), fonts (Anton + Space Grotesk, no Inter), and that
+ * public pages only ever paint sanctioned color (ink/paper/frame + the four
+ * track colors + destructive).
+ *
+ * Two assertions in here are the inverse of what they said before the soft
+ * re-skin — cards now HAVE a rest shadow and DO NOT have a border. If you are
+ * reading this because one of them failed, check whether the design system
+ * changed under you before changing the component.
  *
  * Radius assertions resolve --radius-{container,element,badge} through a probe
  * element at runtime instead of hardcoding px. They used to assert 16/8/4
@@ -76,40 +83,71 @@ test.describe('design system: semantic radius (token-derived)', () => {
   // Assertions read the token rather than a literal px value: the semantic trio
   // is re-tuned by design passes (and is runtime-overridable via /admin/design),
   // so hardcoding the px froze these tests at the 16/4px era and they went stale.
+  // `[data-slot="card"]` and NOT `.bg-card`. The latter is a utility, not the
+  // component: the soft re-skin put `bg-card` on ~70 more elements, so "the
+  // first .bg-card on the page" stopped meaning "a Card" and began resolving
+  // differently under the dev server and the CI build — these three guards
+  // failed against an element that was never a card.
   test('cards use --radius-container', async ({ page }) => {
-    const cards = page.locator('.bg-card').first();
-    await expect(cards).toBeVisible();
-    const radius = await cards.evaluate((el) => getComputedStyle(el).borderRadius);
+    const card = page.locator('[data-slot="card"]').first();
+    await expect(card).toBeVisible();
+    const radius = await card.evaluate((el) => getComputedStyle(el).borderRadius);
     expect(radius).toBe(await resolveRadius(page, '--radius-container'));
   });
 
-  test('cards have no box-shadow at rest', async ({ page }) => {
-    const card = page.locator('.bg-card').first();
+  // Both of these INVERTED with the 2026-08-17 soft re-skin, and the pair has
+  // to be read together. The old suite asserted a card has no shadow at rest
+  // and a 3px ink border — correct while the cage was what separated a card
+  // from a paper page. The cage is gone, so the rest shadow is now
+  // load-bearing: a card with neither border nor shadow is invisible against
+  // a page just 1.12:1 away from it.
+  test('cards carry the soft elevation at rest', async ({ page }) => {
+    const card = page.locator('[data-slot="card"]').first();
     await expect(card).toBeVisible();
     const shadow = await card.evaluate((el) => getComputedStyle(el).boxShadow);
-    expect(shadow).toBe('none');
+    expect(shadow).not.toBe('none');
+    // 0 16px 40px — offset and blur identify the token; the colour serialises
+    // as rgba(...) and is not worth pinning.
+    expect(shadow).toMatch(/0px 16px 40px/);
   });
 
-  test('interactive cards lift with the hard ink shadow on hover', async ({ page }) => {
-    // Foundation ships the .card-lift utility; surfaces adopt it in the
-    // Public phase. Zero elements => explicit skip, never a vacuous pass.
+  test('cards have no frame (surfaces without cages)', async ({ page }) => {
+    const card = page.locator('[data-slot="card"]').first();
+    await expect(card).toBeVisible();
+    const width = await card.evaluate((el) => getComputedStyle(el).borderTopWidth);
+    expect(width).toBe('0px');
+  });
+
+  test('interactive cards lift with a deeper soft shadow on hover', async ({ page }) => {
+    // Zero elements => explicit skip, never a vacuous pass.
     const probe = page.locator('.card-lift, .card-lift-sm').first();
     if ((await probe.count()) === 0) {
-      test.skip(true, 'no .card-lift on /events yet — wired in the Public phase');
+      test.skip(true, 'no .card-lift on /events');
       return;
     }
     await probe.hover();
     await page.waitForTimeout(200);
     const shadow = await probe.evaluate((el) => getComputedStyle(el).boxShadow);
-    expect(shadow).toMatch(/[56]px [56]px 0(px)?/);
+    expect(shadow).toMatch(/0px 12px 30px/);
   });
 
-  test('badges use --radius-badge', async ({ page }) => {
-    const badge = page.locator('[class*="badge"]').first();
-    if ((await badge.count()) > 0) {
-      const radius = await badge.evaluate((el) => getComputedStyle(el).borderRadius);
-      expect(radius).toBe(await resolveRadius(page, '--radius-badge'));
+  // The chip moved from --radius-badge (9px) to --radius-element (12px) in
+  // the soft re-skin: the design system's badge rank is for count marks and
+  // swatches, and the mocks draw chips at 12. This probe selected on
+  // `[class*="badge"]`, which the Badge component no longer emits — so it
+  // would now match nothing and pass vacuously, which this file's own header
+  // calls out as the failure mode to avoid. The radius contract for Badge is
+  // asserted directly on the component in
+  // src/components/ui/__tests__/token-compliance.test.tsx instead, where the
+  // selector cannot rot.
+  test('chips consume a semantic radius token', async ({ page }) => {
+    const chip = page.locator('main [class*="rounded-element"]').first();
+    if ((await chip.count()) === 0) {
+      test.skip(true, 'no chip on /events');
+      return;
     }
+    const radius = await chip.evaluate((el) => getComputedStyle(el).borderRadius);
+    expect(radius).toBe(await resolveRadius(page, '--radius-element'));
   });
 });
 
@@ -140,7 +178,7 @@ test.describe('design system: buttons', () => {
 });
 
 test.describe('design system: dialog', () => {
-  test('dialog uses --radius-container', async ({ page }) => {
+  test('dialog uses --radius-panel', async ({ page }) => {
     await page.goto('/trips');
     // Wait for the app to paint, not for the network to fall idle. These guards
     // read computed styles under #root, and `networkidle` (500ms of zero
@@ -160,7 +198,7 @@ test.describe('design system: dialog', () => {
           const panel = el.querySelector('[class*="DialogContent"], [class*="dialog"]') || el;
           return getComputedStyle(panel).borderRadius;
         });
-        expect(radius).toBe(await resolveRadius(page, '--radius-container'));
+        expect(radius).toBe(await resolveRadius(page, '--radius-panel'));
       }
     }
   });
@@ -197,9 +235,15 @@ test.describe('design system: typography', () => {
       for (const sheet of Array.from(document.styleSheets)) {
         try {
           for (const rule of sheet.cssRules) {
-            if (rule instanceof CSSFontFaceRule && /inter/i.test(rule.style.getPropertyValue('font-family'))) return true;
+            if (
+              rule instanceof CSSFontFaceRule &&
+              /inter/i.test(rule.style.getPropertyValue('font-family'))
+            )
+              return true;
           }
-        } catch { /* cross-origin */ }
+        } catch {
+          /* cross-origin */
+        }
       }
       return false;
     });
@@ -253,7 +297,16 @@ test.describe('design system: typography', () => {
  * equality scale, map layers) because none of them render on these four routes;
  * if one ever does, add it here explicitly rather than widening the tolerance.
  */
-const SANCTIONED_TOKENS = ['track-pink', 'track-blue', 'track-green', 'track-yellow', 'spot', 'ink-blue', 'ink-over', 'destructive'];
+const SANCTIONED_TOKENS = [
+  'track-pink',
+  'track-blue',
+  'track-green',
+  'track-yellow',
+  'spot',
+  'ink-blue',
+  'ink-over',
+  'destructive',
+];
 
 test.describe('design system: sanctioned ink only', () => {
   // /news excluded — news cards may have category images with chromatic content
@@ -268,7 +321,80 @@ test.describe('design system: sanctioned ink only', () => {
   // track-colour-dense page on the site — a five-line index showing all four
   // tracks at once, plus the only sanctioned `.intersection-gradient`. If any
   // page is going to drift an unsanctioned hue in, it is this one.
-  const publicPages = ['/', '/events', '/venues', '/hotels', '/map', '/about'];
+  // /tags and a tag page join the sweep with the 2026-08 glossary rebuild:
+  // both were pre-rebrand (rgba gradients, rounded containers, a lucide-only
+  // surface) and neither was in any design guard, so the whole rebuild would
+  // otherwise ship with no automated check that it stayed on-system.
+  //
+  // /marketplace joins it with the M-line rebuild, and it had been outside this
+  // sweep entirely — which is how the app's LARGEST grid ran for months with
+  // cards that both hover-tinted and cast the hard shadow. Its only saturated
+  // fills are the M-yellow bullet, the yellow count rule and the ink-filled
+  // active department station; product photography arrives in <img>, not as a
+  // background, so it is invisible to this sweep (unlike /news, which is
+  // excluded because its category images are backgrounds).
+  const publicPages = [
+    '/',
+    '/events',
+    '/venues',
+    '/hotels',
+    '/map',
+    '/about',
+    '/tags',
+    '/tags/lesbian',
+    '/marketplace',
+    // The three geo singles, added with their 2026-08 subway rebuild. The city
+    // one is load-bearing here: /city/berlin is the only public page that
+    // renders the four-track network diagram, so it is where an unsanctioned
+    // hue would first appear.
+    '/city/berlin',
+    '/country/germany',
+    '/villages/chueca',
+    '/venues/scum-and-villainy-cantina',
+    '/events/capital-pride-ottawa-2026',
+  ];
+
+/**
+ * Per-route additions to the allowlist above, as raw hex.
+ *
+ * The comment on SANCTIONED_TOKENS says the locked functional palettes are
+ * excluded "because none of them render on these four routes; if one ever
+ * does, add it here explicitly rather than widening the tolerance." Adding the
+ * geo singles made that day arrive: a country page states a legal risk
+ * verdict, so it renders the trip-safety TRAFFIC LIGHT — a user-locked
+ * exception whose only source of truth is `src/hooks/useRiskVisual.ts`, the one
+ * module ESLint allows raw hex in — and the equality tier scale from
+ * `src/utils/equalityScore.ts`.
+ *
+ * Scoped per route on purpose. These hues mean "danger" and "how equal is this
+ * place"; letting them through globally would allow an amber tint onto
+ * /marketplace, where it would mean nothing at all. A city or village page can
+ * show the same verdict tile, so all three geo routes get the same allowance.
+ *
+ * Light-mode values only — the site has no dark mode.
+ */
+const RISK_PALETTE = [
+  // useRiskVisual: bg / fg / border for low | moderate | high | critical
+  '#ecfdf5', '#fffbeb', '#fef2f2',
+  '#047857', '#92400e', '#b91c1c', '#7f1d1d',
+  '#a7f3d0', '#fcd34d', '#fca5a5', '#dc2626',
+];
+const EQUALITY_PALETTE = [
+  // equalityScore: TIER_LABEL_COLOR + TIER_RING_COLOR
+  '#15803d', '#22c55e', '#65a30d', '#84cc16', '#ca8a04', '#eab308',
+  '#ea580c', '#f97316', '#ef4444', '#dc2626',
+  '#dcfce7', '#ecfccb', '#fef9c3', '#fff7ed', '#fef2f2',
+  '#6b7280', '#d1d5db', '#f3f4f6',
+];
+const EXTRA_SANCTIONED: Record<string, string[]> = {
+  '/city/berlin': [...RISK_PALETTE, ...EQUALITY_PALETTE],
+  '/country/germany': [...RISK_PALETTE, ...EQUALITY_PALETTE],
+  '/villages/chueca': [...RISK_PALETTE, ...EQUALITY_PALETTE],
+  // Venue and event both render `SafetyAlertBanner` from their country, and
+  // the event masthead carries an `EqualityScoreBadge`.
+  '/venues/scum-and-villainy-cantina': [...RISK_PALETTE, ...EQUALITY_PALETTE],
+  '/events/capital-pride-ottawa-2026': [...RISK_PALETTE, ...EQUALITY_PALETTE],
+};
 
   // What counts as "this page has rendered its chrome".
   //
@@ -281,8 +407,7 @@ test.describe('design system: sanctioned ink only', () => {
   // so the 15s budget was never the constraint and the extra headroom below is
   // for a loaded CI runner, not for a known slowness. If /map ever does take
   // 30s, that is a real regression and should fail.
-  const readySelector = (path: string) =>
-    path === '/map' ? '[data-testid=map-bar]' : '#root *';
+  const readySelector = (path: string) => (path === '/map' ? '[data-testid=map-bar]' : '#root *');
 
   for (const path of publicPages) {
     test(`only sanctioned brand ink on ${path}`, async ({ page }) => {
@@ -295,7 +420,7 @@ test.describe('design system: sanctioned ink only', () => {
       await dismissCookieBanner(page);
       await page.waitForTimeout(500);
 
-      const rogue = await page.evaluate((tokens) => {
+      const rogue = await page.evaluate(([tokens, extraHex]: [string[], string[]]) => {
         const root = document.documentElement;
 
         // Resolve each token's HSL triple to rgb the way the browser does,
@@ -352,17 +477,21 @@ test.describe('design system: sanctioned ink only', () => {
           return max === 0 ? 0 : (max - min) / max;
         };
 
+        // Per-route additions (locked functional palettes) arrive as raw hex
+        // rather than as tokens: they are not CSS variables, and their source
+        // of truth is the TS module that owns them.
+        for (const hex of extraHex) {
+          const m = /^#(..)(..)(..)$/.exec(hex);
+          if (m) sanctioned.add([1, 2, 3].map((i) => parseInt(m[i], 16)).join(','));
+        }
+
         // A few channels of slack: an ink can arrive through a Tailwind opacity
         // modifier or a color-mix, both of which can shift the last bit.
         const NEAR = 4;
         const isSanctioned = (r: number, g: number, b: number) => {
           for (const s of sanctioned) {
             const [sr, sg, sb] = s.split(',').map(Number);
-            if (
-              Math.abs(r - sr) <= NEAR &&
-              Math.abs(g - sg) <= NEAR &&
-              Math.abs(b - sb) <= NEAR
-            ) {
+            if (Math.abs(r - sr) <= NEAR && Math.abs(g - sg) <= NEAR && Math.abs(b - sb) <= NEAR) {
               return true;
             }
           }
@@ -391,7 +520,7 @@ test.describe('design system: sanctioned ink only', () => {
           offenders.push(`${bg} on <${tag} class="${cls}">`);
         }
         return { offenders: [...new Set(offenders)], sanctioned: [...sanctioned], unparsed };
-      }, SANCTIONED_TOKENS);
+      }, [SANCTIONED_TOKENS, EXTRA_SANCTIONED[path] ?? []] as [string[], string[]]);
 
       expect(
         rogue.sanctioned.length,

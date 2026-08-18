@@ -91,9 +91,7 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
   const isVerified = venue?.verified === true || venue?.verification_status === 'verified';
   const isClosed = !!venue?.closed_at && new Date(venue.closed_at) <= new Date();
   const topTags = (venue?.tags ?? []).slice(0, 2);
-  const locationLabel = venue
-    ? [venue.city, venue.state].filter(Boolean).join(', ')
-    : '';
+  const locationLabel = venue ? [venue.city, venue.state].filter(Boolean).join(', ') : '';
 
   // Single overlay slot — priority order
   const overlay: { label: string; variant: 'closed' | 'open' } | null = isClosed
@@ -162,7 +160,7 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
 
             <div className="p-4">
               <div className="flex items-baseline gap-2 min-w-0">
-                <h3 className="font-display text-title leading-tight truncate flex-1 min-w-0">
+                <h3 className="text-title font-bold leading-tight truncate flex-1 min-w-0">
                   {venue.name}
                   {isVerified && (
                     <BadgeCheck
@@ -192,11 +190,7 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
               {(() => {
                 const blurb = (venue.description ?? '').split(/(?<=[.!?])\s+/)[0]?.trim();
                 if (!blurb || blurb.length < 12) return null;
-                return (
-                  <p className="mt-2 text-13 text-muted-foreground line-clamp-2">
-                    {blurb}
-                  </p>
-                );
+                return <p className="mt-2 text-13 text-muted-foreground line-clamp-2">{blurb}</p>;
               })()}
               {topTags.length > 0 && (
                 <TagChipRow tags={topTags} max={2} size="sm" className="mt-2" linkless />

@@ -478,43 +478,86 @@ type NotFoundKind = {
   body: string;
   backLabel: string;
   backHref: string;
+  /** HSL channel triple of the line this kind rides, for the dead-end artwork.
+   *  Must match a `--track-*` in src/index.css; omitted = an ink line. */
+  track?: string;
 };
 
+/** Mirrors SEGMENT_TYPE in src/pages/NotFound.tsx — the SPA renders this same
+ *  404 for client-side navigations, and the two must tell one story. Tracks
+ *  mirror ROUTE_BULLET_MAP in src/components/transit/routeBulletMap.ts. */
 const NOT_FOUND_KINDS: Record<string, NotFoundKind> = {
   personality: {
-    title: 'Personality not found',
-    heading: "We couldn't find that personality",
-    body: 'The personality you\'re looking for was moved, removed, or never existed.',
-    backLabel: 'Back to personalities',
+    title: 'Person not found',
+    heading: 'Nobody at this stop.',
+    body: 'The person you\'re looking for was moved, removed, or never existed.',
+    backLabel: 'Back to people',
     backHref: '/personalities',
+    track: '330 100% 56%',
   },
   news: {
     title: 'Article not found',
-    heading: "We couldn't find that article",
+    heading: 'No article at this stop.',
     body: 'The article you\'re looking for was moved or removed.',
     backLabel: 'Back to news',
     backHref: '/news',
+    track: '193 100% 45%',
   },
   venue: {
     title: 'Venue not found',
-    heading: "We couldn't find that venue",
+    heading: 'No venue at this stop.',
     body: 'The venue you\'re looking for was moved or removed.',
     backLabel: 'Browse venues',
     backHref: '/venues',
+    track: '330 100% 56%',
   },
   event: {
     title: 'Event not found',
-    heading: "We couldn't find that event",
+    heading: 'No event at this stop.',
     body: 'The event you\'re looking for was moved or removed.',
     backLabel: 'Browse events',
     backHref: '/events',
+    track: '193 100% 45%',
   },
   hotel: {
     title: 'Hotel not found',
-    heading: "We couldn't find that hotel",
+    heading: 'No hotel at this stop.',
     body: 'The hotel you\'re looking for was moved or removed.',
     backLabel: 'Browse hotels',
     backHref: '/hotels',
+    track: '50.1 100% 50%',
+  },
+  city: {
+    title: 'City not found',
+    heading: 'No city at this stop.',
+    body: 'The city you\'re looking for was moved or removed.',
+    backLabel: 'Browse cities',
+    backHref: '/cities',
+    track: '135.6 74.5% 52.4%',
+  },
+  country: {
+    title: 'Country not found',
+    heading: 'No country at this stop.',
+    body: 'The country you\'re looking for was moved or removed.',
+    backLabel: 'Browse destinations',
+    backHref: '/travel',
+    track: '50.1 100% 50%',
+  },
+  village: {
+    title: 'District not found',
+    heading: 'No district at this stop.',
+    body: 'The district you\'re looking for was moved or removed.',
+    backLabel: 'Browse destinations',
+    backHref: '/travel',
+    track: '135.6 74.5% 52.4%',
+  },
+  marketplace: {
+    title: 'Product not found',
+    heading: 'No product at this stop.',
+    body: 'The product you\'re looking for was moved or removed.',
+    backLabel: 'Browse the marketplace',
+    backHref: '/marketplace',
+    track: '50.1 100% 50%',
   },
 };
 
@@ -527,9 +570,13 @@ function notFoundKindFor(pathname: string): NotFoundKind {
   if (segRaw.startsWith('venue')) return NOT_FOUND_KINDS.venue;
   if (segRaw.startsWith('event')) return NOT_FOUND_KINDS.event;
   if (segRaw.startsWith('hotel')) return NOT_FOUND_KINDS.hotel;
+  if (segRaw === 'city' || segRaw === 'cities') return NOT_FOUND_KINDS.city;
+  if (segRaw === 'country' || segRaw === 'countries') return NOT_FOUND_KINDS.country;
+  if (segRaw.startsWith('village')) return NOT_FOUND_KINDS.village;
+  if (segRaw === 'marketplace') return NOT_FOUND_KINDS.marketplace;
   return {
     title: 'Page not found',
-    heading: "This page doesn't exist",
+    heading: 'No stop here.',
     body: 'The page you\'re looking for was moved or removed.',
     backLabel: 'Home',
     backHref: '/',
@@ -554,33 +601,103 @@ function notFoundAssetResponse(pathname: string, nonce: string): Response {
   return res;
 }
 
+/** The failed slug — the ghost station's name. Decoded so `%20` reads as a
+ *  space rather than as machine noise; falls back to the raw path. */
+function ghostStationLabel(pathname: string): string {
+  const segs = pathname.split('?')[0].split('/').filter(Boolean);
+  const last = segs[segs.length - 1];
+  if (!last) return pathname;
+  try {
+    return decodeURIComponent(last);
+  } catch {
+    return last;
+  }
+}
+
+/**
+ * The edge 404 — a standalone document, and for any detail route hit directly
+ * or by a crawler it is the ONLY 404 a visitor sees. The React page never runs
+ * here, so this has to carry the design system on its own: paper and ink, the
+ * self-hosted display face, squared corners, and the same dead-end-track story
+ * as src/components/transit/DeadEndTrack.tsx.
+ *
+ * Colours are HSL channel triples copied from `:root` in src/index.css rather
+ * than hex, so the two can be compared literally — this file is in ESLint's
+ * ignore list, so the design rules do not guard it and
+ * src/test/__tests__/edgeNotFoundTokens.test.ts does instead.
+ *
+ * CSP: the response gets a nonce policy, but `style-src` keeps
+ * `'unsafe-inline'` (functions/_lib/securityHeaders.ts), so the inline
+ * `<style>` runs, and `font-src 'self'` covers the two woff2 files. There is
+ * deliberately no script here at all.
+ */
 function notFoundHtml(pathname: string): string {
   const safePath = escapeAttr(pathname);
   const kind = notFoundKindFor(pathname);
+  const track = kind.track ?? '0 0% 6.7%';
   return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="hsl(60 33% 97%)">
 <title>${escapeAttr(kind.title)} · Queer Guide</title>
 <link rel="canonical" href="https://queer.guide${safePath}">
 <style>
+  @font-face { font-family: 'Anton'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/anton/anton-latin-wght-normal.woff2') format('woff2'); }
+  @font-face { font-family: 'Anton'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/anton/anton-latin-ext-wght-normal.woff2') format('woff2'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+  @font-face { font-family: 'Space Grotesk'; font-style: normal; font-weight: 300 700; font-display: swap; src: url('/fonts/space-grotesk/space-grotesk-latin-wght-normal.woff2') format('woff2'); }
+  @font-face { font-family: 'Space Grotesk'; font-style: normal; font-weight: 300 700; font-display: swap; src: url('/fonts/space-grotesk/space-grotesk-latin-ext-wght-normal.woff2') format('woff2'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+  :root { --paper: 60 16.3% 91.6%; --ink: 0 0% 6.7%; --muted: 0 0% 33%; --track: ${track}; }
+  * { box-sizing: border-box; }
   html, body { height: 100%; }
-  body { font-family: system-ui, sans-serif; margin: 0; min-height: 100vh; display: flex; flex-direction: column; background: #0a0a0a; color: #fafafa; }
-  main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
-  .card { max-width: 32rem; text-align: center; }
-  h1 { font-size: 1.5rem; margin: 0 0 0.5rem; }
-  p { color: #a1a1aa; margin: 0 0 1.5rem; }
-  a { color: #fafafa; }
-  footer { padding: 1rem; text-align: center; color: #a1a1aa; font-size: 0.875rem; }
+  body { font-family: 'Space Grotesk', system-ui, sans-serif; margin: 0; min-height: 100vh; display: flex; flex-direction: column; background: hsl(var(--paper)); color: hsl(var(--ink)); }
+  /* Same frame as every other page: the 1600 (--container-page) cap and the
+     4/6/8 gutter that PageContainer applies in the SPA. Prose and artwork are
+     capped separately so the measure stays readable at full width. */
+  main { flex: 1; width: 100%; max-width: 100rem; margin: 0 auto; padding: 2rem 1rem; }
+  @media (min-width: 640px) { main { padding: 3rem 1.5rem; } }
+  @media (min-width: 768px) { main { padding: 3rem 2rem; } }
+  .card { width: 100%; }
+  .kicker { display: inline-block; background: hsl(var(--ink)); color: hsl(var(--paper)); font-family: 'Anton', 'Space Grotesk', sans-serif; font-size: 0.8125rem; padding: 0.25rem 0.5rem; }
+  h1 { font-family: 'Anton', 'Space Grotesk', sans-serif; font-weight: 400; font-size: clamp(3.25rem, 9vw, 4.75rem); line-height: 0.95; margin: 1.5rem 0 0; }
+  .lede { color: hsl(var(--muted)); font-size: 1.0625rem; line-height: 1.7; margin: 1.5rem 0 0; max-width: 48rem; }
+  .panel { border: 3px solid hsl(var(--ink)); padding: 1.5rem; margin-top: 2.5rem; max-width: 56rem; }
+  .panel svg { display: block; width: 100%; height: auto; }
+  .stop { margin: 1rem 0 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem; }
+  .stop-label { font-size: 0.8125rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: hsl(var(--muted)); }
+  .stop-name { font-family: 'Anton', 'Space Grotesk', sans-serif; font-size: 2rem; line-height: 1.2; word-break: break-all; }
+  .exits { margin-top: 2rem; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .exits a { display: inline-flex; align-items: center; border: 2px solid hsl(var(--ink)); padding: 0.5rem 1rem; font-size: 0.9375rem; font-weight: 700; text-decoration: none; color: hsl(var(--ink)); }
+  .exits a.primary { background: hsl(var(--ink)); color: hsl(var(--paper)); }
+  footer { border-top: 3px solid hsl(var(--ink)); padding: 1rem; text-align: center; color: hsl(var(--muted)); font-size: 0.8125rem; }
 </style>
 </head>
 <body>
 <main><div class="card">
+<div class="kicker">Service notice · 404</div>
 <h1>${escapeAttr(kind.heading)}</h1>
-<p>${escapeAttr(kind.body)}</p>
-<p><a href="${escapeAttr(kind.backHref)}">${escapeAttr(kind.backLabel)}</a> · <a href="/">Home</a></p>
+<p class="lede">${escapeAttr(kind.body)}</p>
+<div class="panel">
+<svg viewBox="0 0 300 100" role="presentation" aria-hidden="true" fill="none" stroke-linecap="round" stroke-linejoin="round" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+<path d="M 10 80 H 44 Q 60 80 71 69 L 101 39 Q 112 28 128 28 H 158" stroke="hsl(var(--track))" stroke-width="5"/>
+<g stroke="hsl(var(--ink))" fill="hsl(var(--paper))">
+<circle cx="34" cy="80" r="7" stroke-width="4"/>
+<circle cx="158" cy="28" r="7" stroke-width="4"/>
+<path d="M 186 28 H 244" stroke-width="4" stroke-dasharray="2 12" opacity="0.4" fill="none"/>
+<g opacity="0.55">
+<circle cx="266" cy="28" r="12" stroke-width="4"/>
+<path d="M 259 21 L 273 35 M 273 21 L 259 35" stroke-width="4" fill="none"/>
+</g>
+</g>
+</svg>
+<p class="stop"><span class="stop-label">No stop</span><span class="stop-name">${escapeAttr(ghostStationLabel(pathname))}</span></p>
+</div>
+<div class="exits">
+<a class="primary" href="${escapeAttr(kind.backHref)}">${escapeAttr(kind.backLabel)}</a>
+<a href="/">Home</a>
+</div>
 </div></main>
 <footer>Queer Guide</footer>
 </body>

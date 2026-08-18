@@ -80,7 +80,9 @@ export function PrideUpNext({ events, selectedId, onSelect, limit = 8 }: PrideUp
               aria-pressed={isSelected}
               className={cn(
                 'snap-start shrink-0 w-[240px] min-h-0 p-4 text-left rounded-container bg-background transition-colors',
-                isSelected ? 'border-foreground' : 'border-foreground/15 hover:border-foreground',
+                isSelected
+                  ? 'border border-border-hairline'
+                  : 'border border-foreground/15 hover:border-border-hairline',
               )}
             >
               <div className="flex items-center justify-between text-xs2 uppercase tracking-label text-muted-foreground mb-2">

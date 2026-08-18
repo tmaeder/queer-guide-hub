@@ -11,6 +11,10 @@ const SearchFiltersPanel = lazy(() =>
 );
 
 export interface SearchPopoverDesktopProps {
+  /** DOM id the input's `aria-controls` points at. Passed in rather than
+   *  hardcoded: the header and the homepage hero both mount a search, and two
+   *  elements sharing an id fails the a11y sweep. */
+  listboxId?: string;
   query: string;
   activeScope: string | null;
   suggestions: SearchSuggestion[];
@@ -36,10 +40,13 @@ export interface SearchPopoverDesktopProps {
   onBrowse: (path: string) => void;
   onPrefetch: (s: SearchSuggestion) => void;
   onAsk: () => void;
+  /** Contribute flow, offered from the no-results state. */
+  onAddToMap?: () => void;
 }
 
 export function SearchPopoverDesktop(props: SearchPopoverDesktopProps) {
   const {
+    listboxId = 'qg-search-listbox',
     query,
     activeScope,
     suggestions,
@@ -65,10 +72,11 @@ export function SearchPopoverDesktop(props: SearchPopoverDesktopProps) {
     onBrowse,
     onPrefetch,
     onAsk,
+    onAddToMap,
   } = props;
 
   return (
-    <div className="flex min-h-[320px] flex-col" id="qg-search-listbox">
+    <div className="flex min-h-[320px] flex-col" id={listboxId}>
       {query.length === 0 ? (
         <SearchPopoverEmpty
           trending={trending}
@@ -105,6 +113,7 @@ export function SearchPopoverDesktop(props: SearchPopoverDesktopProps) {
             onSearchAll={onSearchAll}
             onClearScope={() => setScope(null)}
             onAsk={onAsk}
+            onAddToMap={onAddToMap}
           />
         </>
       )}

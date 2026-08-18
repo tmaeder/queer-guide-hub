@@ -24,7 +24,7 @@ export function SelfHelpDrawer() {
             ink-on-ink outline button would be invisible there. */}
         <button
           type="button"
-          className="inline-flex items-center gap-2 border-2 border-background px-4 py-2 text-13 font-bold text-background transition-colors hover:bg-background hover:text-foreground"
+          className="border inline-flex items-center gap-2 border-background px-4 py-2 text-13 font-bold text-background transition-colors hover:bg-background hover:text-foreground"
         >
           <Wind size={14} aria-hidden />
           {t('help.self_help_trigger', 'Not ready to talk?')}
@@ -42,7 +42,7 @@ export function SelfHelpDrawer() {
         </SheetHeader>
 
         <section className="mt-6">
-          <h3 className="flex items-center gap-2 font-display text-title leading-tight">
+          <h3 className="flex items-center gap-2 text-title font-bold leading-tight">
             <Wind size={16} aria-hidden />
             {t('help.breathing_title', '4-7-8 breathing')}
           </h3>
@@ -55,7 +55,7 @@ export function SelfHelpDrawer() {
         </section>
 
         <section className="mt-6">
-          <h3 className="flex items-center gap-2 font-display text-title leading-tight">
+          <h3 className="flex items-center gap-2 text-title font-bold leading-tight">
             <Hand size={16} aria-hidden />
             {t('help.grounding_title', '5-4-3-2-1 grounding')}
           </h3>
@@ -72,7 +72,7 @@ export function SelfHelpDrawer() {
         </section>
 
         <section className="mt-6">
-          <h3 className="flex items-center gap-2 font-display text-title leading-tight">
+          <h3 className="flex items-center gap-2 text-title font-bold leading-tight">
             <FileText size={16} aria-hidden />
             {t('help.safety_plan_title', 'Safety plan')}
           </h3>
@@ -83,11 +83,7 @@ export function SelfHelpDrawer() {
             )}
           </p>
           <Button asChild variant="link" className="mt-1 h-auto p-0 text-13">
-            <a
-              href="https://suicidesafetyplan.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <a href="https://suicidesafetyplan.com/" target="_blank" rel="noopener noreferrer">
               {t('help.safety_plan_link', 'Open template (Stanley-Brown)')}
               <ExternalLink size={12} className="ml-1" />
             </a>

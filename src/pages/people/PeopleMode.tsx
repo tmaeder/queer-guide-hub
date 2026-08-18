@@ -95,7 +95,7 @@ export default function PeopleMode({ tab }: { tab: PeopleTab }) {
 
         {/* Was a bare `text-headline` h1 with no rule under it — the one place
             in the hub's subtree that read as an unstyled page. */}
-        <div className="mb-8 flex flex-wrap items-end justify-between gap-4 border-b-2 border-foreground pb-4">
+        <div className="mb-8 flex flex-wrap items-end justify-between gap-4 border-b border-border-hairline pb-4">
           <h1 className="font-display text-display">{t(meta.labelKey, meta.label)}</h1>
           <Button
             variant="outline"

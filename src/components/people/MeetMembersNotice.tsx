@@ -74,7 +74,7 @@ export function MeetMembersNotice({
   // visitors will actually see, so it gets real copy rather than a shrug.
   if (total === 0) {
     return (
-      <div className="flex flex-col gap-4 border-[3px] border-foreground bg-background p-6 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 bg-card p-6 sm:flex-row sm:items-center sm:justify-between rounded-container shadow-soft">
         <div className="flex items-start gap-4">
           <UserPlus className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" aria-hidden />
           <div className="space-y-1">
@@ -117,7 +117,7 @@ export function MeetMembersNotice({
   // because of it. `setStatus` is the same writer StatusPicker uses.
   if (user && !optedIntoDiscovery) {
     return (
-      <div className="flex flex-col gap-4 border-[3px] border-foreground bg-background p-6 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 bg-card p-6 sm:flex-row sm:items-center sm:justify-between rounded-container shadow-soft">
         <div className="flex items-start gap-4">
           <Radio className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" aria-hidden />
           <div className="space-y-1">
@@ -155,7 +155,7 @@ export function MeetMembersNotice({
   // Signed out, and there is genuinely somebody to find.
   if (!user) {
     return (
-      <div className="flex flex-col gap-4 border-[3px] border-foreground bg-background p-6 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 bg-card p-6 sm:flex-row sm:items-center sm:justify-between rounded-container shadow-soft">
         <div className="flex items-start gap-4">
           <UserPlus className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" aria-hidden />
           <div className="space-y-1">

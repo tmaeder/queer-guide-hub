@@ -1,18 +1,18 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useMeta } from '@/hooks/useMeta';
 import { IntentPageLayout } from '@/components/intent/IntentPageLayout';
 import { CoverageNote } from '@/components/intent/CoverageNote';
-import { useAllCountriesRightsFull, useIntentNews, type RightsCountry } from '@/hooks/useIntentData';
+import {
+  useAllCountriesRightsFull,
+  useIntentNews,
+  type RightsCountry,
+} from '@/hooks/useIntentData';
 import { summariseRightsWorldwide } from '@/lib/rights/rightsWorldSummary';
 import { RIGHT_SECTION_ORDER, RIGHT_SECTION_LABEL } from '@/lib/rights/rightsCatalog';
 import { useIntentLocation } from '@/hooks/useIntentLocation';
-import {
-  hasAnyCriminalizationSignal,
-  deathPenaltyRisk,
-  tierForScore,
-} from '@/utils/equalityScore';
+import { hasAnyCriminalizationSignal, deathPenaltyRisk, tierForScore } from '@/utils/equalityScore';
 import type { SectionDef } from '@/components/entity/editorial';
 
 /**
@@ -134,6 +134,49 @@ export default function RightsIntent() {
   );
   const { countryCode } = useIntentLocation();
 
+  // Deep links into a single right (`/rights#marriage`), which is where the
+  // glossary sends every class-of-law tag — see src/lib/rights/tagRightTopics.ts.
+  //
+  // The browser performs its fragment jump while this page is still a shell: the
+  // topic cards need the all-countries fetch, so `#marriage` does not exist yet
+  // and the reader is silently left at the top of a very long page. Measured on
+  // a real load, both as a full navigation and as an in-app click: scrollY 0
+  // with the target 4,008px down.
+  //
+  // WAITING ON A DEPENDENCY DOES NOT WORK HERE, which is the trap.
+  // `summariseRightsWorldwide` maps over RIGHT_TOPICS, so `rightsSummary.length`
+  // is 18 from the first render whether or not any country has loaded — keying
+  // the effect on it fires once, immediately, against an empty DOM. So this
+  // polls for the element itself rather than trying to guess when it appears.
+  //
+  // Once found it re-scrolls a few times, because the site header collapses to
+  // its compact height after the first scroll and would otherwise leave the
+  // target ~64px off (the same correction useActiveStation documents).
+  //
+  // A timer, NOT requestAnimationFrame: rAF is paused in a background or
+  // zero-size tab, so a link opened in a new tab would never scroll — which is
+  // exactly how someone following this from a tag page is likely to open it.
+  // Timers still fire there (throttled), so the page is already in position when
+  // they switch to it.
+  useEffect(() => {
+    const id = decodeURIComponent(window.location.hash.slice(1));
+    if (!id) return;
+    const STEP = 100;
+    let waited = 0;
+    let settling = 0;
+    const timer = window.setInterval(() => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ block: 'start' });
+        if (++settling >= 4) window.clearInterval(timer);
+      } else if ((waited += STEP) > 10_000) {
+        // The right does not exist. Leave the page where the reader put it.
+        window.clearInterval(timer);
+      }
+    }, STEP);
+    return () => window.clearInterval(timer);
+  }, []);
+
   useMeta({
     title: 'LGBTQ+ rights and safety, country by country',
     description:
@@ -228,7 +271,12 @@ export default function RightsIntent() {
                     return (
                       <li
                         key={topic.slug}
-                        className="flex items-start gap-4 border-2 border-foreground p-4 rounded-container"
+                        // The anchor target for `/rights#<slug>`. Glossary tags that
+                        // name a class of law (marriage-equality, decriminalization)
+                        // link here rather than citing a statute that does not exist
+                        // — see src/lib/rights/tagRightTopics.ts.
+                        id={topic.slug}
+                        className="flex items-start gap-4 bg-muted p-4 rounded-container scroll-mt-24"
                       >
                         <Icon size={20} aria-hidden="true" className="mt-0.5 shrink-0" />
                         <div className="min-w-0">
@@ -314,16 +362,15 @@ export default function RightsIntent() {
       content: (
         <div>
           <CoverageNote>
-            {withLegalStatus} of {countries?.length ?? 0} countries and territories carry a
-            recorded criminalisation status. The remaining{' '}
-            {(countries?.length ?? 0) - withLegalStatus} also carry no equality score and are
-            listed as “not scored” rather than given a default or folded in with countries we
-            have measured.
+            {withLegalStatus} of {countries?.length ?? 0} countries and territories carry a recorded
+            criminalisation status. The remaining {(countries?.length ?? 0) - withLegalStatus} also
+            carry no equality score and are listed as “not scored” rather than given a default or
+            folded in with countries we have measured.
           </CoverageNote>
           <div className="grid gap-8 md:grid-cols-2">
             {TIER_ORDER.map((tier) => (
               <div key={tier}>
-                <h3 className="font-display text-title mb-2">{TIER_LABEL[tier]}</h3>
+                <h3 className="text-title font-bold mb-2">{TIER_LABEL[tier]}</h3>
                 <p className="text-13 text-muted-foreground mb-4">
                   {buckets[tier].length} countries
                 </p>
@@ -346,9 +393,7 @@ export default function RightsIntent() {
         <div>
           <CoverageNote>
             {criminalizing.length} countries criminalise same-sex acts.{' '}
-            {deathConfirmed.length > 0
-              ? `In ${deathConfirmed.length} the penalty is death.`
-              : null}{' '}
+            {deathConfirmed.length > 0 ? `In ${deathConfirmed.length} the penalty is death.` : null}{' '}
             {deathPossible.length > 0
               ? `In ${deathPossible.length} more our source names the death penalty as possible but records no legal certainty; we list those as uncertain rather than as safe.`
               : null}{' '}
@@ -396,8 +441,8 @@ export default function RightsIntent() {
       content: (
         <div className="max-w-prose">
           <p className="mb-4">
-            Legal status on this page comes from the ILGA World Database and is re-imported
-            nightly. The equality score is a 0–100 composite we compute from it.
+            Legal status on this page comes from the ILGA World Database and is re-imported nightly.
+            The equality score is a 0–100 composite we compute from it.
           </p>
           <p className="text-muted-foreground">
             It opens at 50 and adds points per recorded right, so a country we hold little about
@@ -420,13 +465,13 @@ export default function RightsIntent() {
         <div className="flex flex-wrap gap-4">
           <LocalizedLink
             to="/support"
-            className="border-2 border-foreground px-6 py-2 font-medium no-underline rounded-element"
+            className="bg-muted px-6 py-2 font-medium no-underline rounded-element"
           >
             Find support near you
           </LocalizedLink>
           <LocalizedLink
             to="/help"
-            className="border-2 border-foreground px-6 py-2 font-medium no-underline rounded-element"
+            className="bg-muted px-6 py-2 font-medium no-underline rounded-element"
           >
             Crisis hotlines
           </LocalizedLink>

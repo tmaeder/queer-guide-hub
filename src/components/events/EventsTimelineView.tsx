@@ -443,7 +443,7 @@ export function EventsTimelineView({
                   i % 2 === 1 && 'bg-muted/30',
                 )}
               >
-                <div className="sticky top-0 z-10 px-2 py-1 text-xs2 font-medium tracking-wide text-foreground/70 bg-background border-b-2 border-foreground truncate">
+                <div className="sticky top-0 z-10 px-2 py-1 text-xs2 font-medium tracking-wide text-foreground/70 bg-background border-b border-border-hairline truncate">
                   {b.label}
                 </div>
               </div>
@@ -483,7 +483,7 @@ export function EventsTimelineView({
                       aria-label={`${count} events around ${format(new Date(p.startMs), 'PP')}`}
                       className={cn(
                         'absolute flex items-center justify-center text-2xs font-medium leading-none',
-                        'bg-foreground text-background rounded-full border border-foreground hover:scale-110 transition-transform',
+                        'bg-foreground text-background rounded-full border border-border-hairline hover:scale-110 transition-transform',
                         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-1',
                         isPast && 'opacity-50',
                       )}
@@ -582,7 +582,7 @@ export function EventsTimelineView({
                   {isBar ? (
                     <span
                       className={cn(
-                        'flex items-center px-2 rounded-element border border-foreground transition-colors',
+                        'flex items-center px-2 rounded-element border border-border-hairline transition-colors',
                         event.is_featured
                           ? 'bg-foreground text-background'
                           : 'bg-background text-foreground group-hover:bg-muted',
@@ -597,7 +597,7 @@ export function EventsTimelineView({
                     <>
                       <span
                         className={cn(
-                          'shrink-0 rounded-full border border-foreground transition-all',
+                          'shrink-0 rounded-full border border-border-hairline transition-all',
                           event.is_featured
                             ? 'bg-foreground w-2.5 h-2.5 group-hover:scale-125'
                             : 'bg-background w-2 h-2 group-hover:scale-125 group-hover:bg-foreground',

@@ -7,7 +7,7 @@
 import { useState, useCallback } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useDropzone } from 'react-dropzone';
-import { Upload, X, FileText} from 'lucide-react';
+import { Upload, X, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useCMSMedia } from '@/hooks/useCMSMedia';
@@ -25,20 +25,17 @@ export default function MediaUploader({ onUploaded, bucket, accept }: MediaUploa
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [preview, setPreview] = useState<{ file: File; url: string | null } | null>(null);
 
-  const onDrop = useCallback(
-    (acceptedFiles: File[]) => {
-      if (acceptedFiles.length === 0) return;
-      const file = acceptedFiles[0];
-      setErrorMsg(null);
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    if (acceptedFiles.length === 0) return;
+    const file = acceptedFiles[0];
+    setErrorMsg(null);
 
-      let previewUrl: string | null = null;
-      if (file.type.startsWith('image/')) {
-        previewUrl = URL.createObjectURL(file);
-      }
-      setPreview({ file, url: previewUrl });
-    },
-    [],
-  );
+    let previewUrl: string | null = null;
+    if (file.type.startsWith('image/')) {
+      previewUrl = URL.createObjectURL(file);
+    }
+    setPreview({ file, url: previewUrl });
+  }, []);
 
   const handleUpload = async () => {
     if (!preview) return;
@@ -103,8 +100,8 @@ export default function MediaUploader({ onUploaded, bucket, accept }: MediaUploa
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium truncate">{preview.file.name}</p>
             <span className="text-xs text-muted-foreground">
-              {preview.file.type || 'Unknown type'} &middot;{' '}
-              {(preview.file.size / 1024).toFixed(1)} KB
+              {preview.file.type || 'Unknown type'} &middot; {(preview.file.size / 1024).toFixed(1)}{' '}
+              KB
             </span>
           </div>
 
@@ -116,19 +113,10 @@ export default function MediaUploader({ onUploaded, bucket, accept }: MediaUploa
         </div>
 
         <div className="flex flex-row gap-2 justify-end mt-4">
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={handleClearPreview}
-            disabled={uploading}
-          >
+          <Button size="sm" variant="ghost" onClick={handleClearPreview} disabled={uploading}>
             Cancel
           </Button>
-          <Button
-            size="sm"
-            onClick={handleUpload}
-            disabled={uploading}
-          >
+          <Button size="sm" onClick={handleUpload} disabled={uploading}>
             {uploading ? (
               <TrackLoader size={16} className="mr-2" />
             ) : (
@@ -151,7 +139,7 @@ export default function MediaUploader({ onUploaded, bucket, accept }: MediaUploa
 
       <div
         {...getRootProps()}
-        className={`border-2 border-dashed rounded-badge p-8 text-center cursor-pointer transition-all ${
+        className={` border-dashed rounded-badge p-8 text-center cursor-pointer transition-all ${
           isDragActive
             ? 'border-primary bg-primary/5'
             : 'border-border bg-muted/30 hover:border-primary/50 hover:bg-muted'

@@ -20,11 +20,11 @@ export function DirectoryList({ directories }: { directories: Hotline[] }) {
   if (directories.length === 0) return null;
 
   return (
-    <ul className="m-0 list-none border-[3px] border-foreground bg-background p-0">
+    <ul className="m-0 list-none bg-card p-0 rounded-container shadow-soft">
       {directories.map((d) => {
         const live = d.url && d.link_status !== 'broken';
         return (
-          <li key={d.id} className="border-b-2 border-foreground/10 last:border-b-0">
+          <li key={d.id} className="border-b border-foreground/10 last:border-b-0">
             {live ? (
               <a
                 href={d.url}
@@ -33,7 +33,7 @@ export function DirectoryList({ directories }: { directories: Hotline[] }) {
                 className="flex items-start gap-4 p-4 text-inherit no-underline transition-colors hover:bg-foreground hover:text-background"
               >
                 <span className="min-w-0 flex-1">
-                  <span className="block font-display text-title leading-tight">{d.name}</span>
+                  <span className="block text-title font-bold leading-tight">{d.name}</span>
                   <span className="mt-1 block text-13 leading-relaxed opacity-75">
                     {d.description}
                   </span>
@@ -46,9 +46,12 @@ export function DirectoryList({ directories }: { directories: Hotline[] }) {
             ) : (
               <div className="flex items-start gap-4 p-4">
                 <span className="min-w-0 flex-1">
-                  <span className="block font-display text-title leading-tight">{d.name}</span>
+                  <span className="block text-title font-bold leading-tight">{d.name}</span>
                   <span className="mt-1 block text-13 leading-relaxed text-muted-foreground">
-                    {t('help.link_unavailable', 'Website currently unavailable — being re-checked.')}
+                    {t(
+                      'help.link_unavailable',
+                      'Website currently unavailable — being re-checked.',
+                    )}
                   </span>
                 </span>
               </div>

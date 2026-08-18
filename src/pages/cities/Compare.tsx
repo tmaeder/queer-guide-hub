@@ -10,6 +10,8 @@ import {
 } from '@/components/trips/create/CityCountryAutocomplete';
 import { useCityCompareData, type CityComparison } from '@/hooks/useCityCompareData';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { CityNetwork } from '@/components/home/subway/CityNetwork';
+import { hasCityNetwork } from '@/components/home/subway/cityNetworkGeometry';
 
 /**
  * Two-picker city comparison. URL ?a=<cityId>&b=<cityId> deep-links so users
@@ -219,14 +221,19 @@ function ComparisonTable({
 
 function CityHeader({ city }: { city: CityComparison }) {
   return (
-    <LocalizedLink
-      to={`/city/${city.slug || city.id}`}
-      className="group inline-flex items-center gap-2 text-title font-bold text-foreground no-underline"
-    >
-      {city.countries?.flag_emoji ? <span aria-hidden>{city.countries.flag_emoji}</span> : null}
-      <span className="group-hover:underline">{city.name}</span>
-      <ArrowRight size={14} className="opacity-0 transition-opacity group-hover:opacity-100" />
-    </LocalizedLink>
+    <div className="flex flex-col gap-2">
+      <LocalizedLink
+        to={`/city/${city.slug || city.id}`}
+        className="group inline-flex items-center gap-2 text-title font-bold text-foreground no-underline"
+      >
+        {city.countries?.flag_emoji ? <span aria-hidden>{city.countries.flag_emoji}</span> : null}
+        <span className="group-hover:underline">{city.name}</span>
+        <ArrowRight size={14} className="opacity-0 transition-opacity group-hover:opacity-100" />
+      </LocalizedLink>
+      {hasCityNetwork(city.slug) && (
+        <CityNetwork slug={city.slug} variant="thumb" className="h-14" />
+      )}
+    </div>
   );
 }
 

@@ -18,7 +18,7 @@ export function OnThisDayBand() {
   return (
     <section
       aria-label={t('milestones.onThisDay', 'On this day')}
-      className="border-b-4 border-foreground"
+      className="border-b border-border-hairline"
     >
       <PageContainer flush className="py-6">
         <Eyebrow variant="kicker">{t('milestones.onThisDay', 'On this day')}</Eyebrow>

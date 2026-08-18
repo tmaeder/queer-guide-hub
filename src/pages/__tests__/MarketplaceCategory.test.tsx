@@ -29,9 +29,12 @@ function renderAt(path: string) {
 }
 
 describe('MarketplaceCategory', () => {
-  it('shows not-found when slug missing', () => {
+  it('shows not-found when slug missing, with a way back up the line', () => {
     renderAt('/marketplace/category/');
-    expect(screen.getByText(/Category not found/i)).toBeInTheDocument();
+    // Copy moved from "Category not found" to the family's dead-end voice
+    // (/404 "No stop here.", the maker page "No maker here.").
+    expect(screen.getByText(/No such category/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /All categories/i })).toBeInTheDocument();
   });
 
   it('renders prettified header + passes slug to filtered view', () => {

@@ -2,7 +2,6 @@ import { lazy, Suspense, useState } from 'react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { EventsHeroSpotlight } from '@/components/events/EventsHeroSpotlight';
 import { SmartEmptyState } from '@/components/events/SmartEmptyState';
-import { PresetChips } from '@/components/events/PresetChips';
 import { CoverageNote } from '@/components/intent/CoverageNote';
 import { useEventWindowCounts } from '@/hooks/useEventWindowCounts';
 import { useEvents } from '@/hooks/useEvents';
@@ -24,15 +23,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 import { EventActiveFilters } from '@/components/events/EventActiveFilters';
-import { EventSearchBar } from '@/components/events/EventSearchBar';
-import { EventFiltersPanel } from '@/components/events/EventFiltersPanel';
-import { EventsResultBar } from '@/components/events/EventsResultBar';
+import { EventsControlBar } from '@/components/events/EventsControlBar';
+import { EventsFilterSheet } from '@/components/events/EventsFilterSheet';
+import { EventsResultHeader } from '@/components/events/EventsResultHeader';
 import { EventGridView } from '@/components/events/EventGridView';
-import {
-  PageContainer,
-  PAGE_BLEED_MOBILE,
-  STICKY_UNDER_HEADER,
-} from '@/components/layout/PageContainer';
+import { PageContainer, STICKY_UNDER_HEADER } from '@/components/layout/PageContainer';
+import { cn } from '@/lib/utils';
 
 type Event = Database['public']['Tables']['events']['Row'];
 
@@ -122,73 +118,77 @@ const Events = () => {
         primaryCta={{ label: t('pages.events.submitEvent', 'Add an event'), href: '/submit' }}
         size="md"
       />
-      <PageContainer>
-        <GuidesRail filters={{ entityType: 'event', limit: 6 }} />
-        {/* Filters — first interactive surface after hero */}
-        <div className="flex flex-col gap-4 p-4 bg-card rounded-container mb-6">
-          {/* Search Bar */}
-          <EventSearchBar
+      {/* ---- Control band ---------------------------------------------------
+       *
+       *  ONE band, full-bleed and sticky, holding everything that was previously
+       *  a 352px `bg-card` filter block PLUS a 175px sticky result bar stacked
+       *  under it. Same shape /cities and /marketplace already use.
+       *
+       *  It renders unconditionally — the old result bar was gated on
+       *  `!loading && !error`, so the search field and every control vanished
+       *  during a refetch and the page jumped by the bar's height each time. */}
+      <div
+        className={cn(
+          'sticky z-20 border-b border-border-hairline bg-background',
+          STICKY_UNDER_HEADER,
+        )}
+      >
+        <PageContainer flush className="py-2 md:py-4">
+          <EventsControlBar
             search={f.search}
             onSearchChange={f.setSearch}
-            onSearch={f.handleFiltersChange}
-            showFilters={f.showFilters}
-            onToggleFilters={() => f.setShowFilters(!f.showFilters)}
+            onSearchSubmit={f.handleFiltersChange}
+            activePreset={f.activePreset}
+            /* Counts are passed so a window that would return nothing is
+               disabled and labelled rather than left as a clickable promise;
+               see the note in useEventWindowCounts. */
+            onPresetSelect={f.handlePresetSelect}
+            presetCounts={windowCounts}
+            showPast={f.showPast}
+            onToggleShowPast={() => f.setShowPast(!f.showPast)}
+            sheetFilterCount={f.sheetFilterCount}
+            onOpenFilters={() => f.setShowFilters(true)}
+            filtersOpen={f.showFilters}
           />
+        </PageContainer>
+      </div>
 
-          {/* Smart entry chips — preset filter combos.
-              Counts are passed so a window that would return nothing is
-              disabled and labelled rather than left as a clickable promise;
-              see the note in useEventWindowCounts. */}
-          <PresetChips
-            active={f.activePreset}
-            onSelect={f.handlePresetSelect}
-            counts={windowCounts}
-          />
+      <EventsFilterSheet
+        open={f.showFilters}
+        onOpenChange={f.setShowFilters}
+        resultCount={totalCount ?? events.length}
+        availableCities={f.availableCities}
+        cities={f.cities}
+        setCities={f.setCities}
+        eventTypes={f.eventTypes}
+        setEventTypes={f.setEventTypes}
+        startDate={f.startDate}
+        setStartDate={f.setStartDate}
+        endDate={f.endDate}
+        setEndDate={f.setEndDate}
+        selectedTags={f.selectedTags}
+        setSelectedTags={f.setSelectedTags}
+        accAttrOptions={f.accAttrOptions}
+        accessibilityAttrs={f.accessibilityAttrs}
+        setAccessibilityAttrs={f.setAccessibilityAttrs}
+        tgOptions={f.tgOptions}
+        targetGroupsFilter={f.targetGroupsFilter}
+        setTargetGroupsFilter={f.setTargetGroupsFilter}
+        languages={f.languages}
+        setLanguages={f.setLanguages}
+        ageRestriction={f.ageRestriction}
+        setAgeRestriction={f.setAgeRestriction}
+        hasActiveFilters={f.hasActiveFilters}
+        onApply={f.handleFiltersChange}
+        onClear={f.clearFilters}
+      />
 
-          {typeof windowCounts?.upcoming === 'number' ? (
-            <CoverageNote>
-              {windowCounts.upcoming === 0
-                ? 'We have no upcoming events listed. That means we have no record — not that nothing is happening.'
-                : `${windowCounts.upcoming.toLocaleString()} upcoming events listed${
-                    typeof windowCounts['next-7-days'] === 'number'
-                      ? `, ${windowCounts['next-7-days']} of them in the next 7 days`
-                      : ''
-                  }. Listings come from organisers and submissions, so a quiet week here is a gap in our coverage rather than a quiet scene.`}
-            </CoverageNote>
-          ) : null}
-
-          {/* Extended Filters */}
-          {f.showFilters && (
-            <EventFiltersPanel
-              availableCities={f.availableCities}
-              cities={f.cities}
-              setCities={f.setCities}
-              eventTypes={f.eventTypes}
-              setEventTypes={f.setEventTypes}
-              startDate={f.startDate}
-              setStartDate={f.setStartDate}
-              endDate={f.endDate}
-              setEndDate={f.setEndDate}
-              selectedTags={f.selectedTags}
-              setSelectedTags={f.setSelectedTags}
-              accAttrOptions={f.accAttrOptions}
-              accessibilityAttrs={f.accessibilityAttrs}
-              setAccessibilityAttrs={f.setAccessibilityAttrs}
-              tgOptions={f.tgOptions}
-              targetGroupsFilter={f.targetGroupsFilter}
-              setTargetGroupsFilter={f.setTargetGroupsFilter}
-              languages={f.languages}
-              setLanguages={f.setLanguages}
-              ageRestriction={f.ageRestriction}
-              setAgeRestriction={f.setAgeRestriction}
-              hasActiveFilters={f.hasActiveFilters}
-              onApply={f.handleFiltersChange}
-              onClear={f.clearFilters}
-            />
-          )}
-
-          {/* Active Filters Display */}
-          {f.hasActiveFilters && !f.showFilters && (
+      <PageContainer>
+        {/* Active filters sit BELOW the band, not inside it. They are unbounded
+            — one chip per set dimension — and everything in the band above is
+            paid for on every screen of results for the whole session. */}
+        {f.hasActiveFilters && (
+          <div className="mb-4">
             <EventActiveFilters
               search={f.search}
               cities={f.cities}
@@ -217,8 +217,8 @@ const Events = () => {
               setAgeRestriction={f.setAgeRestriction}
               setSelectedTags={f.setSelectedTags}
             />
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Editor-curated spotlight — only when browsing unfiltered */}
         {!f.hasActiveFilters && (
@@ -227,30 +227,41 @@ const Events = () => {
           </div>
         )}
 
-        {/* Result-meta row: count + view toggle + sort + past toggle */}
-        {!loading && !error && (
-          <div
-            className={`sticky ${STICKY_UNDER_HEADER} z-20 ${PAGE_BLEED_MOBILE} py-2 mb-4 border-b-[3px] border-foreground bg-background`}
-          >
-            <EventsResultBar
-              eventsCount={events.length}
-              totalCount={totalCount}
-              autoLocationLabel={f.autoLocationLabel}
-              cities={f.cities}
-              onShowWorldwide={() => {
-                f.setCities([]);
-                f.setAutoLocationLabel(null);
-              }}
-              showPast={f.showPast}
-              onToggleShowPast={() => f.setShowPast(!f.showPast)}
-              sort={f.sort}
-              onSortChange={f.setSort}
-              userLocation={f.userLocation}
-              nearMe={f.nearMe}
-              viewMode={f.viewMode}
-              onViewModeChange={f.setViewMode}
-            />
-          </div>
+        {/* Coverage honesty — sits directly above the results, where it does its
+            work: it is the difference between "the scene is dead" and "we have
+            no listings". Kept out of the sticky band on purpose; it is prose,
+            and prose in a sticky bar is paid for on every screen. */}
+        {typeof windowCounts?.upcoming === 'number' ? (
+          <CoverageNote>
+            {windowCounts.upcoming === 0
+              ? 'We have no upcoming events listed. That means we have no record — not that nothing is happening.'
+              : `${windowCounts.upcoming.toLocaleString()} upcoming events listed${
+                  typeof windowCounts['next-7-days'] === 'number'
+                    ? `, ${windowCounts['next-7-days']} of them in the next 7 days`
+                    : ''
+                }. Listings come from organisers and submissions, so a quiet week here is a gap in our coverage rather than a quiet scene.`}
+          </CoverageNote>
+        ) : null}
+
+        {/* Count + sort + view mode. Was a sticky 175px bar; see the note in
+            EventsResultHeader for why none of the three earns that. */}
+        {!error && (
+          <EventsResultHeader
+            eventsCount={events.length}
+            totalCount={totalCount}
+            autoLocationLabel={f.autoLocationLabel}
+            cities={f.cities}
+            onShowWorldwide={() => {
+              f.setCities([]);
+              f.setAutoLocationLabel(null);
+            }}
+            sort={f.sort}
+            onSortChange={f.setSort}
+            userLocation={f.userLocation}
+            nearMe={f.nearMe}
+            viewMode={f.viewMode}
+            onViewModeChange={f.setViewMode}
+          />
         )}
 
         {/* Status region for screen readers */}
@@ -394,6 +405,19 @@ const Events = () => {
             )}
           </div>
         )}
+
+        {/* Editorial cross-links go AFTER the events, not before them.
+         *
+         *  This rail used to sit between the hero and the filters — the comment
+         *  above the filter block still called that block "first interactive
+         *  surface after hero", which had not been true for some time. Measured
+         *  on prod at 390x844: the rail was 527px, and the first event card sat
+         *  1,789px down — 2.12 viewport heights of hero, guides, filters and
+         *  result header before a single event. On a page whose entire job is
+         *  events, editorial about events outranked the events.
+         *
+         *  Same placement `/cities` uses for its tail cards. */}
+        <GuidesRail filters={{ entityType: 'event', limit: 6 }} />
       </PageContainer>
     </div>
   );

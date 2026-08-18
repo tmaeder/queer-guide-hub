@@ -21,14 +21,12 @@ import {
   CircleCheck,
   Sparkles,
 } from 'lucide-react';
-import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EntitySocialLinks } from '@/components/entity/EntitySocialLinks';
 import { ShareMenu } from '@/components/share/ShareMenu';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Eyebrow } from '@/components/ui/Eyebrow';
-import { Image } from '@/components/ui/Image';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
@@ -45,9 +43,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { fetchEventBySlugOrId } from '@/hooks/usePageFetchers';
 import { formatEventTime } from '@/lib/event-time';
 import { formatCurrency } from '@/lib/currency';
-import { isMeaningfulTag } from '@/utils/eventText';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { entityImageTreatment } from '@/lib/imageTreatment';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useProfile } from '@/hooks/useProfile';
 import { matchNeeds, needLabel } from '@/lib/accessibilityNeeds';
@@ -251,99 +246,73 @@ interface HeroProps {
   onContentUpdated?: () => void;
 }
 
-export function EventHero({
+/**
+ * The masthead action row (spine S5). Ticket link is the one concrete verb
+ * where it exists; the rest are the report / admin / share affordances the
+ * photo hero used to hide in its top-right corner.
+ */
+export function EventActions({
+  event,
+  onShare,
+}: {
+  event: EventWithRelations;
+  onShare: () => void;
+}) {
+  const OUTLINE =
+    'inline-flex items-center gap-2 px-4 py-2 text-13 font-bold no-underline transition-colors hover:bg-foreground hover:text-background';
+  return (
+    <>
+      {event.ticket_url && (
+        <a href={event.ticket_url} target="_blank" rel="noopener noreferrer" className={OUTLINE}>
+          Get tickets
+        </a>
+      )}
+      {event.website && (
+        <a href={event.website} target="_blank" rel="noopener noreferrer" className={OUTLINE}>
+          Website
+        </a>
+      )}
+      <button type="button" onClick={onShare} className={OUTLINE}>
+        Share
+      </button>
+      <FavoriteButton itemId={event.id} type="event" size="md" />
+      <ReportButton contentType="events" contentId={event.id} contentName={event.title} />
+      <AdminEditButton
+        contentType="events"
+        contentId={event.id}
+        contentName={event.title}
+        currentData={event as unknown as Record<string, unknown>}
+      />
+    </>
+  );
+}
+
+export function eventStatusLabel(event: EventWithRelations): string | undefined {
+  return statusPill(event)?.label;
+}
+
+/**
+ * The masthead's standfirst — where this event is, and whether it is still on.
+ *
+ * `DetailMasthead` owns the bullet, eyebrow, title and status chip, so this is
+ * only what sits under them. It is a `<div>`, not a `<p>`, because it carries
+ * links and a live-state line; `SinglePage`'s `lead` slot wraps its child in a
+ * paragraph, so this goes in the slot below it instead.
+ *
+ * The hero photograph is gone. It was a 380px bed with the title lying on a
+ * scrim; the photo is now `PhotoInset` in the body, on the same 3px frame as
+ * the map — the treatment every other single uses.
+ */
+export function EventMasthead({
   event,
   cityName,
   countryName,
   cityLink,
   countryLink,
-  heroImage,
-  onContentUpdated,
-}: HeroProps) {
-  const isMobile = useIsMobile();
-  const pill = statusPill(event);
-  const eyebrow = event.festivals?.id
-    ? null
-    : isMeaningfulTag(event.event_type)
-      ? event.event_type
-      : null;
-
+}: Omit<HeroProps, 'heroImage' | 'onContentUpdated'>) {
   return (
-    <>
-      <div className="group relative mb-6">
-        <Image
-          src={heroImage}
-          alt={event.title}
-          heightPx={isMobile ? 220 : 380}
-          imageRole="hero"
-          rounded="container"
-          scrim={pill || event.is_featured ? 'readable' : 'none'}
-          treatment={entityImageTreatment(event)}
-          priority
-          fallbackEntityType="event"
-          fallbackKey={event.id}
-        >
-          {(pill || event.is_featured) && (
-            <div className="absolute right-4 top-4 flex flex-wrap justify-end gap-2">
-              {pill && <Badge variant={pill.variant}>{pill.label}</Badge>}
-              {event.is_featured && <Badge>Featured</Badge>}
-            </div>
-          )}
-          {event.logo_url && (
-            <img
-              src={event.logo_url}
-              alt=""
-              role="presentation"
-              referrerPolicy="no-referrer"
-              className="absolute bottom-4 left-4 h-12 w-12 rounded-element bg-background/90 object-contain p-1"
-              onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                (e.target as HTMLImageElement).style.display = 'none';
-              }}
-            />
-          )}
-        </Image>
-      </div>
-
-      {event.countries?.lgbti_criminalization && (
-        <SafetyAlertBanner
-          criminalization={event.countries.lgbti_criminalization}
-          countryName={event.countries.name}
-        />
-      )}
-
-      <div className="mb-2 flex flex-wrap items-center gap-2">
-        {eyebrow && (
-          <Eyebrow as="span" className="capitalize">
-            {eyebrow}
-          </Eyebrow>
-        )}
-        {event.festivals?.id && (
-          <span className="inline-flex items-center gap-1.5 text-13 text-muted-foreground">
-            <Music size={13} aria-hidden="true" />
-            Part of <span className="font-semibold text-foreground">{event.festivals.name}</span>
-          </span>
-        )}
-        {event.countries?.equality_score != null && (
-          <EqualityScoreBadge score={event.countries.equality_score} size="sm" />
-        )}
-      </div>
-
-      <h1
-        className="m-0 text-display font-bold leading-[1.05] tracking-tight md:text-headline"
-        style={{ overflowWrap: 'anywhere' }}
-      >
-        <Editable
-          contentType="events"
-          recordId={event.id}
-          field="title"
-          value={event.title}
-          onSaved={onContentUpdated}
-        >
-          {event.title}
-        </Editable>
-      </h1>
-
-      <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <span className="inline-flex items-center gap-1.5 text-body-lg text-muted-foreground">
           <MapPin size={16} className="shrink-0" aria-hidden="true" />
           <span>
@@ -385,14 +354,27 @@ export function EventHero({
         </span>
         <LiveStateLine event={event} />
       </div>
-    </>
+
+      {(event.festivals?.id || event.countries?.equality_score != null) && (
+        <div className="flex flex-wrap items-center gap-4">
+          {event.festivals?.id && (
+            <span className="inline-flex items-center gap-1.5 text-13 text-muted-foreground">
+              <Music size={13} aria-hidden="true" />
+              Part of <span className="font-semibold text-foreground">{event.festivals.name}</span>
+            </span>
+          )}
+          {event.countries?.equality_score != null && (
+            <EqualityScoreBadge score={event.countries.equality_score} size="sm" />
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
 /* ------------------------------------------------------------------ */
 /* Fact strip — date / time / price / ages, the canonical glance       */
 /* ------------------------------------------------------------------ */
-
 
 export function EventFactStrip({
   event,
@@ -425,7 +407,11 @@ export function EventFactStrip({
               title="Toggle between event timezone and your local time"
               className="text-start underline decoration-dotted underline-offset-4"
             >
-              {formatEventTime(event.start_date, event.end_date, showEventTz ? event.timezone : null)}
+              {formatEventTime(
+                event.start_date,
+                event.end_date,
+                showEventTz ? event.timezone : null,
+              )}
             </button>
           ) : (
             formatEventTime(event.start_date, event.end_date, null)
@@ -771,7 +757,7 @@ export function EventWhoIsGoing({
   return (
     <section className="flex flex-col gap-4">
       <div className="flex items-baseline justify-between gap-2">
-        <h2 className="text-title font-display">Who's going</h2>
+        <h2 className="text-title font-bold">Who's going</h2>
         {(going > 0 || interested > 0) && (
           <span className="text-sm text-muted-foreground">
             {going} going · {interested} interested
@@ -805,7 +791,9 @@ export function EventWhoIsGoing({
 
 interface WhereProps {
   event: EventWithRelations;
-  venueRef: RefObject<HTMLDivElement>;
+  /** `| null` matches what `useRef<HTMLDivElement>(null)` actually produces —
+   *  without it this prop was the single baselined TS2322 on the event page. */
+  venueRef: RefObject<HTMLDivElement | null>;
   countryId?: string | null;
   onOrganizerClick: (organizer: string) => void;
 }

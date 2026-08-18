@@ -9,11 +9,7 @@
 import { useMemo, useState } from 'react';
 import { ExternalLink, ChevronDown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { FieldDiffView, computeFieldDiffs } from './FieldDiffView';
 import { useDedupMatchData } from '@/hooks/useTriageDetail';
 import type { TriageItem } from '@/hooks/useUnifiedTriageQueue';
@@ -59,7 +55,10 @@ function sourceUrl(normalized: Record<string, unknown>): string | null {
 }
 
 function stripHtml(html: string): string {
-  return html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  return html
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function humanizeReason(raw: string): string {
@@ -131,15 +130,21 @@ export function StagingPreview({ item, staging }: StagingPreviewProps) {
 
   // Score breakdown — mixed scales normalised in ScoreChip (≤1 → %, else 0-100).
   const confidence = (staging.ai_confidence_score as number | null) ?? item.confidence_score;
-  const quality = (enriched.quality_score as number | undefined)
-    ?? (typeof enriched.quality_score_after === 'number' ? enriched.quality_score_after : undefined);
+  const quality =
+    (enriched.quality_score as number | undefined) ??
+    (typeof enriched.quality_score_after === 'number' ? enriched.quality_score_after : undefined);
   const relevance = enriched.relevance_score as number | undefined;
   const dedupScore = staging.dedup_match_score as number | undefined;
   const reviewReason = enriched.review_reason as string | undefined;
 
   const { data: matchData } = useDedupMatchData(staging);
   const dedupDiffs = useMemo(
-    () => (matchData ? computeFieldDiffs(matchData, normalized).filter((d) => d.newValue !== undefined && d.newValue !== null) : []),
+    () =>
+      matchData
+        ? computeFieldDiffs(matchData, normalized).filter(
+            (d) => d.newValue !== undefined && d.newValue !== null,
+          )
+        : [],
     [matchData, normalized],
   );
 
@@ -148,7 +153,7 @@ export function StagingPreview({ item, staging }: StagingPreviewProps) {
       {/* Image gallery */}
       {hero && (
         <div className="px-4 pt-4 space-y-2">
-          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */}
+          { }
           <img
             src={hero}
             alt={item.title}
@@ -163,9 +168,9 @@ export function StagingPreview({ item, staging }: StagingPreviewProps) {
                   key={url}
                   type="button"
                   onClick={() => setHeroIdx(i)}
-                  className={`shrink-0 border rounded-element overflow-hidden ${i === heroIdx ? 'border-foreground' : 'border-border'}`}
+                  className={`shrink-0 border rounded-element overflow-hidden ${i === heroIdx ? 'border border-border-hairline' : 'border-border'}`}
                 >
-                  {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */}
+                  { }
                   <img
                     src={url}
                     alt=""
@@ -219,12 +224,15 @@ export function StagingPreview({ item, staging }: StagingPreviewProps) {
             </p>
             {typeof dedupScore === 'number' && (
               <span className="text-2xs text-muted-foreground tabular-nums">
-                match {Math.round((dedupScore <= 1 ? dedupScore * 100 : dedupScore))}%
+                match {Math.round(dedupScore <= 1 ? dedupScore * 100 : dedupScore)}%
               </span>
             )}
           </div>
           <p className="px-4 py-1.5 text-xs">
-            Existing: <span className="font-medium">{String(matchData.name ?? matchData.title ?? matchData.id)}</span>
+            Existing:{' '}
+            <span className="font-medium">
+              {String(matchData.name ?? matchData.title ?? matchData.id)}
+            </span>
           </p>
           {dedupDiffs.length > 0 && <FieldDiffView diffs={dedupDiffs.slice(0, 12)} />}
         </div>

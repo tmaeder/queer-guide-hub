@@ -23,44 +23,38 @@ export interface ChecklistStep {
  * possible process and an unsafe one. A generic step list drops exactly those
  * three and keeps the prose.
  */
-export function Checklist({
-  steps,
-  className,
-}: {
-  steps: ChecklistStep[];
-  className?: string;
-}) {
+export function Checklist({ steps, className }: { steps: ChecklistStep[]; className?: string }) {
   if (steps.length === 0) return null;
 
   return (
-    <ol className={cn('list-none border-[3px] border-foreground p-0', className)}>
+    <ol className={cn('list-none bg-muted rounded-element p-0', className)}>
       {steps.map((s, i) => (
         <li
           key={s.id}
-          className="flex items-start gap-4 border-b-2 border-foreground/15 px-4 py-4 last:border-b-0"
+          className="flex items-start gap-4 border-b border-foreground/15 px-4 py-4 last:border-b-0"
         >
           <span
             aria-hidden
-            className="grid h-8 w-8 shrink-0 place-items-center rounded-full border-[3px] border-foreground text-xs2 font-bold"
+            className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-border-hairline text-xs2 font-bold"
           >
             {i + 1}
           </span>
           <div className="min-w-0 flex-1">
-            <div className="font-display text-title leading-tight">{s.title}</div>
+            <div className="text-title font-bold leading-tight">{s.title}</div>
             {s.detail && <p className="mt-1 text-13 leading-relaxed">{s.detail}</p>}
             <div className="mt-2 flex flex-wrap gap-2">
               {s.form && (
-                <span className="border-2 border-foreground px-2 py-1 text-2xs font-bold uppercase tracking-label">
+                <span className="bg-muted rounded-element px-2 py-1 text-2xs font-bold uppercase tracking-label">
                   {s.form}
                 </span>
               )}
               {s.wait && (
-                <span className="border-2 border-foreground px-2 py-1 text-2xs font-bold uppercase tracking-label">
+                <span className="bg-muted rounded-element px-2 py-1 text-2xs font-bold uppercase tracking-label">
                   Wait {s.wait}
                 </span>
               )}
               {s.byPost && (
-                <span className="border-2 border-foreground bg-foreground px-2 py-1 text-2xs font-bold uppercase tracking-label text-background">
+                <span className="bg-foreground px-2 py-1 text-2xs font-bold uppercase tracking-label text-background">
                   By post
                 </span>
               )}

@@ -34,7 +34,10 @@ const ROUTES = [
   '/going-out',
   '/rights',
   '/support',
-  '/shop',
+  // No '/shop': it 301s to /marketplace (already sampled above). A redirect
+  // source cannot be sampled here at all — fetch follows redirects, so the
+  // response would carry the /marketplace canonical against a /shop request
+  // and the canonical-match assertion would fail by construction.
 ];
 
 const TITLE_MIN = 30;

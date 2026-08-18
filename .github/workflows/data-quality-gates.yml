@@ -53,6 +53,15 @@ jobs:
         if: ${{ !cancelled() && env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
         run: node scripts/check-anon-function-grants.mjs
 
+      # The published legal citations on /tags/:slug are external URLs on other
+      # people's servers, and they rot. NOT run on pull_request on purpose: the
+      # failure lives on third-party hosts, so wiring it to PRs would let a UN
+      # outage block every unrelated PR in the repo. Daily is the right resolution
+      # for documents that change on the order of years.
+      - name: Published legal citations still resolve
+        if: ${{ !cancelled() && github.event_name != 'pull_request' && env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
+        run: node scripts/check-legal-citation-links.mjs
+
       - name: Skip (missing secrets)
         if: ${{ env.SUPABASE_URL == '' || env.SUPABASE_SERVICE_ROLE_KEY == '' }}
         run: echo "::warning::SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY not set — skipping data-quality gates. Configure repo secrets to enable."

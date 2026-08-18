@@ -1,12 +1,10 @@
 import { useMemo } from 'react';
 import { useSearchParams } from 'react-router';
-import { ArrowLeft, Heart } from 'lucide-react';
 import { useMeta } from '@/hooks/useMeta';
-import { PageHeader } from '@/components/layout/PageHeader';
+import { MarketplaceMasthead } from '@/components/marketplace/MarketplaceMasthead';
 import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
 import { AffiliateDisclosure } from '@/components/marketplace/AffiliateDisclosure';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { Button } from '@/components/ui/button';
 import { useMarketplaceListingsByIds } from '@/hooks/useMarketplaceListingsByIds';
 import { PageContainer } from '@/components/layout/PageContainer';
 
@@ -37,26 +35,23 @@ export default function MarketplaceShare() {
 
   return (
     <div className="min-h-screen">
-      <PageContainer>
-        <div className="mb-4">
-          {/* asChild, not a Link wrapping a Button — that nests a <button>
-              inside an <a>, which is invalid HTML. */}
-          <Button asChild variant="ghost" size="sm">
-            <LocalizedLink to="/marketplace" className="no-underline">
-              <ArrowLeft size={14} className="mr-1.5" aria-hidden="true" />
-              Marketplace
-            </LocalizedLink>
-          </Button>
-        </div>
-        <PageHeader
-          title={title}
-          subtitle={
-            ids.length > 0
-              ? `Shared list of ${ids.length} listing${ids.length === 1 ? '' : 's'}.`
-              : 'No listings selected.'
-          }
-        />
+      <MarketplaceMasthead
+        size="page"
+        backTo={{ label: 'Marketplace', to: '/marketplace' }}
+        eyebrow="Marketplace · Shared list"
+        title={title}
+        // Phrasing kept verbatim from the subtitle this masthead replaced.
+        // `e2e/marketplace.spec.ts` derives listing ids by matching
+        // /shared list of N listing/i here, and the unit tests match
+        // "No listings selected" — the wording is a contract, not prose.
+        count={
+          ids.length > 0
+            ? `Shared list of ${ids.length} listing${ids.length === 1 ? '' : 's'}.`
+            : 'No listings selected.'
+        }
+      />
 
+      <PageContainer>
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6">
             {Array.from({ length: Math.max(ids.length, 4) }).map((_, i) => (
@@ -64,10 +59,12 @@ export default function MarketplaceShare() {
             ))}
           </div>
         ) : items.length === 0 ? (
-          <div className="text-center py-16 text-muted-foreground">
-            <Heart size={32} className="mx-auto mb-4" aria-hidden="true" />
-            <p className="text-sm">No active listings found for this link.</p>
-          </div>
+          <p className="text-muted-foreground">
+            No active listings found for this link — they may have sold out or been removed.{' '}
+            <LocalizedLink to="/marketplace" className="underline underline-offset-4">
+              Browse the marketplace
+            </LocalizedLink>
+          </p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6">
             {items.map((listing) => (

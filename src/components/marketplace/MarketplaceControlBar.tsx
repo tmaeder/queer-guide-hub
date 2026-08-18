@@ -1,23 +1,28 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
-import { Check, Grid, List, Search, SlidersHorizontal } from 'lucide-react';
+// TransitIcon only in this band, never lucide alongside it — "never mix the
+// two in the same surface". The Grid/List glyphs are gone entirely: they are
+// two labelled chips now, which is both more legible than a pair of ambiguous
+// icons and the reason no icon gap had to be filled.
+import { TransitIcon } from '@/components/transit/TransitIcon';
+import { FilterChip } from '@/components/transit/FilterChip';
+import { StationRing } from '@/components/transit/StationRing';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { MarketplaceSearchSuggestions } from './MarketplaceSearchSuggestions';
 import { MarketplaceFilterSheet } from './MarketplaceFilterSheet';
 import { SavedSearchesButton } from './SavedSearchesButton';
 import type { MarketplaceFiltersInput, MarketplaceSort } from '@/hooks/useMarketplace';
 import { useMarketplaceSubcategoryTiles } from '@/hooks/useMarketplaceQueries';
-import { DEPARTMENT_ORDER, departmentLabel, departmentOf, OCCASION_CHIPS } from '@/lib/marketplaceTaxonomy';
+import {
+  DEPARTMENT_ORDER,
+  departmentLabel,
+  departmentOf,
+  OCCASION_CHIPS,
+} from '@/lib/marketplaceTaxonomy';
 import { PRICE_BANDS, countActiveFilters, priceToToken } from '@/lib/marketplaceFilterParams';
+import { describeActiveFilters } from './marketplaceEmptyState';
 
 const QUEER_OWNED_VALUES = ['queer_owned', 'trans_owned'];
 
@@ -39,28 +44,40 @@ interface MarketplaceControlBarProps {
   onIncludeAdultChange: (next: boolean) => void;
   /** Live result count for the sheet footer. */
   resultCount?: number;
+  /** Clears every filter param. Powers the active-filter row's "Clear all". */
+  onClearAll?: () => void;
 }
 
-// Spreads rest props (and React 19 ref-as-prop) so PopoverTrigger asChild works.
-function FacetChip({
-  active,
+// The private `FacetChip` that lived here was deleted in favour of the shared
+// `@/components/transit/FilterChip`. It existed only because the shared chip
+// did not forward refs or rest props, so `<PopoverTrigger asChild>` could not
+// use it; FilterChip now does both.
+
+/** One row of a popover list — shared by the department and price pickers. */
+function PickerRow({
+  selected,
+  onClick,
   children,
-  ...rest
-}: { active: boolean } & React.ButtonHTMLAttributes<HTMLButtonElement> & {
-    ref?: React.Ref<HTMLButtonElement>;
-  }) {
+}: {
+  selected: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
   return (
     <button
       type="button"
-      aria-pressed={active}
-      {...rest}
-      className={`inline-flex min-h-0 shrink-0 items-center gap-1.5 rounded-badge border px-2 py-1 text-13 transition-colors ${
-        active
-          ? 'border-foreground bg-foreground text-background'
-          : 'border-border bg-background text-foreground hover:bg-muted'
-      }`}
+      className="group flex w-full items-center justify-between gap-2 px-2 py-1.5 text-left text-sm hover:bg-foreground hover:text-background"
+      onClick={onClick}
     >
       {children}
+      {/* The row fills ink on hover, so a `done` ring (which is also ink) would
+          vanish into it — it flips to paper for the hovered row. */}
+      {selected && (
+        <StationRing
+          state="done"
+          className="border shrink-0 group-hover:border-background group-hover:bg-background"
+        />
+      )}
     </button>
   );
 }
@@ -81,6 +98,7 @@ export function MarketplaceControlBar({
   includeAdult,
   onIncludeAdultChange,
   resultCount,
+  onClearAll,
 }: MarketplaceControlBarProps) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -166,15 +184,16 @@ export function MarketplaceControlBar({
   };
 
   const activeCount = countActiveFilters(filters);
+  const facets = describeActiveFilters(filters);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-2 md:gap-4">
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <Search
-            style={{ left: 12, top: '50%', transform: 'translateY(-50%)', height: 16, width: 16 }}
-            className="absolute text-muted-foreground"
-            aria-hidden="true"
+          <TransitIcon
+            name="search"
+            size={18}
+            className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
           />
           <Input
             ref={inputRef}
@@ -187,8 +206,8 @@ export function MarketplaceControlBar({
                 applySearch(search);
               }
             }}
-            style={{ paddingLeft: 36 }}
-            className="h-12 text-15"
+            style={{ paddingLeft: 42 }}
+            className="h-12 bg-card text-15 shadow-soft rounded-container"
             role="combobox"
             aria-autocomplete="list"
             aria-expanded={false}
@@ -210,10 +229,10 @@ export function MarketplaceControlBar({
           onClick={() => setSheetOpen(true)}
           aria-label="All filters"
         >
-          <SlidersHorizontal size={16} />
+          <TransitIcon name="filter" size={18} />
           <span className="hidden sm:inline">All filters</span>
           {activeCount > 0 && (
-            <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-badge bg-foreground px-1.5 text-2xs font-medium text-background">
+            <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center bg-foreground px-1.5 text-2xs font-bold text-background">
               {activeCount}
             </span>
           )}
@@ -224,126 +243,164 @@ export function MarketplaceControlBar({
         <div className="-mx-1 flex min-w-0 flex-1 items-center gap-2 overflow-x-auto px-1 pb-1">
           <Popover open={deptOpen} onOpenChange={setDeptOpen}>
             <PopoverTrigger asChild>
-              <FacetChip active={Boolean(filters.department)} aria-label="Filter by department">
-                {filters.department ? departmentLabel(filters.department) : 'Department'}
-              </FacetChip>
+              <FilterChip
+                active={Boolean(filters.department)}
+                aria-label="Filter by department"
+                label={filters.department ? departmentLabel(filters.department) : 'Department'}
+              />
             </PopoverTrigger>
             <PopoverContent align="start" className="w-64 p-2">
-              <ul className="flex flex-col">
+              <ul className="m-0 flex list-none flex-col p-0">
                 <li>
-                  <button
-                    type="button"
-                    className="flex w-full items-center justify-between rounded-element px-2 py-1.5 text-left text-sm hover:bg-muted"
+                  <PickerRow
+                    selected={!filters.department}
                     onClick={() => pickDepartment(undefined)}
                   >
                     All departments
-                    {!filters.department && <Check size={14} aria-hidden="true" />}
-                  </button>
+                  </PickerRow>
                 </li>
                 {departments.map((d) => (
                   <li key={d}>
-                    <button
-                      type="button"
-                      className="flex w-full items-center justify-between rounded-element px-2 py-1.5 text-left text-sm hover:bg-muted"
+                    <PickerRow
+                      selected={filters.department === d}
                       onClick={() => pickDepartment(d)}
                     >
                       <span>
                         {departmentLabel(d)}
-                        <span className="ml-1.5 text-xs text-muted-foreground tabular-nums">
+                        <span className="ml-1.5 text-xs tabular-nums opacity-70">
                           {(departmentCounts.get(d) ?? 0).toLocaleString()}
                         </span>
                       </span>
-                      {filters.department === d && <Check size={14} aria-hidden="true" />}
-                    </button>
+                    </PickerRow>
                   </li>
                 ))}
               </ul>
             </PopoverContent>
           </Popover>
 
-          <FacetChip active={queerOwnedActive} onClick={toggleQueerOwned}>
-            Queer-owned
-          </FacetChip>
+          <FilterChip active={queerOwnedActive} onClick={toggleQueerOwned} label="Queer-owned" />
 
           <Popover open={priceOpen} onOpenChange={setPriceOpen}>
             <PopoverTrigger asChild>
-              <FacetChip active={Boolean(filters.priceRange)} aria-label="Filter by price">
-                {activeBand
-                  ? activeBand.label
-                  : filters.priceRange
-                    ? `$${filters.priceRange.min}+`
-                    : 'Price'}
-              </FacetChip>
+              <FilterChip
+                active={Boolean(filters.priceRange)}
+                aria-label="Filter by price"
+                label={
+                  activeBand
+                    ? activeBand.label
+                    : filters.priceRange
+                      ? `$${filters.priceRange.min}+`
+                      : 'Price'
+                }
+              />
             </PopoverTrigger>
             <PopoverContent align="start" className="w-48 p-2">
-              <ul className="flex flex-col">
+              <ul className="m-0 flex list-none flex-col p-0">
                 <li>
-                  <button
-                    type="button"
-                    className="flex w-full items-center justify-between rounded-element px-2 py-1.5 text-left text-sm hover:bg-muted"
-                    onClick={() => pickBand(undefined)}
-                  >
+                  <PickerRow selected={!filters.priceRange} onClick={() => pickBand(undefined)}>
                     Any price
-                    {!filters.priceRange && <Check size={14} aria-hidden="true" />}
-                  </button>
+                  </PickerRow>
                 </li>
                 {PRICE_BANDS.map((b) => (
                   <li key={b.token}>
-                    <button
-                      type="button"
-                      className="flex w-full items-center justify-between rounded-element px-2 py-1.5 text-left text-sm hover:bg-muted"
-                      onClick={() => pickBand(b)}
-                    >
+                    <PickerRow selected={activeBand?.token === b.token} onClick={() => pickBand(b)}>
                       {b.label}
-                      {activeBand?.token === b.token && <Check size={14} aria-hidden="true" />}
-                    </button>
+                    </PickerRow>
                   </li>
                 ))}
               </ul>
             </PopoverContent>
           </Popover>
 
-          <span className="mx-1 h-5 w-px shrink-0 bg-border" aria-hidden="true" />
+          <span className="mx-1 h-5 w-px shrink-0 bg-foreground" aria-hidden="true" />
 
           {OCCASION_CHIPS.map((c) => (
-            <FacetChip key={c.slug} active={activeOcc === c.slug} onClick={() => toggleOcc(c.slug)}>
-              {c.label}
-            </FacetChip>
+            <FilterChip
+              key={c.slug}
+              active={activeOcc === c.slug}
+              onClick={() => toggleOcc(c.slug)}
+              label={c.label}
+            />
           ))}
         </div>
 
         <div className="ml-auto flex shrink-0 flex-wrap items-center gap-2">
           <SavedSearchesButton />
-          <Select value={sortBy} onValueChange={onSortChange}>
-            <SelectTrigger className="w-[150px] sm:w-[180px]" aria-label="Sort listings">
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent>
-              {sortOptions.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button
-            variant={viewMode === 'grid' ? 'default' : 'outline'}
-            size="sm"
+          {/* A native <select> restyled to chip DNA, following HistoryTimeline:
+              src/components/ui/select.tsx is still on pre-rebrand tokens
+              (bg-inverse-surface, ring-spot) and renders as a permanently
+              ink-filled chip, i.e. it reads as an active filter at all times. */}
+          <label className="sr-only" htmlFor="marketplace-sort">
+            Sort listings
+          </label>
+          <select
+            id="marketplace-sort"
+            value={sortBy}
+            onChange={(e) => onSortChange(e.target.value)}
+            className="h-8 shrink-0 bg-card px-2 text-13 font-bold text-foreground rounded-container shadow-soft"
+          >
+            {sortOptions.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+          {/* Two labelled chips, not two ambiguous glyphs. */}
+          <FilterChip
+            active={viewMode === 'grid'}
             onClick={() => onViewModeChange('grid')}
-            aria-label="Grid view"
-          >
-            <Grid size={16} />
-          </Button>
-          <Button
-            variant={viewMode === 'list' ? 'default' : 'outline'}
-            size="sm"
+            label="Grid"
+          />
+          <FilterChip
+            active={viewMode === 'list'}
             onClick={() => onViewModeChange('list')}
-            aria-label="List view"
-          >
-            <List size={16} />
-          </Button>
+            label="List"
+          />
+          {/* Default-SFW browse is a real editorial position, and until now it
+              was invisible — the toggle lived inside the filter sheet, so a
+              reader could not tell the catalogue was filtered at all. */}
+          <FilterChip
+            active={includeAdult}
+            onClick={() => onIncludeAdultChange(!includeAdult)}
+            label="Show 18+"
+          />
         </div>
       </div>
+
+      {/* Active-filter row — the last piece of the anti-flip work. Facets come
+          from describeActiveFilters, the same list the zero-result rescue
+          reads, so the two surfaces can never disagree about which dimensions
+          exist or what they are called. Uncapped on purpose. */}
+      {facets.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 border-t border-border-hairline pt-4">
+          <span className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
+            Filtering by
+          </span>
+          {facets.map((facet) => (
+            <FilterChip
+              key={facet.noun}
+              active
+              onClick={() => onFiltersChange(facet.next)}
+              aria-label={`Remove filter: ${facet.noun}`}
+              label={
+                <>
+                  {facet.noun}
+                  <span aria-hidden="true">×</span>
+                </>
+              }
+            />
+          ))}
+          {onClearAll && (
+            <button
+              type="button"
+              onClick={onClearAll}
+              className="text-13 font-bold underline underline-offset-2"
+            >
+              Clear all
+            </button>
+          )}
+        </div>
+      )}
 
       <MarketplaceFilterSheet
         open={sheetOpen}

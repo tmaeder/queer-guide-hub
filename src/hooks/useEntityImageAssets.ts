@@ -7,6 +7,17 @@ export interface EntityImageAsset {
   optimization_status: string | null;
 }
 
+/** What this query actually returns. Hand-written: the row comes via `untypedFrom`. */
+interface ImageAssetLinkRow {
+  entity_id: string;
+  role: string;
+  image_assets: {
+    optimized_url: string | null;
+    thumbnail_url: string | null;
+    optimization_status: string | null;
+  } | null;
+}
+
 /**
  * Batch-fetch the best `cover` image_asset for each of `entityIds` of the
  * given `entityType`. Returns a Map keyed by entity_id. Callers feed the
@@ -60,19 +71,10 @@ export function useEntityImageAssets(
         setLoading(false);
         return;
       }
-      const data = results.flatMap((r) => r.data ?? []);
+      const data = results.flatMap((r) => r.data ?? []) as unknown as ImageAssetLinkRow[];
 
       const map = new Map<string, EntityImageAsset>();
-      type Row = {
-        entity_id: string;
-        role: string;
-        image_assets: {
-          optimized_url: string | null;
-          thumbnail_url: string | null;
-          optimization_status: string | null;
-        };
-      };
-      for (const row of (data as unknown as Row[]) ?? []) {
+      for (const row of data) {
         const existing = map.get(row.entity_id);
         const next = row.image_assets;
         if (!next) continue;

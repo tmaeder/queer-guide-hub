@@ -19,6 +19,13 @@ SITE="${SITE_URL:-https://queer.guide}"
 
 pass=0; fail=0
 
+# Assets that answered text/html on BOTH the real cache key and a throwaway
+# ?cb= key, i.e. the object is missing at origin rather than poisoned at a
+# colo. Counted separately from `fail` because it is the ONE verdict here that
+# a re-upload can fix and a purge cannot — the caller (deploy-pages.yml) reads
+# it to decide whether re-running `wrangler pages deploy` is worth a try.
+ORIGIN_BROKEN=0
+
 # Paths proven to be poisoned edge-cache entries (plain URL wrong, ?cb= right).
 # Collected rather than only printed, because this is the one failure class a
 # redeploy can never fix — see purge_poisoned() at the bottom.
@@ -33,11 +40,30 @@ STALE_ROUTES=()
 # argument applies to the hashed assets, which it left narrow.
 ALL_ASSETS=()
 
+# EVERY curl below must be bounded. curl has no default total-time limit, so a
+# request that connects and then stalls waits ~forever — and most of the calls
+# here sit inside 5-attempt retry loops, so one stall is multiplied by five and
+# then again by the number of checks.
+#
+# Measured on the 2026-08-09 deploy of d9f5a26dd: this step ran 19m25s
+# (08:52:41 -> 09:12:06) and was killed by the job's `timeout-minutes: 20`,
+# while the identical script against the identical live site finishes in ~30s.
+# "Deploy to Cloudflare Pages" had already SUCCEEDED, so the cancellation
+# painted a healthy, fully-shipped deploy red — the most expensive kind of
+# false alarm, because the only way to disbelieve it is to read step-level
+# conclusions. A bounded curl turns that into a normal ✗ on one check.
+#
+# 15s is two orders of magnitude above the ~200ms these endpoints actually
+# take, so it can only fire on a genuine stall, never on a slow-but-working
+# edge. The sweep's own curl already carries -m 10 and is left alone (it runs
+# in an `sh -c` subshell that cannot see this bash array).
+CURL_TIMEOUT=(--connect-timeout 5 -m 15)
+
 # Cloudflare needs a moment to make a fresh deployment live everywhere.
 retry_status() {
 	local url=$1 want=$2 code=""
 	for _ in 1 2 3 4 5; do
-		code=$(curl -sS -o /dev/null -w '%{http_code}' "$url" || echo 000)
+		code=$(curl -sS "${CURL_TIMEOUT[@]}" -o /dev/null -w '%{http_code}' "$url" || echo 000)
 		[ "$code" = "$want" ] && break
 		sleep 5
 	done
@@ -61,7 +87,7 @@ expect_status() {
 expect_content_type() {
 	local path=$1 want=$2 ct=""
 	for _ in 1 2 3 4 5; do
-		ct=$(curl -sS -o /dev/null -w '%{content_type}' "$SITE$path")
+		ct=$(curl -sS "${CURL_TIMEOUT[@]}" -o /dev/null -w '%{content_type}' "$SITE$path")
 		case "$ct" in *"$want"*) break ;; esac
 		sleep 5
 	done
@@ -114,20 +140,142 @@ expect_content_type() {
 # empty site-wide. `<link rel="modulepreload" crossorigin>` and `<script
 # type="module" crossorigin>` — which is every chunk Vite emits — are fetched in
 # CORS mode, so the variant this header selects is the ONLY one users ever hit.
+# The propagation wait is paid ONCE for the whole deployment, not per asset.
+#
+# Every hashed asset ships in the same Pages deployment, so "has origin caught
+# up?" has ONE answer per run — asking it 46 times cannot learn anything the
+# first answer did not already tell us, but it can (and did) cost 46x.
+#
+# MEASURED, 2026-08-15 run 31866064694: the per-asset `?cb=` loop never matched
+# in CI and burned its full 5 x `sleep 5` on EVERY asset while the real
+# assertion underneath still passed — 46 checks spaced 25-26s apart, 18m43s in
+# the asset phase alone, killed by the 20-minute job cap with a green deploy
+# behind it. The identical script from a laptop finishes in ~25s because there
+# `?cb=` matches on the first try (measured: 0.09s, application/javascript).
+# So the run time was never a stalled request — it was 1,150 seconds of sleep.
+#
+# ORIGIN_READY is the one-time gate. It keeps the ordering property the block
+# above calls load-bearing (never read the real cache key before origin has the
+# object, or the read itself pins the SPA shell under `immutable` for a year)
+# while making the wait O(1) in the number of assets.
+ORIGIN_READY=""
+wait_for_origin() {
+	local probe=$1 want=$2 ct=""
+	[ -n "$ORIGIN_READY" ] && return 0
+	for _ in 1 2 3 4 5; do
+		ct=$(curl -sS "${CURL_TIMEOUT[@]}" -o /dev/null -w '%{content_type}' "$SITE$probe?cb=$$-${SECONDS}-${RANDOM}")
+		case "$ct" in *"$want"*) ORIGIN_READY=1; return 0 ;; esac
+		sleep 5
+	done
+	# Still not serving the right type at origin after 25s. Record it and move
+	# on: the per-asset checks below still run and still report honestly. This
+	# is deliberately NOT a hard exit — "origin looks unhealthy" is exactly the
+	# state the rest of the script exists to characterise.
+	ORIGIN_READY=0
+	echo "  ! origin did not serve $probe as $want within 25s (?cb= gave '${ct:-no response}')"
+	echo "    Continuing; per-asset results below are still authoritative."
+	return 0
+}
+
+# "ORIGIN IS BROKEN" is the one verdict here that nothing can recover from: it
+# is not added to POISONED, so it is never purged, never re-verified, and it
+# alone keeps `fail` above zero at the end. That makes it the verdict that has
+# to be RIGHT, and in one read it cannot be — an object that has not finished
+# propagating answers the SPA shell at `?cb=` too, exactly like an asset a
+# rewrite is shadowing.
+#
+# Measured, same run (31905701638), same asset, 22 seconds apart:
+#   20:05:40  ✗ /assets/js/dist-h5cPJ2Wm.js ... — ORIGIN IS BROKEN
+#   20:06:02  ✗ /assets/js/dist-h5cPJ2Wm.js ... — POISONED (origin is fine)
+# That run then printed "recovered 88/88" and still exited 1, because the four
+# origin-broken readings were the only failures left and none of them was real.
+#
+# wait_for_origin() does not cover this. It latches on the ENTRY chunk, whose
+# hash rotates every deploy — the block below it says so explicitly — so it
+# returns as soon as the one object most likely to be live is live, while the
+# rest of the deployment is still landing.
+#
+# So: re-probe before blaming the origin. The bounded wait is paid ONCE per run
+# (ORIGIN_RECHECKED); every later asset pays a single extra curl and no sleep.
+# Per-asset sleeps are what made this job take 18m43s — do not reintroduce them.
+#
+# RESULT COMES BACK IN A GLOBAL, NOT ON STDOUT. `x=$(reprobe_origin ...)` runs
+# the function in a SUBSHELL, so the latch it sets is discarded the moment it
+# returns and every failing asset pays the full wait again — which is precisely
+# how this job reached 18m43s before. Caught by testing the latch rather than
+# reading it: the second call still slept.
+# LATCH ON SUCCESS, NOT ON HAVING TRIED. The first version latched either way,
+# and run 31912682120 shows why that is wrong: the CSS passed at 22:39:57, the
+# first JS chunk waited its 15s and still read text/html at 22:40:13, latched —
+# and the remaining 51 chunks then got one no-wait retry each, 0.4s apart, and
+# all 52 were called ORIGIN IS BROKEN. Origin was serving the stylesheet and the
+# entry chunk but not the rest, ~60s after publish; the very next deploy was
+# green, so it healed on its own.
+#
+# "We have already waited once" is not evidence about the origin. "A probe
+# succeeded" is. So the latch is only set when origin actually answers, and
+# until then every asset may keep waiting — bounded by ONE budget for the whole
+# run so this can never walk back toward the 18m43s job (#2747, #2756). Worst
+# case is REPROBE_BUDGET seconds plus one curl per failing asset, no matter how
+# many assets fail.
+ORIGIN_RECHECKED=""
+REPROBE_CT=""
+REPROBE_BUDGET=${REPROBE_BUDGET:-120}
+REPROBE_SPENT=0
+# MUST be initialised. `set -u` is on, and an unbound expansion is FATAL to a
+# non-interactive bash — it does not warn and continue, it exits 127 on the
+# spot. This flag is read only when the re-probe budget is exhausted, i.e. only
+# during a genuine origin-broken incident, so the crash was invisible in every
+# green run and would have fired exactly when the diagnostics were needed:
+# no summary line, no purge, no per-asset verdicts, just a bare exit.
+ORIGIN_BUDGET_SPENT_REPORTED=""
+reprobe_origin() {
+	local path=$1 want=$2
+	# One free re-read for everybody: cheap, and enough once origin is up.
+	REPROBE_CT=$(curl -sS "${CURL_TIMEOUT[@]}" -o /dev/null -w '%{content_type}' "$SITE$path?cb=$$-${SECONDS}-${RANDOM}")
+	case "$REPROBE_CT" in
+		*"$want"*) ORIGIN_RECHECKED=1; return ;;
+	esac
+	# Origin has been PROVEN ready earlier in this run, so a miss now is about
+	# this object, not about propagation. Don't spend budget on it.
+	[ -n "$ORIGIN_RECHECKED" ] && return
+	while [ "$REPROBE_SPENT" -lt "$REPROBE_BUDGET" ]; do
+		sleep 5
+		REPROBE_SPENT=$((REPROBE_SPENT + 5))
+		REPROBE_CT=$(curl -sS "${CURL_TIMEOUT[@]}" -o /dev/null -w '%{content_type}' "$SITE$path?cb=$$-${SECONDS}-${RANDOM}")
+		case "$REPROBE_CT" in
+			*"$want"*)
+				echo "  · origin caught up after ${REPROBE_SPENT}s of waiting ($path)"
+				ORIGIN_RECHECKED=1
+				return
+				;;
+		esac
+	done
+	if [ "$REPROBE_SPENT" -ge "$REPROBE_BUDGET" ] && [ -z "$ORIGIN_BUDGET_SPENT_REPORTED" ]; then
+		echo "  ! origin still missing objects after ${REPROBE_SPENT}s — reporting them as broken"
+		ORIGIN_BUDGET_SPENT_REPORTED=1
+	fi
+}
+
 expect_asset_type() {
 	local path=$1 want=$2 ct busted=""
 	ALL_ASSETS+=("$path|$want")
-	for _ in 1 2 3 4 5; do
-		busted=$(curl -sS -o /dev/null -w '%{content_type}' "$SITE$path?cb=$$-${SECONDS}-${RANDOM}")
-		case "$busted" in *"$want"*) break ;; esac
-		sleep 5
-	done
+	# One shot. The retry that used to live here is now wait_for_origin(),
+	# called once before the asset block.
+	busted=$(curl -sS "${CURL_TIMEOUT[@]}" -o /dev/null -w '%{content_type}' "$SITE$path?cb=$$-${SECONDS}-${RANDOM}")
 
-	ct=$(curl -sS -o /dev/null -w '%{content_type}' \
+	ct=$(curl -sS "${CURL_TIMEOUT[@]}" -o /dev/null -w '%{content_type}' \
 		-H "Origin: $SITE" -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Dest: script' \
 		"$SITE$path")
 	case "$ct" in
 		*"$want"*) echo "  ✓ $path is $ct"; pass=$((pass+1)); return ;;
+	esac
+
+	# The real cache key is wrong. Only now does it matter whether origin has
+	# the object, so only now is it worth re-reading.
+	case "$busted" in
+		*"$want"*) ;;
+		*) reprobe_origin "$path" "$want"; busted=$REPROBE_CT ;;
 	esac
 
 	fail=$((fail+1))
@@ -144,6 +292,7 @@ expect_asset_type() {
 			echo "    Static-asset serving is being shadowed. Check public/_redirects for"
 			echo "    a 200-rewrite (see the do-not-add-a-catch-all block in that file)"
 			echo "    and re-read the wrangler rule-parser output of the last deploy."
+			ORIGIN_BROKEN=$((ORIGIN_BROKEN+1))
 			;;
 	esac
 }
@@ -188,7 +337,7 @@ done
 # entry does not move and is still reported.
 echo "== deep routes reference the CURRENT build =="
 entry_hash() {
-	curl -sS "$1" | grep -oE '/assets/js/index-[^"]+\.js' | sort -u | head -1
+	curl -sS "${CURL_TIMEOUT[@]}" "$1" | grep -oE '/assets/js/index-[^"]+\.js' | sort -u | head -1
 }
 origin_entry() {
 	entry_hash "$SITE/?cb=$$-${SECONDS}-${RANDOM}"
@@ -221,8 +370,26 @@ else
 	for route in $ROUTES; do
 		case " $suspect " in
 			*" $route "*)
+				# Re-read the ROUTE before failing it. The verdict above came
+				# from a read taken while a deploy was landing; the diagnostic
+				# below is a later read, and on run 31905701638 the two
+				# disagreed in print:
+				#     ✗ /help serves a STALE cached document
+				#         cached: /assets/js/index-4r5wetLY.js
+				#         origin: /assets/js/index-4r5wetLY.js
+				# Identical — the route had caught up in the interval, and the
+				# check failed the deploy while showing the evidence that it
+				# should not have. Re-judging against a fresh origin (above)
+				# does not cover this: that fixes a moving ORIGIN, this is a
+				# moving ROUTE.
+				cached=$(entry_hash "$SITE$route")
+				if [ "$cached" = "$origin" ]; then
+					echo "  ✓ $route -> $origin (was mid-deploy on the first read)"
+					pass=$((pass+1))
+					continue
+				fi
 				echo "  ✗ $route serves a STALE cached document"
-				echo "      cached: $(entry_hash "$SITE$route")"
+				echo "      cached: $cached"
 				echo "      origin: $origin"
 				echo "    Those cached chunk URLs are gone, so every module request falls"
 				echo "    through to the SPA shell and the page renders BLANK. Redeploying"
@@ -243,9 +410,19 @@ expect_content_type /manifest.json application/json
 # If a rewrite is shadowing static assets — or a colo cached the SPA shell
 # under one of these URLs — they come back as text/html, which is exactly what
 # rendered the homepage unstyled.
-home=$(curl -sS "$SITE/")
+home=$(curl -sS "${CURL_TIMEOUT[@]}" "$SITE/")
 css=$(printf '%s' "$home" | grep -oE '/assets/css/[^"]+\.css' | sort -u)
 js=$(printf '%s' "$home" | grep -oE '/assets/js/[^"]+\.js' | sort -u)
+
+# Pay the propagation wait once, on the entry chunk, before any per-asset read.
+# Everything below ships in the same deployment, so this one answer covers them
+# all — see wait_for_origin() for the 18m43s this replaces.
+entry=$(printf '%s' "$js" | grep -m1 -E '/assets/js/index-[A-Za-z0-9_-]+\.js' || true)
+if [ -n "$entry" ]; then
+	wait_for_origin "$entry" javascript
+elif [ -n "$css" ]; then
+	wait_for_origin "$(printf '%s' "$css" | head -1)" text/css
+fi
 
 if [ -n "$css" ]; then
 	while IFS= read -r sheet; do
@@ -464,7 +641,7 @@ purge_poisoned() {
 	for (( i = 0; i < ${#files[@]}; i += 30 )); do
 		chunk=("${files[@]:i:30}")
 		body=$(printf '{"files":[%s]}' "$(IFS=,; echo "${chunk[*]}")")
-		resp=$(curl -sS -X POST \
+		resp=$(curl -sS "${CURL_TIMEOUT[@]}" -X POST \
 			"https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/purge_cache" \
 			-H "Authorization: Bearer $token" \
 			-H 'Content-Type: application/json' \
@@ -513,7 +690,7 @@ purge_poisoned() {
 	local survivors=()
 	for entry in ${POISONED[@]+"${POISONED[@]}"}; do
 		path=${entry%%|*}; want=${entry##*|}
-		ct=$(curl -sS -o /dev/null -w '%{content_type}' \
+		ct=$(curl -sS "${CURL_TIMEOUT[@]}" -o /dev/null -w '%{content_type}' \
 			-H "Origin: $SITE" -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Dest: script' \
 			"$SITE$path")
 		case "$ct" in
@@ -569,7 +746,7 @@ purge_poisoned() {
 		echo "    These are not in the zone cache (cf-cache-status: DYNAMIC), so purge"
 		echo "    by URL cannot evict them. Escalating to purge_everything."
 		local eresp eok
-		eresp=$(curl -sS -X POST \
+		eresp=$(curl -sS "${CURL_TIMEOUT[@]}" -X POST \
 			"https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/purge_cache" \
 			-H "Authorization: Bearer $token" \
 			-H 'Content-Type: application/json' \
@@ -591,7 +768,7 @@ purge_poisoned() {
 		for item in "${survivors[@]}"; do
 			case "$item" in
 				/assets/*)
-					ct2=$(curl -sS -o /dev/null -w '%{content_type}' \
+					ct2=$(curl -sS "${CURL_TIMEOUT[@]}" -o /dev/null -w '%{content_type}' \
 						-H "Origin: $SITE" -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Dest: script' \
 						"$SITE$item")
 					case "$ct2" in
@@ -646,7 +823,7 @@ purge_poisoned
 echo "== Pages Functions (known degraded — reported, not gated) =="
 probe() {
 	local path=$1 want=$2 ct
-	ct=$(curl -sS -o /dev/null -w '%{content_type}' "$SITE$path")
+	ct=$(curl -sS "${CURL_TIMEOUT[@]}" -o /dev/null -w '%{content_type}' "$SITE$path")
 	case "$ct" in
 		*"$want"*) echo "  ok   $path is $ct" ;;
 		*)         echo "  DEAD $path is $ct (expected $want)"; degraded=$((degraded+1)) ;;
@@ -657,12 +834,32 @@ probe /sitemap.xml xml
 probe /brand/tokens.css text/css
 probe /api/geo application/json
 
-# The edge middleware rewrites the shell <head> per route. No canonical means
-# the middleware did not run, whatever the Function routes returned.
-if curl -sS "$SITE/" | grep -q 'rel="canonical"'; then
+# The edge middleware rewrites the shell <head> per route.
+#
+# RETRIED, unlike the probes above. This script runs immediately after a deploy
+# and often immediately after this script's own `purge_everything`, and a single
+# cold-miss on `/` was reporting the middleware as dead while /sitemap.xml,
+# /brand/tokens.css and /api/geo — all Function-only routes with no static file
+# behind them — had just answered correctly in the very same run (deploy run
+# 31888622990, 2026-08-15). That combination is impossible if the middleware is
+# not running, so the one-shot check was the thing that was wrong.
+canonical_ok=""
+for attempt in 1 2 3; do
+	if curl -sS "${CURL_TIMEOUT[@]}" "$SITE/" | grep -q 'rel="canonical"'; then
+		canonical_ok="yes"
+		break
+	fi
+	[ "$attempt" -lt 3 ] && sleep 4
+done
+if [ -n "$canonical_ok" ]; then
 	echo "  ok   / has middleware-injected <link rel=canonical>"
 else
-	echo "  DEAD / has no canonical — functions/_middleware.ts is not running"
+	# Only trustworthy alongside the probes above: if those returned their
+	# generated bodies and this still fails after three tries, the middleware
+	# runs but is not injecting — a different bug from "Functions are dead".
+	echo "  DEAD / has no canonical after 3 tries — check the probes above before"
+	echo "       concluding Functions are dead; if they passed, this is the"
+	echo "       <head> injection, not execution."
 	degraded=$((degraded+1))
 fi
 
@@ -670,7 +867,7 @@ fi
 # fallback answers 200 text/html and public/sw.js is the only thing converting
 # it, so a stale bundle without a service worker can still fail MIME checks.
 stale="/assets/js/does-not-exist-00000000.js"
-echo "  ·    missing chunk $stale -> $(curl -sS -o /dev/null -w '%{http_code} %{content_type}' "$SITE$stale")"
+echo "  ·    missing chunk $stale -> $(curl -sS "${CURL_TIMEOUT[@]}" -o /dev/null -w '%{http_code} %{content_type}' "$SITE$stale")"
 
 # Reported, not gated. Edge-cache poisoning is PER-COLO, and this script only
 # ever sees one. On 2026-08-01 it passed from the GitHub runner's colo while
@@ -679,10 +876,39 @@ echo "  ·    missing chunk $stale -> $(curl -sS -o /dev/null -w '%{http_code} %
 # this script calls healthy, run it again from their network before doubting
 # them.
 echo "== scope (informational) =="
-echo "  · checked from a single colo: $(curl -sS -o /dev/null -D - "$SITE/" | grep -i '^cf-ray:' | tr -d '\r')"
+echo "  · checked from a single colo: $(curl -sS "${CURL_TIMEOUT[@]}" -o /dev/null -D - "$SITE/" | grep -i '^cf-ray:' | tr -d '\r')"
 
 echo
 echo "smoke: $pass passed, $fail failed"
+
+# Hand the origin-broken verdict to the caller as a step output. deploy-pages.yml
+# re-runs `wrangler pages deploy` ONCE on this and then re-runs this script.
+#
+# Only this verdict triggers a re-upload, and only this one should. A poisoned
+# colo is already remediated above by the purge, and re-uploading cannot evict
+# a cached object; an origin that does not have the file is the one state where
+# uploading again is the actual remedy.
+#
+# Reported even when the re-probe cleared it (ORIGIN_BROKEN counts the assets
+# that were STILL broken after reprobe_origin spent its budget), so a lingering
+# propagation race costs one extra upload and nothing worse. That matters,
+# because this verdict has a measured false-positive history: run 31912682120
+# called 52 assets origin-broken and the very next deploy was green with no
+# intervention — it healed on its own. The re-upload is chosen to be safe
+# under exactly that error: uploading a build Pages already has is a no-op, and
+# the second smoke run is what decides the job's outcome either way.
+if [ -n "${GITHUB_OUTPUT:-}" ]; then
+	if [ "$ORIGIN_BROKEN" -gt 0 ]; then
+		echo "origin_broken=true" >> "$GITHUB_OUTPUT"
+	else
+		echo "origin_broken=false" >> "$GITHUB_OUTPUT"
+	fi
+	echo "failures=$fail" >> "$GITHUB_OUTPUT"
+fi
+if [ "$ORIGIN_BROKEN" -gt 0 ]; then
+	echo "  ! $ORIGIN_BROKEN asset(s) missing at ORIGIN (not a cache fault, not purgeable)."
+fi
+
 if [ "$degraded" -gt 0 ]; then
 	echo "::warning::Pages Functions still not executing ($degraded checks) — sitemaps, /api/*, /brand/* and all crawler meta are dead. Not a regression from this deploy; needs Cloudflare-side investigation (see CLAUDE.md)."
 fi

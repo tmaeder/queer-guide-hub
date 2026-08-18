@@ -25,11 +25,17 @@ export default function ProfessionDetail() {
   const navigate = useLocalizedNavigate();
   const [professionData, setProfessionData] = useState<ProfessionData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Narrowed server-side to this profession. The hook matches it as a substring
+  // SUPERSET, because `profession` holds a comma-separated list; the exact
+  // comma-token comparison in the effect below still decides what renders.
+  // Without it the query fetched the whole table and hit PostgREST's hard
+  // 1000-row cap, so professions late in the alphabet lost people silently.
+  const decodedProfession = professionName ? decodeURIComponent(professionName) : undefined;
   const {
     data: personalities,
     isLoading: loading,
     error: queryError,
-  } = usePersonalitiesByProfession();
+  } = usePersonalitiesByProfession(decodedProfession);
 
   const professionPersonalityIds = (professionData?.personalities ?? []).map(
     (p) => (p as { id: string }).id,
@@ -43,8 +49,7 @@ export default function ProfessionDetail() {
       setError('Failed to load profession data');
       return;
     }
-    if (!personalities) return;
-    const decodedProfession = decodeURIComponent(professionName);
+    if (!personalities || !decodedProfession) return;
     const filtered = (personalities as Array<{ profession?: string | null }>).filter(
       (p) =>
         p.profession &&
@@ -58,7 +63,7 @@ export default function ProfessionDetail() {
       personalities: filtered,
       totalCount: filtered.length,
     });
-  }, [professionName, personalities, queryError]);
+  }, [professionName, decodedProfession, personalities, queryError]);
 
   const handleBack = () => {
     navigate('/tags');

@@ -10,9 +10,9 @@ import type { DirectoryCity } from '@/hooks/useCitiesDirectory';
 interface CitiesMapPaneProps {
   cities: DirectoryCity[];
   selectedCityId?: string | null;
-  hoveredCityId?: string | null;
-  onSelectCity: (slug: string) => void;
-  onHoverCity?: (cityId: string | null) => void;
+  /** Writes `?city=`, which highlights the pin and flies to it. Optional so the
+   *  pane can be embedded read-only. */
+  onSelectCity?: (slug: string) => void;
   height?: number | string;
   className?: string;
 }
@@ -70,9 +70,7 @@ function boundsOf(cities: DirectoryCity[]): maplibregl.LngLatBounds | null {
 export function CitiesMapPane({
   cities,
   selectedCityId,
-  hoveredCityId,
   onSelectCity,
-  onHoverCity,
   height = '100%',
   className,
 }: CitiesMapPaneProps) {
@@ -213,10 +211,13 @@ export function CitiesMapPane({
         const feat = e.features?.[0];
         if (!feat) return;
         const props = feat.properties as { slug: string; id: string };
-        onSelectCity(props.slug || props.id);
+        onSelectCity?.(props.slug || props.id);
       });
 
-      // Cursor + hover feature-state
+      // Cursor + hover feature-state. This is the MAP'S OWN affordance — pointing
+      // at a pin highlights it — and it stays. What was removed is the two-way
+      // sync with the old side list: the grid and the map are no longer on screen
+      // together, so there was nothing left to synchronise.
       let lastHoverId: string | number | null = null;
       for (const layer of [CLUSTERS_LAYER, POINTS_LAYER]) {
         map.on('mouseenter', layer, () => {
@@ -236,21 +237,18 @@ export function CitiesMapPane({
         }
         lastHoverId = fid as string;
         map.setFeatureState({ source: SOURCE_ID, id: fid as string }, { hover: true });
-        const cityId = feat.properties?.id as string | undefined;
-        if (cityId) onHoverCity?.(cityId);
       });
       map.on('mouseleave', POINTS_LAYER, () => {
         if (lastHoverId != null) {
           map.setFeatureState({ source: SOURCE_ID, id: lastHoverId }, { hover: false });
           lastHoverId = null;
         }
-        onHoverCity?.(null);
       });
     };
 
     if (map.isStyleLoaded()) apply();
     else map.once('load', apply);
-  }, [cities, onSelectCity, onHoverCity, reducedMotion]);
+  }, [cities, onSelectCity, reducedMotion]);
 
   // Fit bounds when the filtered city set changes (debounced + de-duped).
   useEffect(() => {
@@ -279,26 +277,6 @@ export function CitiesMapPane({
       }
     };
   }, [cities, reducedMotion]);
-
-  // Sync external hover (list → map): set the new id, clear the previous
-  // on cleanup. Wrapped in try/catch since the feature may not be in
-  // the source yet on first render.
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map || !map.getSource(SOURCE_ID) || !hoveredCityId) return;
-    try {
-      map.setFeatureState({ source: SOURCE_ID, id: hoveredCityId }, { hover: true });
-    } catch {
-      /* feature not yet rendered */
-    }
-    return () => {
-      try {
-        map.setFeatureState({ source: SOURCE_ID, id: hoveredCityId }, { hover: false });
-      } catch {
-        /* swallow */
-      }
-    };
-  }, [hoveredCityId]);
 
   // Highlight selected pin + fly to it.
   useEffect(() => {

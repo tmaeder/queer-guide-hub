@@ -53,8 +53,7 @@ export default function Travel() {
   // Any booking deep link (?intent=book from nav CTAs, ?tab/?city from
   // TripBookingAssistant + CityTravelHub) should land on the booking section
   // with the accordion open.
-  const bookIntent =
-    params.get('intent') === 'book' || !!params.get('tab') || !!params.get('city');
+  const bookIntent = params.get('intent') === 'book' || !!params.get('tab') || !!params.get('city');
 
   const [visitedFilter, setVisitedFilter] = useState<VisitedFilter>(() =>
     readStoredVisitedFilter(),
@@ -101,7 +100,8 @@ export default function Travel() {
   });
 
   const criminalizingCount = useMemo(
-    () => (countries ?? []).filter((c) => hasAnyCriminalizationSignal(c.lgbti_criminalization)).length,
+    () =>
+      (countries ?? []).filter((c) => hasAnyCriminalizationSignal(c.lgbti_criminalization)).length,
     [countries],
   );
 
@@ -181,8 +181,8 @@ export default function Travel() {
       content: (
         <div>
           <CoverageNote>
-            We hold the legal position for all {countries?.length ?? 250} countries and
-            territories. {criminalizingCount} of them criminalise same-sex acts.
+            We hold the legal position for all {countries?.length ?? 250} countries and territories.{' '}
+            {criminalizingCount} of them criminalise same-sex acts.
           </CoverageNote>
           {home ? (
             <p className="text-body-lg mb-4">
@@ -197,13 +197,13 @@ export default function Travel() {
           <div className="flex flex-wrap gap-4">
             <LocalizedLink
               to="/rights"
-              className="border-2 border-foreground px-6 py-2 font-medium no-underline rounded-element"
+              className="bg-muted px-6 py-2 font-medium no-underline rounded-element"
             >
               Check any country
             </LocalizedLink>
             <LocalizedLink
               to="/city/compare"
-              className="border-2 border-foreground px-6 py-2 font-medium no-underline rounded-element"
+              className="bg-muted px-6 py-2 font-medium no-underline rounded-element"
             >
               Compare two places
             </LocalizedLink>

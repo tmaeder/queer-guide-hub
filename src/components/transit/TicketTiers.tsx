@@ -28,7 +28,7 @@ export function TicketTiers({ tiers, className }: { tiers: TicketTier[]; classNa
       )}
     >
       {tiers.map((t) => (
-        <li key={t.name} className="flex flex-col gap-2 border-[3px] border-foreground p-4">
+        <li key={t.name} className="flex flex-col gap-2 bg-muted rounded-element p-4">
           <span className="font-display text-headline leading-none">{t.price}</span>
           <span className="text-13 font-bold">{t.name}</span>
           {t.note && <span className="text-13 leading-snug">{t.note}</span>}

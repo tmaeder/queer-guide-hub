@@ -31,7 +31,7 @@ export function Loading({ size = 'md', text, label }: LoadingProps) {
           <span
             key={i}
             style={{ animationDelay: `${i * 0.15}s`, animationIterationCount: 'infinite' }}
-            className={`${dotSize[size]} station-pop rounded-full border-2 border-foreground bg-background`}
+            className={`${dotSize[size]} station-pop rounded-full border-border-hairline bg-background`}
           />
         ))}
       </div>
@@ -54,7 +54,11 @@ export function LoadingSpinner({ size = 'md', label, className }: LoadingSpinner
   const a11y =
     label === null
       ? { 'aria-hidden': true as const }
-      : { role: 'status' as const, 'aria-live': 'polite' as const, 'aria-label': label ?? t('common.loading') };
+      : {
+          role: 'status' as const,
+          'aria-live': 'polite' as const,
+          'aria-label': label ?? t('common.loading'),
+        };
 
   // Was a rotating border ring. The design system replaces every spinner with
   // a track loop — nothing in a transit system spins, things travel a line.
@@ -71,11 +75,7 @@ export function PageLoading({ text }: PageLoadingProps) {
   const label = text ?? t('common.loading');
 
   return (
-    <div
-      role="status"
-      aria-live="polite"
-      className="flex min-h-screen items-center justify-center"
-    >
+    <div role="status" aria-live="polite" className="flex min-h-screen items-center justify-center">
       <div className="text-center flex flex-col gap-4">
         {/* One indicator, not dots + spinner + "please wait" stacked. */}
         <div className="flex items-center justify-center gap-2" aria-hidden="true">
@@ -105,7 +105,9 @@ export function InlineLoading({ text, size = 'md' }: InlineLoadingProps) {
   return (
     <div role="status" aria-live="polite" className="flex items-center justify-center gap-4 py-8">
       <LoadingSpinner size={size} label={null} />
-      <span className={`text-muted-foreground ${size === 'sm' ? 'text-sm' : 'text-base'}`}>{label}</span>
+      <span className={`text-muted-foreground ${size === 'sm' ? 'text-sm' : 'text-base'}`}>
+        {label}
+      </span>
     </div>
   );
 }

@@ -1,397 +1,33 @@
-import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
+/**
+ * TagLinkedContent — everything in the guide that carries this tag.
+ *
+ * Rewritten onto the transit primitives. The data layer is unchanged
+ * (`get_tag_linked_content` through `useTagContent`, plus the news relevance
+ * ranking below); what went was ~350 lines of bespoke card markup carrying four
+ * `rgba()` literals, two `linear-gradient()`s, a `backdropFilter`, twenty-odd
+ * inline `style` objects and a `style={{ fill: 'hsl(var(--foreground))' }}`.
+ *
+ * Two behavioural improvements ride along:
+ *
+ * - **Rows are real links.** Every card was a `<div onClick={navigate}>`, so
+ *   tag → venue could not be middle-clicked, opened in a new tab, or followed
+ *   by a crawler. NestedEntityCard and DepartureRow both carry a real overlay
+ *   anchor.
+ * - **People render as a Roster, not a photo grid.** The content model marks
+ *   module 07 required for this type and its own note says "this is not a photo
+ *   grid" — so the images go, and with them the `useEntityImageAssets` fetch.
+ *
+ * Section ids match the RouteStrip stations TagDetail builds; the two must stay
+ * in step or the rail links to nothing.
+ */
+
+import { useTranslation } from 'react-i18next';
+import { useTagContent, type TagContentResult } from '@/hooks/useTagContent';
+import { SingleSection } from '@/components/transit/SinglePage';
+import { NestedEntityCard } from '@/components/transit/NestedEntityCard';
+import { DepartureRow } from '@/components/transit/DepartureRow';
+import { Roster } from '@/components/transit/Roster';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Card, CardImage } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import {
-  MapPin,
-  Newspaper,
-  Calendar,
-  Users as UsersIcon,
-  Star,
-  ExternalLink,
-  ShoppingBag,
-  Landmark,
-} from 'lucide-react';
-import { useTagContent, TagContentResult } from '@/hooks/useTagContent';
-import { formatDistanceToNow } from 'date-fns';
-import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
-import { resolveImageUrl } from '@/utils/resolveImageUrl';
-import { buildCfSrcSet } from '@/utils/cloudflareOptimizations';
-
-interface TagLinkedContentProps {
-  tagId: string;
-  tagName: string;
-}
-
-// ── Venue Card ──────────────────────────────────────────────────────
-
-function VenueCard({ v, onClick }: { v: TagContentResult['venues'][number]; onClick: () => void }) {
-  return (
-    <Card hoverable className="overflow-hidden" onClick={onClick}>
-      <CardImage src={v.image_url} alt={v.name} fallbackIcon={MapPin} height={160}>
-        {v.foursquare_rating && (
-          <div
-            className="absolute flex items-center gap-1 text-white rounded-element px-1.5 py-0.5"
-            style={{
-              top: 8,
-              right: 8,
-              backgroundColor: 'rgba(0,0,0,0.65)',
-              backdropFilter: 'blur(4px)',
-            }}
-          >
-            <Star
-              size={12}
-              style={{ fill: 'hsl(var(--foreground))' }}
-              className="text-foreground"
-            />
-            <span style={{ lineHeight: 1 }} className="text-xs font-bold">
-              {(v.foursquare_rating / 10).toFixed(1)}
-            </span>
-          </div>
-        )}
-      </CardImage>
-      <div className="p-4">
-        <div className="flex items-start justify-between gap-2">
-          <p className="text-base font-semibold leading-tight">{v.name}</p>
-          {v.category && <Badge variant="secondary">{v.category}</Badge>}
-        </div>
-        {(v.city || v.country) && (
-          <div className="flex items-center gap-1.5 text-muted-foreground mt-2">
-            <MapPin size={14} className="shrink-0" />
-            <p className="text-sm">{[v.city, v.country].filter(Boolean).join(', ')}</p>
-          </div>
-        )}
-      </div>
-    </Card>
-  );
-}
-
-// ── Event Card ──────────────────────────────────────────────────────
-
-function EventCard({ e, onClick }: { e: TagContentResult['events'][number]; onClick: () => void }) {
-  const date = e.start_date ? new Date(e.start_date) : null;
-  const month = date?.toLocaleDateString(undefined, { month: 'short' });
-  const day = date?.getDate();
-
-  return (
-    <Card hoverable className="overflow-hidden" onClick={onClick}>
-      <CardImage src={e.image_url} alt={e.title} fallbackIcon={Calendar} height={140}>
-        {e.event_type && (
-          <div
-            className="absolute text-white rounded-element px-2 py-0.5 capitalize font-semibold"
-            style={{
-              top: 8,
-              left: 8,
-              backgroundColor: 'rgba(0,0,0,0.65)',
-              fontSize: '0.7rem',
-              backdropFilter: 'blur(4px)',
-            }}
-          >
-            {e.event_type}
-          </div>
-        )}
-      </CardImage>
-      <div className="p-4">
-        <div className="flex items-start gap-4">
-          {date && (
-            <div
-              className="rounded-element bg-muted flex flex-col items-center justify-center py-1.5 flex-shrink-0"
-              style={{ width: 48 }}
-            >
-              <span
-                className="uppercase font-bold"
-                style={{ fontSize: '0.6rem', color: 'hsl(var(--primary))', lineHeight: 1 }}
-              >
-                {month}
-              </span>
-              <span style={{ fontSize: '1.1rem', lineHeight: 1.2 }} className="font-bold">
-                {day}
-              </span>
-            </div>
-          )}
-          <div className="flex-1 min-w-0">
-            <p
-              className="text-base font-semibold leading-tight overflow-hidden"
-              style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
-            >
-              {e.title}
-            </p>
-            {(e.city || e.venue_name) && (
-              <p className="text-sm text-muted-foreground mt-1">
-                {[e.venue_name, e.city].filter(Boolean).join(' · ')}
-              </p>
-            )}
-          </div>
-        </div>
-      </div>
-    </Card>
-  );
-}
-
-// ── News Card ───────────────────────────────────────────────────────
-
-function NewsCard({ n, onClick }: { n: TagContentResult['news'][number]; onClick: () => void }) {
-  return (
-    <Card hoverable className="overflow-hidden" onClick={onClick}>
-      <CardImage src={n.image_url} alt={n.title} fallbackIcon={Newspaper} height={140} />
-      <div className="p-4">
-        <p
-          className="text-base font-semibold overflow-hidden"
-          style={{
-            lineHeight: 1.3,
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-          }}
-        >
-          {n.title}
-        </p>
-        {n.excerpt && (
-          <p
-            className="text-sm text-muted-foreground mt-1.5 overflow-hidden"
-            style={{
-              display: '-webkit-box',
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
-              lineHeight: 1.5,
-            }}
-          >
-            {n.excerpt}
-          </p>
-        )}
-        <div className="flex items-center justify-between mt-4">
-          <span className="text-xs text-muted-foreground">
-            {n.news_sources?.name}
-            {n.news_sources?.name && n.published_at && ' · '}
-            {n.published_at && formatDistanceToNow(new Date(n.published_at), { addSuffix: true })}
-          </span>
-          {n.url && <ExternalLink size={14} style={{ opacity: 0.3 }} className="shrink-0" />}
-        </div>
-      </div>
-    </Card>
-  );
-}
-
-// ── Personality Card ────────────────────────────────────────────────
-
-function PersonalityCard({
-  p,
-  optimizedUrl,
-  thumbnailUrl,
-  onClick,
-}: {
-  p: TagContentResult['personalities'][number];
-  optimizedUrl?: string | null;
-  thumbnailUrl?: string | null;
-  onClick: () => void;
-}) {
-  const initials = p.name
-    .split(' ')
-    .map((w) => w[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
-
-  const resolvedSrc = resolveImageUrl({ imageUrl: p.image_url, optimizedUrl, thumbnailUrl, preferThumb: true });
-  const srcSet = optimizedUrl
-    ? (buildCfSrcSet(optimizedUrl, [400, 800]) ??
-        (thumbnailUrl ? `${thumbnailUrl} 400w, ${optimizedUrl} 1600w` : undefined))
-    : undefined;
-
-  return (
-    <Card hoverable className="overflow-hidden" onClick={onClick}>
-      <div className="relative bg-muted overflow-hidden" style={{ paddingTop: '133.33%' }}>
-        {resolvedSrc ? (
-          <img
-            src={resolvedSrc}
-            srcSet={srcSet}
-            sizes="(max-width: 640px) 45vw, 200px"
-            alt={p.name}
-            role="presentation"
-            loading="lazy"
-            referrerPolicy="no-referrer"
-            style={{
-              inset: 0,
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              objectPosition: 'top',
-              transition: 'transform 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
-            }}
-            className="absolute"
-            onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-              (e.target as HTMLImageElement).style.display = 'none';
-            }}
-          />
-        ) : (
-          <div
-            className="absolute inset-0 flex items-center justify-center"
-            style={{
-              background:
-                'linear-gradient(135deg, rgba(0,0,0,0.06) 0%, rgba(0,0,0,0.12) 100%)',
-            }}
-          >
-            <div
-              className="rounded-full bg-background flex items-center justify-center"
-              style={{ width: 64, height: 64 }}
-            >
-              <span className="text-muted-foreground font-bold text-xl">{initials}</span>
-            </div>
-          </div>
-        )}
-      </div>
-      <div className="p-4">
-        <p className="font-semibold truncate" style={{ fontSize: '0.9rem', lineHeight: 1.3 }}>
-          {p.name}
-        </p>
-        {p.profession && <p className="text-sm text-muted-foreground truncate">{p.profession}</p>}
-      </div>
-    </Card>
-  );
-}
-
-// ── Group Card ──────────────────────────────────────────────────────
-
-function GroupCard({ g, onClick }: { g: TagContentResult['groups'][number]; onClick: () => void }) {
-  return (
-    <Card hoverable className="overflow-hidden" onClick={onClick}>
-      <div className="p-4 flex items-center gap-4">
-        {g.avatar_url ? (
-          <img
-            src={g.avatar_url}
-            alt={g.name}
-            role="presentation"
-            className="rounded-element shrink-0"
-            style={{ width: 48, height: 48, objectFit: 'cover' }}
-            onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-              (e.target as HTMLImageElement).style.display = 'none';
-            }}
-          />
-        ) : (
-          <div
-            className="bg-muted flex items-center justify-center flex-shrink-0 rounded-element"
-            style={{ width: 48, height: 48 }}
-          >
-            <UsersIcon size={20} style={{ opacity: 0.3 }} />
-          </div>
-        )}
-        <div className="flex-1 min-w-0">
-          <p className="font-semibold truncate" style={{ fontSize: '0.95rem' }}>
-            {g.name}
-          </p>
-          <p className="text-sm text-muted-foreground">
-            {g.member_count != null && `${g.member_count} members`}
-            {g.member_count != null && g.privacy && ' · '}
-            {g.privacy}
-          </p>
-        </div>
-      </div>
-    </Card>
-  );
-}
-
-// ── Marketplace Card ────────────────────────────────────────────────
-
-function MarketplaceCard({
-  m,
-  onClick,
-}: {
-  m: TagContentResult['marketplace'][number];
-  onClick: () => void;
-}) {
-  const price = m.price_usd ?? m.price;
-  return (
-    <Card hoverable className="overflow-hidden" onClick={onClick}>
-      <CardImage src={m.image_url} alt={m.title} fallbackIcon={ShoppingBag} height={160} />
-      <div className="p-4">
-        <p className="text-base font-semibold leading-tight line-clamp-2">{m.title}</p>
-        <div className="mt-2 flex items-center justify-between gap-2">
-          {(m.brand || m.business_name) && (
-            <span className="truncate text-sm text-muted-foreground">
-              {m.brand || m.business_name}
-            </span>
-          )}
-          {price != null && (
-            <span className="shrink-0 text-sm font-medium tabular-nums">
-              {m.price_usd != null ? '$' : ''}
-              {Number(price).toFixed(0)}
-              {m.price_usd == null && m.currency ? ` ${m.currency}` : ''}
-            </span>
-          )}
-        </div>
-      </div>
-    </Card>
-  );
-}
-
-// ── Queer Village Card ──────────────────────────────────────────────
-
-function VillageCard({
-  v,
-  onClick,
-}: {
-  v: TagContentResult['queer_villages'][number];
-  onClick: () => void;
-}) {
-  return (
-    <Card hoverable className="overflow-hidden" onClick={onClick}>
-      <CardImage src={v.image_url} alt={v.name} fallbackIcon={Landmark} height={160} />
-      <div className="p-4">
-        <p className="text-base font-semibold leading-tight">{v.name}</p>
-        {(v.city || v.country) && (
-          <div className="mt-2 flex items-center gap-1.5 text-muted-foreground">
-            <MapPin size={14} className="shrink-0" />
-            <p className="text-sm">{[v.city, v.country].filter(Boolean).join(', ')}</p>
-          </div>
-        )}
-      </div>
-    </Card>
-  );
-}
-
-// ── Section wrapper ─────────────────────────────────────────────────
-
-function Section({
-  title,
-  count,
-  children,
-}: {
-  title: string;
-  count: number;
-  children: React.ReactNode;
-}) {
-  return (
-    <div>
-      <div className="flex items-baseline gap-2 mb-4">
-        <h2 className="font-bold" style={{ fontSize: '1.1rem' }}>
-          {title}
-        </h2>
-        <p className="text-sm text-muted-foreground">{count}</p>
-      </div>
-      {children}
-    </div>
-  );
-}
-
-// ── Loading skeleton ────────────────────────────────────────────────
-
-function CardSkeleton({ height = 260 }: { height?: number }) {
-  return <Skeleton className="rounded-container" style={{ height }} />;
-}
-
-function SectionSkeleton() {
-  return (
-    <div>
-      <Skeleton style={{ width: 120, height: 28 }} className="mb-4" />
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <CardSkeleton />
-        <CardSkeleton />
-      </div>
-    </div>
-  );
-}
-
-// ── Main component ──────────────────────────────────────────────────
 
 const MAX_NEWS = 6;
 
@@ -416,22 +52,41 @@ function rankNewsByRelevance(
     const textB = `${b.title ?? ''} ${b.excerpt ?? ''}`.toLowerCase();
     const scoreA = terms.filter((t) => textA.includes(t)).length;
     const scoreB = terms.filter((t) => textB.includes(t)).length;
-    // Higher mention count first; preserve original order (by published_at) within same score
+    // Higher mention count first; preserve original order (by published_at)
+    // within the same score.
     return scoreB - scoreA;
   });
 }
 
-export function TagLinkedContent({ tagId, tagName }: TagLinkedContentProps) {
-  const navigate = useLocalizedNavigate();
+function placeOf(a: { city?: string | null; country?: string | null }): string | null {
+  return [a.city, a.country].filter(Boolean).join(', ') || null;
+}
+
+function shortDate(iso: string | null): string {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime())
+    ? '—'
+    : d.toLocaleDateString(undefined, { day: '2-digit', month: 'short' });
+}
+
+// gap-4, not gap-3: the 8 pt grid admits only even steps (plus .5 for
+// icon-level offsets), and `no-restricted-syntax` flags the odd ones.
+const GRID = 'grid grid-cols-1 gap-4 sm:grid-cols-2';
+
+export function TagLinkedContent({ tagId, tagName }: { tagId: string; tagName: string }) {
+  const { t } = useTranslation();
   const { data, isLoading } = useTagContent(tagId, tagName);
-  const personalityIds = data?.personalities.map((p) => p.id) ?? [];
-  const { assets: personalityImageAssets } = useEntityImageAssets('personality', personalityIds);
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-10">
-        <SectionSkeleton />
-        <SectionSkeleton />
+      <div className="flex flex-col gap-4">
+        <Skeleton className="h-8 w-40" />
+        <div className={GRID}>
+          {[0, 1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-24 w-full" />
+          ))}
+        </div>
       </div>
     );
   }
@@ -442,118 +97,144 @@ export function TagLinkedContent({ tagId, tagName }: TagLinkedContentProps) {
   const marketplace = data.marketplace ?? [];
   const villages = data.queer_villages ?? [];
   const news = rankNewsByRelevance(data.news, tagName);
-  const hasAny =
-    venues.length > 0 ||
-    news.length > 0 ||
-    events.length > 0 ||
-    personalities.length > 0 ||
-    marketplace.length > 0 ||
-    villages.length > 0 ||
-    groups.length > 0;
-  if (!hasAny) return null;
 
   return (
-    <div className="flex flex-col gap-10 min-w-0">
-      {/* Venues */}
+    <>
       {venues.length > 0 && (
-        <Section title="Venues" count={venues.length}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <SingleSection
+          id="venues"
+          title={t('tags.detail.venues', 'Venues')}
+          note={t('tags.detail.venuesNote', '{{count}} tagged', { count: venues.length })}
+        >
+          <div className={GRID}>
             {venues.map((v) => (
-              <VenueCard key={v.id} v={v} onClick={() => navigate(`/venues/${v.slug || v.id}`)} />
+              <NestedEntityCard
+                key={v.id}
+                type="venue"
+                eyebrow={placeOf(v)}
+                name={v.name}
+                description={v.category}
+                href={v.slug ? `/venues/${v.slug}` : undefined}
+              />
             ))}
           </div>
-        </Section>
+        </SingleSection>
       )}
 
-      {/* Events */}
       {events.length > 0 && (
-        <Section title="Events" count={events.length}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <SingleSection
+          id="events"
+          title={t('tags.detail.events', 'Events')}
+          note={t('tags.detail.eventsNote', '{{count}} tagged', { count: events.length })}
+        >
+          <div className="flex flex-col gap-2">
             {events.map((e) => (
-              <EventCard key={e.id} e={e} onClick={() => navigate(`/events/${e.slug || e.id}`)} />
+              <DepartureRow
+                key={e.id}
+                type="event"
+                time={shortDate(e.start_date)}
+                title={e.title}
+                status={e.venue_name ?? placeOf(e) ?? undefined}
+                href={e.slug ? `/events/${e.slug}` : undefined}
+              />
             ))}
           </div>
-        </Section>
+        </SingleSection>
       )}
 
-      {/* Personalities */}
       {personalities.length > 0 && (
-        <Section title="Personalities" count={personalities.length}>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            {personalities.map((p) => {
-              const asset = personalityImageAssets.get(p.id);
-              return (
-                <PersonalityCard
-                  key={p.id}
-                  p={p}
-                  optimizedUrl={asset?.optimized_url}
-                  thumbnailUrl={asset?.thumbnail_url}
-                  onClick={() => navigate(`/personalities/${p.slug || p.id}`)}
-                />
-              );
-            })}
-          </div>
-        </Section>
+        <SingleSection
+          id="people"
+          title={t('tags.detail.people', 'People')}
+          note={t('tags.detail.peopleNote', '{{count}} tagged', { count: personalities.length })}
+        >
+          <Roster
+            people={personalities.map((p) => ({
+              id: p.id,
+              name: p.name,
+              role: p.profession,
+              href: p.slug ? `/personalities/${p.slug}` : undefined,
+            }))}
+          />
+        </SingleSection>
       )}
 
-      {/* News */}
       {news.length > 0 && (
-        <Section title="News" count={news.length}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <SingleSection
+          id="news"
+          title={t('tags.detail.news', 'News')}
+          note={
+            news.length > MAX_NEWS
+              ? t('tags.detail.newsNoteMore', '{{shown}} of {{count}} articles', {
+                  shown: MAX_NEWS,
+                  count: news.length,
+                })
+              : t('tags.detail.newsNote', '{{count}} articles', { count: news.length })
+          }
+        >
+          <div className={GRID}>
             {news.slice(0, MAX_NEWS).map((n) => (
-              <NewsCard
+              <NestedEntityCard
                 key={n.id}
-                n={n}
-                onClick={() => {
-                  if (n.url) window.open(n.url, '_blank', 'noopener');
-                }}
+                type="news"
+                eyebrow={n.news_sources?.name ?? null}
+                name={n.title}
+                description={n.excerpt}
+                href={n.url ?? undefined}
               />
             ))}
           </div>
-          {news.length > MAX_NEWS && (
-            <p className="text-sm text-muted-foreground mt-4 text-center">
-              +{news.length - MAX_NEWS} more articles
-            </p>
-          )}
-        </Section>
+        </SingleSection>
       )}
 
-      {/* Queer villages */}
       {villages.length > 0 && (
-        <Section title="Queer villages" count={villages.length}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <SingleSection id="villages" title={t('tags.detail.villages', 'Queer villages')}>
+          <div className={GRID}>
             {villages.map((v) => (
-              <VillageCard key={v.id} v={v} onClick={() => navigate(`/villages/${v.slug || v.id}`)} />
-            ))}
-          </div>
-        </Section>
-      )}
-
-      {/* Marketplace */}
-      {marketplace.length > 0 && (
-        <Section title="Shop" count={marketplace.length}>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            {marketplace.map((m) => (
-              <MarketplaceCard
-                key={m.id}
-                m={m}
-                onClick={() => navigate(`/marketplace/${m.slug || m.id}`)}
+              <NestedEntityCard
+                key={v.id}
+                type="queer_village"
+                eyebrow={placeOf(v)}
+                name={v.name}
+                href={v.slug ? `/queer-villages/${v.slug}` : undefined}
               />
             ))}
           </div>
-        </Section>
+        </SingleSection>
       )}
 
-      {/* Groups */}
-      {groups.length > 0 && (
-        <Section title="Communities" count={groups.length}>
-          <div className="flex flex-col gap-4">
-            {groups.map((g) => (
-              <GroupCard key={g.id} g={g} onClick={() => navigate(`/groups/${g.id}`)} />
+      {marketplace.length > 0 && (
+        <SingleSection id="shop" title={t('tags.detail.shop', 'Shop')}>
+          <div className={GRID}>
+            {marketplace.map((m) => (
+              <NestedEntityCard
+                key={m.id}
+                type="marketplace"
+                eyebrow={m.brand ?? m.business_name ?? null}
+                name={m.title}
+                description={m.category}
+                href={m.slug ? `/marketplace/${m.slug}` : undefined}
+              />
             ))}
           </div>
-        </Section>
+        </SingleSection>
       )}
-    </div>
+
+      {groups.length > 0 && (
+        <SingleSection id="communities" title={t('tags.detail.communities', 'Communities')}>
+          <div className={GRID}>
+            {groups.map((g) => (
+              <NestedEntityCard
+                key={g.id}
+                type="group"
+                name={g.name}
+                description={g.description}
+                href={`/groups/${g.id}`}
+              />
+            ))}
+          </div>
+        </SingleSection>
+      )}
+    </>
   );
 }

@@ -30,11 +30,31 @@ interface SummaryRow {
 
 type Severity = 'fatal' | 'error' | 'warn' | 'info';
 
-const sevConfig: Record<Severity, { icon: React.ComponentType<{ className?: string }>; className: string; badgeClass: string }> = {
-  fatal: { icon: AlertCircle,    className: 'text-destructive dark:text-destructive',    badgeClass: 'bg-destructive/10 dark:bg-destructive/40 text-destructive dark:text-destructive border-destructive dark:border-destructive' },
-  error: { icon: AlertTriangle,  className: 'text-foreground dark:text-foreground', badgeClass: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground border-border' },
-  warn:  { icon: Bug,            className: 'text-foreground dark:text-foreground', badgeClass: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground border-border dark:border-border' },
-  info:  { icon: Info,           className: 'text-foreground dark:text-foreground',   badgeClass: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground border-foreground/40 dark:border-foreground/40' },
+const sevConfig: Record<
+  Severity,
+  { icon: React.ComponentType<{ className?: string }>; className: string; badgeClass: string }
+> = {
+  fatal: {
+    icon: AlertCircle,
+    className: 'text-destructive',
+    badgeClass:
+      'border bg-destructive/10 dark:bg-destructive/40 text-destructive border-destructive dark:border-destructive',
+  },
+  error: {
+    icon: AlertTriangle,
+    className: 'text-foreground',
+    badgeClass: 'bg-muted text-foreground border-border',
+  },
+  warn: {
+    icon: Bug,
+    className: 'text-foreground',
+    badgeClass: 'bg-muted text-foreground border-border',
+  },
+  info: {
+    icon: Info,
+    className: 'text-foreground',
+    badgeClass: 'border bg-muted text-foreground border-foreground/40',
+  },
 };
 
 export default function ErrorsTab() {
@@ -49,7 +69,7 @@ export default function ErrorsTab() {
         .select('*')
         .order('last_seen_at', { ascending: false });
       if (error) throw error;
-      return (data || []) as SummaryRow[];
+      return (data || []) as unknown as SummaryRow[];
     },
     refetchInterval: 30_000,
   });
@@ -57,9 +77,12 @@ export default function ErrorsTab() {
   const { data: errors = [], isLoading } = useQuery({
     queryKey: ['pipeline-errors', minSeverity],
     queryFn: async () => {
-      const sevs = minSeverity === 'fatal' ? ['fatal']
-                 : minSeverity === 'error' ? ['error', 'fatal']
-                 : ['warn', 'error', 'fatal'];
+      const sevs =
+        minSeverity === 'fatal'
+          ? ['fatal']
+          : minSeverity === 'error'
+            ? ['error', 'fatal']
+            : ['warn', 'error', 'fatal'];
       const { data, error } = await untypedFrom('pipeline_errors')
         .select('*')
         .in('severity', sevs)
@@ -74,9 +97,8 @@ export default function ErrorsTab() {
   const filtered = useMemo(() => {
     if (!search) return errors;
     const q = search.toLowerCase();
-    return errors.filter(e =>
-      e.message.toLowerCase().includes(q)
-      || e.function_name.toLowerCase().includes(q)
+    return errors.filter(
+      (e) => e.message.toLowerCase().includes(q) || e.function_name.toLowerCase().includes(q),
     );
   }, [errors, search]);
 
@@ -90,34 +112,51 @@ export default function ErrorsTab() {
         <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-2">
           {summary.length === 0 ? (
             <div className="col-span-full border border-border rounded-element bg-background p-6 text-center text-sm">
-              <CheckCircle2 className="h-5 w-5 text-foreground dark:text-foreground inline mr-1" />
-              <span className="text-foreground dark:text-foreground font-medium">No errors in the last 7 days</span>
+              <CheckCircle2 className="h-5 w-5 text-foreground inline mr-1" />
+              <span className="text-foreground font-medium">No errors in the last 7 days</span>
             </div>
-          ) : summary.map(s => {
-            const sc = sevConfig[s.severity as Severity] ?? sevConfig.info;
-            const SIcon = sc.icon;
-            return (
-              <div key={`${s.function_name}-${s.severity}`} className="border border-border rounded-element bg-background px-4 py-2.5 hover:bg-muted/30 transition-colors">
-                <div className="flex items-center gap-1.5 mb-1.5">
-                  <SIcon className={`h-3.5 w-3.5 ${sc.className}`} />
-                  <span className="text-xs2 font-mono truncate flex-1" title={s.function_name}>
-                    {s.function_name}
-                  </span>
-                  <Badge variant="outline" className={`text-3xs px-1 py-0 ${sc.badgeClass}`}>
-                    {s.severity}
-                  </Badge>
+          ) : (
+            summary.map((s) => {
+              const sc = sevConfig[s.severity as Severity] ?? sevConfig.info;
+              const SIcon = sc.icon;
+              return (
+                <div
+                  key={`${s.function_name}-${s.severity}`}
+                  className="border border-border rounded-element bg-background px-4 py-2.5 hover:bg-muted/30 transition-colors"
+                >
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <SIcon className={`h-3.5 w-3.5 ${sc.className}`} />
+                    <span className="text-xs2 font-mono truncate flex-1" title={s.function_name}>
+                      {s.function_name}
+                    </span>
+                    <Badge variant="outline" className={`text-3xs px-1 py-0 ${sc.badgeClass}`}>
+                      {s.severity}
+                    </Badge>
+                  </div>
+                  <div className="flex gap-4 text-xs tabular-nums">
+                    <div>
+                      <strong>{s.last_1h}</strong>{' '}
+                      <span className="text-muted-foreground">/ 1h</span>
+                    </div>
+                    <div>
+                      <strong>{s.last_24h}</strong>{' '}
+                      <span className="text-muted-foreground">/ 24h</span>
+                    </div>
+                    <div>
+                      <strong>{s.last_7d}</strong>{' '}
+                      <span className="text-muted-foreground">/ 7d</span>
+                    </div>
+                  </div>
+                  <div className="text-2xs text-muted-foreground mt-1">
+                    last:{' '}
+                    {s.last_seen_at
+                      ? formatDistanceToNow(new Date(s.last_seen_at), { addSuffix: true })
+                      : '—'}
+                  </div>
                 </div>
-                <div className="flex gap-4 text-xs tabular-nums">
-                  <div><strong>{s.last_1h}</strong> <span className="text-muted-foreground">/ 1h</span></div>
-                  <div><strong>{s.last_24h}</strong> <span className="text-muted-foreground">/ 24h</span></div>
-                  <div><strong>{s.last_7d}</strong> <span className="text-muted-foreground">/ 7d</span></div>
-                </div>
-                <div className="text-2xs text-muted-foreground mt-1">
-                  last: {s.last_seen_at ? formatDistanceToNow(new Date(s.last_seen_at), { addSuffix: true }) : '—'}
-                </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
       </div>
 
@@ -139,7 +178,7 @@ export default function ErrorsTab() {
           <div className="flex-1" />
 
           <div className="flex gap-1">
-            {(['fatal', 'error', 'warn'] as const).map(s => (
+            {(['fatal', 'error', 'warn'] as const).map((s) => (
               <button
                 key={s}
                 onClick={() => setMinSeverity(s)}
@@ -148,7 +187,9 @@ export default function ErrorsTab() {
                     ? 'bg-primary text-primary-foreground border-primary'
                     : 'bg-background text-muted-foreground border-border hover:bg-accent'
                 }`}
-              >{s}+</button>
+              >
+                {s}+
+              </button>
             ))}
           </div>
         </div>
@@ -158,8 +199,13 @@ export default function ErrorsTab() {
             <table className="w-full text-sm">
               <thead className="bg-muted/40 sticky top-0">
                 <tr className="border-b border-border">
-                  {['When', 'Function', 'Severity', 'Message'].map(h => (
-                    <th key={h} className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
+                  {['When', 'Function', 'Severity', 'Message'].map((h) => (
+                    <th
+                      key={h}
+                      className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider"
+                    >
+                      {h}
+                    </th>
                   ))}
                 </tr>
               </thead>
@@ -167,38 +213,49 @@ export default function ErrorsTab() {
                 {isLoading ? (
                   <AdminTableRowSkeleton columns={4} />
                 ) : filtered.length === 0 ? (
-                  <tr><td colSpan={4} className="p-6 text-center text-muted-foreground text-xs">
-                    {errors.length === 0 ? 'No errors' : 'No errors match search'}
-                  </td></tr>
-                ) : filtered.map(e => {
-                  const sc = sevConfig[e.severity as Severity] ?? sevConfig.info;
-                  return (
-                    <tr
-                      key={e.id}
-                      onClick={() => setSelected(e)}
-                      className={`border-b border-border/40 cursor-pointer transition-colors ${
-                        selected?.id === e.id ? 'bg-primary/10' : 'hover:bg-muted/30'
-                      }`}
-                    >
-                      <td className="px-4 py-2 text-muted-foreground text-xs2 whitespace-nowrap align-top"
-                          title={new Date(e.created_at).toISOString()}>
-                        {formatDistanceToNow(new Date(e.created_at), { addSuffix: true })}
-                      </td>
-                      <td className="px-4 py-2 font-mono text-xs2 align-top truncate max-w-[160px]"
-                          title={e.function_name}>
-                        {e.function_name}
-                      </td>
-                      <td className="px-4 py-2 align-top">
-                        <Badge variant="outline" className={`text-3xs px-1.5 py-0 ${sc.badgeClass}`}>
-                          {e.severity}
-                        </Badge>
-                      </td>
-                      <td className="px-4 py-2 align-top max-w-[400px] truncate text-xs">
-                        {e.message}
-                      </td>
-                    </tr>
-                  );
-                })}
+                  <tr>
+                    <td colSpan={4} className="p-6 text-center text-muted-foreground text-xs">
+                      {errors.length === 0 ? 'No errors' : 'No errors match search'}
+                    </td>
+                  </tr>
+                ) : (
+                  filtered.map((e) => {
+                    const sc = sevConfig[e.severity as Severity] ?? sevConfig.info;
+                    return (
+                      <tr
+                        key={e.id}
+                        onClick={() => setSelected(e)}
+                        className={`border-b border-border/40 cursor-pointer transition-colors ${
+                          selected?.id === e.id ? 'bg-primary/10' : 'hover:bg-muted/30'
+                        }`}
+                      >
+                        <td
+                          className="px-4 py-2 text-muted-foreground text-xs2 whitespace-nowrap align-top"
+                          title={new Date(e.created_at).toISOString()}
+                        >
+                          {formatDistanceToNow(new Date(e.created_at), { addSuffix: true })}
+                        </td>
+                        <td
+                          className="px-4 py-2 font-mono text-xs2 align-top truncate max-w-[160px]"
+                          title={e.function_name}
+                        >
+                          {e.function_name}
+                        </td>
+                        <td className="px-4 py-2 align-top">
+                          <Badge
+                            variant="outline"
+                            className={`text-3xs px-1.5 py-0 ${sc.badgeClass}`}
+                          >
+                            {e.severity}
+                          </Badge>
+                        </td>
+                        <td className="px-4 py-2 align-top max-w-[400px] truncate text-xs">
+                          {e.message}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>
@@ -212,12 +269,16 @@ export default function ErrorsTab() {
             ) : (
               <div className="flex flex-col gap-4">
                 <div>
-                  <div className="text-2xs text-muted-foreground uppercase tracking-wider font-medium mb-1">Message</div>
+                  <div className="text-2xs text-muted-foreground uppercase tracking-wider font-medium mb-1">
+                    Message
+                  </div>
                   <div className="text-sm break-words font-mono">{selected.message}</div>
                 </div>
                 {selected.context && (
                   <div>
-                    <div className="text-2xs text-muted-foreground uppercase tracking-wider font-medium mb-1">Context</div>
+                    <div className="text-2xs text-muted-foreground uppercase tracking-wider font-medium mb-1">
+                      Context
+                    </div>
                     <pre className="text-xs2 bg-muted/40 p-2 rounded-element overflow-auto">
                       {JSON.stringify(selected.context, null, 2)}
                     </pre>
@@ -225,7 +286,9 @@ export default function ErrorsTab() {
                 )}
                 {selected.stack && (
                   <div>
-                    <div className="text-2xs text-muted-foreground uppercase tracking-wider font-medium mb-1">Stack</div>
+                    <div className="text-2xs text-muted-foreground uppercase tracking-wider font-medium mb-1">
+                      Stack
+                    </div>
                     <pre className="text-2xs bg-muted/40 p-2 rounded-element overflow-auto max-h-60 whitespace-pre-wrap">
                       {selected.stack}
                     </pre>
@@ -235,12 +298,18 @@ export default function ErrorsTab() {
                   <div className="border-t border-border pt-2 space-y-1 text-xs2 text-muted-foreground">
                     {selected.pipeline_run_id && (
                       <div>
-                        pipeline_run: <code className="bg-muted/60 px-1 rounded-badge">{selected.pipeline_run_id}</code>
+                        pipeline_run:{' '}
+                        <code className="bg-muted/60 px-1 rounded-badge">
+                          {selected.pipeline_run_id}
+                        </code>
                       </div>
                     )}
                     {selected.staging_id && (
                       <div>
-                        staging: <code className="bg-muted/60 px-1 rounded-badge">{selected.staging_id}</code>
+                        staging:{' '}
+                        <code className="bg-muted/60 px-1 rounded-badge">
+                          {selected.staging_id}
+                        </code>
                       </div>
                     )}
                   </div>

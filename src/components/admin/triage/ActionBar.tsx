@@ -5,7 +5,11 @@ import { Check, X, SkipForward, Flag } from 'lucide-react';
 import { CannedResponsePicker } from './CannedResponsePicker';
 
 interface ActionBarProps {
-  onAction: (action: 'approve' | 'reject' | 'skip' | 'flag', notes?: string, cannedSlug?: string) => void;
+  onAction: (
+    action: 'approve' | 'reject' | 'skip' | 'flag',
+    notes?: string,
+    cannedSlug?: string,
+  ) => void;
   isLoading: boolean;
 }
 
@@ -42,7 +46,7 @@ export function ActionBar({ onAction, isLoading }: ActionBarProps) {
           variant="outline"
           onClick={() => handleAction('reject')}
           disabled={isLoading}
-          className="h-7 text-xs border-foreground bg-background text-foreground hover:bg-foreground hover:text-background rounded-element"
+          className="h-7 text-xs bg-card text-foreground hover:bg-foreground hover:text-background rounded-element shadow-soft"
         >
           <X className="h-3.5 w-3.5 mr-1" />
           Reject

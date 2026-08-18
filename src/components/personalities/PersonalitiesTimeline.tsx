@@ -68,9 +68,9 @@ export function PersonalitiesTimeline({ personalities }: PersonalitiesTimelinePr
           rather than as a list inside a tinted panel. */}
       <div className="flex min-w-max gap-4">
         {buckets.map((b) => (
-          <div key={b.label} className="w-56 flex-shrink-0 border-[3px] border-foreground bg-background">
-            <div className="sticky top-0 border-b-[3px] border-foreground bg-foreground px-4 py-2 text-background">
-              <div className="font-display text-title leading-tight">{b.label}</div>
+          <div key={b.label} className="w-56 flex-shrink-0 bg-card rounded-container shadow-soft">
+            <div className="sticky top-0 border-b border-border-hairline bg-foreground px-4 py-2 text-background">
+              <div className="text-title font-bold leading-tight">{b.label}</div>
               <div className="text-2xs tabular-nums text-background/70">
                 {b.items.length.toLocaleString()} {b.items.length === 1 ? 'person' : 'people'}
               </div>
@@ -79,13 +79,13 @@ export function PersonalitiesTimeline({ personalities }: PersonalitiesTimelinePr
               {b.items.map((p) => {
                 const year = p.birth_date ? new Date(p.birth_date).getFullYear() : null;
                 return (
-                  <li key={p.id} className="border-b-2 border-foreground/10 last:border-b-0">
+                  <li key={p.id} className="border-b border-foreground/10 last:border-b-0">
                     <LocalizedLink
                       to={`/personalities/${p.slug ?? p.id}`}
                       className="flex items-center gap-2 px-4 py-2 text-inherit no-underline transition-colors hover:bg-surface-container"
                     >
                       <div
-                        className="flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-foreground bg-muted text-2xs font-bold"
+                        className="flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-2xs font-bold"
                         aria-hidden="true"
                       >
                         {p.image_url ? (

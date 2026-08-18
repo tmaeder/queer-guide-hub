@@ -19,6 +19,7 @@ export function NestedEntityCard({
   description,
   href,
   actionLabel,
+  media,
   className,
 }: {
   type: string;
@@ -35,15 +36,15 @@ export function NestedEntityCard({
    *  interaction that does not exist. */
   href?: string;
   actionLabel?: string;
+  /** Optional graphic for the card's trailing edge. Kept as a slot rather than
+   *  a type-specific branch so this primitive stays type-agnostic — a city
+   *  passes its transit diagram, another type can pass something else. */
+  media?: React.ReactNode;
   className?: string;
 }) {
   return (
     <div
-      className={cn(
-        'group relative border-[3px] border-foreground p-4',
-        href && 'card-lift',
-        className,
-      )}
+      className={cn('group relative bg-muted rounded-element p-4', href && 'card-lift', className)}
     >
       <div className="flex items-start gap-4">
         <RouteBullet type={type} size={34} />
@@ -53,15 +54,16 @@ export function NestedEntityCard({
               {eyebrow}
             </div>
           )}
-          <div className="mt-0.5 font-display text-title leading-tight">{name}</div>
+          <div className="mt-0.5 text-title font-bold leading-tight">{name}</div>
           {description && (
             <p className="mt-1 line-clamp-2 text-13 leading-relaxed text-muted-foreground">
               {description}
             </p>
           )}
         </div>
+        {media && <div className="hidden h-12 w-16 shrink-0 sm:block">{media}</div>}
         {actionLabel && (
-          <span className="hidden shrink-0 border-2 border-foreground px-4 py-2 text-xs2 font-bold sm:block">
+          <span className="hidden shrink-0 bg-muted rounded-element px-4 py-2 text-xs2 font-bold sm:block">
             {actionLabel}
           </span>
         )}

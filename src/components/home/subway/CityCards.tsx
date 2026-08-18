@@ -1,99 +1,151 @@
+import type { TFunction } from 'i18next';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { fetchTrendingCities } from '@/hooks/usePersonalizedCities';
-import type { Track } from '@/components/transit/routeBulletMap';
-import { PageContainer } from '@/components/layout/PageContainer';
+import { fetchTrendingCities, fetchPersonalizedCitiesByIds } from '@/hooks/usePersonalizedCities';
+import { Band } from '@/components/home/Band';
+import { useHomeRegionContext } from '@/components/home/HomeRegionProvider';
+import { CityNetwork } from './CityNetwork';
+import { NETWORK_VIEWBOX } from './cityNetworkGeometry';
+import { tierForScore, EQUALITY_TIER_LABEL } from '@/utils/equalityScore';
 
-/** Per-card bending line — four precomputed paths cycled by index so
- *  neighbouring cards never bend the same way (template geometry). */
-const CITY_LINES = [
-  'M 6 20 C 40 12 70 24 100 17 C 130 10 165 22 194 15',
-  'M 6 18 C 38 24 72 12 100 17 C 135 22 160 10 194 16',
-  'M 6 14 C 45 22 80 10 100 17 C 125 24 170 12 194 18',
-  'M 6 16 C 42 10 76 24 100 17 C 128 12 166 22 194 14',
-];
-const TRACK_ORDER: Track[] = ['pink', 'green', 'blue', 'yellow'];
-const TRACK_VAR: Record<Track, string> = {
-  pink: 'var(--track-pink)',
-  blue: 'var(--track-blue)',
-  green: 'var(--track-green)',
-  yellow: 'var(--track-yellow)',
-};
+const CARDS = 8;
 
-/** "Where are you riding?" — city cards with a bending track line each.
- *  Replaces the photo-rail destinations section. */
+/**
+ * The country's equality score, said out loud.
+ *
+ * Three things this has to get right, none of which a bare number did:
+ *
+ *  - It is LABELLED. "90" beside a city name is a figure a reader cannot
+ *    calibrate; the tier word is the part that actually answers "is this
+ *    place safe for me".
+ *  - It is NATIONAL. This is `countries.equality_score` on a *city* card, so
+ *    the accessible name says so — a liberal city inside a restrictive country
+ *    must not read as if the score were its own.
+ *  - It is INK. The equality scale is a sanctioned functional palette, but
+ *    EqualityScoreBadge already documents that those hues fail contrast as
+ *    tiny text (measured 2.27:1 for the green). The ring may carry colour;
+ *    an 10px label may not.
+ *
+ * Renders nothing when the score is null — 11 countries genuinely have none,
+ * and omitting is honest where "0" or "50" would be a false claim.
+ *
+ * The tier WORD only appears below `TIER_WORD_BELOW`. The curated set is all
+ * rights-affirming countries, so spelling out "Very High" put the same two
+ * words on all eight cards — a label that never varies is noise, and it buries
+ * the one case that matters. That case is real: the visitor's own city is
+ * prepended to this band with no equality filter at all, so someone in a
+ * criminalising country sees it first. There the word is the whole point.
+ *
+ * Nothing is hidden either way — the number is always shown, and the full tier
+ * is always in the card's accessible name.
+ */
+const TIER_WORD_BELOW = 60; // = below `high` in EQUALITY_TIER_CUTOFFS
+
+function EqualityLine({ score }: { score: number | null | undefined }) {
+  const { t } = useTranslation();
+  if (score == null) return null;
+  const tier = tierForScore(score);
+  return (
+    <div className="mt-1 truncate text-2xs uppercase tracking-label text-muted-foreground">
+      {t('home.cities.equalityLabel', 'Equality')} {score}/100
+      {score < TIER_WORD_BELOW && (
+        <> · {t(`home.cities.equalityTier.${tier}`, EQUALITY_TIER_LABEL[tier])}</>
+      )}
+    </div>
+  );
+}
+
+/** The card's whole-surface link is the only thing a screen reader announces,
+ *  so it carries the full explainer rather than just the city name. Phrasing
+ *  mirrors EqualityScoreBadge so the two cannot describe the same number
+ *  differently. */
+function equalityAriaLabel(name: string, score: number | null | undefined, t: TFunction): string {
+  if (score == null) return name;
+  return t(
+    'home.cities.equalityAria',
+    '{{city}} — equality score {{score}} of 100, {{tier}}. National LGBTQ+ legal climate.',
+    { city: name, score, tier: EQUALITY_TIER_LABEL[tierForScore(score)] },
+  );
+}
+
+/** "Where are you riding?" — city cards, each carrying an octilinear
+ *  abstraction of that city's own transit network.
+ *
+ *  The visitor's own city leads when we know it, then the editorial set. The
+ *  band used to render the same fixed whitelist in the same order for every
+ *  visitor forever, which made "where are you riding" a question it never
+ *  actually asked. It still never self-hides — the homepage e2e asserts this
+ *  heading is present, because a self-hiding band and a broken query look
+ *  identical. */
 export function CityCards() {
   const { t } = useTranslation();
+  const region = useHomeRegionContext();
+
   const { data: cities = [], isLoading } = useQuery({
-    queryKey: ['home-destinations'],
-    queryFn: () => fetchTrendingCities(200000, 8),
+    queryKey: ['home-destinations', region.cityId],
+    enabled: !region.loading,
+    queryFn: async () => {
+      const trending = await fetchTrendingCities(200000, CARDS);
+      if (!region.cityId) return trending;
+      // Already in the editorial set — promote rather than fetch it twice.
+      const found = trending.find((c) => c.id === region.cityId);
+      if (found) return [found, ...trending.filter((c) => c.id !== region.cityId)];
+      const [home] = await fetchPersonalizedCitiesByIds([region.cityId]);
+      return home ? [home, ...trending].slice(0, CARDS) : trending;
+    },
     staleTime: 30 * 60_000,
   });
 
-  if (!isLoading && cities.length === 0) return null;
-
   return (
-    <section className="border-b-4 border-foreground">
-      <PageContainer>
-        <div className="mb-6 flex flex-wrap items-baseline justify-between gap-4">
-          <h2 className="font-display text-display">
-            {t('home.cities.title', 'Where are you riding?')}
-          </h2>
-          <LocalizedLink to="/cities" className="text-15 font-bold no-underline">
-            {t('home.cities.seeAll', 'All cities')} →
-          </LocalizedLink>
-        </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {isLoading
-            ? Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="h-32 animate-pulse border-[3px] border-foreground/20" />
-              ))
-            : cities.map((city, i) => (
-                <div
-                  key={city.id}
-                  className="card-lift group relative border-[3px] border-foreground bg-background p-4"
-                >
-                  <div className="flex items-baseline justify-between gap-2">
-                    <span className="truncate font-display text-headline">{city.name}</span>
-                    {city.countries?.equality_score != null && (
-                      <span
-                        className="shrink-0 text-13 font-bold"
-                        title={t('home.cities.equality', 'Equality score')}
-                      >
-                        {city.countries.equality_score}
-                      </span>
-                    )}
-                  </div>
-                  <svg viewBox="0 0 200 34" className="my-2 w-full" aria-hidden>
-                    <path
-                      d={CITY_LINES[i % CITY_LINES.length]}
-                      fill="none"
-                      stroke={`hsl(${TRACK_VAR[TRACK_ORDER[i % TRACK_ORDER.length]]})`}
-                      strokeWidth={6}
-                      strokeLinecap="round"
-                    />
-                    <circle
-                      cx={100}
-                      cy={17}
-                      r={6}
-                      fill="hsl(var(--background))"
-                      stroke="hsl(var(--foreground))"
-                      strokeWidth={3}
-                    />
-                  </svg>
-                  <div className="truncate text-13 text-muted-foreground">
-                    {city.editorial_hook || city.countries?.name || ''}
-                  </div>
-                  <LocalizedLink
-                    to={`/city/${city.slug || city.id}`}
-                    className="absolute inset-0 no-underline"
-                    aria-label={city.name}
-                  />
+    <Band
+      surface="tint"
+      title={t('home.cities.title', 'Where are you riding?')}
+      seeAllHref="/cities"
+      seeAllLabel={t('home.cities.seeAll', 'All cities')}
+    >
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {isLoading
+          ? Array.from({ length: 8 }).map((_, i) => (
+              // Same shell + an empty diagram box, so the skeleton is exactly
+              // as tall as the loaded card at every breakpoint instead of a
+              // fixed height that only matches at one.
+              <div key={i} className="border animate-pulse border-foreground/20 p-4">
+                <div className="h-8 w-2/3 bg-muted" />
+                <svg
+                  viewBox={`0 0 ${NETWORK_VIEWBOX.w} ${NETWORK_VIEWBOX.h}`}
+                  className="my-2 w-full"
+                  aria-hidden
+                />
+                <div className="h-4 w-1/2 bg-muted" />
+              </div>
+            ))
+          : cities.map((city, i) => (
+              <div
+                key={city.id}
+                className="card-lift group relative bg-card p-4 rounded-container shadow-soft"
+              >
+                {/* The name owns the row now. The score used to sit here as a
+                      bare "90" with only a hover title — a number a reader
+                      cannot calibrate, on a metric that is safety-adjacent.
+                      EqualityScoreBadge learned the same lesson in 2026-07
+                      ("every size now carries its meaning"); it is a 48-88px
+                      ring, too big for this card, so the meaning moves to the
+                      footer line instead. */}
+                <span className="block truncate font-display text-headline">{city.name}</span>
+                <CityNetwork slug={city.slug} index={i} />
+                <div className="truncate text-13 text-muted-foreground">
+                  {city.editorial_hook || city.countries?.name || ''}
                 </div>
-              ))}
-        </div>
-      </PageContainer>
-    </section>
+                <EqualityLine score={city.countries?.equality_score} />
+                <LocalizedLink
+                  to={`/city/${city.slug || city.id}`}
+                  className="absolute inset-0 no-underline"
+                  aria-label={equalityAriaLabel(city.name, city.countries?.equality_score, t)}
+                />
+              </div>
+            ))}
+      </div>
+    </Band>
   );
 }

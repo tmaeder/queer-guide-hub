@@ -39,12 +39,18 @@ test.describe('Venues — map view', () => {
     // once the cluster source has loaded. Wait for it to leave the loading
     // state first (generous window for a cold source load).
     //
-    // Matches BOTH wordings. The subway rebrand moved this surface onto MapRail
-    // ("N places in view") while MapResultsPill still says "N results in view";
-    // pinned to "results" alone this never matched and the test timed out at
-    // 45s on every nightly, reading as a dead cluster source when the map was
-    // in fact plotting 80 venues.
-    const counter = page.locator('text=/\\d+ (results|places) in view/');
+    // Matches BOTH wordings AND either casing. The subway rebrand moved this
+    // surface onto MapRail ("N places in view") while MapResultsPill still says
+    // "N results in view"; widening the wording alone still never matched,
+    // because MapRail's span carries `uppercase` and `text=` matches RENDERED
+    // text — so the node reads "80 PLACES IN VIEW" however lowercase its
+    // textContent is. Measured on production at the runner's own 1280x720:
+    // exactly one element contains "in view", `textContent` is
+    // "80 places in view", `innerText` is "80 PLACES IN VIEW", it is 97x14px at
+    // opacity 1 — present and visible the whole time the test spent 45s not
+    // finding it, and reading as a dead cluster source while the map plotted 80
+    // venues. The `i` is what was missing.
+    const counter = page.locator('text=/\\d+ (results|places) in view/i');
     await expect(counter).toBeVisible({ timeout: 45_000 });
 
     // The map auto-flies to the visitor's IP geolocation at zoom 10

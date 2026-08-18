@@ -2,6 +2,7 @@ import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Briefcase, GraduationCap, Heart, MapPin, Globe, Phone, Shield } from 'lucide-react';
+import { FlagChipRow } from '@/components/profile/FlagChip';
 
 interface SecureProfileViewerProps {
   profile: Record<string, unknown>;
@@ -87,6 +88,15 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
                 </div>
               )}
             </div>
+
+            {/* Server-gated like every field here: the RPC only returns
+                identity_flags when flags_visibility allows this viewer. */}
+            {Array.isArray(profile.identity_flags) && profile.identity_flags.length > 0 && (
+              <div>
+                <p className="text-base font-medium mb-2">Flags</p>
+                <FlagChipRow flagIds={profile.identity_flags as string[]} />
+              </div>
+            )}
 
             {interests && (
               <div className="flex flex-col gap-4">
@@ -187,7 +197,7 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
               </div>
 
               {!isOwnProfile && isAdmin && (
-                <div className="mt-4 p-4 bg-destructive/10 border-destructive rounded-element">
+                <div className="border mt-4 p-4 bg-destructive/10 border-destructive rounded-element">
                   <p className="text-sm text-destructive font-medium">
                     Admin Access: This sensitive information is logged and monitored for security
                     compliance.

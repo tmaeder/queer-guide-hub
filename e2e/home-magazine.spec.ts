@@ -47,7 +47,7 @@ async function scrollThrough(page: Page) {
 test.describe('homepage masthead', () => {
   test.setTimeout(90_000);
 
-  test('desktop: visible h1 masthead with live stat chips over the map', async ({ page }) => {
+  test('desktop: visible h1 masthead with a map CTA', async ({ page }) => {
     await gotoHome(page, DESKTOP);
 
     // The h1 is the visible identity overlay, not sr-only.
@@ -55,21 +55,35 @@ test.describe('homepage masthead', () => {
     await expect(h1).toBeVisible();
     await expect(h1).not.toHaveClass(/sr-only/);
 
-    // Live stat chips: formatted non-zero counts. Skip-null logic means every
-    // rendered chip must contain a digit 1-9 somewhere.
-    const chips = page.locator('main h1 ~ * .tabular-nums, main .tabular-nums');
-    await expect(chips.first()).toBeVisible({ timeout: 20_000 });
-    const chipTexts = await chips.allTextContents();
-    expect(chipTexts.length).toBeGreaterThanOrEqual(1);
-    for (const text of chipTexts.slice(0, 3)) {
-      expect(text).toMatch(/[1-9]/);
-    }
+    // The masthead carries no numbers, so nothing here asserts on them.
+    // Measured on production 2026-08-16: `SubwayHero` contains ZERO
+    // `.tabular-nums` — an h1, a lede, the ⌘K field, "Open the map" and the
+    // intent map. The stat chips this test was written for belonged to the
+    // pre-rebrand MapLibre hero, deleted alongside the sibling test below.
+    await expect(page.locator('main h1')).toHaveCount(1);
 
     // Map CTA present and pointing at /map.
     const mapLink = page.getByRole('link', { name: /open the map/i });
     await expect(mapLink).toBeVisible();
     await expect(mapLink).toHaveAttribute('href', /\/map/);
   });
+
+  // REMOVED 2026-08-16: the 'live stat chips' block from the test above. Its
+  // selector was `main h1 ~ * .tabular-nums, main .tabular-nums` — page-wide,
+  // not masthead-scoped — so after the rebrand emptied the hero it silently
+  // began sampling whatever else on the page happens to use tabular numerals,
+  // then asserted every one of the first three matches contains a digit 1-9.
+  //
+  // On the live homepage those matches are the departures board and the
+  // marketplace prices. A departure row for an EVENT carries a time
+  // ("SUN 02:00"); a row for a VENUE has no departure time and renders that
+  // cell empty — correctly. So the assertion failed on `""` whenever the rails
+  // led with venues, which is data- and location-dependent: it passed for
+  // months, then failed twice in a row on 2026-08-16 (run 31923932566).
+  //
+  // A too-broad selector does not fail when the thing it describes is deleted;
+  // it quietly starts measuring something else and reports that as a
+  // regression in the feature it names.
 
   // REMOVED 2026-08-11: 'masthead fades after first map interaction'. The
   // subway rebrand replaced the live MapLibre hero with a static SubwayHero
@@ -110,11 +124,13 @@ test.describe('homepage sections', () => {
     const headings = page.locator('main h2');
     const texts = (await headings.allTextContents()).map((t) => t.trim());
 
-    // Events — the DeparturesBoard band. Asserted strictly on purpose: it
-    // `return null`s when the query yields no rows, which is exactly the shape
-    // a broken query takes, so "absent" is a signal rather than an empty week.
-    // (The pre-rebrand section had a pride-season fallback that guaranteed
-    // presence; the subway rebuild dropped it, so this assertion IS the guard.)
+    // Events — the "Near you" band. Asserted strictly on purpose: a band that
+    // `return null`s is exactly the shape a broken query takes, so "absent" is
+    // a signal rather than an empty week. The band now guarantees content via
+    // its region ladder (city -> country -> "Worth the trip") and renders its
+    // chrome even when empty, so this guard is stronger than before.
+    // The heading is region-scoped ("Departures — Berlin" / "— Germany" /
+    // "— across the network"); the shared word is what this matches.
     expect(
       texts.some((t) => /departures/i.test(t)),
       `events section missing; h2s: ${texts.join(' | ')}`,
@@ -177,11 +193,15 @@ test.describe('homepage sections', () => {
     await gotoHome(page, DESKTOP);
     await scrollThrough(page);
 
-    // Section may legitimately self-hide on a thin week — skip, don't fail.
-    const heading = page.locator('main h2', { hasText: /born this week/i });
-    test.skip((await heading.count()) === 0, 'no birthdays in the ±3-day window');
+    // "Born this week" is now a COLUMN inside the merged "From the archive"
+    // band, not its own h2 — the two history rails were merged so a quiet day
+    // loses a column instead of two whole sections.
+    const heading = page.locator('main h2', { hasText: /from the archive/i });
+    test.skip((await heading.count()) === 0, 'no archive content today');
 
     await heading.scrollIntoViewIfNeeded();
+    const column = page.getByRole('region', { name: /born this week/i });
+    test.skip((await column.count()) === 0, 'no birthdays in the ±3-day window');
     // The PartyPopper celebrate affordance is present and enabled (its gating —
     // one celebration per chip — is covered in HomeBornThisWeek.test). We don't
     // click here: the strip is a live marquee/rail with lazy-loading avatars, so

@@ -33,7 +33,7 @@ const PRIMARY_CLASSES =
   'inline-flex items-center gap-2 rounded-full bg-foreground px-8 py-4 text-sm font-bold tracking-tight text-background transition-opacity duration-normal hover:opacity-90 no-underline';
 
 const SECONDARY_CLASSES =
-  'inline-flex items-center gap-2 rounded-full border border-foreground px-8 py-4 text-sm font-bold tracking-tight text-foreground hover:bg-foreground hover:text-background transition-colors no-underline';
+  'inline-flex items-center gap-2 rounded-full border border-border-hairline px-8 py-4 text-sm font-bold tracking-tight text-foreground hover:bg-foreground hover:text-background transition-colors no-underline';
 
 function CtaButton({ cta, primary }: { cta: CTA; primary: boolean }) {
   const cls = primary ? PRIMARY_CLASSES : SECONDARY_CLASSES;

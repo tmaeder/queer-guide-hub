@@ -71,7 +71,12 @@ function AddSavedToTripButton({ item }: { item: FavoriteItem }) {
         <AddToTripDialog
           open={open}
           onClose={() => setOpen(false)}
-          entity={{ type: item.type, id: item.id, name: item.title, category: item.category ?? null }}
+          entity={{
+            type: item.type,
+            id: item.id,
+            name: item.title,
+            category: item.category ?? null,
+          }}
         />
       )}
     </>
@@ -177,7 +182,11 @@ export function SavedTab() {
       };
       setFavorites(transformedFavorites);
     } catch (_error) {
-      toast({ title: 'Error', description: 'Failed to load saved items. Please try again.', variant: 'destructive' });
+      toast({
+        title: 'Error',
+        description: 'Failed to load saved items. Please try again.',
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
@@ -542,7 +551,7 @@ export function SavedTab() {
           <TabsList className="h-auto gap-0 rounded-none border-0 bg-transparent p-0 backdrop-blur-none w-full justify-start overflow-x-auto">
             {(() => {
               const lineTab =
-                'h-10 rounded-none border-b-2 border-transparent bg-transparent px-4 shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-foreground data-[state=active]:shadow-none flex items-center gap-2';
+                'h-10 rounded-none border-b border-transparent bg-transparent px-4 shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-border-hairline data-[state=active]:shadow-none flex items-center gap-2';
               return (
                 <>
                   <TabsTrigger value="all" className={lineTab}>
@@ -589,7 +598,10 @@ export function SavedTab() {
                           await navigator.share({ title: 'My marketplace favorites', url });
                         } else {
                           await navigator.clipboard.writeText(url);
-                          toast({ title: 'Link copied', description: 'Share link copied to clipboard.' });
+                          toast({
+                            title: 'Link copied',
+                            description: 'Share link copied to clipboard.',
+                          });
                         }
                       } catch {
                         /* user cancelled */

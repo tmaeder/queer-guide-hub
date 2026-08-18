@@ -24,7 +24,7 @@ export function SidebarCard({
   return (
     <section
       className={cn(
-        'border-[3px] border-foreground p-4',
+        'bg-muted rounded-element p-4',
         tone === 'ink' && 'bg-foreground text-background',
         className,
       )}
@@ -39,7 +39,7 @@ export function SidebarCard({
           {eyebrow}
         </div>
       )}
-      {title && <h2 className="mt-1 font-display text-title leading-tight">{title}</h2>}
+      {title && <h2 className="mt-1 text-title font-bold leading-tight">{title}</h2>}
       <div className={cn(eyebrow || title ? 'mt-2' : '')}>{children}</div>
     </section>
   );
@@ -61,7 +61,7 @@ export function SidebarRow({
   return (
     <div
       className={cn(
-        'flex items-baseline justify-between gap-4 border-b-2 border-foreground/15 py-2 last:border-b-0 last:pb-0',
+        'flex items-baseline justify-between gap-4 border-b border-foreground/15 py-2 last:border-b-0 last:pb-0',
         className,
       )}
     >

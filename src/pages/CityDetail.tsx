@@ -1,6 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { SeeAllLink } from '@/components/ui/SectionHeader';
 import { useParams } from 'react-router';
 import { useTrackView } from '@/hooks/useTrackView';
 import { resolveEntityImage } from '@/lib/images/resolveEntityImage';
@@ -17,41 +16,54 @@ import { useQueerVillages } from '@/hooks/useQueerVillages';
 import { useNearestAirport } from '@/hooks/useNearestAirport';
 import { useAuth } from '@/hooks/useAuth';
 import { useTrackEvent } from '@/hooks/useTrackEvent';
+import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
 import { MarketplaceForCity } from '@/components/marketplace/MarketplaceForCity';
 import { CityLocalSupporterCaption } from '@/components/marketplace/CityLocalSupporterCaption';
 import { GuidesRail } from '@/components/guides/GuidesRail';
 import { TrendingStrip } from '@/components/discovery/TrendingStrip';
+import { PeopleHereRail } from '@/components/people/PeopleHereRail';
+import { SimilarCities } from '@/components/personalization/SimilarCities';
 import { CreateTripDialog } from '@/components/trips/CreateTripDialog';
 import { TripCoveringBanner } from '@/components/trips/TripCoveringBanner';
 import { PlanTripFromHereButton } from '@/components/trips/PlanTripFromHereButton';
-import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
-import { GatedContentNotice } from '@/components/safety/GatedContentNotice';
-import { EditorialDetailLayout, type SectionDef } from '@/components/entity/editorial';
-import { CITY_SECTION_DEFS } from './city-detail/CitySectionDefs';
+import { SinglePage } from '@/components/transit/SinglePage';
+import { StatLine } from '@/components/transit/StatLine';
+import { ProvenanceLine } from '@/components/transit/ProvenanceLine';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+import { SeeAllLink } from '@/components/ui/SectionHeader';
+import { PageContainer } from '@/components/layout/PageContainer';
+import { GeoCensus } from '@/components/geo/GeoCensus';
+import { GeoPhotoInset } from '@/components/geo/GeoPhotoInset';
+import { GeoSafetyBanner, GeoSafetyVerdict } from '@/components/geo/GeoSafetyBlock';
+import { GeoSectionList, GeoRouteRail } from '@/components/geo/GeoSections';
+import {
+  geoSections,
+  useGeoActiveSection,
+  type GeoSection,
+} from '@/components/geo/geoSectionModel';
 import { PersonalitiesForEntity } from '@/components/discovery/PersonalitiesForEntity';
 import { NearbyTriptych } from '@/components/discovery/NearbyTriptych';
 import { CityLandmarksRail } from '@/components/geo/CityLandmarksRail';
-import {
-  CityHero,
-  CityAtAGlance,
-  CityOverviewTab,
-  CityRightsTab,
-  CityVenuesTab,
-  CityEventsTab,
-  CityTravelTab,
-  CityNewsTab,
-  CityMapTab,
-} from './CityDetail.parts';
-import { PageContainer } from '@/components/layout/PageContainer';
+import { CityActions } from './city-detail/CityActions';
+import { CityAtAGlance } from './city-detail/CityAtAGlance';
+import { CityOverviewTab } from './city-detail/CityOverviewTab';
+import { CityRightsTab } from './city-detail/CityRightsTab';
+import { CityVenuesTab, CityDistricts, CityEventsTab } from './city-detail/CityVenuesTab.parts';
+import { CityTravelTab } from './city-detail/CityTravelTab';
+import { CityNewsTab } from './city-detail/CityNewsTab';
+import { CityMapTab } from './city-detail/CityMapTab';
+
+const OUTLINE_ON_INK =
+  'border inline-flex items-center gap-2 border-background px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground';
 
 export default function CityDetail() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const { toast } = useToast();
   const { toggleFavorite, isFavorited } = useFavorites('city');
   const { fetchCityImage } = useCityImages();
-  const { articles, loading: newsLoading, fetchArticles } = useNews();
+  const { articles, fetchArticles } = useNews();
   const { city, loading, refetch: refetchCity } = useOptimizedCity(slug ?? '');
   useTrackView({
     type: 'city',
@@ -61,7 +73,7 @@ export default function CityDetail() {
     country: city?.countries?.name,
   });
   // Sync fast path mirroring fetchCityImage's short-circuit (curated wins,
-  // then unflagged image_url) so the LCP hero exists in the FIRST render for
+  // then unflagged image_url) so the photo inset exists in the FIRST render for
   // every backfilled city instead of waiting on a JS round-trip. The async
   // edge/Pexels path below only runs on a true miss.
   const syncImageUrl = city
@@ -118,7 +130,7 @@ export default function CityDetail() {
   const effectiveIata = city?.major_airport_code || nearestAirport?.iata_code || null;
 
   const { venues, loading: venuesLoading, fetchVenues } = useVenues(false);
-  const { events, loading: eventsLoading, fetchEvents } = useEvents(false);
+  const { events, fetchEvents } = useEvents(false);
   const fetchVenuesRef = useRef(fetchVenues);
   // eslint-disable-next-line react-hooks/refs -- "latest value" ref pattern; effect below reads .current.
   fetchVenuesRef.current = fetchVenues;
@@ -139,8 +151,8 @@ export default function CityDetail() {
 
   useEffect(() => {
     if (!city) return;
-    // Only hit the network for the hero image on a true miss — the sync fast
-    // path above already covers curated/unflagged images.
+    // Only hit the network for the photo on a true miss — the sync fast path
+    // above already covers curated/unflagged images.
     if (!syncImageUrl) {
       (async () => {
         try {
@@ -176,15 +188,120 @@ export default function CityDetail() {
     if (city?.id) fetchVillages({ cityId: city.id });
   }, [city?.id, fetchVillages]);
 
+  const breadcrumbs = useMemo(
+    () =>
+      city
+        ? [
+            { label: t('breadcrumb.places', 'Places'), href: '/places' },
+            ...(city.countries
+              ? [
+                  {
+                    label: city.countries.name,
+                    href: `/country/${city.countries.slug || city.countries.id}`,
+                  },
+                ]
+              : []),
+            { label: city.name },
+          ]
+        : null,
+    [city, t],
+  );
+  useBreadcrumbs(breadcrumbs);
+
+  const seeAll = (href: string) => (
+    <SeeAllLink to={href} label={t('cities.detail.seeAll', 'See all')} />
+  );
+
+  // Spec module order for `city`: 01 fact strip, 03 occurrences, 05 stop list,
+  // 15 stat line, 16 map inset (the OWNER module). Sections are built
+  // unconditionally so the route rail's stations and the rendered list come
+  // from one array, and so the hook below never sits behind an early return.
+  const sections: GeoSection[] = city
+    ? geoSections([
+        {
+          id: 'rights',
+          title: t('cities.detail.section.rights', 'Safety & rights'),
+          note: t('cities.detail.section.rightsNote', 'Know before you go.'),
+          content: (
+            <CityRightsTab city={city} fullCountry={fullCountry} countryLoading={countryLoading} />
+          ),
+        },
+        {
+          id: 'venues',
+          title: t('cities.detail.section.venues', 'Where to go'),
+          content: venuesLoading ? (
+            <TrackLoader label={t('cities.detail.loadingVenues', 'Loading venues')} />
+          ) : venues.length > 0 ? (
+            <>
+              <CityVenuesTab venues={venues} />
+              <div className="mt-6">{seeAll(`/venues?city=${encodeURIComponent(city.name)}`)}</div>
+            </>
+          ) : null,
+        },
+        {
+          id: 'districts',
+          title: t('cities.detail.section.districts', 'Queer districts'),
+          note: t(
+            'cities.detail.section.districtsNote',
+            'Walkable clusters of bars, cafés and community spaces.',
+          ),
+          content:
+            !villagesLoading && villages.length > 0 ? <CityDistricts villages={villages} /> : null,
+        },
+        {
+          id: 'events',
+          title: t('cities.detail.section.events', 'Next departures'),
+          content:
+            events.length > 0 ? (
+              <>
+                <CityEventsTab
+                  events={events}
+                  locale={i18n.language}
+                  openLabel={t('cities.detail.openEvent', 'Open')}
+                />
+                <div className="mt-6">
+                  {seeAll(`/events?city=${encodeURIComponent(city.name)}`)}
+                </div>
+              </>
+            ) : null,
+        },
+        {
+          id: 'overview',
+          title: t('cities.detail.section.overview', 'About {{city}}', { city: city.name }),
+          content: <CityOverviewTab city={city} />,
+        },
+        {
+          id: 'travel',
+          title: t('cities.detail.section.travel', 'Getting there'),
+          content: (
+            <CityTravelTab
+              city={city}
+              effectiveIata={effectiveIata}
+              hasAirport={hasAirport}
+              nearestAirport={nearestAirport}
+            />
+          ),
+        },
+        {
+          id: 'news',
+          title: t('cities.detail.section.news', 'In the news'),
+          content: articles.length > 0 ? <CityNewsTab articles={articles} /> : null,
+        },
+      ])
+    : [];
+
+  const { activeId, select } = useGeoActiveSection(sections);
+
   const handleFavoriteToggle = async () => {
     if (!city) return;
+    const wasFavorited = isFavorited(city.id);
     try {
       await toggleFavorite(city.id);
       toast({
-        title: isFavorited(city.id)
+        title: wasFavorited
           ? t('favorites.removedTitle', 'Removed from favorites')
           : t('favorites.addedTitle', 'Added to favorites'),
-        description: isFavorited(city.id)
+        description: wasFavorited
           ? t('favorites.removedDescription', '{{name}} removed from your favorites', {
               name: city.name,
             })
@@ -192,7 +309,7 @@ export default function CityDetail() {
               name: city.name,
             }),
       });
-    } catch (_error) {
+    } catch {
       toast({
         title: t('common.error', 'Error'),
         description: t('favorites.updateFailed', 'Failed to update favorites'),
@@ -202,124 +319,31 @@ export default function CityDetail() {
   };
 
   if (loading) {
-    // Content-shaped skeleton mirroring the loaded layout (hero → facts row →
-    // section stubs) so there's no full-screen spinner and no layout shift.
     return (
-      <PageContainer
-        role="status"
-        aria-live="polite"
-        aria-label={t('city.loadingDetails', 'Loading city details...')}
-      >
-        <div className="h-[58vh] min-h-[380px] max-h-[600px] w-full rounded-container bg-muted animate-pulse" />
-        <div className="mt-6 h-11 w-48 rounded-element bg-muted animate-pulse" />
-        <div className="mt-8 grid grid-cols-2 gap-6 sm:grid-cols-3 rounded-container p-6 bg-surface-container">
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="flex flex-col gap-2">
-              <div className="h-3 w-16 rounded-badge bg-muted animate-pulse" />
-              <div className="h-6 w-24 rounded-badge bg-muted animate-pulse" />
-            </div>
-          ))}
-        </div>
-        <div className="mt-10 flex flex-col gap-6">
-          {[0, 1].map((i) => (
-            <div key={i} className="h-40 w-full rounded-container bg-muted animate-pulse" />
-          ))}
-        </div>
+      <PageContainer>
+        <TrackLoader label={t('city.loadingDetails', 'Loading city details')} />
       </PageContainer>
     );
   }
 
   if (!city) {
     return (
-      <div className="min-h-screen bg-background">
-        <PageContainer className="text-center">
-          <h5 className="text-xl font-bold mb-4">{t('city.notFoundTitle', 'City not found')}</h5>
-          <p className="text-muted-foreground mb-6">
-            {t('city.notFoundDescription', "The city you're looking for doesn't exist.")}
-          </p>
-          <LocalizedLink to="/places" className="font-medium" style={{ color: 'inherit' }}>
-            {t('city.backToPlaces', '← Back to Places')}
-          </LocalizedLink>
-        </PageContainer>
-      </div>
+      <PageContainer>
+        <h1 className="font-display text-display leading-none">
+          {t('city.notFoundTitle', 'City not found')}
+        </h1>
+        <p className="mt-4 max-w-reading text-body-lg text-muted-foreground">
+          {t('city.notFoundDescription', "The city you're looking for doesn't exist.")}
+        </p>
+        <LocalizedLink
+          to="/places"
+          className="mt-6 inline-flex items-center gap-2 px-4 py-2 text-13 font-bold no-underline transition-colors hover:bg-foreground hover:text-background"
+        >
+          {t('city.backToPlaces', 'All places')}
+        </LocalizedLink>
+      </PageContainer>
     );
   }
-
-  const breadcrumbs = [
-    { label: t('breadcrumb.places', 'Places'), href: '/places' },
-    ...(city.countries
-      ? [
-          {
-            label: city.countries.name,
-            href: `/country/${city.countries.slug || city.countries.id}`,
-          },
-        ]
-      : []),
-    { label: city.name },
-  ];
-
-  const hasCoords = typeof city.latitude === 'number' && typeof city.longitude === 'number';
-
-  const seeAll = (href: string) => (
-    <SeeAllLink to={href} label={t('cities.detail.seeAll', 'See all')} />
-  );
-
-  const sectionContent: Record<string, React.ReactNode> = {
-    rights: <CityRightsTab city={city} fullCountry={fullCountry} countryLoading={countryLoading} />,
-    venues: (
-      <CityVenuesTab
-        city={city}
-        venues={venues}
-        venuesLoading={venuesLoading}
-        villages={villages}
-        villagesLoading={villagesLoading}
-        showCreateTrip={Boolean(user)}
-        onCreateTrip={() => setCreateTripOpen(true)}
-      />
-    ),
-    events: <CityEventsTab city={city} events={events} eventsLoading={eventsLoading} />,
-    map: hasCoords ? <CityMapTab city={city} /> : null,
-    personalities: (
-      <PersonalitiesForEntity
-        cityId={city.id}
-        countryId={city.countries?.id ?? null}
-        cityName={city.name}
-      />
-    ),
-    overview: <CityOverviewTab city={city} />,
-    travel: (
-      <CityTravelTab
-        city={city}
-        effectiveIata={effectiveIata}
-        hasAirport={hasAirport}
-        nearestAirport={nearestAirport}
-      />
-    ),
-    news: <CityNewsTab city={city} articles={articles} newsLoading={newsLoading} />,
-    nearby: (
-      <NearbyTriptych
-        cityId={city.id}
-        latitude={city.latitude != null ? Number(city.latitude) : null}
-        longitude={city.longitude != null ? Number(city.longitude) : null}
-        countryId={city.countries?.id ?? null}
-        countryName={city.countries?.name ?? null}
-        equalityScore={city.countries?.equality_score ?? null}
-      />
-    ),
-  };
-
-  const sectionAction: Record<string, React.ReactNode> = {
-    venues: seeAll(`/venues?city=${encodeURIComponent(city.name)}`),
-    events: seeAll(`/events?city=${encodeURIComponent(city.name)}`),
-  };
-
-  const sections: SectionDef[] = CITY_SECTION_DEFS.map((def) => ({
-    id: def.id,
-    label: def.heading,
-    kicker: def.kicker,
-    action: sectionAction[def.id],
-    content: sectionContent[def.id] ?? null,
-  })).filter((s) => s.content != null);
 
   const planGeo = city.countries?.id
     ? {
@@ -332,65 +356,214 @@ export default function CityDetail() {
       }
     : null;
 
+  // Rendered unconditionally, zeros included — a masthead row that appears and
+  // disappears shifts the page under the reader (the /marketplace lesson).
+  const census = [
+    t('cities.detail.census.stops', '{{n}} stops', { n: venues.length }),
+    t('cities.detail.census.districts', '{{n}} districts', { n: villages.length }),
+    t('cities.detail.census.departures', '{{n}} departures', { n: events.length }),
+  ];
+
+  const eyebrowParts = [t('cities.detail.eyebrow', 'City')];
+  if (city.countries?.name) eyebrowParts.push(city.countries.name);
+
   return (
     <>
-      <EditorialDetailLayout
-        loading={false}
-        error={null}
-        breadcrumbs={breadcrumbs}
-        banner={
+      <SinglePage
+        type="city"
+        eyebrow={eyebrowParts.join(' · ')}
+        title={city.name}
+        lead={city.editorial_hook || city.description}
+        tags={<GeoCensus type="city" items={census} />}
+        action={
           <>
-            <SafetyAlertBanner
+            <PlanTripFromHereButton
+              initialGeo={planGeo}
+              label={t('cities.detail.planTrip', 'Plan a trip to {{city}}', { city: city.name })}
+            />
+            {user && (
+              <button
+                type="button"
+                onClick={() => setCreateTripOpen(true)}
+                className="px-4 py-2 text-13 font-bold transition-colors hover:bg-foreground hover:text-background"
+              >
+                {t('cities.detail.createTrip', 'Create trip')}
+              </button>
+            )}
+            <CityActions city={city} refetchCity={refetchCity} t={t} />
+          </>
+        }
+        body={
+          <>
+            {/* Safety first, full width, above everything. */}
+            <GeoSafetyBanner
               criminalization={
                 city.countries?.lgbti_criminalization as Record<string, unknown> | null | undefined
               }
-              countryName={city.countries?.name || ''}
+              countryName={city.countries?.name}
+              cityId={city.id}
             />
             <TripCoveringBanner
-              target={{
-                type: 'city',
-                cityId: city.id,
-                countryId: city.countries?.id ?? null,
-              }}
+              target={{ type: 'city', cityId: city.id, countryId: city.countries?.id ?? null }}
             />
-            <GatedContentNotice cityId={city.id} />
+            {/* Spec module 01 is slot HEAD, not rail: `FactGrid` is a
+              1/2/3-column grid keyed to the VIEWPORT, so in the 360px rail its
+              cells collapse to ~110px on a desktop. Same for
+              `CountryPracticalInfo`. The rail carries the rail-slot modules —
+              map inset (16) and stat line (15). */}
+            <CityAtAGlance city={city} hasAirport={hasAirport} effectiveIata={effectiveIata} />
+            <GeoPhotoInset
+              src={imageUrl}
+              alt={city.name}
+              fallbackKey={city.id}
+              priority
+              caption={city.countries?.name ?? null}
+            />
+            <GeoRouteRail
+              sections={sections}
+              activeId={activeId}
+              onNavigate={select}
+              orientation="horizontal"
+              track="green"
+              label={t('cities.detail.sections', 'Sections')}
+              className="lg:hidden"
+            />
+            <GeoSectionList sections={sections} />
           </>
         }
-        header={
-          <div className="flex flex-col gap-6">
-            <CityHero
-              city={city}
-              imageUrl={imageUrl}
-              isFavorited={isFavorited(city.id)}
-              onFavoriteToggle={handleFavoriteToggle}
-              refetchCity={refetchCity}
+        rail={
+          <>
+            <GeoSafetyVerdict
+              countryId={city.countries?.id}
+              equalityScore={city.countries?.equality_score}
             />
-            <div className="flex flex-wrap items-center gap-4">
-              <PlanTripFromHereButton
-                initialGeo={planGeo}
-                label={t('cities.detail.planTrip', 'Plan a trip to {{city}}', { city: city.name })}
+            <CityMapTab
+              city={city}
+              venues={venues}
+              caption={city.region_name ?? undefined}
+              openLabel={t('cities.detail.openMap', 'Open the full map')}
+            />
+            <div className="bg-muted rounded-element p-4">
+              <StatLine
+                stats={[
+                  {
+                    label: t('cities.detail.stats.venues', 'Venues'),
+                    value: venues.length || null,
+                  },
+                  {
+                    label: t('cities.detail.stats.districts', 'Districts'),
+                    value: villages.length || null,
+                  },
+                  {
+                    label: t('cities.detail.stats.events', 'Upcoming events'),
+                    value: events.length || null,
+                  },
+                ]}
               />
             </div>
-            <CityAtAGlance city={city} hasAirport={hasAirport} effectiveIata={effectiveIata} />
-          </div>
+            <GeoRouteRail
+              sections={sections}
+              activeId={activeId}
+              onNavigate={select}
+              orientation="vertical"
+              track="green"
+              label={t('cities.detail.sections', 'Sections')}
+              className="hidden lg:block"
+            />
+            <ProvenanceLine
+              addedAt={city.created_at}
+              checkedAt={city.last_verified_at ?? null}
+              correctHref="/contact"
+            />
+          </>
         }
-        sections={sections}
         footer={
           <div className="flex flex-col gap-12">
+            {/* Rails live here, not in `sections`: each self-hides from inside
+                its own body, which the section filter cannot see, so a station
+                would point at nothing. */}
+            <PersonalitiesForEntity
+              cityId={city.id}
+              countryId={city.countries?.id ?? null}
+              cityName={city.name}
+            />
+            <NearbyTriptych
+              cityId={city.id}
+              latitude={city.latitude != null ? Number(city.latitude) : null}
+              longitude={city.longitude != null ? Number(city.longitude) : null}
+              countryId={city.countries?.id ?? null}
+              countryName={city.countries?.name ?? null}
+              equalityScore={city.countries?.equality_score ?? null}
+            />
+            <PeopleHereRail
+              mode="locals"
+              cityId={city.id}
+              title={t('city.localsToMeet', {
+                defaultValue: 'Locals and travellers to meet in {{city}}',
+                city: city.name,
+              })}
+              seeAllHref="/community/members"
+            />
             <CityLandmarksRail cityId={city.id} />
             <TrendingStrip city={city.name} />
             <GuidesRail filters={{ cityId: city.id }} />
             <MarketplaceForCity cityName={city.name} cityId={city.id} />
             <CityLocalSupporterCaption cityId={city.id} />
+            <SimilarCities
+              cityId={city.id}
+              cityName={city.name}
+              countryId={city.country_id}
+              equalityScore={city.countries?.equality_score}
+              latitude={city.latitude}
+            />
             <SimilarItems
               entity={{ type: 'city', id: city.id }}
               title={t('city.similarCities', 'Similar cities')}
               contentTypes={['city']}
             />
+            <section
+              aria-labelledby="city-end-of-line"
+              className="bg-foreground p-6 text-background md:p-8"
+            >
+              <p className="text-2xs font-bold uppercase tracking-label text-background/70">
+                {t('cities.detail.endOfLine.eyebrow', 'End of line')}
+              </p>
+              <h2 id="city-end-of-line" className="mt-1 font-display text-headline leading-tight">
+                {t('cities.detail.endOfLine.title', 'Riding on?')}
+              </h2>
+              <p className="mt-2 max-w-reading text-13 leading-relaxed text-background/80">
+                {t(
+                  'cities.detail.endOfLine.body',
+                  'Every city on the guide carries the same modules: safety and rights first, then the places.',
+                )}
+              </p>
+              <div className="mt-6 flex flex-wrap gap-2">
+                <LocalizedLink to="/cities" className={OUTLINE_ON_INK}>
+                  {t('cities.detail.endOfLine.allCities', 'All cities')}
+                </LocalizedLink>
+                {city.countries && (
+                  <LocalizedLink
+                    to={`/country/${city.countries.slug || city.countries.id}`}
+                    className={OUTLINE_ON_INK}
+                  >
+                    {t('cities.detail.endOfLine.country', 'More in {{country}}', {
+                      country: city.countries.name,
+                    })}
+                  </LocalizedLink>
+                )}
+              </div>
+            </section>
+            <button
+              type="button"
+              onClick={handleFavoriteToggle}
+              className="self-start px-4 py-2 text-13 font-bold transition-colors hover:bg-foreground hover:text-background"
+            >
+              {isFavorited(city.id)
+                ? t('cities.detail.favorited', 'Saved to favorites')
+                : t('cities.detail.favorite', 'Save to favorites')}
+            </button>
           </div>
         }
-        entityType="city"
-        entityId={city.id}
       />
       <CreateTripDialog open={createTripOpen} onClose={() => setCreateTripOpen(false)} />
     </>

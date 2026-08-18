@@ -1,6 +1,6 @@
 {
   "project": "tsconfig.app.json",
-  "total": 1262,
+  "total": 847,
   "files": {
     "src/assets/intimate/pictograms.tsx": {
       "TS2503": 2
@@ -12,33 +12,14 @@
       "TS18046": 1,
       "TS6133": 1
     },
-    "src/components/admin/PersonalityCheckPanel.tsx": {
-      "TS2345": 6
-    },
     "src/components/admin/SecurityMonitoringDashboard.tsx": {
       "TS2345": 2
     },
     "src/components/admin/TagCategorizer.tsx": {
       "TS18046": 1
     },
-    "src/components/admin/affiliate/LinkHealthPanel.tsx": {
-      "TS2345": 2,
-      "TS2352": 1
-    },
-    "src/components/admin/affiliate/MerchantDrawer.tsx": {
-      "TS2345": 1,
-      "TS2352": 1
-    },
     "src/components/admin/affiliate/MerchantsManager.tsx": {
-      "TS2345": 2
-    },
-    "src/components/admin/affiliate/PerformancePanel.tsx": {
-      "TS2322": 1,
-      "TS2345": 2
-    },
-    "src/components/admin/affiliate/RegistryDriftCard.tsx": {
-      "TS2345": 1,
-      "TS2352": 1
+      "TS2345": 1
     },
     "src/components/admin/business/HotelsManager.tsx": {
       "TS2322": 7,
@@ -53,9 +34,6 @@
     },
     "src/components/admin/data-table/__tests__/AdminEntityTable.test.tsx": {
       "TS2322": 1
-    },
-    "src/components/admin/design/useDesignSettings.ts": {
-      "TS2345": 1
     },
     "src/components/admin/feedback/FeedbackCard.tsx": {
       "TS2554": 1
@@ -77,19 +55,7 @@
       "TS2698": 1
     },
     "src/components/admin/guides/GuidePicksPanel.tsx": {
-      "TS2322": 5,
-      "TS2339": 1,
-      "TS2345": 4,
-      "TS2352": 3
-    },
-    "src/components/admin/guides/GuideQuestPanel.tsx": {
-      "TS2345": 2,
-      "TS2353": 1
-    },
-    "src/components/admin/guides/GuideSectionsPanel.tsx": {
-      "TS2345": 3,
-      "TS2352": 1,
-      "TS2353": 1
+      "TS2352": 2
     },
     "src/components/admin/import-hub/DuplicatesPanel.tsx": {
       "TS2322": 1,
@@ -103,9 +69,7 @@
       "TS2345": 1
     },
     "src/components/admin/milestones/MilestoneLinksPanel.tsx": {
-      "TS2322": 5,
-      "TS2345": 2,
-      "TS2352": 3
+      "TS2352": 2
     },
     "src/components/admin/pipeline-builder/PipelineBuilder.tsx": {
       "TS2322": 2
@@ -120,16 +84,9 @@
       "TS2322": 1
     },
     "src/components/admin/pipeline-builder/hooks/usePipelineBuilder.ts": {
-      "TS2339": 2,
-      "TS2345": 6
-    },
-    "src/components/admin/pipeline-builder/hooks/usePipelineHistory.ts": {
-      "TS2339": 1,
-      "TS2345": 7,
-      "TS2352": 1
+      "TS2345": 1
     },
     "src/components/admin/pipeline-builder/hooks/useUnifiedMonitor.ts": {
-      "TS2345": 2,
       "TS2769": 2
     },
     "src/components/admin/pipeline-builder/nodes/__tests__/BaseNode.test.tsx": {
@@ -141,38 +98,9 @@
     "src/components/admin/pipeline-builder/nodes/__tests__/GroupNode.test.tsx": {
       "TS2740": 4
     },
-    "src/components/admin/pipeline-builder/panels/AccessDialog.tsx": {
-      "TS2322": 4,
-      "TS2345": 3
-    },
     "src/components/admin/pipeline-builder/panels/FindNodePalette.tsx": {
       "TS2339": 1,
       "TS6133": 1
-    },
-    "src/components/admin/pipeline-builder/panels/LogStreamDrawer.tsx": {
-      "TS2345": 2
-    },
-    "src/components/admin/pipeline-builder/panels/ScheduleDialog.tsx": {
-      "TS2345": 1,
-      "TS2353": 1
-    },
-    "src/components/admin/pipeline-builder/panels/TemplateLibrary.tsx": {
-      "TS2322": 6,
-      "TS2345": 1
-    },
-    "src/components/admin/pipeline-builder/panels/VersionHistoryDialog.tsx": {
-      "TS2345": 1
-    },
-    "src/components/admin/pipeline-builder/tabs/AuditTab.tsx": {
-      "TS2345": 2
-    },
-    "src/components/admin/pipeline-builder/tabs/HealthTab.tsx": {
-      "TS2345": 4
-    },
-    "src/components/admin/pipeline-builder/tabs/IntegrationsTab.tsx": {
-      "TS2322": 7,
-      "TS2345": 2,
-      "TS2353": 1
     },
     "src/components/admin/pipeline-builder/tabs/MonitorTab.tsx": {
       "TS18046": 1,
@@ -182,20 +110,6 @@
       "TS2365": 4,
       "TS2538": 2,
       "TS2769": 3
-    },
-    "src/components/admin/pipeline-builder/tabs/NewsTab.tsx": {
-      "TS2345": 6
-    },
-    "src/components/admin/pipeline-builder/tabs/OverviewTab.tsx": {
-      "TS2345": 2,
-      "TS2353": 1
-    },
-    "src/components/admin/pipeline-builder/tabs/SourcesTab.tsx": {
-      "TS2345": 1,
-      "TS2353": 2
-    },
-    "src/components/admin/review-queues/BrandReviewQueue.tsx": {
-      "TS2322": 2
     },
     "src/components/admin/review/ReviewBulkBar.tsx": {
       "TS6133": 1
@@ -212,9 +126,6 @@
     },
     "src/components/admin/venues/VenueImportDialog.tsx": {
       "TS2345": 2
-    },
-    "src/components/analytics/GrowthConversionDashboard.tsx": {
-      "TS2352": 1
     },
     "src/components/analytics/UmamiAnalyticsDashboard.tsx": {
       "TS2339": 2,
@@ -253,16 +164,6 @@
     "src/components/cms/MediaLibrary/AssetVersionSidebar.tsx": {
       "TS2352": 1
     },
-    "src/components/cms/MediaLibrary/MediaUploadZone.tsx": {
-      "TS2353": 1
-    },
-    "src/components/cms/MediaLibrary/StorageBreakdown.tsx": {
-      "TS2352": 1
-    },
-    "src/components/cms/editor/PersonalityAttachmentsPanel.tsx": {
-      "TS2345": 2,
-      "TS2352": 1
-    },
     "src/components/cms/editor/SaveButton.tsx": {
       "TS7030": 1
     },
@@ -291,9 +192,6 @@
     "src/components/country/WorldBankDataPanel.tsx": {
       "TS2339": 2
     },
-    "src/components/directory/DirectoryCard.tsx": {
-      "TS2339": 16
-    },
     "src/components/discovery/NextLegFromHere.tsx": {
       "TS2322": 1
     },
@@ -305,9 +203,6 @@
     },
     "src/components/effects/__tests__/ParallaxHero.test.tsx": {
       "TS2322": 1
-    },
-    "src/components/entity/adapters/useVenueDescriptor.tsx": {
-      "TS2322": 2
     },
     "src/components/error/OptimizedErrorBoundary.tsx": {
       "TS2339": 3,
@@ -324,9 +219,6 @@
     },
     "src/components/events/TimelineToolbar.tsx": {
       "TS2322": 1
-    },
-    "src/components/footprint/ShareControls.tsx": {
-      "TS2322": 2
     },
     "src/components/groups/CreateGroupEventDialog.tsx": {
       "TS2322": 2
@@ -508,12 +400,6 @@
       "TS6133": 1,
       "TS7053": 2
     },
-    "src/components/resources/__tests__/ResourcesFilterBar.test.tsx": {
-      "TS2322": 1
-    },
-    "src/components/score/CommunityLevelUpToast.tsx": {
-      "TS2345": 1
-    },
     "src/components/search/SearchCalendarView.tsx": {
       "TS2322": 1
     },
@@ -555,9 +441,6 @@
     "src/components/trips/CostSplitSummary.tsx": {
       "TS2345": 1
     },
-    "src/components/trips/PostTripMemoryPrompt.tsx": {
-      "TS2345": 1
-    },
     "src/components/trips/TripBookingAssistant.tsx": {
       "TS2339": 2,
       "TS2345": 1,
@@ -573,9 +456,6 @@
       "TS2551": 1
     },
     "src/components/trips/TripSafetyBriefing.tsx": {
-      "TS2345": 1
-    },
-    "src/components/trips/TripTemplates.tsx": {
       "TS2345": 1
     },
     "src/components/trips/__tests__/CityCountryAutocomplete.test.tsx": {
@@ -618,10 +498,6 @@
     "src/components/ui/location-autocomplete.tsx": {
       "TS2322": 6,
       "TS2554": 1
-    },
-    "src/components/venues/AchievementToast.tsx": {
-      "TS2345": 2,
-      "TS2352": 1
     },
     "src/components/venues/VenueCheckInButton.tsx": {
       "TS2339": 1,
@@ -698,17 +574,9 @@
     "src/hooks/useAmenityQualitySummary.ts": {
       "TS2345": 2
     },
-    "src/hooks/useAtlas.ts": {
-      "TS2322": 4,
-      "TS2345": 5,
-      "TS2352": 1
-    },
     "src/hooks/useAuth.tsx": {
       "TS2322": 1,
       "TS6133": 1
-    },
-    "src/hooks/useBusinessSpine.ts": {
-      "TS2345": 4
     },
     "src/hooks/useCMSAudit.tsx": {
       "TS2345": 5,
@@ -743,27 +611,16 @@
       "TS2345": 1,
       "TS2353": 2
     },
-    "src/hooks/useCannedResponses.ts": {
-      "TS2345": 1
-    },
     "src/hooks/useCentralizedTags.tsx": {
       "TS2322": 8,
       "TS2345": 3,
-      "TS2352": 1,
-      "TS2365": 1,
-      "TS2538": 1
-    },
-    "src/hooks/useCitiesDirectory.ts": {
-      "TS2339": 2
+      "TS2352": 1
     },
     "src/hooks/useCockpitRealtime.ts": {
       "TS2578": 1
     },
     "src/hooks/useCommunityPosts.tsx": {
       "TS2322": 1
-    },
-    "src/hooks/useCommunityScore.ts": {
-      "TS2345": 1
     },
     "src/hooks/useConsolidatedStats.tsx": {
       "TS2322": 1
@@ -776,8 +633,7 @@
       "TS2345": 1
     },
     "src/hooks/useDedupReview.ts": {
-      "TS2322": 1,
-      "TS2345": 4
+      "TS2322": 1
     },
     "src/hooks/useDirectory.tsx": {
       "TS2345": 1
@@ -787,16 +643,6 @@
     },
     "src/hooks/useDonations.ts": {
       "TS2322": 1
-    },
-    "src/hooks/useEditorialRails.ts": {
-      "TS2345": 3,
-      "TS2352": 2
-    },
-    "src/hooks/useEntityDetail.ts": {
-      "TS2345": 1
-    },
-    "src/hooks/useEntityImageAssets.ts": {
-      "TS2345": 1
     },
     "src/hooks/useEventFilters.ts": {
       "TS2322": 1,
@@ -833,21 +679,14 @@
       "TS2345": 6,
       "TS2353": 1
     },
-    "src/hooks/useFootprintStats.ts": {
-      "TS2345": 1
-    },
     "src/hooks/useGamification.ts": {
-      "TS2345": 2,
-      "TS2352": 2
+      "TS2352": 1
     },
     "src/hooks/useGranularRoles.tsx": {
       "TS2345": 1
     },
     "src/hooks/useGroupCollections.ts": {
-      "TS2322": 5,
-      "TS2345": 3,
-      "TS2352": 3,
-      "TS2353": 1
+      "TS2352": 3
     },
     "src/hooks/useGroupEvents.tsx": {
       "TS2322": 1,
@@ -859,18 +698,6 @@
     },
     "src/hooks/useGroupPosts.tsx": {
       "TS2322": 1
-    },
-    "src/hooks/useGuideReadTracker.ts": {
-      "TS2322": 4,
-      "TS2345": 2,
-      "TS2353": 1
-    },
-    "src/hooks/useGuideReadingProgress.ts": {
-      "TS2345": 1
-    },
-    "src/hooks/useGuides.ts": {
-      "TS2322": 2,
-      "TS2345": 18
     },
     "src/hooks/useImportHub.tsx": {
       "TS2322": 14,
@@ -884,53 +711,14 @@
       "TS2345": 1,
       "TS6133": 1
     },
-    "src/hooks/useIntimateMatches.ts": {
-      "TS2345": 2,
-      "TS2352": 3,
-      "TS2353": 2
-    },
     "src/hooks/useIntimateProfile.ts": {
       "TS2322": 2
-    },
-    "src/hooks/useIntimateThread.ts": {
-      "TS2345": 3,
-      "TS2352": 1,
-      "TS2353": 1
-    },
-    "src/hooks/useKinkRatings.ts": {
-      "TS2345": 5
-    },
-    "src/hooks/useKinkShare.ts": {
-      "TS2345": 1
-    },
-    "src/hooks/useKinkVisibility.ts": {
-      "TS2345": 2
-    },
-    "src/hooks/useListingImages.ts": {
-      "TS2345": 2
-    },
-    "src/hooks/useMailbox.ts": {
-      "TS2345": 15
-    },
-    "src/hooks/useMarketplaceBrands.ts": {
-      "TS2322": 1
-    },
-    "src/hooks/useMarketplaceMerchants.ts": {
-      "TS2322": 1,
-      "TS2352": 1
     },
     "src/hooks/useMarketplaceQueries.tsx": {
       "TS2322": 6
     },
     "src/hooks/useMediaDetail.ts": {
-      "TS2345": 4,
-      "TS2352": 4
-    },
-    "src/hooks/useMediaMutations.ts": {
-      "TS2322": 9,
-      "TS2345": 28,
-      "TS2352": 2,
-      "TS2353": 3
+      "TS2352": 3
     },
     "src/hooks/useMessaging.tsx": {
       "TS2345": 1,
@@ -954,12 +742,9 @@
     "src/hooks/useNewsSearch.ts": {
       "TS2352": 1
     },
-    "src/hooks/useNewsStories.ts": {
-      "TS2345": 7
-    },
     "src/hooks/usePageFetchers.ts": {
       "TS2322": 1,
-      "TS2345": 8,
+      "TS2345": 3,
       "TS2352": 4,
       "TS2677": 1
     },
@@ -972,9 +757,7 @@
       "TS6196": 1
     },
     "src/hooks/usePlaceMarks.ts": {
-      "TS2322": 6,
-      "TS2339": 1,
-      "TS2345": 7,
+      "TS2345": 1,
       "TS2352": 2
     },
     "src/hooks/usePreferenceChips.ts": {
@@ -989,21 +772,11 @@
     "src/hooks/useProfile.tsx": {
       "TS2322": 1
     },
-    "src/hooks/usePublicCommunityScore.ts": {
-      "TS2345": 1
-    },
-    "src/hooks/usePublicStatus.ts": {
-      "TS2345": 1
-    },
     "src/hooks/usePushSubscription.ts": {
       "TS2322": 1
     },
     "src/hooks/useRailActions.ts": {
       "TS2345": 1
-    },
-    "src/hooks/useRecentActivity.ts": {
-      "TS2345": 1,
-      "TS2352": 1
     },
     "src/hooks/useRecentlyViewedImages.ts": {
       "TS2352": 1
@@ -1014,9 +787,6 @@
     "src/hooks/useRecommendedGroups.ts": {
       "TS2322": 1,
       "TS2677": 1
-    },
-    "src/hooks/useRecommendedGuides.ts": {
-      "TS2322": 3
     },
     "src/hooks/useRedirects.ts": {
       "TS2345": 8
@@ -1031,12 +801,6 @@
     "src/hooks/useSignupFunnel.ts": {
       "TS2322": 1
     },
-    "src/hooks/useSiteBranding.ts": {
-      "TS2345": 1
-    },
-    "src/hooks/useSlugRedirect.ts": {
-      "TS2345": 2
-    },
     "src/hooks/useStoryRoutine.ts": {
       "TS2300": 2,
       "TS2322": 4,
@@ -1048,20 +812,11 @@
     "src/hooks/useTagRelationships.tsx": {
       "TS2345": 1
     },
-    "src/hooks/useTagSearch.ts": {
-      "TS2345": 1
-    },
-    "src/hooks/useTopicHubs.ts": {
-      "TS2345": 1
-    },
     "src/hooks/useTrackEvent.ts": {
       "TS2322": 1
     },
     "src/hooks/useTravelPreferencesEditor.ts": {
       "TS2322": 1
-    },
-    "src/hooks/useTriageDetail.ts": {
-      "TS2345": 3
     },
     "src/hooks/useTripBudget.ts": {
       "TS2345": 1
@@ -1073,8 +828,6 @@
       "TS2322": 2
     },
     "src/hooks/useTripJournal.ts": {
-      "TS2322": 6,
-      "TS2345": 2,
       "TS2352": 1
     },
     "src/hooks/useTripSuggestions.ts": {
@@ -1084,12 +837,6 @@
       "TS2322": 2,
       "TS2339": 3,
       "TS2345": 1
-    },
-    "src/hooks/useTrustTier.ts": {
-      "TS2345": 2
-    },
-    "src/hooks/useUnifiedMedia.ts": {
-      "TS2345": 13
     },
     "src/hooks/useUnifiedTags.tsx": {
       "TS2322": 2,
@@ -1110,20 +857,13 @@
     "src/hooks/useVenues.tsx": {
       "TS2345": 2
     },
-    "src/hooks/useVenuesV2Data.ts": {
-      "TS2345": 1,
-      "TS2353": 1
-    },
     "src/hooks/useViewportPoints.ts": {
       "TS18046": 4,
       "TS2322": 2,
       "TS2339": 3,
-      "TS2345": 3,
+      "TS2345": 2,
       "TS2365": 4,
       "TS2769": 1
-    },
-    "src/hooks/useVocabDedup.ts": {
-      "TS2345": 1
     },
     "src/hooks/useVoiceSearch.tsx": {
       "TS18046": 1,
@@ -1138,9 +878,6 @@
     },
     "src/integrations/supabase/__tests__/cloudflare.test.ts": {
       "TS2578": 1
-    },
-    "src/integrations/supabase/untyped.ts": {
-      "TS2589": 1
     },
     "src/lib/__tests__/motion.test.ts": {
       "TS18046": 2,
@@ -1167,17 +904,8 @@
     "src/pages/Auth.tsx": {
       "TS2339": 4
     },
-    "src/pages/CityDetail.tsx": {
-      "TS2339": 21
-    },
     "src/pages/ClaimUsername.tsx": {
       "TS2352": 1
-    },
-    "src/pages/CountryDetail.tsx": {
-      "TS2339": 1
-    },
-    "src/pages/EventDetail.tsx": {
-      "TS2322": 1
     },
     "src/pages/Events.tsx": {
       "TS2322": 1,
@@ -1215,10 +943,6 @@
       "TS2345": 2,
       "TS2769": 1
     },
-    "src/pages/QueerVillageDetail.tsx": {
-      "TS2339": 1,
-      "TS2551": 1
-    },
     "src/pages/Settings.tsx": {
       "TS2322": 2,
       "TS2352": 1
@@ -1234,9 +958,6 @@
     "src/pages/Venues.tsx": {
       "TS2322": 1
     },
-    "src/pages/__tests__/Cities.test.tsx": {
-      "TS2353": 2
-    },
     "src/pages/__tests__/NewsArchive.test.tsx": {
       "TS2304": 1
     },
@@ -1244,13 +965,10 @@
       "TS2322": 3
     },
     "src/pages/admin/AdminAutomation.tsx": {
-      "TS2345": 1,
       "TS2352": 2
     },
     "src/pages/admin/AdminMailbox.tsx": {
-      "TS2345": 4,
-      "TS2352": 1,
-      "TS2353": 2
+      "TS2345": 2
     },
     "src/pages/admin/AdminTags.tsx": {
       "TS2322": 10,
@@ -1274,12 +992,6 @@
     "src/pages/admin/feedback/index.tsx": {
       "TS2322": 1
     },
-    "src/pages/cities/__tests__/CitiesMapPane.test.tsx": {
-      "TS2353": 1
-    },
-    "src/pages/cities/__tests__/CityListRow.test.tsx": {
-      "TS2353": 1
-    },
     "src/pages/intimate/IntimateOnboard.tsx": {
       "TS2503": 1,
       "TS7030": 1
@@ -1300,18 +1012,8 @@
     "src/pages/trips/TripPlannerPage.tsx": {
       "TS2345": 1
     },
-    "src/pages/trips/TripsDiscoverPage.tsx": {
-      "TS2322": 1,
-      "TS2558": 1,
-      "TS7006": 1,
-      "TS7009": 1
-    },
     "src/pages/trips/__tests__/TripSubrouteRedirect.test.tsx": {
       "TS2322": 1
-    },
-    "src/providers/SearchTelemetryProvider.tsx": {
-      "TS2339": 3,
-      "TS2345": 1
     },
     "src/test/test-utils.tsx": {
       "TS2353": 1

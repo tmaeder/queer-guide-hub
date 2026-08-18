@@ -729,7 +729,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                         </Button>
                       </div>
                     ) : (
-                      <div className="border-2 border-dashed border-muted-foreground rounded-element p-6 text-center">
+                      <div className=" border-dashed border-muted-foreground rounded-element p-6 text-center">
                         <ImageIcon />
                         <p className="text-sm text-muted-foreground">No image uploaded</p>
                       </div>

@@ -87,7 +87,7 @@ export function PeopleHereRail({
   return (
     <section className="space-y-4">
       <div className="flex items-baseline justify-between">
-        <h2 className="text-title font-display">{title}</h2>
+        <h2 className="text-title font-bold">{title}</h2>
         {seeAllHref ? (
           <Link to={seeAllHref} className="text-13 font-bold no-underline hover:underline">
             See all

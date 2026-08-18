@@ -139,7 +139,14 @@
       "recent_city": "In a city you've explored",
       "featured": "Featured"
     },
-    "ariaLabel": "[RU] Search Queer Guide"
+    "ariaLabel": "Поиск по Queer Guide",
+    "escape": "esc",
+    "jumpTo": "Перейти к",
+    "recent": "Недавние",
+    "noStation": "Станции с таким названием пока нет",
+    "addToMap": "Добавить её на карту",
+    "seeOnMap": "Показать {{count}} результатов на карте",
+    "keyHints": "↑↓ навигация · ↵ открыть"
   },
   "common": {
     "contentInLanguage": "На языке: {{lang}}",
@@ -211,12 +218,19 @@
     "contact": "Контакты",
     "supportUs": "Поддержать нас",
     "history": "История",
-    "tagline": "[RU] Every track. Every station. Everyone.",
-    "contributors": "[RU] Contributors",
+    "tagline": "Каждая линия. Каждая станция. Каждый и каждая.",
+    "contributors": "Участники и участницы",
     "emergency": {
       "eyebrow": "[RU] In an emergency",
-      "title": "[RU] Crisis lines, 24 hours",
-      "body": "[RU] Trans helpline, LGBT+ crisis support, and local emergency numbers, listed by country and always one click from any page."
+      "title": "Кризисные линии, круглосуточно",
+      "body": "Транс-линия поддержки, кризисная помощь ЛГБТ+ и местные экстренные номера — по странам и всегда в одном клике с любой страницы."
+    },
+    "osmAttribution": "Транспортные схемы созданы на основе данных © участников OpenStreetMap (ODbL)",
+    "reportSomething": "Сообщить о проблеме",
+    "hotlines": "Телефоны доверия",
+    "antiDiscrimination": {
+      "title": "Здесь нет места нетерпимости.",
+      "body": "Расизм, трансфобия и дискриминация — безусловное основание для блокировки на платформе. Точка."
     }
   },
   "trips": {
@@ -717,12 +731,12 @@
       }
     },
     "discover": {
-      "title": "Открыть места",
-      "button": "Открыть маркетплейс",
+      "title": "Построить маршрут",
+      "button": "Построить маршрут",
       "eyebrow": "Real travelers",
       "subtitle": "Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
       "searchPlaceholder": "Filter by city…",
-      "aria": "Discover public trips",
+      "aria": "Построить маршрут по реальным городам",
       "sortAria": "Sort trips",
       "viewAria": "View mode",
       "filterAria": "Filter trips",
@@ -802,7 +816,81 @@
       "signalsAria": "Trip activity",
       "forkCount": "{{count}} forks",
       "saveCount": "{{count}} saves",
-      "filtersButton": "Filters"
+      "filtersButton": "Filters",
+      "meta": {
+        "title": "Построить маршрут | Queer Guide",
+        "description": "Выберите настроение, сезон и темп. Получите маршрут по реальным городам с количеством мест, правовым статусом и тем, что там происходит во время поездки."
+      },
+      "eyebrowRoute": "Конструктор маршрута",
+      "titleRoute": "Три города. Одна линия.",
+      "ledeRoute": "Скажите, что вам нужно и как быстро вы перемещаетесь. Мы проведём линию через реальные города — с количеством мест, правовым статусом и тем, что там происходит во время поездки.",
+      "picker": {
+        "heading": "Задайте линию",
+        "hint": "Выберите настроение, сезон и темп. Линия перерисуется.",
+        "vibeGroup": "Что вам нужно",
+        "seasonGroup": "Когда",
+        "paceGroup": "Как быстро",
+        "stationCount": "станций: {{count}}",
+        "stopCount": "остановок: {{count}}",
+        "tooFew": "всего {{count}} станций",
+        "thin": "станций: {{count}}, ни одна не рядом настолько, чтобы собрать линию",
+        "vibe": {
+          "nightlife": "Ночная жизнь",
+          "sauna": "Сауна",
+          "slow": "Неспешные утра",
+          "community": "Сообщество",
+          "outdoors": "На природе"
+        },
+        "season": {
+          "now": "Скоро",
+          "autumn": "Осень",
+          "winter": "Зима",
+          "pride": "Сезон прайдов"
+        },
+        "pace": {
+          "slow": "Не спеша",
+          "steady": "Ровно",
+          "sprint": "Охватить больше"
+        }
+      },
+      "route": {
+        "heading": "Ваша линия",
+        "reroll": "Построить другую",
+        "summary": "остановок: {{stops}} · {{km}} км · стран: {{countries}}",
+        "snapped": "Старт в {{km}} км от {{name}} — ближайший город, по которому у нас достаточно данных.",
+        "short": "В этой линии {{delivered}} остановок, а не {{requested}}. Подходящих городов: {{eligible}}, остальные дальше, чем позволяет этот темп.",
+        "announced": "Линия построена: {{stations}}. Остановок: {{count}}.",
+        "stopsAria": "Остановки этой линии, по порядку",
+        "stopAria": "Остановка {{n}}: {{city}}, {{country}}",
+        "swapStopAria": "Заменить остановку {{n}}, {{city}}",
+        "tripTitle": "Линия {{cities}}"
+      },
+      "station": {
+        "venues": "мест: {{count}}"
+      },
+      "loading": {
+        "pool": "Загружаем список станций",
+        "slow": "Всё ещё работаем. Индекс городов сейчас отвечает медленно."
+      },
+      "degraded": {
+        "none": "Под эти условия не подходит ни один город.",
+        "title": "Подходит только {{count}} городов.",
+        "body": "Линии нужны три остановки. Снимите один фильтр, чтобы расширить её.",
+        "terminus": "Ближайший вариант — {{name}}, в {{km}} км: дальше, чем позволяет этот темп.",
+        "clearVibe": "Любое настроение",
+        "goFurther": "Охватить больше"
+      },
+      "error": {
+        "title": "Не удалось создать поездку",
+        "poolTitle": "Список станций не загрузился.",
+        "retry": "Попробовать снова"
+      },
+      "cta": {
+        "heading": "Поехали по этой линии.",
+        "body": "Превратится в вашу поездку со всеми остановками. Потом можно изменить что угодно.",
+        "primary": "Сделать поездкой",
+        "secondary": "Построить другую"
+      }
     },
     "polls": {
       "createdToast": "Poll created",
@@ -1031,6 +1119,15 @@
       "openThread": "Проверить в чате",
       "forwardHint": "[RU] Forward Booking.com, Airbnb or airline confirmations to {{address}} — they appear in your Travel Inbox, ready to add to a trip. Or paste one here to add it straight to this trip.",
       "forwardHintNoAddress": "[RU] Forward booking confirmations to your queer.guide address and they appear in your Travel Inbox. Or paste one here to add it straight to this trip."
+    },
+    "templates": {
+      "heading": "Начать с шаблона",
+      "subheading": "ЛГБТК+ маршруты как отправная точка",
+      "days": "дней: {{count}}",
+      "use": "Использовать шаблон",
+      "created": "Поездка создана",
+      "createdDescription": "Добавляйте остановки отсюда.",
+      "error": "Не удалось создать поездку"
     }
   },
   "auth": {
@@ -1207,7 +1304,16 @@
     "featured": "[RU] Featured",
     "rsvpEmptyMember": "[RU] No RSVPs yet. Be the first.",
     "rsvpEmptyAnon": "[RU] No RSVPs yet. Sign in to be the first.",
-    "peopleYouMayKnow": "[RU] People you may know"
+    "peopleYouMayKnow": "[RU] People you may know",
+    "detail": {
+      "eyebrow": "[RU] Event",
+      "sections": "[RU] Sections",
+      "section": {
+        "about": "[RU] About this event",
+        "where": "[RU] Getting there",
+        "going": "[RU] Who's going"
+      }
+    }
   },
   "venues": {
     "title": "Места",
@@ -1334,7 +1440,20 @@
     },
     "closed": "[RU] Closed",
     "openNow": "[RU] Open now",
-    "locationUnknown": "[RU] Location unknown"
+    "locationUnknown": "[RU] Location unknown",
+    "detail": {
+      "eyebrow": "[RU] Venue",
+      "closed": "[RU] Permanently closed",
+      "section": {
+        "about": "[RU] About",
+        "hours": "[RU] Opening hours",
+        "access": "[RU] Access",
+        "whatsOn": "[RU] What's on here",
+        "signals": "[RU] Visitor signals",
+        "reviews": "[RU] Reviews",
+        "photos": "[RU] Photos"
+      }
+    }
   },
   "marketplace": {
     "title": "Маркетплейс",
@@ -1798,7 +1917,10 @@
       "help": "Помощь",
       "tags": "Теги",
       "history": "История",
-      "guides": "[RU] Guides"
+      "guides": "Гиды",
+      "trips": "Поездки",
+      "organizations": "Организации",
+      "wishlists": "Списки желаний"
     },
     "intents": {
       "goingOut": {
@@ -1892,7 +2014,7 @@
       "hub": "Хаб"
     },
     "primaryNavigation": "[RU] Primary",
-    "signInToContribute": "[RU] Sign in to contribute"
+    "signInToContribute": "Войдите, чтобы внести вклад"
   },
   "pages": {
     "venues": {
@@ -2394,23 +2516,29 @@
     },
     "notFound": {
       "title": "Страница не найдена",
-      "description": "Страница, которую ты ищешь, не существует или была перемещена.",
+      "kicker": "Служебное сообщение · 404",
+      "heading": "Здесь нет остановки.",
+      "description": "На карте по адресу {{path}} ничего нет. Перемещено, удалено или никогда не существовало.",
+      "noStop": "Нет остановки",
       "goBack": "Назад",
       "returnHome": "На главную",
-      "suggestionsLabel": "Or jump to",
-      "didYouMean": "Did you mean",
-      "recentlyViewed": "Pick up where you left off",
-      "searchPlaceholder": "Search venues, events, cities…",
+      "searchLabel": "Проложить другой маршрут",
+      "searchPlaceholder": "Места, события, города…",
+      "searchSubmit": "Найти",
+      "didYouMean": "Ближайшие остановки",
+      "recentlyViewed": "Твои последние остановки",
+      "suggestionsLabel": "Конечная",
+      "endOfLineTitle": "Выбери другую линию.",
       "kind": {
-        "venue": "We couldn't find that venue.",
-        "event": "We couldn't find that event.",
-        "city": "We couldn't find that city.",
-        "country": "We couldn't find that country.",
-        "personality": "We couldn't find that person.",
-        "hotel": "We couldn't find that hotel.",
-        "village": "We couldn't find that place.",
-        "marketplace": "We couldn't find that product.",
-        "news": "We couldn't find that article."
+        "venue": "На этой остановке нет места.",
+        "event": "На этой остановке нет события.",
+        "city": "На этой остановке нет города.",
+        "country": "На этой остановке нет страны.",
+        "personality": "На этой остановке никого нет.",
+        "hotel": "На этой остановке нет отеля.",
+        "village": "На этой остановке нет района.",
+        "marketplace": "На этой остановке нет товара.",
+        "news": "На этой остановке нет статьи."
       }
     },
     "bookings": {
@@ -2648,145 +2776,6 @@
       "tags_other": "[RU] {{count}} tags"
     }
   },
-  "resources": {
-    "hero": {
-      "eyebrow": "Помощь",
-      "title": "Помощь и ресурсы.",
-      "lede": "Кризисная поддержка, практические гиды, и люди и организации, стоящие за ними."
-    },
-    "errorLoading": "Ошибка загрузки ресурсов. Попробуй позже.",
-    "disclosure": "Все темы и поиск",
-    "disclosureAria": "Все темы, поиск и расширенные фильтры",
-    "browseAllTopics": "Все темы",
-    "professions": {
-      "title": "Профессии",
-      "description": "ЛГБТК+ персоналии по профессии",
-      "back": "Назад"
-    },
-    "category": {
-      "back": "Назад",
-      "viewAll": "Смотреть все →",
-      "comingSoon": "Скоро",
-      "tagCount": "{{count}} тегов",
-      "tagCountTotal": "{{count}} тегов всего (по всем подкатегориям)",
-      "tagCountTotalAria": "{{count}} тегов всего по всем подкатегориям",
-      "totalChildHint": "Число у каждой подкатегории — это теги, назначенные напрямую",
-      "supportNewsAlert": "Нужна срочная помощь? Открой каталог кризисных линий.",
-      "crisisHotlines": "Кризисные линии",
-      "emptyTitle": "Пока нет тегов в этой категории",
-      "emptyDescription": "Загляни позже — она заполняется.",
-      "subcategoryEmptyTitle": "Пока нет тегов",
-      "subcategoryEmptyDescription": "Подкатегория заполняется."
-    },
-    "crisis": {
-      "heading": "Кризис и безопасность",
-      "badge": "Бесплатно, анонимно",
-      "chooseCountryAria": "Выбрать страну",
-      "callEmergencyPrefix": "Опасность сейчас? Звони ",
-      "callEmergencySuffix": " ({{country}}).",
-      "callEmergencySuffixInt": ".",
-      "noLocal": "Пока нет линий для {{country}} — показываем международные.",
-      "callAria": "Позвонить {{name}} по {{phone}}",
-      "noHotlinesLoaded": "Линии ещё не загружены.",
-      "listAria": "Кризисные линии",
-      "seeAll": "Все линии"
-    },
-    "topicHubs": {
-      "heading": "Темы"
-    },
-    "topic": {
-      "back": "Ресурсы",
-      "notFound": "Тема не найдена",
-      "backToResources": "К ресурсам",
-      "metaSuffix": "Ресурсы",
-      "metaNotFound": "Тема не найдена",
-      "stats": "{{guides}} гидов · {{orgs}} орг. · {{news}} статей",
-      "guidesHeading": "Гиды",
-      "guidesEmpty": "Пока нет опубликованных гидов по этой теме.",
-      "orgsHeading": "Организации",
-      "orgsEmpty": "Пока нет организаций по этой теме.",
-      "newsHeading": "Свежие новости",
-      "newsEmpty": "Пока нет свежих статей по этой теме.",
-      "moreTopics": "Ещё темы"
-    },
-    "orgs": {
-      "heading": "Организации поддержки",
-      "filterAria": "Фильтр по стране",
-      "noLocal": "Пока нет организаций в {{country}} — показываем глобальные.",
-      "browseAll": "Все организации",
-      "emptyPrefix": "Пока нет организаций поддержки. Отправь через расширение Chrome или ",
-      "emptyLink": "напиши нам",
-      "emptySuffix": "."
-    },
-    "filter": {
-      "searchPlaceholder": "Поиск тегов, категорий, описаний…",
-      "searchAria": "Поиск ресурсов",
-      "filterAria": "Фильтр по категории",
-      "categoryPlaceholder": "Категория",
-      "allCategories": "Все категории",
-      "sortAria": "Сортировка",
-      "sortPlaceholder": "Сортировка",
-      "sortMostUsed": "Популярные",
-      "sortAlphabetical": "По алфавиту",
-      "sortNewest": "Новые",
-      "advanced": "Расширенный",
-      "usageAria": "Фильтр по использованию",
-      "usagePlaceholder": "Использование",
-      "usageAll": "Все теги",
-      "usageUsed": "Используются",
-      "usageUnused": "Не используются",
-      "hasImage": "С картинкой",
-      "hasImageTitle": "Показывать только теги с картинкой",
-      "sortDirAsc": "По возрастанию",
-      "sortDirDesc": "По убыванию",
-      "active": "Активно:",
-      "clearAll": "Очистить всё",
-      "view": {
-        "chips": "Чипы",
-        "grid": "Сетка",
-        "list": "Список",
-        "ariaSuffix": " — вид"
-      },
-      "graph": "Граф связей"
-    },
-    "search": {
-      "resultsHeading": "Результаты поиска",
-      "categoryTagsHeading": "Теги {{category}}",
-      "filteredHeading": "Отфильтрованные теги",
-      "countBadge": "{{visible}} из {{total}}",
-      "countAria": "{{count}} подходящих тегов",
-      "showMore": "Показать ещё {{count}}",
-      "empty": {
-        "title": "Ничего не найдено",
-        "description": "Попробуй более широкий запрос или сбрось фильтры."
-      }
-    },
-    "tagNotFound": {
-      "title": "Тег не найден",
-      "bodyPrefix": "Тег не найден для ",
-      "browse": "Все ресурсы"
-    },
-    "tagDetail": {
-      "breadcrumbHome": "Ресурсы",
-      "noDefinition": "Пока нет описания для этого термина.",
-      "alsoKnownAs": "Также известно как",
-      "readOnWikipedia": "Читать в Википедии",
-      "searchTagged": "Искать всё с тегом {{name}}",
-      "seeAlso": "См. также",
-      "sensitiveContentBody": "Эта тема может содержать деликатный контент. Если вам нужна поддержка, посетите нашу страницу с кризисными горячими линиями.",
-      "sensitiveContentTitle": "Деликатная тема",
-      "tableOfContents": "Содержание",
-      "viewAsGraph": "Показать в виде графа",
-      "hierarchy": "[RU] In the taxonomy",
-      "broader": "[RU] Broader",
-      "narrower": "[RU] More specific",
-      "related": "[RU] Related"
-    },
-    "graph": {
-      "title": "Граф связей тегов",
-      "description": "Как теги связаны по семантическому сходству и совместной встречаемости"
-    }
-  },
   "cities": {
     "metaTitle": "Города",
     "metaDescription": "Исследуйте города, дружественные ЛГБТК+, по всему миру.",
@@ -2837,8 +2826,93 @@
         "currency": "Валюта",
         "bestTime": "Лучшее время",
         "airport": "Аэропорт"
+      },
+      "eyebrow": "[RU] City",
+      "sections": "[RU] Sections",
+      "loadingVenues": "[RU] Loading venues",
+      "openEvent": "[RU] Open",
+      "openMap": "[RU] Open the full map",
+      "createTrip": "[RU] Create trip",
+      "officialWebsite": "[RU] Official website",
+      "favorite": "[RU] Save to favorites",
+      "favorited": "[RU] Saved to favorites",
+      "census": {
+        "stops": "[RU] {{n}} stops",
+        "districts": "[RU] {{n}} districts",
+        "departures": "[RU] {{n}} departures"
+      },
+      "section": {
+        "rights": "[RU] Safety & rights",
+        "rightsNote": "[RU] Know before you go.",
+        "venues": "[RU] Where to go",
+        "districts": "[RU] Queer districts",
+        "districtsNote": "[RU] Walkable clusters of bars, cafés and community spaces.",
+        "events": "[RU] Next departures",
+        "overview": "[RU] About {{city}}",
+        "travel": "[RU] Getting there",
+        "news": "[RU] In the news",
+        "nearby": "[RU] Nearby"
+      },
+      "stats": {
+        "venues": "[RU] Venues",
+        "districts": "[RU] Districts",
+        "events": "[RU] Upcoming events"
+      },
+      "about": {
+        "status": "[RU] Status",
+        "capital": "[RU] Capital city",
+        "majorCity": "[RU] Major city",
+        "region": "[RU] Region",
+        "timezone": "[RU] Timezone",
+        "founded": "[RU] Founded",
+        "area": "[RU] Area",
+        "elevation": "[RU] Elevation",
+        "mayor": "[RU] Mayor",
+        "postalCodes": "[RU] Postal codes",
+        "costOfLiving": "[RU] Cost of living",
+        "universities": "[RU] Universities",
+        "sisterCities": "[RU] Sister cities"
+      },
+      "travel": {
+        "majorAirport": "[RU] Major airport",
+        "nearestAirport": "[RU] Nearest airport",
+        "allCodes": "[RU] All airport codes",
+        "lines": "[RU] Lines",
+        "networkCaption": "[RU] Rapid-transit lines, drawn from OpenStreetMap. Schematic, not to scale.",
+        "gettingAround": "[RU] Getting around",
+        "noDealsTitle": "[RU] We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
+        "noDealsBody": "[RU] If you need to travel to {{city}}, read the safety and rights section first and use the trip planner — it includes a safety briefing for high-risk destinations."
+      },
+      "endOfLine": {
+        "eyebrow": "[RU] End of line",
+        "title": "[RU] Riding on?",
+        "body": "[RU] Every city on the guide carries the same modules: safety and rights first, then the places.",
+        "allCities": "[RU] All cities",
+        "country": "[RU] More in {{country}}"
       }
-    }
+    },
+    "capital": "[RU] Capital",
+    "continentClear": "[RU] Clear",
+    "continentsTitle": "[RU] Continents",
+    "counting": "[RU] Counting…",
+    "highRisk": "[RU] Criminalized",
+    "inView": "[RU] {{count}} cities in the directory, ranked by how much of each one we hold.",
+    "lineEyebrow": "[RU] Cities · Green line",
+    "mapTeaserLede": "[RU] Every city as a pin, coloured by its country’s equality score.",
+    "mapTeaserTitle": "[RU] See it on the map",
+    "networkMode": {
+      "subway": "[RU] Metro network",
+      "light_rail": "[RU] Light rail network",
+      "tram": "[RU] Tram network"
+    },
+    "openMap": "[RU] Open the map",
+    "pridePill": "[RU] Pride · {{date}}",
+    "continentCount_one": "[RU] {{count}} city",
+    "continentCount_other": "[RU] {{count}} cities",
+    "venueCount_one": "[RU] {{count}} place",
+    "venueCount_other": "[RU] {{count}} places",
+    "villageCount_one": "[RU] {{count}} district",
+    "villageCount_other": "[RU] {{count}} districts"
   },
   "pride": {
     "eyebrow": "Pride Calendar",
@@ -2974,7 +3048,9 @@
       "personalities": "Голоса",
       "nearby": "Рядом",
       "news": "Новости",
-      "map": "Карта"
+      "map": "Карта",
+      "history": "[RU] Legal record",
+      "historyNote": "[RU] What changed and when. Safety information without a date is not safety information."
     },
     "practical": {
       "languages": "Языки",
@@ -2993,7 +3069,10 @@
       "hdi": "ИЧР",
       "lifeExpectancy": "Продолжительность жизни",
       "literacy": "Грамотность",
-      "income": "Уровень дохода"
+      "income": "Уровень дохода",
+      "venues": "[RU] Venues",
+      "events": "[RU] Upcoming events",
+      "weather": "[RU] Now in {{city}}"
     },
     "cities": {
       "emptyTitle": "Пока нет городов",
@@ -3009,7 +3088,9 @@
     },
     "travel": {
       "activities": "Развлечения и туры",
-      "activitiesBody": "Впечатления в стране {{country}}"
+      "activitiesBody": "Впечатления в стране {{country}}",
+      "noDealsTitle": "[RU] We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
+      "noDealsBody": "[RU] If you need to travel to {{country}}, read the rights section on this page first and use the trip planner — it includes a safety briefing for high-risk destinations."
     },
     "news": {
       "emptyTitle": "Пока нет местных новостей",
@@ -3056,7 +3137,24 @@
       "ilgaLink": "ILGA World Database",
       "deathPenaltyPossible": "[RU] death penalty possible, no legal certainty"
     },
-    "planTripHighRisk": "[RU] Plan carefully — safety briefing included"
+    "planTripHighRisk": "[RU] Plan carefully — safety briefing included",
+    "eyebrow": "[RU] Country",
+    "sections": "[RU] Sections",
+    "openMap": "[RU] Open the full map",
+    "census": {
+      "cities": "[RU] {{n}} cities",
+      "stops": "[RU] {{n}} stops",
+      "departures": "[RU] {{n}} departures"
+    },
+    "history": {
+      "seeAll": "[RU] Full timeline"
+    },
+    "endOfLine": {
+      "eyebrow": "[RU] End of line",
+      "title": "[RU] Compare the law elsewhere",
+      "body": "[RU] Every country page carries the same legal breakdown, from the same sources, with the date it was checked.",
+      "rights": "[RU] Rights across the world"
+    }
   },
   "inbox": {
     "title": "Входящие",
@@ -3233,7 +3331,7 @@
     "wishlists": "Списки желаний",
     "tags": "Теги",
     "organizations": "[RU] Organizations",
-    "guides": "[RU] Guides",
+    "guides": "Гиды",
     "people": "Знакомства"
   },
   "chat": {
@@ -4193,6 +4291,253 @@
         "title": "Поддержать нас",
         "desc": "Чтобы платформа оставалась бесплатной для всех."
       }
+    }
+  },
+  "tags": {
+    "meta": {
+      "title": "ЛГБТК+ глоссарий",
+      "categoryTitle": "{{name}} — ЛГБТК+ глоссарий",
+      "description": "Просматривайте и ищите среди {{count}} ЛГБТК+ терминов — идентичности, практики, история и язык сообщества, каждый связан с местами, событиями, людьми и новостями, где он используется."
+    },
+    "hero": {
+      "eyebrow": "Глоссарий",
+      "title": "Глоссарий",
+      "lede": "Каждое слово, которое использует гид, с объяснением — и всё, что им помечено.",
+      "legend": "Терминов: {{terms}} · линий: {{lines}} · станций: {{stops}}"
+    },
+    "stats": {
+      "kicker": "Корпус",
+      "terms": "Терминов",
+      "lines": "Линий",
+      "stops": "Станций",
+      "illustrated": "С иллюстрацией"
+    },
+    "rail": {
+      "label": "Тематические линии",
+      "all": "Все термины",
+      "expandAria": "Показать станции линии {{line}}",
+      "collapseAria": "Скрыть станции линии {{line}}"
+    },
+    "spine": {
+      "searchLabel": "Поиск по глоссарию",
+      "searchPlaceholder": "Термин или синоним"
+    },
+    "view": {
+      "label": "Вид",
+      "grid": "Плитки",
+      "list": "Список",
+      "chips": "Метки",
+      "graph": "Граф"
+    },
+    "sort": {
+      "label": "Сортировка",
+      "usage": "Чаще всего",
+      "alphabetical": "А–Я",
+      "recent": "Новые",
+      "dirAsc": "По возрастанию — переключить на убывание",
+      "dirDesc": "По убыванию — переключить на возрастание"
+    },
+    "filter": {
+      "used": "Используются",
+      "unused": "Не используются",
+      "withImage": "С иллюстрацией",
+      "reset": "Сбросить фильтры",
+      "includeAdult": "Показать термины 18+"
+    },
+    "letters": {
+      "label": "Перейти к букве",
+      "all": "Все",
+      "other": "Цифры и другие письменности",
+      "jump": "Термины на {{letter}}"
+    },
+    "alias": {
+      "heading": "Найдено под другими названиями",
+      "description": "Совпадение по синониму или близкому написанию, а не по самому термину.",
+      "badge": "синоним"
+    },
+    "card": {
+      "uses": "Использований: {{count}}"
+    },
+    "count": "Терминов: {{count}}",
+    "showMore": "Показать ещё {{count}}",
+    "searching": "Поиск…",
+    "loading": "Загрузка глоссария",
+    "error": "Глоссарий недоступен",
+    "retry": "Повторить",
+    "empty": {
+      "title": "Ничего не найдено.",
+      "description": "Попробуйте другую букву, другую линию или другой запрос."
+    },
+    "category": {
+      "lede": "Все термины в разделе «{{name}}»."
+    },
+    "endOfLine": {
+      "eyebrow": "Конечная",
+      "title": "Ищете что-то другое?",
+      "body": "Глоссарий объясняет слова. А это места, где они используются.",
+      "helpCta": "Кризисные линии и поддержка",
+      "orgsCta": "Организации",
+      "guidesCta": "Гиды"
+    },
+    "detail": {
+      "loading": "Загрузка",
+      "about": "О термине",
+      "sections": "Разделы",
+      "noDefinition": "Определение для этого термина ещё не написано.",
+      "interchangeEyebrow": "Пересадка",
+      "interchangeTitle": "В таксономии",
+      "inTaxonomy": "В таксономии",
+      "codes": {
+        "eyebrow": "Классификация",
+        "title": "Диагностические коды",
+        "general": "Общие",
+        "specialized": "Специализированные",
+        "procedural": "Процедурные",
+        "pharmaceutical": "Фармацевтические",
+        "source": "Источник",
+        "linkLabel": "Код {{label}} {{code}}",
+        "disclaimer": "Справочные коды этого понятия в клинических классификациях. Не является медицинской консультацией или диагнозом."
+      },
+      "flag": {
+        "eyebrow": "Символ",
+        "title": "Флаг",
+        "designer": "Дизайн",
+        "year": "Год",
+        "stripes": "Что означают полосы",
+        "railSingular": "Флаг",
+        "railPlural": "Флаги"
+      },
+      "hanky": {
+        "eyebrow": "Справка",
+        "title": "Код",
+        "intro": "Платок в заднем кармане обозначал конкретный интерес: левый карман — активная сторона, правый — принимающая. Задокументировано так, как публиковалось в 1980-е; значения различались по городам и десятилетиям.",
+        "safeMode": "Таблица цветов описывает откровенные сексуальные практики и скрыта, пока включён Безопасный режим.",
+        "gateBody": "Таблица цветов называет откровенные сексуальные практики. Подтвердите, что вам 18 лет или больше, чтобы прочитать её.",
+        "gateCta": "Показать код (18+)",
+        "classic": "Классическое ядро (Таунсенд, 1983)",
+        "extended": "Распространённые поздние дополнения",
+        "disclaimer": "Историческая справка, а не одобрение какой-либо практики. Ходили десятки других цветов; ни одни два опубликованных списка полностью не совпадают."
+      },
+      "changeHereFor": "Пересадка на",
+      "contentNote": "Примечание о содержании",
+      "contentNoteBody": "Эта статья затрагивает тему, которая для некоторых читателей тяжела. Здесь нет откровенных описаний: это определение, а не совет.",
+      "findSupport": "Найти поддержку",
+      "whereItAppears": "Где встречается",
+      "elsewhere": "Другие источники",
+      "readThere": "Читать",
+      "editors": "Редакция Queer Guide",
+      "factLine": "Линия",
+      "factTagged": "Помечено в",
+      "venues": "Места",
+      "venuesNote": "помечено: {{count}}",
+      "events": "События",
+      "eventsNote": "помечено: {{count}}",
+      "people": "Люди",
+      "peopleNote": "помечено: {{count}}",
+      "news": "Новости",
+      "newsNote": "статей: {{count}}",
+      "newsNoteMore": "{{shown}} из {{count}} статей",
+      "villages": "Квир-районы",
+      "shop": "Магазин",
+      "communities": "Сообщества",
+      "everythingTagged": "Всё с меткой «{{name}}»",
+      "everythingTaggedBody": "Эту метку носят {{count}} записей гида.",
+      "searchTagged": "Искать всё с меткой «{{name}}»",
+      "moreOnThisLine": "Ещё на этой линии",
+      "notFound": {
+        "title": "Такого термина нет",
+        "body": "В глоссарии ничего нет по адресу",
+        "browse": "Открыть глоссарий"
+      },
+      "alias": {
+        "synonym": "Также называется",
+        "abbreviation": "Сокращение от",
+        "plural": "Множественное число",
+        "misspelling": "Частая ошибка",
+        "historical": "Исторически",
+        "slang": "Сленг"
+      },
+      "sourceOfLaw": "Источник права",
+      "lawJurisdiction": "Юрисдикция",
+      "lawInternational": "Международный",
+      "lawAdopted": "Принят",
+      "lawStatus": "Статус",
+      "lawInForce": "Действует",
+      "lawRepealed": "Отменён",
+      "lawSuperseded": "Заменён",
+      "lawPartlyStruck": "Действует, частично отменён",
+      "notOneLaw": "Это не один закон. Статус фиксируется по каждой стране отдельно.",
+      "seeByCountry": "Посмотреть статус по странам",
+      "spansAllRights": "Это целая область права, а не один закон. Мы отслеживаем 18 отдельных прав по каждой стране.",
+      "seeAllRights": "Посмотреть все 18 прав по странам"
+    },
+    "flagWall": {
+      "eyebrow": "Символы",
+      "title": "Флаги"
+    }
+  },
+  "village": {
+    "eyebrow": "[RU] District · Green line",
+    "loading": "[RU] Loading this district",
+    "loadingVenues": "[RU] Loading the stop list",
+    "sections": "[RU] Sections",
+    "planTrip": "[RU] Plan a trip to {{name}}",
+    "relatedByTag": "[RU] Related by tag",
+    "notFound": {
+      "title": "[RU] No such district.",
+      "body": "[RU] This stop is not on the line.",
+      "cta": "[RU] All queer villages"
+    },
+    "toast": {
+      "errorTitle": "[RU] Error",
+      "loadFailed": "[RU] Failed to load village details"
+    },
+    "facts": {
+      "city": "[RU] City",
+      "country": "[RU] Country",
+      "venues": "[RU] Venues",
+      "events": "[RU] Upcoming events",
+      "editorsPick": "[RU] Editor’s pick"
+    },
+    "census": {
+      "stops": "[RU] {{n}} stops",
+      "departures": "[RU] {{n}} departures"
+    },
+    "section": {
+      "about": "[RU] About {{name}}",
+      "walk": "[RU] The walk",
+      "walkNote": "[RU] Stops in order, with the straight-line gap between them.",
+      "events": "[RU] Next departures",
+      "photos": "[RU] Photos",
+      "city": "[RU] On the same line"
+    },
+    "action": {
+      "website": "[RU] Website",
+      "favorite": "[RU] Save to favorites",
+      "favorited": "[RU] Saved to favorites"
+    },
+    "events": {
+      "open": "[RU] Open"
+    },
+    "landmarks": {
+      "title": "[RU] Notable landmarks"
+    },
+    "photo": {
+      "caption": "[RU] {{village}}, {{city}}",
+      "alt": "[RU] {{name}}, photo {{n}}"
+    },
+    "parentCity": {
+      "body": "[RU] The wider city this district sits in.",
+      "action": "[RU] Open"
+    },
+    "map": {
+      "caption": "[RU] Walking distance in {{city}}."
+    },
+    "endOfLine": {
+      "eyebrow": "[RU] End of line",
+      "title": "[RU] Looking for another district?",
+      "body": "[RU] Queer villages are walkable clusters of bars, cafés and community spaces. There are more of them.",
+      "city": "[RU] More in {{city}}"
     }
   }
 }

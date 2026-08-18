@@ -30,7 +30,7 @@ function Chip({
       aria-pressed={active}
       className={
         active
-          ? 'rounded-badge border border-foreground bg-foreground px-4 py-1.5 text-13 text-background'
+          ? 'rounded-badge border border-border-hairline bg-foreground px-4 py-1.5 text-13 text-background'
           : 'rounded-badge px-4 py-1.5 text-13 text-muted-foreground hover:text-foreground bg-surface-container'
       }
     >

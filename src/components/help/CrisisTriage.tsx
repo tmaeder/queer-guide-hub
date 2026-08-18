@@ -43,12 +43,12 @@ const CHANNEL_ICON: Record<HotlineChannel['kind'], typeof Phone> = {
 
 /** Paper-on-ink action. The panel is inverted, so the strongest fill is paper. */
 const PRIMARY =
-  'flex w-full items-center justify-between gap-4 border-[3px] border-background bg-background px-6 py-6 text-foreground no-underline transition-opacity hover:opacity-90';
+  'border flex w-full items-center justify-between gap-4 border-background bg-background px-6 py-6 text-foreground no-underline transition-opacity hover:opacity-90';
 const SECONDARY =
-  'flex items-center justify-center gap-2 border-2 border-background px-4 py-4 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground';
+  'border flex items-center justify-center gap-2 border-background px-4 py-4 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground';
 /** Same paper-on-ink logic as SECONDARY, tightened for a row of kept lines. */
 const KEPT =
-  'flex items-center gap-2 border-2 border-background px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground';
+  'border flex items-center gap-2 border-background px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground';
 
 function Availability({ hotline }: { hotline: Hotline }) {
   const { t } = useTranslation();
@@ -108,7 +108,7 @@ export function CrisisTriage({
   const showBillNote = ['DE', 'AT', 'CH'].includes(country);
 
   return (
-    <section className="border-[3px] border-foreground bg-foreground p-6 text-background md:p-8">
+    <section className="bg-foreground p-6 text-background md:p-8">
       <h1 className="font-display text-display leading-tight md:text-hero">
         {t('help.title', 'Help & Crisis Hotlines')}
       </h1>
@@ -141,7 +141,7 @@ export function CrisisTriage({
                 <Phone size={20} aria-hidden />
                 {t('help.call_now', 'Call now')}
               </span>
-              <span className="font-display text-title tabular-nums">{phone}</span>
+              <span className="text-title font-bold tabular-nums">{phone}</span>
             </a>
           )}
 
@@ -149,7 +149,7 @@ export function CrisisTriage({
               and something else is demonstrably open, offer it here — directly
               beside the button that would otherwise ring out. */}
           {openAlt && (
-            <div className="mt-6 border-2 border-background/40 p-4">
+            <div className="border mt-6 border-background/40 p-4">
               <p className="text-2xs font-bold uppercase tracking-label text-background/70">
                 {t('help.open_instead', 'Open right now instead')}
               </p>
@@ -192,7 +192,7 @@ export function CrisisTriage({
               Naming the closure and pointing somewhere is the minimum; the
               real remedy is more lines in the corpus. */}
           {heroClosed && !openAlt && (
-            <p className="mt-6 border-2 border-background/40 p-4 text-13 leading-relaxed text-background/80">
+            <p className="border mt-6 border-background/40 p-4 text-13 leading-relaxed text-background/80">
               {t(
                 'help.closed_no_alt',
                 'This line is closed right now and we have no other line open for this country. In acute danger, use the emergency number above.',
@@ -256,8 +256,8 @@ export function CrisisTriage({
         </div>
       ) : (
         // The geo-failure default used to render nothing at all here.
-        <div className="mt-8 border-2 border-background/40 p-4">
-          <h2 className="font-display text-title leading-tight">
+        <div className="border mt-8 border-background/40 p-4">
+          <h2 className="text-title font-bold leading-tight">
             {hotlines.length === 0
               ? t('help.no_lines_title', 'We could not load the directory')
               : t('help.no_country_title', 'We could not work out where you are')}
@@ -322,7 +322,7 @@ export function CrisisTriage({
         </div>
       )}
 
-      <div className="mt-8 border-t-2 border-background/30 pt-6">
+      <div className="mt-8 border-t border-background/30 pt-6">
         <p className="text-2xs font-bold uppercase tracking-label text-background/70">
           {t('help.expect_title', 'What happens when you call')}
         </p>

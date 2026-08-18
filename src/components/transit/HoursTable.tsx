@@ -34,7 +34,7 @@ export function HoursTable({
   if (rows.length === 0) return null;
 
   return (
-    <div className={cn('border-[3px] border-foreground', className)}>
+    <div className={cn('border border-border-hairline', className)}>
       {rows.map((r, i) => {
         const isToday = i === todayIndex;
         return (
@@ -42,7 +42,7 @@ export function HoursTable({
             key={r.day}
             aria-current={isToday ? 'date' : undefined}
             className={cn(
-              'grid grid-cols-[80px_1fr_auto] items-center gap-4 border-b-2 border-foreground/15 px-4 py-2 last:border-b-0',
+              'grid grid-cols-[80px_1fr_auto] items-center gap-4 border-b border-foreground/15 px-4 py-2 last:border-b-0',
               isToday && 'bg-foreground text-background',
             )}
           >

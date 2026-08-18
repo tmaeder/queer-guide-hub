@@ -66,7 +66,7 @@ export function TripsStrip({ hideTitle = false }: { hideTitle?: boolean } = {}) 
         {hideTitle ? (
           <span aria-hidden />
         ) : (
-          <h2 className="text-title font-display">
+          <h2 className="text-title font-bold">
             {t('hub.plans.trips', { defaultValue: 'Your trips' })}
             {hasAnyTrips && (
               <span className="ml-2 text-sm font-normal text-muted-foreground tabular-nums">
@@ -131,9 +131,16 @@ export function TripsStrip({ hideTitle = false }: { hideTitle?: boolean } = {}) 
           if (seedGeo) {
             setSearchParams(
               (prev) => {
-                ['cityId', 'cityName', 'countryId', 'countryName', 'countryCode', 'timezone', 'start', 'end'].forEach(
-                  (k) => prev.delete(k),
-                );
+                [
+                  'cityId',
+                  'cityName',
+                  'countryId',
+                  'countryName',
+                  'countryCode',
+                  'timezone',
+                  'start',
+                  'end',
+                ].forEach((k) => prev.delete(k));
                 return prev;
               },
               { replace: true },

@@ -58,18 +58,49 @@ export async function fetchCountryNameById(id: string): Promise<string | null> {
   return (data?.name as string | undefined) ?? null;
 }
 
-/** ProfessionDetail.tsx — list personalities (filtered downstream). */
-export function usePersonalitiesByProfession() {
+/**
+ * ProfessionDetail.tsx — personalities for one profession.
+ *
+ * Three things this query got wrong until 2026-08-14, all measured on prod:
+ *
+ * 1. No `visibility` filter. RLS does NOT contain this — the anon key can read
+ *    16,060 personality rows of which 14,448 are `visibility='draft'`, so the
+ *    page published them. /professions/drag queen rendered 25 draft rows out of
+ *    52 ("10th place", "3rd place" — import junk), and /professions/adult
+ *    performer rendered 571 drafts. 171 profession pages were affected.
+ *    Explicit filters are mandatory here; see the same lesson in
+ *    functions/_lib/detail.ts, which learned it for the crawler path.
+ *
+ * 2. No `is_adult` filter, while /personalities defaults to hiding adult
+ *    performers and this surface has no toggle to opt in. It was listing 574 of
+ *    them to anonymous visitors.
+ *
+ * 3. No profession filter and no limit. It fetched the WHOLE table and matched
+ *    client-side, but PostgREST hard-caps at 1000 rows — verified, `limit=1500`
+ *    and `limit=5000` both return exactly 1000 — so it saw 1,000 of 12,169 rows
+ *    ordered by name and every profession late in the alphabet silently lost
+ *    people. Filtering by visibility alone does not fix this: that is still
+ *    1,612 rows, over the cap.
+ *
+ * The profession match now happens server-side as a SUPERSET (`ilike %name%`),
+ * with ProfessionDetail keeping its exact comma-token comparison on top — the
+ * column holds comma-separated lists, so a substring match over-selects and the
+ * caller narrows. That keeps a single profession's result far under the cap.
+ */
+export function usePersonalitiesByProfession(profession?: string) {
   return useQuery({
-    queryKey: ['personalities-with-profession'],
+    queryKey: ['personalities-with-profession', profession ?? null],
     staleTime: STALE,
     queryFn: async () => {
-      const { data, error } = await supabase
+      let q = supabase
         .from('personalities')
         .select('*')
         .not('profession', 'is', null)
         .is('duplicate_of_id', null)
-        .order('name');
+        .eq('visibility', 'public')
+        .eq('is_adult', false);
+      if (profession) q = q.ilike('profession', `%${profession}%`);
+      const { data, error } = await q.order('name').limit(1000);
       if (error) throw error;
       return data ?? [];
     },
@@ -165,9 +196,7 @@ export async function fetchEventBySlugOrId<T extends { id: string }>(
   const { data: countsRows } = await supabase.rpc('event_attendee_counts', {
     event_ids: [event.id],
   });
-  const row = countsRows?.[0] as
-    | { going_count: number; interested_count: number }
-    | undefined;
+  const row = countsRows?.[0] as { going_count: number; interested_count: number } | undefined;
   const attendee_counts = {
     going: row?.going_count ?? 0,
     interested: row?.interested_count ?? 0,
@@ -247,10 +276,7 @@ export async function fetchVenueWithReviews<TVenue, TReview>(
   // types yet — cast, per the project's convention for new tables/RPCs.)
   const [primary, redirect] = await Promise.all([
     supabase.from('venues').select(selectFields).eq('slug', slug).single(),
-    untypedFrom('venue_slug_redirects')
-      .select('venue_id')
-      .eq('old_slug', slug)
-      .maybeSingle(),
+    untypedFrom('venue_slug_redirects').select('venue_id').eq('old_slug', slug).maybeSingle(),
   ]);
   const redirectVenueId = (redirect?.data as { venue_id?: string } | null)?.venue_id;
   if (redirectVenueId) {
@@ -260,7 +286,8 @@ export async function fetchVenueWithReviews<TVenue, TReview>(
       .eq('id', redirectVenueId)
       .maybeSingle();
     const c = canon as { slug?: string; id?: string } | null;
-    if (c?.slug || c?.id) return { venue: null, reviews: [], redirectTo: `/venues/${c.slug || c.id}` };
+    if (c?.slug || c?.id)
+      return { venue: null, reviews: [], redirectTo: `/venues/${c.slug || c.id}` };
   }
   let { data: venueData, error: venueError } = primary;
   if (venueError && /uuid|invalid|no rows/i.test(venueError.message || '')) {
@@ -269,7 +296,10 @@ export async function fetchVenueWithReviews<TVenue, TReview>(
     venueError = fb.error;
   }
   if (venueError && /\./.test(slug) && !/\s/.test(slug)) {
-    const host = slug.replace(/^https?:\/\//i, '').replace(/^www\./i, '').split('/')[0];
+    const host = slug
+      .replace(/^https?:\/\//i, '')
+      .replace(/^www\./i, '')
+      .split('/')[0];
     if (host) {
       const { data: byWebsite } = await supabase
         .from('venues')
@@ -328,14 +358,25 @@ export async function upsertEmailTemplate(
   return { error };
 }
 
-/** Resources.tsx — list distinct profession values. */
-export async function fetchAllProfessions(): Promise<string[]> {
-  const { data } = await supabase.from('personalities').select('profession').not('profession', 'is', null);
-  if (!data) return [];
-  return [...new Set((data as Array<{ profession?: string }>).map((p) => p.profession).filter(Boolean))].sort() as string[];
+/**
+ * One curated citation of the law a glossary tag is about.
+ *
+ * Only ever the ~15 rows a human researched and URL-verified — see
+ * `supabase/migrations/20260906100000_tag_sources_legal_citations.sql`.
+ */
+export interface TagLegalSourceRow {
+  id: string;
+  source_type: string;
+  source_url: string | null;
+  official_title: string | null;
+  jurisdiction: string | null;
+  adopted_year: number | null;
+  instrument_status: string | null;
+  claim_summary: string | null;
+  verified_at: string | null;
 }
 
-/** Resources.tsx — fetch tag by name + category assignments + parent names. */
+/** TagDetail.tsx — fetch tag by slug (name fallback) + category assignments. */
 export async function fetchTagWithCategories(name: string) {
   // Tag URLs use the slug (the value stored in entity `tags[]` columns), e.g.
   // "bear-bar". Resolve by slug first, then fall back to a name match so older
@@ -358,6 +399,35 @@ export async function fetchTagWithCategories(name: string) {
       .maybeSingle();
     data = byName.data as Record<string, unknown> | null;
   }
+  // Merged tag → its canonical. `merge_tag_concept` flips status to 'merged' and
+  // records the absorbed slug in tag_slug_redirects; both filters above then miss,
+  // which is how /tags/crystal-meth rendered "No such term" instead of
+  // Methamphetamine. resolve_tag_slug() is the resolver that already encodes the
+  // right precedence — direct active hit first, redirect only as a fallback, and
+  // the target joined on status='active' so a redirect into a since-deprecated
+  // tag correctly resolves to nothing. It has existed (and been anon-granted)
+  // since 2026-08-02 with no caller at all; this is that caller.
+  //
+  // Only reached on a miss, so the happy path still costs exactly one query.
+  // A single hop is sufficient: merge_tag_concept walks the canonical to its
+  // terminal before writing, and the only two multi-hop chains left on prod both
+  // end at a deprecated tag, which must resolve to nothing anyway.
+  if (!data) {
+    const { data: resolved } = await supabase
+      .rpc('resolve_tag_slug', { p_slug: name.toLowerCase() })
+      .maybeSingle();
+    const canonicalSlug = (resolved as { slug?: string } | null)?.slug;
+    if (canonicalSlug && canonicalSlug !== name.toLowerCase()) {
+      const byRedirect = await supabase
+        .from('unified_tags')
+        .select('*')
+        .eq('slug', canonicalSlug)
+        .eq('status', 'active')
+        .limit(1)
+        .maybeSingle();
+      data = byRedirect.data as Record<string, unknown> | null;
+    }
+  }
   if (!data) return null;
 
   const tag = data as { id: string };
@@ -373,6 +443,7 @@ export async function fetchTagWithCategories(name: string) {
     level: number;
     parent_id: string | null;
     parent_name: string | null;
+    parent_slug: string | null;
     is_primary: boolean;
   };
   const cats: Cat[] = (catAssignments ?? [])
@@ -386,6 +457,7 @@ export async function fetchTagWithCategories(name: string) {
             level: c.level,
             parent_id: c.parent_id,
             parent_name: null,
+            parent_slug: null,
             is_primary: (a as { is_primary?: boolean }).is_primary ?? false,
           }
         : null;
@@ -395,17 +467,45 @@ export async function fetchTagWithCategories(name: string) {
   if (cats.length > 0) {
     const parentIds = cats.filter((c) => c.parent_id).map((c) => c.parent_id as string);
     if (parentIds.length > 0) {
+      // `slug` as well as `name`: the tag page's breadcrumb links its parent to
+      // /tags/c/<slug>, and deriving that slug from the display name would
+      // guess wrong on every "&" in the taxonomy.
       const { data: parents } = await supabase
         .from('tag_categories')
-        .select('id, name')
+        .select('id, name, slug')
         .in('id', parentIds);
-      const pm = new Map(((parents ?? []) as Array<{ id: string; name: string }>).map((p) => [p.id, p.name]));
+      const pm = new Map(
+        ((parents ?? []) as Array<{ id: string; name: string; slug: string }>).map((p) => [
+          p.id,
+          p,
+        ]),
+      );
       cats.forEach((c) => {
-        if (c.parent_id) c.parent_name = pm.get(c.parent_id) || null;
+        if (!c.parent_id) return;
+        const parent = pm.get(c.parent_id);
+        c.parent_name = parent?.name ?? null;
+        c.parent_slug = parent?.slug ?? null;
       });
     }
   }
-  return { ...data, categories: cats };
+  // Curated legal citations for law-related tags. `.eq('is_public', true)` is NOT
+  // redundant with RLS: a staff viewer also matches "admin select tag_sources" and
+  // would otherwise pull all ~8,700 wikipedia/wikidata backfill rows onto the
+  // public glossary page.
+  const { data: legalSources } = await supabase
+    .from('tag_sources')
+    .select(
+      'id, source_type, source_url, official_title, jurisdiction, adopted_year, instrument_status, claim_summary, verified_at',
+    )
+    .eq('tag_id', tag.id)
+    .eq('is_public', true)
+    .order('adopted_year', { ascending: true, nullsFirst: false });
+
+  return {
+    ...data,
+    categories: cats,
+    legal_sources: (legalSources ?? []) as unknown as TagLegalSourceRow[],
+  };
 }
 
 /** AdminSubmissions.tsx — promote a submission to its target table. */
@@ -485,7 +585,9 @@ export async function fetchNewsArticleBySlugOrId<T = unknown>(slug: string): Pro
 }
 
 /** NewsDetail.tsx — source name + url by id. */
-export async function fetchNewsSourceById(id: string): Promise<{ name?: string; url?: string } | null> {
+export async function fetchNewsSourceById(
+  id: string,
+): Promise<{ name?: string; url?: string } | null> {
   const { data } = await supabase
     .from('news_sources')
     .select('name, url')
@@ -539,7 +641,12 @@ export interface ListingTag {
 export async function fetchMarketplaceListingBundle<TListing, TReview>(
   slug: string,
   userId: string | undefined,
-): Promise<{ listing: TListing; reviews: TReview[]; isFavorited: boolean; tags: ListingTag[] } | null> {
+): Promise<{
+  listing: TListing;
+  reviews: TReview[];
+  isFavorited: boolean;
+  tags: ListingTag[];
+} | null> {
   let { data: listing, error } = await supabase
     .from('marketplace_listings')
     .select('*')
@@ -578,7 +685,9 @@ export async function fetchMarketplaceListingBundle<TListing, TReview>(
     .eq('entity_type', 'marketplace_listing')
     .eq('entity_id', typed.id);
   const tags: ListingTag[] = (
-    (tagRows as Array<{ unified_tags: { name: string; category: string | null; status: string | null } }> | null) ?? []
+    (tagRows as Array<{
+      unified_tags: { name: string; category: string | null; status: string | null };
+    }> | null) ?? []
   )
     .filter((t) => t.unified_tags?.status !== 'inactive')
     .map((t) => ({ name: t.unified_tags.name, category: t.unified_tags.category }));
@@ -624,11 +733,7 @@ export async function fetchFeedbackBoardItems<T = unknown>(): Promise<T[]> {
 }
 
 /** FeedbackBoard.tsx — toggle a feedback vote. */
-export async function toggleFeedbackVote(
-  submissionId: string,
-  userId: string,
-  hasVoted: boolean,
-) {
+export async function toggleFeedbackVote(submissionId: string, userId: string, hasVoted: boolean) {
   if (hasVoted) {
     await supabase
       .from('feedback_votes' as const)
@@ -683,19 +788,24 @@ export async function fetchUserPostInteractions<TLike, TComment>(
 
   const { data: commentsData } = await supabase
     .from('post_comments')
-    .select(`id, post_id, user_id, content, created_at, profiles ( display_name, avatar_url, user_id )`)
+    .select(
+      `id, post_id, user_id, content, created_at, profiles ( display_name, avatar_url, user_id )`,
+    )
     .in('post_id', postIds)
     .order('created_at', { ascending: false })
     .limit(20);
-  const comments: TComment[] = (commentsData ?? []).map((c: Record<string, unknown> & { profiles?: { display_name?: string; avatar_url?: string } }) => ({
-    id: c.id,
-    post_id: c.post_id,
-    user_id: c.user_id,
-    content: c.content,
-    created_at: c.created_at,
-    user_display_name: c.profiles?.display_name || 'Someone',
-    user_avatar_url: c.profiles?.avatar_url || null,
-  } as unknown as TComment));
+  const comments: TComment[] = (commentsData ?? []).map(
+    (c: Record<string, unknown> & { profiles?: { display_name?: string; avatar_url?: string } }) =>
+      ({
+        id: c.id,
+        post_id: c.post_id,
+        user_id: c.user_id,
+        content: c.content,
+        created_at: c.created_at,
+        user_display_name: c.profiles?.display_name || 'Someone',
+        user_avatar_url: c.profiles?.avatar_url || null,
+      }) as unknown as TComment,
+  );
 
   return { likes, comments };
 }
@@ -736,7 +846,11 @@ export async function listFrom<T = unknown>(
   limit?: number,
 ): Promise<T[]> {
   let q = untypedFrom(table).select(select as never);
-  if (order) q = (q as unknown as { order: (c: string, opts: { ascending?: boolean }) => typeof q }).order(order.col, { ascending: order.ascending ?? true });
+  if (order)
+    q = (q as unknown as { order: (c: string, opts: { ascending?: boolean }) => typeof q }).order(
+      order.col,
+      { ascending: order.ascending ?? true },
+    );
   if (limit) q = (q as unknown as { limit: (n: number) => typeof q }).limit(limit);
   const { data, error } = await q;
   if (error) throw error;
@@ -770,14 +884,13 @@ export async function listFromWhere<T = unknown>(
   let q = untypedFrom(table).select(select as never);
   for (const f of filters) {
     const op = f.op ?? 'eq';
-    q = (
-      q as unknown as Record<string, (c: string, v: unknown) => typeof q>
-    )[op](f.col, f.val);
+    q = (q as unknown as Record<string, (c: string, v: unknown) => typeof q>)[op](f.col, f.val);
   }
   if (opts?.order) {
-    q = (
-      q as unknown as { order: (c: string, opts: { ascending?: boolean }) => typeof q }
-    ).order(opts.order.col, { ascending: opts.order.ascending ?? true });
+    q = (q as unknown as { order: (c: string, opts: { ascending?: boolean }) => typeof q }).order(
+      opts.order.col,
+      { ascending: opts.order.ascending ?? true },
+    );
   }
   if (opts?.limit) {
     q = (q as unknown as { limit: (n: number) => typeof q }).limit(opts.limit);
@@ -819,7 +932,10 @@ export async function insertInto<TPayload extends Record<string, unknown>>(
   table: string,
   payload: TPayload,
 ): Promise<{ data: unknown; error: unknown }> {
-  const { data, error } = await untypedFrom(table).insert([payload as never]).select().maybeSingle();
+  const { data, error } = await untypedFrom(table)
+    .insert([payload as never])
+    .select()
+    .maybeSingle();
   return { data, error };
 }
 
@@ -828,7 +944,9 @@ export async function updateRow(
   id: string,
   update: Record<string, unknown>,
 ): Promise<{ error: unknown }> {
-  const { error } = await untypedFrom(table).update(update as never).eq('id', id);
+  const { error } = await untypedFrom(table)
+    .update(update as never)
+    .eq('id', id);
   return { error };
 }
 
@@ -857,7 +975,10 @@ export async function deleteCountry(id: string) {
 
 /** AdminCountries.tsx — update a country row. */
 export async function updateCountry(id: string, update: Record<string, unknown>) {
-  const { error } = await supabase.from('countries').update(update as never).eq('id', id);
+  const { error } = await supabase
+    .from('countries')
+    .update(update as never)
+    .eq('id', id);
   return { error };
 }
 
@@ -900,8 +1021,9 @@ export async function upsertPersonalityInternalNote(payload: {
   notes: string;
   updated_by?: string | null;
 }) {
-  const { error } = await untypedFrom('personality_internal_notes')
-    .upsert(payload as never, { onConflict: 'personality_id' });
+  const { error } = await untypedFrom('personality_internal_notes').upsert(payload as never, {
+    onConflict: 'personality_id',
+  });
   return { error };
 }
 
@@ -1027,7 +1149,9 @@ export async function listWhereNotNull<T = unknown>(
   notNullCol: string,
   orderCol?: string,
 ): Promise<T[]> {
-  let q = untypedFrom(table).select(select as never).not(notNullCol, 'is', null);
+  let q = untypedFrom(table)
+    .select(select as never)
+    .not(notNullCol, 'is', null);
   if (orderCol) {
     q = (q as unknown as { order: (c: string) => typeof q }).order(orderCol);
   }
@@ -1042,9 +1166,7 @@ export async function deleteRowsByIds(
   ids: string[],
 ): Promise<{ error: { message: string } | null }> {
   if (ids.length === 0) return { error: null };
-  const { error } = await untypedFrom(table)
-    .delete()
-    .in('id', ids);
+  const { error } = await untypedFrom(table).delete().in('id', ids);
   if (!error) void logCmsAudit(table, ids, 'bulk_delete');
   return { error: error ? { message: error.message } : null };
 }

@@ -18,9 +18,15 @@ interface DetailMastheadProps {
  * ("Singles Venue Event Tag.dc.html"): route bullet, uppercase eyebrow, a
  * bordered status chip, then the Anton title and the lead.
  *
- * The status chip is a bordered ink outline rather than a filled track colour:
- * "Open now" and "Sold out" are STATES, and the design system reserves colour
- * for wayfinding — a filled chip here would read as a line, not a status.
+ * The status chip is an OUTLINE rather than a filled track colour: "Open now"
+ * and "Sold out" are STATES, and the design system reserves colour for
+ * wayfinding — a filled chip here would read as a line, not a status.
+ *
+ * It keeps a border through the soft re-skin, when card frames were deleted,
+ * because the outline is the entire chip: with no fill and no edge there is no
+ * chip left. It draws in `border-input` (the control-boundary token, 3.8:1 on
+ * the page) rather than the 12%-ink divider hairline, which at chip scale is
+ * invisible.
  */
 export function DetailMasthead({
   type,
@@ -34,11 +40,9 @@ export function DetailMasthead({
     <header className={className}>
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <RouteBullet type={type} size={44} />
-        {eyebrow && (
-          <span className="text-2xs font-bold uppercase tracking-label">{eyebrow}</span>
-        )}
+        {eyebrow && <span className="text-2xs font-bold uppercase tracking-label">{eyebrow}</span>}
         {status && (
-          <span className="border-2 border-foreground px-2 py-2 text-2xs font-bold uppercase tracking-label">
+          <span className="rounded-element border border-input px-2 py-2 text-2xs font-bold uppercase tracking-label">
             {status}
           </span>
         )}

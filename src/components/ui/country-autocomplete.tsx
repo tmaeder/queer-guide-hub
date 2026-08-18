@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { Check, ChevronsUpDown} from 'lucide-react';
+import { Check, ChevronsUpDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Command,
@@ -95,7 +95,7 @@ export function CountryAutocomplete({
           className={cn(
             'h-10 w-full justify-between rounded-element bg-inverse-surface text-background placeholder:text-background/70 px-4.5 py-2 font-normal transition-all hover:opacity-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/15 focus-visible:ring-offset-0',
             !selectedCountry && 'text-muted-foreground',
-            error && 'border-destructive',
+            error && 'border border-destructive',
           )}
         >
           <span className="flex items-center gap-2 truncate">

@@ -45,8 +45,8 @@ export function PersonalityCardSkeleton() {
     // Matches the card's own frame — this was `bg-background` against a
     // `bg-surface-container` card, so the grid visibly changed colour as it
     // loaded.
-    <div className="flex h-full flex-col border-[3px] border-foreground bg-background">
-      <div className="relative aspect-[3/4] w-full border-b-[3px] border-foreground bg-muted">
+    <div className="flex h-full flex-col bg-card rounded-container shadow-soft">
+      <div className="relative aspect-[3/4] w-full border-b border-border-hairline bg-muted">
         <Skeleton className="absolute inset-0 h-full w-full rounded-none" />
       </div>
       <div className="p-4">
@@ -142,12 +142,12 @@ function PersonalityCardImpl({
          sibling overlay — this card has no nested interactive elements, so the
          whole anchor is the target and a nested lift wrapper only meant the
          border sat on one element while a different one moved. */
-      className="personality-card card-lift group flex h-full cursor-pointer touch-manipulation flex-col border-[3px] border-foreground bg-background text-inherit no-underline focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2"
+      className="personality-card card-lift group flex h-full cursor-pointer touch-manipulation flex-col bg-card text-inherit no-underline focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 rounded-container shadow-soft"
       style={{ WebkitTapHighlightColor: 'transparent' }}
     >
       {/* Portrait. `aspect-[3/4]` replaces a `paddingTop: 133.33%` box and an
           inline foreground-alpha gradient — both pre-rebrand idioms. */}
-      <div className="relative aspect-[3/4] w-full overflow-hidden border-b-[3px] border-foreground bg-muted">
+      <div className="relative aspect-[3/4] w-full overflow-hidden border-b border-border-hairline bg-muted">
         {showImage ? (
           <img
             src={resolvedImageUrl!}
@@ -187,7 +187,7 @@ function PersonalityCardImpl({
 
       {/* Content */}
       <div className="flex-grow p-4">
-        <h3 className="truncate font-display text-title leading-tight text-foreground">
+        <h3 className="truncate text-title font-bold leading-tight text-foreground">
           {personality.name}
         </h3>
         {personality.profession && (
@@ -218,7 +218,7 @@ function PersonalityCardImpl({
         side="top"
         align="center"
         sideOffset={8}
-        className="w-72 overflow-hidden border-[3px] border-foreground p-0"
+        className="w-72 overflow-hidden bg-muted rounded-element p-0"
         onMouseEnter={() => {
           if (closeTimerRef.current) {
             window.clearTimeout(closeTimerRef.current);
@@ -236,22 +236,24 @@ function PersonalityCardImpl({
             alt=""
             loading="lazy"
             referrerPolicy="no-referrer"
-            className="h-40 w-full border-b-[3px] border-foreground bg-muted object-cover object-top"
+            className="h-40 w-full border-b border-border-hairline bg-muted object-cover object-top"
           />
         ) : (
-          <div className="flex h-24 w-full items-center justify-center border-b-[3px] border-foreground bg-muted font-display text-headline text-muted-foreground">
+          <div className="flex h-24 w-full items-center justify-center border-b border-border-hairline bg-muted font-display text-headline text-muted-foreground">
             {getInitials(personality.name)}
           </div>
         )}
         <div className="space-y-1.5 p-4">
-          <div className="font-display text-title leading-snug">{personality.name}</div>
+          <div className="text-title font-bold leading-snug">{personality.name}</div>
           {personality.profession && (
             <div className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
               {formatProfession(personality.profession)}
             </div>
           )}
           {metaParts.length > 0 && (
-            <div className="text-13 tabular-nums text-muted-foreground">{metaParts.join(' · ')}</div>
+            <div className="text-13 tabular-nums text-muted-foreground">
+              {metaParts.join(' · ')}
+            </div>
           )}
           {previewText && (
             <p className="line-clamp-5 pt-1 text-13 leading-snug text-muted-foreground">

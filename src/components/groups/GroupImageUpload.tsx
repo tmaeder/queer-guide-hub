@@ -3,7 +3,7 @@ import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Upload, X, Image as ImageIcon} from 'lucide-react';
+import { Upload, X, Image as ImageIcon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -160,7 +160,7 @@ export const GroupImageUpload = ({
 
       {currentImages.length === 0 && (
         <div
-          className="border-2 border-dashed p-8 text-center"
+          className=" border-dashed p-8 text-center"
           style={{ borderColor: 'hsl(var(--muted-foreground) / 0.3)' }}
         >
           <ImageIcon size={48} style={{ margin: '0 auto', opacity: 0.5 }} className="mb-4" />

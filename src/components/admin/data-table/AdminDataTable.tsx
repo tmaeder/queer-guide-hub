@@ -373,7 +373,7 @@ export function AdminDataTable<TData extends { id: string }>({
                                 onClick={() => action.onClick(row.original)}
                                 className={
                                   action.variant === 'destructive'
-                                    ? 'border-l-2 border-l-foreground font-medium'
+                                    ? 'border-l border-l-foreground font-medium'
                                     : undefined
                                 }
                               >

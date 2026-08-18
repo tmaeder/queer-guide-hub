@@ -41,8 +41,8 @@ interface NavTabProps {
 // (`li a:not(.no-underline)` in index.css) forces `display:inline`, which would
 // override the `flex` utility and left-align the icon under the centred label.
 const linkBase =
-  'flex h-14 flex-col items-center justify-center gap-1 no-underline select-none text-2xs transition-colors rounded-element focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
-const iconWrap = 'relative flex h-8 w-12 items-center justify-center rounded-element';
+  'flex h-14 flex-col items-center justify-center gap-1 no-underline select-none text-2xs font-bold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
+const iconWrap = 'relative flex h-8 w-12 items-center justify-center';
 
 /**
  * One bottom-nav slot: a localized link with an active pill, icon (or avatar),
@@ -84,7 +84,11 @@ export function NavTab({
         }}
         className={cn(
           linkBase,
-          active ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
+          // Active reverses to ink, the same move the desktop track tabs make.
+          // The soft `bg-muted` pill it replaces was the last rounded, tinted
+          // surface in the chrome and read as a different design system from
+          // the bar it sat in.
+          active ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground',
         )}
       >
         <span className={iconWrap}>
@@ -92,12 +96,7 @@ export function NavTab({
               the pill sits inside a non-uniform flex row (contribute button,
               accessory), so a single translated pill would need JS measurement
               — not worth ~97 KB of framer on the entry chunk. */}
-          {active && (
-            <span
-              aria-hidden
-              className={cn('absolute inset-0 rounded-element bg-muted', !reduced && 'scale-in')}
-            />
-          )}
+          {active && !reduced && <span aria-hidden className="absolute inset-0 scale-in" />}
           {avatar ? (
             <Avatar className="relative h-6 w-6">
               <AvatarImage src={avatar.src} alt="" />

@@ -30,11 +30,11 @@ export function StopList({ stops, className }: { stops: Stop[]; className?: stri
   if (stops.length === 0) return null;
 
   return (
-    <ol className={cn('list-none border-[3px] border-foreground p-0', className)}>
+    <ol className={cn('list-none bg-muted rounded-element p-0', className)}>
       {stops.map((s, i) => (
         <li key={s.id}>
           {i > 0 && s.walkFromPrevious && (
-            <div className="flex items-center gap-2 border-b-2 border-t-2 border-foreground/15 bg-surface-container px-4 py-1.5">
+            <div className="flex items-center gap-2 border-b border-t border-foreground/15 bg-surface-container px-4 py-1.5">
               <span aria-hidden className="h-4 w-0.5 bg-track-green" />
               {/* NOT `uppercase`. The eyebrow convention is for LABELS; this
                   string is a measured VALUE, and SI units are case-sensitive —
@@ -52,19 +52,23 @@ export function StopList({ stops, className }: { stops: Stop[]; className?: stri
             ) : (
               <span
                 aria-hidden
-                className="grid h-8 w-8 shrink-0 place-items-center rounded-full border-[3px] border-foreground text-xs2 font-bold"
+                className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-border-hairline text-xs2 font-bold"
               >
                 {i + 1}
               </span>
             )}
             <div className="min-w-0 flex-1">
-              <div className="font-display text-title leading-tight">{s.name}</div>
+              <div className="text-title font-bold leading-tight">{s.name}</div>
               {s.accessNote && (
                 <div className="mt-1 text-13 text-muted-foreground">{s.accessNote}</div>
               )}
             </div>
             {s.href && (
-              <LocalizedLink to={s.href} aria-label={s.name} className="absolute inset-0 no-underline" />
+              <LocalizedLink
+                to={s.href}
+                aria-label={s.name}
+                className="absolute inset-0 no-underline"
+              />
             )}
           </div>
         </li>

@@ -10,8 +10,10 @@ import { test, expect } from '@playwright/test';
  *     leaving /venues and /people unreachable from desktop chrome.
  *  2. Every intent route resolves — unprefixed and locale-prefixed. A route
  *     declared outside the `/:locale?` parent renders NotFound under /de/.
- *  3. /shop reaches the composite page rather than the legacy `shop/*`
- *     redirect, which depends on declaration order in routes.tsx.
+ *  3. /shop redirects to /marketplace — bare, deep, and locale-prefixed. The
+ *     public/_redirects 301 is unprefixed by design and inert off Cloudflare,
+ *     so the router is the only layer covering /de/shop, and the only layer
+ *     this run can see at all.
  *  4. Retiring /places preserves the locale prefix (LocalizedRedirect, not a
  *     bare Navigate, which would bounce /de/places to English).
  *  5. Crisis-adjacent intents stay animation-free.
@@ -31,7 +33,11 @@ const INTENTS = [
   // redirect. /support itself still resolves and is still covered, by the
   // crisis-adjacent block at the bottom of this file.
   { label: 'Support', href: '/help' },
-  { label: 'Shop', href: '/shop' },
+  // /marketplace, not /shop, and for the same reason as Support above: /shop
+  // was /marketplace's twin — two of its three sections were duplicates of
+  // blocks the marketplace landing already rendered — and /marketplace is the
+  // superset. The label stays "Shop"; `to` and `labelKey` are independent.
+  { label: 'Shop', href: '/marketplace' },
 ];
 
 test.describe('desktop intent nav', () => {
@@ -78,7 +84,7 @@ test.describe('homepage intent map', () => {
     '/search', // the interchange, where all four lines meet
     '/rights',
     '/help',
-    '/shop',
+    '/marketplace',
   ];
 
   test('renders the six intents plus the interchange as stations', async ({ page }) => {
@@ -122,15 +128,24 @@ test.describe('intent routes', () => {
     await expect(page.locator('main')).not.toContainText('Page not found');
   });
 
-  test('/shop reaches the composite page, not the legacy redirect', async ({ page }) => {
+  test('/shop is folded into the marketplace', async ({ page }) => {
     await page.goto('/shop');
-    await expect(page).toHaveURL(/\/shop$/);
+    await expect(page).toHaveURL(/\/marketplace$/);
     await expect(page.locator('main h1')).toBeVisible();
   });
 
   test('/shop/<legacy> still redirects to the marketplace', async ({ page }) => {
     await page.goto('/shop/anything-legacy');
     await expect(page).toHaveURL(/\/marketplace/);
+  });
+
+  test('folding /shop keeps the locale prefix', async ({ page }) => {
+    // The public/_redirects 301 is unprefixed on purpose — a `/:lang/shop` rule
+    // would also match /marketplace/shop, a listing whose slug is "shop". So
+    // LocalizedRedirect in the router is the only thing carrying this case, and
+    // a bare <Navigate> would bounce a German reader to the English page.
+    await page.goto('/de/shop');
+    await expect(page).toHaveURL(/\/de\/marketplace$/);
   });
 
   test('/places is retired to the Travelling intent', async ({ page }) => {

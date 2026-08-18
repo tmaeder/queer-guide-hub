@@ -7,6 +7,11 @@ export interface IntentLocation {
   citySlug: string | null;
   cityName: string | null;
   countryCode: string | null;
+  /** `countries.id` for the resolved country. Both country lookups below
+   *  already read the row; before this the id was fetched and thrown away, so
+   *  every caller that scopes a query by country had to re-resolve the ISO
+   *  code to a UUID. Additive — existing consumers destructure by name. */
+  countryId: string | null;
   loading: boolean;
   /** True when the city came from IP geolocation rather than an explicit URL. */
   inferred: boolean;
@@ -40,6 +45,7 @@ export function useIntentLocation(citySlugParam?: string | null): IntentLocation
     citySlug: null,
     cityName: null,
     countryCode: null,
+    countryId: null,
     loading: true,
     inferred: false,
   });
@@ -52,17 +58,19 @@ export function useIntentLocation(citySlugParam?: string | null): IntentLocation
       if (citySlugParam) {
         const { data } = await supabase
           .from('cities')
-          .select('id, name, slug, countries:country_id(code)')
+          .select('id, name, slug, country_id, countries:country_id(id, code)')
           .eq('slug', citySlugParam)
           .maybeSingle();
         if (cancelled) return;
         if (data) {
-          const country = (data as { countries?: { code?: string | null } | null }).countries;
+          const country = (data as { countries?: { id?: string | null; code?: string | null } | null })
+            .countries;
           setResolved({
             cityId: data.id as string,
             citySlug: data.slug as string,
             cityName: data.name as string,
             countryCode: country?.code ?? null,
+            countryId: country?.id ?? ((data as { country_id?: string | null }).country_id ?? null),
             loading: false,
             inferred: false,
           });
@@ -96,7 +104,7 @@ export function useIntentLocation(citySlugParam?: string | null): IntentLocation
         const { data } = countryRow
           ? await supabase
               .from('cities')
-              .select('id, name, slug, countries:country_id(code)')
+              .select('id, name, slug, countries:country_id(id, code)')
               .eq('country_id', countryRow.id as string)
               .ilike('name', cityName)
               .not('slug', 'is', null)
@@ -106,12 +114,30 @@ export function useIntentLocation(citySlugParam?: string | null): IntentLocation
           : { data: null };
         if (cancelled) return;
         if (data) {
-          const country = (data as { countries?: { code?: string | null } | null }).countries;
+          const country = (data as { countries?: { id?: string | null; code?: string | null } | null })
+            .countries;
           setResolved({
             cityId: data.id as string,
             citySlug: data.slug as string,
             cityName: data.name as string,
             countryCode: country?.code ?? location?.country ?? null,
+            countryId: country?.id ?? ((countryRow?.id as string | undefined) ?? null),
+            loading: false,
+            inferred: true,
+          });
+          return;
+        }
+
+        // The city did not resolve, but the COUNTRY did — keep it. A visitor in
+        // a town we have no row for still gets country-scoped content instead
+        // of falling all the way back to global.
+        if (countryRow) {
+          setResolved({
+            cityId: null,
+            citySlug: null,
+            cityName: null,
+            countryCode: (countryRow.code as string | null) ?? location?.country ?? null,
+            countryId: countryRow.id as string,
             loading: false,
             inferred: true,
           });
@@ -125,6 +151,7 @@ export function useIntentLocation(citySlugParam?: string | null): IntentLocation
         citySlug: null,
         cityName: null,
         countryCode: location?.country ?? null,
+        countryId: null,
         loading: false,
         inferred: false,
       });

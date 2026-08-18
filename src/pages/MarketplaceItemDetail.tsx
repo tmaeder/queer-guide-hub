@@ -3,10 +3,12 @@ import { useParams } from 'react-router';
 import { useTrackView } from '@/hooks/useTrackView';
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { EntityDetailLayout, type EntityDetailTab } from '@/components/entity/EntityDetailLayout';
+import { SinglePage } from '@/components/transit/SinglePage';
+import { ProvenanceLine } from '@/components/transit/ProvenanceLine';
+import { DeadEndTrack } from '@/components/transit/DeadEndTrack';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { BrandStoryBlock } from '@/components/marketplace/BrandStoryBlock';
 import { BrandMoreFrom } from '@/components/marketplace/BrandMoreFrom';
 import { PairsWithRail } from '@/components/marketplace/PairsWithRail';
@@ -15,6 +17,7 @@ import { useMarketplace } from '@/hooks/useMarketplace';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useSlugRedirect } from '@/hooks/useSlugRedirect';
 import { useMeta } from '@/hooks/useMeta';
+import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { toast } from '@/hooks/use-toast';
 import { fetchMarketplaceListingBundle, toggleMarketplaceFavorite } from '@/hooks/usePageFetchers';
 import {
@@ -22,8 +25,19 @@ import {
   type MarketplaceReview,
   MarketplaceBuyBox,
   MarketplaceContent,
+  ProductFacts,
+  ProductTags,
+  ProductStats,
+  ProductAdminRow,
+  CommunityTags,
+  MakerCard,
+  RatingRings,
+  productEyebrow,
 } from './MarketplaceItemDetail.parts';
 import { MarketplaceGallery } from '@/components/marketplace/MarketplaceGallery';
+import { useBrandMoreFrom, useMarketplaceBrand } from '@/hooks/useMarketplaceBrands';
+import { brandSlug } from '@/lib/marketplaceTaxonomy';
+import { formatListingPrice } from '@/components/marketplace/marketplaceHelpers';
 import type { ListingTag } from '@/hooks/usePageFetchers';
 import { FeaturedInGuides } from '@/components/guides/FeaturedInGuides';
 import { PageContainer } from '@/components/layout/PageContainer';
@@ -65,6 +79,22 @@ function buildCategoryCrumb(
   return { label, href: `/marketplace/category/${encodeURIComponent(raw.toLowerCase())}` };
 }
 
+/**
+ * A single listing — /marketplace/:slug.
+ *
+ * Moved off `EntityDetailLayout`, which is the legacy TABBED shell (its own
+ * sibling `EntityDetailScroll` documents it as such). It was rendering a tab
+ * bar over exactly one tab — pure chrome — and dragging in Radix Tabs, an
+ * AnimatePresence crossfade and a motion scroll bar to do it. `SinglePage` is
+ * the spine `src/config/singleModules.ts` already specifies for this type.
+ *
+ * THE PRIMARY CTA IS RENDERED TWICE, deliberately. `SinglePage`'s rail collapses
+ * BELOW the body on mobile, so a phone reader would otherwise pass the gallery,
+ * the facts, the description and the reviews before finding a way to buy. The
+ * masthead `action` slot carries price + CTA; the rail carries the full buy box.
+ * Only the rail copy fires the affiliate impression beacon (`compact` suppresses
+ * it), so the duplicate does not double-count.
+ */
 export default function MarketplaceItemDetail() {
   const { slug } = useParams<{ slug: string }>();
   const { t } = useTranslation();
@@ -103,6 +133,18 @@ export default function MarketplaceItemDetail() {
   });
   const reviews = data?.reviews ?? [];
 
+  // Powers the one honest count in the rail's StatLine (module 15).
+  const { data: siblings } = useBrandMoreFrom(listing?.brand, listing?.id ?? '', 24);
+
+  // The curated brand name. Costs NO extra request: BrandStoryBlock further
+  // down this same page already calls `useMarketplaceBrand` with this exact
+  // slug, so react-query serves both from one cache entry. Without it the page
+  // contradicts itself — "Take me to tomboyx" beside a "TomboyX" heading.
+  const { data: curatedBrand } = useMarketplaceBrand(
+    listing?.brand ? (brandSlug(listing.brand) ?? undefined) : undefined,
+  );
+  const curatedName = curatedBrand?.display_name ?? null;
+
   const productJsonLd = listing
     ? {
         '@context': 'https://schema.org',
@@ -111,9 +153,10 @@ export default function MarketplaceItemDetail() {
         description: listing.description ?? undefined,
         image: listing.images && listing.images.length > 0 ? listing.images : undefined,
         sku: listing.id,
+        // Curated name here too — this is what Google indexes as the brand.
         brand:
-          listing.brand || listing.business_name
-            ? { '@type': 'Brand', name: listing.brand || listing.business_name }
+          curatedName || listing.brand || listing.business_name
+            ? { '@type': 'Brand', name: curatedName || listing.brand || listing.business_name }
             : undefined,
         ...(reviews.length > 0
           ? {
@@ -151,6 +194,17 @@ export default function MarketplaceItemDetail() {
     canonicalPath: listing?.slug ? `/marketplace/${listing.slug}` : undefined,
     jsonLd: productJsonLd,
   });
+
+  const categoryCrumb = buildCategoryCrumb(listing?.category);
+  useBreadcrumbs(
+    listing
+      ? [
+          { label: t('breadcrumb.marketplace', 'Marketplace'), href: '/marketplace' },
+          ...(categoryCrumb ? [categoryCrumb] : []),
+          { label: listing.title },
+        ]
+      : null,
+  );
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
@@ -218,21 +272,34 @@ export default function MarketplaceItemDetail() {
     }
   };
 
-  if (!isLoading && !listing && !error) {
+  if (isLoading) {
     return (
-      <PageContainer className="text-center">
-        <h5 className="text-xl font-bold mb-4">Item Not Found</h5>
-        <p className="text-muted-foreground mb-6">
-          The marketplace item you're looking for doesn't exist.
+      <PageContainer className="flex justify-center">
+        <TrackLoader label={t('common.loading', 'Loading')} />
+      </PageContainer>
+    );
+  }
+
+  if (!listing) {
+    return (
+      <PageContainer>
+        <h1 className="font-display text-display leading-[0.95]">
+          {t('pages.marketplaceDetail.notFound', 'No listing here.')}
+        </h1>
+        <p className="mt-4 max-w-reading text-body-lg text-muted-foreground">
+          {t(
+            'pages.marketplaceDetail.notFoundLede',
+            'This listing has been removed, or the link was mistyped.',
+          )}
         </p>
-        {/* asChild, not a Link wrapping a Button — that nests a <button>
-            inside an <a>, which is invalid HTML. */}
-        <Button asChild>
-          <LocalizedLink to="/marketplace" className="no-underline">
-            <ArrowLeft size={16} className="mr-2" />
-            Back to Marketplace
-          </LocalizedLink>
-        </Button>
+        <DeadEndTrack className="mt-10" label={slug ?? 'Unknown'} type="marketplace" />
+        <div className="mt-8 flex flex-wrap gap-2">
+          <Button asChild>
+            <LocalizedLink to="/marketplace" className="no-underline">
+              {t('pages.marketplaceDetail.backToMarketplace', 'Back to the marketplace')}
+            </LocalizedLink>
+          </Button>
+        </div>
       </PageContainer>
     );
   }
@@ -241,71 +308,91 @@ export default function MarketplaceItemDetail() {
     ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
     : 0;
   const tags = data?.tags ?? [];
+  const price = formatListingPrice(listing);
 
-  // listing.category is uncontrolled source data — often a generic junk value
-  // ("products", "uncategorized"). Show it only when it's a real category,
-  // prettified and linking to its category page.
-  const categoryCrumb = buildCategoryCrumb(listing?.category);
-  const breadcrumbs = listing
-    ? [
-        { label: t('breadcrumb.marketplace', 'Marketplace'), href: '/marketplace' },
-        ...(categoryCrumb ? [categoryCrumb] : []),
-        { label: listing.title },
-      ]
-    : undefined;
+  // Bordered ink chip, never a filled track colour — availability is a state,
+  // and colour on this page is wayfinding.
+  const status =
+    listing.in_stock === true
+      ? t('marketplace.inStock', 'In stock')
+      : listing.in_stock === false
+        ? t('marketplace.outOfStock', 'Out of stock')
+        : undefined;
 
-  const tabs: EntityDetailTab[] = listing
-    ? [
-        {
-          id: 'overview',
-          label: 'Overview',
-          content: (
-            <div className="flex flex-col gap-6">
-              <FeaturedInGuides entityType="marketplace" entityId={listing.id} />
-              <MarketplaceContent listing={listing} reviews={reviews} tags={tags} />
-            </div>
-          ),
-        },
-      ]
-    : [];
+  const body = (
+    <>
+      <MarketplaceGallery listingId={listing.id} images={listing.images} title={listing.title} />
+      <ProductFacts listing={listing} curatedName={curatedName} />
+      <MarketplaceContent listing={listing} reviews={reviews} onContentUpdated={refetch} />
+      <FeaturedInGuides entityType="marketplace" entityId={listing.id} />
+      {/* NOT wrapped in a SingleSection: BrandStoryBlock renders its own
+          `#brand-story` h2, and nesting it would put two headings on one
+          block — the second one silently outranking the first. */}
+      <BrandStoryBlock listing={listing} />
+      <BrandMoreFrom listing={listing} curatedName={curatedName} />
+      <PairsWithRail listing={listing} />
+    </>
+  );
+
+  const rail = (
+    <>
+      <MarketplaceBuyBox listing={listing} curatedName={curatedName} />
+      <MakerCard listing={listing} curatedName={curatedName} />
+      <ProductStats listing={listing} siblingCount={siblings?.length ?? null} />
+      {/* Spine S6. These listings are machine-ingested from merchant feeds, so
+          saying who added the row and when we last checked it is the honest
+          floor for a page that asks someone to spend money. */}
+      <ProvenanceLine
+        addedAt={listing.created_at}
+        checkedAt={listing.last_verified_at}
+        correctHref="/contact"
+      />
+      <ProductAdminRow listing={listing} onSaved={refetch} />
+    </>
+  );
 
   return (
-    <>
-      <EntityDetailLayout
-        loading={isLoading}
-        error={(error as Error | null) ?? null}
-        breadcrumbs={breadcrumbs}
-        hero={
-          listing ? (
-            <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1.6fr)_minmax(360px,1fr)] lg:gap-12">
-              <MarketplaceGallery
-                listingId={listing.id}
-                images={listing.images}
-                title={listing.title}
-              />
-              <MarketplaceBuyBox
-                listing={listing}
-                reviewsCount={reviews.length}
-                averageRating={averageRating}
-                isFavorited={isFavorited}
-                onToggleFavorite={handleToggleFavorite}
-                onShare={handleShare}
-                onContentUpdated={refetch}
-              />
-            </div>
-          ) : null
-        }
-        tabs={tabs}
-        entityType="marketplace_listing"
-        entityId={listing?.id}
-      />
-      {listing && (
-        <PageContainer className="flex flex-col gap-16">
-          <BrandStoryBlock listing={listing} />
-          <BrandMoreFrom listing={listing} />
-          <PairsWithRail listing={listing} />
-        </PageContainer>
-      )}
-    </>
+    <SinglePage
+      type="marketplace"
+      eyebrow={productEyebrow(listing, curatedName)}
+      title={listing.title}
+      status={status}
+      lead={
+        <span className="flex flex-wrap items-center gap-4">
+          <span className="font-display text-headline leading-none tabular-nums">
+            {price.primary}
+          </span>
+          {averageRating > 0 && (
+            <span className="flex items-center gap-2 text-15">
+              <RatingRings value={averageRating} />
+              <span className="tabular-nums">
+                {averageRating.toFixed(1)} ({reviews.length})
+              </span>
+            </span>
+          )}
+        </span>
+      }
+      tags={
+        <div className="flex flex-col gap-4">
+          <CommunityTags listing={listing} />
+          <ProductTags tags={tags} />
+        </div>
+      }
+      action={
+        <>
+          <div className="w-full sm:w-auto">
+            <MarketplaceBuyBox listing={listing} compact curatedName={curatedName} />
+          </div>
+          <Button variant="outline" onClick={handleToggleFavorite}>
+            {isFavorited ? t('common.saved', 'Saved') : t('common.save', 'Save')}
+          </Button>
+          <Button variant="outline" onClick={handleShare}>
+            {t('common.share', 'Share')}
+          </Button>
+        </>
+      }
+      body={body}
+      rail={rail}
+    />
   );
 }

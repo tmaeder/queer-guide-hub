@@ -27,6 +27,16 @@ export type DetailResult = {
 
 const TITLE_SUFFIX = ' | Queer Guide';
 const MAX_TITLE = 60;
+
+/** Mirrors STATUS_LABEL in src/components/tags/TagLegalSource.tsx. A repeal
+ *  marker is not decoration — "adopted 1993" alone is a wrong claim about what
+ *  the law is today, and the crawler view must not make it. */
+const LAW_STATUS_LABEL: Record<string, string> = {
+  in_force: 'In force',
+  repealed: 'Repealed',
+  superseded: 'Superseded',
+  partially_invalidated: 'In force, partly struck down',
+};
 const MAX_DESC = 155;
 
 /**
@@ -61,21 +71,28 @@ function gatedDetailResult(): DetailResult {
  * middleware serve the SPA shell (humans get the GatedDetailFallback sign-in
  * gate) while bots still receive noindex + no real content.
  */
-async function isGatedEntity(env: Env, entityType: 'venue' | 'event' | 'milestone' | 'guide', slug: string): Promise<boolean> {
+async function isGatedEntity(
+  env: Env,
+  entityType: 'venue' | 'event' | 'milestone' | 'guide',
+  slug: string,
+): Promise<boolean> {
   if (!env.SUPABASE_URL) return false;
   const key = env.SUPABASE_SERVICE_ROLE_KEY ?? env.SUPABASE_ANON_KEY;
   if (!key) return false;
   try {
-    const res = await fetch(`${env.SUPABASE_URL.replace(/\/$/, '')}/rest/v1/rpc/gated_entity_exists`, {
-      method: 'POST',
-      headers: {
-        apikey: key,
-        Authorization: `Bearer ${key}`,
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
+    const res = await fetch(
+      `${env.SUPABASE_URL.replace(/\/$/, '')}/rest/v1/rpc/gated_entity_exists`,
+      {
+        method: 'POST',
+        headers: {
+          apikey: key,
+          Authorization: `Bearer ${key}`,
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({ p_entity_type: entityType, p_slug: slug }),
       },
-      body: JSON.stringify({ p_entity_type: entityType, p_slug: slug }),
-    });
+    );
     if (!res.ok) return false;
     return (await res.json()) === true;
   } catch {
@@ -215,7 +232,10 @@ async function venueDetail(env: Env, slug: string, pathname: string): Promise<De
     numField(row, 'tomtom_rating'),
   ].filter((n): n is number => n !== undefined);
   const aggregate = ratings.length
-    ? { ratingValue: ratings.reduce((a, b) => a + b, 0) / ratings.length, ratingCount: ratings.length }
+    ? {
+        ratingValue: ratings.reduce((a, b) => a + b, 0) / ratings.length,
+        ratingCount: ratings.length,
+      }
     : null;
 
   const localBusiness: Record<string, unknown> = {
@@ -228,18 +248,18 @@ async function venueDetail(env: Env, slug: string, pathname: string): Promise<De
     // Schema.org/Google flags PostalAddress entries without streetAddress
     // as invalid LocalBusiness markup. City + country alone go into the
     // areaServed field below; they don't pretend to be a postal address.
-    address:
-      address
-        ? {
-            '@type': 'PostalAddress',
-            streetAddress: address,
-            addressLocality: city,
-            addressRegion: stringField(row, 'state'),
-            postalCode: stringField(row, 'postal_code'),
-            addressCountry: country,
-          }
-        : undefined,
-    areaServed: !address && (city || country) ? [city, country].filter(Boolean).join(', ') : undefined,
+    address: address
+      ? {
+          '@type': 'PostalAddress',
+          streetAddress: address,
+          addressLocality: city,
+          addressRegion: stringField(row, 'state'),
+          postalCode: stringField(row, 'postal_code'),
+          addressCountry: country,
+        }
+      : undefined,
+    areaServed:
+      !address && (city || country) ? [city, country].filter(Boolean).join(', ') : undefined,
     geo:
       numField(row, 'latitude') !== undefined && numField(row, 'longitude') !== undefined
         ? {
@@ -269,7 +289,8 @@ function mapVenueType(subtype: string): string {
   if (s.includes('cafe') || s.includes('café')) return 'CafeOrCoffeeShop';
   if (s.includes('club') || s.includes('night')) return 'NightClub';
   if (s.includes('restaurant')) return 'Restaurant';
-  if (s.includes('hotel') || s.includes('hostel') || s.includes('accommodation')) return 'LodgingBusiness';
+  if (s.includes('hotel') || s.includes('hostel') || s.includes('accommodation'))
+    return 'LodgingBusiness';
   if (s.includes('shop') || s.includes('store') || s.includes('boutique')) return 'Store';
   return 'LocalBusiness';
 }
@@ -359,7 +380,9 @@ async function eventDetail(env: Env, slug: string, pathname: string): Promise<De
       ? { '@type': 'Organization', name: stringField(row, 'organizer_name') }
       : undefined,
     offers:
-      stringField(row, 'ticket_url') || numField(row, 'price_min') !== undefined || row.is_free === true
+      stringField(row, 'ticket_url') ||
+      numField(row, 'price_min') !== undefined ||
+      row.is_free === true
         ? {
             '@type': 'Offer',
             url: stringField(row, 'ticket_url'),
@@ -414,7 +437,7 @@ async function newsDetail(env: Env, slug: string, pathname: string): Promise<Det
       <ul>
         <li><a href="/news">All news</a></li>
         <li><a href="/blog">Long-form essays</a></li>
-        <li><a href="/resources">Knowledge hub</a></li>
+        <li><a href="/tags">Glossary</a></li>
       </ul>
     </nav>
   </main>`;
@@ -504,14 +527,14 @@ async function personalityDetail(
     <article>
       <h1>${escape(name)}</h1>
       ${profession ? `<p><strong>${escape(profession)}</strong></p>` : ''}
-      ${birthDate || deathDate ? `<p>${birthDate ? escape(birthDate.slice(0, 10)) : '?'} – ${deathDate ? escape(deathDate.slice(0, 10)) : (row.is_living === true ? 'present' : '?')}</p>` : ''}
+      ${birthDate || deathDate ? `<p>${birthDate ? escape(birthDate.slice(0, 10)) : '?'} – ${deathDate ? escape(deathDate.slice(0, 10)) : row.is_living === true ? 'present' : '?'}</p>` : ''}
       ${description ? paragraphsHtml(description) : ''}
       ${bio && bio !== description ? paragraphsHtml(bio) : ''}
     </article>
     <nav aria-label="Site sections">
       <ul>
         <li><a href="/personalities">All personalities</a></li>
-        <li><a href="/resources">Knowledge hub</a></li>
+        <li><a href="/tags">Glossary</a></li>
       </ul>
     </nav>
   </main>`;
@@ -669,15 +692,18 @@ async function cityDetail(env: Env, slug: string, pathname: string): Promise<Det
       }
     : null;
 
-  const jsonLd =
-    renderLd(prune(placeLd)) + (itemList ? '\n' + renderLd(prune(itemList)) : '');
+  const jsonLd = renderLd(prune(placeLd)) + (itemList ? '\n' + renderLd(prune(itemList)) : '');
 
   return { meta, body, jsonLd };
 }
 
 // Country — /country/:slug
 
-async function countryDetail(env: Env, slug: string, pathname: string): Promise<DetailResult | null> {
+async function countryDetail(
+  env: Env,
+  slug: string,
+  pathname: string,
+): Promise<DetailResult | null> {
   // duplicate_of_id=is.null — see the identical comment in venueDetail.
   const rows = await fetchRows(
     env,
@@ -700,9 +726,7 @@ async function countryDetail(env: Env, slug: string, pathname: string): Promise<
   const meta: RouteMeta = {
     title: truncate(`LGBTQ+ rights & travel — ${name}${TITLE_SUFFIX}`, MAX_TITLE),
     description: truncate(
-      hook ||
-        description ||
-        `LGBTQ+ legal status, safety, venues and travel guide for ${name}.`,
+      hook || description || `LGBTQ+ legal status, safety, venues and travel guide for ${name}.`,
       MAX_DESC,
     ),
     ogImage: safeOgImage(image ?? DEFAULT_OG_IMAGE),
@@ -814,7 +838,9 @@ async function hotelDetail(env: Env, slug: string, pathname: string): Promise<De
       : undefined,
     telephone: stringField(row, 'phone'),
     priceRange:
-      numField(row, 'price_range') !== undefined ? '$'.repeat(numField(row, 'price_range') as number) : undefined,
+      numField(row, 'price_range') !== undefined
+        ? '$'.repeat(numField(row, 'price_range') as number)
+        : undefined,
     sameAs: stringField(row, 'website') ? [stringField(row, 'website')] : undefined,
   };
 
@@ -823,7 +849,11 @@ async function hotelDetail(env: Env, slug: string, pathname: string): Promise<De
 
 // Queer villages — /villages/:slug
 
-async function villageDetail(env: Env, slug: string, pathname: string): Promise<DetailResult | null> {
+async function villageDetail(
+  env: Env,
+  slug: string,
+  pathname: string,
+): Promise<DetailResult | null> {
   // duplicate_of_id=is.null — see the identical comment in venueDetail.
   const rows = await fetchRows(
     env,
@@ -839,7 +869,8 @@ async function villageDetail(env: Env, slug: string, pathname: string): Promise<
   const description = stringField(row, 'description') ?? '';
   const history = stringField(row, 'history') ?? '';
   const landmarks = arrayField(row, 'notable_landmarks') ?? [];
-  const image = stringField(row, 'image_url') ?? (arrayField(row, 'images')?.[0] as string | undefined);
+  const image =
+    stringField(row, 'image_url') ?? (arrayField(row, 'images')?.[0] as string | undefined);
 
   const meta: RouteMeta = {
     title: truncate(`${name} — Queer village${TITLE_SUFFIX}`, MAX_TITLE),
@@ -893,28 +924,90 @@ async function villageDetail(env: Env, slug: string, pathname: string): Promise<
 // Tags — /tags/:slug
 
 async function tagDetail(env: Env, slug: string, pathname: string): Promise<DetailResult | null> {
-  const row = await fetchOne(
+  // status=eq.active mirrors fetchTagWithCategories in src/hooks/usePageFetchers.ts,
+  // and is the same trick as venueDetail's duplicate_of_id=is.null above: a merged
+  // or deprecated tag keeps its row at its old slug, so without this filter the
+  // edge happily titled `<title>Rack | Queer Guide</title>` while the SPA rendered
+  // "No such term" underneath it — a soft 404 on every one of the 144 merged and
+  // 5,802 deprecated tags. Excluding them here lets the caller's `!detail` check
+  // fall through to resolveSlugRedirect (301 for the 127 that have a live
+  // canonical) and then to the hard 404 (correct for a retired concept).
+  const rows = await fetchRows(
     env,
     'unified_tags',
-    'slug',
-    slug,
-    'name,slug,description,short_description,long_description,image_url,category,wikipedia_url,wikidata_id,updated_at',
+    'id,name,slug,description,short_description,long_description,image_url,category,wikipedia_url,wikidata_id,updated_at',
+    `slug=eq.${encodeURIComponent(slug)}&status=eq.active`,
+    1,
   );
+  const row = rows[0] ?? null;
   if (!row) return null;
 
+  // Curated legal citations for law tags. The SPA renders these into its own
+  // DefinedTerm, but a crawler that does not run JS only ever sees THIS one, so
+  // it has to be built here too or the citation is invisible to exactly the
+  // consumer JSON-LD exists for.
+  //
+  // `is_public=eq.true` is MANDATORY and is not a duplicate of the RLS policy:
+  // fetchRows authenticates with the service role, which bypasses RLS entirely,
+  // so without it this would publish all ~8,700 wikipedia/wikidata backfill rows
+  // as legal citations. Same trap as the draft-personalities leak.
+  const tagId = stringField(row, 'id');
+  const legalRows = tagId
+    ? await fetchRows(
+        env,
+        'tag_sources',
+        'official_title,source_url,jurisdiction,adopted_year,instrument_status',
+        `tag_id=eq.${encodeURIComponent(tagId)}&is_public=eq.true`,
+        10,
+      )
+    : [];
+  const citations = legalRows
+    .map((r) => ({
+      title: stringField(r, 'official_title'),
+      url: stringField(r, 'source_url'),
+      juris: stringField(r, 'jurisdiction'),
+      status: stringField(r, 'instrument_status'),
+      year: numField(r, 'adopted_year'),
+    }))
+    .filter((c): c is typeof c & { title: string; url: string } =>
+      Boolean(c.title && c.url),
+    );
+
   const name = stringField(row, 'name') ?? slug;
-  const description =
+  // TWO FIELDS, NOT ONE — they had been the same variable, with
+  // `long_description` first, so the 155-char meta description was a
+  // mid-sentence slice of the wiki body ("…the average survival time…") on
+  // every tag that has one. Worse, src/pages/TagDetail.tsx's useMeta picks
+  // `description` FIRST, so the crawler and the reader were served different
+  // fields for the same URL — the inverse of the byte-identical-title fix
+  // noted above, and invisible unless the two are compared directly.
+  //
+  // On /tags/hiv that meant humans read "with effective treatment … cannot be
+  // transmitted sexually" while Google indexed "without treatment, the average
+  // survival time … is 9 to 11 years". A stigma difference, not a cosmetic one.
+  const article =
     stringField(row, 'long_description') ??
     stringField(row, 'description') ??
     stringField(row, 'short_description') ??
+    '';
+  // Precedence mirrors the SPA's useMeta exactly. A meta description wants the
+  // curated one-liner; the crawler-visible <article> below still gets the long
+  // prose, which is what it is for.
+  const summary =
+    stringField(row, 'description') ??
+    stringField(row, 'short_description') ??
+    stringField(row, 'long_description') ??
     '';
   const image = stringField(row, 'image_url');
   const category = stringField(row, 'category');
 
   const meta: RouteMeta = {
-    title: truncate(`${name} — Topic${TITLE_SUFFIX}`, MAX_TITLE),
+    // Byte-identical to the SPA's `useMeta({ title: tag.name })`. The edge used
+    // to append "— Topic", so a crawler and a reader saw two different titles
+    // for the same URL.
+    title: truncate(`${name}${TITLE_SUFFIX}`, MAX_TITLE),
     description: truncate(
-      description || `Articles, venues and events about ${name} on Queer Guide.`,
+      summary || `Articles, venues and events about ${name} on Queer Guide.`,
       MAX_DESC,
     ),
     ogImage: safeOgImage(image ?? DEFAULT_OG_IMAGE),
@@ -924,12 +1017,26 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
     <article>
       <h1>${escape(name)}</h1>
       ${category ? `<p><strong>Category:</strong> ${escape(category)}</p>` : ''}
-      ${description ? paragraphsHtml(description) : `<p>Browse content tagged ${escape(name)} on Queer Guide.</p>`}
+      ${article ? paragraphsHtml(article) : `<p>Browse content tagged ${escape(name)} on Queer Guide.</p>`}
+      ${
+        citations.length
+          ? `<section><h2>Source of law</h2><ul>${citations
+              .map(
+                (c) =>
+                  `<li><a href="${escape(c.url)}" rel="noopener">${escape(c.title)}</a>${
+                    c.juris ? ` — ${escape(c.juris === 'INT' ? 'International' : c.juris)}` : ''
+                  }${c.year ? ` (${c.year})` : ''}${
+                    c.status ? ` — ${escape(LAW_STATUS_LABEL[c.status] ?? c.status)}` : ''
+                  }</li>`,
+              )
+              .join('')}</ul></section>`
+          : ''
+      }
       ${stringField(row, 'wikipedia_url') ? `<p><a href="${escape(stringField(row, 'wikipedia_url')!)}" rel="noopener">Read more on Wikipedia</a></p>` : ''}
     </article>
     <nav aria-label="Site sections">
       <ul>
-        <li><a href="/resources">Knowledge hub</a></li>
+        <li><a href="/tags">Glossary</a></li>
         <li><a href="/news">Related news</a></li>
         <li><a href="/blog">Long-form essays</a></li>
       </ul>
@@ -940,11 +1047,28 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
     '@context': 'https://schema.org',
     '@type': 'DefinedTerm',
     name,
-    description: description || undefined,
+    // Summary, not the article: src/lib/tags/tagJsonLd.ts is fed the SPA's
+    // summary-first `description`, and the two DefinedTerm documents for one
+    // URL must not disagree.
+    description: summary || undefined,
     image,
     url: `${SITE_ORIGIN}${pathname}`,
-    sameAs: stringField(row, 'wikipedia_url') ? [stringField(row, 'wikipedia_url')] : undefined,
+    sameAs: [stringField(row, 'wikipedia_url'), ...citations.map((c) => c.url)].filter(Boolean)
+      .length
+      ? [stringField(row, 'wikipedia_url'), ...citations.map((c) => c.url)].filter(Boolean)
+      : undefined,
     identifier: stringField(row, 'wikidata_id'),
+    // No `legislationDate`: schema.org types it as a Date and only a year is
+    // held, so emitting one would assert a precision we do not have. Kept
+    // deliberately identical to src/lib/tags/tagJsonLd.ts.
+    citation: citations.length
+      ? citations.map((c) => ({
+          '@type': 'Legislation',
+          name: c.title,
+          url: c.url,
+          legislationJurisdiction: c.juris || undefined,
+        }))
+      : undefined,
   };
 
   return { meta, body, jsonLd: renderLd(prune(thingLd)) };
@@ -1045,7 +1169,8 @@ async function guideDetail(env: Env, slug: string, pathname: string): Promise<De
   const dek = stringField(row, 'dek');
   const intro = stringField(row, 'intro_md') ?? '';
   const format = stringField(row, 'format') ?? 'guide';
-  const formatLabel = format === 'quest' ? 'Community quest' : format === 'list' ? 'Curated list' : 'Guide';
+  const formatLabel =
+    format === 'quest' ? 'Community quest' : format === 'list' ? 'Curated list' : 'Guide';
   const picks = numField(row, 'pick_count');
   const hero = stringField(row, 'hero_image_path');
 
@@ -1123,6 +1248,12 @@ const RESERVED_DETAIL_SLUGS = new Set([
   'milestones',
   // /city/compare — the two-city comparison tool, not a city slug.
   'compare',
+  // /tags/interactions — the drug interaction chart. Not a tag slug; the SPA
+  // route also reserves the name so no tag can ever claim it.
+  'interactions',
+  // /tags/sti-guide — the STI transmission/testing/protection guide. Same
+  // shape as interactions: a static page under the tag namespace.
+  'sti-guide',
 ]);
 
 function matchDetailPath(pathname: string): RegExpMatchArray | null {
@@ -1146,25 +1277,105 @@ export function isDetailPath(pathname: string): boolean {
 // `<redirectTable>` (old_slug → <redirectIdColumn>); this drives the generic
 // lookup below. Marketplace and organizations aren't here — they have no edge
 // SSR detail route at all (not in DETAIL_ROUTE_RE), so an edge 301 isn't
-// architecturally possible for them yet. Tags are skipped too — their public
-// routes are topic/category pages, not a single `/tags/:slug` detail page, so
-// the redirect target isn't a simple slug swap.
+// architecturally possible for them yet.
+//
+// Tags used to be excluded here, on the reasoning that "their public routes are
+// topic/category pages, not a single /tags/:slug detail page, so the redirect
+// target isn't a simple slug swap". That stopped being true when TagDetail.tsx
+// lifted /tags/:slug out of the index page into a real detail route, and the
+// stale comment is why 144 merged tags stayed soft-404s for months: the
+// mechanism that fixes them was sitting right here, already built, with a note
+// on it saying it did not apply. tag_slug_redirects is old_slug → tag_id, which
+// is exactly the shape this lookup wants.
 const SLUG_REDIRECT_KINDS: Array<{
   test: (kindRaw: string) => boolean;
   redirectTable: string;
   redirectIdColumn: string;
   entityTable: string;
   routePrefix: string;
+  /** Extra PostgREST filter on the CANONICAL row lookup. See the tags entry. */
+  entityFilter?: string;
 }> = [
-  { test: (k) => k.startsWith('venue'), redirectTable: 'venue_slug_redirects', redirectIdColumn: 'venue_id', entityTable: 'venues', routePrefix: '/venues' },
-  { test: (k) => k.startsWith('event'), redirectTable: 'event_slug_redirects', redirectIdColumn: 'event_id', entityTable: 'events', routePrefix: '/events' },
-  { test: (k) => k.startsWith('personalit'), redirectTable: 'personality_slug_redirects', redirectIdColumn: 'personality_id', entityTable: 'personalities', routePrefix: '/personalities' },
-  { test: (k) => k === 'country', redirectTable: 'country_slug_redirects', redirectIdColumn: 'country_id', entityTable: 'countries', routePrefix: '/country' },
-  { test: (k) => k.startsWith('hotel'), redirectTable: 'hotel_slug_redirects', redirectIdColumn: 'hotel_id', entityTable: 'hotels', routePrefix: '/hotels' },
-  { test: (k) => k.startsWith('village'), redirectTable: 'village_slug_redirects', redirectIdColumn: 'village_id', entityTable: 'queer_villages', routePrefix: '/villages' },
-  { test: (k) => k === 'news', redirectTable: 'news_slug_redirects', redirectIdColumn: 'article_id', entityTable: 'news_articles', routePrefix: '/news' },
-  { test: (k) => k === 'history', redirectTable: 'milestone_slug_redirects', redirectIdColumn: 'milestone_id', entityTable: 'milestones', routePrefix: '/history' },
-  { test: (k) => k === 'guides', redirectTable: 'guide_slug_redirects', redirectIdColumn: 'guide_id', entityTable: 'guides', routePrefix: '/guides' },
+  {
+    test: (k) => k.startsWith('venue'),
+    redirectTable: 'venue_slug_redirects',
+    redirectIdColumn: 'venue_id',
+    entityTable: 'venues',
+    routePrefix: '/venues',
+  },
+  {
+    test: (k) => k.startsWith('event'),
+    redirectTable: 'event_slug_redirects',
+    redirectIdColumn: 'event_id',
+    entityTable: 'events',
+    routePrefix: '/events',
+  },
+  {
+    test: (k) => k.startsWith('personalit'),
+    redirectTable: 'personality_slug_redirects',
+    redirectIdColumn: 'personality_id',
+    entityTable: 'personalities',
+    routePrefix: '/personalities',
+  },
+  {
+    test: (k) => k === 'country',
+    redirectTable: 'country_slug_redirects',
+    redirectIdColumn: 'country_id',
+    entityTable: 'countries',
+    routePrefix: '/country',
+  },
+  {
+    test: (k) => k.startsWith('hotel'),
+    redirectTable: 'hotel_slug_redirects',
+    redirectIdColumn: 'hotel_id',
+    entityTable: 'hotels',
+    routePrefix: '/hotels',
+  },
+  {
+    test: (k) => k.startsWith('village'),
+    redirectTable: 'village_slug_redirects',
+    redirectIdColumn: 'village_id',
+    entityTable: 'queer_villages',
+    routePrefix: '/villages',
+  },
+  {
+    test: (k) => k === 'news',
+    redirectTable: 'news_slug_redirects',
+    redirectIdColumn: 'article_id',
+    entityTable: 'news_articles',
+    routePrefix: '/news',
+  },
+  {
+    test: (k) => k === 'history',
+    redirectTable: 'milestone_slug_redirects',
+    redirectIdColumn: 'milestone_id',
+    entityTable: 'milestones',
+    routePrefix: '/history',
+  },
+  {
+    test: (k) => k === 'guides',
+    redirectTable: 'guide_slug_redirects',
+    redirectIdColumn: 'guide_id',
+    entityTable: 'guides',
+    routePrefix: '/guides',
+  },
+  {
+    test: (k) => k.startsWith('tag'),
+    redirectTable: 'tag_slug_redirects',
+    redirectIdColumn: 'tag_id',
+    entityTable: 'unified_tags',
+    routePrefix: '/tags',
+    // status=eq.active is load-bearing, not belt-and-braces. Measured on prod
+    // 2026-08-16: 57 of the 195 tag_slug_redirects rows point at a tag that is
+    // itself deprecated (the diacritic-repair cohort — `alex-j-rgen` →
+    // `alex-jurgen`, now retired). Without this filter each of those becomes a
+    // 301 into a hard 404, which is worse for a crawler than the 404 it
+    // replaces. With it, resolveSlugRedirect returns null and the middleware
+    // falls through to the 404 — the right answer for a retired concept.
+    // resolve_tag_slug() in Postgres joins `status = 'active'` for the same
+    // reason; this keeps the two resolvers telling one story.
+    entityFilter: 'status=eq.active',
+  },
 ];
 
 /**
@@ -1174,10 +1385,7 @@ const SLUG_REDIRECT_KINDS: Array<{
  * path so the middleware can emit a real 301 (keeps SEO link equity). Returns
  * the de-localised target path, or null if no redirect exists.
  */
-export async function resolveSlugRedirect(
-  env: Env,
-  pathname: string,
-): Promise<string | null> {
+export async function resolveSlugRedirect(env: Env, pathname: string): Promise<string | null> {
   if (!env.SUPABASE_URL || (!env.SUPABASE_ANON_KEY && !env.SUPABASE_SERVICE_ROLE_KEY)) {
     return null;
   }
@@ -1197,7 +1405,17 @@ export async function resolveSlugRedirect(
     );
     const canonicalId = stringField(redirectRows[0] ?? {}, kind.redirectIdColumn);
     if (!canonicalId) return null;
-    const canonicalRows = await fetchRows(env, kind.entityTable, 'slug', `id=eq.${canonicalId}`, 1);
+    // Resolve the target through `<redirectIdColumn>` rather than trusting a
+    // `new_slug` column: prod has a redirect row whose new_slug still reads
+    // `munchen` while the tag it points at was since renamed to `munich`. The
+    // id is the durable pointer, the denormalized slug is not.
+    const canonicalRows = await fetchRows(
+      env,
+      kind.entityTable,
+      'slug',
+      `id=eq.${canonicalId}${kind.entityFilter ? `&${kind.entityFilter}` : ''}`,
+      1,
+    );
     const newSlug = stringField(canonicalRows[0] ?? {}, 'slug');
     if (!newSlug || newSlug === slug) return null;
     return `${kind.routePrefix}/${newSlug}`;
@@ -1206,10 +1424,7 @@ export async function resolveSlugRedirect(
   }
 }
 
-export async function resolveDetailRoute(
-  env: Env,
-  pathname: string,
-): Promise<DetailResult | null> {
+export async function resolveDetailRoute(env: Env, pathname: string): Promise<DetailResult | null> {
   if (!env.SUPABASE_URL || (!env.SUPABASE_ANON_KEY && !env.SUPABASE_SERVICE_ROLE_KEY)) {
     return null;
   }

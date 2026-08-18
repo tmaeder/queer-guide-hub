@@ -11,11 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import type { TripMember } from '@/hooks/useTrips';
-import {
-  useTripJournal,
-  useTripJournalMutations,
-  type JournalMood,
-} from '@/hooks/useTripJournal';
+import { useTripJournal, useTripJournalMutations, type JournalMood } from '@/hooks/useTripJournal';
 
 const MOODS: Array<{ key: JournalMood; icon: typeof Smile; labelKey: string; label: string }> = [
   { key: 'joy', icon: Sparkles, labelKey: 'trips.journal.mood.joy', label: 'Joyful' },
@@ -99,7 +95,7 @@ export function JournalTab({ tripId, members }: Props) {
                   onClick={() => setMood(mood === key ? null : key)}
                   className={`flex items-center justify-center w-9 h-9 rounded-element border transition-colors ${
                     mood === key
-                      ? 'border-foreground bg-foreground text-background'
+                      ? 'bg-foreground text-background'
                       : 'border-border text-muted-foreground hover:bg-muted'
                   }`}
                 >

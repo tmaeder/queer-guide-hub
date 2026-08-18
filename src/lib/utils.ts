@@ -28,11 +28,26 @@ const customTextSizes = [
 // stylesheet order rather than by the caller.
 const customContainerSizes = ['page', 'reading', 'form'];
 
+// Semantic radius tokens defined in src/index.css @theme. tailwind-merge only
+// knows the t-shirt scale in its `rounded` group, so without this it treats
+// `rounded-container` as an unknown class and lets a caller's `rounded-full`
+// sit alongside it — two radii applying at once, decided by stylesheet order
+// rather than by the caller. That was harmless while every radius resolved to
+// 0rem; it is a real bug now the ladder is 26/18/12/9.
+const customRadii = ['none', 'panel', 'container', 'element', 'badge', 'full'];
+
+// Semantic elevation tokens defined in src/index.css @theme. Same failure mode
+// as the radii: `shadow-soft` is not a t-shirt size, so a component overriding
+// its rest elevation with `shadow-none` would otherwise apply both.
+const customShadows = ['none', 'hairline', 'soft', 'soft-hover', 'soft-lg'];
+
 const twMerge = extendTailwindMerge({
   extend: {
     classGroups: {
       'font-size': [{ text: customTextSizes }],
       'max-w': [{ 'max-w': customContainerSizes }],
+      rounded: [{ rounded: customRadii }],
+      shadow: [{ shadow: customShadows }],
     },
   },
 });

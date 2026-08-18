@@ -1,8 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Sparkles, CornerDownLeft } from 'lucide-react';
-import { TYPE_ICONS } from '@/hooks/useSearchSuggestions';
 import { SearchResultRow } from './SearchResultRow';
 import type { AssistantMessage } from '@/hooks/useAssistant';
 import type { AssistantCard } from '@/lib/assistantClient';
@@ -80,15 +79,11 @@ export function SearchAskPanel({
               {m.cards && m.cards.length > 0 && (
                 <div className="-mx-4 border-y border-border">
                   {m.cards.map((card) => {
-                    const Icon = (TYPE_ICONS[card.type] ?? Sparkles) as React.ComponentType<{
-                      className?: string;
-                    }>;
                     const subtitle = [card.city, card.country].filter(Boolean).join(' · ');
                     return (
                       <SearchResultRow
                         key={`${card.type}-${card.objectID}`}
-                        image={card.imageUrl}
-                        Icon={Icon}
+                        type={card.type}
                         name={card.title ?? ''}
                         subtitle={subtitle || card.category || card.type}
                         onClick={() => onSelectCard(card)}

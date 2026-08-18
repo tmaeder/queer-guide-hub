@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { Check, ChevronsUpDown} from 'lucide-react';
+import { Check, ChevronsUpDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Command,
@@ -48,7 +48,7 @@ export function ProfessionAutocomplete({
           aria-required={required}
           disabled={disabled}
           className={cn(
-            'h-10 w-full justify-between rounded-element bg-inverse-surface text-background placeholder:text-background/70 px-4.5 py-2 font-normal transition-all hover:opacity-95 focus:border-foreground focus-visible:ring-2 focus-visible:ring-foreground/15 focus-visible:ring-offset-0',
+            'h-10 w-full justify-between rounded-element bg-inverse-surface text-background placeholder:text-background/70 px-4.5 py-2 font-normal transition-all hover:opacity-95 focus:border-border-hairline focus-visible:ring-2 focus-visible:ring-foreground/15 focus-visible:ring-offset-0',
             !value && 'text-muted-foreground',
           )}
         >

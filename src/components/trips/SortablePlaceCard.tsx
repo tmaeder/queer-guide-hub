@@ -99,14 +99,9 @@ export function SortablePlaceCard({
     (r) => r.id === place.reservation_id,
   );
 
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: place.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: place.id,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -148,9 +143,7 @@ export function SortablePlaceCard({
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-13 font-medium truncate">
-              {getPlaceName(place)}
-            </p>
+            <p className="text-13 font-medium truncate">{getPlaceName(place)}</p>
             {eqScore !== null && (
               <span
                 className="w-2 h-2 rounded-full shrink-0"
@@ -158,10 +151,7 @@ export function SortablePlaceCard({
                 title={`Equality score: ${eqScore}`}
               />
             )}
-            <BookingBadge
-              status={status}
-              confirmationCode={linkedReservation?.confirmation_code}
-            />
+            <BookingBadge status={status} confirmationCode={linkedReservation?.confirmation_code} />
           </div>
           {place.start_time && (
             <div className="flex items-center gap-0.5 text-muted-foreground">
@@ -238,18 +228,19 @@ export function PlaceCardOverlay({ place }: { place: TripPlace }) {
   const ringColor = getScoreRingColor(eqScore);
 
   return (
-    <div className="flex items-center gap-2 rounded-container border border-foreground bg-background px-4 py-2 w-[320px] opacity-95">
+    <div className="flex items-center gap-2 rounded-container border border-border-hairline bg-background px-4 py-2 w-[320px] opacity-95">
       <GripVertical className="w-3.5 h-3.5 shrink-0 opacity-40" />
       <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center shrink-0">
         <Icon className="w-3 h-3" />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <p className="text-13 font-medium truncate">
-            {getPlaceName(place)}
-          </p>
+          <p className="text-13 font-medium truncate">{getPlaceName(place)}</p>
           {eqScore !== null && (
-            <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: ringColor }} />
+            <span
+              className="w-2 h-2 rounded-full shrink-0"
+              style={{ backgroundColor: ringColor }}
+            />
           )}
         </div>
       </div>

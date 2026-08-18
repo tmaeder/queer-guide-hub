@@ -43,7 +43,7 @@ function Avatar({ row }: { row: RecognitionPublicRow }) {
       <img
         src={row.avatar_url}
         alt=""
-        className="h-12 w-12 shrink-0 rounded-full border-[3px] border-foreground bg-muted object-cover"
+        className="h-12 w-12 shrink-0 rounded-full bg-muted object-cover"
         loading="lazy"
       />
     );
@@ -51,7 +51,7 @@ function Avatar({ row }: { row: RecognitionPublicRow }) {
   return (
     <span
       aria-hidden
-      className="grid h-12 w-12 shrink-0 place-items-center rounded-full border-[3px] border-foreground bg-muted text-13 font-bold"
+      className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-muted text-13 font-bold"
     >
       {getInitials(row.display_name)}
     </span>
@@ -69,13 +69,13 @@ function Avatar({ row }: { row: RecognitionPublicRow }) {
  */
 function ContributorCard({ row }: { row: RecognitionPublicRow }) {
   return (
-    <article className="flex h-full flex-col gap-4 border-[3px] border-foreground bg-background p-4">
+    <article className="flex h-full flex-col gap-4 bg-card p-4 rounded-container shadow-soft">
       <div className="flex items-center gap-4">
         <Avatar row={row} />
         {/* No category label here: every card sits under a band header that
             already names the category, and repeating it made "Venue scouts"
             appear once per contributor. */}
-        <p className="min-w-0 font-display text-title leading-tight">{row.display_name}</p>
+        <p className="min-w-0 text-title font-bold leading-tight">{row.display_name}</p>
       </div>
       {row.blurb_md && (
         <p className="text-13 leading-relaxed text-muted-foreground">{row.blurb_md}</p>
@@ -91,7 +91,7 @@ function YearSwitcher({ year }: { year: number }) {
   if (years.length < 2) return null;
 
   return (
-    <nav aria-label="Year" className="inline-flex border-2 border-foreground">
+    <nav aria-label="Year" className="inline-flex border border-border-hairline">
       {years.map((y, i) => (
         <LocalizedLink
           key={y}
@@ -99,7 +99,7 @@ function YearSwitcher({ year }: { year: number }) {
           aria-current={y === year ? 'page' : undefined}
           className={cn(
             'px-4 py-2 text-13 font-bold tabular-nums no-underline transition-colors',
-            i > 0 && 'border-l-2 border-foreground',
+            i > 0 && 'border-l border-border-hairline',
             y === year
               ? 'bg-foreground text-background'
               : 'bg-background text-foreground hover:bg-surface-container',
@@ -142,7 +142,7 @@ export default function Contributors() {
 
   return (
     <PageContainer>
-      <header className="border-b-4 border-foreground pb-6">
+      <header className="border-b border-border-hairline pb-6">
         <p className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
           Recognition wall
         </p>
@@ -178,7 +178,7 @@ export default function Contributors() {
         <section className="mt-12" aria-labelledby="featured">
           <h2
             id="featured"
-            className="border-b-[3px] border-foreground bg-foreground px-4 py-2 font-display text-title leading-tight text-background"
+            className="border-b border-border-hairline bg-foreground px-4 py-2 text-title font-bold leading-tight text-background"
           >
             Featured
           </h2>
@@ -204,7 +204,7 @@ export default function Contributors() {
         <section key={category} className="mt-12" aria-labelledby={`cat-${category}`}>
           <h2
             id={`cat-${category}`}
-            className="border-b-[3px] border-foreground bg-foreground px-4 py-2 font-display text-title leading-tight text-background"
+            className="border-b border-border-hairline bg-foreground px-4 py-2 text-title font-bold leading-tight text-background"
           >
             {CATEGORY_LABELS[category] ?? category}
             <span className="ml-2 text-2xs tabular-nums text-background/70">{catRows.length}</span>
@@ -219,7 +219,7 @@ export default function Contributors() {
         </section>
       ))}
 
-      <footer className="mt-16 border-t-2 border-foreground pt-6 text-13 text-muted-foreground">
+      <footer className="mt-16 border-t border-border-hairline pt-6 text-13 text-muted-foreground">
         Selected by the editorial team. Anyone can opt out of being named in their profile settings.
       </footer>
     </PageContainer>

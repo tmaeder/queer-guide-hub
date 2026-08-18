@@ -22,11 +22,7 @@ vi.mock('react-force-graph-2d', () => {
       d3ReheatSimulation,
     }));
     return (
-      <div
-        data-testid="force-graph-stub"
-        data-width={props.width}
-        data-height={props.height}
-      />
+      <div data-testid="force-graph-stub" data-width={props.width} data-height={props.height} />
     );
   });
   return { default: Stub };
@@ -95,11 +91,19 @@ Element.prototype.getBoundingClientRect = function () {
   } as DOMRect;
 };
 
+import { MemoryRouter } from 'react-router';
 import TagRelationshipGraph from '../TagRelationshipGraph';
 
+// MemoryRouter is required: the graph resolves its own /tags/<slug> target
+// through useLocalizedNavigate when no `onTagClick` is supplied, so it calls
+// useNavigate on every render — including the ones these tests exercise.
 const wrap = ({ children }: { children: ReactNode }) => {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
-  return <QueryClientProvider client={qc}>{children}</QueryClientProvider>;
+  return (
+    <MemoryRouter>
+      <QueryClientProvider client={qc}>{children}</QueryClientProvider>
+    </MemoryRouter>
+  );
 };
 
 const emitResize = (width: number, height: number) => {
@@ -185,20 +189,18 @@ describe('TagRelationshipGraph — left-alignment regression', () => {
   });
 
   it('remount (Grid ↔ Network toggle) does not render with stale defaults', () => {
-    const first = render(
-      <TagRelationshipGraph onTagClick={() => {}} categories={[]} />,
-      { wrapper: wrap },
-    );
+    const first = render(<TagRelationshipGraph onTagClick={() => {}} categories={[]} />, {
+      wrapper: wrap,
+    });
     emitResize(1200, 600);
     first.unmount();
 
     // Simulate toggle back to Network with pre-layout (0x0) state.
     boundingRect = { width: 0, height: 0 };
     forceGraphRenders.length = 0;
-    const second = render(
-      <TagRelationshipGraph onTagClick={() => {}} categories={[]} />,
-      { wrapper: wrap },
-    );
+    const second = render(<TagRelationshipGraph onTagClick={() => {}} categories={[]} />, {
+      wrapper: wrap,
+    });
     expect(second.queryByTestId('force-graph-stub')).toBeNull();
     expect(forceGraphRenders).toHaveLength(0);
     emitResize(900, 500);
@@ -223,10 +225,11 @@ describe('TagRelationshipGraph — error state (P0-1)', () => {
       }),
     });
 
-    const { queryByTestId, getByText, queryByTestId: q2 } = render(
-      <TagRelationshipGraph onTagClick={() => {}} categories={[]} />,
-      { wrapper: wrap },
-    );
+    const {
+      queryByTestId,
+      getByText,
+      queryByTestId: q2,
+    } = render(<TagRelationshipGraph onTagClick={() => {}} categories={[]} />, { wrapper: wrap });
 
     expect(queryByTestId('tag-graph-error')).not.toBeNull();
     expect(getByText("Couldn't load the tag graph")).toBeTruthy();
@@ -242,10 +245,9 @@ describe('TagRelationshipGraph — error state (P0-1)', () => {
       error: new Error('boom'),
     });
 
-    const { getByRole } = render(
-      <TagRelationshipGraph onTagClick={() => {}} categories={[]} />,
-      { wrapper: wrap },
-    );
+    const { getByRole } = render(<TagRelationshipGraph onTagClick={() => {}} categories={[]} />, {
+      wrapper: wrap,
+    });
 
     act(() => {
       getByRole('button', { name: /retry/i }).click();

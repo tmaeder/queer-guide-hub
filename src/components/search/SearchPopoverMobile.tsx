@@ -35,6 +35,8 @@ export interface SearchPopoverMobileProps {
   onPrefetch: (s: SearchSuggestion) => void;
   navigate: (path: string) => void;
   onAsk: () => void;
+  /** Contribute flow, offered from the no-results state. */
+  onAddToMap?: () => void;
   recentSearches: string[];
   onSelectRecent: (term: string) => void;
   clearRecents: () => void;
@@ -62,6 +64,7 @@ export function SearchPopoverMobile({
   onPrefetch,
   navigate,
   onAsk,
+  onAddToMap,
   recentSearches,
   onSelectRecent,
   clearRecents,
@@ -157,6 +160,7 @@ export function SearchPopoverMobile({
             onSearchAll={onSearchAll}
             onClearScope={() => setScope(null)}
             onAsk={onAsk}
+            onAddToMap={onAddToMap}
           />
         </>
       )}

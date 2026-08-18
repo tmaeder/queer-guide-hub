@@ -5,7 +5,19 @@ import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { User, ArrowLeft, Heart, Lock, Check, Settings as SettingsIcon, ChevronDown, Luggage, FileText, Sparkles, X } from 'lucide-react';
+import {
+  User,
+  ArrowLeft,
+  Heart,
+  Lock,
+  Check,
+  Settings as SettingsIcon,
+  ChevronDown,
+  Luggage,
+  FileText,
+  Sparkles,
+  X,
+} from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useAuth } from '@/hooks/useAuth';
 import { useMeta } from '@/hooks/useMeta';
@@ -32,6 +44,7 @@ import { UsernamePanel } from '@/components/profile/UsernamePanel';
 import { PreferencesMirrorCard } from '@/components/profile/PreferencesMirrorCard';
 import { userModeLabel } from '@/lib/userMode';
 import { pronounDisplay } from '@/components/ui/pronoun-utils';
+import { flagById } from '@/lib/flags';
 import { shortLocation } from '@/lib/shortLocation';
 import { initFormData, calculateCompletion } from '@/types/profileForm';
 import type { ProfileFormData, ComingOutStatus } from '@/types/profileForm';
@@ -231,7 +244,7 @@ function AccordionSection({
         id={`settings-section-${id}`}
         className={cn(
           'rounded-container bg-card transition-colors scroll-mt-24',
-          active ? 'border-foreground/30' : 'border-border',
+          active ? 'border border-foreground/30' : 'border-border',
         )}
       >
         <CollapsibleTrigger asChild>
@@ -323,6 +336,12 @@ function ProfileSettingsContent({
     setSaveStatus('unsaved');
   };
 
+  const handleIdentityFlagsChange = (flags: string[]) => {
+    setFormData((prev) => ({ ...prev, identity_flags: flags }));
+    setHasUnsavedChanges(true);
+    setSaveStatus('unsaved');
+  };
+
   const handleComingOutChange = (area: keyof ComingOutStatus, value: string) => {
     setFormData((prev) => ({
       ...prev,
@@ -368,6 +387,9 @@ function ProfileSettingsContent({
         location: formData.location,
         pronouns: formData.pronouns,
         pronoun_tags: formData.pronoun_tags,
+        // Filter to the known vocabulary on save — TS is the vocabulary, the
+        // DB only caps cardinality.
+        identity_flags: formData.identity_flags.filter((id) => flagById(id)).slice(0, 8),
         phone: formData.phone,
         website: formData.website,
         date_of_birth: formData.date_of_birth || null,
@@ -438,6 +460,8 @@ function ProfileSettingsContent({
         username={username}
         pronouns={formData.pronouns}
         pronounsVisibility={formData.privacy_settings.pronouns_visibility}
+        identityFlags={formData.identity_flags}
+        flagsVisibility={formData.privacy_settings.flags_visibility}
         profileVisibility={formData.privacy_settings.profile_visibility}
         occupation={formData.occupation}
         bio={formData.bio}
@@ -452,7 +476,7 @@ function ProfileSettingsContent({
 
       {/* Avatar editor — opened from the hero, inline (no pop-over) */}
       {activeSection === 'avatar' && (
-        <Card id="settings-section-avatar" className="scroll-mt-24 border-foreground/30">
+        <Card id="settings-section-avatar" className="border scroll-mt-24 border-foreground/30">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
               <p className="font-semibold">Your avatar</p>
@@ -533,6 +557,7 @@ function ProfileSettingsContent({
               formData={formData}
               onChange={handleInputChange}
               onComingOutChange={handleComingOutChange}
+              onFlagsChange={handleIdentityFlagsChange}
             />
             <IntimateTab />
           </div>

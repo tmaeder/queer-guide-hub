@@ -151,7 +151,9 @@ export function PersonalityFreigabeQueue({
                 type="button"
                 onClick={() => onStageChange(s)}
                 className={`flex items-center gap-1.5 rounded-element border px-4 py-2 text-13 ${
-                  s === stage ? 'border-foreground font-semibold' : 'border-border text-muted-foreground'
+                  s === stage
+                    ? 'border border-border-hairline font-semibold'
+                    : 'border-border text-muted-foreground'
                 }`}
               >
                 <AmpelDot tone={m.tone} />
@@ -218,7 +220,9 @@ export function PersonalityFreigabeQueue({
                     <X size={14} className="mr-1" /> Ablehnen
                   </Button>
                   <Button size="sm" disabled={busy === row.id} onClick={() => doFreigeben(row)}>
-                    {(row.reasons ?? []).some((r) => r !== 'needs_attention' && r !== 'open_review_item') ? (
+                    {(row.reasons ?? []).some(
+                      (r) => r !== 'needs_attention' && r !== 'open_review_item',
+                    ) ? (
                       <Lock size={14} className="mr-1" />
                     ) : (
                       <Check size={14} className="mr-1" />

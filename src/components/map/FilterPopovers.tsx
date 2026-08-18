@@ -204,11 +204,11 @@ export const EraPopover = ({
           </SliderPrimitive.Track>
           <SliderPrimitive.Thumb
             aria-label="Start decade"
-            className="block h-4 w-4 border border-foreground bg-background focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="block h-4 w-4 border border-border-hairline bg-background focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           />
           <SliderPrimitive.Thumb
             aria-label="End decade"
-            className="block h-4 w-4 border border-foreground bg-background focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="block h-4 w-4 border border-border-hairline bg-background focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           />
         </SliderPrimitive.Root>
         <div className="flex items-center justify-between gap-2 mt-4">

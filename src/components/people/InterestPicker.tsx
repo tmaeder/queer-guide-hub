@@ -35,10 +35,8 @@ export function InterestPicker({ className }: { className?: string }) {
   if (tags.length === 0) return null;
 
   return (
-    <section className={cn('border-[3px] border-foreground p-6', className)}>
-      <h3 className="font-display text-title">
-        {t('people.interests.title', 'What are you into?')}
-      </h3>
+    <section className={cn('bg-muted rounded-container p-6', className)}>
+      <h3 className="text-title font-bold">{t('people.interests.title', 'What are you into?')}</h3>
       <p className="mt-2 max-w-prose text-13 text-muted-foreground">
         {signedIn
           ? t(
@@ -69,7 +67,7 @@ export function InterestPicker({ className }: { className?: string }) {
                       aria-pressed={on}
                       onClick={() => toggleFollow({ tagId: tg.id, name: tg.name, slug: tg.slug })}
                       className={cn(
-                        'inline-flex items-center gap-1.5 border-2 border-foreground px-4 py-2 text-13 font-bold transition-colors',
+                        'inline-flex items-center gap-1.5 bg-muted rounded-element px-4 py-2 text-13 font-bold transition-colors',
                         on ? 'bg-foreground text-background' : 'hover:bg-surface-container',
                       )}
                     >

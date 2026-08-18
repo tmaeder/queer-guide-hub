@@ -121,7 +121,7 @@ export function TripChat({ tripId }: Props) {
                 </div>
 
                 {replyMsg && (
-                  <div className="border-l-2 border-primary/40 pl-2 mb-1 rounded-badge bg-muted py-1 px-2">
+                  <div className="border-l border-primary/40 pl-2 mb-1 rounded-badge bg-muted py-1 px-2">
                     <span className="block text-2xs text-muted-foreground">
                       {replyMsg.sender?.display_name || 'Unknown'}
                     </span>

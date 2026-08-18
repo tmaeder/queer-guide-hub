@@ -1,14 +1,19 @@
 import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MotionCard as Card } from '@/components/ui/card';
+// `Card`, NOT `MotionCard`. MotionCard is a borderless tinted plate that
+// hover-tints (`hover:bg-muted/40`), and this card is ALSO wrapped in
+// CardHoverEffect, which casts `.card-lift`. So every marketplace card filled
+// AND lifted — the one hard rule of the design system ("a card fills ink on
+// hover or lifts with the hard shadow, never both") broken on the app's
+// largest grid, inherited by ~12 call sites. Card gives the 3px ink border and
+// no hover fill; the lift is the only hover language here.
+import { Card } from '@/components/ui/card';
 import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
 import { Image } from '@/components/ui/Image';
 import { Badge } from '@/components/ui/badge';
 import type { Database } from '@/integrations/supabase/types';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { WishlistPicker } from '@/components/marketplace/WishlistPicker';
-import { Skeleton } from 'boneyard-js/react';
-import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import type { EntityImageAsset } from '@/hooks/useEntityImageAssets';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useFxRates } from '@/hooks/useFxRates';
@@ -25,8 +30,12 @@ interface MarketplaceCardProps {
     marketplace_favorites?: Array<{ id: string }>;
     venues?: { name: string; address: string; city: string } | null;
   };
-  onViewDetails?: (listing: MarketplaceListing) => void;
-  onToggleFavorite?: (listingId: string) => void;
+  // NOTE: there are deliberately no `onViewDetails` / `onToggleFavorite` props.
+  // They were declared here and never destructured by the implementation, so
+  // the page's handlers — 23 lines of auth check, toast and refetch, plus an
+  // `incrementViews` call — could never fire from the grid. Favoriting really
+  // happens inside <WishlistPicker/>, and the whole card is a link to the
+  // detail page. Do not re-add them without a call site that reads them.
   showFavoriteButton?: boolean;
   loading?: boolean;
   searchQuery?: string;
@@ -59,6 +68,45 @@ function HighlightedText({ text, query }: { text: string; query?: string }) {
   );
 }
 
+/**
+ * The card's disclosure row, above the title in both variants.
+ *
+ * Three things moved here out of the price line and the heading:
+ *  - `18+` was rendered INSIDE the <h3>, so it was read into the accessible
+ *    name of every adult listing ("18+ Some Product"). It is a status, not
+ *    part of the title. Ink fill, never `--destructive` — that hue is reserved
+ *    for harm to the reader, and an adult listing is not a danger.
+ *  - `Ad` sat beside the price, after the thing it discloses. The FTC wants
+ *    the disclosure before the monetised link, and this is the highest a
+ *    per-card marker can go.
+ *  - `Queer-owned` is an attribute, so it stays a paper `soft` chip and never
+ *    takes a track colour: track colours are wayfinding and never a state.
+ *
+ * No overflow mechanism, deliberately: every chip here is monochrome, at most
+ * three can co-occur, and `queerOwned` is true for well under 1% of rows.
+ */
+function CardBadges({
+  isAdult,
+  isAffiliate,
+  queerOwned,
+}: {
+  isAdult: boolean;
+  isAffiliate: boolean;
+  queerOwned: boolean;
+}) {
+  const { t } = useTranslation();
+  if (!isAdult && !isAffiliate && !queerOwned) return null;
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      {isAdult && <Badge variant="default">{t('marketplace.adultBadge', '18+')}</Badge>}
+      {isAffiliate && <Badge variant="soft">{t('marketplace.adBadge', 'Ad')}</Badge>}
+      {queerOwned && (
+        <Badge variant="soft">{t('marketplace.queerOwnedBadge', 'Queer-owned')}</Badge>
+      )}
+    </div>
+  );
+}
+
 function MarketplaceCardImpl({
   listing,
   loading = false,
@@ -77,10 +125,17 @@ function MarketplaceCardImpl({
   const [hovered, setHovered] = useState(false);
 
   if (loading || !listing) {
+    // A bordered pulse plate in the real card's shape, not a generic skeleton:
+    // the grid should not change its geometry when the data lands.
     return (
-      <Skeleton name="marketplace-card" loading={true} fallback={<PageLoadingState count={1} />}>
-        <div />
-      </Skeleton>
+      <div className="border border-foreground/20 bg-card" aria-hidden="true">
+        <div className="aspect-[3/4] animate-pulse border-b border-foreground/20 bg-muted" />
+        <div className="flex flex-col gap-2 p-4">
+          <div className="h-2.5 w-1/3 animate-pulse bg-muted" />
+          <div className="h-4 w-5/6 animate-pulse bg-muted" />
+          <div className="h-4 w-1/4 animate-pulse bg-muted" />
+        </div>
+      </div>
     );
   }
 
@@ -110,9 +165,12 @@ function MarketplaceCardImpl({
 
   const imageBlock = (
     <div className="relative">
-      {/* Nested tray: image plate sits in a muted frame — depth from
-          borders and surfaces, never shadows. */}
-      <div className="bg-muted p-1.5 rounded-t-container">
+      {/* The card's own 3px border IS the frame — no plate inside a plate. The
+          image used to sit in a nested `bg-muted p-1.5` tray, a PASTE-UP-era
+          device ("depth from borders and surfaces, never shadows") that the
+          subway spec reversed. A rule under the image separates it from the
+          text block the same way a band separates two sections of the page. */}
+      <div className="border-b border-border-hairline">
         <LocalizedLink
           to={`/marketplace/${listing.slug}`}
           className="block"
@@ -124,7 +182,7 @@ function MarketplaceCardImpl({
               {...listingSources}
               alt={listing.title}
               aspect="portrait"
-              rounded="element"
+              rounded="none"
               priority={priority}
               fallbackEntityType="marketplace"
               fallbackKey={listing.id}
@@ -134,7 +192,7 @@ function MarketplaceCardImpl({
                 src={secondImage}
                 alt=""
                 loading="lazy"
-                className="absolute inset-0 h-full w-full rounded-element object-cover opacity-0 transition-opacity duration-normal group-hover:opacity-100"
+                className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-normal group-hover:opacity-100"
               />
             )}
           </div>
@@ -154,10 +212,10 @@ function MarketplaceCardImpl({
     return (
       <CardHoverEffect>
         <Card
-          className="group flex flex-row items-stretch gap-4 p-2 transition-colors duration-normal hover:border-foreground/40"
+          className="group flex flex-row items-stretch gap-4 p-2"
           onMouseEnter={() => setHovered(true)}
         >
-          <div className="relative w-28 shrink-0 overflow-hidden rounded-element sm:w-32">
+          <div className="relative w-28 shrink-0 overflow-hidden border border-border-hairline sm:w-32">
             <LocalizedLink
               to={`/marketplace/${listing.slug}`}
               className="block"
@@ -168,7 +226,7 @@ function MarketplaceCardImpl({
                 {...listingSources}
                 alt={listing.title}
                 aspect="square"
-                rounded="element"
+                rounded="none"
                 fallbackEntityType="marketplace"
                 fallbackKey={listing.id}
               />
@@ -195,14 +253,15 @@ function MarketplaceCardImpl({
 
   return (
     <CardHoverEffect>
-      <Card
-        className="group overflow-hidden transition-colors duration-normal hover:border-foreground/40"
-        onMouseEnter={() => setHovered(true)}
-      >
+      {/* No `hover:border-foreground/40` and no `hoverable`: a border tint is a
+          second hover language competing with the lift. The card lifts. */}
+      <Card className="group overflow-hidden" onMouseEnter={() => setHovered(true)}>
         {imageBlock}
 
-        <div className="p-4 flex flex-col gap-1.5">
-          <p className="text-2xs uppercase tracking-wider text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap">
+        <div className="p-4 flex flex-col gap-2">
+          <CardBadges isAdult={isAdult} isAffiliate={isAffiliate} queerOwned={queerOwned} />
+
+          <p className="text-2xs uppercase tracking-label text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap">
             {/* Brand leads (linked to its brand page); department gives context. */}
             {listing.brand && brandSlug(listing.brand) ? (
               <>
@@ -236,12 +295,9 @@ function MarketplaceCardImpl({
             </span>
           </p>
 
-          <h3 className="text-15 font-medium leading-snug line-clamp-2 text-balance">
-            {isAdult && (
-              <span className="mr-1.5 text-2xs uppercase tracking-wider text-muted-foreground">
-                {t('marketplace.adultBadge', '18+')}
-              </span>
-            )}
+          {/* Station-name weight. The 18+ marker is no longer inside the
+              heading — it was being read into the accessible name. */}
+          <h3 className="text-title font-bold leading-snug line-clamp-2 text-balance">
             <LocalizedLink
               to={`/marketplace/${listing.slug}`}
               onClick={(e) => e.stopPropagation()}
@@ -251,40 +307,31 @@ function MarketplaceCardImpl({
             </LocalizedLink>
           </h3>
 
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-baseline gap-1.5 min-w-0">
-              {price.modifier && (
-                <span className="text-2xs uppercase tracking-wider text-muted-foreground">
-                  {price.modifier}
-                </span>
-              )}
-              <p
-                className={`text-15 font-semibold leading-none tabular-nums ${outOfStock ? 'line-through text-muted-foreground' : ''}`}
-              >
-                {price.primary}
-              </p>
-              {price.secondary && (
-                <span className="text-xs text-muted-foreground">{price.secondary}</span>
-              )}
-              {/* FTC-honest without shouting: monetized listings get an Ad marker. */}
-              {isAffiliate && (
-                <span className="text-2xs uppercase tracking-wider text-muted-foreground">
-                  {t('marketplace.adBadge', 'Ad')}
-                </span>
-              )}
-            </div>
-            {queerOwned && (
-              <Badge variant="outline">{t('marketplace.queerOwnedBadge', 'Queer-owned')}</Badge>
+          <div className="flex items-baseline gap-1.5 min-w-0">
+            {price.modifier && (
+              <span className="text-2xs uppercase tracking-label text-muted-foreground">
+                {price.modifier}
+              </span>
+            )}
+            <p
+              className={`text-title font-bold leading-none tabular-nums ${outOfStock ? 'line-through text-muted-foreground' : ''}`}
+            >
+              {price.primary}
+            </p>
+            {price.secondary && (
+              <span className="text-xs text-muted-foreground">{price.secondary}</span>
+            )}
+            {outOfStock && (
+              <span className="text-2xs uppercase tracking-label text-muted-foreground">
+                {t('marketplace.outOfStock', 'Out of stock')}
+              </span>
             )}
           </div>
-          {outOfStock && (
-            <p className="text-2xs uppercase tracking-wider text-muted-foreground">
-              {t('marketplace.outOfStock', 'Out of stock')}
-            </p>
-          )}
-          {/* Quiet trust line, revealed on hover where hover exists. */}
+          {/* Persistent, not hover-revealed. This line was `sm:opacity-0
+              sm:group-hover:opacity-100`, i.e. invisible on touch — which is
+              most of the traffic — and invisible to anyone not using a mouse. */}
           {metaFacts.length > 0 && (
-            <p className="hidden text-2xs uppercase tracking-wider text-muted-foreground sm:block sm:opacity-0 sm:transition-opacity sm:duration-normal sm:group-hover:opacity-100">
+            <p className="text-2xs uppercase tracking-label text-muted-foreground">
               {metaFacts.join(' · ')}
             </p>
           )}
@@ -313,8 +360,9 @@ function RowBody({
 }) {
   const { t } = useTranslation();
   return (
-    <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5 py-2 pr-2">
-      <p className="text-2xs uppercase tracking-wider text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap">
+    <div className="flex min-w-0 flex-1 flex-col justify-center gap-2 py-2 pr-2">
+      <CardBadges isAdult={isAdult} isAffiliate={isAffiliate} queerOwned={queerOwned} />
+      <p className="text-2xs uppercase tracking-label text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap">
         {listing.brand && brandSlug(listing.brand) ? (
           <>
             <LocalizedLink
@@ -334,12 +382,7 @@ function RowBody({
         ) : null}
         <span>{departmentLabel(listing.department ?? departmentOf(listing.subcategory_slug))}</span>
       </p>
-      <h3 className="text-15 font-medium leading-snug line-clamp-2">
-        {isAdult && (
-          <span className="mr-1.5 text-2xs uppercase tracking-wider text-muted-foreground">
-            {t('marketplace.adultBadge', '18+')}
-          </span>
-        )}
+      <h3 className="text-title font-bold leading-snug line-clamp-2">
         <LocalizedLink
           to={`/marketplace/${listing.slug}`}
           onClick={(e) => e.stopPropagation()}
@@ -348,27 +391,19 @@ function RowBody({
           <HighlightedText text={listing.title} query={searchQuery} />
         </LocalizedLink>
       </h3>
-      <div className="flex items-center gap-2">
+      <div className="flex items-baseline gap-2">
         <p
-          className={`text-15 font-semibold leading-none tabular-nums ${outOfStock ? 'line-through text-muted-foreground' : ''}`}
+          className={`text-title font-bold leading-none tabular-nums ${outOfStock ? 'line-through text-muted-foreground' : ''}`}
         >
           {price.primary}
         </p>
         {price.secondary && (
           <span className="text-xs text-muted-foreground">{price.secondary}</span>
         )}
-        {isAffiliate && (
-          <span className="text-2xs uppercase tracking-wider text-muted-foreground">
-            {t('marketplace.adBadge', 'Ad')}
-          </span>
-        )}
         {outOfStock && (
-          <span className="text-2xs uppercase tracking-wider text-muted-foreground">
+          <span className="text-2xs uppercase tracking-label text-muted-foreground">
             {t('marketplace.outOfStock', 'Out of stock')}
           </span>
-        )}
-        {queerOwned && (
-          <Badge variant="outline">{t('marketplace.queerOwnedBadge', 'Queer-owned')}</Badge>
         )}
       </div>
     </div>

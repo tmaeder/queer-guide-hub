@@ -105,7 +105,7 @@ export function RouteStrip({
            a 4px slot on mobile for content to slide through). Restating
            either here is how the two drift apart. */
         className={cn(
-          `sticky ${STICKY_UNDER_HEADER} z-30 border-b-2 border-foreground bg-background`,
+          `sticky ${STICKY_UNDER_HEADER} z-30 border-b border-border-hairline bg-background`,
           PAGE_BLEED,
           className,
         )}
@@ -124,7 +124,7 @@ export function RouteStrip({
                   aria-current={isActive ? 'true' : undefined}
                   onClick={(e) => handleClick(e, s.id)}
                   className={cn(
-                    'inline-flex items-center gap-2 whitespace-nowrap border-2 border-foreground px-2 py-1 text-13 font-bold no-underline transition-colors',
+                    'inline-flex items-center gap-2 whitespace-nowrap bg-muted rounded-element px-2 py-1 text-13 font-bold no-underline transition-colors',
                     isActive
                       ? 'bg-foreground text-background'
                       : 'bg-background hover:bg-surface-container',
@@ -185,7 +185,7 @@ export function RouteStrip({
                     <span
                       aria-hidden
                       className={cn(
-                        'mt-1 inline-block h-2.5 w-2.5 rounded-full border-2 border-foreground',
+                        'mt-1 inline-block h-2.5 w-2.5 rounded-full bg-muted',
                         isActive || isPast ? 'bg-foreground' : 'bg-background',
                       )}
                     />
@@ -193,7 +193,16 @@ export function RouteStrip({
                 </span>
                 <span
                   className={cn(
-                    'min-w-0 flex-1 px-2 py-1 text-left text-13 leading-snug transition-colors',
+                    // NO transition on this pair. The active state swaps the
+                    // label to paper-on-ink, and while that fade runs the two
+                    // interpolate together: at ~17% they are #717170 on
+                    // #d1d1cd, which is 3.19:1 and a serious axe
+                    // color-contrast failure. `motion-reduce:transition-none`
+                    // did not settle it — the nightly still caught the exact
+                    // same pair, so the guard is not reliable here. A hard
+                    // state has no mid-state to sample, and hard states are
+                    // what the subway system does everywhere else anyway.
+                    'min-w-0 flex-1 px-2 py-1 text-left text-13 leading-snug',
                     s.depth === 2 && 'ml-4 text-2xs',
                     isActive
                       ? 'bg-foreground font-bold text-background'

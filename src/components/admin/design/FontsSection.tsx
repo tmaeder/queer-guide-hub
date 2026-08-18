@@ -2,7 +2,13 @@ import { Plus, RotateCcw, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { BrandUploadField } from './BrandUploadField';
 import { FONT_SLOTS, type FontFile, type FontSlot, type FontSlotKey } from './tokenCatalog';
 import type { DesignSettingsController } from './useDesignSettings';
@@ -58,7 +64,13 @@ function FileRow({
           </SelectContent>
         </Select>
       </div>
-      <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Remove file" onClick={onRemove}>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8"
+        aria-label="Remove file"
+        onClick={onRemove}
+      >
         <X className="h-3.5 w-3.5" />
       </Button>
     </div>
@@ -80,8 +92,7 @@ function FontSlotEditor({
   const error = controller.validationErrors[`fonts.${slotKey}`];
 
   const update = (next: FontSlot | null) => controller.setFontSlot(slotKey, next);
-  const setFiles = (files: FontFile[]) =>
-    update({ family: slot?.family ?? '', files });
+  const setFiles = (files: FontFile[]) => update({ family: slot?.family ?? '', files });
 
   return (
     <div className="space-y-4 border-b border-border-hairline pb-6 last:border-b-0">
@@ -100,12 +111,14 @@ function FontSlotEditor({
       </div>
 
       <div>
-        <Label className="text-2xs uppercase tracking-wide text-muted-foreground">Family name</Label>
+        <Label className="text-2xs uppercase tracking-wide text-muted-foreground">
+          Family name
+        </Label>
         <Input
           value={slot?.family ?? ''}
           aria-invalid={!!error}
           placeholder={`${defaultFamily} (default)`}
-          className={`font-mono text-13 ${error ? 'border-destructive' : ''}`}
+          className={`font-mono text-13 ${error ? 'border border-destructive' : ''}`}
           onChange={(e) => update({ family: e.target.value, files: slot?.files ?? [] })}
         />
       </div>
@@ -136,8 +149,8 @@ function FontSlotEditor({
       {error && <p className="text-2xs text-destructive">{error}</p>}
       {!slot && (
         <p className="text-2xs text-muted-foreground">
-          Enter a family name, then upload 1–4 .woff2 files. Custom fonts fall back to {defaultFamily}{' '}
-          until loaded.
+          Enter a family name, then upload 1–4 .woff2 files. Custom fonts fall back to{' '}
+          {defaultFamily} until loaded.
         </p>
       )}
     </div>

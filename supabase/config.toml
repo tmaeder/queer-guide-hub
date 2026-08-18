@@ -426,6 +426,12 @@ verify_jwt = false
 [functions.amenity-truth-backfill]
 verify_jwt = false
 
+# Cron target (pg_cron x-webhook-secret) — self-gates via hasValidWebhookSecret
+# / requireInternalOrAdmin. Without this the gateway 401s before the function
+# body runs, so the nightly job would never execute.
+[functions.personality-link-adult-profiles]
+verify_jwt = false
+
 [functions.marketplace-tag-backfill]
 verify_jwt = false
 

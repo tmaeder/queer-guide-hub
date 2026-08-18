@@ -28,9 +28,12 @@ function renderAt(path: string) {
 }
 
 describe('MarketplaceMerchant', () => {
-  it('shows not-found when domain missing', () => {
+  it('shows not-found when domain missing, with a way back up the line', () => {
     renderAt('/marketplace/merchants/');
-    expect(screen.getByText(/Merchant not found/i)).toBeInTheDocument();
+    // Copy moved from "Merchant not found" to the family's dead-end voice
+    // (/404 "No stop here.", the maker page "No maker here.").
+    expect(screen.getByText(/No such merchant/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /All makers/i })).toBeInTheDocument();
   });
 
   it('renders merchant heading + visit link', () => {

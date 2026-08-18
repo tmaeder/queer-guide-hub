@@ -1,7 +1,7 @@
-import React from 'react';
 import DOMPurify from 'dompurify';
-import { ArrowUpRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { RouteBullet } from '@/components/transit/RouteBullet';
+import { ROUTE_BULLET_MAP } from '@/components/transit/routeBulletMap';
 
 function sanitizeHighlight(html: string): string {
   return DOMPurify.sanitize(html, { ALLOWED_TAGS: ['em'], ALLOWED_ATTR: [] });
@@ -43,34 +43,43 @@ export function HighlightedText({
 
 export interface SearchResultRowProps {
   id?: string;
-  image?: string;
-  Icon: React.ComponentType<{ className?: string }>;
+  /** search_documents entity type — picks the route bullet's letter and line. */
+  type: string;
   name: string;
   nameHtml?: string | null;
   query?: string;
   subtitle?: string;
+  /** Right-hand kind label. Defaults to the bullet's own label. */
+  kind?: string;
   focused?: boolean;
   onClick: () => void;
   onMouseEnter?: () => void;
 }
 
 /**
- * One bold suggestion / card row: 48px thumbnail, semibold name with query
- * highlight, muted subtitle, full-bleed hover. Shared by the suggestion list
- * and the inline Ask-AI card list so they read identically.
+ * One result row: `[bullet] [name over subtitle] [kind]`, per the mock's
+ * `grid-template-columns: 40px 1fr auto`.
+ *
+ * The 48px image thumbnail this used to lead with is gone deliberately. Two
+ * reasons, and the second is the real one: a mixed-type list is exactly what
+ * the route bullet exists to type — the letter says WHAT it is and the colour
+ * says which line it is on, which a photo of a bar cannot — and roughly half
+ * the corpus (cities, tags, people, guides, news) has no usable image, so the
+ * thumbnail column was mostly an empty grey well acting as a lookup key.
  */
 export function SearchResultRow({
   id,
-  image,
-  Icon,
+  type,
   name,
   nameHtml,
   query = '',
   subtitle,
+  kind,
   focused = false,
   onClick,
   onMouseEnter,
 }: SearchResultRowProps) {
+  const label = kind ?? ROUTE_BULLET_MAP[type]?.label ?? type;
   return (
     <div
       id={id}
@@ -84,33 +93,22 @@ export function SearchResultRow({
         if (e.key === 'Enter') onClick();
       }}
       className={cn(
-        'flex min-h-[56px] cursor-pointer items-center gap-4 px-4 py-2 transition-colors',
-        focused ? 'bg-accent outline outline-1 -outline-offset-1 outline-ring' : 'hover:bg-accent',
+        'flex min-h-[56px] cursor-pointer items-center gap-4 border-b border-foreground/10 px-6 py-2 transition-colors last:border-b-0',
+        focused
+          ? 'bg-surface-container outline outline-2 -outline-offset-2 outline-ring'
+          : 'hover:bg-surface-container',
       )}
     >
-      <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-element bg-muted">
-        {image ? (
-          /* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */
-          <img
-            src={image}
-            alt=""
-            loading="lazy"
-            className="h-full w-full object-cover"
-            onError={(e) => {
-              (e.currentTarget as HTMLImageElement).style.display = 'none';
-            }}
-          />
-        ) : (
-          <Icon className="h-5 w-5 text-muted-foreground" />
-        )}
-      </div>
+      <RouteBullet type={type} size={34} />
       <div className="flex min-w-0 flex-1 flex-col">
-        <span className="truncate text-15 font-semibold">
+        <span className="truncate text-15 font-bold">
           <HighlightedText text={name} query={query} html={nameHtml} />
         </span>
-        {subtitle && <span className="truncate text-xs text-muted-foreground">{subtitle}</span>}
+        {subtitle && <span className="truncate text-13 text-muted-foreground">{subtitle}</span>}
       </div>
-      <ArrowUpRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+      <span className="shrink-0 text-2xs font-bold uppercase tracking-label text-muted-foreground">
+        {label}
+      </span>
     </div>
   );
 }

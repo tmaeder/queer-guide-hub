@@ -1,7 +1,6 @@
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useLocation, useNavigate } from 'react-router';
 import { useEffect, useMemo, useState } from 'react';
-import { Home, ArrowLeft, MapPin, CalendarDays, Map, Users, Search, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
 import { NotFoundMeta } from '@/components/seo/NotFoundMeta';
@@ -15,57 +14,68 @@ import { useVenueSlugRedirect } from '@/hooks/useVenueSlugRedirect';
 import { useGeoSlugRedirect } from '@/hooks/useGeoSlugRedirect';
 import { hrefForEntity } from '@/lib/searchRoutes';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { Eyebrow } from '@/components/ui/Eyebrow';
+import { RouteBullet } from '@/components/transit/RouteBullet';
+import { TransitIcon } from '@/components/transit/TransitIcon';
+import type { TransitIconName } from '@/components/transit/transitIconPaths';
+import { DeadEndTrack } from '@/components/transit/DeadEndTrack';
 
-const SUGGESTIONS = [
-  { to: '/venues', icon: MapPin, labelKey: 'nav.venues', fallback: 'Venues' },
-  { to: '/events', icon: CalendarDays, labelKey: 'nav.events', fallback: 'Events' },
-  { to: '/map', icon: Map, labelKey: 'nav.map', fallback: 'Map' },
-  { to: '/community', icon: Users, labelKey: 'nav.community', fallback: 'Community' },
-] as const;
+/** The lines you can pick up from here. */
+const SUGGESTIONS: ReadonlyArray<{
+  to: string;
+  icon: TransitIconName;
+  labelKey: string;
+  fallback: string;
+}> = [
+  { to: '/venues', icon: 'near-you', labelKey: 'nav.venues', fallback: 'Venues' },
+  { to: '/events', icon: 'events', labelKey: 'nav.events', fallback: 'Events' },
+  { to: '/map', icon: 'map', labelKey: 'nav.map', fallback: 'Map' },
+  { to: '/community', icon: 'community', labelKey: 'nav.community', fallback: 'Community' },
+];
 
 /** First path segment → entity type + i18n key for type-aware copy. Mirrors
- *  notFoundKindFor() in functions/_middleware.ts. */
+ *  notFoundKindFor() in functions/_middleware.ts — keep the two in step. */
 const SEGMENT_TYPE: Record<string, { type: string; key: string; fallback: string }> = {
   venues: {
     type: 'venue',
     key: 'pages.notFound.kind.venue',
-    fallback: "We couldn't find that venue.",
+    fallback: 'No venue at this stop.',
   },
   events: {
     type: 'event',
     key: 'pages.notFound.kind.event',
-    fallback: "We couldn't find that event.",
+    fallback: 'No event at this stop.',
   },
-  city: { type: 'city', key: 'pages.notFound.kind.city', fallback: "We couldn't find that city." },
+  city: { type: 'city', key: 'pages.notFound.kind.city', fallback: 'No city at this stop.' },
   country: {
     type: 'country',
     key: 'pages.notFound.kind.country',
-    fallback: "We couldn't find that country.",
+    fallback: 'No country at this stop.',
   },
   personalities: {
     type: 'personality',
     key: 'pages.notFound.kind.personality',
-    fallback: "We couldn't find that person.",
+    fallback: 'Nobody at this stop.',
   },
   hotels: {
     type: 'hotel',
     key: 'pages.notFound.kind.hotel',
-    fallback: "We couldn't find that hotel.",
+    fallback: 'No hotel at this stop.',
   },
   villages: {
     type: 'queer_village',
     key: 'pages.notFound.kind.village',
-    fallback: "We couldn't find that place.",
+    fallback: 'No district at this stop.',
   },
   marketplace: {
     type: 'marketplace',
     key: 'pages.notFound.kind.marketplace',
-    fallback: "We couldn't find that product.",
+    fallback: 'No product at this stop.',
   },
   news: {
     type: 'news',
     key: 'pages.notFound.kind.news',
-    fallback: "We couldn't find that article.",
+    fallback: 'No article at this stop.',
   },
 };
 
@@ -77,6 +87,37 @@ function pathSegments(pathname: string): string[] {
   if (segs.length && LOCALE_RE.test(segs[0])) segs.shift();
   return segs;
 }
+
+/** A row on the board: bullet · name · place. The link is an absolute overlay
+ *  SIBLING, never a wrapper — a card that wraps its own controls in an anchor
+ *  is `nested-interactive` (see EventCard/DepartureRow). */
+function StopRow({
+  href,
+  type,
+  title,
+  meta,
+}: {
+  href: string;
+  type: string;
+  title: string;
+  meta?: string | null;
+}) {
+  return (
+    <li className="card-lift-sm relative flex items-center gap-4 bg-card px-4 py-4 rounded-container shadow-soft">
+      <RouteBullet type={type} size={38} />
+      <span className="min-w-0 flex-1 truncate text-title font-bold leading-tight">{title}</span>
+      {meta && <span className="shrink-0 text-15 text-muted-foreground">{meta}</span>}
+      <LocalizedLink to={href} aria-label={title} className="absolute inset-0 no-underline" />
+    </li>
+  );
+}
+
+/** `text-13`, not the `text-2xs` eyebrow convention: this page runs at the full
+ *  site width, and a 10px label floating over a 1600px column is unreadable. */
+const SECTION_LABEL = 'text-13 font-bold uppercase tracking-label text-muted-foreground';
+
+const END_OF_LINE_LINK =
+  'border inline-flex items-center gap-2 border-background px-4 py-2 text-15 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground';
 
 const NotFound = () => {
   const location = useLocation();
@@ -152,142 +193,155 @@ const NotFound = () => {
     };
   }, [segs, kind]);
 
-  return (
-    <div className="min-h-[60vh] bg-background">
-      <NotFoundMeta title={t('pages.notFound.title', 'Page not found')} />
-      <PageContainer size="reading">
-        <div className="text-center">
-          <h2 className="font-display text-display md:text-hero font-bold mb-4">404</h2>
-          <h6 className="text-title font-semibold mb-2">
-            {t('pages.notFound.title', 'Page not found')}
-          </h6>
-          <p className="text-muted-foreground mb-8">
-            {kind
-              ? t(kind.key, kind.fallback)
-              : t(
-                  'pages.notFound.description',
-                  "The page you're looking for doesn't exist or has been moved.",
-                )}
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              variant="outline"
-              onClick={() => window.history.back()}
-              style={{ display: 'inline-flex', gap: 8 }}
-            >
-              <ArrowLeft size={16} aria-hidden="true" />
-              {t('pages.notFound.goBack', 'Go Back')}
-            </Button>
-            <Button asChild className="inline-flex gap-2">
-              <LocalizedLink to="/">
-                <Home size={16} aria-hidden="true" />
-                {t('pages.notFound.returnHome', 'Return Home')}
-              </LocalizedLink>
-            </Button>
-          </div>
-        </div>
+  // The ghost station's name: the slug that isn't on the line.
+  const ghostLabel = useMemo(() => {
+    const last = segs[segs.length - 1];
+    if (!last) return location.pathname;
+    try {
+      return decodeURIComponent(last);
+    } catch {
+      return last;
+    }
+  }, [segs, location.pathname]);
 
-        {/* Search the site directly instead of bouncing. */}
-        <form onSubmit={onSearch} className="mt-12 relative" role="search">
-          <Search
-            size={18}
-            aria-hidden="true"
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
-          />
+  return (
+    // Default size = the 1600 page cap, the same frame every other page uses.
+    // Prose inside is capped to `max-w-reading` so the measure stays readable
+    // at full width — the container sets the FRAME, not the line length.
+    <PageContainer>
+      <NotFoundMeta title={t('pages.notFound.title', 'Page not found')} />
+
+      <header>
+        <Eyebrow variant="kicker" as="div">
+          {t('pages.notFound.kicker', 'Service notice · 404')}
+        </Eyebrow>
+        <h1 className="mt-6 font-display text-display leading-[0.95] md:text-hero">
+          {kind ? t(kind.key, kind.fallback) : t('pages.notFound.heading', 'No stop here.')}
+        </h1>
+        <p className="mt-6 max-w-reading text-body-lg leading-relaxed text-muted-foreground">
+          {t(
+            'pages.notFound.description',
+            'Nothing is on the map at {{path}}. It was moved, removed, or never existed.',
+            { path: location.pathname },
+          )}
+        </p>
+
+        <div className="mt-8 flex flex-col gap-2 sm:flex-row">
+          {/* No icon: the transit set has no "reverse direction" glyph, and the
+              nearest candidates (route/compass) read as "plan a trip", which is
+              what the search below actually does. */}
+          <Button variant="outline" onClick={() => window.history.back()}>
+            {t('pages.notFound.goBack', 'Go Back')}
+          </Button>
+          <Button asChild className="gap-2">
+            <LocalizedLink to="/">
+              <TransitIcon name="home-base" size={18} />
+              {t('pages.notFound.returnHome', 'Return Home')}
+            </LocalizedLink>
+          </Button>
+        </div>
+      </header>
+
+      <DeadEndTrack
+        className="mt-10"
+        label={ghostLabel}
+        type={kind?.type}
+        caption={t('pages.notFound.noStop', 'No stop')}
+      />
+
+      {/* Search the site directly instead of bouncing. */}
+      <section className="mt-10" aria-labelledby="notfound-search">
+        <h2 id="notfound-search" className={SECTION_LABEL}>
+          {t('pages.notFound.searchLabel', 'Plan another route')}
+        </h2>
+        <form onSubmit={onSearch} className="mt-4 flex max-w-reading gap-2" role="search">
           <Input
             type="search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t('pages.notFound.searchPlaceholder', 'Search venues, events, cities…')}
             aria-label={t('pages.notFound.searchPlaceholder', 'Search venues, events, cities…')}
-            className="pl-12 h-12"
+            className="h-12"
           />
+          <Button type="submit" className="h-12 shrink-0 gap-2 px-6">
+            <TransitIcon name="search" size={18} />
+            {t('pages.notFound.searchSubmit', 'Search')}
+          </Button>
         </form>
+      </section>
 
-        {/* "Did you mean?" fuzzy matches for the failed slug. */}
-        {suggestions.length > 0 && (
-          <div className="mt-10">
-            <p className="text-xs2 font-medium uppercase tracking-widest text-muted-foreground mb-4 flex items-center gap-2">
-              <Search size={14} aria-hidden="true" />
-              {t('pages.notFound.didYouMean', 'Did you mean')}
-            </p>
-            <div className="flex flex-col gap-2">
-              {suggestions.map((hit) => {
-                const href = hrefForEntity({
+      {/* "Did you mean?" fuzzy matches for the failed slug. */}
+      {suggestions.length > 0 && (
+        <section className="mt-10" aria-labelledby="notfound-nearest">
+          <h2 id="notfound-nearest" className={SECTION_LABEL}>
+            {t('pages.notFound.didYouMean', 'Nearest stops')}
+          </h2>
+          {/* Two columns at the full page width — a single 1600px-wide row per
+              stop reads as empty track, not as a board. */}
+          <ul className="mt-4 grid list-none grid-cols-1 gap-2 p-0 lg:grid-cols-2">
+            {suggestions.map((hit) => (
+              <StopRow
+                key={`${hit.type}:${hit.id}`}
+                href={hrefForEntity({
                   type: hit.type,
                   slug: (hit.slug as string) || hit.id,
                   title: (hit.title as string) || (hit.name as string),
-                });
-                return (
-                  <LocalizedLink
-                    key={`${hit.type}:${hit.id}`}
-                    to={href}
-                    className="flex items-center justify-between gap-2 rounded-element bg-surface-container px-4 py-4 no-underline transition-colors hover:bg-surface-container"
-                  >
-                    <span className="text-15 font-medium text-foreground truncate">
-                      {hit.title || hit.name}
-                    </span>
-                    {(hit.city as string) && (
-                      <span className="text-13 text-muted-foreground shrink-0">
-                        {hit.city as string}
-                      </span>
-                    )}
-                  </LocalizedLink>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Pick up where you left off — anon + auth (localStorage). */}
-        {recent.length > 0 && (
-          <div className="mt-10">
-            <p className="text-xs2 font-medium uppercase tracking-widest text-muted-foreground mb-4 flex items-center gap-2">
-              <Clock size={14} aria-hidden="true" />
-              {t('pages.notFound.recentlyViewed', 'Pick up where you left off')}
-            </p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {recent.map((item) => (
-                <LocalizedLink
-                  key={`${item.type}:${item.slug}`}
-                  to={recentlyViewedHref(item)}
-                  className="flex flex-col gap-1 rounded-element bg-surface-container px-4 py-4 no-underline transition-colors hover:bg-surface-container"
-                >
-                  <span className="text-15 font-medium text-foreground truncate">{item.title}</span>
-                  {(item.city || item.country) && (
-                    <span className="text-13 text-muted-foreground truncate">
-                      {[item.city, item.country].filter(Boolean).join(', ')}
-                    </span>
-                  )}
-                </LocalizedLink>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Personalized recommendations (renders nothing without a bias signal). */}
-        <RecommendedForYou className="mt-10" limit={10} />
-
-        {/* Static fallback jump-links. */}
-        <div className="mt-12 pt-8">
-          <p className="text-xs2 font-medium uppercase tracking-widest text-muted-foreground mb-4">
-            {t('pages.notFound.suggestionsLabel', 'Or jump to')}
-          </p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            {SUGGESTIONS.map(({ to, icon: Icon, labelKey, fallback }) => (
-              <LocalizedLink
-                key={to}
-                to={to}
-                className="flex flex-col items-center gap-2 rounded-element bg-surface-container px-4 py-6 no-underline transition-colors hover:bg-surface-container"
-              >
-                <Icon size={20} aria-hidden="true" className="text-muted-foreground" />
-                <span className="text-13 font-medium text-foreground">{t(labelKey, fallback)}</span>
-              </LocalizedLink>
+                })}
+                type={hit.type}
+                title={((hit.title as string) || (hit.name as string)) ?? ''}
+                meta={hit.city as string}
+              />
             ))}
-          </div>
+          </ul>
+        </section>
+      )}
+
+      {/* Pick up where you left off — anon + auth (localStorage). */}
+      {recent.length > 0 && (
+        <section className="mt-10" aria-labelledby="notfound-recent">
+          <h2 id="notfound-recent" className={SECTION_LABEL}>
+            {t('pages.notFound.recentlyViewed', 'Your last stops')}
+          </h2>
+          {/* Two columns at the full page width — a single 1600px-wide row per
+              stop reads as empty track, not as a board. */}
+          <ul className="mt-4 grid list-none grid-cols-1 gap-2 p-0 lg:grid-cols-2">
+            {recent.map((item) => (
+              <StopRow
+                key={`${item.type}:${item.slug}`}
+                href={recentlyViewedHref(item)}
+                type={item.type}
+                title={item.title}
+                meta={[item.city, item.country].filter(Boolean).join(', ') || null}
+              />
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {/* Personalized recommendations (renders nothing without a bias signal). */}
+      <RecommendedForYou className="mt-10" limit={10} />
+
+      {/* Terminus: the lines you can pick up instead. */}
+      <section
+        aria-labelledby="notfound-end-of-line"
+        className="mt-12 bg-foreground p-6 text-background md:p-8"
+      >
+        <p className="text-13 font-bold uppercase tracking-label text-background/70">
+          {t('pages.notFound.suggestionsLabel', 'End of line')}
+        </p>
+        <h2 id="notfound-end-of-line" className="mt-2 font-display text-display leading-tight">
+          {t('pages.notFound.endOfLineTitle', 'Pick up another line.')}
+        </h2>
+        <div className="mt-8 flex flex-wrap gap-2">
+          {SUGGESTIONS.map(({ to, icon, labelKey, fallback }) => (
+            <LocalizedLink key={to} to={to} className={END_OF_LINE_LINK}>
+              <TransitIcon name={icon} size={18} />
+              {t(labelKey, fallback)}
+            </LocalizedLink>
+          ))}
         </div>
-      </PageContainer>
-    </div>
+      </section>
+    </PageContainer>
   );
 };
 

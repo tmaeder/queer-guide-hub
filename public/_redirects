@@ -1,4 +1,11 @@
 # Redirect old paths to /tags (canonical)
+#
+# The topic-hub rules MUST sit above the /resources/* splat. Rules are matched
+# in file order, so with the splat first `/resources/topic/x` becomes
+# `/tags/topic/x` — a URL that no longer exists and only bounces again
+# client-side. Two hops and a soft redirect where one 301 belongs.
+/tags/topic/*  /tags  301
+/resources/topic/*  /tags  301
 /ressources  /tags  301
 /ressources/*  /tags/:splat  301
 /resources  /tags  301
@@ -26,6 +33,18 @@
 # edge HTML in functions/_lib/ linked to it until 2026-08-01), so redirect
 # rather than drop it.
 /help-hotlines   /help          301
+
+# /shop was /marketplace twice — two of its three sections were duplicates of
+# blocks the marketplace landing already rendered, and /marketplace is the
+# superset (every deep route, the slug-redirect table, the search entity).
+# Unprefixed only, deliberately: a `/:lang/shop` rule would ALSO match
+# /marketplace/shop, i.e. a listing whose slug is "shop". Localized paths
+# redirect in the router instead (src/routes.tsx) — same split as /places/*.
+# First match wins in this file: adding a broader rule above these silently
+# stops the 301 and /shop starts serving an SPA hop, which no test can see
+# because _redirects is inert off Cloudflare. scripts/smoke-pages.sh asserts it.
+/shop            /marketplace   301
+/shop/*          /marketplace   301
 
 # ---------------------------------------------------------------------------
 # There is deliberately NO SPA catch-all rule below. Do not add one.
