@@ -59,6 +59,12 @@ const BLOCKED = /\/rpc\/(branding_|admin_automation_set_enabled|.*_upsert|.*_del
 type Shape = { endpoints: string[]; h1: string; errors: string[] };
 
 test.describe('admin routes stay healthy through the archetype migration', () => {
+  // Admin pages are heavier than the 30s default allows, and CI runs one
+  // worker: /admin/pipelines alone mounts 13 tabs over a MapLibre canvas and
+  // blew the default three times in a row. A timeout there says nothing about
+  // the route's health — it says the budget was set for public pages.
+  test.describe.configure({ timeout: 75_000 });
+
   test.skip(
     ({ browserName }) => browserName !== 'chromium',
     'admin needs the chromium storageState; the mobile project has none',
@@ -85,9 +91,20 @@ test.describe('admin routes stay healthy through the archetype migration', () =>
 
       await page.goto(route);
       await page.waitForSelector('#root *', { state: 'attached', timeout: 20_000 });
-      // Settle for data, not for networkidle — pages with maps and analytics
-      // never reach it, which is how four earlier guards in this repo timed out.
-      await page.waitForTimeout(2500);
+      // Wait for the PAGE TITLE, not for a fixed delay and not for networkidle
+      // — pages with maps and analytics never reach idle (four earlier guards
+      // in this repo timed out that way), and a flat 2.5s both wastes time on
+      // fast routes and is not enough for slow ones. Every route asserted
+      // below has an h1, so that is the honest readiness signal; the short
+      // settle after it lets late data land.
+      await page
+        .locator('h1')
+        .first()
+        .waitFor({ state: 'visible', timeout: 30_000 })
+        .catch(() => {
+          /* fall through — the h1 assertion below reports it properly */
+        });
+      await page.waitForTimeout(600);
 
       // No admin session -> SKIP, loudly, rather than fail or silently pass.
       //
