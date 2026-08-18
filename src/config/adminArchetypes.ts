@@ -161,6 +161,7 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
     path: 'duplicates',
     archetype: 'C',
     title: 'Duplicates',
+    adopted: true,
     caveat:
       'The only C ROUTE, but there are seven more hand-rolled diff layouts embedded elsewhere ' +
       '(import-hub SideBySideComparison / DuplicatePairCard / MergeDialog, triage FieldDiffView, ' +
@@ -191,12 +192,14 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
     path: 'content/event-quality',
     archetype: 'E',
     title: 'Event quality',
+    adopted: true,
     caveat: 'A single panel with no ranked list — an E fragment rather than a full board.',
   },
   {
     path: 'search-intelligence',
     archetype: 'E',
     title: 'Search intelligence',
+    adopted: true,
     caveat:
       'Only its Analytics and IngestionQuality tabs are E. Synonyms/Suggestions are H and Setup ' +
       'is a plain form.',
@@ -217,8 +220,8 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
   },
 
   // ── G · Tree + canvas ─────────────────────────────────────────────────
-  { path: 'geography', archetype: 'G', title: 'Geography' },
-  { path: 'graph', archetype: 'G', title: 'Content graph' },
+  { path: 'geography', archetype: 'G', title: 'Geography', adopted: true },
+  { path: 'graph', archetype: 'G', title: 'Content graph', adopted: true },
   {
     path: 'maps',
     archetype: 'G',
