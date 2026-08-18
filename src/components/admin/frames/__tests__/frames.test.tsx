@@ -13,7 +13,7 @@ import { AdminOpsFrame } from '../AdminOpsFrame';
 import { AdminAnalyticsFrame } from '../AdminAnalyticsFrame';
 import { AdminInboxFrame } from '../AdminInboxFrame';
 import { AdminTreeCanvasFrame } from '../AdminTreeCanvasFrame';
-import { AdminRegistryFrame } from '../AdminRegistryFrame';
+import { AdminRegistryFrame, AdminRegistryRow } from '../AdminRegistryFrame';
 
 const at = (path: string, ui: React.ReactNode) =>
   render(<MemoryRouter initialEntries={[path]}>{ui}</MemoryRouter>);
@@ -55,7 +55,12 @@ describe('admin archetype frames: shared contract', () => {
         '/admin/geography',
         <AdminTreeCanvasFrame key="g" title="Geography" tree={<span />} canvas={<span />} />,
       ],
-      ['/admin/automation', <AdminRegistryFrame key="h" title="Automations" rows={[]} />],
+      [
+        '/admin/automation',
+        <AdminRegistryFrame key="h" title="Automations">
+          rows
+        </AdminRegistryFrame>,
+      ],
     ];
     for (const [path, ui] of cases) {
       const { unmount } = at(path, ui);
@@ -85,6 +90,18 @@ describe('admin archetype frames: shared contract', () => {
       const src = readFileSync(resolve(FRAMES_DIR, file), 'utf8');
       expect(src, `${file} uses card-lift`).not.toMatch(/card-lift/);
       expect(src, `${file} imports motion`).not.toMatch(/framer-motion|motion\/react/);
+    }
+  });
+
+  it('no frame adds its own horizontal gutter', () => {
+    // AdminShell's <main> is documented as "the ONE owner of admin page
+    // spacing" and already applies PAGE_GUTTER. A frame adding px would
+    // double-pad every admin page — the exact defect that rule ended, and one
+    // all eight frames shipped with until the first real migration exposed it.
+    for (const file of readdirSync(FRAMES_DIR).filter((f) => f.endsWith('.tsx'))) {
+      const src = readFileSync(resolve(FRAMES_DIR, file), 'utf8');
+      const code = src.replace(/\/\*\*[\s\S]*?\*\//g, '');
+      expect(code, `${file} adds a horizontal gutter`).not.toMatch(/\bp[xl]-\d/);
     }
   });
 
@@ -139,19 +156,36 @@ describe('AdminIndexFrame (A)', () => {
 });
 
 describe('AdminRegistryFrame (H)', () => {
-  it('renders name, fired-count and toggle per row', () => {
+  it('takes any body, not a fixed row shape', () => {
+    // The frame owns the chrome; the caller owns the body — the same contract
+    // as A. H shipped with a row shape baked in, and the first real migration
+    // showed why that was wrong: /admin/automation is the page H was modelled
+    // on and it renders SEVEN columns with row-click to open a detail.
+    // Flattening that to name-plus-toggle would be a downgrade dressed as
+    // consistency.
     at(
       '/admin/automation',
-      <AdminRegistryFrame
-        title="Automations"
-        rows={[
-          {
-            id: 'city_safety_backfill',
-            name: 'city_safety_backfill',
-            firedCount: '412 runs',
-            toggle: <button type="button">Enabled</button>,
-          },
-        ]}
+      <AdminRegistryFrame title="Automations">
+        <table>
+          <tbody>
+            <tr>
+              <td>city_safety_backfill</td>
+              <td>30 4 * * *</td>
+            </tr>
+          </tbody>
+        </table>
+      </AdminRegistryFrame>,
+    );
+    expect(screen.getByText('city_safety_backfill')).toBeInTheDocument();
+    expect(screen.getByText('30 4 * * *')).toBeInTheDocument();
+  });
+
+  it('AdminRegistryRow renders name, fired-count and toggle', () => {
+    render(
+      <AdminRegistryRow
+        name="city_safety_backfill"
+        firedCount="412 runs"
+        toggle={<button type="button">Enabled</button>}
       />,
     );
     expect(screen.getByText('city_safety_backfill')).toBeInTheDocument();
@@ -163,34 +197,17 @@ describe('AdminRegistryFrame (H)', () => {
     // CLAUDE.md holds in two locked places that a track colour may never
     // encode a state. Admin is not a good enough reason to erode a rule the
     // public safety surfaces depend on.
-    const { container } = at(
-      '/admin/automation',
-      <AdminRegistryFrame
-        title="Automations"
-        rows={[{ id: 'x', name: 'failing_job', alert: true }]}
-      />,
-    );
-    const row = container.querySelector('[data-registry-row="x"]')!;
+    const { container } = render(<AdminRegistryRow name="failing_job" alert />);
+    const row = container.firstElementChild!;
     expect(row.className).toContain('font-bold');
     expect(row.className).not.toMatch(/bg-track-|text-track-/);
   });
 
   it('divides rows with a hairline and never with a shadow', () => {
-    const { container } = at(
-      '/admin/automation',
-      <AdminRegistryFrame title="Automations" rows={[{ id: 'x', name: 'a' }]} />,
-    );
-    const row = container.querySelector('[data-registry-row="x"]')!;
+    const { container } = render(<AdminRegistryRow name="a" />);
+    const row = container.firstElementChild!;
     expect(row.className).toContain('border-border-hairline');
     expect(row.className).not.toMatch(/shadow-/);
-  });
-
-  it('shows the empty state instead of an empty list', () => {
-    at(
-      '/admin/automation',
-      <AdminRegistryFrame title="A" rows={[]} empty={<p>No rules yet.</p>} />,
-    );
-    expect(screen.getByText('No rules yet.')).toBeInTheDocument();
   });
 });
 

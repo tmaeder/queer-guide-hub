@@ -59,7 +59,7 @@ export function AdminInboxFrame({
 
       <div
         className={cn(
-          'grid min-w-0 gap-6 px-6 pb-6',
+          'grid min-w-0 gap-6 pb-6',
           actionRail
             ? 'lg:grid-cols-[340px_minmax(0,1fr)_300px]'
             : 'lg:grid-cols-[340px_minmax(0,1fr)]',

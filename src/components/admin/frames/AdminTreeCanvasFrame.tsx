@@ -48,7 +48,7 @@ export function AdminTreeCanvasFrame({
         filters={filters}
         actions={actions}
       />
-      <div className="grid min-w-0 gap-6 px-6 pb-6 lg:grid-cols-[320px_minmax(0,1fr)]">
+      <div className="grid min-w-0 gap-6 pb-6 lg:grid-cols-[320px_minmax(0,1fr)]">
         <div className="min-w-0 overflow-y-auto">{tree}</div>
         {/* No overflow-hidden, no radius: see the note above. */}
         <div className="min-w-0">{canvas}</div>

@@ -54,8 +54,8 @@ export function AdminAnalyticsFrame({
         filters={filters}
         actions={actions}
       />
-      {stats && <div className="px-6 pb-4">{stats}</div>}
-      <div className="grid min-w-0 gap-6 px-6 pb-6 lg:grid-cols-3">
+      {stats && <div className="pb-4">{stats}</div>}
+      <div className="grid min-w-0 gap-6 pb-6 lg:grid-cols-3">
         <div className="min-w-0 lg:col-span-2">{chart}</div>
         <div className="min-w-0">{rankedList}</div>
       </div>
