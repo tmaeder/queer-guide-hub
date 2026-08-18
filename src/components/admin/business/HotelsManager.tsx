@@ -41,6 +41,7 @@ import { formatDateTime } from '@/lib/format';
 import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
+import type { AdminTableFeatures } from '@/components/admin/data-table/features';
 import { useQueryClient } from '@tanstack/react-query';
 import { Edit, Trash2, Star, Plus, RefreshCw, Briefcase } from 'lucide-react';
 import { toast } from 'sonner';
@@ -80,7 +81,7 @@ interface HotelRow {
   created_at: string;
 }
 
-const columnHelper = createColumnHelper<HotelRow>();
+const columnHelper = createColumnHelper<AdminTableFeatures, HotelRow>();
 
 const emptyForm = {
   name: '',
