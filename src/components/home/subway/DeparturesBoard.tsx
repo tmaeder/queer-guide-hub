@@ -4,7 +4,7 @@ import { RouteBullet } from '@/components/transit/RouteBullet';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { Band } from '@/components/home/Band';
 import { RegionChip } from '@/components/home/RegionChip';
-import { useHomeRegionContext } from '@/components/home/HomeRegionProvider';
+import { useHomeRegionContext } from '@/components/home/homeRegionContext';
 import { useHomeNearYou, type NearYouRow } from '@/hooks/useHomeNearYou';
 
 const ROWS = 6;

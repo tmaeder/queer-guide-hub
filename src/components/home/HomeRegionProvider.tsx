@@ -1,23 +1,6 @@
-import { createContext, useContext, type ReactNode } from 'react';
-import { useHomeRegion, type HomeRegionApi } from '@/hooks/useHomeRegion';
-
-const HomeRegionContext = createContext<HomeRegionApi | null>(null);
-
-/** Neutral value for consumers rendered outside the provider (tests, and any
- *  future reuse of a band on another page). Reads as "no region", which every
- *  band already handles by going global — never as an error. */
-const NEUTRAL: HomeRegionApi = {
-  cityId: null,
-  citySlug: null,
-  cityName: null,
-  countryId: null,
-  countryCode: null,
-  countryName: null,
-  source: 'none',
-  inferred: false,
-  loading: false,
-  setRegion: () => {},
-};
+import { type ReactNode } from 'react';
+import { useHomeRegion } from '@/hooks/useHomeRegion';
+import { HomeRegionContext } from './homeRegionContext';
 
 /**
  * Resolves the homepage's region ONCE and shares it.
@@ -27,12 +10,12 @@ const NEUTRAL: HomeRegionApi = {
  * the region chip all read the same value, so resolving per-consumer would
  * multiply the requests and let two bands briefly disagree about where the
  * visitor is.
+ *
+ * The context and its `useHomeRegionContext` reader live in
+ * `homeRegionContext.ts`, not here: this file must export only its component or
+ * Fast Refresh stops hot-swapping it.
  */
 export function HomeRegionProvider({ children }: { children: ReactNode }) {
   const region = useHomeRegion();
   return <HomeRegionContext.Provider value={region}>{children}</HomeRegionContext.Provider>;
-}
-
-export function useHomeRegionContext(): HomeRegionApi {
-  return useContext(HomeRegionContext) ?? NEUTRAL;
 }
