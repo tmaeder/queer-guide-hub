@@ -33,21 +33,21 @@ interface LogStreamDrawerProps {
 }
 
 const stageColor: Record<string, string> = {
-  normalize: 'text-foreground dark:text-foreground',
-  validate: 'text-foreground dark:text-foreground',
-  deduplicate: 'text-foreground dark:text-foreground',
-  quality_score: 'text-foreground dark:text-foreground',
-  review_gate: 'text-foreground dark:text-foreground',
-  commit: 'text-foreground dark:text-foreground',
-  enrich: 'text-foreground dark:text-foreground',
+  normalize: 'text-foreground',
+  validate: 'text-foreground',
+  deduplicate: 'text-foreground',
+  quality_score: 'text-foreground',
+  review_gate: 'text-foreground',
+  commit: 'text-foreground',
+  enrich: 'text-foreground',
 };
 
 const statusIcon: Record<string, React.ReactNode> = {
-  committed: <CheckCircle2 className="h-3 w-3 text-foreground dark:text-foreground" />,
+  committed: <CheckCircle2 className="h-3 w-3 text-foreground" />,
   rejected: <AlertCircle className="h-3 w-3 text-destructive" />,
   failed: <AlertCircle className="h-3 w-3 text-destructive" />,
   error: <AlertCircle className="h-3 w-3 text-destructive" />,
-  approved: <CheckCircle2 className="h-3 w-3 text-foreground dark:text-foreground" />,
+  approved: <CheckCircle2 className="h-3 w-3 text-foreground" />,
 };
 
 /**
@@ -132,7 +132,7 @@ export default function LogStreamDrawer({ pipelineRunId, onClose }: LogStreamDra
         {errorCount > 0 && (
           <Badge
             variant="outline"
-            className="border text-2xs px-1.5 py-0 bg-destructive/10 dark:bg-destructive/30 text-destructive dark:text-destructive border-destructive dark:border-destructive"
+            className="border text-2xs px-1.5 py-0 bg-destructive/10 dark:bg-destructive/30 text-destructive border-destructive dark:border-destructive"
           >
             {errorCount} errors
           </Badge>

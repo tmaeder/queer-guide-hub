@@ -17,9 +17,9 @@ function StatBlock({
 }) {
   const colorClass =
     variant === 'success'
-      ? 'text-foreground dark:text-foreground'
+      ? 'text-foreground'
       : variant === 'warning'
-        ? 'text-foreground dark:text-foreground'
+        ? 'text-foreground'
         : variant === 'destructive'
           ? 'text-destructive'
           : 'text-foreground';
@@ -168,7 +168,7 @@ export default function NewsTab() {
           {paused > 0 && (
             <Badge
               variant="outline"
-              className="border text-2xs px-1.5 py-0 bg-destructive/10 dark:bg-destructive/30 text-destructive dark:text-destructive border-destructive dark:border-destructive"
+              className="border text-2xs px-1.5 py-0 bg-destructive/10 dark:bg-destructive/30 text-destructive border-destructive dark:border-destructive"
             >
               {paused} auto-paused
             </Badge>
@@ -176,7 +176,7 @@ export default function NewsTab() {
           {errored > 0 && (
             <Badge
               variant="outline"
-              className="text-2xs px-1.5 py-0 bg-muted dark:bg-foreground/30 text-foreground dark:text-foreground border-border dark:border-border"
+              className="text-2xs px-1.5 py-0 bg-muted text-foreground border-border"
             >
               {errored} errored
             </Badge>
@@ -218,10 +218,10 @@ export default function NewsTab() {
                   const avg = Number(s.avg_articles_per_fetch ?? 0);
                   const statusColor =
                     status === 'active'
-                      ? 'text-foreground dark:text-foreground'
+                      ? 'text-foreground'
                       : s.auto_paused || status === 'paused'
                         ? 'text-destructive'
-                        : 'text-foreground dark:text-foreground';
+                        : 'text-foreground';
                   return (
                     <tr
                       key={String(s.id)}
@@ -232,7 +232,7 @@ export default function NewsTab() {
                         {s.auto_paused ? (
                           <Badge
                             variant="outline"
-                            className="border ml-2 text-3xs px-1 py-0 bg-destructive/10 dark:bg-destructive/30 text-destructive dark:text-destructive border-destructive dark:border-destructive"
+                            className="border ml-2 text-3xs px-1 py-0 bg-destructive/10 dark:bg-destructive/30 text-destructive border-destructive dark:border-destructive"
                           >
                             paused
                           </Badge>

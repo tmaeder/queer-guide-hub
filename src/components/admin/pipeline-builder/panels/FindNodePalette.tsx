@@ -1,6 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useReactFlow } from '@xyflow/react';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { resolvePipelineIcon } from '../icon-registry';
 import { isBaseNode, type AppNode } from '../types';
@@ -23,7 +30,7 @@ export default function FindNodePalette({ nodes, onSelect }: FindNodePaletteProp
       const inInput = ['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName || '');
       if (mod && e.key === 'f' && !inInput && nodes.length > 0) {
         e.preventDefault();
-        setOpen(o => !o);
+        setOpen((o) => !o);
       }
     };
     window.addEventListener('keydown', handler);
@@ -49,8 +56,16 @@ export default function FindNodePalette({ nodes, onSelect }: FindNodePaletteProp
           <CommandList className="max-h-[400px]">
             <CommandEmpty>No nodes match</CommandEmpty>
             <CommandGroup heading={`${nodes.length} nodes on canvas`}>
-              {nodes.map(n => {
-                const d = isBaseNode(n) ? n.data : { label: undefined, icon: undefined, color: undefined, nodeTypeSlug: undefined, status: undefined };
+              {nodes.map((n) => {
+                const d = isBaseNode(n)
+                  ? n.data
+                  : {
+                      label: undefined,
+                      icon: undefined,
+                      color: undefined,
+                      nodeTypeSlug: undefined,
+                      status: undefined,
+                    };
                 const Icon = resolvePipelineIcon(d.icon);
                 const color = d.color || 'hsl(var(--muted-foreground))';
                 return (
@@ -67,16 +82,25 @@ export default function FindNodePalette({ nodes, onSelect }: FindNodePaletteProp
                       <Icon className="h-3 w-3" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium truncate">{d.label || d.nodeTypeSlug || n.id}</div>
-                      <div className="text-2xs text-muted-foreground font-mono truncate">{d.nodeTypeSlug || n.id.slice(0, 12)}</div>
+                      <div className="text-sm font-medium truncate">
+                        {d.label || d.nodeTypeSlug || n.id}
+                      </div>
+                      <div className="text-2xs text-muted-foreground font-mono truncate">
+                        {d.nodeTypeSlug || n.id.slice(0, 12)}
+                      </div>
                     </div>
                     {d.status && (
-                      <span className={`text-2xs px-1.5 py-0 rounded-badge ${
-                        d.status === 'completed' ? 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground'
-                        : d.status === 'failed' ? 'bg-destructive/10 dark:bg-destructive/40 text-destructive dark:text-destructive'
-                        : d.status === 'running' ? 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground'
-                        : 'bg-muted text-muted-foreground'
-                      }`}>
+                      <span
+                        className={`text-2xs px-1.5 py-0 rounded-badge ${
+                          d.status === 'completed'
+                            ? 'bg-muted text-foreground'
+                            : d.status === 'failed'
+                              ? 'bg-destructive/10 dark:bg-destructive/40 text-destructive'
+                              : d.status === 'running'
+                                ? 'bg-muted text-foreground'
+                                : 'bg-muted text-muted-foreground'
+                        }`}
+                      >
                         {d.status}
                       </span>
                     )}

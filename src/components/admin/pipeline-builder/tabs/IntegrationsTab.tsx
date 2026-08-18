@@ -7,8 +7,22 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogTrigger,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom } from '@/integrations/supabase/untyped';
@@ -49,7 +63,12 @@ export default function IntegrationsTab() {
   const qc = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState<Partial<Integration>>({
-    name: '', kind: 'slack', webhook_url: '', auth_token: null, min_severity: 'warn', enabled: true,
+    name: '',
+    kind: 'slack',
+    webhook_url: '',
+    auth_token: null,
+    min_severity: 'warn',
+    enabled: true,
   });
 
   const { data: integrations = [], isLoading } = useQuery<Integration[]>({
@@ -70,7 +89,7 @@ export default function IntegrationsTab() {
         name: form.name,
         kind: form.kind,
         webhook_url: form.webhook_url,
-        auth_token: form.kind === 'ntfy' ? (form.auth_token || null) : null,
+        auth_token: form.kind === 'ntfy' ? form.auth_token || null : null,
         min_severity: form.min_severity,
         enabled: form.enabled,
         created_by: u.user?.id ?? null,
@@ -81,7 +100,14 @@ export default function IntegrationsTab() {
       toast.success('Integration added');
       qc.invalidateQueries({ queryKey: ['alert-integrations'] });
       setDialogOpen(false);
-      setForm({ name: '', kind: 'slack', webhook_url: '', auth_token: null, min_severity: 'warn', enabled: true });
+      setForm({
+        name: '',
+        kind: 'slack',
+        webhook_url: '',
+        auth_token: null,
+        min_severity: 'warn',
+        enabled: true,
+      });
     },
     onError: (e: Error) => toast.error(`Create failed: ${e.message}`),
   });
@@ -110,7 +136,9 @@ export default function IntegrationsTab() {
   const sendTest = useMutation({
     mutationFn: async (i: Integration) => {
       const isNtfy = i.kind === 'ntfy';
-      const { origin, topic } = isNtfy ? splitNtfyUrl(i.webhook_url) : { origin: i.webhook_url, topic: '' };
+      const { origin, topic } = isNtfy
+        ? splitNtfyUrl(i.webhook_url)
+        : { origin: i.webhook_url, topic: '' };
       const res = await fetch(origin, {
         method: 'POST',
         headers: {
@@ -119,7 +147,13 @@ export default function IntegrationsTab() {
         },
         body: JSON.stringify(
           isNtfy
-            ? { topic, title: `[TEST] ${i.name}`, message: 'Data ops alert integration test', priority: 3, tags: ['information_source'] }
+            ? {
+                topic,
+                title: `[TEST] ${i.name}`,
+                message: 'Data ops alert integration test',
+                priority: 3,
+                tags: ['information_source'],
+              }
             : { text: `[TEST] ${i.name} — data ops alert integration test` },
         ),
       });
@@ -129,7 +163,8 @@ export default function IntegrationsTab() {
     onError: (e: Error) => toast.error(`Test failed: ${e.message}`),
   });
 
-  const canSave = form.name && form.name.length >= 2 && form.webhook_url && form.webhook_url.startsWith('http');
+  const canSave =
+    form.name && form.name.length >= 2 && form.webhook_url && form.webhook_url.startsWith('http');
 
   return (
     <TooltipProvider delayDuration={200}>
@@ -137,7 +172,9 @@ export default function IntegrationsTab() {
         <div className="flex items-center gap-2">
           <Webhook className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm font-semibold">Alert Webhook Integrations</span>
-          <Badge variant="outline" className="text-2xs px-1.5 py-0">{integrations.length}</Badge>
+          <Badge variant="outline" className="text-2xs px-1.5 py-0">
+            {integrations.length}
+          </Badge>
           <div className="flex-1" />
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
@@ -155,7 +192,9 @@ export default function IntegrationsTab() {
               </DialogHeader>
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="integration-name" className="text-xs font-medium">Name</label>
+                  <label htmlFor="integration-name" className="text-xs font-medium">
+                    Name
+                  </label>
                   <Input
                     id="integration-name"
                     value={form.name || ''}
@@ -165,9 +204,20 @@ export default function IntegrationsTab() {
                   />
                 </div>
                 <div>
-                  <label htmlFor="integration-kind" className="text-xs font-medium">Type</label>
-                  <Select value={form.kind || 'slack'} onValueChange={(v) => setForm({ ...form, kind: v as Integration['kind'] })}>
-                    <SelectTrigger id="integration-kind" aria-label="Type" className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+                  <label htmlFor="integration-kind" className="text-xs font-medium">
+                    Type
+                  </label>
+                  <Select
+                    value={form.kind || 'slack'}
+                    onValueChange={(v) => setForm({ ...form, kind: v as Integration['kind'] })}
+                  >
+                    <SelectTrigger
+                      id="integration-kind"
+                      aria-label="Type"
+                      className="h-8 text-xs mt-1"
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="slack">Slack</SelectItem>
                       <SelectItem value="discord">Discord</SelectItem>
@@ -184,13 +234,19 @@ export default function IntegrationsTab() {
                     id="integration-url"
                     value={form.webhook_url || ''}
                     onChange={(e) => setForm({ ...form, webhook_url: e.target.value })}
-                    placeholder={form.kind === 'ntfy' ? 'https://ntfy.queer.guide/qg-ops' : 'https://hooks.slack.com/services/...'}
+                    placeholder={
+                      form.kind === 'ntfy'
+                        ? 'https://ntfy.queer.guide/qg-ops'
+                        : 'https://hooks.slack.com/services/...'
+                    }
                     className="h-8 text-xs mt-1 font-mono"
                   />
                 </div>
                 {form.kind === 'ntfy' && (
                   <div>
-                    <label htmlFor="integration-auth-token" className="text-xs font-medium">Auth token (optional)</label>
+                    <label htmlFor="integration-auth-token" className="text-xs font-medium">
+                      Auth token (optional)
+                    </label>
                     <Input
                       id="integration-auth-token"
                       type="password"
@@ -202,12 +258,22 @@ export default function IntegrationsTab() {
                   </div>
                 )}
                 <div>
-                  <label htmlFor="integration-severity" className="text-xs font-medium">Minimum severity</label>
+                  <label htmlFor="integration-severity" className="text-xs font-medium">
+                    Minimum severity
+                  </label>
                   <Select
                     value={form.min_severity || 'warn'}
-                    onValueChange={(v) => setForm({ ...form, min_severity: v as Integration['min_severity'] })}
+                    onValueChange={(v) =>
+                      setForm({ ...form, min_severity: v as Integration['min_severity'] })
+                    }
                   >
-                    <SelectTrigger id="integration-severity" aria-label="Minimum severity" className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+                    <SelectTrigger
+                      id="integration-severity"
+                      aria-label="Minimum severity"
+                      className="h-8 text-xs mt-1"
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="info">info (all alerts)</SelectItem>
                       <SelectItem value="warn">warn and above</SelectItem>
@@ -217,8 +283,14 @@ export default function IntegrationsTab() {
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="ghost" size="sm" onClick={() => setDialogOpen(false)}>Cancel</Button>
-                <Button size="sm" disabled={!canSave || create.isPending} onClick={() => create.mutate()}>
+                <Button variant="ghost" size="sm" onClick={() => setDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  disabled={!canSave || create.isPending}
+                  onClick={() => create.mutate()}
+                >
                   {create.isPending ? <TrackLoader size={14} className="mr-1.5" /> : null}
                   Add integration
                 </Button>
@@ -234,26 +306,50 @@ export default function IntegrationsTab() {
             <div className="p-8 text-center text-sm text-muted-foreground">
               <Webhook className="h-5 w-5 mx-auto mb-2 opacity-40" />
               <p>No integrations configured</p>
-              <p className="text-xs mt-1">Forward alerts to Slack, Discord, ntfy, or any webhook endpoint.</p>
+              <p className="text-xs mt-1">
+                Forward alerts to Slack, Discord, ntfy, or any webhook endpoint.
+              </p>
             </div>
           ) : (
             <table className="w-full text-sm">
               <thead className="bg-muted/40">
                 <tr className="border-b border-border">
-                  {['Name', 'Type', 'Min severity', 'URL', 'Sent', 'Last triggered', 'Enabled', 'Actions'].map(h => (
-                    <th key={h} className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
+                  {[
+                    'Name',
+                    'Type',
+                    'Min severity',
+                    'URL',
+                    'Sent',
+                    'Last triggered',
+                    'Enabled',
+                    'Actions',
+                  ].map((h) => (
+                    <th
+                      key={h}
+                      className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider"
+                    >
+                      {h}
+                    </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {integrations.map(i => (
-                  <tr key={i.id} className={`border-b border-border/40 hover:bg-muted/30 transition-colors ${!i.enabled ? 'opacity-50' : ''}`}>
+                {integrations.map((i) => (
+                  <tr
+                    key={i.id}
+                    className={`border-b border-border/40 hover:bg-muted/30 transition-colors ${!i.enabled ? 'opacity-50' : ''}`}
+                  >
                     <td className="px-4 py-2 font-medium">{i.name}</td>
                     <td className="px-4 py-2">
-                      <Badge variant="outline" className="text-2xs px-1.5 py-0">{KIND_LABEL[i.kind]}</Badge>
+                      <Badge variant="outline" className="text-2xs px-1.5 py-0">
+                        {KIND_LABEL[i.kind]}
+                      </Badge>
                     </td>
                     <td className="px-4 py-2 text-xs capitalize">{i.min_severity}</td>
-                    <td className="px-4 py-2 text-xs2 font-mono text-muted-foreground truncate max-w-[280px]" title={i.webhook_url}>
+                    <td
+                      className="px-4 py-2 text-xs2 font-mono text-muted-foreground truncate max-w-[280px]"
+                      title={i.webhook_url}
+                    >
                       {i.webhook_url.replace(/^https?:\/\//, '').replace(/\/.*$/, '')}/…
                     </td>
                     <td className="px-4 py-2 tabular-nums text-xs">{i.total_sent}</td>
@@ -262,15 +358,25 @@ export default function IntegrationsTab() {
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <span className="flex items-center gap-1 cursor-help">
-                              {i.last_error ? <XCircle className="h-3 w-3 text-destructive" /> : <CheckCircle2 className="h-3 w-3 text-foreground dark:text-foreground" />}
-                              {formatDistanceToNow(new Date(i.last_triggered_at), { addSuffix: true })}
+                              {i.last_error ? (
+                                <XCircle className="h-3 w-3 text-destructive" />
+                              ) : (
+                                <CheckCircle2 className="h-3 w-3 text-foreground" />
+                              )}
+                              {formatDistanceToNow(new Date(i.last_triggered_at), {
+                                addSuffix: true,
+                              })}
                             </span>
                           </TooltipTrigger>
                           <TooltipContent className="text-xs max-w-[300px]">
-                            {i.last_error ? `Last error: ${i.last_error}` : 'Last send was successful'}
+                            {i.last_error
+                              ? `Last error: ${i.last_error}`
+                              : 'Last send was successful'}
                           </TooltipContent>
                         </Tooltip>
-                      ) : '—'}
+                      ) : (
+                        '—'
+                      )}
                     </td>
                     <td className="px-4 py-2">
                       <Switch
@@ -300,7 +406,8 @@ export default function IntegrationsTab() {
                             variant="ghost"
                             className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
                             onClick={() => {
-                              if (window.confirm(`Delete integration "${i.name}"?`)) remove.mutate(i.id);
+                              if (window.confirm(`Delete integration "${i.name}"?`))
+                                remove.mutate(i.id);
                             }}
                             disabled={remove.isPending}
                           >

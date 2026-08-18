@@ -17,9 +17,9 @@ import { AdminTableRowSkeleton } from '@/components/admin/primitives/AdminLoadin
 type Filter = 'open' | 'all';
 
 const severityClass: Record<string, string> = {
-  info: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground',
-  warn: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground',
-  error: 'bg-destructive/10 dark:bg-destructive/40 text-destructive dark:text-destructive',
+  info: 'bg-muted text-foreground',
+  warn: 'bg-muted text-foreground',
+  error: 'bg-destructive/10 dark:bg-destructive/40 text-destructive',
 };
 
 const KIND_LABEL: Record<string, string> = {
@@ -86,7 +86,7 @@ export default function AlertsTab() {
     <div className="flex flex-col gap-4">
       {/* Header */}
       <div className="flex items-center gap-2 flex-wrap">
-        <Bell className="h-4 w-4 text-foreground dark:text-foreground" />
+        <Bell className="h-4 w-4 text-foreground" />
         <span className="text-sm font-semibold">Data Ops Alerts</span>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span>
@@ -95,7 +95,7 @@ export default function AlertsTab() {
           {counts.error > 0 && (
             <Badge
               variant="outline"
-              className="border text-2xs px-1.5 py-0 bg-destructive/10 dark:bg-destructive/30 text-destructive dark:text-destructive border-destructive dark:border-destructive"
+              className="border text-2xs px-1.5 py-0 bg-destructive/10 dark:bg-destructive/30 text-destructive border-destructive dark:border-destructive"
             >
               {counts.error} error
             </Badge>
@@ -103,7 +103,7 @@ export default function AlertsTab() {
           {counts.warn > 0 && (
             <Badge
               variant="outline"
-              className="text-2xs px-1.5 py-0 bg-muted dark:bg-foreground/30 text-foreground dark:text-foreground border-border dark:border-border"
+              className="text-2xs px-1.5 py-0 bg-muted text-foreground border-border"
             >
               {counts.warn} warn
             </Badge>
@@ -111,7 +111,7 @@ export default function AlertsTab() {
           {counts.info > 0 && (
             <Badge
               variant="outline"
-              className="border text-2xs px-1.5 py-0 bg-muted dark:bg-foreground/30 text-foreground dark:text-foreground border-foreground/40 dark:border-foreground/40"
+              className="border text-2xs px-1.5 py-0 bg-muted text-foreground border-foreground/40"
             >
               {counts.info} info
             </Badge>
@@ -157,10 +157,7 @@ export default function AlertsTab() {
               <AdminTableRowSkeleton columns={6} />
             ) : alerts.length === 0 ? (
               <tr>
-                <td
-                  colSpan={6}
-                  className="p-6 text-center text-foreground dark:text-foreground text-sm font-medium"
-                >
+                <td colSpan={6} className="p-6 text-center text-foreground text-sm font-medium">
                   <CheckCircle className="h-5 w-5 inline mr-1" />
                   All clear
                 </td>
@@ -202,7 +199,7 @@ export default function AlertsTab() {
                   </td>
                   <td className="px-4 py-2.5 align-top">
                     {a.acked_at ? (
-                      <span className="inline-flex items-center gap-1 text-xs2 text-foreground dark:text-foreground">
+                      <span className="inline-flex items-center gap-1 text-xs2 text-foreground">
                         <CheckCircle className="h-3 w-3" />
                         acked
                       </span>

@@ -53,7 +53,7 @@
 @source inline("{,hover:,focus:,group-hover:,dark:}{bg,text,decoration}-ink-{pink,blue,over}");
 @source inline("{,dark:}{bg,text}-ink-{pink,blue,over}-foreground");
 @source inline("{,hover:,focus:,group-hover:}{bg,text,border,decoration}-track-{pink,blue,green,yellow}");
-@source inline("border-track-ring");
+@source inline("{border,text}-track-ring");
 @source inline("shadow-{soft,soft-hover,soft-lg}");
 
 @theme {
@@ -500,10 +500,118 @@
   --admin-content-min-h: 100dvh;
 }
 
-/* Dark mode removed 2026-08 (subway-map rebrand): the identity is a fixed
-   paper/ink poster. The `.dark` override block is gone; `dark:` utilities in
-   components are inert because the class is never applied (they get stripped
-   surface-by-surface in the Public/Admin phases). */
+/* ── Dark mode (reinstated 2026-08-18) ──────────────────────────────────
+   Removed with the 2026-08-09 rebrand ("the identity is a fixed paper/ink
+   poster"); restored when the design project shipped a dark toggle with its
+   own neutral ramp.
+
+   Brand Guidelines specifies FIVE neutrals and no more:
+     --ink #FAFAF5   --paper #111111   --frame #23231F
+     --wash #1C1C19  --wash-strong #262622
+
+   Ordered by lightness that is paper 6.7 < wash 10.4 < frame 12.9 <
+   wash-strong 14.1, and the mapping INVERTS rather than mirrors: in light,
+   "recessed" is darker than the card; in dark, elevated is lighter and
+   nothing may sit below the page. So frame becomes the card (the thing that
+   lifts), wash becomes the inset and the field fill (recessed against a card
+   at 10.4 < 12.9), and wash-strong becomes the popover — the only surface
+   above a card.
+
+   Everything else is DERIVED, not specified, and each derivation says so.
+   Two rules hold across the block:
+     - Track colours never change. They are identity, not theme — which is
+       also why type on a track fill uses `--track-ring` (ink in both modes)
+       rather than `--foreground`, which flips.
+     - Shadows stay BLACK and only deepen. `hsl(var(--foreground)/a)` would
+       turn every shadow into a white glow here.
+
+   This must stay a real `.dark {}` block in this file: `@custom-variant dark`
+   uses `:where()` (zero specificity) so the stylesheet's own rule beats every
+   `dark:` utility, and tokenCatalog.test.ts parses this file textually for a
+   SECOND occurrence of each token. */
+.dark {
+  --background: 0 0% 6.7%; /* paper #111111 — the page */
+  --foreground: 60 33% 97%; /* ink #FAFAF5 */
+
+  --card: 60 6.1% 12.9%; /* frame #23231F — the sheet, one rung up */
+  --card-foreground: 60 33% 97%;
+
+  --popover: 60 5.6% 14.1%; /* wash-strong #262622 — floats highest */
+  --popover-foreground: 60 33% 97%;
+
+  --primary: 60 33% 97%;
+  --primary-foreground: 0 0% 6.7%;
+  --secondary: 60 33% 97%;
+  --secondary-foreground: 0 0% 6.7%;
+
+  --muted: 60 5.7% 10.4%; /* wash #1C1C19 — recessed against a card */
+  --muted-foreground: 60 6% 66%; /* derived: 8.4:1 on the page */
+  --accent: 60 5.6% 14.1%;
+  --accent-foreground: 60 33% 97%;
+
+  /* Derived. The light value's comment applies verbatim: this token is read
+     as TEXT ~236x against 16 button fills, so its lightness is tuned for
+     red-on-dark-page legibility (5.9:1) and the BUTTON case is solved by
+     flipping its foreground to near-black instead. */
+  --destructive: 0 80% 66%;
+  --destructive-foreground: 0 0% 6.7%;
+  --warning: 60 33% 97%;
+  --warning-foreground: 0 0% 6.7%;
+  --success: 60 33% 97%;
+  --success-foreground: 0 0% 6.7%;
+
+  /* Identity, not theme — unchanged in both modes, the ring included. */
+  --track-pink: 330 100% 56%;
+  --track-blue: 193 100% 45%;
+  --track-green: 135.6 74.5% 52.4%;
+  --track-yellow: 50.1 100% 50%;
+  --track-ring: 0 0% 6.7%;
+
+  --spot: 330 100% 56%;
+  --spot-foreground: 0 0% 6.7%;
+  --ink-blue: 193 100% 45%;
+  --ink-blue-foreground: 0 0% 6.7%;
+  --ink-over: 135.6 74.5% 52.4%;
+  --ink-over-foreground: 0 0% 6.7%;
+
+  /* Derived: 12% paper over the page — the mirror of light's 12% ink. */
+  --border: 60 1.1% 17.5%;
+  /* Derived: a control boundary clears 3:1 against BOTH the page (5.2:1) and
+     a card (4.4:1), which is a tighter constraint than the light value's. */
+  --input: 60 3.6% 51.2%;
+  --input-bg: 60 5.7% 10.4%;
+  --ring: 330 100% 56%;
+
+  --sidebar-background: 60 6.1% 12.9%;
+  --sidebar-foreground: 60 33% 97%;
+  --sidebar-primary: 60 33% 97%;
+  --sidebar-primary-foreground: 0 0% 6.7%;
+  --sidebar-accent: 60 5.6% 14.1%;
+  --sidebar-accent-foreground: 60 33% 97%;
+  --sidebar-border: 60 1.1% 17.5%;
+  --sidebar-ring: 60 33% 97%;
+
+  --text-primary: 60 33% 97%;
+  --text-secondary: 60 8% 72%; /* derived: 10.0:1 on the page */
+  --text-muted: 60 6% 62%; /* derived: 7.5:1 on the page */
+  /* Channels flip to paper; the 12% alpha lives in --hairline-alpha. */
+  --border-hairline: 60 33% 97%;
+
+  --surface: 60 6.1% 12.9%;
+  --surface-container-lowest: 60 5.7% 10.4%;
+  --surface-container-low: 60 6.1% 12.9%;
+  --surface-container: 60 5.6% 14.1%;
+  /* The last three continue the ramp past the four specified neutrals. */
+  --surface-container-high: 60 5.5% 16.5%;
+  --surface-container-highest: 60 5.4% 19%;
+  --surface-dim: 60 5.2% 22%;
+  --inverse-surface: 60 33% 97%;
+
+  /* Same geometry, deeper alpha: 6% black is invisible on a #111 page. */
+  --shadow-soft: 0 16px 40px rgba(0, 0, 0, 0.45);
+  --shadow-soft-hover: 0 12px 30px rgba(0, 0, 0, 0.6);
+  --shadow-soft-lg: 0 24px 60px rgba(0, 0, 0, 0.65);
+}
 
 /* ── MapLibre popup theme (Aceternity card vibe) ───────────────────── */
 .maplibregl-popup-content {

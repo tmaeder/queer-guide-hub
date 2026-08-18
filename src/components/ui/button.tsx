@@ -45,9 +45,9 @@ const buttonVariants = cva(
         // `accent`/`brand` are used across src/components/trips/**, and
         // CLAUDE.md keeps travel content motion-free because it is
         // safety-adjacent. Opt in per call site with className="ink-bleed".
-        accent: 'border border-track-ring bg-track-pink text-foreground font-bold hover:opacity-90',
+        accent: 'border border-track-ring bg-track-pink text-track-ring font-bold hover:opacity-90',
         // Blue track. Ink type (paper-on-blue fails 3:1 — see tokenContrast).
-        brand: 'border border-track-ring bg-track-blue text-foreground font-bold hover:opacity-90',
+        brand: 'border border-track-ring bg-track-blue text-track-ring font-bold hover:opacity-90',
         // Legacy alias retained for compat (2026-05-19) — collapses to
         // `default`. Use variant="default".
         secondary: 'bg-foreground text-background font-bold hover:opacity-85',

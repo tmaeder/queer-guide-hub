@@ -125,7 +125,7 @@ export default function VersionHistoryDialog({
                         {isCurrent && (
                           <Badge
                             variant="outline"
-                            className="border text-2xs px-1.5 py-0 bg-muted dark:bg-foreground/30 text-foreground dark:text-foreground border-foreground/40 dark:border-foreground/40"
+                            className="border text-2xs px-1.5 py-0 bg-muted text-foreground border-foreground/40"
                           >
                             current
                           </Badge>

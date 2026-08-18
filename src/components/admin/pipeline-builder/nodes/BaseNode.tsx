@@ -14,19 +14,19 @@ import type { BaseNodeType } from '../types';
 const statusConfig: Record<string, { className: string; icon: string }> = {
   pending: { className: 'bg-muted text-muted-foreground', icon: 'Clock' },
   running: {
-    className: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground animate-pulse',
+    className: 'bg-muted text-foreground animate-pulse',
     icon: 'Loader2',
   },
   completed: {
-    className: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground',
+    className: 'bg-muted text-foreground',
     icon: 'CheckCircle2',
   },
   failed: {
-    className: 'bg-destructive/10 dark:bg-destructive/40 text-destructive dark:text-destructive',
+    className: 'bg-destructive/10 dark:bg-destructive/40 text-destructive',
     icon: 'XCircle',
   },
   skipped: {
-    className: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground',
+    className: 'bg-muted text-foreground',
     icon: 'SkipForward',
   },
 };
@@ -101,7 +101,7 @@ function BaseNode({ data: d, selected }: NodeProps<BaseNodeType>) {
           {d.hasValidationIssue && !sc && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <AlertCircle className="h-3.5 w-3.5 text-foreground dark:text-foreground ml-auto shrink-0" />
+                <AlertCircle className="h-3.5 w-3.5 text-foreground ml-auto shrink-0" />
               </TooltipTrigger>
               <TooltipContent className="text-xs">Missing required config</TooltipContent>
             </Tooltip>

@@ -241,6 +241,27 @@ describe('design tokens: contrast guards', () => {
     }
   });
 
+  it.each(
+    ['track-pink', 'track-blue', 'track-green', 'track-yellow'].flatMap((t) =>
+      MODES.map((mode) => [t, mode] as const),
+    ),
+  )('type on --%s is readable in %s mode', (track, mode) => {
+    // Measured against `--track-ring`, which is what the components actually
+    // render (TRACK_TEXT, Button accent/brand, Badge ink) — NOT against
+    // `--foreground`, which flips to paper in dark and would make this assert
+    // paper-on-cyan at 2.32:1 while the product renders ink at 7.72:1.
+    //
+    // A track fill is identity, not theme: the same four hexes in both modes.
+    // So this ratio is mode-independent by construction, and running it in
+    // both modes is what proves that rather than assumes it.
+    const v = contrastVerdict(TRACK_RING, value(track, mode));
+    expect(v).not.toBeNull();
+    expect(
+      v!.ratio,
+      `--track-ring on --${track} (${mode}) is ${v!.ratio}:1, needs >= 4.5`,
+    ).toBeGreaterThanOrEqual(4.5);
+  });
+
   it('locks the text-on-track rule: INK on every track fill', () => {
     // The source design mock puts PAPER type on the pink and cyan fills.
     // Measured, paper-on-cyan is 2.32:1 and paper-on-pink 3.43:1 — the first

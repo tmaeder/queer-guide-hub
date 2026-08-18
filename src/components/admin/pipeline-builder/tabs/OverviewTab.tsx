@@ -11,9 +11,22 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
-import { Activity, AlertTriangle, CheckCircle, Play, Workflow, GitBranch, Search} from 'lucide-react';
+import {
+  Activity,
+  AlertTriangle,
+  CheckCircle,
+  Play,
+  Workflow,
+  GitBranch,
+  Search,
+} from 'lucide-react';
 import { AdminStatTile } from '@/components/admin/primitives/AdminStatTile';
-import { useUnifiedPipelineOverview, usePipelineRunCounts24h, useCircuitBreakers, type UnifiedPipelineRow } from '../hooks/usePipelineHistory';
+import {
+  useUnifiedPipelineOverview,
+  usePipelineRunCounts24h,
+  useCircuitBreakers,
+  type UnifiedPipelineRow,
+} from '../hooks/usePipelineHistory';
 import { AdminTableRowSkeleton } from '@/components/admin/primitives/AdminLoading';
 import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 
@@ -21,10 +34,10 @@ type Filter = 'all' | 'pipelines' | 'workflows' | 'failing' | 'disabled';
 
 const statusClass: Record<string, string> = {
   queued: 'bg-muted text-muted-foreground',
-  running: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground',
-  completed: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground',
-  failed: 'bg-destructive/10 dark:bg-destructive/40 text-destructive dark:text-destructive',
-  cancelled: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground',
+  running: 'bg-muted text-foreground',
+  completed: 'bg-muted text-foreground',
+  failed: 'bg-destructive/10 dark:bg-destructive/40 text-destructive',
+  cancelled: 'bg-muted text-foreground',
   paused: 'bg-muted text-foreground',
 };
 
@@ -51,10 +64,16 @@ function StatusDots({ statuses }: { statuses: string[] }) {
   return (
     <div className="flex gap-0.5">
       {cells.map((s, i) => {
-        const bg = s === 'completed' ? 'bg-foreground'
-                 : s === 'failed' ? 'bg-destructive'
-                 : s === 'running' ? 'bg-foreground'
-                 : s ? 'bg-muted-foreground' : 'bg-muted';
+        const bg =
+          s === 'completed'
+            ? 'bg-foreground'
+            : s === 'failed'
+              ? 'bg-destructive'
+              : s === 'running'
+                ? 'bg-foreground'
+                : s
+                  ? 'bg-muted-foreground'
+                  : 'bg-muted';
         return (
           <Tooltip key={i}>
             <TooltipTrigger asChild>
@@ -77,11 +96,11 @@ export default function OverviewTab() {
   const [filter, setFilter] = useState<Filter>('all');
   const [search, setSearch] = useState('');
 
-  const openCircuits = circuitBreakers?.filter(cb => cb.state === 'open').length || 0;
-  const activeCount = rows?.filter(r => r.is_enabled && !r.is_template).length || 0;
-  const failingCount = rows?.filter(r => r.last_run_status === 'failed').length || 0;
-  const pipelineCount = rows?.filter(r => r.kind === 'pipeline').length || 0;
-  const workflowCount = rows?.filter(r => r.kind === 'workflow').length || 0;
+  const openCircuits = circuitBreakers?.filter((cb) => cb.state === 'open').length || 0;
+  const activeCount = rows?.filter((r) => r.is_enabled && !r.is_template).length || 0;
+  const failingCount = rows?.filter((r) => r.last_run_status === 'failed').length || 0;
+  const pipelineCount = rows?.filter((r) => r.kind === 'pipeline').length || 0;
+  const workflowCount = rows?.filter((r) => r.kind === 'workflow').length || 0;
 
   const toggleEnabled = useMutation({
     mutationFn: async ({ row, enabled }: { row: UnifiedPipelineRow; enabled: boolean }) => {
@@ -116,12 +135,16 @@ export default function OverviewTab() {
 
   const filtered = useMemo(() => {
     if (!rows) return [];
-    return rows.filter(r => {
+    return rows.filter((r) => {
       if (filter === 'pipelines' && r.kind !== 'pipeline') return false;
       if (filter === 'workflows' && r.kind !== 'workflow') return false;
       if (filter === 'failing' && r.last_run_status !== 'failed') return false;
       if (filter === 'disabled' && r.is_enabled) return false;
-      if (search && !`${r.name} ${r.display_name || ''}`.toLowerCase().includes(search.toLowerCase())) return false;
+      if (
+        search &&
+        !`${r.name} ${r.display_name || ''}`.toLowerCase().includes(search.toLowerCase())
+      )
+        return false;
       return true;
     });
   }, [rows, filter, search]);
@@ -131,7 +154,15 @@ export default function OverviewTab() {
     else navigate(`/admin/pipelines?tab=monitor&workflow=${row.name}`);
   };
 
-  const FilterButton = ({ value, label, count }: { value: Filter; label: string; count?: number }) => (
+  const FilterButton = ({
+    value,
+    label,
+    count,
+  }: {
+    value: Filter;
+    label: string;
+    count?: number;
+  }) => (
     <button
       onClick={() => setFilter(value)}
       className={`text-xs px-4 py-1 rounded-badge border transition-colors capitalize ${
@@ -150,8 +181,18 @@ export default function OverviewTab() {
       <div className="flex flex-col gap-6">
         {/* Stat cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <AdminStatTile icon={Activity} iconClassName="text-primary" value={activeCount} label="Active definitions" />
-          <AdminStatTile icon={CheckCircle} iconClassName="text-foreground dark:text-foreground" value={counts24h?.total ?? '—'} label="Runs in last 24h" />
+          <AdminStatTile
+            icon={Activity}
+            iconClassName="text-primary"
+            value={activeCount}
+            label="Active definitions"
+          />
+          <AdminStatTile
+            icon={CheckCircle}
+            iconClassName="text-foreground"
+            value={counts24h?.total ?? '—'}
+            label="Runs in last 24h"
+          />
           <AdminStatTile
             icon={AlertTriangle}
             iconClassName={failingCount > 0 ? 'text-destructive' : 'text-muted-foreground'}
@@ -161,7 +202,7 @@ export default function OverviewTab() {
           />
           <AdminStatTile
             icon={AlertTriangle}
-            iconClassName={openCircuits > 0 ? 'text-destructive' : 'text-foreground dark:text-foreground'}
+            iconClassName={openCircuits > 0 ? 'text-destructive' : 'text-foreground'}
             value={openCircuits}
             label="Open circuits"
             alert={openCircuits > 0}
@@ -200,7 +241,7 @@ export default function OverviewTab() {
             <Input
               placeholder="Search by name..."
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={(e) => setSearch(e.target.value)}
               className="h-8 pl-8 text-xs"
             />
           </div>
@@ -211,14 +252,30 @@ export default function OverviewTab() {
           <table className="w-full text-sm">
             <thead className="bg-muted/40">
               <tr className="border-b border-border">
-                <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[90px]">Kind</th>
-                <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">Name</th>
-                <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[130px]">Schedule</th>
-                <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[110px]">Last run</th>
-                <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[100px]">Status</th>
-                <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[160px]">Last 10</th>
-                <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[110px]">Items</th>
-                <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[80px]">Enabled</th>
+                <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[90px]">
+                  Kind
+                </th>
+                <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">
+                  Name
+                </th>
+                <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[130px]">
+                  Schedule
+                </th>
+                <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[110px]">
+                  Last run
+                </th>
+                <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[100px]">
+                  Status
+                </th>
+                <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[160px]">
+                  Last 10
+                </th>
+                <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[110px]">
+                  Items
+                </th>
+                <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[80px]">
+                  Enabled
+                </th>
                 <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[100px]" />
               </tr>
             </thead>
@@ -226,82 +283,124 @@ export default function OverviewTab() {
               {isLoading ? (
                 <AdminTableRowSkeleton columns={9} />
               ) : filtered.length === 0 ? (
-                <tr><td colSpan={9} className="p-6 text-center text-muted-foreground text-xs">
-                  <AdminEmpty
-                    variant="inline"
-                    noun="definitions"
-                    filtered={(rows?.length ?? 0) > 0}
-                    className="text-xs"
-                  />
-                </td></tr>
-              ) : filtered.map(row => (
-                <tr key={`${row.kind}-${row.id}`} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
-                  <td className="px-4 py-2.5 align-top">
-                    <Badge variant="outline" className="text-2xs px-1.5 py-0 gap-1">
-                      {row.kind === 'pipeline' ? <GitBranch className="h-2.5 w-2.5" /> : <Workflow className="h-2.5 w-2.5" />}
-                      {row.kind}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-2.5 align-top">
-                    <button
-                      onClick={() => openRow(row)}
-                      className="text-primary font-medium hover:underline text-left"
-                    >
-                      {row.display_name || row.name}
-                    </button>
-                    {row.is_template && <Badge variant="outline" className="ml-2 text-3xs px-1 py-0">Template</Badge>}
-                    <div className="text-xs2 text-muted-foreground font-mono truncate max-w-[320px]" title={row.name}>{row.name}</div>
-                  </td>
-                  <td className="px-4 py-2.5 align-top text-xs text-muted-foreground"
-                      title={row.schedule || 'manual'}>
-                    {humanSchedule(row.schedule)}
-                  </td>
-                  <td className="px-4 py-2.5 align-top text-xs text-muted-foreground"
-                      title={row.last_run_at ? new Date(row.last_run_at).toISOString() : ''}>
-                    {row.last_run_at ? formatDistanceToNow(new Date(row.last_run_at), { addSuffix: true }) : '—'}
-                  </td>
-                  <td className="px-4 py-2.5 align-top">
-                    {row.last_run_status ? (
-                      <Badge variant="outline" className={`text-2xs px-2 py-0 ${statusClass[row.last_run_status] || ''}`}>
-                        {row.last_run_status}
-                      </Badge>
-                    ) : <span className="text-xs2 text-muted-foreground">never</span>}
-                  </td>
-                  <td className="px-4 py-2.5 align-top">
-                    <div className="flex flex-col gap-1">
-                      <StatusDots statuses={row.recent_statuses} />
-                      <span className="text-2xs text-muted-foreground">
-                        {row.recent_total_count > 0 ? `${row.recent_success_count}/${row.recent_total_count} ok` : 'no runs'}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-2.5 align-top text-xs tabular-nums">
-                    {row.last_items_total != null && row.last_items_total > 0
-                      ? <><span className="text-foreground dark:text-foreground font-semibold">{row.last_items_succeeded ?? 0}</span><span className="text-muted-foreground">/{row.last_items_total}</span></>
-                      : <span className="text-muted-foreground">—</span>}
-                  </td>
-                  <td className="px-4 py-2.5 align-top">
-                    <Switch
-                      checked={row.is_enabled}
-                      onCheckedChange={enabled => toggleEnabled.mutate({ row, enabled })}
+                <tr>
+                  <td colSpan={9} className="p-6 text-center text-muted-foreground text-xs">
+                    <AdminEmpty
+                      variant="inline"
+                      noun="definitions"
+                      filtered={(rows?.length ?? 0) > 0}
+                      className="text-xs"
                     />
                   </td>
-                  <td className="px-4 py-2.5 align-top">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-7 text-xs"
-                      disabled={runNow.isPending || !row.is_enabled}
-                      onClick={() => runNow.mutate(row)}
-                    >
-                      {runNow.isPending && runNow.variables?.id === row.id
-                        ? <TrackLoader size={12} className="mr-1" />
-                        : <Play className="h-3 w-3 mr-1" />}
-                      Run
-                    </Button>
-                  </td>
                 </tr>
-              ))}
+              ) : (
+                filtered.map((row) => (
+                  <tr
+                    key={`${row.kind}-${row.id}`}
+                    className="border-b border-border/40 hover:bg-muted/30 transition-colors"
+                  >
+                    <td className="px-4 py-2.5 align-top">
+                      <Badge variant="outline" className="text-2xs px-1.5 py-0 gap-1">
+                        {row.kind === 'pipeline' ? (
+                          <GitBranch className="h-2.5 w-2.5" />
+                        ) : (
+                          <Workflow className="h-2.5 w-2.5" />
+                        )}
+                        {row.kind}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-2.5 align-top">
+                      <button
+                        onClick={() => openRow(row)}
+                        className="text-primary font-medium hover:underline text-left"
+                      >
+                        {row.display_name || row.name}
+                      </button>
+                      {row.is_template && (
+                        <Badge variant="outline" className="ml-2 text-3xs px-1 py-0">
+                          Template
+                        </Badge>
+                      )}
+                      <div
+                        className="text-xs2 text-muted-foreground font-mono truncate max-w-[320px]"
+                        title={row.name}
+                      >
+                        {row.name}
+                      </div>
+                    </td>
+                    <td
+                      className="px-4 py-2.5 align-top text-xs text-muted-foreground"
+                      title={row.schedule || 'manual'}
+                    >
+                      {humanSchedule(row.schedule)}
+                    </td>
+                    <td
+                      className="px-4 py-2.5 align-top text-xs text-muted-foreground"
+                      title={row.last_run_at ? new Date(row.last_run_at).toISOString() : ''}
+                    >
+                      {row.last_run_at
+                        ? formatDistanceToNow(new Date(row.last_run_at), { addSuffix: true })
+                        : '—'}
+                    </td>
+                    <td className="px-4 py-2.5 align-top">
+                      {row.last_run_status ? (
+                        <Badge
+                          variant="outline"
+                          className={`text-2xs px-2 py-0 ${statusClass[row.last_run_status] || ''}`}
+                        >
+                          {row.last_run_status}
+                        </Badge>
+                      ) : (
+                        <span className="text-xs2 text-muted-foreground">never</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-2.5 align-top">
+                      <div className="flex flex-col gap-1">
+                        <StatusDots statuses={row.recent_statuses} />
+                        <span className="text-2xs text-muted-foreground">
+                          {row.recent_total_count > 0
+                            ? `${row.recent_success_count}/${row.recent_total_count} ok`
+                            : 'no runs'}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-2.5 align-top text-xs tabular-nums">
+                      {row.last_items_total != null && row.last_items_total > 0 ? (
+                        <>
+                          <span className="text-foreground font-semibold">
+                            {row.last_items_succeeded ?? 0}
+                          </span>
+                          <span className="text-muted-foreground">/{row.last_items_total}</span>
+                        </>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-2.5 align-top">
+                      <Switch
+                        checked={row.is_enabled}
+                        onCheckedChange={(enabled) => toggleEnabled.mutate({ row, enabled })}
+                      />
+                    </td>
+                    <td className="px-4 py-2.5 align-top">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-xs"
+                        disabled={runNow.isPending || !row.is_enabled}
+                        onClick={() => runNow.mutate(row)}
+                      >
+                        {runNow.isPending && runNow.variables?.id === row.id ? (
+                          <TrackLoader size={12} className="mr-1" />
+                        ) : (
+                          <Play className="h-3 w-3 mr-1" />
+                        )}
+                        Run
+                      </Button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
           {!isLoading && rows && (

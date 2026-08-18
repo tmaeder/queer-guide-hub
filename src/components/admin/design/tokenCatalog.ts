@@ -99,25 +99,25 @@ export const COLOR_TOKENS: ColorTokenDef[] = [
   // Light-only: dark mirrors light (dark mode removed 2026-08, subway-map
   // rebrand). NOTE the page is NOT paper since the 2026-08-17 soft re-skin —
   // the page/card step is what separates a card now that keylines are gone.
-  { key: 'background', group: 'core', light: '60 16.3% 91.6%', dark: '60 16.3% 91.6%' },
-  { key: 'foreground', group: 'core', light: '0 0% 6.7%', dark: '0 0% 6.7%' },
-  { key: 'card', group: 'core', light: '60 33% 97%', dark: '60 33% 97%' },
-  { key: 'card-foreground', group: 'core', light: '0 0% 6.7%', dark: '0 0% 6.7%' },
-  { key: 'popover', group: 'core', light: '60 33% 97%', dark: '60 33% 97%' },
-  { key: 'popover-foreground', group: 'core', light: '0 0% 6.7%', dark: '0 0% 6.7%' },
-  { key: 'primary', group: 'core', light: '0 0% 6.7%', dark: '0 0% 6.7%' },
-  { key: 'primary-foreground', group: 'core', light: '60 33% 97%', dark: '60 33% 97%' },
-  { key: 'secondary', group: 'core', light: '0 0% 6.7%', dark: '0 0% 6.7%' },
-  { key: 'secondary-foreground', group: 'core', light: '60 33% 97%', dark: '60 33% 97%' },
-  { key: 'muted', group: 'core', light: '60 22.2% 92.9%', dark: '60 22.2% 92.9%' },
-  { key: 'muted-foreground', group: 'core', light: '0 0% 33%', dark: '0 0% 33%' },
-  { key: 'accent', group: 'core', light: '60 22.2% 92.9%', dark: '60 22.2% 92.9%' },
-  { key: 'accent-foreground', group: 'core', light: '0 0% 6.7%', dark: '0 0% 6.7%' },
+  { key: 'background', group: 'core', light: '60 16.3% 91.6%', dark: '0 0% 6.7%' },
+  { key: 'foreground', group: 'core', light: '0 0% 6.7%', dark: '60 33% 97%' },
+  { key: 'card', group: 'core', light: '60 33% 97%', dark: '60 6.1% 12.9%' },
+  { key: 'card-foreground', group: 'core', light: '0 0% 6.7%', dark: '60 33% 97%' },
+  { key: 'popover', group: 'core', light: '60 33% 97%', dark: '60 5.6% 14.1%' },
+  { key: 'popover-foreground', group: 'core', light: '0 0% 6.7%', dark: '60 33% 97%' },
+  { key: 'primary', group: 'core', light: '0 0% 6.7%', dark: '60 33% 97%' },
+  { key: 'primary-foreground', group: 'core', light: '60 33% 97%', dark: '0 0% 6.7%' },
+  { key: 'secondary', group: 'core', light: '0 0% 6.7%', dark: '60 33% 97%' },
+  { key: 'secondary-foreground', group: 'core', light: '60 33% 97%', dark: '0 0% 6.7%' },
+  { key: 'muted', group: 'core', light: '60 22.2% 92.9%', dark: '60 5.7% 10.4%' },
+  { key: 'muted-foreground', group: 'core', light: '0 0% 33%', dark: '60 6% 66%' },
+  { key: 'accent', group: 'core', light: '60 22.2% 92.9%', dark: '60 5.6% 14.1%' },
+  { key: 'accent-foreground', group: 'core', light: '0 0% 6.7%', dark: '60 33% 97%' },
   // A divider, not a component boundary — cards separate by tint + shadow.
-  { key: 'border', group: 'core', light: '60 7.4% 81.4%', dark: '60 7.4% 81.4%' },
+  { key: 'border', group: 'core', light: '60 7.4% 81.4%', dark: '60 1.1% 17.5%' },
   // A form control's boundary IS required to clear 3:1 (WCAG 1.4.11).
-  { key: 'input', group: 'core', light: '60 4.8% 44.9%', dark: '60 4.8% 44.9%' },
-  { key: 'input-bg', group: 'core', light: '60 33% 97%', dark: '60 33% 97%' },
+  { key: 'input', group: 'core', light: '60 4.8% 44.9%', dark: '60 3.6% 51.2%' },
+  { key: 'input-bg', group: 'core', light: '60 33% 97%', dark: '60 5.7% 10.4%' },
   { key: 'ring', group: 'core', light: '330 100% 56%', dark: '330 100% 56%' },
   // Track colors — SEMANTIC wayfinding lines. Fill-only, never body text;
   // a track-coloured MARK carries the ink `--track-ring`. See src/index.css.
@@ -132,12 +132,12 @@ export const COLOR_TOKENS: ColorTokenDef[] = [
   },
   { key: 'track-yellow', group: 'core', light: '50.1 100% 50%', dark: '50.1 100% 50%', ink: true },
   // Feedback — destructive is the only chromatic hue; warning + success are neutral
-  { key: 'destructive', group: 'feedback', light: '0 70% 38%', dark: '0 70% 38%' },
-  { key: 'destructive-foreground', group: 'feedback', light: '60 33% 97%', dark: '60 33% 97%' },
-  { key: 'warning', group: 'feedback', light: '0 0% 6.7%', dark: '0 0% 6.7%' },
-  { key: 'warning-foreground', group: 'feedback', light: '60 33% 97%', dark: '60 33% 97%' },
-  { key: 'success', group: 'feedback', light: '0 0% 6.7%', dark: '0 0% 6.7%' },
-  { key: 'success-foreground', group: 'feedback', light: '60 33% 97%', dark: '60 33% 97%' },
+  { key: 'destructive', group: 'feedback', light: '0 70% 38%', dark: '0 80% 66%' },
+  { key: 'destructive-foreground', group: 'feedback', light: '60 33% 97%', dark: '0 0% 6.7%' },
+  { key: 'warning', group: 'feedback', light: '0 0% 6.7%', dark: '60 33% 97%' },
+  { key: 'warning-foreground', group: 'feedback', light: '60 33% 97%', dark: '0 0% 6.7%' },
+  { key: 'success', group: 'feedback', light: '0 0% 6.7%', dark: '60 33% 97%' },
+  { key: 'success-foreground', group: 'feedback', light: '60 33% 97%', dark: '0 0% 6.7%' },
   // DEPRECATED PASTE-UP ink aliases. Deliberately NOT flagged `ink: true`:
   // they hold the SAME values as the track colours above, so flagging them
   // would make the mutual-hue-distinctness guard compare a colour with itself
@@ -152,40 +152,40 @@ export const COLOR_TOKENS: ColorTokenDef[] = [
   { key: 'ink-over', group: 'feedback', light: '135.6 74.5% 52.4%', dark: '135.6 74.5% 52.4%' },
   { key: 'ink-over-foreground', group: 'feedback', light: '0 0% 6.7%', dark: '0 0% 6.7%' },
   // Text hierarchy
-  { key: 'text-primary', group: 'text', light: '0 0% 6.7%', dark: '0 0% 6.7%' },
-  { key: 'text-secondary', group: 'text', light: '0 0% 30%', dark: '0 0% 30%' },
-  { key: 'text-muted', group: 'text', light: '0 0% 40%', dark: '0 0% 40%' },
+  { key: 'text-primary', group: 'text', light: '0 0% 6.7%', dark: '60 33% 97%' },
+  { key: 'text-secondary', group: 'text', light: '0 0% 30%', dark: '60 8% 72%' },
+  { key: 'text-muted', group: 'text', light: '0 0% 40%', dark: '60 6% 62%' },
   // Channels only — the 12% alpha lives in `--hairline-alpha`, because
   // branding_validate's HSL_RE forbids an alpha component in a token value.
-  { key: 'border-hairline', group: 'text', light: '0 0% 6.7%', dark: '0 0% 6.7%' },
+  { key: 'border-hairline', group: 'text', light: '0 0% 6.7%', dark: '60 33% 97%' },
   // Surface elevation ladder — paper-tinted neutral steps
-  { key: 'surface', group: 'surface', light: '60 33% 97%', dark: '60 33% 97%' },
-  { key: 'surface-container-lowest', group: 'surface', light: '60 33% 97%', dark: '60 33% 97%' },
+  { key: 'surface', group: 'surface', light: '60 33% 97%', dark: '60 6.1% 12.9%' },
+  { key: 'surface-container-lowest', group: 'surface', light: '60 33% 97%', dark: '60 5.7% 10.4%' },
   {
     key: 'surface-container-low',
     group: 'surface',
     light: '60 22.2% 92.9%',
-    dark: '60 22.2% 92.9%',
+    dark: '60 6.1% 12.9%',
   },
-  { key: 'surface-container', group: 'surface', light: '60 16.3% 91.6%', dark: '60 16.3% 91.6%' },
+  { key: 'surface-container', group: 'surface', light: '60 16.3% 91.6%', dark: '60 5.6% 14.1%' },
   {
     key: 'surface-container-high',
     group: 'surface',
     light: '60 13.2% 89.6%',
-    dark: '60 13.2% 89.6%',
+    dark: '60 5.5% 16.5%',
   },
-  { key: 'surface-container-highest', group: 'surface', light: '60 12% 87%', dark: '60 12% 87%' },
-  { key: 'surface-dim', group: 'surface', light: '60 11% 85%', dark: '60 11% 85%' },
-  { key: 'inverse-surface', group: 'surface', light: '0 0% 6.7%', dark: '0 0% 6.7%' },
+  { key: 'surface-container-highest', group: 'surface', light: '60 12% 87%', dark: '60 5.4% 19%' },
+  { key: 'surface-dim', group: 'surface', light: '60 11% 85%', dark: '60 5.2% 22%' },
+  { key: 'inverse-surface', group: 'surface', light: '0 0% 6.7%', dark: '60 33% 97%' },
   // Sidebar
-  { key: 'sidebar-background', group: 'sidebar', light: '60 33% 97%', dark: '60 33% 97%' },
-  { key: 'sidebar-foreground', group: 'sidebar', light: '0 0% 6.7%', dark: '0 0% 6.7%' },
-  { key: 'sidebar-primary', group: 'sidebar', light: '0 0% 6.7%', dark: '0 0% 6.7%' },
-  { key: 'sidebar-primary-foreground', group: 'sidebar', light: '60 33% 97%', dark: '60 33% 97%' },
-  { key: 'sidebar-accent', group: 'sidebar', light: '60 22.2% 92.9%', dark: '60 22.2% 92.9%' },
-  { key: 'sidebar-accent-foreground', group: 'sidebar', light: '0 0% 6.7%', dark: '0 0% 6.7%' },
-  { key: 'sidebar-border', group: 'sidebar', light: '60 7.4% 81.4%', dark: '60 7.4% 81.4%' },
-  { key: 'sidebar-ring', group: 'sidebar', light: '0 0% 6.7%', dark: '0 0% 6.7%' },
+  { key: 'sidebar-background', group: 'sidebar', light: '60 33% 97%', dark: '60 6.1% 12.9%' },
+  { key: 'sidebar-foreground', group: 'sidebar', light: '0 0% 6.7%', dark: '60 33% 97%' },
+  { key: 'sidebar-primary', group: 'sidebar', light: '0 0% 6.7%', dark: '60 33% 97%' },
+  { key: 'sidebar-primary-foreground', group: 'sidebar', light: '60 33% 97%', dark: '0 0% 6.7%' },
+  { key: 'sidebar-accent', group: 'sidebar', light: '60 22.2% 92.9%', dark: '60 5.6% 14.1%' },
+  { key: 'sidebar-accent-foreground', group: 'sidebar', light: '0 0% 6.7%', dark: '60 33% 97%' },
+  { key: 'sidebar-border', group: 'sidebar', light: '60 7.4% 81.4%', dark: '60 1.1% 17.5%' },
+  { key: 'sidebar-ring', group: 'sidebar', light: '0 0% 6.7%', dark: '60 33% 97%' },
 ];
 
 export const GLOBAL_TOKENS: GlobalTokenDef[] = [
@@ -310,9 +310,13 @@ export const CONTRAST_PAIRS: Array<{ fg: string; bg: string; label: string }> = 
   // /admin/design cannot publish an override that makes fill copy unreadable.
   { fg: 'ink-blue-foreground', bg: 'ink-blue', label: 'Blue ink plate (deprecated alias)' },
   { fg: 'ink-over-foreground', bg: 'ink-over', label: 'Overprint plate (deprecated alias)' },
-  { fg: 'foreground', bg: 'track-blue', label: 'Ink on blue track fill' },
-  { fg: 'foreground', bg: 'track-green', label: 'Ink on green track fill' },
-  { fg: 'foreground', bg: 'track-yellow', label: 'Ink on yellow track fill' },
+  // The three `foreground`-on-track pairs that used to sit here were REMOVED
+  // when dark mode came back. `--foreground` flips to paper in dark, so they
+  // would have asserted paper-on-cyan (2.32:1) and failed — while the product
+  // renders `--track-ring`, which is ink in BOTH modes and is not cataloged
+  // (it is compile-time only, so it cannot be named here). The rule is
+  // asserted directly against the stylesheet in tokenContrast.test.ts
+  // instead, for both modes.
   { fg: 'text-primary', bg: 'background', label: 'Text hierarchy: primary' },
   { fg: 'text-secondary', bg: 'background', label: 'Text hierarchy: secondary' },
   { fg: 'text-muted', bg: 'background', label: 'Text hierarchy: muted' },

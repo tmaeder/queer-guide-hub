@@ -2,7 +2,16 @@ import { useState, useMemo } from 'react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
 import {
-  History, Save, Play, User, Clock, Search, Filter, CheckCircle2, XCircle, Loader2,
+  History,
+  Save,
+  Play,
+  User,
+  Clock,
+  Search,
+  Filter,
+  CheckCircle2,
+  XCircle,
+  Loader2,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -87,7 +96,9 @@ export default function AuditTab() {
     queryKey: ['audit-runs'],
     queryFn: async () => {
       const { data, error } = await untypedFrom('pipeline_runs')
-        .select('id, pipeline_id, pipeline_name, status, items_succeeded, items_total, triggered_by, duration_ms, pipeline_version, error_message, started_at, created_at')
+        .select(
+          'id, pipeline_id, pipeline_name, status, items_succeeded, items_total, triggered_by, duration_ms, pipeline_version, error_message, started_at, created_at',
+        )
         .order('created_at', { ascending: false })
         .limit(200);
       if (error) throw error;
@@ -116,13 +127,16 @@ export default function AuditTab() {
   }, [versions, runs]);
 
   const filtered = useMemo(() => {
-    return events.filter(e => {
+    return events.filter((e) => {
       if (kindFilter !== 'all' && e.kind !== kindFilter) return false;
       if (search) {
         const q = search.toLowerCase();
-        if (!e.pipeline_name?.toLowerCase().includes(q)
-            && !(e.kind === 'run' ? (e.triggered_by || '') : '').toLowerCase().includes(q)
-            && !(e.kind === 'run' && (e.error_message || '').toLowerCase().includes(q))) return false;
+        if (
+          !e.pipeline_name?.toLowerCase().includes(q) &&
+          !(e.kind === 'run' ? e.triggered_by || '' : '').toLowerCase().includes(q) &&
+          !(e.kind === 'run' && (e.error_message || '').toLowerCase().includes(q))
+        )
+          return false;
       }
       return true;
     });
@@ -141,7 +155,9 @@ export default function AuditTab() {
         <div className="flex items-center gap-2 flex-wrap">
           <History className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm font-semibold">Audit Trail</span>
-          <Badge variant="outline" className="text-2xs px-1.5 py-0">{events.length} events</Badge>
+          <Badge variant="outline" className="text-2xs px-1.5 py-0">
+            {events.length} events
+          </Badge>
           <Badge variant="outline" className="text-2xs px-1.5 py-0 gap-1">
             <Save className="h-2.5 w-2.5" /> {counts.save} saves
           </Badge>
@@ -160,7 +176,7 @@ export default function AuditTab() {
           </div>
 
           <div className="flex gap-1">
-            {(['all', 'save', 'run'] as const).map(f => (
+            {(['all', 'save', 'run'] as const).map((f) => (
               <button
                 key={f}
                 onClick={() => setKindFilter(f)}
@@ -169,7 +185,9 @@ export default function AuditTab() {
                     ? 'bg-primary text-primary-foreground border-primary'
                     : 'bg-background text-muted-foreground border-border hover:bg-accent'
                 }`}
-              >{f}</button>
+              >
+                {f}
+              </button>
             ))}
           </div>
         </div>
@@ -189,20 +207,27 @@ export default function AuditTab() {
               </div>
             ) : (
               <div className="divide-y divide-border/40">
-                {filtered.map(e => {
+                {filtered.map((e) => {
                   if (e.kind === 'save') {
                     return (
-                      <div key={`save-${e.id}`} className="p-4 flex items-start gap-4 hover:bg-muted/30 transition-colors">
-                        <div className="w-7 h-7 rounded-full bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground flex items-center justify-center shrink-0">
+                      <div
+                        key={`save-${e.id}`}
+                        className="p-4 flex items-start gap-4 hover:bg-muted/30 transition-colors"
+                      >
+                        <div className="w-7 h-7 rounded-full bg-muted text-foreground flex items-center justify-center shrink-0">
                           <Save className="h-3.5 w-3.5" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 text-sm">
                             <span className="font-medium truncate">{e.pipeline_name}</span>
-                            <Badge variant="outline" className="text-2xs px-1.5 py-0 font-mono">v{e.version}</Badge>
+                            <Badge variant="outline" className="text-2xs px-1.5 py-0 font-mono">
+                              v{e.version}
+                            </Badge>
                           </div>
                           <div className="flex items-center gap-4 text-xs2 text-muted-foreground mt-0.5">
-                            <span>{e.nodes_count} nodes · {e.edges_count} edges</span>
+                            <span>
+                              {e.nodes_count} nodes · {e.edges_count} edges
+                            </span>
                             {e.actor_id && (
                               <Tooltip>
                                 <TooltipTrigger asChild>
@@ -211,7 +236,9 @@ export default function AuditTab() {
                                     <span className="font-mono">{e.actor_id.slice(0, 8)}</span>
                                   </span>
                                 </TooltipTrigger>
-                                <TooltipContent className="text-xs font-mono">{e.actor_id}</TooltipContent>
+                                <TooltipContent className="text-xs font-mono">
+                                  {e.actor_id}
+                                </TooltipContent>
                               </Tooltip>
                             )}
                           </div>
@@ -230,17 +257,31 @@ export default function AuditTab() {
                       </div>
                     );
                   } else {
-                    const StatusIcon = e.status === 'completed' ? CheckCircle2
-                                      : e.status === 'failed' ? XCircle
-                                      : Loader2;
-                    const statusColorClass = e.status === 'completed' ? 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground'
-                                            : e.status === 'failed' ? 'bg-destructive/10 dark:bg-destructive/40 text-destructive dark:text-destructive'
-                                            : e.status === 'running' ? 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground'
-                                            : 'bg-muted text-muted-foreground';
+                    const StatusIcon =
+                      e.status === 'completed'
+                        ? CheckCircle2
+                        : e.status === 'failed'
+                          ? XCircle
+                          : Loader2;
+                    const statusColorClass =
+                      e.status === 'completed'
+                        ? 'bg-muted text-foreground'
+                        : e.status === 'failed'
+                          ? 'bg-destructive/10 dark:bg-destructive/40 text-destructive'
+                          : e.status === 'running'
+                            ? 'bg-muted text-foreground'
+                            : 'bg-muted text-muted-foreground';
                     return (
-                      <div key={`run-${e.id}`} className="p-4 flex items-start gap-4 hover:bg-muted/30 transition-colors">
-                        <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${statusColorClass}`}>
-                          <StatusIcon className={`h-3.5 w-3.5 ${e.status === 'running' ? 'animate-spin' : ''}`} />
+                      <div
+                        key={`run-${e.id}`}
+                        className="p-4 flex items-start gap-4 hover:bg-muted/30 transition-colors"
+                      >
+                        <div
+                          className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${statusColorClass}`}
+                        >
+                          <StatusIcon
+                            className={`h-3.5 w-3.5 ${e.status === 'running' ? 'animate-spin' : ''}`}
+                          />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 text-sm">
@@ -250,12 +291,16 @@ export default function AuditTab() {
                               {e.status}
                             </Badge>
                             {e.pipeline_version != null && (
-                              <Badge variant="outline" className="text-2xs px-1.5 py-0 font-mono">v{e.pipeline_version}</Badge>
+                              <Badge variant="outline" className="text-2xs px-1.5 py-0 font-mono">
+                                v{e.pipeline_version}
+                              </Badge>
                             )}
                           </div>
                           <div className="flex items-center gap-4 text-xs2 text-muted-foreground mt-0.5 flex-wrap">
                             <span>
-                              <span className="text-foreground dark:text-foreground font-semibold">{e.items_succeeded ?? 0}</span>
+                              <span className="text-foreground font-semibold">
+                                {e.items_succeeded ?? 0}
+                              </span>
                               <span> / {e.items_total ?? 0}</span>
                             </span>
                             <span className="font-mono">{formatDuration(e.duration_ms)}</span>
@@ -268,9 +313,13 @@ export default function AuditTab() {
                             {e.error_message && (
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <span className="text-destructive truncate max-w-[320px] cursor-help">{e.error_message}</span>
+                                  <span className="text-destructive truncate max-w-[320px] cursor-help">
+                                    {e.error_message}
+                                  </span>
                                 </TooltipTrigger>
-                                <TooltipContent className="text-xs max-w-[480px] whitespace-pre-wrap">{e.error_message}</TooltipContent>
+                                <TooltipContent className="text-xs max-w-[480px] whitespace-pre-wrap">
+                                  {e.error_message}
+                                </TooltipContent>
                               </Tooltip>
                             )}
                           </div>

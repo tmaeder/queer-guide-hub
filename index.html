@@ -7,6 +7,32 @@
     <meta name="description" content="The global guide to LGBTQ+ venues, events, travel and community. Find safe spaces near you and around the world." />
     <meta name="author" content="Queer Guide" />
 
+    <!-- Theme boot. Applies the stored theme to <html> BEFORE first paint.
+         ThemeProvider also does this, but in a useEffect — i.e. after
+         hydration, which on a prerendered document (`npm run prerender`) is a
+         full-page white flash for every dark-mode user on every navigation.
+         That was a latent bug in the pre-2026-08 provider; do not "simplify"
+         it away by trusting the provider alone.
+
+         `data-cfasync="false"` because Cloudflare Rocket Loader defers and
+         re-executes inline scripts, which would put this back AFTER paint and
+         restore the exact flash it exists to prevent — the same reason the
+         boot guard below carries it. Wrapped in try/catch: localStorage
+         throws outright in Safari private mode, and a theme preference is
+         never worth a blank page. -->
+    <script data-cfasync="false">
+      (function () {
+        try {
+          var t = localStorage.getItem('ui-theme');
+          var dark =
+            t === 'dark' ||
+            ((!t || t === 'system') &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.classList.add(dark ? 'dark' : 'light');
+        } catch (e) {}
+      })();
+    </script>
+
     <!-- Blank-page guard for a broken module graph after a deploy. MUST stay
          a classic inline script and MUST stay ahead of the module entry Vite
          injects. The BODY of this script must stay byte-identical (modulo

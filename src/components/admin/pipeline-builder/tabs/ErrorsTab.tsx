@@ -36,26 +36,24 @@ const sevConfig: Record<
 > = {
   fatal: {
     icon: AlertCircle,
-    className: 'text-destructive dark:text-destructive',
+    className: 'text-destructive',
     badgeClass:
-      'border bg-destructive/10 dark:bg-destructive/40 text-destructive dark:text-destructive border-destructive dark:border-destructive',
+      'border bg-destructive/10 dark:bg-destructive/40 text-destructive border-destructive dark:border-destructive',
   },
   error: {
     icon: AlertTriangle,
-    className: 'text-foreground dark:text-foreground',
-    badgeClass: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground border-border',
+    className: 'text-foreground',
+    badgeClass: 'bg-muted text-foreground border-border',
   },
   warn: {
     icon: Bug,
-    className: 'text-foreground dark:text-foreground',
-    badgeClass:
-      'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground border-border dark:border-border',
+    className: 'text-foreground',
+    badgeClass: 'bg-muted text-foreground border-border',
   },
   info: {
     icon: Info,
-    className: 'text-foreground dark:text-foreground',
-    badgeClass:
-      'border bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground border-foreground/40 dark:border-foreground/40',
+    className: 'text-foreground',
+    badgeClass: 'border bg-muted text-foreground border-foreground/40',
   },
 };
 
@@ -114,10 +112,8 @@ export default function ErrorsTab() {
         <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-2">
           {summary.length === 0 ? (
             <div className="col-span-full border border-border rounded-element bg-background p-6 text-center text-sm">
-              <CheckCircle2 className="h-5 w-5 text-foreground dark:text-foreground inline mr-1" />
-              <span className="text-foreground dark:text-foreground font-medium">
-                No errors in the last 7 days
-              </span>
+              <CheckCircle2 className="h-5 w-5 text-foreground inline mr-1" />
+              <span className="text-foreground font-medium">No errors in the last 7 days</span>
             </div>
           ) : (
             summary.map((s) => {

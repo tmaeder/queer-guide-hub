@@ -49,12 +49,23 @@ export const ROUTE_BULLET_MAP: Record<string, BulletDef> = {
  *  3:1 graphical-object bar and the second fails AA for anything under
  *  18.66px bold, which a 17px bullet letter is. Ink clears on all four
  *  (5.22 / 7.72 / 10.67 / 13.15), so the whole set takes ink and the rule
- *  stays one sentence instead of a per-track exception. */
+ *  stays one sentence instead of a per-track exception.
+ *
+ *  It is `--track-ring`, NOT `--foreground`. The two are the same ink in light
+ *  mode, which is why this said `text-foreground` until dark mode landed — and
+ *  why the difference is invisible until you switch themes. `--foreground`
+ *  flips to paper in dark, so every bullet letter, badge and accent button
+ *  would have gone paper-on-cyan (2.32:1) in exactly one mode.
+ *
+ *  A track fill is IDENTITY, not theme: the same four hexes in both modes. So
+ *  the type on it has to be the same ink in both modes, and `--track-ring` is
+ *  already that — it had to be mode-independent to gate the fill's border, and
+ *  type-on-fill is the same problem wearing a different hat. */
 export const TRACK_TEXT: Record<Track, string> = {
-  pink: 'text-foreground',
-  blue: 'text-foreground',
-  green: 'text-foreground',
-  yellow: 'text-foreground',
+  pink: 'text-track-ring',
+  blue: 'text-track-ring',
+  green: 'text-track-ring',
+  yellow: 'text-track-ring',
 };
 export const TRACK_BG: Record<Track, string> = {
   pink: 'bg-track-pink',

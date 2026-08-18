@@ -1,13 +1,34 @@
 import { useState, useMemo } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import {
-  Play, CheckCircle, XCircle, BarChart3, Database, Search, Clock, Loader2, SkipForward, TrendingUp,
+  Play,
+  CheckCircle,
+  XCircle,
+  BarChart3,
+  Database,
+  Search,
+  Clock,
+  Loader2,
+  SkipForward,
+  TrendingUp,
 } from 'lucide-react';
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip as ChartTooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip as ChartTooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+} from 'recharts';
 import { useUnifiedMonitor, type UnifiedRun } from '../hooks/useUnifiedMonitor';
 import {
-  useStagingStats, useEventIngestStats,
-  useCityIngestStats, useCountryIngestStats,
+  useStagingStats,
+  useEventIngestStats,
+  useCityIngestStats,
+  useCountryIngestStats,
 } from '../hooks/usePipelineHistory';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -21,12 +42,12 @@ type StatusFilter = 'all' | 'running' | 'completed' | 'failed';
 type TypeFilter = 'all' | 'pipeline' | 'workflow';
 
 const statusClass: Record<string, string> = {
-  running: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground',
-  completed: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground',
-  failed: 'bg-destructive/10 dark:bg-destructive/40 text-destructive dark:text-destructive',
-  dead_letter: 'bg-destructive/10 dark:bg-destructive/40 text-destructive dark:text-destructive',
+  running: 'bg-muted text-foreground',
+  completed: 'bg-muted text-foreground',
+  failed: 'bg-destructive/10 dark:bg-destructive/40 text-destructive',
+  dead_letter: 'bg-destructive/10 dark:bg-destructive/40 text-destructive',
   queued: 'bg-muted text-muted-foreground',
-  cancelled: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground',
+  cancelled: 'bg-muted text-foreground',
 };
 
 const statusIcon: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -48,24 +69,45 @@ function formatDuration(ms: number | null | undefined, status?: string): string 
 }
 
 type Agg = {
-  staged: number; validated: number; unique_items: number; duplicates: number;
-  merge_candidates: number; inserted: number; committed?: number; updated: number; rejected: number; pending_review: number;
+  staged: number;
+  validated: number;
+  unique_items: number;
+  duplicates: number;
+  merge_candidates: number;
+  inserted: number;
+  committed?: number;
+  updated: number;
+  rejected: number;
+  pending_review: number;
 };
 
-function aggregateBySource(rows: Array<{ source: string | null } & Partial<Agg>> | undefined): Array<[string, Agg]> {
+function aggregateBySource(
+  rows: Array<{ source: string | null } & Partial<Agg>> | undefined,
+): Array<[string, Agg]> {
   const acc: Record<string, Agg> = {};
   for (const row of rows || []) {
     const src = row.source || 'unknown';
-    if (!acc[src]) acc[src] = { staged: 0, validated: 0, unique_items: 0, duplicates: 0, merge_candidates: 0, inserted: 0, updated: 0, rejected: 0, pending_review: 0 };
-    acc[src].staged           += Number(row.staged || 0);
-    acc[src].validated        += Number(row.validated || 0);
-    acc[src].unique_items     += Number(row.unique_items || 0);
-    acc[src].duplicates       += Number(row.duplicates || 0);
+    if (!acc[src])
+      acc[src] = {
+        staged: 0,
+        validated: 0,
+        unique_items: 0,
+        duplicates: 0,
+        merge_candidates: 0,
+        inserted: 0,
+        updated: 0,
+        rejected: 0,
+        pending_review: 0,
+      };
+    acc[src].staged += Number(row.staged || 0);
+    acc[src].validated += Number(row.validated || 0);
+    acc[src].unique_items += Number(row.unique_items || 0);
+    acc[src].duplicates += Number(row.duplicates || 0);
     acc[src].merge_candidates += Number(row.merge_candidates || 0);
-    acc[src].inserted         += Number(row.inserted || row.committed || 0);
-    acc[src].updated          += Number(row.updated || 0);
-    acc[src].rejected         += Number(row.rejected || 0);
-    acc[src].pending_review   += Number(row.pending_review || 0);
+    acc[src].inserted += Number(row.inserted || row.committed || 0);
+    acc[src].updated += Number(row.updated || 0);
+    acc[src].rejected += Number(row.rejected || 0);
+    acc[src].pending_review += Number(row.pending_review || 0);
   }
   return Object.entries(acc).sort((a, b) => b[1].staged - a[1].staged);
 }
@@ -78,23 +120,39 @@ function totalsFor(sources: Array<[string, Agg]>) {
       rejected: t.rejected + v.rejected,
       pending_review: t.pending_review + v.pending_review,
     }),
-    { staged: 0, inserted: 0, rejected: 0, pending_review: 0 }
+    { staged: 0, inserted: 0, rejected: 0, pending_review: 0 },
   );
 }
 
-function IngestTable({ label, sources, totals }: { label: string; sources: Array<[string, Agg]>; totals: ReturnType<typeof totalsFor> }) {
+function IngestTable({
+  label,
+  sources,
+  totals,
+}: {
+  label: string;
+  sources: Array<[string, Agg]>;
+  totals: ReturnType<typeof totalsFor>;
+}) {
   return (
     <div className="border border-border rounded-element bg-background overflow-hidden">
       <div className="px-4 py-2.5 border-b border-border flex items-center justify-between">
         <div className="font-semibold text-sm">{label} Ingest</div>
         <div className="text-xs text-muted-foreground flex items-center gap-4">
-          <span>staged <span className="font-semibold text-foreground">{totals.staged}</span></span>
+          <span>
+            staged <span className="font-semibold text-foreground">{totals.staged}</span>
+          </span>
           <span>·</span>
-          <span>committed <span className="font-semibold text-foreground dark:text-foreground">{totals.inserted}</span></span>
+          <span>
+            committed <span className="font-semibold text-foreground">{totals.inserted}</span>
+          </span>
           <span>·</span>
-          <span>review <span className="font-semibold text-foreground dark:text-foreground">{totals.pending_review}</span></span>
+          <span>
+            review <span className="font-semibold text-foreground">{totals.pending_review}</span>
+          </span>
           <span>·</span>
-          <span>rejected <span className="font-semibold text-destructive">{totals.rejected}</span></span>
+          <span>
+            rejected <span className="font-semibold text-destructive">{totals.rejected}</span>
+          </span>
           <span className="ml-2 text-2xs">last 14d</span>
         </div>
       </div>
@@ -102,28 +160,73 @@ function IngestTable({ label, sources, totals }: { label: string; sources: Array
         <table className="w-full text-sm">
           <thead className="bg-muted/40 sticky top-0">
             <tr className="border-b border-border">
-              {['Source', 'Staged', 'Validated', 'Unique', 'Dupe', 'Merge?', 'Committed', 'Updated', 'Review', 'Rejected'].map(h => (
-                <th key={h} className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
+              {[
+                'Source',
+                'Staged',
+                'Validated',
+                'Unique',
+                'Dupe',
+                'Merge?',
+                'Committed',
+                'Updated',
+                'Review',
+                'Rejected',
+              ].map((h) => (
+                <th
+                  key={h}
+                  className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider"
+                >
+                  {h}
+                </th>
               ))}
             </tr>
           </thead>
           <tbody>
             {sources.length === 0 ? (
-              <tr><td colSpan={10} className="p-6 text-center text-muted-foreground text-xs">No {label.toLowerCase()} ingest activity</td></tr>
-            ) : sources.map(([src, v]) => (
-              <tr key={src} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
-                <td className="px-4 py-2 font-medium">{src}</td>
-                <td className="px-4 py-2 tabular-nums">{v.staged}</td>
-                <td className="px-4 py-2 tabular-nums">{v.validated}</td>
-                <td className="px-4 py-2 tabular-nums">{v.unique_items}</td>
-                <td className={`px-4 py-2 tabular-nums ${v.duplicates ? 'text-foreground dark:text-foreground' : 'text-muted-foreground'}`}>{v.duplicates}</td>
-                <td className={`px-4 py-2 tabular-nums ${v.merge_candidates ? 'text-foreground dark:text-foreground' : 'text-muted-foreground'}`}>{v.merge_candidates}</td>
-                <td className={`px-4 py-2 tabular-nums ${v.inserted ? 'text-foreground dark:text-foreground font-semibold' : 'text-muted-foreground'}`}>{v.inserted}</td>
-                <td className="px-4 py-2 tabular-nums">{v.updated}</td>
-                <td className={`px-4 py-2 tabular-nums ${v.pending_review ? 'text-foreground dark:text-foreground' : 'text-muted-foreground'}`}>{v.pending_review}</td>
-                <td className={`px-4 py-2 tabular-nums ${v.rejected ? 'text-destructive' : 'text-muted-foreground'}`}>{v.rejected}</td>
+              <tr>
+                <td colSpan={10} className="p-6 text-center text-muted-foreground text-xs">
+                  No {label.toLowerCase()} ingest activity
+                </td>
               </tr>
-            ))}
+            ) : (
+              sources.map(([src, v]) => (
+                <tr
+                  key={src}
+                  className="border-b border-border/40 hover:bg-muted/30 transition-colors"
+                >
+                  <td className="px-4 py-2 font-medium">{src}</td>
+                  <td className="px-4 py-2 tabular-nums">{v.staged}</td>
+                  <td className="px-4 py-2 tabular-nums">{v.validated}</td>
+                  <td className="px-4 py-2 tabular-nums">{v.unique_items}</td>
+                  <td
+                    className={`px-4 py-2 tabular-nums ${v.duplicates ? 'text-foreground' : 'text-muted-foreground'}`}
+                  >
+                    {v.duplicates}
+                  </td>
+                  <td
+                    className={`px-4 py-2 tabular-nums ${v.merge_candidates ? 'text-foreground' : 'text-muted-foreground'}`}
+                  >
+                    {v.merge_candidates}
+                  </td>
+                  <td
+                    className={`px-4 py-2 tabular-nums ${v.inserted ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}
+                  >
+                    {v.inserted}
+                  </td>
+                  <td className="px-4 py-2 tabular-nums">{v.updated}</td>
+                  <td
+                    className={`px-4 py-2 tabular-nums ${v.pending_review ? 'text-foreground' : 'text-muted-foreground'}`}
+                  >
+                    {v.pending_review}
+                  </td>
+                  <td
+                    className={`px-4 py-2 tabular-nums ${v.rejected ? 'text-destructive' : 'text-muted-foreground'}`}
+                  >
+                    {v.rejected}
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
@@ -157,7 +260,10 @@ export default function MonitorTab() {
     for (const r of allRuns) {
       if (r.status !== 'completed' || !r.duration_ms || r.duration_ms <= 0) continue;
       for (const b of buckets) {
-        if (r.duration_ms >= b.min && r.duration_ms < b.max) { b.count++; break; }
+        if (r.duration_ms >= b.min && r.duration_ms < b.max) {
+          b.count++;
+          break;
+        }
       }
     }
     return buckets;
@@ -172,7 +278,8 @@ export default function MonitorTab() {
       const start = now - (i + 1) * 60 * 60 * 1000;
       const end = now - i * 60 * 60 * 1000;
       const hour = new Date(end).getHours();
-      let completed = 0, failed = 0;
+      let completed = 0,
+        failed = 0;
       for (const r of allRuns) {
         const t = r.started_at ? new Date(r.started_at).getTime() : 0;
         if (t < start || t > end) continue;
@@ -185,22 +292,22 @@ export default function MonitorTab() {
   }, [allRuns]);
 
   const filteredRuns = useMemo(() => {
-    return allRuns.filter(r => {
+    return allRuns.filter((r) => {
       if (typeFilter !== 'all' && r.type !== typeFilter) return false;
       if (statusFilter === 'failed' && !['failed', 'dead_letter'].includes(r.status)) return false;
       if (statusFilter === 'completed' && r.status !== 'completed') return false;
       if (statusFilter === 'running' && r.status !== 'running') return false;
       if (search) {
         const q = search.toLowerCase();
-        if (!r.name.toLowerCase().includes(q)
-            && !(r.error_message || '').toLowerCase().includes(q)) return false;
+        if (!r.name.toLowerCase().includes(q) && !(r.error_message || '').toLowerCase().includes(q))
+          return false;
       }
       return true;
     });
   }, [allRuns, search, statusFilter, typeFilter]);
 
-  const eventSources   = aggregateBySource(eventStats);
-  const citySources    = aggregateBySource(cityStats);
+  const eventSources = aggregateBySource(eventStats);
+  const citySources = aggregateBySource(cityStats);
   const countrySources = aggregateBySource(countryStats);
 
   return (
@@ -208,11 +315,37 @@ export default function MonitorTab() {
       <div className="flex flex-col gap-6">
         {/* Summary cards */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-          <AdminStatTile icon={Play} iconClassName="text-foreground" value={stats.running} label="Running" />
-          <AdminStatTile icon={CheckCircle} iconClassName="text-foreground" value={stats.completed} label="Completed" />
-          <AdminStatTile icon={XCircle} iconClassName="text-destructive" value={stats.failed} label="Failed" alert={stats.failed > 0} />
-          <AdminStatTile icon={Database} iconClassName="text-muted-foreground" value={totalStaging} label="Staging Items" />
-          <AdminStatTile icon={BarChart3} iconClassName="text-muted-foreground" value={stats.total} label="Total Runs" />
+          <AdminStatTile
+            icon={Play}
+            iconClassName="text-foreground"
+            value={stats.running}
+            label="Running"
+          />
+          <AdminStatTile
+            icon={CheckCircle}
+            iconClassName="text-foreground"
+            value={stats.completed}
+            label="Completed"
+          />
+          <AdminStatTile
+            icon={XCircle}
+            iconClassName="text-destructive"
+            value={stats.failed}
+            label="Failed"
+            alert={stats.failed > 0}
+          />
+          <AdminStatTile
+            icon={Database}
+            iconClassName="text-muted-foreground"
+            value={totalStaging}
+            label="Staging Items"
+          />
+          <AdminStatTile
+            icon={BarChart3}
+            iconClassName="text-muted-foreground"
+            value={stats.total}
+            label="Total Runs"
+          />
         </div>
 
         {/* Charts */}
@@ -224,12 +357,34 @@ export default function MonitorTab() {
             </div>
             <div className="p-4" style={{ height: 180 }}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={durationHistogram} margin={{ top: 8, right: 8, bottom: 8, left: -16 }}>
-                  <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="range" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} allowDecimals={false} />
+                <BarChart
+                  data={durationHistogram}
+                  margin={{ top: 8, right: 8, bottom: 8, left: -16 }}
+                >
+                  <CartesianGrid
+                    stroke="hsl(var(--border))"
+                    strokeDasharray="3 3"
+                    vertical={false}
+                  />
+                  <XAxis
+                    dataKey="range"
+                    tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
+                    axisLine={false}
+                    tickLine={false}
+                    allowDecimals={false}
+                  />
                   <ChartTooltip
-                    contentStyle={{ background: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))', borderRadius: 'var(--radius-element)', fontSize: 11 }}
+                    contentStyle={{
+                      background: 'hsl(var(--popover))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: 'var(--radius-element)',
+                      fontSize: 11,
+                    }}
                     cursor={{ fill: 'hsl(var(--muted))', opacity: 0.4 }}
                   />
                   <Bar dataKey="count" fill="hsl(var(--primary))" radius={[3, 3, 0, 0]} />
@@ -245,15 +400,52 @@ export default function MonitorTab() {
             </div>
             <div className="p-4" style={{ height: 180 }}>
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={throughputData} margin={{ top: 8, right: 8, bottom: 8, left: -16 }}>
-                  <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="hour" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} interval={2} />
-                  <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} allowDecimals={false} />
-                  <ChartTooltip
-                    contentStyle={{ background: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))', borderRadius: 'var(--radius-element)', fontSize: 11 }}
+                <LineChart
+                  data={throughputData}
+                  margin={{ top: 8, right: 8, bottom: 8, left: -16 }}
+                >
+                  <CartesianGrid
+                    stroke="hsl(var(--border))"
+                    strokeDasharray="3 3"
+                    vertical={false}
                   />
-                  <Line type="monotone" dataKey="completed" stroke="hsl(var(--foreground))" strokeWidth={2} dot={false} strokeDasharray="0" />
-                  <Line type="monotone" dataKey="failed" stroke="hsl(var(--destructive))" strokeWidth={2} dot={false} strokeDasharray="4 2" />
+                  <XAxis
+                    dataKey="hour"
+                    tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
+                    axisLine={false}
+                    tickLine={false}
+                    interval={2}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
+                    axisLine={false}
+                    tickLine={false}
+                    allowDecimals={false}
+                  />
+                  <ChartTooltip
+                    contentStyle={{
+                      background: 'hsl(var(--popover))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: 'var(--radius-element)',
+                      fontSize: 11,
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="completed"
+                    stroke="hsl(var(--foreground))"
+                    strokeWidth={2}
+                    dot={false}
+                    strokeDasharray="0"
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="failed"
+                    stroke="hsl(var(--destructive))"
+                    strokeWidth={2}
+                    dot={false}
+                    strokeDasharray="4 2"
+                  />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -282,7 +474,7 @@ export default function MonitorTab() {
                 />
               </div>
               <div className="flex gap-1">
-                {(['all', 'running', 'completed', 'failed'] as const).map(f => (
+                {(['all', 'running', 'completed', 'failed'] as const).map((f) => (
                   <button
                     key={f}
                     onClick={() => setStatusFilter(f)}
@@ -291,12 +483,14 @@ export default function MonitorTab() {
                         ? 'bg-primary text-primary-foreground border-primary'
                         : 'bg-background text-muted-foreground border-border hover:bg-accent'
                     }`}
-                  >{f}</button>
+                  >
+                    {f}
+                  </button>
                 ))}
               </div>
               <div className="h-4 w-px bg-border mx-1" />
               <div className="flex gap-1">
-                {(['all', 'pipeline', 'workflow'] as const).map(f => (
+                {(['all', 'pipeline', 'workflow'] as const).map((f) => (
                   <button
                     key={f}
                     onClick={() => setTypeFilter(f)}
@@ -305,7 +499,9 @@ export default function MonitorTab() {
                         ? 'bg-primary text-primary-foreground border-primary'
                         : 'bg-background text-muted-foreground border-border hover:bg-accent'
                     }`}
-                  >{f}</button>
+                  >
+                    {f}
+                  </button>
                 ))}
               </div>
             </div>
@@ -313,8 +509,13 @@ export default function MonitorTab() {
               <table className="w-full text-sm">
                 <thead className="bg-muted/40 sticky top-0">
                   <tr className="border-b border-border">
-                    {['Name', 'Type', 'Status', 'Items', 'Duration', 'Started'].map(h => (
-                      <th key={h} className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
+                    {['Name', 'Type', 'Status', 'Items', 'Duration', 'Started'].map((h) => (
+                      <th
+                        key={h}
+                        className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider"
+                      >
+                        {h}
+                      </th>
                     ))}
                   </tr>
                 </thead>
@@ -322,50 +523,72 @@ export default function MonitorTab() {
                   {isLoading ? (
                     <AdminTableRowSkeleton columns={6} />
                   ) : filteredRuns.length === 0 ? (
-                    <tr><td colSpan={6} className="p-6 text-center text-muted-foreground text-xs">
-                      <AdminEmpty
-                        variant="inline"
-                        noun="runs"
-                        filtered={allRuns.length > 0}
-                        className="text-xs"
-                      />
-                    </td></tr>
-                  ) : filteredRuns.map(run => {
-                    const Icon = statusIcon[run.status] || Clock;
-                    return (
-                      <tr
-                        key={run.id}
-                        onClick={() => setSelectedRun(run)}
-                        className={`border-b border-border/40 cursor-pointer transition-colors ${
-                          selectedRun?.id === run.id ? 'bg-primary/10' : 'hover:bg-muted/30'
-                        }`}
-                      >
-                        <td className="px-4 py-2 font-medium truncate max-w-[200px]" title={run.name}>{run.name}</td>
-                        <td className="px-4 py-2">
-                          <Badge variant="outline" className="text-2xs px-1.5 py-0">
-                            {run.type}
-                          </Badge>
-                        </td>
-                        <td className="px-4 py-2">
-                          <span className={`inline-flex items-center gap-1 text-2xs px-2 py-0.5 rounded-full ${statusClass[run.status] || 'bg-muted'}`}>
-                            <Icon className={`h-2.5 w-2.5 ${run.status === 'running' ? 'animate-spin' : ''}`} />
-                            {run.status}
-                          </span>
-                        </td>
-                        <td className="px-4 py-2 tabular-nums text-xs">
-                          <span className="text-foreground dark:text-foreground font-semibold">{run.items_succeeded}</span>
-                          <span className="text-muted-foreground">/{run.items_processed}</span>
-                          {run.items_failed > 0 && <span className="text-destructive ml-1">·{run.items_failed}</span>}
-                        </td>
-                        <td className="px-4 py-2 text-muted-foreground font-mono tabular-nums text-xs">
-                          {formatDuration(run.duration_ms, run.status)}
-                        </td>
-                        <td className="px-4 py-2 text-muted-foreground text-xs" title={run.started_at ? new Date(run.started_at).toISOString() : ''}>
-                          {run.started_at ? formatDistanceToNow(new Date(run.started_at), { addSuffix: true }) : '—'}
-                        </td>
-                      </tr>
-                    );
-                  })}
+                    <tr>
+                      <td colSpan={6} className="p-6 text-center text-muted-foreground text-xs">
+                        <AdminEmpty
+                          variant="inline"
+                          noun="runs"
+                          filtered={allRuns.length > 0}
+                          className="text-xs"
+                        />
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredRuns.map((run) => {
+                      const Icon = statusIcon[run.status] || Clock;
+                      return (
+                        <tr
+                          key={run.id}
+                          onClick={() => setSelectedRun(run)}
+                          className={`border-b border-border/40 cursor-pointer transition-colors ${
+                            selectedRun?.id === run.id ? 'bg-primary/10' : 'hover:bg-muted/30'
+                          }`}
+                        >
+                          <td
+                            className="px-4 py-2 font-medium truncate max-w-[200px]"
+                            title={run.name}
+                          >
+                            {run.name}
+                          </td>
+                          <td className="px-4 py-2">
+                            <Badge variant="outline" className="text-2xs px-1.5 py-0">
+                              {run.type}
+                            </Badge>
+                          </td>
+                          <td className="px-4 py-2">
+                            <span
+                              className={`inline-flex items-center gap-1 text-2xs px-2 py-0.5 rounded-full ${statusClass[run.status] || 'bg-muted'}`}
+                            >
+                              <Icon
+                                className={`h-2.5 w-2.5 ${run.status === 'running' ? 'animate-spin' : ''}`}
+                              />
+                              {run.status}
+                            </span>
+                          </td>
+                          <td className="px-4 py-2 tabular-nums text-xs">
+                            <span className="text-foreground font-semibold">
+                              {run.items_succeeded}
+                            </span>
+                            <span className="text-muted-foreground">/{run.items_processed}</span>
+                            {run.items_failed > 0 && (
+                              <span className="text-destructive ml-1">·{run.items_failed}</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-2 text-muted-foreground font-mono tabular-nums text-xs">
+                            {formatDuration(run.duration_ms, run.status)}
+                          </td>
+                          <td
+                            className="px-4 py-2 text-muted-foreground text-xs"
+                            title={run.started_at ? new Date(run.started_at).toISOString() : ''}
+                          >
+                            {run.started_at
+                              ? formatDistanceToNow(new Date(run.started_at), { addSuffix: true })
+                              : '—'}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
                 </tbody>
               </table>
             </div>
@@ -387,7 +610,9 @@ export default function MonitorTab() {
                   <div>
                     <div className="font-semibold text-sm truncate">{selectedRun.name}</div>
                     <div className="text-xs2 text-muted-foreground">
-                      <Badge variant="outline" className="text-2xs px-1.5 py-0 mr-1">{selectedRun.type}</Badge>
+                      <Badge variant="outline" className="text-2xs px-1.5 py-0 mr-1">
+                        {selectedRun.type}
+                      </Badge>
                       {selectedRun.id.slice(0, 8)}
                     </div>
                   </div>
@@ -396,37 +621,57 @@ export default function MonitorTab() {
                       {selectedRun.error_message}
                     </div>
                   )}
-                  {selectedRun.node_states && Object.entries(selectedRun.node_states as Record<string, Record<string, unknown>>).map(([nodeId, state]) => {
-                    const NodeIcon = statusIcon[state.status as string] || Clock;
-                    return (
-                      <div key={nodeId} className="border border-border rounded-element p-2 hover:bg-muted/30 transition-colors">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-xs2 font-mono truncate" title={nodeId}>{nodeId}</span>
-                          <span className={`inline-flex items-center gap-1 text-2xs px-1.5 py-0 rounded-badge ${statusClass[state.status as string] || 'bg-muted'}`}>
-                            <NodeIcon className={`h-2.5 w-2.5 ${state.status === 'running' ? 'animate-spin' : ''}`} />
-                            {state.status as string}
-                          </span>
-                        </div>
-                        {(state.items_out as number) > 0 && (
-                          <div className="text-xs2 text-muted-foreground mt-1">
-                            {state.items_out as number} items out
-                            {state.duration_ms ? ` · ${formatDuration(state.duration_ms as number)}` : ''}
+                  {selectedRun.node_states &&
+                    Object.entries(
+                      selectedRun.node_states as Record<string, Record<string, unknown>>,
+                    ).map(([nodeId, state]) => {
+                      const NodeIcon = statusIcon[state.status as string] || Clock;
+                      return (
+                        <div
+                          key={nodeId}
+                          className="border border-border rounded-element p-2 hover:bg-muted/30 transition-colors"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-xs2 font-mono truncate" title={nodeId}>
+                              {nodeId}
+                            </span>
+                            <span
+                              className={`inline-flex items-center gap-1 text-2xs px-1.5 py-0 rounded-badge ${statusClass[state.status as string] || 'bg-muted'}`}
+                            >
+                              <NodeIcon
+                                className={`h-2.5 w-2.5 ${state.status === 'running' ? 'animate-spin' : ''}`}
+                              />
+                              {state.status as string}
+                            </span>
                           </div>
-                        )}
-                        {state.error != null && (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <div className="text-xs2 text-destructive mt-1 truncate cursor-help">{state.error as string}</div>
-                            </TooltipTrigger>
-                            <TooltipContent className="text-xs max-w-[320px] whitespace-pre-wrap">{state.error as string}</TooltipContent>
-                          </Tooltip>
-                        )}
-                      </div>
-                    );
-                  })}
+                          {(state.items_out as number) > 0 && (
+                            <div className="text-xs2 text-muted-foreground mt-1">
+                              {state.items_out as number} items out
+                              {state.duration_ms
+                                ? ` · ${formatDuration(state.duration_ms as number)}`
+                                : ''}
+                            </div>
+                          )}
+                          {state.error != null && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="text-xs2 text-destructive mt-1 truncate cursor-help">
+                                  {state.error as string}
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent className="text-xs max-w-[320px] whitespace-pre-wrap">
+                                {state.error as string}
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                        </div>
+                      );
+                    })}
                   {selectedRun.output_result && (
                     <details className="text-xs">
-                      <summary className="cursor-pointer text-muted-foreground hover:text-foreground py-1">Raw output</summary>
+                      <summary className="cursor-pointer text-muted-foreground hover:text-foreground py-1">
+                        Raw output
+                      </summary>
                       <pre className="text-2xs bg-muted/40 p-2 rounded-element overflow-auto max-h-56 mt-1">
                         {JSON.stringify(selectedRun.output_result, null, 2)}
                       </pre>
@@ -434,7 +679,9 @@ export default function MonitorTab() {
                   )}
                 </div>
               ) : (
-                <p className="text-muted-foreground text-sm text-center py-8">Click a run to view details</p>
+                <p className="text-muted-foreground text-sm text-center py-8">
+                  Click a run to view details
+                </p>
               )}
             </div>
           </div>
