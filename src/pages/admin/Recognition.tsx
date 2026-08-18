@@ -30,7 +30,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {Plus, RefreshCw, Trash2, Edit2, Star } from 'lucide-react';
+import { Plus, RefreshCw, Trash2, Edit2, Star } from 'lucide-react';
 import { toast } from 'sonner';
 import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 import {
@@ -39,7 +39,7 @@ import {
   useRecognitionMutations,
   type RecognitionRow,
 } from '@/hooks/useRecognitions';
-import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
 
 const CATEGORIES = [
   { value: 'editorial', label: 'Editorial' },
@@ -68,8 +68,7 @@ export default function AdminRecognition() {
   const loading = recognitionsQ.isLoading;
 
   useEffect(() => {
-    if (recognitionsQ.error)
-      toast.error(`Recognitions: ${(recognitionsQ.error as Error).message}`);
+    if (recognitionsQ.error) toast.error(`Recognitions: ${(recognitionsQ.error as Error).message}`);
   }, [recognitionsQ.error]);
   useEffect(() => {
     if (metricsQ.error) toast.error(`Metrics: ${(metricsQ.error as Error).message}`);
@@ -95,39 +94,56 @@ export default function AdminRecognition() {
   );
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        {/* border-b-0: this header sits inline beside the year picker, so it
-            keeps the type scale but drops AdminPageHeader's own rule.
-            Was text-2xl font-semibold — an arbitrary size off the scale. */}
-        <AdminPageHeader
-          className="mb-0 border-b-0 pb-0"
-          title="Recognition Wall"
-          subtitle={`Curate the annual /contributors/${year} page. Editorial only — not a live leaderboard.`}
-        />
-        <div className="flex items-center gap-2">
-          <Label className="text-xs uppercase tracking-wide text-muted-foreground">Year</Label>
-          <Input
-            type="number"
-            value={year}
-            onChange={(e) => setYear(parseInt(e.target.value, 10) || currentYear)}
-            className="w-24"
-            min={2024}
-            max={2100}
-          />
-          <Button variant="outline" size="sm" onClick={handleRefreshMetrics} disabled={refreshMetrics.isPending}>
-            {refreshMetrics.isPending ? (
-              <TrackLoader size={16} />
-            ) : (
-              <RefreshCw className="h-4 w-4" />
-            )}
-            <span className="ml-2">Refresh metrics</span>
-          </Button>
-          <Button size="sm" onClick={() => setCreateOpen(true)}>
-            <Plus className="h-4 w-4 mr-1" /> Add
-          </Button>
-        </div>
-      </div>
+    <div className="space-y-6">
+      {/* Archetype H. The year picker and the refresh button are the filter row
+        and the primary action, so they move INTO the header rather than sitting
+        beside it in a bespoke flex row — that row was the reason this page
+        needed `border-b-0 pb-0` to suppress the old header's rule.
+
+        `p-6` is gone: AdminShell's <main> is the one owner of admin page
+        spacing, and this page was double-padding inside it. */}
+      <AdminArchetypeHeader
+        title="Recognition Wall"
+        filters={
+          <div className="flex items-center gap-2">
+            <Label
+              htmlFor="recognition-year"
+              className="text-xs uppercase tracking-wide text-muted-foreground"
+            >
+              Year
+            </Label>
+            <Input
+              id="recognition-year"
+              type="number"
+              value={year}
+              onChange={(e) => setYear(parseInt(e.target.value, 10) || currentYear)}
+              className="w-24"
+              min={2024}
+              max={2100}
+            />
+          </div>
+        }
+        actions={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefreshMetrics}
+              disabled={refreshMetrics.isPending}
+            >
+              {refreshMetrics.isPending ? (
+                <TrackLoader size={16} />
+              ) : (
+                <RefreshCw className="h-4 w-4" />
+              )}
+              <span className="ml-2">Refresh metrics</span>
+            </Button>
+            <Button size="sm" onClick={() => setCreateOpen(true)}>
+              <Plus className="h-4 w-4 mr-1" /> Add
+            </Button>
+          </>
+        }
+      />
 
       <Card>
         <CardHeader>
@@ -199,9 +215,7 @@ export default function AdminRecognition() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">
-            Top contributors by score ({metrics.length})
-          </CardTitle>
+          <CardTitle className="text-base">Top contributors by score ({metrics.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {metrics.length === 0 ? (
@@ -233,12 +247,8 @@ export default function AdminRecognition() {
                     <TableCell className="text-right tabular-nums">
                       {m.accepted_submissions}
                     </TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {m.venue_submissions}
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {m.event_submissions}
-                    </TableCell>
+                    <TableCell className="text-right tabular-nums">{m.venue_submissions}</TableCell>
+                    <TableCell className="text-right tabular-nums">{m.event_submissions}</TableCell>
                     <TableCell>
                       {m.appear_in_recognition ? (
                         <Badge variant="default">Yes</Badge>
@@ -390,10 +400,7 @@ function RecognitionEditDialog({
           </div>
           <div>
             <Label>Category</Label>
-            <Select
-              value={form.category}
-              onValueChange={(v) => setForm({ ...form, category: v })}
-            >
+            <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -418,9 +425,7 @@ function RecognitionEditDialog({
             <Label>Display name override (optional pseudonym)</Label>
             <Input
               value={form.display_name_override ?? ''}
-              onChange={(e) =>
-                setForm({ ...form, display_name_override: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, display_name_override: e.target.value })}
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
