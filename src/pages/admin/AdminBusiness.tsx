@@ -19,7 +19,7 @@ import { Link, Navigate, useSearchParams } from 'react-router';
 
 import { toast } from 'sonner';
 import { untypedSupabase } from '@/integrations/supabase/untyped';
-import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
 import { AffiliatePartnersManager } from '@/components/admin/AffiliatePartnersManager';
 import { MerchantsManager } from '@/components/admin/affiliate/MerchantsManager';
 import { HotelsManager } from '@/components/admin/business/HotelsManager';
@@ -45,7 +45,15 @@ import {
 } from '@/components/ui/table';
 import { ORG_ROLE_LABELS, useAdminOrgList, useOrgSpineDrift } from '@/hooks/useBusinessSpine';
 
-const ROLE_FILTERS = ['venue', 'hotel', 'seller', 'affiliate_partner', 'brand', 'publisher', 'support'];
+const ROLE_FILTERS = [
+  'venue',
+  'hotel',
+  'seller',
+  'affiliate_partner',
+  'brand',
+  'publisher',
+  'support',
+];
 
 const TABS = ['directory', 'hotels', 'merchants', 'brands', 'partners'] as const;
 type Tab = (typeof TABS)[number];
@@ -95,10 +103,9 @@ export default function AdminBusiness() {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="px-6 pt-6">
-        <AdminPageHeader
-          eyebrow="COCKPIT · BUSINESS"
+        {/* No eyebrow: the route line is derived from the registry. */}
+        <AdminArchetypeHeader
           title="Business"
-          subtitle="One console for every business on the platform — venues, hotels, merchants, brands, partners and support orgs, unified on the organizations spine."
           actions={
             tab === 'brands' ? (
               <Button variant="outline" disabled={applyingOwnership} onClick={applyOwnership}>
@@ -164,7 +171,10 @@ export default function AdminBusiness() {
               placeholder="Search name, domain, slug…"
               className="max-w-xs"
             />
-            <Select value={roleParam || 'all'} onValueChange={(v) => setParam('role', v === 'all' ? '' : v)}>
+            <Select
+              value={roleParam || 'all'}
+              onValueChange={(v) => setParam('role', v === 'all' ? '' : v)}
+            >
               <SelectTrigger className="w-40">
                 <SelectValue placeholder="Role" />
               </SelectTrigger>
@@ -217,7 +227,10 @@ export default function AdminBusiness() {
                 {(orgs ?? []).map((o) => (
                   <TableRow key={o.id}>
                     <TableCell>
-                      <Link to={`/admin/business/${o.id}`} className="flex items-center gap-2 font-medium">
+                      <Link
+                        to={`/admin/business/${o.id}`}
+                        className="flex items-center gap-2 font-medium"
+                      >
                         {o.logo_url ? (
                           <img
                             src={o.logo_url}
@@ -247,7 +260,9 @@ export default function AdminBusiness() {
                         ))}
                       </div>
                     </TableCell>
-                    <TableCell className="text-muted-foreground">{o.website_domain ?? '—'}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {o.website_domain ?? '—'}
+                    </TableCell>
                     <TableCell>
                       {o.claim_status === 'unclaimed' ? (
                         <span className="text-13 text-muted-foreground">—</span>

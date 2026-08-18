@@ -19,6 +19,14 @@ export interface AdminEntityTableProps<TData extends { id: string }> {
   afterTable?: ReactNode;
   /** Right-aligned actions in the page header row (links, secondary buttons). */
   headerActions?: ReactNode;
+  /**
+   * Suppress this table's own archetype header.
+   *
+   * For a table embedded in a page that already owns the title — otherwise the
+   * route renders TWO h1s, an a11y defect and the exact invariant
+   * e2e/admin-route-baseline.spec.ts asserts.
+   */
+  hideHeader?: boolean;
   skipAuthGuard?: boolean;
 }
 
@@ -31,6 +39,7 @@ export function AdminEntityTable<TData extends { id: string }>({
   beforeTable,
   afterTable,
   headerActions,
+  hideHeader = false,
   skipAuthGuard = false,
 }: AdminEntityTableProps<TData>) {
   const navigate = useNavigate();
@@ -74,7 +83,7 @@ export function AdminEntityTable<TData extends { id: string }>({
        the migration, not less. Dropping it to match the mock would be a
        silent navigation regression. */
     <AdminIndexFrame
-      title={title}
+      title={hideHeader ? null : title}
       countLine={subtitle}
       actions={
         <>

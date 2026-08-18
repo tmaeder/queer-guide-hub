@@ -26,7 +26,11 @@ export default function AdminSearchIntelligence() {
 
   return (
     <div>
-      <AdminArchetypeHeader eyebrow="Data" title="Search Intelligence" />
+      {/* No `eyebrow`: that was AdminPageHeader's API, where each page typed
+        its own context string. AdminArchetypeHeader DERIVES the equivalent
+        route line from the registry, so the two cannot disagree — which is the
+        whole reason the line is derived rather than passed. */}
+      <AdminArchetypeHeader title="Search Intelligence" />
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
