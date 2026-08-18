@@ -52,7 +52,9 @@ export function ContentListFilters({
               value={current === '' ? SENTINEL_ALL : current}
               onValueChange={(v) => setFilter(f.name, v === SENTINEL_ALL ? undefined : v)}
             >
-              <SelectTrigger className="min-w-[140px] text-sm">
+              {/* A placeholder is not a name: once a value is chosen the
+                placeholder is gone and the control is unlabelled. */}
+              <SelectTrigger aria-label={`Filter by ${f.label}`} className="min-w-[140px] text-sm">
                 <SelectValue placeholder={`All ${f.label}`} />
               </SelectTrigger>
               <SelectContent>
@@ -78,7 +80,7 @@ export function ContentListFilters({
                 setFilter(f.name, v === SENTINEL_ALL ? undefined : v === 'true');
               }}
             >
-              <SelectTrigger className="min-w-[130px] text-sm">
+              <SelectTrigger aria-label={`Filter by ${f.label}`} className="min-w-[130px] text-sm">
                 <SelectValue placeholder={`Any ${f.label}`} />
               </SelectTrigger>
               <SelectContent>
