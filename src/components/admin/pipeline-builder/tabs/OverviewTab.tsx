@@ -172,7 +172,7 @@ export default function OverviewTab() {
       }`}
     >
       {label}
-      {count != null && <span className="ml-1 opacity-70">{count}</span>}
+      {count != null && <span className="ml-1 font-semibold">{count}</span>}
     </button>
   );
 

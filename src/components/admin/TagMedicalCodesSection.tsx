@@ -27,12 +27,12 @@ export function TagMedicalCodesSection({ tagId }: { tagId: string }) {
   const total = countMedicalCodes(codes);
 
   if (isLoading) {
-    return <p className="text-13 opacity-75">{t('common.loading', 'Loading…')}</p>;
+    return <p className="text-13 text-muted-foreground">{t('common.loading', 'Loading…')}</p>;
   }
 
   if (total === 0) {
     return (
-      <p className="text-13 opacity-75">
+      <p className="text-13 text-muted-foreground">
         No diagnostic codes. Codes are derived from the tag&apos;s Wikidata item — a term with no
         Wikidata ID, or one whose item carries no ICD/SNOMED/ATC statement, has none.
       </p>
@@ -52,7 +52,7 @@ export function TagMedicalCodesSection({ tagId }: { tagId: string }) {
                 key={`${item.system}-${item.code}`}
                 className="flex items-baseline justify-between gap-4 border-b border-border py-2 last:border-b-0"
               >
-                <span className="text-13 opacity-75">{item.label}</span>
+                <span className="text-13 text-muted-foreground">{item.label}</span>
                 <span className="flex items-center gap-2 text-13 font-bold">
                   {item.code}
                   {item.url && (
@@ -71,7 +71,7 @@ export function TagMedicalCodesSection({ tagId }: { tagId: string }) {
           </ul>
         </div>
       ))}
-      <p className="text-2xs opacity-75">
+      <p className="text-2xs text-muted-foreground">
         Derived from Wikidata weekly. Read-only — edit the tag&apos;s Wikidata ID to change these.
       </p>
     </div>
