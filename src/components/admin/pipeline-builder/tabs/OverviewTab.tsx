@@ -378,6 +378,7 @@ export default function OverviewTab() {
                     </td>
                     <td className="px-4 py-2.5 align-top">
                       <Switch
+                        aria-label={`Enable ${row.display_name || row.name}`}
                         checked={row.is_enabled}
                         onCheckedChange={(enabled) => toggleEnabled.mutate({ row, enabled })}
                       />

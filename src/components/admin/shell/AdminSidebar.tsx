@@ -161,7 +161,7 @@ export function AdminSidebar() {
         type="button"
         onClick={() => navigate(item.route)}
         className={cn(
-          'group/navrow rounded-element mx-1.5 mb-px py-1.5 inline-flex items-center gap-2 transition-all hover:translate-x-0.5 w-[calc(100%-12px)]',
+          'rounded-element mx-1.5 mb-px py-1.5 inline-flex items-center gap-2 transition-all hover:translate-x-0.5 w-[calc(100%-12px)]',
           active
             ? 'bg-muted font-semibold border-l border-border-hairline pl-4'
             : 'pl-4.5 border-l border-transparent',
@@ -173,30 +173,6 @@ export function AdminSidebar() {
         {!collapsed && (
           <>
             <span className="flex-1 text-left text-sm truncate">{item.label}</span>
-            {!collapsed && (
-              <span
-                role="button"
-                tabIndex={0}
-                aria-label={pinned ? `Unpin ${item.label}` : `Pin ${item.label}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  togglePin(item.id);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    togglePin(item.id);
-                  }
-                }}
-                className={cn(
-                  'p-0.5 text-muted-foreground hover:text-foreground',
-                  pinned ? 'opacity-100' : 'opacity-0 group-hover/navrow:opacity-100',
-                )}
-              >
-                <Star size={12} className={pinned ? 'fill-current' : undefined} aria-hidden />
-              </span>
-            )}
             {hasCount &&
               (countsLoading ? (
                 <Skeleton className="w-7 h-[18px] rounded-full" />
@@ -208,6 +184,44 @@ export function AdminSidebar() {
       </button>
     );
 
+    /* The pin is a SIBLING of the nav button, never a descendant. Both are
+       interactive; nesting them was invalid HTML, hid the pin from keyboard and
+       screen-reader users, and is axe `nested-interactive` (serious). The hover
+       group moves to this wrapper so the reveal still works. */
+    const row = collapsed ? (
+      button
+    ) : (
+      <div className="group/navrow relative flex items-center">
+        {button}
+        {/* A SIBLING of the nav button, never a descendant: a role="button"
+          span inside a <button> is invalid HTML and axe `nested-interactive`
+          (serious) — keyboard and screen-reader users got one merged
+          interactive node and could not reach the pin at all. */}
+        <span
+          role="button"
+          tabIndex={0}
+          aria-label={pinned ? `Unpin ${item.label}` : `Pin ${item.label}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            togglePin(item.id);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              e.stopPropagation();
+              togglePin(item.id);
+            }
+          }}
+          className={cn(
+            'absolute right-8 top-1/2 -translate-y-1/2 p-0.5 text-muted-foreground hover:text-foreground',
+            pinned ? 'opacity-100' : 'opacity-0 group-hover/navrow:opacity-100',
+          )}
+        >
+          <Star size={12} className={pinned ? 'fill-current' : undefined} aria-hidden />
+        </span>
+      </div>
+    );
+
     if (collapsed) {
       return (
         <Tooltip>
@@ -216,7 +230,7 @@ export function AdminSidebar() {
         </Tooltip>
       );
     }
-    return button;
+    return row;
   }
 
   // ── Render a section's items, with optional group subheaders ─────
