@@ -102,7 +102,7 @@ function SelectFilter({ config, value, onChange }: SelectFilterProps) {
         value={(value as string) || 'all'}
         onValueChange={(v) => onChange(v === 'all' ? undefined : v)}
       >
-        <SelectTrigger style={{ height: 36, fontSize: 13 }}>
+        <SelectTrigger aria-label={config.label} style={{ height: 36, fontSize: 13 }}>
           <SelectValue placeholder={config.label} />
         </SelectTrigger>
         <SelectContent>

@@ -11,6 +11,14 @@ import { test, expect } from '@playwright/test';
  *   E2E_BASE_URL=https://queer.guide npx playwright test e2e/trip-creation.spec.ts
  */
 
+// Signed-out means signed-out. Since #2863 the `chromium` project injects the
+// admin storageState from auth.setup into EVERY spec, so this file — whose
+// entire premise is the anonymous view — began running authenticated: the
+// "Sign in" CTA it asserts on is absent for a signed-in user, and it failed on
+// every PR. Same intent as the explicit anon contexts in
+// members-directory-anon.spec.ts / messages.spec.ts, applied file-wide.
+test.use({ storageState: { cookies: [], origins: [] } });
+
 test.describe('/trips create dialog (signed out)', () => {
   test('signed-out users see the auth CTA, not the create dialog', async ({ page }) => {
     await page.goto('/trips');

@@ -34,11 +34,7 @@ export function DataTablePagination({
   return (
     <div className="flex items-center justify-between px-4 py-4 border-t border-border flex-wrap gap-2">
       <div className="flex items-center gap-4">
-        {selectedCount > 0 && (
-          <p className="text-sm font-medium">
-            {selectedCount} selected
-          </p>
-        )}
+        {selectedCount > 0 && <p className="text-sm font-medium">{selectedCount} selected</p>}
         <p className="text-sm text-muted-foreground">
           {from}-{to} of {totalCount.toLocaleString()}
         </p>
@@ -46,11 +42,9 @@ export function DataTablePagination({
 
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
-          <p className="text-sm text-muted-foreground">
-            Rows
-          </p>
+          <p className="text-sm text-muted-foreground">Rows</p>
           <Select value={String(pageSize)} onValueChange={(v) => onPageSizeChange(Number(v))}>
-            <SelectTrigger style={{ width: 70, height: 32 }}>
+            <SelectTrigger aria-label="Rows per page" style={{ width: 70, height: 32 }}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -68,6 +62,7 @@ export function DataTablePagination({
             variant="outline"
             size="icon"
             style={{ height: 32, width: 32 }}
+            aria-label="First page"
             onClick={() => onPageChange(1)}
             disabled={page <= 1}
           >
@@ -77,6 +72,7 @@ export function DataTablePagination({
             variant="outline"
             size="icon"
             style={{ height: 32, width: 32 }}
+            aria-label="Previous page"
             onClick={() => onPageChange(page - 1)}
             disabled={page <= 1}
           >
@@ -89,6 +85,7 @@ export function DataTablePagination({
             variant="outline"
             size="icon"
             style={{ height: 32, width: 32 }}
+            aria-label="Next page"
             onClick={() => onPageChange(page + 1)}
             disabled={page >= totalPages}
           >
@@ -98,6 +95,7 @@ export function DataTablePagination({
             variant="outline"
             size="icon"
             style={{ height: 32, width: 32 }}
+            aria-label="Last page"
             onClick={() => onPageChange(totalPages)}
             disabled={page >= totalPages}
           >

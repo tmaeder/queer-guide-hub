@@ -156,67 +156,75 @@ export function AdminSidebar() {
     const { count, overdue, hasCount } = itemCount(item);
     const pinned = isPinned(item.id);
 
-    const button = (
-      <button
-        type="button"
-        onClick={() => navigate(item.route)}
-        className={cn(
-          'group/navrow rounded-element mx-1.5 mb-px py-1.5 inline-flex items-center gap-2 transition-all hover:translate-x-0.5 w-[calc(100%-12px)]',
-          active
-            ? 'bg-muted font-semibold border-l border-border-hairline pl-4'
-            : 'pl-4.5 border-l border-transparent',
-        )}
-      >
-        <span className="min-w-9 flex">
-          <IconBadge icon={item.icon} />
-        </span>
-        {!collapsed && (
-          <>
-            <span className="flex-1 text-left text-sm truncate">{item.label}</span>
-            {!collapsed && (
-              <span
-                role="button"
-                tabIndex={0}
-                aria-label={pinned ? `Unpin ${item.label}` : `Pin ${item.label}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  togglePin(item.id);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    togglePin(item.id);
-                  }
-                }}
-                className={cn(
-                  'p-0.5 text-muted-foreground hover:text-foreground',
-                  pinned ? 'opacity-100' : 'opacity-0 group-hover/navrow:opacity-100',
-                )}
-              >
-                <Star size={12} className={pinned ? 'fill-current' : undefined} aria-hidden />
-              </span>
-            )}
-            {hasCount &&
-              (countsLoading ? (
-                <Skeleton className="w-7 h-[18px] rounded-full" />
-              ) : (
-                <CountBadge count={count} overdue={overdue} />
-              ))}
-          </>
-        )}
-      </button>
+    const rowClass = cn(
+      'group/navrow rounded-element mx-1.5 mb-px py-1.5 inline-flex items-center gap-2 transition-all hover:translate-x-0.5 w-[calc(100%-12px)]',
+      active
+        ? 'bg-muted font-semibold border-l border-border-hairline pl-4'
+        : 'pl-4.5 border-l border-transparent',
     );
 
+    // Collapsed: icon only, no pin, so the row can stay a plain button.
     if (collapsed) {
       return (
         <Tooltip>
-          <TooltipTrigger asChild>{button}</TooltipTrigger>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              aria-label={item.label}
+              onClick={() => navigate(item.route)}
+              className={rowClass}
+            >
+              <span className="min-w-9 flex">
+                <IconBadge icon={item.icon} />
+              </span>
+            </button>
+          </TooltipTrigger>
           <TooltipContent side="right">{item.label}</TooltipContent>
         </Tooltip>
       );
     }
-    return button;
+
+    // Expanded: the pin is a SIBLING of the nav button, never a child of it.
+    // It used to be a <span role="button" tabIndex={0}> nested inside the row
+    // <button> — invalid HTML and axe `nested-interactive` (serious, WCAG
+    // 4.1.2) on every admin route. Same fix as the card-overlay pattern: the
+    // full-row target is an absolutely-positioned button and the real controls
+    // sit above it on `z-10`.
+    return (
+      <div className={cn('relative', rowClass)}>
+        <button
+          type="button"
+          aria-label={item.label}
+          onClick={() => navigate(item.route)}
+          className="absolute inset-0 rounded-element"
+        />
+        <span className="min-w-9 flex">
+          <IconBadge icon={item.icon} />
+        </span>
+        <span className="flex-1 text-left text-sm truncate">{item.label}</span>
+        <button
+          type="button"
+          aria-label={pinned ? `Unpin ${item.label}` : `Pin ${item.label}`}
+          onClick={() => togglePin(item.id)}
+          className={cn(
+            'relative z-10 p-0.5 text-muted-foreground hover:text-foreground',
+            // Keyboard users need it visible when focused; an opacity-0 control
+            // is still tabbable, so hover-only reveal stranded them on it.
+            pinned
+              ? 'opacity-100'
+              : 'opacity-0 group-hover/navrow:opacity-100 focus-visible:opacity-100',
+          )}
+        >
+          <Star size={12} className={pinned ? 'fill-current' : undefined} aria-hidden />
+        </button>
+        {hasCount &&
+          (countsLoading ? (
+            <Skeleton className="relative z-10 w-7 h-[18px] rounded-full" />
+          ) : (
+            <CountBadge count={count} overdue={overdue} />
+          ))}
+      </div>
+    );
   }
 
   // ── Render a section's items, with optional group subheaders ─────
@@ -233,7 +241,7 @@ export function AdminSidebar() {
         {groups.map((g) => (
           <div key={g}>
             {!collapsed && (
-              <div className="mx-4 mt-2 mb-0.5 text-3xs font-semibold uppercase tracking-label text-muted-foreground/60">
+              <div className="mx-4 mt-2 mb-0.5 text-3xs font-semibold uppercase tracking-label text-muted-foreground">
                 {g}
               </div>
             )}
@@ -287,7 +295,7 @@ export function AdminSidebar() {
             {!collapsed && (
               <div className="min-w-0">
                 <p className="text-sm font-bold tracking-tight leading-tight">Admin Console</p>
-                <p className="text-xs2 text-muted-foreground/70">Manage everything</p>
+                <p className="text-xs2 text-muted-foreground">Manage everything</p>
               </div>
             )}
             {!collapsed && isAdmin && (
@@ -339,8 +347,8 @@ export function AdminSidebar() {
               {!collapsed && pinnedItems.length > 0 && (
                 <div className="mb-1">
                   <div className="mx-1.5 mt-1 mb-px py-1 px-2 inline-flex items-center gap-2">
-                    <Pin size={12} className="text-muted-foreground/70" aria-hidden />
-                    <span className="text-2xs font-bold tracking-[0.08em] text-muted-foreground/70">
+                    <Pin size={12} className="text-muted-foreground" aria-hidden />
+                    <span className="text-2xs font-bold tracking-[0.08em] text-muted-foreground">
                       PINNED
                     </span>
                   </div>
@@ -380,10 +388,10 @@ export function AdminSidebar() {
                           >
                             <ChevronDown size={14} />
                           </span>
-                          <span className="flex-1 text-left text-2xs font-bold tracking-[0.08em] text-muted-foreground/70">
+                          <span className="flex-1 text-left text-2xs font-bold tracking-[0.08em] text-muted-foreground">
                             {section.label.toUpperCase()}
                           </span>
-                          <span className="text-2xs font-medium text-muted-foreground/70">
+                          <span className="text-2xs font-medium text-muted-foreground">
                             {items.length}
                           </span>
                         </button>
@@ -404,7 +412,7 @@ export function AdminSidebar() {
           type="button"
           onClick={toggleCollapsed}
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          className="border-t border-border px-4 py-2 inline-flex items-center gap-2 text-muted-foreground/70 hover:text-muted-foreground hover:bg-muted/40"
+          className="border-t border-border px-4 py-2 inline-flex items-center gap-2 text-muted-foreground hover:text-muted-foreground hover:bg-muted/40"
         >
           {collapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
           {!collapsed && <span className="text-2xs font-medium">Collapse</span>}
@@ -430,7 +438,7 @@ export function AdminSidebar() {
               <p className="font-semibold text-13 leading-tight whitespace-nowrap overflow-hidden text-ellipsis">
                 {userDisplayName}
               </p>
-              <p className="text-2xs text-muted-foreground/70 leading-tight whitespace-nowrap overflow-hidden text-ellipsis">
+              <p className="text-2xs text-muted-foreground leading-tight whitespace-nowrap overflow-hidden text-ellipsis">
                 {userEmail}
               </p>
             </div>
@@ -441,7 +449,7 @@ export function AdminSidebar() {
                 type="button"
                 onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
                 aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-                className="p-1 rounded-element text-muted-foreground/70 hover:bg-muted hover:text-muted-foreground transition-colors flex items-center justify-center flex-shrink-0"
+                className="p-1 rounded-element text-muted-foreground hover:bg-muted hover:text-muted-foreground transition-colors flex items-center justify-center flex-shrink-0"
               >
                 {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
               </button>
@@ -456,7 +464,7 @@ export function AdminSidebar() {
                 type="button"
                 onClick={() => supabase.auth.signOut()}
                 aria-label="Sign out"
-                className="p-1 rounded-element text-muted-foreground/70 hover:bg-muted hover:text-muted-foreground transition-colors flex items-center justify-center flex-shrink-0"
+                className="p-1 rounded-element text-muted-foreground hover:bg-muted hover:text-muted-foreground transition-colors flex items-center justify-center flex-shrink-0"
               >
                 <LogOut size={14} />
               </button>
