@@ -70,6 +70,7 @@ jobs:
           npx vite preview --port 4173 &
           sleep 5
           npx playwright test \
+            e2e/auth.setup.ts \
             e2e/auth-signup-renders.spec.ts \
             e2e/search.spec.ts \
             e2e/trip-creation.spec.ts \
@@ -83,6 +84,14 @@ jobs:
             e2e/nested-interactive.spec.ts \
             e2e/singles.spec.ts \
             --reporter=line
+          # e2e/auth.setup.ts is FIRST on the list and is load-bearing.
+          # Passing explicit file paths filters EVERY project, including the
+          # `setup` project whose testMatch is /auth\.setup\.ts$/ — so without
+          # naming it here the setup has zero tests, never writes
+          # playwright/.auth/admin.json, and every admin route in the run
+          # redirects to /auth. Measured: all 34 admin-route-baseline tests
+          # skipped for "no admin session" while the storageState in
+          # playwright.config.ts pointed at a file that was never created.
           # admin-route-baseline.spec.ts is on the list for the same reason as
           # singles.spec.ts below: it exists to catch regressions introduced by
           # the archetype migration, and a migration lands in a PR. Left to the
