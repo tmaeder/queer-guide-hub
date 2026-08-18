@@ -26,6 +26,13 @@ import { ADMIN_ARCHETYPES } from '../src/config/adminArchetypes';
  *
  *   ADMIN_BASELINE=record npx playwright test e2e/admin-route-baseline.spec.ts
  *
+ * CREDENTIALS: needs E2E_ADMIN_EMAIL / E2E_ADMIN_PASSWORD as repo secrets, and
+ * `e2e/auth.setup.ts` must be named in any explicit spec list — passing file
+ * paths to `playwright test` filters EVERY project, including `setup`, so
+ * omitting it leaves the setup with zero tests and no storage state. Both were
+ * missing until 2026-08-18, which is why this whole spec skipped from the day
+ * it landed and let a two-h1 regression through.
+ *
  * SAFETY: every write is aborted at the network layer. The client hardcodes the
  * PRODUCTION Supabase URL even under `vite preview`, so a spec walking 40 admin
  * routes would otherwise fire real mutations at prod — `branding_*`,
