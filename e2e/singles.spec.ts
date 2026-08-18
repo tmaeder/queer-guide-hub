@@ -138,6 +138,13 @@ for (const route of ROUTES) {
 }
 
 test.describe('safety layer', () => {
+  // The chromium project carries the admin storageState when CI has admin
+  // credentials, so "anonymous" must be asked for. Without this the assertion
+  // still passes — a signed-in visitor never sees the notice for ANY country —
+  // but it passes for a reason that has nothing to do with the gate, and would
+  // keep passing if the gate were deleted.
+  test.use({ storageState: { cookies: [], origins: [] } });
+
   test('a village in a criminalising country is gated for anonymous visitors', async ({ page }) => {
     // Villages carried no safety layer at all before the rebuild: a district
     // in a criminalising country rendered exactly like one in Berlin. The

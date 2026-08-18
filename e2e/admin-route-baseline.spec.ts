@@ -56,6 +56,13 @@ const ROUTES = ADMIN_ARCHETYPES.filter(
 /** Anything that could mutate production. Aborted, never sent. */
 const BLOCKED = /\/rpc\/(branding_|admin_automation_set_enabled|.*_upsert|.*_delete)/i;
 
+/** Map tiles, glyphs and sprites. This baseline asserts STRUCTURE — an h1, some
+ *  content, no page errors, no horizontal overflow — and none of that needs a
+ *  rendered basemap. /admin/pipelines mounts a MapLibre canvas and was blowing
+ *  even the raised 75s budget three attempts running, with every tile paying
+ *  the cost of the `page.route('**\/*')` interceptor on a single worker. */
+const MAP_ASSET = /(\.pbf|\.mvt|tiles?\/|sprite|glyphs|basemap|maptiler|openfreemap)/i;
+
 type Shape = { endpoints: string[]; h1: string; errors: string[] };
 
 test.describe('admin routes stay healthy through the archetype migration', () => {
@@ -80,6 +87,7 @@ test.describe('admin routes stay healthy through the archetype migration', () =>
       await page.route('**/*', (r) => {
         const url = r.request().url();
         const method = r.request().method();
+        if (MAP_ASSET.test(url)) return r.abort();
         if (BLOCKED.test(url) || (method !== 'GET' && /supabase|rest\/v1/.test(url))) {
           endpoints.add(`BLOCKED ${new URL(url).pathname}`);
           return r.abort();
@@ -124,7 +132,14 @@ test.describe('admin routes stay healthy through the archetype migration', () =>
         `${route}: no admin session in this run — not verified here`,
       );
 
-      const h1 = (await page.locator('h1').first().textContent().catch(() => ''))?.trim() ?? '';
+      const h1 =
+        (
+          await page
+            .locator('h1')
+            .first()
+            .textContent()
+            .catch(() => '')
+        )?.trim() ?? '';
       const shape: Shape = { endpoints: [...endpoints].sort(), h1, errors };
 
       if (RECORDING) {
@@ -135,14 +150,18 @@ test.describe('admin routes stay healthy through the archetype migration', () =>
       // ── Invariants ───────────────────────────────────────────────────────
       // 1. The page renders something. A frame swap that blanks a route is the
       //    loudest possible regression and the easiest to miss behind auth.
-      const bodyLength = (await page.locator('main, #admin-main-content').first().innerText()).trim()
-        .length;
+      const bodyLength = (
+        await page.locator('main, #admin-main-content').first().innerText()
+      ).trim().length;
       expect(bodyLength, `${route} rendered no content`).toBeGreaterThan(0);
 
       // 2. Exactly one h1. The whole point of the fixed header grammar is that
       //    a page stops stacking heading bands; two h1s means a page kept its
       //    old header while adopting the frame.
-      expect(await page.locator('h1').count(), `${route} has ${await page.locator('h1').count()} h1s`).toBe(1);
+      expect(
+        await page.locator('h1').count(),
+        `${route} has ${await page.locator('h1').count()} h1s`,
+      ).toBe(1);
 
       // 3. No uncaught errors.
       expect(errors, `${route} threw`).toEqual([]);
