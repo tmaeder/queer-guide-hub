@@ -13,16 +13,28 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertTriangle, Trash2, Zap} from 'lucide-react';
+import { AlertTriangle, Trash2, Zap } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { useUnifiedMedia, PAGE_SIZE } from '@/hooks/useUnifiedMedia';
 import { useMediaMutations } from '@/hooks/useMediaMutations';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import type { UnifiedMediaItem, ViewMode, SortBy, SortDir, StatusFilter, EntityTypeFilter, FormatFilter, SourceTypeFilter, AccessLevelFilter, BrandCategoryFilter } from './types';
+import type {
+  UnifiedMediaItem,
+  ViewMode,
+  SortBy,
+  SortDir,
+  StatusFilter,
+  EntityTypeFilter,
+  FormatFilter,
+  SourceTypeFilter,
+  AccessLevelFilter,
+  BrandCategoryFilter,
+} from './types';
 import { MediaToolbar } from './MediaToolbar';
 import { MediaGrid } from './MediaGrid';
+import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
 import { MediaUploadZone } from './MediaUploadZone';
 import { DuplicateFinderPanel } from './DuplicateFinderPanel';
 import { StorageBreakdown } from './StorageBreakdown';
@@ -107,9 +119,13 @@ export function MediaLibrary() {
   };
 
   const handleBulkDelete = () => {
-    const toDelete = items.filter(i => selectedItems.has(i.id) && i.usage_count === 0);
+    const toDelete = items.filter((i) => selectedItems.has(i.id) && i.usage_count === 0);
     if (toDelete.length === 0) {
-      toast({ title: 'No deletable items selected', description: 'Items in use cannot be deleted.', variant: 'destructive' });
+      toast({
+        title: 'No deletable items selected',
+        description: 'Items in use cannot be deleted.',
+        variant: 'destructive',
+      });
       return;
     }
     mutations.bulkDelete.mutate(toDelete, {
@@ -136,25 +152,37 @@ export function MediaLibrary() {
   };
 
   return (
-    <div className="max-w-screen-lg mx-auto p-6 flex flex-col gap-4">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h4 className="text-2xl font-bold">Media &amp; Assets</h4>
-          <p className="text-sm text-muted-foreground">
-            {totalCount.toLocaleString()} items
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="ghost" size="sm" asChild>
-            <a href="/brand" target="_blank" rel="noopener noreferrer">Brand guidelines</a>
-          </Button>
-          <Button variant="outline" size="sm" onClick={handleBulkOptimize}>
-            <Zap size={14} className="mr-1" />
-            Optimize All
-          </Button>
-        </div>
-      </div>
+    <div className="flex flex-col gap-4">
+      {/* Archetype A (grid view). Title was an <h4 className="text-2xl
+        font-bold"> — wrong heading level, off-scale size. The item count is the
+        index's count line and rides with the title.
+
+        `max-w-screen-lg mx-auto p-6` is gone: AdminShell's <main> already caps
+        and gutters admin content, and this wrapper was imposing a SECOND,
+        narrower cap on top of it. */}
+      <AdminArchetypeHeader
+        title={
+          <span className="flex items-center gap-4">
+            Media &amp; Assets
+            <span className="text-13 font-normal text-muted-foreground">
+              {totalCount.toLocaleString()} items
+            </span>
+          </span>
+        }
+        actions={
+          <>
+            <Button variant="ghost" size="sm" asChild>
+              <a href="/brand" target="_blank" rel="noopener noreferrer">
+                Brand guidelines
+              </a>
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleBulkOptimize}>
+              <Zap size={14} className="mr-1" />
+              Optimize All
+            </Button>
+          </>
+        }
+      />
 
       {/* Upload Zone */}
       <MediaUploadZone />
@@ -172,23 +200,47 @@ export function MediaLibrary() {
             search={search}
             onSearchChange={setSearch}
             statusFilter={statusFilter}
-            onStatusFilterChange={(v) => { setStatusFilter(v); setPage(0); }}
+            onStatusFilterChange={(v) => {
+              setStatusFilter(v);
+              setPage(0);
+            }}
             entityTypeFilter={entityTypeFilter}
-            onEntityTypeFilterChange={(v) => { setEntityTypeFilter(v); setPage(0); }}
+            onEntityTypeFilterChange={(v) => {
+              setEntityTypeFilter(v);
+              setPage(0);
+            }}
             formatFilter={formatFilter}
-            onFormatFilterChange={(v) => { setFormatFilter(v); setPage(0); }}
+            onFormatFilterChange={(v) => {
+              setFormatFilter(v);
+              setPage(0);
+            }}
             sourceTypeFilter={sourceTypeFilter}
-            onSourceTypeFilterChange={(v) => { setSourceTypeFilter(v); setPage(0); }}
+            onSourceTypeFilterChange={(v) => {
+              setSourceTypeFilter(v);
+              setPage(0);
+            }}
             accessFilter={accessFilter}
-            onAccessFilterChange={(v) => { setAccessFilter(v); setPage(0); }}
+            onAccessFilterChange={(v) => {
+              setAccessFilter(v);
+              setPage(0);
+            }}
             brandCategoryFilter={brandCategoryFilter}
-            onBrandCategoryFilterChange={(v) => { setBrandCategoryFilter(v); setPage(0); }}
+            onBrandCategoryFilterChange={(v) => {
+              setBrandCategoryFilter(v);
+              setPage(0);
+            }}
             tagFilter={tagFilter}
-            onTagFilterChange={(v) => { setTagFilter(v); setPage(0); }}
+            onTagFilterChange={(v) => {
+              setTagFilter(v);
+              setPage(0);
+            }}
             sortBy={sortBy}
-            onSortByChange={(v) => { setSortBy(v); setPage(0); }}
+            onSortByChange={(v) => {
+              setSortBy(v);
+              setPage(0);
+            }}
             sortDir={sortDir}
-            onSortDirToggle={() => setSortDir(d => d === 'asc' ? 'desc' : 'asc')}
+            onSortDirToggle={() => setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))}
             viewMode={viewMode}
             onViewModeChange={setViewMode}
             bulkMode={bulkMode}
@@ -206,18 +258,14 @@ export function MediaLibrary() {
                 <Checkbox
                   checked={selectedItems.size === items.length && items.length > 0}
                   onCheckedChange={(checked) => {
-                    if (checked) setSelectedItems(new Set(items.map(i => i.id)));
+                    if (checked) setSelectedItems(new Set(items.map((i) => i.id)));
                     else setSelectedItems(new Set());
                   }}
                 />
                 <span className="text-sm">{selectedItems.size} selected</span>
               </div>
               <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setDeleteDialogOpen(true)}
-                >
+                <Button size="sm" variant="outline" onClick={() => setDeleteDialogOpen(true)}>
                   <Trash2 size={14} className="mr-1" />
                   Delete
                 </Button>
@@ -239,14 +287,15 @@ export function MediaLibrary() {
           {totalPages > 1 && (
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">
-                {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, totalCount)} of {totalCount.toLocaleString()}
+                {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, totalCount)} of{' '}
+                {totalCount.toLocaleString()}
               </p>
               <div className="flex gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   disabled={page === 0}
-                  onClick={() => setPage(p => p - 1)}
+                  onClick={() => setPage((p) => p - 1)}
                 >
                   Previous
                 </Button>
@@ -254,7 +303,7 @@ export function MediaLibrary() {
                   variant="outline"
                   size="sm"
                   disabled={page >= totalPages - 1}
-                  onClick={() => setPage(p => p + 1)}
+                  onClick={() => setPage((p) => p + 1)}
                 >
                   Next
                 </Button>

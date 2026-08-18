@@ -3,16 +3,27 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 import { render } from '@testing-library/react';
+import { MemoryRouter } from 'react-router';
 
-vi.mock('@/hooks/useAdminRoles', () => ({ useAdminRoles: () => ({ isAdmin: true, canManageContent: () => true }) }));
+vi.mock('@/hooks/useAdminRoles', () => ({
+  useAdminRoles: () => ({ isAdmin: true, canManageContent: () => true }),
+}));
 vi.mock('@/hooks/useUnifiedMedia', () => ({
-  useUnifiedMedia: () => ({ items: [], totalCount: 0, loading: false, error: null, refresh: vi.fn() }),
+  useUnifiedMedia: () => ({
+    items: [],
+    totalCount: 0,
+    loading: false,
+    error: null,
+    refresh: vi.fn(),
+  }),
   PAGE_SIZE: 50,
 }));
 vi.mock('@/hooks/useMediaMutations', () => ({
   useMediaMutations: () => ({ bulkDelete: vi.fn(), bulkOptimize: vi.fn(), isPending: false }),
 }));
-vi.mock('@/integrations/supabase/client', () => ({ supabase: { functions: { invoke: vi.fn().mockResolvedValue({ data: null, error: null }) } } }));
+vi.mock('@/integrations/supabase/client', () => ({
+  supabase: { functions: { invoke: vi.fn().mockResolvedValue({ data: null, error: null }) } },
+}));
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
 vi.mock('../MediaToolbar', () => ({ MediaToolbar: () => null }));
 vi.mock('../MediaGrid', () => ({ MediaGrid: () => null }));
@@ -24,7 +35,16 @@ import { MediaLibrary } from '../index';
 
 describe('MediaLibrary', () => {
   it('renders', () => {
-    const { container } = render(<MediaLibrary />);
+    // MemoryRouter: the page now emits AdminArchetypeHeader, which DERIVES its
+    // route line from useLocation() rather than taking it as a prop — that is
+    // what stops the line drifting from the frame the page renders in. The
+    // cost is that the component needs routing context, which it always has in
+    // the app and did not have here.
+    const { container } = render(
+      <MemoryRouter>
+        <MediaLibrary />
+      </MemoryRouter>,
+    );
     expect(container).toBeTruthy();
   });
 });

@@ -166,15 +166,23 @@ export function AuditLog({ sourceTable, sourceId }: AuditLogProps) {
     <div>
       <div className="flex flex-col gap-2 mb-2">
         <div className="flex flex-row items-center justify-between flex-wrap gap-2">
-          <div className="flex flex-row items-center gap-1">
-            <History size={18} className="text-muted-foreground" />
-            <p className="text-sm font-semibold">Audit Log</p>
+          {/* Archetype A. This page's title was a <p className="text-sm
+            font-semibold"> — not a heading at ALL, so the route had no h1 and
+            no entry in a screen reader's heading list. Worse than the <h4>/<h5>
+            cases elsewhere, and invisible until every admin header was audited.
+
+            Safe to promote: AuditLog is route-only. The embedded variant is
+            EntityAuditHistory, a separate component whose own docblock says it
+            exists precisely so the page-shaped AuditLog is not nested. */}
+          <h1 className="m-0 flex flex-row items-center gap-1 font-display text-headline leading-tight">
+            <History size={18} className="text-muted-foreground" aria-hidden />
+            Audit Log
             {totalCount > 0 && (
-              <span className="text-xs text-muted-foreground">
+              <span className="text-13 font-normal text-muted-foreground">
                 ({totalCount} entr{totalCount !== 1 ? 'ies' : 'y'})
               </span>
             )}
-          </div>
+          </h1>
 
           <Select value={actionFilter} onValueChange={handleFilterChange}>
             <SelectTrigger className="h-8 min-w-[180px] text-xs">
