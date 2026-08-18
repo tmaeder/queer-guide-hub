@@ -128,12 +128,13 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
   { path: 'content/milestones', archetype: 'A', title: 'Milestones', adopted: true },
   { path: 'users', archetype: 'A', title: 'Users', adopted: true },
   { path: 'business', archetype: 'A', title: 'Business', adopted: true },
-  { path: 'audit', archetype: 'A', title: 'Audit log' },
-  { path: 'imports/email-ingestions', archetype: 'A', title: 'Email ingestions' },
+  { path: 'audit', archetype: 'A', title: 'Audit log', adopted: true },
+  { path: 'imports/email-ingestions', archetype: 'A', title: 'Email ingestions', adopted: true },
   {
     path: 'media',
     archetype: 'A',
     title: 'Media',
+    adopted: true,
     caveat: 'Index frame with a GRID view rather than a table — see the note on A below.',
   },
   {
