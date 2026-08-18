@@ -62,7 +62,7 @@ export function AdminCompareFrame({
     <div className={cn('flex min-w-0 flex-col', className)}>
       <AdminArchetypeHeader title={title} routeLine={routeLine} actions={actions} />
 
-      <div className="min-w-0 px-6 pb-6">
+      <div className="min-w-0 pb-6">
         <div className={cn('grid grid-cols-1 gap-4 pb-4', cols)}>
           <div className="min-w-0">{leftHeader}</div>
           <div aria-hidden className="hidden sm:block" />

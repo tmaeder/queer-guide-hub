@@ -35,11 +35,14 @@ interface AdminArchetypeHeaderProps {
  * so it cannot drift from the frame the page actually renders in, and an
  * unregistered route simply gets no line rather than a wrong one.
  *
- * Padding is `px-6 py-4` (24/16), not the mock's `14px 24px`. The 8pt-grid
- * rule rejects both `py-3` and `py-3.5` — its allowlist matches the `-3`
- * before the decimal — and a 2px difference is not worth an eslint suppression
- * in the one component every admin page renders. Where a mock and a repo guard
- * disagree on 2px, the guard wins.
+ * Vertical padding only: AdminShell's <main> is documented as "the ONE owner
+ * of admin page spacing" and already applies PAGE_GUTTER, so a frame that
+ * added its own px would double-pad every admin page — the exact defect that
+ * rule was written to end.
+ *
+ * py-4 (16), not the mock's 14: the 8pt-grid rule rejects py-3 and py-3.5
+ * alike, and 2px is not worth a suppression in the one component every admin
+ * page renders.
  */
 export function AdminArchetypeHeader({
   title,
@@ -54,7 +57,7 @@ export function AdminArchetypeHeader({
   return (
     <header
       className={cn(
-        'flex flex-col gap-4 px-6 py-4 sm:flex-row sm:items-end sm:justify-between',
+        'flex flex-col gap-4 py-4 sm:flex-row sm:items-end sm:justify-between',
         className,
       )}
     >

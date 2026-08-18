@@ -34,7 +34,7 @@ import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { adminAction } from '@/lib/adminAction';
 import { formatNextFire } from '@/lib/nextCronFire';
 import { toast } from 'sonner';
-import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
+import { AdminRegistryFrame } from '@/components/admin/frames/AdminRegistryFrame';
 import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 
 interface Automation {
@@ -254,69 +254,69 @@ export default function AdminAutomation() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* mb-0: the parent already spaces children with gap-6. */}
-      {/* Archetype H — the reference implementation. AdminAutomation is the
-        cleanest registry in the console: a slug, an enabled toggle, a last-run
-        status and a next-fire time, which is the archetype's definition almost
-        word for word. The subtitle is gone because the route line now carries
-        the "where am I" job, and the shell has stopped drawing its breadcrumb
-        band above this page (see `adopted` in adminArchetypes.ts). */}
-      <AdminArchetypeHeader
-        className="mb-0"
-        title={
-          <span className="flex items-center gap-2">
-            <Workflow size={22} aria-hidden />
-            Automation
-          </span>
-        }
-        actions={
-          <div className="flex gap-2 flex-shrink-0 flex-wrap">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={dryRunAll}
-              disabled={busySlug !== null}
-              title="Preview every enabled automation in one click"
-            >
-              {busySlug === 'dry-all' ? (
-                <TrackLoader size={12} className="mr-1" />
-              ) : (
-                <FlaskConical size={12} className="mr-1" />
-              )}
-              Dry-run all
-            </Button>
-            {isAdmin && (
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => pauseAll(false)}
-                  disabled={busySlug !== null}
-                  title="Disable every automation (emergency kill switch)"
-                >
-                  {busySlug === 'pause-all:false' ? (
-                    <TrackLoader size={12} className="mr-1" />
-                  ) : null}
-                  Pause all
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => pauseAll(true)}
-                  disabled={busySlug !== null}
-                >
-                  {busySlug === 'pause-all:true' ? (
-                    <TrackLoader size={12} className="mr-1" />
-                  ) : null}
-                  Resume all
-                </Button>
-              </>
-            )}
-          </div>
-        }
-      />
+    /* Archetype H — the reference implementation. A slug, an enabled toggle, a
+       last-run status and a next-fire time is the archetype's definition almost
+       word for word.
 
+       The seven-column TABLE is kept deliberately. H constrains the grammar —
+       header, filter row, primary action, a body of named things with their
+       state — not the markup, and a schedule and a next-fire time are exactly
+       what an operator scans down a column. Flattening this into the frame's
+       simple row shape would have been a downgrade dressed as consistency; it
+       is why AdminRegistryFrame takes a body rather than a row list.
+
+       The subtitle is gone: the route line now carries the "where am I" job,
+       and the shell has stopped drawing its breadcrumb band above this page
+       (see `adopted` in adminArchetypes.ts). */
+    <AdminRegistryFrame
+      title={
+        <span className="flex items-center gap-2">
+          <Workflow size={22} aria-hidden />
+          Automation
+        </span>
+      }
+      actions={
+        <div className="flex gap-2 flex-shrink-0 flex-wrap">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={dryRunAll}
+            disabled={busySlug !== null}
+            title="Preview every enabled automation in one click"
+          >
+            {busySlug === 'dry-all' ? (
+              <TrackLoader size={12} className="mr-1" />
+            ) : (
+              <FlaskConical size={12} className="mr-1" />
+            )}
+            Dry-run all
+          </Button>
+          {isAdmin && (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => pauseAll(false)}
+                disabled={busySlug !== null}
+                title="Disable every automation (emergency kill switch)"
+              >
+                {busySlug === 'pause-all:false' ? <TrackLoader size={12} className="mr-1" /> : null}
+                Pause all
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => pauseAll(true)}
+                disabled={busySlug !== null}
+              >
+                {busySlug === 'pause-all:true' ? <TrackLoader size={12} className="mr-1" /> : null}
+                Resume all
+              </Button>
+            </>
+          )}
+        </div>
+      }
+    >
       {/* Registry */}
       <section>
         <h2 className="text-title font-semibold mb-2">Registered automations</h2>
@@ -617,6 +617,6 @@ export default function AdminAutomation() {
           )}
         </SheetContent>
       </Sheet>
-    </div>
+    </AdminRegistryFrame>
   );
 }

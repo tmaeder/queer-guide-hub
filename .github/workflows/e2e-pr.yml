@@ -75,6 +75,7 @@ jobs:
             e2e/trip-creation.spec.ts \
             e2e/marketplace.spec.ts \
             e2e/admin-pipelines.spec.ts \
+            e2e/admin-route-baseline.spec.ts \
             e2e/venues/detail-content.spec.ts \
             e2e/help-locale.spec.ts \
             e2e/locale-prefix.spec.ts \
@@ -82,6 +83,11 @@ jobs:
             e2e/nested-interactive.spec.ts \
             e2e/singles.spec.ts \
             --reporter=line
+          # admin-route-baseline.spec.ts is on the list for the same reason as
+          # singles.spec.ts below: it exists to catch regressions introduced by
+          # the archetype migration, and a migration lands in a PR. Left to the
+          # nightly it would report the breakage the morning after the change
+          # that caused it, against a merged commit.
           # singles.spec.ts is in the list above rather than left to the nightly
           # run for the reason it exists: /villages/:slug shipped for months on
           # a dead layout branch with no safety gating because NOTHING
