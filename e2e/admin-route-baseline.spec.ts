@@ -150,8 +150,24 @@ test.describe('admin routes stay healthy through the archetype migration', () =>
       // ── Invariants ───────────────────────────────────────────────────────
       // 1. The page renders something. A frame swap that blanks a route is the
       //    loudest possible regression and the easiest to miss behind auth.
+      //
+      //    `textContent`, NOT `innerText`. innerText is defined in terms of
+      //    RENDERED text, so it forces a full style+layout flush of the
+      //    subtree; on /admin/pipelines, which mounts a ReactFlow canvas of
+      //    transformed nodes, it never returned inside a 75s budget — three
+      //    attempts running, failing at this exact line with "Target page,
+      //    context or browser has been closed" (the teardown, not the cause).
+      //    textContent reads the DOM directly and needs no layout.
+      //
+      //    The trade is that textContent also counts text in hidden panels.
+      //    That is acceptable HERE and only here: the invariant is "the route
+      //    did not go blank", and a blanked route has no DOM text at all. Do
+      //    not reuse this as a visibility assertion.
       const bodyLength = (
-        await page.locator('main, #admin-main-content').first().innerText()
+        await page
+          .locator('main, #admin-main-content')
+          .first()
+          .evaluate((el) => el.textContent ?? '')
       ).trim().length;
       expect(bodyLength, `${route} rendered no content`).toBeGreaterThan(0);
 
