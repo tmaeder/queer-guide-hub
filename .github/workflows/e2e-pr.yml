@@ -90,6 +90,7 @@ jobs:
             e2e/hotels-filters.spec.ts \
             e2e/nested-interactive.spec.ts \
             e2e/singles.spec.ts \
+            e2e/legal-pages.spec.ts \
             --reporter=line
           # e2e/auth.setup.ts is FIRST on the list and is load-bearing.
           # Passing explicit file paths filters EVERY project, including the
@@ -109,6 +110,17 @@ jobs:
           # a dead layout branch with no safety gating because NOTHING
           # exercised it. A spec written to close that gap, parked behind a
           # hardcoded list it is not on, closes nothing.
+          # legal-pages.spec.ts is here for the SAME reason as design-system
+          # below, and it is the second time this exact fault has been paid for.
+          # The elevation contract is asserted in two files; only one of them was
+          # on this list. So when #2848 inverted it (--shadow-hard -> the soft
+          # re-skin), that PR ran the copy it had correctly migrated and never
+          # ran the copy it broke — `legal-pages.spec.ts` went stale invisibly and
+          # took the nightly down from 2026-08-18. A design-contract assertion
+          # parked behind a hardcoded list it is not on guards nothing, and the
+          # nightly is the only e2e `main` gets (this workflow is
+          # `pull_request`-only), so the report arrives a day late against an
+          # already-merged commit.
           # Design-system guards (radius tiers + monochrome) used to run ONLY in
           # the nightly suite, so the PHOTOCOPY radius retune passed every PR
           # check and turned nightly red the next morning. Second invocation
