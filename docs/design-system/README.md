@@ -535,11 +535,48 @@ Header, search and footer moved onto the map 2026-08-15 (#2775, #2781).
 - **Footer** — the tracks band is **full-bleed**, outside the cap and the
   gutter; the columns, policy band and legal row keep `PAGE_GUTTER`. A track
   that stops in a margin reads as a graphic in a column, not as the network.
-  Its four lines converge on one interchange, and each ring sits on a middle
-  ANCHOR of its own path so it is exactly on the line at any width. Columns are
-  one per intent, single-sourced from `INTENT_NAV` (including `children`), so
-  the footer cannot drift from the topbar — the defect that once put `/venues`
-  and `/people` out of reach of desktop chrome.
+  It is ONE line with two stops (see `FooterTracks` for why four does not work
+  at a footer's aspect ratio), and each ring sits on an ANCHOR of that path so
+  it is exactly on the line at any width. Columns are one per intent,
+  single-sourced from `INTENT_NAV` (including `children`), so the footer cannot
+  drift from the topbar — the defect that once put `/venues` and `/people` out
+  of reach of desktop chrome.
+
+- **Footer, compact** (`<Footer variant="compact">`, panel 09) — one paper
+  island on single-purpose flows and account screens (`isCompactFooterRoute` in
+  `src/lib/locale.ts`: `/auth`, `/claim-username`, `/onboarding`, `/hub`,
+  `/settings`). The full footer is a closing statement, and a sign-in form has
+  not been making one. **Report and hotlines never drop, whatever else does** —
+  they lead the row, ahead of privacy and terms, because that is the priority
+  order rather than the conventional one. Prefix matching is exact-or-slash, so
+  a future `/settings-export` is not an account screen.
+
+- **Signal** (`src/components/notifications/SignalPanel.tsx`, panel 05) — the
+  bell popover is an ISLAND, not a menu: paper, `rounded-container`,
+  `shadow-soft-lg`, `p-0` so its own footer strip reaches the rounded edges, and
+  no caret (the badge and the gap do the pointing). Three rules are
+  load-bearing:
+
+  1. **Safety never mixes.** `sos` pins above the list on ink, outside
+     read/unread, with no dot — a standing condition, not an item you clear.
+     "Cannot be marked read" is enforced in `mark_all_alerts_read` (migration
+     `20260911150000`), not by the client filter: a rendering decision is not a
+     guarantee. **Deviation:** the mock also says it does not count toward the
+     badge. That is right for a venue advisory and wrong for a distress signal,
+     so it stays counted.
+  2. **Unread is a station dot** — presence/absence, not bold-vs-regular, so
+     the cue survives colour-blindness; an `sr-only` label carries it for screen
+     readers, and the read state keeps a transparent rim so both states are the
+     same width.
+  3. **The bullet is the track the alert rode in on**, resolved through
+     `ROUTE_BULLET_MAP` via `RouteBullet` — never a second local colour table.
+     A face beats a letter when the alert carries an avatar. Either way the mark
+     is `aria-hidden`: it restates the row's own title, and `role="img"` with no
+     name would read the raw subtype ("submission_update") before every one.
+
+  The strip claims **no quiet hours** — there is no quiet-hours model in this
+  product, and a fixed "23:00–09:00" would be a promise the notifier does not
+  keep.
 
 Two mock deviations, both deliberate: the results footer hovers to an underline
 rather than pink (pink text on paper is 3.43:1, and track colour is fill-only),

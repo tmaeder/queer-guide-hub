@@ -18,8 +18,10 @@ vi.mock('@/hooks/useInboxFeed', () => ({
   }),
 }));
 
-vi.mock('./NotificationList', () => ({
-  NotificationList: () => <div data-testid="notification-list">Notifications</div>,
+// The panel itself is covered by SignalPanel.test.tsx; stub it here so the
+// bell's own assertions do not depend on the feed shape the panel reads.
+vi.mock('../SignalPanel', () => ({
+  SignalPanel: () => <div data-testid="signal-panel">Signal</div>,
 }));
 
 import { NotificationBell } from '../NotificationBell';
