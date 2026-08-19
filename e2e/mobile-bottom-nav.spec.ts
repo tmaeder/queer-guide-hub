@@ -8,8 +8,9 @@ import { test, expect, type Page } from '@playwright/test';
  * real target (same rationale as visual-mobile.spec.ts). All cases use the
  * anonymous state — no Supabase data or auth fixture required.
  *
- * Reduced motion is forced so the hide-on-scroll transform is disabled and the
- * bar stays put for stable assertions.
+ * Reduced motion is forced out of habit from when this bar slid away on
+ * scroll-down. It no longer does — the island dock never scrolls away (design
+ * panel 12, §10 rule 4) — so nothing here depends on the setting any more.
  */
 test.use({ reducedMotion: 'reduce' });
 
@@ -32,8 +33,13 @@ async function dismissCookieBanner(page: Page) {
     .then(() => true)
     .catch(() => false);
   if (!appeared) return;
-  await banner.getByRole('button', { name: /necessary only|accept all/i }).first().click();
-  await expect(banner).toBeHidden().catch(() => {});
+  await banner
+    .getByRole('button', { name: /necessary only|accept all/i })
+    .first()
+    .click();
+  await expect(banner)
+    .toBeHidden()
+    .catch(() => {});
 }
 
 /**
@@ -87,10 +93,7 @@ test.describe('Mobile bottom navigation', () => {
     // primary navigation, so the tab's own tap opens it now.
     await gotoMobile(page, '/');
     const explore = bottomNav(page).getByText('Explore', { exact: true });
-    await expect(explore.locator('xpath=ancestor::a')).toHaveAttribute(
-      'aria-haspopup',
-      'dialog',
-    );
+    await expect(explore.locator('xpath=ancestor::a')).toHaveAttribute('aria-haspopup', 'dialog');
     await explore.click();
     await expect(page.getByRole('dialog')).toBeVisible();
     // The tap opened the sheet INSTEAD of navigating.
@@ -142,7 +145,9 @@ test.describe('Mobile bottom navigation', () => {
 
   test('contribute gates anonymous users to sign-in (no submit nav)', async ({ page }) => {
     await gotoMobile(page, '/');
-    await bottomNav(page).getByRole('button', { name: /sign in to contribute/i }).click();
+    await bottomNav(page)
+      .getByRole('button', { name: /sign in to contribute/i })
+      .click();
 
     // The auth dialog surfaces (email field) and we did not route to /submit.
     await expect(page.locator('input[type="email"]').first()).toBeVisible();

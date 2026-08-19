@@ -174,6 +174,11 @@
   --radius-element: 0.75rem; /* 12px — buttons, inputs, rows, chips */
   --radius-badge: 0.5625rem; /* 9px — count badges, swatches, micro marks */
   --radius-full: 9999px; /* circles ONLY: station rings, route bullets, avatars, dots */
+  /* Floating islands (Header and Footer.dc.html panels 10-12). Two values
+     because the spec draws two: 22px at desktop, 20px on the 390px board.
+     Declared here only, same reasoning as --radius-panel above. */
+  --radius-island: 1.375rem; /* 22px — the top bar and the phone dock */
+  --radius-island-sm: 1.25rem; /* 20px — the same bars under 768px */
 
   /* ── Colors — CSS-variable-based monochrome ────────────────────── */
   --color-border: hsl(var(--border));
@@ -271,6 +276,15 @@
   /* Dialogs, sheets and the search command plate: they float over a scrim
      rather than sitting on the page, so they carry more depth than a card. */
   --shadow-soft-lg: 0 24px 60px rgba(17, 17, 17, 0.1);
+  /* Islands. §10 rule 3, "Elevation is the only edge": an island carries no
+     keyline, so it is separated by its shadow and the gap around it alone,
+     "which is why the shadow is heavier than a card's" — 22% against a
+     card's 6%. The ink variants sit deeper still, straight from the spec's
+     own inline styles (0.28 desktop, 0.30 on the phone dock). */
+  --shadow-island: 0 18px 44px rgba(17, 17, 17, 0.22);
+  --shadow-island-ink: 0 18px 44px rgba(17, 17, 17, 0.28);
+  --shadow-island-sm: 0 14px 32px rgba(17, 17, 17, 0.22);
+  --shadow-island-ink-sm: 0 14px 32px rgba(17, 17, 17, 0.3);
 }
 
 /* ── Self-hosted fonts (subway-map rebrand 2026-08) ──────────────────
@@ -429,6 +443,14 @@
   --input-bg: 60 33% 97%;
   --ring: 330 100% 56%;
   --hairline-alpha: 0.12;
+  /* Island inset. §10 rule 1, "Islands float, they never span": "Inset 14 to
+     22px from every edge, so page colour shows on all four sides. The gap is
+     fixed; it does not tighten on scroll." The spec draws the top of that
+     range on desktop and the bottom on the 390px board, so this is one
+     variable with a breakpoint, never an interpolation. `e2e/page-layout`
+     reads it rather than hard-coding 22, so the guard cannot drift from the
+     value the chrome actually uses. */
+  --island-inset: 14px;
 
   --sidebar-background: 60 33% 97%;
   --sidebar-foreground: 0 0% 6.7%;
@@ -1381,6 +1403,58 @@ h2,
    duotone, paper grain) was removed 2026-08-09 with the subway-map
    rebrand; its class names in components are inert no-ops until the
    Public/Admin phases delete them. */
+
+/* ── Floating islands ──────────────────────────────────────────────────
+   `Header and Footer.dc.html` panels 10-12. The chrome detaches from the
+   window edges and rides above the content as an object sitting on the map,
+   with the page's own ground showing through on all four sides.
+
+   Four rules from the spec, and each is enforced here rather than left to
+   call sites:
+
+     1. "Islands float, they never span." The inset is a variable, applied
+        to every side, and it does NOT tighten on scroll — nothing here is
+        transitioned, so a sticky island cannot animate its gap shut.
+     2. "One indicator per page." The underside hairline is opt-in
+        (`.island-progress`), because pages that already draw a reading
+        progress line must not answer "where am I" twice. See
+        ReadingProgressBar.
+     3. "Elevation is the only edge." No border, ever. The shadow is 22%
+        against a card's 6% precisely because there is no keyline under it —
+        adding one back makes the depth read as a mistake.
+     4. The dock owns the bottom on phones: `.island-dock` never translates
+        away, so scroll direction cannot hide it.
+
+   The class carries geometry only. Surface (paper vs ink) stays with the
+   component, because the top bar swaps to ink when it collapses and the
+   phone dock is ink from the start. */
+.island {
+  border-radius: var(--radius-island-sm);
+  box-shadow: var(--shadow-island-sm);
+  margin-inline: var(--island-inset);
+  /* An island clips its own children: the compact ink state fills the whole
+     box, and without this the fill squares off the corners. */
+  overflow: hidden;
+}
+
+.island-ink {
+  box-shadow: var(--shadow-island-ink-sm);
+}
+
+@media (min-width: 768px) {
+  :root {
+    --island-inset: 22px;
+  }
+
+  .island {
+    border-radius: var(--radius-island);
+    box-shadow: var(--shadow-island);
+  }
+
+  .island-ink {
+    box-shadow: var(--shadow-island-ink);
+  }
+}
 
 /* ── Card lift ─────────────────────────────────────────────────────────
    The interactive-card MOTION: on hover/focus the surface translates up-left

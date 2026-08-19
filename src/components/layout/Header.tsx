@@ -331,12 +331,26 @@ export function Header() {
 
   return (
     <header
-      // The whole bar is one 4px-ruled box (spec panel 01), not a hairline
-      // edge. No backdrop blur: the compact state is a solid ink flood, and a
+      // A floating island (spec panels 10-12), not a bar welded to the window
+      // edge: inset on every side so the page's own ground shows through, and
+      // separated by elevation alone. The border is GONE on purpose — §10
+      // rule 3, "Elevation is the only edge. No keyline on an island."
+      //
+      // `sticky`, not `fixed`. The spec's demo overlays the island on padded
+      // content; sticky keeps the island in flow, which means the first
+      // screenful is not underlapped at rest but every page keeps its own top
+      // spacing and nothing needs a global scroll-padding. The moment the
+      // reader scrolls, content passes beneath it exactly as drawn.
+      //
+      // No backdrop blur: the compact state is a solid ink flood, and a
       // blurred translucent bar under it reads as a third, muddier surface.
+      //
+      // The compact state changes only the SURFACE, never the box — §11,
+      // "The gap to the page edge never changes, so the bar appears to shrink
+      // in place rather than dock."
       className={cn(
-        'sticky top-0 border-b border-border-hairline',
-        compact && !isMobile ? 'bg-foreground text-background' : 'bg-background',
+        'island sticky',
+        compact && !isMobile ? 'island-ink bg-foreground text-background' : 'bg-background',
       )}
       // z-40, NOT the 1100 this carried before. Every portaled overlay in the
       // app — dialog, alert-dialog, dropdown, popover, select, sheet, tooltip,
@@ -349,7 +363,20 @@ export function Header() {
       // unclickable behind the wordmark. 40 keeps the header above page
       // content and the sticky page bars (z-20/z-30) and level with
       // MobileBottomNav, while staying under the z-50 overlay layer.
-      style={{ zIndex: 40, paddingTop: 'env(safe-area-inset-top, 0px)' }}
+      // `top` is the island inset, not 0, so the gap above the bar is the same
+      // gap as the one at its sides — that symmetry is the whole point of the
+      // island. The safe-area inset is ADDED to it rather than replacing the
+      // padding it used to carry: on a notched phone the island has to clear
+      // the notch and still keep its own gap.
+      // The margin is what makes the gap exist AT REST; `top` is what keeps it
+      // once the bar sticks. Both are the same value, so the island does not
+      // jump when it detaches — §10 rule 1, "The gap is fixed; it does not
+      // tighten on scroll."
+      style={{
+        zIndex: 40,
+        top: 'calc(var(--island-inset) + env(safe-area-inset-top, 0px))',
+        marginTop: 'calc(var(--island-inset) + env(safe-area-inset-top, 0px))',
+      }}
     >
       {compact && !isMobile ? (
         /* ── 02 · Compact, after scroll — one ink line ────────────────── */
