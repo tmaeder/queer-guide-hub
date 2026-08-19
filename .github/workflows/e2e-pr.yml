@@ -35,6 +35,21 @@ jobs:
     # 10.8m of tests and was killed at 12m during teardown, which GitHub
     # reports as `cancelled`, not `timed out` — so it read as a concurrency
     # cancellation rather than the budget it actually was.
+    #
+    # 20 STAYS, and the next person to see a `cancelled` here should not raise
+    # it. Measured 2026-08-19 across five green runs: whole job 8m08s-8m56s
+    # (npm ci ~15-20s, playwright install 22-102s, build ~8s, specs 6m34s-7m12s).
+    # That is 2.3x headroom. Every `cancelled` run that day died inside
+    # `playwright install --with-deps`, stalled on a dead Ubuntu mirror for
+    # 12-20 minutes — see .github/actions/setup-playwright, which bounds it.
+    # A bigger budget buys a longer stall, not a green check.
+    #
+    # Also note: not every `cancelled` here is this budget. `concurrency` +
+    # `cancel-in-progress` kills the previous run the moment a new commit
+    # lands, and GitHub reports THAT as `cancelled` too. Check the job's
+    # elapsed time before diagnosing — ~20m is the cap, anything shorter is a
+    # supersession (runs 32268586231 and 32236106405 were superseded, not
+    # timed out).
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
@@ -46,7 +61,7 @@ jobs:
           files=$(gh api "repos/${{ github.repository }}/pulls/${{ github.event.number }}/files" \
             --paginate --jq '.[].filename')
           echo "Changed files:"; echo "$files" | sed 's/^/  /'
-          if echo "$files" | grep -qE '^(src/|public/|e2e/|index\.html$|vite\.config\.ts$|playwright\.config\.ts$|package\.json$|package-lock\.json$|\.github/workflows/e2e-pr\.yml$)'; then
+          if echo "$files" | grep -qE '^(src/|public/|e2e/|index\.html$|vite\.config\.ts$|playwright\.config\.ts$|package\.json$|package-lock\.json$|\.github/workflows/e2e-pr\.yml$|\.github/actions/setup-playwright/)'; then
             echo "relevant=true" >> "$GITHUB_OUTPUT"
             echo "::notice::Relevant paths changed - running critical-path specs."
           else
@@ -60,7 +75,7 @@ jobs:
           cache: npm
       - run: npm ci
         if: steps.changes.outputs.relevant == 'true'
-      - run: npx playwright install --with-deps chromium
+      - uses: ./.github/actions/setup-playwright
         if: steps.changes.outputs.relevant == 'true'
       - name: Build app
         if: steps.changes.outputs.relevant == 'true'

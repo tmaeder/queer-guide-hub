@@ -72,7 +72,7 @@ jobs:
           files=$(gh api "repos/${{ github.repository }}/pulls/${{ github.event.number }}/files" \
             --paginate --jq '.[].filename')
           echo "Changed files:"; echo "$files" | sed 's/^/  /'
-          if echo "$files" | grep -qE '^(src/|e2e/a11y-.*\.spec\.ts$|e2e/focus-visible\.spec\.ts$|eslint\.config\.js$|playwright\.config\.ts$|scripts/a11y-axe-scan\.mjs$|scripts/a11y-routes\.mjs$|\.github/workflows/a11y\.yml$)'; then
+          if echo "$files" | grep -qE '^(src/|e2e/a11y-.*\.spec\.ts$|e2e/focus-visible\.spec\.ts$|eslint\.config\.js$|playwright\.config\.ts$|scripts/a11y-axe-scan\.mjs$|scripts/a11y-routes\.mjs$|\.github/workflows/a11y\.yml$|\.github/actions/setup-playwright/)'; then
             echo "relevant=true" >> "$GITHUB_OUTPUT"
             echo "::notice::Relevant paths changed - running the a11y gate."
           else
@@ -162,7 +162,7 @@ jobs:
         if: needs.changes.outputs.relevant == 'true'
         env:
           HUSKY: '0'
-      - run: npx playwright install --with-deps chromium
+      - uses: ./.github/actions/setup-playwright
         if: needs.changes.outputs.relevant == 'true'
       - name: Download dist
         if: needs.changes.outputs.relevant == 'true' && needs.build.result == 'success'
@@ -234,7 +234,7 @@ jobs:
       - run: npm install
         env:
           HUSKY: '0'
-      - run: npx playwright install --with-deps chromium
+      - uses: ./.github/actions/setup-playwright
       - name: Download dist
         if: needs.build.result == 'success'
         uses: actions/download-artifact@v8

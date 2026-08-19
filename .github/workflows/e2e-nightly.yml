@@ -31,7 +31,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      - uses: ./.github/actions/setup-playwright
       - name: Run e2e suite
         env:
           E2E_BASE_URL: ${{ env.BASE_URL_INPUT || 'https://queer.guide' }}
