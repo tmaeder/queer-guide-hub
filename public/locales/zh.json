@@ -1968,11 +1968,11 @@
     },
     "mobileNav": {
       "home": "首页",
-      "explore": "探索",
+      "explore": "浏览",
       "contribute": "添加",
       "messages": "消息",
       "you": "我的",
-      "menuTitle": "探索 Queer Guide",
+      "menuTitle": "全部板块",
       "menuDescription": "跳转到任意板块，切换语言或主题。",
       "trips": "我的行程",
       "settingsSection": "显示",
@@ -3718,18 +3718,18 @@
   },
   "connections": {
     "title": "[ZH] Connections",
-    "subtitle": "[ZH] Explore how places, events and people on queer.guide relate to each other.",
+    "subtitle": "看看 queer.guide 上的场所、活动与人物如何彼此关联。",
     "hint": "[ZH] Click a card to expand its connections. Drag to rearrange, scroll to zoom. The arrow opens the detail page.",
-    "mobileHint": "[ZH] Closest connections first. Re-center to explore from another entity.",
+    "mobileHint": "最近的关联优先显示。重新居中即可从另一个对象开始。",
     "stats": "[ZH] {{nodes}} entities, {{links}} links",
     "open": "[ZH] Open {{title}}",
     "openShort": "[ZH] Open",
     "recenter": "[ZH] Connections",
     "error": "[ZH] Could not load connections. Please try again later.",
     "emptyTitle": "[ZH] Pick a starting point",
-    "emptyDescription": "[ZH] Open any venue, event, city or person and use its Connections button to explore from there.",
+    "emptyDescription": "打开任意场所、活动、城市或人物页面，用「关联」按钮从那里开始。",
     "emptyCta": "[ZH] Search the guide",
-    "explore": "[ZH] Explore connections"
+    "explore": "查看关联"
   },
   "milestones": {
     "eyebrow": "酷儿历史",
@@ -3808,7 +3808,7 @@
     "eras": {
       "hidden-lives": {
         "title": "[ZH] Hidden lives",
-        "intro": "[ZH] Before 1800, queer life survived in the shadows of law and church. What the record preserves is mostly persecution — trials, executions, edicts — alongside rare glimpses of love and community that outlasted them."
+        "intro": "1800 年以前，酷儿的生活在法律与教会的阴影下存续。留在记录里的多半是迫害：审判、处决、敕令。与之并存的，是少数比它们活得更久的爱与社群的痕迹。"
       },
       "empire-criminalization": {
         "title": "[ZH] Empire & criminalization",
@@ -3824,7 +3824,7 @@
       },
       "homophile-years": {
         "title": "[ZH] The homophile years",
-        "intro": "[ZH] After the war, small 'homophile' groups rebuilt quietly — Mattachine, the Daughters of Bilitis, Arcadie, the COC — trading radicalism for respectability while police raids and purges continued."
+        "intro": "战后，小型「同性恋权益」团体悄然重建：马塔辛、比利提斯的女儿、阿卡迪、COC。它们以激进换取体面，而突击搜查与清洗仍在继续。"
       },
       "liberation": {
         "title": "[ZH] Liberation",
@@ -3832,7 +3832,7 @@
       },
       "aids-crisis": {
         "title": "[ZH] The AIDS crisis",
-        "intro": "[ZH] A generation was decimated while governments looked away. The epidemic's grief forged the militant activism — ACT UP, treatment-access campaigns — that reshaped medicine and queer politics alike."
+        "intro": "在政府别过头去的时候，整整一代人被夺走。这场疫病的悲痛锻造出重塑医学与酷儿政治的抗争行动：ACT UP，以及争取治疗可及性的运动。"
       },
       "recognition": {
         "title": "[ZH] Recognition",
@@ -3878,8 +3878,8 @@
     "hub": {
       "title": "[ZH] Guides",
       "eyebrow": "[ZH] Editorial",
-      "lede": "[ZH] Comparison-driven guides, curated lists and community quests — written by editors, no fluff.",
-      "metaDescription": "[ZH] Editor-written guides, curated lists and community quests across LGBTQ+ places, events and shopping.",
+      "lede": "以比较为本的指南、人工挑选的清单，以及社群任务。由编辑撰写，不注水。",
+      "metaDescription": "由编辑撰写的指南、人工挑选的清单与社群任务，涵盖 LGBTQ+ 场所、活动与购物。",
       "empty": "[ZH] No guides yet.",
       "emptyHint": "[ZH] New guides land regularly. Check back soon."
     },
@@ -4065,7 +4065,7 @@
         "rights": "[ZH] Distinct rights tracked per country"
       },
       "body": {
-        "source": "[ZH] Every legal status on this site — criminalisation, partnership recognition, anti-discrimination protection, gender recognition, conversion therapy and intersex bodily integrity — comes from the ILGA World Database, the reference dataset maintained by the International Lesbian, Gay, Bisexual, Trans and Intersex Association.",
+        "source": "本站的每一项法律状态都来自 ILGA World Database，即国际女同性恋、男同性恋、双性恋、跨性别与间性者协会维护的基准数据集。涵盖刑事化、伴侣关系承认、反歧视保护、性别承认、扭转治疗，以及间性者的身体完整权。",
         "refresh": "[ZH] We re-import it nightly. Where a country page shows an \"Updated\" date, that is the date ILGA last revised that record, not the date we fetched it.",
         "link": "[ZH] ILGA World Database",
         "unscored": "[ZH] The unscored rows are uninhabited or near-uninhabited territories with no ILGA entry. We list them as \"not scored\" rather than giving them a default, because a default would read as a measurement.",
@@ -4075,7 +4075,7 @@
         "scoreNotSafety": "[ZH] The score describes law on paper. It is not a safety rating, and it says nothing about enforcement, policing or how welcome you will be made to feel."
       },
       "limits": {
-        "national": "[ZH] It is national. Where rights vary by state or province — the United States, Indonesia, Nigeria, Mexico and others — a single national figure averages that away.",
+        "national": "数据以国家为单位。在美国、印度尼西亚、尼日利亚、墨西哥这类权利因州或省而异的地方，单一的全国数字会把差异抹平。",
         "enforcement": "[ZH] It records statutes, not enforcement. A law that is rarely applied and a law applied constantly look identical here.",
         "trans": "[ZH] Several facts that matter most to trans travellers are not in this dataset at all: bathroom and facility access, how identity documents are treated at borders, and access to gender-affirming healthcare.",
         "personal": "[ZH] It knows nothing about you. Your citizenship, residency, gender marker and relationship status all change what applies, and we hold none of them.",
@@ -4104,7 +4104,7 @@
     "title": "由酷儿打造，属于每个人。",
     "lede": "Queer Guide 汇集构成酷儿生活的场所、活动与人——由社群核实，向所有人免费开放，覆盖全球。",
     "diagram": {
-      "label": "四条线路——场所、活动、社群与目的地——汇聚于同一座站点。"
+      "label": "四条线路汇聚于同一座站点：场所、活动、社群与目的地。"
     },
     "scale": {
       "kicker": "此刻的网络",
@@ -4207,7 +4207,7 @@
       },
       "accessibility": {
         "title": "无障碍",
-        "description": "我们标注无台阶入口、无障碍卫生间——以及缺少什么。"
+        "description": "我们标注无台阶入口与无障碍卫生间，以及缺少什么。"
       },
       "growth": {
         "title": "成长",
