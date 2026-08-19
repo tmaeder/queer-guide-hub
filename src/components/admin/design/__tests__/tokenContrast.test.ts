@@ -20,7 +20,8 @@ const TRACK_RING = (() => {
 
 /**
  * Derived, never hardcoded (adopted from #2659): the guards below used to read
- * a literal ['spot','ink-blue','ink-over'], so a FOURTH wayfinding colour added
+ * a literal ['spot','ink-blue','ink-over'] (the PASTE-UP alias names, retired
+ * 2026-08-19), so a FOURTH wayfinding colour added
  * everywhere else would simply never have been checked against --destructive.
  * Flagging `ink: true` on the catalog row is now sufficient and sole.
  */
@@ -107,11 +108,13 @@ const TEXT_ON_PAGE = [
  * and buttons live inside cards at least as often as on the page, and a guard
  * that only knew about the page would miss the tighter of the two.
  *
- * Container borders are deliberately absent — see the header. `spot` and
- * `track-pink` are here because pink is the one track that draws borderless
- * marks (focus ring, ::selection, the active-nav underline).
+ * Container borders are deliberately absent — see the header. `track-pink` is
+ * here because pink is the one track that draws borderless marks (focus ring,
+ * ::selection, the active-nav underline). Its PASTE-UP alias `spot` used to be
+ * listed beside it; the two always held the same value, so retiring the alias
+ * (2026-08-19) cost this guard no coverage.
  */
-const CONTROL_BOUNDARIES = ['input', 'ring', 'spot', 'track-pink'];
+const CONTROL_BOUNDARIES = ['input', 'ring', 'track-pink'];
 const CONTROL_SURFACES = ['background', 'card'] as const;
 
 /**
@@ -146,7 +149,7 @@ const SURFACE_SEPARATION: Array<[string, string, number]> = [
  * case: it is sized well past the 3:1-exempt threshold and reads as
  * illustration, which is why the mocks draw route lines with no casing.)
  */
-const BORDER_GATED_FILLS = ['track-blue', 'track-green', 'track-yellow', 'ink-blue', 'ink-over'];
+const BORDER_GATED_FILLS = ['track-blue', 'track-green', 'track-yellow'];
 
 describe('design tokens: contrast guards', () => {
   it.each(CONTRAST_PAIRS.flatMap((p) => MODES.map((mode) => [p.label, p.fg, p.bg, mode] as const)))(
@@ -196,7 +199,9 @@ describe('design tokens: contrast guards', () => {
     // every card in the product goes invisible — this is the guard that says so.
     const css = readFileSync(resolve(__dirname, '../../../../index.css'), 'utf8');
     const body = css.slice(css.indexOf('\nbody {'));
-    expect(body, 'body lost its ground layer').toContain('background-image: url("data:image/svg+xml');
+    expect(body, 'body lost its ground layer').toContain(
+      'background-image: url("data:image/svg+xml',
+    );
     // All four tracks, and no straight runs (hard rule #1: every track bends).
     for (const track of ['%23FF1F8F', '%2300B4E6', '%232BE05A', '%23FFD500']) {
       expect(body.slice(0, 4000), `ground layer is missing ${track}`).toContain(track);
@@ -244,7 +249,7 @@ describe('design tokens: contrast guards', () => {
     // Track colors are FILL-ONLY. Type on a fill uses ink (blue/green/yellow)
     // or paper (pink), gated at their own pairs; a track color as body text
     // fails AA and the axe route sweep would catch it — this documents why.
-    for (const track of [...INKS, 'spot', 'ink-blue', 'ink-over']) {
+    for (const track of INKS) {
       expect(TEXT_ON_PAGE, `--${track} must never be body text`).not.toContain(track);
     }
   });
@@ -317,7 +322,7 @@ describe('design tokens: contrast guards', () => {
     // Measured against --destructive's ACTUAL hue per mode, not against 0
     // (adopted from #2659): the old form assumed red sits at hue 0, which is
     // true today but is runtime-overridable via /admin/design.
-    for (const track of [...INKS, 'spot', 'ink-blue', 'ink-over']) {
+    for (const track of INKS) {
       for (const mode of MODES) {
         const hue = hueOf(value(track, mode));
         const danger = hueOf(value('destructive', mode));

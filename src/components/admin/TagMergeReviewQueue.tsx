@@ -111,7 +111,7 @@ export function TagMergeReviewQueue() {
 
   return (
     <div className="mb-6 flex flex-col gap-4">
-      <div className="rounded-element border border-border">
+      <div className="rounded-element bg-muted">
         <button
           type="button"
           onClick={() => setQueueOpen((v) => !v)}
@@ -141,7 +141,7 @@ export function TagMergeReviewQueue() {
                 return (
                   <div
                     key={row.review_id}
-                    className="flex flex-col gap-2 rounded-element border border-border bg-muted/40 p-4 md:flex-row md:items-center md:justify-between"
+                    className="flex flex-col gap-2 rounded-element bg-muted/40 p-4 md:flex-row md:items-center md:justify-between"
                   >
                     <div className="flex flex-1 flex-wrap items-center gap-2 text-13">
                       <span className="font-semibold">{row.duplicate_name}</span>
@@ -193,7 +193,7 @@ export function TagMergeReviewQueue() {
         )}
       </div>
 
-      <div className="rounded-element border border-border">
+      <div className="rounded-element bg-muted">
         <button
           type="button"
           onClick={() => setRecentOpen((v) => !v)}
@@ -214,12 +214,11 @@ export function TagMergeReviewQueue() {
             )}
             {!recentLoading &&
               (recent ?? []).map((row) => {
-                const isUndoing =
-                  unmerge.isPending && unmerge.variables?.audit_id === row.audit_id;
+                const isUndoing = unmerge.isPending && unmerge.variables?.audit_id === row.audit_id;
                 return (
                   <div
                     key={row.audit_id}
-                    className="flex flex-col gap-2 rounded-element border border-border bg-muted/40 p-4 md:flex-row md:items-center md:justify-between"
+                    className="flex flex-col gap-2 rounded-element bg-muted/40 p-4 md:flex-row md:items-center md:justify-between"
                   >
                     <div className="flex flex-1 flex-wrap items-center gap-2 text-13">
                       <code className="rounded-badge bg-muted px-2 py-0.5 text-xs2">

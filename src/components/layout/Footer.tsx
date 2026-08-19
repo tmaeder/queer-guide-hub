@@ -6,7 +6,7 @@ import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { cn } from '@/lib/utils';
 import { INTENT_NAV, INTENT_TRACK, isIntentActive } from '@/config/navigation';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { MasterSymbol } from '@/components/brand/MasterSymbol';
+import { Wordmark } from '@/components/brand/Wordmark';
 import { TrackSwatch } from '@/components/transit/TrackSwatch';
 import { PAGE_GUTTER } from '@/components/layout/PageContainer';
 import { FooterTracks } from './FooterTracks';
@@ -40,11 +40,77 @@ const legalLinks = [
   { href: '/donate', labelKey: 'footer.supportUs', fallback: 'Support Us' },
 ];
 
-export function Footer() {
+/** Where "Report something" goes.
+ *
+ *  It pointed at `/report` for as long as this footer has existed and there
+ *  has never been such a route — the anti-discrimination block's only call to
+ *  action landed on the SPA's 404 board. Reporting in this product is
+ *  contextual (ReportDialog / ReportContentDialog, both of which require a
+ *  target entity), so there is nothing target-less to open from here; the real
+ *  target-less surface is the contact form's Safety & Moderation lane, which
+ *  now accepts `?category=` so the link arrives with that lane already picked. */
+const REPORT_HREF = '/contact?category=safety';
+
+export interface FooterProps {
+  /**
+   * `compact` is panel 09 — "Used on print-adjacent pages, single-purpose
+   * flows, and anything inside an account. Report and hotlines never drop,
+   * whatever else does."
+   *
+   * It is a PAPER island, not a reversed plate: the full footer's ink flood is
+   * a closing statement, and a page that is a form or an account screen has
+   * not been making one. What it must not lose is the two links a reader might
+   * need in the next thirty seconds, which is why report and hotlines lead the
+   * row and the legal links follow them rather than the other way round.
+   */
+  variant?: 'full' | 'compact';
+}
+
+export function Footer({ variant = 'full' }: FooterProps = {}) {
   const { t } = useTranslation();
   const { pathname } = useLocation();
   const currentYear = new Date().getFullYear();
   const localePath = pathname.replace(/^\/(?:[a-z]{2}\/)?/, '/');
+
+  if (variant === 'compact') {
+    return (
+      <footer className="mt-auto">
+        <div className={cn('mx-auto w-full max-w-page py-8', PAGE_GUTTER)}>
+          {/* An island: paper surface, panel radius, one soft elevation, and
+              the page colour showing on all four sides. No keyline — "It is
+              separated by its shadow and the gap around it" (panel 11). */}
+          <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-4 rounded-panel bg-card px-6 py-6 shadow-soft">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+              <LocalizedLink to="/" className="no-underline" aria-label="Queer Guide">
+                <Wordmark className="text-title text-foreground" />
+              </LocalizedLink>
+              <p className="text-13 text-muted-foreground">
+                {t('footer.tagline', 'Every track. Every station. Everyone.')}
+              </p>
+            </div>
+            <nav
+              aria-label={t('footer.essentials', 'Footer essentials')}
+              className="flex flex-wrap items-center gap-x-6 gap-y-2 text-13 font-bold"
+            >
+              {/* Order is the priority order, not the conventional one. */}
+              <LocalizedLink to={REPORT_HREF} className="no-underline hover:underline">
+                {t('footer.report', 'Report')}
+              </LocalizedLink>
+              <LocalizedLink to="/help" className="no-underline hover:underline">
+                {t('footer.hotlines', 'Hotlines')}
+              </LocalizedLink>
+              <LocalizedLink to="/privacy" className="no-underline hover:underline">
+                {t('footer.privacy', 'Privacy')}
+              </LocalizedLink>
+              <LocalizedLink to="/terms" className="no-underline hover:underline">
+                {t('footer.terms', 'Terms')}
+              </LocalizedLink>
+            </nav>
+          </div>
+        </div>
+      </footer>
+    );
+  }
 
   return (
     <footer className="mt-auto bg-foreground text-background">
@@ -64,8 +130,13 @@ export function Footer() {
            full measure and costs no vertical space, because the mark and the
            tagline sit side by side rather than stacked. ─────────────── */}
       <div className={cn('mx-auto w-full max-w-page pt-8', PAGE_GUTTER)}>
-        <div className="flex items-center gap-4">
-          <MasterSymbol className="w-20 shrink-0 text-background" />
+        {/* Wordmark + tagline. The "Cupid's transit" mark that used to lead
+            this row is retired: the logo is the wordmark alone (Brand
+            Guidelines §03), and §03's clear-space rule — "Nothing sits inside
+            it — no line, no station dot, no badge" — is why the tagline sits
+            beside it rather than tucked against it. */}
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+          <Wordmark className="text-headline text-background" />
           <p className="text-15 font-bold leading-snug">
             {t('footer.tagline', 'Every track. Every station. Everyone.')}
           </p>
@@ -144,7 +215,7 @@ export function Footer() {
               )}
             </p>
             <LocalizedLink
-              to="/report"
+              to={REPORT_HREF}
               className="border mt-4 inline-block border-background px-4 py-2 text-xs2 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
             >
               {t('footer.reportSomething', 'Report something')}

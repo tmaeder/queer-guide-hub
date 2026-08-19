@@ -51,7 +51,7 @@ export function RegistryDriftCard() {
   const clean = worker.source === 'db' && missingInWorker.length === 0 && dbNotServed.length === 0;
 
   return (
-    <div className="mb-6 rounded-element border border-border p-4">
+    <div className="mb-6 rounded-element bg-muted p-4">
       <div className="flex items-center gap-2">
         {clean ? <CheckCircle2 className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
         <p className="text-13 font-semibold">Worker registry</p>
@@ -62,7 +62,8 @@ export function RegistryDriftCard() {
       </div>
       {worker.source === 'fallback' && (
         <p className="mt-2 text-13 text-muted-foreground">
-          The /go worker could not load this table and is serving its baked-in map — edits here are not live.
+          The /go worker could not load this table and is serving its baked-in map — edits here are
+          not live.
         </p>
       )}
       {missingInWorker.length > 0 && (

@@ -116,11 +116,7 @@ export default function MarketplaceBrands() {
         {isLoading && brands.length === 0 ? (
           <ul className="m-0 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
             {Array.from({ length: 8 }).map((_, i) => (
-              <li
-                key={i}
-                aria-hidden="true"
-                className="border h-[152px] animate-pulse border-foreground/20 bg-muted"
-              />
+              <li key={i} aria-hidden="true" className="h-[152px] animate-pulse bg-muted" />
             ))}
           </ul>
         ) : brands.length === 0 ? (

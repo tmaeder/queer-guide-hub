@@ -253,7 +253,7 @@ export function MediaLibrary() {
 
           {/* Bulk actions bar */}
           {bulkMode && selectedItems.size > 0 && (
-            <div className="flex items-center justify-between border border-border p-4">
+            <div className="flex items-center justify-between p-4 bg-muted">
               <div className="flex items-center gap-4">
                 <Checkbox
                   checked={selectedItems.size === items.length && items.length > 0}

@@ -13,7 +13,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { presetOverrideCount, useBrandingPresets } from './useBrandingPresets';
 import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
@@ -73,7 +79,11 @@ function ScheduleDialog({ presetIds }: { presetIds: Array<{ id: string; name: st
             <Label className="text-2xs uppercase tracking-wide text-muted-foreground">
               Publish at
             </Label>
-            <Input type="datetime-local" value={starts} onChange={(e) => setStarts(e.target.value)} />
+            <Input
+              type="datetime-local"
+              value={starts}
+              onChange={(e) => setStarts(e.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <Label className="text-2xs uppercase tracking-wide text-muted-foreground">
@@ -81,8 +91,8 @@ function ScheduleDialog({ presetIds }: { presetIds: Array<{ id: string; name: st
             </Label>
             <Input type="datetime-local" value={ends} onChange={(e) => setEnds(e.target.value)} />
             <p className="text-2xs text-muted-foreground">
-              At revert time the branding returns to whatever was published before this preset. Takes
-              effect within ~5–10 minutes of the set time.
+              At revert time the branding returns to whatever was published before this preset.
+              Takes effect within ~5–10 minutes of the set time.
             </p>
           </div>
         </div>
@@ -141,12 +151,13 @@ export function PresetsTab() {
           </div>
 
           {presets.isLoading && <AdminTextSkeleton lines={2} />}
-          {presets.data?.length === 0 && (
-            <AdminEmpty variant="inline" noun="presets" />
-          )}
+          {presets.data?.length === 0 && <AdminEmpty variant="inline" noun="presets" />}
           <div className="space-y-2">
             {presets.data?.map((p) => (
-              <div key={p.id} className="flex items-center justify-between gap-2 rounded-element border p-4">
+              <div
+                key={p.id}
+                className="flex items-center justify-between gap-2 rounded-element bg-muted p-4"
+              >
                 <div className="min-w-0">
                   <p className="truncate font-medium">{p.name}</p>
                   <p className="text-2xs text-muted-foreground">
@@ -182,7 +193,9 @@ export function PresetsTab() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-title">Schedule</CardTitle>
-          <ScheduleDialog presetIds={(presets.data ?? []).map((p) => ({ id: p.id, name: p.name }))} />
+          <ScheduleDialog
+            presetIds={(presets.data ?? []).map((p) => ({ id: p.id, name: p.name }))}
+          />
         </CardHeader>
         <CardContent className="space-y-2">
           {schedules.isLoading && <AdminTextSkeleton lines={2} />}
@@ -190,13 +203,19 @@ export function PresetsTab() {
             <p className="text-13 text-muted-foreground">No upcoming or active schedules.</p>
           )}
           {schedules.data?.map((s) => (
-            <div key={s.id} className="flex items-center justify-between gap-2 rounded-element border p-4">
+            <div
+              key={s.id}
+              className="flex items-center justify-between gap-2 rounded-element bg-muted p-4"
+            >
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <p className="truncate font-medium">
                     {presetById.get(s.preset_id)?.name ?? 'Preset'}
                   </p>
-                  <Badge variant={s.status === 'active' ? 'default' : 'outline'} className="text-2xs">
+                  <Badge
+                    variant={s.status === 'active' ? 'default' : 'outline'}
+                    className="text-2xs"
+                  >
                     {s.status}
                   </Badge>
                 </div>

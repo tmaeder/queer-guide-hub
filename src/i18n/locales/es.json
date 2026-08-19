@@ -1968,11 +1968,11 @@
     },
     "mobileNav": {
       "home": "Inicio",
-      "explore": "Explorar",
+      "explore": "Navegar",
       "contribute": "Añadir",
       "messages": "Mensajes",
       "you": "Perfil",
-      "menuTitle": "Explora Queer Guide",
+      "menuTitle": "Todas las secciones",
       "menuDescription": "Ve a cualquier sección, cambia el idioma o el tema.",
       "trips": "Mis viajes",
       "settingsSection": "Pantalla",
@@ -3720,18 +3720,18 @@
   },
   "connections": {
     "title": "[ES] Connections",
-    "subtitle": "[ES] Explore how places, events and people on queer.guide relate to each other.",
+    "subtitle": "Mira cómo se relacionan entre sí los lugares, eventos y personas de queer.guide.",
     "hint": "[ES] Click a card to expand its connections. Drag to rearrange, scroll to zoom. The arrow opens the detail page.",
-    "mobileHint": "[ES] Closest connections first. Re-center to explore from another entity.",
+    "mobileHint": "Primero las conexiones más cercanas. Vuelve a centrar para empezar desde otra entidad.",
     "stats": "[ES] {{nodes}} entities, {{links}} links",
     "open": "[ES] Open {{title}}",
     "openShort": "[ES] Open",
     "recenter": "[ES] Connections",
     "error": "[ES] Could not load connections. Please try again later.",
     "emptyTitle": "[ES] Pick a starting point",
-    "emptyDescription": "[ES] Open any venue, event, city or person and use its Connections button to explore from there.",
+    "emptyDescription": "Abre cualquier local, evento, ciudad o persona y usa su botón Conexiones para empezar desde ahí.",
     "emptyCta": "[ES] Search the guide",
-    "explore": "[ES] Explore connections"
+    "explore": "Ver conexiones"
   },
   "milestones": {
     "eyebrow": "Historia queer",
@@ -3810,7 +3810,7 @@
     "eras": {
       "hidden-lives": {
         "title": "[ES] Hidden lives",
-        "intro": "[ES] Before 1800, queer life survived in the shadows of law and church. What the record preserves is mostly persecution — trials, executions, edicts — alongside rare glimpses of love and community that outlasted them."
+        "intro": "Antes de 1800, la vida queer sobrevivió a la sombra de la ley y la iglesia. Lo que conserva el registro es sobre todo persecución: juicios, ejecuciones, edictos. Junto a ello, destellos raros de amor y comunidad que los sobrevivieron."
       },
       "empire-criminalization": {
         "title": "[ES] Empire & criminalization",
@@ -3826,7 +3826,7 @@
       },
       "homophile-years": {
         "title": "[ES] The homophile years",
-        "intro": "[ES] After the war, small 'homophile' groups rebuilt quietly — Mattachine, the Daughters of Bilitis, Arcadie, the COC — trading radicalism for respectability while police raids and purges continued."
+        "intro": "Tras la guerra, pequeños grupos «homófilos» reconstruyeron en silencio: Mattachine, las Daughters of Bilitis, Arcadie, el COC. Cambiaron radicalidad por respetabilidad mientras seguían las redadas y las purgas."
       },
       "liberation": {
         "title": "[ES] Liberation",
@@ -3834,7 +3834,7 @@
       },
       "aids-crisis": {
         "title": "[ES] The AIDS crisis",
-        "intro": "[ES] A generation was decimated while governments looked away. The epidemic's grief forged the militant activism — ACT UP, treatment-access campaigns — that reshaped medicine and queer politics alike."
+        "intro": "Una generación fue diezmada mientras los gobiernos miraban a otro lado. El duelo de la epidemia forjó el activismo combativo que transformó por igual la medicina y la política queer: ACT UP, campañas por el acceso al tratamiento."
       },
       "recognition": {
         "title": "[ES] Recognition",
@@ -3880,8 +3880,8 @@
     "hub": {
       "title": "[ES] Guides",
       "eyebrow": "[ES] Editorial",
-      "lede": "[ES] Comparison-driven guides, curated lists and community quests — written by editors, no fluff.",
-      "metaDescription": "[ES] Editor-written guides, curated lists and community quests across LGBTQ+ places, events and shopping.",
+      "lede": "Guías comparativas, listas hechas a mano y misiones de la comunidad. Escritas por editores, sin relleno.",
+      "metaDescription": "Guías escritas por la redacción, listas hechas a mano y misiones de la comunidad sobre lugares, eventos y compras LGBTQ+.",
       "empty": "[ES] No guides yet.",
       "emptyHint": "[ES] New guides land regularly. Check back soon."
     },
@@ -4067,7 +4067,7 @@
         "rights": "[ES] Distinct rights tracked per country"
       },
       "body": {
-        "source": "[ES] Every legal status on this site — criminalisation, partnership recognition, anti-discrimination protection, gender recognition, conversion therapy and intersex bodily integrity — comes from the ILGA World Database, the reference dataset maintained by the International Lesbian, Gay, Bisexual, Trans and Intersex Association.",
+        "source": "Todo estatus legal de este sitio procede de la ILGA World Database, el conjunto de datos de referencia que mantiene la International Lesbian, Gay, Bisexual, Trans and Intersex Association. Eso abarca criminalización, reconocimiento de la pareja, protección antidiscriminación, reconocimiento de género, terapias de conversión e integridad corporal intersex.",
         "refresh": "[ES] We re-import it nightly. Where a country page shows an \"Updated\" date, that is the date ILGA last revised that record, not the date we fetched it.",
         "link": "[ES] ILGA World Database",
         "unscored": "[ES] The unscored rows are uninhabited or near-uninhabited territories with no ILGA entry. We list them as \"not scored\" rather than giving them a default, because a default would read as a measurement.",
@@ -4077,7 +4077,7 @@
         "scoreNotSafety": "[ES] The score describes law on paper. It is not a safety rating, and it says nothing about enforcement, policing or how welcome you will be made to feel."
       },
       "limits": {
-        "national": "[ES] It is national. Where rights vary by state or province — the United States, Indonesia, Nigeria, Mexico and others — a single national figure averages that away.",
+        "national": "Es nacional. Donde los derechos varían por estado o provincia, como en Estados Unidos, Indonesia, Nigeria y México, una sola cifra nacional promedia esa diferencia.",
         "enforcement": "[ES] It records statutes, not enforcement. A law that is rarely applied and a law applied constantly look identical here.",
         "trans": "[ES] Several facts that matter most to trans travellers are not in this dataset at all: bathroom and facility access, how identity documents are treated at borders, and access to gender-affirming healthcare.",
         "personal": "[ES] It knows nothing about you. Your citizenship, residency, gender marker and relationship status all change what applies, and we hold none of them.",
@@ -4106,7 +4106,7 @@
     "title": "Hecho por personas queer, para todo el mundo.",
     "lede": "Queer Guide mapea los lugares, eventos y personas que forman la vida queer: verificado por la comunidad, gratis para todo el mundo, en cualquier parte.",
     "diagram": {
-      "label": "Cuatro líneas —locales, eventos, comunidad y lugares— que confluyen en una estación."
+      "label": "Cuatro líneas que confluyen en una estación: locales, eventos, comunidad y lugares."
     },
     "scale": {
       "kicker": "La red hoy",
@@ -4209,7 +4209,7 @@
       },
       "accessibility": {
         "title": "Accesibilidad",
-        "description": "Señalamos entradas sin escalones, baños accesibles y lo que falta."
+        "description": "Señalamos entradas sin escalones y baños accesibles, y lo que falta."
       },
       "growth": {
         "title": "Crecimiento",

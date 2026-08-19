@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,7 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Mail, ChevronDown, Send} from 'lucide-react';
+import { Mail, ChevronDown, Send } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -60,15 +61,24 @@ const faqs = [
 export default function Contact() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [form, setForm] = useState({
+  // `?category=` deep link. The footer's "Report something" is the caller that
+  // needs it: reporting here is target-less, so the least this page can do is
+  // arrive with the Safety & Moderation lane already picked instead of asking
+  // a reporter to find it. Validated against the vocabulary rather than
+  // trusted — an unknown value leaves the field unset, never sets a lane that
+  // does not exist and silently fails the submit guard below.
+  const [form, setForm] = useState(() => ({
     name: '',
     email: user?.email ?? '',
-    category: '',
+    category: categories.some((c) => c.value === searchParams.get('category'))
+      ? (searchParams.get('category') as string)
+      : '',
     message: '',
-  });
+  }));
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

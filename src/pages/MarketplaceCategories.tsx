@@ -47,11 +47,7 @@ export default function MarketplaceCategories() {
         {loading ? (
           <ul className="m-0 grid list-none grid-cols-2 gap-4 p-0 md:grid-cols-3 lg:grid-cols-4">
             {Array.from({ length: 12 }).map((_, i) => (
-              <li
-                key={i}
-                aria-hidden="true"
-                className="border h-[120px] animate-pulse border-foreground/20 bg-muted"
-              />
+              <li key={i} aria-hidden="true" className="h-[120px] animate-pulse bg-muted" />
             ))}
           </ul>
         ) : tiles.length === 0 ? (

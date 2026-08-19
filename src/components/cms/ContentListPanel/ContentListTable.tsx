@@ -319,7 +319,7 @@ export function ContentListTable({
   const colCount = (contentTypeId ? 5 : 6) + extraColumns.length;
 
   return (
-    <div className="overflow-hidden rounded-element border border-border bg-background">
+    <div className="overflow-hidden rounded-element bg-muted">
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>

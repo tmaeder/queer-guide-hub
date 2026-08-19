@@ -27,7 +27,7 @@ export default function AdminMaps() {
             'Geographic view of platform content. Switch lenses to see density, individual entities, or boundaries.',
         })}
       </p>
-      <div className="border border-border" style={{ height: 'calc(100dvh - 200px)' }}>
+      <div className="bg-muted" style={{ height: 'calc(100dvh - 200px)' }}>
         <MapShell surface="admin" height="100%" />
       </div>
     </div>

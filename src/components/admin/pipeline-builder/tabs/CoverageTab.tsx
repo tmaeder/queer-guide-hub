@@ -120,7 +120,7 @@ export default function CoverageTab() {
         </div>
 
         {/* Per-source rollup */}
-        <div className="border border-border rounded-element bg-background overflow-hidden">
+        <div className="rounded-element bg-muted overflow-hidden">
           <div className="px-4 py-2 border-b border-border text-xs font-semibold text-muted-foreground flex items-center gap-2">
             <Hotel className="h-3.5 w-3.5" />
             Hotels / B&Bs by source
@@ -194,7 +194,7 @@ export default function CoverageTab() {
         </div>
 
         {/* Coverage targets */}
-        <div className="border border-border rounded-element bg-background overflow-hidden max-h-[500px] overflow-y-auto">
+        <div className="rounded-element bg-muted overflow-hidden max-h-[500px] overflow-y-auto">
           <div className="px-4 py-2 border-b border-border text-xs font-semibold text-muted-foreground flex items-center gap-2 sticky top-0 bg-background z-10">
             <Bed className="h-3.5 w-3.5" />
             Coverage targets

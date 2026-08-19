@@ -58,7 +58,7 @@ function RecordPicker({ type, onExplore }: { type: string; onExplore: Props['onE
         />
       </div>
       {q.trim().length >= 2 && (
-        <div className="flex flex-col rounded-element border border-border divide-y divide-border max-h-64 overflow-y-auto">
+        <div className="flex flex-col rounded-element bg-muted divide-y divide-border max-h-64 overflow-y-auto">
           {isFetching && (
             <span className="px-4 py-2 text-13 text-muted-foreground">Searching…</span>
           )}
@@ -158,17 +158,17 @@ export default function GraphDetailPanel({
       </div>
 
       <dl className="grid grid-cols-3 gap-2 text-center">
-        <div className="rounded-element border border-border py-2">
+        <div className="rounded-element bg-muted py-2">
           <dt className="text-2xs uppercase tracking-wide text-muted-foreground">Total</dt>
           <dd className="text-title font-bold tabular-nums">{nf.format(node.count)}</dd>
         </div>
-        <div className="rounded-element border border-border py-2">
+        <div className="rounded-element bg-muted py-2">
           <dt className="text-2xs uppercase tracking-wide text-muted-foreground">Orphans</dt>
           <dd className="text-title font-bold tabular-nums">
             {node.orphan_count == null ? '—' : nf.format(node.orphan_count)}
           </dd>
         </div>
-        <div className="rounded-element border border-border py-2">
+        <div className="rounded-element bg-muted py-2">
           <dt className="text-2xs uppercase tracking-wide text-muted-foreground">Dupes</dt>
           <dd className="text-title font-bold tabular-nums">{nf.format(node.dup_count)}</dd>
         </div>

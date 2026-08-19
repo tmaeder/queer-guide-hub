@@ -101,7 +101,7 @@ export function StiProfile({ tagId, tagName }: Props) {
       </div>
 
       {/* ── When to test ────────────────────────────────────────────────── */}
-      <div className="border-t border-foreground/15 p-4">
+      <div className="border-t border-border-hairline p-4">
         <h3 className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
           {t('tags.sti.testing', 'When to test')}
         </h3>
@@ -109,7 +109,7 @@ export function StiProfile({ tagId, tagName }: Props) {
           {profile.testing.map((w, i) => (
             <li
               key={i}
-              className="flex flex-wrap items-baseline justify-between gap-2 border-b border-foreground/15 py-2 last:border-b-0"
+              className="flex flex-wrap items-baseline justify-between gap-2 border-b border-border-hairline py-2 last:border-b-0"
             >
               <span className="text-13 font-bold">{w.test_kind}</span>
               <span className="text-13 text-muted-foreground">
@@ -138,13 +138,13 @@ export function StiProfile({ tagId, tagName }: Props) {
       </div>
 
       {/* ── Protection ──────────────────────────────────────────────────── */}
-      <div className="border-t border-foreground/15 p-4">
+      <div className="border-t border-border-hairline p-4">
         <h3 className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
           {t('tags.sti.protection', 'What protects against it')}
         </h3>
         <ul className="mt-2 list-none p-0">
           {profile.protection.map((m) => (
-            <li key={m.slug} className="border-b border-foreground/15 py-2 last:border-b-0">
+            <li key={m.slug} className="border-b border-border-hairline py-2 last:border-b-0">
               <span className="text-13 font-bold">{m.label}</span>
               <p className="mt-1 text-13 leading-relaxed text-muted-foreground">{m.description}</p>
             </li>

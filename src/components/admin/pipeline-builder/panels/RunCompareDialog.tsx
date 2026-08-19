@@ -94,7 +94,7 @@ function RunColumn({
       </Select>
 
       {run && (
-        <div className="border border-border rounded-element bg-background p-4 text-xs space-y-1.5">
+        <div className="rounded-element bg-muted p-4 text-xs space-y-1.5">
           <div className="flex items-center gap-2">
             <Badge
               variant="outline"
@@ -148,7 +148,7 @@ function RunColumn({
       )}
 
       {run?.node_states && (
-        <div className="border border-border rounded-element bg-background text-xs overflow-hidden">
+        <div className="rounded-element bg-muted text-xs overflow-hidden">
           <div className="px-4 py-1.5 text-2xs font-semibold text-muted-foreground uppercase tracking-wider bg-muted/40">
             Per-node
           </div>
@@ -239,7 +239,7 @@ export default function RunCompareDialog() {
               Diff summary
             </div>
             <div className="grid grid-cols-3 gap-2 text-xs">
-              <div className="border border-border rounded-element p-2">
+              <div className="rounded-element bg-muted p-2">
                 <div className="text-2xs text-muted-foreground">Duration Δ</div>
                 <div
                   className={`text-sm font-mono tabular-nums font-semibold ${
@@ -253,14 +253,14 @@ export default function RunCompareDialog() {
                   {formatDuration(Math.abs((runA.duration_ms || 0) - (runB.duration_ms || 0)))}
                 </div>
               </div>
-              <div className="border border-border rounded-element p-2">
+              <div className="rounded-element bg-muted p-2">
                 <div className="text-2xs text-muted-foreground">Success Δ</div>
                 <div className="text-sm font-mono tabular-nums font-semibold">
                   {(runA.items_succeeded ?? 0) - (runB.items_succeeded ?? 0) >= 0 ? '+' : ''}
                   {(runA.items_succeeded ?? 0) - (runB.items_succeeded ?? 0)}
                 </div>
               </div>
-              <div className="border border-border rounded-element p-2">
+              <div className="rounded-element bg-muted p-2">
                 <div className="text-2xs text-muted-foreground">Failures Δ</div>
                 <div className="text-sm font-mono tabular-nums font-semibold">
                   {(runA.items_failed ?? 0) - (runB.items_failed ?? 0) >= 0 ? '+' : ''}

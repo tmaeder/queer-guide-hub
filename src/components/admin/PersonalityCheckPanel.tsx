@@ -85,7 +85,7 @@ function Tile({
   const visual = useRiskVisual(tone && tone !== 'gray' ? AMPEL_RISK[tone] : 'low');
   const dotColor = tone && tone !== 'gray' ? visual.fg : 'hsl(var(--muted-foreground))';
   const inner = (
-    <div className="flex flex-col gap-1 rounded-container border border-border p-4">
+    <div className="flex flex-col gap-1 rounded-container bg-muted p-4">
       <div className="flex items-center gap-2">
         {tone && (
           <span
@@ -184,7 +184,7 @@ export function PersonalityCheckPanel() {
               return (
                 <li
                   key={`${it.id}-${it.anniversary}`}
-                  className="flex items-center gap-4 rounded-element border border-border p-2"
+                  className="flex items-center gap-4 rounded-element bg-muted p-2"
                 >
                   <div className="flex w-10 shrink-0 flex-col items-center">
                     <span className="text-title font-bold leading-none tabular-nums">{d}</span>

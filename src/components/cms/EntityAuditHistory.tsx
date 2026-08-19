@@ -26,7 +26,7 @@ export function EntityAuditHistory({ sourceTable, sourceId }: EntityAuditHistory
   }, [open, sourceTable, sourceId, loadForContent]);
 
   return (
-    <div className="rounded-element border border-border">
+    <div className="rounded-element bg-muted">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}

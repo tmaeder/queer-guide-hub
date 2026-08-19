@@ -222,7 +222,10 @@ export function StoryDetailDrawer({
           {onSaveNarrative && (
             <div
               className="p-4 bg-muted flex flex-col gap-2"
-              style={{ border: '1px solid hsl(var(--foreground) / 0.4)', borderRadius: 'var(--radius-element)' }}
+              style={{
+                border: '1px solid hsl(var(--foreground) / 0.4)',
+                borderRadius: 'var(--radius-element)',
+              }}
             >
               <div
                 className="flex items-center gap-2 text-2xs font-bold uppercase text-foreground"
@@ -420,7 +423,7 @@ export function StoryDetailDrawer({
               {feedbackMembers.map((item) => (
                 <div
                   key={item.id}
-                  className="p-2.5 border border-border flex items-start gap-2 rounded-element"
+                  className="p-2.5 flex items-start gap-2 rounded-element bg-muted"
                 >
                   <MessageSquare size={14} className="mt-0.5" />
                   <div className="flex-1 min-w-0">
@@ -455,7 +458,7 @@ export function StoryDetailDrawer({
               {errorMembers.map((item) => (
                 <div
                   key={item.id}
-                  className="p-2.5 border border-border flex items-start gap-2 rounded-element"
+                  className="p-2.5 flex items-start gap-2 rounded-element bg-muted"
                 >
                   <AlertTriangle size={14} className="mt-0.5" />
                   <div className="flex-1 min-w-0">

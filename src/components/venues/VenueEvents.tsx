@@ -17,11 +17,11 @@ interface VenueEventsProps {
 }
 
 export function VenueEvents({ venueId, venueName, events, compact = false }: VenueEventsProps) {
-  const venueEvents = events.filter(event => event.venue_id === venueId);
+  const venueEvents = events.filter((event) => event.venue_id === venueId);
 
-  const upcomingEvents = venueEvents.filter(event =>
-    new Date(event.start_date) > new Date()
-  ).slice(0, compact ? 3 : 10);
+  const upcomingEvents = venueEvents
+    .filter((event) => new Date(event.start_date) > new Date())
+    .slice(0, compact ? 3 : 10);
 
   if (upcomingEvents.length === 0) {
     return null;
@@ -39,7 +39,10 @@ export function VenueEvents({ venueId, venueName, events, compact = false }: Ven
             <div className="flex-1">
               <p className="text-sm font-medium truncate">
                 {event.title}
-                <ContentLangBadge text={event.title} language={(event as { content_language?: string | null }).content_language} />
+                <ContentLangBadge
+                  text={event.title}
+                  language={(event as { content_language?: string | null }).content_language}
+                />
               </p>
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Calendar size={12} />
@@ -48,9 +51,7 @@ export function VenueEvents({ venueId, venueName, events, compact = false }: Ven
                 <span className="text-xs">{formatEventTime(event.start_date)}</span>
               </div>
             </div>
-            <Badge variant="outline">
-              {event.event_type}
-            </Badge>
+            <Badge variant="outline">{event.event_type}</Badge>
           </div>
         ))}
         {venueEvents.length > 3 && (
@@ -70,11 +71,17 @@ export function VenueEvents({ venueId, venueName, events, compact = false }: Ven
       <CardContent>
         <div className="flex flex-col gap-4">
           {upcomingEvents.map((event) => (
-            <div key={event.id} className="flex items-center justify-between p-4 border border-border hover:bg-muted transition-colors">
+            <div
+              key={event.id}
+              className="flex items-center justify-between p-4 hover:bg-muted transition-colors bg-muted"
+            >
               <div className="flex-1">
                 <p className="text-sm font-medium">
                   {event.title}
-                  <ContentLangBadge text={event.title} language={(event as { content_language?: string | null }).content_language} />
+                  <ContentLangBadge
+                    text={event.title}
+                    language={(event as { content_language?: string | null }).content_language}
+                  />
                 </p>
                 <div className="flex items-center gap-4 mt-1 text-muted-foreground">
                   <div className="flex items-center gap-1">
@@ -99,7 +106,9 @@ export function VenueEvents({ venueId, venueName, events, compact = false }: Ven
                   <Badge variant="outline">Free</Badge>
                 ) : (
                   <span className="text-sm font-medium">
-                    {event.price_min ? formatCurrency(event.price_min, event.currency) : 'Price TBA'}
+                    {event.price_min
+                      ? formatCurrency(event.price_min, event.currency)
+                      : 'Price TBA'}
                   </span>
                 )}
                 <Button size="sm" variant="outline">

@@ -28,9 +28,7 @@ export function StorySuggestionsPanel({ suggestions, onAccept, onDismiss }: Prop
     <div className="mb-4">
       <div className="flex items-center gap-2 mb-2">
         <Sparkles size={14} />
-        <p className="text-sm font-semibold">
-          AI-suggested stories ({suggestions.length})
-        </p>
+        <p className="text-sm font-semibold">AI-suggested stories ({suggestions.length})</p>
         <p className="text-xs text-muted-foreground">
           Clusters of ≥ 3 related items. Accept to create a story.
         </p>
@@ -39,11 +37,9 @@ export function StorySuggestionsPanel({ suggestions, onAccept, onDismiss }: Prop
         {suggestions.map((s) => (
           <div
             key={s.id}
-            className="min-w-[260px] p-4 border border-border rounded-element flex flex-col gap-2"
+            className="min-w-[260px] p-4 rounded-element bg-muted flex flex-col gap-2"
           >
-            <p className="text-sm font-semibold leading-tight">
-              {s.proposed_title}
-            </p>
+            <p className="text-sm font-semibold leading-tight">{s.proposed_title}</p>
             <div className="flex items-center gap-2 flex-wrap">
               <Badge variant="secondary" className="h-[18px] text-2xs">
                 {s.member_ids.length} items
@@ -56,11 +52,7 @@ export function StorySuggestionsPanel({ suggestions, onAccept, onDismiss }: Prop
               </Badge>
             </div>
             <div className="flex gap-1 mt-1">
-              <Button
-                size="sm"
-                onClick={() => onAccept(s.id)}
-                className="flex-1"
-              >
+              <Button size="sm" onClick={() => onAccept(s.id)} className="flex-1">
                 <Check size={12} className="mr-1" />
                 Accept
               </Button>
@@ -88,18 +80,21 @@ export function StorySuggestionsPanel({ suggestions, onAccept, onDismiss }: Prop
         ))}
       </div>
 
-      <Dialog open={!!editing} onOpenChange={(o) => { if (!o) setEditing(null); }}>
+      <Dialog
+        open={!!editing}
+        onOpenChange={(o) => {
+          if (!o) setEditing(null);
+        }}
+      >
         <DialogContent className="sm:max-w-xs">
           <DialogHeader>
             <DialogTitle>Edit story title</DialogTitle>
           </DialogHeader>
-          <Input
-            autoFocus
-            value={editedTitle}
-            onChange={(e) => setEditedTitle(e.target.value)}
-          />
+          <Input autoFocus value={editedTitle} onChange={(e) => setEditedTitle(e.target.value)} />
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setEditing(null)}>Cancel</Button>
+            <Button variant="ghost" onClick={() => setEditing(null)}>
+              Cancel
+            </Button>
             <Button
               disabled={!editedTitle.trim()}
               onClick={() => {

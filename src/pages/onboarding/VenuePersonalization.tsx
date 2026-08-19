@@ -179,7 +179,7 @@ const VenuePersonalization = () => {
             }}
           />
           {cityMatches.length > 0 && !cityChoice && (
-            <ul className="border rounded-container divide-y bg-card">
+            <ul className="rounded-container divide-y bg-card shadow-soft">
               {cityMatches.map((m) => (
                 <li key={m.id}>
                   <button

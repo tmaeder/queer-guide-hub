@@ -113,7 +113,9 @@ export function QualityPanel({
   }, [config, result, onApplyField]);
 
   if (!recordId || recordId === 'new') {
-    return <p className="text-sm text-muted-foreground">Save the item first to run a quality review.</p>;
+    return (
+      <p className="text-sm text-muted-foreground">Save the item first to run a quality review.</p>
+    );
   }
 
   const score = result?.quality_score;
@@ -192,7 +194,7 @@ export function QualityPanel({
             return (
               <div
                 key={`${issue.field}-${i}`}
-                className="border border-border rounded-element p-2 flex flex-col gap-1"
+                className="rounded-element bg-muted p-2 flex flex-col gap-1"
               >
                 <div className="flex items-center gap-1.5">
                   <span

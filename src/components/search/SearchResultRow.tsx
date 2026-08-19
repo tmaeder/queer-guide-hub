@@ -93,7 +93,7 @@ export function SearchResultRow({
         if (e.key === 'Enter') onClick();
       }}
       className={cn(
-        'flex min-h-[56px] cursor-pointer items-center gap-4 border-b border-foreground/10 px-6 py-2 transition-colors last:border-b-0',
+        'flex min-h-[56px] cursor-pointer items-center gap-4 border-b border-border-hairline px-6 py-2 transition-colors last:border-b-0',
         focused
           ? 'bg-surface-container outline outline-2 -outline-offset-2 outline-ring'
           : 'hover:bg-surface-container',

@@ -9,7 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { FloatingInput } from '@/components/effects';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Heart, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
+import { Wordmark } from '@/components/brand/Wordmark';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useTurnstile } from '@/hooks/useTurnstile';
@@ -176,9 +177,13 @@ export default function Auth() {
               <Card>
                 <CardHeader>
                   <div className="flex flex-col gap-4">
-                    <div className="flex items-center justify-center gap-2">
-                      <Heart className="w-8 h-8 fill-current text-primary" />
-                      <h5 className="text-xl font-bold">Queer Guide</h5>
+                    {/* The logo is the wordmark alone (Brand Guidelines §03:
+                        "It carries no symbol, no container and no colour").
+                        This was a lucide heart beside "Queer Guide" in Space
+                        Grotesk — a symbol the brand does not own, and the wrong
+                        case: §03 is always lowercase, always with the dot. */}
+                    <div className="flex items-center justify-center">
+                      <Wordmark className="text-title text-foreground" />
                     </div>
                     <CardTitle>
                       {mode === 'forgot'

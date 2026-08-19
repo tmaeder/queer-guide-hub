@@ -15,15 +15,11 @@ export function ImageEditor({ field, initialValue, onSave, onCancel, saving }: E
   }, [onCancel]);
 
   return (
-    <div className="block p-4 border border-border rounded-element bg-background max-w-md">
+    <div className="block p-4 rounded-element bg-muted max-w-md">
       <ImageUpload value={url} onValueChange={setUrl} label={field.label} />
       <div className="flex items-center justify-between mt-4">
         <span className="text-xs text-muted-foreground">Esc to cancel</span>
-        <EditorActions
-          onConfirm={() => onSave(url || null)}
-          onCancel={onCancel}
-          saving={saving}
-        />
+        <EditorActions onConfirm={() => onSave(url || null)} onCancel={onCancel} saving={saving} />
       </div>
     </div>
   );

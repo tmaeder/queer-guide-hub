@@ -42,7 +42,7 @@ export function HoursTable({
             key={r.day}
             aria-current={isToday ? 'date' : undefined}
             className={cn(
-              'grid grid-cols-[80px_1fr_auto] items-center gap-4 border-b border-foreground/15 px-4 py-2 last:border-b-0',
+              'grid grid-cols-[80px_1fr_auto] items-center gap-4 border-b border-border-hairline px-4 py-2 last:border-b-0',
               isToday && 'bg-foreground text-background',
             )}
           >

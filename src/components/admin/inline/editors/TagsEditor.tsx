@@ -56,7 +56,7 @@ export function TagsEditor({ field, initialValue, onSave, onCancel, saving }: Ed
 
   return (
     <div className="block">
-      <div className="flex flex-wrap items-center gap-2 p-2 border border-border rounded-element bg-background min-h-12">
+      <div className="flex flex-wrap items-center gap-2 p-2 rounded-element bg-muted min-h-12">
         {tags.map((t) => (
           <Badge key={t} variant="outline" className="gap-1">
             {t}

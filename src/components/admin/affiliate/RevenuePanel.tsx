@@ -13,9 +13,21 @@ import { supabase } from '@/integrations/supabase/client';
 import { untypedSupabase } from '@/integrations/supabase/untyped';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { monoChartPalette, monoChartAxis } from '@/lib/chartPalette';
 import { Stat } from './Stat';
@@ -40,10 +52,16 @@ export function RevenuePanel({ days }: { days: string }) {
   const [pulling, setPulling] = useState<string | null>(null);
   const [csvOpen, setCsvOpen] = useState(false);
 
-  const { data: funnel, isLoading, error } = useQuery({
+  const {
+    data: funnel,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['affiliate-funnel', days],
     queryFn: async (): Promise<FunnelRow[]> => {
-      const { data, error } = await untypedSupabase.rpc('affiliate_funnel_summary', { p_days: Number(days) });
+      const { data, error } = await untypedSupabase.rpc('affiliate_funnel_summary', {
+        p_days: Number(days),
+      });
       if (error) throw error;
       return (data ?? []) as FunnelRow[];
     },
@@ -57,7 +75,14 @@ export function RevenuePanel({ days }: { days: string }) {
     const pending = rows.reduce((s, r) => s + Number(r.commission_pending_usd), 0);
     const confirmed = rows.reduce((s, r) => s + Number(r.commission_confirmed_usd), 0);
     const unmatched = rows.reduce((s, r) => s + Number(r.unmatched_conversions), 0);
-    return { clicks, conversions, rate: clicks ? conversions / clicks : null, pending, confirmed, unmatched };
+    return {
+      clicks,
+      conversions,
+      rate: clicks ? conversions / clicks : null,
+      pending,
+      confirmed,
+      unmatched,
+    };
   }, [rows]);
 
   const bySurface = useMemo(() => {
@@ -66,7 +91,9 @@ export function RevenuePanel({ days }: { days: string }) {
       const usd = Number(r.commission_pending_usd) + Number(r.commission_confirmed_usd);
       if (usd > 0) map.set(r.surface, (map.get(r.surface) ?? 0) + usd);
     }
-    return [...map.entries()].map(([surface, usd]) => ({ surface, usd })).sort((a, b) => b.usd - a.usd);
+    return [...map.entries()]
+      .map(([surface, usd]) => ({ surface, usd }))
+      .sort((a, b) => b.usd - a.usd);
   }, [rows]);
 
   const palette = monoChartPalette(Math.max(bySurface.length, 1));
@@ -84,7 +111,9 @@ export function RevenuePanel({ days }: { days: string }) {
       } else if (r?.error) {
         toast.error(`${network}: ${String(r.error)}`);
       } else {
-        toast.success(`${network}: ${Number(r?.fetched ?? 0)} transactions, ${Number(r?.matched ?? 0)} matched to clicks`);
+        toast.success(
+          `${network}: ${Number(r?.fetched ?? 0)} transactions, ${Number(r?.matched ?? 0)} matched to clicks`,
+        );
       }
       queryClient.invalidateQueries({ queryKey: ['affiliate-funnel'] });
     } catch (e: unknown) {
@@ -100,7 +129,12 @@ export function RevenuePanel({ days }: { days: string }) {
         <h2 className="text-15 font-semibold">Realized revenue</h2>
         <div className="flex gap-2">
           {NETWORKS.map((n) => (
-            <Button key={n} variant="outline" onClick={() => pullNow(n)} disabled={pulling !== null}>
+            <Button
+              key={n}
+              variant="outline"
+              onClick={() => pullNow(n)}
+              disabled={pulling !== null}
+            >
               <Download className="w-4 h-4 mr-2" />
               {pulling === n ? 'Pulling…' : `Pull ${n}`}
             </Button>
@@ -112,23 +146,35 @@ export function RevenuePanel({ days }: { days: string }) {
       </div>
 
       {error && (
-        <p className="text-13 text-destructive">Failed to load revenue data: {(error as Error).message}</p>
+        <p className="text-13 text-destructive">
+          Failed to load revenue data: {(error as Error).message}
+        </p>
       )}
 
       <div className="mb-8 grid grid-cols-5 gap-4">
         <Stat label="Clicks" value={totals.clicks.toLocaleString()} />
         <Stat label="Conversions" value={totals.conversions.toLocaleString()} />
-        <Stat label="Conv. rate" value={totals.rate == null ? '—' : `${(totals.rate * 100).toFixed(2)}%`} />
+        <Stat
+          label="Conv. rate"
+          value={totals.rate == null ? '—' : `${(totals.rate * 100).toFixed(2)}%`}
+        />
         <Stat label="Commission pending" value={`$${totals.pending.toFixed(2)}`} />
-        <Stat label="Commission confirmed" value={`$${totals.confirmed.toFixed(2)}`} hint="approved + paid" />
+        <Stat
+          label="Commission confirmed"
+          value={`$${totals.confirmed.toFixed(2)}`}
+          hint="approved + paid"
+        />
       </div>
 
       {totals.unmatched > 0 && (
-        <div className="mb-8 flex items-start gap-2 rounded-element border border-border p-4">
+        <div className="mb-8 flex items-start gap-2 rounded-element bg-muted p-4">
           <AlertCircle className="mt-0.5 w-4 h-4 shrink-0" />
           <p className="text-13">
-            <span className="font-semibold">{totals.unmatched} conversions carry a click code but matched no click row.</span>{' '}
-            That usually means clickref/sub_id is being mutated in transit — check the network's tracking settings.
+            <span className="font-semibold">
+              {totals.unmatched} conversions carry a click code but matched no click row.
+            </span>{' '}
+            That usually means clickref/sub_id is being mutated in transit — check the network's
+            tracking settings.
           </p>
         </div>
       )}
@@ -138,7 +184,11 @@ export function RevenuePanel({ days }: { days: string }) {
           <h2 className="mb-4 text-15 font-semibold">Commission by surface (USD)</h2>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={bySurface} layout="vertical" margin={{ top: 4, right: 16, bottom: 4, left: 8 }}>
+              <BarChart
+                data={bySurface}
+                layout="vertical"
+                margin={{ top: 4, right: 16, bottom: 4, left: 8 }}
+              >
                 <XAxis type="number" {...monoChartAxis} />
                 <YAxis type="category" dataKey="surface" width={96} {...monoChartAxis} />
                 <Tooltip cursor={{ fill: 'hsl(var(--muted))' }} />
@@ -181,8 +231,12 @@ export function RevenuePanel({ days }: { days: string }) {
                 <TableRow key={`${r.surface}-${r.partner}-${i}`}>
                   <TableCell className="font-medium">{r.surface}</TableCell>
                   <TableCell>{r.partner}</TableCell>
-                  <TableCell className="text-right tabular-nums">{Number(r.clicks).toLocaleString()}</TableCell>
-                  <TableCell className="text-right tabular-nums">{Number(r.conversions).toLocaleString()}</TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {Number(r.clicks).toLocaleString()}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {Number(r.conversions).toLocaleString()}
+                  </TableCell>
                   <TableCell className="text-right tabular-nums">
                     {r.conv_rate == null ? '—' : `${(Number(r.conv_rate) * 100).toFixed(2)}%`}
                   </TableCell>
@@ -199,7 +253,11 @@ export function RevenuePanel({ days }: { days: string }) {
         )}
       </section>
 
-      <AmazonCsvDialog open={csvOpen} onOpenChange={setCsvOpen} onImported={() => queryClient.invalidateQueries({ queryKey: ['affiliate-funnel'] })} />
+      <AmazonCsvDialog
+        open={csvOpen}
+        onOpenChange={setCsvOpen}
+        onImported={() => queryClient.invalidateQueries({ queryKey: ['affiliate-funnel'] })}
+      />
     </div>
   );
 }
@@ -226,7 +284,12 @@ function AmazonCsvDialog({
       toast.error('Paste a CSV with a header row and at least one data row');
       return;
     }
-    const header = lines[0].split(',').map((h) => h.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_'));
+    const header = lines[0].split(',').map((h) =>
+      h
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '_'),
+    );
     const col = (names: string[]) => header.findIndex((h) => names.some((n) => h.includes(n)));
     const iOrder = col(['order_id', 'order']);
     const iDate = col(['date', 'shipped']);
@@ -237,23 +300,30 @@ function AmazonCsvDialog({
       toast.error('Could not find order-id and commission/fee columns in the header');
       return;
     }
-    const rows = lines.slice(1).map((line) => {
-      const cells = line.split(',').map((c) => c.trim().replace(/^"|"$/g, ''));
-      return {
-        order_id: cells[iOrder],
-        transaction_time: iDate >= 0 ? cells[iDate] : null,
-        commission_amount: cells[iFee]?.replace(/[^0-9.-]/g, ''),
-        sale_amount: iSale >= 0 ? cells[iSale]?.replace(/[^0-9.-]/g, '') : null,
-        sub_id: iSub >= 0 ? cells[iSub] : null,
-        currency: 'USD',
-      };
-    }).filter((r) => r.order_id);
+    const rows = lines
+      .slice(1)
+      .map((line) => {
+        const cells = line.split(',').map((c) => c.trim().replace(/^"|"$/g, ''));
+        return {
+          order_id: cells[iOrder],
+          transaction_time: iDate >= 0 ? cells[iDate] : null,
+          commission_amount: cells[iFee]?.replace(/[^0-9.-]/g, ''),
+          sale_amount: iSale >= 0 ? cells[iSale]?.replace(/[^0-9.-]/g, '') : null,
+          sub_id: iSub >= 0 ? cells[iSub] : null,
+          currency: 'USD',
+        };
+      })
+      .filter((r) => r.order_id);
 
     setImporting(true);
     try {
-      const { data, error } = await untypedSupabase.rpc('admin_import_amazon_conversions', { p_rows: rows });
+      const { data, error } = await untypedSupabase.rpc('admin_import_amazon_conversions', {
+        p_rows: rows,
+      });
       if (error) throw error;
-      toast.success(`Imported ${(data as { upserted?: number })?.upserted ?? rows.length} Amazon conversions`);
+      toast.success(
+        `Imported ${(data as { upserted?: number })?.upserted ?? rows.length} Amazon conversions`,
+      );
       setCsv('');
       onOpenChange(false);
       onImported();
@@ -270,19 +340,23 @@ function AmazonCsvDialog({
         <DialogHeader>
           <DialogTitle>Import Amazon earnings CSV</DialogTitle>
           <DialogDescription>
-            Amazon Associates has no earnings API. Export the fee report and paste it here — rows upsert on
-            order id, so re-importing is safe.
+            Amazon Associates has no earnings API. Export the fee report and paste it here — rows
+            upsert on order id, so re-importing is safe.
           </DialogDescription>
         </DialogHeader>
         <Textarea
           value={csv}
           onChange={(e) => setCsv(e.target.value)}
           rows={10}
-          placeholder={'order_id,date,fee,revenue,tracking_id\n123-4567,2026-07-01,1.23,24.99,queerguide-21'}
+          placeholder={
+            'order_id,date,fee,revenue,tracking_id\n123-4567,2026-07-01,1.23,24.99,queerguide-21'
+          }
           className="font-mono text-xs"
         />
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
           <Button onClick={handleImport} disabled={importing || !csv.trim()}>
             {importing ? 'Importing…' : 'Import'}
           </Button>

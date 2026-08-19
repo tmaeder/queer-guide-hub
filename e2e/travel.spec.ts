@@ -58,7 +58,10 @@ test.describe('Travel hub (/travel)', () => {
     });
     await expect(page.getByRole('button', { name: 'Flights', exact: true })).toHaveCount(0);
 
-    await page.getByRole('button', { name: /book now/i }).first().click();
+    await page
+      .getByRole('button', { name: /book now/i })
+      .first()
+      .click();
     await expect(page.getByRole('button', { name: 'Flights', exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Hotels', exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Activities', exact: true })).toBeVisible();
@@ -79,29 +82,44 @@ test.describe('Travel hub (/travel)', () => {
     await expect(page.locator('label:has-text("LGBTQ+ friendly only")')).toBeVisible();
   });
 
-  test('travel → plan trip flow routes anonymous user to /trips with city seeded', async ({
-    page,
-  }) => {
-    await page.goto('/travel');
+  // This test is about the ANONYMOUS path, and it has to say so. The chromium
+  // project carries the admin storageState whenever E2E_ADMIN_EMAIL/PASSWORD are
+  // set, so a spec that merely never signs in is signed IN — the same trap
+  // trip-creation.spec.ts documents.
+  //
+  // Signed in, this test wrote to the production database. Travel.tsx renders
+  // StartTripHero only while `user` is still null, but auth resolves during the
+  // page's own load, so by click time `handlePlan` took the signed-in branch and
+  // called createTrip. Every authenticated run left a real "Berlin trip" row
+  // behind — three of them on 2026-08-19, one per Playwright retry, each retry
+  // then failing the URL assertion because it had navigated to /trips/<id>.
+  test.describe('anonymous', () => {
+    test.use({ storageState: { cookies: [], origins: [] } });
 
-    const cityInput = page.getByLabel(/where to\?/i);
-    await cityInput.click();
-    await cityInput.fill('Berlin');
-    // Wait for the autocomplete (search_cities RPC). Pick the first option.
-    const firstOption = page.getByRole('option').first();
-    try {
-      await firstOption.waitFor({ state: 'visible', timeout: 5000 });
-      await firstOption.click();
-    } catch {
-      test.skip(true, 'Autocomplete did not return options for "Berlin"');
-      return;
-    }
+    test('travel → plan trip flow routes anonymous user to /trips with city seeded', async ({
+      page,
+    }) => {
+      await page.goto('/travel');
 
-    await page.getByTestId('travel-plan-trip').click();
+      const cityInput = page.getByLabel(/where to\?/i);
+      await cityInput.click();
+      await cityInput.fill('Berlin');
+      // Wait for the autocomplete (search_cities RPC). Pick the first option.
+      const firstOption = page.getByRole('option').first();
+      try {
+        await firstOption.waitFor({ state: 'visible', timeout: 5000 });
+        await firstOption.click();
+      } catch {
+        test.skip(true, 'Autocomplete did not return options for "Berlin"');
+        return;
+      }
 
-    // Anonymous: routed to /trips with cityId param (signed-in flow lives in trip-creation.spec.ts).
-    await page.waitForURL(/\/trips(?:\?|$)/, { timeout: 10000 });
-    expect(page.url()).toContain('cityId=');
+      await page.getByTestId('travel-plan-trip').click();
+
+      // Anonymous: routed to /trips with cityId param (signed-in flow lives in trip-creation.spec.ts).
+      await page.waitForURL(/\/trips(?:\?|$)/, { timeout: 10000 });
+      expect(page.url()).toContain('cityId=');
+    });
   });
 });
 

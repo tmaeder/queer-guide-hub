@@ -208,7 +208,7 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
           </h2>
           <ul className="mt-4 flex flex-col">
             {COMMON_REQUESTS.map((r) => (
-              <li key={r.to} className="border-b border-foreground/15 last:border-b-0">
+              <li key={r.to} className="border-b border-border-hairline last:border-b-0">
                 <LocalizedLink
                   to={r.to}
                   className="block py-2 text-13 font-bold text-inherit no-underline transition-colors hover:bg-surface-container"

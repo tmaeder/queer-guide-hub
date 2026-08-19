@@ -184,7 +184,7 @@ export default function AccessDialog({ pipelineId, pipelineName }: AccessDialogP
             </Button>
           </div>
 
-          <div className="border border-border rounded-element bg-background overflow-hidden max-h-[300px] overflow-y-auto">
+          <div className="rounded-element bg-muted overflow-hidden max-h-[300px] overflow-y-auto">
             {isLoading ? (
               <AdminTextSkeleton lines={2} />
             ) : grants.length === 0 ? (

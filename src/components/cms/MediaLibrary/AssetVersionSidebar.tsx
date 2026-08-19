@@ -24,9 +24,10 @@ export function AssetVersionSidebar({ detail }: { detail: MediaDetailData }) {
   const { data: versions = [] } = useQuery({
     queryKey: ['asset-versions', table, groupId, detail.id],
     queryFn: async () => {
-      const cols = detail.source_type === 'image_asset'
-        ? 'id, version, status, created_at'
-        : 'id, version, created_at';
+      const cols =
+        detail.source_type === 'image_asset'
+          ? 'id, version, status, created_at'
+          : 'id, version, created_at';
       const { data, error } = await untypedFrom(table)
         .select(cols)
         .or(`version_group_id.eq.${groupId},id.eq.${detail.id}`)
@@ -37,7 +38,11 @@ export function AssetVersionSidebar({ detail }: { detail: MediaDetailData }) {
       const map = new Map<string, VersionRow>();
       for (const r of rows) map.set(r.id, r);
       if (!map.has(detail.id)) {
-        map.set(detail.id, { id: detail.id, version: detail.version, created_at: detail.created_at });
+        map.set(detail.id, {
+          id: detail.id,
+          version: detail.version,
+          created_at: detail.created_at,
+        });
       }
       return Array.from(map.values()).sort((a, b) => b.version - a.version);
     },
@@ -59,13 +64,19 @@ export function AssetVersionSidebar({ detail }: { detail: MediaDetailData }) {
           return (
             <div
               key={v.id}
-              className="flex items-center justify-between border border-border rounded-element p-2 text-sm"
+              className="flex items-center justify-between rounded-element bg-muted p-2 text-sm"
             >
               <div className="flex items-center gap-2">
                 <span className="font-medium">v{v.version}</span>
-                {isCurrent && <Badge variant="secondary" className="text-2xs">Current</Badge>}
+                {isCurrent && (
+                  <Badge variant="secondary" className="text-2xs">
+                    Current
+                  </Badge>
+                )}
                 {v.status && v.status !== 'active' && (
-                  <Badge variant="outline" className="text-2xs capitalize">{v.status}</Badge>
+                  <Badge variant="outline" className="text-2xs capitalize">
+                    {v.status}
+                  </Badge>
                 )}
               </div>
               <span className="text-xs text-muted-foreground">

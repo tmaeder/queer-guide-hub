@@ -75,4 +75,47 @@ describe('Footer', () => {
     renderFooter();
     expect(screen.getByText(/OpenStreetMap/)).toBeInTheDocument();
   });
+
+  // "Report something" pointed at /report for as long as this footer existed
+  // and no such route was ever registered, so the anti-discrimination block's
+  // only call to action landed on the 404 board.
+  it('sends "Report something" to a route that exists', () => {
+    renderFooter();
+    const report = screen.getByRole('link', { name: 'Report something' });
+    expect(report).toHaveAttribute('href', '/contact?category=safety');
+  });
+});
+
+describe('Footer, compact (panel 09)', () => {
+  const renderCompact = () =>
+    render(
+      <MemoryRouter>
+        <Footer variant="compact" />
+      </MemoryRouter>,
+    );
+
+  // The whole point of the variant: whatever else drops, these two do not.
+  it('keeps report and hotlines', () => {
+    renderCompact();
+    expect(screen.getByRole('link', { name: 'Report' })).toHaveAttribute(
+      'href',
+      '/contact?category=safety',
+    );
+    expect(screen.getByRole('link', { name: 'Hotlines' })).toHaveAttribute('href', '/help');
+  });
+
+  it('drops the track columns and the crisis card', () => {
+    renderCompact();
+    expect(screen.queryByRole('navigation', { name: 'Footer navigation' })).not.toBeInTheDocument();
+    expect(screen.queryByText(/Crisis lines/)).not.toBeInTheDocument();
+  });
+
+  it('leads with report, not with the legal links', () => {
+    renderCompact();
+    const nav = screen.getByRole('navigation', { name: 'Footer essentials' });
+    const labels = within(nav)
+      .getAllByRole('link')
+      .map((a) => a.textContent);
+    expect(labels).toEqual(['Report', 'Hotlines', 'Privacy', 'Terms']);
+  });
 });

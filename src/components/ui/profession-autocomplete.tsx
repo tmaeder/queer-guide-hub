@@ -48,7 +48,12 @@ export function ProfessionAutocomplete({
           aria-required={required}
           disabled={disabled}
           className={cn(
-            'h-10 w-full justify-between rounded-element bg-inverse-surface text-background placeholder:text-background/70 px-4.5 py-2 font-normal transition-all hover:opacity-95 focus:border-border-hairline focus-visible:ring-2 focus-visible:ring-foreground/15 focus-visible:ring-offset-0',
+            // See pronoun-combobox for why the inverted plate came off: the
+            // empty state put `text-muted-foreground` on an ink fill at 2.50:1.
+            // `variant="outline"` carries the form-control treatment, and the
+            // global `*:focus-visible` rule carries the focus ring, so the
+            // hand-rolled `ring-foreground/15` (a 1.1:1 ring) goes with it.
+            'h-10 w-full justify-between rounded-element px-4.5 py-2 font-normal',
             !value && 'text-muted-foreground',
           )}
         >

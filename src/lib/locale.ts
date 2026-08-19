@@ -46,3 +46,33 @@ export function isMapRoute(pathname: string): boolean {
 export function isAdminRoute(pathname: string): boolean {
   return pathname === '/admin' || pathname.startsWith('/admin/');
 }
+
+/**
+ * Whether the path takes the COMPACT footer ("Header and Footer.dc.html",
+ * panel 09: "Used on print-adjacent pages, single-purpose flows, and anything
+ * inside an account").
+ *
+ * The full footer is a closing statement — a station map with six track
+ * columns, the anti-discrimination policy and the crisis card. A page that is
+ * a sign-in form, an onboarding step or an account screen has not been making
+ * a statement, and ending it with 600px of sitemap is the footer talking over
+ * the task. What survives the collapse is report and hotlines, which is the
+ * one thing panel 09 is explicit about.
+ *
+ * Prefix-matched on a locale-stripped path, with an exact-or-slash test so a
+ * future `/settings-export` or `/hubbub` cannot match by accident.
+ */
+const COMPACT_FOOTER_ROOTS = [
+  // Single-purpose flows.
+  '/auth',
+  '/claim-username',
+  '/onboarding',
+  // Inside an account.
+  '/hub',
+  '/settings',
+];
+
+export function isCompactFooterRoute(pathname: string): boolean {
+  const path = stripLocale(pathname).replace(/\/+$/, '') || '/';
+  return COMPACT_FOOTER_ROOTS.some((root) => path === root || path.startsWith(`${root}/`));
+}

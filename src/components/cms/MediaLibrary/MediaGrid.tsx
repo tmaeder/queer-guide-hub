@@ -38,7 +38,6 @@ function ThumbImage({ item, size = 'full' }: { item: UnifiedMediaItem; size?: 'f
         <div
           className="w-full h-full flex items-center justify-center bg-muted overflow-hidden"
           dangerouslySetInnerHTML={{ __html: svgContent }}
-
         />
       );
     } catch {
@@ -49,7 +48,10 @@ function ThumbImage({ item, size = 'full' }: { item: UnifiedMediaItem; size?: 'f
   if (errored || !url) {
     return (
       <div className="w-full h-full flex items-center justify-center bg-muted">
-        <ImageOff style={{ height: size === 'sm' ? 16 : 24, width: size === 'sm' ? 16 : 24 }} className="text-muted-foreground" />
+        <ImageOff
+          style={{ height: size === 'sm' ? 16 : 24, width: size === 'sm' ? 16 : 24 }}
+          className="text-muted-foreground"
+        />
       </div>
     );
   }
@@ -74,13 +76,19 @@ function GovernanceBadges({ item }: { item: UnifiedMediaItem }) {
   return (
     <div className="flex flex-wrap items-center gap-1 mt-1">
       {showAccess && (
-        <Badge variant="outline" className="text-2xs capitalize">{item.access_level}</Badge>
+        <Badge variant="outline" className="text-2xs capitalize">
+          {item.access_level}
+        </Badge>
       )}
       {item.brand_category && (
-        <Badge variant="secondary" className="text-2xs capitalize">{item.brand_category}</Badge>
+        <Badge variant="secondary" className="text-2xs capitalize">
+          {item.brand_category}
+        </Badge>
       )}
       {tagCount > 0 && (
-        <Badge variant="outline" className="text-2xs">{tagCount} tag{tagCount !== 1 ? 's' : ''}</Badge>
+        <Badge variant="outline" className="text-2xs">
+          {tagCount} tag{tagCount !== 1 ? 's' : ''}
+        </Badge>
       )}
     </div>
   );
@@ -100,7 +108,7 @@ export function MediaGrid(props: MediaGridProps) {
 
   if (items.length === 0) {
     return (
-      <div className="border border-border p-12 text-center">
+      <div className="p-12 text-center bg-muted">
         <ImageIcon size={48} style={{ margin: '0 auto 16px' }} className="text-muted-foreground" />
         <p className="text-muted-foreground">No media found.</p>
       </div>
@@ -119,8 +127,8 @@ export function MediaGrid(props: MediaGridProps) {
             {bulkMode && (
               <div
                 className="absolute top-2 left-2 z-10"
-                onClick={e => e.stopPropagation()}
-                onKeyDown={e => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
+                onKeyDown={(e) => e.stopPropagation()}
                 role="presentation"
               >
                 <Checkbox
@@ -141,9 +149,7 @@ export function MediaGrid(props: MediaGridProps) {
 
               {/* Status indicators */}
               <div className="absolute top-1.5 right-1.5 flex gap-1">
-                {item.is_flagged && (
-                  <Flag size={12} />
-                )}
+                {item.is_flagged && <Flag size={12} />}
                 {getOptimizationIcon(item.optimization_status)}
               </div>
 
@@ -154,7 +160,10 @@ export function MediaGrid(props: MediaGridProps) {
                   size="sm"
                   className="h-6 w-6 p-0"
                   style={{ color: 'white' }}
-                  onClick={(e) => { e.stopPropagation(); onStar(item); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onStar(item);
+                  }}
                 >
                   <Star size={14} style={{ fill: item.starred ? 'currentColor' : 'none' }} />
                 </Button>
@@ -179,7 +188,7 @@ export function MediaGrid(props: MediaGridProps) {
 
   // List view
   return (
-    <div className="border border-border divide-y divide-border">
+    <div className="divide-y divide-border bg-muted">
       {items.map((item) => (
         <div
           key={item.id}
@@ -196,8 +205,8 @@ export function MediaGrid(props: MediaGridProps) {
         >
           {bulkMode && (
             <div
-              onClick={e => e.stopPropagation()}
-              onKeyDown={e => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => e.stopPropagation()}
               role="presentation"
             >
               <Checkbox
@@ -225,7 +234,11 @@ export function MediaGrid(props: MediaGridProps) {
             </div>
             <div className="flex items-center gap-4 text-xs text-muted-foreground">
               <span>{formatFileSize(item.file_size)}</span>
-              {item.width && item.height && <span>{item.width}×{item.height}</span>}
+              {item.width && item.height && (
+                <span>
+                  {item.width}×{item.height}
+                </span>
+              )}
               <span>{new Date(item.created_at).toLocaleDateString()}</span>
             </div>
             <GovernanceBadges item={item} />
@@ -242,7 +255,10 @@ export function MediaGrid(props: MediaGridProps) {
               variant="ghost"
               size="sm"
               className="h-6 w-6 p-0"
-              onClick={(e) => { e.stopPropagation(); onStar(item); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onStar(item);
+              }}
             >
               <Star size={14} style={{ fill: item.starred ? 'currentColor' : 'none' }} />
             </Button>

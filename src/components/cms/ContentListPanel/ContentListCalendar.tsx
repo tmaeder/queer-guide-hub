@@ -118,7 +118,7 @@ export function ContentListCalendar({
         </Button>
       </div>
 
-      <div className="grid grid-cols-7 gap-px bg-border border border-border rounded-container overflow-hidden">
+      <div className="grid grid-cols-7 gap-px bg-border rounded-container overflow-hidden">
         {WEEKDAYS.map((d) => (
           <div
             key={d}

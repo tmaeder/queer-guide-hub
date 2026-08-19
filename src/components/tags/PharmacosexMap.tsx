@@ -214,7 +214,7 @@ export function PharmacosexMap() {
           </h3>
           <ul className="mt-2 list-none p-0">
             {EFFECTS.map((e) => (
-              <li key={e.key} className="border-b border-foreground/15 py-2 last:border-b-0">
+              <li key={e.key} className="border-b border-border-hairline py-2 last:border-b-0">
                 <span className="text-13 font-bold">{e.label}</span>
                 <p className="mt-1 text-13 leading-relaxed text-muted-foreground">{e.meaning}</p>
               </li>
@@ -242,7 +242,7 @@ export function PharmacosexMap() {
             {SUBSTANCES.map((s) => (
               <li
                 key={s.slug}
-                className="flex items-baseline justify-between gap-4 border-b border-foreground/15 py-2 last:border-b-0"
+                className="flex items-baseline justify-between gap-4 border-b border-border-hairline py-2 last:border-b-0"
               >
                 <LocalizedLink
                   to={`/tags/${s.slug}`}

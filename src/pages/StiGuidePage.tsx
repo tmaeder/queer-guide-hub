@@ -284,7 +284,7 @@ export default function StiGuidePage() {
                     const cell = cellByKey.get(`${sti.id}|${p.slug}`);
                     if (!cell) {
                       return (
-                        <td key={p.slug} className="border border-foreground/20 p-2">
+                        <td key={p.slug} className="border border-border p-2">
                           <span className="sr-only">
                             {sti.name}, {p.label}: {t('stiGuide.noEntry', 'no documented route')}
                           </span>
@@ -368,7 +368,7 @@ export default function StiGuidePage() {
                   {methods.map((m) => {
                     const on = protects.has(`${sti.id}|${m.slug}`);
                     return (
-                      <td key={m.slug} className="border border-foreground/20 p-2 text-center">
+                      <td key={m.slug} className="border border-border p-2 text-center">
                         {on && (
                           <span
                             className="mx-auto block h-3 w-3 rounded-full bg-foreground"
@@ -438,7 +438,7 @@ export default function StiGuidePage() {
               {(protection?.stis ?? []).map((sti) => {
                 const rows = testingByTag.get(sti.id) ?? [];
                 return rows.map((row, i) => (
-                  <tr key={`${sti.id}-${i}`} className="border-t border-foreground/15">
+                  <tr key={`${sti.id}-${i}`} className="border-t border-border-hairline">
                     {i === 0 && (
                       <th
                         scope="row"
@@ -480,11 +480,11 @@ export default function StiGuidePage() {
                         <p className="mt-1 text-3xs text-muted-foreground">{row.note}</p>
                       )}
                     </td>
-                    <td className="border-l border-foreground/15 p-2">{row.sample}</td>
+                    <td className="border-l border-border-hairline p-2">{row.sample}</td>
                     {i === 0 && (
                       <td
                         rowSpan={rows.length}
-                        className="border-l border-foreground/15 p-2 align-top"
+                        className="border-l border-border-hairline p-2 align-top"
                       >
                         {sti.vaccine_note ?? t('stiGuide.noVaccine', '—')}
                       </td>

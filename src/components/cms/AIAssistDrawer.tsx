@@ -6,7 +6,18 @@
 
 import { useState, useCallback } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { Sparkles, X, Check, RotateCcw, FileText, Image as ImageIcon, Tag, Search, Globe, Gauge } from 'lucide-react';
+import {
+  Sparkles,
+  X,
+  Check,
+  RotateCcw,
+  FileText,
+  Image as ImageIcon,
+  Tag,
+  Search,
+  Globe,
+  Gauge,
+} from 'lucide-react';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -166,10 +177,7 @@ export function AIAssistDrawer({
             const result = results[op];
             const busy = busyOp === op;
             return (
-              <div
-                key={op}
-                className="border border-border rounded-element p-4 bg-background"
-              >
+              <div key={op} className="rounded-element p-4 bg-muted">
                 <div className="flex items-center mb-1">
                   <Icon size={14} />
                   <span className="text-sm font-semibold ml-2">{meta.label}</span>

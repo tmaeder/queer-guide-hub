@@ -78,7 +78,7 @@ export function FeedbackBulkBar({
     try {
       const suggested = await onAutoTitle();
       // Only fill if the admin hasn't already typed something in the interim.
-      setStoryTitle((prev) => (prev ? prev : suggested ?? ''));
+      setStoryTitle((prev) => (prev ? prev : (suggested ?? '')));
     } catch {
       /* leave empty on failure */
     } finally {
@@ -90,9 +90,7 @@ export function FeedbackBulkBar({
 
   return (
     <>
-      <div
-        className="sticky bottom-4 mx-auto px-4 py-2 flex items-center gap-2 rounded-element z-50 flex-wrap max-w-[1200px] bg-background border border-border"
-      >
+      <div className="sticky bottom-4 mx-auto px-4 py-2 flex items-center gap-2 rounded-element z-50 flex-wrap max-w-[1200px] bg-muted">
         <Badge>{selectedCount} selected</Badge>
         {selectedCount < totalCount && (
           <Button size="sm" variant="ghost" onClick={onSelectAll}>
@@ -165,12 +163,7 @@ export function FeedbackBulkBar({
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => setLabelOpen(true)}
-          disabled={loading}
-        >
+        <Button size="sm" variant="outline" onClick={() => setLabelOpen(true)} disabled={loading}>
           <Tag size={14} />
           Label
         </Button>
@@ -231,9 +224,7 @@ export function FeedbackBulkBar({
           <div className="space-y-2">
             <Input
               autoFocus
-              placeholder={
-                storyTitleLoading ? 'Suggesting a title…' : 'Short title for this story'
-              }
+              placeholder={storyTitleLoading ? 'Suggesting a title…' : 'Short title for this story'}
               value={storyTitle}
               onChange={(e) => setStoryTitle(e.target.value)}
               onKeyDown={(e) => {

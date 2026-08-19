@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import {ThumbsUp } from 'lucide-react';
+import { ThumbsUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { RoadmapItemDrawer } from '@/components/admin/feedback/RoadmapItemDrawer';
 import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
@@ -37,7 +37,7 @@ export function RoadmapTab() {
 
   if (items.length === 0) {
     return (
-      <div className="rounded-container border">
+      <div className="rounded-container bg-muted">
         <AdminEmpty
           noun="roadmap items"
           description="Promote an idea from the Triage tab to start one."

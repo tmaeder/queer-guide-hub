@@ -41,7 +41,7 @@ export function FactGrid({ facts, className }: { facts: Fact[]; className?: stri
       {shown.map((f) => (
         <div
           key={f.label}
-          className="border-t border-r border-foreground/15 px-4 py-4 last:border-r-0"
+          className="border-t border-r border-border-hairline px-4 py-4 last:border-r-0"
         >
           <dt className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
             {f.label}

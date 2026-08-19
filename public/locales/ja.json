@@ -1968,11 +1968,11 @@
     },
     "mobileNav": {
       "home": "ホーム",
-      "explore": "さがす",
+      "explore": "一覧",
       "contribute": "追加",
       "messages": "メッセージ",
       "you": "マイページ",
-      "menuTitle": "Queer Guide を見る",
+      "menuTitle": "すべてのセクション",
       "menuDescription": "任意のセクションに移動し、言語やテーマを切り替えます。",
       "trips": "マイトリップ",
       "settingsSection": "表示",
@@ -3718,18 +3718,18 @@
   },
   "connections": {
     "title": "[JA] Connections",
-    "subtitle": "[JA] Explore how places, events and people on queer.guide relate to each other.",
+    "subtitle": "queer.guide の場所・イベント・人物がどうつながっているかを見る。",
     "hint": "[JA] Click a card to expand its connections. Drag to rearrange, scroll to zoom. The arrow opens the detail page.",
-    "mobileHint": "[JA] Closest connections first. Re-center to explore from another entity.",
+    "mobileHint": "近いつながりから表示します。別の対象から始めるには中心を変えてください。",
     "stats": "[JA] {{nodes}} entities, {{links}} links",
     "open": "[JA] Open {{title}}",
     "openShort": "[JA] Open",
     "recenter": "[JA] Connections",
     "error": "[JA] Could not load connections. Please try again later.",
     "emptyTitle": "[JA] Pick a starting point",
-    "emptyDescription": "[JA] Open any venue, event, city or person and use its Connections button to explore from there.",
+    "emptyDescription": "場所・イベント・都市・人物のページを開き、「つながり」ボタンからそこを起点にできます。",
     "emptyCta": "[JA] Search the guide",
-    "explore": "[JA] Explore connections"
+    "explore": "つながりを見る"
   },
   "milestones": {
     "eyebrow": "クィアの歴史",
@@ -3808,7 +3808,7 @@
     "eras": {
       "hidden-lives": {
         "title": "[JA] Hidden lives",
-        "intro": "[JA] Before 1800, queer life survived in the shadows of law and church. What the record preserves is mostly persecution — trials, executions, edicts — alongside rare glimpses of love and community that outlasted them."
+        "intro": "1800年以前、クィアの生は法と教会の影で生き延びた。記録に残るのはほとんどが迫害だ。裁判、処刑、勅令。その傍らに、それらより長く残った愛と共同体のわずかな痕跡がある。"
       },
       "empire-criminalization": {
         "title": "[JA] Empire & criminalization",
@@ -3824,7 +3824,7 @@
       },
       "homophile-years": {
         "title": "[JA] The homophile years",
-        "intro": "[JA] After the war, small 'homophile' groups rebuilt quietly — Mattachine, the Daughters of Bilitis, Arcadie, the COC — trading radicalism for respectability while police raids and purges continued."
+        "intro": "戦後、小さな「ホモファイル」団体が静かに再建された。マタシン、ダーターズ・オブ・ビリティス、アルカディ、COC。彼らは急進性を体面と引き換えにしたが、摘発と追放は続いた。"
       },
       "liberation": {
         "title": "[JA] Liberation",
@@ -3832,7 +3832,7 @@
       },
       "aids-crisis": {
         "title": "[JA] The AIDS crisis",
-        "intro": "[JA] A generation was decimated while governments looked away. The epidemic's grief forged the militant activism — ACT UP, treatment-access campaigns — that reshaped medicine and queer politics alike."
+        "intro": "政府が目を背けるあいだに、ひとつの世代が失われた。この疫病の悲嘆が、医療とクィア政治の両方を作り変える闘う運動を生んだ。ACT UP、治療アクセスを求めるキャンペーン。"
       },
       "recognition": {
         "title": "[JA] Recognition",
@@ -3878,8 +3878,8 @@
     "hub": {
       "title": "[JA] Guides",
       "eyebrow": "[JA] Editorial",
-      "lede": "[JA] Comparison-driven guides, curated lists and community quests — written by editors, no fluff.",
-      "metaDescription": "[JA] Editor-written guides, curated lists and community quests across LGBTQ+ places, events and shopping.",
+      "lede": "比較にもとづくガイド、手で選んだリスト、コミュニティのクエスト。編集者が書いています。中身のない文章はありません。",
+      "metaDescription": "編集者が書いたガイド、手で選んだリスト、コミュニティのクエスト。LGBTQ+ の場所・イベント・ショッピングを扱います。",
       "empty": "[JA] No guides yet.",
       "emptyHint": "[JA] New guides land regularly. Check back soon."
     },
@@ -4065,7 +4065,7 @@
         "rights": "[JA] Distinct rights tracked per country"
       },
       "body": {
-        "source": "[JA] Every legal status on this site — criminalisation, partnership recognition, anti-discrimination protection, gender recognition, conversion therapy and intersex bodily integrity — comes from the ILGA World Database, the reference dataset maintained by the International Lesbian, Gay, Bisexual, Trans and Intersex Association.",
+        "source": "このサイトの法的ステータスはすべて ILGA World Database によります。International Lesbian, Gay, Bisexual, Trans and Intersex Association が維持する基準データセットです。対象は、刑事罰、パートナーシップの承認、差別からの保護、性別の承認、転向療法、インターセックスの身体の不可侵です。",
         "refresh": "[JA] We re-import it nightly. Where a country page shows an \"Updated\" date, that is the date ILGA last revised that record, not the date we fetched it.",
         "link": "[JA] ILGA World Database",
         "unscored": "[JA] The unscored rows are uninhabited or near-uninhabited territories with no ILGA entry. We list them as \"not scored\" rather than giving them a default, because a default would read as a measurement.",
@@ -4075,7 +4075,7 @@
         "scoreNotSafety": "[JA] The score describes law on paper. It is not a safety rating, and it says nothing about enforcement, policing or how welcome you will be made to feel."
       },
       "limits": {
-        "national": "[JA] It is national. Where rights vary by state or province — the United States, Indonesia, Nigeria, Mexico and others — a single national figure averages that away.",
+        "national": "データは国単位です。米国、インドネシア、ナイジェリア、メキシコのように州や地方で権利が異なる場合、国全体の一つの数値はその差をならしてしまいます。",
         "enforcement": "[JA] It records statutes, not enforcement. A law that is rarely applied and a law applied constantly look identical here.",
         "trans": "[JA] Several facts that matter most to trans travellers are not in this dataset at all: bathroom and facility access, how identity documents are treated at borders, and access to gender-affirming healthcare.",
         "personal": "[JA] It knows nothing about you. Your citizenship, residency, gender marker and relationship status all change what applies, and we hold none of them.",
@@ -4104,7 +4104,7 @@
     "title": "クィアがつくり、すべての人へ。",
     "lede": "Queer Guide は、クィアの暮らしをかたちづくる場所・イベント・人をマッピングしています。コミュニティによる検証、誰でも無料、世界中どこでも。",
     "diagram": {
-      "label": "4本の路線——スポット、イベント、コミュニティ、旅先——がひとつの駅に集まる図。"
+      "label": "ひとつの駅に集まる4本の路線。スポット、イベント、コミュニティ、旅先。"
     },
     "scale": {
       "kicker": "いまのネットワーク",
@@ -4207,7 +4207,7 @@
       },
       "accessibility": {
         "title": "アクセシビリティ",
-        "description": "段差のない入口、利用しやすいトイレ——そして足りないものも記します。"
+        "description": "段差のない入口と利用しやすいトイレを記します。足りないものも記します。"
       },
       "growth": {
         "title": "成長",
