@@ -55,10 +55,10 @@ const handler = async (req: Request): Promise<Response> => {
           <h2>You were mentioned in ${safeGroupName}</h2>
           <p>Hi ${safeUserName},</p>
           <p><strong>${safeTriggeredByName}</strong> mentioned you in a post:</p>
-          <blockquote style="border-left: 4px solid #4F46E5; padding-left: 16px; margin: 16px 0; color: #6B7280;">
+          <blockquote style="border-left:3px solid #111111;padding-left:16px;margin:16px 0;color:#3f3f3a;">
             ${safeContent}
           </blockquote>
-          ${post_url ? `<p><a href="${safePostUrl}" style="background: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">View Post</a></p>` : ''}
+          ${post_url ? `<p><a href="${safePostUrl}" style="background:#111111;color:#FAFAF5;padding:12px 20px;text-decoration:none;border-radius:12px;display:inline-block;font-weight:700;">View Post</a></p>` : ''}
           <p>Best regards,<br>The ${safeGroupName} Group</p>
         `;
         break;
@@ -66,14 +66,14 @@ const handler = async (req: Request): Promise<Response> => {
       case 'new_announcement':
         subject = `New announcement in ${safeGroupName}`;
         htmlContent = `
-          <h2>📢 New Announcement in ${safeGroupName}</h2>
+          <h2>New announcement in ${safeGroupName}</h2>
           <p>Hi ${safeUserName},</p>
           <p><strong>${safeTriggeredByName}</strong> made an important announcement:</p>
-          <div style="background: #FEF3C7; border: 1px solid #F59E0B; border-radius: 8px; padding: 16px; margin: 16px 0;">
-            <h3 style="margin: 0 0 8px 0; color: #92400E;">📢 Announcement</h3>
-            <p style="margin: 0; color: #92400E;">${safeContent}</p>
+          <div style="background:#EAEADE;border-radius:12px;padding:16px;margin:16px 0;">
+            <h3 style="margin:0 0 8px 0;color:#111111;font-size:15px;">Announcement</h3>
+            <p style="margin:0;color:#111111;">${safeContent}</p>
           </div>
-          ${post_url ? `<p><a href="${safePostUrl}" style="background: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">View Announcement</a></p>` : ''}
+          ${post_url ? `<p><a href="${safePostUrl}" style="background:#111111;color:#FAFAF5;padding:12px 20px;text-decoration:none;border-radius:12px;display:inline-block;font-weight:700;">View Announcement</a></p>` : ''}
           <p>Best regards,<br>The ${safeGroupName} Group</p>
         `;
         break;
@@ -84,11 +84,11 @@ const handler = async (req: Request): Promise<Response> => {
           <h2>🗳️ New Poll in ${safeGroupName}</h2>
           <p>Hi ${safeUserName},</p>
           <p><strong>${safeTriggeredByName}</strong> created a new poll and wants your input:</p>
-          <div style="background: #EEF2FF; border: 1px solid #4F46E5; border-radius: 8px; padding: 16px; margin: 16px 0;">
-            <h3 style="margin: 0 0 8px 0; color: #4F46E5;">🗳️ Poll Question</h3>
-            <p style="margin: 0; color: #4F46E5;">${safeContent}</p>
+          <div style="background:#EAEADE;border-radius:12px;padding:16px;margin:16px 0;">
+            <h3 style="margin:0 0 8px 0;color:#111111;font-size:15px;">Poll question</h3>
+            <p style="margin:0;color:#111111;">${safeContent}</p>
           </div>
-          ${post_url ? `<p><a href="${safePostUrl}" style="background: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Vote Now</a></p>` : ''}
+          ${post_url ? `<p><a href="${safePostUrl}" style="background:#111111;color:#FAFAF5;padding:12px 20px;text-decoration:none;border-radius:12px;display:inline-block;font-weight:700;">Vote Now</a></p>` : ''}
           <p>Your vote matters! Join the discussion and share your opinion.</p>
           <p>Best regards,<br>The ${safeGroupName} Group</p>
         `;
@@ -101,7 +101,7 @@ const handler = async (req: Request): Promise<Response> => {
           <p>Hi ${safeUserName},</p>
           <p>There's new activity in your group:</p>
           <p>${safeContent}</p>
-          ${post_url ? `<p><a href="${safePostUrl}" style="background: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">View Post</a></p>` : ''}
+          ${post_url ? `<p><a href="${safePostUrl}" style="background:#111111;color:#FAFAF5;padding:12px 20px;text-decoration:none;border-radius:12px;display:inline-block;font-weight:700;">View Post</a></p>` : ''}
           <p>Best regards,<br>The ${safeGroupName} Group</p>
         `;
     }

@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
         : `You have ${count} unread messages`;
     const preview = c.latest_preview ? `<p style="color:#555">${esc(c.latest_preview)}</p>` : '';
     const html = `
-      <div style="font-family:Inter,system-ui,sans-serif;max-width:480px;margin:0 auto">
+      <div style="font-family:'Space Grotesk',Helvetica,Arial,sans-serif;max-width:480px;margin:0 auto">
         <h2 style="font-size:20px">${heading}</h2>
         <p>Hi ${name}, you have unread messages waiting on Queer Guide.</p>
         ${preview}
