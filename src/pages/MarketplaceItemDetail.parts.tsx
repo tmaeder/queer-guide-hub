@@ -409,7 +409,7 @@ export function MarketplaceContent({ listing, reviews, onContentUpdated }: Conte
             {reviews.slice(0, 5).map((review) => (
               <li
                 key={review.id}
-                className="border-b border-foreground/15 px-4 py-4 last:border-b-0"
+                className="border-b border-border-hairline px-4 py-4 last:border-b-0"
               >
                 <div className="flex flex-wrap items-baseline justify-between gap-4">
                   <div className="flex items-center gap-4">

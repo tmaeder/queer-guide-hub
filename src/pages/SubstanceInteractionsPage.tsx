@@ -268,10 +268,7 @@ export default function SubstanceInteractionsPage() {
                   {axis.map((col) => {
                     if (row.id === col.id) {
                       return (
-                        <td
-                          key={col.id}
-                          className="border border-foreground/20 bg-foreground/10 p-2"
-                        >
+                        <td key={col.id} className="border border-border bg-muted p-2">
                           <span className="sr-only">{row.name}</span>
                         </td>
                       );
@@ -279,7 +276,7 @@ export default function SubstanceInteractionsPage() {
                     const cell = byPair.get(pairKey(row.id, col.id));
                     if (!cell) {
                       return (
-                        <td key={col.id} className="border border-foreground/20 p-2">
+                        <td key={col.id} className="border border-border p-2">
                           <span className="sr-only">
                             {row.name}, {col.name}: {t('interactions.noEntry', 'no entry')}
                           </span>

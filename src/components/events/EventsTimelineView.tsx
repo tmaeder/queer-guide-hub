@@ -439,7 +439,7 @@ export function EventsTimelineView({
                 key={b.startMs}
                 data-bucket={b.startMs}
                 className={cn(
-                  'relative border-r border-foreground/10 last:border-r-0',
+                  'relative border-r border-border-hairline last:border-r-0',
                   i % 2 === 1 && 'bg-muted/30',
                 )}
               >

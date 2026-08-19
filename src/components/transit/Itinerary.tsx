@@ -31,7 +31,7 @@ export function Itinerary({ days, className }: { days: ItineraryDay[]; className
   return (
     <div className={cn('border border-border-hairline', className)}>
       {days.map((d) => (
-        <section key={d.id} className="border-b border-foreground/15 last:border-b-0">
+        <section key={d.id} className="border-b border-border-hairline last:border-b-0">
           <h3 className="bg-foreground px-4 py-2 text-title font-bold leading-none text-background">
             {d.label}
           </h3>
@@ -42,7 +42,7 @@ export function Itinerary({ days, className }: { days: ItineraryDay[]; className
               {d.entries.map((e) => (
                 <li
                   key={e.id}
-                  className="flex items-center gap-4 border-b border-foreground/15 px-4 py-2 last:border-b-0"
+                  className="flex items-center gap-4 border-b border-border-hairline px-4 py-2 last:border-b-0"
                 >
                   {e.type && <RouteBullet type={e.type} size={30} />}
                   {e.time && <span className="text-13 font-bold tabular-nums">{e.time}</span>}

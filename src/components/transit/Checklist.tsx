@@ -31,7 +31,7 @@ export function Checklist({ steps, className }: { steps: ChecklistStep[]; classN
       {steps.map((s, i) => (
         <li
           key={s.id}
-          className="flex items-start gap-4 border-b border-foreground/15 px-4 py-4 last:border-b-0"
+          className="flex items-start gap-4 border-b border-border-hairline px-4 py-4 last:border-b-0"
         >
           <span
             aria-hidden

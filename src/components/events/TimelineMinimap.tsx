@@ -149,7 +149,7 @@ export function TimelineMinimap({
         {yearTicks.map((t) => (
           <div
             key={t.year}
-            className="absolute top-0 bottom-0 border-l border-foreground/15"
+            className="absolute top-0 bottom-0 border-l border-border-hairline"
             style={{ left: `${t.leftPct}%` }}
             aria-hidden
           >

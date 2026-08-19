@@ -25,7 +25,7 @@ import { HANKY_CODE, HANKY_CODE_TAG_SLUG, type HankyCodeEntry } from '@/lib/flag
 function CodeRow({ entry }: { entry: HankyCodeEntry }) {
   const { t } = useTranslation();
   return (
-    <li className="flex items-center gap-4 border-b border-foreground/15 py-2 last:border-b-0">
+    <li className="flex items-center gap-4 border-b border-border-hairline py-2 last:border-b-0">
       <span
         aria-hidden="true"
         className="h-4 w-8 shrink-0 border border-border-hairline"

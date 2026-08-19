@@ -33,12 +33,7 @@ export function AdminStat({ label, value, hardFail, icon, className }: AdminStat
   const failing = hardFail === true && typeof value === 'number' && value > 0;
 
   return (
-    <div
-      className={cn(
-        'flex items-center gap-2 rounded-element border bg-muted/40 px-4 py-2',
-        className,
-      )}
-    >
+    <div className={cn('flex items-center gap-2 rounded-element bg-muted px-4 py-2', className)}>
       <span className={cn('text-headline tabular-nums', failing && 'text-destructive')}>
         {value}
       </span>

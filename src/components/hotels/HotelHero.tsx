@@ -28,13 +28,13 @@ export function HotelHero({ hotel }: HotelHeroProps) {
   return (
     <LocalizedLink
       to={`/hotels/${hotel.slug}`}
-      className="block group border border-foreground/10 no-underline"
+      className="block group no-underline"
       style={{ color: 'inherit' }}
       aria-label={name}
     >
       <div className="grid grid-cols-1 md:grid-cols-2">
         <div className="relative bg-muted aspect-[4/3] md:aspect-auto md:min-h-[360px] overflow-hidden">
-          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */}
+          { }
           <img
             src={image}
             alt={name}
@@ -43,7 +43,10 @@ export function HotelHero({ hotel }: HotelHeroProps) {
             decoding="async"
             fetchPriority="high"
             referrerPolicy="no-referrer"
-            onError={(e) => { if ((e.target as HTMLImageElement).src !== fallback) (e.target as HTMLImageElement).src = fallback; }}
+            onError={(e) => {
+              if ((e.target as HTMLImageElement).src !== fallback)
+                (e.target as HTMLImageElement).src = fallback;
+            }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
         </div>

@@ -70,7 +70,7 @@ export function HotlineCard({
 
   return (
     <article className="flex h-full flex-col bg-card rounded-container shadow-soft">
-      <header className="border-b border-foreground/10 p-4">
+      <header className="border-b border-border-hairline p-4">
         <div className="flex items-start justify-between gap-4">
           <h3 className="min-w-0 text-title font-bold leading-tight">{hotline.name}</h3>
           <div className="flex shrink-0 items-center gap-2">
@@ -244,7 +244,7 @@ export function HotlineCard({
         </div>
       </div>
 
-      <footer className="flex justify-end border-t border-foreground/10 px-4 py-2">
+      <footer className="flex justify-end border-t border-border-hairline px-4 py-2">
         <ReportHotline hotlineId={hotline.id} />
       </footer>
     </article>

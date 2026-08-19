@@ -73,7 +73,7 @@ export function CitiesLineIndex({
             <div
               key={i}
               aria-hidden="true"
-              className="border h-[84px] w-[140px] shrink-0 animate-pulse border-foreground/20 bg-muted sm:h-[108px] sm:w-auto"
+              className="h-[84px] w-[140px] shrink-0 animate-pulse bg-muted sm:h-[108px] sm:w-auto"
             />
           ))}
         </div>

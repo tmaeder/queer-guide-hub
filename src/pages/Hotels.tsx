@@ -244,7 +244,7 @@ export default function Hotels() {
             <h3 className="text-lg font-semibold">
               {hasActiveFilters ? 'Matching hotels' : 'All hotels'}
             </h3>
-            <div className="inline-flex border border-foreground/20">
+            <div className="inline-flex rounded-element border border-input">
               <button
                 type="button"
                 onClick={() => setView('grid')}
@@ -263,7 +263,7 @@ export default function Hotels() {
                 onClick={() => setView('map')}
                 aria-pressed={view === 'map'}
                 className={
-                  'px-4 py-2 text-sm inline-flex items-center gap-1.5 border-l border-foreground/20 ' +
+                  'px-4 py-2 text-sm inline-flex items-center gap-1.5 border-l border-border-hairline ' +
                   (view === 'map'
                     ? 'bg-foreground text-background'
                     : 'bg-background hover:bg-muted')
@@ -287,7 +287,7 @@ export default function Hotels() {
             <Suspense
               fallback={
                 <div
-                  className="flex items-center justify-center h-[560px] border border-foreground/10"
+                  className="flex items-center justify-center h-[560px] bg-muted"
                   role="status"
                   aria-label="Loading map"
                 >

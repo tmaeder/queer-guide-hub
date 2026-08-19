@@ -34,7 +34,7 @@ export function OccurrenceList({
         <div
           key={o.id}
           className={cn(
-            'flex flex-wrap items-center gap-4 border-b border-foreground/15 px-4 py-4 last:border-b-0',
+            'flex flex-wrap items-center gap-4 border-b border-border-hairline px-4 py-4 last:border-b-0',
             i === 0 && 'bg-foreground text-background',
           )}
         >

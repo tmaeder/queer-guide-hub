@@ -316,7 +316,7 @@ function HistorySkeleton() {
           </div>
           <div className="mt-8 grid gap-8 md:grid-cols-2">
             {Array.from({ length: 2 }).map((_, j) => (
-              <div key={j} className="border h-56 animate-pulse border-foreground/20" />
+              <div key={j} className="h-56 animate-pulse bg-muted" />
             ))}
           </div>
           <div className="relative mt-8">

@@ -189,19 +189,6 @@ export const eventFields: FieldConfig[] = [
   // Media
   { name: 'images', label: 'Images', type: 'images', group: 'media' },
   { name: 'logo_url', label: 'Event Logo', type: 'image', group: 'media' },
-  {
-    name: 'image_treatment',
-    label: 'Hero print treatment',
-    type: 'select',
-    group: 'media',
-    helpText:
-      'Off by default. "Riso" separates the hero photo onto two ink drums — it looks like print on architecture and interiors, but it DESTROYS rainbow, trans and bi flags, because their colours are the meaning. Only set this when the photo’s colour is decorative.',
-    options: [
-      { value: 'none', label: 'None (default)' },
-      { value: 'riso', label: 'Riso duotone' },
-      { value: 'halftone', label: 'Halftone screen' },
-    ],
-  },
   // Settings
   { name: 'is_featured', label: 'Featured', type: 'boolean', group: 'settings' },
   { name: 'is_public', label: 'Public', type: 'boolean', group: 'settings' },

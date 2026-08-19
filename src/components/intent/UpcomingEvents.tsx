@@ -57,7 +57,10 @@ export function UpcomingEvents({
       {events.length > 0 ? (
         <ul className="m-0 list-none bg-card p-0 rounded-container shadow-soft">
           {events.map((e) => (
-            <li key={e.id} className="group relative border-b border-foreground/10 last:border-b-0">
+            <li
+              key={e.id}
+              className="group relative border-b border-border-hairline last:border-b-0"
+            >
               <div className="flex items-center gap-4 px-4 py-4 transition-colors group-hover:bg-surface-container">
                 <RouteBullet type="event" size={34} />
                 <span className="min-w-0 flex-1 truncate text-title font-bold leading-tight">

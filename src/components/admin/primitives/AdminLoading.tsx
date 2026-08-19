@@ -1,4 +1,3 @@
-
 import { Skeleton } from '@/components/ui/skeleton';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { cn } from '@/lib/utils';
@@ -42,13 +41,7 @@ export function AdminTableSkeleton({
  * the parser, so the seven pipeline-builder tables that rendered
  * `<tr><td colSpan={n}>Loading…</td></tr>` need this shape specifically.
  */
-export function AdminTableRowSkeleton({
-  columns,
-  rows = 3,
-}: {
-  columns: number;
-  rows?: number;
-}) {
+export function AdminTableRowSkeleton({ columns, rows = 3 }: { columns: number; rows?: number }) {
   return (
     <>
       {Array.from({ length: rows }).map((_, r) => (
@@ -79,11 +72,7 @@ export function AdminTextSkeleton({
   className?: string;
 }) {
   return (
-    <div
-      className={cn('flex flex-col gap-2', className)}
-      role="status"
-      aria-label="Loading"
-    >
+    <div className={cn('flex flex-col gap-2', className)} role="status" aria-label="Loading">
       {Array.from({ length: lines }).map((_, i) => (
         <Skeleton key={i} className="h-4" style={{ width: i === lines - 1 ? '60%' : '100%' }} />
       ))}
@@ -101,7 +90,7 @@ export function AdminCardSkeleton({
 }) {
   return (
     <div
-      className={cn('rounded-container border border-border p-6', className)}
+      className={cn('rounded-container bg-muted p-6', className)}
       role="status"
       aria-label="Loading"
     >
