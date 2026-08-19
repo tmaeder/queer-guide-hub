@@ -67,8 +67,17 @@ const EDGES = `(() => {
   // Outermost only — a container nested inside another is a legitimate inner
   // block (a hero inside a band), not the page's own frame.
   const tops = all.filter((n) => !all.some((o) => o !== n && o.contains(n)));
+  // The header is a floating island (design panels 10-12): it is inset from
+  // the window on every side, so its content row starts one inset further in
+  // than the page's. Read the inset from the token the chrome actually uses
+  // rather than hard-coding it, so this guard cannot drift from the value in
+  // src/index.css when the design moves within its stated 14-22px range.
+  const inset = Math.round(
+    parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--island-inset')) || 0,
+  );
   return {
     header: header ? contentLeft(header) : null,
+    islandInset: inset,
     pages: Array.from(new Set(tops.map(contentLeft))),
     overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
   };
@@ -90,10 +99,15 @@ test.describe('page layout — one gutter, one cap, one rhythm', () => {
         expect(r.pages.length, `${route} has no PageContainer`).toBeGreaterThan(0);
         expect(r.header, 'header has no capped content row').not.toBeNull();
 
+        // The relationship, not the number: page content and the header's
+        // content row share one gutter and one cap, offset by the island
+        // inset. A route that hand-rolls its own wrapper still fails here.
+        expect(r.islandInset, 'no --island-inset token on :root').toBeGreaterThan(0);
         for (const left of r.pages) {
           expect(
-            Math.abs(left - (r.header as number)),
-            `${route} @${width}: content starts at ${left}, header at ${r.header}`,
+            Math.abs(left + r.islandInset - (r.header as number)),
+            `${route} @${width}: content starts at ${left}, header at ${r.header} ` +
+              `(island inset ${r.islandInset})`,
           ).toBeLessThanOrEqual(1);
         }
 

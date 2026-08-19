@@ -20,7 +20,7 @@ export function NavContributeButton({ label, onClick }: NavContributeButtonProps
         type="button"
         onClick={onClick}
         aria-label={label}
-        className="-mt-4 flex h-12 w-12 items-center justify-center rounded-element border border-border-hairline bg-foreground text-background transition-transform active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        className="-mt-4 flex h-12 w-12 items-center justify-center rounded-element bg-background text-foreground transition-transform active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
       >
         <Plus className="h-6 w-6" aria-hidden />
       </button>

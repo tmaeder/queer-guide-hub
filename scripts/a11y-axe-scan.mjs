@@ -219,6 +219,95 @@ async function scanVariant(browser, route, viewport, theme) {
       })),
     }));
 
+    // `target-size` says WHAT failed and by how much, but never WHY: it reports
+    // the largest unobscured sub-rect ("smallest space is 14px by 44px") and
+    // names nothing that is doing the obscuring. That left a real finding —
+    // reproducible only on the CI runner, moving between the three /*/guides
+    // routes run to run — undiagnosable from the report, and un-chaseable
+    // locally across ~200 scans on the same dist, server, viewport matrix and
+    // concurrency.
+    //
+    // So record axe's own inputs here, while the page is still open. Obscuring
+    // in `getTargetRects` is decided by RECT INTERSECTION and paint order —
+    // neither hit-testing nor clipping ancestors play any part, which is worth
+    // knowing before writing a probe: an `elementsFromPoint` version of this
+    // reports overlays axe deliberately ignored and misses ones it counted.
+    // `_findNearbyElms` also drops any neighbour whose `position: fixed`-ness
+    // differs from the target's, so a fixed overlay can never obscure a static
+    // link. Those discriminators are recorded as FIELDS below rather than
+    // applied as filters — see the note at the push site.
+    for (const v of result.violations) {
+      if (v.id !== 'target-size') continue;
+      for (const n of v.sample) {
+        const selector = Array.isArray(n.target) ? n.target[0] : n.target;
+        if (typeof selector !== 'string') continue;
+        n.geometry = await page
+          .evaluate((sel) => {
+            const el = document.querySelector(sel);
+            if (!el) return { error: 'selector no longer matches' };
+            const round = (r) => ({
+              x: Math.round(r.x),
+              y: Math.round(r.y),
+              w: Math.round(r.width),
+              h: Math.round(r.height),
+            });
+            const describe = (e) =>
+              `${e.tagName.toLowerCase()}${e.id ? '#' + e.id : ''}.${String(e.className || '')
+                .trim()
+                .split(/\s+/)
+                .slice(0, 3)
+                .join('.')}`;
+            const isFixed = (e) => {
+              for (let p = e; p; p = p.parentElement) {
+                if (getComputedStyle(p).position === 'fixed') return true;
+              }
+              return false;
+            };
+            const r = el.getBoundingClientRect();
+            const overlapping = [];
+            for (const e of document.querySelectorAll('*')) {
+              if (e === el || e.contains(el) || el.contains(e)) continue;
+              const b = e.getBoundingClientRect();
+              if (!b.width || !b.height) continue;
+              if (r.left >= b.right || r.right <= b.left) continue;
+              if (r.top >= b.bottom || r.bottom <= b.top) continue;
+              const cs = getComputedStyle(e);
+              // Record axe's discriminators as FIELDS rather than applying them
+              // as filters. A filtered probe that returns nothing is
+              // indistinguishable from a probe that ran on the wrong page, and
+              // this one only gets a single chance per CI run.
+              overlapping.push({
+                el: describe(e),
+                position: cs.position,
+                display: cs.display,
+                zIndex: cs.zIndex,
+                fixed: isFixed(e),
+                pointerEvents: cs.pointerEvents,
+                rect: round(b),
+              });
+              if (overlapping.length >= 8) break;
+            }
+            const header = document.querySelector('header');
+            return {
+              rect: round(r),
+              display: getComputedStyle(el).display,
+              fixed: isFixed(el),
+              text: (el.textContent || '').trim().slice(0, 40),
+              scrollY: Math.round(window.scrollY),
+              viewport: { w: window.innerWidth, h: window.innerHeight },
+              islandInset: getComputedStyle(document.documentElement)
+                .getPropertyValue('--island-inset')
+                .trim(),
+              header: header
+                ? { rect: round(header.getBoundingClientRect()), position: getComputedStyle(header).position }
+                : null,
+              overlapping,
+            };
+          }, selector)
+          .catch((err) => ({ error: String(err).slice(0, 120) }));
+      }
+    }
+
     // Mobile-first reflow gate (WCAG 1.4.10): at 320px the page must not need
     // horizontal scrolling. Reported as a serious violation so it flows through
     // the same summary + CI serious/critical gate as axe findings.
