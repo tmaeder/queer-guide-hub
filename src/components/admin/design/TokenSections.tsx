@@ -111,7 +111,7 @@ export function RadiusSection({ controller }: { controller: DesignSettingsContro
       {radii.map((token) => (
         <div key={token.key} className="space-y-2">
           <div
-            className="h-20 w-full border bg-muted"
+            className="h-20 w-full bg-muted"
             style={{ borderRadius: resolveGlobal(controller.draft, token.key) }}
             aria-hidden
           />

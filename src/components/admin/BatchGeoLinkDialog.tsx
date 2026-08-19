@@ -92,7 +92,7 @@ export default function BatchGeoLinkDialog({ onComplete }: BatchGeoLinkDialogPro
             skipped: acc.skipped + r.total_skipped,
             alreadyLinked: acc.alreadyLinked + r.total_already_linked,
           }),
-          { processed: 0, linked: 0, partial: 0, skipped: 0, alreadyLinked: 0 }
+          { processed: 0, linked: 0, partial: 0, skipped: 0, alreadyLinked: 0 },
         )
       : result
         ? {
@@ -106,8 +106,10 @@ export default function BatchGeoLinkDialog({ onComplete }: BatchGeoLinkDialogPro
     : null;
 
   const totalUnlinked = unlinkedCounts
-    ? unlinkedCounts.venues + unlinkedCounts.events +
-      unlinkedCounts.personalities + unlinkedCounts.news_articles
+    ? unlinkedCounts.venues +
+      unlinkedCounts.events +
+      unlinkedCounts.personalities +
+      unlinkedCounts.news_articles
     : null;
 
   return (
@@ -127,15 +129,15 @@ export default function BatchGeoLinkDialog({ onComplete }: BatchGeoLinkDialogPro
             </span>
           </DialogTitle>
           <DialogDescription>
-            Link content items to cities and countries using deterministic matching.
-            No AI cost — pure database matching with alias normalization.
+            Link content items to cities and countries using deterministic matching. No AI cost —
+            pure database matching with alias normalization.
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col gap-6 mt-2">
           {/* Unlinked counts */}
           {unlinkedCounts && (
-            <div className="border border-border rounded-element p-4 flex flex-col gap-1">
+            <div className="rounded-element bg-muted p-4 flex flex-col gap-1">
               <span className="text-xs font-semibold mb-1">Unlinked Items</span>
               <div className="grid grid-cols-2 gap-1">
                 {[
@@ -143,7 +145,7 @@ export default function BatchGeoLinkDialog({ onComplete }: BatchGeoLinkDialogPro
                   { label: 'Events', count: unlinkedCounts.events },
                   { label: 'Personalities', count: unlinkedCounts.personalities },
                   { label: 'News Articles', count: unlinkedCounts.news_articles },
-                ].map(item => (
+                ].map((item) => (
                   <div key={item.label} className="flex items-center gap-1">
                     {item.count > 0 ? (
                       <AlertCircle size={12} style={{ color: 'hsl(var(--foreground) / 0.55)' }} />
@@ -172,7 +174,7 @@ export default function BatchGeoLinkDialog({ onComplete }: BatchGeoLinkDialogPro
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {CONTENT_TYPES.map(ct => (
+                {CONTENT_TYPES.map((ct) => (
                   <SelectItem key={ct.value} value={ct.value}>
                     {ct.label}
                   </SelectItem>
@@ -189,7 +191,7 @@ export default function BatchGeoLinkDialog({ onComplete }: BatchGeoLinkDialogPro
               min={1}
               max={500}
               value={batchLimit}
-              onChange={e => setBatchLimit(Number(e.target.value))}
+              onChange={(e) => setBatchLimit(Number(e.target.value))}
               disabled={loading}
             />
             <span className="text-xs text-muted-foreground">
@@ -200,8 +202,8 @@ export default function BatchGeoLinkDialog({ onComplete }: BatchGeoLinkDialogPro
           {/* Info box */}
           <div className="bg-muted rounded-element p-4">
             <span className="text-xs text-muted-foreground">
-              <strong>No AI cost</strong> — Uses deterministic alias normalization and
-              exact matching against 351 cities and 199 countries in the database.
+              <strong>No AI cost</strong> — Uses deterministic alias normalization and exact
+              matching against 351 cities and 199 countries in the database.
             </span>
           </div>
 
@@ -220,7 +222,7 @@ export default function BatchGeoLinkDialog({ onComplete }: BatchGeoLinkDialogPro
 
           {/* Results */}
           {totals && !loading && (
-            <div className="border border-border rounded-element p-4 flex flex-col gap-4">
+            <div className="rounded-element bg-muted p-4 flex flex-col gap-4">
               <div className="flex items-center gap-2">
                 <CheckCircle size={18} className="text-foreground" />
                 <span className="text-sm font-semibold">Geo-Link Complete</span>

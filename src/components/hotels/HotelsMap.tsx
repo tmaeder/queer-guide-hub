@@ -195,7 +195,5 @@ export function HotelsMap({ hotels, height = 560 }: HotelsMapProps) {
     }
   }, [hotels, ready, navigate]);
 
-  return (
-    <div ref={containerRef} className="w-full border border-foreground/10" style={{ height }} />
-  );
+  return <div ref={containerRef} className="w-full bg-muted" style={{ height }} />;
 }

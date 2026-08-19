@@ -35,13 +35,11 @@ export function VersionHistorySheet({
         </SheetHeader>
         <div className="mt-6 space-y-4 overflow-y-auto">
           {versions.isLoading && <AdminTextSkeleton lines={2} />}
-          {versions.data?.length === 0 && (
-            <AdminEmpty variant="inline" noun="published versions" />
-          )}
+          {versions.data?.length === 0 && <AdminEmpty variant="inline" noun="published versions" />}
           {versions.data?.map((v) => (
             <div
               key={v.version}
-              className="flex items-center justify-between gap-4 rounded-element border p-4"
+              className="flex items-center justify-between gap-4 rounded-element bg-muted p-4"
             >
               <div className="min-w-0">
                 <div className="flex items-center gap-2">

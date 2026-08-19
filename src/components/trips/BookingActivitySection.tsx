@@ -62,10 +62,7 @@ export function BookingActivitySection({ tripId }: Props) {
           {verticalEntries.map(([v, count]) => {
             const Icon = VERTICAL_ICON[v];
             return (
-              <div
-                key={v}
-                className="flex items-center gap-1 px-2 py-1 bg-background border border-border"
-              >
+              <div key={v} className="flex items-center gap-1 px-2 py-1 bg-muted">
                 <Icon size={12} />
                 <span className="text-xs font-semibold">{VERTICAL_LABEL[v]}</span>
                 <span className="text-xs text-muted-foreground">{count}</span>
@@ -87,10 +84,7 @@ export function BookingActivitySection({ tripId }: Props) {
               // leave as-is
             }
             return (
-              <div
-                key={r.id}
-                className="flex items-center gap-2 px-2 py-1.5 bg-background border border-border"
-              >
+              <div key={r.id} className="flex items-center gap-2 px-2 py-1.5 bg-muted">
                 <Icon size={14} style={{ opacity: 0.7 }} className="shrink-0" />
                 <span className="text-xs font-semibold flex-shrink-0">{r.provider}</span>
                 <span className="text-xs text-muted-foreground flex-1 min-w-0 truncate">

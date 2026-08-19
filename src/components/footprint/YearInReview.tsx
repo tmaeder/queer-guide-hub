@@ -48,7 +48,7 @@ export function YearInReview({ data }: { data: YearReviewData }) {
         <CardTitle className="text-base">Year in review: {data.year}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div ref={ref} className="bg-background border border-border p-6 space-y-2">
+        <div ref={ref} className="bg-muted p-6 space-y-2">
           <div className="text-xs uppercase tracking-wide text-muted-foreground">queer.guide</div>
           <div className="text-3xl font-semibold">{data.year}</div>
           <div className="text-sm">Countries visited: {data.countries}</div>

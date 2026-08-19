@@ -34,7 +34,7 @@ export default function CanvasControls({ pipelineName, hasSelection }: CanvasCon
   }, [fitView]);
 
   const handleFitSelection = useCallback(() => {
-    const selected = getNodes().filter(n => n.selected);
+    const selected = getNodes().filter((n) => n.selected);
     if (selected.length === 0) return;
     fitView({ nodes: selected, padding: 0.3, duration: 300 });
   }, [fitView, getNodes]);
@@ -69,23 +69,37 @@ export default function CanvasControls({ pipelineName, hasSelection }: CanvasCon
   }, [pipelineName]);
 
   return (
-    <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-1 bg-popover border border-border rounded-element p-1">
+    <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-1 bg-popover rounded-element p-1">
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => zoomIn({ duration: 150 })}>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-7 w-7 p-0"
+            onClick={() => zoomIn({ duration: 150 })}
+          >
             <ZoomIn className="h-3.5 w-3.5" />
           </Button>
         </TooltipTrigger>
-        <TooltipContent side="left" className="text-xs">Zoom in</TooltipContent>
+        <TooltipContent side="left" className="text-xs">
+          Zoom in
+        </TooltipContent>
       </Tooltip>
 
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => zoomOut({ duration: 150 })}>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-7 w-7 p-0"
+            onClick={() => zoomOut({ duration: 150 })}
+          >
             <ZoomOut className="h-3.5 w-3.5" />
           </Button>
         </TooltipTrigger>
-        <TooltipContent side="left" className="text-xs">Zoom out</TooltipContent>
+        <TooltipContent side="left" className="text-xs">
+          Zoom out
+        </TooltipContent>
       </Tooltip>
 
       <div className="text-2xs text-center font-mono text-muted-foreground py-0.5 select-none">
@@ -100,7 +114,9 @@ export default function CanvasControls({ pipelineName, hasSelection }: CanvasCon
             <Maximize className="h-3.5 w-3.5" />
           </Button>
         </TooltipTrigger>
-        <TooltipContent side="left" className="text-xs">Fit all nodes</TooltipContent>
+        <TooltipContent side="left" className="text-xs">
+          Fit all nodes
+        </TooltipContent>
       </Tooltip>
 
       <Tooltip>
@@ -115,7 +131,9 @@ export default function CanvasControls({ pipelineName, hasSelection }: CanvasCon
             <Crosshair className="h-3.5 w-3.5" />
           </Button>
         </TooltipTrigger>
-        <TooltipContent side="left" className="text-xs">Fit to selection</TooltipContent>
+        <TooltipContent side="left" className="text-xs">
+          Fit to selection
+        </TooltipContent>
       </Tooltip>
 
       <div className="h-px bg-border my-0.5" />
@@ -129,10 +147,16 @@ export default function CanvasControls({ pipelineName, hasSelection }: CanvasCon
             onClick={handleExportPNG}
             disabled={exporting}
           >
-            {exporting ? <Download className="h-3.5 w-3.5 animate-pulse" /> : <Camera className="h-3.5 w-3.5" />}
+            {exporting ? (
+              <Download className="h-3.5 w-3.5 animate-pulse" />
+            ) : (
+              <Camera className="h-3.5 w-3.5" />
+            )}
           </Button>
         </TooltipTrigger>
-        <TooltipContent side="left" className="text-xs">Export as PNG</TooltipContent>
+        <TooltipContent side="left" className="text-xs">
+          Export as PNG
+        </TooltipContent>
       </Tooltip>
     </div>
   );

@@ -29,7 +29,7 @@ import {
 function CodeRow({ item }: { item: MedicalCode }) {
   const { t } = useTranslation();
   return (
-    <li className="flex items-baseline justify-between gap-4 border-b border-foreground/15 py-2 last:border-b-0">
+    <li className="flex items-baseline justify-between gap-4 border-b border-border-hairline py-2 last:border-b-0">
       <span className="text-13 opacity-75">{item.label}</span>
       {item.url ? (
         <a

@@ -1,7 +1,15 @@
 import { useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Sparkles, Wand2 } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogTrigger,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
@@ -74,7 +82,7 @@ export default function AISuggestDialog({ nodeTypes, onApply }: AISuggestDialogP
     const now = Date.now();
     // Map LLM-returned slugs to React Flow baseNode shape
     const nodes: BaseNodeType[] = suggestion.nodes.map((s, i) => {
-      const nt = nodeTypes.find(t => t.slug === s.slug);
+      const nt = nodeTypes.find((t) => t.slug === s.slug);
       const rfId = `${s.slug}-${now}-${i}`;
       return {
         id: rfId,
@@ -108,7 +116,9 @@ export default function AISuggestDialog({ nodeTypes, onApply }: AISuggestDialogP
     // Auto-layout to make it look clean
     const laidOut = autoLayout(nodes, edges);
     onApply(laidOut, edges);
-    toast.success('Pipeline applied', { description: `${nodes.length} nodes, ${edges.length} edges` });
+    toast.success('Pipeline applied', {
+      description: `${nodes.length} nodes, ${edges.length} edges`,
+    });
     setOpen(false);
     setSuggestion(null);
     setDescription('');
@@ -129,8 +139,8 @@ export default function AISuggestDialog({ nodeTypes, onApply }: AISuggestDialogP
             AI pipeline suggest
           </DialogTitle>
           <DialogDescription>
-            Describe what the pipeline should do. Claude will propose a DAG using the available node types.
-            You'll see the suggestion before it's applied to the canvas.
+            Describe what the pipeline should do. Claude will propose a DAG using the available node
+            types. You'll see the suggestion before it's applied to the canvas.
           </DialogDescription>
         </DialogHeader>
 
@@ -142,7 +152,7 @@ export default function AISuggestDialog({ nodeTypes, onApply }: AISuggestDialogP
             className="text-sm min-h-[80px]"
           />
           <div className="flex flex-wrap gap-1">
-            {EXAMPLES.map(ex => (
+            {EXAMPLES.map((ex) => (
               <button
                 key={ex}
                 onClick={() => setDescription(ex)}
@@ -155,7 +165,7 @@ export default function AISuggestDialog({ nodeTypes, onApply }: AISuggestDialogP
         </div>
 
         {suggestion && (
-          <div className="border border-border rounded-element bg-background p-4 space-y-2 max-h-[320px] overflow-y-auto">
+          <div className="rounded-element bg-muted p-4 space-y-2 max-h-[320px] overflow-y-auto">
             {suggestion.rationale && (
               <div className="text-xs text-muted-foreground italic">
                 <Wand2 className="h-3 w-3 inline mr-1" />
@@ -163,34 +173,48 @@ export default function AISuggestDialog({ nodeTypes, onApply }: AISuggestDialogP
               </div>
             )}
             <div className="text-xs">
-              <span className="font-semibold">{suggestion.nodes.length}</span> nodes,
-              {' '}<span className="font-semibold">{suggestion.edges.length}</span> edges
+              <span className="font-semibold">{suggestion.nodes.length}</span> nodes,{' '}
+              <span className="font-semibold">{suggestion.edges.length}</span> edges
             </div>
             <div className="space-y-1">
               {suggestion.nodes.map((n) => (
                 <div key={n.id} className="flex items-center gap-2 text-xs">
-                  <Badge variant="outline" className="text-2xs px-1.5 py-0 font-mono">{n.id}</Badge>
+                  <Badge variant="outline" className="text-2xs px-1.5 py-0 font-mono">
+                    {n.id}
+                  </Badge>
                   <span className="font-mono text-xs2 text-muted-foreground">{n.slug}</span>
                   <span className="truncate">{n.label}</span>
                 </div>
               ))}
             </div>
             <div className="text-2xs text-muted-foreground pt-2 border-t border-border/40">
-              Edges: {suggestion.edges.map(e => `${e.source}→${e.target}`).join(', ')}
+              Edges: {suggestion.edges.map((e) => `${e.source}→${e.target}`).join(', ')}
             </div>
           </div>
         )}
 
         <DialogFooter>
           {!suggestion ? (
-            <Button onClick={handleGenerate} disabled={loading || description.length < 10} className="w-full">
-              {loading ? <TrackLoader size={14} className="mr-2" /> : <Sparkles className="h-3.5 w-3.5 mr-2" />}
+            <Button
+              onClick={handleGenerate}
+              disabled={loading || description.length < 10}
+              className="w-full"
+            >
+              {loading ? (
+                <TrackLoader size={14} className="mr-2" />
+              ) : (
+                <Sparkles className="h-3.5 w-3.5 mr-2" />
+              )}
               {loading ? 'Designing…' : 'Generate suggestion'}
             </Button>
           ) : (
             <>
-              <Button variant="ghost" size="sm" onClick={() => setSuggestion(null)}>Discard</Button>
-              <Button size="sm" onClick={handleApply}>Apply to canvas</Button>
+              <Button variant="ghost" size="sm" onClick={() => setSuggestion(null)}>
+                Discard
+              </Button>
+              <Button size="sm" onClick={handleApply}>
+                Apply to canvas
+              </Button>
             </>
           )}
         </DialogFooter>

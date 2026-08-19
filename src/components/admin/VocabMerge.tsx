@@ -87,7 +87,7 @@ export function VocabMerge() {
         ))}
       </div>
 
-      <div className="rounded-container flex flex-col gap-4 border p-4">
+      <div className="rounded-container bg-muted flex flex-col gap-4 p-4">
         <p className="text-muted-foreground text-13">
           Pick a term to keep and a duplicate to merge into it. The dropped term’s label is kept as
           an alias on the survivor; entity data is unaffected.
@@ -102,7 +102,11 @@ export function VocabMerge() {
           <div className="flex flex-wrap items-end gap-4">
             <label className="flex min-w-0 flex-1 flex-col gap-1">
               <span className="text-2xs uppercase tracking-wide text-muted-foreground">Keep</span>
-              <select className={selectCls} value={keepId} onChange={(e) => setKeepId(e.target.value)}>
+              <select
+                className={selectCls}
+                value={keepId}
+                onChange={(e) => setKeepId(e.target.value)}
+              >
                 <option value="">Select survivor…</option>
                 {terms.map((t) => (
                   <option key={t.id} value={t.id} disabled={t.id === dropId}>
@@ -115,7 +119,11 @@ export function VocabMerge() {
               <span className="text-2xs uppercase tracking-wide text-muted-foreground">
                 Merge (drop)
               </span>
-              <select className={selectCls} value={dropId} onChange={(e) => setDropId(e.target.value)}>
+              <select
+                className={selectCls}
+                value={dropId}
+                onChange={(e) => setDropId(e.target.value)}
+              >
                 <option value="">Select duplicate…</option>
                 {terms.map((t) => (
                   <option key={t.id} value={t.id} disabled={t.id === keepId}>
@@ -138,7 +146,7 @@ export function VocabMerge() {
           {recent.map((r) => (
             <div
               key={r.id}
-              className="rounded-element flex items-center justify-between gap-4 border p-2"
+              className="rounded-element bg-muted flex items-center justify-between gap-4 p-2"
             >
               <div className="flex items-center gap-2">
                 <Badge variant="outline">{r.vocab}</Badge>

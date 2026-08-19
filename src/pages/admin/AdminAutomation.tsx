@@ -325,7 +325,7 @@ export default function AdminAutomation() {
         ) : automationsQ.data?.length === 0 ? (
           <p className="text-sm text-muted-foreground">No automations registered.</p>
         ) : (
-          <div className="border border-border">
+          <div className="bg-muted">
             <table className="w-full text-13">
               <thead className="bg-muted">
                 <tr className="text-left">
@@ -488,7 +488,7 @@ export default function AdminAutomation() {
         ) : runsQ.data?.length === 0 ? (
           <AdminEmpty noun="runs" />
         ) : (
-          <div className="border border-border">
+          <div className="bg-muted">
             <table className="w-full text-13">
               <thead className="bg-muted">
                 <tr className="text-left">

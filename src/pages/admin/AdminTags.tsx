@@ -468,7 +468,7 @@ export default function AdminTags() {
       config={tableConfig}
       beforeTable={
         <>
-          <div className="mb-6 rounded-element border border-border p-4">
+          <div className="mb-6 rounded-element bg-muted p-4">
             <p className="text-2xs uppercase tracking-wide text-muted-foreground mb-2">
               Other taxonomies
             </p>
@@ -504,7 +504,7 @@ export default function AdminTags() {
                 const tag = tags.find((t) => t.id === tagId);
                 if (!tag) return null;
                 return (
-                  <div key={tagId} className="border border-border rounded-element p-4">
+                  <div key={tagId} className="rounded-element bg-muted p-4">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="font-medium">{tag.name}</span>
                       <Badge variant="outline">{tag.category}</Badge>

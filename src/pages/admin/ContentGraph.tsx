@@ -96,17 +96,14 @@ export default function ContentGraph() {
       {error && (
         <div
           role="alert"
-          className="rounded-container border border-border p-8 text-center text-13 text-muted-foreground"
+          className="rounded-container bg-muted p-8 text-center text-13 text-muted-foreground"
         >
           Could not load the content graph. You may not have admin access.
         </div>
       )}
 
       {isLoading && (
-        <div
-          className="h-[560px] rounded-container border border-border bg-muted/20 animate-pulse"
-          aria-hidden="true"
-        />
+        <div className="h-[560px] rounded-container bg-muted/20 animate-pulse" aria-hidden="true" />
       )}
 
       {!isLoading && !error && isMobile && (
@@ -114,7 +111,7 @@ export default function ContentGraph() {
           {snapshot.nodes.map((n) => {
             const Icon = typeMeta(n.type).icon;
             return (
-              <div key={n.type} className="rounded-container border border-border p-4">
+              <div key={n.type} className="rounded-container bg-muted p-4">
                 <div className="flex items-center gap-2">
                   <Icon size={15} className="text-muted-foreground" aria-hidden="true" />
                   <span className="text-13 font-medium">{n.label}</span>
@@ -140,7 +137,7 @@ export default function ContentGraph() {
 
       {!isLoading && !error && !isMobile && (
         <div className="flex gap-4" style={{ height: 'calc(100vh - 240px)', minHeight: 560 }}>
-          <div className="flex-1 min-w-0 rounded-container border border-border overflow-hidden">
+          <div className="flex-1 min-w-0 rounded-container bg-muted overflow-hidden">
             <OntologyMap
               nodes={snapshot.nodes}
               edges={snapshot.edges}
@@ -150,7 +147,7 @@ export default function ContentGraph() {
               onSelectEdge={selectEdge}
             />
           </div>
-          <aside className="w-80 shrink-0 overflow-y-auto rounded-container border border-border p-4">
+          <aside className="w-80 shrink-0 overflow-y-auto rounded-container bg-muted p-4">
             <GraphDetailPanel
               snapshot={snapshot}
               selectedType={selectedType}

@@ -5,7 +5,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Heart, Eye, EyeOff} from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
+import { Wordmark } from '@/components/brand/Wordmark';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useTurnstile } from '@/hooks/useTurnstile';
@@ -27,7 +28,12 @@ export function AuthDialog({ open, onOpenChange, defaultMode = 'signin' }: AuthD
   const { signIn } = useAuth();
   const { toast } = useToast();
   const navigate = useLocalizedNavigate();
-  const { token: captchaToken, widget: captcha, reset: resetCaptcha, required: captchaRequired } = useTurnstile();
+  const {
+    token: captchaToken,
+    widget: captcha,
+    reset: resetCaptcha,
+    required: captchaRequired,
+  } = useTurnstile();
 
   // Sync mode when the dialog is (re)opened with a different default
   useEffect(() => {
@@ -54,7 +60,8 @@ export function AuthDialog({ open, onOpenChange, defaultMode = 'signin' }: AuthD
       if (error) {
         // Turnstile tokens are single-use — refresh for the next attempt.
         resetCaptcha();
-        const msg = error instanceof Error ? error.message : (error as { message?: string })?.message;
+        const msg =
+          error instanceof Error ? error.message : (error as { message?: string })?.message;
         toast({
           title: 'Sign in failed',
           description: msg ?? 'Please try again later.',
@@ -96,18 +103,15 @@ export function AuthDialog({ open, onOpenChange, defaultMode = 'signin' }: AuthD
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Heart
-              className="w-7 h-7 fill-current animate-pulse text-primary"
-            />
-            <h6 className="text-base font-bold gradient-text">
-              Queer Guide
-            </h6>
+          {/* Wordmark alone — see Auth.tsx. This one broke §03 three ways:
+              the heart, `gradient-text` (the wordmark "carries no colour", and
+              gradients are banned outright), and `animate-pulse` on the mark of
+              a sign-in surface. */}
+          <div className="mb-4 flex items-center justify-center">
+            <Wordmark className="text-title text-foreground" />
           </div>
           <DialogTitle>Welcome Back</DialogTitle>
-          <p className="text-sm text-muted-foreground mt-1">
-            Sign in to continue
-          </p>
+          <p className="text-sm text-muted-foreground mt-1">Sign in to continue</p>
         </DialogHeader>
 
         <div className="px-6 pb-6">
@@ -144,11 +148,7 @@ export function AuthDialog({ open, onOpenChange, defaultMode = 'signin' }: AuthD
                     onClick={() => setShowPassword(!showPassword)}
                     disabled={loading}
                   >
-                    {showPassword ? (
-                      <EyeOff className="w-4 h-4" />
-                    ) : (
-                      <Eye className="w-4 h-4" />
-                    )}
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </Button>
                 </div>
               </div>
@@ -170,8 +170,7 @@ export function AuthDialog({ open, onOpenChange, defaultMode = 'signin' }: AuthD
 
           <div className="mt-6">
             <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-              </div>
+              <div className="absolute inset-0 flex items-center"></div>
               <div className="relative flex justify-center">
                 <span className="text-xs bg-background px-4 text-muted-foreground font-medium uppercase">
                   New to Queer Guide?

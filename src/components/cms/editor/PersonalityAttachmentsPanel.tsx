@@ -10,7 +10,7 @@
 import { useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {ExternalLink, Trash2, Archive } from 'lucide-react';
+import { ExternalLink, Trash2, Archive } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom } from '@/integrations/supabase/untyped';
@@ -131,7 +131,7 @@ export function PersonalityAttachmentsPanel({ personalityId }: { personalityId: 
           {(rows ?? []).map((att) => (
             <li
               key={att.id}
-              className="flex items-start justify-between gap-2 rounded-element border border-border p-2"
+              className="flex items-start justify-between gap-2 rounded-element bg-muted p-2"
             >
               <div className="min-w-0">
                 <p className="truncate text-13 font-medium">{att.title}</p>

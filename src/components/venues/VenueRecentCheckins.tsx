@@ -74,7 +74,9 @@ export function VenueRecentCheckins({ venueId, refreshTrigger }: VenueRecentChec
           <div role="alert" className="text-center py-6">
             <p className="font-semibold mb-2">Couldn't load recent activity</p>
             <p className="text-sm text-muted-foreground mb-4">Please try again in a moment.</p>
-            <Button variant="outline" onClick={fetchStats}>Retry</Button>
+            <Button variant="outline" onClick={fetchStats}>
+              Retry
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -107,7 +109,10 @@ export function VenueRecentCheckins({ venueId, refreshTrigger }: VenueRecentChec
       {header}
       <CardContent>
         <div className="flex flex-col gap-4">
-          <div className="text-center p-4 border border-border" style={{ backgroundColor: 'hsl(var(--primary) / 0.05)' }}>
+          <div
+            className="text-center p-4 bg-muted"
+            style={{ backgroundColor: 'hsl(var(--primary) / 0.05)' }}
+          >
             <p className="text-2xl font-bold text-primary">{totalCheckins}</p>
             <p className="text-sm text-muted-foreground">Total visits (30 days)</p>
           </div>
@@ -124,7 +129,13 @@ export function VenueRecentCheckins({ venueId, refreshTrigger }: VenueRecentChec
                 return (
                   <div key={index} className="flex items-center justify-between py-2 px-4 bg-muted">
                     <p className="text-sm">
-                      {hour ? new Date(hour).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit' }) : ''}
+                      {hour
+                        ? new Date(hour).toLocaleDateString([], {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                          })
+                        : ''}
                     </p>
                     <p className="text-sm font-medium">
                       {count} visit{count !== 1 ? 's' : ''}

@@ -13,7 +13,10 @@ const GAP_LABELS: Record<string, string> = {
   embedding: 'No embedding',
 };
 
-const BUCKETS: { key: keyof NonNullable<ReturnType<typeof useTagQualityScorecard>['data']>['buckets']; label: string }[] = [
+const BUCKETS: {
+  key: keyof NonNullable<ReturnType<typeof useTagQualityScorecard>['data']>['buckets'];
+  label: string;
+}[] = [
   { key: 'p0_20', label: '0–20' },
   { key: 'p20_40', label: '20–40' },
   { key: 'p40_60', label: '40–60' },
@@ -30,7 +33,8 @@ export function TagQualityPanel() {
   const { data } = useTagQualityScorecard();
   if (!data || !data.scored) return null;
 
-  const { mean_score, mean_confidence, scored, active_total, gaps, buckets, sensitive_unreviewed } = data;
+  const { mean_score, mean_confidence, scored, active_total, gaps, buckets, sensitive_unreviewed } =
+    data;
   const maxBucket = Math.max(1, ...BUCKETS.map((b) => buckets[b.key] ?? 0));
 
   return (
@@ -43,10 +47,11 @@ export function TagQualityPanel() {
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <div className="flex flex-wrap gap-2">
-          <AdminStat label={`Mean score (${scored}/${active_total} scored)`} value={mean_score ?? 0} />
-          {mean_confidence != null && (
-            <AdminStat label="Mean confidence" value={mean_confidence} />
-          )}
+          <AdminStat
+            label={`Mean score (${scored}/${active_total} scored)`}
+            value={mean_score ?? 0}
+          />
+          {mean_confidence != null && <AdminStat label="Mean confidence" value={mean_confidence} />}
           {sensitive_unreviewed > 0 && (
             <AdminStat label="Sensitive · unreviewed" value={sensitive_unreviewed} hardFail />
           )}
@@ -60,7 +65,7 @@ export function TagQualityPanel() {
               .map(([key, count]) => (
                 <div
                   key={key}
-                  className="flex items-center gap-2 rounded-element border bg-muted/40 px-4 py-2"
+                  className="flex items-center gap-2 rounded-element bg-muted/40 px-4 py-2"
                 >
                   <span className="text-body-lg tabular-nums">{count}</span>
                   <span className="text-13 text-muted-foreground">{GAP_LABELS[key] ?? key}</span>

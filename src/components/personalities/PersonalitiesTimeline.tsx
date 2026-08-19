@@ -79,7 +79,7 @@ export function PersonalitiesTimeline({ personalities }: PersonalitiesTimelinePr
               {b.items.map((p) => {
                 const year = p.birth_date ? new Date(p.birth_date).getFullYear() : null;
                 return (
-                  <li key={p.id} className="border-b border-foreground/10 last:border-b-0">
+                  <li key={p.id} className="border-b border-border-hairline last:border-b-0">
                     <LocalizedLink
                       to={`/personalities/${p.slug ?? p.id}`}
                       className="flex items-center gap-2 px-4 py-2 text-inherit no-underline transition-colors hover:bg-surface-container"

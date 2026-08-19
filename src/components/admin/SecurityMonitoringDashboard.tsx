@@ -177,7 +177,7 @@ export function SecurityMonitoringDashboard() {
                 return (
                   <div
                     key={event.id}
-                    className="flex items-start gap-4 p-4 border border-border rounded-element"
+                    className="flex items-start gap-4 p-4 rounded-element bg-muted"
                   >
                     <div className="mt-1">{getEventIcon(event.event_type)}</div>
                     <div className="flex-1 flex flex-col gap-1">
@@ -223,7 +223,7 @@ export function SecurityMonitoringDashboard() {
               {auditLogs.map((log: Record<string, unknown>) => (
                 <div
                   key={log.id as string}
-                  className="flex items-start gap-4 p-4 border border-border rounded-element"
+                  className="flex items-start gap-4 p-4 rounded-element bg-muted"
                 >
                   <Users size={16} className="mt-1" />
                   <div className="flex-1 flex flex-col gap-1">
@@ -260,7 +260,7 @@ export function SecurityMonitoringDashboard() {
               {recentFailedLogins.map((attempt: Record<string, unknown>) => (
                 <div
                   key={attempt.id as string}
-                  className="flex items-start gap-4 p-4 border border-border rounded-element"
+                  className="flex items-start gap-4 p-4 rounded-element bg-muted"
                 >
                   <AlertTriangle
                     size={16}

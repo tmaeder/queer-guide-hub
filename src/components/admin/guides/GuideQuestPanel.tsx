@@ -158,7 +158,7 @@ export function GuideQuestPanel({ guideId }: { guideId: string }) {
         </div>
       </div>
 
-      <div className="rounded-element border border-border p-4 text-sm">
+      <div className="rounded-element bg-muted p-4 text-sm">
         <p className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">Participation</p>
         <p>
           {stats?.accepted_count ?? 0} accepted · {stats?.pending_count ?? 0} pending ·{' '}

@@ -299,7 +299,7 @@ export default function IntegrationsTab() {
           </Dialog>
         </div>
 
-        <div className="border border-border rounded-element bg-background overflow-hidden">
+        <div className="rounded-element bg-muted overflow-hidden">
           {isLoading ? (
             <AdminTextSkeleton lines={2} />
           ) : integrations.length === 0 ? (

@@ -346,7 +346,7 @@ function RelatedContent({ personality }: { personality: Personality }) {
                 <li key={n.id}>
                   <LocalizedLink
                     to={`/news/${n.slug}`}
-                    className="-mx-2 flex items-start gap-4 border-b border-foreground/10 px-2 py-4 text-inherit no-underline transition-colors hover:bg-surface-container"
+                    className="-mx-2 flex items-start gap-4 border-b border-border-hairline px-2 py-4 text-inherit no-underline transition-colors hover:bg-surface-container"
                   >
                     {n.image_url && (
                       <img

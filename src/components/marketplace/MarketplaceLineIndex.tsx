@@ -91,11 +91,7 @@ export function MarketplaceLineIndex({ activeDepartment }: { activeDepartment?: 
       {loading ? (
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
           {Array.from({ length: 10 }).map((_, i) => (
-            <div
-              key={i}
-              aria-hidden="true"
-              className="border h-[132px] animate-pulse border-foreground/20 bg-muted"
-            />
+            <div key={i} aria-hidden="true" className="h-[132px] animate-pulse bg-muted" />
           ))}
         </div>
       ) : (

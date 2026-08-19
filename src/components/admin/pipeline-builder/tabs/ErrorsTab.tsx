@@ -111,7 +111,7 @@ export default function ErrorsTab() {
         </div>
         <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-2">
           {summary.length === 0 ? (
-            <div className="col-span-full border border-border rounded-element bg-background p-6 text-center text-sm">
+            <div className="col-span-full rounded-element bg-muted p-6 text-center text-sm">
               <CheckCircle2 className="h-5 w-5 text-foreground inline mr-1" />
               <span className="text-foreground font-medium">No errors in the last 7 days</span>
             </div>
@@ -122,7 +122,7 @@ export default function ErrorsTab() {
               return (
                 <div
                   key={`${s.function_name}-${s.severity}`}
-                  className="border border-border rounded-element bg-background px-4 py-2.5 hover:bg-muted/30 transition-colors"
+                  className="rounded-element bg-muted px-4 py-2.5 hover:bg-muted/30 transition-colors"
                 >
                   <div className="flex items-center gap-1.5 mb-1.5">
                     <SIcon className={`h-3.5 w-3.5 ${sc.className}`} />
@@ -161,7 +161,7 @@ export default function ErrorsTab() {
       </div>
 
       {/* Filter + recent error table */}
-      <div className="border border-border rounded-element bg-background overflow-hidden">
+      <div className="rounded-element bg-muted overflow-hidden">
         <div className="px-4 py-2 border-b border-border flex items-center gap-2 flex-wrap">
           <span className="font-semibold text-sm">Recent errors</span>
 

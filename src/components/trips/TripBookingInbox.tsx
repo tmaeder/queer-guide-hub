@@ -17,15 +17,8 @@ export function TripBookingInbox({ tripId }: Props) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const { profile } = useProfile();
-  const {
-    inbox,
-    inboxLoading,
-    items,
-    itemsLoading,
-    slotItem,
-    dismissItem,
-    pasteConfirmation,
-  } = useTripInbox(tripId);
+  const { inbox, inboxLoading, items, itemsLoading, slotItem, dismissItem, pasteConfirmation } =
+    useTripInbox(tripId);
 
   const [pasteText, setPasteText] = useState('');
   const [pasteOpen, setPasteOpen] = useState(false);
@@ -51,10 +44,7 @@ export function TripBookingInbox({ tripId }: Props) {
   // Empty state — no forwarded/pasted items yet.
   if (!inboxLoading && !inbox && parsedItems.length === 0 && failedItems.length === 0) {
     return (
-      <section
-        aria-label={t('trips.inbox.label', 'Booking inbox')}
-        className="border border-border bg-background p-4 mb-4"
-      >
+      <section aria-label={t('trips.inbox.label', 'Booking inbox')} className="bg-muted p-4 mb-4">
         <div className="flex items-start gap-4">
           <Inbox className="h-5 w-5 mt-0.5 text-muted-foreground" aria-hidden />
           <div className="flex-1">
@@ -63,11 +53,7 @@ export function TripBookingInbox({ tripId }: Props) {
             </h3>
             <p className="text-sm text-muted-foreground mt-1">{forwardHint}</p>
             <div className="flex gap-2 mt-4 flex-wrap">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setPasteOpen((v) => !v)}
-              >
+              <Button size="sm" variant="outline" onClick={() => setPasteOpen((v) => !v)}>
                 {t('trips.inbox.cta.paste', 'Paste confirmation instead')}
               </Button>
             </div>
@@ -92,10 +78,7 @@ export function TripBookingInbox({ tripId }: Props) {
   }
 
   return (
-    <section
-      aria-label={t('trips.inbox.label', 'Booking inbox')}
-      className="border border-border bg-background p-4 mb-4"
-    >
+    <section aria-label={t('trips.inbox.label', 'Booking inbox')} className="bg-muted p-4 mb-4">
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
         <h3 className="text-sm font-bold uppercase tracking-wide flex items-center gap-2">
           <Inbox className="h-4 w-4" aria-hidden />
@@ -106,11 +89,7 @@ export function TripBookingInbox({ tripId }: Props) {
       <p className="text-sm text-muted-foreground mb-4">{forwardHint}</p>
 
       <div className="mb-4">
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={() => setPasteOpen((v) => !v)}
-        >
+        <Button size="sm" variant="ghost" onClick={() => setPasteOpen((v) => !v)}>
           <Mail className="h-3.5 w-3.5 mr-1" aria-hidden />
           {t('trips.inbox.cta.paste', 'Paste confirmation instead')}
         </Button>
@@ -148,7 +127,7 @@ export function TripBookingInbox({ tripId }: Props) {
             </li>
           ))}
           {failedItems.map((item) => (
-            <li key={item.id} className="text-sm border border-border p-4 bg-muted/20">
+            <li key={item.id} className="text-sm p-4 bg-muted/20">
               <div className="font-medium">{item.raw_subject ?? '(no subject)'}</div>
               <div className="text-xs text-muted-foreground">
                 {t('trips.inbox.parseFailed', 'Could not parse this email.')}
@@ -219,7 +198,7 @@ function InboxItemRow({
   const conf = item.parse_confidence == null ? null : Math.round(item.parse_confidence * 100);
 
   return (
-    <div className="border border-border p-4">
+    <div className="p-4 bg-muted">
       <div className="flex items-start justify-between gap-2 flex-wrap">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wide">
@@ -237,7 +216,8 @@ function InboxItemRow({
             {item.parsed_location && <span> · {item.parsed_location}</span>}
             {item.parsed_price != null && (
               <span>
-                {' '}· {item.parsed_price}
+                {' '}
+                · {item.parsed_price}
                 {item.parsed_currency ? ` ${item.parsed_currency}` : ''}
               </span>
             )}

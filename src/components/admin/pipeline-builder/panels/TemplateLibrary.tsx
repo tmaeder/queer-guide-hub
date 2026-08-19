@@ -221,7 +221,7 @@ export default function TemplateLibrary({
               </Select>
             </div>
 
-            <div className="flex-1 overflow-y-auto border border-border rounded-element">
+            <div className="flex-1 overflow-y-auto rounded-element bg-muted">
               {isLoading && <AdminTextSkeleton lines={2} />}
               {!isLoading && filtered.length === 0 && (
                 <div className="p-8 text-xs text-muted-foreground text-center">

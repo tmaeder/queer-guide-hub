@@ -96,7 +96,7 @@ export default function AdminLiveness() {
           {(reviewQueue.data ?? []).map((r) => (
             <div
               key={r.audit_id}
-              className="flex items-center justify-between gap-4 rounded-element border p-4"
+              className="flex items-center justify-between gap-4 rounded-element bg-muted p-4"
             >
               <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-2">
@@ -158,7 +158,7 @@ export default function AdminLiveness() {
           {(recentArchives.data ?? []).map((r) => (
             <div
               key={r.audit_id}
-              className="flex items-center justify-between gap-4 rounded-element border p-4"
+              className="flex items-center justify-between gap-4 rounded-element bg-muted p-4"
             >
               <div className="flex items-center gap-2">
                 <span className="font-medium">{r.label ?? r.entity_id.slice(0, 8)}</span>

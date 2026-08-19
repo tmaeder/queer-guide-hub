@@ -101,17 +101,18 @@ export function MediaToolbar(props: MediaToolbarProps) {
     setTagDraft('');
   };
 
-  const activeFilterCount = [
-    statusFilter !== 'all',
-    entityTypeFilter !== 'all',
-    formatFilter !== 'all',
-    sourceTypeFilter !== 'all',
-    accessFilter !== 'all',
-    brandCategoryFilter !== 'all',
-  ].filter(Boolean).length + tagFilter.length;
+  const activeFilterCount =
+    [
+      statusFilter !== 'all',
+      entityTypeFilter !== 'all',
+      formatFilter !== 'all',
+      sourceTypeFilter !== 'all',
+      accessFilter !== 'all',
+      brandCategoryFilter !== 'all',
+    ].filter(Boolean).length + tagFilter.length;
 
   return (
-    <div className="flex flex-col gap-4 p-4 border border-border">
+    <div className="flex flex-col gap-4 p-4 bg-muted">
       {/* Row 1: Search + view controls */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
@@ -128,7 +129,7 @@ export function MediaToolbar(props: MediaToolbarProps) {
         </div>
 
         <div className="flex gap-1 items-center">
-          <div className="flex border border-border">
+          <div className="flex bg-muted">
             <Button
               variant={viewMode === 'grid' ? 'default' : 'ghost'}
               size="sm"
@@ -232,26 +233,36 @@ export function MediaToolbar(props: MediaToolbarProps) {
           </SelectContent>
         </Select>
 
-        <Select value={accessFilter} onValueChange={(v) => onAccessFilterChange?.(v as AccessLevelFilter)}>
+        <Select
+          value={accessFilter}
+          onValueChange={(v) => onAccessFilterChange?.(v as AccessLevelFilter)}
+        >
           <SelectTrigger style={{ width: 120 }} className="text-13">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Access</SelectItem>
             {ACCESS_LEVELS.map((a) => (
-              <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>
+              <SelectItem key={a.value} value={a.value}>
+                {a.label}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
 
-        <Select value={brandCategoryFilter} onValueChange={(v) => onBrandCategoryFilterChange?.(v as BrandCategoryFilter)}>
+        <Select
+          value={brandCategoryFilter}
+          onValueChange={(v) => onBrandCategoryFilterChange?.(v as BrandCategoryFilter)}
+        >
           <SelectTrigger style={{ width: 130 }} className="text-13">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Categories</SelectItem>
             {BRAND_CATEGORIES.map((c) => (
-              <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+              <SelectItem key={c.value} value={c.value}>
+                {c.label}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -322,7 +333,10 @@ export function MediaToolbar(props: MediaToolbarProps) {
           value={tagDraft}
           onChange={(e) => setTagDraft(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') { e.preventDefault(); addTag(); }
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              addTag();
+            }
           }}
           placeholder="Filter by tag slug…"
           style={{ width: 180, fontSize: '0.8125rem' }}

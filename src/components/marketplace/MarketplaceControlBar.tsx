@@ -326,10 +326,12 @@ export function MarketplaceControlBar({
 
         <div className="ml-auto flex shrink-0 flex-wrap items-center gap-2">
           <SavedSearchesButton />
-          {/* A native <select> restyled to chip DNA, following HistoryTimeline:
-              src/components/ui/select.tsx is still on pre-rebrand tokens
-              (bg-inverse-surface, ring-spot) and renders as a permanently
-              ink-filled chip, i.e. it reads as an active filter at all times. */}
+          {/* A native <select> restyled to chip DNA, following HistoryTimeline.
+              This used to say the Select primitive was stuck on pre-rebrand
+              tokens; it is not — `ui/select.tsx` moved to `border-input` +
+              `bg-muted` and no longer reads as a permanently-active chip. What
+              keeps the native control here is the chip DNA itself: this row is
+              chips, and the primitive is a field. */}
           <label className="sr-only" htmlFor="marketplace-sort">
             Sort listings
           </label>

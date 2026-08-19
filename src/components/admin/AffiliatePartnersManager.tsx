@@ -155,7 +155,7 @@ export function AffiliatePartnersManager({
   if (fetchError) {
     return (
       <div className={shell}>
-        <div className="rounded-element border bg-card p-8 text-center">
+        <div className="rounded-element bg-card shadow-soft p-8 text-center">
           <AlertCircle size={32} style={{ margin: '0 auto 12px' }} className="text-destructive" />
           <h6 className="text-lg font-medium mb-1">Failed to load affiliate partners</h6>
           <p className="text-muted-foreground mb-4">{fetchError}</p>
@@ -181,7 +181,7 @@ export function AffiliatePartnersManager({
       </div>
 
       {partners.length === 0 ? (
-        <div className="rounded-element border bg-card">
+        <div className="rounded-element bg-card shadow-soft">
           <AdminEmpty
             noun={organizationId ? 'affiliate partners for this business' : 'affiliate partners'}
             icon={Handshake}
@@ -190,7 +190,10 @@ export function AffiliatePartnersManager({
       ) : (
         <div className="flex flex-col gap-4">
           {partners.map((p) => (
-            <div key={p.id} className="rounded-element border bg-card p-6 flex items-center gap-4">
+            <div
+              key={p.id}
+              className="rounded-element bg-card shadow-soft p-6 flex items-center gap-4"
+            >
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-base font-semibold">{p.partner_name}</span>

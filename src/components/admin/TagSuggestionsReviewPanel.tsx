@@ -111,9 +111,7 @@ export function TagSuggestionsReviewPanel() {
         <CardTitle className="flex items-center gap-2 text-title">
           <Inbox size={16} />
           Tag enrichment review
-          <span className="text-13 font-normal text-muted-foreground">
-            {items.length} pending
-          </span>
+          <span className="text-13 font-normal text-muted-foreground">{items.length} pending</span>
           <Button
             size="sm"
             variant="outline"
@@ -145,7 +143,7 @@ export function TagSuggestionsReviewPanel() {
           items.map((s) => (
             <div
               key={s.id}
-              className="flex flex-col gap-2 rounded-element border bg-muted/40 p-4 md:flex-row md:items-start md:justify-between"
+              className="flex flex-col gap-2 rounded-element bg-muted/40 p-4 md:flex-row md:items-start md:justify-between"
             >
               <div className="min-w-0 flex-1">
                 <div className="mb-1 flex flex-wrap items-center gap-2">
@@ -163,7 +161,11 @@ export function TagSuggestionsReviewPanel() {
                 </p>
               </div>
               <div className="flex shrink-0 gap-2">
-                <Button size="sm" onClick={() => setStatus(s.id, 'approved')} disabled={busy === s.id}>
+                <Button
+                  size="sm"
+                  onClick={() => setStatus(s.id, 'approved')}
+                  disabled={busy === s.id}
+                >
                   Approve
                 </Button>
                 <Button

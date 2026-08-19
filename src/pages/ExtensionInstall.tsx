@@ -4,15 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import {
-  CheckCircle2,
-  Download,
-  Puzzle,
-  Wand2,
-  ShieldCheck,
-  Bug,
-  Link2,
-} from 'lucide-react';
+import { CheckCircle2, Download, Puzzle, Wand2, ShieldCheck, Bug, Link2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { supabase } from '@/integrations/supabase/client';
@@ -190,7 +182,7 @@ function ConnectCard({
           {t('extension.connect.installed', 'is installed in this browser.')}
         </p>
         {status === 'connected' ? (
-          <div className="bg-muted border border-border p-4">
+          <div className="bg-muted p-4">
             <p className="font-medium">{t('extension.connect.done.title', 'Connected.')}</p>
             <p className="text-muted-foreground">
               {t(

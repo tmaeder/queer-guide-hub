@@ -65,7 +65,16 @@ export function PronounCombobox({ value, onValueChange, id, disabled }: PronounC
             aria-expanded={open}
             disabled={disabled}
             className={cn(
-              'h-10 w-full justify-between rounded-element bg-inverse-surface text-background placeholder:text-background/70 px-4 py-2 font-normal transition-all hover:opacity-95',
+              // No fill override: `variant="outline"` already renders the
+              // system's form-control treatment (border-input on card). The
+              // PASTE-UP inverted plate that used to be pasted over it
+              // (`bg-inverse-surface` + `text-background`) had the same coupled
+              // halves input.tsx documents — and here the empty state, which is
+              // this control's DEFAULT, replaced only the text with
+              // `text-muted-foreground` and left it on the ink fill: measured
+              // 2.50:1 in light and 2.15:1 in dark, both failing WCAG 1.4.3.
+              // On the outline variant the same placeholder is 7.21:1 / 7.02:1.
+              'h-10 w-full justify-between rounded-element px-4 py-2 font-normal',
               value.length === 0 && 'text-muted-foreground',
             )}
           >

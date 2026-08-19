@@ -128,7 +128,13 @@ for (const route of ROUTES) {
       // "Every single works at 390px with the same modules in the same order,
       // stacked. No mobile-only cuts." A `hidden lg:block` rail would drop
       // the map, the facts and the provenance line on a phone.
-      await expect(page.locator('article aside')).toBeVisible();
+      // By testid, not `article aside`: the rail is not the only <aside> in
+      // the article. A signed-in visitor whose trip covers this destination
+      // also gets TripCoveringBanner, and the e2e account accumulates exactly
+      // such a trip every time trip-creation.spec.ts runs — so this assertion
+      // became a strict-mode violation ("resolved to 2 elements") on
+      // /city/berlin for every authenticated run, on every branch.
+      await expect(page.getByTestId('single-rail')).toBeVisible();
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
       );

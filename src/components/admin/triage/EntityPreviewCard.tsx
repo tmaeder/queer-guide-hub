@@ -26,10 +26,25 @@ interface EntityPreviewCardProps {
 
 /** Keys not worth showing in the fallback — already in detail header or internal */
 const HIDDEN_KEYS = new Set([
-  'id', 'entity_id', 'entity_table', 'queue_type', 'content_type',
-  'title', 'subtitle', 'status', 'confidence_score', 'created_at',
-  'updated_at', 'has_diff', 'reporter_id', 'source', 'meta',
-  'normalized_data', 'raw_data', 'source_data', 'priority_score',
+  'id',
+  'entity_id',
+  'entity_table',
+  'queue_type',
+  'content_type',
+  'title',
+  'subtitle',
+  'status',
+  'confidence_score',
+  'created_at',
+  'updated_at',
+  'has_diff',
+  'reporter_id',
+  'source',
+  'meta',
+  'normalized_data',
+  'raw_data',
+  'source_data',
+  'priority_score',
 ]);
 
 function formatFieldValue(value: unknown): string {
@@ -58,12 +73,10 @@ function FallbackPreview({ item }: { item: TriageItem }) {
 
   return (
     <div className="p-4 space-y-4">
-      {item.subtitle && (
-        <p className="text-xs text-muted-foreground">{item.subtitle}</p>
-      )}
+      {item.subtitle && <p className="text-xs text-muted-foreground">{item.subtitle}</p>}
 
       {metaFields.length > 0 && (
-        <div className="divide-y border">
+        <div className="divide-y bg-muted">
           {metaFields.map(([key, value]) => (
             <div key={key} className="flex gap-4 px-4 py-2 text-xs">
               <span className="text-muted-foreground shrink-0 w-28 text-2xs uppercase tracking-wider">
@@ -75,9 +88,7 @@ function FallbackPreview({ item }: { item: TriageItem }) {
         </div>
       )}
 
-      {metaFields.length === 0 && !item.subtitle && (
-        <AdminEmpty noun="preview data" />
-      )}
+      {metaFields.length === 0 && !item.subtitle && <AdminEmpty noun="preview data" />}
     </div>
   );
 }

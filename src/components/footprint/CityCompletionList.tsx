@@ -16,12 +16,13 @@ export function CityCompletionList({ rows }: { rows: CityCompletionRow[] }) {
   return (
     <div className="space-y-4" data-testid="footprint-city-completion">
       {qualifying.map((r) => {
-        const pct = r.total_venues > 0 ? Math.min(100, Math.round((r.visited / r.total_venues) * 100)) : 0;
+        const pct =
+          r.total_venues > 0 ? Math.min(100, Math.round((r.visited / r.total_venues) * 100)) : 0;
         const href = `/trips?cityId=${encodeURIComponent(r.city_id)}&cityName=${encodeURIComponent(
           r.city_name,
         )}`;
         return (
-          <div key={r.city_id} className="border border-border p-4">
+          <div key={r.city_id} className="p-4 bg-muted">
             <div className="flex items-baseline justify-between gap-2 flex-wrap">
               {r.city_slug ? (
                 <LocalizedLink to={`/places/${r.city_slug}`} className="font-medium">

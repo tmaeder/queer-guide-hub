@@ -136,7 +136,10 @@ export function SEOPanel({ metadata, onUpdate }: SEOPanelProps) {
           <Search size={14} className="text-muted-foreground" />
           <span className="text-xs font-semibold text-muted-foreground">Google Preview</span>
         </div>
-        <div className={cn('rounded-element border border-border p-4 bg-white')}>
+        {/* A facsimile of a Google result, not a surface of this design system:
+            the white page and Arial are the point. Its frame is the edge of the
+            simulated artifact, so the de-caging rule does not apply here. */}
+        <div className={cn('rounded-element border border-border bg-white p-4')}>
           {/* Title line */}
           <p
             className="text-base font-medium leading-snug overflow-hidden text-ellipsis whitespace-nowrap text-muted-foreground"

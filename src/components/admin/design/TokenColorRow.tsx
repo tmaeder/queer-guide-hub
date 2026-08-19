@@ -6,21 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { contrastVerdict, hslChannelsToCss, parseHslChannels } from '@/lib/wcagContrast';
-import {
-  CONTRAST_PAIRS,
-  resolveColor,
-  type BrandingDoc,
-  type ColorTokenDef,
-} from './tokenCatalog';
+import { CONTRAST_PAIRS, resolveColor, type BrandingDoc, type ColorTokenDef } from './tokenCatalog';
 import type { DesignSettingsController } from './useDesignSettings';
 
-function ChannelEditor({
-  value,
-  onChange,
-}: {
-  value: string;
-  onChange: (next: string) => void;
-}) {
+function ChannelEditor({ value, onChange }: { value: string; onChange: (next: string) => void }) {
   const parsed = parseHslChannels(value) ?? [0, 0, 0];
   const update = (idx: 0 | 1 | 2, raw: string) => {
     const n = Number(raw);
@@ -32,14 +21,16 @@ function ChannelEditor({
   return (
     <div className="space-y-2">
       <div
-        className="h-16 w-full rounded-element border"
+        className="h-16 w-full rounded-element bg-muted"
         style={{ backgroundColor: hslChannelsToCss(value) }}
         aria-hidden
       />
       <div className="grid grid-cols-3 gap-2">
         {(['H', 'S %', 'L %'] as const).map((label, idx) => (
           <div key={label}>
-            <Label className="text-2xs uppercase tracking-wide text-muted-foreground">{label}</Label>
+            <Label className="text-2xs uppercase tracking-wide text-muted-foreground">
+              {label}
+            </Label>
             <Input
               type="number"
               step="0.1"
@@ -82,7 +73,9 @@ function ModeSwatch({
       </PopoverTrigger>
       <PopoverContent className="w-72" align="start">
         <div className="mb-2 flex items-center justify-between">
-          <span className="font-mono text-13">--{token.key} · {mode}</span>
+          <span className="font-mono text-13">
+            --{token.key} · {mode}
+          </span>
           {overridden && (
             <Button
               variant="ghost"
@@ -124,7 +117,10 @@ export function TokenColorRow({
     if (!pair) return null;
     return (['light', 'dark'] as const).map((mode) => ({
       mode,
-      verdict: contrastVerdict(resolveColor(draft, pair.fg, mode), resolveColor(draft, pair.bg, mode)),
+      verdict: contrastVerdict(
+        resolveColor(draft, pair.fg, mode),
+        resolveColor(draft, pair.bg, mode),
+      ),
     }));
   }, [pair, draft]);
 

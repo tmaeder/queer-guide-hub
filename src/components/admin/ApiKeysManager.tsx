@@ -374,7 +374,7 @@ export const ApiKeysManager = () => {
                   {requiredKeys.map((rk) => (
                     <div
                       key={rk.key_name}
-                      className="flex items-center justify-between p-4 rounded-element border"
+                      className="flex items-center justify-between p-4 rounded-element bg-muted"
                       style={{
                         borderColor:
                           rk.status === 'configured'
@@ -452,7 +452,7 @@ export const ApiKeysManager = () => {
                   {keys.map((key) => (
                     <div
                       key={key.id}
-                      className="flex items-center justify-between p-4 rounded-element border border-border"
+                      className="flex items-center justify-between p-4 rounded-element bg-muted"
                     >
                       <div className="flex items-center gap-4">
                         <Key

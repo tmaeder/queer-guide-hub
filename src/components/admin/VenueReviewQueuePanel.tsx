@@ -86,7 +86,7 @@ function CategoryRow({ c }: { c: VenueReviewCandidate }) {
   const busy = decide.isPending;
 
   return (
-    <li className="grid gap-4 border-b border-foreground/10 py-4 last:border-b-0 md:grid-cols-[1fr_auto] md:items-start">
+    <li className="grid gap-4 border-b border-border-hairline py-4 last:border-b-0 md:grid-cols-[1fr_auto] md:items-start">
       <Evidence c={c} />
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-13 font-bold tabular-nums">
@@ -138,7 +138,7 @@ function NonvenueRow({ c }: { c: VenueReviewCandidate }) {
   const busy = decide.isPending;
 
   return (
-    <li className="grid gap-4 border-b border-foreground/10 py-4 last:border-b-0 md:grid-cols-[1fr_auto] md:items-start">
+    <li className="grid gap-4 border-b border-border-hairline py-4 last:border-b-0 md:grid-cols-[1fr_auto] md:items-start">
       <Evidence c={c} />
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-13 text-muted-foreground">

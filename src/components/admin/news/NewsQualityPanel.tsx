@@ -27,7 +27,7 @@ export function NewsQualityPanel() {
   ].sort((a, b) => b.missing - a.missing);
 
   return (
-    <div className="border border-border rounded-element bg-background overflow-hidden">
+    <div className="rounded-element bg-muted overflow-hidden">
       <div className="px-4 py-2 border-b border-border text-xs font-semibold text-muted-foreground flex items-center gap-2 flex-wrap">
         <ShieldCheck className="h-3.5 w-3.5" />
         News content quality

@@ -99,7 +99,8 @@ export function MilestoneLinksPanel({ milestoneId }: { milestoneId: string }) {
       setRole('');
       qc.invalidateQueries({ queryKey: ['milestone-links', milestoneId] });
     },
-    onError: (e: Error) => toast({ title: 'Link failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) =>
+      toast({ title: 'Link failed', description: e.message, variant: 'destructive' }),
   });
 
   const removeLink = useMutation({
@@ -108,7 +109,8 @@ export function MilestoneLinksPanel({ milestoneId }: { milestoneId: string }) {
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['milestone-links', milestoneId] }),
-    onError: (e: Error) => toast({ title: 'Unlink failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) =>
+      toast({ title: 'Unlink failed', description: e.message, variant: 'destructive' }),
   });
 
   const nameCol = ENTITY_TABLES[type].nameCol;
@@ -134,11 +136,13 @@ export function MilestoneLinksPanel({ milestoneId }: { milestoneId: string }) {
           </li>
         ))}
         {!links?.length && (
-          <li><AdminEmpty variant="inline" noun="linked entities" className="italic" /></li>
+          <li>
+            <AdminEmpty variant="inline" noun="linked entities" className="italic" />
+          </li>
         )}
       </ul>
 
-      <div className="flex flex-col gap-2 rounded-element border border-border p-2">
+      <div className="flex flex-col gap-2 rounded-element bg-muted p-2">
         <div className="flex items-center gap-2">
           <Select value={type} onValueChange={(v) => setType(v as LinkEntityType)}>
             <SelectTrigger className="w-40">

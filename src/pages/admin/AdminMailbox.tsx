@@ -204,9 +204,7 @@ export default function AdminMailbox() {
               // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- role/tabIndex/keydown make the row a button only when unread.
               <li
                 key={m.id}
-                className={
-                  'rounded-element border border-border p-2 ' + (isUnread ? 'bg-muted' : '')
-                }
+                className={'rounded-element p-2 ' + (isUnread ? 'bg-muted' : 'bg-card shadow-soft')}
                 role={isUnread ? 'button' : undefined}
                 tabIndex={isUnread ? 0 : undefined}
                 onClick={isUnread ? () => markRead.mutate(m.id) : undefined}

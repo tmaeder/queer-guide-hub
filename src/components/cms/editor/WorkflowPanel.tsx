@@ -7,7 +7,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import {Clock, Eye, EyeOff, Lock, Globe, CalendarClock } from 'lucide-react';
+import { Clock, Eye, EyeOff, Lock, Globe, CalendarClock } from 'lucide-react';
 import { useCMSWorkflow } from '@/hooks/useCMSWorkflow';
 import { loadCMSContentMetadata, upsertCMSContentMetadata } from '@/hooks/useCMSContentMetadata';
 import { getStateColor, getStateLabel } from '@/config/workflowConfig';
@@ -84,12 +84,7 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
     async (trans: WorkflowTransition, comment?: string) => {
       if (!itemId || !config) return;
 
-      const success = await transition(
-        config.tableName,
-        itemId,
-        trans.to,
-        comment,
-      );
+      const success = await transition(config.tableName, itemId, trans.to, comment);
 
       if (success) {
         setCurrentState(trans.to);
@@ -217,7 +212,7 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
       {commentTarget && (
         <>
           <hr className="border-border" />
-          <div className="rounded-element p-4 bg-muted border border-border">
+          <div className="rounded-element p-4 bg-muted">
             <p className="text-sm font-semibold mb-1">{commentTarget.label}</p>
             {commentTarget.description && (
               <p className="text-xs text-muted-foreground block mb-1.5">

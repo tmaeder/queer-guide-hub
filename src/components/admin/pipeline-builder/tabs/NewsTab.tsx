@@ -24,7 +24,7 @@ function StatBlock({
           ? 'text-destructive'
           : 'text-foreground';
   return (
-    <div className="border border-border rounded-element bg-background p-4">
+    <div className="rounded-element bg-muted p-4">
       <div className={`text-2xl font-bold tabular-nums ${colorClass}`}>
         {value.toLocaleString()}
       </div>
@@ -104,7 +104,7 @@ export default function NewsTab() {
       <NewsQualityPanel />
 
       {/* Staging stats */}
-      <div className="border border-border rounded-element bg-background overflow-hidden">
+      <div className="rounded-element bg-muted overflow-hidden">
         <div className="px-4 py-2 border-b border-border text-xs font-semibold text-muted-foreground flex items-center gap-2">
           <Newspaper className="h-3.5 w-3.5" />
           News staging (disposition)
@@ -121,7 +121,7 @@ export default function NewsTab() {
       </div>
 
       {/* Dedup audit */}
-      <div className="border border-border rounded-element bg-background overflow-hidden">
+      <div className="rounded-element bg-muted overflow-hidden">
         <div className="px-4 py-2 border-b border-border text-xs font-semibold text-muted-foreground flex items-center gap-2">
           <GitMerge className="h-3.5 w-3.5" />
           Dedup decisions
@@ -158,7 +158,7 @@ export default function NewsTab() {
       </div>
 
       {/* Sources */}
-      <div className="border border-border rounded-element bg-background overflow-hidden">
+      <div className="rounded-element bg-muted overflow-hidden">
         <div className="px-4 py-2 border-b border-border text-xs font-semibold text-muted-foreground flex items-center gap-2 flex-wrap">
           <AlertCircle className="h-3.5 w-3.5" />
           News sources

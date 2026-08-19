@@ -6,12 +6,8 @@
 
 import { useState, useEffect } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { ChevronDown, FileText, Clock} from 'lucide-react';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+import { ChevronDown, FileText, Clock } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
 import { WorkflowPanel } from './WorkflowPanel';
 import { SEOPanel } from './SEOPanel';
@@ -50,7 +46,7 @@ interface PanelProps {
 function Panel({ title, open, onOpenChange, badge, children }: PanelProps) {
   return (
     <Collapsible open={open} onOpenChange={onOpenChange}>
-      <div className="border border-border rounded-element overflow-hidden">
+      <div className="rounded-element bg-muted overflow-hidden">
         <CollapsibleTrigger asChild>
           <button
             type="button"
@@ -64,9 +60,7 @@ function Panel({ title, open, onOpenChange, badge, children }: PanelProps) {
                 </Badge>
               )}
             </div>
-            <ChevronDown
-              className={cn('transition-transform', open && 'rotate-180')} size={18}
-            />
+            <ChevronDown className={cn('transition-transform', open && 'rotate-180')} size={18} />
           </button>
         </CollapsibleTrigger>
         <CollapsibleContent>
@@ -102,17 +96,10 @@ export function EditorSidebar({
   });
 
   // Revisions hook
-  const {
-    revisions,
-    loading: revisionsLoading,
-    loadRevisions,
-  } = useCMSRevisions();
+  const { revisions, loading: revisionsLoading, loadRevisions } = useCMSRevisions();
 
   // Media hook
-  const {
-    loading: mediaLoading,
-    getAttachments,
-  } = useCMSMedia();
+  const { loading: mediaLoading, getAttachments } = useCMSMedia();
 
   const [attachments, setAttachments] = useState<CMSMediaAttachment[]>([]);
 
@@ -201,10 +188,7 @@ export function EditorSidebar({
         ) : (
           <div className="flex flex-col gap-2">
             {attachments.map((att) => (
-              <div
-                key={att.id}
-                className="flex items-center gap-2 p-2 rounded-element bg-muted/40 border border-border"
-              >
+              <div key={att.id} className="flex items-center gap-2 p-2 rounded-element bg-muted/40">
                 {att.media?.mime_type?.startsWith('image/') ? (
                   <img
                     src={att.media.storage_path}

@@ -11,7 +11,7 @@ import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker';
 import { useGlobalPresence } from '@/hooks/useConversationPresence';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { lazyOptional } from '@/utils/lazyRetry';
-import { isMapRoute, isAdminRoute } from '@/lib/locale';
+import { isMapRoute, isAdminRoute, isCompactFooterRoute } from '@/lib/locale';
 
 // Peripheral chrome — banners and the feedback FAB. None of these are
 // above-the-fold or interaction-critical on first paint, so defer their
@@ -59,6 +59,9 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
   // Match /map and /:locale/map (locale prefix is optional in the router).
   const isFullBleedMap = isMapRoute(pathname);
   const isAdmin = isAdminRoute(pathname);
+  // Panel 09: single-purpose flows and account screens get the one-line paper
+  // footer instead of the full ink plate. See isCompactFooterRoute.
+  const footerVariant = isCompactFooterRoute(pathname) ? 'compact' : 'full';
   // Broadcast the current user's global presence (only if they opted into the
   // global dot) so inbox/discovery surfaces can show "active now".
   useGlobalPresence();
@@ -140,7 +143,7 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
       {!isFullBleedMap && !isAdmin && (
         <div className="relative z-10 pb-24 md:pb-0">
           <ErrorBoundary section="footer" fallback={null}>
-            <Footer />
+            <Footer variant={footerVariant} />
           </ErrorBoundary>
         </div>
       )}

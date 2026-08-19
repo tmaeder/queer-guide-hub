@@ -23,8 +23,7 @@ interface SectionRow {
 /** Relation editor for guide_sections — prose/callout blocks interleaved with picks. */
 export function GuideSectionsPanel({ guideId }: { guideId: string }) {
   const qc = useQueryClient();
-  const invalidate = () =>
-    qc.invalidateQueries({ queryKey: ['admin-guide-sections', guideId] });
+  const invalidate = () => qc.invalidateQueries({ queryKey: ['admin-guide-sections', guideId] });
 
   const { data: sections } = useQuery({
     queryKey: ['admin-guide-sections', guideId],
@@ -84,7 +83,7 @@ export function GuideSectionsPanel({ guideId }: { guideId: string }) {
     <div className="flex flex-col gap-4">
       <ul className="flex flex-col gap-4">
         {(sections ?? []).map((s, idx) => (
-          <li key={s.id} className="rounded-element border border-border p-4 flex flex-col gap-2">
+          <li key={s.id} className="rounded-element bg-muted p-4 flex flex-col gap-2">
             <div className="flex items-center gap-2">
               <Select
                 value={s.kind}
@@ -129,7 +128,9 @@ export function GuideSectionsPanel({ guideId }: { guideId: string }) {
           </li>
         ))}
         {!sections?.length && (
-          <li><AdminEmpty variant="inline" noun="sections" className="italic" /></li>
+          <li>
+            <AdminEmpty variant="inline" noun="sections" className="italic" />
+          </li>
         )}
       </ul>
       <Button variant="outline" size="sm" onClick={() => addSection.mutate()}>

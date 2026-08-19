@@ -9,7 +9,14 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { contrastVerdict, hslChannelsToCss, parseHslChannels } from '@/lib/wcagContrast';
@@ -18,7 +25,8 @@ import { TokenSpecimen } from './TokenPreviewPanel';
 import type { DesignSettingsController } from './useDesignSettings';
 
 function ValueCell({ path, value }: { path: string; value: string | undefined }) {
-  const isColor = path.startsWith('tokens.') && value !== undefined && parseHslChannels(value) !== null;
+  const isColor =
+    path.startsWith('tokens.') && value !== undefined && parseHslChannels(value) !== null;
   return (
     <span className="inline-flex items-center gap-2">
       {isColor && (
@@ -28,7 +36,9 @@ function ValueCell({ path, value }: { path: string; value: string | undefined })
           aria-hidden
         />
       )}
-      <span className="font-mono text-13">{value ?? <span className="text-muted-foreground">default</span>}</span>
+      <span className="font-mono text-13">
+        {value ?? <span className="text-muted-foreground">default</span>}
+      </span>
     </span>
   );
 }
@@ -70,7 +80,9 @@ export function PublishDiffDialog({
       .map((p) => ({ path: p, from: published[p], to: draft[p] }));
   }, [controller.row, controller.draft]);
 
-  const tokensChanged = changes.some((c) => c.path.startsWith('tokens.') || c.path.startsWith('fonts.'));
+  const tokensChanged = changes.some(
+    (c) => c.path.startsWith('tokens.') || c.path.startsWith('fonts.'),
+  );
 
   const publish = async () => {
     await controller.publish.mutateAsync(note);
@@ -96,7 +108,7 @@ export function PublishDiffDialog({
           </div>
         )}
         {changes.length > 0 && (
-          <div className="max-h-80 overflow-y-auto rounded-element border">
+          <div className="max-h-80 overflow-y-auto rounded-element bg-muted">
             <Table>
               <TableHeader>
                 <TableRow>

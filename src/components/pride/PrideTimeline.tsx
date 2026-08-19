@@ -138,7 +138,7 @@ export function PrideTimeline({
                 key={m}
                 data-month={i}
                 className={cn(
-                  'relative border-r border-foreground/10 last:border-r-0',
+                  'relative border-r border-border-hairline last:border-r-0',
                   i % 2 === 1 && 'bg-muted/30',
                 )}
               >

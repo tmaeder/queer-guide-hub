@@ -88,7 +88,7 @@ export function CityOverviewTab({ city }: CityOverviewTabProps) {
             {costOfLiving.map(([key, value]) => (
               <div
                 key={key}
-                className="flex flex-wrap items-baseline justify-between gap-4 border-b border-foreground/15 px-4 py-2 last:border-b-0"
+                className="flex flex-wrap items-baseline justify-between gap-4 border-b border-border-hairline px-4 py-2 last:border-b-0"
               >
                 <dt className="text-13 capitalize text-muted-foreground">
                   {key.replace(/_/g, ' ')}

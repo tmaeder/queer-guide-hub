@@ -329,7 +329,7 @@ export function CMSEditorLayout({
       <div className="flex-1 overflow-hidden flex flex-col lg:flex-row">
         {/* ── Main Column ─────────────────────────────────── */}
         <div className="flex-1 overflow-auto lg:w-[70%] lg:max-w-[70%]">
-          <div className="border border-border rounded-element bg-background m-4 mb-1 lg:mb-4 overflow-hidden">
+          <div className="rounded-element bg-muted m-4 mb-1 lg:mb-4 overflow-hidden">
             {/* Group tabs */}
             <Tabs value={state.activeGroup} onValueChange={(v) => setActiveGroup(v as FieldGroup)}>
               <TabsList className="border-b border-border min-h-12 bg-background w-full justify-start overflow-x-auto">
