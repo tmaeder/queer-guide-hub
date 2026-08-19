@@ -5,18 +5,21 @@
 // sharp, which was never installed here — so the previous version of this
 // script could not run at all, which is how the icons drifted from the mark.
 //
-// The mark's geometry below is a copy of src/components/brand/MasterSymbol.tsx
-// and the OG wordmark mirrors src/components/brand/Wordmark.tsx (neither can be
-// imported here — they are TSX). src/components/brand/__tests__/
-// brandAssetSync.test.ts pins both copies to their components, including that
-// neither carries colour: the mark is ink-only in every rendition.
+// The OG wordmark mirrors src/components/brand/Wordmark.tsx (which cannot be
+// imported here — it is TSX). src/components/brand/__tests__/
+// brandAssetSync.test.ts pins the copy to its component, including that it
+// carries no colour.
+//
+// The OG image is the WORDMARK ALONE. It used to stack the "Cupid's transit"
+// master symbol above it; the design project's brand rules retire that mark and
+// state the logo "carries no symbol, no container and no colour", so at
+// 1200x630 the wordmark simply sits on its own with room to spare.
 import { readFile, writeFile, rm } from 'node:fs/promises';
 import { chromium } from 'playwright';
 
 const CWD = process.cwd();
 const PAPER = '#FAFAF5';
 
-const MASTER_SYMBOL = `<svg viewBox="0 24 354 190" width="480"><g fill="none" stroke="#111" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"><path d="M 18 112 C 40 88 62 130 84 106 C 94 94 104 106 114 106"/><path d="M 96 90 L 120 106 L 96 122"/><path d="M 180 158 C 152 136 132 116 132 96 C 132 79 145 68 159 68 C 172 68 180 78 180 89 C 180 78 188 68 201 68 C 215 68 228 79 228 96 C 228 116 208 136 180 158 Z"/><path d="M 219.8 75.6 L 248 41 M 248 41 L 226 41 M 248 41 L 248 63"/><path d="M 180 158 L 180 196 M 165 180 L 195 180"/><path d="M 225.7 108 C 250 80 266 132 288 104 C 296 94 306 90 318 93 L 336 89 M 336 89 L 312 75 M 336 89 L 310 105"/></g></svg>`;
 
 const browser = await chromium.launch();
 
@@ -79,7 +82,6 @@ body { width:1200px; height:630px; color:#111;
   display:flex; flex-direction:column; align-items:center; justify-content:center; gap:24px; }
 .wm { font-family:Anton, sans-serif; font-size:110px; letter-spacing:-0.02em; line-height:1; }
 </style>
-${MASTER_SYMBOL}
 <div class="wm">queer.guide</div>`;
 // Served from a real file:// document, not setContent: an about:blank page
 // cannot load the self-hosted Anton woff2 and would silently fall back.

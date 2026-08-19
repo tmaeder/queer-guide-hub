@@ -6,7 +6,6 @@ import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { cn } from '@/lib/utils';
 import { INTENT_NAV, INTENT_TRACK, isIntentActive } from '@/config/navigation';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { MasterSymbol } from '@/components/brand/MasterSymbol';
 import { Wordmark } from '@/components/brand/Wordmark';
 import { TrackSwatch } from '@/components/transit/TrackSwatch';
 import { PAGE_GUTTER } from '@/components/layout/PageContainer';
@@ -131,8 +130,13 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
            full measure and costs no vertical space, because the mark and the
            tagline sit side by side rather than stacked. ─────────────── */}
       <div className={cn('mx-auto w-full max-w-page pt-8', PAGE_GUTTER)}>
-        <div className="flex items-center gap-4">
-          <MasterSymbol className="w-20 shrink-0 text-background" />
+        {/* Wordmark + tagline. The "Cupid's transit" mark that used to lead
+            this row is retired: the logo is the wordmark alone (Brand
+            Guidelines §03), and §03's clear-space rule — "Nothing sits inside
+            it — no line, no station dot, no badge" — is why the tagline sits
+            beside it rather than tucked against it. */}
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+          <Wordmark className="text-headline text-background" />
           <p className="text-15 font-bold leading-snug">
             {t('footer.tagline', 'Every track. Every station. Everyone.')}
           </p>

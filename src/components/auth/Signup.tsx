@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Eye, EyeOff, Heart} from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
+import { Wordmark } from '@/components/brand/Wordmark';
 import { Trans, useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { useTurnstile } from '@/hooks/useTurnstile';
@@ -29,7 +30,12 @@ export default function Signup({ onBack }: Props) {
   const { t, i18n } = useTranslation();
   const { signUp } = useAuth();
   const { emit, reset: resetFunnel } = useSignupFunnel();
-  const { token: captchaToken, widget: captcha, reset: resetCaptcha, required: captchaRequired } = useTurnstile();
+  const {
+    token: captchaToken,
+    widget: captcha,
+    reset: resetCaptcha,
+    required: captchaRequired,
+  } = useTurnstile();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -41,7 +47,9 @@ export default function Signup({ onBack }: Props) {
   const [verificationEmail, setVerificationEmail] = useState<string | null>(null);
   const [step, setStep] = useState<'form' | 'username'>('form');
   const [pendingUsername, setPendingUsername] = useState<string | null>(null);
-  const [pendingAvatar, setPendingAvatar] = useState<AvatarConfig | null>(() => generateRandomConfig());
+  const [pendingAvatar, setPendingAvatar] = useState<AvatarConfig | null>(() =>
+    generateRandomConfig(),
+  );
 
   useEffect(() => {
     emit('signup_landing_view');
@@ -54,11 +62,17 @@ export default function Signup({ onBack }: Props) {
       return t('auth.errors.emailInvalid', 'Please enter a valid email address');
     if (!password) return t('auth.errors.passwordRequired', 'Password is required');
     if (password.length < MIN_PASSWORD_LEN)
-      return t('auth.errors.passwordTooShort', { defaultValue: 'Password must be at least {{n}} characters', n: MIN_PASSWORD_LEN });
+      return t('auth.errors.passwordTooShort', {
+        defaultValue: 'Password must be at least {{n}} characters',
+        n: MIN_PASSWORD_LEN,
+      });
     if (passwordScore < 2)
       return t('auth.errors.passwordTooWeak', 'Please choose a stronger password');
     if (!consent)
-      return t('auth.errors.consentRequired', 'Please accept the terms, privacy policy, and confirm you are 18+');
+      return t(
+        'auth.errors.consentRequired',
+        'Please accept the terms, privacy policy, and confirm you are 18+',
+      );
     return null;
   };
 
@@ -82,23 +96,31 @@ export default function Signup({ onBack }: Props) {
     setIsLoading(true);
     setError(null);
     const now = new Date().toISOString();
-    const { error: signUpError } = await signUp(email, password, {
-      display_name: email.split('@')[0],
-      username,
-      avatar_config: avatar,
-      preferred_language: i18n.language,
-      terms_accepted_at: now,
-      privacy_accepted_at: now,
-      age_confirmed_at: now,
-    }, captchaToken ?? undefined);
+    const { error: signUpError } = await signUp(
+      email,
+      password,
+      {
+        display_name: email.split('@')[0],
+        username,
+        avatar_config: avatar,
+        preferred_language: i18n.language,
+        terms_accepted_at: now,
+        privacy_accepted_at: now,
+        age_confirmed_at: now,
+      },
+      captchaToken ?? undefined,
+    );
     setIsLoading(false);
     if (signUpError) {
       // Turnstile tokens are single-use — refresh for the next attempt.
       resetCaptcha();
-      const msg = signUpError instanceof Error
-        ? signUpError.message
-        : (signUpError as { message?: string })?.message ?? '';
-      setError(msg || t('auth.errors.unexpected', 'An unexpected error occurred. Please try again.'));
+      const msg =
+        signUpError instanceof Error
+          ? signUpError.message
+          : ((signUpError as { message?: string })?.message ?? '');
+      setError(
+        msg || t('auth.errors.unexpected', 'An unexpected error occurred. Please try again.'),
+      );
       setStep('form');
       return;
     }
@@ -132,16 +154,17 @@ export default function Signup({ onBack }: Props) {
           <AvatarQuickPick value={pendingAvatar} onChange={setPendingAvatar} />
           {captcha}
           <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              onClick={() => setStep('form')}
-              disabled={isLoading}
-            >
+            <Button variant="ghost" onClick={() => setStep('form')} disabled={isLoading}>
               Back
             </Button>
             <Button
               className="flex-1"
-              disabled={!pendingUsername || !pendingAvatar || isLoading || (captchaRequired && !captchaToken)}
+              disabled={
+                !pendingUsername ||
+                !pendingAvatar ||
+                isLoading ||
+                (captchaRequired && !captchaToken)
+              }
               onClick={() =>
                 pendingUsername && pendingAvatar && performSignup(pendingUsername, pendingAvatar)
               }
@@ -159,9 +182,9 @@ export default function Signup({ onBack }: Props) {
     <Card className="max-w-md mx-auto rounded-container">
       <CardHeader>
         <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-center gap-2">
-            <Heart className="w-8 h-8 fill-current text-foreground" />
-            <h5 className="text-xl font-bold tracking-tight">Queer Guide</h5>
+          {/* Wordmark alone — see Auth.tsx. */}
+          <div className="flex items-center justify-center">
+            <Wordmark className="text-title text-foreground" />
           </div>
           <CardTitle className="text-2xl md:text-3xl font-bold tracking-tight text-center text-balance">
             {t('auth.signup.title', 'Create your account')}
@@ -225,7 +248,11 @@ export default function Signup({ onBack }: Props) {
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowPassword((s) => !s)}
-                  aria-label={showPassword ? t('auth.hidePassword', 'Hide password') : t('auth.showPassword', 'Show password')}
+                  aria-label={
+                    showPassword
+                      ? t('auth.hidePassword', 'Hide password')
+                      : t('auth.showPassword', 'Show password')
+                  }
                   disabled={isLoading}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -243,7 +270,10 @@ export default function Signup({ onBack }: Props) {
                 id="signup-consent"
                 checked={consent}
                 onCheckedChange={(v) => setConsent(v === true)}
-                aria-label={t('auth.consent.combinedAria', 'Accept terms, privacy, confirm 18 or older, and acknowledge the 18+ dating platform')}
+                aria-label={t(
+                  'auth.consent.combinedAria',
+                  'Accept terms, privacy, confirm 18 or older, and acknowledge the 18+ dating platform',
+                )}
                 className="mt-0.5"
                 disabled={isLoading}
               />

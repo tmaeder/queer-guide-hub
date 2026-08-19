@@ -1,12 +1,34 @@
-<!-- App icon: the master symbol cropped to the heart + its two arms. Geometry
-     and stroke weight are the mark's own (see src/components/brand/MasterSymbol.tsx);
-     the viewBox is a square centred on that ink. Kept in sync by
-     src/components/brand/__tests__/brandAssetSync.test.ts. -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="93 22 194 194">
-  <rect x="93" y="22" width="194" height="194" fill="#FAFAF5"/>
-  <g fill="none" stroke="#111111" stroke-width="15" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M 180 158 C 152 136 132 116 132 96 C 132 79 145 68 159 68 C 172 68 180 78 180 89 C 180 78 188 68 201 68 C 215 68 228 79 228 96 C 228 116 208 136 180 158 Z"/>
-    <path d="M 219.8 75.6 L 248 41 M 248 41 L 226 41 M 248 41 L 248 63"/>
-    <path d="M 180 158 L 180 196 M 165 180 L 195 180"/>
+<!-- App icon: the "Rainbow" wayfinding icon — two concentric arcs, ink on paper.
+
+     It replaced the "Cupid's transit" master symbol on 2026-08-19. The design
+     project's brand rules retire that mark ("The logo is the wordmark alone …
+     It never takes color, gradients, a symbol or a container. The retired
+     'Cupid's transit' mark survives only on the Logo Options sheet as
+     history."), and a wordmark cannot be an app icon: at 16px "queer.guide" in
+     Anton is illegible.
+
+     Rainbow was chosen over the Icon System's "Route" glyph after rendering
+     both at 16 / 32 / 64 / 160px. Route's two station rings are radius 7 with a
+     stroke of 9–11, which leaves a 1.5–3.5 unit hole: they fill in solid at
+     every weight, so the glyph reads as a dumbbell and breaks the Icon System's
+     own rule that points of interest are open circles, never filled dots. It is
+     legible in a row of icons, where neighbours give it context; a browser tab
+     gives none. Rainbow has no such failure mode — its two arcs stay separated
+     down to 16px — and it is queer-specific rather than generic.
+
+     Geometry is NOT hand-copied: it is TRANSIT_ICON_PATHS.rainbow verbatim, and
+     brandAssetSync.test.ts pins the two together, so the icon set stays the
+     single source.
+
+     Stroke 9 is the design's weight at 32px and up ("bump the weight one step
+     below 32px"). One file serves the 16px browser tab and the 512px app icon;
+     9 is taken because this glyph's legibility risk is the two arcs MERGING,
+     which a heavier stroke makes worse — the opposite trade from a glyph whose
+     risk is thin strokes disappearing. The gap between the arcs is 16 units
+     against a 9 stroke, so they stay apart. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect x="0" y="0" width="100" height="100" fill="#FAFAF5"/>
+  <g fill="none" stroke="#111111" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 20 72 C 20 44 33 26 50 26 C 67 26 80 44 80 72 M 36 72 C 36 54 41 42 50 42 C 59 42 64 54 64 72"/>
   </g>
 </svg>

@@ -1,19 +1,28 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { TRANSIT_ICON_PATHS } from '@/components/transit/transitIconPaths';
 
 /**
- * The brand mark exists as THREE copies that must stay in sync:
+ * The brand renditions that must not drift apart.
  *
- *  - src/components/brand/MasterSymbol.tsx — what the app renders,
- *  - scripts/generate-brand-assets.mjs — the OG image (a node script; it
- *    cannot import the TSX component), and
- *  - public/favicon.svg — the app-icon crop, which is also the input every
- *    icon-*.png is resized from.
+ * Until 2026-08-19 this pinned three copies of the "Cupid's transit" master
+ * symbol — the component, the OG script and the favicon. That mark is retired:
+ * the design project's brand rules say the logo "carries no symbol, no
+ * container and no colour", and the mark "survives only on the Logo Options
+ * sheet as history".
  *
- * Editing one and not the others is exactly how the site ended up shipping a
- * mark whose favicon, OG image and header disagreed on stroke weight. This
- * pins them together and pins the two hard rules the mark itself encodes.
+ * What replaced it is not a redraw but a REUSE, so the pinning changes shape:
+ *
+ *  - the app icon (`public/favicon.svg`, the input every `icon-*.png` and the
+ *    .ico are resized from) is the Icon System's "Rainbow" glyph, and its path
+ *    must be `TRANSIT_ICON_PATHS.rainbow` verbatim — the icon set stays the
+ *    single source, so there is no second copy to drift.
+ *  - the OG image (`scripts/generate-brand-assets.mjs`) and the header/footer
+ *    lockup are the wordmark ALONE.
+ *
+ * The colour rule survives unchanged, and it is the one that has actually
+ * broken before: every rendition is ink-only.
  */
 
 const ROOT = path.resolve(__dirname, '../../../..');
@@ -33,33 +42,45 @@ function viewBox(src: string): string {
   return m[1];
 }
 
-const component = read('src/components/brand/MasterSymbol.tsx');
 const script = read('scripts/generate-brand-assets.mjs');
 const favicon = read('public/favicon.svg');
 const wordmark = read('src/components/brand/Wordmark.tsx');
 
 describe('brand asset sync', () => {
-  it('the OG script draws the same mark as the component', () => {
-    expect(paths(script).slice(0, 6)).toEqual(paths(component));
-    expect(strokeWidth(script)).toBe(strokeWidth(component));
-    expect(viewBox(script)).toBe(viewBox(component));
+  it('the app icon is the Rainbow icon from the set, not a redraw', () => {
+    expect(paths(favicon)).toEqual([TRANSIT_ICON_PATHS.rainbow.replace(/\s+/g, ' ').trim()]);
   });
 
-  it('the favicon is a crop of the same mark, not a redraw', () => {
-    const heartArm = paths(component).slice(2, 5); // heart + mars + venus
-    expect(paths(favicon)).toEqual(heartArm);
-    expect(strokeWidth(favicon)).toBe(strokeWidth(component));
-    // Square, so the icon pipeline's resize(size, size) cannot distort it.
+  it('the app icon stroke keeps the two arcs apart', () => {
+    // This glyph's failure mode at small sizes is the arcs MERGING, not thin
+    // strokes vanishing, so it takes the lighter weight. The gap between the
+    // arcs is 16 units; a stroke of 16 or more would close it.
+    const sw = Number(strokeWidth(favicon));
+    expect(sw).toBe(9);
+    expect(sw).toBeLessThan(16);
+  });
+
+  it('the app icon box is square, so the resize cannot distort it', () => {
     const [, , w, h] = viewBox(favicon).split(/\s+/).map(Number);
     expect(w).toBe(h);
+    // The icon set is authored in a 100-unit box; anything else means the
+    // favicon re-framed the glyph and the two will read differently.
+    expect(viewBox(favicon)).toBe('0 0 100 100');
+  });
+
+  it('the OG image is the wordmark alone — no symbol came back', () => {
+    // Brand Guidelines §03. The OG composition used to stack the master symbol
+    // above the wordmark; a <path> reappearing here is that regression.
+    expect(paths(script)).toEqual([]);
+    expect(script).not.toMatch(/MASTER_SYMBOL/);
   });
 
   it('the mark carries no colour, in any rendition', () => {
     // The wordmark used to nest a pink heart at the g's descender. It was
-    // removed on purpose — the mark is ink-only, like MasterSymbol — and these
-    // renditions have already drifted apart once, so pin it: a hue reappearing
-    // in ANY of them is the regression.
-    for (const src of [wordmark, component, script, favicon]) {
+    // removed on purpose — the mark is ink-only — and these renditions have
+    // already drifted apart once, so pin it: a hue reappearing in ANY of them
+    // is the regression.
+    for (const src of [wordmark, script, favicon]) {
       expect(src).not.toMatch(/track-pink|#FF1F8F/i);
     }
     // Paper and ink are the only literals the non-TSX copies may name.
@@ -68,29 +89,15 @@ describe('brand asset sync', () => {
         expect(hex.toUpperCase()).toMatch(/^#(FAFAF5|111|111111)$/);
       }
     }
-    // The heart was a <path>; the wordmark is now plain text, and the OG copy
-    // must not resurrect it.
+    // The heart was a <path>; the wordmark is plain text and must stay so.
     expect(paths(wordmark)).toEqual([]);
-    expect(paths(script).some((d) => d.startsWith('M12 21'))).toBe(false);
   });
 
-  it('both transit tracks bend — hard rule #1 of the subway map', () => {
-    const [entry, , , , , exit] = paths(component);
-    expect(entry).toMatch(/C/);
-    expect(exit).toMatch(/C/);
-    // A straight run (H/V, or an L that is not part of an arrowhead/glyph)
-    // is what the entry track used to be.
-    expect(entry).not.toMatch(/[HV]/);
-    expect(exit).not.toMatch(/[HV]/);
-  });
-
-  it('the viewBox is trimmed to the ink so the mark fills its box', () => {
-    const [x, y, w, h] = viewBox(component).split(/\s+/).map(Number);
-    const half = Number(strokeWidth(component)) / 2;
-    // Ink extents of the six paths, measured once (geometry bbox + stroke).
-    const ink = { left: 18 - half, right: 336 + half, top: 41 - half, bottom: 196 + half };
-    const pad = [ink.left - x, x + w - ink.right, ink.top - y, y + h - ink.bottom];
-    for (const p of pad) expect(p).toBeGreaterThan(8);
-    for (const p of pad) expect(p).toBeLessThan(13);
+  it('the icon bends — hard rule #1 of the subway map', () => {
+    // "Illustrative transit/subway lines are NEVER drawn straight." Both arcs
+    // on the app icon are curves, and neither may contain a straight run.
+    const [line] = paths(favicon);
+    expect(line).toMatch(/C/);
+    expect(line).not.toMatch(/[HV]/);
   });
 });
