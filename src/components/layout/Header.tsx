@@ -383,8 +383,13 @@ export function Header() {
             {isMobile ? (
               <div className="flex items-center gap-2" style={{ height: 56 }}>
                 {brand}
-                <div className="mx-2 min-w-0 flex-1">
-                  <UniversalSearchBar />
+                {/* `collapse`: below `sm` the search is the mock's ICON, not a
+                    field (panel 06 — brand, search icon, avatar). A field
+                    cannot share a 320px row with the wordmark and the action
+                    cluster; it measured 14.7px wide and the axe sweep returned
+                    43 serious `target-size` failures on it. */}
+                <div className="mx-2 flex min-w-0 flex-1 justify-end sm:justify-stretch">
+                  <UniversalSearchBar collapse />
                 </div>
                 {rightCluster}
               </div>
