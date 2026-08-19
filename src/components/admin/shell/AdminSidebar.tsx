@@ -193,32 +193,35 @@ export function AdminSidebar() {
     ) : (
       <div className="group/navrow relative flex items-center">
         {button}
-        {/* A SIBLING of the nav button, never a descendant: a role="button"
-          span inside a <button> is invalid HTML and axe `nested-interactive`
-          (serious) — keyboard and screen-reader users got one merged
-          interactive node and could not reach the pin at all. */}
-        <span
-          role="button"
-          tabIndex={0}
+        {/* A SIBLING of the nav button, never a descendant: a control inside
+          a <button> is invalid HTML and axe `nested-interactive` (serious) —
+          keyboard and screen-reader users got one merged interactive node and
+          could not reach the pin at all.
+
+          A NATIVE <button>, not a <span role="button" tabIndex={0}>. The span
+          worked and satisfied axe, but it had to hand-roll Enter/Space and
+          re-implement what the platform already gives away. */}
+        <button
+          type="button"
           aria-label={pinned ? `Unpin ${item.label}` : `Pin ${item.label}`}
           onClick={(e) => {
             e.stopPropagation();
             togglePin(item.id);
           }}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              e.stopPropagation();
-              togglePin(item.id);
-            }
-          }}
           className={cn(
             'absolute right-8 top-1/2 -translate-y-1/2 p-0.5 text-muted-foreground hover:text-foreground',
-            pinned ? 'opacity-100' : 'opacity-0 group-hover/navrow:opacity-100',
+            // `focus-visible:` is load-bearing, not polish. The pin is
+            // opacity-0 until the row is hovered, but it has always been
+            // TABBABLE — so a keyboard user could land on a control they
+            // could not see, with no way to tell what was focused. Hover is
+            // not a focus state and cannot stand in for one.
+            pinned
+              ? 'opacity-100'
+              : 'opacity-0 group-hover/navrow:opacity-100 focus-visible:opacity-100',
           )}
         >
           <Star size={12} className={pinned ? 'fill-current' : undefined} aria-hidden />
-        </span>
+        </button>
       </div>
     );
 
