@@ -6,7 +6,7 @@ import { Eyebrow } from '@/components/ui/Eyebrow';
 import { Band } from './Band';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useNewsFront, useForYouNews } from '@/hooks/useNewsFront';
-import { useHomeRegionContext } from './HomeRegionProvider';
+import { useHomeRegionContext } from './homeRegionContext';
 import { timeBucket, rotateWindow } from '@/lib/rotation';
 import { useEditorsPick } from '@/hooks/useEditorsPick';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
@@ -90,7 +90,9 @@ const NewsMagazine = React.memo(() => {
     const rest = (articles as unknown as Article[]).filter((a) => a.id !== pick?.id);
     // Already-read stories sink before the window is taken, so rotation and
     // "you've seen this" pull in the same direction instead of fighting.
-    const ranked = [...rest].sort((a, b) => Number(a.is_read ?? false) - Number(b.is_read ?? false));
+    const ranked = [...rest].sort(
+      (a, b) => Number(a.is_read ?? false) - Number(b.is_read ?? false),
+    );
     // The editors' pick is pinned: rotating a flagged lead out of the lead slot
     // would defeat the flag.
     return rotateWindow([...(pick ? [pick] : []), ...ranked], SHOWN, bucket, pick ? 1 : 0);

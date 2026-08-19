@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { fetchTrendingCities, fetchPersonalizedCitiesByIds } from '@/hooks/usePersonalizedCities';
 import { Band } from '@/components/home/Band';
-import { useHomeRegionContext } from '@/components/home/HomeRegionProvider';
+import { useHomeRegionContext } from '@/components/home/homeRegionContext';
 import { CityNetwork } from './CityNetwork';
 import { NETWORK_VIEWBOX } from './cityNetworkGeometry';
 import { tierForScore, EQUALITY_TIER_LABEL } from '@/utils/equalityScore';

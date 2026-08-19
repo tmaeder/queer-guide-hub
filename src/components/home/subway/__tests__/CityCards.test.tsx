@@ -11,7 +11,7 @@ vi.mock('@/hooks/usePersonalizedCities', () => ({
   fetchTrendingCities: async () => state.cities,
   fetchPersonalizedCitiesByIds: async () => [],
 }));
-vi.mock('@/components/home/HomeRegionProvider', () => ({
+vi.mock('@/components/home/homeRegionContext', () => ({
   useHomeRegionContext: () => ({
     cityId: null,
     citySlug: null,

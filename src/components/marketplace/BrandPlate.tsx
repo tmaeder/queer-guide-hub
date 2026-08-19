@@ -2,19 +2,10 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Badge } from '@/components/ui/badge';
 import { Image } from '@/components/ui/Image';
 import { COMMUNITY_OWNED_OPTIONS } from './marketplaceFilterOptions';
+import { brandMonogram } from './marketplaceHelpers';
 import type { DirectoryBrand } from '@/hooks/useMarketplaceBrands';
 
 const OWNERSHIP_LABEL = new Map(COMMUNITY_OWNED_OPTIONS.map((o) => [o.value, o.label]));
-
-/** First letters of the first two words — "Siebdruck Kollektiv" → "SK". */
-export function brandMonogram(name: string) {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase() ?? '')
-    .join('');
-}
 
 /**
  * One maker in the directory grid.

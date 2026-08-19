@@ -9,7 +9,10 @@ export type MarketplaceListing = Database['public']['Tables']['marketplace_listi
  * products. Deliberately narrow: only pride/drag/wedding shapes get a rail;
  * everything else renders nothing (no venue-type/weather/sentiment rails).
  */
-export function occasionForEvent(eventType: string | null | undefined, title: string): string | null {
+export function occasionForEvent(
+  eventType: string | null | undefined,
+  title: string,
+): string | null {
   const hay = `${eventType ?? ''} ${title}`.toLowerCase();
   if (/\bpride\b|\bcsd\b/.test(hay)) return 'occ-pride';
   if (/\bdrag\b|\bball(room)?\b/.test(hay)) return 'occ-drag';
@@ -23,7 +26,11 @@ export type FxRates = Record<string, number>;
  * Convert a USD amount into a target currency using fx_rates (where
  * rate_to_usd is the native→USD multiplier).
  */
-function convertFromUsd(usdAmount: number, target: string, rates: FxRates | undefined): number | null {
+function convertFromUsd(
+  usdAmount: number,
+  target: string,
+  rates: FxRates | undefined,
+): number | null {
   if (!rates) return null;
   const code = target.toUpperCase();
   if (code === 'USD') return usdAmount;
@@ -49,17 +56,22 @@ export interface OutboundLink {
  * /go?l= redirect (worker resolves the destination from the DB row and logs
  * the click); direct links stay untouched.
  */
-export function getOutboundLink(listing: MarketplaceListing, surface?: MarketplaceSurface): OutboundLink | null {
+export function getOutboundLink(
+  listing: MarketplaceListing,
+  surface?: MarketplaceSurface,
+): OutboundLink | null {
   const direct = listing.affiliate_url ?? listing.external_url ?? listing.website;
   if (!direct) return null;
-  const isAffiliate = Boolean(listing.affiliate_url) || AFFILIATE_SOURCES.has(listing.source_type ?? '');
+  const isAffiliate =
+    Boolean(listing.affiliate_url) || AFFILIATE_SOURCES.has(listing.source_type ?? '');
   const url = (isAffiliate && surface && marketplaceGoHref(listing.id, surface)) || direct;
   const sourceLabel = sourceDisplayLabel(listing.source_type);
-  const label = isAffiliate && sourceLabel
-    ? `Shop on ${sourceLabel}`
-    : isAffiliate
-    ? 'Shop now'
-    : 'Visit website';
+  const label =
+    isAffiliate && sourceLabel
+      ? `Shop on ${sourceLabel}`
+      : isAffiliate
+        ? 'Shop now'
+        : 'Visit website';
   const rel = isAffiliate ? 'sponsored nofollow noopener noreferrer' : 'noopener noreferrer';
   return { url, label, isAffiliate, rel };
 }
@@ -93,10 +105,18 @@ export interface TrustPill {
 export function trustPillsFor(listing: MarketplaceListing): TrustPill[] {
   const pills: TrustPill[] = [];
   if (listing.business_type === 'queer-owned' || listing.business_type === 'lgbtq-owned') {
-    pills.push({ key: 'owned', label: 'Queer-owned', title: 'Identified as a queer-owned business' });
+    pills.push({
+      key: 'owned',
+      label: 'Queer-owned',
+      title: 'Identified as a queer-owned business',
+    });
   }
   if (AFFILIATE_SOURCES.has(listing.source_type ?? '')) {
-    pills.push({ key: 'merchant', label: 'Verified merchant', title: 'Listed via a verified merchant integration' });
+    pills.push({
+      key: 'merchant',
+      label: 'Verified merchant',
+      title: 'Listed via a verified merchant integration',
+    });
   }
   return pills;
 }
@@ -132,7 +152,10 @@ export interface FormatPriceOpts {
  * (e.g. ≈ £27). Omitted when native == display, or when no fx rate is
  * available for the requested display currency.
  */
-export function formatListingPrice(listing: MarketplaceListing, opts: FormatPriceOpts = {}): PriceDisplay {
+export function formatListingPrice(
+  listing: MarketplaceListing,
+  opts: FormatPriceOpts = {},
+): PriceDisplay {
   if (!listing.price && listing.price_type !== 'free') {
     return { primary: 'Price varies', secondary: null, modifier: null };
   }
@@ -155,11 +178,33 @@ export function formatListingPrice(listing: MarketplaceListing, opts: FormatPric
   return { primary, secondary, modifier };
 }
 
-export function highlightMatches(text: string, query: string | undefined | null): Array<{ text: string; match: boolean }> {
+export function highlightMatches(
+  text: string,
+  query: string | undefined | null,
+): Array<{ text: string; match: boolean }> {
   const q = (query ?? '').trim();
   if (!q || !text) return [{ text, match: false }];
   const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const re = new RegExp(`(${escaped})`, 'ig');
   const parts = text.split(re);
-  return parts.filter(Boolean).map((part) => ({ text: part, match: part.toLowerCase() === q.toLowerCase() }));
+  return parts
+    .filter(Boolean)
+    .map((part) => ({ text: part, match: part.toLowerCase() === q.toLowerCase() }));
+}
+
+/**
+ * First letters of the first two words — "Siebdruck Kollektiv" → "SK".
+ *
+ * Lives here rather than in `BrandPlate.tsx` so that file exports only its
+ * component: a module mixing a component with other exports breaks React Fast
+ * Refresh. It is also imported by the brand page, which had no reason to reach
+ * into a component module for a string helper.
+ */
+export function brandMonogram(name: string) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? '')
+    .join('');
 }
