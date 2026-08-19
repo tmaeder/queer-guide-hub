@@ -19,7 +19,7 @@ document is prose; where the two disagree, the catalog is right.
   Octilinear network diagrams (segments snapped to 0/45/90°) are the documented
   exception: a whole network bends constantly, and it is the straight runs
   between bends that make it read as a map rather than a squiggle. See
-  *City network diagrams* below.
+  _City network diagrams_ below.
 - The master symbol is black-only: ink on paper, or reversed.
 - Track colors are wayfinding, not decoration — one accent per context; the
   intersection gradient (`.intersection-gradient`) only where lines meet.
@@ -29,11 +29,11 @@ document is prose; where the two disagree, the catalog is right.
   circles: rings, bullets, avatars, dots.
 - **Surfaces without cages.** A container never carries a frame. It separates
   from what surrounds it by sitting a tonal rung above (page → card → wash)
-  plus one soft shadow. The only line permitted *between* surfaces is a
+  plus one soft shadow. The only line permitted _between_ surfaces is a
   hairline at 7–13% ink, dividing rows in a dense list.
 - **One elevation.** `--shadow-soft` at rest, `--shadow-soft-hover` on lift.
   No hard offset shadows, no stacked depth — and Tailwind's own
-  `shadow-md/lg/xl/2xl` ramp stays ESLint-banned as a *competing* ladder.
+  `shadow-md/lg/xl/2xl` ramp stays ESLint-banned as a _competing_ ladder.
 - A card fills ink on hover or lifts — never both.
 - The exceptions to "no frame" are the boundaries a user has to be able to
   find: form controls (`border-input`) and the ink ring on a track-coloured
@@ -44,25 +44,25 @@ document is prose; where the two disagree, the catalog is right.
 
 All colors are HSL channel values used via `hsl(var(--token))`. Light-only.
 
-| Token | Value | Usage |
-|-------|-------|-------|
-| `--background` | `60 16.3% 91.6%` (#EDEDE6 frame) | **The page. Not paper.** |
-| `--card` / `--popover` | `60 33% 97%` (#FAFAF5 paper) | The sheet, one rung above the page |
-| `--muted` / `--accent` | `60 22.2% 92.9%` (#F1F1E9 wash) | Insets, chips, card hover tint |
-| `--surface-container-high` | `60 13.2% 89.6%` (#E8E8E1) | Image wells |
-| `--foreground` | `0 0% 6.7%` (#111 ink) | Type, marks, station rings |
-| `--border` | `60 7.4% 81.4%` | Row **dividers**, never a container frame |
-| `--border-hairline` | ink channels @ `--hairline-alpha` (12%) | The one line allowed between surfaces |
-| `--input` | `60 4.8% 44.9%` | Form-control boundary — 3:1 on page *and* card |
-| `--track-ring` | `0 0% 6.7%` | The ink ring a track-coloured mark wears |
-| `--muted-foreground` | `0 0% 33%` | Secondary text |
-| `--destructive` | `0 70% 38%` | **Danger. The only non-track semantic hue.** |
-| `--ring` | `330 100% 56%` | Focus ring (pink track) |
-| `--radius-panel/container/element/badge` | `26 / 18 / 12 / 9 px` | `rounded-full` for circles only |
-| `--shadow-soft` / `-hover` / `-lg` | `0 16px 40px .06` / `0 12px 30px .13` / `0 24px 60px .10` | Rest / lift / floats over a scrim |
+| Token                                    | Value                                                     | Usage                                          |
+| ---------------------------------------- | --------------------------------------------------------- | ---------------------------------------------- |
+| `--background`                           | `60 16.3% 91.6%` (#EDEDE6 frame)                          | **The page. Not paper.**                       |
+| `--card` / `--popover`                   | `60 33% 97%` (#FAFAF5 paper)                              | The sheet, one rung above the page             |
+| `--muted` / `--accent`                   | `60 22.2% 92.9%` (#F1F1E9 wash)                           | Insets, chips, card hover tint                 |
+| `--surface-container-high`               | `60 13.2% 89.6%` (#E8E8E1)                                | Image wells                                    |
+| `--foreground`                           | `0 0% 6.7%` (#111 ink)                                    | Type, marks, station rings                     |
+| `--border`                               | `60 7.4% 81.4%`                                           | Row **dividers**, never a container frame      |
+| `--border-hairline`                      | ink channels @ `--hairline-alpha` (12%)                   | The one line allowed between surfaces          |
+| `--input`                                | `60 4.8% 44.9%`                                           | Form-control boundary — 3:1 on page _and_ card |
+| `--track-ring`                           | `0 0% 6.7%`                                               | The ink ring a track-coloured mark wears       |
+| `--muted-foreground`                     | `0 0% 33%`                                                | Secondary text                                 |
+| `--destructive`                          | `0 70% 38%`                                               | **Danger. The only non-track semantic hue.**   |
+| `--ring`                                 | `330 100% 56%`                                            | Focus ring (pink track)                        |
+| `--radius-panel/container/element/badge` | `26 / 18 / 12 / 9 px`                                     | `rounded-full` for circles only                |
+| `--shadow-soft` / `-hover` / `-lg`       | `0 16px 40px .06` / `0 12px 30px .13` / `0 24px 60px .10` | Rest / lift / floats over a scrim              |
 
 **`--background` is not paper, and that is the load-bearing fact of the whole
-system.** The page is a rung *below* the card, and that step plus the soft
+system.** The page is a rung _below_ the card, and that step plus the soft
 shadow is what replaced the 3px ink cage. Restoring `--background` to paper
 without also restoring the cage yields an invisible card, not a subtler one.
 
@@ -76,23 +76,23 @@ that cap in the same migration.
 
 ### Track colors — SEMANTIC wayfinding lines
 
-| Token | Value | Hex | Line | Text on the fill |
-|-------|-------|-----|------|------------------|
-| `--track-pink` | `330 100% 56%` | #FF1F8F | Feminine spectrum | **ink** (5.2:1) |
-| `--track-blue` | `193 100% 45%` | #00B4E6 | Masculine spectrum | **ink** (7.7:1) |
-| `--track-green` | `136 75% 52%` | #2BE05A | Non-binary | **ink** (10.4:1) |
-| `--track-yellow` | `50 100% 50%` | #FFD500 | Agender / other | **ink** (13.5:1) |
+| Token            | Value          | Hex     | Line               | Text on the fill |
+| ---------------- | -------------- | ------- | ------------------ | ---------------- |
+| `--track-pink`   | `330 100% 56%` | #FF1F8F | Feminine spectrum  | **ink** (5.2:1)  |
+| `--track-blue`   | `193 100% 45%` | #00B4E6 | Masculine spectrum | **ink** (7.7:1)  |
+| `--track-green`  | `136 75% 52%`  | #2BE05A | Non-binary         | **ink** (10.4:1) |
+| `--track-yellow` | `50 100% 50%`  | #FFD500 | Agender / other    | **ink** (13.5:1) |
 
 Rules (gated by `tokenContrast.test.ts`):
 
 - **Fill-only.** A track color is never body text.
 - **Ring-gated.** Blue/green/yellow measure under 3:1 against any light
-  surface, so every track-coloured *mark* carries a 1px `--track-ring` — WCAG
+  surface, so every track-coloured _mark_ carries a 1px `--track-ring` — WCAG
   1.4.11 is satisfied by fill-vs-ring. This is why a badge and a track-filled
   button keep an edge when cards lost theirs: a card frame is decoration, a
   track fill's ring is not. It is anchored to `--track-ring` rather than to
   `--foreground` so it stays ink in both modes and cannot invert.
-  A track-coloured *line* on a diagram is a different case — it is far past
+  A track-coloured _line_ on a diagram is a different case — it is far past
   the size at which 1.4.11 applies and reads as illustration, which is why
   the mocks draw route lines with no casing.
 - **Text-on-fill is ink on all four**, deviating from the source mock on a11y
@@ -104,7 +104,7 @@ Rules (gated by `tokenContrast.test.ts`):
   decorative. No token guard can see this — it lives in the components.
 - **One accent per context.** Never a rainbow of fills in one component; the
   four blend only in `.intersection-gradient` (master-symbol moments). The one
-  exception is a *city network diagram* (below), where the four colors are the
+  exception is a _city network diagram_ (below), where the four colors are the
   artifact's own wayfinding vocabulary rather than decoration.
 - **Never a state.** Track colors never reach /help, /safety, /report-*, the
   trip-safety briefing, the equality scale or any risk badge; all four hues
@@ -122,14 +122,14 @@ reading, 700 for station names). Inter removed. Both self-hosted woff2
 Rank table — ladder 96/76/52/32/20 px, adjacent ratios 1.26/1.46/1.63/1.60
 (all ≥1.25 so every pair resolves as a different level):
 
-| Rank | Token | Size | Face | Belongs at |
-|------|-------|------|------|------------|
-| 0 | `--text-hero-xl` | 6rem/96px | Anton | Marketing covers only |
-| 1 | `--text-hero` | 4.75rem/76px | Anton | Page h1 |
-| 2 | `--text-display` | 3.25rem/52px | Anton | Section h2 |
-| 3 | `--text-headline` | 2rem/32px | Anton | Sub-section / large card title |
-| 4 | `--text-title` | 1.25rem/20px | Space Grotesk 700 | Card titles, row titles |
-| — | `--text-body-lg` | 1.0625rem | Space Grotesk | Long-form prose (not a rank) |
+| Rank | Token             | Size         | Face              | Belongs at                     |
+| ---- | ----------------- | ------------ | ----------------- | ------------------------------ |
+| 0    | `--text-hero-xl`  | 6rem/96px    | Anton             | Marketing covers only          |
+| 1    | `--text-hero`     | 4.75rem/76px | Anton             | Page h1                        |
+| 2    | `--text-display`  | 3.25rem/52px | Anton             | Section h2                     |
+| 3    | `--text-headline` | 2rem/32px    | Anton             | Sub-section / large card title |
+| 4    | `--text-title`    | 1.25rem/20px | Space Grotesk 700 | Card titles, row titles        |
+| —    | `--text-body-lg`  | 1.0625rem    | Space Grotesk     | Long-form prose (not a rank)   |
 
 A card title may never use the same token as the section heading above it.
 Anton is never letterspaced apart (tracking ≥ -0.02em, tight); the eyebrow
@@ -140,7 +140,7 @@ exception. Micro-scale (`--text-15/13/xs2/2xs/3xs`) unchanged.
 (`@theme` + `@source` safelist) → `tokenCatalog.ts` → `functions/_lib/
 branding.ts` SIZE_KEYS → `src/lib/utils.ts` customTextSizes → a migration on
 `branding_validate` (which RAISEs on unknown keys — check `site_branding` and
-`site_branding_versions` before *removing* one). The radius trio was ZEROED,
+`site_branding_versions` before _removing_ one). The radius trio was ZEROED,
 not deleted, precisely to avoid that procedure and keep every
 `rounded-container/element/badge` call site valid.
 
@@ -151,13 +151,13 @@ One primitive frames every page: **`<PageContainer>`**
 `container mx-auto px-4 py-8` — ESLint errors on it in `src/pages/**`
 (`queerguide/no-hand-rolled-page-wrapper`).
 
-| Aspect | Value | Token |
-|---|---|---|
-| Gutter | `px-4 sm:px-6 md:px-8` | `PAGE_GUTTER` |
-| Vertical | `py-8 md:py-12` — the ONE rhythm, no per-page override | `PAGE_VERTICAL` |
-| Default cap | 1600 — grids, listings, detail pages | `--container-page` → `max-w-page` |
-| Reading cap | 768 — long-form prose | `--container-reading` → `max-w-reading` |
-| Form cap | 512 — auth, steppers, single-column forms | `--container-form` → `max-w-form` |
+| Aspect      | Value                                                  | Token                                   |
+| ----------- | ------------------------------------------------------ | --------------------------------------- |
+| Gutter      | `px-4 sm:px-6 md:px-8`                                 | `PAGE_GUTTER`                           |
+| Vertical    | `py-8 md:py-12` — the ONE rhythm, no per-page override | `PAGE_VERTICAL`                         |
+| Default cap | 1600 — grids, listings, detail pages                   | `--container-page` → `max-w-page`       |
+| Reading cap | 768 — long-form prose                                  | `--container-reading` → `max-w-reading` |
+| Form cap    | 512 — auth, steppers, single-column forms              | `--container-form` → `max-w-form`       |
 
 - `size="reading" | "form"` picks the measure. Default is `page`.
 - `flush` drops the vertical for a page that owns its own bands (heroes, the
@@ -168,7 +168,7 @@ One primitive frames every page: **`<PageContainer>`**
 whole point: a page's first pixel of content sits on the same vertical as the
 nav tab above it, at every breakpoint. Full-bleed bars (header rows, the
 breadcrumb bar, tinted home bands) stay full-bleed — their rule or tint IS the
-band's edge — and take the cap on their *content row* only.
+band's edge — and take the cap on their _content row_ only.
 
 Why 1600 rather than the `max-w-7xl` (1280) it replaced: the cap exists to stop
 grids spreading, and 1280 left roughly a third of a common desktop viewport as
@@ -219,7 +219,7 @@ whole session.** So:
   means "show me more".
 - **Budget every control at 44px, whatever the `h-*` says.** `src/index.css`
   sets a global `min-height: 44px` on `a, button, input, select, textarea,
-  summary` for WCAG 2.5.5, and min-height beats the height utility at the
+summary` for WCAG 2.5.5, and min-height beats the height utility at the
   box-model level. `h-8` chips and `h-10` inputs all render 44 tall. Only
   `.rounded-badge` opts down (to 24px, WCAG 2.5.8). A band budgeted on the
   class names comes in ~30% over.
@@ -234,7 +234,7 @@ There is exactly **one** elevation, and it does two jobs.
 
 - **Rest.** Every card carries `--shadow-soft` (`0 16px 40px` at 6% ink) —
   baked into `Card`, not opt-in. Together with `bg-card` sitting a rung above
-  `--background`, that pair *is* the card's edge. Remove either and the card
+  `--background`, that pair _is_ the card's edge. Remove either and the card
   stops existing rather than getting flatter.
 - **Lift.** Interactive cards add `.card-lift`: hover/focus translates −3,−3
   and deepens to `--shadow-soft-hover` (`0 12px 30px` at 13%). Small tiles:
@@ -272,7 +272,7 @@ a second sanctioned treatment.
   table is `routeBulletMap.ts` (single point of change). 2px ink ring.
 - **`DepartureRow`** — bullet · time · title · status.
 - **`LineStepper`** — progress is always a bending line with stations.
-- **`RouteStrip`** — a long document's table of contents *as a route*: sections
+- **`RouteStrip`** — a long document's table of contents _as a route_: sections
   are stations on a line, `depth: 2` renders `<h3>` sub-stations. Vertical for
   a sticky rail, horizontal for the mobile band (same bleed grammar as
   `SectionNav`). Stations are `<a href="#id">`, never buttons — see below.
@@ -297,7 +297,7 @@ Two rules bend here, both on purpose:
   make the artifact unreadable rather than calmer. This is the only sanctioned
   four-track surface outside `.intersection-gradient`.
 - **Segments run straight** between 45° bends. Coordinates sit on an integer
-  lattice, so a diagonal step of *k* is exactly (±k, ±k) and "every bearing is
+  lattice, so a diagonal step of _k_ is exactly (±k, ±k) and "every bearing is
   a multiple of 45°" is exact arithmetic in `cityNetworkGeometry.test.ts`, not
   a tolerance.
 
@@ -344,8 +344,8 @@ off the crop rather than fixed, or it would be a dot on a sprawling network and 
 blob on a compact one.
 
 **`hasCityNetwork(slug)` is the integration point.** Most cities have no
-geometry, so a surface must ask before it commits: the diagram *replaces a
-meaningless placeholder* — the initial-letter tile on `/cities`, the generic
+geometry, so a surface must ask before it commits: the diagram _replaces a
+meaningless placeholder_ — the initial-letter tile on `/cities`, the generic
 `Globe` glyph in search, the deterministic stock skyline that belongs to no
 particular city — and never replaces a real photograph of the place. Only the
 homepage passes `index`, which opts into the template line; everywhere else a
@@ -380,9 +380,9 @@ the credit sits in the site footer alongside the map's.
 Two types own a module the corpus cannot fill. Both are absent rather than
 faked, and the numbers are here so the next person does not re-derive them:
 
-| Type | Owner module | Reality |
-|---|---|---|
-| Venue | 02 Hours table | `venues.hours` on **626 of 23,335** live rows (2.7%). Free-form jsonb, only the scraper path fills it. |
+| Type  | Owner module        | Reality                                                                                                                                                                                                  |
+| ----- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Venue | 02 Hours table      | `venues.hours` on **626 of 23,335** live rows (2.7%). Free-form jsonb, only the scraper path fills it.                                                                                                   |
 | Event | 03 Occurrence board | **`event_occurrences` has 0 rows.** Specced in `20260429130000` with an expansion function, never populated. `is_recurring` is true on 1,098 of 39,899, but a recurrence PATTERN is not a list of dates. |
 
 Two required modules are in the same position: venue module 04 (access) has
@@ -419,7 +419,7 @@ Four rules, each of which was a bug before it was a rule:
   whether they have data, so each one used as a section leaves a dead station.
   They render in the page footer, which has no stations.
 - **The route rail renders twice**, horizontal at the top of the body and
-  vertical in the rail, because `SinglePage`'s 360px rail reflows *under* the
+  vertical in the rail, because `SinglePage`'s 360px rail reflows _under_ the
   body on mobile — a rail-only TOC lands below the content it indexes. Same
   two-render pattern as `/tags`' `CategoryTreeRail`.
 - **The census strip renders unconditionally**, zeros included. Gating it on a
@@ -473,8 +473,8 @@ to report, so after a jump to section 11 the rail stayed pinned to section 1.
 ## Brand (`src/components/brand/`)
 
 - **The logo is the `Wordmark`, alone.** Lowercase Anton "queer.guide", ink
-  only. The design project's brand rules: *"It never takes color, gradients, a
-  symbol or a container."* §03 adds the two rules that bite in code — **clear
+  only. The design project's brand rules: _"It never takes color, gradients, a
+  symbol or a container."_ §03 adds the two rules that bite in code — **clear
   space** ("half the cap height on every side. Nothing sits inside it, no line,
   no station dot, no badge") and **one case** (always lowercase, always with the
   dot; never "Queer Guide"). The wordmark once nested a pink heart at the g's
@@ -510,6 +510,52 @@ to report, so after a jump to section 11 the rail stayed pinned to section 1.
 
 Header, search and footer moved onto the map 2026-08-15 (#2775, #2781).
 
+### Floating islands (design panels 10-12)
+
+The chrome does not span the window. The top bar and the phone dock are
+**islands**: inset on every side so the page's own ground shows through, and
+separated by elevation alone. Geometry is the `.island` utility in
+`src/index.css`; surface stays with the component, because the top bar swaps to
+ink when it collapses and the dock is ink from the start.
+
+|                  | phone                     | `md:` and up           |
+| ---------------- | ------------------------- | ---------------------- |
+| `--island-inset` | 14px                      | 22px                   |
+| radius           | `--radius-island-sm` 20px | `--radius-island` 22px |
+| shadow (paper)   | `--shadow-island-sm`      | `--shadow-island`      |
+| shadow (ink)     | `--shadow-island-ink-sm`  | `--shadow-island-ink`  |
+
+Four rules, each enforced in the utility rather than left to call sites:
+
+1. **Islands float, they never span.** Inset on all four sides, and the gap is
+   FIXED — nothing in `.island` transitions, so a sticky island cannot animate
+   its gap shut on scroll. The header sets the same value on `top` and
+   `margin-top` for the same reason: the gap that exists at rest is the gap it
+   keeps once it sticks, so the bar never jumps when it detaches.
+2. **One indicator per page.** An island's underside progress hairline is
+   opt-in, because a page that already draws a reading-progress line
+   (`ReadingProgressBar`) must not answer "where am I" twice.
+3. **Elevation is the only edge.** No keyline on an island, ever. The shadow is
+   22% against a card's 6% _because_ there is nothing under it — put a border
+   back and the depth reads as a mistake.
+4. **The dock owns the bottom on phones.** It never scrolls away. This replaced
+   a hide-on-scroll transform, and the reason is not cosmetic: nothing collapses
+   into a hamburger any more, so the dock is the only navigation a phone reader
+   has. Hiding it on the gesture people use most stranded them with the
+   browser's back button.
+
+**The inset is a token because a guard reads it.** `e2e/page-layout.spec.ts`
+asserts that a page container's content edge and the header's differ by exactly
+`--island-inset`; before the islands it asserted they were equal. Change the
+inset in `src/index.css` and the guard follows. Hard-code 22 anywhere and it
+will not.
+
+**Not implemented: a fixed desktop bottom dock.** Panel 10 draws one, and the
+site already ends every page with a real footer (plus panel 09's compact
+variant). A second permanently-pinned bottom bar on desktop would duplicate it
+and occlude content on every route. The phone dock is the one the spec argues
+for by name.
+
 - **Header** — brand · search · actions on one row, then the six intent tabs as
   TRACK TABS under a 3px rule. Each tab is `TransitIcon` + label; the icon draws
   in `currentColor`, so it inverts with the active tab's ink fill for free.
@@ -523,7 +569,7 @@ Header, search and footer moved onto the map 2026-08-15 (#2775, #2781).
 - **Search is a command plate**, not a dropdown: centred, `max-w-[680px]`, top
   `8vh`, 4px ink border, `shadow-hard-lg`. Mobile keeps a full-screen sheet.
 
-  **There is exactly ONE `role="combobox"` at any moment.** The field is *moved*
+  **There is exactly ONE `role="combobox"` at any moment.** The field is _moved_
   between the bar and the overlay, never duplicated — two inputs claiming one
   listbox is ambiguous for a screen reader, and `e2e/search-ux.spec.ts` resolves
   the input first and then asserts `aria-expanded` flips on that same element.
@@ -532,7 +578,7 @@ Header, search and footer moved onto the map 2026-08-15 (#2775, #2781).
 
   **Focus restoration is a `useEffect` keyed on `isOpen`** — not Radix's
   `onCloseAutoFocus`, not a timer, not rAF. At callback time the field is still
-  inside the *closing* overlay, so the ref points at a node being torn down and
+  inside the _closing_ overlay, so the ref points at a node being torn down and
   focus lands on `<body>`. An effect runs after the commit that puts the field
   back. rAF was tried and is wrong: it does not run in a hidden tab, which is
   exactly when a queued restore would strand focus.
@@ -608,10 +654,10 @@ exemption" for this — **that section does not exist**; this is the spec.
   line color. `TransitIcon` is fine — it is `currentColor` by construction.
 - **Weight comes from inversion and rules**, never hue: 3px ink borders, one
   ink-flooded panel (`SidebarCard tone="ink"` is the shared idiom), `--shadow-hard`.
-- **`--destructive` is rationed to danger *to the reader*.** On `/help` that
+- **`--destructive` is rationed to danger _to the reader_.** On `/help` that
   is exactly three things: the emergency band, `QuickExit`, and the per-line
   "may contact police without your consent" strip. A fourth candidate must
-  pass: *would a reader be harmed by not noticing this?* An explicit
+  pass: _would a reader be harmed by not noticing this?_ An explicit
   non-carceral policy is a reassurance and renders in **ink**, not red —
   flattening the two into one color destroys the distinction.
 - **Animation-free.** No `PageHeader` (hardcodes `.content-enter`), no
@@ -653,7 +699,7 @@ inert and get deleted surface-by-surface in later phases.
   budget was deleted — ink borders are the idiom now.
 - `e2e/page-layout.spec.ts` — the page-layout invariant: a page's outermost
   container's content edge equals the header's, across 12 routes ×
-  390/768/1440/1920, plus no horizontal overflow. Asserts the *relationship*
+  390/768/1440/1920, plus no horizontal overflow. Asserts the _relationship_
   rather than pixel values, so it survives a change to the gutter ladder itself.
 - `eslint.config.js` — hex/rgb/hsl literals, chromatic Tailwind classes,
   soft shadows, JSX gradients: unchanged and still errors. Plus

@@ -83,6 +83,38 @@ export interface UseMapShellStateResult {
 export function useMapShellState(config: MapShellConfig): UseMapShellStateResult {
   const [searchParams, setSearchParams] = useSearchParams();
   const useUrl = config.enableUrlState !== false;
+
+  /**
+   * Every URL write goes through here, and none of them may use
+   * `setSearchParams`'s functional form.
+   *
+   * That form does not receive the live query string: React Router closes over
+   * the `searchParams` of the render that produced this particular
+   * `setSearchParams` identity, and documents the consequence — "Multiple calls
+   * to setSearchParams in the same tick will not build on the prior value."
+   * `setViewport` debounces 250 ms, so its callback outlives its render by
+   * design and its snapshot is routinely stale by the time it fires.
+   *
+   * The effect was a silently lost write: click a lens inside that window and
+   * the viewport timer rebuilt the query string without it, so `?lens=density`
+   * vanished while `data-map-lens` still read `density` (React state, not URL
+   * state) — the view rendered correctly and could not be shared. Reading the
+   * ref instead makes each write build on the last one we issued, whether that
+   * was this tick or 250 ms ago.
+   */
+  const paramsRef = useRef(searchParams);
+  paramsRef.current = searchParams;
+
+  const writeParams = useCallback(
+    (mutate: (sp: URLSearchParams) => void) => {
+      const sp = new URLSearchParams(paramsRef.current);
+      mutate(sp);
+      paramsRef.current = sp;
+      setSearchParams(sp, { replace: true });
+    },
+    [setSearchParams],
+  );
+
   const prefs = useMemo(() => readPrefs(), []);
   const defaultLayers = useMemo(
     () => config.defaultEnabledLayers ?? seedEnabledLayers(config.layers),
@@ -155,85 +187,70 @@ export function useMapShellState(config: MapShellConfig): UseMapShellStateResult
   const setLens = useCallback(
     (next: MapLens) => {
       if (useUrl) {
-        setSearchParams(
-          (prev) => {
-            const sp = new URLSearchParams(prev);
-            if (next === config.defaultLens) sp.delete('lens');
-            else sp.set('lens', next);
-            return sp;
-          },
-          { replace: true },
-        );
+        writeParams((sp) => {
+          if (next === config.defaultLens) sp.delete('lens');
+          else sp.set('lens', next);
+        });
       } else {
         inMemoryRef.current.lens = next;
       }
       writePrefs({ lens: next });
     },
-    [useUrl, setSearchParams, config.defaultLens],
+    [useUrl, writeParams, config.defaultLens],
   );
 
   const setLayers = useCallback(
     (next: LayerType[]) => {
       if (useUrl) {
-        setSearchParams(
-          (prev) => {
-            const sp = new URLSearchParams(prev);
-            if (next.length === 0) sp.delete('layers');
-            else sp.set('layers', next.join(','));
-            return sp;
-          },
-          { replace: true },
-        );
+        writeParams((sp) => {
+          if (next.length === 0) sp.delete('layers');
+          else sp.set('layers', next.join(','));
+        });
       } else {
         inMemoryRef.current.enabledLayers = next;
       }
       writePrefs({ enabledLayers: next });
     },
-    [useUrl, setSearchParams],
+    [useUrl, writeParams],
   );
 
   const setFilters = useCallback(
     (next: MapShellFilters) => {
       if (useUrl) {
-        setSearchParams(
-          (prev) => {
-            const sp = new URLSearchParams(prev);
-            if (next.search) sp.set('q', next.search);
-            else sp.delete('q');
-            if (next.category) sp.set('category', next.category);
-            else sp.delete('category');
-            if (next.tags?.length) sp.set('tags', next.tags.join(','));
-            else sp.delete('tags');
-            if (next.nearMe) {
-              sp.set(
-                'near',
-                `${next.nearMe.lat.toFixed(4)},${next.nearMe.lng.toFixed(4)},${next.nearMe.radiusKm}`,
-              );
-            } else {
-              sp.delete('near');
-            }
-            if (next.queerOwned) sp.set('queer_owned', '1');
-            else sp.delete('queer_owned');
-            if (next.openNow) sp.set('open', '1');
-            else sp.delete('open');
-            if (next.dateRange) {
-              sp.set('from', next.dateRange.start);
-              sp.set('to', next.dateRange.end);
-            } else {
-              sp.delete('from');
-              sp.delete('to');
-            }
-            if (next.era) sp.set('era', `${next.era.decadeStart}-${next.era.decadeEnd}`);
-            else sp.delete('era');
-            return sp;
-          },
-          { replace: true },
-        );
+        writeParams((sp) => {
+          if (next.search) sp.set('q', next.search);
+          else sp.delete('q');
+          if (next.category) sp.set('category', next.category);
+          else sp.delete('category');
+          if (next.tags?.length) sp.set('tags', next.tags.join(','));
+          else sp.delete('tags');
+          if (next.nearMe) {
+            sp.set(
+              'near',
+              `${next.nearMe.lat.toFixed(4)},${next.nearMe.lng.toFixed(4)},${next.nearMe.radiusKm}`,
+            );
+          } else {
+            sp.delete('near');
+          }
+          if (next.queerOwned) sp.set('queer_owned', '1');
+          else sp.delete('queer_owned');
+          if (next.openNow) sp.set('open', '1');
+          else sp.delete('open');
+          if (next.dateRange) {
+            sp.set('from', next.dateRange.start);
+            sp.set('to', next.dateRange.end);
+          } else {
+            sp.delete('from');
+            sp.delete('to');
+          }
+          if (next.era) sp.set('era', `${next.era.decadeStart}-${next.era.decadeEnd}`);
+          else sp.delete('era');
+        });
       } else {
         inMemoryRef.current.filters = next;
       }
     },
-    [useUrl, setSearchParams],
+    [useUrl, writeParams],
   );
 
   const writeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -245,19 +262,16 @@ export function useMapShellState(config: MapShellConfig): UseMapShellStateResult
       }
       if (writeTimer.current) clearTimeout(writeTimer.current);
       writeTimer.current = setTimeout(() => {
-        setSearchParams(
-          (prev) => {
-            const sp = new URLSearchParams(prev);
-            sp.set('lat', vp.center[1].toFixed(4));
-            sp.set('lng', vp.center[0].toFixed(4));
-            sp.set('z', vp.zoom.toFixed(2));
-            return sp;
-          },
-          { replace: true },
-        );
+        // 250 ms after the render that scheduled this. Anything the user
+        // changed in between is in `paramsRef`, not in this closure.
+        writeParams((sp) => {
+          sp.set('lat', vp.center[1].toFixed(4));
+          sp.set('lng', vp.center[0].toFixed(4));
+          sp.set('z', vp.zoom.toFixed(2));
+        });
       }, 250);
     },
-    [useUrl, setSearchParams],
+    [useUrl, writeParams],
   );
 
   return {

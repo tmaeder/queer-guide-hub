@@ -52,25 +52,45 @@ test.describe('MapShell — discover surface (/map)', () => {
     await expect(page).toHaveURL(/[?&]layers=/);
   });
 
-  test('Density lens flips data-map-lens and URL param', async ({ page }) => {
+  // This asserts both halves of the label/key split at once: the LABEL is the
+  // transit vocabulary the reader sees, the KEY is what a shared link carries.
+  //
+  // It was briefly `test.fixme` over a bug that does not exist. Every lens
+  // writes its key — measured on prod at 125 ms intervals for 3 s after each
+  // click, no clobber. What failed was the LAST line: only the surface default
+  // clears the param, and discover's default is `combined`, not `pins`
+  // (SURFACE_PRESETS.discover, unchanged since #1451). So clicking Stations
+  // leaves `?lens=pins` standing and correctly fails a `not.toHaveURL(/lens=/)`
+  // — a failure at the end of the test that was read as the first half never
+  // writing its param. Nothing in useMapShellState treats `density` specially.
+  test('Heat lens flips data-map-lens and URL param', async ({ page }) => {
     await openFilters(page);
-    await page.getByRole('radio', { name: 'Density' }).click();
+    await page.getByRole('radio', { name: 'Heat' }).click();
     await expect
       .poll(async () => page.locator('[data-map-surface]').getAttribute('data-map-lens'))
       .toBe('density');
     await expect(page).toHaveURL(/[?&]lens=density/);
 
-    // Switch back to Pins removes the param (it equals the surface default).
-    await page.getByRole('radio', { name: 'Pins' }).click();
+    // Stations is NOT the default, so it writes its key like any other lens.
+    // The LABEL is "Stations"; the URL value stays `pins`, because the lens
+    // keys are shared-link state and were deliberately not renamed.
+    await page.getByRole('radio', { name: 'Stations' }).click();
     await expect
       .poll(async () => page.locator('[data-map-surface]').getAttribute('data-map-lens'))
       .toBe('pins');
+    await expect(page).toHaveURL(/[?&]lens=pins/);
+
+    // Only the surface default removes the param.
+    await page.getByRole('radio', { name: 'Combined' }).click();
+    await expect
+      .poll(async () => page.locator('[data-map-surface]').getAttribute('data-map-lens'))
+      .toBe('combined');
     await expect(page).not.toHaveURL(/[?&]lens=/);
   });
 
-  test('Boundary lens persists in URL when shared', async ({ page }) => {
+  test('Areas lens persists in URL when shared', async ({ page }) => {
     await openFilters(page);
-    await page.getByRole('radio', { name: 'Boundary' }).click();
+    await page.getByRole('radio', { name: 'Areas' }).click();
     await expect(page).toHaveURL(/[?&]lens=boundary/);
     // Reload preserves it.
     await page.reload();
@@ -187,7 +207,7 @@ test.describe('MapShell — mobile chrome (390px)', () => {
     // Filters opens the same content as desktop, in a sheet.
     await filtersEntry.click();
     await expect(page.getByRole('dialog')).toBeVisible();
-    await expect(page.getByRole('radio', { name: 'Density' })).toBeVisible();
+    await expect(page.getByRole('radio', { name: 'Heat' })).toBeVisible();
   });
 });
 
@@ -207,6 +227,6 @@ test.describe('MapShell — search surface', () => {
 
     // Only one lens is available here, so the View section never renders.
     await openFilters(page);
-    await expect(page.getByRole('radio', { name: 'Density' })).toHaveCount(0);
+    await expect(page.getByRole('radio', { name: 'Heat' })).toHaveCount(0);
   });
 });

@@ -14,16 +14,11 @@ import { useInboxFeed } from '@/hooks/useInboxFeed';
 import { useInboxBadge } from '@/hooks/useInboxBadge';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useHaptics } from '@/hooks/useHaptics';
-import { useScrollDirection } from '@/hooks/useScrollDirection';
 import { useLongPress } from '@/hooks/useLongPress';
 import { useMotionTokens } from '@/lib/motion';
-import { duration } from '@/lib/animation';
 import { getSubmitCta } from '@/lib/submitCta';
 import { generateAvatarUrl } from '@/lib/avatar';
 import { stripLocale, isMapRoute } from '@/lib/locale';
-
-/** Stay visible within this many px of the top (above the fold). */
-const SCROLL_TOP_OFFSET = 80;
 
 const FALLBACK_LABEL: Record<BottomNavTab['id'], string> = {
   home: 'Home',
@@ -46,9 +41,8 @@ function isTabActive(tab: BottomNavTab, path: string): boolean {
  * now only a shortcut, not the sole route. Its href stays `/search` so
  * middle-click and no-JS still reach discovery. Hub carries the unread badge;
  * You shows the signed-in avatar. Auth-only destinations gate on tap. The
- * bar slides away on scroll-down and returns on scroll-up (disabled under
- * reduced motion), honours safe-area-inset-bottom, hides on md+ and on the
- * full-bleed /map.
+ * dock never scrolls away (spec panel 12), honours safe-area-inset-bottom,
+ * hides on md+ and on the full-bleed /map.
  */
 export function MobileBottomNav() {
   const { t } = useTranslation();
@@ -58,7 +52,6 @@ export function MobileBottomNav() {
   const navigate = useLocalizedNavigate();
   const { trigger } = useHaptics();
   const { reduced } = useMotionTokens();
-  const scrollDir = useScrollDirection({ topOffset: SCROLL_TOP_OFFSET });
   const { unreadCount } = useInboxFeed('all');
   const tripCount = useInboxBadge();
 
@@ -75,8 +68,6 @@ export function MobileBottomNav() {
 
   const path = stripLocale(pathname);
   const tapHaptic = () => trigger('nudge');
-  // Slide off-screen on scroll-down (keep visible while the hub is open).
-  const hidden = !reduced && scrollDir === 'down' && !sheetOpen;
 
   const avatarSrc =
     profile?.avatar_url ||
@@ -100,7 +91,7 @@ export function MobileBottomNav() {
   // It stays because it still carries the trip-count dot and reads as "there
   // is more above". `pointer-events-none` lets taps fall through to the tab.
   const exploreAccessory = (
-    <span className="pointer-events-none absolute end-0 top-0 flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground">
+    <span className="pointer-events-none absolute end-0 top-0 flex h-6 w-6 items-center justify-center rounded-full text-background/70">
       <ChevronUp className="h-3.5 w-3.5" aria-hidden />
       {!!user && tripCount > 0 && (
         <NavBadge
@@ -117,21 +108,30 @@ export function MobileBottomNav() {
     <>
       <nav
         aria-label={t('header.navigation', 'Navigation')}
-        className="md:hidden fixed inset-x-0 bottom-0 z-40"
+        className="md:hidden fixed inset-x-0 z-40"
+        // §10 rule 4: "The dock owns the bottom on phones. Five tracks, 48px
+        // targets, sitting above the safe area. It never hides behind a menu
+        // icon and NEVER SCROLLS AWAY."
+        //
+        // It used to translate off-screen on scroll-down (`useScrollDirection`).
+        // That is the behaviour the rule names, and it is not a small nicety:
+        // the dock is the only navigation on a phone now that nothing collapses
+        // into a hamburger, so hiding it on the gesture people use most leaves
+        // a reader mid-page with no way out but the browser's own back button.
+        //
+        // `bottom` is the inset plus the safe area, for the same reason the
+        // header adds them rather than choosing between them: on a notched
+        // phone the dock has to clear the home indicator AND keep its own gap.
         style={{
-          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-          transform: hidden ? 'translateY(calc(100% + 1rem))' : 'translateY(0)',
-          transition: reduced
-            ? undefined
-            : `transform ${duration.normal}s cubic-bezier(0.22,1,0.36,1)`,
+          bottom: 'calc(var(--island-inset) + env(safe-area-inset-bottom, 0px))',
         }}
       >
-        {/* Squared, ruled and opaque. The translucent blurred capsule this
-            replaces was the mobile counterpart of the frosted top bar the
-            header explicitly rejects: over a paper page a 90%-opaque blur
-            reads as a third, muddier surface, and the active tab's ink fill
-            has nothing solid to sit against. Same box as the header's. */}
-        <ul className="mx-4 mb-2 flex items-stretch gap-1 bg-card px-2 rounded-container shadow-soft">
+        {/* The island dock (spec panel 12): ink surface, island radius and the
+            deepest shadow in the system, inset by the same gap as the top bar.
+            Opaque, never blurred — over a paper page a 90%-opaque blur reads
+            as a third, muddier surface, and the active tab has nothing solid
+            to sit against. */}
+        <ul className="island island-ink flex items-stretch gap-1 bg-foreground px-2 text-background">
           {BOTTOM_NAV_TABS.map((tab) => {
             const isExplore = tab.id === 'explore';
             const anonGated = tab.authGated && !user;
