@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check, X, RotateCcw, Flag, Archive, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { useExistenceEngine, type ExistenceAuditRow } from '@/hooks/useExistenceEngine';
-import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
 import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 const TYPES = ['venue', 'event', 'marketplace'] as const;
@@ -44,11 +44,18 @@ export default function AdminLiveness() {
   return (
     <div className="flex flex-col gap-6">
       {/* mb-0: the parent already spaces children with gap-6. */}
-      <AdminPageHeader
-        className="mb-0"
-        title="Liveness & closure"
-        subtitle="Auto-detection of venues, events and products that no longer exist. Archiving needs ≥2 independent dead signals and is always reversible. Single-signal cases wait for review here."
-      />
+      <AdminArchetypeHeader className="mb-0" title="Liveness &amp; closure" />
+
+      {/* The old header's `subtitle`. AdminArchetypeHeader has no such slot —
+        the grammar is route line, title, filter row, primary action — and this
+        text is NOT orientation the route line can replace: it states approval
+        and reversibility semantics an operator needs before acting. So it stays
+        as page content, immediately above what it describes, rather than being
+        dropped to match the mock or bloating the shared header. */}
+      <p className="m-0 max-w-reading text-13 leading-relaxed text-muted-foreground">
+        Auto-detection of venues, events and products that no longer exist. Archiving needs ≥2
+        independent dead signals and is always reversible. Single-signal cases wait for review here.
+      </p>
 
       {/* overview */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">

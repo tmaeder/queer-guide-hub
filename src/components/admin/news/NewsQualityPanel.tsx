@@ -56,7 +56,7 @@ export function NewsQualityPanel() {
           <div key={g.label} className="bg-background p-4">
             <div className="text-2xl font-bold tabular-nums">{pct(g.missing)}%</div>
             <div className="text-xs2 text-muted-foreground mt-0.5">{g.label}</div>
-            <div className="text-3xs text-muted-foreground/70 tabular-nums">
+            <div className="text-3xs text-muted-foreground tabular-nums">
               {g.missing.toLocaleString()}
             </div>
           </div>

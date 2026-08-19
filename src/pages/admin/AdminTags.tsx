@@ -46,6 +46,7 @@ import BatchGeoLinkDialog from '@/components/admin/BatchGeoLinkDialog';
 import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
+import type { AdminTableFeatures } from '@/components/admin/data-table/features';
 
 interface TagRow {
   id: string;
@@ -60,7 +61,7 @@ interface TagRow {
   created_at: string;
 }
 
-const columnHelper = createColumnHelper<TagRow>();
+const columnHelper = createColumnHelper<AdminTableFeatures, TagRow>();
 
 const TAXONOMY_PAGES: Array<{ label: string; route: string }> = [
   { label: 'Venue categories', route: '/admin/settings/venue-categories' },
@@ -410,7 +411,9 @@ export default function AdminTags() {
                     value={formData.category}
                     onValueChange={(v) => setFormData((p) => ({ ...p, category: v }))}
                   >
-                    <SelectTrigger>
+                    {/* The Label above says htmlFor="category"; without this
+                      id it pointed at nothing and named nothing. */}
+                    <SelectTrigger id="category">
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>

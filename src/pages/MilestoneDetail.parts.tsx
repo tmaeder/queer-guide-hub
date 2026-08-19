@@ -94,8 +94,8 @@ export function MilestoneHero({ milestone }: { milestone: Milestone }) {
       />
       {imageUrl && (
         <figure className={cn('mt-6', restrained ? 'max-w-sm' : '')}>
-          <span className="block overflow-hidden border-[3px] border-foreground bg-muted">
-            { }
+          <span className="block overflow-hidden bg-muted">
+            {}
             <img
               src={imageUrl}
               alt={milestone.image_metadata?.alt ?? ''}
@@ -233,16 +233,14 @@ export function MilestoneLinkedEntities({ links }: { links: MilestoneLink[] }) {
               {href ? (
                 <LocalizedLink
                   to={href}
-                  className="card-lift group block border-[3px] border-foreground bg-background p-4 no-underline"
+                  className="card-lift group block bg-card p-4 no-underline rounded-container shadow-soft"
                 >
                   {body}
                 </LocalizedLink>
               ) : (
                 // No resolvable route — a plate, but not a lift: nothing to
                 // click, so nothing should imply it.
-                <span className="block border-[3px] border-foreground bg-background p-4">
-                  {body}
-                </span>
+                <span className="block bg-card p-4 rounded-container shadow-soft">{body}</span>
               )}
             </li>
           );
@@ -308,12 +306,12 @@ export function MilestonePrevNext({ milestone }: { milestone: Milestone }) {
       aria-label={t('milestones.timelineNav', 'Timeline navigation')}
       // The 4px ink rule is the system's block separator — the same edge
       // SinglePage puts above its footer block.
-      className="grid gap-4 border-t-4 border-foreground pt-8 sm:grid-cols-2"
+      className="grid gap-4 border-t border-border-hairline pt-8 sm:grid-cols-2"
     >
       {milestone.prev ? (
         <LocalizedLink
           to={`/history/${milestone.prev.slug}`}
-          className="card-lift group block border-[3px] border-foreground bg-background p-4 no-underline"
+          className="card-lift group block bg-card p-4 no-underline rounded-container shadow-soft"
         >
           <span className="inline-flex items-center gap-1 text-13 text-muted-foreground">
             <ArrowLeft className="h-3 w-3" aria-hidden />
@@ -329,7 +327,7 @@ export function MilestonePrevNext({ milestone }: { milestone: Milestone }) {
       {milestone.next ? (
         <LocalizedLink
           to={`/history/${milestone.next.slug}`}
-          className="card-lift group block border-[3px] border-foreground bg-background p-4 no-underline sm:text-right"
+          className="card-lift group block bg-card p-4 no-underline sm:text-right rounded-container shadow-soft"
         >
           <span className="inline-flex items-center gap-1 text-13 text-muted-foreground">
             {t('milestones.next', 'Later')} · {milestoneYear(milestone.next.date)}

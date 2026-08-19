@@ -24,12 +24,16 @@ describe('RouteBullet', () => {
     // Ink on EVERY track fill — paper-on-pink measures 3.43:1 and the bullet
     // letter is 17px, well under the large-text threshold. See the
     // text-on-track lock in tokenContrast.test.ts.
+    // `--track-ring`, not `--foreground`: the two are the same ink in light
+    // mode, but `--foreground` flips to paper in dark and this letter would
+    // have gone paper-on-cyan at 2.32:1 in exactly one theme. A track fill is
+    // identity, not theme, so its type is ink in BOTH modes.
     render(<RouteBullet type="venue" />);
     const bullet = screen.getByText('V');
     expect(bullet.className).toContain('bg-track-pink');
-    expect(bullet.className).toContain('text-foreground');
+    expect(bullet.className).toContain('text-track-ring');
     render(<RouteBullet type="event" />);
-    expect(screen.getByText('E').className).toContain('text-foreground');
+    expect(screen.getByText('E').className).toContain('text-track-ring');
   });
 
   it('covers the search entity vocabulary', () => {

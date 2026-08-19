@@ -6,7 +6,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { Search, Check, ExternalLink, Camera} from 'lucide-react';
+import { Search, Check, ExternalLink, Camera } from 'lucide-react';
 import { useExternalImageSearch, type ExternalImage } from '@/hooks/useExternalImageSearch';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -191,7 +191,7 @@ export default function ExternalImageSearch({
                     role="button"
                     tabIndex={0}
                     aria-pressed={isSelected}
-                    className={`cursor-pointer rounded-element overflow-hidden border-2 relative bg-muted hover:border-muted ${
+                    className={`cursor-pointer rounded-element overflow-hidden relative bg-muted hover:border-muted ${
                       isSelected ? 'border-primary hover:border-primary' : 'border-transparent'
                     }`}
                   >

@@ -7,11 +7,7 @@ import { Eyebrow } from '@/components/ui/Eyebrow';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useMeta } from '@/hooks/useMeta';
 import { untypedRpc } from '@/integrations/supabase/untyped';
-import {
-  transmissionRiskVisual,
-  TRANSMISSION_RISK_ORDER,
-  BloodIcon,
-} from '@/lib/stiRisk';
+import { transmissionRiskVisual, TRANSMISSION_RISK_ORDER, BloodIcon } from '@/lib/stiRisk';
 
 /**
  * /tags/sti-guide — the full sexual-health reference: the transmission-mode
@@ -103,7 +99,7 @@ const GROUP_LABELS: Record<string, string> = {
 function Legend() {
   const { t } = useTranslation();
   return (
-    <div className="border-[3px] border-foreground p-4">
+    <div className="bg-muted rounded-element p-4">
       <Eyebrow>{t('stiGuide.legend', 'What the marks mean')}</Eyebrow>
       <ul className="mt-4 flex list-none flex-col gap-2 p-0">
         {TRANSMISSION_RISK_ORDER.map((risk) => {
@@ -112,7 +108,7 @@ function Legend() {
           return (
             <li key={risk} className="flex items-start gap-2">
               <span
-                className="mt-0.5 inline-flex shrink-0 items-center gap-2 border-2 border-foreground px-2 py-1.5"
+                className="mt-0.5 inline-flex shrink-0 items-center gap-2 bg-muted rounded-element px-2 py-1.5"
                 style={{ backgroundColor: `hsl(${v.tint})`, color: `hsl(${v.ink})` }}
               >
                 <Icon className="h-4 w-4" aria-hidden="true" />
@@ -123,7 +119,7 @@ function Legend() {
           );
         })}
         <li className="flex items-start gap-2">
-          <span className="mt-0.5 inline-flex shrink-0 items-center gap-2 border-2 border-foreground px-2 py-1.5">
+          <span className="mt-0.5 inline-flex shrink-0 items-center gap-2 bg-muted rounded-element px-2 py-1.5">
             <BloodIcon className="h-4 w-4" aria-hidden="true" />
             <span className="text-2xs font-bold uppercase tracking-label">
               {t('stiGuide.blood', 'With blood')}
@@ -226,7 +222,7 @@ export default function StiGuidePage() {
             p: practices.length,
           })}
         </p>
-        <div className="mt-4 overflow-x-auto border-[3px] border-foreground">
+        <div className="mt-4 overflow-x-auto bg-muted rounded-element">
           <table className="border-collapse text-2xs">
             <caption className="sr-only">
               {t(
@@ -242,7 +238,7 @@ export default function StiGuidePage() {
                     key={g.group}
                     scope="colgroup"
                     colSpan={g.practices.length}
-                    className="border-b border-l-2 border-foreground/40 px-2 pt-2 text-left font-bold uppercase tracking-label text-muted-foreground"
+                    className="border-b border-l border-foreground/40 px-2 pt-2 text-left font-bold uppercase tracking-label text-muted-foreground"
                   >
                     {GROUP_LABELS[g.group] ?? g.group}
                   </th>
@@ -256,7 +252,7 @@ export default function StiGuidePage() {
                   <th
                     key={p.slug}
                     scope="col"
-                    className="h-32 whitespace-nowrap border-b-2 border-foreground p-1 align-bottom"
+                    className="h-32 whitespace-nowrap border-b border-border-hairline p-1 align-bottom"
                   >
                     <span className="block origin-bottom-left translate-x-4 -rotate-45 text-left font-bold">
                       {p.label}
@@ -270,7 +266,7 @@ export default function StiGuidePage() {
                 <tr key={sti.id}>
                   <th
                     scope="row"
-                    className="sticky left-0 z-10 whitespace-nowrap border-r-2 border-foreground bg-background p-2 text-left font-bold"
+                    className="sticky left-0 z-10 whitespace-nowrap border-r border-border-hairline bg-background p-2 text-left font-bold"
                   >
                     <LocalizedLink
                       to={`/tags/${encodeURIComponent(sti.slug)}`}
@@ -300,7 +296,7 @@ export default function StiGuidePage() {
                     return (
                       <td
                         key={p.slug}
-                        className="border-2 border-foreground p-2 text-center"
+                        className="bg-muted rounded-element p-2 text-center"
                         style={{ backgroundColor: `hsl(${v.tint})`, color: `hsl(${v.ink})` }}
                       >
                         <span className="inline-flex items-center gap-1">
@@ -309,9 +305,7 @@ export default function StiGuidePage() {
                         </span>
                         <span className="sr-only">
                           {sti.name}, {p.label}: {v.label}
-                          {cell.blood
-                            ? ` — ${t('stiGuide.bloodNote', 'risk with blood')}`
-                            : ''}
+                          {cell.blood ? ` — ${t('stiGuide.bloodNote', 'risk with blood')}` : ''}
                         </span>
                       </td>
                     );
@@ -334,13 +328,10 @@ export default function StiGuidePage() {
             'No single method covers everything — combining them is what the promotion of sexual health calls combination prevention. A dot means the method meaningfully protects against that infection.',
           )}
         </p>
-        <div className="mt-4 overflow-x-auto border-[3px] border-foreground">
+        <div className="mt-4 overflow-x-auto bg-muted rounded-element">
           <table className="border-collapse text-2xs">
             <caption className="sr-only">
-              {t(
-                'stiGuide.protectCaption',
-                'Which prevention method protects against which STI.',
-              )}
+              {t('stiGuide.protectCaption', 'Which prevention method protects against which STI.')}
             </caption>
             <thead>
               <tr>
@@ -351,7 +342,7 @@ export default function StiGuidePage() {
                   <th
                     key={m.slug}
                     scope="col"
-                    className="h-32 whitespace-nowrap border-b-2 border-foreground p-1 align-bottom"
+                    className="h-32 whitespace-nowrap border-b border-border-hairline p-1 align-bottom"
                   >
                     <span className="block origin-bottom-left translate-x-4 -rotate-45 text-left font-bold">
                       {m.label}
@@ -365,7 +356,7 @@ export default function StiGuidePage() {
                 <tr key={sti.id}>
                   <th
                     scope="row"
-                    className="sticky left-0 z-10 whitespace-nowrap border-r-2 border-foreground bg-background p-2 text-left font-bold"
+                    className="sticky left-0 z-10 whitespace-nowrap border-r border-border-hairline bg-background p-2 text-left font-bold"
                   >
                     <LocalizedLink
                       to={`/tags/${encodeURIComponent(sti.slug)}`}
@@ -400,7 +391,7 @@ export default function StiGuidePage() {
         </div>
         <ul className="mt-4 grid list-none gap-2 p-0 sm:grid-cols-2">
           {methods.map((m) => (
-            <li key={m.slug} className="border-2 border-foreground/40 p-2">
+            <li key={m.slug} className="border border-foreground/40 p-2">
               <span className="text-13 font-bold">{m.label}</span>
               <p className="mt-1 text-13 leading-relaxed text-muted-foreground">{m.description}</p>
             </li>
@@ -419,7 +410,7 @@ export default function StiGuidePage() {
             'Every STI needs an incubation period before a test can detect it. The bar shows from how many weeks after a risk a test is reliable; testing earlier can miss a real infection.',
           )}
         </p>
-        <div className="mt-4 overflow-x-auto border-[3px] border-foreground">
+        <div className="mt-4 overflow-x-auto bg-muted rounded-element">
           <table className="w-full border-collapse text-2xs">
             <caption className="sr-only">
               {t(
@@ -432,13 +423,13 @@ export default function StiGuidePage() {
                 <th scope="col" className="p-2 text-left">
                   {t('stiGuide.sti', 'Infection')}
                 </th>
-                <th scope="col" className="w-1/2 border-l-2 border-foreground/40 p-2 text-left">
+                <th scope="col" className="w-1/2 border-l border-foreground/40 p-2 text-left">
                   {t('stiGuide.window', 'Reliable from (weeks after the risk)')}
                 </th>
-                <th scope="col" className="border-l-2 border-foreground/40 p-2 text-left">
+                <th scope="col" className="border-l border-foreground/40 p-2 text-left">
                   {t('stiGuide.sample', 'Sample')}
                 </th>
-                <th scope="col" className="border-l-2 border-foreground/40 p-2 text-left">
+                <th scope="col" className="border-l border-foreground/40 p-2 text-left">
                   {t('stiGuide.vaccineCol', 'Vaccine?')}
                 </th>
               </tr>
@@ -447,12 +438,12 @@ export default function StiGuidePage() {
               {(protection?.stis ?? []).map((sti) => {
                 const rows = testingByTag.get(sti.id) ?? [];
                 return rows.map((row, i) => (
-                  <tr key={`${sti.id}-${i}`} className="border-t-2 border-foreground/15">
+                  <tr key={`${sti.id}-${i}`} className="border-t border-foreground/15">
                     {i === 0 && (
                       <th
                         scope="row"
                         rowSpan={rows.length}
-                        className="whitespace-nowrap border-r-2 border-foreground p-2 text-left align-top font-bold"
+                        className="whitespace-nowrap border-r border-border-hairline p-2 text-left align-top font-bold"
                       >
                         <LocalizedLink
                           to={`/tags/${encodeURIComponent(sti.slug)}`}
@@ -489,11 +480,11 @@ export default function StiGuidePage() {
                         <p className="mt-1 text-3xs text-muted-foreground">{row.note}</p>
                       )}
                     </td>
-                    <td className="border-l-2 border-foreground/15 p-2">{row.sample}</td>
+                    <td className="border-l border-foreground/15 p-2">{row.sample}</td>
                     {i === 0 && (
                       <td
                         rowSpan={rows.length}
-                        className="border-l-2 border-foreground/15 p-2 align-top"
+                        className="border-l border-foreground/15 p-2 align-top"
                       >
                         {sti.vaccine_note ?? t('stiGuide.noVaccine', '—')}
                       </td>

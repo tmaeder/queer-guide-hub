@@ -21,7 +21,7 @@ import {
 } from '@/hooks/useVenueDuplicates';
 import { TagMergeReviewQueue } from '@/components/admin/TagMergeReviewQueue';
 import { VocabMerge } from '@/components/admin/VocabMerge';
-import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
 
 /**
  * /admin/duplicates — the registry-driven duplicate review & merge console,
@@ -75,11 +75,16 @@ export default function AdminDuplicates() {
   return (
     <div className="flex flex-col gap-6 p-6">
       {/* mb-0: the parent already spaces children with gap-6. */}
-      <AdminPageHeader
-        className="mb-0"
-        title="Duplicates & merge"
-        subtitle="Pick the canonical record and merge the rest — duplicates are hidden, their URLs redirect, and every merge is reversible."
-      />
+      <AdminArchetypeHeader className="mb-0" title="Duplicates & merge" />
+
+      {/* Kept, not dropped with the subtitle slot: "every merge is
+        reversible" is the sentence that makes this destructive-looking
+        screen safe to use. Orientation copy can go; a reversibility
+        guarantee cannot. */}
+      <p className="m-0 max-w-reading text-13 leading-relaxed text-muted-foreground">
+        Pick the canonical record and merge the rest — duplicates are hidden, their URLs redirect,
+        and every merge is reversible.
+      </p>
 
       <div className="rounded-container flex flex-wrap items-center gap-2 border p-4 text-15">
         <GitMerge size={16} className="text-muted-foreground" />
@@ -250,7 +255,9 @@ function ContentDuplicates({
                 <div key={key} className="rounded-container flex flex-col gap-4 border p-4">
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium">{c.members[0]?.title ?? c.normalized_title}</span>
+                      <span className="font-medium">
+                        {c.members[0]?.title ?? c.normalized_title}
+                      </span>
                       {c.city && <Badge variant="outline">{c.city}</Badge>}
                       <Badge variant="secondary">{c.count} copies</Badge>
                     </div>
@@ -282,7 +289,9 @@ function ContentDuplicates({
                           {typeof vm?.quality_score === 'number' && (
                             <Badge variant="outline">q {Math.round(vm.quality_score)}</Badge>
                           )}
-                          {hasImage(vm) && <ImageIcon size={14} className="text-muted-foreground" />}
+                          {hasImage(vm) && (
+                            <ImageIcon size={14} className="text-muted-foreground" />
+                          )}
                         </button>
                       );
                     })}
@@ -311,8 +320,11 @@ function FuzzyDuplicates({ type }: { type: DedupType }) {
     const [a, b] = c.members;
     const aBetter =
       (a.quality_score ?? -1) > (b.quality_score ?? -1) ||
-      ((a.quality_score ?? -1) === (b.quality_score ?? -1) && Boolean(a.is_featured) && !b.is_featured) ||
-      ((a.quality_score ?? -1) === (b.quality_score ?? -1) && Boolean(a.is_featured) === Boolean(b.is_featured));
+      ((a.quality_score ?? -1) === (b.quality_score ?? -1) &&
+        Boolean(a.is_featured) &&
+        !b.is_featured) ||
+      ((a.quality_score ?? -1) === (b.quality_score ?? -1) &&
+        Boolean(a.is_featured) === Boolean(b.is_featured));
     return aBetter ? [a.id, b.id] : [b.id, a.id];
   };
 
@@ -362,8 +374,10 @@ function FuzzyDuplicates({ type }: { type: DedupType }) {
       </div>
     );
   }
-  if (isError) return <div className="text-destructive p-4">Failed to load pairs: {error?.message}</div>;
-  if (clusters.length === 0) return <div className="text-muted-foreground p-4">No fuzzy duplicate pairs.</div>;
+  if (isError)
+    return <div className="text-destructive p-4">Failed to load pairs: {error?.message}</div>;
+  if (clusters.length === 0)
+    return <div className="text-muted-foreground p-4">No fuzzy duplicate pairs.</div>;
 
   return (
     <div className="flex flex-col gap-4">
@@ -401,7 +415,12 @@ function FuzzyDuplicates({ type }: { type: DedupType }) {
                 <Badge variant="outline">sim {c.score.toFixed(2)}</Badge>
                 {c.dist_m != null && <Badge variant="outline">{c.dist_m} m apart</Badge>}
               </div>
-              <Button size="sm" variant="outline" onClick={() => mergeOne.mutate(c)} disabled={busy}>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => mergeOne.mutate(c)}
+                disabled={busy}
+              >
                 {busy ? <TrackLoader size={16} /> : <GitMerge size={16} />}
                 Merge
               </Button>

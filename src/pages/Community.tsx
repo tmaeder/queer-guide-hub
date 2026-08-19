@@ -52,7 +52,7 @@ export default function Community({ tab }: { tab?: CommunityTab }) {
               <TabsTrigger
                 key={v}
                 value={v}
-                className="h-10 rounded-none border-b-2 border-transparent bg-transparent px-4 shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-foreground data-[state=active]:shadow-none flex items-center gap-2"
+                className="h-10 rounded-none border-b border-transparent bg-transparent px-4 shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-border-hairline data-[state=active]:shadow-none flex items-center gap-2"
               >
                 <Icon size={16} aria-hidden />
                 {label}

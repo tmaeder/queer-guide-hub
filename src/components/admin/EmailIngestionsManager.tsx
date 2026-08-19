@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -157,22 +158,25 @@ export function EmailIngestionsManager() {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Mail size={24} className="text-foreground" />
-          <div>
-            <h6 className="text-base font-semibold">Email Ingestions</h6>
-            <p className="text-sm text-muted-foreground">
-              Forwarded emails processed for LGBTQ+ events and venues
-            </p>
-          </div>
-        </div>
-        <Button variant="outline" size="sm" onClick={fetchIngestions}>
-          <RefreshCw size={14} className="mr-1.5" />
-          Refresh
-        </Button>
-      </div>
+      {/* Archetype A. The page title was an <h6> — the LOWEST heading level in
+        HTML used for the most important text on the route. Across this console
+        the audit turned up <h4>, <h5>, <h6> and a bare <p> all serving as page
+        titles; a screen-reader user got either nothing or a bottom-of-hierarchy
+        entry on each. That is the concrete case for a fixed header grammar. */}
+      <AdminArchetypeHeader
+        title={
+          <span className="flex items-center gap-4">
+            <Mail size={24} className="text-foreground" aria-hidden />
+            Email Ingestions
+          </span>
+        }
+        actions={
+          <Button variant="outline" size="sm" onClick={fetchIngestions}>
+            <RefreshCw size={14} className="mr-1.5" />
+            Refresh
+          </Button>
+        }
+      />
 
       {/* Stats grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

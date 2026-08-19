@@ -5,7 +5,19 @@ import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { User, ArrowLeft, Heart, Lock, Check, Settings as SettingsIcon, ChevronDown, Luggage, FileText, Sparkles, X } from 'lucide-react';
+import {
+  User,
+  ArrowLeft,
+  Heart,
+  Lock,
+  Check,
+  Settings as SettingsIcon,
+  ChevronDown,
+  Luggage,
+  FileText,
+  Sparkles,
+  X,
+} from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useAuth } from '@/hooks/useAuth';
 import { useMeta } from '@/hooks/useMeta';
@@ -232,7 +244,7 @@ function AccordionSection({
         id={`settings-section-${id}`}
         className={cn(
           'rounded-container bg-card transition-colors scroll-mt-24',
-          active ? 'border-foreground/30' : 'border-border',
+          active ? 'border border-foreground/30' : 'border-border',
         )}
       >
         <CollapsibleTrigger asChild>
@@ -464,7 +476,7 @@ function ProfileSettingsContent({
 
       {/* Avatar editor — opened from the hero, inline (no pop-over) */}
       {activeSection === 'avatar' && (
-        <Card id="settings-section-avatar" className="scroll-mt-24 border-foreground/30">
+        <Card id="settings-section-avatar" className="border scroll-mt-24 border-foreground/30">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
               <p className="font-semibold">Your avatar</p>

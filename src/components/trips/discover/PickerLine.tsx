@@ -123,13 +123,11 @@ export function PickerLine({
               }}
               className={cn(
                 'pointer-events-none absolute block h-6 w-6 -translate-x-1/2 -translate-y-1/2',
-                'rounded-full border-[3px] border-foreground transition-colors duration-fast',
+                'rounded-full border border-border-hairline transition-colors duration-fast',
                 // The ink ring border-gates the fill: the track colours are
                 // fill-only and clear 3:1 against paper on their own, but the
                 // ring is what makes the set read as one system.
-                activeId === option.id && !option.disabled
-                  ? TRACK_BG[track]
-                  : 'bg-background',
+                activeId === option.id && !option.disabled ? TRACK_BG[track] : 'bg-background',
               )}
             />
           ))}
@@ -172,11 +170,15 @@ export function PickerLine({
                         : 'text-muted-foreground hover:text-foreground',
                   )}
                 >
-                  <span className={cn('text-13 leading-tight', active ? 'font-bold' : 'font-medium')}>
+                  <span
+                    className={cn('text-13 leading-tight', active ? 'font-bold' : 'font-medium')}
+                  >
                     {option.short ?? option.label}
                   </span>
                   {option.meta && (
-                    <span className="text-2xs tabular-nums text-muted-foreground">{option.meta}</span>
+                    <span className="text-2xs tabular-nums text-muted-foreground">
+                      {option.meta}
+                    </span>
                   )}
                 </button>
               </div>

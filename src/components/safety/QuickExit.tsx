@@ -39,7 +39,7 @@ export function QuickExit() {
       <button
         type="button"
         onClick={performQuickExit}
-        className="pointer-events-auto inline-flex items-center gap-2 border-[3px] border-foreground bg-destructive px-6 py-4 text-xl font-bold text-destructive-foreground shadow-hard-sm"
+        className="pointer-events-auto inline-flex items-center gap-2 bg-destructive px-6 py-4 text-xl font-bold text-destructive-foreground shadow-soft"
         aria-label={t('help.quick_exit_aria', 'Leave this page immediately (ESC)')}
       >
         <LogOut size={20} aria-hidden="true" />

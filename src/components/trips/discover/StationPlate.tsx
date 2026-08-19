@@ -97,7 +97,7 @@ export function StationPlate({
           animate && (revealed ? 'station-pop' : 'opacity-0'),
         )}
       >
-        <StationRing state="typed" track="blue" className="lg:h-6 lg:w-6 lg:border-[4px]" />
+        <StationRing state="typed" track="blue" className="lg:h-6 lg:w-6 lg:" />
       </span>
 
       <div
@@ -105,7 +105,7 @@ export function StationPlate({
           // A FIXED box, not a min-height, at every breakpoint: both the band
           // height (desktop) and the rail row (mobile) are derived from this
           // number, so content has to clip into it rather than push past it.
-          'card-lift relative h-[var(--route-plate-h)] min-w-0 flex-1 overflow-hidden border-[3px] border-foreground bg-background p-4',
+          'card-lift relative h-[var(--route-plate-h)] min-w-0 flex-1 overflow-hidden bg-card p-4 rounded-container shadow-soft',
           'lg:absolute lg:left-1/2 lg:w-48 lg:flex-none lg:-translate-x-1/2 xl:w-56',
           lane === 'above' ? 'lg:bottom-14' : 'lg:top-14',
           animate && (revealed ? 'station-arrive' : 'opacity-0'),
@@ -133,7 +133,7 @@ export function StationPlate({
               })}
               className={cn(
                 'relative z-10 -mt-1 inline-flex h-8 w-8 shrink-0 items-center justify-center',
-                'border-2 border-foreground transition-colors duration-fast',
+                'border border-border-hairline transition-colors duration-fast',
                 'hover:bg-foreground hover:text-background',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                 'focus-visible:ring-offset-2 focus-visible:ring-offset-background',

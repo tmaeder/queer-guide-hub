@@ -7,7 +7,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useSearchParams } from 'react-router';
-import { History, Clock, User} from 'lucide-react';
+import { History, Clock, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCMSAudit } from '@/hooks/useCMSAudit';
 import { formatRelativeTime, formatAction } from '@/lib/audit-format';
@@ -34,13 +34,13 @@ import {
 /** Tailwind classes for action type chips */
 function getActionClasses(action: string): string {
   if (action.includes('publish') || action.includes('approved'))
-    return 'border-foreground/40 text-foreground';
+    return 'border border-foreground/40 text-foreground';
   if (action.includes('archive') || action.includes('delete'))
-    return 'border-destructive text-destructive';
+    return 'border border-destructive text-destructive';
   if (action.includes('review') || action.includes('change_request'))
     return 'border-border text-foreground';
   if (action.includes('create') || action.includes('restore'))
-    return 'border-foreground/40 text-foreground';
+    return 'border border-foreground/40 text-foreground';
   if (action.includes('workflow')) return 'border-primary text-primary';
   return 'border-border text-foreground';
 }
@@ -111,7 +111,16 @@ export function AuditLog({ sourceTable, sourceId }: AuditLogProps) {
         since: sinceIso,
       });
     }
-  }, [isContentSpecific, sourceTable, sourceId, page, actionFilter, sinceIso, loadForContent, loadGlobal]);
+  }, [
+    isContentSpecific,
+    sourceTable,
+    sourceId,
+    page,
+    actionFilter,
+    sinceIso,
+    loadForContent,
+    loadGlobal,
+  ]);
 
   const setSince = useCallback(
     (opt: SinceOption) => {
@@ -157,15 +166,23 @@ export function AuditLog({ sourceTable, sourceId }: AuditLogProps) {
     <div>
       <div className="flex flex-col gap-2 mb-2">
         <div className="flex flex-row items-center justify-between flex-wrap gap-2">
-          <div className="flex flex-row items-center gap-1">
-            <History size={18} className="text-muted-foreground" />
-            <p className="text-sm font-semibold">Audit Log</p>
+          {/* Archetype A. This page's title was a <p className="text-sm
+            font-semibold"> — not a heading at ALL, so the route had no h1 and
+            no entry in a screen reader's heading list. Worse than the <h4>/<h5>
+            cases elsewhere, and invisible until every admin header was audited.
+
+            Safe to promote: AuditLog is route-only. The embedded variant is
+            EntityAuditHistory, a separate component whose own docblock says it
+            exists precisely so the page-shaped AuditLog is not nested. */}
+          <h1 className="m-0 flex flex-row items-center gap-1 font-display text-headline leading-tight">
+            <History size={18} className="text-muted-foreground" aria-hidden />
+            Audit Log
             {totalCount > 0 && (
-              <span className="text-xs text-muted-foreground">
+              <span className="text-13 font-normal text-muted-foreground">
                 ({totalCount} entr{totalCount !== 1 ? 'ies' : 'y'})
               </span>
             )}
-          </div>
+          </h1>
 
           <Select value={actionFilter} onValueChange={handleFilterChange}>
             <SelectTrigger className="h-8 min-w-[180px] text-xs">
@@ -185,11 +202,7 @@ export function AuditLog({ sourceTable, sourceId }: AuditLogProps) {
         </div>
 
         {!isContentSpecific && (
-          <div
-            role="radiogroup"
-            aria-label="Filter by date"
-            className="flex items-center gap-1"
-          >
+          <div role="radiogroup" aria-label="Filter by date" className="flex items-center gap-1">
             {(['all', '24h', '7d', '30d'] as const).map((opt) => (
               <Button
                 key={opt}
@@ -223,8 +236,7 @@ export function AuditLog({ sourceTable, sourceId }: AuditLogProps) {
         <>
           <div className="flex flex-col divide-y divide-border">
             {paginatedEntries.map((entry) => {
-              const actorName =
-                entry.actor?.display_name || entry.actor?.email || 'System';
+              const actorName = entry.actor?.display_name || entry.actor?.email || 'System';
               const initials = actorName
                 .split(/[\s@]/)
                 .filter(Boolean)
@@ -233,10 +245,7 @@ export function AuditLog({ sourceTable, sourceId }: AuditLogProps) {
                 .join('');
 
               return (
-                <div
-                  key={entry.id}
-                  className="flex gap-2 py-4 px-1 hover:bg-muted rounded-element"
-                >
+                <div key={entry.id} className="flex gap-2 py-4 px-1 hover:bg-muted rounded-element">
                   <Avatar className="w-7 h-7 mt-0.5">
                     <AvatarFallback className="bg-border text-2xs">
                       {initials || <User size={14} />}

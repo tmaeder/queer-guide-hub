@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check, X, ArrowRight, Inbox } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTwentyInboundReview, type TwentyInboundRow } from '@/hooks/useTwentyInboundReview';
-import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
 import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 const ENTITY_LABEL: Record<TwentyInboundRow['entity_type'], string> = {
@@ -48,11 +48,18 @@ export default function AdminTwentyCrm() {
   return (
     <div className="flex flex-col gap-6">
       {/* mb-0: the parent already spaces children with gap-6. */}
-      <AdminPageHeader
-        className="mb-0"
-        title="Twenty CRM sync"
-        subtitle="Edits made in Twenty land here as proposals. Approving applies only the shown fields to the live record; nothing reaches public content until you approve."
-      />
+      <AdminArchetypeHeader className="mb-0" title="Twenty CRM sync" />
+
+      {/* The old header's `subtitle`. AdminArchetypeHeader has no such slot —
+        the grammar is route line, title, filter row, primary action — and this
+        text is NOT orientation the route line can replace: it states approval
+        and reversibility semantics an operator needs before acting. So it stays
+        as page content, immediately above what it describes, rather than being
+        dropped to match the mock or bloating the shared header. */}
+      <p className="m-0 max-w-reading text-13 leading-relaxed text-muted-foreground">
+        Edits made in Twenty land here as proposals. Approving applies only the shown fields to the
+        live record; nothing reaches public content until you approve.
+      </p>
 
       <Card>
         <CardHeader className="pb-2">

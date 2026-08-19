@@ -144,7 +144,7 @@ export function PrideTrips({ events, selectedId, onSelect }: PrideTripsProps) {
                         isSelected ? 'bg-muted' : 'hover:bg-muted/60',
                       )}
                     >
-                      <span className="shrink-0 size-6 inline-flex items-center justify-center text-xs2 font-medium rounded-full border border-foreground/30 text-foreground/70 group-hover:border-foreground group-hover:text-foreground tabular-nums">
+                      <span className="shrink-0 size-6 inline-flex items-center justify-center text-xs2 font-medium rounded-full border border-foreground/30 text-foreground/70 group-hover:border-border-hairline group-hover:text-foreground tabular-nums">
                         {i + 1}
                       </span>
                       <span className="flex-1 min-w-0">

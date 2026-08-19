@@ -65,7 +65,7 @@ export function EraKeyFigures({ era }: { era: HistoryEra }) {
               to={`/personalities/${f.slug}`}
               // A chip FILLS on hover — it never lifts. `no-underline` keeps the
               // unlayered `li a` rule from collapsing the flex row.
-              className="flex items-center gap-2 border-2 border-foreground bg-background py-1 pl-1 pr-2 text-13 no-underline transition-colors duration-fast hover:bg-foreground hover:text-background"
+              className="flex items-center gap-2 bg-card py-1 pl-1 pr-2 text-13 no-underline transition-colors duration-fast hover:bg-foreground hover:text-background rounded-container shadow-soft"
             >
               {/* Avatars are circles — the sanctioned rounded-full exception. */}
               <Avatar className="h-7 w-7">

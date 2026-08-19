@@ -100,8 +100,7 @@ export function MapRail({ points, selectedId, loading, onHover, onSelect }: MapR
     }
   };
 
-  const shell =
-    'pointer-events-auto w-[min(960px,100%)] border-[3px] border-foreground bg-background';
+  const shell = 'pointer-events-auto w-[min(960px,100%)] bg-card rounded-container shadow-soft';
 
   // First-load skeleton — avoids a 0→data pop before the first fetch resolves.
   if (loading && total === 0) {
@@ -184,7 +183,7 @@ export function MapRail({ points, selectedId, loading, onHover, onSelect }: MapR
                   name: point.name,
                 })}
                 className={cn(
-                  'card-lift-sm block w-56 shrink-0 cursor-pointer snap-start border-2 border-foreground bg-background text-left',
+                  'card-lift-sm block w-56 shrink-0 cursor-pointer snap-start bg-card text-left rounded-container shadow-soft',
                   'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                   selectedId === point.id && 'bg-foreground text-background',
                 )}

@@ -14,18 +14,36 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import {
-  AGE_BANDS, BODY_TYPES, GENITALIA_OPTIONS, INTO_TAGS as FALLBACK_INTO, LIMITS as FALLBACK_LIMITS, ROLES, SAFER_SEX_PREFS, SIZE_CM_OPTIONS,
+  AGE_BANDS,
+  BODY_TYPES,
+  GENITALIA_OPTIONS,
+  INTO_TAGS as FALLBACK_INTO,
+  LIMITS as FALLBACK_LIMITS,
+  ROLES,
+  SAFER_SEX_PREFS,
+  SIZE_CM_OPTIONS,
 } from '@/assets/intimate/options';
-import {
-  angleOptions, bodyPictograms, getGenitalPictogramSet,
-} from '@/assets/intimate/pictograms';
+import { angleOptions, bodyPictograms, getGenitalPictogramSet } from '@/assets/intimate/pictograms';
 import type { Genitalia, IntimateProfile, WizardStep } from '@/lib/intimate/types';
 import { StepperShell, type StepperStep } from '@/components/ui/StepperShell';
 import { FlatFieldGroup, FlatField } from '@/components/ui/FlatFieldGroup';
 
 const STEP_ORDER: WizardStep[] = [
-  'consent','genitalia','genital-pictogram','size','angle','body-pictogram','body-type',
-  'age','height','role','into','limits','safer-sex','text','review',
+  'consent',
+  'genitalia',
+  'genital-pictogram',
+  'size',
+  'angle',
+  'body-pictogram',
+  'body-type',
+  'age',
+  'height',
+  'role',
+  'into',
+  'limits',
+  'safer-sex',
+  'text',
+  'review',
 ];
 
 const STEP_LABELS: Record<WizardStep, string> = {
@@ -47,7 +65,8 @@ const STEP_LABELS: Record<WizardStep, string> = {
 };
 
 const STEP_DESCRIPTIONS: Partial<Record<WizardStep, string>> = {
-  consent: 'This section is 18+. Your intimate profile stays invisible until you complete it, and only opted-in users can see it.',
+  consent:
+    'This section is 18+. Your intimate profile stays invisible until you complete it, and only opted-in users can see it.',
   genitalia: 'Pick what applies to you.',
   size: 'Approximate size in centimeters.',
   angle: 'Erection angle.',
@@ -170,11 +189,7 @@ export default function IntimateOnboard() {
       nextLabel={isLast ? (upsert.isPending ? 'Activating…' : 'Activate') : 'Next'}
       variant="discreet"
     >
-      <FlatFieldGroup
-        title={STEP_LABELS[step]}
-        description={STEP_DESCRIPTIONS[step]}
-        noTopBorder
-      >
+      <FlatFieldGroup title={STEP_LABELS[step]} description={STEP_DESCRIPTIONS[step]} noTopBorder>
         {step === 'consent' && (
           <FlatField>
             <label htmlFor="intimate-consent" className="flex items-start gap-4 cursor-pointer">
@@ -293,9 +308,7 @@ export default function IntimateOnboard() {
           <ChipPicker
             options={ROLES as readonly string[]}
             selected={merged.role ?? []}
-            onToggle={(v) =>
-              update({ role: toggleIn(merged.role ?? [], v) })
-            }
+            onToggle={(v) => update({ role: toggleIn(merged.role ?? [], v) })}
           />
         )}
 
@@ -303,9 +316,7 @@ export default function IntimateOnboard() {
           <ChipPicker
             options={kinkVocab}
             selected={merged.into_tags ?? []}
-            onToggle={(v) =>
-              update({ into_tags: toggleIn(merged.into_tags ?? [], v) })
-            }
+            onToggle={(v) => update({ into_tags: toggleIn(merged.into_tags ?? [], v) })}
           />
         )}
 
@@ -313,9 +324,7 @@ export default function IntimateOnboard() {
           <ChipPicker
             options={kinkTags?.length ? kinkVocab : (FALLBACK_LIMITS as readonly string[])}
             selected={merged.limits ?? []}
-            onToggle={(v) =>
-              update({ limits: toggleIn(merged.limits ?? [], v) })
-            }
+            onToggle={(v) => update({ limits: toggleIn(merged.limits ?? [], v) })}
           />
         )}
 
@@ -388,7 +397,9 @@ function toggleIn(arr: string[], v: string): string[] {
 }
 
 function PictogramGrid({
-  picks, selected, onSelect,
+  picks,
+  selected,
+  onSelect,
 }: {
   picks: Record<string, (p: React.SVGProps<SVGSVGElement>) => JSX.Element>;
   selected: string | null;
@@ -407,15 +418,13 @@ function PictogramGrid({
             aria-pressed={isSelected}
             className={`relative p-4 flex items-center justify-center border-border transition-colors ${
               (i + 1) % 4 !== 0 ? 'border-r' : ''
-            } ${row > 0 ? '' : ''} ${
-              isSelected ? 'bg-foreground/5' : 'hover:bg-muted/40'
-            }`}
+            } ${row > 0 ? '' : ''} ${isSelected ? 'bg-foreground/5' : 'hover:bg-muted/40'}`}
           >
             <Picto width={64} height={64} />
             {isSelected && (
               <span
                 aria-hidden
-                className="absolute inset-0 border-2 border-foreground pointer-events-none"
+                className="absolute inset-0 border border-border-hairline pointer-events-none"
               />
             )}
           </button>
@@ -426,9 +435,15 @@ function PictogramGrid({
 }
 
 function NumberPicker({
-  label, options, value, onSelect,
+  label,
+  options,
+  value,
+  onSelect,
 }: {
-  label: string; options: readonly number[]; value: number | null; onSelect: (n: number) => void;
+  label: string;
+  options: readonly number[];
+  value: number | null;
+  onSelect: (n: number) => void;
 }) {
   return (
     <FlatField label={label}>
@@ -450,9 +465,15 @@ function NumberPicker({
 }
 
 function ChipPicker({
-  options, selected, onToggle, single,
+  options,
+  selected,
+  onToggle,
+  single,
 }: {
-  options: readonly string[]; selected: string[]; onToggle: (v: string) => void; single?: boolean;
+  options: readonly string[];
+  selected: string[];
+  onToggle: (v: string) => void;
+  single?: boolean;
 }) {
   return (
     <div className="flex flex-wrap gap-2">

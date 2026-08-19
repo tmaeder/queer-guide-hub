@@ -116,7 +116,7 @@ export function EventsResultHeader({
           id="events-sort"
           value={sort}
           onChange={(e) => onSortChange(e.target.value as EventSort)}
-          className="max-w-[9rem] shrink-0 border-2 border-foreground bg-background px-2 text-13 font-bold text-foreground"
+          className="max-w-[9rem] shrink-0 bg-card px-2 text-13 font-bold text-foreground rounded-container shadow-soft"
         >
           {SORT_ORDER.map((key) => (
             <option key={key} value={key} disabled={key === 'distance' && !userLocation && !nearMe}>

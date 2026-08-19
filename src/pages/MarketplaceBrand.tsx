@@ -76,10 +76,7 @@ export default function MarketplaceBrand() {
           {t('marketplace.noMaker', 'No maker here.')}
         </h1>
         <p className="mt-4 max-w-reading text-body-lg text-muted-foreground">
-          {t(
-            'marketplace.noMakerLede',
-            'This brand is not listed, or its page has been retired.',
-          )}
+          {t('marketplace.noMakerLede', 'This brand is not listed, or its page has been retired.')}
         </p>
         <DeadEndTrack className="mt-10" label={slug ?? 'Unknown'} type="marketplace" />
         <div className="mt-8 flex flex-wrap gap-2">
@@ -99,11 +96,11 @@ export default function MarketplaceBrand() {
 
   return (
     <div className="min-h-screen">
-      <header className="border-b-4 border-foreground">
+      <header className="border-b border-border-hairline">
         {/* The banner is the line running behind the maker's mark — the one
             place this page shows track colour. Ink ground, so the yellow is
             already border-gated by the band's own edges. */}
-        <div className="relative border-b-4 border-foreground bg-foreground">
+        <div className="relative border-b border-border-hairline bg-foreground">
           <PageContainer flush className="py-4">
             <MarketplaceLineArt tone="ink" className="ml-auto max-w-[420px]" />
           </PageContainer>
@@ -120,7 +117,7 @@ export default function MarketplaceBrand() {
               </div>
 
               <div className="mt-4 flex items-start gap-4">
-                <div className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden border-[3px] border-foreground bg-background">
+                <div className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden bg-card rounded-container shadow-soft">
                   {brand.logo_url ? (
                     <Image src={brand.logo_url} alt="" aspect="square" rounded="none" />
                   ) : (
@@ -134,9 +131,7 @@ export default function MarketplaceBrand() {
                 </h1>
               </div>
 
-              {brand.story && (
-                <p className="mt-6 max-w-reading text-body-lg">{brand.story}</p>
-              )}
+              {brand.story && <p className="mt-6 max-w-reading text-body-lg">{brand.story}</p>}
 
               {ownership.length > 0 && (
                 <div className="mt-6 flex flex-wrap gap-2">
@@ -151,7 +146,7 @@ export default function MarketplaceBrand() {
               <p className="mt-6 flex items-center gap-4 text-13 text-muted-foreground">
                 <span
                   aria-hidden="true"
-                  className="h-1.5 w-10 shrink-0 border border-foreground bg-track-yellow"
+                  className="h-1.5 w-10 shrink-0 border border-border-hairline bg-track-yellow"
                 />
                 <span className="tabular-nums">
                   {count.toLocaleString()} listing{count !== 1 ? 's' : ''}
@@ -172,7 +167,7 @@ export default function MarketplaceBrand() {
 
       {/* FactGrid self-filters falsy values and returns null when every one is
           empty, so this is deliberately unguarded at the call site. */}
-      <div className="border-b-4 border-foreground">
+      <div className="border-b border-border-hairline">
         <PageContainer flush className="py-8 md:py-12">
           <FactGrid
             // Ownership is deliberately NOT a fact here: it is already stated
@@ -206,11 +201,11 @@ export default function MarketplaceBrand() {
       </PageContainer>
 
       {/* End of line: the one ink block on the page. */}
-      <div className="border-t-4 border-foreground">
+      <div className="border-t border-border-hairline">
         <PageContainer flush className="py-12 md:py-16">
           <section
             aria-labelledby="brand-end-of-line"
-            className="border-[3px] border-foreground bg-foreground p-6 text-background md:p-8"
+            className="bg-foreground p-6 text-background md:p-8"
           >
             <p className="text-2xs font-bold uppercase tracking-label text-background/70">
               {t('marketplace.endOfLine', 'End of line')}
@@ -220,7 +215,7 @@ export default function MarketplaceBrand() {
             </h2>
             <LocalizedLink
               to="/marketplace/brands"
-              className="mt-4 inline-flex items-center gap-2 border-2 border-background px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
+              className="border mt-4 inline-flex items-center gap-2 border-background px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
             >
               {t('marketplace.allMakers', 'All makers')} →
             </LocalizedLink>

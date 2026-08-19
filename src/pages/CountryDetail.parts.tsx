@@ -123,7 +123,7 @@ export function CountryLegalRecord({
       <VersionHistory revisions={revisions} />
       <LocalizedLink
         to={`/history?country=${encodeURIComponent(countryName)}`}
-        className="mt-4 inline-block border-2 border-foreground px-4 py-2 text-xs2 font-bold no-underline transition-colors hover:bg-foreground hover:text-background"
+        className="mt-4 inline-block px-4 py-2 text-xs2 font-bold no-underline transition-colors hover:bg-foreground hover:text-background"
       >
         {seeAllLabel}
       </LocalizedLink>
@@ -231,7 +231,7 @@ export function CountryTravelTab({
   // suppressed in favour of a sober pointer to the rights section.
   if (hasAnyCriminalizationSignal(country.lgbti_criminalization)) {
     return (
-      <div className="flex gap-4 border-[3px] border-destructive p-4 sm:p-6">
+      <div className="border flex gap-4 border-destructive p-4 sm:p-6">
         <ShieldAlert size={18} aria-hidden="true" className="mt-0.5 shrink-0 text-destructive" />
         <div className="flex flex-col gap-2">
           <p className="text-body-lg font-bold">{noDealsTitle}</p>
@@ -317,7 +317,7 @@ export function CountryMapTab({
       {openLabel && (
         <LocalizedLink
           to={`/map?country=${encodeURIComponent(country.name)}`}
-          className="block border-t-2 border-foreground px-2 py-2 text-2xs font-bold uppercase tracking-label no-underline transition-colors hover:bg-foreground hover:text-background"
+          className="block border-t border-border-hairline px-2 py-2 text-2xs font-bold uppercase tracking-label no-underline transition-colors hover:bg-foreground hover:text-background"
         >
           {openLabel}
         </LocalizedLink>

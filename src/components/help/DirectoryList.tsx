@@ -20,11 +20,11 @@ export function DirectoryList({ directories }: { directories: Hotline[] }) {
   if (directories.length === 0) return null;
 
   return (
-    <ul className="m-0 list-none border-[3px] border-foreground bg-background p-0">
+    <ul className="m-0 list-none bg-card p-0 rounded-container shadow-soft">
       {directories.map((d) => {
         const live = d.url && d.link_status !== 'broken';
         return (
-          <li key={d.id} className="border-b-2 border-foreground/10 last:border-b-0">
+          <li key={d.id} className="border-b border-foreground/10 last:border-b-0">
             {live ? (
               <a
                 href={d.url}

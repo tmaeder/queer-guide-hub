@@ -101,7 +101,7 @@ export function CitiesControlBar({
           aria-label={t('cities.sortAriaLabel', 'Sort cities')}
           value={sort}
           onChange={(e) => onSortChange(e.target.value as CitiesSortKey)}
-          className="h-10 max-w-[9rem] shrink-0 border-2 border-foreground bg-background px-2 text-13 font-bold text-foreground md:h-8"
+          className="h-10 max-w-[9rem] shrink-0 bg-card px-2 text-13 font-bold text-foreground md:h-8 rounded-container shadow-soft"
         >
           {CITIES_SORT_KEYS.map((k) => (
             <option key={k} value={k}>

@@ -23,7 +23,12 @@ const QUALITY_QUEUE_KEYS = [
 const QUEUE_CHIPS = [
   { key: 'staging', keys: ['staging'], label: 'Staging', countKey: 'staging' as const },
   { key: 'moderation', keys: ['moderation'], label: 'Reports', countKey: 'moderation' as const },
-  { key: 'submissions', keys: ['submissions'], label: 'Submissions', countKey: 'submissions' as const },
+  {
+    key: 'submissions',
+    keys: ['submissions'],
+    label: 'Submissions',
+    countKey: 'submissions' as const,
+  },
   { key: 'content', keys: ['content'], label: 'CMS', countKey: 'cmsReview' as const },
   { key: 'automation', keys: ['automation'], label: 'Auto', countKey: 'automation' as const },
   { key: 'tags', keys: ['tags'], label: 'Tags', countKey: 'tagSuggestions' as const },
@@ -67,16 +72,13 @@ export function TriageFilterBar({ filters, counts, onFiltersChange }: TriageFilt
               onClick={() => toggleQueue(chip.keys)}
               className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs border transition-colors ${
                 active
-                  ? 'bg-foreground text-background border-foreground'
+                  ? 'bg-foreground text-background'
                   : 'bg-background text-foreground border-border hover:bg-muted'
               }`}
             >
               {chip.label}
               {count > 0 && (
-                <Badge
-                  variant="secondary"
-                  className="h-4 min-w-4 px-1 text-2xs font-normal"
-                >
+                <Badge variant="secondary" className="h-4 min-w-4 px-1 text-2xs font-normal">
                   {count}
                 </Badge>
               )}

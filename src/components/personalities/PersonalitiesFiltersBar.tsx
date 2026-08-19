@@ -56,7 +56,7 @@ function FilterChip({ label, active, onClick, capitalize }: FilterChipProps) {
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        'shrink-0 cursor-pointer border-2 border-foreground px-4 py-1 text-13 font-bold transition-colors',
+        'shrink-0 cursor-pointer bg-muted rounded-element px-4 py-1 text-13 font-bold transition-colors',
         active ? 'bg-foreground text-background' : 'bg-background hover:bg-surface-container',
         capitalize && 'capitalize',
       )}
@@ -90,10 +90,7 @@ export function PersonalitiesFiltersBar({ filters, onFiltersChange }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters.search]);
 
-  const professionChips = useMemo(
-    () => facets.map((f) => f.profession),
-    [facets],
-  );
+  const professionChips = useMemo(() => facets.map((f) => f.profession), [facets]);
 
   const setProfession = (profession: string | null) => {
     onFiltersChange({ ...filters, profession: profession ?? undefined });
@@ -143,7 +140,10 @@ export function PersonalitiesFiltersBar({ filters, onFiltersChange }: Props) {
           <span className="hidden text-2xs font-bold uppercase tracking-label text-muted-foreground sm:block">
             Sort
           </span>
-          <Select value={filters.sortBy ?? 'featured'} onValueChange={(v) => setSort(v as PersonalitySort)}>
+          <Select
+            value={filters.sortBy ?? 'featured'}
+            onValueChange={(v) => setSort(v as PersonalitySort)}
+          >
             <SelectTrigger className="w-40" aria-label="Sort personalities">
               <SelectValue />
             </SelectTrigger>
@@ -256,9 +256,7 @@ export function PersonalitiesFiltersBar({ filters, onFiltersChange }: Props) {
                   })
                 }
               />
-              <Label htmlFor="featured-only">
-                Featured only
-              </Label>
+              <Label htmlFor="featured-only">Featured only</Label>
             </div>
 
             <div className="flex items-start gap-4">
@@ -273,9 +271,7 @@ export function PersonalitiesFiltersBar({ filters, onFiltersChange }: Props) {
                 }
               />
               <div>
-                <Label htmlFor="include-adult">
-                  Include adult performers
-                </Label>
+                <Label htmlFor="include-adult">Include adult performers</Label>
                 <span className="block text-xs text-muted-foreground">
                   Hidden by default. Opt in to browse performers alongside other personalities.
                 </span>

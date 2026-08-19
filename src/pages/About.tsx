@@ -448,10 +448,7 @@ export default function About() {
         />
         <ul className="m-0 mt-8 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
           {values.map((value) => (
-            <li
-              key={value.key}
-              className="flex h-full flex-col gap-2 border-[3px] border-foreground p-6"
-            >
+            <li key={value.key} className="flex h-full flex-col gap-2 p-6">
               <TransitIcon name={value.icon} size={32} className="text-foreground" />
               <h3 className="mt-2 text-title font-bold leading-tight">{value.title}</h3>
               <p className="text-13 leading-relaxed text-muted-foreground">{value.description}</p>
@@ -469,7 +466,7 @@ export default function About() {
         />
         <ul className="m-0 mt-8 grid list-none grid-cols-1 gap-4 p-0 md:grid-cols-3">
           {people.map((member) => (
-            <li key={member.key} className="border-[3px] border-foreground p-6">
+            <li key={member.key} className="p-6">
               <p className="flex items-center gap-2">
                 <StationRing state="done" />
                 <span className="text-2xs uppercase tracking-label text-muted-foreground">
@@ -500,12 +497,17 @@ export default function About() {
           <ul className="m-0 mt-10 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-4">
             {getInvolved.map((item) => (
               <li key={item.key}>
-                {/* On ink both the frame AND the lift shadow have to be paper —
-                    `border-foreground` and the default ink `--shadow-hard` are
-                    each invisible against this band. */}
+                {/* A card on an ink band cannot use the shared elevation: a
+                    soft black shadow is invisible against ink, which is why
+                    the old hard-shadow system needed a paper-coloured
+                    `card-lift-invert` variant here. The soft system has no
+                    equivalent — a blurred paper glow reads as a halo, not as
+                    depth — so this tile separates the way the rest of the
+                    system does, by surface tint, and gives its feedback by
+                    deepening that tint instead of lifting. */}
                 <LocalizedLink
                   to={item.to}
-                  className="card-lift card-lift-invert flex h-full flex-col gap-2 border-[3px] border-background p-6 text-background no-underline"
+                  className="flex h-full flex-col gap-2 rounded-container bg-background/10 p-6 text-background no-underline transition-colors duration-fast hover:bg-background/20"
                 >
                   <TransitIcon name={item.icon} size={28} />
                   <span className="mt-2 text-title font-bold leading-tight">{item.title}</span>
@@ -518,11 +520,7 @@ export default function About() {
           <div className="mt-10 flex flex-wrap gap-2">
             {/* asChild, not a Link wrapping a Button — that nests a <button>
                 inside an <a>, which is invalid HTML. */}
-            <Button
-              asChild
-              size="lg"
-              className="border-background bg-background text-foreground hover:opacity-90"
-            >
+            <Button asChild size="lg" className="bg-background text-foreground hover:opacity-90">
               <LocalizedLink to="/submit" className="no-underline">
                 {t('about.cta.primary', 'Submit a venue')}
               </LocalizedLink>
@@ -531,7 +529,7 @@ export default function About() {
               asChild
               size="lg"
               variant="outline"
-              className="border-background bg-transparent text-background hover:bg-background hover:text-foreground"
+              className="bg-transparent text-background hover:bg-background hover:text-foreground"
             >
               <LocalizedLink to="/contact" className="no-underline">
                 {t('about.cta.secondary', 'Contact us')}

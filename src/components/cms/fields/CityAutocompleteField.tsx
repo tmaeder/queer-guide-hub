@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { Check, ChevronsUpDown} from 'lucide-react';
+import { Check, ChevronsUpDown } from 'lucide-react';
 import { FieldWrapper } from './FieldWrapper';
 import type { FieldProps } from './FieldRenderer';
 import { Button } from '@/components/ui/button';
@@ -170,7 +170,7 @@ export function CityAutocompleteField({
             className={cn(
               'w-full justify-between font-normal',
               !currentValueLabel && 'text-muted-foreground',
-              error && 'border-destructive',
+              error && 'border border-destructive',
             )}
           >
             <span className="truncate">

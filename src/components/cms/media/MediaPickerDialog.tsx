@@ -367,7 +367,7 @@ export default function MediaPickerDialog({
                         role="button"
                         tabIndex={0}
                         aria-pressed={isSelected}
-                        className={`cursor-pointer rounded-element overflow-hidden border-2 relative bg-muted hover:border-muted ${
+                        className={`cursor-pointer rounded-element overflow-hidden relative bg-muted hover:border-muted ${
                           isSelected ? 'border-primary hover:border-primary' : 'border-transparent'
                         }`}
                       >

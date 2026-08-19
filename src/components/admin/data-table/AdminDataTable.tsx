@@ -1,15 +1,12 @@
 import { useMemo } from 'react';
 import {
-  useReactTable,
-  getCoreRowModel,
-  getSortedRowModel,
-  getGroupedRowModel,
-  getExpandedRowModel,
+  useTable,
   flexRender,
   type SortingState,
-  type VisibilityState,
+  type ColumnVisibilityState,
   type GroupingState,
 } from '@tanstack/react-table';
+import { adminTableFeatures } from './features';
 import { Checkbox } from '@/components/ui/checkbox';
 import { MoreVertical } from 'lucide-react';
 import {
@@ -138,20 +135,26 @@ export function AdminDataTable<TData extends { id: string }>({
     ? [{ id: state.sorting.column, desc: state.sorting.direction === 'desc' }]
     : [];
 
-  const columnVisibility: VisibilityState = state.columnVisibility;
+  const columnVisibility: ColumnVisibilityState = state.columnVisibility;
   const grouping: GroupingState = state.grouping;
 
-  // eslint-disable-next-line react-hooks/incompatible-library -- third-party (react-hook-form etc.) returns a function the compiler can't memoize; the value is consumed inline and not propagated to memoized descendants.
-  const table = useReactTable({
+  const table = useTable({
+    // v9 requires features to be registered explicitly; the row models that
+    // were `getSortedRowModel()` / `getGroupedRowModel()` / `getExpandedRowModel()`
+    // options in v8 are now slots inside `adminTableFeatures`, and the core row
+    // model is implicit.
+    //
+    // `manualPagination: true` is gone rather than ported: it only ever told v8
+    // "don't slice rows client-side", and v9 cannot slice them because
+    // `rowPaginationFeature` / `paginatedRowModel` are deliberately not
+    // registered. Paging stays what it already was — server-side via
+    // `useAdminTableQuery`, rendered by `DataTablePagination`, which reads
+    // `state.pagination` and never touches this table instance.
+    features: adminTableFeatures,
     data,
     columns,
     state: { sorting, columnVisibility, grouping },
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getGroupedRowModel: getGroupedRowModel(),
-    getExpandedRowModel: getExpandedRowModel(),
     manualSorting: true,
-    manualPagination: true,
     enableMultiSort: false,
   });
 
@@ -373,7 +376,7 @@ export function AdminDataTable<TData extends { id: string }>({
                                 onClick={() => action.onClick(row.original)}
                                 className={
                                   action.variant === 'destructive'
-                                    ? 'border-l-2 border-l-foreground font-medium'
+                                    ? 'border-l border-l-foreground font-medium'
                                     : undefined
                                 }
                               >

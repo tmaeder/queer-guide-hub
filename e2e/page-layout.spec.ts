@@ -232,13 +232,35 @@ const MAX_STICKY_RATIO = 0.3;
 /** The first real content of the page must begin within this many viewports. */
 const MAX_SCREENS_TO_CONTENT = 1.25;
 /** A link into a detail page — the first thing on these routes that is content
- *  rather than chrome. */
-const CARD_LINK_SELECTOR =
-  'main a[href*="/city/"], main a[href*="/venues/"], main a[href*="/events/"], main a[href*="/marketplace/"], main a[href*="/tags/"]';
+ *  rather than chrome.
+ *
+ *  PER ROUTE, not one shared list. A shared list measures "the first card-like
+ *  link anywhere", which is a different question from "where does this route's
+ *  content begin". On 2026-08-16 the runner's geolocation put /events in its
+ *  empty state — the chips read `Tonight 0 · This weekend 0 · Next 7 days 0`
+ *  and not one event rendered — and the shared list still matched a link inside
+ *  the editorial card that sits above the footer, 1,123px down. The route
+ *  scored 1.33 screens and failed a guard about buried content, on a page that
+ *  had no content to bury.
+ *
+ *  The empty-state skip below (`firstTop !== null`) is what should have fired.
+ *  It cannot while a link belonging to some other route's content still
+ *  matches, so the fix belongs in the selector, not in the skip. */
+const CARD_LINK_SELECTORS: Record<string, string> = {
+  '/cities': 'main a[href*="/city/"]',
+  '/events': 'main a[href*="/events/"]',
+  '/venues': 'main a[href*="/venues/"]',
+  '/marketplace': 'main a[href*="/marketplace/"]',
+  '/tags': 'main a[href*="/tags/"]',
+};
 
 test.describe('page layout — mobile density', () => {
   for (const route of DENSITY_ROUTES) {
     test(`${route} does not bury its content under chrome at 390px`, async ({ page }) => {
+      // A route added to DENSITY_ROUTES without its own selector would otherwise
+      // measure nothing and skip silently — green, asserting zero.
+      const cardSelector = CARD_LINK_SELECTORS[route];
+      expect(cardSelector, `${route} has no entry in CARD_LINK_SELECTORS`).toBeTruthy();
       await page.setViewportSize({ width: 390, height: 844 });
       await page.goto(route);
       await page.waitForLoadState('domcontentloaded');
@@ -248,7 +270,7 @@ test.describe('page layout — mobile density', () => {
       // and 2.4 screens on the same build depending on how warm the dev server
       // was. Measuring a layout before its content exists is measuring nothing.
       await page
-        .locator(CARD_LINK_SELECTOR)
+        .locator(cardSelector)
         .first()
         .waitFor({ state: 'attached', timeout: 25_000 })
         .catch(() => {});
@@ -258,7 +280,7 @@ test.describe('page layout — mobile density', () => {
       const firstTop = await page.evaluate((SEL) => {
         const first = document.querySelector(SEL);
         return first ? Math.round(first.getBoundingClientRect().top + window.scrollY) : null;
-      }, CARD_LINK_SELECTOR);
+      }, cardSelector);
 
       // Then scroll, and measure sticky chrome THERE. A bar that sits below the
       // fold at rest is not pinned yet, so measuring at scrollY=0 reports 0 for

@@ -471,7 +471,7 @@ export default function Personalities() {
           <div
             role="tablist"
             aria-label="View mode"
-            className="inline-flex border-2 border-foreground"
+            className="inline-flex border border-border-hairline"
           >
             {VIEW_TABS.map(({ key, icon: Icon, labelKey, fallback, title }, i) => (
               <button
@@ -482,7 +482,7 @@ export default function Personalities() {
                 onClick={() => setView(key)}
                 className={cn(
                   'flex items-center gap-1.5 px-4 py-2 text-13 font-bold transition-colors',
-                  i > 0 && 'border-l-2 border-foreground',
+                  i > 0 && 'border-l border-border-hairline',
                   view === key
                     ? 'bg-foreground text-background'
                     : 'bg-background hover:bg-surface-container',
@@ -507,7 +507,7 @@ export default function Personalities() {
             {activeChips.map((chip) => (
               <span
                 key={chip.key}
-                className="inline-flex items-center gap-1.5 border-2 border-foreground px-2 py-1 text-13 font-bold"
+                className="inline-flex items-center gap-1.5 bg-muted rounded-element px-2 py-1 text-13 font-bold"
               >
                 {chip.label}
                 <button
@@ -584,11 +584,7 @@ export default function Personalities() {
             {view === 'timeline' ? (
               <PersonalitiesTimeline personalities={personalities} />
             ) : view === 'map' ? (
-              <Suspense
-                fallback={
-                  <div className="h-[600px] w-full animate-pulse border-[3px] border-foreground bg-muted" />
-                }
-              >
+              <Suspense fallback={<div className="h-[600px] w-full animate-pulse bg-muted" />}>
                 <PersonalitiesMap personalities={personalities} />
               </Suspense>
             ) : (

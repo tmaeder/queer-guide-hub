@@ -12,6 +12,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 import { CurrencySelector } from '@/components/i18n/CurrencySelector';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { AuthDialog } from '@/components/auth/AuthDialog';
 import { Button } from '@/components/ui/button';
 import {
@@ -164,7 +165,7 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
                       key={intent.to}
                       to={intent.to}
                       onClick={close}
-                      className="flex items-center gap-4 border-2 border-foreground p-4 no-underline transition-colors hover:bg-foreground hover:text-background"
+                      className="flex items-center gap-4 p-4 no-underline transition-colors hover:bg-foreground hover:text-background"
                     >
                       {/* The line, then the icon — the same pair the desktop
                           tab and the compact bar carry, so a reader arriving
@@ -206,7 +207,7 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
                           key={dest.to}
                           to={dest.to}
                           onClick={close}
-                          className="flex flex-col items-center justify-center gap-2 border-2 border-foreground p-4 text-center no-underline transition-colors hover:bg-foreground hover:text-background"
+                          className="flex flex-col items-center justify-center gap-2 p-4 text-center no-underline transition-colors hover:bg-foreground hover:text-background"
                         >
                           <Icon size={20} aria-hidden />
                           <span className="text-2xs font-bold leading-tight">
@@ -269,6 +270,7 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
               <div className="flex items-center gap-2">
                 <LanguageSwitcher />
                 <CurrencySelector />
+                <ThemeToggle />
               </div>
             </div>
           </div>

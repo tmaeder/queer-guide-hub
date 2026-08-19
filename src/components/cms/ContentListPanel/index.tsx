@@ -24,6 +24,7 @@ import { SortBuilder } from './filters/SortBuilder';
 import { ViewSettings } from './filters/ViewSettings';
 import { ViewBar } from './filters/ViewBar';
 import { ListPagination } from './ListPagination';
+import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
 import { useContentViews, type SavedView } from '@/hooks/useContentViews';
 import { useGroupedRows } from '@/hooks/useGroupedRows';
 import { normalizeSpec, specEquals } from './viewSpec';
@@ -37,6 +38,17 @@ const BulkActionsBar = lazy(() =>
 );
 
 interface ContentListPanelProps {
+  /**
+   * Suppress this panel's own archetype header.
+   *
+   * Set by a page that embeds the panel AND owns the page title — otherwise
+   * the route renders TWO h1s, which is both an a11y defect (a screen reader
+   * announces two page titles) and the exact invariant
+   * e2e/admin-route-baseline.spec.ts asserts. Introduced after adopting the
+   * header here silently gave /admin/content/milestones a second one.
+   */
+  hideHeader?: boolean;
+
   contentTypeId?: string;
   onEdit?: (contentType: string, itemId: string) => void;
   onCreate?: (contentType: string) => void;
@@ -123,53 +135,83 @@ function ContentListPanelBody(props: ContentListPanelProps) {
   return (
     <div>
       <ContentEntityTabs type={type ?? props.contentTypeId} />
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-4">
-          {Icon && (
-            <div
-              className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-              style={{ backgroundColor: tintOf(typeColor) }}
-            >
-              <Icon size={16} style={{ color: typeColor }} />
-            </div>
-          )}
-          <h5 className="text-xl font-bold">{c.config ? c.config.label.plural : 'All Content'}</h5>
-          {!c.loading && (
-            <Badge
-              variant="secondary"
-              className="h-[22px] text-xs font-semibold"
-              style={{ backgroundColor: tintOf(typeColor), color: typeColor }}
-            >
-              {c.totalCount.toLocaleString()}
-            </Badge>
-          )}
-        </div>
-        <div className="flex flex-row gap-2">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 w-7 p-0"
-                onClick={() => c.loadItems()}
-              >
-                <RefreshCw size={16} />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Refresh</TooltipContent>
-          </Tooltip>
-          {c.config?.toolbarActions?.()}
-          {c.config && c.allListColumns.length > 0 && (
-            <ExportExcelButton onExport={() => exportContentType(c.config!, c.allListColumns)} />
-          )}
-          {c.config && (
-            <Button size="sm" onClick={() => c.onCreate(c.config!.id)}>
-              <Plus size={16} className="mr-1" />
-              New {c.config.label.singular}
-            </Button>
-          )}
-        </div>
-      </div>
+      {/* Archetype A — the fixed header grammar. This route family is 24 of the
+        40 admin routes, so it is the one the eight-frame claim actually rests
+        on.
+
+        The title was an <h5 className="text-xl font-bold">: the wrong heading
+        LEVEL (a page has one h1, and a screen-reader user navigating by
+        heading found nothing at the top of the busiest console in the product)
+        and an arbitrary size off the semantic scale.
+
+        Only the HEADER is adopted here, not AdminIndexFrame's body contract.
+        The body already carries five view modes, a bulk bar and two paginators
+        wired through useContentList; restructuring that in the same change as
+        the header would put a behavioural rewrite inside a layout diff. The
+        count rides with the title. */}
+      {!props.hideHeader && (
+        <AdminArchetypeHeader
+          title={
+            <span className="flex items-center gap-4">
+              {Icon && (
+                <span
+                  className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                  style={{ backgroundColor: tintOf(typeColor) }}
+                >
+                  <Icon size={16} style={{ color: typeColor }} />
+                </span>
+              )}
+              {c.config ? c.config.label.plural : 'All Content'}
+              {/* The record count sits with the title, not in a countLine slot:
+              AdminArchetypeHeader has no such slot (that is AdminIndexFrame's,
+              and adopting the full body contract here would mean restructuring
+              five view modes in a layout diff). */}
+              {!c.loading && (
+                <Badge
+                  variant="secondary"
+                  className="h-[22px] text-xs font-semibold"
+                  style={{ backgroundColor: tintOf(typeColor), color: typeColor }}
+                >
+                  {c.totalCount.toLocaleString()}
+                </Badge>
+              )}
+            </span>
+          }
+          actions={
+            <>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    // A Tooltip is NOT an accessible name: its content lives in
+                    // a portal and is never referenced by the trigger, so an
+                    // icon-only button reads as unlabelled (axe button-name).
+                    aria-label="Refresh"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0"
+                    onClick={() => c.loadItems()}
+                  >
+                    <RefreshCw size={16} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Refresh</TooltipContent>
+              </Tooltip>
+              {c.config?.toolbarActions?.()}
+              {c.config && c.allListColumns.length > 0 && (
+                <ExportExcelButton
+                  onExport={() => exportContentType(c.config!, c.allListColumns)}
+                />
+              )}
+              {c.config && (
+                <Button size="sm" onClick={() => c.onCreate(c.config!.id)}>
+                  <Plus size={16} className="mr-1" />
+                  New {c.config.label.singular}
+                </Button>
+              )}
+            </>
+          }
+        />
+      )}
 
       {c.contentTypeId && (
         <ViewBar

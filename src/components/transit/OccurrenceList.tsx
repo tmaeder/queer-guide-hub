@@ -29,12 +29,12 @@ export function OccurrenceList({
   if (occurrences.length === 0) return null;
 
   return (
-    <div className={cn('border-[3px] border-foreground', className)}>
+    <div className={cn('border border-border-hairline', className)}>
       {occurrences.map((o, i) => (
         <div
           key={o.id}
           className={cn(
-            'flex flex-wrap items-center gap-4 border-b-2 border-foreground/15 px-4 py-4 last:border-b-0',
+            'flex flex-wrap items-center gap-4 border-b border-foreground/15 px-4 py-4 last:border-b-0',
             i === 0 && 'bg-foreground text-background',
           )}
         >

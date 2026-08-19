@@ -42,7 +42,7 @@ export function TagSafetyCallout({ isSensitive, topics }: TagSafetyCalloutProps)
     <aside
       role="note"
       aria-label={t('tags.detail.contentNote', 'Content note')}
-      className="border-[3px] border-foreground bg-foreground p-4 text-background"
+      className="bg-foreground p-4 text-background"
     >
       <p className="text-2xs font-bold uppercase tracking-label text-background/70">
         {t('tags.detail.contentNote', 'Content note')}
@@ -58,7 +58,7 @@ export function TagSafetyCallout({ isSensitive, topics }: TagSafetyCalloutProps)
           {list.map((topic) => (
             <li
               key={topic}
-              className="border-2 border-background px-2 py-1 text-2xs font-bold uppercase tracking-label"
+              className="border border-background px-2 py-1 text-2xs font-bold uppercase tracking-label"
             >
               {humanize(topic)}
             </li>
@@ -67,7 +67,7 @@ export function TagSafetyCallout({ isSensitive, topics }: TagSafetyCalloutProps)
       )}
       <LocalizedLink
         to="/help"
-        className="mt-4 inline-block border-2 border-background px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
+        className="border mt-4 inline-block border-background px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
       >
         {t('tags.detail.findSupport', 'Find support')}
       </LocalizedLink>

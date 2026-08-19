@@ -29,7 +29,7 @@ import {
 function CodeRow({ item }: { item: MedicalCode }) {
   const { t } = useTranslation();
   return (
-    <li className="flex items-baseline justify-between gap-4 border-b-2 border-foreground/15 py-2 last:border-b-0">
+    <li className="flex items-baseline justify-between gap-4 border-b border-foreground/15 py-2 last:border-b-0">
       <span className="text-13 opacity-75">{item.label}</span>
       {item.url ? (
         <a
@@ -87,7 +87,7 @@ export function TagDiagnosticCodes({ tagId }: { tagId: string }) {
     <section
       id="codes"
       aria-labelledby="codes-heading"
-      className="border-y-4 border-foreground py-8"
+      className="border-y border-border-hairline py-8"
     >
       <Eyebrow as="p">{t('tags.detail.codes.eyebrow', 'Classification')}</Eyebrow>
       <h2

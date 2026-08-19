@@ -75,7 +75,7 @@ function PickerRow({
       {selected && (
         <StationRing
           state="done"
-          className="shrink-0 group-hover:border-background group-hover:bg-background"
+          className="border shrink-0 group-hover:border-background group-hover:bg-background"
         />
       )}
     </button>
@@ -207,7 +207,7 @@ export function MarketplaceControlBar({
               }
             }}
             style={{ paddingLeft: 42 }}
-            className="h-12 border-[3px] border-foreground bg-background text-15 shadow-hard"
+            className="h-12 bg-card text-15 shadow-soft rounded-container"
             role="combobox"
             aria-autocomplete="list"
             aria-expanded={false}
@@ -337,7 +337,7 @@ export function MarketplaceControlBar({
             id="marketplace-sort"
             value={sortBy}
             onChange={(e) => onSortChange(e.target.value)}
-            className="h-8 shrink-0 border-2 border-foreground bg-background px-2 text-13 font-bold text-foreground"
+            className="h-8 shrink-0 bg-card px-2 text-13 font-bold text-foreground rounded-container shadow-soft"
           >
             {sortOptions.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -372,7 +372,7 @@ export function MarketplaceControlBar({
           reads, so the two surfaces can never disagree about which dimensions
           exist or what they are called. Uncapped on purpose. */}
       {facets.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 border-t-2 border-foreground pt-4">
+        <div className="flex flex-wrap items-center gap-2 border-t border-border-hairline pt-4">
           <span className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
             Filtering by
           </span>

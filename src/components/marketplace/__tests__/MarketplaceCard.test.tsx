@@ -174,9 +174,13 @@ describe('MarketplaceCard', () => {
       ),
     );
     const lift = container.querySelector('.card-lift');
-    expect(lift, 'card must carry the hard-shadow lift').toBeTruthy();
+    expect(lift, 'card must carry the lift').toBeTruthy();
     const card = lift!.querySelector(':scope > div') as HTMLElement;
-    expect(card.className).toContain('border-[3px]');
+    // The rest state is the soft elevation, not a 3px ink cage — the card's
+    // separation from the page moved from the frame to `shadow-soft` plus the
+    // page/card tonal step (soft re-skin 2026-08-17).
+    expect(card.className).toContain('shadow-soft');
+    expect(card.className).not.toContain('border-[3px]');
     expect(card.className).not.toMatch(/hover:bg-/);
     expect(card.className).not.toMatch(/hover:border-/);
   });

@@ -20,13 +20,7 @@ export interface RosterPerson {
  * and renders roles as plain text — there is deliberately no prop through
  * which a caller could sort by popularity or show a total.
  */
-export function Roster({
-  people,
-  className,
-}: {
-  people: RosterPerson[];
-  className?: string;
-}) {
+export function Roster({ people, className }: { people: RosterPerson[]; className?: string }) {
   if (people.length === 0) return null;
 
   const initialsOf = (p: RosterPerson) =>
@@ -45,7 +39,7 @@ export function Roster({
           <>
             <span
               aria-hidden
-              className="grid h-8 w-8 shrink-0 place-items-center rounded-full border-2 border-foreground bg-background text-xs2 font-bold"
+              className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-card text-xs2 font-bold shadow-soft"
             >
               {initialsOf(p)}
             </span>
@@ -58,12 +52,12 @@ export function Roster({
             {p.href ? (
               <LocalizedLink
                 to={p.href}
-                className="flex items-center gap-2 border-2 border-foreground py-2 pe-4 ps-2 no-underline hover:bg-foreground hover:text-background"
+                className="flex items-center gap-2 py-2 pe-4 ps-2 no-underline hover:bg-foreground hover:text-background"
               >
                 {inner}
               </LocalizedLink>
             ) : (
-              <span className="flex items-center gap-2 border-2 border-foreground py-2 pe-4 ps-2">
+              <span className="flex items-center gap-2 bg-muted rounded-element py-2 pe-4 ps-2">
                 {inner}
               </span>
             )}

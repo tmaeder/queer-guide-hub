@@ -1,14 +1,18 @@
-import { flexRender, type Header } from '@tanstack/react-table';
+import { flexRender, type Header, type RowData } from '@tanstack/react-table';
 import { ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 import { TableHead } from '@/components/ui/table';
 import type { AdminColumnMeta } from './types';
+import type { AdminTableFeatures } from './features';
 
-interface DataTableHeaderCellProps<TData> {
-  header: Header<TData, unknown>;
+interface DataTableHeaderCellProps<TData extends RowData> {
+  header: Header<AdminTableFeatures, TData, unknown>;
   onSort?: (columnId: string) => void;
 }
 
-export function DataTableHeaderCell<TData>({ header, onSort }: DataTableHeaderCellProps<TData>) {
+export function DataTableHeaderCell<TData extends RowData>({
+  header,
+  onSort,
+}: DataTableHeaderCellProps<TData>) {
   const meta = header.column.columnDef.meta as AdminColumnMeta | undefined;
   const canSort = meta?.serverSortable !== false && header.column.getCanSort();
   const sorted = header.column.getIsSorted();

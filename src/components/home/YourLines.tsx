@@ -121,10 +121,7 @@ export function YourLines() {
     <Band title={t('home.yourLines.title', 'Your lines')}>
       <ul className="m-0 grid list-none grid-cols-2 gap-4 p-0 md:grid-cols-4">
         {cards.map((c) => (
-          <li
-            key={c.key}
-            className="card-lift relative border-[3px] border-foreground bg-background"
-          >
+          <li key={c.key} className="card-lift relative bg-card rounded-container shadow-soft">
             {!c.image && c.type === 'city' && hasCityNetwork(c.slug) ? (
               // A themed fallback tile says "city". The city's own network says
               // WHICH city — better placeholder, same empty-image branch.

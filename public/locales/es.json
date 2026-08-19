@@ -139,7 +139,7 @@
       "recent_city": "In a city you've explored",
       "featured": "Featured"
     },
-    "ariaLabel": "[ES] Search Queer Guide",
+    "ariaLabel": "Buscar en Queer Guide",
     "escape": "esc",
     "jumpTo": "Ir a",
     "recent": "Reciente",
@@ -218,12 +218,12 @@
     "contact": "Contacto",
     "supportUs": "Apóyanos",
     "history": "Historia",
-    "tagline": "[ES] Every track. Every station. Everyone.",
-    "contributors": "[ES] Contributors",
+    "tagline": "Cada línea. Cada estación. Todo el mundo.",
+    "contributors": "Personas colaboradoras",
     "emergency": {
       "eyebrow": "[ES] In an emergency",
-      "title": "[ES] Crisis lines, 24 hours",
-      "body": "[ES] Trans helpline, LGBT+ crisis support, and local emergency numbers, listed by country and always one click from any page."
+      "title": "Líneas de crisis, 24 horas",
+      "body": "Línea de atención trans, apoyo en crisis LGBT+ y números de emergencia locales, ordenados por país y siempre a un clic desde cualquier página."
     },
     "osmAttribution": "Diagramas de transporte derivados de © colaboradores de OpenStreetMap (ODbL)",
     "reportSomething": "Reportar algo",
@@ -1885,7 +1885,7 @@
       "help": "Ayuda",
       "tags": "Etiquetas",
       "history": "Historia",
-      "guides": "[ES] Guides",
+      "guides": "Guías",
       "trips": "Viajes",
       "organizations": "Organizaciones",
       "wishlists": "Listas de deseos"
@@ -1982,7 +1982,7 @@
       "hub": "Hub"
     },
     "primaryNavigation": "[ES] Primary",
-    "signInToContribute": "[ES] Sign in to contribute"
+    "signInToContribute": "Inicia sesión para contribuir"
   },
   "pages": {
     "venues": {
@@ -3297,7 +3297,7 @@
     "wishlists": "Listas de deseos",
     "tags": "Etiquetas",
     "organizations": "[ES] Organizations",
-    "guides": "[ES] Guides",
+    "guides": "Guías",
     "people": "Conocer gente"
   },
   "chat": {

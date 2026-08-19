@@ -1,7 +1,15 @@
 import { lazy, Suspense, useCallback, Component, type ReactNode } from 'react';
 import { useSearchParams, Link } from 'react-router';
 import { ReactFlowProvider } from '@xyflow/react';
-import { LayoutDashboard, Workflow, Shield, Newspaper, ClipboardCheck, Plug, History } from 'lucide-react';
+import {
+  LayoutDashboard,
+  Workflow,
+  Shield,
+  Newspaper,
+  ClipboardCheck,
+  Plug,
+  History,
+} from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const OverviewTab = lazy(() => import('./tabs/OverviewTab'));
@@ -14,10 +22,10 @@ const CoverageTab = lazy(() => import('./tabs/CoverageTab'));
 const SourcesTab = lazy(() => import('./tabs/SourcesTab'));
 const ErrorsTab = lazy(() => import('./tabs/ErrorsTab'));
 const AlertsTab = lazy(() => import('./tabs/AlertsTab'));
-const ScraperHealthTab  = lazy(() => import('./tabs/ScraperHealthTab'));
-const AuditTab          = lazy(() => import('./tabs/AuditTab'));
-const IntegrationsTab   = lazy(() => import('./tabs/IntegrationsTab'));
-const BackfillsTab      = lazy(() => import('./tabs/BackfillsTab'));
+const ScraperHealthTab = lazy(() => import('./tabs/ScraperHealthTab'));
+const AuditTab = lazy(() => import('./tabs/AuditTab'));
+const IntegrationsTab = lazy(() => import('./tabs/IntegrationsTab'));
+const BackfillsTab = lazy(() => import('./tabs/BackfillsTab'));
 
 type Tab = 'overview' | 'builder' | 'health' | 'sources' | 'news' | 'audit';
 
@@ -29,28 +37,28 @@ type SubSection = {
 };
 
 const HEALTH_SUBS: SubSection[] = [
-  { key: 'monitor',        label: 'Runs',     Component: MonitorTab },
-  { key: 'health',         label: 'Health',   Component: HealthTab },
-  { key: 'scraper-health', label: 'Scraper',  Component: ScraperHealthTab },
-  { key: 'alerts',         label: 'Alerts',   Component: AlertsTab },
-  { key: 'errors',         label: 'Errors',   Component: ErrorsTab },
-  { key: 'dlq',            label: 'DLQ',      Component: DLQTab },
+  { key: 'monitor', label: 'Runs', Component: MonitorTab },
+  { key: 'health', label: 'Health', Component: HealthTab },
+  { key: 'scraper-health', label: 'Scraper', Component: ScraperHealthTab },
+  { key: 'alerts', label: 'Alerts', Component: AlertsTab },
+  { key: 'errors', label: 'Errors', Component: ErrorsTab },
+  { key: 'dlq', label: 'DLQ', Component: DLQTab },
 ];
 
 const SOURCES_SUBS: SubSection[] = [
-  { key: 'sources',      label: 'Managers',     Component: SourcesTab },
-  { key: 'coverage',     label: 'Coverage',     Component: CoverageTab },
+  { key: 'sources', label: 'Managers', Component: SourcesTab },
+  { key: 'coverage', label: 'Coverage', Component: CoverageTab },
   { key: 'integrations', label: 'Integrations', Component: IntegrationsTab },
-  { key: 'backfills',    label: 'Backfills',    Component: BackfillsTab },
+  { key: 'backfills', label: 'Backfills', Component: BackfillsTab },
 ];
 
 const TABS: { key: Tab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { key: 'overview', label: 'Overview', icon: LayoutDashboard },
-  { key: 'builder',  label: 'Builder',  icon: Workflow },
-  { key: 'health',   label: 'Monitoring', icon: Shield },
-  { key: 'sources',  label: 'Sources',  icon: Plug },
-  { key: 'news',     label: 'News',     icon: Newspaper },
-  { key: 'audit',    label: 'Audit',    icon: History },
+  { key: 'builder', label: 'Builder', icon: Workflow },
+  { key: 'health', label: 'Monitoring', icon: Shield },
+  { key: 'sources', label: 'Sources', icon: Plug },
+  { key: 'news', label: 'News', icon: Newspaper },
+  { key: 'audit', label: 'Audit', icon: History },
 ];
 
 /**
@@ -88,16 +96,23 @@ function TabSkeleton() {
   );
 }
 
-class TabErrorBoundary extends Component<{ children: ReactNode; tab: string }, { error: Error | null }> {
+class TabErrorBoundary extends Component<
+  { children: ReactNode; tab: string },
+  { error: Error | null }
+> {
   state = { error: null as Error | null };
-  static getDerivedStateFromError(error: Error) { return { error }; }
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
   render() {
     if (this.state.error) {
       return (
         <div className="flex flex-col items-center justify-center py-16 text-sm text-muted-foreground">
           <p className="font-medium text-destructive mb-1">Failed to load {this.props.tab}</p>
           <p className="text-xs mb-4">{this.state.error.message}</p>
-          <button className="text-xs underline" onClick={() => this.setState({ error: null })}>Retry</button>
+          <button className="text-xs underline" onClick={() => this.setState({ error: null })}>
+            Retry
+          </button>
         </div>
       );
     }
@@ -128,7 +143,7 @@ function SubTabs({
             onClick={() => onSelect(s.key)}
             className={`px-2 py-1 text-xs border rounded-element transition-colors ${
               s.key === current.key
-                ? 'bg-foreground text-background border-foreground'
+                ? 'bg-foreground text-background'
                 : 'bg-background text-muted-foreground border-border hover:text-foreground'
             }`}
           >
@@ -149,16 +164,23 @@ export default function UnifiedDataOps() {
   const [params, setParams] = useSearchParams();
   const rawTab = params.get('tab') ?? '';
   const alias = TAB_ALIAS[rawTab];
-  const activeTab: Tab = alias?.tab ?? (TAB_KEYS.includes(rawTab as Tab) ? (rawTab as Tab) : 'overview');
+  const activeTab: Tab =
+    alias?.tab ?? (TAB_KEYS.includes(rawTab as Tab) ? (rawTab as Tab) : 'overview');
   const activeSub = alias?.sub ?? params.get('sub') ?? undefined;
 
-  const switchTab = useCallback((tab: Tab) => {
-    setParams(tab === 'overview' ? {} : { tab });
-  }, [setParams]);
+  const switchTab = useCallback(
+    (tab: Tab) => {
+      setParams(tab === 'overview' ? {} : { tab });
+    },
+    [setParams],
+  );
 
-  const switchSub = useCallback((sub: string) => {
-    setParams({ tab: activeTab, sub });
-  }, [setParams, activeTab]);
+  const switchSub = useCallback(
+    (sub: string) => {
+      setParams({ tab: activeTab, sub });
+    },
+    [setParams, activeTab],
+  );
 
   let content: ReactNode;
   if (activeTab === 'health') {
@@ -167,10 +189,13 @@ export default function UnifiedDataOps() {
     content = <SubTabs subs={SOURCES_SUBS} active={activeSub ?? 'sources'} onSelect={switchSub} />;
   } else {
     const ActiveComponent =
-      activeTab === 'builder' ? PipelineBuilder
-      : activeTab === 'news' ? NewsTab
-      : activeTab === 'audit' ? AuditTab
-      : OverviewTab;
+      activeTab === 'builder'
+        ? PipelineBuilder
+        : activeTab === 'news'
+          ? NewsTab
+          : activeTab === 'audit'
+            ? AuditTab
+            : OverviewTab;
     content = (
       <TabErrorBoundary tab={activeTab} key={activeTab}>
         <Suspense fallback={<TabSkeleton />}>
@@ -183,26 +208,36 @@ export default function UnifiedDataOps() {
   return (
     <div>
       {/* Tab bar */}
-      <div className="flex items-stretch border-b border-border overflow-x-auto" style={{ marginBottom: activeTab === 'builder' ? 0 : 20 }}>
-        {TABS.map(({ key, label, icon: Icon }) => {
-          const isActive = activeTab === key;
-          return (
-            <button
-              key={key}
-              role="tab"
-              aria-selected={isActive}
-              onClick={() => switchTab(key)}
-              className={`flex items-center gap-1.5 px-4 py-2.5 text-sm whitespace-nowrap border-b-2 transition-colors ${
-                isActive
-                  ? 'border-primary text-primary font-semibold'
-                  : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/30'
-              }`}
-            >
-              <Icon className="h-[15px] w-[15px]" />
-              {label}
-            </button>
-          );
-        })}
+      <div
+        className="flex items-stretch border-b border-border overflow-x-auto"
+        style={{ marginBottom: activeTab === 'builder' ? 0 : 20 }}
+      >
+        {/* The tablist wraps ONLY the tabs. The "Inbox" link below is a
+          navigation escape hatch that happens to sit in the same bar; inside
+          the tablist it is an illegal child (axe aria-required-children) and
+          is announced as one of N tabs. Previously there was no tablist at
+          all, so every tab reported aria-required-parent instead. */}
+        <div role="tablist" aria-label="Data ops sections" className="flex items-stretch">
+          {TABS.map(({ key, label, icon: Icon }) => {
+            const isActive = activeTab === key;
+            return (
+              <button
+                key={key}
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => switchTab(key)}
+                className={`flex items-center gap-1.5 px-4 py-2.5 text-sm whitespace-nowrap border-b transition-colors ${
+                  isActive
+                    ? 'border-primary text-primary font-semibold'
+                    : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/30'
+                }`}
+              >
+                <Icon className="h-[15px] w-[15px]" />
+                {label}
+              </button>
+            );
+          })}
+        </div>
         <Link
           to="/admin/inbox"
           className="flex items-center gap-1.5 px-4 py-2.5 text-sm whitespace-nowrap text-muted-foreground hover:text-foreground transition-colors ml-auto"

@@ -135,7 +135,7 @@ export default function GoingOut() {
           </p>
           <LocalizedLink
             to="/rights"
-            className="border-2 border-foreground px-6 py-2 font-medium no-underline rounded-element inline-block"
+            className="bg-muted px-6 py-2 font-medium no-underline rounded-element inline-block"
           >
             LGBTQ+ rights by country
           </LocalizedLink>
@@ -149,7 +149,7 @@ export default function GoingOut() {
       content: (
         <ul className="list-none p-0 m-0 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {(cities ?? []).map((c) => (
-            <li key={c.id} className="border-2 border-foreground p-4 rounded-container">
+            <li key={c.id} className="bg-muted p-4 rounded-container">
               <h3 className="text-title font-bold">
                 {c.slug ? (
                   <LocalizedLink to={`/city/${c.slug}`} className="no-underline hover:underline">

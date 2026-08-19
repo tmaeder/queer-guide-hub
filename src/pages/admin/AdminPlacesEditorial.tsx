@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import {Check, X, Sparkles } from 'lucide-react';
+import { Check, X, Sparkles } from 'lucide-react';
 import { useMeta } from '@/hooks/useMeta';
 import {
   type EditorialEntityType,
@@ -22,7 +22,7 @@ import {
   useAdminCovers,
   useToggleCoverPublished,
 } from '@/hooks/useAdminEditorial';
-import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
 import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 
@@ -36,11 +36,15 @@ export default function AdminPlacesEditorial() {
   return (
     <div className="flex flex-col gap-6">
       {/* mb-0: the parent already spaces children with gap-6. */}
-      <AdminPageHeader
-        className="mb-0"
-        title="Editorial — Places"
-        subtitle="Generate LLM drafts, review hooks, curate covers for /places. Rails are now Guides (format “List”) at /admin/content/guides."
-      />
+      <AdminArchetypeHeader className="mb-0" title="Editorial — Places" />
+
+      {/* Kept as body copy rather than dropped with the subtitle slot: the last
+        sentence is a live POINTER — rails moved to Guides — and an operator who
+        never finds it goes looking for a surface that no longer exists here. */}
+      <p className="m-0 max-w-reading text-13 leading-relaxed text-muted-foreground">
+        Generate LLM drafts, review hooks, curate covers for /places. Rails are now Guides (format
+        “List”) at /admin/content/guides.
+      </p>
 
       <Tabs defaultValue="drafts">
         <TabsList>

@@ -139,7 +139,7 @@
       "recent_city": "In a city you've explored",
       "featured": "Featured"
     },
-    "ariaLabel": "[KO] Search Queer Guide",
+    "ariaLabel": "Queer Guide 검색",
     "escape": "esc",
     "jumpTo": "바로 가기",
     "recent": "최근",
@@ -218,12 +218,12 @@
     "contact": "문의",
     "supportUs": "후원하기",
     "history": "역사",
-    "tagline": "[KO] Every track. Every station. Everyone.",
-    "contributors": "[KO] Contributors",
+    "tagline": "모든 노선. 모든 역. 모든 사람.",
+    "contributors": "기여자",
     "emergency": {
       "eyebrow": "[KO] In an emergency",
-      "title": "[KO] Crisis lines, 24 hours",
-      "body": "[KO] Trans helpline, LGBT+ crisis support, and local emergency numbers, listed by country and always one click from any page."
+      "title": "24시간 위기 상담 전화",
+      "body": "트랜스젠더 상담 전화, LGBT+ 위기 지원, 지역 긴급 전화번호를 국가별로 정리했습니다. 어느 페이지에서나 한 번의 클릭으로 열 수 있습니다."
     },
     "osmAttribution": "교통 다이어그램은 © OpenStreetMap 기여자 데이터를 기반으로 합니다 (ODbL)",
     "reportSomething": "신고하기",
@@ -1885,7 +1885,7 @@
       "help": "도움말",
       "tags": "태그",
       "history": "역사",
-      "guides": "[KO] Guides",
+      "guides": "가이드",
       "trips": "여행",
       "organizations": "단체",
       "wishlists": "위시리스트"
@@ -1982,7 +1982,7 @@
       "hub": "허브"
     },
     "primaryNavigation": "[KO] Primary",
-    "signInToContribute": "[KO] Sign in to contribute"
+    "signInToContribute": "로그인하고 참여하기"
   },
   "pages": {
     "venues": {
@@ -3295,7 +3295,7 @@
     "wishlists": "위시리스트",
     "tags": "태그",
     "organizations": "[KO] Organizations",
-    "guides": "[KO] Guides",
+    "guides": "가이드",
     "people": "사람 만나기"
   },
   "chat": {

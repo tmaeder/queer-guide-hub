@@ -65,7 +65,7 @@ function PrettyJson({ value, label }: { value: unknown; label: string }) {
     return (
       <div>
         <span className="text-xs text-muted-foreground">{label}</span>
-        <p className="text-sm italic text-muted-foreground/60">(none)</p>
+        <p className="text-sm italic text-muted-foreground">(none)</p>
       </div>
     );
   }

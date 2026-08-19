@@ -14,7 +14,7 @@ import {
   Plus,
   Trash2,
 } from 'lucide-react';
-import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -569,10 +569,7 @@ export default function AdminGeography() {
 
   return (
     <div className="flex flex-col gap-6">
-      <AdminPageHeader
-        title="Geography"
-        subtitle="The full geo tree — continents to landmarks. Move nodes, add parks/beaches/landmarks, review integrity."
-      />
+      <AdminArchetypeHeader title="Geography" />
       <Tabs defaultValue="tree">
         <TabsList>
           <TabsTrigger value="tree">Tree</TabsTrigger>

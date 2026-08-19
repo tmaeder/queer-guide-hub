@@ -21,17 +21,34 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 /**
- * Subway-map card: paper fill, 3px ink border, squared corners (radius tokens
- * are zeroed). Interactive cards additionally take `.card-lift` (hover
- * translate + hard ink shadow) via className — deliberately NOT baked in
- * here, lift is opt-in per surface.
+ * Subway-map card, soft edition: paper fill on a frame-grey page, 18px
+ * corners, one soft shadow, and NO border.
+ *
+ * The border is gone on purpose (soft re-skin 2026-08-17, Brand Guidelines
+ * §02b "Surfaces without cages"). What replaces it is the pair below —
+ * `bg-card` sitting one tonal rung above `--background`, plus `shadow-soft`.
+ * Those two are a unit: remove either and the card stops reading as a surface
+ * at all rather than merely reading flatter. That is also why the REST shadow
+ * is baked in here while the hover shadow lives in `.card-lift` — a
+ * non-interactive card still has to be a card.
+ *
+ * Interactive cards additionally take `.card-lift` (hover translate + deeper
+ * elevation) via className — deliberately NOT baked in, lift is opt-in per
+ * surface.
  */
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className, children, hoverable, ...props }, ref) => (
     <div
       ref={ref}
+      // A stable hook for the design guards. e2e/design-system.spec.ts used to
+      // probe `.bg-card`, which is a UTILITY, not this component — and the soft
+      // re-skin put `bg-card` on ~70 more elements, so "the first .bg-card on
+      // the page" stopped meaning "a Card" and started differing between the
+      // dev server and the CI build. Three guards failed on an element that was
+      // never a card. Assert on the component, not on one of its classes.
+      data-slot="card"
       className={cn(
-        'border-[3px] border-foreground bg-card text-card-foreground rounded-container transition-all duration-fast ease-[cubic-bezier(0.22,1,0.36,1)]',
+        'bg-card text-card-foreground rounded-container shadow-soft transition-all duration-fast ease-[cubic-bezier(0.22,1,0.36,1)]',
         hoverable === 'group' && 'group-hover:bg-surface-container-low',
         hoverable === true && 'cursor-pointer hover:bg-surface-container-low',
         className,
@@ -94,11 +111,7 @@ CardImage.displayName = 'CardImage';
 
 const CardHeaderCompat = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, children, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn('flex flex-col gap-1.5 p-6', className)}
-      {...props}
-    >
+    <div ref={ref} className={cn('flex flex-col gap-1.5 p-6', className)} {...props}>
       {children}
     </div>
   ),
@@ -122,11 +135,7 @@ const CardDescription = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, children, ...props }, ref) => (
-  <p
-    ref={ref}
-    className={cn('text-sm text-muted-foreground', className)}
-    {...props}
-  >
+  <p ref={ref} className={cn('text-sm text-muted-foreground', className)} {...props}>
     {children}
   </p>
 ));
@@ -134,11 +143,7 @@ CardDescription.displayName = 'CardDescription';
 
 const CardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, children, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn('px-6 pb-6 pt-0', className)}
-      {...props}
-    >
+    <div ref={ref} className={cn('px-6 pb-6 pt-0', className)} {...props}>
       {children}
     </div>
   ),
@@ -147,11 +152,7 @@ CardContent.displayName = 'CardContent';
 
 const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, children, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn('flex items-center px-6 pt-0', className)}
-      {...props}
-    >
+    <div ref={ref} className={cn('flex items-center px-6 pt-0', className)} {...props}>
       {children}
     </div>
   ),

@@ -73,7 +73,7 @@ export function GroupCollections({ groupId, isMember, className }: GroupCollecti
                     className={cn(
                       'w-full rounded-element px-4 py-2 text-left text-sm whitespace-nowrap md:whitespace-normal bg-surface-container',
                       active
-                        ? 'border-foreground bg-foreground text-background'
+                        ? 'bg-foreground text-background'
                         : 'border-border bg-card text-foreground hover:bg-muted/40',
                     )}
                   >

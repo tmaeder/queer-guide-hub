@@ -19,7 +19,7 @@ import { IntentChips } from '@/components/status/IntentChips';
  *  active and inactive chips differed only by fill. */
 const chip = (active: boolean) =>
   cn(
-    'inline-flex shrink-0 cursor-pointer items-center gap-1.5 border-2 border-foreground px-2.5 py-2 text-13 font-bold transition-colors',
+    'inline-flex shrink-0 cursor-pointer items-center gap-1.5 bg-muted rounded-element px-2.5 py-2 text-13 font-bold transition-colors',
     active ? 'bg-foreground text-background' : 'bg-background hover:bg-surface-container',
   );
 
@@ -102,7 +102,7 @@ export function IntentSheet({
               {t('people.intent.travel', 'Travel')}
             </h3>
             {travelCityActive ? (
-              <div className="flex items-center justify-between gap-4 border-2 border-foreground px-4 py-2 bg-background">
+              <div className="flex items-center justify-between gap-4 px-4 py-2 bg-card rounded-container shadow-soft">
                 <span className="flex items-center gap-2 text-sm">
                   <Plane className="h-4 w-4 text-muted-foreground" aria-hidden />
                   {t('people.intent.travelActive', {
@@ -118,7 +118,7 @@ export function IntentSheet({
               <button
                 type="button"
                 onClick={useTrip}
-                className="flex w-full items-center gap-2 border-2 border-foreground bg-background px-4 py-2 text-left transition-colors hover:bg-surface-container"
+                className="flex w-full items-center gap-2 bg-card px-4 py-2 text-left transition-colors hover:bg-surface-container rounded-container shadow-soft"
               >
                 <Plane className="h-4 w-4 text-muted-foreground" aria-hidden />
                 <span className="text-sm">

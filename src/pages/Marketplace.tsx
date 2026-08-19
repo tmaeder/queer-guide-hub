@@ -96,7 +96,7 @@ function MainGridSection({
       <p className="mb-6 flex items-center gap-4 text-13 text-muted-foreground">
         <span
           aria-hidden="true"
-          className="h-1.5 w-10 shrink-0 border border-foreground bg-track-yellow"
+          className="h-1.5 w-10 shrink-0 border border-border-hairline bg-track-yellow"
         />
         <span className="tabular-nums">
           {visible.length.toLocaleString()} of {total.toLocaleString()} listing
@@ -148,10 +148,7 @@ function MainGridSection({
  */
 function MakersEntry() {
   return (
-    <section
-      aria-labelledby="makers-entry"
-      className="border-[3px] border-foreground bg-foreground p-6 text-background md:p-8"
-    >
+    <section aria-labelledby="makers-entry" className="bg-foreground p-6 text-background md:p-8">
       <p className="text-2xs font-bold uppercase tracking-label text-background/70">End of line</p>
       <h2 id="makers-entry" className="mt-1 font-display text-headline leading-tight">
         Every maker on this line
@@ -161,7 +158,7 @@ function MakersEntry() {
       </p>
       <LocalizedLink
         to="/marketplace/brands"
-        className="mt-4 inline-flex items-center gap-2 border-2 border-background px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
+        className="border mt-4 inline-flex items-center gap-2 border-background px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
       >
         All makers →
       </LocalizedLink>
@@ -466,7 +463,7 @@ const Marketplace = () => {
             is the thing that has to still be there after you scroll — so it is
             the last stationary band before the results and sticks directly
             under the header from then on. */}
-        <div className="border-b-4 border-foreground">
+        <div className="border-b border-border-hairline">
           <PageContainer flush className="py-8 md:py-12">
             {/* `department` is a single slug, not an array — indexing it would
                 mark the station whose slug starts with that letter. */}
@@ -478,7 +475,7 @@ const Marketplace = () => {
             bordered box inside the content column; bands are the page's
             grammar and a band cannot be scrolled past without being noticed. */}
         <section
-          className={`sticky ${STICKY_UNDER_HEADER} z-20 border-b-4 border-foreground bg-surface-container-low`}
+          className={`sticky ${STICKY_UNDER_HEADER} z-20 border-b border-border-hairline bg-surface-container-low`}
         >
           {/* py-2 below md: this band is sticky, so its padding is subtracted from
               every screen of results. Measured 260px total chrome at 390x844 —
@@ -564,7 +561,7 @@ const Marketplace = () => {
             was only needed BECAUSE the cover sat above the grid. Down here it
             is editorial among editorial, so it can render unconditionally and
             the entire region above the results is now stable in every state. */}
-        <div className="border-t-4 border-foreground">
+        <div className="border-t border-border-hairline">
           <PageContainer flush className="flex flex-col gap-16 py-12 md:gap-24 md:py-16">
             <MarketplaceRow rowKey="new" title="New this week" />
             <MarketplaceHeroCover />

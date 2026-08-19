@@ -31,7 +31,12 @@ describe('FactGrid', () => {
 describe('DetailMasthead', () => {
   it('leads with the typed route bullet and an Anton title', () => {
     render(
-      <DetailMasthead type="venue" eyebrow="Venue · Nightlife" title="Südblock" status="Open now" />,
+      <DetailMasthead
+        type="venue"
+        eyebrow="Venue · Nightlife"
+        title="Südblock"
+        status="Open now"
+      />,
     );
     expect(screen.getByLabelText('Venue')).toBeInTheDocument();
     const h1 = screen.getByRole('heading', { level: 1 });
@@ -45,7 +50,7 @@ describe('DetailMasthead', () => {
     // filled chip here would read as a line rather than a status.
     render(<DetailMasthead type="event" title="Ballroom" status="Sold out" />);
     const chip = screen.getByText('Sold out');
-    expect(chip.className).toContain('border-foreground');
+    expect(chip.className).toContain('border-input');
     expect(chip.className).not.toMatch(/bg-track-/);
   });
 });

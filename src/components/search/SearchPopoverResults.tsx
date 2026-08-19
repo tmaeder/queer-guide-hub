@@ -75,7 +75,7 @@ export function SearchPopoverResults({
           aria-pressed={filtersOpen}
           aria-label={t('search.filters', 'Filters')}
           className={cn(
-            'inline-flex shrink-0 cursor-pointer items-center gap-1 border-2 border-foreground px-2 py-0.5 text-2xs font-bold uppercase tracking-label transition-colors',
+            'inline-flex shrink-0 cursor-pointer items-center gap-1 bg-muted rounded-element px-2 py-0.5 text-2xs font-bold uppercase tracking-label transition-colors',
             filtersOpen
               ? 'bg-foreground text-background'
               : 'bg-transparent text-foreground hover:bg-foreground hover:text-background',
@@ -142,7 +142,7 @@ export function SearchPopoverResults({
                 <button
                   type="button"
                   onClick={onClearScope}
-                  className="cursor-pointer border-2 border-foreground bg-transparent px-4 py-1.5 text-13 font-bold transition-colors hover:bg-foreground hover:text-background"
+                  className="cursor-pointer bg-transparent px-4 py-1.5 text-13 font-bold transition-colors hover:bg-foreground hover:text-background"
                 >
                   {t('search.tryAll', 'Try All')}
                 </button>
@@ -151,7 +151,7 @@ export function SearchPopoverResults({
                 <button
                   type="button"
                   onClick={onAddToMap}
-                  className="cursor-pointer border-2 border-foreground bg-foreground px-4 py-1.5 text-13 font-bold text-background transition-colors hover:bg-background hover:text-foreground"
+                  className="cursor-pointer bg-foreground px-4 py-1.5 text-13 font-bold text-background transition-colors hover:bg-background hover:text-foreground rounded-container shadow-soft"
                 >
                   {t('search.addToMap', 'Add it to the map')} →
                 </button>
@@ -197,7 +197,7 @@ export function SearchPopoverResults({
           type="button"
           onClick={onAsk}
           className={cn(
-            'flex w-full items-center gap-2 border-t-2 border-foreground px-6 py-2 text-left text-13 transition-colors hover:bg-foreground hover:text-background',
+            'flex w-full items-center gap-2 border-t border-border-hairline px-6 py-2 text-left text-13 transition-colors hover:bg-foreground hover:text-background',
             thin && 'font-bold',
           )}
         >
@@ -214,7 +214,7 @@ export function SearchPopoverResults({
           combobox implements ↑↓ and Enter — and it is the only place the
           shortcut is taught, so it is not hidden behind the empty state. */}
       {visible > 0 && (
-        <div className="flex items-center justify-between gap-4 border-t-[3px] border-foreground px-6 py-4 text-13 font-bold">
+        <div className="flex items-center justify-between gap-4 border-t border-border-hairline px-6 py-4 text-13 font-bold">
           <button
             type="button"
             onClick={onSearchAll}

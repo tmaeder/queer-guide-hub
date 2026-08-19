@@ -288,7 +288,16 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2 border-b">
         <div className="flex items-center gap-2">
-          <h1 className="text-lg font-medium">Review</h1>
+          {/* h2, not h1. TriageView is EMBEDDED — /admin/inbox already renders
+            its own <h1>Inbox</h1> above this pane, so an h1 here gave that
+            route TWO page titles and a screen reader two competing answers to
+            "what page am I on".
+
+            Caught by e2e/admin-route-baseline.spec.ts on its first run with a
+            real admin session: "/admin/inbox has 2 h1s". The guard had been
+            skipping silently since the day it landed, for want of a CI
+            session — this is the defect it existed to find. */}
+          <h2 className="text-lg font-medium">Review</h2>
           {total > 0 && (
             <Badge variant="secondary" className="text-xs">
               {total}

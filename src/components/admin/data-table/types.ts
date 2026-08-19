@@ -1,5 +1,6 @@
-import type { ColumnDef } from '@tanstack/react-table';
+import type { ColumnDef, RowData } from '@tanstack/react-table';
 import type { LucideIcon } from 'lucide-react';
+import type { AdminTableFeatures } from './features';
 import type { ExportColumnDef } from '@/utils/excelExport';
 import type { BackfillJob } from '@/config/backfillJobs';
 
@@ -50,7 +51,7 @@ export interface RowActionConfig<TData> {
 
 // ── Table Config (per-page) ─────────────────────────────────────
 
-export interface AdminTableConfig<TData> {
+export interface AdminTableConfig<TData extends RowData> {
   tableName: string;
   /**
    * Optional table to target for mutations (bulk edit/delete) when `tableName`
@@ -64,7 +65,18 @@ export interface AdminTableConfig<TData> {
    */
   emptyNoun?: string;
   select?: string;
-  columns: ColumnDef<TData, unknown>[];
+  /**
+   * `TValue` is `any`, not `unknown`, and that is load-bearing in v9.
+   *
+   * v9 marks `ColumnDef`'s type params `in out` (strictly invariant), so a
+   * heterogeneous array — `accessor('name')` yields `TValue = string`,
+   * `accessor('star_rating')` yields `number` — no longer widens into a single
+   * `ColumnDef<…, unknown>`. TS reports it as "two different types with this
+   * name exist, but they are unrelated". `any` is bivariant and absorbs every
+   * column's value type, which is what `unknown` did for us under v8.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- see above: invariant TValue needs a bivariant slot to hold mixed columns.
+  columns: ColumnDef<AdminTableFeatures, TData, any>[];
   entityFilters?: EntityFilterConfig[];
   bulkEditFields?: BulkEditFieldConfig[];
   /** Selection-scoped backfill jobs (from backfillJobs registry) shown in the

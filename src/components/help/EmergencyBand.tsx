@@ -25,7 +25,7 @@ export function EmergencyBand() {
       // it cancels the page gutter and re-applies it to its content row. It must
       // stay a descendant of the container — a sibling would break the
       // header-alignment contract in e2e/page-layout.spec.ts.
-      className="-mx-4 border-y-4 border-foreground bg-destructive text-destructive-foreground sm:-mx-6 md:-mx-8"
+      className="-mx-4 border-y border-border-hairline bg-destructive text-destructive-foreground sm:-mx-6 md:-mx-8"
     >
       <div className="mx-auto flex max-w-page items-start gap-4 px-4 py-6 sm:px-6 md:px-8">
         <AlertTriangle className="mt-1 h-8 w-8 shrink-0" aria-hidden />

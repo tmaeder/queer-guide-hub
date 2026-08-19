@@ -5,7 +5,7 @@ import { untypedSupabase } from '@/integrations/supabase/untyped';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {Merge, Check } from 'lucide-react';
+import { Merge, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { DuplicateGroup, VisualDuplicatePair } from './types';
 
@@ -67,7 +67,7 @@ export function DuplicateFinderPanel() {
 
   const handleMerge = async (group: DuplicateGroup) => {
     const keepId = selectedPrimary.get(group.group_hash) || group.items[0].asset_id;
-    const removeIds = group.items.filter(i => i.asset_id !== keepId).map(i => i.asset_id);
+    const removeIds = group.items.filter((i) => i.asset_id !== keepId).map((i) => i.asset_id);
 
     try {
       const { error } = await untypedSupabase.rpc('merge_duplicate_images', {
@@ -131,13 +131,16 @@ export function DuplicateFinderPanel() {
       {mode === 'exact' && exactQuery.data && (
         <>
           {exactQuery.data.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">No exact duplicates found.</p>
+            <p className="text-sm text-muted-foreground py-8 text-center">
+              No exact duplicates found.
+            </p>
           ) : (
             <div className="flex flex-col gap-4">
               <p className="text-sm text-muted-foreground">
-                {exactQuery.data.length} duplicate group{exactQuery.data.length !== 1 ? 's' : ''} found
+                {exactQuery.data.length} duplicate group{exactQuery.data.length !== 1 ? 's' : ''}{' '}
+                found
               </p>
-              {exactQuery.data.map(group => (
+              {exactQuery.data.map((group) => (
                 <Card key={group.group_hash}>
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between">
@@ -152,21 +155,27 @@ export function DuplicateFinderPanel() {
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
-                      {group.items.map(item => {
-                        const isSelected = (selectedPrimary.get(group.group_hash) || group.items[0].asset_id) === item.asset_id;
+                      {group.items.map((item) => {
+                        const isSelected =
+                          (selectedPrimary.get(group.group_hash) || group.items[0].asset_id) ===
+                          item.asset_id;
                         return (
                           <div
                             key={item.asset_id}
-                            className={`relative aspect-square bg-muted cursor-pointer border-2 ${
-                              isSelected ? 'border-foreground' : 'border-transparent'
+                            className={`relative aspect-square bg-muted cursor-pointer ${
+                              isSelected ? 'border border-border-hairline' : 'border-transparent'
                             }`}
                             onClick={() => {
-                              setSelectedPrimary(prev => new Map(prev).set(group.group_hash, item.asset_id));
+                              setSelectedPrimary((prev) =>
+                                new Map(prev).set(group.group_hash, item.asset_id),
+                              );
                             }}
                             onKeyDown={(e) => {
                               if (e.key === 'Enter' || e.key === ' ') {
                                 e.preventDefault();
-                                setSelectedPrimary(prev => new Map(prev).set(group.group_hash, item.asset_id));
+                                setSelectedPrimary((prev) =>
+                                  new Map(prev).set(group.group_hash, item.asset_id),
+                                );
                               }
                             }}
                             role="button"
@@ -204,16 +213,24 @@ export function DuplicateFinderPanel() {
       {mode === 'visual' && visualQuery.data && (
         <>
           {visualQuery.data.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">No visual duplicates found.</p>
+            <p className="text-sm text-muted-foreground py-8 text-center">
+              No visual duplicates found.
+            </p>
           ) : (
             <div className="flex flex-col gap-4">
               <p className="text-sm text-muted-foreground">
-                {visualQuery.data.length} similar pair{visualQuery.data.length !== 1 ? 's' : ''} found
+                {visualQuery.data.length} similar pair{visualQuery.data.length !== 1 ? 's' : ''}{' '}
+                found
               </p>
               {visualQuery.data.map((pair, i) => (
                 <div key={i} className="flex items-center gap-4 border border-border p-4">
                   <div className="w-20 h-20 bg-muted flex-shrink-0">
-                    <img src={pair.thumb_a || pair.url_a} alt="" className="w-full h-full object-cover" loading="lazy" />
+                    <img
+                      src={pair.thumb_a || pair.url_a}
+                      alt=""
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
                   </div>
                   <div className="flex flex-col items-center gap-1">
                     <Badge variant="outline" className="text-2xs">
@@ -221,13 +238,22 @@ export function DuplicateFinderPanel() {
                     </Badge>
                   </div>
                   <div className="w-20 h-20 bg-muted flex-shrink-0">
-                    <img src={pair.thumb_b || pair.url_b} alt="" className="w-full h-full object-cover" loading="lazy" />
+                    <img
+                      src={pair.thumb_b || pair.url_b}
+                      alt=""
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
                   </div>
                   <div className="flex gap-1 ml-auto">
                     <Button size="sm" variant="outline" onClick={() => handleMergePair(pair, true)}>
                       Keep Left
                     </Button>
-                    <Button size="sm" variant="outline" onClick={() => handleMergePair(pair, false)}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleMergePair(pair, false)}
+                    >
                       Keep Right
                     </Button>
                   </div>

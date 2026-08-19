@@ -3,6 +3,7 @@ import { createColumnHelper } from '@tanstack/react-table';
 import { renderWithProviders, screen } from '@/test/test-utils';
 import { AdminEntityTable } from '../AdminEntityTable';
 import type { AdminTableConfig } from '../types';
+import type { AdminTableFeatures } from '../features';
 
 // Mock the auth + roles hooks so the guard lets us through.
 vi.mock('@/hooks/useAuth', () => ({
@@ -25,10 +26,8 @@ interface Row {
   id: string;
   name: string;
 }
-const helper = createColumnHelper<Row>();
-const columns = [
-  helper.accessor('name', { header: 'Name', cell: (i) => i.getValue() }),
-];
+const helper = createColumnHelper<AdminTableFeatures, Row>();
+const columns = [helper.accessor('name', { header: 'Name', cell: (i) => i.getValue() })];
 const config: AdminTableConfig<Row> = {
   tableName: 'widgets',
   columns,
@@ -100,9 +99,7 @@ describe('AdminEntityTable', () => {
   });
 
   it('omits the back link when backHref is null', () => {
-    renderWithProviders(
-      <AdminEntityTable title="Hotels" config={config} backHref={null} />,
-    );
+    renderWithProviders(<AdminEntityTable title="Hotels" config={config} backHref={null} />);
     expect(screen.queryByText(/^Back to/)).toBeNull();
   });
 });

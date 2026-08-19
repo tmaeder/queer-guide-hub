@@ -9,6 +9,28 @@ interface MarketplaceGalleryProps {
 }
 
 /**
+ * Declared at module scope, not inside `MarketplaceGallery`. A component defined
+ * in a render body is a NEW type on every render, so React unmounts and remounts
+ * the subtree instead of updating it.
+ */
+function NoImage({ label }: { label: string }) {
+  return (
+    <div
+      className="flex aspect-square w-full items-center justify-center bg-muted"
+      role="img"
+      aria-label={label}
+    >
+      <span
+        aria-hidden="true"
+        className="text-2xs font-bold uppercase tracking-label text-muted-foreground"
+      >
+        No photo
+      </span>
+    </div>
+  );
+}
+
+/**
  * Product gallery: one bordered image plate with a strip of square thumbnails
  * that swap it. R2-optimized URLs via useListingImages.
  *
@@ -34,18 +56,6 @@ export function MarketplaceGallery({ listingId, images, title }: MarketplaceGall
   const current = gallery[safeActive];
   const usable = gallery.filter((_, i) => !failed.has(i));
 
-  const NoImage = ({ label }: { label: string }) => (
-    <div
-      className="flex aspect-square w-full items-center justify-center border-[3px] border-foreground bg-muted"
-      role="img"
-      aria-label={label}
-    >
-      <span aria-hidden="true" className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
-        No photo
-      </span>
-    </div>
-  );
-
   if (gallery.length === 0 || usable.length === 0) {
     return <NoImage label={`No image for ${title}`} />;
   }
@@ -64,10 +74,9 @@ export function MarketplaceGallery({ listingId, images, title }: MarketplaceGall
   return (
     <div className="flex flex-col gap-4">
       {current && !failed.has(safeActive) ? (
-        <div className="overflow-hidden border-[3px] border-foreground bg-muted">
+        <div className="overflow-hidden bg-muted">
           {/* onError is a standard non-interactive image fallback handler, not a
               mouse/keyboard interaction. */}
-          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
           <img
             src={current.full}
             alt={current.alt || title}
@@ -93,14 +102,16 @@ export function MarketplaceGallery({ listingId, images, title }: MarketplaceGall
               aria-label={`Show image ${i + 1} of ${gallery.length}`}
               aria-current={i === safeActive}
               className={cn(
-                'h-16 w-16 flex-shrink-0 snap-start overflow-hidden bg-muted transition-colors md:h-20 md:w-20',
-                // The selected thumb takes the full 3px ink border; the rest sit
-                // back at 2px translucent. Same fill-or-lift logic as a station
-                // tile, expressed in border weight because a 64px square has no
-                // room to lift.
+                'h-16 w-16 flex-shrink-0 snap-start overflow-hidden rounded-element bg-muted transition-colors md:h-20 md:w-20',
+                // Selection is still expressed in border weight, because a 64px
+                // square has no room to lift — and unlike a card frame, a
+                // selected state IS something WCAG 1.4.11 covers, so this
+                // border survives the de-caging. It only thins to the soft
+                // system's weights: ink at 2px for the active thumb, a hairline
+                // for the rest.
                 i === safeActive
-                  ? 'border-[3px] border-foreground'
-                  : 'border-2 border-foreground/30 hover:border-foreground',
+                  ? 'border-2 border-foreground'
+                  : 'border border-border-hairline hover:border-foreground',
               )}
             >
               {failed.has(i) ? (

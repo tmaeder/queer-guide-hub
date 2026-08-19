@@ -48,7 +48,7 @@ function activeCount(filters: MapShellFilters, savedOnly: boolean): number {
 }
 
 const trigger =
-  'inline-flex h-10 items-center gap-1.5 border-2 border-foreground bg-background px-4 text-13 font-semibold text-foreground transition-colors hover:bg-foreground hover:text-background focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 data-[state=open]:bg-foreground data-[state=open]:text-background';
+  'inline-flex h-10 items-center gap-1.5 bg-card px-4 text-13 font-semibold text-foreground transition-colors hover:bg-foreground hover:text-background focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 data-[state=open]:bg-foreground data-[state=open]:text-background rounded-container shadow-soft';
 
 /**
  * The map's single control bar — one component at every width.
@@ -209,7 +209,7 @@ export function MapBar({
               // scrolls the panel to itself — the popover appeared already
               // scrolled past "When", showing a bare calendar footer.
               onOpenAutoFocus={(e) => e.preventDefault()}
-              className="w-96 border-[3px] border-foreground bg-background p-4"
+              className="w-96 bg-card p-4 rounded-container shadow-soft"
             >
               {controls}
             </PopoverContent>
@@ -239,7 +239,7 @@ export function MapBar({
             <PopoverContent
               align="start"
               onOpenAutoFocus={(e) => e.preventDefault()}
-              className="w-72 border-[3px] border-foreground bg-background p-2"
+              className="w-72 bg-card p-2 rounded-container shadow-soft"
             >
               {lineKey}
             </PopoverContent>
@@ -253,7 +253,7 @@ export function MapBar({
           <Sheet open={controlsOpen} onOpenChange={setControlsOpen}>
             <SheetContent
               side="bottom"
-              className="max-h-[85dvh] overflow-y-auto border-t-[3px] border-foreground"
+              className="max-h-[85dvh] overflow-y-auto border-t border-border-hairline"
             >
               <SheetHeader>
                 <SheetTitle>{filtersLabel}</SheetTitle>
@@ -265,7 +265,7 @@ export function MapBar({
           <Sheet open={linesOpen} onOpenChange={setLinesOpen}>
             <SheetContent
               side="bottom"
-              className="max-h-[85dvh] overflow-y-auto border-t-[3px] border-foreground"
+              className="max-h-[85dvh] overflow-y-auto border-t border-border-hairline"
             >
               <SheetHeader>
                 <SheetTitle>{linesLabel}</SheetTitle>

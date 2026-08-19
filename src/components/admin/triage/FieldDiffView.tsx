@@ -20,9 +20,7 @@ function formatValue(v: unknown): string {
 
 export function FieldDiffView({ diffs }: FieldDiffViewProps) {
   if (diffs.length === 0) {
-    return (
-      <p className="text-xs text-muted-foreground px-4 py-2">No changes detected.</p>
-    );
+    return <p className="text-xs text-muted-foreground px-4 py-2">No changes detected.</p>;
   }
 
   return (
@@ -37,11 +35,7 @@ export function FieldDiffView({ diffs }: FieldDiffViewProps) {
               {formatValue(d.oldValue)}
             </p>
           )}
-          <p
-            className={cn(
-              'text-xs font-semibold border-l-2 border-foreground pl-2',
-            )}
-          >
+          <p className={cn('text-xs font-semibold border-l border-border-hairline pl-2')}>
             {formatValue(d.newValue)}
           </p>
         </div>

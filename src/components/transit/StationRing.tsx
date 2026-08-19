@@ -29,8 +29,12 @@ export function StationRing({
     <span
       aria-hidden
       className={cn(
+        // The ring WEIGHT belongs to the base; the tone branch may only set its
+        // COLOUR. The de-caging sweep briefly put a bare `border` in the ink
+        // branch — same tailwind-merge group as `border-[3px]` — so a ring on
+        // an ink band silently thinned to 1px while the paper one stayed at 3.
         'inline-block h-4 w-4 rounded-full border-[3px]',
-        onInk ? 'border-background' : 'border-foreground',
+        onInk ? 'border-background' : 'border-track-ring',
         state === 'open' && (onInk ? 'bg-foreground' : 'bg-background'),
         state === 'typed' && TRACK_BG[track],
         state === 'done' && (onInk ? 'bg-background' : 'bg-foreground'),

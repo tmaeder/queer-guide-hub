@@ -1,6 +1,13 @@
 import { useMemo } from 'react';
 import { GitCompare, Plus, Minus, Pencil } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -24,19 +31,21 @@ interface EdgeDiff {
 }
 
 function computeDiff(
-  currentNodes: Node[], currentEdges: Edge[],
-  savedNodes: Node[], savedEdges: Edge[],
+  currentNodes: Node[],
+  currentEdges: Edge[],
+  savedNodes: Node[],
+  savedEdges: Edge[],
 ): { nodes: NodeDiff; edges: EdgeDiff } {
-  const currentIds = new Set(currentNodes.map(n => n.id));
-  const savedIds = new Set(savedNodes.map(n => n.id));
+  const currentIds = new Set(currentNodes.map((n) => n.id));
+  const savedIds = new Set(savedNodes.map((n) => n.id));
 
   const nodes: NodeDiff = {
-    added: currentNodes.filter(n => !savedIds.has(n.id)),
-    removed: savedNodes.filter(n => !currentIds.has(n.id)),
+    added: currentNodes.filter((n) => !savedIds.has(n.id)),
+    removed: savedNodes.filter((n) => !currentIds.has(n.id)),
     modified: [],
   };
 
-  const savedMap = new Map(savedNodes.map(n => [n.id, n]));
+  const savedMap = new Map(savedNodes.map((n) => [n.id, n]));
   for (const cur of currentNodes) {
     const saved = savedMap.get(cur.id);
     if (!saved) continue;
@@ -45,46 +54,65 @@ function computeDiff(
     const savedD = saved.data as Record<string, unknown>;
 
     if (curD.label !== savedD.label) changes.push('label');
-    if (JSON.stringify(curD.config ?? {}) !== JSON.stringify(savedD.config ?? {})) changes.push('config');
-    if (Math.abs((cur.position?.x || 0) - (saved.position?.x || 0)) > 1
-        || Math.abs((cur.position?.y || 0) - (saved.position?.y || 0)) > 1) changes.push('position');
+    if (JSON.stringify(curD.config ?? {}) !== JSON.stringify(savedD.config ?? {}))
+      changes.push('config');
+    if (
+      Math.abs((cur.position?.x || 0) - (saved.position?.x || 0)) > 1 ||
+      Math.abs((cur.position?.y || 0) - (saved.position?.y || 0)) > 1
+    )
+      changes.push('position');
     if (changes.length > 0) {
       nodes.modified.push({ current: cur, saved, changes });
     }
   }
 
-  const edgeKey = (e: Edge) => `${e.source}:${e.sourceHandle ?? ''}→${e.target}:${e.targetHandle ?? ''}`;
+  const edgeKey = (e: Edge) =>
+    `${e.source}:${e.sourceHandle ?? ''}→${e.target}:${e.targetHandle ?? ''}`;
   const currentEdgeKeys = new Set(currentEdges.map(edgeKey));
   const savedEdgeKeys = new Set(savedEdges.map(edgeKey));
 
   const edges: EdgeDiff = {
-    added: currentEdges.filter(e => !savedEdgeKeys.has(edgeKey(e))),
-    removed: savedEdges.filter(e => !currentEdgeKeys.has(edgeKey(e))),
+    added: currentEdges.filter((e) => !savedEdgeKeys.has(edgeKey(e))),
+    removed: savedEdges.filter((e) => !currentEdgeKeys.has(edgeKey(e))),
   };
 
   return { nodes, edges };
 }
 
-export default function PipelineDiffDialog({ currentNodes, currentEdges, savedDef }: PipelineDiffDialogProps) {
+export default function PipelineDiffDialog({
+  currentNodes,
+  currentEdges,
+  savedDef,
+}: PipelineDiffDialogProps) {
   const diff = useMemo(() => {
     if (!savedDef) return null;
     return computeDiff(currentNodes, currentEdges, savedDef.nodes || [], savedDef.edges || []);
   }, [currentNodes, currentEdges, savedDef]);
 
   const totalChanges = diff
-    ? diff.nodes.added.length + diff.nodes.removed.length + diff.nodes.modified.length + diff.edges.added.length + diff.edges.removed.length
+    ? diff.nodes.added.length +
+      diff.nodes.removed.length +
+      diff.nodes.modified.length +
+      diff.edges.added.length +
+      diff.edges.removed.length
     : 0;
 
-  const labelFor = (n: Node) => (n.data as { label?: string; nodeTypeSlug?: string })?.label
-    || (n.data as { nodeTypeSlug?: string })?.nodeTypeSlug
-    || n.id;
+  const labelFor = (n: Node) =>
+    (n.data as { label?: string; nodeTypeSlug?: string })?.label ||
+    (n.data as { nodeTypeSlug?: string })?.nodeTypeSlug ||
+    n.id;
 
   return (
     <Dialog>
       <Tooltip>
         <TooltipTrigger asChild>
           <DialogTrigger asChild>
-            <Button size="sm" variant="ghost" className="h-8 w-8 p-0 relative" disabled={!savedDef || totalChanges === 0}>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-8 w-8 p-0 relative"
+              disabled={!savedDef || totalChanges === 0}
+            >
               <GitCompare className="h-3.5 w-3.5" />
               {totalChanges > 0 && (
                 <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-3xs rounded-full w-4 h-4 flex items-center justify-center font-semibold">
@@ -95,7 +123,9 @@ export default function PipelineDiffDialog({ currentNodes, currentEdges, savedDe
           </DialogTrigger>
         </TooltipTrigger>
         <TooltipContent className="text-xs">
-          {totalChanges > 0 ? `${totalChanges} unsaved change${totalChanges === 1 ? '' : 's'}` : 'No changes vs saved'}
+          {totalChanges > 0
+            ? `${totalChanges} unsaved change${totalChanges === 1 ? '' : 's'}`
+            : 'No changes vs saved'}
         </TooltipContent>
       </Tooltip>
 
@@ -111,23 +141,32 @@ export default function PipelineDiffDialog({ currentNodes, currentEdges, savedDe
         </DialogHeader>
 
         {!diff ? (
-          <div className="text-sm text-muted-foreground text-center py-10">No saved version to compare against.</div>
+          <div className="text-sm text-muted-foreground text-center py-10">
+            No saved version to compare against.
+          </div>
         ) : totalChanges === 0 ? (
-          <div className="text-sm text-foreground dark:text-foreground text-center py-10 font-medium">✓ No changes — canvas matches saved</div>
+          <div className="text-sm text-foreground text-center py-10 font-medium">
+            ✓ No changes — canvas matches saved
+          </div>
         ) : (
           <div className="overflow-y-auto flex-1 space-y-4">
             {diff.nodes.added.length > 0 && (
               <div>
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground dark:text-foreground mb-1.5">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground mb-1.5">
                   <Plus className="h-3 w-3" />
                   Nodes added ({diff.nodes.added.length})
                 </div>
                 <div className="space-y-1">
-                  {diff.nodes.added.map(n => (
-                    <div key={n.id} className="text-xs font-mono bg-muted dark:bg-foreground/30 border border-foreground/40 dark:border-foreground/40 rounded-element px-2 py-1 flex gap-2">
-                      <span className="text-foreground dark:text-foreground">+</span>
+                  {diff.nodes.added.map((n) => (
+                    <div
+                      key={n.id}
+                      className="text-xs font-mono bg-muted border border-foreground/40 rounded-element px-2 py-1 flex gap-2"
+                    >
+                      <span className="text-foreground">+</span>
                       <span>{labelFor(n)}</span>
-                      <span className="text-muted-foreground ml-auto text-2xs">{n.id.slice(0, 16)}</span>
+                      <span className="text-muted-foreground ml-auto text-2xs">
+                        {n.id.slice(0, 16)}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -141,11 +180,16 @@ export default function PipelineDiffDialog({ currentNodes, currentEdges, savedDe
                   Nodes removed ({diff.nodes.removed.length})
                 </div>
                 <div className="space-y-1">
-                  {diff.nodes.removed.map(n => (
-                    <div key={n.id} className="text-xs font-mono bg-destructive/10 dark:bg-destructive/30 border border-destructive dark:border-destructive rounded-element px-2 py-1 flex gap-2">
+                  {diff.nodes.removed.map((n) => (
+                    <div
+                      key={n.id}
+                      className="text-xs font-mono bg-destructive/10 dark:bg-destructive/30 border border-destructive dark:border-destructive rounded-element px-2 py-1 flex gap-2"
+                    >
                       <span className="text-destructive">−</span>
                       <span>{labelFor(n)}</span>
-                      <span className="text-muted-foreground ml-auto text-2xs">{n.id.slice(0, 16)}</span>
+                      <span className="text-muted-foreground ml-auto text-2xs">
+                        {n.id.slice(0, 16)}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -154,21 +198,32 @@ export default function PipelineDiffDialog({ currentNodes, currentEdges, savedDe
 
             {diff.nodes.modified.length > 0 && (
               <div>
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground dark:text-foreground mb-1.5">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground mb-1.5">
                   <Pencil className="h-3 w-3" />
                   Nodes modified ({diff.nodes.modified.length})
                 </div>
                 <div className="space-y-1">
-                  {diff.nodes.modified.map(m => (
-                    <div key={m.current.id} className="text-xs font-mono bg-muted dark:bg-foreground/30 border border-border dark:border-border rounded-element px-2 py-1 flex gap-2 items-center">
-                      <span className="text-foreground dark:text-foreground">~</span>
+                  {diff.nodes.modified.map((m) => (
+                    <div
+                      key={m.current.id}
+                      className="text-xs font-mono bg-muted border border-border rounded-element px-2 py-1 flex gap-2 items-center"
+                    >
+                      <span className="text-foreground">~</span>
                       <span>{labelFor(m.current)}</span>
                       <div className="flex gap-1">
-                        {m.changes.map(c => (
-                          <Badge key={c} variant="outline" className="text-3xs px-1 py-0 h-4 bg-muted dark:bg-foreground/40">{c}</Badge>
+                        {m.changes.map((c) => (
+                          <Badge
+                            key={c}
+                            variant="outline"
+                            className="text-3xs px-1 py-0 h-4 bg-muted"
+                          >
+                            {c}
+                          </Badge>
                         ))}
                       </div>
-                      <span className="text-muted-foreground ml-auto text-2xs">{m.current.id.slice(0, 16)}</span>
+                      <span className="text-muted-foreground ml-auto text-2xs">
+                        {m.current.id.slice(0, 16)}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -177,16 +232,21 @@ export default function PipelineDiffDialog({ currentNodes, currentEdges, savedDe
 
             {diff.edges.added.length > 0 && (
               <div>
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground dark:text-foreground mb-1.5">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground mb-1.5">
                   <Plus className="h-3 w-3" />
                   Edges added ({diff.edges.added.length})
                 </div>
                 <div className="space-y-1">
-                  {diff.edges.added.map(e => (
-                    <div key={e.id} className="text-xs font-mono bg-muted dark:bg-foreground/30 border border-foreground/40 dark:border-foreground/40 rounded-element px-2 py-1 flex gap-2 truncate">
-                      <span className="text-foreground dark:text-foreground">+</span>
+                  {diff.edges.added.map((e) => (
+                    <div
+                      key={e.id}
+                      className="text-xs font-mono bg-muted border border-foreground/40 rounded-element px-2 py-1 flex gap-2 truncate"
+                    >
+                      <span className="text-foreground">+</span>
                       <span className="truncate">
-                        {e.source.slice(0, 20)} <span className="text-muted-foreground mx-1">→</span> {e.target.slice(0, 20)}
+                        {e.source.slice(0, 20)}{' '}
+                        <span className="text-muted-foreground mx-1">→</span>{' '}
+                        {e.target.slice(0, 20)}
                       </span>
                     </div>
                   ))}
@@ -201,11 +261,16 @@ export default function PipelineDiffDialog({ currentNodes, currentEdges, savedDe
                   Edges removed ({diff.edges.removed.length})
                 </div>
                 <div className="space-y-1">
-                  {diff.edges.removed.map(e => (
-                    <div key={e.id} className="text-xs font-mono bg-destructive/10 dark:bg-destructive/30 border border-destructive dark:border-destructive rounded-element px-2 py-1 flex gap-2 truncate">
+                  {diff.edges.removed.map((e) => (
+                    <div
+                      key={e.id}
+                      className="text-xs font-mono bg-destructive/10 dark:bg-destructive/30 border border-destructive dark:border-destructive rounded-element px-2 py-1 flex gap-2 truncate"
+                    >
                       <span className="text-destructive">−</span>
                       <span className="truncate">
-                        {e.source.slice(0, 20)} <span className="text-muted-foreground mx-1">→</span> {e.target.slice(0, 20)}
+                        {e.source.slice(0, 20)}{' '}
+                        <span className="text-muted-foreground mx-1">→</span>{' '}
+                        {e.target.slice(0, 20)}
                       </span>
                     </div>
                   ))}

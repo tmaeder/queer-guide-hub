@@ -111,7 +111,7 @@ export function FlagSwatch({
   return (
     <svg
       viewBox={`0 0 ${W} ${H}`}
-      className={cn('block h-auto w-full border-2 border-foreground', className)}
+      className={cn('block h-auto w-full border border-border-hairline', className)}
       role={decorative ? undefined : 'img'}
       aria-label={decorative ? undefined : t(flag.nameKey, flag.nameEn)}
       aria-hidden={decorative || undefined}

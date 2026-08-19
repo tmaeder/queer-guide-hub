@@ -36,7 +36,7 @@ export function TagFlagBand({ tagSlug }: { tagSlug: string }) {
     <section
       id="flag"
       aria-labelledby="flag-heading"
-      className="scroll-mt-24 border-y-4 border-foreground py-8"
+      className="scroll-mt-24 border-y border-border-hairline py-8"
     >
       <Eyebrow as="p">{t('tags.detail.flag.eyebrow', 'Symbol')}</Eyebrow>
       <h2
@@ -81,11 +81,11 @@ export function TagFlagBand({ tagSlug }: { tagSlug: string }) {
                 {meanings.map((s, i) => (
                   <li
                     key={i}
-                    className="flex items-center gap-4 border-b-2 border-foreground/15 py-2 last:border-b-0"
+                    className="flex items-center gap-4 border-b border-foreground/15 py-2 last:border-b-0"
                   >
                     <span
                       aria-hidden="true"
-                      className="h-4 w-8 shrink-0 border-2 border-foreground"
+                      className="h-4 w-8 shrink-0 border border-border-hairline"
                       style={{ backgroundColor: s.hex }}
                     />
                     <span className="text-13">{t(s.meaningKey ?? '', s.meaningEn ?? '')}</span>

@@ -1,7 +1,6 @@
-
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { PageHeader } from '@/components/layout/PageHeader';
+import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
 import { updateCommunitySubmission } from '@/hooks/usePageFetchers';
 import { AnalyticsTab } from '@/components/admin/feedback/analytics/AnalyticsTab';
 import { kanbanColumns, type KanbanStatus } from '@/components/admin/feedback/constants';
@@ -32,23 +31,26 @@ export default function AdminFeedback() {
   const tabValue = c.state.tab;
 
   return (
-    <div className="p-4 sm:p-6">
-      <div className="flex items-start gap-4 mb-2">
-        <div className="flex-1">
-          <PageHeader
-            title="Feedback & Errors"
-            subtitle="Community feedback and automated API error reports"
-          />
-        </div>
-        <button
-          onClick={() => c.setHelpOpen(true)}
-          aria-label="Keyboard shortcuts"
-          title="Keyboard shortcuts (?)"
-          className="border-0 bg-transparent p-0 cursor-pointer text-xs text-muted-foreground inline-flex items-center gap-1 mt-2.5 tracking-wide transition-colors hover:text-primary active:opacity-70"
-        >
-          press <strong className="font-bold">?</strong> for shortcuts
-        </button>
-      </div>
+    <div>
+      {/* This page was importing the PUBLIC PageHeader from
+        @/components/layout — a cross-tree leak that gave the admin console a
+        header built for marketing pages, with its own type scale and spacing.
+
+        `p-4 sm:p-6` is gone too: AdminShell's <main> is the one owner of admin
+        page spacing and this was padding inside it. */}
+      <AdminArchetypeHeader
+        title="Feedback &amp; Errors"
+        actions={
+          <button
+            onClick={() => c.setHelpOpen(true)}
+            aria-label="Keyboard shortcuts"
+            title="Keyboard shortcuts (?)"
+            className="border-0 bg-transparent p-0 cursor-pointer text-xs text-muted-foreground inline-flex items-center gap-1 tracking-wide transition-colors hover:text-primary active:opacity-70"
+          >
+            press <strong className="font-bold">?</strong> for shortcuts
+          </button>
+        }
+      />
 
       <Tabs
         value={tabValue}
@@ -107,9 +109,7 @@ export default function AdminFeedback() {
             return res?.proposed_title ?? null;
           }}
           mutationsLoading={
-            c.statusMutation.isPending ||
-            c.priorityMutation.isPending ||
-            c.assignMutation.isPending
+            c.statusMutation.isPending || c.priorityMutation.isPending || c.assignMutation.isPending
           }
         />
       )}
@@ -130,7 +130,11 @@ export default function AdminFeedback() {
                   c.update({ story: storyId });
                 },
                 onError: (e: Error) =>
-                  c.toast({ title: 'Accept failed', description: e.message, variant: 'destructive' }),
+                  c.toast({
+                    title: 'Accept failed',
+                    description: e.message,
+                    variant: 'destructive',
+                  }),
               },
             )
           }
@@ -140,9 +144,7 @@ export default function AdminFeedback() {
 
       {tabValue === 'roadmap' && <RoadmapTab />}
 
-      {tabValue === 'analytics' && (
-        <AnalyticsTab items={c.items} voteCounts={c.votesMap} />
-      )}
+      {tabValue === 'analytics' && <AnalyticsTab items={c.items} voteCounts={c.votesMap} />}
 
       <StoryDetailDrawer
         open={!!c.state.story}
@@ -225,9 +227,7 @@ export default function AdminFeedback() {
         renarrating={c.renarrateStory.isPending}
         onAddLabel={(label) => {
           if (!c.state.story || !c.activeStoryBundle) return;
-          const next = Array.from(
-            new Set([...(c.activeStoryBundle.story.labels ?? []), label]),
-          );
+          const next = Array.from(new Set([...(c.activeStoryBundle.story.labels ?? []), label]));
           c.updateStory.mutate({ storyId: c.state.story, patch: { labels: next } });
         }}
         onRemoveLabel={(label) => {
@@ -255,20 +255,16 @@ export default function AdminFeedback() {
       <FeedbackDetailDrawer
         open={c.drawerOpen}
         item={c.selected}
-        voteCount={c.selected ? c.votesMap[c.selected.id]?.count ?? 0 : 0}
+        voteCount={c.selected ? (c.votesMap[c.selected.id]?.count ?? 0) : 0}
         admins={c.admins}
         availableLabels={c.availableLabels}
-        watchers={c.selected ? c.watchersByItem[c.selected.id] ?? [] : []}
+        watchers={c.selected ? (c.watchersByItem[c.selected.id] ?? []) : []}
         isForwarding={c.selected ? c.forwardingIds.has(c.selected.id) : false}
-        duplicateSuggestions={c.selected ? c.duplicateMap[c.selected.id] ?? [] : []}
+        duplicateSuggestions={c.selected ? (c.duplicateMap[c.selected.id] ?? []) : []}
         itemsById={c.itemsById}
-        canonical={
-          c.selected?.duplicate_of ? c.itemsById[c.selected.duplicate_of] ?? null : null
-        }
-        parentStory={c.selected ? c.submissionStoryMap[c.selected.id] ?? null : null}
-        onOpenStory={(storyId) =>
-          c.update({ tab: 'stories', story: storyId, sel: null })
-        }
+        canonical={c.selected?.duplicate_of ? (c.itemsById[c.selected.duplicate_of] ?? null) : null}
+        parentStory={c.selected ? (c.submissionStoryMap[c.selected.id] ?? null) : null}
+        onOpenStory={(storyId) => c.update({ tab: 'stories', story: storyId, sel: null })}
         onOpenPartner={(id) => c.update({ sel: id })}
         onMergeDuplicate={(args) => c.mergeDuplicate.mutate(args)}
         onDismissDuplicate={(id) => c.dismissSuggestion.mutate(id)}
@@ -287,8 +283,7 @@ export default function AdminFeedback() {
         auditEntries={c.auditEntries}
         adminById={c.adminMap}
         onSendReply={(body, notify) =>
-          c.selected &&
-          c.replyMutation.mutate({ submissionId: c.selected.id, body, notify })
+          c.selected && c.replyMutation.mutate({ submissionId: c.selected.id, body, notify })
         }
         isSendingReply={c.replyMutation.isPending}
         onResolutionChange={(resolution) =>
@@ -314,9 +309,7 @@ export default function AdminFeedback() {
           const next = (c.selected.labels ?? []).filter((l) => l !== label);
           c.labelsMutation.mutate({ id: c.selected.id, labels: next });
         }}
-        onSaveNotes={(notes) =>
-          c.selected && c.notesMutation.mutate({ id: c.selected.id, notes })
-        }
+        onSaveNotes={(notes) => c.selected && c.notesMutation.mutate({ id: c.selected.id, notes })}
         onForward={() => c.selected && c.forwardMutation.mutate(c.selected.id)}
         onCopyPrompt={() => c.selected && c.handleCopyPrompt(c.selected)}
         onRecordHandoff={(target) => {
@@ -345,7 +338,10 @@ export default function AdminFeedback() {
           if (!c.selected) return;
           promoteToRoadmap.mutate([c.selected.id], {
             onSuccess: () => {
-              c.toast({ title: 'Promoted to roadmap', description: 'Shape it in the Roadmap tab.' });
+              c.toast({
+                title: 'Promoted to roadmap',
+                description: 'Shape it in the Roadmap tab.',
+              });
               c.update({ sel: null, tab: 'roadmap' });
             },
             onError: (e: Error) =>

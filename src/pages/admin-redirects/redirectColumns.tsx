@@ -1,10 +1,11 @@
 import { Badge } from '@/components/ui/badge';
 import type { AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
+import type { AdminTableFeatures } from '@/components/admin/data-table/features';
 import { Link2, ArrowRight, Clock } from 'lucide-react';
 import type { RedirectRow } from './types';
 
-const columnHelper = createColumnHelper<RedirectRow>();
+const columnHelper = createColumnHelper<AdminTableFeatures, RedirectRow>();
 
 export function getRedirectColumns() {
   return [

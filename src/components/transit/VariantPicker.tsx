@@ -51,7 +51,7 @@ export function VariantPicker({
               aria-pressed={selected}
               onClick={() => onSelect?.(v.id)}
               className={cn(
-                'border-2 border-foreground px-4 py-2 text-13 font-bold transition-colors',
+                'bg-muted rounded-element px-4 py-2 text-13 font-bold transition-colors',
                 selected && 'bg-foreground text-background',
                 !v.available && 'cursor-not-allowed line-through opacity-40',
                 v.available && !selected && 'hover:bg-foreground hover:text-background',

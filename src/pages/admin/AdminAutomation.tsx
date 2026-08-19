@@ -34,7 +34,7 @@ import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { adminAction } from '@/lib/adminAction';
 import { formatNextFire } from '@/lib/nextCronFire';
 import { toast } from 'sonner';
-import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { AdminRegistryFrame } from '@/components/admin/frames/AdminRegistryFrame';
 import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 
 interface Automation {
@@ -126,7 +126,7 @@ export default function AdminAutomation() {
   });
 
   const detailRow = detailSlug
-    ? automationsQ.data?.find((a) => a.slug === detailSlug) ?? null
+    ? (automationsQ.data?.find((a) => a.slug === detailSlug) ?? null)
     : null;
 
   async function runNow(slug: string) {
@@ -254,19 +254,29 @@ export default function AdminAutomation() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* mb-0: the parent already spaces children with gap-6. */}
-      <AdminPageHeader
-        className="mb-0"
-        title={
-          <span className="flex items-center gap-2">
-            <Workflow size={22} aria-hidden />
-            Automation
-          </span>
-        }
-        subtitle="Things the system is doing on its own. Each row is a rule; runs are audited below."
-        actions={
-          <div className="flex gap-2 flex-shrink-0 flex-wrap">
+    /* Archetype H — the reference implementation. A slug, an enabled toggle, a
+       last-run status and a next-fire time is the archetype's definition almost
+       word for word.
+
+       The seven-column TABLE is kept deliberately. H constrains the grammar —
+       header, filter row, primary action, a body of named things with their
+       state — not the markup, and a schedule and a next-fire time are exactly
+       what an operator scans down a column. Flattening this into the frame's
+       simple row shape would have been a downgrade dressed as consistency; it
+       is why AdminRegistryFrame takes a body rather than a row list.
+
+       The subtitle is gone: the route line now carries the "where am I" job,
+       and the shell has stopped drawing its breadcrumb band above this page
+       (see `adopted` in adminArchetypes.ts). */
+    <AdminRegistryFrame
+      title={
+        <span className="flex items-center gap-2">
+          <Workflow size={22} aria-hidden />
+          Automation
+        </span>
+      }
+      actions={
+        <div className="flex gap-2 flex-shrink-0 flex-wrap">
           <Button
             variant="ghost"
             size="sm"
@@ -281,37 +291,32 @@ export default function AdminAutomation() {
             )}
             Dry-run all
           </Button>
-        {isAdmin && (
-          <>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => pauseAll(false)}
-              disabled={busySlug !== null}
-              title="Disable every automation (emergency kill switch)"
-            >
-              {busySlug === 'pause-all:false' ? (
-                <TrackLoader size={12} className="mr-1" />
-              ) : null}
-              Pause all
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => pauseAll(true)}
-              disabled={busySlug !== null}
-            >
-              {busySlug === 'pause-all:true' ? (
-                <TrackLoader size={12} className="mr-1" />
-              ) : null}
-              Resume all
-            </Button>
-          </>
-        )}
-          </div>
-        }
-      />
-
+          {isAdmin && (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => pauseAll(false)}
+                disabled={busySlug !== null}
+                title="Disable every automation (emergency kill switch)"
+              >
+                {busySlug === 'pause-all:false' ? <TrackLoader size={12} className="mr-1" /> : null}
+                Pause all
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => pauseAll(true)}
+                disabled={busySlug !== null}
+              >
+                {busySlug === 'pause-all:true' ? <TrackLoader size={12} className="mr-1" /> : null}
+                Resume all
+              </Button>
+            </>
+          )}
+        </div>
+      }
+    >
       {/* Registry */}
       <section>
         <h2 className="text-title font-semibold mb-2">Registered automations</h2>
@@ -342,7 +347,9 @@ export default function AdminAutomation() {
                   >
                     <td className="px-4 py-2">
                       <div className="font-semibold">{a.name}</div>
-                      <div className="font-mono text-2xs text-muted-foreground mt-0.5">{a.slug}</div>
+                      <div className="font-mono text-2xs text-muted-foreground mt-0.5">
+                        {a.slug}
+                      </div>
                       {a.description && (
                         <div className="text-2xs text-muted-foreground mt-0.5">{a.description}</div>
                       )}
@@ -499,9 +506,7 @@ export default function AdminAutomation() {
                     <td className="px-4 py-2 align-top">
                       <StatusIcon status={r.status} />
                     </td>
-                    <td className="px-4 py-2 align-top font-mono text-2xs">
-                      {r.automation_slug}
-                    </td>
+                    <td className="px-4 py-2 align-top font-mono text-2xs">{r.automation_slug}</td>
                     <td className="px-4 py-2 align-top">
                       {formatDistanceToNow(new Date(r.started_at), { addSuffix: true })}
                     </td>
@@ -535,9 +540,7 @@ export default function AdminAutomation() {
             <>
               <SheetHeader className="mb-4">
                 <SheetTitle className="text-headline">{detailRow.name}</SheetTitle>
-                <SheetDescription className="font-mono text-2xs">
-                  {detailRow.slug}
-                </SheetDescription>
+                <SheetDescription className="font-mono text-2xs">{detailRow.slug}</SheetDescription>
               </SheetHeader>
 
               {detailRow.description && (
@@ -567,12 +570,11 @@ export default function AdminAutomation() {
                     detailRow.consecutive_failures > 0 ? 'text-destructive font-semibold' : ''
                   }
                 >
-                  {detailRow.consecutive_failures} / {detailRow.auto_pause_threshold} before auto-pause
+                  {detailRow.consecutive_failures} / {detailRow.auto_pause_threshold} before
+                  auto-pause
                 </dd>
                 <dt className="text-muted-foreground">Created</dt>
-                <dd>
-                  {formatDistanceToNow(new Date(detailRow.created_at), { addSuffix: true })}
-                </dd>
+                <dd>{formatDistanceToNow(new Date(detailRow.created_at), { addSuffix: true })}</dd>
               </dl>
 
               <h3 className="text-title font-semibold mb-2">Trigger</h3>
@@ -615,6 +617,6 @@ export default function AdminAutomation() {
           )}
         </SheetContent>
       </Sheet>
-    </div>
+    </AdminRegistryFrame>
   );
 }

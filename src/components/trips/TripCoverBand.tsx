@@ -38,13 +38,7 @@ function gradientForTrip(tripId: string): string {
   return `linear-gradient(135deg, ${a} 0%, ${b} 100%)`;
 }
 
-export function TripCoverBand({
-  trip,
-  dateRange,
-  statusLabel,
-  actions,
-  children,
-}: Props) {
+export function TripCoverBand({ trip, dateRange, statusLabel, actions, children }: Props) {
   const { t } = useTranslation();
   const displayTitle = resolveTripTitle(trip, t);
 
@@ -110,10 +104,7 @@ export function TripCoverBand({
           {trip.trip_members.length > 0 && (
             <div className="flex -space-x-2">
               {visibleMembers.map((m) => (
-                <Avatar
-                  key={m.id}
-                  className="h-8 w-8 border-2 border-white/60 text-13"
-                >
+                <Avatar key={m.id} className="h-8 w-8 border-white/60 text-13">
                   {m.profiles?.avatar_url && (
                     <AvatarImage
                       src={m.profiles.avatar_url}
@@ -126,7 +117,7 @@ export function TripCoverBand({
                 </Avatar>
               ))}
               {overflow > 0 && (
-                <Avatar className="h-8 w-8 border-2 border-white/60 bg-muted">
+                <Avatar className="h-8 w-8 border-white/60 bg-muted">
                   <AvatarFallback className="text-13">+{overflow}</AvatarFallback>
                 </Avatar>
               )}

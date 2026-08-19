@@ -28,7 +28,14 @@ jobs:
   critical:
     name: Critical paths
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    # Raised from 12 when the admin session became real. Until the E2E_ADMIN_*
+    # secrets existed, auth.setup.ts skipped and all 34 admin-route-baseline
+    # tests skipped with it — the 12-minute budget was measured against a run
+    # that was NOT doing that work. The first run with a live session took
+    # 10.8m of tests and was killed at 12m during teardown, which GitHub
+    # reports as `cancelled`, not `timed out` — so it read as a concurrency
+    # cancellation rather than the budget it actually was.
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
       - name: Detect relevant changes
@@ -70,17 +77,33 @@ jobs:
           npx vite preview --port 4173 &
           sleep 5
           npx playwright test \
+            e2e/auth.setup.ts \
             e2e/auth-signup-renders.spec.ts \
             e2e/search.spec.ts \
             e2e/trip-creation.spec.ts \
             e2e/marketplace.spec.ts \
             e2e/admin-pipelines.spec.ts \
+            e2e/admin-route-baseline.spec.ts \
             e2e/venues/detail-content.spec.ts \
             e2e/help-locale.spec.ts \
+            e2e/locale-prefix.spec.ts \
             e2e/hotels-filters.spec.ts \
             e2e/nested-interactive.spec.ts \
             e2e/singles.spec.ts \
             --reporter=line
+          # e2e/auth.setup.ts is FIRST on the list and is load-bearing.
+          # Passing explicit file paths filters EVERY project, including the
+          # `setup` project whose testMatch is /auth\.setup\.ts$/ — so without
+          # naming it here the setup has zero tests, never writes
+          # playwright/.auth/admin.json, and every admin route in the run
+          # redirects to /auth. Measured: all 34 admin-route-baseline tests
+          # skipped for "no admin session" while the storageState in
+          # playwright.config.ts pointed at a file that was never created.
+          # admin-route-baseline.spec.ts is on the list for the same reason as
+          # singles.spec.ts below: it exists to catch regressions introduced by
+          # the archetype migration, and a migration lands in a PR. Left to the
+          # nightly it would report the breakage the morning after the change
+          # that caused it, against a merged commit.
           # singles.spec.ts is in the list above rather than left to the nightly
           # run for the reason it exists: /villages/:slug shipped for months on
           # a dead layout branch with no safety gating because NOTHING

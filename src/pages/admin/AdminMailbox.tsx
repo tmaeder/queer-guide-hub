@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
 import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 /**
@@ -70,9 +70,9 @@ function TabButton({
       type="button"
       onClick={() => onSelect(id)}
       className={
-        'flex items-center gap-2 border-b-2 px-2 py-2 text-13 ' +
+        'flex items-center gap-2 border-b px-2 py-2 text-13 ' +
         (activeTab === id
-          ? 'border-foreground font-semibold'
+          ? 'border border-border-hairline font-semibold'
           : 'border-transparent text-muted-foreground')
       }
     >
@@ -167,14 +167,13 @@ export default function AdminMailbox() {
   return (
     <div className="flex flex-col gap-4">
       {/* mb-0: the parent already spaces children with gap-4. */}
-      <AdminPageHeader
+      <AdminArchetypeHeader
         className="mb-0"
         title={
           <span className="flex items-center gap-2">
             <Mail size={22} aria-hidden /> Postfach
           </span>
         }
-        subtitle="Internal staff messages."
         actions={
           <ComposeDialog
             open={composeOpen}

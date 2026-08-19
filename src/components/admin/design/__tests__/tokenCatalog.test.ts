@@ -14,12 +14,14 @@ const css = readFileSync(resolve(__dirname, '../../../../index.css'), 'utf8');
 
 const normalize = (v: string) => v.replace(/\s+/g, ' ').trim();
 
-/** All values for `--key:` in document order. Light-only since the subway-map
- * rebrand removed dark mode: occurrence 1 = :root; there is no .dark block.
- * The catalog keeps a `dark` field for BrandingDoc shape-compat — it must
- * simply mirror `light`. */
+/** All values for `--key:` in document order: occurrence 1 = `:root`,
+ * occurrence 2 = `.dark`. Dark mode was reinstated 2026-08-18, so both must
+ * exist for every colour token. */
 function cssValues(key: string): string[] {
-  const re = new RegExp(`(?<![\\w-])--${key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:\\s*([^;]+);`, 'g');
+  const re = new RegExp(
+    `(?<![\\w-])--${key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:\\s*([^;]+);`,
+    'g',
+  );
   return [...css.matchAll(re)].map((m) => normalize(m[1]));
 }
 
@@ -28,7 +30,15 @@ describe('tokenCatalog drift guard (defaults must match src/index.css)', () => {
     const values = cssValues(t.key);
     expect(values.length, `--${t.key} must appear in :root`).toBeGreaterThanOrEqual(1);
     expect(values[0], `--${t.key} light default drifted`).toBe(t.light);
-    expect(t.dark, `--${t.key} dark must mirror light (dark mode removed)`).toBe(t.light);
+    // Fails LOUDLY on a token missing from `.dark` rather than letting it
+    // inherit the light value. A silent inherit is how you ship ink-on-ink:
+    // the catalog would claim a dark value the stylesheet never sets, and the
+    // contrast guards would then be evaluating a colour nobody renders.
+    expect(
+      values.length,
+      `--${t.key} is missing from the .dark block in src/index.css`,
+    ).toBeGreaterThanOrEqual(2);
+    expect(values[1], `--${t.key} dark default drifted`).toBe(t.dark);
   });
 
   it.each(GLOBAL_TOKENS.map((t) => [t.key, t] as const))('global token %s', (_key, t) => {
@@ -49,8 +59,14 @@ describe('tokenCatalog drift guard (defaults must match src/index.css)', () => {
 describe('sparse doc helpers', () => {
   it('resolveColor prefers the override and falls back to the default', () => {
     expect(resolveColor({}, 'background', 'light')).toBe('60 33% 97%');
-    expect(resolveColor({ tokens: { light: { background: '0 0% 90%' } } }, 'background', 'light')).toBe('0 0% 90%');
-    expect(resolveColor({ tokens: { light: { background: '0 0% 90%' } } }, 'background', 'dark')).toBe('60 33% 97%');
+    expect(
+      resolveColor({ tokens: { light: { background: '0 0% 90%' } } }, 'background', 'light'),
+    ).toBe('0 0% 90%');
+    expect(
+      resolveColor({ tokens: { light: { background: '0 0% 90%' } } }, 'background', 'dark'),
+      // A light-only override must NOT leak into dark — dark falls back to its
+      // own default, which is a genuinely different colour now.
+    ).toBe('0 0% 6.7%');
   });
 
   it('countOverrides counts every section', () => {

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
 import { ContentListPanel } from '@/components/cms/ContentListPanel';
 import { MilestoneDiscoveryButton } from '@/components/admin/MilestoneDiscoveryButton';
 import { MilestoneLinkProposalsPanel } from '@/components/admin/milestones/MilestoneLinkProposalsPanel';
@@ -21,20 +21,22 @@ export default function MilestonesAdmin() {
     // AdminShell's <main> owns the gutter and the vertical rhythm — admin pages
     // render bare content. The old `px-4 pt-4` here doubled the shell's gutter.
     <div className="flex flex-col gap-6">
-      {/* mb-0: the parent already spaces children with gap-6. */}
-      <AdminPageHeader
+      {/* This page owns the title, so the embedded ContentListPanel is told to
+        suppress its own — otherwise the route renders TWO h1s. */}
+      <AdminArchetypeHeader
         className="mb-0"
         title="Milestones"
-        subtitle={
-          <>
-            AI suggestions land as <b>pending</b> — never public. Review and publish them here;
-            filter the list by review status “pending” to find them.
-          </>
-        }
         actions={<MilestoneDiscoveryButton onComplete={() => setRefreshKey((k) => k + 1)} />}
       />
+
+      {/* Kept as body copy: "AI suggestions land as pending — never public" is
+        a publication guarantee, not orientation. */}
+      <p className="m-0 max-w-reading text-13 leading-relaxed text-muted-foreground">
+        AI suggestions land as <b>pending</b> — never public. Review and publish them here; filter
+        the list by review status “pending” to find them.
+      </p>
       <MilestoneLinkProposalsPanel />
-      <ContentListPanel key={refreshKey} contentTypeId="milestones" />
+      <ContentListPanel key={refreshKey} contentTypeId="milestones" hideHeader />
     </div>
   );
 }

@@ -550,13 +550,13 @@ export const UniversalSearchBar = ({
             ? // Inside the plate the box has no border of its own: the panel's
               // own 4px edge is the box, and the 3px rule is what separates the
               // query from its results.
-              'border-b-[3px] border-foreground px-6'
+              'border-b border-border-hairline px-6'
             : hero
               ? // The homepage hero entry: the template's heavier edge and a
                 // resting hard shadow, because it is the page's primary target
                 // rather than a chrome control.
-                'rounded-container border-[3px] border-foreground shadow-hard'
-              : 'rounded-container border-2 border-foreground focus-within:shadow-hard-sm',
+                'rounded-container border border-border-hairline shadow-soft'
+              : 'rounded-container border border-border-hairline focus-within:shadow-soft',
         )}
         onClick={() => {
           setIsOpen(true);
@@ -699,7 +699,7 @@ export const UniversalSearchBar = ({
           {!query && !isMobile && !panel && (
             <kbd
               aria-hidden="true"
-              className="pointer-events-none rounded-badge border border-foreground px-1.5 py-0.5 text-xs2 leading-none text-muted-foreground font-[inherit]"
+              className="pointer-events-none rounded-badge border border-border-hairline px-1.5 py-0.5 text-xs2 leading-none text-muted-foreground font-[inherit]"
             >
               {isMac ? '⌘K' : 'Ctrl+K'}
             </kbd>
@@ -727,7 +727,7 @@ export const UniversalSearchBar = ({
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="border-2 border-foreground px-2 py-1 text-xs2 font-bold uppercase leading-none text-foreground transition-colors hover:bg-foreground hover:text-background"
+              className="px-2 py-1 text-xs2 font-bold uppercase leading-none text-foreground transition-colors hover:bg-foreground hover:text-background"
             >
               {t('search.escape', 'esc')}
             </button>
@@ -955,7 +955,7 @@ export const UniversalSearchBar = ({
               is the one depth cue this system does not use. */}
           <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-foreground/80 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
           <DialogPrimitive.Content
-            className="fixed inset-x-0 top-[8vh] z-50 mx-auto flex max-h-[84vh] w-[calc(100%-3rem)] max-w-[680px] flex-col overflow-hidden border-4 border-foreground bg-background shadow-hard-lg duration-fast data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0"
+            className="fixed inset-x-0 top-[8vh] z-50 mx-auto flex max-h-[84vh] w-[calc(100%-3rem)] max-w-[680px] flex-col overflow-hidden bg-card shadow-soft-lg duration-fast data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0 rounded-container"
             onOpenAutoFocus={(e) => {
               e.preventDefault();
               focusInput();

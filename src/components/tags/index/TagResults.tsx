@@ -89,7 +89,7 @@ export function TagResults({
   if (view === 'graph') {
     return (
       <Suspense fallback={<TrackLoader label={t('tags.loading', 'Loading the glossary')} />}>
-        <div className="h-[520px] w-full border-[3px] border-foreground md:h-[640px]">
+        <div className="h-[520px] w-full border border-border-hairline md:h-[640px]">
           <TagRelationshipGraph categoryFilter={graphCategory} categories={graphCategories} />
         </div>
       </Suspense>
@@ -114,7 +114,7 @@ export function TagResults({
           <button
             type="button"
             onClick={() => setChipLimit((n) => n + CHIP_PAGE)}
-            className="mt-6 border-2 border-foreground px-4 py-2 text-13 font-bold transition-colors hover:bg-foreground hover:text-background"
+            className="mt-6 px-4 py-2 text-13 font-bold transition-colors hover:bg-foreground hover:text-background"
           >
             {t('tags.showMore', 'Show {{count}} more', {
               count: Math.min(CHIP_PAGE, tags.length - shown.length),

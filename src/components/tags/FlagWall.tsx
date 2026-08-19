@@ -20,7 +20,7 @@ export function FlagWall() {
   return (
     <section
       aria-labelledby="flag-wall-heading"
-      className="mb-8 border-[3px] border-foreground p-6 md:p-8"
+      className="mb-8 bg-muted rounded-container p-6 md:p-8"
     >
       <Eyebrow as="p">{t('tags.flagWall.eyebrow', 'Symbols')}</Eyebrow>
       <h2 id="flag-wall-heading" className="mt-2 font-display text-headline leading-tight">

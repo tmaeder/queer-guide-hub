@@ -90,7 +90,7 @@ export function VillageActions({
   t: TFunction;
 }) {
   const OUTLINE =
-    'inline-flex items-center gap-2 border-2 border-foreground px-4 py-2 text-13 font-bold no-underline transition-colors hover:bg-foreground hover:text-background';
+    'inline-flex items-center gap-2 px-4 py-2 text-13 font-bold no-underline transition-colors hover:bg-foreground hover:text-background';
   return (
     <>
       {village.website && (
@@ -176,10 +176,7 @@ export function VillageAbout({
           </h3>
           <ul className="mt-2 flex list-none flex-wrap gap-2 p-0">
             {village.notable_landmarks.map((landmark) => (
-              <li
-                key={landmark}
-                className="border-2 border-foreground px-2 py-1 text-13 font-bold"
-              >
+              <li key={landmark} className="bg-muted rounded-element px-2 py-1 text-13 font-bold">
                 {landmark}
               </li>
             ))}
@@ -261,7 +258,7 @@ export function VillageStops({ venues }: { venues: VillageVenue[] }) {
  *
  * The action link inherits its colour rather than carrying a border: the
  * module ink-floods its first row (the one next instance), and a
- * `border-foreground` chip on flooded ink is invisible.
+ * `border-border-hairline` chip on flooded ink is invisible.
  */
 export function villageOccurrences(
   events: VillageEvent[],
@@ -314,13 +311,7 @@ export function VillageOccurrences({
 }
 
 /** Spec module 08 + rule 4 — the parent city, wearing the CITY's bullet. */
-export function VillageParentCity({
-  village,
-  t,
-}: {
-  village: VillageWithRelations;
-  t: TFunction;
-}) {
+export function VillageParentCity({ village, t }: { village: VillageWithRelations; t: TFunction }) {
   const city = village.cities;
   if (!city) return null;
   return (
@@ -340,7 +331,7 @@ export function VillagePhotos({ village, t }: { village: VillageWithRelations; t
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
       {village.images.map((img, i) => (
-        <div key={img} className="border-2 border-foreground">
+        <div key={img} className="border border-border-hairline">
           <img
             src={img}
             alt={t('village.photo.alt', '{{name}}, photo {{n}}', {

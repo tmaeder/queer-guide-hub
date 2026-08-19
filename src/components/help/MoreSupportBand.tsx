@@ -28,15 +28,15 @@ interface SupportOrg {
   website_domain?: string | null;
 }
 
-const COLUMN = 'flex min-w-0 flex-col border-[3px] border-foreground bg-background p-6';
+const COLUMN = 'flex min-w-0 flex-col bg-card p-6 rounded-container shadow-soft';
 const ACTION =
-  'mt-4 inline-flex items-center gap-1 self-start border-2 border-foreground px-4 py-2 text-13 font-bold no-underline transition-colors hover:bg-foreground hover:text-background';
+  'mt-4 inline-flex items-center gap-1 self-start px-4 py-2 text-13 font-bold no-underline transition-colors hover:bg-foreground hover:text-background';
 
 export function MoreSupportBand({ orgs }: { orgs: SupportOrg[] }) {
   const { t } = useTranslation();
 
   return (
-    <section className="mt-12 border-t-4 border-foreground pt-8" aria-labelledby="help-more">
+    <section className="mt-12 border-t border-border-hairline pt-8" aria-labelledby="help-more">
       <h2 id="help-more" className="font-display text-display leading-tight">
         {t('help.more_support', 'More support')}
       </h2>
@@ -53,9 +53,9 @@ export function MoreSupportBand({ orgs }: { orgs: SupportOrg[] }) {
             )}
           </p>
           {orgs.length > 0 && (
-            <ul className="m-0 mt-4 list-none border-t-2 border-foreground/10 p-0">
+            <ul className="m-0 mt-4 list-none border-t border-foreground/10 p-0">
               {orgs.slice(0, 4).map((org) => (
-                <li key={org.id} className="border-b-2 border-foreground/10 last:border-b-0">
+                <li key={org.id} className="border-b border-foreground/10 last:border-b-0">
                   <LocalizedLink
                     to={`/organizations/${org.slug}`}
                     className="card-lift-sm flex items-center gap-2 py-2 text-inherit no-underline"
@@ -64,10 +64,10 @@ export function MoreSupportBand({ orgs }: { orgs: SupportOrg[] }) {
                       <img
                         src={org.logo_url}
                         alt=""
-                        className="h-8 w-8 shrink-0 border-2 border-foreground object-contain"
+                        className="h-8 w-8 shrink-0 border border-border-hairline object-contain"
                       />
                     ) : (
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center border-2 border-foreground">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center border border-border-hairline">
                         <Building2 size={14} aria-hidden />
                       </span>
                     )}

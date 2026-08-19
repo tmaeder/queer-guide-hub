@@ -55,7 +55,7 @@ import { CityNewsTab } from './city-detail/CityNewsTab';
 import { CityMapTab } from './city-detail/CityMapTab';
 
 const OUTLINE_ON_INK =
-  'inline-flex items-center gap-2 border-2 border-background px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground';
+  'border inline-flex items-center gap-2 border-background px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground';
 
 export default function CityDetail() {
   const { t, i18n } = useTranslation();
@@ -337,7 +337,7 @@ export default function CityDetail() {
         </p>
         <LocalizedLink
           to="/places"
-          className="mt-6 inline-flex items-center gap-2 border-2 border-foreground px-4 py-2 text-13 font-bold no-underline transition-colors hover:bg-foreground hover:text-background"
+          className="mt-6 inline-flex items-center gap-2 px-4 py-2 text-13 font-bold no-underline transition-colors hover:bg-foreground hover:text-background"
         >
           {t('city.backToPlaces', 'All places')}
         </LocalizedLink>
@@ -385,7 +385,7 @@ export default function CityDetail() {
               <button
                 type="button"
                 onClick={() => setCreateTripOpen(true)}
-                className="border-2 border-foreground px-4 py-2 text-13 font-bold transition-colors hover:bg-foreground hover:text-background"
+                className="px-4 py-2 text-13 font-bold transition-colors hover:bg-foreground hover:text-background"
               >
                 {t('cities.detail.createTrip', 'Create trip')}
               </button>
@@ -443,7 +443,7 @@ export default function CityDetail() {
               caption={city.region_name ?? undefined}
               openLabel={t('cities.detail.openMap', 'Open the full map')}
             />
-            <div className="border-[3px] border-foreground p-4">
+            <div className="bg-muted rounded-element p-4">
               <StatLine
                 stats={[
                   {
@@ -523,7 +523,7 @@ export default function CityDetail() {
             />
             <section
               aria-labelledby="city-end-of-line"
-              className="border-[3px] border-foreground bg-foreground p-6 text-background md:p-8"
+              className="bg-foreground p-6 text-background md:p-8"
             >
               <p className="text-2xs font-bold uppercase tracking-label text-background/70">
                 {t('cities.detail.endOfLine.eyebrow', 'End of line')}
@@ -556,7 +556,7 @@ export default function CityDetail() {
             <button
               type="button"
               onClick={handleFavoriteToggle}
-              className="self-start border-2 border-foreground px-4 py-2 text-13 font-bold transition-colors hover:bg-foreground hover:text-background"
+              className="self-start px-4 py-2 text-13 font-bold transition-colors hover:bg-foreground hover:text-background"
             >
               {isFavorited(city.id)
                 ? t('cities.detail.favorited', 'Saved to favorites')

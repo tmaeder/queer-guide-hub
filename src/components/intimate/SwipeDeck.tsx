@@ -131,13 +131,13 @@ export function SwipeDeck({ cards, onLike, onPass, className }: SwipeDeckProps) 
                 <>
                   <motion.div
                     style={{ opacity: likeOpacity }}
-                    className="pointer-events-none absolute top-4 right-4 rounded-badge border-2 border-foreground bg-background/90 px-2.5 py-1 text-sm font-bold uppercase tracking-wider"
+                    className="pointer-events-none absolute top-4 right-4 rounded-badge bg-background/90 px-2.5 py-1 text-sm font-bold uppercase tracking-wider shadow-soft"
                   >
                     Like
                   </motion.div>
                   <motion.div
                     style={{ opacity: passOpacity }}
-                    className="pointer-events-none absolute top-4 left-4 rounded-badge border-2 border-foreground bg-background/90 px-2.5 py-1 text-sm font-bold uppercase tracking-wider"
+                    className="pointer-events-none absolute top-4 left-4 rounded-badge bg-background/90 px-2.5 py-1 text-sm font-bold uppercase tracking-wider shadow-soft"
                   >
                     Pass
                   </motion.div>

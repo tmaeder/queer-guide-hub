@@ -133,8 +133,9 @@ export function StepperShell({
                     <span
                       className={cn(
                         'relative z-10 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-all',
-                        status === 'done' && 'bg-foreground border-foreground text-background',
-                        status === 'active' && 'border-foreground text-foreground bg-background',
+                        status === 'done' && 'bg-foreground text-background',
+                        status === 'active' &&
+                          'text-foreground bg-card rounded-container shadow-soft',
                         status === 'pending' && 'border-border text-muted-foreground bg-background',
                       )}
                     >

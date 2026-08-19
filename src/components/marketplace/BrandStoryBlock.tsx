@@ -58,7 +58,7 @@ export function BrandStoryBlock({ listing }: { listing: MarketplaceListing }) {
   }
 
   return (
-    <section aria-labelledby="brand-story" className="border-[3px] border-foreground p-8 lg:p-12">
+    <section aria-labelledby="brand-story" className="bg-muted rounded-container p-8 lg:p-12">
       <div className="max-w-prose">
         <p className="mb-4 text-2xs font-bold uppercase tracking-label text-muted-foreground">
           About the brand
@@ -70,10 +70,10 @@ export function BrandStoryBlock({ listing }: { listing: MarketplaceListing }) {
             <img
               src={brand.logo_url}
               alt=""
-              className="h-10 w-10 border-2 border-foreground bg-background object-contain p-1"
+              className="h-10 w-10 bg-card object-contain p-1 rounded-container shadow-soft"
             />
           ) : (
-            <span className="flex h-10 w-10 items-center justify-center border-2 border-foreground bg-surface-container text-title font-bold">
+            <span className="flex h-10 w-10 items-center justify-center bg-surface-container text-title font-bold">
               {brand.display_name.charAt(0).toUpperCase()}
             </span>
           )}

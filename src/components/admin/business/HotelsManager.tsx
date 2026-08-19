@@ -41,6 +41,7 @@ import { formatDateTime } from '@/lib/format';
 import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
+import type { AdminTableFeatures } from '@/components/admin/data-table/features';
 import { useQueryClient } from '@tanstack/react-query';
 import { Edit, Trash2, Star, Plus, RefreshCw, Briefcase } from 'lucide-react';
 import { toast } from 'sonner';
@@ -80,7 +81,7 @@ interface HotelRow {
   created_at: string;
 }
 
-const columnHelper = createColumnHelper<HotelRow>();
+const columnHelper = createColumnHelper<AdminTableFeatures, HotelRow>();
 
 const emptyForm = {
   name: '',
@@ -409,6 +410,8 @@ export function HotelsManager() {
 
   return (
     <AdminEntityTable
+      /* Embedded in AdminBusiness, which owns the page title. */
+      hideHeader
       title="Hotels & BnBs"
       subtitle="Manage LGBTQ+ friendly accommodations"
       backHref={null}
@@ -574,7 +577,13 @@ export function HotelsManager() {
                 <div className="flex items-center justify-between gap-2">
                   <Label htmlFor="hotel-safety">Queer Safety Notes</Label>
                   {editingHotel && (
-                    <Button type="button" size="sm" variant="outline" disabled={regenBusy} onClick={handleRegenerateSafety}>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={regenBusy}
+                      onClick={handleRegenerateSafety}
+                    >
                       <RefreshCw size={13} className="mr-1" /> Regenerate from signals
                     </Button>
                   )}

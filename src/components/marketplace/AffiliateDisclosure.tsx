@@ -25,7 +25,7 @@ export function AffiliateDisclosure({
         role="note"
         aria-label="Affiliate disclosure"
         className={cn(
-          'border-2 border-foreground px-4 py-2 text-13 leading-relaxed text-muted-foreground',
+          'bg-muted rounded-element px-4 py-2 text-13 leading-relaxed text-muted-foreground',
           className,
         )}
       >

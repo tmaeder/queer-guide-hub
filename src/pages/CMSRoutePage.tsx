@@ -70,7 +70,7 @@ function PageIndexCard({ page }: { page: CMSPage }) {
   return (
     <LocalizedLink
       to={`/${page.slug}`}
-      className="card-lift group flex items-start gap-4 border-[3px] border-foreground bg-background p-6 text-inherit no-underline"
+      className="card-lift group flex items-start gap-4 bg-card p-6 text-inherit no-underline rounded-container shadow-soft"
     >
       <RouteBullet
         type={line?.slug ?? 'page'}
@@ -178,7 +178,7 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
   if (isLegalHub) {
     return (
       <PageContainer className="max-w-[1100px]">
-        <header className="border-b-4 border-foreground pb-6">
+        <header className="border-b border-border-hairline pb-6">
           <p className="text-2xs font-bold uppercase tracking-label text-muted-foreground">Legal</p>
           <h1 className="mt-4 font-display text-display leading-none tracking-tight md:text-hero">
             {page.title}
@@ -199,7 +199,7 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
             ))}
         </div>
 
-        <section className="mt-12 border-[3px] border-foreground p-6" aria-labelledby="common">
+        <section className="mt-12 bg-muted rounded-container p-6" aria-labelledby="common">
           <p className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
             Straight there
           </p>
@@ -208,7 +208,7 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
           </h2>
           <ul className="mt-4 flex flex-col">
             {COMMON_REQUESTS.map((r) => (
-              <li key={r.to} className="border-b-2 border-foreground/15 last:border-b-0">
+              <li key={r.to} className="border-b border-foreground/15 last:border-b-0">
                 <LocalizedLink
                   to={r.to}
                   className="block py-2 text-13 font-bold text-inherit no-underline transition-colors hover:bg-surface-container"
@@ -220,7 +220,7 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
           </ul>
         </section>
 
-        <section className="mt-8 border-[3px] border-foreground bg-foreground p-6 text-background">
+        <section className="mt-8 bg-foreground p-6 text-background">
           <p className="text-2xs font-bold uppercase tracking-label text-background/70">
             End of line
           </p>
@@ -250,7 +250,7 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
           footer={
             slug === 'accessibility' ? (
               <section
-                className="mt-12 border-[3px] border-foreground p-6"
+                className="mt-12 bg-muted rounded-container p-6"
                 aria-labelledby="a11y-settings"
               >
                 <p className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
@@ -283,7 +283,7 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
         <img
           src={page.cover_image_url}
           alt={page.cover_image_alt || page.title}
-          className="mb-6 max-h-[400px] w-full border-[3px] border-foreground object-cover"
+          className="mb-6 max-h-[400px] w-full bg-muted rounded-element object-cover"
         />
       )}
 

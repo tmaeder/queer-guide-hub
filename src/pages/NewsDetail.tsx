@@ -450,7 +450,7 @@ export default function NewsDetail() {
           {(article.editorial_note || altHeld) && (
             <aside
               aria-label={t('newsDetail.whyThisMatters', 'Why this matters')}
-              className="border-l-2 border-foreground py-2 pl-6"
+              className="border-l border-border-hairline py-2 pl-6"
             >
               <p className="m-0 text-2xs uppercase tracking-[0.2em] text-muted-foreground">
                 {t('newsDetail.whyThisMatters', 'Why this matters')}

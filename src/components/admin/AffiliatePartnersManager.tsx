@@ -1,14 +1,6 @@
 import { useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import {
-  Plus,
-  Edit2,
-  Trash2,
-  Handshake,
-  Globe,
-  AlertCircle,
-  RefreshCw,
-} from 'lucide-react';
+import { Plus, Edit2, Trash2, Handshake, Globe, AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -204,7 +196,7 @@ export function AffiliatePartnersManager({
                   <span className="text-base font-semibold">{p.partner_name}</span>
                   <Badge
                     variant="outline"
-                    className={p.enabled ? 'border-foreground/40 text-foreground' : ''}
+                    className={p.enabled ? 'border border-foreground/40 text-foreground' : ''}
                   >
                     {p.enabled ? 'Active' : 'Disabled'}
                   </Badge>
@@ -306,7 +298,9 @@ export function AffiliatePartnersManager({
                   onChange={(e) => setForm((f) => ({ ...f, sub_field: e.target.value }))}
                 >
                   {SUB_FIELDS.map((s) => (
-                    <option key={s} value={s}>{s}</option>
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
                   ))}
                 </select>
               </div>
