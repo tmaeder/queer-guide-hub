@@ -2722,10 +2722,10 @@
     },
     "lens": {
       "groupLabel": "Map view",
-      "pins": "Pins",
-      "density": "Density",
+      "pins": "Stations",
+      "density": "Heat",
       "routes": "Routes",
-      "boundary": "Boundary",
+      "boundary": "Areas",
       "combined": "Combined"
     },
     "sheet": {
