@@ -283,6 +283,12 @@ jobs:
                 // color-contrast it carries the measured ratio and both colours,
                 // which is the difference between a fix and a guess.
                 if(n.failureSummary) console.error('    why:    '+String(n.failureSummary).replace(/\n/g,' | ').slice(0,300));
+                // target-size records the rect, the scroll offset and what is
+                // sitting on top of the target (see the scanner). Without it
+                // the summary's \"smallest space is 14px by 44px\" names no
+                // culprit, which is exactly the finding that could not be
+                // diagnosed from this log.
+                if(n.geometry) console.error('    where:  '+JSON.stringify(n.geometry));
                 console.error(\`    docs:   \${v.helpUrl}\`);
               }
               if(bad.length>10) console.error(\`  … and \${bad.length-10} more — see the axe-postdeploy artifact\`);
