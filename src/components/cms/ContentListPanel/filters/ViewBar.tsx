@@ -69,7 +69,17 @@ export function ViewBar({
 
   return (
     <div className="flex items-center gap-2 mb-4 border-b border-border pb-2">
-      <div role="tablist" aria-label="Views" className="flex items-center gap-1 overflow-x-auto">
+      {/*
+        Deliberately NOT role="tablist"/role="tab". axe: "Element has children
+        which are not allowed: button[aria-label]" — a tablist may own tabs and
+        nothing else, but every view here carries its own ⋯ menu button and the
+        row ends with a + button, none of which can leave without breaking the
+        layout. There are also no tabpanels, so this was never a tab widget.
+        PresetChips keeps tab roles precisely because its tablist contains only
+        tabs; this one can't, so the selected view is announced with
+        aria-current instead. Same keyboard behaviour, honest semantics.
+      */}
+      <div role="group" aria-label="Views" className="flex items-center gap-1 overflow-x-auto">
         {views.length === 0 && (
           <span className="text-sm text-muted-foreground px-2">No saved views yet.</span>
         )}
@@ -78,8 +88,7 @@ export function ViewBar({
           return (
             <div key={v.id} className="group flex items-center shrink-0">
               <Button
-                role="tab"
-                aria-selected={isActive}
+                aria-current={isActive ? 'true' : undefined}
                 // Unsaved state is announced, not only shown as a dot.
                 aria-label={isActive && dirty ? `${v.name}, unsaved changes` : v.name}
                 size="sm"

@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { toast } from 'sonner';
-import {Maximize2, CheckCheck } from 'lucide-react';
+import { Maximize2, CheckCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,10 +14,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import {
-  Sheet,
-  SheetContent,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
   useUnifiedTriageQueue,
@@ -63,10 +60,7 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
 
   const items = useMemo(() => data?.items ?? [], [data]);
   const total = data?.total ?? 0;
-  const activeItem = useMemo(
-    () => items.find((i) => i.id === activeId) ?? null,
-    [items, activeId],
-  );
+  const activeItem = useMemo(() => items.find((i) => i.id === activeId) ?? null, [items, activeId]);
 
   function updateFilters(partial: Partial<TriageFilters>) {
     setFilters((f) => ({ ...f, ...partial }));
@@ -187,7 +181,11 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
   );
 
   const handleBulkAction = useCallback(
-    (action: 'approve' | 'reject') => runBulk(items.filter((i) => selectedIds.has(i.id)), action),
+    (action: 'approve' | 'reject') =>
+      runBulk(
+        items.filter((i) => selectedIds.has(i.id)),
+        action,
+      ),
     [items, selectedIds, runBulk],
   );
 
@@ -205,7 +203,9 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
       { contentTypes: filters.contentTypes },
       {
         onSuccess: (res) => {
-          toast.success(`Approved ${res.approved} high-confidence item${res.approved !== 1 ? 's' : ''}`);
+          toast.success(
+            `Approved ${res.approved} high-confidence item${res.approved !== 1 ? 's' : ''}`,
+          );
           setActiveId(null);
           refetchHighConf();
         },
@@ -288,7 +288,10 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2 border-b">
         <div className="flex items-center gap-2">
-          <h1 className="text-lg font-medium">Review</h1>
+          {/* h2, not h1: TriageView is only ever mounted inside AdminInbox,
+              which already owns the page <h1>. Two h1s on one route is the
+              exact invariant e2e/admin-route-baseline.spec.ts asserts. */}
+          <h2 className="text-lg font-medium">Review</h2>
           {total > 0 && (
             <Badge variant="secondary" className="text-xs">
               {total}
@@ -298,9 +301,7 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
         </div>
         <div className="flex items-center gap-2">
           {selectedIds.size > 0 && (
-            <span className="text-xs text-muted-foreground">
-              {selectedIds.size} selected
-            </span>
+            <span className="text-xs text-muted-foreground">{selectedIds.size} selected</span>
           )}
           {(highConfCount ?? 0) > 0 && (
             <Button
@@ -342,12 +343,8 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
         </>
       ) : (
         <div className="flex flex-1 overflow-hidden">
-          <div className="w-[40%] min-w-[300px] border-r overflow-hidden">
-            {listPanel}
-          </div>
-          <div className="flex-1 overflow-hidden">
-            {detailPanel}
-          </div>
+          <div className="w-[40%] min-w-[300px] border-r overflow-hidden">{listPanel}</div>
+          <div className="flex-1 overflow-hidden">{detailPanel}</div>
         </div>
       )}
 
@@ -379,8 +376,8 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Approve {highConfCount ?? 0} high-confidence items?</AlertDialogTitle>
             <AlertDialogDescription>
-              This approves every pending staging item with a confidence score of 90% or higher
-              — across all pages, not just the visible ones. Items the quality check rejected are
+              This approves every pending staging item with a confidence score of 90% or higher —
+              across all pages, not just the visible ones. Items the quality check rejected are
               excluded. Approved items move on to commit and can be reopened individually.
             </AlertDialogDescription>
           </AlertDialogHeader>

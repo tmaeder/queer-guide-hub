@@ -176,7 +176,7 @@ export default function SourcesTab() {
                   }`}
                 >
                   {f}
-                  {counts[f] > 0 && <span className="ml-1 opacity-70">{counts[f]}</span>}
+                  {counts[f] > 0 && <span className="ml-1">{counts[f]}</span>}
                 </button>
               ))}
             </div>

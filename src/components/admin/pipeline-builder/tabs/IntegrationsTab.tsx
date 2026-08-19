@@ -380,6 +380,7 @@ export default function IntegrationsTab() {
                     </td>
                     <td className="px-4 py-2">
                       <Switch
+                        aria-label={`Enable ${i.name}`}
                         checked={i.enabled}
                         onCheckedChange={(enabled) => toggle.mutate({ id: i.id, enabled })}
                       />

@@ -212,25 +212,33 @@ export default function UnifiedDataOps() {
         className="flex items-stretch border-b border-border overflow-x-auto"
         style={{ marginBottom: activeTab === 'builder' ? 0 : 20 }}
       >
-        {TABS.map(({ key, label, icon: Icon }) => {
-          const isActive = activeTab === key;
-          return (
-            <button
-              key={key}
-              role="tab"
-              aria-selected={isActive}
-              onClick={() => switchTab(key)}
-              className={`flex items-center gap-1.5 px-4 py-2.5 text-sm whitespace-nowrap border-b transition-colors ${
-                isActive
-                  ? 'border-primary text-primary font-semibold'
-                  : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/30'
-              }`}
-            >
-              <Icon className="h-[15px] w-[15px]" />
-              {label}
-            </button>
-          );
-        })}
+        {/*
+          The tabs need a real tablist parent (axe: "Required ARIA parent role
+          not present: tablist"), and a tablist may own tabs and nothing else —
+          so the Inbox link stays a sibling of this element, inside the same
+          scroll row. Same shape as PresetChips' `trailing` slot.
+        */}
+        <div role="tablist" aria-label="Data operations sections" className="flex items-stretch">
+          {TABS.map(({ key, label, icon: Icon }) => {
+            const isActive = activeTab === key;
+            return (
+              <button
+                key={key}
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => switchTab(key)}
+                className={`flex items-center gap-1.5 px-4 py-2.5 text-sm whitespace-nowrap border-b transition-colors ${
+                  isActive
+                    ? 'border-primary text-primary font-semibold'
+                    : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/30'
+                }`}
+              >
+                <Icon className="h-[15px] w-[15px]" />
+                {label}
+              </button>
+            );
+          })}
+        </div>
         <Link
           to="/admin/inbox"
           className="flex items-center gap-1.5 px-4 py-2.5 text-sm whitespace-nowrap text-muted-foreground hover:text-foreground transition-colors ml-auto"

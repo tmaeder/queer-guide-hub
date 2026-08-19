@@ -184,6 +184,7 @@ function ContentListPanelBody(props: ContentListPanelProps) {
                   <Button
                     variant="ghost"
                     size="sm"
+                    aria-label="Refresh"
                     className="h-7 w-7 p-0"
                     onClick={() => c.loadItems()}
                   >

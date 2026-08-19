@@ -326,6 +326,7 @@ export function ContentListTable({
             <TableRow>
               <TableHead style={{ width: 42 }} className="pl-4">
                 <Checkbox
+                  aria-label="Select all rows"
                   checked={someSelected && !allSelected ? 'indeterminate' : allSelected}
                   onCheckedChange={toggleSelectAll}
                 />
@@ -421,6 +422,7 @@ export function ContentListTable({
                   >
                     <TableCell className="pl-4" onClick={(e) => e.stopPropagation()}>
                       <Checkbox
+                        aria-label="Select row"
                         checked={isSelected}
                         onCheckedChange={() => toggleSelect(itemKey)}
                       />

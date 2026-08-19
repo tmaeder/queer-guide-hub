@@ -47,13 +47,18 @@ interface FilterControlProps {
 
 function FilterControl({ config, value, onChange }: FilterControlProps) {
   if (config.type === 'boolean') {
+    // The Label was purely visual — no htmlFor, no id — so the switch reached
+    // screen readers unnamed (axe `button-name`, critical). Associating them
+    // names the control AND makes the text a click target for it.
+    const switchId = `filter-${config.key}`;
     return (
       <div className="flex items-center gap-2">
         <Switch
+          id={switchId}
           checked={value === true}
           onCheckedChange={(checked) => onChange(checked || undefined)}
         />
-        <Label style={{ fontSize: 13 }} className="whitespace-nowrap">
+        <Label htmlFor={switchId} style={{ fontSize: 13 }} className="whitespace-nowrap">
           {config.label}
         </Label>
       </div>
