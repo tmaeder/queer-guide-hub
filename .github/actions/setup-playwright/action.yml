@@ -94,31 +94,39 @@ runs:
         EOF
 
     # Belt and braces: even with apt bounded, this step gets its own clock so a
-    # stall can cost at most ~5 minutes instead of the entire job.
+    # stall costs 3 minutes instead of the entire job.
     #
-    # It is deliberately NON-FATAL. ubuntu-latest already ships almost every
-    # library Chromium needs, so the realistic outcome of a skipped deps install
-    # is a green run. If a library really is missing, the browser fails to launch
-    # seconds later with a named `.so` — a legible failure on the step that
-    # actually needs it, which beats a twenty-minute `cancelled` that reads as
-    # flakiness and leaves auto-merge stuck on a check that is neither pass nor
-    # fail.
+    # ONE attempt, not two, and this is measured rather than assumed. The first
+    # version of this action retried once with a 300s cap each. On its very first
+    # run (32277251665) BOTH attempts consumed their full cap — the step took
+    # 616s, which is 300 + 300 + ~16s of cache-miss browser download, and a
+    # successful attempt would have exited immediately. A dead Ubuntu mirror does
+    # not recover in five minutes, so the retry bought nothing and pushed the
+    # worst case to ~18 minutes against a 20-minute cap: a `cancelled` turned
+    # into a *nearly* cancelled. 180s fits a healthy apt with room to spare (the
+    # entire old step, browser download included, measured 22-102s) and fails
+    # fast on a sick one.
+    #
+    # It is deliberately NON-FATAL. ubuntu-latest already ships the libraries
+    # Chromium needs — demonstrated by that same run, where apt installed
+    # NOTHING and the full critical-path suite passed anyway. If one really is
+    # missing, the browser fails to launch seconds later naming the `.so`: a
+    # legible failure on the step that actually needs it, which beats a
+    # twenty-minute `cancelled` that reads as flakiness and leaves auto-merge
+    # stuck on a check that is neither pass nor fail.
     - name: Install system dependencies
       if: inputs.with-deps == 'true' && runner.os == 'Linux'
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       run: |
-        for attempt in 1 2; do
-          if timeout 300 npx playwright install-deps ${{ inputs.browser }}; then
-            echo "System dependencies installed (attempt $attempt)."
-            exit 0
-          fi
-          echo "::warning::playwright install-deps attempt $attempt failed or timed out after 5m."
-          sudo rm -rf /var/lib/apt/lists/* || true
-        done
-        echo "::warning::Continuing without a fresh system-dependency install. \
-        The runner image usually already carries them; if it does not, the \
-        browser launch below will name the missing library."
+        if timeout 180 npx playwright install-deps ${{ inputs.browser }}; then
+          echo "System dependencies installed."
+          exit 0
+        fi
+        echo "::warning::playwright install-deps failed or timed out after 3m — \
+        almost always a stalled Ubuntu mirror. Continuing: the runner image \
+        already carries these libraries, and if one is missing the browser \
+        launch will name it."
 
     - name: Install browser
       shell: bash
