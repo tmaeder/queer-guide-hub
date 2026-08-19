@@ -21,7 +21,18 @@ jobs:
   full-suite:
     name: Full Playwright suite
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    # A job killed by this budget reports as `cancelled`, NOT `failure` — which
+    # is why the 2026-08-15 and 2026-08-19 nightlies read as someone cancelling
+    # them by hand. Check the duration before believing a cancellation: 45m16s
+    # against a 45m budget is a timeout.
+    #
+    # Raised 45 -> 75 on 2026-08-19. The admin secrets (E2E_ADMIN_EMAIL /
+    # _PASSWORD) started resolving between the 08-18 and 08-19 runs, which un-
+    # skipped the admin-authenticated specs: 620 -> 653 tests and 104 -> ~40
+    # skips. At `workers: 1` (deliberate — this suite runs against PRODUCTION,
+    # so concurrency here is load on the live site) plus `retries: 2`, every
+    # failing test costs 3 executions, and the run no longer fits in 45m.
+    timeout-minutes: 75
     env:
       BASE_URL_INPUT: ${{ inputs.base_url }}
     steps:
