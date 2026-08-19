@@ -19,9 +19,38 @@ export type EmailBranding = {
 const DEFAULTS: EmailBranding = {
   from_name: 'The Queer Guide',
   from_address: 'noreply@queer.guide',
-  wrapper_bg: '#0a0a0a',
-  wrapper_fg: '#fafafa',
+  // Frame grey + ink, the live brand. This shell was still dark-mode
+  // (#0a0a0a on #fafafa) from before the rebrand: every transactional mail
+  // the product sent looked like a different company from the site.
+  wrapper_bg: '#EDEDE6',
+  wrapper_fg: '#111111',
 };
+
+/**
+ * ONE accent per message class, and the class is what the accent encodes —
+ * never severity, never risk. These are the four track colours doing the job
+ * they exist for on the site: telling you which line you are on.
+ *
+ * `unsubscribable` is a product rule, not a style: account mail is
+ * transactional and must always be delivered; only the digest is bulk.
+ */
+export const MESSAGE_CLASSES = {
+  account: { accent: '#00B4E6', label: 'Account', unsubscribable: false },
+  receipt: { accent: '#2BE05A', label: 'Receipt', unsubscribable: false },
+  contribution: { accent: '#FF1F8F', label: 'Contribution', unsubscribable: false },
+  digest: { accent: '#FFD500', label: 'Digest', unsubscribable: true },
+} as const;
+
+export type MessageClass = keyof typeof MESSAGE_CLASSES;
+
+/**
+ * Anton is the display face on the site and cannot be webfont-loaded in mail
+ * (Gmail strips @font-face; Outlook never had it). Impact is the closest
+ * ubiquitous condensed grotesque, and the chain degrades to any sans rather
+ * than to a serif. Body is Space Grotesk with the same reasoning.
+ */
+const DISPLAY_STACK = "Impact,'Haettenschweiler','Arial Narrow Bold',Arial,sans-serif";
+const BODY_STACK = "'Space Grotesk',Helvetica,Arial,sans-serif";
 
 const HEX_RE = /^#[0-9a-fA-F]{6}$/;
 const TTL_MS = 60_000;
@@ -75,21 +104,133 @@ export function fromHeader(branding: EmailBranding): string {
 const escapeHtml = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
+export type WrapOptions = {
+  /** Which line this message is on. Defaults to `account` — the safest class:
+   *  it is never treated as bulk, so a mis-tagged mail is under-suppressed
+   *  rather than silently unsubscribed. */
+  messageClass?: MessageClass;
+  /** Plain sentence saying why this landed in their inbox. Required by the
+   *  footer band; a mail that cannot explain itself reads as spam. */
+  reason?: string;
+  /** One-click unsubscribe. Only rendered for a bulk class — offering it on a
+   *  receipt promises something the product will not honour. */
+  unsubscribeUrl?: string;
+  preferencesUrl?: string;
+  /** Rendered as a solid ink block. One per message, by the spec. */
+  action?: { label: string; url: string };
+  /** Sits above the body in the display face. Lowercase sentence case. */
+  subject?: string;
+};
+
+const POSTAL = 'Queer Guide · Europaallee 40 · 8004 Zürich · Switzerland';
+
 /**
- * Minimal table wrapper for email clients (inline styles only). Wraps the
- * rendered template HTML in the branded frame.
+ * The 600px single-column shell: ink on paper, one accent per message class,
+ * one solid-ink primary action, no gradients, no shadows, no background
+ * images. Layout is nested TABLES with inline styles — the source mock is
+ * authored in flex/grid and neither survives Outlook's Word renderer.
+ *
+ * Radius follows the LIVE system (18px container / 12px element), not the
+ * "square corners everywhere" line in the older email spec. That line predates
+ * the soft re-skin, which reversed it system-wide to "Nothing square"; the
+ * mock contradicted itself on the same point by shipping an 18px secondary
+ * button. Matching the site is the tie-breaker.
  */
-export function wrapHtml(inner: string, branding: EmailBranding): string {
+export function wrapHtml(inner: string, branding: EmailBranding, opts: WrapOptions = {}): string {
+  const cls = MESSAGE_CLASSES[opts.messageClass ?? 'account'];
   const header = branding.logo_url
-    ? `<img src="${escapeHtml(branding.logo_url)}" alt="${escapeHtml(branding.from_name)}" height="32" style="height:32px;width:auto;display:block;" />`
-    : `<span style="font-size:16px;font-weight:600;color:${branding.wrapper_fg};">${escapeHtml(branding.from_name)}</span>`;
-  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:${branding.wrapper_bg};padding:24px 0;">
+    ? `<img src="${escapeHtml(branding.logo_url)}" alt="${escapeHtml(branding.from_name)}" height="28" style="height:28px;width:auto;display:block;border:0;" />`
+    : `<span style="font-family:${DISPLAY_STACK};font-size:20px;letter-spacing:0.01em;color:${branding.wrapper_fg};">${escapeHtml(branding.from_name)}</span>`;
+
+  // The accent is a rule, not a wash: a 4px bar on the card's top edge. A
+  // filled panel would put body text on a track colour, which fails contrast
+  // on three of the four.
+  const accentBar = `<tr><td style="background-color:${cls.accent};font-size:0;line-height:0;height:4px;">&nbsp;</td></tr>`;
+
+  const subject = opts.subject
+    ? `<tr><td style="padding:24px 24px 0;font-family:${DISPLAY_STACK};font-size:28px;line-height:1.15;color:#111111;">${escapeHtml(opts.subject)}</td></tr>`
+    : '';
+
+  const action = opts.action
+    ? `<tr><td style="padding:8px 24px 24px;">
+      <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+        <td style="background-color:#111111;border-radius:12px;">
+          <a href="${escapeHtml(opts.action.url)}" style="display:inline-block;padding:12px 20px;font-family:${BODY_STACK};font-size:15px;font-weight:700;color:#FAFAF5;text-decoration:none;">${escapeHtml(opts.action.label)}</a>
+        </td>
+      </tr></table>
+    </td></tr>`
+    : '';
+
+  // Only a bulk class gets an unsubscribe link, and only if one was supplied.
+  const unsub =
+    cls.unsubscribable && opts.unsubscribeUrl
+      ? ` · <a href="${escapeHtml(opts.unsubscribeUrl)}" style="color:#111111;">Unsubscribe</a>`
+      : '';
+  const prefs = opts.preferencesUrl
+    ? ` · <a href="${escapeHtml(opts.preferencesUrl)}" style="color:#111111;">Email preferences</a>`
+    : '';
+  const reason = opts.reason ? `${escapeHtml(opts.reason)}<br />` : '';
+
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:${branding.wrapper_bg};padding:24px 0;margin:0;">
   <tr><td align="center">
     <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
       <tr><td style="padding:0 24px 16px;">${header}</td></tr>
-      <tr><td style="background-color:#ffffff;border-radius:8px;padding:24px;color:#111111;font-family:system-ui,-apple-system,sans-serif;">${inner}</td></tr>
-      <tr><td style="padding:16px 24px 0;font-size:11px;color:${branding.wrapper_fg};opacity:0.7;font-family:system-ui,-apple-system,sans-serif;">© Queer Guide · <a href="https://queer.guide" style="color:${branding.wrapper_fg};">queer.guide</a></td></tr>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#FAFAF5;border-radius:18px;overflow:hidden;">
+        ${accentBar}
+        ${subject}
+        <tr><td style="padding:16px 24px 24px;color:#111111;font-family:${BODY_STACK};font-size:15px;line-height:1.55;">${inner}</td></tr>
+        ${action}
+      </table>
+      <tr><td style="padding:16px 24px 0;font-size:12px;line-height:1.5;color:${branding.wrapper_fg};font-family:${BODY_STACK};">
+        ${reason}${escapeHtml(POSTAL)}<br />
+        <a href="https://queer.guide" style="color:${branding.wrapper_fg};">queer.guide</a>${prefs}${unsub}
+      </td></tr>
     </table>
   </td></tr>
 </table>`;
+}
+
+/**
+ * The plain-text twin. Every message ships one: a text/plain part is what
+ * screen-reader users, text-only clients and most spam filters actually read,
+ * and a missing one is itself a deliverability signal.
+ *
+ * Deliberately a real conversion, not `stripTags(html)` — block elements have
+ * to become line breaks or the whole mail arrives as one run-on paragraph, and
+ * a link whose href is dropped is unusable in text.
+ */
+export function toPlainText(html: string, opts: WrapOptions = {}): string {
+  const body = html
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi, (_m, href, text) =>
+      // `text (url)`, NOT `text <url>`: the generic tag-strip below runs
+      // afterwards and `<https://…>` matches /<[^>]+>/ exactly like a tag, so
+      // the angle-bracket form deleted every link target it had just written.
+      `${String(text).replace(/<[^>]+>/g, '').trim()} (${href})`)
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(p|div|tr|h[1-6]|li)>/gi, '\n')
+    .replace(/<li\b[^>]*>/gi, '- ')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+
+  const cls = MESSAGE_CLASSES[opts.messageClass ?? 'account'];
+  const parts = [
+    opts.subject ? `${opts.subject}\n` : '',
+    body,
+    opts.action ? `\n${opts.action.label}: ${opts.action.url}` : '',
+    '\n---',
+    opts.reason ?? '',
+    POSTAL,
+    'https://queer.guide',
+    opts.preferencesUrl ? `Email preferences: ${opts.preferencesUrl}` : '',
+    cls.unsubscribable && opts.unsubscribeUrl ? `Unsubscribe: ${opts.unsubscribeUrl}` : '',
+  ].filter(Boolean);
+  return parts.join('\n').replace(/\n{3,}/g, '\n\n').trim();
 }
