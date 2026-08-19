@@ -35,7 +35,16 @@ jobs:
     # 10.8m of tests and was killed at 12m during teardown, which GitHub
     # reports as `cancelled`, not `timed out` — so it read as a concurrency
     # cancellation rather than the budget it actually was.
-    timeout-minutes: 20
+    #
+    # Raised again 20 -> 30 (2026-08-19): 20 was still marginal and the job was
+    # being killed on ~1 run in 3. Measured on PR #2866: two runs died at 20m16s
+    # and 20m17s — near-identical durations are a timeout, never flakiness. The
+    # step holding the clock at minute 20 is the one stamped `cancelled`, which
+    # is why the SAME defect looked like "install hung" on one run and "specs
+    # cancelled" on another, and looked branch-specific when it was not. The
+    # real cost was the uncached browser download below; 30 is headroom over the
+    # ~11m of specs + build that remain once that is cached.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
       - name: Detect relevant changes
@@ -60,8 +69,32 @@ jobs:
           cache: npm
       - run: npm ci
         if: steps.changes.outputs.relevant == 'true'
-      - run: npx playwright install --with-deps chromium
+      # The browser download is the single biggest slice of this job and nothing
+      # cached it — `setup-node`'s `cache: npm` covers node_modules ONLY, so every
+      # run re-fetched chromium and apt-installed its system deps. Key on the
+      # resolved Playwright version, not on package-lock's hash: the lockfile
+      # changes on every unrelated dependency bump and would evict the browser
+      # each time.
+      - name: Resolve Playwright version
+        id: pw
         if: steps.changes.outputs.relevant == 'true'
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+      - name: Cache Playwright browsers
+        id: pw-cache
+        if: steps.changes.outputs.relevant == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ms-playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
+      - name: Install Playwright browser + system deps
+        if: steps.changes.outputs.relevant == 'true' && steps.pw-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+      # System deps live in /usr/lib, not in the cached browser directory, so they
+      # must still be installed on a cache hit — but this is apt only, no download
+      # of the browser itself.
+      - name: Install Playwright system deps (browser cached)
+        if: steps.changes.outputs.relevant == 'true' && steps.pw-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
       - name: Build app
         if: steps.changes.outputs.relevant == 'true'
         run: npm run build
