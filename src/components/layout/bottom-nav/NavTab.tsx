@@ -84,11 +84,18 @@ export function NavTab({
         }}
         className={cn(
           linkBase,
-          // Active reverses to ink, the same move the desktop track tabs make.
-          // The soft `bg-muted` pill it replaces was the last rounded, tinted
-          // surface in the chrome and read as a different design system from
-          // the bar it sat in.
-          active ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground',
+          // The dock is an INK island (spec panel 12), so both states are the
+          // inverse of what they were on the old paper bar: active reverses to
+          // PAPER, and the resting label is paper at 70% rather than
+          // --muted-foreground.
+          //
+          // That inversion is the whole point. --muted-foreground is #545454,
+          // designed against paper; on #111 it measures 2.49:1 and axe failed
+          // it 42 times across the route sweep. Paper at 70% composites to
+          // rgb(180,180,177) on ink — 9.1:1, which a 10px bold label needs
+          // (bold only counts as large text from 18.66px up, so the bar here
+          // is 4.5:1, not 3:1).
+          active ? 'bg-background text-foreground' : 'text-background/70 hover:text-background',
         )}
       >
         <span className={iconWrap}>

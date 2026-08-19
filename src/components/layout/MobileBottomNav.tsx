@@ -91,7 +91,7 @@ export function MobileBottomNav() {
   // It stays because it still carries the trip-count dot and reads as "there
   // is more above". `pointer-events-none` lets taps fall through to the tab.
   const exploreAccessory = (
-    <span className="pointer-events-none absolute end-0 top-0 flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground">
+    <span className="pointer-events-none absolute end-0 top-0 flex h-6 w-6 items-center justify-center rounded-full text-background/70">
       <ChevronUp className="h-3.5 w-3.5" aria-hidden />
       {!!user && tripCount > 0 && (
         <NavBadge
