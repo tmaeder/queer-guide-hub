@@ -52,20 +52,18 @@ test.describe('MapShell — discover surface (/map)', () => {
     await expect(page).toHaveURL(/[?&]layers=/);
   });
 
-  // KNOWN BROKEN, and not by the rename — `test.fixme` rather than `skip`
-  // because this SHOULD pass and a silent skip reads identical to a pass.
+  // This asserts both halves of the label/key split at once: the LABEL is the
+  // transit vocabulary the reader sees, the KEY is what a shared link carries.
   //
-  // Clicking Heat flips `data-map-lens` to `density` but never writes
-  // `?lens=density`. Measured on prod 2026-08-19, three ways:
-  //   - clicking AREAS does write `?lens=boundary` — same code path, so a
-  //     label rename cannot explain the difference;
-  //   - loading `/map?lens=density` directly works AND the param survives
-  //     alongside the viewport params, so reading and persisting are fine;
-  //   - discover's defaultLens is `combined`, so the `sp.delete('lens')`
-  //     branch in useMapShellState should not be taken.
-  // Suspected race between setLens and the viewport's own replace:true
-  // setSearchParams. Tracked separately.
-  test.fixme('Heat lens flips data-map-lens and URL param', async ({ page }) => {
+  // It was briefly `test.fixme` over a bug that does not exist. Every lens
+  // writes its key — measured on prod at 125 ms intervals for 3 s after each
+  // click, no clobber. What failed was the LAST line: only the surface default
+  // clears the param, and discover's default is `combined`, not `pins`
+  // (SURFACE_PRESETS.discover, unchanged since #1451). So clicking Stations
+  // leaves `?lens=pins` standing and correctly fails a `not.toHaveURL(/lens=/)`
+  // — a failure at the end of the test that was read as the first half never
+  // writing its param. Nothing in useMapShellState treats `density` specially.
+  test('Heat lens flips data-map-lens and URL param', async ({ page }) => {
     await openFilters(page);
     await page.getByRole('radio', { name: 'Heat' }).click();
     await expect
@@ -73,13 +71,20 @@ test.describe('MapShell — discover surface (/map)', () => {
       .toBe('density');
     await expect(page).toHaveURL(/[?&]lens=density/);
 
-    // Switch back to Stations removes the param (it equals the surface
-    // default). The LABEL is "Stations"; the URL value stays `pins`, because
-    // the lens keys are shared-link state and were deliberately not renamed.
+    // Stations is NOT the default, so it writes its key like any other lens.
+    // The LABEL is "Stations"; the URL value stays `pins`, because the lens
+    // keys are shared-link state and were deliberately not renamed.
     await page.getByRole('radio', { name: 'Stations' }).click();
     await expect
       .poll(async () => page.locator('[data-map-surface]').getAttribute('data-map-lens'))
       .toBe('pins');
+    await expect(page).toHaveURL(/[?&]lens=pins/);
+
+    // Only the surface default removes the param.
+    await page.getByRole('radio', { name: 'Combined' }).click();
+    await expect
+      .poll(async () => page.locator('[data-map-surface]').getAttribute('data-map-lens'))
+      .toBe('combined');
     await expect(page).not.toHaveURL(/[?&]lens=/);
   });
 
