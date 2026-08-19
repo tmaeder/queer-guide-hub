@@ -159,3 +159,37 @@ Deno.test('style and script CONTENT never reaches the body', () => {
   assert(!text.includes('color:red'), 'style content leaked');
   assert(!text.includes('alert(1)'), 'script content leaked');
 });
+
+Deno.test('a legal end tag with junk in it still closes the skip', () => {
+  // `</script\t\n foo>` IS a valid end tag. `<\/script\s*>` missed it, so
+  // script content leaked back into the body (CodeQL js/bad-tag-filter).
+  const text = toPlainText('<p>a</p><script>alert(1)</script\t\n foo><p>b</p>');
+  assert(!text.includes('alert(1)'), `script content leaked: ${text}`);
+  assertStringIncludes(text, 'a');
+  assertStringIncludes(text, 'b');
+});
+
+Deno.test('no "<" can reach the output, whatever the input', () => {
+  // The scanner makes this structural: every `<` starts a tag scan that runs
+  // to `>` or to end-of-input. Completeness is not a property of a pattern.
+  const nasty = [
+    '<scr<script>ipt>alert(1)</script>',
+    '<style>x{}</style',
+    '<<>>',
+    '<p onclick="<">hi</p>',
+    '<style',
+    '</script foo bar>',
+    '<a href="https://q.test/1">l</a><script',
+  ];
+  for (const input of nasty) {
+    const text = toPlainText(input);
+    assert(!text.includes('<'), `"${input}" produced a "<": ${JSON.stringify(text)}`);
+  }
+});
+
+Deno.test('entity text is decoded but never re-parsed as markup', () => {
+  // Decoding happens AFTER scanning, so a decoded `<` is inert text and can
+  // never become a tag — the ordering is the guarantee.
+  const text = toPlainText('<p>&lt;script&gt;alert(1)&lt;/script&gt;</p>');
+  assertStringIncludes(text, '<script>alert(1)</script>');
+});

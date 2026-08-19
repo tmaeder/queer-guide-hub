@@ -199,30 +199,13 @@ export function wrapHtml(inner: string, branding: EmailBranding, opts: WrapOptio
  * to become line breaks or the whole mail arrives as one run-on paragraph, and
  * a link whose href is dropped is unusable in text.
  */
-/** Strip tags to a FIXED POINT, not in one pass.
+/**
+ * Decode entities in ONE pass.
  *
- *  `<scr<script>ipt>` survives a single `/<[^>]*>/g` — the inner match is
- *  removed and the outer halves close up into a live tag behind it. Looping
- *  until the string stops changing is the only way a regex strip is sound.
- *  An unterminated `<tag` at the end is dropped too: nothing in this string
- *  can close it, but whatever a caller concatenates afterwards can.
- */
-function stripTags(input: string): string {
-  let out = input;
-  let prev: string;
-  do {
-    prev = out;
-    out = out.replace(/<[^>]*>/g, '');
-  } while (out !== prev);
-  return out.replace(/<[^>]*$/, '');
-}
-
-/** Decode entities in ONE pass.
- *
- *  Sequential `.replace()` calls double-unescape: decoding `&amp;` first turns
- *  `&amp;lt;` into `&lt;`, and the later `&lt;` rule then turns it into a real
- *  `<`. A single pass consumes each entity exactly once and never re-scans its
- *  own output, so `&amp;lt;` correctly stays the literal text `&lt;`.
+ * Sequential `.replace()` calls double-unescape: decoding `&amp;` first turns
+ * `&amp;lt;` into `&lt;`, and a later `&lt;` rule then turns it into a real
+ * `<`. A single pass consumes each entity exactly once and never re-scans its
+ * own output, so `&amp;lt;` correctly stays the literal text `&lt;`.
  */
 const ENTITIES: Record<string, string> = {
   nbsp: ' ',
@@ -235,33 +218,79 @@ const ENTITIES: Record<string, string> = {
 const decodeEntities = (v: string) =>
   v.replace(/&(nbsp|amp|lt|gt|quot|#39);/g, (_m, name: string) => ENTITIES[name] ?? _m);
 
+const BLOCK_TAGS = new Set(['p', 'div', 'tr', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li']);
+
+/**
+ * HTML to text as a SINGLE-PASS SCANNER, not a pile of regexes.
+ *
+ * Three rounds of CodeQL alerts on this function all said the same thing, and
+ * it was right every time: a regex cannot soundly strip HTML. Patching the
+ * pattern kept moving the hole — `<scr<script>ipt>` closes up behind a
+ * single-pass strip, `</script\t\n foo>` is a legal end tag that `<\/script\s*>`
+ * misses, and a non-greedy `<style>…</style>` removal leaves `<style` when
+ * unterminated.
+ *
+ * The scanner has no hole to move: every `<` begins a tag scan that consumes
+ * to the next `>` or to end-of-input, so **no `<` can reach the output at
+ * all** — completeness is structural rather than a property of a pattern.
+ * `<style>`/`<script>` content is skipped wholesale, because it is not prose.
+ */
+function htmlToText(html: string): string {
+  let out = '';
+  let skipping: 'style' | 'script' | null = null;
+  let pendingHref: string | null = null;
+  let i = 0;
+
+  while (i < html.length) {
+    const ch = html[i];
+    if (ch !== '<') {
+      if (!skipping) out += ch;
+      i++;
+      continue;
+    }
+
+    // Consume the whole tag, terminated or not. An unterminated `<foo` at the
+    // end of input is swallowed here rather than left for a caller to close.
+    let j = i + 1;
+    while (j < html.length && html[j] !== '>') j++;
+    const raw = html.slice(i + 1, j);
+    i = j < html.length ? j + 1 : html.length;
+
+    const closing = /^\s*\//.test(raw);
+    const name = (/^\s*\/?\s*([a-zA-Z][a-zA-Z0-9]*)/.exec(raw)?.[1] ?? '').toLowerCase();
+
+    if (skipping) {
+      if (closing && name === skipping) skipping = null;
+      continue;
+    }
+    if (!closing && (name === 'style' || name === 'script')) {
+      skipping = name;
+      continue;
+    }
+    if (!closing && name === 'a') {
+      pendingHref = /href\s*=\s*["']([^"']+)["']/i.exec(raw)?.[1] ?? null;
+      continue;
+    }
+    if (closing && name === 'a') {
+      // `text (url)` — a link whose target is dropped is unusable in text.
+      if (pendingHref) out += ` (${pendingHref})`;
+      pendingHref = null;
+      continue;
+    }
+    if (name === 'br') out += '\n';
+    else if (closing && BLOCK_TAGS.has(name)) out += '\n';
+    else if (!closing && name === 'li') out += '- ';
+  }
+  return out;
+}
+
 /**
  * The plain-text twin. Every message ships one: a text/plain part is what
  * screen-reader users, text-only clients and most spam filters actually read,
  * and a missing one is itself a deliverability signal.
- *
- * Deliberately a real conversion, not `stripTags(html)` alone — block elements
- * have to become line breaks or the whole mail arrives as one run-on
- * paragraph, and a link whose href is dropped is unusable in text.
  */
 export function toPlainText(html: string, opts: WrapOptions = {}): string {
-  const body = decodeEntities(
-    stripTags(
-      html
-        // Element CONTENT, not just the tags: the text inside <style>/<script>
-        // is not prose and must not survive into the body.
-        .replace(/<style\b[\s\S]*?<\/style\s*>/gi, '')
-        .replace(/<script\b[\s\S]*?<\/script\s*>/gi, '')
-        .replace(/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi, (_m, href, text) =>
-          // `text (url)`, NOT `text <url>`: the tag strip below matches
-          // `<https://…>` exactly like a tag and would delete every link
-          // target it had just written.
-          `${stripTags(String(text)).trim()} (${href})`)
-        .replace(/<br\s*\/?>/gi, '\n')
-        .replace(/<\/(p|div|tr|h[1-6]|li)\s*>/gi, '\n')
-        .replace(/<li\b[^>]*>/gi, '- '),
-    ),
-  )
+  const body = decodeEntities(htmlToText(html))
     .replace(/[ \t]+/g, ' ')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
