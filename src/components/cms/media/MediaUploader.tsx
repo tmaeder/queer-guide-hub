@@ -77,7 +77,7 @@ export default function MediaUploader({ onUploaded, bucket, accept }: MediaUploa
 
   if (preview) {
     return (
-      <div className="border border-border rounded-badge p-4 bg-muted/30">
+      <div className="rounded-badge p-4 bg-muted/30">
         {errorMsg && (
           <Alert variant="destructive" className="mb-4">
             <AlertDescription>{errorMsg}</AlertDescription>

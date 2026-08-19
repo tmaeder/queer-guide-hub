@@ -99,7 +99,7 @@ export default function BrandGuidelines() {
       {/* Typography */}
       <section className="flex flex-col gap-4">
         <h2 className="font-display text-headline">Type scale</h2>
-        <div className="flex flex-col divide-y divide-border border border-border rounded-container">
+        <div className="flex flex-col divide-y divide-border rounded-container bg-muted">
           {sizeTokens.map((g) => (
             <div key={g.key} className="flex items-baseline justify-between gap-4 p-4">
               <span className="truncate" style={{ fontSize: g.default, lineHeight: 1.1 }}>
@@ -119,10 +119,7 @@ export default function BrandGuidelines() {
         <div className="grid grid-cols-3 gap-4">
           {radiusTokens.map((g) => (
             <div key={g.key} className="flex flex-col items-center gap-2">
-              <div
-                className="w-full h-20 bg-muted border border-border"
-                style={{ borderRadius: g.default }}
-              />
+              <div className="w-full h-20 bg-muted" style={{ borderRadius: g.default }} />
               <code className="text-xs2 text-muted-foreground text-center">
                 --{g.key} · {g.default}
               </code>

@@ -31,10 +31,13 @@ export function ImageArrayEditor({ field, initialValue, onSave, onCancel, saving
   };
 
   return (
-    <div className="block p-4 border border-border rounded-element bg-background max-w-2xl">
+    <div className="block p-4 rounded-element bg-muted max-w-2xl">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
         {items.map((src, idx) => (
-          <div key={`${src}-${idx}`} className="relative aspect-square overflow-hidden rounded-element border border-border">
+          <div
+            key={`${src}-${idx}`}
+            className="relative aspect-square overflow-hidden rounded-element bg-muted"
+          >
             <img src={src} alt="" role="presentation" className="w-full h-full object-cover" />
             <div className="absolute inset-0 flex flex-col justify-between p-1 opacity-0 hover:opacity-100 transition-opacity bg-foreground/30">
               <div className="flex justify-end">
@@ -87,7 +90,9 @@ export function ImageArrayEditor({ field, initialValue, onSave, onCancel, saving
         />
       </div>
       <div className="flex items-center justify-between mt-4">
-        <span className="text-xs text-muted-foreground">Drag-reorder coming later · Esc to cancel</span>
+        <span className="text-xs text-muted-foreground">
+          Drag-reorder coming later · Esc to cancel
+        </span>
         <EditorActions onConfirm={() => onSave(items)} onCancel={onCancel} saving={saving} />
       </div>
     </div>

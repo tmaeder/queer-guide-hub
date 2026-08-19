@@ -223,7 +223,7 @@ export function DuplicateFinderPanel() {
                 found
               </p>
               {visualQuery.data.map((pair, i) => (
-                <div key={i} className="flex items-center gap-4 border border-border p-4">
+                <div key={i} className="flex items-center gap-4 p-4 bg-muted">
                   <div className="w-20 h-20 bg-muted flex-shrink-0">
                     <img
                       src={pair.thumb_a || pair.url_a}

@@ -34,8 +34,11 @@ export default function PresenceIndicator({ pipelineId, isDirty }: PresenceIndic
   const [others, setOthers] = useState<Presence[]>([]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-    if (!pipelineId) { setOthers([]); return; }
+    if (!pipelineId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
+      setOthers([]);
+      return;
+    }
 
     let channel: RealtimeChannel | null = null;
     let cleanup: (() => void) | null = null;
@@ -75,7 +78,11 @@ export default function PresenceIndicator({ pipelineId, isDirty }: PresenceIndic
       // Heartbeat to refresh last_seen and reflect dirty→editing transitions
       const heartbeat = window.setInterval(() => {
         if (channel) {
-          channel.track({ ...myPresence, activity: isDirty ? 'editing' : 'viewing', last_seen: new Date().toISOString() });
+          channel.track({
+            ...myPresence,
+            activity: isDirty ? 'editing' : 'viewing',
+            last_seen: new Date().toISOString(),
+          });
         }
       }, 15_000);
 
@@ -90,16 +97,16 @@ export default function PresenceIndicator({ pipelineId, isDirty }: PresenceIndic
 
   if (others.length === 0) return null;
 
-  const editorCount = others.filter(p => p.activity === 'editing').length;
+  const editorCount = others.filter((p) => p.activity === 'editing').length;
 
   return (
     <TooltipProvider delayDuration={200}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="flex items-center gap-1 border border-border rounded-element px-1.5 py-0.5 bg-background h-8 cursor-help">
+          <div className="flex items-center gap-1 rounded-element px-1.5 py-0.5 bg-muted h-8 cursor-help">
             <Users className="h-3 w-3 text-muted-foreground" />
             <div className="flex -space-x-1">
-              {others.slice(0, 3).map(p => (
+              {others.slice(0, 3).map((p) => (
                 <div
                   key={p.user_id}
                   className="w-5 h-5 rounded-full border-2 border-background flex items-center justify-center text-3xs font-semibold text-white"
@@ -121,9 +128,11 @@ export default function PresenceIndicator({ pipelineId, isDirty }: PresenceIndic
           </div>
         </TooltipTrigger>
         <TooltipContent className="text-xs max-w-[280px]">
-          <div className="font-medium mb-1">{others.length} other{others.length === 1 ? '' : 's'} here</div>
+          <div className="font-medium mb-1">
+            {others.length} other{others.length === 1 ? '' : 's'} here
+          </div>
           <div className="space-y-1">
-            {others.map(p => (
+            {others.map((p) => (
               <div key={p.user_id} className="flex items-center gap-1.5">
                 <div
                   className="w-2 h-2 rounded-full"

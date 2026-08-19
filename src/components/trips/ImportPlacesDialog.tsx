@@ -153,9 +153,7 @@ export function ImportPlacesDialog({ open, onClose, tripId, nextSortOrder }: Pro
             className="border border-dashed border-border rounded-container py-10 px-6 text-center w-full hover:bg-muted/40 transition-colors"
           >
             <Upload className="w-6 h-6 mx-auto mb-2 text-muted-foreground" aria-hidden />
-            <p className="text-sm font-medium">
-              {t('trips.import.pickFile', 'Choose a file')}
-            </p>
+            <p className="text-sm font-medium">{t('trips.import.pickFile', 'Choose a file')}</p>
             <p className="text-xs text-muted-foreground mt-1">
               {t(
                 'trips.import.formats',
@@ -186,7 +184,7 @@ export function ImportPlacesDialog({ open, onClose, tripId, nextSortOrder }: Pro
               </div>
             </div>
 
-            <div className="max-h-[320px] overflow-y-auto border border-border rounded-element divide-y divide-border">
+            <div className="max-h-[320px] overflow-y-auto rounded-element bg-muted divide-y divide-border">
               {(matches ?? places.map((place) => ({ place, venue: null }))).map((row, i) => (
                 <label
                   key={`${row.place.name}-${i}`}

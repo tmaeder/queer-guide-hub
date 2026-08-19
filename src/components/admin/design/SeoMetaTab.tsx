@@ -148,7 +148,7 @@ export function SeoMetaTab({ controller }: { controller: DesignSettingsControlle
             <CardTitle className="text-title">Search result preview</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="rounded-element border p-4">
+            <div className="rounded-element bg-muted p-4">
               <p className="text-2xs text-muted-foreground">queer.guide</p>
               <p className="truncate text-body-lg underline">{effective.title}</p>
               <p className="mt-1 line-clamp-2 text-13 text-muted-foreground">
@@ -162,7 +162,7 @@ export function SeoMetaTab({ controller }: { controller: DesignSettingsControlle
             <CardTitle className="text-title">Social card preview</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="overflow-hidden rounded-element border">
+            <div className="overflow-hidden rounded-element bg-muted">
               <div className="flex aspect-[1200/630] items-center justify-center bg-muted">
                 {meta.og_image_url ? (
                   <img

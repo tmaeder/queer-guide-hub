@@ -2,7 +2,13 @@ import { useMemo } from 'react';
 import { ReactFlow, ReactFlowProvider, Background, MiniMap } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { format } from 'date-fns';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 import BaseNode from '../nodes/BaseNode';
@@ -31,9 +37,9 @@ export default function RunSnapshotDialog({ runId, onClose }: RunSnapshotDialogP
   const { nodes, edges } = useMemo((): { nodes: AppNode[]; edges: AppEdge[] } => {
     if (!run?.pipeline_snapshot?.nodes) return { nodes: [], edges: [] };
     const canvas = storedNodesToCanvas(run.pipeline_snapshot.nodes, nodeTypeList);
-    const snapEdges = (run.pipeline_snapshot.edges || []).map(e => ({ ...e, animated: false }));
+    const snapEdges = (run.pipeline_snapshot.edges || []).map((e) => ({ ...e, animated: false }));
     const states = run.node_states || {};
-    const withStates = canvas.map(n => {
+    const withStates = canvas.map((n) => {
       if (!isBaseNode(n)) return n;
       const s = states[n.id];
       if (!s) return n;
@@ -41,13 +47,19 @@ export default function RunSnapshotDialog({ runId, onClose }: RunSnapshotDialogP
         ...n,
         data: {
           ...n.data,
-          status: s.status, itemsIn: s.items_in, itemsOut: s.items_out,
-          durationMs: s.duration_ms, errorMessage: s.error,
+          status: s.status,
+          itemsIn: s.items_in,
+          itemsOut: s.items_out,
+          durationMs: s.duration_ms,
+          errorMessage: s.error,
         },
       };
     });
-    const hasPositions = run.pipeline_snapshot.nodes.some(n => n.position);
-    return { nodes: hasPositions ? withStates : autoLayout(withStates, snapEdges), edges: snapEdges };
+    const hasPositions = run.pipeline_snapshot.nodes.some((n) => n.position);
+    return {
+      nodes: hasPositions ? withStates : autoLayout(withStates, snapEdges),
+      edges: snapEdges,
+    };
   }, [run, nodeTypeList]);
 
   const hasSnapshot = !!run?.pipeline_snapshot?.nodes?.length;
@@ -58,9 +70,21 @@ export default function RunSnapshotDialog({ runId, onClose }: RunSnapshotDialogP
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             Run on canvas
-            {run && <Badge variant="outline" className="text-2xs font-mono">{run.id.slice(0, 8)}</Badge>}
-            {run?.pipeline_version && <Badge variant="outline" className="text-2xs font-mono">v{run.pipeline_version}</Badge>}
-            {run && <Badge variant="outline" className="text-2xs">{run.status}</Badge>}
+            {run && (
+              <Badge variant="outline" className="text-2xs font-mono">
+                {run.id.slice(0, 8)}
+              </Badge>
+            )}
+            {run?.pipeline_version && (
+              <Badge variant="outline" className="text-2xs font-mono">
+                v{run.pipeline_version}
+              </Badge>
+            )}
+            {run && (
+              <Badge variant="outline" className="text-2xs">
+                {run.status}
+              </Badge>
+            )}
           </DialogTitle>
           <DialogDescription>
             {run
@@ -69,7 +93,7 @@ export default function RunSnapshotDialog({ runId, onClose }: RunSnapshotDialogP
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 min-h-0 border border-border rounded-element overflow-hidden">
+        <div className="flex-1 min-h-0 rounded-element bg-muted overflow-hidden">
           {!hasSnapshot ? (
             run ? (
               <div className="h-full flex items-center justify-center text-xs text-muted-foreground px-6 text-center">

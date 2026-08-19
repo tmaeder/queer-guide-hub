@@ -147,7 +147,7 @@ export function TagLegalSourcesSection({ tagId }: { tagId: string }) {
           )}
 
           {citations.map((s) => (
-            <div key={s.id} className="mb-2 rounded-element border p-2 text-xs">
+            <div key={s.id} className="mb-2 rounded-element bg-muted p-2 text-xs">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <div className="font-medium">{s.official_title || '(no title)'}</div>
@@ -201,7 +201,7 @@ export function TagLegalSourcesSection({ tagId }: { tagId: string }) {
               <Plus size={14} /> Add legal source
             </Button>
           ) : (
-            <div className="space-y-2 rounded-element border p-2">
+            <div className="space-y-2 rounded-element bg-muted p-2">
               <Input
                 placeholder="Official title, e.g. Anti-Homosexuality Act, 2023"
                 value={draft.official_title ?? ''}

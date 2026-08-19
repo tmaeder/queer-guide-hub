@@ -171,7 +171,7 @@ export function PersonalityFreigabeQueue({
         )}
 
         {list.map((row) => (
-          <div key={row.id} className="flex items-center gap-4 rounded-element border p-4">
+          <div key={row.id} className="flex items-center gap-4 rounded-element bg-muted p-4">
             {row.image_url ? (
               <img
                 src={row.image_url}

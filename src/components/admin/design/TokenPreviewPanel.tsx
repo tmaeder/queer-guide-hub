@@ -2,7 +2,13 @@ import { useEffect, useState, type CSSProperties } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { FONT_SLOTS, type BrandingDoc } from './tokenCatalog';
 
 /**
@@ -38,7 +44,7 @@ function SpecimenBody() {
         <Badge variant="outline">Outline</Badge>
       </div>
       <Input placeholder="Input field" className="max-w-56" />
-      <div className="rounded-container border bg-card p-4 text-card-foreground">
+      <div className="rounded-container bg-card shadow-soft p-4 text-card-foreground">
         <p className="text-title font-medium">Card title</p>
         <p className="mt-1 text-13 text-muted-foreground">
           Card body on --card with --border at container radius.
@@ -90,7 +96,10 @@ function useDraftFonts(doc: BrandingDoc) {
             style: f.style || 'normal',
             display: 'swap',
           });
-          face.load().then((loaded) => document.fonts.add(loaded)).catch(() => {});
+          face
+            .load()
+            .then((loaded) => document.fonts.add(loaded))
+            .catch(() => {});
           added.push(face);
         } catch {
           /* invalid descriptor — ignore, preview falls back to default */
@@ -124,8 +133,10 @@ export function TokenSpecimen({ doc, label }: { doc: BrandingDoc; label?: string
   const darkVars = varsOf(doc.tokens?.dark);
   return (
     <div>
-      {label && <p className="mb-1 text-2xs uppercase tracking-wide text-muted-foreground">{label}</p>}
-      <div className="overflow-hidden rounded-container border" style={rootVars}>
+      {label && (
+        <p className="mb-1 text-2xs uppercase tracking-wide text-muted-foreground">{label}</p>
+      )}
+      <div className="overflow-hidden rounded-container bg-muted" style={rootVars}>
         <SpecimenBody />
         <div className="dark" style={darkVars}>
           <SpecimenBody />
@@ -150,9 +161,11 @@ export function TokenPreviewPanel({ draft }: { draft: BrandingDoc }) {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-2xs uppercase tracking-wide text-muted-foreground">Live preview (draft)</p>
+        <p className="text-2xs uppercase tracking-wide text-muted-foreground">
+          Live preview (draft)
+        </p>
         <div className="flex items-center gap-2">
-          <div className="flex overflow-hidden rounded-element border">
+          <div className="flex overflow-hidden rounded-element bg-muted">
             {(['desktop', 'mobile'] as const).map((w) => (
               <Button
                 key={w}

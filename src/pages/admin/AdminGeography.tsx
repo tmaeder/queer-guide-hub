@@ -424,7 +424,7 @@ function DetailPanel({
   const publicHref = node.slug ? PUBLIC_HREF[node.place_type]?.(node.slug) : undefined;
 
   return (
-    <div className="flex flex-col gap-4 rounded-container border border-border p-6">
+    <div className="flex flex-col gap-4 rounded-container bg-muted p-6">
       <div>
         <div className="text-2xs uppercase tracking-wide text-muted-foreground">
           {node.place_type}
@@ -448,7 +448,7 @@ function DetailPanel({
         </p>
       )}
       {isLandmark && review.data?.needs_review && (
-        <div className="rounded-element border border-border bg-muted p-4 text-13">
+        <div className="rounded-element bg-muted p-4 text-13">
           Pending review — hidden from search and public pages until approved.
           <Button
             size="sm"
@@ -577,7 +577,7 @@ export default function AdminGeography() {
         </TabsList>
         <TabsContent value="tree">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[3fr_2fr]">
-            <div className="max-h-[70vh] overflow-y-auto rounded-container border border-border p-2">
+            <div className="max-h-[70vh] overflow-y-auto rounded-container bg-muted p-2">
               <NodeChildren parentId={null} depth={0} selected={selected} onSelect={setSelected} />
             </div>
             <div>

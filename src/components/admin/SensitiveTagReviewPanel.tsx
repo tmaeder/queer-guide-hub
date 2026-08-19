@@ -40,19 +40,27 @@ export function SensitiveTagReviewPanel() {
         {data.map((t) => (
           <div
             key={t.id}
-            className="flex items-center justify-between gap-4 rounded-element border bg-muted/40 px-4 py-2"
+            className="flex items-center justify-between gap-4 rounded-element bg-muted/40 px-4 py-2"
           >
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <span className="font-medium truncate">{t.name}</span>
-                {t.is_adult && <Badge variant="outline" className="font-normal">adult</Badge>}
+                {t.is_adult && (
+                  <Badge variant="outline" className="font-normal">
+                    adult
+                  </Badge>
+                )}
                 {t.is_sensitive && !t.is_adult && (
-                  <Badge variant="outline" className="font-normal">sensitive</Badge>
+                  <Badge variant="outline" className="font-normal">
+                    sensitive
+                  </Badge>
                 )}
                 {t.category && (
                   <span className="text-13 text-muted-foreground truncate">{t.category}</span>
                 )}
-                <span className="text-13 text-muted-foreground tabular-nums">· {t.usage_count ?? 0} used</span>
+                <span className="text-13 text-muted-foreground tabular-nums">
+                  · {t.usage_count ?? 0} used
+                </span>
               </div>
               {t.description && (
                 <p className="text-13 text-muted-foreground truncate">{t.description}</p>

@@ -134,7 +134,7 @@ function IngestTable({
   totals: ReturnType<typeof totalsFor>;
 }) {
   return (
-    <div className="border border-border rounded-element bg-background overflow-hidden">
+    <div className="rounded-element bg-muted overflow-hidden">
       <div className="px-4 py-2.5 border-b border-border flex items-center justify-between">
         <div className="font-semibold text-sm">{label} Ingest</div>
         <div className="text-xs text-muted-foreground flex items-center gap-4">
@@ -350,7 +350,7 @@ export default function MonitorTab() {
 
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="border border-border rounded-element bg-background overflow-hidden">
+          <div className="rounded-element bg-muted overflow-hidden">
             <div className="px-4 py-2 border-b border-border flex items-center gap-2 text-xs font-semibold text-muted-foreground">
               <BarChart3 className="h-3.5 w-3.5" />
               Run duration distribution
@@ -393,7 +393,7 @@ export default function MonitorTab() {
             </div>
           </div>
 
-          <div className="border border-border rounded-element bg-background overflow-hidden">
+          <div className="rounded-element bg-muted overflow-hidden">
             <div className="px-4 py-2 border-b border-border flex items-center gap-2 text-xs font-semibold text-muted-foreground">
               <TrendingUp className="h-3.5 w-3.5" />
               Throughput (last 24h)
@@ -460,7 +460,7 @@ export default function MonitorTab() {
         {/* Runs table + detail panel */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Runs table */}
-          <div className="lg:col-span-2 border border-border rounded-element bg-background overflow-hidden flex flex-col">
+          <div className="lg:col-span-2 rounded-element bg-muted overflow-hidden flex flex-col">
             <div className="px-4 py-2.5 border-b border-border flex items-center gap-2">
               <div className="font-semibold text-sm mr-2">Recent Runs</div>
               <RunCompareDialog />
@@ -600,7 +600,7 @@ export default function MonitorTab() {
           </div>
 
           {/* Detail panel */}
-          <div className="border border-border rounded-element bg-background overflow-hidden flex flex-col">
+          <div className="rounded-element bg-muted overflow-hidden flex flex-col">
             <div className="px-4 py-2.5 border-b border-border font-semibold text-sm">
               {selectedRun ? 'Run Details' : 'Select a run'}
             </div>
@@ -629,7 +629,7 @@ export default function MonitorTab() {
                       return (
                         <div
                           key={nodeId}
-                          className="border border-border rounded-element p-2 hover:bg-muted/30 transition-colors"
+                          className="rounded-element bg-muted p-2 hover:bg-muted/30 transition-colors"
                         >
                           <div className="flex items-center justify-between gap-2">
                             <span className="text-xs2 font-mono truncate" title={nodeId}>

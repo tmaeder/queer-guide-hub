@@ -24,10 +24,8 @@ export default function MultiSelectActionBar({
   onSaveAsTemplate,
 }: MultiSelectActionBarProps) {
   return (
-    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 bg-popover border border-border rounded-element px-2 py-1.5 animate-in fade-in slide-in-from-bottom-2 duration-fast">
-      <span className="text-xs font-medium px-2 text-muted-foreground">
-        {count} selected
-      </span>
+    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 bg-popover rounded-element px-2 py-1.5 animate-in fade-in slide-in-from-bottom-2 duration-fast">
+      <span className="text-xs font-medium px-2 text-muted-foreground">{count} selected</span>
       <div className="h-4 w-px bg-border mx-1" />
 
       <Tooltip>

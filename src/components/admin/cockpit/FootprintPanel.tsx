@@ -54,7 +54,7 @@ export function FootprintPanel({ counts }: { counts: AdminCounts | undefined }) 
         />
       </CollapsibleTrigger>
       <CollapsibleContent>
-        <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-2 rounded-container border border-border p-4 sm:grid-cols-3 lg:grid-cols-2">
+        <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-2 rounded-container bg-muted p-4 sm:grid-cols-3 lg:grid-cols-2">
           {rows.map(([key, label]) => (
             <div key={key} className="flex items-baseline justify-between gap-2">
               <dt className="truncate text-13 text-muted-foreground">{label}</dt>

@@ -30,7 +30,12 @@ export function TripPreTripBlock({ trip }: Props) {
       trip.trip_days,
       trip.trip_places,
       reservations ?? [],
-    ).map((c) => ({ kind: c.kind, severity: c.severity, dayId: c.dayId ?? 'trip', message: c.message }));
+    ).map((c) => ({
+      kind: c.kind,
+      severity: c.severity,
+      dayId: c.dayId ?? 'trip',
+      message: c.message,
+    }));
     const gapItems = detectTripGaps(trip.trip_days, trip.trip_places).map((g) => ({
       kind: g.kind as string,
       severity: g.severity,
@@ -61,96 +66,87 @@ export function TripPreTripBlock({ trip }: Props) {
 
   return (
     <>
-    <TripBookingInbox tripId={trip.id} />
-    <section
-      aria-label={t('trips.preTrip.label', 'Pre-trip overview')}
-      className="border border-border bg-background p-4 mb-4"
-    >
-      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-        <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
-          {t('trips.preTrip.title', 'Before you go')}
-        </h2>
-        {start && daysUntil !== null && (
-          <div className="inline-flex items-center gap-2 text-sm">
-            <Calendar className="h-4 w-4" aria-hidden />
-            {daysUntil === 0
-              ? t('trips.preTrip.today', 'Starts today')
-              : daysUntil === 1
-                ? t('trips.preTrip.tomorrow', 'Starts tomorrow')
-                : t('trips.preTrip.inDays', 'In {{count}} days', { count: daysUntil })}
-            <span className="text-muted-foreground">·</span>
-            <span className="text-muted-foreground">{format(start, 'PP')}</span>
-          </div>
-        )}
-      </div>
-
-      {gaps.length > 0 && (
-        <ul className="space-y-1.5">
-          {gaps.slice(0, 6).map((gap, i) => (
-            <li
-              key={`${gap.kind}-${gap.dayId}-${i}`}
-              className="flex items-start gap-2 text-sm"
-            >
-              {gap.severity === 'warning' ? (
-                <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" aria-hidden />
-              ) : (
-                <Info className="h-4 w-4 mt-0.5 shrink-0 text-muted-foreground" aria-hidden />
-              )}
-              <span
-                className={gap.severity === 'warning' ? '' : 'text-muted-foreground'}
-              >
-                {gap.message}
-              </span>
-            </li>
-          ))}
-          {gaps.length > 6 && (
-            <li className="text-xs text-muted-foreground">
-              {t('trips.preTrip.moreGaps', '+ {{count}} more', { count: gaps.length - 6 })}
-            </li>
-          )}
-        </ul>
-      )}
-
-      {gaps.length === 0 && start && (
-        <p className="text-sm text-muted-foreground">
-          {t('trips.preTrip.allSet', 'Itinerary looks complete. No gaps detected.')}
-        </p>
-      )}
-
-      <div className="mt-4 pt-4 flex items-center justify-between gap-4 flex-wrap">
-        <div className="inline-flex items-center gap-4 text-sm text-muted-foreground">
-          <span className="inline-flex items-center gap-1.5">
-            <Ticket className="h-4 w-4" aria-hidden />
-            {t('trips.preTrip.bookings', '{{count}} reservations', {
-              count: bookingStats.totalRes,
-            })}
-          </span>
-          {bookingStats.lodgingCount > 0 && bookingStats.dayCount > 0 && (
-            <span>
-              ·{' '}
-              {t('trips.preTrip.lodgingCoverage', '{{count}} lodging', {
-                count: bookingStats.lodgingCount,
-              })}
-            </span>
+      <TripBookingInbox tripId={trip.id} />
+      <section
+        aria-label={t('trips.preTrip.label', 'Pre-trip overview')}
+        className="bg-muted p-4 mb-4"
+      >
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
+            {t('trips.preTrip.title', 'Before you go')}
+          </h2>
+          {start && daysUntil !== null && (
+            <div className="inline-flex items-center gap-2 text-sm">
+              <Calendar className="h-4 w-4" aria-hidden />
+              {daysUntil === 0
+                ? t('trips.preTrip.today', 'Starts today')
+                : daysUntil === 1
+                  ? t('trips.preTrip.tomorrow', 'Starts tomorrow')
+                  : t('trips.preTrip.inDays', 'In {{count}} days', { count: daysUntil })}
+              <span className="text-muted-foreground">·</span>
+              <span className="text-muted-foreground">{format(start, 'PP')}</span>
+            </div>
           )}
         </div>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => setAddOpen(true)}
-          className="inline-flex items-center gap-1.5"
-        >
-          <Plus className="h-3.5 w-3.5" aria-hidden />
-          {t('trips.preTrip.addReservation', 'Booked it')}
-        </Button>
-      </div>
 
-      <AddReservationDialog
-        open={addOpen}
-        onClose={() => setAddOpen(false)}
-        tripId={trip.id}
-      />
-    </section>
+        {gaps.length > 0 && (
+          <ul className="space-y-1.5">
+            {gaps.slice(0, 6).map((gap, i) => (
+              <li key={`${gap.kind}-${gap.dayId}-${i}`} className="flex items-start gap-2 text-sm">
+                {gap.severity === 'warning' ? (
+                  <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" aria-hidden />
+                ) : (
+                  <Info className="h-4 w-4 mt-0.5 shrink-0 text-muted-foreground" aria-hidden />
+                )}
+                <span className={gap.severity === 'warning' ? '' : 'text-muted-foreground'}>
+                  {gap.message}
+                </span>
+              </li>
+            ))}
+            {gaps.length > 6 && (
+              <li className="text-xs text-muted-foreground">
+                {t('trips.preTrip.moreGaps', '+ {{count}} more', { count: gaps.length - 6 })}
+              </li>
+            )}
+          </ul>
+        )}
+
+        {gaps.length === 0 && start && (
+          <p className="text-sm text-muted-foreground">
+            {t('trips.preTrip.allSet', 'Itinerary looks complete. No gaps detected.')}
+          </p>
+        )}
+
+        <div className="mt-4 pt-4 flex items-center justify-between gap-4 flex-wrap">
+          <div className="inline-flex items-center gap-4 text-sm text-muted-foreground">
+            <span className="inline-flex items-center gap-1.5">
+              <Ticket className="h-4 w-4" aria-hidden />
+              {t('trips.preTrip.bookings', '{{count}} reservations', {
+                count: bookingStats.totalRes,
+              })}
+            </span>
+            {bookingStats.lodgingCount > 0 && bookingStats.dayCount > 0 && (
+              <span>
+                ·{' '}
+                {t('trips.preTrip.lodgingCoverage', '{{count}} lodging', {
+                  count: bookingStats.lodgingCount,
+                })}
+              </span>
+            )}
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setAddOpen(true)}
+            className="inline-flex items-center gap-1.5"
+          >
+            <Plus className="h-3.5 w-3.5" aria-hidden />
+            {t('trips.preTrip.addReservation', 'Booked it')}
+          </Button>
+        </div>
+
+        <AddReservationDialog open={addOpen} onClose={() => setAddOpen(false)} tripId={trip.id} />
+      </section>
     </>
   );
 }

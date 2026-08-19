@@ -60,13 +60,52 @@ export default function NodeContextMenu({
   }, [onClose]);
 
   const entries: MenuEntry[] = [
-    { label: 'Configure', icon: Settings, onClick: () => { onConfigure(nodeId); onClose(); } },
+    {
+      label: 'Configure',
+      icon: Settings,
+      onClick: () => {
+        onConfigure(nodeId);
+        onClose();
+      },
+    },
     { separator: true },
-    { label: 'Duplicate', icon: Copy, onClick: () => { onDuplicate(nodeId); onClose(); }, shortcut: `${mod}D` },
-    { label: 'Copy config', icon: ClipboardCopy, onClick: () => { onCopyConfig(nodeId); onClose(); } },
-    { label: 'Paste config', icon: ClipboardPaste, onClick: () => { onPasteConfig(nodeId); onClose(); }, disabled: !canPaste },
+    {
+      label: 'Duplicate',
+      icon: Copy,
+      onClick: () => {
+        onDuplicate(nodeId);
+        onClose();
+      },
+      shortcut: `${mod}D`,
+    },
+    {
+      label: 'Copy config',
+      icon: ClipboardCopy,
+      onClick: () => {
+        onCopyConfig(nodeId);
+        onClose();
+      },
+    },
+    {
+      label: 'Paste config',
+      icon: ClipboardPaste,
+      onClick: () => {
+        onPasteConfig(nodeId);
+        onClose();
+      },
+      disabled: !canPaste,
+    },
     { separator: true },
-    { label: 'Delete', icon: Trash2, onClick: () => { onDelete(nodeId); onClose(); }, shortcut: 'Del', destructive: true },
+    {
+      label: 'Delete',
+      icon: Trash2,
+      onClick: () => {
+        onDelete(nodeId);
+        onClose();
+      },
+      shortcut: 'Del',
+      destructive: true,
+    },
   ];
 
   // Clamp position so menu doesn't overflow viewport (approx)
@@ -81,7 +120,7 @@ export default function NodeContextMenu({
     <div
       ref={menuRef}
       role="menu"
-      className="fixed z-50 bg-popover text-popover-foreground border border-border rounded-element py-1 text-sm"
+      className="fixed z-50 bg-popover text-popover-foreground rounded-element py-1 text-sm"
       style={{ left, top, minWidth: width }}
     >
       {entries.map((entry, i) => {
@@ -96,9 +135,7 @@ export default function NodeContextMenu({
             onClick={entry.onClick}
             disabled={entry.disabled}
             className={`w-full flex items-center gap-2 px-4 py-1.5 text-left transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
-              entry.destructive
-                ? 'text-destructive hover:bg-destructive/10'
-                : 'hover:bg-accent'
+              entry.destructive ? 'text-destructive hover:bg-destructive/10' : 'hover:bg-accent'
             }`}
           >
             <Icon className="h-3.5 w-3.5 shrink-0" />

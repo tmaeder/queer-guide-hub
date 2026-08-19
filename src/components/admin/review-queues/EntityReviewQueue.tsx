@@ -88,7 +88,8 @@ export function EntityReviewQueue<Row extends ReviewQueueRowBase>({
     try {
       await onDecide(row, action, confirmed);
       toast.success(
-        decideSuccess?.(action) ?? (action === 'approve' ? 'Approved — value published' : 'Rejected'),
+        decideSuccess?.(action) ??
+          (action === 'approve' ? 'Approved — value published' : 'Rejected'),
       );
     } catch (e) {
       toast.error(`Error: ${(e as Error).message}`);
@@ -135,7 +136,7 @@ export function EntityReviewQueue<Row extends ReviewQueueRowBase>({
           const field = fieldLabel?.(r);
           const note = rationale?.(r);
           return (
-            <div key={r.id} className="flex flex-col gap-2 rounded-element border p-4">
+            <div key={r.id} className="flex flex-col gap-2 rounded-element bg-muted p-4">
               <div className="flex items-center justify-between gap-4">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-medium">{entityName(r)}</span>

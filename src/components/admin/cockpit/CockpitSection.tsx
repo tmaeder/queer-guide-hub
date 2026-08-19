@@ -38,7 +38,7 @@ export function CockpitSection({
 /** Hairline-separated list container shared by the queue and broken lists. */
 export function CockpitList({ children }: { children: ReactNode }) {
   return (
-    <div className="flex flex-col divide-y divide-border rounded-container border border-border">
+    <div className="flex flex-col divide-y divide-border rounded-container bg-muted">
       {children}
     </div>
   );

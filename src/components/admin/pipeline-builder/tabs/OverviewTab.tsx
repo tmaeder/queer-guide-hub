@@ -210,7 +210,7 @@ export default function OverviewTab() {
         </div>
 
         {/* Dedup pointer — the old dedup / geo-review tabs moved to the inbox. */}
-        <div className="flex flex-wrap items-center gap-2 rounded-element border border-border p-2 text-xs text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-2 rounded-element bg-muted p-2 text-xs text-muted-foreground">
           <GitBranch className="h-3.5 w-3.5" />
           <span>
             Dedup decisions →{' '}
@@ -248,7 +248,7 @@ export default function OverviewTab() {
         </div>
 
         {/* Table */}
-        <div className="border border-border rounded-element bg-background overflow-hidden">
+        <div className="rounded-element bg-muted overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-muted/40">
               <tr className="border-b border-border">

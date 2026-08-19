@@ -94,7 +94,7 @@ export function AnalyticsTab({ items, voteCounts }: Props) {
 
   return (
     <div className="grid gap-6 grid-cols-1 md:grid-cols-[2fr_1fr]">
-      <div className="border border-border rounded-element bg-background p-4">
+      <div className="rounded-element bg-muted p-4">
         <p className="text-sm font-bold mb-2">Volume by category (90d)</p>
         <div className="h-[260px]">
           <ResponsiveContainer width="100%" height="100%">
@@ -123,7 +123,7 @@ export function AnalyticsTab({ items, voteCounts }: Props) {
         </div>
       </div>
 
-      <div className="border border-border rounded-element bg-background p-4">
+      <div className="rounded-element bg-muted p-4">
         <p className="text-sm font-bold mb-2">Status funnel</p>
         <div className="h-[260px]">
           <ResponsiveContainer width="100%" height="100%">
@@ -138,7 +138,7 @@ export function AnalyticsTab({ items, voteCounts }: Props) {
         </div>
       </div>
 
-      <div className="border border-border rounded-element bg-background p-4 col-span-1 md:col-auto">
+      <div className="rounded-element bg-muted p-4 col-span-1 md:col-auto">
         <p className="text-sm font-bold mb-2">Time to resolve (90d, resolved items only)</p>
         {sla.length === 0 ? (
           <AdminEmpty variant="inline" noun="resolved items" className="text-xs" />
@@ -178,7 +178,7 @@ export function AnalyticsTab({ items, voteCounts }: Props) {
         )}
       </div>
 
-      <div className="border border-border rounded-element bg-background p-4">
+      <div className="rounded-element bg-muted p-4">
         <p className="text-sm font-bold mb-2">Top voted</p>
         {topVoted.length === 0 ? (
           <AdminEmpty variant="inline" noun="votes" className="text-xs" />
@@ -187,13 +187,12 @@ export function AnalyticsTab({ items, voteCounts }: Props) {
             {topVoted.map(({ item, votes }) => {
               const cat = feedbackCategoryMap[item.data.category];
               return (
-                <div
-                  key={item.id}
-                  className="flex items-center gap-2 py-1 border-b border-border"
-                >
+                <div key={item.id} className="flex items-center gap-2 py-1 border-b border-border">
                   <div
                     className="w-6 text-right font-bold text-xs"
-                    style={{ color: votes > 0 ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))' }}
+                    style={{
+                      color: votes > 0 ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
+                    }}
                   >
                     {votes}
                   </div>

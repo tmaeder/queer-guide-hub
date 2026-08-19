@@ -21,15 +21,17 @@ export function MarketplaceTagQualityPanel() {
         {data && (
           <>
             <div className="grid grid-cols-3 gap-4">
-              <div className="rounded-element border p-4">
+              <div className="rounded-element bg-muted p-4">
                 <p className="text-13 text-muted-foreground">Active products</p>
                 <p className="text-headline tabular-nums">{data.totalActive.toLocaleString()}</p>
               </div>
-              <div className="rounded-element border p-4">
+              <div className="rounded-element bg-muted p-4">
                 <p className="text-13 text-muted-foreground">Attribute assignments</p>
-                <p className="text-headline tabular-nums">{data.attributeAssignments.toLocaleString()}</p>
+                <p className="text-headline tabular-nums">
+                  {data.attributeAssignments.toLocaleString()}
+                </p>
               </div>
-              <div className="rounded-element border p-4">
+              <div className="rounded-element bg-muted p-4">
                 <p className="text-13 text-muted-foreground">Open reviews</p>
                 <p className="text-headline tabular-nums">{data.openReviews.toLocaleString()}</p>
               </div>
@@ -40,7 +42,9 @@ export function MarketplaceTagQualityPanel() {
                 {data.departments.map((d) => (
                   <span key={d.slug} className="rounded-badge border px-2 py-1 text-xs">
                     {departmentLabel(d.slug)}
-                    <span className="ml-1.5 text-muted-foreground tabular-nums">{d.count.toLocaleString()}</span>
+                    <span className="ml-1.5 text-muted-foreground tabular-nums">
+                      {d.count.toLocaleString()}
+                    </span>
                   </span>
                 ))}
               </div>
