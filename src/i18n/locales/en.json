@@ -84,14 +84,14 @@
       "dismiss": "Dismiss",
       "openTrip": "Open trip",
       "fallbackTitle": "Forwarded email",
-      "intro": "Something off in the extracted details? Tell me and I’ll fix it — e.g. “check-in is actually the 12th”.",
+      "intro": "Something off in the extracted details? Tell me and I’ll fix it, e.g. “check-in is actually the 12th”.",
       "thinking": "Checking the email…",
       "placeholder": "Correct a detail or ask about this booking…",
       "send": "Send",
       "sendFailed": "Couldn't send that",
       "foundEntities": "Found in this email",
       "addToGuide": "Add to queer.guide",
-      "stagedNote": "Submitted for review — these go through our quality pipeline.",
+      "stagedNote": "Submitted for review. These go through our quality pipeline.",
       "anEvent": "Event",
       "aVenue": "Venue"
     },
@@ -242,7 +242,7 @@
     "escape": "esc",
     "jumpTo": "Jump to",
     "recent": "Recent",
-    "noStation": "No station by that name — yet",
+    "noStation": "No station by that name, yet",
     "addToMap": "Add it to the map",
     "seeOnMap": "See {{count}} results on the map",
     "keyHints": "↑↓ navigate · ↵ open"
@@ -572,7 +572,7 @@
         "global": "Global",
         "city": "In {{city}}"
       },
-      "empty": "No data yet — be the first to check in.",
+      "empty": "No data yet. Be the first to check in.",
       "venuesShort": "venues",
       "widget": {
         "label": "Top explorers",
@@ -775,7 +775,7 @@
       "cta": "Create your first trip",
       "hero": {
         "title": "Plan a trip you'll feel safe on.",
-        "subtitle": "Three ways to start — pick whichever fits."
+        "subtitle": "Three ways to start. Pick whichever fits."
       },
       "paths": {
         "scratch": {
@@ -947,7 +947,7 @@
     },
     "share": {
       "title": "Share this trip",
-      "description": "Create a link anyone can open — no account needed.",
+      "description": "Create a link anyone can open. No account needed.",
       "activeLinks_one": "{{count}} active link",
       "activeLinks_other": "{{count}} active links",
       "createNew": "Create a new share link",
@@ -1005,7 +1005,7 @@
       "countriesHeading": "Countries on your trip",
       "crossBorderTitle": "Sharp drop from {{from}} to {{to}}",
       "crossBorderBody": "Equality score drops by {{drop}} points. Review local laws and risks before crossing.",
-      "dataSource": "Data from ILGA World database, updated yearly. Scores are a guide, not a guarantee — check current news before you travel.",
+      "dataSource": "Data from ILGA World database, updated yearly. Scores are a guide, not a guarantee. Check current news before you travel.",
       "basedOn_one": "Based on LGBTQ+ equality data for {{count}} country on your trip.",
       "basedOn_other": "Based on LGBTQ+ equality data for {{count}} countries on your trip.",
       "worstCountry": "Lowest score: {{country}} ({{score}}/100).",
@@ -1153,7 +1153,7 @@
     },
     "shared": {
       "badge": "Shared trip",
-      "metaDescription": "A trip on Queer Guide — the LGBTQ+ travel planner.",
+      "metaDescription": "A trip on Queer Guide, the LGBTQ+ travel planner.",
       "notFoundTitle": "Trip not found",
       "notFoundDescription": "This share link may have expired or been removed.",
       "safetyNotice": "Safety notice",
@@ -1187,7 +1187,7 @@
       "journal": "Journal"
     },
     "today": {
-      "offlineBanner": "You're offline — showing your last-saved itinerary.",
+      "offlineBanner": "You're offline. Showing your last-saved itinerary.",
       "pushPrompt": "Get a reminder 30 min before each reservation.",
       "pushEnable": "Enable"
     },
@@ -1240,7 +1240,7 @@
       "title": "Build a route",
       "button": "Build a route",
       "eyebrow": "Real travelers",
-      "subtitle": "Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
+      "subtitle": "Real itineraries from QG travelers. Copy ideas, find queer-friendly stops, plan your own.",
       "searchPlaceholder": "Filter by city…",
       "aria": "Build a route through real cities",
       "sortAria": "Sort trips",
@@ -1310,14 +1310,14 @@
       "moreInspirationDescription": "Few public trips match. Start from a template instead.",
       "emptyTitle": "No public trips yet",
       "emptyFiltered": "No public trips match that city. Try a different one.",
-      "emptyDescription": "Be the first — make any of your trips public from the Share dialog.",
+      "emptyDescription": "Be the first. Make any of your trips public from the Share dialog.",
       "anonymous": "A QG traveler",
       "placeCount": "{{count}} places",
       "fork": "Fork into my trips",
       "forkAria": "Fork this trip",
       "forking": "Forking…",
       "forked": "Trip forked",
-      "forkedDescription": "Your copy is ready — edit days and places freely.",
+      "forkedDescription": "Your copy is ready. Edit days and places freely.",
       "forkError": "Could not create trip",
       "inspiredTitle": "Inspired by: {{title}}",
       "signalsAria": "Trip activity",
@@ -1329,7 +1329,7 @@
       },
       "eyebrowRoute": "Route builder",
       "titleRoute": "Three cities. One line.",
-      "ledeRoute": "Tell us what you are after and how fast you move. We draw you a line through real cities — with the venue counts, the legal status and what is on while you are there.",
+      "ledeRoute": "Tell us what you are after and how fast you move. We draw you a line through real cities, with the venue counts, the legal status and what is on while you are there.",
       "picker": {
         "heading": "Set the line",
         "hint": "Pick a vibe, a season and a pace. The line redraws.",
@@ -1363,7 +1363,7 @@
         "heading": "Your line",
         "reroll": "Draw another",
         "summary": "{{stops}} stops · {{km}} km · {{countries}} countries",
-        "snapped": "Starting {{km}} km from {{name}} — the nearest city we have enough on.",
+        "snapped": "Starting {{km}} km from {{name}}. The nearest city we have enough on.",
         "short": "This line runs {{delivered}} stops, not {{requested}}. {{eligible}} cities match that vibe, and the rest are further apart than this pace goes.",
         "announced": "Line drawn: {{stations}}. {{count}} stops.",
         "stopsAria": "Stops on this line, in order",
@@ -1382,7 +1382,7 @@
         "none": "No cities match those picks.",
         "title": "Only {{count}} cities match.",
         "body": "A line needs three stops. Clear a pick to widen it.",
-        "terminus": "The nearest match is {{name}}, {{km}} km away — further than this pace goes.",
+        "terminus": "The nearest match is {{name}}, {{km}} km away, further than this pace goes.",
         "clearVibe": "Any vibe",
         "goFurther": "Cover more ground"
       },
@@ -1426,7 +1426,7 @@
       "toursTicketsDayTrips": "Tours, tickets, day trips",
       "title": "Bundle your bookings",
       "description": "Step through hotels and activities for each city on your trip.",
-      "emptyHint": "Add places to your trip first — we'll generate bookable links per city.",
+      "emptyHint": "Add places to your trip first. We'll generate bookable links per city.",
       "openedOf": "{{booked}} of {{total}} opened",
       "allSkipped": "All steps skipped",
       "revisitHint": "You can revisit this anytime from the Budget tab.",
@@ -1547,7 +1547,7 @@
     },
     "legs": {
       "switchMode": "Switch transport mode",
-      "modeAria": "Transport mode: {{mode}} — click to change",
+      "modeAria": "Transport mode: {{mode}}, click to change",
       "mode": {
         "walk": "walk",
         "transit": "transit",
@@ -1588,10 +1588,10 @@
       "changeFile": "Change file",
       "matched": "Existing venue",
       "customPin": "Custom pin",
-      "noCoords": "No coordinates — name only",
+      "noCoords": "No coordinates, name only",
       "confirm": "Import {{count}} places",
       "done": "{{count}} places imported",
-      "doneHint": "They land in the unscheduled pool — drag them onto days."
+      "doneHint": "They land in the unscheduled pool. Drag them onto days."
     },
     "offline": {
       "pending_one": "{{count}} change waiting to sync",
@@ -1599,7 +1599,7 @@
     },
     "inbox": {
       "openThread": "Review in chat",
-      "forwardHint": "Forward Booking.com, Airbnb or airline confirmations to {{address}} — they appear in your Travel Inbox, ready to add to a trip. Or paste one here to add it straight to this trip.",
+      "forwardHint": "Forward Booking.com, Airbnb or airline confirmations to {{address}}. They appear in your Travel Inbox, ready to add to a trip. Or paste one here to add it straight to this trip.",
       "forwardHintNoAddress": "Forward booking confirmations to your queer.guide address and they appear in your Travel Inbox. Or paste one here to add it straight to this trip."
     },
     "templates": {
@@ -1646,7 +1646,7 @@
     },
     "closed_now": "Closed right now",
     "closed_no_alt": "This line is closed right now and we have no other line open for this country. In acute danger, use the emergency number above.",
-    "directories_subtitle": "These are referral organisations and directories — websites rather than direct phone lines.",
+    "directories_subtitle": "These are referral organisations and directories, websites rather than direct phone lines.",
     "directories_title": "Directories & further support",
     "disclaimer": "Queer Guide does not replace professional help.",
     "emergency_body": "Call emergency services immediately: 112 (EU) or 911 (US/CA). Every second counts.",
@@ -1657,7 +1657,7 @@
     "expect_1": "You'll hear a short greeting. You don't have to give your name.",
     "expect_2": "You can hang up at any time. You can call back as often as you need.",
     "expect_3": "Free hotlines in DE/AT/CH don't appear on itemized phone bills.",
-    "expect_4": "If you can't speak, ask for text or chat — most hotlines offer it.",
+    "expect_4": "If you can't speak, ask for text or chat. Most hotlines offer it.",
     "expect_short": "What to expect",
     "expect_title": "What happens when you call",
     "filter_country": "Country",
@@ -1691,7 +1691,7 @@
     "know_the_law": "Know the law",
     "know_the_law_body": "Whether it is safe to be out, to seek healthcare, or to report a crime depends on where you are. Check the legal position before you act on it.",
     "languages": "Languages",
-    "link_unavailable": "Website currently unavailable — being re-checked.",
+    "link_unavailable": "Website currently unavailable, being re-checked.",
     "loading": "Loading the directory…",
     "meta_description": "Free, anonymous LGBTQIA+ crisis hotlines and counselling services worldwide. You are not alone.",
     "more_support": "More support",
@@ -1706,7 +1706,7 @@
     "open_instead": "Open right now instead",
     "open_now": "Open now",
     "operator": "Operated by",
-    "org_coverage": "This directory is nowhere near everywhere. If a group you trust is missing, tell us about it. An empty result here means we have no record — not that no help exists.",
+    "org_coverage": "This directory is nowhere near everywhere. If a group you trust is missing, tell us about it. An empty result here means we have no record, not that no help exists.",
     "phone_only": "This line is phone-only in our records.",
     "phone_only_with_site": "This line is phone-only in our records. Their website may offer chat or email.",
     "provenance": "Provenance",
@@ -1736,7 +1736,7 @@
     "result_count_other": "{{count}} lines",
     "reveal_aria": "Click anywhere to show the page again",
     "rights_by_country": "LGBTQ+ rights by country",
-    "safety_plan_desc": "A short written plan you can pull up when things get bad — your warning signs, coping steps, people to call, and reasons to live.",
+    "safety_plan_desc": "A short written plan you can pull up when things get bad, your warning signs, coping steps, people to call, and reasons to live.",
     "safety_plan_link": "Open template (Stanley-Brown)",
     "safety_plan_title": "Safety plan",
     "save": "Save hotline",
@@ -2045,11 +2045,11 @@
     },
     "mobileNav": {
       "home": "Home",
-      "explore": "Explore",
+      "explore": "Browse",
       "contribute": "Add",
       "messages": "Messages",
       "you": "You",
-      "menuTitle": "Explore Queer Guide",
+      "menuTitle": "All sections",
       "menuDescription": "Jump to any section, switch language or theme.",
       "trips": "My Trips",
       "settingsSection": "Display",
@@ -2288,7 +2288,7 @@
     "travel": {
       "title": "Where are you going?",
       "subtitle": "Find flights, hotels, and activities for LGBTQ+ friendly destinations",
-      "lede": "Pick a place, build the trip, book the pieces — with the legal picture built in.",
+      "lede": "Pick a place, build the trip, book the pieces, with the legal picture built in.",
       "sections": {
         "plan": "Plan your trip",
         "planKicker": "The planner",
@@ -2310,7 +2310,7 @@
       },
       "goNow": {
         "kicker": "This month",
-        "heading": "Go now — {{month}}",
+        "heading": "Go now, {{month}}",
         "trending": "Trending now"
       },
       "cover": {
@@ -2365,7 +2365,7 @@
       },
       "bookNow": {
         "title": "Book now",
-        "subtitle": "Search flights, hotels, and activities directly — no trip required.",
+        "subtitle": "Search flights, hotels, and activities directly. No trip required.",
         "headline": "Book without a trip",
         "tripContext": "Searching for your {{city}} trip",
         "tripContextChange": "change"
@@ -2669,9 +2669,9 @@
     },
     "geolocate": {
       "unsupported": "Geolocation unavailable",
-      "denied": "Location access is off — showing the default area",
-      "unavailable": "Couldn't get your location — showing the default area",
-      "timeout": "Location lookup timed out — showing the default area"
+      "denied": "Location access is off. Showing the default area",
+      "unavailable": "Couldn't get your location. Showing the default area",
+      "timeout": "Location lookup timed out. Showing the default area"
     },
     "share": {
       "title": "Map view",
@@ -2686,7 +2686,7 @@
       "typeMore": "Type at least 2 characters",
       "filterMapFor": "Filter map for “{{query}}”",
       "jumpToPlace": "Jump to a place",
-      "noMatches": "No places match — Enter still filters the map.",
+      "noMatches": "No places match. Enter still filters the map.",
       "filters": "Filters",
       "filtersActive": "Filters, {{count}} active",
       "filtersAndLayers": "Filters & layers",
@@ -2791,10 +2791,10 @@
       "hotelCount_other": "{{count}} hotels",
       "placeCount_one": "{{count}} place",
       "placeCount_other": "{{count}} places",
-      "emptyOpenNow": "Nothing open right now in view — turn off Open now or try later.",
-      "emptyTimeRange": "No events in this time range here — widen the dates or pan out.",
-      "emptySearch": "No matches for \"{{query}}\" here — clear search or pan out.",
-      "emptyDefault": "No spots here yet — pan, zoom out, or put one on the map."
+      "emptyOpenNow": "Nothing open right now in view. Turn off Open now or try later.",
+      "emptyTimeRange": "No events in this time range here. Widen the dates or pan out.",
+      "emptySearch": "No matches for \"{{query}}\" here. Clear search or pan out.",
+      "emptyDefault": "No spots here yet. Pan, zoom out, or put one on the map."
     },
     "layers": {
       "venues": "Venues",
@@ -2895,7 +2895,7 @@
         "networkCaption": "Rapid-transit lines, drawn from OpenStreetMap. Schematic, not to scale.",
         "gettingAround": "Getting around",
         "noDealsTitle": "We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
-        "noDealsBody": "If you need to travel to {{city}}, read the safety and rights section first and use the trip planner — it includes a safety briefing for high-risk destinations."
+        "noDealsBody": "If you need to travel to {{city}}, read the safety and rights section first and use the trip planner. It includes a safety briefing for high-risk destinations."
       },
       "endOfLine": {
         "eyebrow": "End of line",
@@ -2940,7 +2940,7 @@
     "sortAriaLabel": "Sort cities",
     "sortLabel": "Sort",
     "suggestCta": "Suggest a city",
-    "suggestLede": "Suggest one — adds to the directory after review.",
+    "suggestLede": "Suggest one. Adds to the directory after review.",
     "suggestTitle": "Missing a city?",
     "title": "Cities.",
     "venueCount_one": "{{count}} place",
@@ -3125,7 +3125,7 @@
       "activities": "Activities & tours",
       "activitiesBody": "Experiences in {{country}}",
       "noDealsTitle": "We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
-      "noDealsBody": "If you need to travel to {{country}}, read the rights section on this page first and use the trip planner — it includes a safety briefing for high-risk destinations."
+      "noDealsBody": "If you need to travel to {{country}}, read the rights section on this page first and use the trip planner. It includes a safety briefing for high-risk destinations."
     },
     "news": {
       "emptyTitle": "No local news yet",
@@ -3172,7 +3172,7 @@
       "ilgaLink": "ILGA World Database",
       "deathPenaltyPossible": "death penalty possible, no legal certainty"
     },
-    "planTripHighRisk": "Plan carefully — safety briefing included",
+    "planTripHighRisk": "Plan carefully. Safety briefing included",
     "eyebrow": "Country",
     "sections": "Sections",
     "openMap": "Open the full map",
@@ -3239,7 +3239,7 @@
         "l1": "Open chrome://extensions in a new tab.",
         "l2": "Toggle Developer mode on (top right).",
         "l3": "Click Load unpacked and pick the unzipped folder.",
-        "l4": "The queer.guide puzzle icon appears in your toolbar — pin it for one-click access.",
+        "l4": "The queer.guide puzzle icon appears in your toolbar. Pin it for one-click access.",
         "note": "Other Chromium browsers (Edge, Brave, Arc) work the same way. Firefox / Safari are not supported yet."
       },
       "s3": {
@@ -3254,7 +3254,7 @@
     "highlights": {
       "smart": {
         "title": "Smart capture",
-        "body": "Reads JSON-LD, OpenGraph, microdata and DOM heuristics — most pages just work."
+        "body": "Reads JSON-LD, OpenGraph, microdata and DOM heuristics. Most pages just work."
       },
       "privacy": {
         "title": "Privacy-first",
@@ -3347,13 +3347,13 @@
     "minRead": "{{count}} min read",
     "viewsCount": "{{count}} views",
     "whyThisMatters": "Why this matters",
-    "editorialPlaceholder": "Alt-click to add the stakes — 1–3 sentences on why this story matters.",
+    "editorialPlaceholder": "Alt-click to add the stakes, 1–3 sentences on why this story matters.",
     "bodyFallback": "The full story lives on the original source.",
     "originallyPublishedBy": "Originally published by {{source}}.",
     "viewOriginal": "View the original report",
-    "integritySatire": "Flagged as satire — not a literal report.",
+    "integritySatire": "Flagged as satire. Not a literal report.",
     "integrityAdvertorial": "Sponsored / advertorial content.",
-    "integritySentimentConflict": "Sources disagree on tone — read with care.",
+    "integritySentimentConflict": "Sources disagree on tone. Read with care.",
     "closeToHome": "Close to your home base",
     "seeFullStory": "See the full story",
     "topics": "Topics",
@@ -3380,7 +3380,7 @@
     },
     "install": {
       "title": "Install Queer Guide",
-      "description": "Quick access from your home screen — works offline too.",
+      "description": "Quick access from your home screen. Works offline too.",
       "action": "Install",
       "iosTitle": "Add to Home Screen",
       "iosHint": "Tap the share button in Safari, then select \"Add to Home Screen\".",
@@ -3433,7 +3433,7 @@
     "groupMembers": "{{count}} members",
     "titleCity": "Meet people in {{city}}",
     "fullGuide": "Full guide to {{city}}",
-    "lede": "The spaces, groups and events where queer people actually gather — plus the members, travel buddies and dates you can find here.",
+    "lede": "The spaces, groups and events where queer people actually gather, plus the members, travel buddies and dates you can find here.",
     "safetyBody": "Meeting strangers carries different risk in different countries. Check the legal position for where you are before you arrange to meet someone.",
     "safetyCta": "LGBTQ+ rights by country",
     "sections": {
@@ -3441,7 +3441,7 @@
       "spacesKicker": "Places built for meeting people",
       "spacesKickerCity": "Places built for meeting people in {{city}}",
       "spacesEmpty": "No community spaces are listed for {{where}} yet.",
-      "spacesCountryFallback": "Nothing is listed in {{where}} itself, so these are elsewhere in the country. Community centres are recorded for 120 cities and queer villages for 104 — a gap here means we have no record, not that there is nowhere to go.",
+      "spacesCountryFallback": "Nothing is listed in {{where}} itself, so these are elsewhere in the country. Community centres are recorded for 120 cities and queer villages for 104. A gap here means we have no record, not that there is nowhere to go.",
       "groups": "Groups to join",
       "groupsKicker": "Smaller rooms than a whole city",
       "groupsEmpty": "No public groups yet.",
@@ -3474,7 +3474,7 @@
       "emptyCtaAnon": "Create a profile",
       "emptyCtaMember": "Set up your profile",
       "discoveryOffTitle": "You are not discoverable yet",
-      "discoveryOffBody": "Discovery is off by default, so you are hidden — and so is everyone else who has left it off. Turn it on to appear to other members, and to see the {{count}} who are listed.",
+      "discoveryOffBody": "Discovery is off by default, so you are hidden. And so is everyone else who has left it off. Turn it on to appear to other members, and to see the {{count}} who are listed.",
       "discoveryOffCta": "Turn on discovery",
       "discoveryOnPending": "Turning on…",
       "countHere": "{{count}} members listed in {{city}}",
@@ -3685,26 +3685,26 @@
   },
   "connections": {
     "title": "Connections",
-    "subtitle": "Explore how places, events and people on queer.guide relate to each other.",
+    "subtitle": "See how places, events and people on queer.guide relate to each other.",
     "hint": "Click a card to expand its connections. Drag to rearrange, scroll to zoom. The arrow opens the detail page.",
-    "mobileHint": "Closest connections first. Re-center to explore from another entity.",
+    "mobileHint": "Closest connections first. Re-center to start from another entity.",
     "stats": "{{nodes}} entities, {{links}} links",
     "open": "Open {{title}}",
     "openShort": "Open",
     "recenter": "Connections",
     "error": "Could not load connections. Please try again later.",
     "emptyTitle": "Pick a starting point",
-    "emptyDescription": "Open any venue, event, city or person and use its Connections button to explore from there.",
+    "emptyDescription": "Open any venue, event, city or person and use its Connections button to start from there.",
     "emptyCta": "Search the guide",
-    "explore": "Explore connections"
+    "explore": "See connections"
   },
   "milestones": {
     "eyebrow": "Queer history",
     "breadcrumb": "History",
     "pageTitle": "Queer history",
-    "pageDescription": "Milestones that shaped LGBTQ+ life — uprisings, laws, setbacks. Dated and sourced.",
+    "pageDescription": "Milestones that shaped LGBTQ+ life: uprisings, laws, setbacks. Dated and sourced.",
     "metaTitle": "Queer history timeline",
-    "metaDescription": "Milestones of LGBTQ+ history: uprisings, decriminalizations, marriage equality and setbacks — dated, sourced, worldwide.",
+    "metaDescription": "Milestones of LGBTQ+ history: uprisings, decriminalizations, marriage equality and setbacks. Dated, sourced, worldwide.",
     "empty": "No milestones match these filters.",
     "decadeNav": "Jump to decade",
     "filter": {
@@ -3775,11 +3775,11 @@
     "eras": {
       "hidden-lives": {
         "title": "Hidden lives",
-        "intro": "Before 1800, queer life survived in the shadows of law and church. What the record preserves is mostly persecution — trials, executions, edicts — alongside rare glimpses of love and community that outlasted them."
+        "intro": "Before 1800, queer life survived in the shadows of law and church. What the record preserves is mostly persecution: trials, executions, edicts. Alongside it, rare glimpses of love and community that outlasted them."
       },
       "empire-criminalization": {
         "title": "Empire & criminalization",
-        "intro": "Colonial empires exported sodomy laws across the globe in the 19th century, while a few states — revolutionary France first among them — quietly removed their own. Much of today's legal map was drawn in this era."
+        "intro": "Colonial empires exported sodomy laws across the globe in the 19th century, while a few states, revolutionary France first among them, quietly removed their own. Much of today's legal map was drawn in this era."
       },
       "birth-of-movement": {
         "title": "Birth of a movement",
@@ -3791,7 +3791,7 @@
       },
       "homophile-years": {
         "title": "The homophile years",
-        "intro": "After the war, small 'homophile' groups rebuilt quietly — Mattachine, the Daughters of Bilitis, Arcadie, the COC — trading radicalism for respectability while police raids and purges continued."
+        "intro": "After the war, small 'homophile' groups rebuilt quietly: Mattachine, the Daughters of Bilitis, Arcadie, the COC. They traded radicalism for respectability while police raids and purges continued."
       },
       "liberation": {
         "title": "Liberation",
@@ -3799,7 +3799,7 @@
       },
       "aids-crisis": {
         "title": "The AIDS crisis",
-        "intro": "A generation was decimated while governments looked away. The epidemic's grief forged the militant activism — ACT UP, treatment-access campaigns — that reshaped medicine and queer politics alike."
+        "intro": "A generation was decimated while governments looked away. The epidemic's grief forged the militant activism that reshaped medicine and queer politics alike: ACT UP, treatment-access campaigns."
       },
       "recognition": {
         "title": "Recognition",
@@ -3811,7 +3811,7 @@
       },
       "backlash-now": {
         "title": "Backlash & now",
-        "intro": "Progress continues — and so does organized backlash: 'LGBT-free zones', anti-trans legislation and new criminalization drives. The timeline is still being written."
+        "intro": "Progress continues. And so does organized backlash: 'LGBT-free zones', anti-trans legislation and new criminalization drives. The timeline is still being written."
       }
     },
     "era": {
@@ -3838,15 +3838,15 @@
     },
     "photoCredit": "Photo",
     "eraNavHeading": "The line, end to end",
-    "eraNavStation": "{{era}} — {{count}} milestones",
+    "eraNavStation": "{{era}}, {{count}} milestones",
     "emptyTitle": "No service on this stretch of the line"
   },
   "guides": {
     "hub": {
       "title": "Guides",
       "eyebrow": "Editorial",
-      "lede": "Comparison-driven guides, curated lists and community quests — written by editors, no fluff.",
-      "metaDescription": "Editor-written guides, curated lists and community quests across LGBTQ+ places, events and shopping.",
+      "lede": "Comparison-driven guides, hand-picked lists and community quests. Written by editors, no fluff.",
+      "metaDescription": "Editor-written guides, hand-picked lists and community quests across LGBTQ+ places, events and shopping.",
       "empty": "No guides yet.",
       "emptyHint": "New guides land regularly. Check back soon."
     },
@@ -4032,21 +4032,21 @@
         "rights": "Distinct rights tracked per country"
       },
       "body": {
-        "source": "Every legal status on this site — criminalisation, partnership recognition, anti-discrimination protection, gender recognition, conversion therapy and intersex bodily integrity — comes from the ILGA World Database, the reference dataset maintained by the International Lesbian, Gay, Bisexual, Trans and Intersex Association.",
+        "source": "Every legal status on this site comes from the ILGA World Database, the reference dataset maintained by the International Lesbian, Gay, Bisexual, Trans and Intersex Association. That covers criminalisation, partnership recognition, anti-discrimination protection, gender recognition, conversion therapy and intersex bodily integrity.",
         "refresh": "We re-import it nightly. Where a country page shows an \"Updated\" date, that is the date ILGA last revised that record, not the date we fetched it.",
         "link": "ILGA World Database",
         "unscored": "The unscored rows are uninhabited or near-uninhabited territories with no ILGA entry. We list them as \"not scored\" rather than giving them a default, because a default would read as a measurement.",
         "scoreHow": "The score runs 0–100. It starts at 50 and moves up or down as each recorded right is added: decriminalisation and marriage weigh heaviest, then anti-discrimination protections, hate-crime law, adoption, legal gender recognition and a conversion-therapy ban.",
         "scoreLimit": "Because it opens at 50 and adds from there, a country we hold almost nothing about lands mid-scale rather than reading as unknown. A middling score can mean middling rights or thin data, and the number cannot tell you which.",
-        "scoreLens": "It is also a single number for very different lives. Protections are recorded separately for sexual orientation, gender identity, gender expression and sex characteristics, and those four rarely move together — a country can protect sexual orientation thoroughly and gender identity not at all. Read the per-right breakdown on a country page rather than the score alone.",
+        "scoreLens": "It is also a single number for very different lives. Protections are recorded separately for sexual orientation, gender identity, gender expression and sex characteristics, and those four rarely move together. A country can protect sexual orientation thoroughly and gender identity not at all. Read the per-right breakdown on a country page rather than the score alone.",
         "scoreNotSafety": "The score describes law on paper. It is not a safety rating, and it says nothing about enforcement, policing or how welcome you will be made to feel."
       },
       "limits": {
-        "national": "It is national. Where rights vary by state or province — the United States, Indonesia, Nigeria, Mexico and others — a single national figure averages that away.",
+        "national": "It is national. Where rights vary by state or province, as in the United States, Indonesia, Nigeria and Mexico, a single national figure averages that away.",
         "enforcement": "It records statutes, not enforcement. A law that is rarely applied and a law applied constantly look identical here.",
         "trans": "Several facts that matter most to trans travellers are not in this dataset at all: bathroom and facility access, how identity documents are treated at borders, and access to gender-affirming healthcare.",
         "personal": "It knows nothing about you. Your citizenship, residency, gender marker and relationship status all change what applies, and we hold none of them.",
-        "corrections": "If something here is wrong, tell us — corrections to the underlying record should also go to ILGA, who maintain it."
+        "corrections": "If something here is wrong, tell us. Corrections to the underlying record should also go to ILGA, who maintain it."
       }
     },
     "lens": {
@@ -4058,7 +4058,7 @@
       "noData": "We hold no recorded legal status for this country or territory."
     },
     "verdict": {
-      "criminalized-severe": "Criminalised — death penalty",
+      "criminalized-severe": "Criminalised: death penalty",
       "criminalized": "Criminalised",
       "hostile": "Few or no protections",
       "partial": "Some protections",
@@ -4069,9 +4069,9 @@
   "about": {
     "eyebrow": "About",
     "title": "Built by queers, for everyone.",
-    "lede": "Queer Guide maps the places, events and people that make up queer life — verified by the community, free for everyone, everywhere in the world.",
+    "lede": "Queer Guide maps the places, events and people that make up queer life, verified by the community, free for everyone, everywhere in the world.",
     "diagram": {
-      "label": "Four lines — venues, events, community and places — converging on one station."
+      "label": "Four lines converging on one station: venues, events, community and places."
     },
     "scale": {
       "kicker": "The network today",
@@ -4091,7 +4091,7 @@
       },
       "events": {
         "name": "Events",
-        "description": "Pride marches, drag shows, support groups, screenings — near you or anywhere."
+        "description": "Pride marches, drag shows, support groups, screenings. Near you or anywhere."
       },
       "marketplace": {
         "name": "Marketplace",
@@ -4109,8 +4109,8 @@
     "story": {
       "kicker": "Our story",
       "title": "How this started",
-      "p1": "Finding a queer-friendly bar shouldn't take a group chat, three forum threads and a leap of faith. We started Queer Guide because we were tired of guessing which spaces were actually safe — and which just put a rainbow on the logo in June.",
-      "p2": "A personal list of trusted venues turned into a global directory: verified by the community, built on real experience, free to use. Travelling solo, moving city, or just looking for somewhere to be on a Friday night — start here."
+      "p1": "Finding a queer-friendly bar shouldn't take a group chat, three forum threads and a leap of faith. We started Queer Guide because we were tired of guessing which spaces were actually safe, and which just put a rainbow on the logo in June.",
+      "p2": "A personal list of trusted venues turned into a global directory: verified by the community, built on real experience, free to use. Travelling solo, moving city, or just looking for somewhere to be on a Friday night. Start here."
     },
     "legend": {
       "kicker": "Legend",
@@ -4129,7 +4129,7 @@
       },
       "global": {
         "label": "Global reach",
-        "body": "Berlin to Bangkok, São Paulo to Sydney — and growing."
+        "body": "Berlin to Bangkok, São Paulo to Sydney. And growing."
       }
     },
     "history": {
@@ -4174,7 +4174,7 @@
       },
       "accessibility": {
         "title": "Accessibility",
-        "description": "We mark step-free entrances, accessible restrooms — and what's missing."
+        "description": "We mark step-free entrances and accessible restrooms, and what's missing."
       },
       "growth": {
         "title": "Growth",
@@ -4203,7 +4203,7 @@
     },
     "cta": {
       "title": "Help us extend the line.",
-      "body": "The network grows because people add to it. Every verified entry has someone behind it — add yours.",
+      "body": "The network grows because people add to it. Every verified entry has someone behind it. Add yours.",
       "primary": "Submit a venue",
       "secondary": "Contact us",
       "addVenues": {
@@ -4227,13 +4227,13 @@
   "tags": {
     "meta": {
       "title": "LGBTQ+ glossary",
-      "categoryTitle": "{{name}} — LGBTQ+ glossary",
-      "description": "Browse and search {{count}} LGBTQ+ terms — identities, practices, history and community language, each linked to the venues, events, people and news that use it."
+      "categoryTitle": "{{name}}: LGBTQ+ glossary",
+      "description": "Browse and search {{count}} LGBTQ+ terms: identities, practices, history and community language, each linked to the venues, events, people and news that use it."
     },
     "hero": {
       "eyebrow": "Glossary",
       "title": "The glossary",
-      "lede": "Every word the guide uses, defined — and everything tagged with it.",
+      "lede": "Every word the guide uses, defined. And everything tagged with it.",
       "legend": "{{terms}} terms · {{lines}} lines · {{stops}} stops"
     },
     "stats": {
@@ -4265,8 +4265,8 @@
       "usage": "Most used",
       "alphabetical": "A–Z",
       "recent": "Newest",
-      "dirAsc": "Ascending — switch to descending",
-      "dirDesc": "Descending — switch to ascending"
+      "dirAsc": "Ascending. Switch to descending",
+      "dirDesc": "Descending. Switch to ascending"
     },
     "filter": {
       "used": "In use",
@@ -4341,7 +4341,7 @@
       "hanky": {
         "eyebrow": "Reference",
         "title": "The code",
-        "intro": "A colour worn in the back pocket signalled a specific interest — left pocket for the giving side, right pocket for the receiving side. Documented here as it was published in the 1980s; meanings varied by city and decade.",
+        "intro": "A colour worn in the back pocket signalled a specific interest. Left pocket for the giving side, right pocket for the receiving side. Documented here as it was published in the 1980s; meanings varied by city and decade.",
         "safeMode": "The colour table covers explicit sexual practices and is hidden while Safe Mode is on.",
         "gateBody": "The colour table names explicit sexual practices. Confirm you are 18 or older to read it.",
         "gateCta": "Show the code (18+)",
