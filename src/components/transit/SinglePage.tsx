@@ -57,7 +57,19 @@ export function SinglePage({
 
       <div className="grid grid-cols-1 gap-8 py-8 lg:grid-cols-[1fr_360px]">
         <div className="flex min-w-0 flex-col gap-10">{body}</div>
-        {rail && <aside className="flex flex-col gap-4">{rail}</aside>}
+        {/* The testid exists because `article aside` is NOT unique: a signed-in
+            visitor whose trip covers this destination also gets
+            TripCoveringBanner, which is an <aside> inside the same <article>.
+            A locator that matches "the aside" is ambiguous exactly when a
+            reader has a trip — see e2e/singles.spec.ts. Deliberately not an
+            aria-label: an <aside> nested in an <article> is only a
+            `complementary` landmark once it HAS an accessible name, so naming
+            this one would add a landmark to the a11y tree to satisfy a test. */}
+        {rail && (
+          <aside data-testid="single-rail" className="flex flex-col gap-4">
+            {rail}
+          </aside>
+        )}
       </div>
 
       {footer && <div className="border-t border-border-hairline py-8">{footer}</div>}
