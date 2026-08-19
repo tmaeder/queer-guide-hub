@@ -166,9 +166,15 @@ export default function TagsIndex() {
     if (parent) {
       return { id: parent.id, name: parent.name, isParent: true, node: parent as CategoryTreeNode };
     }
-    for (const p of categoriesTree) {
-      const child = p.children?.find((c) => c.slug?.toLowerCase() === lower);
-      if (child) return { id: child.id, name: child.name, isParent: false, parentName: p.name };
+    // Resolved with `find`, not a `for` loop that returns from inside it: the
+    // React Compiler cannot preserve manual memoization across an early return
+    // out of a loop, and bailed on this whole component because of it.
+    const owner = categoriesTree.find((p) =>
+      p.children?.some((c) => c.slug?.toLowerCase() === lower),
+    );
+    const child = owner?.children?.find((c) => c.slug?.toLowerCase() === lower);
+    if (owner && child) {
+      return { id: child.id, name: child.name, isParent: false, parentName: owner.name };
     }
     return null;
   }, [categorySlug, categoriesTree]);

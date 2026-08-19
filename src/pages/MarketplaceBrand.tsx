@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useMeta } from '@/hooks/useMeta';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { MarketplaceFilteredView } from '@/components/marketplace/MarketplaceFilteredView';
-import { brandMonogram } from '@/components/marketplace/BrandPlate';
+import { brandMonogram } from '@/components/marketplace/marketplaceHelpers';
 import { COMMUNITY_OWNED_OPTIONS } from '@/components/marketplace/marketplaceFilterOptions';
 import { MarketplaceLineArt } from '@/components/marketplace/MarketplaceLineArt';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';

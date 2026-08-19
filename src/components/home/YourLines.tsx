@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Image } from '@/components/ui/Image';
 import { Band } from './Band';
-import { useHomeRegionContext } from './HomeRegionProvider';
+import { useHomeRegionContext } from './homeRegionContext';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { useRecentlyViewedImages } from '@/hooks/useRecentlyViewedImages';
 import { useYourLinesDiscovery } from '@/hooks/useYourLines';
