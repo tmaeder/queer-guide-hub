@@ -41,7 +41,10 @@ export function LeaderboardPanel() {
           <TabsTrigger value="global">{t('venues.leaderboard.tabs.global', 'Global')}</TabsTrigger>
           {myCity && (
             <TabsTrigger value="city">
-              {t('venues.leaderboard.tabs.city', { city: myCity.name, defaultValue: 'In {{city}}' })}
+              {t('venues.leaderboard.tabs.city', {
+                city: myCity.name,
+                defaultValue: 'In {{city}}',
+              })}
             </TabsTrigger>
           )}
         </TabsList>
@@ -66,7 +69,8 @@ export function LeaderboardPanel() {
             </>
           ) : (
             <>
-              {t('venues.leaderboard.viewAll', 'View top 100')} <ChevronDown size={14} aria-hidden />
+              {t('venues.leaderboard.viewAll', 'View top 100')}{' '}
+              <ChevronDown size={14} aria-hidden />
             </>
           )}
         </button>
@@ -102,7 +106,7 @@ function Board({
     );
   }
   return (
-    <ol className="divide-y border rounded-container overflow-hidden bg-card">
+    <ol className="divide-y rounded-container overflow-hidden bg-card shadow-soft">
       {rows.map((r) => {
         const isYou = currentUserId === r.user_id;
         return (

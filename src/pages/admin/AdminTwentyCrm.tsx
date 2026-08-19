@@ -18,7 +18,7 @@ const ENTITY_LABEL: Record<TwentyInboundRow['entity_type'], string> = {
 
 function ChangeRow({ field, from, to }: { field: string; from: unknown; to: string | null }) {
   return (
-    <div className="flex flex-col gap-1 rounded-element border p-4">
+    <div className="flex flex-col gap-1 rounded-element bg-muted p-4">
       <span className="text-2xs uppercase tracking-wide text-muted-foreground">{field}</span>
       <div className="flex items-start gap-2 text-15">
         <span className="text-muted-foreground line-through">{String(from ?? '—')}</span>
@@ -74,7 +74,7 @@ export default function AdminTwentyCrm() {
             <p className="text-13 text-muted-foreground">No edits awaiting review.</p>
           )}
           {rows?.map((r) => (
-            <div key={r.id} className="flex flex-col gap-4 rounded-element border p-4">
+            <div key={r.id} className="flex flex-col gap-4 rounded-element bg-muted p-4">
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
                   <Badge variant="outline">{ENTITY_LABEL[r.entity_type]}</Badge>

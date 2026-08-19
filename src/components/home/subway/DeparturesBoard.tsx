@@ -4,7 +4,7 @@ import { RouteBullet } from '@/components/transit/RouteBullet';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { Band } from '@/components/home/Band';
 import { RegionChip } from '@/components/home/RegionChip';
-import { useHomeRegionContext } from '@/components/home/HomeRegionProvider';
+import { useHomeRegionContext } from '@/components/home/homeRegionContext';
 import { useHomeNearYou, type NearYouRow } from '@/hooks/useHomeNearYou';
 
 const ROWS = 6;
@@ -23,7 +23,7 @@ function BoardRow({ row, locale }: { row: NearYouRow; locale: string }) {
   const href =
     row.kind === 'event' ? `/events/${row.slug || row.id}` : `/venues/${row.slug || row.id}`;
   return (
-    <div className="group relative border-b border-foreground/10 last:border-b-0">
+    <div className="group relative border-b border-border-hairline last:border-b-0">
       <div className="grid grid-cols-[42px_1fr_auto] items-center gap-4 px-4 py-4 transition-colors group-hover:bg-surface-container md:grid-cols-[52px_120px_1fr_28px] md:px-6">
         <RouteBullet type={row.kind} size={42} />
         {/* Blank, not an em-dash. A standing place has no departure time, and a
@@ -102,7 +102,7 @@ export function DeparturesBoard() {
           Array.from({ length: ROWS }).map((_, i) => (
             <div
               key={i}
-              className="h-[74px] animate-pulse border-b border-foreground/10 last:border-b-0"
+              className="h-[74px] animate-pulse border-b border-border-hairline last:border-b-0"
             />
           ))
         ) : rows.length === 0 ? (

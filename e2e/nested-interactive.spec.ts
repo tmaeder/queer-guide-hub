@@ -114,7 +114,13 @@ test.describe('No nested interactive elements', () => {
   for (const route of STATIC_ROUTES) {
     test(`${route} has no interactive element nested inside an <a>`, async ({ page }) => {
       await page.goto(route, { waitUntil: 'domcontentloaded' });
-      await page.waitForSelector('main', { timeout: 30_000 });
+      // 60s, matching CARD_ROUTES above, and for the same reason: a cold visit
+      // pays a Cloudflare edge miss plus the SPA bundle. Measured against prod
+      // on 2026-08-19, /marketplace/share took 24.6s cold vs 0.7-1.3s warm —
+      // ~5s of headroom under the old 30s, which is why this flaked in the
+      // 2026-08-18 nightly (timed out, then passed on retry). The STATIC_ROUTES
+      // branch was simply left behind when CARD_ROUTES was raised.
+      await page.waitForSelector('main', { timeout: 60_000 });
       // The not-found branches render only after their query resolves, and the
       // gated-detail fallback adds a second round trip on top — 5s was not
       // enough for /venues locally.

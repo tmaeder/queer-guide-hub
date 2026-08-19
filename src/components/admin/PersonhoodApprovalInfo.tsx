@@ -6,11 +6,31 @@
  */
 
 const STAMPS: { n: number; title: string; who: string; detail: string }[] = [
-  { n: 1, title: 'Pflichtangaben vollständig', who: 'automatisch', detail: 'Name · Geburtsdatum · LGBTQ+-Bezug · Beruf/Tätigkeit · Bild' },
-  { n: 2, title: 'Beleg vorhanden', who: 'automatisch', detail: 'mindestens eine Quelle (Wikipedia / Wikidata / Link)' },
-  { n: 3, title: 'KI-Check bestanden', who: 'automatisch', detail: 'keine Widersprüche, Angaben plausibel' },
+  {
+    n: 1,
+    title: 'Pflichtangaben vollständig',
+    who: 'automatisch',
+    detail: 'Name · Geburtsdatum · LGBTQ+-Bezug · Beruf/Tätigkeit · Bild',
+  },
+  {
+    n: 2,
+    title: 'Beleg vorhanden',
+    who: 'automatisch',
+    detail: 'mindestens eine Quelle (Wikipedia / Wikidata / Link)',
+  },
+  {
+    n: 3,
+    title: 'KI-Check bestanden',
+    who: 'automatisch',
+    detail: 'keine Widersprüche, Angaben plausibel',
+  },
   { n: 4, title: 'Kein Duplikat', who: 'automatisch', detail: 'Person existiert nicht doppelt' },
-  { n: 5, title: 'Mensch-Freigabe (Vier-Augen)', who: 'Mensch', detail: 'bestätigt von jemand anderem als der/die erfasst hat' },
+  {
+    n: 5,
+    title: 'Mensch-Freigabe (Vier-Augen)',
+    who: 'Mensch',
+    detail: 'bestätigt von jemand anderem als der/die erfasst hat',
+  },
 ];
 
 export function PersonhoodApprovalInfo() {
@@ -22,9 +42,9 @@ export function PersonhoodApprovalInfo() {
 
       <div className="pb-2 pt-2 text-13 text-muted-foreground">
         <p className="mb-4">
-          <span className="font-medium text-foreground">Online = geprüft.</span> Eine Person ist
-          auf Website + Suche nur sichtbar, wenn alle Prüf-Stempel gesetzt sind. Stempel 1–4 setzt
-          das System automatisch, Stempel 5 ist die redaktionelle Freigabe.
+          <span className="font-medium text-foreground">Online = geprüft.</span> Eine Person ist auf
+          Website + Suche nur sichtbar, wenn alle Prüf-Stempel gesetzt sind. Stempel 1–4 setzt das
+          System automatisch, Stempel 5 ist die redaktionelle Freigabe.
         </p>
 
         <ol className="mb-4 space-y-2">
@@ -43,7 +63,7 @@ export function PersonhoodApprovalInfo() {
           ))}
         </ol>
 
-        <div className="mb-4 rounded-element border border-border bg-background p-4">
+        <div className="mb-4 rounded-element bg-muted p-4">
           <p className="mb-2 font-medium text-foreground">Zwei Regeln, die Qualität sichern</p>
           <p className="mb-1">
             <span className="font-medium text-foreground">Vier-Augen:</span> Wer eine Person

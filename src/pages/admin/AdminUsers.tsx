@@ -16,6 +16,7 @@ import { formatDateTime } from '@/lib/format';
 import { AdminEntityTable } from '@/components/admin/data-table/AdminEntityTable';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
+import type { AdminTableFeatures } from '@/components/admin/data-table/features';
 import { Eye, ExternalLink, MapPin, Shield, UserPlus } from 'lucide-react';
 import { UserStatsCards } from '@/components/admin/users/UserStatsCards';
 import { UserDetailSheet } from '@/components/admin/users/UserDetailSheet';
@@ -47,7 +48,7 @@ const ROLE_COLORS: Record<string, string> = {
   contributor: 'hsl(var(--foreground))',
 };
 
-const columnHelper = createColumnHelper<UserRow>();
+const columnHelper = createColumnHelper<AdminTableFeatures, UserRow>();
 
 export default function AdminUsers() {
   const navigate = useNavigate();

@@ -157,16 +157,34 @@ test.describe('Legal hub', () => {
     await expect(page.getByText(/\d+ sections/).first()).toBeVisible();
   });
 
-  test('cards carry the hard ink shadow on hover and none at rest', async ({ page }) => {
+  // INVERTED by the 2026-08-17 soft re-skin (#2848), which retired --shadow-hard
+  // in favour of --shadow-soft and moved the rest elevation onto the surface.
+  // The sibling assertion in e2e/design-system.spec.ts was migrated with it and
+  // this one was not — that omission is what turned the nightly suite red from
+  // 2026-08-18, and it is the only e2e coverage `main` gets (e2e-pr.yml is
+  // `pull_request`-only), so it masked the whole suite for days.
+  //
+  // Deliberately NOT deleted as redundant: design-system.spec.ts probes the rest
+  // shadow on `[data-slot="card"]`, and these hub cards are a hand-rolled
+  // `<a class="card-lift bg-card">` with no Card component anywhere inside. They
+  // are precisely the case src/index.css warns about — "a lifted wrapper around a
+  // non-Card surface should declare its own rest elevation" — so this is the only
+  // guard that the hub cards are not invisible against a page 1.12:1 away.
+  test('cards carry the soft elevation at rest and deepen it on hover', async ({ page }) => {
     await page.goto('/legal');
     await waitForAppReady(page);
     const card = page.locator('main a.card-lift').first();
     await expect(card).toBeVisible();
-    expect(await card.evaluate((el) => getComputedStyle(el).boxShadow)).toBe('none');
+    // Offset+blur identify the token; the colour serialises as rgba() and the
+    // utility composes four transparent ring layers ahead of it, so match rather
+    // than compare (same convention as design-system.spec.ts).
+    const rest = await card.evaluate((el) => getComputedStyle(el).boxShadow);
+    expect(rest).not.toBe('none');
+    expect(rest).toMatch(/0px 16px 40px/); // --shadow-soft
     await card.hover();
     await page.waitForTimeout(250);
     expect(await card.evaluate((el) => getComputedStyle(el).boxShadow)).toMatch(
-      /[56]px [56]px 0(px)?/,
+      /0px 12px 30px/, // --shadow-soft-hover
     );
   });
 

@@ -24,7 +24,7 @@ export function DirectoryList({ directories }: { directories: Hotline[] }) {
       {directories.map((d) => {
         const live = d.url && d.link_status !== 'broken';
         return (
-          <li key={d.id} className="border-b border-foreground/10 last:border-b-0">
+          <li key={d.id} className="border-b border-border-hairline last:border-b-0">
             {live ? (
               <a
                 href={d.url}

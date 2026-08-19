@@ -81,7 +81,7 @@ export function TagFlagBand({ tagSlug }: { tagSlug: string }) {
                 {meanings.map((s, i) => (
                   <li
                     key={i}
-                    className="flex items-center gap-4 border-b border-foreground/15 py-2 last:border-b-0"
+                    className="flex items-center gap-4 border-b border-border-hairline py-2 last:border-b-0"
                   >
                     <span
                       aria-hidden="true"

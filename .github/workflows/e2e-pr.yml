@@ -35,6 +35,21 @@ jobs:
     # 10.8m of tests and was killed at 12m during teardown, which GitHub
     # reports as `cancelled`, not `timed out` — so it read as a concurrency
     # cancellation rather than the budget it actually was.
+    #
+    # 20 STAYS, and the next person to see a `cancelled` here should not raise
+    # it. Measured 2026-08-19 across five green runs: whole job 8m08s-8m56s
+    # (npm ci ~15-20s, playwright install 22-102s, build ~8s, specs 6m34s-7m12s).
+    # That is 2.3x headroom. Every `cancelled` run that day died inside
+    # `playwright install --with-deps`, stalled on a dead Ubuntu mirror for
+    # 12-20 minutes — see .github/actions/setup-playwright, which bounds it.
+    # A bigger budget buys a longer stall, not a green check.
+    #
+    # Also note: not every `cancelled` here is this budget. `concurrency` +
+    # `cancel-in-progress` kills the previous run the moment a new commit
+    # lands, and GitHub reports THAT as `cancelled` too. Check the job's
+    # elapsed time before diagnosing — ~20m is the cap, anything shorter is a
+    # supersession (runs 32268586231 and 32236106405 were superseded, not
+    # timed out).
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
@@ -46,7 +61,7 @@ jobs:
           files=$(gh api "repos/${{ github.repository }}/pulls/${{ github.event.number }}/files" \
             --paginate --jq '.[].filename')
           echo "Changed files:"; echo "$files" | sed 's/^/  /'
-          if echo "$files" | grep -qE '^(src/|public/|e2e/|index\.html$|vite\.config\.ts$|playwright\.config\.ts$|package\.json$|package-lock\.json$|\.github/workflows/e2e-pr\.yml$)'; then
+          if echo "$files" | grep -qE '^(src/|public/|e2e/|index\.html$|vite\.config\.ts$|playwright\.config\.ts$|package\.json$|package-lock\.json$|\.github/workflows/e2e-pr\.yml$|\.github/actions/setup-playwright/)'; then
             echo "relevant=true" >> "$GITHUB_OUTPUT"
             echo "::notice::Relevant paths changed - running critical-path specs."
           else
@@ -60,7 +75,7 @@ jobs:
           cache: npm
       - run: npm ci
         if: steps.changes.outputs.relevant == 'true'
-      - run: npx playwright install --with-deps chromium
+      - uses: ./.github/actions/setup-playwright
         if: steps.changes.outputs.relevant == 'true'
       - name: Build app
         if: steps.changes.outputs.relevant == 'true'
@@ -90,6 +105,7 @@ jobs:
             e2e/hotels-filters.spec.ts \
             e2e/nested-interactive.spec.ts \
             e2e/singles.spec.ts \
+            e2e/legal-pages.spec.ts \
             --reporter=line
           # e2e/auth.setup.ts is FIRST on the list and is load-bearing.
           # Passing explicit file paths filters EVERY project, including the
@@ -109,6 +125,17 @@ jobs:
           # a dead layout branch with no safety gating because NOTHING
           # exercised it. A spec written to close that gap, parked behind a
           # hardcoded list it is not on, closes nothing.
+          # legal-pages.spec.ts is here for the SAME reason as design-system
+          # below, and it is the second time this exact fault has been paid for.
+          # The elevation contract is asserted in two files; only one of them was
+          # on this list. So when #2848 inverted it (--shadow-hard -> the soft
+          # re-skin), that PR ran the copy it had correctly migrated and never
+          # ran the copy it broke — `legal-pages.spec.ts` went stale invisibly and
+          # took the nightly down from 2026-08-18. A design-contract assertion
+          # parked behind a hardcoded list it is not on guards nothing, and the
+          # nightly is the only e2e `main` gets (this workflow is
+          # `pull_request`-only), so the report arrives a day late against an
+          # already-merged commit.
           # Design-system guards (radius tiers + monochrome) used to run ONLY in
           # the nightly suite, so the PHOTOCOPY radius retune passed every PR
           # check and turned nightly red the next morning. Second invocation

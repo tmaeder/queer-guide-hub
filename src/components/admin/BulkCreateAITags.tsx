@@ -1,12 +1,18 @@
 import React, { useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { Sparkles, CheckCircle, XCircle, AlertCircle, ExternalLink } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { Badge } from "@/components/ui/badge";
+import { Sparkles, CheckCircle, XCircle, AlertCircle, ExternalLink } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { Badge } from '@/components/ui/badge';
 
 interface BulkCreateResult {
   term: string;
@@ -41,8 +47,8 @@ const BulkCreateAITags = ({ onComplete }: BulkCreateAITagsProps) => {
     try {
       const termsList = terms
         .split('\n')
-        .map(term => term.trim())
-        .filter(term => term.length > 0);
+        .map((term) => term.trim())
+        .filter((term) => term.length > 0);
 
       if (termsList.length === 0) {
         toast.error('Error: No valid terms found');
@@ -50,7 +56,7 @@ const BulkCreateAITags = ({ onComplete }: BulkCreateAITagsProps) => {
       }
 
       const { data, error } = await supabase.functions.invoke('bulk-create-ai-tags', {
-        body: { terms: termsList }
+        body: { terms: termsList },
       });
 
       if (error) {
@@ -59,12 +65,13 @@ const BulkCreateAITags = ({ onComplete }: BulkCreateAITagsProps) => {
 
       setResults(data.results);
 
-      toast.success('Bulk Creation Complete', { description: `Created ${data.summary.created} tags, ${data.summary.exists} already existed, ${data.summary.errors} errors` });
+      toast.success('Bulk Creation Complete', {
+        description: `Created ${data.summary.created} tags, ${data.summary.exists} already existed, ${data.summary.errors} errors`,
+      });
 
       if (onComplete) {
         onComplete();
       }
-
     } catch (error) {
       console.error('Error in bulk create:', error);
       toast.error(`Error: ${error.message}`);
@@ -119,24 +126,28 @@ const BulkCreateAITags = ({ onComplete }: BulkCreateAITagsProps) => {
           <div className="flex flex-col gap-2">
             <p className="text-sm font-medium">Enter terms (one per line)</p>
             <Textarea
-              placeholder={"pride\nrainbow flag\ncoming out\ndrag show\nqueer history"}
+              placeholder={'pride\nrainbow flag\ncoming out\ndrag show\nqueer history'}
               value={terms}
               onChange={(e) => setTerms(e.target.value)}
               style={{ minHeight: 128, resize: 'none' }}
               disabled={isLoading}
             />
             <span className="text-xs text-muted-foreground">
-              Each term will be automatically categorized and enhanced with AI-generated descriptions using Wikipedia and OpenAI.
+              Each term will be automatically categorized and enhanced with AI-generated
+              descriptions using Wikipedia and OpenAI.
             </span>
           </div>
 
           {results.length > 0 && (
             <div className="flex-1 overflow-hidden">
               <p className="text-sm font-medium mb-2">Results:</p>
-              <div className="border border-border rounded-badge overflow-auto max-h-64">
+              <div className="rounded-badge bg-muted overflow-auto max-h-64">
                 <div className="flex flex-col gap-2 p-4">
                   {results.map((result, index) => (
-                    <div key={index} className="flex items-start justify-between gap-4 p-2 bg-muted rounded-badge">
+                    <div
+                      key={index}
+                      className="flex items-start justify-between gap-4 p-2 bg-muted rounded-badge"
+                    >
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           {getStatusIcon(result.status)}
@@ -150,7 +161,11 @@ const BulkCreateAITags = ({ onComplete }: BulkCreateAITagsProps) => {
                         )}
                         {result.image_url && (
                           <div className="mt-1">
-                            <img src={result.image_url} alt={result.term} className="w-16 h-12 object-cover rounded-element mt-1" />
+                            <img
+                              src={result.image_url}
+                              alt={result.term}
+                              className="w-16 h-12 object-cover rounded-element mt-1"
+                            />
                           </div>
                         )}
                         {result.description && (
@@ -183,17 +198,10 @@ const BulkCreateAITags = ({ onComplete }: BulkCreateAITagsProps) => {
           )}
 
           <div className="flex justify-end gap-2 pt-2 border-t border-border">
-            <Button
-              variant="outline"
-              onClick={() => setOpen(false)}
-              disabled={isLoading}
-            >
+            <Button variant="outline" onClick={() => setOpen(false)} disabled={isLoading}>
               {results.length > 0 ? 'Close' : 'Cancel'}
             </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={isLoading || !terms.trim()}
-            >
+            <Button onClick={handleSubmit} disabled={isLoading || !terms.trim()}>
               {isLoading && <TrackLoader size={16} className="mr-2" />}
               Create Tags with AI
             </Button>

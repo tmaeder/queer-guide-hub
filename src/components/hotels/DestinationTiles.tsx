@@ -27,7 +27,7 @@ export function DestinationTiles({ cities }: DestinationTilesProps) {
           <LocalizedLink
             key={c.city_id}
             to={href}
-            className="relative block group border border-foreground/10 overflow-hidden aspect-[4/3] no-underline"
+            className="relative block group overflow-hidden aspect-[4/3] no-underline"
             style={{ color: 'inherit' }}
             aria-label={`${c.name}, ${c.hotel_count} hotels`}
           >

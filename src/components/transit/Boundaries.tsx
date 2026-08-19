@@ -42,7 +42,10 @@ export function Boundaries({
           <h3 className="text-title font-bold leading-none">{c.label}</h3>
           <ul className="mt-2 list-none p-0">
             {c.items.map((item) => (
-              <li key={item} className="border-b border-foreground/15 py-2 text-13 last:border-b-0">
+              <li
+                key={item}
+                className="border-b border-border-hairline py-2 text-13 last:border-b-0"
+              >
                 {item}
               </li>
             ))}

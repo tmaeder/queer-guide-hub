@@ -17,12 +17,12 @@ export type ColorTokenDef = {
   light: string; // "H S% L%" channels
   dark: string;
   /**
-   * A wayfinding TRACK colour (or one of its deprecated PASTE-UP ink aliases):
-   * a fill that is NEVER a letterform and never a semantic state. Flagging it
-   * here enrols it in the safety guards in __tests__/tokenContrast.test.ts —
-   * the ban on body text and, above all, the check that it never drifts into
-   * the `--destructive` hue band. Those guards used to read a hardcoded
-   * `['spot','ink-blue','ink-over']`, so a fourth colour added everywhere else
+   * A wayfinding TRACK colour: a fill that is NEVER a letterform and never a
+   * semantic state. Flagging it here enrols it in the safety guards in
+   * __tests__/tokenContrast.test.ts — the ban on body text and, above all, the
+   * check that it never drifts into the `--destructive` hue band. Those guards
+   * used to read a hardcoded `['spot','ink-blue','ink-over']` (the PASTE-UP
+   * alias names, retired 2026-08-19), so a fourth colour added everywhere else
    * would have been silently unguarded (adopted from #2659).
    */
   ink?: true;
@@ -136,19 +136,6 @@ export const COLOR_TOKENS: ColorTokenDef[] = [
   { key: 'warning-foreground', group: 'feedback', light: '60 33% 97%', dark: '0 0% 6.7%' },
   { key: 'success', group: 'feedback', light: '0 0% 6.7%', dark: '60 33% 97%' },
   { key: 'success-foreground', group: 'feedback', light: '60 33% 97%', dark: '0 0% 6.7%' },
-  // DEPRECATED PASTE-UP ink aliases. Deliberately NOT flagged `ink: true`:
-  // they hold the SAME values as the track colours above, so flagging them
-  // would make the mutual-hue-distinctness guard compare a colour with itself
-  // and fail at 0°. The canonical track tokens carry the flag. — now point at the track values so
-  // existing bg-spot / bg-ink-* call sites keep rendering until the
-  // Public/Admin phases retire them. `ink-pink` is absent on purpose — it is
-  // a @theme alias of `spot`, so it has no `:root` declaration to catalog.
-  { key: 'spot', group: 'feedback', light: '330 100% 56%', dark: '330 100% 56%' },
-  { key: 'spot-foreground', group: 'feedback', light: '0 0% 6.7%', dark: '0 0% 6.7%' },
-  { key: 'ink-blue', group: 'feedback', light: '193 100% 45%', dark: '193 100% 45%' },
-  { key: 'ink-blue-foreground', group: 'feedback', light: '0 0% 6.7%', dark: '0 0% 6.7%' },
-  { key: 'ink-over', group: 'feedback', light: '135.6 74.5% 52.4%', dark: '135.6 74.5% 52.4%' },
-  { key: 'ink-over-foreground', group: 'feedback', light: '0 0% 6.7%', dark: '0 0% 6.7%' },
   // Text hierarchy
   { key: 'text-primary', group: 'text', light: '0 0% 6.7%', dark: '60 33% 97%' },
   { key: 'text-secondary', group: 'text', light: '0 0% 30%', dark: '60 8% 72%' },
@@ -302,12 +289,10 @@ export const CONTRAST_PAIRS: Array<{ fg: string; bg: string; label: string }> = 
   { fg: 'destructive-foreground', bg: 'destructive', label: 'Destructive button' },
   { fg: 'warning-foreground', bg: 'warning', label: 'Warning' },
   { fg: 'success-foreground', bg: 'success', label: 'Success' },
-  { fg: 'spot-foreground', bg: 'spot', label: 'Spot ink (selection highlight)' },
-  // Type sitting on a track fill: ink on blue/green/yellow, paper on pink
-  // (see the text-on-track rule in src/index.css). Gating them here means
-  // /admin/design cannot publish an override that makes fill copy unreadable.
-  { fg: 'ink-blue-foreground', bg: 'ink-blue', label: 'Blue ink plate (deprecated alias)' },
-  { fg: 'ink-over-foreground', bg: 'ink-over', label: 'Overprint plate (deprecated alias)' },
+  // The `spot` / `ink-blue` / `ink-over` pairs that used to sit here went with
+  // the PASTE-UP alias tokens themselves (2026-08-19). They asserted the same
+  // three colours the track tokens hold, so nothing lost coverage: the
+  // selection highlight now reads `--track-pink` / `--track-ring` directly.
   // The three `foreground`-on-track pairs that used to sit here were REMOVED
   // when dark mode came back. `--foreground` flips to paper in dark, so they
   // would have asserted paper-on-cyan (2.32:1) and failed — while the product

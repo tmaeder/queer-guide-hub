@@ -33,7 +33,6 @@ import {
 import { getSubmitCta } from '@/lib/submitCta';
 import { useSiteBranding } from '@/hooks/useSiteBranding';
 import { Wordmark } from '@/components/brand/Wordmark';
-import { MasterSymbol } from '@/components/brand/MasterSymbol';
 import { useCompactHeader } from '@/hooks/useCompactHeader';
 import { cn } from '@/lib/utils';
 import { PAGE_GUTTER } from '@/components/layout/PageContainer';
@@ -95,17 +94,18 @@ export function Header() {
           </span>
         </>
       ) : (
-        // Spec row 1: the mark and the wordmark travel together.
+        // The wordmark IS the logo: "It carries no symbol, no container and no
+        // colour" (Brand Guidelines §03). The "Cupid's transit" mark that used
+        // to sit beside it here is retired — it survives only on the design
+        // project's Logo Options sheet as history.
         //
-        // The wordmark steps DOWN on small screens and is dropped entirely
-        // below `sm`. Anton at --text-headline measures 142px, and on a 320px
-        // viewport that left the search field 32px wide — unusable, and 94
-        // `target-size` violations in the axe route sweep, which scans down to
-        // 320px. The mark alone carries the brand at that width.
-        <>
-          <MasterSymbol className="w-10 shrink-0 text-foreground sm:w-12" />
-          <Wordmark className="hidden text-title text-foreground sm:inline-block md:text-headline" />
-        </>
+        // So the wordmark can no longer be dropped below `sm`, which is what it
+        // did while the mark was there to carry the brand at 320px. It steps
+        // down instead, and the bottom step is 17px rather than the 32px of
+        // --text-headline (which measures 142px and left the search field
+        // unusable at 320px, plus 94 axe `target-size` violations). §03 puts the
+        // floor at 16px on screen, so 17px is inside the rule with a little air.
+        <Wordmark className="text-body-lg text-foreground sm:text-title md:text-headline" />
       )}
     </Link>
   );
@@ -383,8 +383,13 @@ export function Header() {
             {isMobile ? (
               <div className="flex items-center gap-2" style={{ height: 56 }}>
                 {brand}
-                <div className="mx-2 min-w-0 flex-1">
-                  <UniversalSearchBar />
+                {/* `collapse`: below `sm` the search is the mock's ICON, not a
+                    field (panel 06 — brand, search icon, avatar). A field
+                    cannot share a 320px row with the wordmark and the action
+                    cluster; it measured 14.7px wide and the axe sweep returned
+                    43 serious `target-size` failures on it. */}
+                <div className="mx-2 flex min-w-0 flex-1 justify-end sm:justify-stretch">
+                  <UniversalSearchBar collapse />
                 </div>
                 {rightCluster}
               </div>

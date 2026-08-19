@@ -83,7 +83,7 @@ export function SubstanceInteractions({ tagId, tagName }: Props) {
 
               <ul className="flex list-none flex-col gap-2 p-0">
                 {list.map((r) => (
-                  <li key={r.other_id} className="border border-foreground/15 p-2">
+                  <li key={r.other_id} className="bg-muted p-2">
                     <LocalizedLink
                       to={`/tags/${encodeURIComponent(r.other_slug)}`}
                       className="text-13 font-bold text-foreground no-underline hover:underline"

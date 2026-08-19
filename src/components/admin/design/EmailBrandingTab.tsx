@@ -149,7 +149,7 @@ export function EmailBrandingTab({ controller }: { controller: DesignSettingsCon
             <span className="font-mono">{`${effective.from_name} <${effective.from_address}>`}</span>
           </p>
           <div
-            className="rounded-element border p-6"
+            className="rounded-element bg-muted p-6"
             style={{ backgroundColor: effective.wrapper_bg, color: effective.wrapper_fg }}
           >
             {email.logo_url ? (

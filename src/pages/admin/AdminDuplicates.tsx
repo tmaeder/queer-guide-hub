@@ -86,7 +86,7 @@ export default function AdminDuplicates() {
         and every merge is reversible.
       </p>
 
-      <div className="rounded-container flex flex-wrap items-center gap-2 border p-4 text-15">
+      <div className="rounded-container bg-muted flex flex-wrap items-center gap-2 p-4 text-15">
         <GitMerge size={16} className="text-muted-foreground" />
         <span>
           Suggested pairs from the nightly sweep are reviewed in the{' '}
@@ -252,7 +252,7 @@ function ContentDuplicates({
               const keepId = keepFor(c);
               const busy = mergeMutation.isPending && mergeMutation.variables === c;
               return (
-                <div key={key} className="rounded-container flex flex-col gap-4 border p-4">
+                <div key={key} className="rounded-container bg-muted flex flex-col gap-4 p-4">
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-2">
                       <span className="font-medium">
@@ -381,7 +381,7 @@ function FuzzyDuplicates({ type }: { type: DedupType }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="rounded-container flex items-center justify-between gap-4 border p-4">
+      <div className="rounded-container bg-muted flex items-center justify-between gap-4 p-4">
         <p className="text-muted-foreground text-15">
           {clusters.length} candidate pairs · {autoCount} are key-identical and safe to merge
           automatically
@@ -405,7 +405,7 @@ function FuzzyDuplicates({ type }: { type: DedupType }) {
         return (
           <div
             key={`${c.members[0].id}|${c.members[1].id}`}
-            className="rounded-container flex flex-col gap-2 border p-4"
+            className="rounded-container bg-muted flex flex-col gap-2 p-4"
           >
             <div className="flex items-center justify-between gap-4">
               <div className="flex flex-wrap items-center gap-2">

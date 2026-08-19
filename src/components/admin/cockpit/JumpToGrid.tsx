@@ -42,7 +42,7 @@ export function JumpToGrid({
   return (
     // lg:grid-cols-2 is the one place the column count goes back DOWN: at lg the
     // grid moves into a 320px rail, where six columns would be 53px wide.
-    <div className="grid grid-cols-2 gap-px overflow-hidden rounded-container border border-border bg-border sm:grid-cols-3 md:grid-cols-6 lg:grid-cols-2">
+    <div className="grid grid-cols-2 gap-px overflow-hidden rounded-container bg-border sm:grid-cols-3 md:grid-cols-6 lg:grid-cols-2">
       {destinations.map((d) => {
         const Icon = d.icon;
         return (

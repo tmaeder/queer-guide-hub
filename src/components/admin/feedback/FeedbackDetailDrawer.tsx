@@ -291,12 +291,14 @@ export function FeedbackDetailDrawer({
 
           {/* AI triage suggestion (from feedback-autotriage) */}
           {item.autotriage?.summary && (
-            <div className="mb-4 rounded-element border border-border bg-muted/40 p-2">
+            <div className="mb-4 rounded-element bg-muted/40 p-2">
               <div className="flex items-center gap-1.5 mb-1 text-xs2 font-semibold text-muted-foreground">
                 <Sparkles size={12} />
                 AI triage
                 {item.autotriage.is_probably_spam && (
-                  <Badge variant="outline" className="ml-1">possible spam</Badge>
+                  <Badge variant="outline" className="ml-1">
+                    possible spam
+                  </Badge>
                 )}
               </div>
               <p className="text-13 text-foreground mb-2">{item.autotriage.summary}</p>

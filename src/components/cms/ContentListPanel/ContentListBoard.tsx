@@ -109,10 +109,7 @@ export function ContentListBoard({
   return (
     <div className="flex gap-4 overflow-x-auto pb-4">
       {columns.map((col) => (
-        <div
-          key={col.key}
-          className="flex-shrink-0 w-[280px] border border-border rounded-container p-2"
-        >
+        <div key={col.key} className="flex-shrink-0 w-[280px] rounded-container bg-muted p-2">
           <div className="flex items-center justify-between px-2 py-1 mb-2">
             <span className="text-2xs uppercase tracking-wide text-muted-foreground font-semibold">
               {col.label}

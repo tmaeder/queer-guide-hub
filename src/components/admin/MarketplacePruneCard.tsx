@@ -26,16 +26,22 @@ export function MarketplacePruneCard() {
   const waves = Object.entries(data.archived_by_reason ?? {});
 
   return (
-    <section className="rounded-element border border-border p-4">
+    <section className="rounded-element bg-muted p-4">
       <h2 className="text-15 font-semibold">Catalog prune</h2>
       <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
         <div>
-          <p className="text-2xs uppercase tracking-[0.14em] text-muted-foreground">Active listings</p>
+          <p className="text-2xs uppercase tracking-[0.14em] text-muted-foreground">
+            Active listings
+          </p>
           <p className="text-title font-bold tabular-nums">{data.active_total.toLocaleString()}</p>
         </div>
         <div>
-          <p className="text-2xs uppercase tracking-[0.14em] text-muted-foreground">Prune candidates left</p>
-          <p className="text-title font-bold tabular-nums">{data.remaining_candidates.toLocaleString()}</p>
+          <p className="text-2xs uppercase tracking-[0.14em] text-muted-foreground">
+            Prune candidates left
+          </p>
+          <p className="text-title font-bold tabular-nums">
+            {data.remaining_candidates.toLocaleString()}
+          </p>
         </div>
         <div>
           <p className="text-2xs uppercase tracking-[0.14em] text-muted-foreground">Archived</p>

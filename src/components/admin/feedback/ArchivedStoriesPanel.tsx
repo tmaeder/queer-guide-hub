@@ -18,11 +18,9 @@ export function ArchivedStoriesPanel({ archived, adminById, onOpen }: Props) {
 
   if (archived.length === 0) {
     return (
-      <div className="border border-border p-6 text-center">
+      <div className="p-6 text-center bg-muted">
         <Archive size={20} style={{ opacity: 0.4 }} />
-        <span className="block mt-2 text-xs text-muted-foreground">
-          No archived stories.
-        </span>
+        <span className="block mt-2 text-xs text-muted-foreground">No archived stories.</span>
       </div>
     );
   }
@@ -36,14 +34,9 @@ export function ArchivedStoriesPanel({ archived, adminById, onOpen }: Props) {
         {archived.map((s) => {
           const archivedBy = s.archived_by ? adminById[s.archived_by] : null;
           return (
-            <div
-              key={s.id}
-              className="border border-border p-4 flex items-start gap-4 opacity-90"
-            >
+            <div key={s.id} className="p-4 flex items-start gap-4 opacity-90 bg-muted">
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold">
-                  {s.brief_title || s.title}
-                </p>
+                <p className="text-sm font-semibold">{s.brief_title || s.title}</p>
                 <span className="block text-xs text-muted-foreground">
                   Archived {s.archived_at ? timeAgo(s.archived_at) : ''}
                   {archivedBy?.display_name ? ` · by ${archivedBy.display_name}` : ''}

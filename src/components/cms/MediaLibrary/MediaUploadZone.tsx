@@ -198,7 +198,7 @@ export function MediaUploadZone() {
       </div>
 
       {expanded && files.length > 0 && (
-        <div className="border border-border p-4 flex flex-col gap-2">
+        <div className="p-4 flex flex-col gap-2 bg-muted">
           <div className="flex items-center justify-between">
             <p className="text-xs text-muted-foreground">
               {activeCount > 0 && `Uploading ${activeCount}...`}

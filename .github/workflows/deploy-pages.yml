@@ -106,7 +106,7 @@ jobs:
           # asset URLs. The site was blank for ~80 minutes off one transient
           # registry hiccup. Keep this string and the devDependency identical
           # or npx goes back to the network and the failure mode returns.
-          wranglerVersion: '4.119.0'
+          wranglerVersion: '4.123.0'
           # Pass an explicit ASCII commit message. Without it, wrangler derives
           # the message from git, and the Cloudflare Pages API rejects any
           # multibyte UTF-8 (e.g. — or →) with "Invalid commit message, it must
@@ -151,7 +151,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          wranglerVersion: '4.119.0'
+          wranglerVersion: '4.123.0'
           command: pages deploy dist --project-name=queer-guide --branch=main --commit-hash=${{ github.sha }} --commit-message="re-upload ${{ github.sha }}" --commit-dirty=true
 
       # Hard-gated, unlike the first run: if the re-upload did not fix it, the

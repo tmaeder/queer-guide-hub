@@ -34,7 +34,7 @@ export function StopList({ stops, className }: { stops: Stop[]; className?: stri
       {stops.map((s, i) => (
         <li key={s.id}>
           {i > 0 && s.walkFromPrevious && (
-            <div className="flex items-center gap-2 border-b border-t border-foreground/15 bg-surface-container px-4 py-1.5">
+            <div className="flex items-center gap-2 border-b border-t border-border-hairline bg-surface-container px-4 py-1.5">
               <span aria-hidden className="h-4 w-0.5 bg-track-green" />
               {/* NOT `uppercase`. The eyebrow convention is for LABELS; this
                   string is a measured VALUE, and SI units are case-sensitive —

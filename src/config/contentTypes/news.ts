@@ -131,19 +131,6 @@ export const newsArticleFields: FieldConfig[] = [
   { name: 'city_ids', label: 'Cities', type: 'tags', group: 'details', helpText: 'City geo-tags' },
   { name: 'image_url', label: 'Image', type: 'image', group: 'media' },
   {
-    name: 'image_treatment',
-    label: 'Hero print treatment',
-    type: 'select',
-    group: 'media',
-    helpText:
-      'Off by default. "Riso" separates the hero photo onto two ink drums — it looks like print on architecture and interiors, but it DESTROYS rainbow, trans and bi flags, because their colours are the meaning. Only set this when the photo’s colour is decorative.',
-    options: [
-      { value: 'none', label: 'None (default)' },
-      { value: 'riso', label: 'Riso duotone' },
-      { value: 'halftone', label: 'Halftone screen' },
-    ],
-  },
-  {
     name: 'is_featured',
     label: 'Featured',
     type: 'boolean',

@@ -41,10 +41,10 @@ const buttonVariants = cva(
         // ring is what satisfies 1.4.11. It thins from 2px to 1px with the
         // soft re-skin, but it cannot go away.
         //
-        // The `.ink-bleed` press feedback is deliberately NOT baked in here.
-        // `accent`/`brand` are used across src/components/trips/**, and
-        // CLAUDE.md keeps travel content motion-free because it is
-        // safety-adjacent. Opt in per call site with className="ink-bleed".
+        // There is no press-feedback effect on these. `.ink-bleed`, the
+        // PASTE-UP ripple that used to be the opt-in, had zero call sites and
+        // went with the rest of that layer; travel content stays motion-free
+        // anyway because it is safety-adjacent.
         accent: 'border border-track-ring bg-track-pink text-track-ring font-bold hover:opacity-90',
         // Blue track. Ink type (paper-on-blue fails 3:1 — see tokenContrast).
         brand: 'border border-track-ring bg-track-blue text-track-ring font-bold hover:opacity-90',

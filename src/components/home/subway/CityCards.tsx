@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { fetchTrendingCities, fetchPersonalizedCitiesByIds } from '@/hooks/usePersonalizedCities';
 import { Band } from '@/components/home/Band';
-import { useHomeRegionContext } from '@/components/home/HomeRegionProvider';
+import { useHomeRegionContext } from '@/components/home/homeRegionContext';
 import { CityNetwork } from './CityNetwork';
 import { NETWORK_VIEWBOX } from './cityNetworkGeometry';
 import { tierForScore, EQUALITY_TIER_LABEL } from '@/utils/equalityScore';
@@ -110,7 +110,7 @@ export function CityCards() {
               // Same shell + an empty diagram box, so the skeleton is exactly
               // as tall as the loaded card at every breakpoint instead of a
               // fixed height that only matches at one.
-              <div key={i} className="border animate-pulse border-foreground/20 p-4">
+              <div key={i} className="animate-pulse bg-muted p-4">
                 <div className="h-8 w-2/3 bg-muted" />
                 <svg
                   viewBox={`0 0 ${NETWORK_VIEWBOX.w} ${NETWORK_VIEWBOX.h}`}

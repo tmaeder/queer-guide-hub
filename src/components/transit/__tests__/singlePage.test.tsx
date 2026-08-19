@@ -31,6 +31,18 @@ describe('SinglePage', () => {
     expect(aside.className).not.toMatch(/\bhidden\b/);
   });
 
+  it('labels the rail with a stable hook, because `article aside` is not unique', () => {
+    // e2e/singles.spec.ts asserts the rail reflows on a phone. It used to
+    // locate it as `article aside`, which is ambiguous the moment a signed-in
+    // reader's trip covers the destination: TripCoveringBanner is a second
+    // <aside> in the same <article>. Strict mode then fails the assertion for
+    // a reason that has nothing to do with the rail.
+    render(
+      <SinglePage type="city" title="Berlin" body={<div />} rail={<div data-testid="rail" />} />,
+    );
+    expect(screen.getByTestId('single-rail')).toBeInTheDocument();
+  });
+
   it('omits the rail and footer entirely when not supplied', () => {
     const { container } = render(<SinglePage type="page" title="Terms" body={<div />} />);
     expect(container.querySelector('aside')).toBeNull();

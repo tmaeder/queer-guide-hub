@@ -53,7 +53,12 @@ jobs:
         run: npm ci
 
       - name: Install Playwright browsers
-        run: npx playwright install chromium
+        uses: ./.github/actions/setup-playwright
+        with:
+          # Prerender launches the browser, but this job has never installed
+          # system deps and has never failed for want of them — the runner
+          # image carries them. Keep it apt-free.
+          with-deps: 'false'
 
       - name: Build SPA
         run: npm run build

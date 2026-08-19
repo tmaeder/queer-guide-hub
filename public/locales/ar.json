@@ -1978,11 +1978,11 @@
     },
     "mobileNav": {
       "home": "الرئيسية",
-      "explore": "استكشاف",
+      "explore": "تصفّح",
       "contribute": "إضافة",
       "messages": "الرسائل",
       "you": "حسابي",
-      "menuTitle": "استكشف Queer Guide",
+      "menuTitle": "كل الأقسام",
       "menuDescription": "انتقل إلى أي قسم، وبدّل اللغة أو المظهر.",
       "trips": "رحلاتي",
       "settingsSection": "العرض",
@@ -3728,18 +3728,18 @@
   },
   "connections": {
     "title": "[AR] Connections",
-    "subtitle": "[AR] Explore how places, events and people on queer.guide relate to each other.",
+    "subtitle": "اطّلع على كيفية ارتباط الأماكن والفعاليات والأشخاص على queer.guide ببعضها.",
     "hint": "[AR] Click a card to expand its connections. Drag to rearrange, scroll to zoom. The arrow opens the detail page.",
-    "mobileHint": "[AR] Closest connections first. Re-center to explore from another entity.",
+    "mobileHint": "أقرب الروابط أولاً. أعِد التمركز لتبدأ من عنصر آخر.",
     "stats": "[AR] {{nodes}} entities, {{links}} links",
     "open": "[AR] Open {{title}}",
     "openShort": "[AR] Open",
     "recenter": "[AR] Connections",
     "error": "[AR] Could not load connections. Please try again later.",
     "emptyTitle": "[AR] Pick a starting point",
-    "emptyDescription": "[AR] Open any venue, event, city or person and use its Connections button to explore from there.",
+    "emptyDescription": "افتح أي مكان أو فعالية أو مدينة أو شخص واستخدم زر «الروابط» لتبدأ من هناك.",
     "emptyCta": "[AR] Search the guide",
-    "explore": "[AR] Explore connections"
+    "explore": "عرض الروابط"
   },
   "milestones": {
     "eyebrow": "التاريخ الكويري",
@@ -3818,7 +3818,7 @@
     "eras": {
       "hidden-lives": {
         "title": "[AR] Hidden lives",
-        "intro": "[AR] Before 1800, queer life survived in the shadows of law and church. What the record preserves is mostly persecution — trials, executions, edicts — alongside rare glimpses of love and community that outlasted them."
+        "intro": "قبل عام 1800 نجت الحياة الكويرية في ظل القانون والكنيسة. ما حفظه السجل هو الاضطهاد في معظمه: محاكمات وإعدامات ومراسيم. وإلى جانبه لمحات نادرة من حب ومجتمع بقيت بعده."
       },
       "empire-criminalization": {
         "title": "[AR] Empire & criminalization",
@@ -3834,7 +3834,7 @@
       },
       "homophile-years": {
         "title": "[AR] The homophile years",
-        "intro": "[AR] After the war, small 'homophile' groups rebuilt quietly — Mattachine, the Daughters of Bilitis, Arcadie, the COC — trading radicalism for respectability while police raids and purges continued."
+        "intro": "بعد الحرب أعادت جماعات «هوموفيلية» صغيرة البناء بهدوء: ماتاشين، وبنات بيليتيس، وأركادي، وCOC. استبدلت الراديكالية بالاحترام الاجتماعي بينما استمرت المداهمات وحملات التطهير."
       },
       "liberation": {
         "title": "[AR] Liberation",
@@ -3842,7 +3842,7 @@
       },
       "aids-crisis": {
         "title": "[AR] The AIDS crisis",
-        "intro": "[AR] A generation was decimated while governments looked away. The epidemic's grief forged the militant activism — ACT UP, treatment-access campaigns — that reshaped medicine and queer politics alike."
+        "intro": "أُبيد جيل كامل بينما أشاحت الحكومات بوجهها. صاغ حزن الوباء نضالاً مقاتلاً أعاد تشكيل الطب والسياسة الكويرية معاً: أكت أب، وحملات إتاحة العلاج."
       },
       "recognition": {
         "title": "[AR] Recognition",
@@ -3888,8 +3888,8 @@
     "hub": {
       "title": "[AR] Guides",
       "eyebrow": "[AR] Editorial",
-      "lede": "[AR] Comparison-driven guides, curated lists and community quests — written by editors, no fluff.",
-      "metaDescription": "[AR] Editor-written guides, curated lists and community quests across LGBTQ+ places, events and shopping.",
+      "lede": "أدلة قائمة على المقارنة، وقوائم مختارة بعناية، ومهام مجتمعية. يكتبها محررون، بلا حشو.",
+      "metaDescription": "أدلة يكتبها المحررون، وقوائم مختارة بعناية، ومهام مجتمعية تغطي الأماكن والفعاليات والتسوّق للمجتمع الميم.",
       "empty": "[AR] No guides yet.",
       "emptyHint": "[AR] New guides land regularly. Check back soon."
     },
@@ -4075,7 +4075,7 @@
         "rights": "[AR] Distinct rights tracked per country"
       },
       "body": {
-        "source": "[AR] Every legal status on this site — criminalisation, partnership recognition, anti-discrimination protection, gender recognition, conversion therapy and intersex bodily integrity — comes from the ILGA World Database, the reference dataset maintained by the International Lesbian, Gay, Bisexual, Trans and Intersex Association.",
+        "source": "كل وضع قانوني على هذا الموقع مصدره قاعدة بيانات ILGA World، وهي المجموعة المرجعية التي تديرها الرابطة الدولية للمثليات والمثليين ومزدوجي التوجه الجنسي والعابرين وثنائيي الجنس. ويشمل ذلك التجريم، والاعتراف بالشراكة، والحماية من التمييز، والاعتراف بالنوع الاجتماعي، والعلاج التحويلي، وسلامة الجسد لثنائيي الجنس.",
         "refresh": "[AR] We re-import it nightly. Where a country page shows an \"Updated\" date, that is the date ILGA last revised that record, not the date we fetched it.",
         "link": "[AR] ILGA World Database",
         "unscored": "[AR] The unscored rows are uninhabited or near-uninhabited territories with no ILGA entry. We list them as \"not scored\" rather than giving them a default, because a default would read as a measurement.",
@@ -4085,7 +4085,7 @@
         "scoreNotSafety": "[AR] The score describes law on paper. It is not a safety rating, and it says nothing about enforcement, policing or how welcome you will be made to feel."
       },
       "limits": {
-        "national": "[AR] It is national. Where rights vary by state or province — the United States, Indonesia, Nigeria, Mexico and others — a single national figure averages that away.",
+        "national": "البيانات وطنية المستوى. وحين تختلف الحقوق بين ولاية وأخرى، كما في الولايات المتحدة وإندونيسيا ونيجيريا والمكسيك، يخفي الرقم الوطني الواحد هذا الاختلاف.",
         "enforcement": "[AR] It records statutes, not enforcement. A law that is rarely applied and a law applied constantly look identical here.",
         "trans": "[AR] Several facts that matter most to trans travellers are not in this dataset at all: bathroom and facility access, how identity documents are treated at borders, and access to gender-affirming healthcare.",
         "personal": "[AR] It knows nothing about you. Your citizenship, residency, gender marker and relationship status all change what applies, and we hold none of them.",
@@ -4114,7 +4114,7 @@
     "title": "صُنع بأيدي كويريين، ومن أجل الجميع.",
     "lede": "يرسم Queer Guide خريطة الأماكن والفعاليات والأشخاص الذين تتكوّن منهم الحياة الكويرية: تحقّقٌ من المجتمع، ومجاناً للجميع، في أي مكان في العالم.",
     "diagram": {
-      "label": "أربعة خطوط — الأماكن والفعاليات والمجتمع والوجهات — تلتقي عند محطة واحدة."
+      "label": "أربعة خطوط تلتقي عند محطة واحدة: الأماكن والفعاليات والمجتمع والوجهات."
     },
     "scale": {
       "kicker": "الشبكة اليوم",
@@ -4217,7 +4217,7 @@
       },
       "accessibility": {
         "title": "إمكانية الوصول",
-        "description": "نشير إلى المداخل بلا درجات ودورات المياه المهيّأة — وإلى ما ينقص أيضاً."
+        "description": "نشير إلى المداخل بلا درجات ودورات المياه المهيّأة، وإلى ما ينقص أيضاً."
       },
       "growth": {
         "title": "النمو",

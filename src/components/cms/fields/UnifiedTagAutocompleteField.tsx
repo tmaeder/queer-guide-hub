@@ -166,7 +166,7 @@ export function UnifiedTagAutocompleteField({
         </div>
 
         {open && !disabled && hits.length > 0 && (
-          <ul className="absolute z-50 mt-1 w-full m-0 p-0 list-none rounded-element border border-border bg-popover max-h-56 overflow-auto">
+          <ul className="absolute z-50 mt-1 w-full m-0 p-0 list-none rounded-element bg-popover max-h-56 overflow-auto">
             {hits.map((hit) => (
               <li key={hit.id}>
                 <button

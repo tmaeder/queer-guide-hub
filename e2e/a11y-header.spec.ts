@@ -67,17 +67,28 @@ test.describe('Header mobile a11y', () => {
     await page.goto('/');
     await waitForAppReady(page);
 
-    // The legacy hamburger drawer + search-toggle are gone.
+    // The legacy hamburger drawer is gone. Nothing collapses into a menu.
     await expect(page.locator('button[aria-label="Open menu"]')).toHaveCount(0);
-    await expect(page.locator('button[aria-label="Open search"]')).toHaveCount(0);
 
-    // The search bar is the always-visible mobile discovery affordance.
-    const search = page.locator('input[role="combobox"]').first();
-    await expect(search).toBeVisible();
+    // Below `sm` the search FIELD is replaced by a search ICON — design panel
+    // 06 ("Mobile, 390px": brand, search, avatar). This is not the legacy
+    // "Open search" toggle, which expanded a second inline field in the bar:
+    // the icon opens the same full-screen hub the field opened, and exactly
+    // one `role="combobox"` exists at a time either way.
+    await expect(page.locator('button[aria-label="Open search"]')).toHaveCount(0);
+    const trigger = page.getByRole('button', { name: 'Search', exact: true });
+    await expect(trigger).toBeVisible();
+    // A field at this width squeezed to 14.7px and failed axe `target-size`.
+    const box = await trigger.boundingBox();
+    expect(box!.width).toBeGreaterThanOrEqual(24);
+    expect(box!.height).toBeGreaterThanOrEqual(24);
     // React hydration / Suspense boundaries can lag before handlers bind.
     await page.waitForTimeout(500);
 
-    await search.click();
+    await trigger.click();
+    const search = page.locator('input[role="combobox"]').first();
+    await expect(search).toBeVisible();
+    await expect(search).toBeFocused();
     await expect(search).toHaveAttribute('aria-expanded', 'true');
 
     // The full-screen hub exposes the prominent mode switcher.

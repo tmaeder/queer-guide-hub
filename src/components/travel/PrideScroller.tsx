@@ -59,7 +59,7 @@ export function PrideScroller() {
             return (
               <div
                 key={event.id}
-                className="shrink-0 border border-border bg-background p-4 hover:bg-muted transition-colors"
+                className="shrink-0 bg-muted p-4 hover:bg-muted transition-colors"
                 style={{ width: 240 }}
               >
                 <LocalizedLink

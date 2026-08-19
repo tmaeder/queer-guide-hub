@@ -121,6 +121,20 @@ export interface UniversalSearchBarProps {
    * hero conversion stays separable from the header's.
    */
   surface?: 'header' | 'hero';
+  /**
+   * Below `sm`, render a 40px icon TRIGGER instead of the field.
+   *
+   * This is the mock's mobile topbar (panel 06): brand, a search icon, avatar.
+   * A field cannot share a 320px row with a wordmark and an action cluster —
+   * measured, the input came out 14.7px wide and the axe sweep returned 43
+   * serious `target-size` failures on it. The field's own magnifier already
+   * sheds at this breakpoint for the same reason; this is the next step of the
+   * same trade, and it is what the design asks for anyway.
+   *
+   * The trigger opens the same mobile sheet the field opens, so nothing about
+   * the search machinery changes — only what the closed state looks like.
+   */
+  collapse?: boolean;
 }
 
 /**
@@ -135,6 +149,7 @@ export const UniversalSearchBar = ({
   size = 'bar',
   hotkey = true,
   surface = 'header',
+  collapse = false,
 }: UniversalSearchBarProps = {}) => {
   const trackClickFromSearch = useTrackClick();
   const [query, setQuery] = useState('');
@@ -879,11 +894,36 @@ export const UniversalSearchBar = ({
   // the bar or in the sheet, never both.
   if (isMobile) {
     return (
-      <div className="min-w-0 flex-1">
+      <div className={cn(collapse ? 'shrink-0 sm:min-w-0 sm:flex-1' : 'min-w-0 flex-1')}>
         <Popover open={isOpen} onOpenChange={setIsOpen}>
           <PopoverAnchor asChild>
             <div className="relative">
-              {isOpen ? <div aria-hidden style={{ height: inputHeight }} /> : searchField(false)}
+              {isOpen ? (
+                <div aria-hidden style={{ height: inputHeight }} />
+              ) : (
+                <>
+                  {/* `collapse`: the trigger and the field are the SAME control
+                      at two widths, and exactly one is in the tree at a time —
+                      `sm:hidden` / `hidden sm:block`, never both. Two
+                      `role="combobox"` inputs claiming one listbox is the
+                      ambiguity this file exists to avoid, which is also why the
+                      trigger is a plain button and cannot become a second one. */}
+                  {collapse && (
+                    <button
+                      type="button"
+                      aria-label={t('search.open', 'Search')}
+                      onClick={() => {
+                        setIsOpen(true);
+                        focusInput();
+                      }}
+                      className="grid h-11 w-11 shrink-0 place-items-center rounded-container bg-muted text-foreground sm:hidden"
+                    >
+                      <TransitIcon name="search" size={20} />
+                    </button>
+                  )}
+                  <div className={cn(collapse && 'hidden sm:block')}>{searchField(false)}</div>
+                </>
+              )}
             </div>
           </PopoverAnchor>
           <PopoverContent

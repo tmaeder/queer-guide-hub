@@ -1,0 +1,134 @@
+name: Setup Playwright
+description: >-
+  Install a Playwright browser and its Linux system libraries, with the browser
+  binary cached and the apt step hard-bounded so a stalled Ubuntu mirror cannot
+  eat the whole job budget.
+
+# WHY THIS EXISTS (measured 2026-08-19, workflow e2e-pr.yml)
+#
+# `npx playwright install --with-deps chromium` shells out to `apt-get update`
+# before it downloads anything. On four separate runs that apt call went SILENT
+# on `azure.archive.ubuntu.com` and never returned:
+#
+#   run 32270109541  install step ran 19m52s, killed by timeout-minutes
+#   run 32272360187  install step ran 19m42s, killed by timeout-minutes
+#   run 32268586231  install step ran 12m40s, then the specs were killed
+#   run 32236106405  install step ran 14m45s (superseded by a newer push)
+#
+# Every one of them stops dead at `Ign: http://azure.archive.ubuntu.com/ubuntu
+# noble-updates/main amd64 Packages` and emits not one more line until the job
+# is cancelled. The same step on a healthy run takes 22-102 SECONDS.
+#
+# Two consequences worth keeping in mind:
+#
+#   * The budget was never the binding constraint. A green `Critical paths` run
+#     measured 8m08s-8m56s end to end against a 20-minute cap. Raising the cap
+#     would only have bought a longer stall.
+#   * A browser cache alone does NOT fix it. `--with-deps` runs apt whether or
+#     not the browser binary is already on disk, so caching `~/.cache/ms-playwright`
+#     removes the download (seconds) and leaves the stall (minutes) intact.
+#     Both halves below are needed; the cache is the smaller one.
+#
+# So: cache the binary, and put a hard clock on apt.
+
+inputs:
+  browser:
+    description: Browser(s) to install, e.g. `chromium` or `chromium firefox`.
+    required: false
+    default: chromium
+  with-deps:
+    description: >-
+      Install the Linux system libraries the browser needs ('true'/'false').
+      Set 'false' when the job only needs the binary (no browser launch).
+    required: false
+    default: 'true'
+  working-directory:
+    description: Directory holding the package-lock.json to resolve the version from.
+    required: false
+    default: .
+
+runs:
+  using: composite
+  steps:
+    # Key the cache on the RESOLVED Playwright version, not on the lockfile
+    # hash: browsers are versioned with Playwright, so an unrelated dependency
+    # bump must not throw the browser away. Read from package-lock.json rather
+    # than node_modules so this step does not depend on `npm ci` having run.
+    - name: Resolve Playwright version
+      id: pw
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        version=$(node -p "
+          const lock = require('./package-lock.json');
+          const pkg = lock.packages['node_modules/playwright-core']
+                   || lock.packages['node_modules/playwright']
+                   || lock.packages['node_modules/@playwright/test'];
+          if (!pkg) throw new Error('no playwright entry in package-lock.json');
+          pkg.version;
+        ")
+        echo "version=$version" >> "$GITHUB_OUTPUT"
+        echo "Playwright $version"
+
+    - name: Restore browser cache
+      id: cache
+      uses: actions/cache@v6
+      with:
+        path: ~/.cache/ms-playwright
+        key: ms-playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}-${{ inputs.browser }}
+
+    # apt's own defaults are what let a dead mirror hang for twenty minutes:
+    # it retries a stalled connection without a wall-clock ceiling. These three
+    # settings turn that into a fast failure, at which point apt falls through
+    # to the next entry in /etc/apt/apt-mirrors.txt (archive.ubuntu.com), which
+    # answered fine on every one of the stalled runs.
+    - name: Bound apt network waits
+      if: inputs.with-deps == 'true' && runner.os == 'Linux'
+      shell: bash
+      run: |
+        sudo tee /etc/apt/apt.conf.d/99-ci-timeouts > /dev/null <<'EOF'
+        Acquire::Retries "2";
+        Acquire::http::Timeout "20";
+        Acquire::https::Timeout "20";
+        Acquire::ftp::Timeout "20";
+        EOF
+
+    # Belt and braces: even with apt bounded, this step gets its own clock so a
+    # stall costs 3 minutes instead of the entire job.
+    #
+    # ONE attempt, not two, and this is measured rather than assumed. The first
+    # version of this action retried once with a 300s cap each. On its very first
+    # run (32277251665) BOTH attempts consumed their full cap — the step took
+    # 616s, which is 300 + 300 + ~16s of cache-miss browser download, and a
+    # successful attempt would have exited immediately. A dead Ubuntu mirror does
+    # not recover in five minutes, so the retry bought nothing and pushed the
+    # worst case to ~18 minutes against a 20-minute cap: a `cancelled` turned
+    # into a *nearly* cancelled. 180s fits a healthy apt with room to spare (the
+    # entire old step, browser download included, measured 22-102s) and fails
+    # fast on a sick one.
+    #
+    # It is deliberately NON-FATAL. ubuntu-latest already ships the libraries
+    # Chromium needs — demonstrated by that same run, where apt installed
+    # NOTHING and the full critical-path suite passed anyway. If one really is
+    # missing, the browser fails to launch seconds later naming the `.so`: a
+    # legible failure on the step that actually needs it, which beats a
+    # twenty-minute `cancelled` that reads as flakiness and leaves auto-merge
+    # stuck on a check that is neither pass nor fail.
+    - name: Install system dependencies
+      if: inputs.with-deps == 'true' && runner.os == 'Linux'
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        if timeout 180 npx playwright install-deps ${{ inputs.browser }}; then
+          echo "System dependencies installed."
+          exit 0
+        fi
+        echo "::warning::playwright install-deps failed or timed out after 3m — \
+        almost always a stalled Ubuntu mirror. Continuing: the runner image \
+        already carries these libraries, and if one is missing the browser \
+        launch will name it."
+
+    - name: Install browser
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: npx playwright install ${{ inputs.browser }}

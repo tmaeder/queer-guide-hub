@@ -53,29 +53,72 @@ export type FontSlot = {
 };
 
 const COLOR_KEYS = new Set([
-  'background', 'foreground', 'card', 'card-foreground', 'popover', 'popover-foreground',
-  'primary', 'primary-foreground', 'secondary', 'secondary-foreground',
-  'muted', 'muted-foreground', 'accent', 'accent-foreground',
-  'destructive', 'destructive-foreground', 'warning', 'warning-foreground',
-  'success', 'success-foreground', 'spot', 'spot-foreground',
-  // PASTE-UP inks (deprecated aliases of the track colors). `ink-pink` is
-  // absent by design — it is a @theme alias of `spot`, so overriding `spot`
-  // moves both.
-  'ink-blue', 'ink-blue-foreground', 'ink-over', 'ink-over-foreground',
+  'background',
+  'foreground',
+  'card',
+  'card-foreground',
+  'popover',
+  'popover-foreground',
+  'primary',
+  'primary-foreground',
+  'secondary',
+  'secondary-foreground',
+  'muted',
+  'muted-foreground',
+  'accent',
+  'accent-foreground',
+  'destructive',
+  'destructive-foreground',
+  'warning',
+  'warning-foreground',
+  'success',
+  'success-foreground',
   // Subway-map track colors (semantic wayfinding lines, 2026-08 rebrand).
-  'track-pink', 'track-blue', 'track-green', 'track-yellow',
-  'border', 'input', 'input-bg', 'ring',
-  'sidebar-background', 'sidebar-foreground', 'sidebar-primary', 'sidebar-primary-foreground',
-  'sidebar-accent', 'sidebar-accent-foreground', 'sidebar-border', 'sidebar-ring',
-  'text-primary', 'text-secondary', 'text-muted', 'border-hairline',
-  'surface', 'surface-container-lowest', 'surface-container-low', 'surface-container',
-  'surface-container-high', 'surface-container-highest', 'surface-dim', 'inverse-surface',
+  'track-pink',
+  'track-blue',
+  'track-green',
+  'track-yellow',
+  'border',
+  'input',
+  'input-bg',
+  'ring',
+  'sidebar-background',
+  'sidebar-foreground',
+  'sidebar-primary',
+  'sidebar-primary-foreground',
+  'sidebar-accent',
+  'sidebar-accent-foreground',
+  'sidebar-border',
+  'sidebar-ring',
+  'text-primary',
+  'text-secondary',
+  'text-muted',
+  'border-hairline',
+  'surface',
+  'surface-container-lowest',
+  'surface-container-low',
+  'surface-container',
+  'surface-container-high',
+  'surface-container-highest',
+  'surface-dim',
+  'inverse-surface',
 ]);
 
 const SIZE_KEYS = new Set([
-  'radius-container', 'radius-element', 'radius-badge',
-  'text-3xs', 'text-2xs', 'text-xs2', 'text-13', 'text-15', 'text-body-lg',
-  'text-title', 'text-headline', 'text-display', 'text-hero', 'text-hero-xl',
+  'radius-container',
+  'radius-element',
+  'radius-badge',
+  'text-3xs',
+  'text-2xs',
+  'text-xs2',
+  'text-13',
+  'text-15',
+  'text-body-lg',
+  'text-title',
+  'text-headline',
+  'text-display',
+  'text-hero',
+  'text-hero-xl',
 ]);
 
 const LINE_HEIGHT_SUFFIX = '--line-height';
@@ -141,7 +184,10 @@ function isValidGlobalToken(key: string, value: string): boolean {
   return false;
 }
 
-function cssDecls(scope: Record<string, string> | undefined, validate: (k: string, v: string) => boolean): string {
+function cssDecls(
+  scope: Record<string, string> | undefined,
+  validate: (k: string, v: string) => boolean,
+): string {
   if (!scope) return '';
   return Object.entries(scope)
     .filter(([k, v]) => typeof v === 'string' && validate(k, v))
@@ -194,9 +240,7 @@ export function brandFontPreloads(doc: BrandingDoc | null): string[] {
     if (!validFontFamily(fonts[slot])) continue;
     const first = validFontFiles(fonts[slot])[0];
     if (first) {
-      out.push(
-        `<link rel="preload" href="${first.url}" as="font" type="font/woff2" crossorigin>`,
-      );
+      out.push(`<link rel="preload" href="${first.url}" as="font" type="font/woff2" crossorigin>`);
     }
   }
   return out;
@@ -218,7 +262,11 @@ export function brandingMeta(doc: BrandingDoc | null): NonNullable<BrandingDoc['
     theme_color_dark: str(m.theme_color_dark, HEX_RE, 7),
     org_logo_url: str(m.org_logo_url, URL_RE),
     org_sameas: Array.isArray(m.org_sameas)
-      ? m.org_sameas.filter((u): u is string => typeof u === 'string' && /^https:\/\/[^\s"'<>]{1,255}$/.test(u)).slice(0, 20)
+      ? m.org_sameas
+          .filter(
+            (u): u is string => typeof u === 'string' && /^https:\/\/[^\s"'<>]{1,255}$/.test(u),
+          )
+          .slice(0, 20)
       : undefined,
   };
 }
@@ -232,7 +280,8 @@ export function brandingManifest(doc: BrandingDoc | null): Record<string, string
   if (typeof m.short_name === 'string' && m.short_name.length >= 1 && m.short_name.length <= 100) {
     out.short_name = m.short_name;
   }
-  if (typeof m.theme_color === 'string' && HEX_RE.test(m.theme_color)) out.theme_color = m.theme_color;
+  if (typeof m.theme_color === 'string' && HEX_RE.test(m.theme_color))
+    out.theme_color = m.theme_color;
   if (typeof m.background_color === 'string' && HEX_RE.test(m.background_color)) {
     out.background_color = m.background_color;
   }

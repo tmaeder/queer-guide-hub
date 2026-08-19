@@ -334,7 +334,7 @@ export function AdminShell() {
                     <div key={location.pathname} className="content-enter">
                       {routeDenied ? (
                         <div
-                          className="flex flex-col items-center gap-2 rounded-container border border-border bg-muted/30 p-8 text-center"
+                          className="flex flex-col items-center gap-2 rounded-container bg-muted/30 p-8 text-center"
                           role="alert"
                         >
                           <Lock className="h-6 w-6 text-muted-foreground" aria-hidden />

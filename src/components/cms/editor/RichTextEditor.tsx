@@ -103,7 +103,7 @@ export function RichTextEditor({
   return (
     <div
       className={cn(
-        'border border-border rounded-element overflow-hidden focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/15',
+        'border border-input rounded-element overflow-hidden focus-within:ring-2 focus-within:ring-ring',
         className,
       )}
     >
@@ -111,10 +111,7 @@ export function RichTextEditor({
       {editable && <EditorToolbar editor={editor} />}
 
       {/* Editor content area */}
-      <div
-        className="px-4 py-4 overflow-y-auto rich-text-content"
-        style={{ minHeight }}
-      >
+      <div className="px-4 py-4 overflow-y-auto rich-text-content" style={{ minHeight }}>
         <EditorContent editor={editor} />
       </div>
     </div>

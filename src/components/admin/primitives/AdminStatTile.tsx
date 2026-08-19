@@ -39,14 +39,10 @@ export function AdminStatTile({
   className,
 }: AdminStatTileProps) {
   return (
-    <div
-      className={cn('rounded-element border border-border bg-background p-4', className)}
-    >
+    <div className={cn('rounded-element bg-muted p-4', className)}>
       <div className="flex items-center gap-2">
         {Icon && <Icon className={cn('h-4 w-4', iconClassName)} />}
-        <span
-          className={cn('text-headline font-bold tabular-nums', alert && 'text-destructive')}
-        >
+        <span className={cn('text-headline font-bold tabular-nums', alert && 'text-destructive')}>
           {value}
         </span>
       </div>

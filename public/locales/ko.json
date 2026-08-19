@@ -1972,7 +1972,7 @@
       "contribute": "추가",
       "messages": "메시지",
       "you": "내 정보",
-      "menuTitle": "Queer Guide 둘러보기",
+      "menuTitle": "전체 섹션",
       "menuDescription": "원하는 섹션으로 이동하고 언어나 테마를 변경하세요.",
       "trips": "내 여행",
       "settingsSection": "디스플레이",
@@ -3718,18 +3718,18 @@
   },
   "connections": {
     "title": "[KO] Connections",
-    "subtitle": "[KO] Explore how places, events and people on queer.guide relate to each other.",
+    "subtitle": "queer.guide의 장소, 행사, 인물이 서로 어떻게 연결되는지 봅니다.",
     "hint": "[KO] Click a card to expand its connections. Drag to rearrange, scroll to zoom. The arrow opens the detail page.",
-    "mobileHint": "[KO] Closest connections first. Re-center to explore from another entity.",
+    "mobileHint": "가까운 연결부터 표시합니다. 다른 항목에서 시작하려면 중심을 옮기세요.",
     "stats": "[KO] {{nodes}} entities, {{links}} links",
     "open": "[KO] Open {{title}}",
     "openShort": "[KO] Open",
     "recenter": "[KO] Connections",
     "error": "[KO] Could not load connections. Please try again later.",
     "emptyTitle": "[KO] Pick a starting point",
-    "emptyDescription": "[KO] Open any venue, event, city or person and use its Connections button to explore from there.",
+    "emptyDescription": "장소, 행사, 도시, 인물 페이지를 열고 ‘연결’ 버튼으로 거기서 시작하세요.",
     "emptyCta": "[KO] Search the guide",
-    "explore": "[KO] Explore connections"
+    "explore": "연결 보기"
   },
   "milestones": {
     "eyebrow": "퀴어 역사",
@@ -3808,7 +3808,7 @@
     "eras": {
       "hidden-lives": {
         "title": "[KO] Hidden lives",
-        "intro": "[KO] Before 1800, queer life survived in the shadows of law and church. What the record preserves is mostly persecution — trials, executions, edicts — alongside rare glimpses of love and community that outlasted them."
+        "intro": "1800년 이전, 퀴어의 삶은 법과 교회의 그늘에서 살아남았다. 기록이 남긴 것은 대부분 박해다. 재판, 처형, 칙령. 그 곁에 그것들보다 오래 남은 사랑과 공동체의 드문 흔적이 있다."
       },
       "empire-criminalization": {
         "title": "[KO] Empire & criminalization",
@@ -3824,7 +3824,7 @@
       },
       "homophile-years": {
         "title": "[KO] The homophile years",
-        "intro": "[KO] After the war, small 'homophile' groups rebuilt quietly — Mattachine, the Daughters of Bilitis, Arcadie, the COC — trading radicalism for respectability while police raids and purges continued."
+        "intro": "전후, 작은 ‘호모파일’ 단체들이 조용히 다시 세워졌다. 매타신, 빌리티스의 딸들, 아르카디, COC. 이들은 급진성을 체면과 맞바꿨지만 단속과 숙청은 계속됐다."
       },
       "liberation": {
         "title": "[KO] Liberation",
@@ -3832,7 +3832,7 @@
       },
       "aids-crisis": {
         "title": "[KO] The AIDS crisis",
-        "intro": "[KO] A generation was decimated while governments looked away. The epidemic's grief forged the militant activism — ACT UP, treatment-access campaigns — that reshaped medicine and queer politics alike."
+        "intro": "정부가 외면하는 사이 한 세대가 스러졌다. 전염병의 슬픔은 의학과 퀴어 정치를 함께 바꿔놓은 투쟁적 행동주의를 벼려냈다. ACT UP, 치료 접근권 캠페인."
       },
       "recognition": {
         "title": "[KO] Recognition",
@@ -3878,8 +3878,8 @@
     "hub": {
       "title": "[KO] Guides",
       "eyebrow": "[KO] Editorial",
-      "lede": "[KO] Comparison-driven guides, curated lists and community quests — written by editors, no fluff.",
-      "metaDescription": "[KO] Editor-written guides, curated lists and community quests across LGBTQ+ places, events and shopping.",
+      "lede": "비교 중심 가이드, 직접 고른 목록, 커뮤니티 퀘스트. 편집자가 쓰고, 군더더기는 없습니다.",
+      "metaDescription": "편집자가 쓴 가이드, 직접 고른 목록, 커뮤니티 퀘스트. LGBTQ+ 장소와 행사, 쇼핑을 다룹니다.",
       "empty": "[KO] No guides yet.",
       "emptyHint": "[KO] New guides land regularly. Check back soon."
     },
@@ -4065,7 +4065,7 @@
         "rights": "[KO] Distinct rights tracked per country"
       },
       "body": {
-        "source": "[KO] Every legal status on this site — criminalisation, partnership recognition, anti-discrimination protection, gender recognition, conversion therapy and intersex bodily integrity — comes from the ILGA World Database, the reference dataset maintained by the International Lesbian, Gay, Bisexual, Trans and Intersex Association.",
+        "source": "이 사이트의 모든 법적 지위는 ILGA World Database에서 옵니다. International Lesbian, Gay, Bisexual, Trans and Intersex Association이 관리하는 기준 데이터셋입니다. 범죄화, 동반자 관계 인정, 차별 금지 보호, 성별 인정, 전환 치료, 인터섹스 신체 온전성을 다룹니다.",
         "refresh": "[KO] We re-import it nightly. Where a country page shows an \"Updated\" date, that is the date ILGA last revised that record, not the date we fetched it.",
         "link": "[KO] ILGA World Database",
         "unscored": "[KO] The unscored rows are uninhabited or near-uninhabited territories with no ILGA entry. We list them as \"not scored\" rather than giving them a default, because a default would read as a measurement.",
@@ -4075,7 +4075,7 @@
         "scoreNotSafety": "[KO] The score describes law on paper. It is not a safety rating, and it says nothing about enforcement, policing or how welcome you will be made to feel."
       },
       "limits": {
-        "national": "[KO] It is national. Where rights vary by state or province — the United States, Indonesia, Nigeria, Mexico and others — a single national figure averages that away.",
+        "national": "국가 단위 데이터입니다. 미국, 인도네시아, 나이지리아, 멕시코처럼 주나 지방마다 권리가 다른 곳에서는 하나의 국가 수치가 그 차이를 평균으로 지웁니다.",
         "enforcement": "[KO] It records statutes, not enforcement. A law that is rarely applied and a law applied constantly look identical here.",
         "trans": "[KO] Several facts that matter most to trans travellers are not in this dataset at all: bathroom and facility access, how identity documents are treated at borders, and access to gender-affirming healthcare.",
         "personal": "[KO] It knows nothing about you. Your citizenship, residency, gender marker and relationship status all change what applies, and we hold none of them.",
@@ -4104,7 +4104,7 @@
     "title": "퀴어가 만들고, 모두를 위해.",
     "lede": "Queer Guide는 퀴어의 삶을 이루는 공간과 행사, 사람을 지도로 모읍니다. 커뮤니티가 검증하고, 누구에게나 무료이며, 전 세계 어디서나.",
     "diagram": {
-      "label": "네 개의 노선 — 공간, 행사, 커뮤니티, 여행지 — 이 하나의 역에서 만나는 그림."
+      "label": "하나의 역에서 만나는 네 개의 노선. 공간, 행사, 커뮤니티, 여행지."
     },
     "scale": {
       "kicker": "지금의 네트워크",
@@ -4207,7 +4207,7 @@
       },
       "accessibility": {
         "title": "접근성",
-        "description": "턱 없는 입구와 이용 가능한 화장실을 표시합니다 — 없는 것도 함께."
+        "description": "턱 없는 입구와 이용 가능한 화장실을 표시합니다. 없는 것도 함께 표시합니다."
       },
       "growth": {
         "title": "성장",

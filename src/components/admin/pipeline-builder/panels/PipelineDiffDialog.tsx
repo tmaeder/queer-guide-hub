@@ -206,7 +206,7 @@ export default function PipelineDiffDialog({
                   {diff.nodes.modified.map((m) => (
                     <div
                       key={m.current.id}
-                      className="text-xs font-mono bg-muted border border-border rounded-element px-2 py-1 flex gap-2 items-center"
+                      className="text-xs font-mono bg-muted rounded-element px-2 py-1 flex gap-2 items-center"
                     >
                       <span className="text-foreground">~</span>
                       <span>{labelFor(m.current)}</span>

@@ -61,7 +61,7 @@ export function SidebarRow({
   return (
     <div
       className={cn(
-        'flex items-baseline justify-between gap-4 border-b border-foreground/15 py-2 last:border-b-0 last:pb-0',
+        'flex items-baseline justify-between gap-4 border-b border-border-hairline py-2 last:border-b-0 last:pb-0',
         className,
       )}
     >

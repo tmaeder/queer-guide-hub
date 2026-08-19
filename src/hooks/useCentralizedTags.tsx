@@ -76,6 +76,11 @@ interface CentralizedTagsData {
   categoriesTree: CategoryTreeNode[];
 }
 
+/** Module-level so the loading/error fallbacks keep a stable identity. */
+const EMPTY_TAGS: CentralizedTag[] = [];
+const EMPTY_CATEGORIES: TagCategory[] = [];
+const EMPTY_TREE: CategoryTreeNode[] = [];
+
 /**
  * Core fetch function — parallelises independent queries and enriches tags
  * with multi-category assignments.
@@ -237,9 +242,14 @@ export const useCentralizedTags = () => {
     retryDelay: (attempt) => Math.min(1000 * (attempt + 1), 5000),
   });
 
-  const allTags = data?.allTags ?? [];
-  const tagsByCategory = data?.tagsByCategory ?? [];
-  const categoriesTree = data?.categoriesTree ?? [];
+  // Shared frozen empties, not `?? []`. A fresh array literal is a NEW
+  // reference on every render, so while the query is loading or errored these
+  // three change identity each pass — and every consumer memo keyed on them
+  // (TagsIndex alone has three) recomputes instead of memoizing. Stable
+  // references also let the React Compiler preserve that memoization.
+  const allTags = data?.allTags ?? EMPTY_TAGS;
+  const tagsByCategory = data?.tagsByCategory ?? EMPTY_CATEGORIES;
+  const categoriesTree = data?.categoriesTree ?? EMPTY_TREE;
 
   const searchTags = async (query: string): Promise<CentralizedTag[]> => {
     try {

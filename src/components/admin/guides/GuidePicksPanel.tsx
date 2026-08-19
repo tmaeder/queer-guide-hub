@@ -181,7 +181,7 @@ export function GuidePicksPanel({ guideId }: { guideId: string }) {
 
       <ul className="flex flex-col gap-4">
         {(picks ?? []).map((p, idx) => (
-          <li key={p.id} className="rounded-element border border-border p-4 flex flex-col gap-2">
+          <li key={p.id} className="rounded-element bg-muted p-4 flex flex-col gap-2">
             <div className="flex items-center gap-2">
               <Badge variant="outline">{p.entity_type}</Badge>
               {p.is_orphaned && <Badge variant="destructive">orphaned</Badge>}
@@ -237,7 +237,10 @@ export function GuidePicksPanel({ guideId }: { guideId: string }) {
                 placeholder="Pros (separate with ;)"
                 aria-label="Pros"
                 onBlur={(e) => {
-                  const pros = e.target.value.split(';').map((s) => s.trim()).filter(Boolean);
+                  const pros = e.target.value
+                    .split(';')
+                    .map((s) => s.trim())
+                    .filter(Boolean);
                   if (pros.join(';') !== p.pros.join(';')) updatePick.mutate({ id: p.id, pros });
                 }}
               />
@@ -246,7 +249,10 @@ export function GuidePicksPanel({ guideId }: { guideId: string }) {
                 placeholder="Cons (separate with ;)"
                 aria-label="Cons"
                 onBlur={(e) => {
-                  const cons = e.target.value.split(';').map((s) => s.trim()).filter(Boolean);
+                  const cons = e.target.value
+                    .split(';')
+                    .map((s) => s.trim())
+                    .filter(Boolean);
                   if (cons.join(';') !== p.cons.join(';')) updatePick.mutate({ id: p.id, cons });
                 }}
               />
@@ -254,11 +260,13 @@ export function GuidePicksPanel({ guideId }: { guideId: string }) {
           </li>
         ))}
         {!picks?.length && (
-          <li><AdminEmpty variant="inline" noun="picks" className="italic" /></li>
+          <li>
+            <AdminEmpty variant="inline" noun="picks" className="italic" />
+          </li>
         )}
       </ul>
 
-      <div className="flex flex-col gap-2 rounded-element border border-border p-2">
+      <div className="flex flex-col gap-2 rounded-element bg-muted p-2">
         <div className="flex items-center gap-2">
           <Select value={type} onValueChange={(v) => setType(v as GuideEntityType)}>
             <SelectTrigger className="w-40">

@@ -109,7 +109,7 @@ export function HoursEditor({ field, initialValue, onSave, onCancel, saving }: E
   };
 
   return (
-    <div className="block p-4 border border-border rounded-element bg-background">
+    <div className="block p-4 rounded-element bg-muted">
       <div className="flex flex-col gap-2">
         {DAYS.map(({ key, label }) => (
           <div key={key} className="flex items-center gap-2">
@@ -135,7 +135,9 @@ export function HoursEditor({ field, initialValue, onSave, onCancel, saving }: E
         ))}
       </div>
       <div className="flex items-center justify-between mt-4">
-        <span className="text-xs text-muted-foreground">Leave both blank for closed · Esc to cancel</span>
+        <span className="text-xs text-muted-foreground">
+          Leave both blank for closed · Esc to cancel
+        </span>
         <EditorActions
           onConfirm={() => onSave(toPersisted(hours, initialValue))}
           onCancel={onCancel}

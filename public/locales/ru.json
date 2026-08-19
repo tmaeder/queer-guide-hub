@@ -2004,7 +2004,7 @@
       "contribute": "Добавить",
       "messages": "Сообщения",
       "you": "Профиль",
-      "menuTitle": "Обзор Queer Guide",
+      "menuTitle": "Все разделы",
       "menuDescription": "Перейдите в любой раздел, смените язык или тему.",
       "trips": "Мои поездки",
       "settingsSection": "Отображение",
@@ -3754,18 +3754,18 @@
   },
   "connections": {
     "title": "[RU] Connections",
-    "subtitle": "[RU] Explore how places, events and people on queer.guide relate to each other.",
+    "subtitle": "Посмотрите, как места, события и люди на queer.guide связаны между собой.",
     "hint": "[RU] Click a card to expand its connections. Drag to rearrange, scroll to zoom. The arrow opens the detail page.",
-    "mobileHint": "[RU] Closest connections first. Re-center to explore from another entity.",
+    "mobileHint": "Сначала ближайшие связи. Сместите центр, чтобы начать с другого объекта.",
     "stats": "[RU] {{nodes}} entities, {{links}} links",
     "open": "[RU] Open {{title}}",
     "openShort": "[RU] Open",
     "recenter": "[RU] Connections",
     "error": "[RU] Could not load connections. Please try again later.",
     "emptyTitle": "[RU] Pick a starting point",
-    "emptyDescription": "[RU] Open any venue, event, city or person and use its Connections button to explore from there.",
+    "emptyDescription": "Откройте место, событие, город или человека и нажмите «Связи», чтобы начать оттуда.",
     "emptyCta": "[RU] Search the guide",
-    "explore": "[RU] Explore connections"
+    "explore": "Показать связи"
   },
   "milestones": {
     "eyebrow": "Квир-история",
@@ -3844,7 +3844,7 @@
     "eras": {
       "hidden-lives": {
         "title": "[RU] Hidden lives",
-        "intro": "[RU] Before 1800, queer life survived in the shadows of law and church. What the record preserves is mostly persecution — trials, executions, edicts — alongside rare glimpses of love and community that outlasted them."
+        "intro": "До 1800 года квир-жизнь выживала в тени закона и церкви. В документах сохранились в основном преследования: суды, казни, эдикты. Рядом с ними — редкие свидетельства любви и сообщества, пережившие их."
       },
       "empire-criminalization": {
         "title": "[RU] Empire & criminalization",
@@ -3860,7 +3860,7 @@
       },
       "homophile-years": {
         "title": "[RU] The homophile years",
-        "intro": "[RU] After the war, small 'homophile' groups rebuilt quietly — Mattachine, the Daughters of Bilitis, Arcadie, the COC — trading radicalism for respectability while police raids and purges continued."
+        "intro": "После войны небольшие «гомофильные» группы тихо восстанавливались: «Маттачине», «Дочери Билитис», «Аркадия», COC. Они променяли радикальность на респектабельность, а облавы и чистки продолжались."
       },
       "liberation": {
         "title": "[RU] Liberation",
@@ -3868,7 +3868,7 @@
       },
       "aids-crisis": {
         "title": "[RU] The AIDS crisis",
-        "intro": "[RU] A generation was decimated while governments looked away. The epidemic's grief forged the militant activism — ACT UP, treatment-access campaigns — that reshaped medicine and queer politics alike."
+        "intro": "Целое поколение было выкошено, пока правительства смотрели в сторону. Скорбь эпидемии выковала боевой активизм, изменивший и медицину, и квир-политику: ACT UP, кампании за доступ к лечению."
       },
       "recognition": {
         "title": "[RU] Recognition",
@@ -3914,8 +3914,8 @@
     "hub": {
       "title": "[RU] Guides",
       "eyebrow": "[RU] Editorial",
-      "lede": "[RU] Comparison-driven guides, curated lists and community quests — written by editors, no fluff.",
-      "metaDescription": "[RU] Editor-written guides, curated lists and community quests across LGBTQ+ places, events and shopping.",
+      "lede": "Сравнительные гиды, списки, собранные вручную, и задания сообщества. Пишут редакторы, без воды.",
+      "metaDescription": "Гиды от редакции, списки, собранные вручную, и задания сообщества о ЛГБТК+ местах, событиях и покупках.",
       "empty": "[RU] No guides yet.",
       "emptyHint": "[RU] New guides land regularly. Check back soon."
     },
@@ -4101,7 +4101,7 @@
         "rights": "[RU] Distinct rights tracked per country"
       },
       "body": {
-        "source": "[RU] Every legal status on this site — criminalisation, partnership recognition, anti-discrimination protection, gender recognition, conversion therapy and intersex bodily integrity — comes from the ILGA World Database, the reference dataset maintained by the International Lesbian, Gay, Bisexual, Trans and Intersex Association.",
+        "source": "Любой правовой статус на этом сайте взят из ILGA World Database — эталонного набора данных, который ведёт International Lesbian, Gay, Bisexual, Trans and Intersex Association. Он охватывает криминализацию, признание партнёрств, защиту от дискриминации, признание гендера, конверсионную терапию и телесную неприкосновенность интерсекс-людей.",
         "refresh": "[RU] We re-import it nightly. Where a country page shows an \"Updated\" date, that is the date ILGA last revised that record, not the date we fetched it.",
         "link": "[RU] ILGA World Database",
         "unscored": "[RU] The unscored rows are uninhabited or near-uninhabited territories with no ILGA entry. We list them as \"not scored\" rather than giving them a default, because a default would read as a measurement.",
@@ -4111,7 +4111,7 @@
         "scoreNotSafety": "[RU] The score describes law on paper. It is not a safety rating, and it says nothing about enforcement, policing or how welcome you will be made to feel."
       },
       "limits": {
-        "national": "[RU] It is national. Where rights vary by state or province — the United States, Indonesia, Nigeria, Mexico and others — a single national figure averages that away.",
+        "national": "Данные национальные. Там, где права различаются по штатам или провинциям, как в США, Индонезии, Нигерии и Мексике, единая цифра по стране усредняет эту разницу.",
         "enforcement": "[RU] It records statutes, not enforcement. A law that is rarely applied and a law applied constantly look identical here.",
         "trans": "[RU] Several facts that matter most to trans travellers are not in this dataset at all: bathroom and facility access, how identity documents are treated at borders, and access to gender-affirming healthcare.",
         "personal": "[RU] It knows nothing about you. Your citizenship, residency, gender marker and relationship status all change what applies, and we hold none of them.",
@@ -4140,7 +4140,7 @@
     "title": "Сделано квир-людьми — для всех.",
     "lede": "Queer Guide — это карта мест, событий и людей, из которых состоит квир-жизнь. Проверено сообществом, бесплатно для всех и везде.",
     "diagram": {
-      "label": "Четыре линии — места, события, сообщество и направления — сходятся на одной станции."
+      "label": "Четыре линии сходятся на одной станции: места, события, сообщество и направления."
     },
     "scale": {
       "kicker": "Сеть сегодня",
@@ -4243,7 +4243,7 @@
       },
       "accessibility": {
         "title": "Доступность",
-        "description": "Отмечаем входы без ступеней, доступные туалеты — и то, чего нет."
+        "description": "Отмечаем входы без ступеней и доступные туалеты, а также то, чего нет."
       },
       "growth": {
         "title": "Развитие",
