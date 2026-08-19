@@ -3,7 +3,8 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { cn } from '@/lib/utils';
-import { MapEntityCard } from '../MapEntityCard';
+import { DepartureRow } from '@/components/transit/DepartureRow';
+import { bulletTypeForLayer, departureStatus, departureTime } from './railDeparture';
 import type { MapPointSummary } from '../mapPoint';
 
 export interface MapRailProps {
@@ -183,7 +184,7 @@ export function MapRail({ points, selectedId, loading, onHover, onSelect }: MapR
                   name: point.name,
                 })}
                 className={cn(
-                  'card-lift-sm block w-56 shrink-0 cursor-pointer snap-start bg-card text-left rounded-container shadow-soft',
+                  'card-lift-sm block w-[17.5rem] shrink-0 cursor-pointer snap-start bg-card text-left rounded-container shadow-soft',
                   'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                   selectedId === point.id && 'bg-foreground text-background',
                 )}
@@ -196,7 +197,19 @@ export function MapRail({ points, selectedId, loading, onHover, onSelect }: MapR
                 onBlur={() => onHover(null)}
                 onClick={() => onSelect(point.id)}
               >
-                <MapEntityCard point={point} variant="rail" />
+                {/* Departure-board grammar: bullet · time · title · status.
+                    No `href` — the rail SELECTS on the map (fly-to) rather
+                    than navigating, and passing one would nest a link inside
+                    this button (axe nested-interactive). Omitting it also
+                    drops DepartureRow's own lift, which the wrapper already
+                    supplies. */}
+                <DepartureRow
+                  type={bulletTypeForLayer(point.type)}
+                  time={departureTime(point)}
+                  title={point.name}
+                  {...departureStatus(point)}
+                  className="bg-transparent"
+                />
               </button>
             ))}
           </div>

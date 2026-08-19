@@ -59,11 +59,22 @@ export const FILTER_LABELS: Record<MapFilterKey, string> = {
   era: 'Era',
 };
 
+/**
+ * DISPLAY labels only. The KEYS are URL state (`?lens=…`, see
+ * `useMapShellState`), so renaming them would break every shared or
+ * bookmarked link — the transit vocabulary is what the reader sees, not what
+ * the query string carries.
+ *
+ * These are only the FALLBACK: `MapControls` renders
+ * `t('map.lens.<key>', { defaultValue: LENS_LABELS[key] })`, so
+ * `public/locales/en.json` wins wherever it has a value. Both must move
+ * together or the rename is invisible in the running app.
+ */
 export const LENS_LABELS: Record<MapLens, string> = {
-  pins: 'Pins',
-  density: 'Density',
+  pins: 'Stations',
+  density: 'Heat',
   routes: 'Routes',
-  boundary: 'Boundary',
+  boundary: 'Areas',
   combined: 'Combined',
 };
 
