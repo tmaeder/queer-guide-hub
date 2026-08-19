@@ -50,31 +50,19 @@ const RECORDING = process.env.ADMIN_BASELINE === 'record';
 
 /** Registered, real, non-redirect routes with no param segment to invent. */
 /**
- * QUARANTINED, not fixed — and the reason is a finding about the APP, not the
- * spec. On /admin/pipelines the renderer's main thread stops answering: after
- * the page loads, `locator.count()` — the cheapest call Playwright has — sits
- * pending until the 75s budget expires. It is not the assertion. Four rewrites
- * of it failed identically (innerText -> textContent -> bounded evaluate ->
- * count), which is precisely the tell that the subject was never the
- * assertion.
+ * Empty, and kept empty. /admin/pipelines lived here until 2026-08-19 under a
+ * diagnosis of "the renderer's main thread stops answering". It did not: the
+ * route rendered ZERO h1s, and the un-timeboxed `textContent()` read below
+ * blocked on the missing element for the whole remaining budget. Measured on
+ * prod with an admin session: a 250ms heartbeat never missed a beat, and
+ * `locator('h1').count()` returned 0 instantly while `textContent()` was still
+ * pending 25s later. The h1 is fixed in src/pages/admin/AdminPipelines.tsx and
+ * the read is bounded below, so both halves of that failure are gone.
  *
- * Ruled out, so nobody repeats the search: the layout flush (textContent needs
- * none and hangs the same), the MapLibre basemap (aborting tiles bought 0.9m),
- * and the `page.route('**\/*')` interceptor (narrowing it to supabase/rpc
- * changed nothing).
- *
- * The route is NOT dead: e2e/a11y-admin.spec.ts loads it authenticated and
- * runs a full axe scan on the same commit, green — so an admin can open it and
- * a short visit is fine. What that scan does not do is sit on the page for
- * ~30s first, which is the window this spec spends waiting for an h1 that
- * never becomes visible here.
- *
- * A route that pegs the main thread for a signed-in admin is a product bug
- * worth its own investigation; excluding it from a breadth guard is not the
- * same as declaring it healthy. Coverage retained via a11y-admin.spec.ts and
- * e2e/admin-pipelines.spec.ts.
+ * The mechanism is worth keeping for the next real quarantine: a route that
+ * stops announcing itself is indistinguishable from one nobody ever guarded.
  */
-const QUARANTINED = new Set(['/admin/pipelines']);
+const QUARANTINED = new Set<string>();
 
 const ROUTES = ADMIN_ARCHETYPES.filter(
   (e) => !e.path.includes(':') && e.path !== '*' && e.path !== 'review',
@@ -97,10 +85,12 @@ const BLOCKED = /\/rpc\/(branding_|admin_automation_set_enabled|.*_upsert|.*_del
 type Shape = { endpoints: string[]; h1: string; errors: string[] };
 
 test.describe('admin routes stay healthy through the archetype migration', () => {
-  // Admin pages are heavier than the 30s default allows, and CI runs one
-  // worker: /admin/pipelines alone mounts 13 tabs over a MapLibre canvas and
-  // blew the default three times in a row. A timeout there says nothing about
-  // the route's health — it says the budget was set for public pages.
+  // Admin pages are heavier than the 30s default allows and CI runs one
+  // worker, so the budget is set for admin, not for public pages.
+  //
+  // This used to cite /admin/pipelines blowing the default three times as the
+  // evidence. That was the missing-h1 stall, not page weight — do not read the
+  // number as a measurement of how slow these routes are.
   test.describe.configure({ timeout: 75_000 });
 
   test.skip(
@@ -148,12 +138,18 @@ test.describe('admin routes stay healthy through the archetype migration', () =>
       // fast routes and is not enough for slow ones. Every route asserted
       // below has an h1, so that is the honest readiness signal; the short
       // settle after it lets late data land.
+      //
+      // The outcome is CARRIED, not swallowed. A route whose h1 never appears
+      // is the single most informative thing this spec can learn about it, and
+      // discarding it into an empty `.catch()` is what let /admin/pipelines
+      // read as a mysterious hang for a week — see `h1NeverVisible` below.
+      let h1NeverVisible = false;
       await page
         .locator('h1')
         .first()
         .waitFor({ state: 'visible', timeout: 30_000 })
         .catch(() => {
-          /* fall through — the h1 assertion below reports it properly */
+          h1NeverVisible = true;
         });
       await page.waitForTimeout(600);
 
@@ -175,14 +171,32 @@ test.describe('admin routes stay healthy through the archetype migration', () =>
         `${route}: no admin session in this run — not verified here`,
       );
 
+      // COUNT FIRST, then read — and never read unbounded.
+      //
+      // `locator.count()` resolves immediately against the current DOM. The
+      // text read does NOT: `textContent()` auto-waits for the element, and
+      // playwright.config.ts sets no `actionTimeout`, so its default of 0 means
+      // "no limit" and a route with zero h1s blocks here until the 75s test
+      // budget expires. Teardown then closes the page and the still-pending
+      // call surfaces as "Target page, context or browser has been closed" —
+      // which reads exactly like a hung renderer and is not one.
+      //
+      // That is what quarantined /admin/pipelines (it rendered no h1 at all,
+      // fixed in the same change as this comment). It also explains why four
+      // successive rewrites of the assertions BELOW failed identically: none of
+      // them ever ran. Ordering the count first makes a missing h1 report as
+      // "has 0 h1s", which is the true finding, in under a second.
+      const h1Count = await page.locator('h1').count();
       const h1 =
-        (
-          await page
-            .locator('h1')
-            .first()
-            .textContent()
-            .catch(() => '')
-        )?.trim() ?? '';
+        h1Count === 0
+          ? ''
+          : ((
+              await page
+                .locator('h1')
+                .first()
+                .textContent({ timeout: 5_000 })
+                .catch(() => '')
+            )?.trim() ?? '');
       const shape: Shape = { endpoints: [...endpoints].sort(), h1, errors };
 
       if (RECORDING) {
@@ -202,8 +216,10 @@ test.describe('admin routes stay healthy through the archetype migration', () =>
       //    a page stops stacking heading bands; two h1s means a page kept its
       //    old header while adopting the frame. A visible h1 with text is also
       //    proof the route did not render blank.
-      const h1Count = await page.locator('h1').count();
-      expect(h1Count, `${route} has ${h1Count} h1s`).toBe(1);
+      expect(
+        h1Count,
+        `${route} has ${h1Count} h1s${h1NeverVisible ? ' (none became visible within 30s)' : ''}`,
+      ).toBe(1);
       expect(h1.length, `${route} has an empty h1`).toBeGreaterThan(0);
 
       // 2. No uncaught errors.
