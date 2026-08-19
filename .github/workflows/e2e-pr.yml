@@ -28,7 +28,14 @@ jobs:
   critical:
     name: Critical paths
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    # Raised from 12 when the admin session became real. Until the E2E_ADMIN_*
+    # secrets existed, auth.setup.ts skipped and all 34 admin-route-baseline
+    # tests skipped with it — the 12-minute budget was measured against a run
+    # that was NOT doing that work. The first run with a live session took
+    # 10.8m of tests and was killed at 12m during teardown, which GitHub
+    # reports as `cancelled`, not `timed out` — so it read as a concurrency
+    # cancellation rather than the budget it actually was.
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
       - name: Detect relevant changes

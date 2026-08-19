@@ -74,7 +74,11 @@ export function ContentListGallery({
 
             {/* Above the overlay so selecting does not open the editor. */}
             <div className="absolute top-2 left-2 z-10">
-              <Checkbox checked={isSelected} onCheckedChange={() => toggleSelect(key)} />
+              <Checkbox
+                aria-label={`Select ${item.title}`}
+                checked={isSelected}
+                onCheckedChange={() => toggleSelect(key)}
+              />
             </div>
 
             {imageUrl ? (

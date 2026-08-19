@@ -1,6 +1,6 @@
 {
   "project": "tsconfig.app.json",
-  "total": 847,
+  "total": 843,
   "files": {
     "src/assets/intimate/pictograms.tsx": {
       "TS2503": 2
@@ -22,7 +22,7 @@
       "TS2345": 1
     },
     "src/components/admin/business/HotelsManager.tsx": {
-      "TS2322": 7,
+      "TS2322": 6,
       "TS2345": 6
     },
     "src/components/admin/data-table/AdminDataTable.tsx": {
@@ -30,9 +30,6 @@
       "TS6133": 1
     },
     "src/components/admin/data-table/DataTableFilters.tsx": {
-      "TS2322": 1
-    },
-    "src/components/admin/data-table/__tests__/AdminEntityTable.test.tsx": {
       "TS2322": 1
     },
     "src/components/admin/feedback/FeedbackCard.tsx": {
@@ -971,11 +968,11 @@
       "TS2345": 2
     },
     "src/pages/admin/AdminTags.tsx": {
-      "TS2322": 10,
+      "TS2322": 9,
       "TS2345": 3
     },
     "src/pages/admin/AdminUsers.tsx": {
-      "TS2322": 5,
+      "TS2322": 4,
       "TS2345": 3
     },
     "src/pages/admin/EmailTemplates.tsx": {

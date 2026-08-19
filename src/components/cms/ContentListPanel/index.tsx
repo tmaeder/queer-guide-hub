@@ -182,6 +182,10 @@ function ContentListPanelBody(props: ContentListPanelProps) {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
+                    // A Tooltip is NOT an accessible name: its content lives in
+                    // a portal and is never referenced by the trigger, so an
+                    // icon-only button reads as unlabelled (axe button-name).
+                    aria-label="Refresh"
                     variant="ghost"
                     size="sm"
                     className="h-7 w-7 p-0"

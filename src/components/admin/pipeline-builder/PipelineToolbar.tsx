@@ -292,6 +292,7 @@ export default function PipelineToolbar(p: Props) {
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
+            aria-label="Undo"
             size="sm"
             variant="ghost"
             className="h-8 w-8 p-0"
@@ -308,6 +309,7 @@ export default function PipelineToolbar(p: Props) {
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
+            aria-label="Redo"
             size="sm"
             variant="ghost"
             className="h-8 w-8 p-0"
@@ -324,6 +326,7 @@ export default function PipelineToolbar(p: Props) {
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
+            aria-label="Auto-layout"
             size="sm"
             variant="ghost"
             className="h-8 w-8 p-0"
@@ -339,7 +342,13 @@ export default function PipelineToolbar(p: Props) {
       </Tooltip>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={p.onOpenQuickAdd}>
+          <Button
+            aria-label="Quick-add node"
+            size="sm"
+            variant="ghost"
+            className="h-8 w-8 p-0"
+            onClick={p.onOpenQuickAdd}
+          >
             <Command className="h-3.5 w-3.5" />
           </Button>
         </TooltipTrigger>
@@ -350,7 +359,13 @@ export default function PipelineToolbar(p: Props) {
       </Tooltip>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={p.handleAddComment}>
+          <Button
+            aria-label="Add sticky note"
+            size="sm"
+            variant="ghost"
+            className="h-8 w-8 p-0"
+            onClick={p.handleAddComment}
+          >
             <StickyNote className="h-3.5 w-3.5" />
           </Button>
         </TooltipTrigger>
@@ -358,7 +373,13 @@ export default function PipelineToolbar(p: Props) {
       </Tooltip>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={p.handleAddGroup}>
+          <Button
+            aria-label="Wrap selection in group"
+            size="sm"
+            variant="ghost"
+            className="h-8 w-8 p-0"
+            onClick={p.handleAddGroup}
+          >
             <Folder className="h-3.5 w-3.5" />
           </Button>
         </TooltipTrigger>

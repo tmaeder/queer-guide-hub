@@ -34,11 +34,7 @@ export function DataTablePagination({
   return (
     <div className="flex items-center justify-between px-4 py-4 border-t border-border flex-wrap gap-2">
       <div className="flex items-center gap-4">
-        {selectedCount > 0 && (
-          <p className="text-sm font-medium">
-            {selectedCount} selected
-          </p>
-        )}
+        {selectedCount > 0 && <p className="text-sm font-medium">{selectedCount} selected</p>}
         <p className="text-sm text-muted-foreground">
           {from}-{to} of {totalCount.toLocaleString()}
         </p>
@@ -46,11 +42,9 @@ export function DataTablePagination({
 
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
-          <p className="text-sm text-muted-foreground">
-            Rows
-          </p>
+          <p className="text-sm text-muted-foreground">Rows</p>
           <Select value={String(pageSize)} onValueChange={(v) => onPageSizeChange(Number(v))}>
-            <SelectTrigger style={{ width: 70, height: 32 }}>
+            <SelectTrigger aria-label="Rows per page" style={{ width: 70, height: 32 }}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -65,6 +59,7 @@ export function DataTablePagination({
 
         <div className="flex items-center gap-1">
           <Button
+            aria-label="First page"
             variant="outline"
             size="icon"
             style={{ height: 32, width: 32 }}
@@ -74,6 +69,7 @@ export function DataTablePagination({
             <ChevronsLeft size={14} />
           </Button>
           <Button
+            aria-label="Previous page"
             variant="outline"
             size="icon"
             style={{ height: 32, width: 32 }}
@@ -86,6 +82,7 @@ export function DataTablePagination({
             {page} / {totalPages || 1}
           </p>
           <Button
+            aria-label="Next page"
             variant="outline"
             size="icon"
             style={{ height: 32, width: 32 }}
@@ -95,6 +92,7 @@ export function DataTablePagination({
             <ChevronRight size={14} />
           </Button>
           <Button
+            aria-label="Last page"
             variant="outline"
             size="icon"
             style={{ height: 32, width: 32 }}
