@@ -40,7 +40,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      - uses: ./.github/actions/setup-playwright
       - name: Regenerate visual baselines
         env:
           E2E_BASE_URL: ${{ inputs.base_url || 'https://queer.guide' }}

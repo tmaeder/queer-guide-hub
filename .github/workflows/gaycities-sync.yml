@@ -28,7 +28,12 @@ jobs:
           cache: npm
           cache-dependency-path: scraper/package-lock.json
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      - uses: ./.github/actions/setup-playwright
+        with:
+          # This job's `defaults.run.working-directory: scraper` does NOT apply
+          # to a composite action's own steps, so the scraper lockfile has to be
+          # named explicitly or the version resolves against the root one.
+          working-directory: scraper
       # xvfb: Cloudflare blocks headless Chromium; the scraper runs a headed
       # browser against a virtual display.
       - run: xvfb-run --auto-servernum npx tsx scripts/gaycities-sync.ts
