@@ -25,7 +25,6 @@ import { ReportButton } from '@/components/moderation/ReportButton';
 import { DestinationSafetyCard } from '@/components/safety/DestinationSafetyCard';
 import { estimateReadingTime } from '@/lib/share';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { entityImageTreatment } from '@/lib/imageTreatment';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchNewsCategories } from '@/hooks/usePageFetchers';
 import { cleanTitle, cleanAuthor, cleanExcerpt, cleanContent } from '@/utils/htmlDecode';
@@ -295,7 +294,6 @@ export default function NewsDetail() {
           heightPx={isMobile ? 220 : 360}
           imageRole="hero"
           rounded="container"
-          treatment={entityImageTreatment(article)}
           priority
           fallbackEntityType="news"
           fallbackKey={article.id}

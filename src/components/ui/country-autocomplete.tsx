@@ -93,7 +93,12 @@ export function CountryAutocomplete({
           aria-describedby={ariaDescribedBy}
           disabled={disabled}
           className={cn(
-            'h-10 w-full justify-between rounded-element bg-inverse-surface text-background placeholder:text-background/70 px-4.5 py-2 font-normal transition-all hover:opacity-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/15 focus-visible:ring-offset-0',
+            // See pronoun-combobox for why the inverted plate came off: the
+            // empty state put `text-muted-foreground` on an ink fill at 2.50:1.
+            // `focus:outline-none` also went — `index.css` sets
+            // `*:focus-visible` with `!important` as the WCAG 2.4.7 guarantee,
+            // so suppressing the outline here only ever looked like it worked.
+            'h-10 w-full justify-between rounded-element px-4.5 py-2 font-normal',
             !selectedCountry && 'text-muted-foreground',
             error && 'border border-destructive',
           )}

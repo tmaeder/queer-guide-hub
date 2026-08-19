@@ -212,11 +212,10 @@ export default function HistoryTimeline() {
               ))}
             </div>
 
-            {/* Native select, restyled to the chip's DNA. src/components/ui/select.tsx
-                is still on pre-rebrand tokens (bg-inverse-surface, ring-spot) and
-                would read as a permanently-active chip here; the native picker is
-                also the better control for ~100 countries on a phone.
-                TODO(design): adopt the primitive once it migrates. */}
+            {/* Native select, restyled to the chip's DNA. The pre-rebrand-token
+                objection this used to carry is resolved — `ui/select.tsx` is on
+                `border-input` + `bg-muted` now — but the native picker stays: it
+                is still the better control for ~100 countries on a phone. */}
             <select
               value={country ?? ''}
               onChange={(e) => setParam('country', e.target.value || null)}
