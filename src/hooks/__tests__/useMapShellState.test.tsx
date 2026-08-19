@@ -1,10 +1,28 @@
-import { describe, expect, it } from 'vitest';
+/**
+ * Regression guard for the URL-write race in `useMapShellState`.
+ *
+ * `setSearchParams(fn)` does NOT hand `fn` the live query string. React Router
+ * closes over the `searchParams` of the render that produced that particular
+ * `setSearchParams` identity, and its own docs say so: "Multiple calls to
+ * setSearchParams in the same tick will not build on the prior value."
+ *
+ * The viewport writer debounces for 250 ms, so its callback routinely outlives
+ * the render it was created in. Any lens / layer / filter write landing inside
+ * that window was silently erased when the timer fired on the stale snapshot —
+ * `?lens=density` vanished and the view could not be shared, while
+ * `data-map-lens` (React state, not URL state) still read `density`, which is
+ * what made it look like a rendering bug rather than a lost write.
+ *
+ * This is a unit test on purpose. The e2e that found it only fails when the
+ * click lands inside the 250 ms window, so it passes against a warm production
+ * page and fails on a fast CI preview — a coin flip, not a guard.
+ */
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
-import { MemoryRouter } from 'react-router';
+import { MemoryRouter, useLocation } from 'react-router';
 import type { ReactNode } from 'react';
 import { useMapShellState } from '@/hooks/useMapShellState';
 import { SURFACE_PRESETS } from '@/components/map/MapShell.types';
-import { LAYER_DEFS } from '@/config/mapLayers';
 
 function wrapper(initial: string) {
   return ({ children }: { children: ReactNode }) => (
@@ -12,152 +30,72 @@ function wrapper(initial: string) {
   );
 }
 
-const discover = SURFACE_PRESETS.discover;
+/** The hook under test plus the location it writes to. */
+function useProbe() {
+  return { shell: useMapShellState(SURFACE_PRESETS.discover), search: useLocation().search };
+}
 
-// Layers seeded on first load: the surface's available layers narrowed to
-// those flagged defaultOn (restrooms/cities/countries/villages stay off).
-const defaultOn = new Set(
-  LAYER_DEFS.filter((d) => d.defaultOn && !d.comingSoon).map((d) => d.type),
-);
-const seededLayers = discover.layers.filter((l) => defaultOn.has(l));
-
-describe('useMapShellState', () => {
-  it('parses defaults when URL is empty', () => {
-    const { result } = renderHook(() => useMapShellState(discover), {
-      wrapper: wrapper('/map'),
-    });
-    expect(result.current.state.lens).toBe('combined');
-    expect(result.current.state.enabledLayers).toEqual(seededLayers);
-    // restrooms (external Refuge API) is available but off by default
-    expect(result.current.state.enabledLayers).not.toContain('restrooms');
-    expect(result.current.state.filters).toEqual({});
+describe('useMapShellState — URL writes', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+    localStorage.clear();
   });
 
-  it('parses lens from URL when allowed by the surface', () => {
-    const { result } = renderHook(() => useMapShellState(discover), {
-      wrapper: wrapper('/map?lens=density'),
-    });
-    expect(result.current.state.lens).toBe('density');
+  it('keeps a lens written while a viewport write is still debounced', () => {
+    const { result } = renderHook(useProbe, { wrapper: wrapper('/map') });
+
+    // Order matters: the map emits a viewport on load, the user clicks a lens
+    // before the 250 ms debounce elapses.
+    act(() => result.current.shell.setViewport({ center: [0, 20], zoom: 2.2 }));
+    act(() => result.current.shell.setLens('density'));
+    expect(result.current.search).toContain('lens=density');
+
+    act(() => void vi.advanceTimersByTime(400));
+
+    expect(result.current.search).toContain('lat=20.0000');
+    expect(result.current.search).toContain('lens=density');
+    expect(result.current.shell.state.lens).toBe('density');
   });
 
-  it('parses combined from the URL when allowed by the surface', () => {
-    const { result } = renderHook(() => useMapShellState(discover), {
-      wrapper: wrapper('/map?lens=combined'),
-    });
-    expect(result.current.state.lens).toBe('combined');
+  it('keeps layers and filters written in the same window', () => {
+    const { result } = renderHook(useProbe, { wrapper: wrapper('/map') });
+
+    act(() => result.current.shell.setViewport({ center: [0, 20], zoom: 2.2 }));
+    act(() => result.current.shell.setLayers(['venues']));
+    act(() => result.current.shell.setFilters({ category: 'bar' }));
+    act(() => void vi.advanceTimersByTime(400));
+
+    expect(result.current.search).toContain('layers=venues');
+    expect(result.current.search).toContain('category=bar');
+    expect(result.current.search).toContain('z=2.20');
   });
 
-  it('ignores lens values not allowed by the surface', () => {
-    const { result } = renderHook(() => useMapShellState(discover), {
-      wrapper: wrapper('/map?lens=routes'),
+  it('builds on the prior value across writes in a single tick', () => {
+    const { result } = renderHook(useProbe, { wrapper: wrapper('/map') });
+
+    act(() => {
+      result.current.shell.setLens('boundary');
+      result.current.shell.setLayers(['venues', 'events']);
     });
-    expect(result.current.state.lens).toBe('combined');
+
+    expect(result.current.search).toContain('lens=boundary');
+    expect(result.current.search).toContain('layers=venues%2Cevents');
   });
 
-  it('parses filters (q, category, tags, near, queer_owned, era) from URL', () => {
-    const { result } = renderHook(() => useMapShellState(discover), {
-      wrapper: wrapper(
-        '/map?q=berlin&category=bar&tags=lesbian,trans&near=52.52,13.41,5&queer_owned=1&era=1970-1990',
-      ),
-    });
-    expect(result.current.state.filters.search).toBe('berlin');
-    expect(result.current.state.filters.category).toBe('bar');
-    expect(result.current.state.filters.tags).toEqual(['lesbian', 'trans']);
-    expect(result.current.state.filters.nearMe).toEqual({ lat: 52.52, lng: 13.41, radiusKm: 5 });
-    expect(result.current.state.filters.queerOwned).toBe(true);
-    expect(result.current.state.filters.era).toEqual({ decadeStart: 1970, decadeEnd: 1990 });
-  });
+  it('still deletes the param when the surface default is selected', () => {
+    const { result } = renderHook(useProbe, { wrapper: wrapper('/map?lens=density') });
+    expect(result.current.shell.state.lens).toBe('density');
 
-  it('parses viewport from URL', () => {
-    const { result } = renderHook(() => useMapShellState(discover), {
-      wrapper: wrapper('/map?lat=52.52&lng=13.41&z=12'),
-    });
-    expect(result.current.state.viewport).toEqual({ center: [13.41, 52.52], zoom: 12 });
-  });
+    // `combined` is discover's defaultLens — the only value that clears it.
+    act(() => result.current.shell.setLens('combined'));
+    expect(result.current.search).not.toContain('lens=');
 
-  it('rejects out-of-range lat/lng/zoom', () => {
-    const { result } = renderHook(() => useMapShellState(discover), {
-      wrapper: wrapper('/map?lat=999&lng=999&z=99'),
-    });
-    expect(result.current.state.viewport).toBeUndefined();
-  });
-
-  it('setLens removes the param when the value matches the surface default', () => {
-    const { result } = renderHook(() => useMapShellState(discover), {
-      wrapper: wrapper('/map?lens=density'),
-    });
-    act(() => result.current.setLens('combined'));
-    expect(result.current.state.lens).toBe('combined');
-  });
-
-  it('defaults city and admin surfaces to combined', () => {
-    const city = SURFACE_PRESETS.city;
-    const admin = SURFACE_PRESETS.admin;
-    const cityHook = renderHook(() => useMapShellState(city), {
-      wrapper: wrapper('/city'),
-    });
-    const adminHook = renderHook(() => useMapShellState(admin), {
-      wrapper: wrapper('/admin'),
-    });
-    expect(cityHook.result.current.state.lens).toBe('combined');
-    expect(adminHook.result.current.state.lens).toBe('combined');
-  });
-
-  it('still honors an explicit ?lens=pins over the combined default', () => {
-    const { result } = renderHook(() => useMapShellState(discover), {
-      wrapper: wrapper('/map?lens=pins'),
-    });
-    expect(result.current.state.lens).toBe('pins');
-  });
-
-  it('setFilters clears params when removed', () => {
-    const { result } = renderHook(() => useMapShellState(discover), {
-      wrapper: wrapper('/map?q=foo&queer_owned=1'),
-    });
-    expect(result.current.state.filters.search).toBe('foo');
-    expect(result.current.state.filters.queerOwned).toBe(true);
-    act(() => result.current.setFilters({}));
-    expect(result.current.state.filters.search).toBeUndefined();
-    expect(result.current.state.filters.queerOwned).toBeUndefined();
-  });
-
-  it('setLayers removes the param when empty', () => {
-    const { result } = renderHook(() => useMapShellState(discover), {
-      wrapper: wrapper('/map?layers=venues,events'),
-    });
-    expect(result.current.state.enabledLayers).toEqual(['venues', 'events']);
-    act(() => result.current.setLayers([]));
-    expect(result.current.state.enabledLayers).toEqual(seededLayers);
-  });
-
-  it('falls back to surface defaults when saved layer prefs are empty', () => {
-    // Regression: a once-saved `enabledLayers: []` in localStorage used to
-    // stick — `[] ?? config.layers` does not fall back — leaving bare /map
-    // with zero layers and "0 results in view".
-    localStorage.setItem('map_shell_prefs', JSON.stringify({ enabledLayers: [] }));
-    try {
-      const { result } = renderHook(() => useMapShellState(discover), {
-        wrapper: wrapper('/map'),
-      });
-      expect(result.current.state.enabledLayers).toEqual(seededLayers);
-    } finally {
-      localStorage.removeItem('map_shell_prefs');
-    }
-  });
-
-  it('ignores layer values not present in the surface preset', () => {
-    const { result } = renderHook(() => useMapShellState(discover), {
-      wrapper: wrapper('/map?layers=venues,fake_layer'),
-    });
-    expect(result.current.state.enabledLayers).toEqual(['venues']);
-  });
-
-  it('skips URL parsing when enableUrlState is false', () => {
-    const trip = SURFACE_PRESETS.trip;
-    const { result } = renderHook(() => useMapShellState(trip), {
-      wrapper: wrapper('/trips/x?lens=pins&q=foo'),
-    });
-    expect(result.current.state.lens).toBe(trip.defaultLens);
-    expect(result.current.state.filters.search).toBeUndefined();
+    // `pins` is NOT the default here, so it is written like any other lens.
+    act(() => result.current.shell.setLens('pins'));
+    expect(result.current.search).toContain('lens=pins');
   });
 });

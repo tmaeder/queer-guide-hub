@@ -106,6 +106,7 @@ jobs:
             e2e/nested-interactive.spec.ts \
             e2e/singles.spec.ts \
             e2e/legal-pages.spec.ts \
+            e2e/map-shell.spec.ts \
             --reporter=line
           # e2e/auth.setup.ts is FIRST on the list and is load-bearing.
           # Passing explicit file paths filters EVERY project, including the
@@ -125,6 +126,17 @@ jobs:
           # a dead layout branch with no safety gating because NOTHING
           # exercised it. A spec written to close that gap, parked behind a
           # hardcoded list it is not on, closes nothing.
+          # map-shell.spec.ts ran in NO workflow at all until 2026-08-19 —
+          # neither this list nor the nightly — so it had never gated anything
+          # in its life. It asserts the lens controls by accessible NAME, and
+          # #2880 renamed all four labels (Pins/Density/Boundary ->
+          # Stations/Heat/Areas) without touching it; three tests went red on
+          # prod and the rename still shipped green. Worse, the repair session
+          # then read one of those failures as an app bug and parked a
+          # `test.fixme` on a lens-sharing assertion that was in fact correct.
+          # A spec nothing runs does not just miss regressions, it manufactures
+          # phantom ones. ~1.1m for 8 tests, against a job measured at 8-9m of
+          # a 20m budget.
           # legal-pages.spec.ts is here for the SAME reason as design-system
           # below, and it is the second time this exact fault has been paid for.
           # The elevation contract is asserted in two files; only one of them was
