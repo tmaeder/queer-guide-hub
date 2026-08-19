@@ -199,23 +199,69 @@ export function wrapHtml(inner: string, branding: EmailBranding, opts: WrapOptio
  * to become line breaks or the whole mail arrives as one run-on paragraph, and
  * a link whose href is dropped is unusable in text.
  */
+/** Strip tags to a FIXED POINT, not in one pass.
+ *
+ *  `<scr<script>ipt>` survives a single `/<[^>]*>/g` — the inner match is
+ *  removed and the outer halves close up into a live tag behind it. Looping
+ *  until the string stops changing is the only way a regex strip is sound.
+ *  An unterminated `<tag` at the end is dropped too: nothing in this string
+ *  can close it, but whatever a caller concatenates afterwards can.
+ */
+function stripTags(input: string): string {
+  let out = input;
+  let prev: string;
+  do {
+    prev = out;
+    out = out.replace(/<[^>]*>/g, '');
+  } while (out !== prev);
+  return out.replace(/<[^>]*$/, '');
+}
+
+/** Decode entities in ONE pass.
+ *
+ *  Sequential `.replace()` calls double-unescape: decoding `&amp;` first turns
+ *  `&amp;lt;` into `&lt;`, and the later `&lt;` rule then turns it into a real
+ *  `<`. A single pass consumes each entity exactly once and never re-scans its
+ *  own output, so `&amp;lt;` correctly stays the literal text `&lt;`.
+ */
+const ENTITIES: Record<string, string> = {
+  nbsp: ' ',
+  amp: '&',
+  lt: '<',
+  gt: '>',
+  quot: '"',
+  '#39': "'",
+};
+const decodeEntities = (v: string) =>
+  v.replace(/&(nbsp|amp|lt|gt|quot|#39);/g, (_m, name: string) => ENTITIES[name] ?? _m);
+
+/**
+ * The plain-text twin. Every message ships one: a text/plain part is what
+ * screen-reader users, text-only clients and most spam filters actually read,
+ * and a missing one is itself a deliverability signal.
+ *
+ * Deliberately a real conversion, not `stripTags(html)` alone — block elements
+ * have to become line breaks or the whole mail arrives as one run-on
+ * paragraph, and a link whose href is dropped is unusable in text.
+ */
 export function toPlainText(html: string, opts: WrapOptions = {}): string {
-  const body = html
-    .replace(/<style[\s\S]*?<\/style>/gi, '')
-    .replace(/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi, (_m, href, text) =>
-      // `text (url)`, NOT `text <url>`: the generic tag-strip below runs
-      // afterwards and `<https://…>` matches /<[^>]+>/ exactly like a tag, so
-      // the angle-bracket form deleted every link target it had just written.
-      `${String(text).replace(/<[^>]+>/g, '').trim()} (${href})`)
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<\/(p|div|tr|h[1-6]|li)>/gi, '\n')
-    .replace(/<li\b[^>]*>/gi, '- ')
-    .replace(/<[^>]+>/g, '')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
+  const body = decodeEntities(
+    stripTags(
+      html
+        // Element CONTENT, not just the tags: the text inside <style>/<script>
+        // is not prose and must not survive into the body.
+        .replace(/<style\b[\s\S]*?<\/style\s*>/gi, '')
+        .replace(/<script\b[\s\S]*?<\/script\s*>/gi, '')
+        .replace(/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi, (_m, href, text) =>
+          // `text (url)`, NOT `text <url>`: the tag strip below matches
+          // `<https://…>` exactly like a tag and would delete every link
+          // target it had just written.
+          `${stripTags(String(text)).trim()} (${href})`)
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<\/(p|div|tr|h[1-6]|li)\s*>/gi, '\n')
+        .replace(/<li\b[^>]*>/gi, '- '),
+    ),
+  )
     .replace(/[ \t]+/g, ' ')
     .replace(/\n{3,}/g, '\n\n')
     .trim();

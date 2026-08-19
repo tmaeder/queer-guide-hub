@@ -83,7 +83,10 @@ Deno.test('unsubscribe is offered ONLY for the bulk class', () => {
 Deno.test('an unknown/omitted class defaults to account, the safest', () => {
   const html = wrapHtml('<p>hi</p>', BRANDING, { unsubscribeUrl: 'https://x.test/u' });
   assertStringIncludes(html, MESSAGE_CLASSES.account.accent);
-  assert(!html.includes('https://x.test/u'), 'default class must not be treated as bulk');
+  // Assert on the LINK, not on a bare substring of the URL — a substring can
+  // match inside an unrelated href and the check would pass by accident
+  // (CodeQL js/incomplete-url-substring-sanitization).
+  assert(!/href=["']https:\/\/x\.test\/u["']/.test(html), 'default class must not be treated as bulk');
 });
 
 Deno.test('the footer band carries reason and postal address', () => {
@@ -122,4 +125,37 @@ Deno.test('plain text mirrors the unsubscribe rule of the HTML', () => {
 Deno.test('plain text carries the action URL, which a label alone cannot', () => {
   const text = toPlainText('<p>hi</p>', { action: { label: 'Open trip', url: 'https://queer.guide/t/9' } });
   assertStringIncludes(text, 'Open trip: https://queer.guide/t/9');
+});
+
+// ── Regression tests for the three CodeQL findings ────────────────────────
+// Each asserts the DEFECT is gone, not merely that the scanner is quiet.
+
+Deno.test('entities are decoded once — no double-unescape', () => {
+  // `&amp;lt;` must stay the literal text `&lt;`. Decoding `&amp;` first and
+  // `&lt;` afterwards turned it into a real `<` (CodeQL js/double-escaping).
+  const text = toPlainText('<p>&amp;lt;script&amp;gt;</p>');
+  assertStringIncludes(text, '&lt;script&gt;');
+  assert(!text.includes('<script>'), 'double-unescaped into a live tag');
+});
+
+Deno.test('nested tags are stripped to a fixed point', () => {
+  // A single pass removes the inner match and closes the outer halves into a
+  // live tag behind it (CodeQL js/incomplete-multi-character-sanitization).
+  const text = toPlainText('<p><scr<script>ipt>alert(1)</p>');
+  assert(!/<script/i.test(text), `still contains <script: ${text}`);
+  assert(!/<[a-z]/i.test(text), `tag-like residue survived: ${text}`);
+});
+
+Deno.test('an unterminated tag start does not survive', () => {
+  // Nothing in this string can close it, but whatever a caller concatenates
+  // afterwards can.
+  const text = toPlainText('<p>hello</p><script');
+  assert(!text.includes('<script'), `unterminated tag survived: ${text}`);
+});
+
+Deno.test('style and script CONTENT never reaches the body', () => {
+  const text = toPlainText('<style>.x{color:red}</style><script>alert(1)</script><p>real</p>');
+  assertStringIncludes(text, 'real');
+  assert(!text.includes('color:red'), 'style content leaked');
+  assert(!text.includes('alert(1)'), 'script content leaked');
 });
