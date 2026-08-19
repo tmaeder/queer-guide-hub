@@ -472,26 +472,36 @@ to report, so after a jump to section 11 the rail stayed pinned to section 1.
 
 ## Brand (`src/components/brand/`)
 
-- **`MasterSymbol`** — "Cupid's transit", one line left to right: arrow in,
-  through the heart, out as a wavy exit. Black-only via currentColor.
-  **Both tracks bend** — the entry ran straight (`H 134`) with its arrowhead
-  stranded mid-shaft until 2026-08, i.e. the mark broke hard rule #1. Stroke
-  15 in a 354-unit box (~4.2%) so it carries the same visual weight as
-  `TransitIcon` beside it; at the old 12/360 the header mark drew ~1.3px
-  strokes next to the icons' 2.4px. viewBox `0 24 354 190` is trimmed to the
-  ink (~10 units of pad on every side) — the old `0 0 360 210` spent a third
-  of the height on nothing.
-- **`Wordmark`** — lowercase Anton "queer.guide", ink only. It carried a pink
-  heart nested at the g's descender until 2026-08; that is **removed on
-  purpose — do not re-add it**. The whole mark now obeys one rule, the
-  master symbol's: ink on paper, or reversed. It also drops the wordmark's
-  dependence on Anton's metrics (the heart needed a hand-measured
-  `right-[2.02em]` that held only for that string, face and tracking).
-  Header default (the /admin/design logoUrl override keeps the img branch).
-- The mark exists as three copies — component, `scripts/generate-brand-assets.mjs`
-  (OG), `public/favicon.svg` (square crop, the source every icon PNG is
-  rasterised from). `__tests__/brandAssetSync.test.ts` pins them together,
-  asserts both tracks bend, and fails if any hue reappears in any of them.
+- **The logo is the `Wordmark`, alone.** Lowercase Anton "queer.guide", ink
+  only. The design project's brand rules: *"It never takes color, gradients, a
+  symbol or a container."* §03 adds the two rules that bite in code — **clear
+  space** ("half the cap height on every side. Nothing sits inside it, no line,
+  no station dot, no badge") and **one case** (always lowercase, always with the
+  dot; never "Queer Guide"). The wordmark once nested a pink heart at the g's
+  descender; that is **removed on purpose, do not re-add it**, and it also
+  dropped a hand-measured `right-[2.02em]` that held only for that string, face
+  and tracking.
+- **`MasterSymbol` is GONE (2026-08-19).** "Cupid's transit" is retired — it
+  "survives only on the Logo Options sheet as history". It used to sit beside
+  the wordmark in the header and footer, and three more lockups in the auth
+  flow paired a lucide heart with "Queer Guide" in Space Grotesk (one of them
+  with `gradient-text` and `animate-pulse`). All are the wordmark now. The
+  header can no longer drop the wordmark below `sm` — it steps down to 17px,
+  inside §03's 16px floor.
+- **The app icon is the Icon System's "Rainbow" glyph**, reused verbatim from
+  `TRANSIT_ICON_PATHS` so there is no second copy to drift. A wordmark cannot be
+  a favicon (Anton at 16px is illegible), and the obvious candidate does not
+  work: **"Route" was measured and rejected** — its station rings are radius 7
+  against a stroke of 9–11, so the 1.5–3.5 unit hole fills in at every weight
+  and the glyph reads as a dumbbell, breaking the set's own "open circles, never
+  a filled dot" rule. It is legible in a row of icons, where neighbours give it
+  context; a browser tab gives none. Rainbow's arcs are 16 units apart against a
+  9 stroke.
+- Two renditions must not drift: `public/favicon.svg` (the source every icon
+  PNG and the .ico are rasterised from) and the OG composition in
+  `scripts/generate-brand-assets.mjs` (the wordmark alone, no `<path>` at all).
+  `__tests__/brandAssetSync.test.ts` pins both, asserts the icon bends, and
+  fails if any hue reappears in either.
 - Icons / maskables / favicon.ico / OG regenerate via
   `node scripts/generate-brand-assets.mjs` — playwright, no `sharp` (which was
   never installed, so the script could not run and the icons drifted).
