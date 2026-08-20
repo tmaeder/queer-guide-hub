@@ -1,9 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { getFallbackImage, getRandomFallbackImage, FALLBACK_IMAGES } from '../fallbackImages';
+import { getFallbackImage, FALLBACK_IMAGES } from '../fallbackImages';
 
 describe('fallbackImages', () => {
   it('returns a string from the curated pool', () => {
-    expect(FALLBACK_IMAGES).toContain(getRandomFallbackImage());
     expect(FALLBACK_IMAGES).toContain(getFallbackImage('venue', 'abc'));
   });
 
@@ -14,7 +13,6 @@ describe('fallbackImages', () => {
 
   it('keyless calls are stable (never random)', () => {
     expect(getFallbackImage('venue')).toBe(getFallbackImage('venue'));
-    expect(getRandomFallbackImage()).toBe(getRandomFallbackImage());
   });
 
   it('varies the image across themes for the same key', () => {

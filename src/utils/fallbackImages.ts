@@ -69,13 +69,4 @@ export function getFallbackImage(theme: FallbackTheme = 'default', key?: string)
   return FALLBACK_IMAGES[hashKey(`${theme}:${key}`) % FALLBACK_IMAGES.length];
 }
 
-/**
- * @deprecated Use {@link getFallbackImage} with a theme + entity key so the
- * fallback is stable per entity. Retained as a stable (no longer random) shim
- * for callers not yet migrated; returns the `default` theme default.
- */
-export function getRandomFallbackImage(): string {
-  return getFallbackImage('default');
-}
-
 export { FALLBACK_IMAGES };
