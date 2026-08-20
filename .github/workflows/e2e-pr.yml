@@ -107,7 +107,6 @@ jobs:
             e2e/singles.spec.ts \
             e2e/legal-pages.spec.ts \
             e2e/map-shell.spec.ts \
-            e2e/tags-not-found.spec.ts \
             --reporter=line
           # e2e/auth.setup.ts is FIRST on the list and is load-bearing.
           # Passing explicit file paths filters EVERY project, including the
@@ -138,15 +137,17 @@ jobs:
           # A spec nothing runs does not just miss regressions, it manufactures
           # phantom ones. ~1.1m for 8 tests, against a job measured at 8-9m of
           # a 20m budget.
-          # tags-not-found.spec.ts guards the /tags/:slug 404 on BOTH surfaces,
-          # and until 2026-08-20 it was on no list either. That gap is why the
-          # SPA branch shipped as an indexable soft 404: `useMeta` read a single
-          # `!tag` test that conflated loading with not-found, so a dead glossary
-          # URL published `<title>Loading</title>` with NO robots tag and a
-          # self-referencing canonical. Measured on production, not inferred.
-          # The edge answers first on a hard load, so curl sees a correct 404 and
-          # every prod-only check passes — the defect is only reachable by
-          # client-side navigation, which is exactly what this spec drives.
+          # tags-not-found.spec.ts must NEVER be added to this list, and it was
+          # tried on 2026-08-20. It asserts `res.status() === 404` for an unknown
+          # /tags/:slug, which is `functions/_middleware.ts` answering — and this
+          # job serves `vite preview` on localhost:4173, a static server with no
+          # Pages Functions at all. The SPA fallback returns 200 there, so both
+          # of its tests fail by construction, on every run, no matter the app.
+          # It already runs in the nightly, whose baseURL defaults to
+          # https://queer.guide, which is the only surface that HAS an edge.
+          # The PR-time guard for the SPA half of that route is the unit test in
+          # src/pages/__tests__/TagDetail.test.tsx — an edge-backed 404 hides the
+          # SPA branch entirely, so prod e2e cannot cover the meta it emits.
           # legal-pages.spec.ts is here for the SAME reason as design-system
           # below, and it is the second time this exact fault has been paid for.
           # The elevation contract is asserted in two files; only one of them was
