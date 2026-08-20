@@ -211,6 +211,22 @@ describe('TagDetail — page', () => {
     expect(await screen.findByTestId('tag-not-found')).toBeInTheDocument();
   });
 
+  it('noindexes an unknown slug and does not title it "Loading"', async () => {
+    // The meta memo used to branch on `!tag` alone, which conflated "still
+    // loading" with "no such tag": a dead URL shipped `<title>Loading</title>`
+    // and — because `noIndex` lived only on the resolved-tag branch — NO robots
+    // tag at all, while `useMeta` still emitted a self-referential canonical.
+    // That is an indexable soft 404, the shape that got merged slugs indexed
+    // before they were 301'd. The canonical cannot be suppressed through
+    // `useMeta`, so `noIndex` is the assertion that matters here.
+    tagRow = null;
+    renderPage();
+    await screen.findByTestId('tag-not-found');
+    await waitFor(() => expect(lastMeta()?.noIndex).toBe(true));
+    expect(lastMeta()?.title).toBe('No such term');
+    expect(lastMeta()?.title).not.toMatch(/loading/i);
+  });
+
   it('cites an external source by host, and links out to it', async () => {
     // The label is derived from the URL rather than printed from
     // `claim_summary`, so an unvetted row cannot put prose on the page.

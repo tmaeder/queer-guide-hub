@@ -137,6 +137,17 @@ jobs:
           # A spec nothing runs does not just miss regressions, it manufactures
           # phantom ones. ~1.1m for 8 tests, against a job measured at 8-9m of
           # a 20m budget.
+          # tags-not-found.spec.ts must NEVER be added to this list, and it was
+          # tried on 2026-08-20. It asserts `res.status() === 404` for an unknown
+          # /tags/:slug, which is `functions/_middleware.ts` answering — and this
+          # job serves `vite preview` on localhost:4173, a static server with no
+          # Pages Functions at all. The SPA fallback returns 200 there, so both
+          # of its tests fail by construction, on every run, no matter the app.
+          # It already runs in the nightly, whose baseURL defaults to
+          # https://queer.guide, which is the only surface that HAS an edge.
+          # The PR-time guard for the SPA half of that route is the unit test in
+          # src/pages/__tests__/TagDetail.test.tsx — an edge-backed 404 hides the
+          # SPA branch entirely, so prod e2e cannot cover the meta it emits.
           # legal-pages.spec.ts is here for the SAME reason as design-system
           # below, and it is the second time this exact fault has been paid for.
           # The elevation contract is asserted in two files; only one of them was
