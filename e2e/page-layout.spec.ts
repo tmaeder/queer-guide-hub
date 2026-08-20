@@ -57,6 +57,28 @@ const ROUTES = [
 
 const WIDTHS = [390, 768, 1440, 1920];
 
+/**
+ * How far RIGHT the header's content row starts, relative to the page's.
+ *
+ * The header is a floating island inset from the window; the page is not. Both
+ * share one cap and one gutter. So the offset is NOT simply the inset — it
+ * depends on whether the cap has engaged:
+ *
+ *   header = inset + max(0, (V - 2*inset - cap)/2) + gutter
+ *   page   =         max(0, (V          - cap)/2) + gutter
+ *
+ *   neither capped  -> offset = inset          (the gutter sets both edges)
+ *   both capped     -> offset = 0              (centring absorbs the inset)
+ *   page only       -> offset = inset - (V-cap)/2
+ *
+ * which collapses to the line below. Getting this wrong is not hypothetical:
+ * the listing block asserted a constant `inset` and failed on EVERY route at
+ * 1920px, while the detail block assumed a constant 0 and failed at 390 and
+ * 1440 — the same misreading, in opposite directions, in one file.
+ */
+const expectedHeaderOffset = (viewport: number, cap: number, inset: number) =>
+  inset - Math.min(inset, Math.max(0, (viewport - cap) / 2));
+
 /** Left edge of a container's CONTENT (border box + its own gutter). */
 const EDGES = `(() => {
   const cs = (n, k) => Math.round(parseFloat(getComputedStyle(n)[k]) || 0);
@@ -75,8 +97,12 @@ const EDGES = `(() => {
   const inset = Math.round(
     parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--island-inset')) || 0,
   );
+  // The cap ACTUALLY IN FORCE, read off the element — not parsed from the
+  // token, which is authored in rem and would need a unit guess here.
+  const capPx = header ? Math.round(parseFloat(getComputedStyle(header).maxWidth) || 0) : 0;
   return {
     header: header ? contentLeft(header) : null,
+    cap: capPx,
     islandInset: inset,
     pages: Array.from(new Set(tops.map(contentLeft))),
     overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
@@ -103,11 +129,12 @@ test.describe('page layout — one gutter, one cap, one rhythm', () => {
         // content row share one gutter and one cap, offset by the island
         // inset. A route that hand-rolls its own wrapper still fails here.
         expect(r.islandInset, 'no --island-inset token on :root').toBeGreaterThan(0);
+        const offset = expectedHeaderOffset(width, r.cap as number, r.islandInset as number);
         for (const left of r.pages) {
           expect(
-            Math.abs(left + r.islandInset - (r.header as number)),
+            Math.abs(left + offset - (r.header as number)),
             `${route} @${width}: content starts at ${left}, header at ${r.header} ` +
-              `(island inset ${r.islandInset})`,
+              `(island inset ${r.islandInset}, cap ${r.cap}, expected offset ${offset})`,
           ).toBeLessThanOrEqual(1);
         }
 
@@ -193,7 +220,20 @@ test.describe('page layout — detail routes', () => {
             Math.round(n.getBoundingClientRect().left) + cs(n, 'paddingLeft');
           const frame = document.querySelector('[data-testid="entity-detail-layout"]');
           const header = document.querySelector('header .max-w-page');
+          // This block previously compared frame and header DIRECTLY, i.e. it
+          // assumed an offset of zero — true only once the cap engages. It was
+          // therefore failing at 390 and 1440 by exactly the inset while the
+          // listing block above failed at 1920 by exactly the same amount, in
+          // the other direction.
+          const inset = Math.round(
+            parseFloat(
+              getComputedStyle(document.documentElement).getPropertyValue('--island-inset'),
+            ) || 0,
+          );
+          const cap = header ? Math.round(parseFloat(getComputedStyle(header).maxWidth) || 0) : 0;
           return {
+            inset,
+            cap,
             capped: frame ? frame.className.includes('max-w-page') : false,
             bareContainer: frame ? frame.className.split(/\s+/).includes('container') : false,
             frame: frame ? contentLeft(frame) : null,
@@ -205,9 +245,11 @@ test.describe('page layout — detail routes', () => {
         expect(r.capped, `${href} detail frame is not on --container-page`).toBe(true);
         expect(r.bareContainer, `${href} detail frame hand-rolls \`container\``).toBe(false);
         expect(r.header, 'header has no capped content row').not.toBeNull();
+        const detailOffset = expectedHeaderOffset(width, r.cap as number, r.inset as number);
         expect(
-          Math.abs((r.frame as number) - (r.header as number)),
-          `${href} @${width}: content starts at ${r.frame}, header at ${r.header}`,
+          Math.abs((r.frame as number) + detailOffset - (r.header as number)),
+          `${href} @${width}: content starts at ${r.frame}, header at ${r.header} ` +
+            `(island inset ${r.inset}, cap ${r.cap}, expected offset ${detailOffset})`,
         ).toBeLessThanOrEqual(1);
         expect(r.overflow, `${href} @${width} scrolls horizontally`).toBeLessThanOrEqual(0);
       });
