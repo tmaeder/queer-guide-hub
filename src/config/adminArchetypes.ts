@@ -183,6 +183,7 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
     archetype: 'D',
     title: 'Pipelines',
     subFrames: ['G', 'A', 'E'],
+    adopted: true,
     caveat:
       'ONE route, FOUR archetypes: 13 tabs spanning the monitor (D), the builder canvas (G), the ' +
       'sources/staging tables (A) and the coverage charts (E). Registered with subFrames rather ' +
