@@ -5,6 +5,13 @@ import { test, expect } from '@playwright/test';
 // canonical grid, and that filter chips collapse the rails section.
 
 test.describe('Venues v2', () => {
+  // The chromium project applies the admin storageState whenever E2E_ADMIN_*
+  // resolves, so "signed out" has to be ASKED for — a spec that merely never
+  // signs in is signed IN. Those secrets began resolving between the 08-18 and
+  // 08-19 nightlies, which is when these cases started failing there while
+  // passing locally, where no credentials exist.
+  test.use({ storageState: { cookies: [], origins: [] } });
+
   test.setTimeout(60_000);
 
   test('renders hero + rails + grid when no filters', async ({ page }) => {
