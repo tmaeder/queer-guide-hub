@@ -24406,7 +24406,6 @@ export type Database = {
           url_checked_at: string | null
           url_status: string | null
           venue_subtype: string | null
-          verification_status: string
           verified: boolean | null
           vibe_tags: string[] | null
           website: string | null
@@ -24494,7 +24493,6 @@ export type Database = {
           url_checked_at?: string | null
           url_status?: string | null
           venue_subtype?: string | null
-          verification_status?: string
           verified?: boolean | null
           vibe_tags?: string[] | null
           website?: string | null
@@ -24582,7 +24580,6 @@ export type Database = {
           url_checked_at?: string | null
           url_status?: string | null
           venue_subtype?: string | null
-          verification_status?: string
           verified?: boolean | null
           vibe_tags?: string[] | null
           website?: string | null

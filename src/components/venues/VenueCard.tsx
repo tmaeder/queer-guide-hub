@@ -88,7 +88,7 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
     typeof venue?.price_range === 'number' && venue.price_range > 0
       ? '$'.repeat(Math.min(4, Math.max(1, venue.price_range)))
       : null;
-  const isVerified = venue?.verified === true || venue?.verification_status === 'verified';
+  const isVerified = venue?.verified === true;
   const isClosed = !!venue?.closed_at && new Date(venue.closed_at) <= new Date();
   const topTags = (venue?.tags ?? []).slice(0, 2);
   const locationLabel = venue ? [venue.city, venue.state].filter(Boolean).join(', ') : '';
