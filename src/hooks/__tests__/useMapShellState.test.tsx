@@ -86,6 +86,34 @@ describe('useMapShellState — URL writes', () => {
     expect(result.current.search).toContain('layers=venues%2Cevents');
   });
 
+  it('lands on the default after a rapid density -> pins -> combined sequence', () => {
+    const { result } = renderHook(useProbe, { wrapper: wrapper('/map') });
+
+    act(() => result.current.shell.setViewport({ center: [0, 20], zoom: 2.2 }));
+    act(() => result.current.shell.setLens('density'));
+    act(() => result.current.shell.setLens('pins'));
+    act(() => result.current.shell.setLens('combined'));
+    act(() => void vi.advanceTimersByTime(400));
+
+    expect(result.current.search).not.toContain('lens=');
+    expect(result.current.shell.state.lens).toBe('combined');
+  });
+
+  it('does not resurrect a stale saved lens after the default is chosen', () => {
+    // `prefs` is read once at mount, and the fallback for "no lens param" is
+    // that saved value. A remount mid-session must not reinstate the lens the
+    // user just cleared.
+    localStorage.setItem('map_shell_prefs', JSON.stringify({ lens: 'pins' }));
+    const { result, rerender } = renderHook(useProbe, { wrapper: wrapper('/map') });
+    expect(result.current.shell.state.lens).toBe('pins');
+
+    act(() => result.current.shell.setLens('combined'));
+    rerender();
+
+    expect(result.current.search).not.toContain('lens=');
+    expect(result.current.shell.state.lens).toBe('combined');
+  });
+
   it('still deletes the param when the surface default is selected', () => {
     const { result } = renderHook(useProbe, { wrapper: wrapper('/map?lens=density') });
     expect(result.current.shell.state.lens).toBe('density');

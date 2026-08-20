@@ -6,8 +6,16 @@ import { test, expect } from '@playwright/test';
 // /tags/:slug is a detail route, so the Cloudflare Pages middleware hard-404s
 // unknown slugs at the edge (functions/_middleware.ts notFoundHtml) — a real
 // 404 status + a static "No stop here." page, consistent with every other
-// detail route. The SPA `tag-not-found` component only renders on a
-// client-side navigation to a broken tag link, not on a hard load.
+// detail route.
+//
+// The SPA `tag-not-found` component renders whenever the edge does NOT answer
+// first — that means BOTH a client-side navigation to a broken tag link AND a
+// hard load on any surface with no middleware (dev server, `vite preview`).
+// This comment used to claim "not on a hard load"; measured false on a dev
+// server (`navType: "navigate"` → `<h1>No such term</h1>`, testid present).
+// Its copy is `tags.detail.notFound.title` = "No such term", which is NOT the
+// edge's "No stop here." — every cross-surface 404 assertion has to accept both
+// strings. Assuming they were identical is what broke tags-smoke.spec.ts (#2762).
 
 test.describe('@p1-4 /tags/[slug] 404', () => {
   test('unknown slug returns a hard 404, not the overview', async ({ page }) => {

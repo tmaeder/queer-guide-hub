@@ -115,7 +115,24 @@ export function useMapShellState(config: MapShellConfig): UseMapShellStateResult
     [setSearchParams],
   );
 
-  const prefs = useMemo(() => readPrefs(), []);
+  /**
+   * Saved prefs are the fallback for "no param in the URL", and this hook is
+   * also what writes them — so a mount-time snapshot goes stale the moment the
+   * user changes anything, and choosing the SURFACE DEFAULT became impossible:
+   * `setLens` deletes the param for the default (URLs stay clean), the read
+   * path then fell through to the snapshot, and the previous lens reinstated
+   * itself. With `pins` saved, clicking Combined removed `?lens=pins` and left
+   * the map on Pins — no error, no way out except clearing localStorage.
+   * The ref tracks what we have actually written.
+   */
+  const initialPrefs = useMemo(() => readPrefs(), []);
+  const prefsRef = useRef(initialPrefs);
+  const prefs = prefsRef.current;
+  const savePrefs = useCallback((partial: Partial<MapShellState>) => {
+    prefsRef.current = { ...(prefsRef.current ?? {}), ...partial };
+    writePrefs(partial);
+  }, []);
+
   const defaultLayers = useMemo(
     () => config.defaultEnabledLayers ?? seedEnabledLayers(config.layers),
     [config.defaultEnabledLayers, config.layers],
@@ -194,9 +211,9 @@ export function useMapShellState(config: MapShellConfig): UseMapShellStateResult
       } else {
         inMemoryRef.current.lens = next;
       }
-      writePrefs({ lens: next });
+      savePrefs({ lens: next });
     },
-    [useUrl, writeParams, config.defaultLens],
+    [useUrl, writeParams, savePrefs, config.defaultLens],
   );
 
   const setLayers = useCallback(
@@ -209,9 +226,9 @@ export function useMapShellState(config: MapShellConfig): UseMapShellStateResult
       } else {
         inMemoryRef.current.enabledLayers = next;
       }
-      writePrefs({ enabledLayers: next });
+      savePrefs({ enabledLayers: next });
     },
-    [useUrl, writeParams],
+    [useUrl, writeParams, savePrefs],
   );
 
   const setFilters = useCallback(

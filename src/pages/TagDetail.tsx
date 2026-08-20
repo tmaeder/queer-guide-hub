@@ -319,7 +319,18 @@ export default function TagDetail() {
   }, [tag, safeMode]);
 
   const meta = useMemo(() => {
-    if (!tag) return { title: t('tags.detail.loading', 'Glossary') };
+    // Mirror the render's three branches below. A single `!tag` test conflated
+    // "still loading" with "no such tag", so a dead glossary URL published
+    // `<title>Loading</title>` — and, worse, inherited NO `noIndex`, which only
+    // existed on the resolved-tag branch. `useMeta` always emits a canonical
+    // (falling back to `pathname`), so an unknown slug advertised itself as its
+    // own canonical with no robots tag: an indexable soft 404, the same failure
+    // that got merged slugs indexed before they were 301'd. `noIndex` is the
+    // lever that shuts that off — the canonical cannot be suppressed here.
+    if (isLoading) return { title: t('tags.detail.loading', 'Loading') };
+    if (isError || !tag) {
+      return { title: t('tags.detail.notFound.title', 'No such term'), noIndex: true };
+    }
     const longFirst = tag.long_description
       ?.trim()
       .split(/\n{2,}/)[0]
@@ -359,7 +370,10 @@ export default function TagDetail() {
     // `legalSources` MUST stay in this list. It arrives with the same fetch as
     // `tag`, but omitting it is the useMeta-freezing bug: the memo would keep the
     // first-computed jsonLd and publish a DefinedTerm with no `citation`.
-  }, [tag, legalSources, isAdult, t]);
+    // `isLoading`/`isError` are load-bearing for the same reason: they gate the
+    // two branches above, so leaving them out would pin the title to "Loading"
+    // for the whole visit — exactly the bug this replaced.
+  }, [tag, legalSources, isAdult, isLoading, isError, t]);
   useMeta(meta);
 
   if (isLoading) {

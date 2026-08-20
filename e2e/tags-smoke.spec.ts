@@ -70,14 +70,20 @@ test.describe('@smoke /tags happy path', () => {
     // against a dev server there is no edge, so the SPA's own not-found branch
     // renders. What must NEVER happen — and what this actually guards — is
     // silently falling back to the glossary index.
-    // The heading is "No stop here." on BOTH surfaces — `functions/_middleware.ts`
-    // and `pages.notFound.heading` in the locales are the same string, and
-    // tags-not-found.spec.ts already asserts it. The wording this test used to
-    // look for ("doesn't exist" / "page not found" / "no such term") exists
-    // nowhere in the product, so it could only ever have passed by accident.
+    // The two surfaces use DIFFERENT copy, so the regex must accept both:
+    //   edge  — `functions/_middleware.ts` notFoundHtml → "No stop here."
+    //   SPA   — `tags.detail.notFound.title` → "No such term"
+    //           (`src/pages/TagDetail.tsx`, the `isError || !tag` branch)
+    // #2762 narrowed this to the edge string alone on the premise that "no such
+    // term" existed nowhere in the product. It does — `en.json` →
+    // `tags.detail.notFound.title` — and it is exactly what a dev server renders,
+    // so dropping it broke the surface this test's own comment promises to cover.
+    // That change was verified on production only, where the edge answers first
+    // and the SPA branch never runs. Measured on a dev server: a hard load
+    // renders `tag-not-found` with `<h1>No such term</h1>` in ~50ms.
     await page.goto('/tags/asdfgibberish-not-real');
     await expect(
-      page.getByRole('heading', { name: /no stop here|page not found/i }).first(),
+      page.getByRole('heading', { name: /no stop here|no such term/i }).first(),
     ).toBeVisible({ timeout: 15_000 });
     await expect(page.getByRole('searchbox', { name: /search the glossary/i })).toHaveCount(0);
   });
