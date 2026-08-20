@@ -31,6 +31,13 @@ test.describe('/bookings → /hub/plans redirect', () => {
 });
 
 test.describe('/trips/inbox (signed out)', () => {
+  // The chromium project applies the admin storageState whenever E2E_ADMIN_*
+  // resolves, so "signed out" has to be ASKED for — a spec that merely never
+  // signs in is signed IN. Those secrets began resolving between the 08-18 and
+  // 08-19 nightlies, which is when these cases started failing there while
+  // passing locally, where no credentials exist.
+  test.use({ storageState: { cookies: [], origins: [] } });
+
   test('renders the trips signed-out hero, not a crash', async ({ page }) => {
     await page.goto('/trips/inbox');
     await page.waitForLoadState('domcontentloaded');
@@ -38,7 +45,10 @@ test.describe('/trips/inbox (signed out)', () => {
     // Signed-out users get the same TripsSignedOutHero as /trips. We assert
     // the page rendered something interactive — not a blank or error screen.
     await expect(
-      page.getByRole('button').filter({ hasText: /sign in|anmelden|connexion|iniciar/i }).first(),
+      page
+        .getByRole('button')
+        .filter({ hasText: /sign in|anmelden|connexion|iniciar/i })
+        .first(),
     ).toBeVisible({ timeout: 15000 });
   });
 
@@ -75,7 +85,10 @@ test.describe('header user menu', () => {
     // /trips redirects anon to the /hub/plans auth gate; its Sign In link is
     // the app-mounted signal (networkidle never settles on prod).
     await expect(page).toHaveURL(/\/hub\/plans/, { timeout: 15_000 });
-    await page.getByRole('link', { name: /sign in/i }).first().waitFor({ timeout: 15_000 });
+    await page
+      .getByRole('link', { name: /sign in/i })
+      .first()
+      .waitFor({ timeout: 15_000 });
     const directLinks = page.locator('a[href$="/bookings"], a[href*="/bookings?"]');
     expect(await directLinks.count()).toBe(0);
   });

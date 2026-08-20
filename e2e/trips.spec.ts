@@ -13,6 +13,13 @@ import { test, expect } from '@playwright/test';
  */
 
 test.describe('/trips (signed out)', () => {
+  // The chromium project applies the admin storageState whenever E2E_ADMIN_*
+  // resolves, so "signed out" has to be ASKED for — a spec that merely never
+  // signs in is signed IN. Those secrets began resolving between the 08-18 and
+  // 08-19 nightlies, which is when these cases started failing there while
+  // passing locally, where no credentials exist.
+  test.use({ storageState: { cookies: [], origins: [] } });
+
   test('renders the signed-out hero with both CTAs', async ({ page }) => {
     await page.goto('/trips');
 
@@ -20,7 +27,10 @@ test.describe('/trips (signed out)', () => {
     // CTA. We don't assert text content because it's i18n-driven and the
     // page may pick a non-English locale based on Accept-Language.
     await expect(
-      page.getByRole('button').filter({ hasText: /sign in|anmelden|connexion|iniciar/i }).first(),
+      page
+        .getByRole('button')
+        .filter({ hasText: /sign in|anmelden|connexion|iniciar/i })
+        .first(),
     ).toBeVisible({ timeout: 15000 });
 
     // The trip planner hero is distinguished by its 3 value bullets.

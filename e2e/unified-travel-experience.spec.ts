@@ -7,6 +7,13 @@ import { test, expect } from '@playwright/test';
  */
 
 test.describe('unified travel experience', () => {
+  // The chromium project applies the admin storageState whenever E2E_ADMIN_*
+  // resolves, so "signed out" has to be ASKED for — a spec that merely never
+  // signs in is signed IN. Those secrets began resolving between the 08-18 and
+  // 08-19 nightlies, which is when these cases started failing there while
+  // passing locally, where no credentials exist.
+  test.use({ storageState: { cookies: [], origins: [] } });
+
   // The Browse/Plan tablist was removed — /travel is now a single hub page
   // (src/pages/Travel.tsx).
   //
@@ -16,9 +23,9 @@ test.describe('unified travel experience', () => {
   // then read as "the travel hub does not render" while the hub was fine.
   test('/travel renders the travel hub', async ({ page }) => {
     await page.goto('/travel');
-    await expect(
-      page.getByRole('heading', { level: 1, name: /where are you going/i }),
-    ).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole('heading', { level: 1, name: /where are you going/i })).toBeVisible(
+      { timeout: 15_000 },
+    );
   });
 
   // WAS: 'legacy ?mode=browse is dropped from the URL'. The rebuilt /travel has
@@ -32,13 +39,10 @@ test.describe('unified travel experience', () => {
   test('a legacy ?mode= URL still lands on the travel hub', async ({ page }) => {
     await page.goto('/travel?mode=browse');
     await expect(page).toHaveURL(/\/travel/);
-    await expect(
-      page.getByRole('heading', { level: 1, name: /where are you going/i }),
-    ).toBeVisible({ timeout: 15_000 });
-    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
-      'href',
-      /\/travel$/,
+    await expect(page.getByRole('heading', { level: 1, name: /where are you going/i })).toBeVisible(
+      { timeout: 15_000 },
     );
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', /\/travel$/);
   });
 
   test('/hotels survives as transactional shortcut', async ({ page }) => {
@@ -55,9 +59,7 @@ test.describe('unified travel experience', () => {
     await expect(page.getByRole('link', { name: /sign in/i })).toBeVisible({ timeout: 15_000 });
   });
 
-  test('/profile/footprint requires auth (no crash on unauthenticated load)', async ({
-    page,
-  }) => {
+  test('/profile/footprint requires auth (no crash on unauthenticated load)', async ({ page }) => {
     const errors: string[] = [];
     page.on('pageerror', (e) => errors.push(e.message));
     await page.goto('/profile/footprint');
