@@ -1244,6 +1244,20 @@
     "required": {
       "title": "Sign in required",
       "description": "Please sign in to continue."
+    },
+    "reset": {
+      "title": "[AR] Set a new password",
+      "blurb": "[AR] Choose a new password for your account.",
+      "newPassword": "[AR] New password",
+      "confirmPassword": "[AR] Confirm new password",
+      "submit": "[AR] Update password",
+      "success": "[AR] Password updated.",
+      "expiredTitle": "[AR] This reset link has expired",
+      "expiredBody": "[AR] Reset links work once and only in the browser that requested them. Request a new one to continue.",
+      "requestNew": "[AR] Request a new link",
+      "errors": {
+        "mismatch": "[AR] Both passwords must match."
+      }
     }
   },
   "onboarding": {

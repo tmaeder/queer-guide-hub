@@ -24,6 +24,30 @@ function isPrivateIpv4([a, b]: number[]): boolean {
   return false
 }
 
+// IPv4-mapped/-translated IPv6 literals (::ffff:a9fe:a9fe / ::ffff:169.254.169.254)
+// embed a real IPv4 address in the low 32 bits. The WHATWG URL parser normalizes
+// bracketed literals to the compressed hex-group form (verified: both dotted-quad
+// and hex-group input collapse to e.g. "::ffff:a9fe:a9fe"), so that's the only
+// shape that needs handling here — but both are matched in case a caller passes
+// an already-normalized string directly. Without this, 169.254.169.254 (cloud
+// metadata) and 127.0.0.1 are reachable via their IPv4-mapped-IPv6 spelling even
+// though the dotted-quad form is correctly blocked above.
+function ipv4FromMappedIpv6(host: string): number[] | null {
+  const hexMatch = host.match(/^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/i)
+  if (hexMatch) {
+    const hi = parseInt(hexMatch[1], 16)
+    const lo = parseInt(hexMatch[2], 16)
+    return [(hi >> 8) & 0xff, hi & 0xff, (lo >> 8) & 0xff, lo & 0xff]
+  }
+  const dottedMatch = host.match(/^::ffff:(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/i)
+  if (dottedMatch) {
+    const parts = dottedMatch.slice(1).map(Number)
+    if (parts.some((n) => n > 255)) return null
+    return parts
+  }
+  return null
+}
+
 export function assertPublicHttpUrl(raw: string): URL {
   let url: URL
   try {
@@ -50,6 +74,10 @@ export function assertPublicHttpUrl(raw: string): URL {
   const v4 = ipv4ToParts(host)
   if (v4 && isPrivateIpv4(v4)) {
     throw new Error('Blocked URL host (private range)')
+  }
+  const mappedV4 = ipv4FromMappedIpv6(host)
+  if (mappedV4 && isPrivateIpv4(mappedV4)) {
+    throw new Error('Blocked URL host (private range, ipv4-mapped ipv6)')
   }
   return url
 }

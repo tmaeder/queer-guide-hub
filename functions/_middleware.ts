@@ -166,6 +166,51 @@ class ScriptNonceInjector {
   }
 }
 
+// Identifies the running deployment, for the SPA-shell subrequest key far
+// below. That key MUST change with every deployment — with a constant one a
+// stale shell answered `/events` and `/venues` for days.
+//
+// It used to be `env.CF_PAGES_COMMIT_SHA`, which Cloudflare injects only into
+// its OWN Pages builds. This project direct-uploads from GitHub Actions
+// (.github/workflows/deploy-pages.yml), declares no such project variable, and
+// nothing anywhere would report its absence — so the key almost certainly fell
+// back to a bare `/` in production, which is the exact constant key the
+// incident was about. The build-time half of the same mistake was measured:
+// /build-id.txt served `local-<ms>` on prod because vite.config.ts read that
+// same variable (fixed 2026-08-21).
+//
+// So do not depend on a variable whose presence cannot be observed from
+// outside. `/build-id.txt` is emitted into dist/ by vite.config.ts on EVERY
+// build, which makes it part of the same deployment as the shell we are about
+// to fetch — it cannot be present-but-stale or absent-but-silent.
+//
+// Memoized per isolate: the extra subrequest is paid at most once per isolate,
+// and only on the fallback path. A new deployment gets new isolates, so the
+// memo can never outlive the build it names.
+let cachedBuildKey: string | null | undefined;
+
+async function getBuildKey(env: Env, request: Request): Promise<string | null> {
+  if (cachedBuildKey !== undefined) return cachedBuildKey;
+  try {
+    const res = await env.ASSETS.fetch(new URL('/build-id.txt', request.url).toString());
+    const ct = (res.headers.get('content-type') ?? '').toLowerCase();
+    // If the file is missing, Pages' built-in fallback answers with the SPA
+    // shell at 200 — so an unguarded read would key the deployment on a whole
+    // HTML document. The content-type test is what stops that; it is the same
+    // guard src/utils/buildVersion.ts applies to the same file.
+    if (res.ok && !ct.includes('text/html')) {
+      const id = (await res.text()).trim();
+      if (id) return (cachedBuildKey = id);
+    }
+  } catch {
+    // Fall through to the env var. Never let this throw: failing to key the
+    // subrequest degrades to the old behaviour, failing to SERVE it 404s
+    // every deep route.
+  }
+  cachedBuildKey = env.CF_PAGES_COMMIT_SHA ?? null;
+  return cachedBuildKey;
+}
+
 export const onRequest: PagesFunction<Env> = async (context) => {
   const { request, next, env } = context;
   const url = new URL(request.url);
@@ -253,7 +298,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     // a blank page. The homepage was fine throughout because a direct hit on
     // `/` never goes through this branch, which is why the fault looked
     // per-route and unreproducible.
-    const buildKey = env.CF_PAGES_COMMIT_SHA;
+    const buildKey = await getBuildKey(env, request);
     const shellUrl = new URL('/', request.url);
     if (buildKey) shellUrl.searchParams.set('__build', buildKey);
     let indexResponse = await env.ASSETS.fetch(shellUrl.toString());

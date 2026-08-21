@@ -348,8 +348,14 @@ export function Header() {
       // The compact state changes only the SURFACE, never the box — §11,
       // "The gap to the page edge never changes, so the bar appears to shrink
       // in place rather than dock."
+      // `island-capped`, not bare `island`: the plate stops at the page cap
+      // instead of spanning the window. Without it the bar kept widening while
+      // its contents stayed capped at --container-page, so past ~1710px the
+      // plate grew empty ears — 205px of blank bar on each side at 1990px.
+      // Capping the plate makes its box the page's own container box, so the
+      // wordmark and the tab row still land on the page content's vertical.
       className={cn(
-        'island sticky',
+        'island island-capped sticky',
         compact && !isMobile ? 'island-ink bg-foreground text-background' : 'bg-background',
       )}
       // z-40, NOT the 1100 this carried before. Every portaled overlay in the

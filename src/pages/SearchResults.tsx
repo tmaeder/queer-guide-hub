@@ -23,7 +23,7 @@ import { PreferenceChips } from '@/components/preferences/PreferenceChips';
 import { usePreferenceChips, priceRangeFromChips } from '@/hooks/usePreferenceChips';
 import { SavedSearchesMenu } from '@/components/search/SavedSearchesMenu';
 import { BackToTopButton } from '@/components/search/BackToTopButton';
-import { LoadMoreSentinel } from '@/components/search/LoadMoreSentinel';
+import { LoadMore } from '@/components/transit/LoadMore';
 import { VirtualizedGrid } from '@/components/ui/VirtualizedGrid';
 import { useGridColumns } from '@/components/ui/useGridColumns';
 import { ResultsMapView } from '@/components/search/ResultsMapView';
@@ -524,10 +524,11 @@ export default function SearchResults() {
         ) : effectiveView === 'calendar' ? (
           <div className={cn(loading && 'opacity-60 transition-opacity')} aria-busy={loading}>
             <SearchCalendarView results={accumulated} query={query} onSelect={navigateToResult} />
-            <LoadMoreSentinel
+            <LoadMore
               hasMore={hasMore}
               loading={loading}
               onLoadMore={() => setPage((p) => p + 1)}
+              resetKey={query}
             />
           </div>
         ) : (
@@ -549,10 +550,11 @@ export default function SearchResults() {
                 />
               )}
             />
-            <LoadMoreSentinel
+            <LoadMore
               hasMore={hasMore}
               loading={loading}
               onLoadMore={() => setPage((p) => p + 1)}
+              resetKey={query}
             />
           </div>
         )}

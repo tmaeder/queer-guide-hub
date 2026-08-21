@@ -16,6 +16,16 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const FROM = Deno.env.get("EMAIL_FROM") ?? "alerts@queer.guide";
 
+// PostgREST's .or() filter grammar treats `,` `.` `(` `)` as syntax — a saved
+// search's own query/category text (user-controlled) previously went straight
+// into the filter string, so a value containing one of those could smuggle in
+// an extra clause. Double-quoting is PostgREST's documented escape mechanism
+// for values with reserved characters; only `\` and `"` need escaping inside
+// the quotes. https://postgrest.org/en/stable/references/api/tables_views.html#operators
+function pgOrValue(v: string): string {
+  return `"${v.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+}
+
 Deno.serve(async (req) => {
   const secret = Deno.env.get("NEWS_ALERTS_WEBHOOK_SECRET");
   if (secret) {
@@ -80,11 +90,15 @@ Deno.serve(async (req) => {
 
     const f = ss.filters ?? {};
     if (ss.query?.trim()) {
-      const esc = ss.query.replace(/[%_]/g, (m) => `\\${m}`);
-      q = q.or(`title.ilike.%${esc}%,content.ilike.%${esc}%`);
+      const likePattern = ss.query.replace(/[%_]/g, (m) => `\\${m}`);
+      const quoted = pgOrValue(`%${likePattern}%`);
+      q = q.or(`title.ilike.${quoted},content.ilike.${quoted}`);
     }
     if (Array.isArray(f.tags) && f.tags.length) q = q.overlaps("tags", f.tags as string[]);
-    if (f.category) q = q.or(`category_canonical.eq.${f.category},category.eq.${f.category}`);
+    if (f.category) {
+      const quotedCategory = pgOrValue(String(f.category));
+      q = q.or(`category_canonical.eq.${quotedCategory},category.eq.${quotedCategory}`);
+    }
     if (f.language) q = q.eq("content_language", f.language);
     if (f.sourceId) q = q.eq("source_id", f.sourceId as string);
     if (Array.isArray(f.sourceIds) && f.sourceIds.length) q = q.in("source_id", f.sourceIds as string[]);

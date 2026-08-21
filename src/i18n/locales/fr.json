@@ -1242,6 +1242,20 @@
     "required": {
       "title": "Sign in required",
       "description": "Please sign in to continue."
+    },
+    "reset": {
+      "title": "[FR] Set a new password",
+      "blurb": "[FR] Choose a new password for your account.",
+      "newPassword": "[FR] New password",
+      "confirmPassword": "[FR] Confirm new password",
+      "submit": "[FR] Update password",
+      "success": "[FR] Password updated.",
+      "expiredTitle": "[FR] This reset link has expired",
+      "expiredBody": "[FR] Reset links work once and only in the browser that requested them. Request a new one to continue.",
+      "requestNew": "[FR] Request a new link",
+      "errors": {
+        "mismatch": "[FR] Both passwords must match."
+      }
     }
   },
   "onboarding": {

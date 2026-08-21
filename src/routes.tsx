@@ -53,6 +53,7 @@ const BrandGuidelines = lazyRetry(() => import('./pages/Brand'));
 const Contact = lazyRetry(() => import('./pages/Contact'));
 const Auth = lazyRetry(() => import('./pages/Auth'));
 const AuthCallback = lazyRetry(() => import('./pages/AuthCallback'));
+const ResetPassword = lazyRetry(() => import('./pages/ResetPassword'));
 const ClaimUsername = lazyRetry(() => import('./pages/ClaimUsername'));
 const ExtensionInstall = lazyRetry(() => import('./pages/ExtensionInstall'));
 const OnboardingWelcome = lazyRetry(() => import('./pages/onboarding/Welcome'));
@@ -344,6 +345,10 @@ export const AppRoutes = () => {
                 {/* Auth routes — no locale prefix */}
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
+                {/* Under /auth/ deliberately: that prefix already carries the
+                    no-locale-prefix rule, the compact footer, and the noindex
+                    in functions/_lib/routeMeta.ts. */}
+                <Route path="/auth/reset-password" element={<ResetPassword />} />
                 <Route path="/claim-username" element={<ClaimUsername />} />
                 <Route path="/extension" element={<ExtensionInstall />} />
                 {import.meta.env.DEV && (

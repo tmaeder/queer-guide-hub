@@ -2,7 +2,8 @@ import { Suspense, lazy } from 'react';
 import { useSearchParams } from 'react-router';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TripViewSwitcher, getTripViewFromSearch } from '@/components/trips/TripViewSwitcher';
-import { PageContainer } from '@/components/layout/PageContainer';
+import { PageContainer, STICKY_UNDER_HEADER } from '@/components/layout/PageContainer';
+import { cn } from '@/lib/utils';
 
 const TripPlannerPage = lazy(() => import('./TripPlannerPage'));
 const TodayModePage = lazy(() => import('./TodayModePage'));
@@ -14,7 +15,12 @@ export default function TripWorkspace() {
 
   return (
     <div className="relative">
-      <div className="sticky top-16 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+      <div
+        className={cn(
+          'sticky z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80',
+          STICKY_UNDER_HEADER,
+        )}
+      >
         <PageContainer flush className="flex items-center justify-end py-2">
           <TripViewSwitcher current={view} />
         </PageContainer>

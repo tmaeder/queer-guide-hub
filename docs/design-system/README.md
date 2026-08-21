@@ -170,6 +170,22 @@ nav tab above it, at every breakpoint. Full-bleed bars (header rows, the
 breadcrumb bar, tinted home bands) stay full-bleed — their rule or tint IS the
 band's edge — and take the cap on their _content row_ only.
 
+**A bleed is a ROUND TRIP: `PAGE_BLEED` out, `PAGE_GUTTER` back in, and no
+second cap.** The inner row must return to its container's content box exactly.
+`SectionNav`'s row carried `max-w-screen-2xl` (1536) while the bleed had landed
+it on the page container's 1600 box, so `mx-auto` split the 64px difference into
+32px of margin per side and its tabs sat 32px right of the cards below —
+measured on prod at 1990px, tabs at 259 vs content at 227. It is exactly zero
+below 1536px (`max(0, (min(1600, vw) - 1536) / 2)`), so only large desktops ever
+showed it. If a row needs a cap at all it is `max-w-page`, the one the frame
+uses; `RouteStrip`'s row takes the gutter and no cap, which is the shape to
+copy. Also import `PAGE_BLEED` rather than restating `-mx-4 sm:-mx-6 md:-mx-8`
+— a hand-written copy is how the two drift. Guarded by the `bled bars align
+with the content column` block in `e2e/page-layout.spec.ts`, which asserts the
+row against **its own parent**, not against the page column: `/tags`' spine
+bleeds inside the glossary's two-column body, so its row correctly lands at 448
+and a page-column assertion would fail a bar that is right.
+
 Why 1600 rather than the `max-w-7xl` (1280) it replaced: the cap exists to stop
 grids spreading, and 1280 left roughly a third of a common desktop viewport as
 dead margin. Prose does not scale with it, which is what the second and third
@@ -278,6 +294,50 @@ a second sanctioned treatment.
   `SectionNav`). Stations are `<a href="#id">`, never buttons — see below.
 - **Buttons** — `default` (ink fill), `outline` (2px ink border, hover fills
   ink), `accent` (pink), `brand` (blue), `destructive` unchanged.
+- **`LoadMore`** — sentinel plus button. See _Loading more_ below.
+
+### Loading more
+
+Five surfaces paginated five different ways, and only `/search` was correct:
+
+| Surface          | What it had                                             |
+| ---------------- | ------------------------------------------------------- |
+| `/search`        | Observer, latched, disconnect before the await          |
+| `/venues`        | Observer, async callback, **no latch**, cap of 50 items |
+| `/personalities` | Observer, async callback, **no latch**, cap of 48 items |
+| `/events`        | **No observer at all**, button gated on a dead counter  |
+| `/marketplace`   | Manual button only                                      |
+
+**The latch is the point.** An `IntersectionObserver` keeps delivering entries
+until it is disconnected, and the two async callbacks awaited a fetch before
+React had re-rendered with `loading = true`. Every entry in that window
+re-entered, read the same `page` from the same stale closure, and called
+`setPage(page + 1)` again — so the list could skip a page. Guarding on
+`!loading` cannot fix that; disconnecting before the await is what does.
+
+**`autoLoadLimit` is what makes the latch safe to have**, and it arrives in the
+same change for a reason. The observer re-arms when `loading` settles, and on a
+virtualized grid that instant can be an unmeasured frame — rows unsized, the
+sentinel sitting under a collapsed container, trivially inside the margin. So a
+correct latch turns "fires twice by accident" into "walks the list forward on
+its own": `/personalities` reached **page 3 before the reader touched
+anything**. The old double-fire had hidden this by re-reading the same stale
+page, producing one net advance from two ticks.
+
+The cap is counted in **loads, not items**. The two pages that had one expressed
+it in items against a page size of 24 and picked different numbers — 50 and 48 —
+which nobody decided: 50 buys a silent third auto-load (24 → 48 → 72, clamped)
+where 48 stops after the second. Two loads is the documented default.
+
+`autoLoadLimit={0}` is button-only, and two surfaces take it: `/marketplace`
+(a browse grid that should not fetch while someone skims) and `/personalities`
+(which owns a `?page=N` deep-link contract, so an auto-load walks the URL
+forward as well as the layout).
+
+**The button is not a fallback.** It is the primary control for anyone using a
+keyboard, and it renders whether or not the sentinel ever fires. `/venues` and
+`/events` previously gated theirs behind a counter, so on `/venues` no button
+existed until 50 items had auto-loaded, and on `/events` none could ever exist.
 
 ### City network diagrams
 
@@ -532,6 +592,14 @@ Four rules, each enforced in the utility rather than left to call sites:
    its gap shut on scroll. The header sets the same value on `top` and
    `margin-top` for the same reason: the gap that exists at rest is the gap it
    keeps once it sticks, so the bar never jumps when it detaches.
+   **They do not grow past the content column either** — `.island-capped` (the
+   header) stops the plate at `min(--container-page, 100% - 2*--island-inset)`.
+   Bare `.island` widens with the window while its contents stay capped, which
+   past ~1710px leaves empty plate on both sides: measured **205px per side at
+   1990px**, and read as a broken bar. Capping makes the island's box the
+   page's own container box, so its contents keep landing on the page
+   content's vertical with the gutter as the only inset. The phone dock stays
+   bare `.island` on purpose — it is window-width by design.
 2. **One indicator per page.** An island's underside progress hairline is
    opt-in, because a page that already draws a reading-progress line
    (`ReadingProgressBar`) must not answer "where am I" twice.
@@ -549,6 +617,34 @@ asserts that a page container's content edge and the header's differ by exactly
 `--island-inset`; before the islands it asserted they were equal. Change the
 inset in `src/index.css` and the guard follows. Hard-code 22 anywhere and it
 will not.
+
+**Two offsets, both derived.** A full-width control band pins flush at
+`STICKY_UNDER_HEADER`; a sidebar rail pins at `STICKY_RAIL_UNDER_HEADER`
+(header + 1rem), because a tall column of links butting against the bar reads
+as a collision where a band reads as a stack. The rails had already invented
+that gap and each hard-coded its own version of it against the pre-island 64px
+header — `top-[76px]` (64+12) on the glossary tree, `top-20` (64+16) on the
+legal TOC, `top-24` (64+32) on News / Sitemap / Donate / EventDetail /
+GuidePickBlock. When the header's underside moved to 82 the first two ended up
+*behind* it (6px and 2px, measured on prod); the `top-24` group survived only
+because its gap happened to exceed the drift. Flattening them all onto the band
+offset would have thrown away a real intent, so the gap is expressed once and
+derived.
+
+**The island moved the header's underside, and one constant did not follow.**
+`STICKY_UNDER_HEADER` carried `top-[60px] md:top-[64px]`, measured against a
+header welded to `top: 0`. Once the header floats, its underside is
+`--island-inset` lower, so every bar that constant positions — RouteStrip,
+SectionNav, StickyLetterBar, the `/events` and `/cities` filter bars — pinned
+*inside* the header: 10px behind it at 390px, 18px at 1440px, measured on prod.
+It now reads `--header-pinned-bottom` (`--island-inset` + the bar's pinned
+height: 56px on phones where it never collapses, 60px from `md` where it does),
+and so does `html { scroll-padding-top }`, which had drifted the same way and
+for the same reason. **Never re-inline a pixel value in either place** — a
+height derived from the variable the header positions itself with cannot
+desynchronise from it. Guarded by the `sticky bars clear the header` block in
+`e2e/page-layout.spec.ts`, which scrolls first: this is a vertical failure that
+does not exist at rest, which is why the alignment block above never saw it.
 
 **Not implemented: a fixed desktop bottom dock.** Panel 10 draws one, and the
 site already ends every page with a real footer (plus panel 09's compact

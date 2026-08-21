@@ -79,12 +79,26 @@ export function MarketplaceMasthead({
                 {eyebrow}
               </p>
             </div>
-            {/* `text-hero` flat, no md:text-hero-xl — that rank is for
-                marketing covers, not a listing index. */}
+            {/* THE LADDER WAS INVERTED AT BOTH BREAKPOINTS. It read
+                `hub → text-hero` (76 flat) and `page → text-display md:text-hero`
+                (52 → 76), so at md and up the two ranks resolved to the SAME
+                76px and the hierarchy the `size` prop's own comment describes —
+                "a category never shouts as loudly as the index that lists it" —
+                did not exist at the widths that have room for it. Below md it
+                was worse than absent: the HUB took the 76px (roughly one word
+                per line on a 390px screen) while the subordinate page got the
+                readable 52.
+
+                Now hub is 52 → 76 and page 32 → 52: distinct at every width,
+                1.46x and 1.63x apart (both clear of the ≥1.25x adjacent-rank
+                rule), and the larger rank is the one that steps down on mobile.
+
+                Neither takes md:text-hero-xl — that rank is for marketing
+                covers, not a listing index. */}
             <h1
               className={cn(
                 'mt-4 font-display leading-[0.95]',
-                size === 'hub' ? 'text-hero' : 'text-display md:text-hero',
+                size === 'hub' ? 'text-display md:text-hero' : 'text-headline md:text-display',
               )}
             >
               {title}

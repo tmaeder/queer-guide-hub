@@ -57,14 +57,7 @@ export function IntentPageLayout({
         <>
           {/* `bare` — EditorialDetailLayout already puts this inside a
               PageContainer, and two nested containers double the gutter. */}
-          <PageHero
-            bare
-            eyebrow={eyebrow}
-            title={title}
-            lede={lede}
-            size="md"
-            effect={disableProgress ? 'none' : 'spotlight'}
-          />
+          <PageHero bare eyebrow={eyebrow} title={title} lede={lede} size="md" />
           {scopeBar ? <div className="mt-6">{scopeBar}</div> : null}
         </>
       }
