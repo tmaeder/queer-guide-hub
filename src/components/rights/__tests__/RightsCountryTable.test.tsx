@@ -92,4 +92,37 @@ describe('RightsCountryTable', () => {
     const row = screen.getByText('Blankland').closest('tr')!;
     expect(row.textContent).toContain('—');
   });
+
+  it('score header cycles desc → asc → none, nulls always last', async () => {
+    render(<Harness />);
+    // Show all 44 first so the whole sorted order is visible, not just the
+    // 30-row window.
+    await userEvent.click(screen.getByRole('button', { name: /show all 44/i }));
+    const table = screen.getByRole('table');
+    const scoreHead = within(table).getAllByRole('columnheader')[2];
+    const scoreBtn = screen.getByRole('button', { name: /sort by score/i });
+
+    await userEvent.click(scoreBtn); // desc
+    expect(scoreHead).toHaveAttribute('aria-sort', 'descending');
+    let rows = within(table).getAllByRole('row').slice(1);
+    expect(rows[0].textContent).toContain('Safeland'); // 90s first
+    expect(rows[40].textContent).toContain('Midland'); // then 60
+    expect(rows[41].textContent).toContain('Grimland'); // then 20
+    expect(rows[42].textContent).toContain('—'); // nulls last regardless of direction
+    expect(rows[43].textContent).toContain('—');
+
+    await userEvent.click(scoreBtn); // asc
+    expect(scoreHead).toHaveAttribute('aria-sort', 'ascending');
+    rows = within(table).getAllByRole('row').slice(1);
+    expect(rows[0].textContent).toContain('Grimland'); // 20 lowest scored first
+    expect(rows[1].textContent).toContain('Midland'); // then 60
+    expect(rows[2].textContent).toContain('Safeland'); // then 90s
+    expect(rows[42].textContent).toContain('—'); // nulls still last
+    expect(rows[43].textContent).toContain('—');
+
+    await userEvent.click(scoreBtn); // back to none (name/arrival order)
+    expect(scoreHead).toHaveAttribute('aria-sort', 'none');
+    rows = within(table).getAllByRole('row').slice(1);
+    expect(rows[0].textContent).toContain('Safeland 00');
+  });
 });

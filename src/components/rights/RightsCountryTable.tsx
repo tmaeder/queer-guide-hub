@@ -29,6 +29,7 @@ import { cn } from '@/lib/utils';
  */
 
 export type CountryFilter = 'all' | Tier | 'criminalising' | 'death';
+type ScoreSort = 'none' | 'desc' | 'asc';
 
 const WINDOW = 30;
 
@@ -50,6 +51,7 @@ export function RightsCountryTable({
 }) {
   const [search, setSearch] = useState('');
   const [showAll, setShowAll] = useState(false);
+  const [scoreSort, setScoreSort] = useState<ScoreSort>('none');
 
   // A narrowed view resets the window so "Show all N" always names the
   // CURRENT result set, not a stale one.
@@ -81,7 +83,21 @@ export function RightsCountryTable({
     );
   }, [countries, filter, search]);
 
-  const visible = showAll ? filtered : filtered.slice(0, WINDOW);
+  // Default order = name (as the data arrives). "Score" cycles
+  // descending → ascending → back to name order. Unscored rows sort last
+  // in both score modes, never mixed in by numeric coincidence.
+  const sorted = useMemo(() => {
+    if (scoreSort === 'none') return filtered;
+    const dir = scoreSort === 'desc' ? -1 : 1;
+    return [...filtered].sort((a, b) => {
+      if (a.equality_score == null && b.equality_score == null) return 0;
+      if (a.equality_score == null) return 1;
+      if (b.equality_score == null) return -1;
+      return dir * (a.equality_score - b.equality_score);
+    });
+  }, [filtered, scoreSort]);
+
+  const visible = showAll ? sorted : sorted.slice(0, WINDOW);
 
   const chips: { key: CountryFilter; label: string; count: number }[] = [
     { key: 'all', label: 'All', count: countries.length },
@@ -130,7 +146,23 @@ export function RightsCountryTable({
           <TableRow>
             <TableHead>Country</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead className="text-right">Score</TableHead>
+            <TableHead
+              className="text-right"
+              aria-sort={
+                scoreSort === 'desc' ? 'descending' : scoreSort === 'asc' ? 'ascending' : 'none'
+              }
+            >
+              <button
+                type="button"
+                aria-label="Sort by score"
+                onClick={() =>
+                  setScoreSort((s) => (s === 'none' ? 'desc' : s === 'desc' ? 'asc' : 'none'))
+                }
+                className="font-medium hover:text-foreground"
+              >
+                Score{scoreSort === 'desc' ? ' ↓' : scoreSort === 'asc' ? ' ↑' : ''}
+              </button>
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

@@ -13,6 +13,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { deathPenaltyRisk, hasAnyCriminalizationSignal } from '@/utils/equalityScore';
+import { scrollToIdSettled } from '@/lib/scrollSettle';
 import type { RightsCountry } from '@/hooks/useIntentData';
 
 /**
@@ -138,7 +139,11 @@ export function RightsScopeBar({
           </span>
           <span className="text-13 text-muted-foreground block">with the death penalty</span>
         </button>
-        <a href="#marriage" className="no-underline text-left block">
+        <a
+          href="#marriage"
+          onClick={() => scrollToIdSettled('marriage')}
+          className="no-underline text-left block"
+        >
           <span className="font-display text-display m-0 block">{stats.marriage}</span>
           <span className="text-13 text-muted-foreground block">have marriage equality</span>
         </a>

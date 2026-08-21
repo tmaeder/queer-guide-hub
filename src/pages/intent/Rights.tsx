@@ -12,6 +12,7 @@ import { RightsScopeBar } from '@/components/rights/RightsScopeBar';
 import { RightsCountryTable, type CountryFilter } from '@/components/rights/RightsCountryTable';
 import { RightsLedger } from '@/components/rights/RightsLedger';
 import type { SectionDef } from '@/components/entity/editorial';
+import { scrollToIdSettled } from '@/lib/scrollSettle';
 
 /**
  * `/rights` — LGBTQ+ law and safety, country by country.
@@ -147,7 +148,7 @@ export default function RightsIntent() {
 
   const showInTable = (filter: 'criminalising' | 'death') => {
     setTableFilter(filter);
-    document.getElementById('world')?.scrollIntoView({ block: 'start' });
+    scrollToIdSettled('world');
   };
 
   const sections: SectionDef[] = [

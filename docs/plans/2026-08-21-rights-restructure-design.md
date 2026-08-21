@@ -36,7 +36,7 @@ existing `scopeBar` slot, split on `md:`:
 
 ### 2 · "The world" — one interactive table (~700px viewport)
 
-TanStack Table (already a dependency) on `ui/table.tsx`:
+Hand-rolled filter/sort over `ui/table.tsx` primitives (TanStack Table measured as admin-only machinery and rejected during planning — 250 rows need a `useMemo`):
 
 - **Columns:** Country (LocalizedLink) · Status (tier word; criminalisation /
   death-penalty note in `text-13`; destructive only for confirmed death penalty) ·
@@ -44,7 +44,7 @@ TanStack Table (already a dependency) on `ui/table.tsx`:
 - **Controls:** search input + count-first filter chips:
   `All 250 · Protected 112 · Mixed · Restricted · Not scored · Criminalising 66 · Death penalty`.
   Counts on chips replace the old bucket headers as the visible distribution summary.
-- **Pagination ~25/page, no inner scrollbox** (crisis-adjacent page — no trapped
+- **30-row window + "Show all N", no inner scrollbox** (crisis-adjacent page — no trapped
   scroll). Default sort: name; score sortable.
 - The existing `CoverageNote` (239/250 measured; 11 listed "not scored", never
   defaulted) stays verbatim above the table.
