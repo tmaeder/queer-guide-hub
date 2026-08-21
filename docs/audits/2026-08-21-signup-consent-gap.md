@@ -1,6 +1,6 @@
 # Signup consent records not persisted (2026-05-23 → 2026-08-21)
 
-**Status:** fixed forward in `20260914110000_handle_new_user_restore_consent_and_defaults.sql`.
+**Status:** fixed forward in `20260915090000_handle_new_user_restore_consent_and_defaults.sql`.
 **Deliberately not backfilled.** See *Remediation*.
 
 ## What happened
