@@ -9,7 +9,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 const village = vi.hoisted(() => ({ data: null as unknown }));
 
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
-vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: null, session: null, loading: false }) }));
+vi.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({ user: null, session: null, loading: false }),
+}));
 vi.mock('@/hooks/useFavorites', () => ({
   useFavorites: () => ({ toggleFavorite: vi.fn(), isFavorited: () => false }),
 }));
@@ -69,10 +71,13 @@ function renderPage() {
 }
 
 describe('QueerVillageDetail', () => {
-  it('renders the subway not-found stop when there is no such village', () => {
+  it('renders the subway not-found stop when there is no such village', async () => {
     village.data = null;
     renderPage();
-    expect(screen.getByText('No such district.')).toBeInTheDocument();
+    // GatedDetailFallback runs an async gated_entity_exists check for
+    // signed-out visitors before falling back to the not-found UI — same
+    // reason EventDetail's equivalent test awaits findByText.
+    expect(await screen.findByText('No such district.')).toBeInTheDocument();
   });
 
   it('renders the single with its masthead and census', () => {
