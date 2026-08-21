@@ -532,6 +532,14 @@ Four rules, each enforced in the utility rather than left to call sites:
    its gap shut on scroll. The header sets the same value on `top` and
    `margin-top` for the same reason: the gap that exists at rest is the gap it
    keeps once it sticks, so the bar never jumps when it detaches.
+   **They do not grow past the content column either** — `.island-capped` (the
+   header) stops the plate at `min(--container-page, 100% - 2*--island-inset)`.
+   Bare `.island` widens with the window while its contents stay capped, which
+   past ~1710px leaves empty plate on both sides: measured **205px per side at
+   1990px**, and read as a broken bar. Capping makes the island's box the
+   page's own container box, so its contents keep landing on the page
+   content's vertical with the gutter as the only inset. The phone dock stays
+   bare `.island` on purpose — it is window-width by design.
 2. **One indicator per page.** An island's underside progress hairline is
    opt-in, because a page that already draws a reading-progress line
    (`ReadingProgressBar`) must not answer "where am I" twice.
@@ -549,6 +557,21 @@ asserts that a page container's content edge and the header's differ by exactly
 `--island-inset`; before the islands it asserted they were equal. Change the
 inset in `src/index.css` and the guard follows. Hard-code 22 anywhere and it
 will not.
+
+**The island moved the header's underside, and one constant did not follow.**
+`STICKY_UNDER_HEADER` carried `top-[60px] md:top-[64px]`, measured against a
+header welded to `top: 0`. Once the header floats, its underside is
+`--island-inset` lower, so every bar that constant positions — RouteStrip,
+SectionNav, StickyLetterBar, the `/events` and `/cities` filter bars — pinned
+*inside* the header: 10px behind it at 390px, 18px at 1440px, measured on prod.
+It now reads `--header-pinned-bottom` (`--island-inset` + the bar's pinned
+height: 56px on phones where it never collapses, 60px from `md` where it does),
+and so does `html { scroll-padding-top }`, which had drifted the same way and
+for the same reason. **Never re-inline a pixel value in either place** — a
+height derived from the variable the header positions itself with cannot
+desynchronise from it. Guarded by the `sticky bars clear the header` block in
+`e2e/page-layout.spec.ts`, which scrolls first: this is a vertical failure that
+does not exist at rest, which is why the alignment block above never saw it.
 
 **Not implemented: a fixed desktop bottom dock.** Panel 10 draws one, and the
 site already ends every page with a real footer (plus panel 09's compact
