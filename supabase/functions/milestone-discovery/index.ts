@@ -120,6 +120,9 @@ Deno.serve(async (req: Request) => {
       review_status: 'pending',   // awaits admin approval
       seo_indexable: false,
       is_featured: false,
+      // Records the model's own precision claim so a future audit can tell
+      // "sourced but coarse" apart from a row with no provenance at all.
+      field_provenance: { date: { source: 'llm_discovery', precision: c.date_precision } },
     })
   }
 

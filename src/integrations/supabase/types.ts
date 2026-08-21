@@ -12204,6 +12204,50 @@ export type Database = {
           },
         ]
       }
+      milestone_coverage_gaps: {
+        Row: {
+          created_at: string
+          gap_score: number
+          id: string
+          last_checked_at: string
+          milestone_id: string | null
+          milestone_title: string | null
+          missing_fields: string[]
+          resolution: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          gap_score?: number
+          id?: string
+          last_checked_at?: string
+          milestone_id?: string | null
+          milestone_title?: string | null
+          missing_fields?: string[]
+          resolution?: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          gap_score?: number
+          id?: string
+          last_checked_at?: string
+          milestone_id?: string | null
+          milestone_title?: string | null
+          missing_fields?: string[]
+          resolution?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "milestone_coverage_gaps_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: true
+            referencedRelation: "milestones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       milestone_link_proposals: {
         Row: {
           confidence: string
@@ -12298,6 +12342,47 @@ export type Database = {
           },
         ]
       }
+      milestone_quality_signals: {
+        Row: {
+          created_at: string
+          details: Json
+          id: string
+          milestone_id: string
+          signal_type: string
+          source: string | null
+          value: number
+          weight: number
+        }
+        Insert: {
+          created_at?: string
+          details?: Json
+          id?: string
+          milestone_id: string
+          signal_type: string
+          source?: string | null
+          value?: number
+          weight?: number
+        }
+        Update: {
+          created_at?: string
+          details?: Json
+          id?: string
+          milestone_id?: string
+          signal_type?: string
+          source?: string | null
+          value?: number
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "milestone_quality_signals_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: false
+            referencedRelation: "milestones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       milestone_slug_redirects: {
         Row: {
           created_at: string
@@ -12329,6 +12414,7 @@ export type Database = {
           category: string | null
           city_id: string | null
           city_name: string | null
+          completeness_score: number
           country_id: string | null
           country_name: string | null
           created_at: string
@@ -12344,8 +12430,9 @@ export type Database = {
           image_url: string | null
           impact: string
           is_featured: boolean
+          last_verified_at: string | null
           location: string | null
-          quality_score: number | null
+          needs_attention: boolean
           region: string | null
           review_status: string
           safety_gated: boolean
@@ -12356,12 +12443,14 @@ export type Database = {
           status: string
           tags: string[]
           title: string
+          trust_score: number
           updated_at: string
         }
         Insert: {
           category?: string | null
           city_id?: string | null
           city_name?: string | null
+          completeness_score?: number
           country_id?: string | null
           country_name?: string | null
           created_at?: string
@@ -12377,8 +12466,9 @@ export type Database = {
           image_url?: string | null
           impact?: string
           is_featured?: boolean
+          last_verified_at?: string | null
           location?: string | null
-          quality_score?: number | null
+          needs_attention?: boolean
           region?: string | null
           review_status?: string
           safety_gated?: boolean
@@ -12389,12 +12479,14 @@ export type Database = {
           status?: string
           tags?: string[]
           title: string
+          trust_score?: number
           updated_at?: string
         }
         Update: {
           category?: string | null
           city_id?: string | null
           city_name?: string | null
+          completeness_score?: number
           country_id?: string | null
           country_name?: string | null
           created_at?: string
@@ -12410,8 +12502,9 @@ export type Database = {
           image_url?: string | null
           impact?: string
           is_featured?: boolean
+          last_verified_at?: string | null
           location?: string | null
-          quality_score?: number | null
+          needs_attention?: boolean
           region?: string | null
           review_status?: string
           safety_gated?: boolean
@@ -12422,6 +12515,7 @@ export type Database = {
           status?: string
           tags?: string[]
           title?: string
+          trust_score?: number
           updated_at?: string
         }
         Relationships: [
@@ -30027,6 +30121,10 @@ export type Database = {
         Returns: number
       }
       compute_level: { Args: { p_points: number }; Returns: number }
+      compute_milestone_completeness: {
+        Args: { p_id: string }
+        Returns: number
+      }
       compute_personality_completeness: {
         Args: { p_id: string }
         Returns: number
@@ -35287,6 +35385,14 @@ export type Database = {
         Returns: Json
       }
       run_marketplace_tag_llm: { Args: { p_force?: boolean }; Returns: Json }
+      run_milestone_coverage_radar: {
+        Args: { p_force?: boolean }
+        Returns: Json
+      }
+      run_milestone_trust_recompute: {
+        Args: { p_force?: boolean; p_limit?: number }
+        Returns: Json
+      }
       run_news_category_backfill: {
         Args: { p_after?: string; p_max_batches?: number }
         Returns: Json
