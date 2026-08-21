@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useVisitorLocation } from '@/hooks/useVisitorLocation';
 import { useAccessibilityAttributes } from '@/hooks/useAccessibilityAttributes';
 import { useTargetGroups } from '@/hooks/useTargetGroups';
@@ -51,7 +51,16 @@ export function useEventFilters(
   const [autoLocationLabel, setAutoLocationLabel] = useState<string | null>(null);
   const { location: visitorLocation } = useVisitorLocation();
   const [page, setPage] = useState(1);
-  const [autoLoadedCount, setAutoLoadedCount] = useState(0);
+  /** Bumped wherever the result list is REPLACED rather than appended to —
+   *  every site below already calls `setPage(1)` on the same line. `LoadMore`
+   *  keys its auto-load budget off this, so a new filter set gets a fresh one.
+   *
+   *  It replaces `autoLoadedCount`, which was dead: every write in the codebase
+   *  set it to 0, nothing incremented it, and /events gated its Load-More
+   *  button on `>= 50` — so the button could never render and the page was
+   *  capped at a single page of results. */
+  const [listGeneration, setListGeneration] = useState(0);
+  const bumpList = useCallback(() => setListGeneration((n) => n + 1), []);
   // New filter dimensions (Phase B.2 + B.4)
   const [accessibilityAttrs, setAccessibilityAttrs] = useState<string[]>([]);
   const [targetGroupsFilter, setTargetGroupsFilter] = useState<string[]>([]);
@@ -98,7 +107,7 @@ export function useEventFilters(
       sort,
     };
     setPage(1);
-    setAutoLoadedCount(0);
+    bumpList();
     await fetchEvents(filters, {
       page: 1,
       pageSize: PAGE_SIZE,
@@ -133,7 +142,7 @@ export function useEventFilters(
         setUserLocation(null);
       }
       setPage(1);
-      setAutoLoadedCount(0);
+      bumpList();
       await fetchEvents(
         {
           search: search || undefined,
@@ -168,7 +177,7 @@ export function useEventFilters(
       return;
     }
     setPage(1);
-    setAutoLoadedCount(0);
+    bumpList();
     await fetchEvents(
       {
         search: search || undefined,
@@ -252,7 +261,7 @@ export function useEventFilters(
     setActivePreset(null);
     setSort('date-asc');
     setPage(1);
-    setAutoLoadedCount(0);
+    bumpList();
     await fetchEvents(
       {},
       {
@@ -303,7 +312,7 @@ export function useEventFilters(
     if (autoInitDone.current) return;
     autoInitDone.current = true;
     setPage(1);
-    setAutoLoadedCount(0);
+    bumpList();
     const cityName = visitorLocation?.city;
     if (cityName) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
@@ -534,8 +543,7 @@ export function useEventFilters(
     setAgeRestriction,
     page,
     setPage,
-    autoLoadedCount,
-    setAutoLoadedCount,
+    listGeneration,
     setTimelineViewport,
     // option sources
     accAttrOptions,

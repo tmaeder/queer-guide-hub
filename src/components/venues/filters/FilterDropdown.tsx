@@ -11,8 +11,9 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { Badge } from '@/components/ui/badge';
-import { X, Check, ChevronDown} from 'lucide-react';
-import { xStyle, type FilterOption } from './constants';
+import { X, Check, ChevronDown } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { type FilterOption } from './constants';
 
 // Extracted filter dropdown component to reduce repetition
 export function FilterDropdown({
@@ -38,6 +39,12 @@ export function FilterDropdown({
   searchPlaceholder: string;
   emptyMessage: string;
 }) {
+  const { t } = useTranslation();
+  /** Says WHICH filter it removes. Every one of these used to announce the bare
+   *  string "Remove filter", so a row of them was indistinguishable by ear. */
+  const removeLabel = (val: string) =>
+    t('search.removeFilter', 'Remove filter {{label}}', { label: val });
+
   return (
     <div className="flex flex-col gap-2">
       <Label className="text-xs2 uppercase tracking-wider text-muted-foreground">
@@ -110,12 +117,19 @@ export function FilterDropdown({
           {selected.map((val) => (
             <Badge key={val} variant="secondary">
               {val}
-              <X
-                style={xStyle}
-                role="button"
-                aria-label="Remove filter"
+              {/* A real <button>, not `<X role="button">`. `role` does not make
+                  an SVG focusable, so this control was pointer-only — see the
+                  docblock on ActiveFilterBadges, which had the same defect
+                  eight times over. */}
+              <button
+                type="button"
                 onClick={() => onToggle(val)}
-              />
+                aria-label={removeLabel(val)}
+                title={removeLabel(val)}
+                className="-me-1 ms-1 inline-flex items-center justify-center rounded-badge p-1 transition-colors hover:bg-foreground/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
+              >
+                <X className="h-3 w-3" aria-hidden="true" />
+              </button>
             </Badge>
           ))}
         </div>

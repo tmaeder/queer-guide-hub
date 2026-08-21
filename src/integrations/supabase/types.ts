@@ -12383,6 +12383,59 @@ export type Database = {
           },
         ]
       }
+      milestone_review_queue: {
+        Row: {
+          citations: Json
+          confidence: number | null
+          created_at: string
+          field: string
+          id: string
+          milestone_id: string
+          model: string | null
+          proposed_value: Json
+          reviewed_at: string | null
+          reviewer_id: string | null
+          reviewer_note: string | null
+          status: string
+        }
+        Insert: {
+          citations?: Json
+          confidence?: number | null
+          created_at?: string
+          field: string
+          id?: string
+          milestone_id: string
+          model?: string | null
+          proposed_value: Json
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          reviewer_note?: string | null
+          status?: string
+        }
+        Update: {
+          citations?: Json
+          confidence?: number | null
+          created_at?: string
+          field?: string
+          id?: string
+          milestone_id?: string
+          model?: string | null
+          proposed_value?: Json
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          reviewer_note?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "milestone_review_queue_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: false
+            referencedRelation: "milestones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       milestone_slug_redirects: {
         Row: {
           created_at: string
@@ -28785,6 +28838,10 @@ export type Database = {
         Args: { p_id: string; p_role?: string }
         Returns: undefined
       }
+      approve_milestone_review: {
+        Args: { p_id: string; p_note?: string }
+        Returns: Json
+      }
       approve_personality_review: {
         Args: { p_id: string; p_note?: string }
         Returns: Json
@@ -34880,6 +34937,10 @@ export type Database = {
       reject_milestone_link_proposal: {
         Args: { p_id: string }
         Returns: undefined
+      }
+      reject_milestone_review: {
+        Args: { p_id: string; p_note?: string }
+        Returns: Json
       }
       reject_personality_capture: {
         Args: { p_id: string; p_reason?: string }
