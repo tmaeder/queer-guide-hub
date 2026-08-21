@@ -12,12 +12,32 @@ import { test, expect, type Page } from '@playwright/test';
  * scroll-down. It no longer does — the island dock never scrolls away (design
  * panel 12, §10 rule 4) — so nothing here depends on the setting any more.
  */
-test.use({ reducedMotion: 'reduce' });
+// The chromium project carries the admin storageState whenever the E2E_ADMIN_*
+// secrets resolve, so the "anonymous state" this file documents has to be ASKED
+// for — a spec that merely never signs in is signed IN. Those secrets started
+// resolving between the 2026-08-18 and 08-19 nightlies, which is when all eight
+// cases here began failing: the bar renders different destinations for a signed-
+// in user, and the two gating cases assert on a redirect that no longer happens.
+test.use({ reducedMotion: 'reduce', storageState: { cookies: [], origins: [] } });
 
 const MOBILE = { width: 390, height: 844 };
 // Scoped to the fixed bottom bar — the desktop header renders its own nav
 // landmark ("Primary"), and a bare aria-label match would be ambiguous.
 const bottomNav = (page: Page) => page.locator('nav.fixed[aria-label="Navigation"]');
+
+/**
+ * Destinations are addressed by HREF, never by label.
+ *
+ * The visible text comes from `t(tab.labelKey, FALLBACK_LABEL[tab.id])`, so the
+ * translation wins and the fallback renders only when a key is MISSING. This
+ * file asserted the fallbacks — `Explore` — while en.json has said `Browse`
+ * for some time, so six cases failed against a perfectly healthy bar. Same
+ * shape as the map lens rename: a spec pinned to a label the product no longer
+ * shows. The hrefs are a documented stability guarantee (MobileBottomNav:
+ * "Its href stays `/search`"), so they are the honest handle.
+ */
+const TABS = { home: '/', explore: '/search', hub: '/hub', you: '/me' } as const;
+const tab = (page: Page, href: string) => bottomNav(page).locator(`a[href="${href}"]`);
 
 /**
  * The cookie-consent banner is fixed to the bottom (z-sticky) and overlaps the
@@ -70,8 +90,13 @@ test.describe('Mobile bottom navigation', () => {
     await gotoMobile(page, '/');
     const nav = bottomNav(page);
     await expect(nav).toBeVisible();
-    for (const label of ['Home', 'Explore', 'Hub', 'You']) {
-      await expect(nav.getByText(label, { exact: true })).toBeVisible();
+    for (const href of Object.values(TABS)) {
+      const t = nav.locator(`a[href="${href}"]`);
+      await expect(t, `no tab for ${href}`).toBeVisible();
+      // Still assert the tab is LABELLED — just not with which word. A blank
+      // dock is the regression this case exists to catch; the specific string
+      // is the translation team's, not this file's.
+      expect((await t.innerText()).trim().length, `${href} tab has no label`).toBeGreaterThan(0);
     }
     // The raised contribute button is icon-only — identified by aria-label.
     await expect(nav.getByRole('button', { name: /sign in to contribute/i })).toBeVisible();
@@ -80,9 +105,9 @@ test.describe('Mobile bottom navigation', () => {
   test('tabs meet the minimum tap-target size', async ({ page }) => {
     await gotoMobile(page, '/');
     const nav = bottomNav(page);
-    for (const label of ['Home', 'Explore', 'Hub', 'You']) {
-      const box = await nav.getByText(label, { exact: true }).locator('..').boundingBox();
-      expect(box, `${label} tab has a bounding box`).not.toBeNull();
+    for (const href of Object.values(TABS)) {
+      const box = await nav.locator(`a[href="${href}"]`).boundingBox();
+      expect(box, `${href} tab has a bounding box`).not.toBeNull();
       expect(box!.height).toBeGreaterThanOrEqual(44);
     }
   });
@@ -92,8 +117,10 @@ test.describe('Mobile bottom navigation', () => {
     // sole affordance. An undiscoverable gesture cannot be the entry to
     // primary navigation, so the tab's own tap opens it now.
     await gotoMobile(page, '/');
-    const explore = bottomNav(page).getByText('Explore', { exact: true });
-    await expect(explore.locator('xpath=ancestor::a')).toHaveAttribute('aria-haspopup', 'dialog');
+    const explore = tab(page, TABS.explore);
+    // `tab()` already resolves the <a>; the old `ancestor::a` hop existed only
+    // because the handle used to be the label text inside it.
+    await expect(explore).toHaveAttribute('aria-haspopup', 'dialog');
     await explore.click();
     await expect(page.getByRole('dialog')).toBeVisible();
     // The tap opened the sheet INSTEAD of navigating.
@@ -104,9 +131,7 @@ test.describe('Mobile bottom navigation', () => {
     // Intercepting the tap must not cost middle-click, "open in new tab" or a
     // no-JS fallback, so the slot stays a genuine link to /search.
     await gotoMobile(page, '/');
-    await expect(
-      bottomNav(page).getByText('Explore', { exact: true }).locator('xpath=ancestor::a'),
-    ).toHaveAttribute('href', /\/search$/);
+    await expect(tab(page, TABS.explore)).toHaveAttribute('href', /\/search$/);
   });
 
   test('is hidden on desktop viewport', async ({ page }) => {
@@ -118,11 +143,14 @@ test.describe('Mobile bottom navigation', () => {
 
   test('the destination hub lists both intents and every browse route', async ({ page }) => {
     await gotoMobile(page, '/');
-    await bottomNav(page).getByText('Explore', { exact: true }).click();
+    await tab(page, TABS.explore).click();
 
     const sheet = page.getByRole('dialog');
     await expect(sheet).toBeVisible();
-    await expect(sheet.getByText(/Explore Queer Guide/i)).toBeVisible();
+    // The sheet's TITLE is translated (`header.mobileNav.menuTitle`, currently
+    // "All sections" — this asserted "Explore Queer Guide", a heading the
+    // product stopped rendering). What this case is actually named for is the
+    // route list below, so assert that and let the copy team own the copy.
     // Intents lead; the browse layer stays reachable beneath them.
     // /people appears TWICE by design — once as the "Meet people" intent and
     // once in the browse grid beneath it — so these must not be strict.
@@ -134,7 +162,7 @@ test.describe('Mobile bottom navigation', () => {
 
   test('tapping a hub destination navigates and closes the sheet', async ({ page }) => {
     await gotoMobile(page, '/');
-    await bottomNav(page).getByText('Explore', { exact: true }).click();
+    await tab(page, TABS.explore).click();
     const sheet = page.getByRole('dialog');
     await expect(sheet).toBeVisible();
     await sheet.locator('a[href$="/venues"]').first().click();
