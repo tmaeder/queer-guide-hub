@@ -56,7 +56,11 @@ export function SinglePage({
         {action && <div className="mt-6 flex flex-wrap gap-2">{action}</div>}
       </div>
 
-      <div className="grid grid-cols-1 gap-8 py-8 lg:grid-cols-[1fr_360px]">
+      {/* The 360px track is declared only when there IS a rail. Declaring it
+          unconditionally reserved the column for a rail that never came, so a
+          single with no rail (the venue) rendered its content at 984px of a
+          1440px viewport with 360px of nothing beside it. */}
+      <div className={cn('grid grid-cols-1 gap-8 py-8', rail && 'lg:grid-cols-[1fr_360px]')}>
         <div className="flex min-w-0 flex-col gap-10">{body}</div>
         {/* The testid exists because `article aside` is NOT unique: a signed-in
             visitor whose trip covers this destination also gets

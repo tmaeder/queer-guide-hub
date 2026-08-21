@@ -1,17 +1,6 @@
-import {
-  Star,
-  MapPin,
-  Phone,
-  Globe,
-  Mail,
-  Clock,
-  Luggage,
-  Navigation2,
-  Sparkles,
-} from 'lucide-react';
+import { Star, MapPin, Phone, Globe, Mail, Luggage, Navigation2, Sparkles } from 'lucide-react';
 import { Instagram } from '@/components/icons/brand';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { EntitySocialLinks } from '@/components/entity/EntitySocialLinks';
 import { ShareMenu } from '@/components/share/ShareMenu';
 import { TagChipRow } from '@/components/tags/TagChipRow';
@@ -504,9 +493,13 @@ export function VenueGuides({ venue }: { venue: VenueWithRelations }) {
   return <FeaturedInGuides entityType="venue" entityId={venue.id} />;
 }
 
-/** Visitor-reported signals. Renders its own "Visitor signals" title. */
+/**
+ * Visitor-reported signals. `bare` — the `SingleSection` around this already
+ * renders "Visitor signals" as its h2, so the component's own card title was
+ * the same words a second time.
+ */
 export function VenueSignals({ venue }: { venue: VenueWithRelations }) {
-  return <VenueSafetySignalDisplay venueId={venue.id} />;
+  return <VenueSafetySignalDisplay venueId={venue.id} bare />;
 }
 
 export function VenueTags({
@@ -618,209 +611,207 @@ interface VenueSidebarProps {
   nearbyPoints?: EntityMapMarker[];
 }
 
-export function VenueSidebar({
+/**
+ * Location, contact and the map — a body SECTION now, not the rail.
+ *
+ * The split is the point. Measured on prod, a typical venue put 301px in the
+ * 1fr column and 1,028px in the 360px rail: the page's biggest and most
+ * useful block (address, contact links, map) was squeezed into the narrow
+ * column while the wide one held almost nothing. The rail was not the
+ * problem — what was IN it was. This half moves to the body; the small
+ * supplementary cards stay in `VenueSidebar` below.
+ */
+export function VenueLocationContact({
   venue,
-  checkinRefresh,
   onContentUpdated,
   nearbyPoints = [],
 }: VenueSidebarProps) {
   const hasMap = typeof venue.latitude === 'number' && typeof venue.longitude === 'number';
-  const openNow = getOpenNow(venue.hours);
   const hasContact = Boolean(
     venue.address || venue.phone || venue.email || venue.website || venue.instagram,
   );
 
+  if (!hasMap && !hasContact) return null;
+
   return (
-    <div className="flex flex-col gap-6">
-      {(hasMap || hasContact) && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Location & contact</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            {hasMap && (
-              // Spec module 16, "Around this station" — REQUIRED on venues.
-              // A FRAME around the existing EntityMap, not a second map: the
-              // real one already carries clustering, tile loading and the
-              // safety-gating that hides venues in criminalising countries
-              // from signed-out readers. Re-implementing it here would fork
-              // all three.
-              <MapInset className="border-0 p-0">
-                <EntityMap
-                  center={[Number(venue.longitude), Number(venue.latitude)]}
-                  zoom={15}
-                  height={nearbyPoints.length > 0 ? 220 : 180}
-                  markers={[
-                    {
-                      id: venue.id,
-                      lat: Number(venue.latitude),
-                      lng: Number(venue.longitude),
-                      name: venue.name ?? 'Venue',
-                      type: 'venues',
-                      primary: true,
-                    },
-                    ...nearbyPoints,
-                  ]}
-                />
-                <NearbyMapLegend markers={nearbyPoints} />
-              </MapInset>
-            )}
+    /* Bare content, no card and no title of its own: this used to be a rail
+       card, and it is now the body of a `SingleSection` that already renders
+       "Location & contact" as its h2 — the same duplication that made the
+       signals section print its heading twice.
+       From `lg` the two halves run side by side, so the map sits beside the
+       contact details instead of a full-width letterbox above a full-width
+       list of four short lines. Below `lg` it stacks as it did in the rail. */
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:items-start">
+      {hasMap && (
+        // Spec module 16, "Around this station" — REQUIRED on venues.
+        // A FRAME around the existing EntityMap, not a second map: the
+        // real one already carries clustering, tile loading and the
+        // safety-gating that hides venues in criminalising countries
+        // from signed-out readers. Re-implementing it here would fork
+        // all three.
+        <MapInset className="border-0 p-0">
+          <EntityMap
+            center={[Number(venue.longitude), Number(venue.latitude)]}
+            zoom={15}
+            height={nearbyPoints.length > 0 ? 220 : 180}
+            markers={[
+              {
+                id: venue.id,
+                lat: Number(venue.latitude),
+                lng: Number(venue.longitude),
+                name: venue.name ?? 'Venue',
+                type: 'venues',
+                primary: true,
+              },
+              ...nearbyPoints,
+            ]}
+          />
+          <NearbyMapLegend markers={nearbyPoints} />
+        </MapInset>
+      )}
 
-            {venue.address && (
-              <div className="flex items-start gap-2">
-                <MapPin size={16} className="mt-0.5 shrink-0 text-muted-foreground" />
-                <div className="min-w-0">
-                  <p className="text-sm">
-                    <Editable
-                      contentType="venues"
-                      recordId={venue.id}
-                      field="address"
-                      value={venue.address}
-                      onSaved={onContentUpdated}
-                      fieldOverride={{ type: 'text' }}
-                    >
-                      {venue.address}
-                    </Editable>
-                    {venue.postal_code ? `, ${venue.postal_code}` : ''}
-                  </p>
-                </div>
-              </div>
-            )}
+      {/* One cell, so the contact lines stay a single column beside the
+                map instead of being dealt into the grid one per cell. */}
+      <div className="flex min-w-0 flex-col gap-4">
+        {venue.address && (
+          <div className="flex items-start gap-2">
+            <MapPin size={16} className="mt-0.5 shrink-0 text-muted-foreground" />
+            <div className="min-w-0">
+              <p className="text-sm">
+                <Editable
+                  contentType="venues"
+                  recordId={venue.id}
+                  field="address"
+                  value={venue.address}
+                  onSaved={onContentUpdated}
+                  fieldOverride={{ type: 'text' }}
+                >
+                  {venue.address}
+                </Editable>
+                {venue.postal_code ? `, ${venue.postal_code}` : ''}
+              </p>
+            </div>
+          </div>
+        )}
 
-            {venue.phone && (
-              <div className="flex items-center gap-2">
-                <Phone size={16} className="shrink-0 text-muted-foreground" />
-                <span className="text-sm">
-                  <Editable
-                    contentType="venues"
-                    recordId={venue.id}
-                    field="phone"
-                    value={venue.phone}
-                    onSaved={onContentUpdated}
-                  >
-                    <a href={`tel:${venue.phone}`} className="text-primary hover:underline">
-                      {formatPhoneDisplay(venue.phone)}
-                    </a>
-                  </Editable>
-                </span>
-              </div>
-            )}
+        {venue.phone && (
+          <div className="flex items-center gap-2">
+            <Phone size={16} className="shrink-0 text-muted-foreground" />
+            <span className="text-sm">
+              <Editable
+                contentType="venues"
+                recordId={venue.id}
+                field="phone"
+                value={venue.phone}
+                onSaved={onContentUpdated}
+              >
+                <a href={`tel:${venue.phone}`} className="text-primary hover:underline">
+                  {formatPhoneDisplay(venue.phone)}
+                </a>
+              </Editable>
+            </span>
+          </div>
+        )}
 
-            {venue.email && (
-              <div className="flex items-center gap-2">
-                <Mail size={16} className="shrink-0 text-muted-foreground" />
-                <span className="min-w-0 truncate text-sm">
-                  <Editable
-                    contentType="venues"
-                    recordId={venue.id}
-                    field="email"
-                    value={venue.email}
-                    onSaved={onContentUpdated}
-                  >
-                    <a href={`mailto:${venue.email}`} className="text-primary hover:underline">
-                      {venue.email}
-                    </a>
-                  </Editable>
-                </span>
-              </div>
-            )}
+        {venue.email && (
+          <div className="flex items-center gap-2">
+            <Mail size={16} className="shrink-0 text-muted-foreground" />
+            <span className="min-w-0 truncate text-sm">
+              <Editable
+                contentType="venues"
+                recordId={venue.id}
+                field="email"
+                value={venue.email}
+                onSaved={onContentUpdated}
+              >
+                <a href={`mailto:${venue.email}`} className="text-primary hover:underline">
+                  {venue.email}
+                </a>
+              </Editable>
+            </span>
+          </div>
+        )}
 
-            {venue.website && (
-              <div className="flex items-center gap-2">
-                <Globe size={16} className="shrink-0 text-muted-foreground" />
-                <span className="min-w-0 truncate text-sm">
-                  <Editable
-                    contentType="venues"
-                    recordId={venue.id}
-                    field="website"
-                    value={venue.website}
-                    onSaved={onContentUpdated}
-                  >
-                    <a
-                      href={venue.website}
-                      target="_blank"
-                      rel="noopener noreferrer nofollow"
-                      className="text-primary hover:underline"
-                    >
-                      {venue.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
-                    </a>
-                  </Editable>
-                </span>
-              </div>
-            )}
-
-            {venue.instagram && (
-              <div className="flex items-center gap-2">
-                <Instagram size={16} className="shrink-0 text-muted-foreground" />
-                <span className="text-sm">
-                  <Editable
-                    contentType="venues"
-                    recordId={venue.id}
-                    field="instagram"
-                    value={venue.instagram}
-                    onSaved={onContentUpdated}
-                  >
-                    <a
-                      href={`https://instagram.com/${venue.instagram}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline"
-                    >
-                      @{venue.instagram}
-                    </a>
-                  </Editable>
-                </span>
-              </div>
-            )}
-
-            <EntitySocialLinks links={venue.social_links} exclude={['instagram']} size="sm" />
-
-            {hasMap && (
-              <Button variant="outline" size="sm" asChild className="self-start">
+        {venue.website && (
+          <div className="flex items-center gap-2">
+            <Globe size={16} className="shrink-0 text-muted-foreground" />
+            <span className="min-w-0 truncate text-sm">
+              <Editable
+                contentType="venues"
+                recordId={venue.id}
+                field="website"
+                value={venue.website}
+                onSaved={onContentUpdated}
+              >
                 <a
-                  href={`https://www.google.com/maps/dir/?api=1&destination=${venue.latitude},${venue.longitude}`}
+                  href={venue.website}
+                  target="_blank"
+                  rel="noopener noreferrer nofollow"
+                  className="text-primary hover:underline"
+                >
+                  {venue.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                </a>
+              </Editable>
+            </span>
+          </div>
+        )}
+
+        {venue.instagram && (
+          <div className="flex items-center gap-2">
+            <Instagram size={16} className="shrink-0 text-muted-foreground" />
+            <span className="text-sm">
+              <Editable
+                contentType="venues"
+                recordId={venue.id}
+                field="instagram"
+                value={venue.instagram}
+                onSaved={onContentUpdated}
+              >
+                <a
+                  href={`https://instagram.com/${venue.instagram}`}
                   target="_blank"
                   rel="noopener noreferrer"
+                  className="text-primary hover:underline"
                 >
-                  <Navigation2 size={14} className="mr-1.5" />
-                  Directions
+                  @{venue.instagram}
                 </a>
-              </Button>
-            )}
-          </CardContent>
-        </Card>
-      )}
+              </Editable>
+            </span>
+          </div>
+        )}
 
-      {hasUsableHours(venue.hours) && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between gap-2">
-              <span className="flex items-center gap-2">
-                <Clock size={16} />
-                Hours
-              </span>
-              {openNow !== null && (
-                <Badge variant={openNow ? 'soft' : 'outline'}>
-                  {openNow ? 'Open now' : 'Closed'}
-                </Badge>
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Editable
-              contentType="venues"
-              recordId={venue.id}
-              field="hours"
-              value={venue.hours}
-              onSaved={onContentUpdated}
-              as="div"
+        <EntitySocialLinks links={venue.social_links} exclude={['instagram']} size="sm" />
+
+        {hasMap && (
+          <Button variant="outline" size="sm" asChild className="self-start">
+            <a
+              href={`https://www.google.com/maps/dir/?api=1&destination=${venue.latitude},${venue.longitude}`}
+              target="_blank"
+              rel="noopener noreferrer"
             >
-              {formatHours(venue.hours as Record<string, unknown>)}
-            </Editable>
-          </CardContent>
-        </Card>
-      )}
+              <Navigation2 size={14} className="mr-1.5" />
+              Directions
+            </a>
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
 
+/**
+ * What is left for the 360px rail: the destination safety card, recent
+ * check-ins and the correction footnote — small, supplementary, and genuinely
+ * rail-shaped.
+ *
+ * The Hours card that used to live here is GONE, not moved: the descriptor
+ * already declares an `hours` section behind the identical
+ * `hasUsableHours(venue.hours)` guard, so every venue with hours rendered them
+ * twice — once as a section and once as a rail card.
+ */
+export function VenueSidebar({ venue, checkinRefresh }: VenueSidebarProps) {
+  return (
+    <div className="flex flex-col gap-6">
       <DestinationSafetyCard countryIds={[venue.country_id]} />
 
       <VenueRecentCheckins venueId={venue.id} refreshTrigger={checkinRefresh} />
