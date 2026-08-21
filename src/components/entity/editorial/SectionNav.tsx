@@ -1,5 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react';
-import { STICKY_UNDER_HEADER } from '@/components/layout/PageContainer';
+import { PAGE_BLEED, STICKY_UNDER_HEADER } from '@/components/layout/PageContainer';
 import { cn } from '@/lib/utils';
 
 export interface SectionNavItem {
@@ -43,19 +43,30 @@ export function SectionNav({ items, activeId, onSelect, className }: SectionNavP
     <nav
       aria-label="Sections"
       /* A route strip, not a frosted iOS tab bar: solid paper with an ink rule
-         that IS the band's edge. The bleed follows PAGE_GUTTER so the rule
-         reaches the viewport edge at every breakpoint and the item row still
-         lines up with the page content above it — at a flat `-mx-4` the rule
-         stopped 16px short of the gutter from `sm` up. */
+         that IS the band's edge. `PAGE_BLEED` cancels the gutter so the rule
+         reaches the viewport edge at every breakpoint — at a flat `-mx-4` it
+         stopped 16px short from `sm` up. Imported rather than restated: this
+         carried its own `-mx-4 sm:-mx-6 md:-mx-8` copy, which is how it drifts
+         from the ladder it is supposed to track. */
       className={cn(
-        'sticky z-30 -mx-4 mb-8 border-b border-border-hairline bg-background sm:-mx-6 md:-mx-8',
+        'sticky z-30 mb-8 border-b border-border-hairline bg-background',
+        PAGE_BLEED,
         STICKY_UNDER_HEADER,
         className,
       )}
     >
+      {/* `max-w-page`, NOT `max-w-screen-2xl`. The bleed above lands this row
+          on the page container's own box, so a 1536px cap here is 64px NARROWER
+          than the frame it sits in and `mx-auto` splits the difference into
+          32px of margin per side — on top of the gutter this already re-applies.
+          Measured on prod at 1990px: tabs began at 259 while the cards below
+          began at 227. Invisible under 1536px, which is why it survived; the
+          indent is max(0, (min(1600, vw) - 1536) / 2), so it only appears on
+          large desktops and saturates at 32px from 1600 up. The cap must be the
+          one the frame uses, or it is a second frame fighting the first. */}
       <ul
         ref={listRef}
-        className="mx-auto flex h-12 max-w-screen-2xl items-center gap-6 overflow-x-auto px-4 sm:px-6 md:px-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="mx-auto flex h-12 max-w-page items-center gap-6 overflow-x-auto px-4 sm:px-6 md:px-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {items.map((item) => {
           const isActive = item.id === activeId;

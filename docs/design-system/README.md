@@ -170,6 +170,22 @@ nav tab above it, at every breakpoint. Full-bleed bars (header rows, the
 breadcrumb bar, tinted home bands) stay full-bleed — their rule or tint IS the
 band's edge — and take the cap on their _content row_ only.
 
+**A bleed is a ROUND TRIP: `PAGE_BLEED` out, `PAGE_GUTTER` back in, and no
+second cap.** The inner row must return to its container's content box exactly.
+`SectionNav`'s row carried `max-w-screen-2xl` (1536) while the bleed had landed
+it on the page container's 1600 box, so `mx-auto` split the 64px difference into
+32px of margin per side and its tabs sat 32px right of the cards below —
+measured on prod at 1990px, tabs at 259 vs content at 227. It is exactly zero
+below 1536px (`max(0, (min(1600, vw) - 1536) / 2)`), so only large desktops ever
+showed it. If a row needs a cap at all it is `max-w-page`, the one the frame
+uses; `RouteStrip`'s row takes the gutter and no cap, which is the shape to
+copy. Also import `PAGE_BLEED` rather than restating `-mx-4 sm:-mx-6 md:-mx-8`
+— a hand-written copy is how the two drift. Guarded by the `bled bars align
+with the content column` block in `e2e/page-layout.spec.ts`, which asserts the
+row against **its own parent**, not against the page column: `/tags`' spine
+bleeds inside the glossary's two-column body, so its row correctly lands at 448
+and a page-column assertion would fail a bar that is right.
+
 Why 1600 rather than the `max-w-7xl` (1280) it replaced: the cap exists to stop
 grids spreading, and 1280 left roughly a third of a common desktop viewport as
 dead margin. Prose does not scale with it, which is what the second and third
