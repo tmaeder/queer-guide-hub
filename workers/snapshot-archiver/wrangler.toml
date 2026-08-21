@@ -19,4 +19,12 @@ bucket_name = "queer-guide-scraper-snapshots"
 
 # Set these via `wrangler secret put`:
 # wrangler secret put SUPABASE_SERVICE_ROLE_KEY
-# wrangler secret put ADMIN_SECRET  # optional, gates manual POST /
+# wrangler secret put ADMIN_SECRET
+#   REQUIRED for manual invocation, and the gate FAILS CLOSED: with it unset,
+#   `POST /` is refused for everyone (403) rather than allowed for everyone.
+#   This line read "optional" until 2026-08-21, and the secret was in fact unset
+#   in production that whole time — so the handler's old `if (env.ADMIN_SECRET)`
+#   check was skipped entirely and anyone who could reach the worker URL could
+#   trigger a batch running with SUPABASE_SERVICE_ROLE_KEY. Nothing looked
+#   broken because the weekly cron below runs the `scheduled` handler, which
+#   never passes through this gate.
