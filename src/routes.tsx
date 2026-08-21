@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useSearchTelemetry } from '@/providers/SearchTelemetryProvider';
 import { AdminRouteGuard } from '@/components/security/AdminRouteGuard';
 import { LocaleRouter } from '@/components/routing/LocaleRouter';
+import { AuthAliasRedirect } from '@/components/routing/AuthAliasRedirect';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { RouteFade } from '@/components/layout/RouteFade';
@@ -349,6 +350,11 @@ export const AppRoutes = () => {
                     no-locale-prefix rule, the compact footer, and the noindex
                     in functions/_lib/routeMeta.ts. */}
                 <Route path="/auth/reset-password" element={<ResetPassword />} />
+                {/* Unprefixed aliases. These existed ONLY under /:locale?, so a
+                    bare /signin parsed as locale "signin" and 404'd — which is
+                    where PlanTripFromHereButton had been sending people. */}
+                <Route path="/signin" element={<AuthAliasRedirect />} />
+                <Route path="/login" element={<AuthAliasRedirect />} />
                 <Route path="/claim-username" element={<ClaimUsername />} />
                 <Route path="/extension" element={<ExtensionInstall />} />
                 {import.meta.env.DEV && (
@@ -823,8 +829,10 @@ export const AppRoutes = () => {
                   <Route path="shop/*" element={<LocalizedRedirect to="/marketplace" />} />
                   <Route path="produkt/:slug" element={<LocalizedRedirect to="/marketplace" />} />
                   <Route path="home" element={<LocalizedRedirect to="/" />} />
-                  <Route path="login" element={<Navigate to="/auth" replace />} />
-                  <Route path="signin" element={<Navigate to="/auth" replace />} />
+                  {/* Bare <Navigate> here dropped location.search, discarding
+                      the ?redirect= these aliases exist to carry. */}
+                  <Route path="login" element={<AuthAliasRedirect />} />
+                  <Route path="signin" element={<AuthAliasRedirect />} />
                   <Route path="dashboard" element={<LocalizedRedirect to="/hub" />} />
                   <Route path="directory" element={<LocalizedRedirect to="/community" />} />
                   <Route path="users/:slug" element={<SlugAliasRedirect toBase="user" />} />

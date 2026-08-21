@@ -19,6 +19,7 @@ import Signup from '@/components/auth/Signup';
 import { OAuthButtons } from '@/components/auth/OAuthButtons';
 import { PasskeyButton } from '@/components/auth/PasskeyButton';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { sanitizeRedirect } from '@/lib/authRedirect';
 
 type Mode = 'signin' | 'signup' | 'forgot';
 
@@ -38,8 +39,22 @@ export default function Auth() {
   const [searchParams, setSearchParams] = useSearchParams();
   // Where to land after sign-in: a gated tab (e.g. Messages) passes its target
   // via router state; fall back to ?redirect= or home.
+  // Precedence: router state (set by in-app gates) > ?redirect= > ?next= > home.
+  //
+  // `?next=` is accepted as a deprecated alias for one release. It was never
+  // read here, so every link using it — VenuesRails, PlanTripFromHereButton —
+  // silently dropped its destination and dumped the user on the homepage.
+  // Those call sites now emit ?redirect=, but bookmarked and external links
+  // still carry ?next=.
+  //
+  // Every branch is sanitized: the value arrives from a URL anyone can craft,
+  // and an unchecked one becomes an open redirect the moment a caller passes
+  // it to window.location instead of the router.
   const redirectTo =
-    (location.state as { from?: string } | null)?.from || searchParams.get('redirect') || '/';
+    sanitizeRedirect((location.state as { from?: string } | null)?.from) ??
+    sanitizeRedirect(searchParams.get('redirect')) ??
+    sanitizeRedirect(searchParams.get('next')) ??
+    '/';
   const initialMode: Mode = searchParams.get('mode') === 'signup' ? 'signup' : 'signin';
   const [mode, setMode] = useState<Mode>(initialMode);
 
