@@ -1270,6 +1270,20 @@
     "required": {
       "title": "Sign in required",
       "description": "Please sign in to continue."
+    },
+    "reset": {
+      "title": "[RU] Set a new password",
+      "blurb": "[RU] Choose a new password for your account.",
+      "newPassword": "[RU] New password",
+      "confirmPassword": "[RU] Confirm new password",
+      "submit": "[RU] Update password",
+      "success": "[RU] Password updated.",
+      "expiredTitle": "[RU] This reset link has expired",
+      "expiredBody": "[RU] Reset links work once and only in the browser that requested them. Request a new one to continue.",
+      "requestNew": "[RU] Request a new link",
+      "errors": {
+        "mismatch": "[RU] Both passwords must match."
+      }
     }
   },
   "onboarding": {

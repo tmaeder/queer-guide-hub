@@ -1,6 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { PageContainer } from '@/components/layout/PageContainer';
+import { PageContainer, STICKY_RAIL_UNDER_HEADER } from '@/components/layout/PageContainer';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { RouteBullet } from '@/components/transit/RouteBullet';
 import { RouteStrip, type RouteStation } from '@/components/transit/RouteStrip';
@@ -115,7 +115,9 @@ export const LegalPageLayout = ({
 
       <div className="mt-8 flex flex-col items-start md:flex-row md:gap-12">
         {sections.length > 0 && (
-          <div className="sticky top-20 hidden w-56 flex-shrink-0 md:block">
+          <div
+            className={cn('sticky hidden w-56 flex-shrink-0 md:block', STICKY_RAIL_UNDER_HEADER)}
+          >
             <p className="mb-2 text-2xs font-bold uppercase tracking-label text-muted-foreground">
               On this page
             </p>
