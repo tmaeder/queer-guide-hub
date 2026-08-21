@@ -9,7 +9,7 @@ vi.mock('@/components/routing/LocalizedLink', () => ({
     <a href={to} {...rest}>{children}</a>
   ),
 }));
-vi.mock('@/utils/fallbackImages', () => ({ getFallbackImage: () => '/fallback.png', getRandomFallbackImage: () => '/fallback.png' }));
+vi.mock('@/utils/fallbackImages', () => ({ getFallbackImage: () => '/fallback.png' }));
 
 import { DestinationTiles } from '../DestinationTiles';
 
