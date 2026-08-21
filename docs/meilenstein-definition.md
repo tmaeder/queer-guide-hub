@@ -12,9 +12,16 @@ Akt der Verfolgung. Meilensteine sind mit Personen verknüpfbar und bekommen ein
 
 ## Aufnahmekriterien (verbindlich)
 
-1. **Exaktes Tagesdatum** (`YYYY-MM-DD`) **+ mindestens eine Quelle.** Ist nur Jahr oder Monat sicher
-   belegbar → **nicht aufnehmen**, nichts raten. (Abgeleitete Daten, z. B. nach einer Vacatio-legis-Regel,
-   nur mit klarem Hinweis im Text.)
+1. **Datum + mindestens eine Quelle — nie geraten.** Zwei Präzisionsstufen (`date_precision`),
+   beide zulässig, solange eine Quelle das Datum stützt:
+   - **Tag** (`YYYY-MM-DD`) — verbindlich für alles, was als "an diesem Tag"-Ereignis auftritt
+     (`milestones_on_this_day`, Jahrestags-Widgets). Die Anzeige zeigt hier Tag+Monat+Jahr.
+   - **Monat/Jahr** — zulässig für die allgemeine Timeline, wenn nur Jahr oder Monat sicher belegbar
+     ist. Die Anzeige zeigt dann nur den Monat bzw. nur das Jahr (`formatMilestoneDate` rundet nie
+     auf einen erfundenen Tag hoch) und der Eintrag erscheint nicht in den tagesgenauen Widgets.
+   - Was weiterhin **nicht aufgenommen** wird: ein Datum ohne jede Quelle. "Nichts raten" heisst
+     "nichts ohne Beleg erfinden", nicht "nur Tagesgenauigkeit ist erlaubt".
+   (Abgeleitete Daten, z. B. nach einer Vacatio-legis-Regel, nur mit klarem Hinweis im Text.)
 2. **Bei Gesetzen zählt das Inkrafttreten** — nicht Unterschrift, Parlamentsbeschluss oder erste Zeremonie.
    Wenn beides bekannt/relevant ist, im Text nennen.
 3. **Nationale Ebene.** Nur regional/kommunale Regelungen (z. B. einzelne US-Bundesstaaten, Gemeinden)

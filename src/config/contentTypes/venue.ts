@@ -162,17 +162,6 @@ export const venueFields: FieldConfig[] = [
   { name: 'verified', label: 'Verified', type: 'boolean', group: 'settings' },
   { name: 'star_rating', label: 'Star Rating', type: 'number', group: 'settings', min: 1, max: 5 },
   {
-    name: 'verification_status',
-    label: 'Verification Status',
-    type: 'select',
-    group: 'settings',
-    options: [
-      { value: 'pending', label: 'Pending' },
-      { value: 'verified', label: 'Verified' },
-      { value: 'rejected', label: 'Rejected' },
-    ],
-  },
-  {
     name: 'closed_at',
     label: 'Closed At',
     type: 'datetime',
@@ -273,7 +262,7 @@ export const venueContentType: ContentTypeConfig = {
   fields: venueFields,
   // Has to follow the field above to `is_featured` — `defaults` goes into every
   // CREATE payload, so the name dropped in PR #312 400'd the whole insert.
-  defaults: { is_featured: false, verified: false, verification_status: 'pending' },
+  defaults: { is_featured: false, verified: false },
   validate: validateVenue,
   fieldGroupOrder: ['basic', 'location', 'details', 'media', 'settings', 'external'],
   translatableFields: ['name', 'description', 'accessibility_notes'],

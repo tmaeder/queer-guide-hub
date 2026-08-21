@@ -930,7 +930,7 @@ Propose notable milestones in LGBTQ+ history (rights, decriminalization, crimina
 
 STRICT RULES — a proposal that breaks any rule must be omitted:
 1. It must be REAL, notable and verifiable — no invented events.
-2. Give an EXACT date. Use YYYY-MM-DD. If only the month is reliably known, set date_precision:"month" and use the first of that month; if only the year, date_precision:"year" and use YYYY-01-01. NEVER guess a day or month you are not sure of.
+2. Prefer the EXACT day when it is genuinely knowable (most laws, court rulings and dated events have one) — set date_precision:"day" and YYYY-MM-DD. Only fall back to date_precision:"month" (first of month) or date_precision:"year" (YYYY-01-01) when the day is not reliably documented. NEVER guess a day or month you are not sure of — coarser precision is always preferable to a fabricated one.
 3. Every proposal MUST include at least one authoritative source_url (Wikipedia, primary law/court source, WHO/UN, reputable news). No source → omit it.
 4. category MUST be one of: ${MILESTONE_CATEGORIES.join(', ')}.
 5. impact is "positive", "neutral" or "negative" (setbacks/criminalization = negative).
