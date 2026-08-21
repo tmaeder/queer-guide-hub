@@ -6,6 +6,7 @@ import { Footer } from '@/components/layout/Footer';
 import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
 import { TripContextBar } from '@/components/trips/TripContextBar';
 import { EmailVerifyBanner } from '@/components/auth/EmailVerifyBanner';
+import { RecoveryRedirect } from '@/components/auth/RecoveryRedirect';
 import { BreadcrumbBar } from '@/components/breadcrumbs/BreadcrumbBar';
 import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker';
 import { useGlobalPresence } from '@/hooks/useConversationPresence';
@@ -103,6 +104,10 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
           thing that surface exists to do. */}
       <div aria-hidden="true" className="fixed inset-0 z-0 pointer-events-none bg-background" />
       <AnalyticsTracker />
+      {/* Outside the !isAdmin branch on purpose: a recovery link can land on
+          any path, including an admin one, and must still reach the reset
+          page. */}
+      <RecoveryRedirect />
       {/* Header + banners are wrapped in dedicated error boundaries so a crash
         in (e.g.) the avatar menu's notifications subscription cannot blank the
         whole app. The inner ErrorBoundary in routes.tsx handles route-level
