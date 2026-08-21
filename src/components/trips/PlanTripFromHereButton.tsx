@@ -22,8 +22,12 @@ export interface PlanTripFromHereButtonProps {
  * Editorial "Plan a trip from here" CTA. Opens CreateTripDialog pre-seeded with
  * the destination's city/country so the user lands on /trips/:id in one step.
  *
- * Unauthenticated users are bounced to /signin?next=/travel so they finish auth
- * and pick this destination back up.
+ * Unauthenticated users are bounced to /auth?redirect=/travel so they finish
+ * auth and pick this destination back up.
+ *
+ * This used to target /signin?next=, which did neither thing: unprefixed
+ * /signin was a 404 (the route existed only under the locale parent) and
+ * ?next= was never read.
  */
 export function PlanTripFromHereButton({
   initialGeo,
@@ -37,7 +41,7 @@ export function PlanTripFromHereButton({
 
   const handleClick = () => {
     if (!user) {
-      navigate(`/signin?next=${encodeURIComponent('/travel')}`);
+      navigate(`/auth?redirect=${encodeURIComponent('/travel')}`);
       return;
     }
     setOpen(true);
