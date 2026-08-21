@@ -17,18 +17,15 @@ import { useNearestAirport } from '@/hooks/useNearestAirport';
 import { useAuth } from '@/hooks/useAuth';
 import { useTrackEvent } from '@/hooks/useTrackEvent';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
-import { SimilarItems } from '@/components/discovery/SimilarItems';
 import { MarketplaceForCity } from '@/components/marketplace/MarketplaceForCity';
 import { CityLocalSupporterCaption } from '@/components/marketplace/CityLocalSupporterCaption';
 import { GuidesRail } from '@/components/guides/GuidesRail';
-import { TrendingStrip } from '@/components/discovery/TrendingStrip';
 import { PeopleHereRail } from '@/components/people/PeopleHereRail';
 import { SimilarCities } from '@/components/personalization/SimilarCities';
 import { CreateTripDialog } from '@/components/trips/CreateTripDialog';
 import { TripCoveringBanner } from '@/components/trips/TripCoveringBanner';
 import { PlanTripFromHereButton } from '@/components/trips/PlanTripFromHereButton';
-import { SinglePage } from '@/components/transit/SinglePage';
-import { StatLine } from '@/components/transit/StatLine';
+import { SinglePage, StickyRailGroup } from '@/components/transit/SinglePage';
 import { ProvenanceLine } from '@/components/transit/ProvenanceLine';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { SeeAllLink } from '@/components/ui/SectionHeader';
@@ -268,7 +265,11 @@ export default function CityDetail() {
         {
           id: 'overview',
           title: t('cities.detail.section.overview', 'About {{city}}', { city: city.name }),
-          content: <CityOverviewTab city={city} />,
+          // `showDescription` only when the masthead lead used the editorial
+          // hook. Without a hook (96.5% of live cities) the lead IS the
+          // description, and rendering it again here printed the same
+          // paragraph twice on essentially every city page.
+          content: <CityOverviewTab city={city} showDescription={!!city.editorial_hook} />,
         },
         {
           id: 'travel',
@@ -390,6 +391,18 @@ export default function CityDetail() {
                 {t('cities.detail.createTrip', 'Create trip')}
               </button>
             )}
+            {/* Save lives with the other actions. It used to be the last
+                element of the page, below ten footer rails — a core action a
+                reader had to scroll the entire single to find. */}
+            <button
+              type="button"
+              onClick={handleFavoriteToggle}
+              className="px-4 py-2 text-13 font-bold transition-colors hover:bg-foreground hover:text-background"
+            >
+              {isFavorited(city.id)
+                ? t('cities.detail.favorited', 'Saved to favorites')
+                : t('cities.detail.favorite', 'Save to favorites')}
+            </button>
             <CityActions city={city} refetchCity={refetchCity} t={t} />
           </>
         }
@@ -409,16 +422,35 @@ export default function CityDetail() {
             {/* Spec module 01 is slot HEAD, not rail: `FactGrid` is a
               1/2/3-column grid keyed to the VIEWPORT, so in the 360px rail its
               cells collapse to ~110px on a desktop. Same for
-              `CountryPracticalInfo`. The rail carries the rail-slot modules —
-              map inset (16) and stat line (15). */}
-            <CityAtAGlance city={city} hasAirport={hasAirport} effectiveIata={effectiveIata} />
-            <GeoPhotoInset
-              src={imageUrl}
-              alt={city.name}
-              fallbackKey={city.id}
-              priority
-              caption={city.countries?.name ?? null}
-            />
+              `CountryPracticalInfo`. The rail carries the rail-slot module —
+              map inset (16).
+
+              Facts and photo share one band from lg. Stacked full-width they
+              cost a whole desktop viewport before the first section heading;
+              side by side the head halves and "Safety & rights" arrives a
+              scroll earlier. The head strip carries five short facts, so its
+              cells survive the narrower column; on mobile the band stacks in
+              the same order as before. */}
+            {/* The two-up split is gated on the photo actually existing —
+                `PhotoInset` self-hides on a miss (~6% of cities), and a grid
+                with a dead right column would pin the facts to half width for
+                nothing. */}
+            <div
+              className={
+                imageUrl
+                  ? 'grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] lg:items-start'
+                  : 'contents'
+              }
+            >
+              <CityAtAGlance city={city} hasAirport={hasAirport} effectiveIata={effectiveIata} />
+              <GeoPhotoInset
+                src={imageUrl}
+                alt={city.name}
+                fallbackKey={city.id}
+                priority
+                caption={city.countries?.name ?? null}
+              />
+            </div>
             <GeoRouteRail
               sections={sections}
               activeId={activeId}
@@ -443,58 +475,60 @@ export default function CityDetail() {
               caption={city.region_name ?? undefined}
               openLabel={t('cities.detail.openMap', 'Open the full map')}
             />
-            <div className="bg-muted rounded-element p-4">
-              <StatLine
-                stats={[
-                  {
-                    label: t('cities.detail.stats.venues', 'Venues'),
-                    value: venues.length || null,
-                  },
-                  {
-                    label: t('cities.detail.stats.districts', 'Districts'),
-                    value: villages.length || null,
-                  },
-                  {
-                    label: t('cities.detail.stats.events', 'Upcoming events'),
-                    value: events.length || null,
-                  },
-                ]}
+            {/* Module 15 (stat line) is carried by the masthead census, not by
+                a second box here. The rail used to repeat the census's exact
+                three numbers ("N stops · N districts · N departures") as a
+                labelled list one viewport below it — and module 15's own rule
+                is that a count belongs only where it changes what the reader
+                does. A duplicate changes nothing; the census is the one
+                unconditional render. */}
+            <StickyRailGroup>
+              {/* Sticky from lg so the line map follows the reader — the
+                  horizontal strip already does exactly this on mobile, pinned
+                  under the header; without this the desktop TOC scrolls away
+                  after the first section. Provenance rides inside the same
+                  wrapper: a sibling below a stuck element gets overlapped, not
+                  pushed. */}
+              <GeoRouteRail
+                sections={sections}
+                activeId={activeId}
+                onNavigate={select}
+                orientation="vertical"
+                track="green"
+                label={t('cities.detail.sections', 'Sections')}
+                className="hidden lg:block"
               />
-            </div>
-            <GeoRouteRail
-              sections={sections}
-              activeId={activeId}
-              onNavigate={select}
-              orientation="vertical"
-              track="green"
-              label={t('cities.detail.sections', 'Sections')}
-              className="hidden lg:block"
-            />
-            <ProvenanceLine
-              addedAt={city.created_at}
-              checkedAt={city.last_verified_at ?? null}
-              correctHref="/contact"
-            />
+              <ProvenanceLine
+                addedAt={city.created_at}
+                checkedAt={city.last_verified_at ?? null}
+                correctHref="/contact"
+              />
+            </StickyRailGroup>
           </>
         }
         footer={
-          <div className="flex flex-col gap-12">
+          <div className="flex flex-col gap-10">
             {/* Rails live here, not in `sections`: each self-hides from inside
                 its own body, which the section filter cannot see, so a station
-                would point at nothing. */}
+                would point at nothing.
+
+                Curated down from ten stacked rails to seven, in a fixed
+                narrative order — in this city (landmarks, people from here,
+                guides, shops), then the community, then onward travel. Two
+                rails were cut as duplicates, not casualties: `TrendingStrip`
+                re-surfaces the same venues and events the body sections just
+                showed, and `SimilarItems` filtered to cities answered the
+                question `SimilarCities` already answers with equality-aware
+                ranking. One question, one module. */}
+            <CityLandmarksRail cityId={city.id} />
             <PersonalitiesForEntity
               cityId={city.id}
               countryId={city.countries?.id ?? null}
               cityName={city.name}
             />
-            <NearbyTriptych
-              cityId={city.id}
-              latitude={city.latitude != null ? Number(city.latitude) : null}
-              longitude={city.longitude != null ? Number(city.longitude) : null}
-              countryId={city.countries?.id ?? null}
-              countryName={city.countries?.name ?? null}
-              equalityScore={city.countries?.equality_score ?? null}
-            />
+            <GuidesRail filters={{ cityId: city.id }} />
+            <MarketplaceForCity cityName={city.name} cityId={city.id} />
+            <CityLocalSupporterCaption cityId={city.id} />
             <PeopleHereRail
               mode="locals"
               cityId={city.id}
@@ -504,22 +538,20 @@ export default function CityDetail() {
               })}
               seeAllHref="/community/members"
             />
-            <CityLandmarksRail cityId={city.id} />
-            <TrendingStrip city={city.name} />
-            <GuidesRail filters={{ cityId: city.id }} />
-            <MarketplaceForCity cityName={city.name} cityId={city.id} />
-            <CityLocalSupporterCaption cityId={city.id} />
+            <NearbyTriptych
+              cityId={city.id}
+              latitude={city.latitude != null ? Number(city.latitude) : null}
+              longitude={city.longitude != null ? Number(city.longitude) : null}
+              countryId={city.countries?.id ?? null}
+              countryName={city.countries?.name ?? null}
+              equalityScore={city.countries?.equality_score ?? null}
+            />
             <SimilarCities
               cityId={city.id}
               cityName={city.name}
               countryId={city.country_id}
               equalityScore={city.countries?.equality_score}
               latitude={city.latitude}
-            />
-            <SimilarItems
-              entity={{ type: 'city', id: city.id }}
-              title={t('city.similarCities', 'Similar cities')}
-              contentTypes={['city']}
             />
             <section
               aria-labelledby="city-end-of-line"
@@ -553,15 +585,6 @@ export default function CityDetail() {
                 )}
               </div>
             </section>
-            <button
-              type="button"
-              onClick={handleFavoriteToggle}
-              className="self-start px-4 py-2 text-13 font-bold transition-colors hover:bg-foreground hover:text-background"
-            >
-              {isFavorited(city.id)
-                ? t('cities.detail.favorited', 'Saved to favorites')
-                : t('cities.detail.favorite', 'Save to favorites')}
-            </button>
           </div>
         }
       />

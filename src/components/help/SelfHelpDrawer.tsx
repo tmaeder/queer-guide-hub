@@ -24,7 +24,7 @@ export function SelfHelpDrawer() {
             ink-on-ink outline button would be invisible there. */}
         <button
           type="button"
-          className="border inline-flex items-center gap-2 border-background px-4 py-2 text-13 font-bold text-background transition-colors hover:bg-background hover:text-foreground"
+          className="border inline-flex items-center gap-2 rounded-element border-background px-4 py-2 text-13 font-bold text-background transition-colors hover:bg-background hover:text-foreground"
         >
           <Wind size={14} aria-hidden />
           {t('help.self_help_trigger', 'Not ready to talk?')}

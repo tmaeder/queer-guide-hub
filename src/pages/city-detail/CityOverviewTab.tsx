@@ -6,6 +6,10 @@ import type { CityRelation } from './types';
 
 export interface CityOverviewTabProps {
   city: CityRelation;
+  /** False when the masthead lead already rendered `city.description` — the
+   *  fallback on the 96.5% of cities without an `editorial_hook`. Rendering it
+   *  here too printed the same paragraph twice on essentially every page. */
+  showDescription?: boolean;
 }
 
 /**
@@ -31,7 +35,7 @@ export interface CityOverviewTabProps {
  * from city data, and cherry-picking `.band` would silently upgrade a
  * country-level estimate into a claim about this city.
  */
-export function CityOverviewTab({ city }: CityOverviewTabProps) {
+export function CityOverviewTab({ city, showDescription = true }: CityOverviewTabProps) {
   const { t } = useTranslation();
 
   const facts: Fact[] = [];
@@ -44,8 +48,8 @@ export function CityOverviewTab({ city }: CityOverviewTabProps) {
     facts.push({ label: t('cities.detail.about.status', 'Status'), value: civicStatus });
   if (city.region_name)
     facts.push({ label: t('cities.detail.about.region', 'Region'), value: city.region_name });
-  if (city.timezone)
-    facts.push({ label: t('cities.detail.about.timezone', 'Timezone'), value: city.timezone });
+  // Timezone is NOT repeated here — the head fact strip (`CityAtAGlance`)
+  // already carries it, and a headline fact lives once.
   if (city.founded_year)
     facts.push({
       label: t('cities.detail.about.founded', 'Founded'),
@@ -73,7 +77,7 @@ export function CityOverviewTab({ city }: CityOverviewTabProps) {
 
   return (
     <div className="flex flex-col gap-8">
-      {city.description && (
+      {showDescription && city.description && (
         <p className="max-w-reading text-body-lg leading-relaxed">{city.description}</p>
       )}
 

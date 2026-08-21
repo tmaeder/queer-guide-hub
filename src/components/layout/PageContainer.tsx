@@ -53,6 +53,24 @@ export const PAGE_BLEED = '-mx-4 sm:-mx-6 md:-mx-8';
  *  drift that way again; do not re-inline a pixel literal here. */
 export const STICKY_UNDER_HEADER = 'top-[var(--header-pinned-bottom)]';
 
+/** Where a sticky SIDEBAR RAIL pins — the header's underside plus a gap, so a
+ *  tall column of links does not butt against the bar the way a full-width
+ *  control band deliberately does.
+ *
+ *  It exists because the rails had already invented it, each with its own
+ *  literal and all of them measured against the old 64px header: the glossary
+ *  category tree at `top-[76px]` (64+12), the legal TOC at `top-20` (64+16),
+ *  and the News / Sitemap / Donate / EventDetail / GuidePickBlock rails at
+ *  `top-24` (64+32). The island then moved the header's underside to 82 and
+ *  the first two ended up BEHIND it — 6px and 2px, measured on prod
+ *  2026-08-21. The `top-24` group survived only because its gap happened to be
+ *  larger than the drift.
+ *
+ *  So the fix is not to flatten every rail onto the bar offset — that discards
+ *  a real design intent — but to express "header plus a gap" as one derived
+ *  value. 1rem is the middle of the three gaps the rails actually used. */
+export const STICKY_RAIL_UNDER_HEADER = 'top-[calc(var(--header-pinned-bottom)+1rem)]';
+
 /** Bleed on narrow viewports only, snapping back to the content column at md.
  *  Carries its own re-padding, so contents stay aligned while the background
  *  and border reach the screen edge on mobile. For sticky bars that should span

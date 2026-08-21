@@ -21,9 +21,12 @@ export interface Occurrence {
  */
 export function OccurrenceList({
   occurrences,
+  floodFirst = true,
   className,
 }: {
   occurrences: Occurrence[];
+  /** Off when the first row is merely newest, not "your next departure". */
+  floodFirst?: boolean;
   className?: string;
 }) {
   if (occurrences.length === 0) return null;
@@ -35,7 +38,7 @@ export function OccurrenceList({
           key={o.id}
           className={cn(
             'flex flex-wrap items-center gap-4 border-b border-border-hairline px-4 py-4 last:border-b-0',
-            i === 0 && 'bg-foreground text-background',
+            floodFirst && i === 0 && 'bg-foreground text-background',
           )}
         >
           <span className="text-13 font-bold uppercase tracking-label">{o.date}</span>

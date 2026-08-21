@@ -486,6 +486,28 @@ Four rules, each of which was a bug before it was a rule:
   non-zero count unmounts a masthead row and shifts the page under the reader
   (`/marketplace` learned this one).
 
+The city single is the **compact** variant of the family (2026-08-21), and its
+four decisions are deliberate, not drift:
+
+- **One fact, one home.** The head strip (`CityAtAGlance`) is the home for
+  headline facts; About dropped its duplicate timezone, the travel section its
+  duplicate airport code, and the rail its `StatLine` — which repeated the
+  masthead census's exact three counts one viewport below it. Module 15 is
+  carried by the census on this type.
+- **The description renders once.** Without an `editorial_hook` (96.5% of live
+  cities) the masthead lead falls back to `description`, so the page passes
+  `showDescription={!!editorial_hook}` to About instead of printing the same
+  paragraph twice.
+- **Facts and photo share one band from `lg`** (photo capped at 420px, gated on
+  the photo existing so a miss never pins the facts to half width), which
+  brings "Safety & rights" a scroll earlier. The desktop route rail is sticky
+  under the header, matching what the horizontal strip already does on mobile.
+- **The footer is a curated seven**, ordered in-this-city → community → onward,
+  ending on the End-of-line band. `TrendingStrip` (re-surfaced the body's own
+  venues/events) and `SimilarItems` filtered to cities (same question
+  `SimilarCities` answers with equality-aware ranking) were cut as duplicates;
+  Save moved from below the footer into the masthead action row.
+
 Safety composes rather than restyles: `GeoSafetyBanner` wraps the unmodified
 `SafetyAlertBanner` + `GatedContentNotice`, and `GeoSafetyVerdict` is the shared
 verdict tile. It stays monochrome + `--destructive`, gates on `useTripSafety`'s
@@ -618,6 +640,19 @@ asserts that a page container's content edge and the header's differ by exactly
 inset in `src/index.css` and the guard follows. Hard-code 22 anywhere and it
 will not.
 
+**Two offsets, both derived.** A full-width control band pins flush at
+`STICKY_UNDER_HEADER`; a sidebar rail pins at `STICKY_RAIL_UNDER_HEADER`
+(header + 1rem), because a tall column of links butting against the bar reads
+as a collision where a band reads as a stack. The rails had already invented
+that gap and each hard-coded its own version of it against the pre-island 64px
+header — `top-[76px]` (64+12) on the glossary tree, `top-20` (64+16) on the
+legal TOC, `top-24` (64+32) on News / Sitemap / Donate / EventDetail /
+GuidePickBlock. When the header's underside moved to 82 the first two ended up
+*behind* it (6px and 2px, measured on prod); the `top-24` group survived only
+because its gap happened to exceed the drift. Flattening them all onto the band
+offset would have thrown away a real intent, so the gap is expressed once and
+derived.
+
 **The island moved the header's underside, and one constant did not follow.**
 `STICKY_UNDER_HEADER` carried `top-[60px] md:top-[64px]`, measured against a
 header welded to `top: 0`. Once the header floats, its underside is
@@ -735,8 +770,12 @@ exemption" for this — **that section does not exist**; this is the spec.
   pages every visual distinction a reader makes is a risk judgement; teach
   them that hue means "content type" and the red warning becomes just another
   line color. `TransitIcon` is fine — it is `currentColor` by construction.
-- **Weight comes from inversion and rules**, never hue: 3px ink borders, one
-  ink-flooded panel (`SidebarCard tone="ink"` is the shared idiom), `--shadow-hard`.
+- **Weight comes from inversion and rules**, never hue: one ink-flooded plate
+  (`rounded-panel` + `shadow-soft`; `SidebarCard tone="ink"` is the shared
+  idiom), hairline dividers, and outline-on-ink buttons whose border IS the
+  component. (This line said "3px ink borders + `--shadow-hard`" until
+  2026-08-21 — that was the pre-soft-re-skin idiom; the tokens no longer
+  exist.)
 - **`--destructive` is rationed to danger _to the reader_.** On `/help` that
   is exactly three things: the emergency band, `QuickExit`, and the per-line
   "may contact police without your consent" strip. A fourth candidate must

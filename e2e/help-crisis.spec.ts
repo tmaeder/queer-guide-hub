@@ -81,8 +81,8 @@ test('choosing a country puts it in the URL so the page can be shared', async ({
 });
 
 test('a directory is never presented as a callable line', async ({ page }) => {
-  // Audit H-1. Directories render as a rules-and-rows list, call-now lines as
-  // bordered cards with a Call button — different shapes, not just different
+  // Audit H-1. Directories render as a plain link list, call-now lines as
+  // <article> rows with a Call button — different shapes, not just different
   // sections, so the difference survives a glance.
   await openHelp(page, '/help/int');
 
