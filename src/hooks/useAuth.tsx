@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { startRegistration, startAuthentication } from '@simplewebauthn/browser';
@@ -20,15 +20,64 @@ interface SignUpMetadata {
 
 type OAuthProvider = 'google' | 'apple';
 
+// Survives an in-SPA navigation between the recovery landing URL and
+// /auth/reset-password. sessionStorage (not localStorage) so a recovery
+// intent never outlives the tab that started it.
+const RECOVERY_KEY = 'qg:auth:recovery';
+
+function readStoredRecovery(): boolean {
+  try {
+    return window.sessionStorage.getItem(RECOVERY_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function writeStoredRecovery(active: boolean) {
+  try {
+    if (active) window.sessionStorage.setItem(RECOVERY_KEY, '1');
+    else window.sessionStorage.removeItem(RECOVERY_KEY);
+  } catch {
+    /* private mode — the in-memory flag still carries the current page */
+  }
+}
+
+/**
+ * True when this page load is a password-recovery landing.
+ *
+ * GoTrue's PKCE exchange deletes only `code` and the flow-id param from the
+ * URL, so `?reset=1` (set by resetPassword's redirectTo) survives it. Reading
+ * it synchronously covers the window before the PASSWORD_RECOVERY event lands:
+ * the notification is dispatched behind a setTimeout(…, 0) while our
+ * onAuthStateChange subscription registers in an effect, so the event is the
+ * primary signal but not a guaranteed-first one.
+ */
+function detectInitialRecovery(): boolean {
+  try {
+    if (new URLSearchParams(window.location.search).get('reset') === '1') return true;
+  } catch {
+    /* no window.location in some test envs */
+  }
+  return readStoredRecovery();
+}
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, metadata?: SignUpMetadata, captchaToken?: string) => Promise<{ error: unknown }>;
+  /** A password-recovery link is being consumed; route to /auth/reset-password. */
+  passwordRecovery: boolean;
+  signUp: (
+    email: string,
+    password: string,
+    metadata?: SignUpMetadata,
+    captchaToken?: string,
+  ) => Promise<{ error: unknown }>;
   signIn: (email: string, password: string, captchaToken?: string) => Promise<{ error: unknown }>;
   signInWithOAuth: (provider: OAuthProvider) => Promise<{ error: unknown }>;
   resendVerification: (email: string) => Promise<{ error: unknown }>;
   resetPassword: (email: string, captchaToken?: string) => Promise<{ error: unknown }>;
+  updatePassword: (password: string) => Promise<{ error: unknown }>;
   signOut: () => Promise<void>;
   enrollPasskey: () => Promise<{ error: unknown }>;
   signInWithPasskey: () => Promise<{ error: unknown }>;
@@ -46,6 +95,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [hasPasskey, setHasPasskey] = useState(false);
+  const [passwordRecovery, setPasswordRecovery] = useState<boolean>(detectInitialRecovery);
+  // Whether a real PASSWORD_RECOVERY event has been seen this tab, as opposed
+  // to the flag merely being seeded from ?reset=1. See the INITIAL_SESSION
+  // branch below.
+  const sawRecoveryEvent = useRef(false);
+
+  // Persist a recovery detected from the URL so the flag survives the
+  // client-side navigation to /auth/reset-password (which drops ?reset=1).
+  useEffect(() => {
+    if (passwordRecovery) writeStoredRecovery(true);
+  }, [passwordRecovery]);
 
   useEffect(() => {
     // onAuthStateChange is the single source of truth for auth state.
@@ -53,24 +113,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // session from localStorage (or null if none). All subsequent
     // events (SIGNED_IN, SIGNED_OUT, TOKEN_REFRESHED) are also
     // delivered through this callback.
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
 
-        // Check for existing passkey enrollment when user signs in.
-        // Pass the event's user id directly — the `user` state set above
-        // has not flushed yet, so reading it inside the check would see the
-        // previous (often null) value on first sign-in.
-        if (session?.user) {
-          // eslint-disable-next-line react-hooks/immutability -- checkPasskeyEnrollment declared below; auth callback fires after mount, after the binding is initialized.
-          checkPasskeyEnrollment(session.user.id);
-        } else {
-          setHasPasskey(false);
-        }
+      // A recovery link exchanges to PASSWORD_RECOVERY rather than SIGNED_IN
+      // (auth-js tags the PKCE verifier with a '/recovery' suffix). Without
+      // this branch the user is just silently signed in and bounced home,
+      // which is why password reset never completed.
+      if (event === 'PASSWORD_RECOVERY') {
+        sawRecoveryEvent.current = true;
+        setPasswordRecovery(true);
+        writeStoredRecovery(true);
+      } else if (event === 'SIGNED_OUT') {
+        sawRecoveryEvent.current = false;
+        setPasswordRecovery(false);
+        writeStoredRecovery(false);
+      } else if (event === 'INITIAL_SESSION' && !sawRecoveryEvent.current) {
+        // INITIAL_SESSION means the session was restored from storage rather
+        // than minted by a recovery exchange (that path emits
+        // PASSWORD_RECOVERY). So a flag still standing here came only from
+        // the ?reset=1 seed — and anyone can put ?reset=1 on a URL. Clearing
+        // it stops a crafted link from showing the set-a-new-password form
+        // to an ordinary signed-in visitor.
+        //
+        // Gated on sawRecoveryEvent rather than on event order: auth-js
+        // emits INITIAL_SESSION per-subscriber at registration time and
+        // PASSWORD_RECOVERY from the URL exchange, and which lands first is
+        // a race. This way both orders are correct — recovery-first is never
+        // cleared, and initial-first is re-set when the real event arrives.
+        setPasswordRecovery(false);
+        writeStoredRecovery(false);
       }
-    );
+
+      // Check for existing passkey enrollment when user signs in.
+      // Pass the event's user id directly — the `user` state set above
+      // has not flushed yet, so reading it inside the check would see the
+      // previous (often null) value on first sign-in.
+      if (session?.user) {
+        // eslint-disable-next-line react-hooks/immutability -- checkPasskeyEnrollment declared below; auth callback fires after mount, after the binding is initialized.
+        checkPasskeyEnrollment(session.user.id);
+      } else {
+        setHasPasskey(false);
+      }
+    });
 
     return () => subscription.unsubscribe();
   }, []);
@@ -104,8 +193,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-
-  const signUp = async (email: string, password: string, metadata?: SignUpMetadata, captchaToken?: string) => {
+  const signUp = async (
+    email: string,
+    password: string,
+    metadata?: SignUpMetadata,
+    captchaToken?: string,
+  ) => {
     const redirectUrl = `${window.location.origin}/`;
 
     const { error } = await supabase.auth.signUp({
@@ -150,10 +243,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const resetPassword = async (email: string, captchaToken?: string) => {
+    // Deliberately still /auth?reset=1, not /auth/reset-password: that is the
+    // URL currently on the Supabase redirect allowlist, and RecoveryRedirect
+    // forwards it. Repoint this only after adding the new URL in the dashboard
+    // — otherwise GoTrue silently falls back to Site URL and the link lands
+    // on "/", which is the original bug.
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/auth?reset=1`,
       ...(captchaToken ? { captchaToken } : {}),
     });
+    return { error };
+  };
+
+  const updatePassword = async (password: string) => {
+    const { error } = await supabase.auth.updateUser({ password });
+    if (!error) {
+      setPasswordRecovery(false);
+      writeStoredRecovery(false);
+    }
     return { error };
   };
 
@@ -177,53 +284,59 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (attempts >= maxAttempts) {
             throw networkError;
           }
-          
+
           // Wait before retry (exponential backoff)
-          await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempts) * 1000));
+          await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempts) * 1000));
         }
       }
-      
+
       const { data, error } = authResult!;
-      
+
       if (error) {
         console.error('Sign in error:', error);
-        
-        // Log failed sign-in attempt
+
+        // Log failed sign-in attempt.
+        // The email is deliberately NOT recorded: this row is written for an
+        // unauthenticated caller who has just proved nothing, so the address
+        // may well belong to someone who is not present — and on this platform
+        // an address in a queryable log is identity-adjacent. Brute-force
+        // detection belongs at the GoTrue rate limiter, which sees the real
+        // identifier without persisting it here.
         try {
           await supabase.rpc('log_security_event', {
             p_event_type: 'FAILED_SIGNIN_ATTEMPT',
             p_user_id: null,
             p_metadata: {
-              email: email,
               error_message: error.message,
-              timestamp: new Date().toISOString()
+              timestamp: new Date().toISOString(),
             },
-            p_severity: 'medium'
+            p_severity: 'medium',
           });
         } catch (logError) {
           console.error('Failed to log security event:', logError);
         }
-        
+
         return { error };
       }
-      
+
       // Log successful sign-in
       if (data.user) {
         try {
           await supabase.rpc('log_security_event', {
             p_event_type: 'SUCCESSFUL_SIGNIN',
             p_user_id: data.user.id,
+            // p_user_id already identifies the account; the email would be
+            // redundant PII in a log that outlives the session.
             p_metadata: {
-              email: email,
-              timestamp: new Date().toISOString()
+              timestamp: new Date().toISOString(),
             },
-            p_severity: 'info'
+            p_severity: 'info',
           });
         } catch (logError) {
           console.error('Failed to log security event:', logError);
         }
       }
-      
+
       return { error };
     } catch (unexpectedError) {
       console.error('Unexpected sign-in error:', unexpectedError);
@@ -234,6 +347,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     await supabase.auth.signOut();
     setHasPasskey(false);
+    setPasswordRecovery(false);
+    writeStoredRecovery(false);
   };
 
   // Helper function to check if running in iframe
@@ -254,7 +369,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error('WebAuthn is not supported on this device');
       }
       if (isInIframe()) {
-        throw new Error('Passkey setup is not available in preview mode. Please use the deployed app for passkey functionality.');
+        throw new Error(
+          'Passkey setup is not available in preview mode. Please use the deployed app for passkey functionality.',
+        );
       }
 
       // 1. Get registration options from the server.
@@ -263,7 +380,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         {
           body: { action: 'enroll' },
           headers: { Authorization: `Bearer ${session.access_token}` },
-        }
+        },
       );
       if (enrollError || !enrollData?.options) {
         throw new Error(enrollError?.message || 'Failed to initiate passkey enrollment');
@@ -278,10 +395,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         {
           body: { action: 'verify-enrollment', credentialData: regResponse },
           headers: { Authorization: `Bearer ${session.access_token}` },
-        }
+        },
       );
       if (verifyError || !verifyData?.success) {
-        throw new Error(verifyError?.message || verifyData?.error || 'Failed to verify passkey enrollment');
+        throw new Error(
+          verifyError?.message || verifyData?.error || 'Failed to verify passkey enrollment',
+        );
       }
 
       setHasPasskey(true);
@@ -298,14 +417,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error('WebAuthn is not supported on this device');
       }
       if (isInIframe()) {
-        throw new Error('Passkey sign-in is not available in preview mode. Please use the deployed app for passkey functionality.');
+        throw new Error(
+          'Passkey sign-in is not available in preview mode. Please use the deployed app for passkey functionality.',
+        );
       }
 
       // 1. Get a discoverable-credential challenge (no session required —
       //    the browser surfaces the user's resident keys).
       const { data: authData, error: authError } = await supabase.functions.invoke(
         'secure-passkey-operations',
-        { body: { action: 'authenticate' } }
+        { body: { action: 'authenticate' } },
       );
       if (authError || !authData?.options || !authData?.challengeId) {
         throw new Error(authError?.message || 'Failed to initiate passkey authentication');
@@ -323,10 +444,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             credentialData: assertion,
             challengeId: authData.challengeId,
           },
-        }
+        },
       );
       if (verifyError || !verifyData?.success || !verifyData?.email || !verifyData?.otp) {
-        throw new Error(verifyError?.message || verifyData?.error || 'Passkey authentication failed');
+        throw new Error(
+          verifyError?.message || verifyData?.error || 'Passkey authentication failed',
+        );
       }
 
       // 4. Exchange the OTP for a real Supabase session. This fires
@@ -346,20 +469,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      session,
-      loading,
-      signUp,
-      signIn,
-      signInWithOAuth,
-      resendVerification,
-      resetPassword,
-      signOut,
-      enrollPasskey,
-      signInWithPasskey,
-      hasPasskey,
-    }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        session,
+        loading,
+        passwordRecovery,
+        signUp,
+        signIn,
+        signInWithOAuth,
+        resendVerification,
+        resetPassword,
+        updatePassword,
+        signOut,
+        enrollPasskey,
+        signInWithPasskey,
+        hasPasskey,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

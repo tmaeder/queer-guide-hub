@@ -40,13 +40,36 @@ export const PAGE_VERTICAL = 'py-8 md:py-12';
 export const PAGE_BLEED = '-mx-4 sm:-mx-6 md:-mx-8';
 
 /** Where a page-level sticky element must pin so the site header does not cover
- *  it. The header is `sticky top-0` at `z-1100`; anything a page pins at
- *  `top-0` lands underneath it. Measured against the header's PINNED height,
- *  which is the compact state (it latches at 40px of scroll, long before any
- *  page bar reaches the top): 60px on mobile, 64px from md where the bar
- *  collapses to the one-line ink flood. Page bars sit at z-20 — far below the
- *  header — so this offset, not a z-index, is what keeps them visible. */
-export const STICKY_UNDER_HEADER = 'top-[60px] md:top-[64px]';
+ *  it. Page bars sit at z-20/z-30 — far below the header's z-40 — so this
+ *  offset, not a z-index, is what keeps them visible.
+ *
+ *  Reads `--header-pinned-bottom` (src/index.css) rather than carrying its own
+ *  numbers. It was `top-[60px] md:top-[64px]` until 2026-08-21: those were
+ *  measured against a header welded to `top: 0`, and when the chrome became a
+ *  floating island the header's underside moved down by `--island-inset` while
+ *  these did not. Every bar using this constant then sat BEHIND the bar it was
+ *  offset to clear — 10px on mobile, 18px from md, measured on prod. A value
+ *  derived from the same variable the header positions itself with cannot
+ *  drift that way again; do not re-inline a pixel literal here. */
+export const STICKY_UNDER_HEADER = 'top-[var(--header-pinned-bottom)]';
+
+/** Where a sticky SIDEBAR RAIL pins — the header's underside plus a gap, so a
+ *  tall column of links does not butt against the bar the way a full-width
+ *  control band deliberately does.
+ *
+ *  It exists because the rails had already invented it, each with its own
+ *  literal and all of them measured against the old 64px header: the glossary
+ *  category tree at `top-[76px]` (64+12), the legal TOC at `top-20` (64+16),
+ *  and the News / Sitemap / Donate / EventDetail / GuidePickBlock rails at
+ *  `top-24` (64+32). The island then moved the header's underside to 82 and
+ *  the first two ended up BEHIND it — 6px and 2px, measured on prod
+ *  2026-08-21. The `top-24` group survived only because its gap happened to be
+ *  larger than the drift.
+ *
+ *  So the fix is not to flatten every rail onto the bar offset — that discards
+ *  a real design intent — but to express "header plus a gap" as one derived
+ *  value. 1rem is the middle of the three gaps the rails actually used. */
+export const STICKY_RAIL_UNDER_HEADER = 'top-[calc(var(--header-pinned-bottom)+1rem)]';
 
 /** Bleed on narrow viewports only, snapping back to the content column at md.
  *  Carries its own re-padding, so contents stay aligned while the background

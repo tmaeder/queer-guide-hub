@@ -1,8 +1,9 @@
-import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
 import { writeToStaging, skippedResponse } from '../_shared/source-adapter.ts'
 import { extractMerchantDomain, normalizeCurrency } from '../_shared/marketplace-pipeline-utils.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
+import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
 
 // ============================================================
 // source-shopify-public — ingest any Shopify storefront via its PUBLIC
@@ -96,10 +97,11 @@ interface StorefrontProduct {
 async function storefrontPage(
   shopDomain: string, token: string, country: string, cursor: string | null,
 ): Promise<{ nodes: StorefrontProduct[]; hasNext: boolean; endCursor: string | null }> {
+  const url = assertPublicHttpUrl(`https://${shopDomain}/api/${STOREFRONT_API_VERSION}/graphql.json`)
   const ctrl = new AbortController()
   const timer = setTimeout(() => ctrl.abort(), 25_000)
   try {
-    const res = await fetch(`https://${shopDomain}/api/${STOREFRONT_API_VERSION}/graphql.json`, {
+    const res = await fetch(url, {
       method: 'POST', signal: ctrl.signal,
       headers: {
         'X-Shopify-Storefront-Access-Token': token,
@@ -183,7 +185,7 @@ function makeAdapter(shopDomain: string, sourceSlug: string, currency = 'EUR', o
       // the value can be self-verified instead of assumed.
       const q = new URLSearchParams({ limit: String(PER_PAGE), page: String(page) })
       if (marketCountry) q.set('country', marketCountry)
-      const url = `https://${shopDomain}/products.json?${q}`
+      const url = assertPublicHttpUrl(`https://${shopDomain}/products.json?${q}`)
       // Per-page timeout: merchants that tarpit datacenter egress (e.g.
       // ohmyfantasy.com) otherwise hang the fetch until the function hits its
       // wall-clock limit (HTTP 546) — fail fast with a clear error instead.
@@ -243,6 +245,7 @@ function makeAdapter(shopDomain: string, sourceSlug: string, currency = 'EUR', o
 Deno.serve(withErrorReporting('source-shopify-public', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
+  const _auth = await requireInternalOrAdmin(req, supabase); if (_auth instanceof Response) return _auth
   try {
     const body = await req.json().catch(() => ({}))
     const shopDomain = (body.shop_domain || body.shopDomain || '').replace(/^https?:\/\//, '').replace(/\/$/, '')

@@ -77,7 +77,7 @@ export default {
 
 		// Auth.
 		const tok = request.headers.get("X-QG-Token");
-		if (tok !== env.INGEST_TOKEN) return jres({ error: "unauthorized" }, 401);
+		if (!(await timingSafeEqual(tok ?? "", env.INGEST_TOKEN))) return jres({ error: "unauthorized" }, 401);
 
 		try {
 			if (url.pathname === "/webhook" && request.method === "POST") {
@@ -249,7 +249,7 @@ async function deleteRow(env: Env, table: string, id?: string): Promise<void> {
 	const tm = TABLE_MAP[table];
 	if (!tm) return;
 	await fetch(
-		`${env.SUPABASE_URL}/rest/v1/content_embeddings?content_type=eq.${tm.contentType}&content_id=eq.${id}`,
+		`${env.SUPABASE_URL}/rest/v1/content_embeddings?content_type=eq.${tm.contentType}&content_id=eq.${encodeURIComponent(id)}`,
 		{
 			method: "DELETE",
 			headers: {
@@ -262,7 +262,7 @@ async function deleteRow(env: Env, table: string, id?: string): Promise<void> {
 
 async function fetchRow(env: Env, table: string, id: string): Promise<TableRow | null> {
 	const r = await fetch(
-		`${env.SUPABASE_URL}/rest/v1/${table}?id=eq.${id}&limit=1`,
+		`${env.SUPABASE_URL}/rest/v1/${table}?id=eq.${encodeURIComponent(id)}&limit=1`,
 		{
 			headers: {
 				apikey: env.SUPABASE_SERVICE_KEY,
@@ -386,6 +386,18 @@ async function sha256(t: string): Promise<string> {
 	const buf = new TextEncoder().encode(t);
 	const hash = await crypto.subtle.digest("SHA-256", buf);
 	return [...new Uint8Array(hash)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+// Constant-time credential compare. A plain `!==` short-circuits on the first
+// mismatched byte, which is a timing side channel for a bearer secret; hashing
+// both sides to a fixed-length digest first removes the length/position leak,
+// and the byte-by-byte compare over that fixed digest runs in constant time
+// regardless of where the two hashes diverge.
+async function timingSafeEqual(a: string, b: string): Promise<boolean> {
+	const [ha, hb] = await Promise.all([sha256(a), sha256(b)]);
+	let diff = 0;
+	for (let i = 0; i < ha.length; i++) diff |= ha.charCodeAt(i) ^ hb.charCodeAt(i);
+	return diff === 0;
 }
 
 type SupabaseWebhookPayload = {

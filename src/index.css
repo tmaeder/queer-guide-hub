@@ -452,6 +452,24 @@
      value the chrome actually uses. */
   --island-inset: 14px;
 
+  /* Where the header's underside sits once it is PINNED — the offset every
+     page-level sticky bar and every anchor jump has to clear.
+
+     Derived, never a literal: the island moved the header off `top: 0` by
+     `--island-inset`, and the two hard-coded 60/64px constants that predated
+     it did not follow, so every sticky page bar (RouteStrip, SectionNav,
+     StickyLetterBar, the /events and /cities filter bars) spent its life
+     10px behind the ink flood on mobile and 18px behind it from md. Measured
+     on prod 2026-08-21: header bottom 70 vs bar top 60 at 390px, 82 vs 64 at
+     1440px. Because this composes the inset rather than restating it, moving
+     the island within its stated 14-22px range can no longer desynchronise
+     the two.
+
+     `--header-pinned-h` is the bar's own height in its PINNED state: 56px on
+     mobile, where it never collapses, and 60px from md, where it does. */
+  --header-pinned-h: 56px;
+  --header-pinned-bottom: calc(var(--island-inset) + var(--header-pinned-h));
+
   --sidebar-background: 60 33% 97%;
   --sidebar-foreground: 0 0% 6.7%;
   --sidebar-primary: 0 0% 6.7%;
@@ -736,15 +754,11 @@ html {
      website" link under the header and tripped axe `target-size`
      ("partially obscured"), the moment the header started sticking at all.
 
-     Matches STICKY_UNDER_HEADER in PageContainer.tsx — the header's PINNED
-     height, 60px on mobile and 64px from md. */
-  scroll-padding-top: 60px;
-}
-
-@media (min-width: 768px) {
-  html {
-    scroll-padding-top: 64px;
-  }
+     Shares one source with STICKY_UNDER_HEADER in PageContainer.tsx —
+     `--header-pinned-bottom`, which composes the island inset rather than
+     restating a measured height. It carried its own literals (60/64px) until
+     2026-08-21 and drifted the moment the header became an island. */
+  scroll-padding-top: var(--header-pinned-bottom);
 }
 
 /* ── The ground layer ──────────────────────────────────────────────────
@@ -827,6 +841,17 @@ body {
 
 :focus:not(:focus-visible) {
   outline: none;
+}
+
+/* The search plate's field is the full height of the plate's first row and sits
+   flush against its top edge, so a 2px-OUTSET ring lands outside the plate's
+   `overflow-hidden` clip: it renders as two severed pink arcs, cut level with
+   the plate edge above and the hairline rule below. Draw it inside the field
+   instead — same 2px pink track, same contrast, nothing left to clip. Unlayered
+   + `!important` because that is what the global rule above is, and a Tailwind
+   utility cannot beat it. */
+.search-plate-field input:focus-visible {
+  outline-offset: -2px !important;
 }
 
 /* ── Touch target minimum (WCAG 2.5.5) ─────────────────────────────── */
@@ -1441,9 +1466,29 @@ h2,
   box-shadow: var(--shadow-island-ink-sm);
 }
 
+/* An island floats, but it does not GROW past the content column. `.island`
+   alone spans the window minus the inset, so on anything wider than the cap
+   plus its gutters the plate kept growing while its contents stayed capped at
+   --container-page: measured 205px of empty plate on each side at 1990px, the
+   ears that read as a broken bar. Capping the plate itself at the cap makes
+   the island's box the page's own container box, so its contents land on the
+   same vertical as the page content below with no ears — and below the cap
+   the `100% - 2*inset` arm keeps the plain inset behaviour unchanged.
+
+   `margin-inline: auto` must beat `.island`'s `var(--island-inset)`: same
+   specificity, so this rule stays AFTER it. Not folded into `.island` because
+   the phone dock (`.island-dock`) is deliberately window-width. */
+.island-capped {
+  width: min(var(--container-page), 100% - 2 * var(--island-inset));
+  margin-inline: auto;
+}
+
 @media (min-width: 768px) {
   :root {
     --island-inset: 22px;
+    /* The bar collapses to one ink line from md, so its pinned height is the
+       compact state's 60px rather than the mobile row's 56px. */
+    --header-pinned-h: 60px;
   }
 
   .island {

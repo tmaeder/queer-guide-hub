@@ -1238,6 +1238,20 @@
     "required": {
       "title": "Sign in required",
       "description": "Please sign in to continue."
+    },
+    "reset": {
+      "title": "[IT] Set a new password",
+      "blurb": "[IT] Choose a new password for your account.",
+      "newPassword": "[IT] New password",
+      "confirmPassword": "[IT] Confirm new password",
+      "submit": "[IT] Update password",
+      "success": "[IT] Password updated.",
+      "expiredTitle": "[IT] This reset link has expired",
+      "expiredBody": "[IT] Reset links work once and only in the browser that requested them. Request a new one to continue.",
+      "requestNew": "[IT] Request a new link",
+      "errors": {
+        "mismatch": "[IT] Both passwords must match."
+      }
     }
   },
   "onboarding": {

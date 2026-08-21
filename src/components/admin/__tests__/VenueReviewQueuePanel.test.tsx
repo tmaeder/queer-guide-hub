@@ -2,13 +2,14 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, fireEvent } from '@testing-library/react';
+import { screen, fireEvent, act } from '@testing-library/react';
 import { renderWithProviders } from '@/test/test-utils';
 
 const state = vi.hoisted(() => ({
   rows: [] as unknown[],
   counts: { category_pending: 0, nonvenue_pending: 0, no_signal: 0, unexamined: 0, other_total: 0 },
   lastKind: null as string | null,
+  lastCity: null as string | null,
   categoryCalls: [] as unknown[],
   nonvenueCalls: [] as unknown[],
 }));
@@ -18,8 +19,9 @@ vi.mock('@/hooks/useVenueReviewQueue', async () => {
   return {
     ...actual,
     useVenueReviewCounts: () => ({ data: state.counts }),
-    useVenueReviewCandidates: (kind: string) => {
+    useVenueReviewCandidates: (kind: string, _limit?: number, city?: string) => {
       state.lastKind = kind;
+      state.lastCity = city ?? null;
       return { data: state.rows, isLoading: false };
     },
     useDecideVenueCategory: () => ({
@@ -52,6 +54,7 @@ const candidate = (over: Record<string, unknown> = {}) => ({
 
 beforeEach(() => {
   state.rows = [];
+  state.lastCity = null;
   state.counts = {
     category_pending: 844,
     nonvenue_pending: 1319,
@@ -133,5 +136,47 @@ describe('VenueReviewQueuePanel', () => {
     state.rows = [];
     renderWithProviders(<VenueReviewQueuePanel />);
     expect(screen.getByText(/rather than guessing/i)).toBeTruthy();
+  });
+});
+
+describe('VenueReviewQueuePanel city filter', () => {
+  it('passes the typed city down to the query, debounced', async () => {
+    vi.useFakeTimers();
+    try {
+      renderWithProviders(<VenueReviewQueuePanel />);
+      expect(state.lastCity).toBe('');
+
+      fireEvent.change(screen.getByLabelText('Filter review queue by city'), {
+        target: { value: 'Zürich' },
+      });
+
+      // Still the old value: a per-keystroke refetch would run the SECURITY DEFINER
+      // function once per character.
+      expect(state.lastCity).toBe('');
+
+      await act(async () => {
+        vi.advanceTimersByTime(300);
+      });
+      expect(state.lastCity).toBe('Zürich');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('says which city came up empty, so a filtered blank is not read as a drained queue', async () => {
+    vi.useFakeTimers();
+    try {
+      state.rows = [];
+      renderWithProviders(<VenueReviewQueuePanel />);
+      fireEvent.change(screen.getByLabelText('Filter review queue by city'), {
+        target: { value: 'Zürich' },
+      });
+      await act(async () => {
+        vi.advanceTimersByTime(300);
+      });
+      expect(screen.getByText(/Nothing waiting for “Zürich”/)).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

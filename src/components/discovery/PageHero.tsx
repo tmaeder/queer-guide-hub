@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { SpotlightV2 } from '@/components/effects/SpotlightV2';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { cn } from '@/lib/utils';
 import { PageContainer } from '@/components/layout/PageContainer';
@@ -18,7 +17,6 @@ interface PageHeroProps {
   lede?: React.ReactNode;
   primaryCta?: CTA;
   secondaryCta?: CTA;
-  effect?: 'none' | 'spotlight';
   align?: 'left' | 'center';
   size?: 'sm' | 'md' | 'lg';
   /** Skip the page gutter + cap because a parent PageContainer already applies
@@ -86,7 +84,6 @@ export function PageHero({
   lede,
   primaryCta,
   secondaryCta,
-  effect = 'spotlight',
   align = 'left',
   size = 'lg',
   bare = false,
@@ -97,8 +94,6 @@ export function PageHero({
 
   return (
     <section className={cn('relative isolate overflow-hidden bg-background', className)}>
-      {effect === 'spotlight' && <SpotlightV2 anchor="top-center" intensity={0.14} />}
-
       {/* `flush` — the hero keeps its own size-keyed vertical scale (SIZE_PADDING);
           only the gutter and the content cap come from the page standard.
           `bare` swaps the container for a plain div: overriding it with

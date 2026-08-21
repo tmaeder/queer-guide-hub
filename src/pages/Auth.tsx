@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { useLocation, useSearchParams } from 'react-router';
+import { Navigate, useLocation, useSearchParams } from 'react-router';
 import { motion, AnimatePresence } from 'motion/react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,7 +24,7 @@ type Mode = 'signin' | 'signup' | 'forgot';
 
 export default function Auth() {
   const navigate = useLocalizedNavigate();
-  const { signIn, resetPassword, user } = useAuth();
+  const { signIn, resetPassword, user, passwordRecovery } = useAuth();
   const { toast } = useToast();
   const { t } = useTranslation();
   const {
@@ -71,8 +71,21 @@ export default function Auth() {
   const [resetSent, setResetSent] = useState(false);
   const [loginData, setLoginData] = useState({ email: '', password: '' });
 
+  // Navigating in the render body is a side effect during render: it warns,
+  // and it re-fires on every render until the route actually changes.
+  useEffect(() => {
+    if (user && !passwordRecovery) navigate(redirectTo);
+  }, [user, passwordRecovery, navigate, redirectTo]);
+
+  // A recovery link mints a session, so this MUST come before the `user` check
+  // below — otherwise the redirect wins and the user is bounced home with no
+  // way to set a password, which is what made reset unusable.
+  // RecoveryRedirect covers links that land on other paths entirely.
+  if (passwordRecovery) {
+    return <Navigate to="/auth/reset-password" replace />;
+  }
+
   if (user) {
-    navigate(redirectTo);
     return null;
   }
 

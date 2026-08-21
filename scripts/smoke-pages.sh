@@ -402,6 +402,32 @@ else
 	done
 fi
 
+# /build-id.txt is the only way to ask prod which commit it is running, and it
+# spent its whole life unable to answer: vite.config.ts read CF_PAGES_COMMIT_SHA,
+# which Cloudflare's own build system sets and this deploy path (GitHub Actions
+# + `wrangler pages deploy`) never does, so the `local-<ms>` fallback always won
+# — measured 2026-08-21, `local-1787327428937`. Nothing noticed for as long as
+# the file has existed, hence this check. It also covers the Sentry release,
+# which is derived from the same string and was therefore empty on every
+# release ever shipped.
+#
+# Asserts the FORMAT, not equality with this run's SHA: a deploy that has not
+# finished propagating serves the PREVIOUS build's id, which is a valid SHA and
+# must not fail the deploy. A regression makes EVERY build `local-`, so the
+# format test catches it whatever the propagation state.
+echo "== /build-id.txt names a commit =="
+build_id=$(curl -sS "${CURL_TIMEOUT[@]}" "$SITE/build-id.txt" | tr -d '\r\n')
+case "$build_id" in
+	local-*|"")
+		echo "  ✗ /build-id.txt = '${build_id:-<empty>}' — it names no commit, so nothing can"
+		echo "    tell which build is live, and VITE_SENTRY_RELEASE is empty too."
+		echo "    Check that the build step exports GITHUB_SHA (or CF_PAGES_COMMIT_SHA);"
+		echo "    see the COMMIT_SHA comment in vite.config.ts."
+		fail=$((fail+1))
+		;;
+	*) echo "  ✓ /build-id.txt = $build_id"; pass=$((pass+1)) ;;
+esac
+
 echo "== static assets keep their real content types =="
 expect_content_type /robots.txt text/plain
 expect_content_type /manifest.json application/json
@@ -432,11 +458,14 @@ else
 	echo "  ✗ no stylesheet found in / — the HTML shell looks wrong"; fail=$((fail+1))
 fi
 
-# Every chunk the shell references, not just the entry. The entry is the LEAST
-# likely to be stuck: vite.config.ts derives __BUILD_ID__ from Date.now() when
-# CF_PAGES_COMMIT_SHA is unset (which it is in deploy-pages.yml), so its hash
-# rotates on every single deploy and it heals itself. vendor-*, router-* and
-# friends keep their filenames across deploys — those are what stays poisoned.
+# Every chunk the shell references, not just the entry. The entry used to be
+# the LEAST likely to be stuck, because __BUILD_ID__ fell back to Date.now()
+# and rotated its hash on every single deploy, healing itself. Since 2026-08-21
+# __BUILD_ID__ is the commit SHA (vite.config.ts), so it rotates per COMMIT:
+# a redeploy of the same commit re-emits the same entry hash and the entry can
+# now stay poisoned exactly like vendor-*, router-* and friends, which keep
+# their filenames across deploys. Nothing here needed changing — the entry was
+# always checked — but do not assume it self-heals any more.
 if [ -n "$js" ]; then
 	while IFS= read -r chunk; do
 		expect_asset_type "$chunk" javascript
@@ -476,10 +505,14 @@ sweep_built_assets() {
 	# from two days earlier produced 12+ such lines (AdminShell, AdminMaps,
 	# AdminPipelines, …) against a completely healthy prod.
 	#
-	# The entry chunk is the reliable tell: vite.config.ts derives __BUILD_ID__
-	# from Date.now() when CF_PAGES_COMMIT_SHA is unset, so its hash rotates on
-	# every single build. If ours is not the one the live shell references, the
-	# two builds are different and the sweep can only produce noise.
+	# The entry chunk is the reliable tell: vite.config.ts bakes __BUILD_ID__
+	# into it, so its hash moves with the commit. If ours is not the one the
+	# live shell references, the two builds are different and the sweep can
+	# only produce noise. Since 2026-08-21 __BUILD_ID__ is the commit SHA
+	# rather than a per-build timestamp, so a local rebuild of the SAME commit
+	# prod is serving now MATCHES and the sweep runs — which is correct, it is
+	# the same build. A dirty tree still differs, because the source differs
+	# and the content hash moves with it.
 	local dist_entry live_entry
 	dist_entry=$(cd "$dist" && find assets -name 'index-*.js' -type f 2>/dev/null | sed 's|.*/||' | sort | head -1)
 	live_entry=$(printf '%s' "$home" | grep -oE 'index-[A-Za-z0-9_-]+\.js' | sort -u | head -1)

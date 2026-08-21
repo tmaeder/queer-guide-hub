@@ -18,6 +18,7 @@ import {
   type View,
 } from '@/lib/personalitiesFilters';
 import { PageHero } from '@/components/discovery';
+import { LoadMore } from '@/components/transit/LoadMore';
 import { EmptyState, ErrorState } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/button';
 import { VirtualizedGrid } from '@/components/ui/VirtualizedGrid';
@@ -45,7 +46,6 @@ import { PageContainer } from '@/components/layout/PageContainer';
 import { cn } from '@/lib/utils';
 
 const PAGE_SIZE = 24;
-const AUTO_LOAD_CAP = 48;
 
 // pb-* preserves the inter-row gap between virtual rows.
 const GRID_CLASS =
@@ -144,8 +144,6 @@ export default function Personalities() {
   const initialPageRef = useRef<number>(pageFromParams(searchParams));
   // eslint-disable-next-line react-hooks/refs -- one-shot read of the initial-page ref during render to seed useState; ref value is never mutated after this.
   const [page, setPage] = useState(initialPageRef.current);
-  const [autoLoadedCount, setAutoLoadedCount] = useState(0);
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   const { personalities, totalCount, loading, error, hasMore, fetchPersonalities } =
     usePersonalities(false);
@@ -160,7 +158,6 @@ export default function Personalities() {
     const targetPage = initialPageRef.current;
     initialPageRef.current = 1; // only deep-link on the very first mount
     setPage(targetPage);
-    setAutoLoadedCount(targetPage > 1 ? (targetPage - 1) * PAGE_SIZE : 0);
     fetchPersonalities(filters, {
       page: 1,
       pageSize: targetPage * PAGE_SIZE,
@@ -247,35 +244,6 @@ export default function Personalities() {
     },
     [setSearchParams],
   );
-
-  // Infinite scroll sentinel
-  useEffect(() => {
-    const el = sentinelRef.current;
-    if (!el) return;
-
-    const observer = new IntersectionObserver(
-      async (entries) => {
-        const [entry] = entries;
-        if (entry.isIntersecting && !loading && hasMore && autoLoadedCount < AUTO_LOAD_CAP) {
-          const nextPage = page + 1;
-          setPage(nextPage);
-          const result = await fetchPersonalities(filters, {
-            page: nextPage,
-            pageSize: PAGE_SIZE,
-            append: true,
-          });
-          const fetched = result?.fetched ?? PAGE_SIZE;
-          setAutoLoadedCount((c) => Math.min(AUTO_LOAD_CAP, c + fetched));
-          syncPageToUrl(nextPage);
-        }
-      },
-      { rootMargin: '200px' },
-    );
-
-    observer.observe(el);
-    return () => observer.unobserve(el);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, loading, hasMore, filters, autoLoadedCount, fetchPersonalities]);
 
   const loadMoreManual = useCallback(async () => {
     const nextPage = page + 1;
@@ -382,7 +350,6 @@ export default function Personalities() {
     setFilters((prev) => ({ ...prev, profession }));
   }, []);
 
-  const showLoadMoreButton = !loading && hasMore && autoLoadedCount >= AUTO_LOAD_CAP;
   const loadedCount = personalities.length;
 
   return (
@@ -406,7 +373,6 @@ export default function Personalities() {
               })
         }
         size="sm"
-        effect="none"
       >
         {user ? <AddPersonalityDialog onSuccess={() => window.location.reload()} /> : null}
       </PageHero>
@@ -611,23 +577,21 @@ export default function Personalities() {
               />
             )}
 
-            {/* Sentinel for auto-load */}
-            {hasMore && autoLoadedCount < AUTO_LOAD_CAP && (
-              <div ref={sentinelRef} className="h-10 mt-8" aria-hidden="true" />
-            )}
-
-            {/* Manual load more after cap */}
-            {showLoadMoreButton && (
-              <div className="flex justify-center mt-8">
-                <Button onClick={loadMoreManual} variant="outline">
-                  Load more ({(totalCount - loadedCount).toLocaleString()} more)
-                </Button>
-              </div>
-            )}
-
-            {loading && personalities.length > 0 && (
-              <p className="text-13 text-muted-foreground">Loading more…</p>
-            )}
+            {/* autoLoadLimit={0} — button only. This page owns a `?page=N`
+                deep-link contract (loadMoreManual syncs it), and its grid is
+                virtualized, so an auto-load fired from an unmeasured mount
+                frame both walks the URL forward and shifts the layout under
+                whatever the reader is reaching for. */}
+            <LoadMore
+              hasMore={hasMore}
+              loading={loading}
+              autoLoadLimit={0}
+              onLoadMore={loadMoreManual}
+              resetKey={JSON.stringify(filters)}
+              label={t('pages.personalities.loadMoreCount', 'Load more ({{count}} more)', {
+                count: totalCount - loadedCount,
+              })}
+            />
           </>
         )}
       </PageContainer>

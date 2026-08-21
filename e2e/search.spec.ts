@@ -87,7 +87,7 @@ test.describe('search results', () => {
     );
     await page.goto('/search?q=berlin');
     await expect(page.getByRole('heading', { name: 'Venue 1', exact: true })).toBeVisible();
-    // Scroll to bottom — IntersectionObserver inside LoadMoreSentinel auto-fires.
+    // Scroll to bottom — the IntersectionObserver inside LoadMore auto-fires.
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await expect(page.getByRole('heading', { name: 'Venue 21', exact: true })).toBeVisible({
       timeout: 10_000,
