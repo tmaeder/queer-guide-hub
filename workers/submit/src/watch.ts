@@ -5,6 +5,7 @@
  */
 
 import type { Env } from "./index";
+import { assertPublicHttpUrl } from "../../_shared/ssrf-guard";
 
 export interface WatchRow {
   id: string;
@@ -90,6 +91,7 @@ export async function addNewsFeed(opts: {
 }): Promise<{ id: string; name: string; url: string }> {
   // Quick sanity check: HEAD the feed URL to make sure it responds.
   // Not a strict content-type check — some feeds serve text/html.
+  assertPublicHttpUrl(opts.url);
   try {
     const probe = await fetch(opts.url, { method: "HEAD" });
     if (!probe.ok && probe.status !== 405) {
