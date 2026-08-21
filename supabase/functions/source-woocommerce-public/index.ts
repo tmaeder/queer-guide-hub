@@ -1,8 +1,9 @@
-import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
 import { writeToStaging, skippedResponse } from '../_shared/source-adapter.ts'
 import { extractMerchantDomain, normalizeCurrency } from '../_shared/marketplace-pipeline-utils.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
+import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
 
 // ============================================================
 // source-woocommerce-public — ingest any WooCommerce storefront via its PUBLIC
@@ -52,7 +53,7 @@ function makeAdapter(shopDomain: string, sourceSlug: string): SourceAdapter {
     // page-by-page so memory stays bounded. Returns [] past the last page.
     async fetch(config: AdapterConfig): Promise<RawItem[]> {
       const page = Number(config.offset ?? 1)
-      const url = `https://${shopDomain}/wp-json/wc/store/v1/products?per_page=${PER_PAGE}&page=${page}`
+      const url = assertPublicHttpUrl(`https://${shopDomain}/wp-json/wc/store/v1/products?per_page=${PER_PAGE}&page=${page}`)
       const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/json' } })
       if (!res.ok) {
         if (page === 1) throw new Error(`store api ${res.status} for ${shopDomain}`)
@@ -95,6 +96,7 @@ function makeAdapter(shopDomain: string, sourceSlug: string): SourceAdapter {
 Deno.serve(withErrorReporting('source-woocommerce-public', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
+  const _auth = await requireInternalOrAdmin(req, supabase); if (_auth instanceof Response) return _auth
   try {
     const body = await req.json().catch(() => ({}))
     const shopDomain = (body.shop_domain || body.shopDomain || '').replace(/^https?:\/\//, '').replace(/\/$/, '')

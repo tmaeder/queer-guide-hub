@@ -1,3 +1,4 @@
+import DOMPurify from 'dompurify';
 import { useNavigate } from 'react-router';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Card, CardContent } from '@/components/ui/card';
@@ -23,7 +24,10 @@ function ThumbImage({ item, size = 'full' }: { item: UnifiedMediaItem; size?: 'f
   const [errored, setErrored] = useState(false);
   const url = getThumbnailUrl(item);
 
-  // SVG data URIs — render inline
+  // SVG data URIs — render inline. Scraped entities routinely carry a
+  // data:image/svg+xml lazy-load placeholder in their image field, so this is
+  // externally-influenceable content and MUST be sanitized before injection —
+  // an unsanitized inline SVG here is stored XSS into an authenticated admin session.
   if (url.startsWith('data:image/svg+xml')) {
     try {
       let svgContent = '';
@@ -33,11 +37,16 @@ function ThumbImage({ item, size = 'full' }: { item: UnifiedMediaItem; size?: 'f
         const prefix = url.indexOf(',');
         svgContent = decodeURIComponent(url.slice(prefix + 1));
       }
+      const sanitized = DOMPurify.sanitize(svgContent, {
+        USE_PROFILES: { svg: true, svgFilters: true },
+        FORBID_TAGS: ['script', 'foreignObject'],
+        FORBID_ATTR: ['onload', 'onerror', 'onclick', 'onmouseover'],
+      });
       return (
         // eslint-disable-next-line react-hooks/error-boundaries -- inline SVG render guarded by try/catch with fallback below; deliberate.
         <div
           className="w-full h-full flex items-center justify-center bg-muted overflow-hidden"
-          dangerouslySetInnerHTML={{ __html: svgContent }}
+          dangerouslySetInnerHTML={{ __html: sanitized }}
         />
       );
     } catch {
