@@ -37,7 +37,8 @@ import type { CategoryTreeNode, CentralizedTag } from '@/hooks/useCentralizedTag
 import { useTagAliasSearch } from '@/hooks/useTagAliasSearch';
 import { useSafeMode } from '@/providers/SafeModeProvider';
 import { useMeta } from '@/hooks/useMeta';
-import { PageContainer } from '@/components/layout/PageContainer';
+import { PageContainer, STICKY_RAIL_UNDER_HEADER } from '@/components/layout/PageContainer';
+import { cn } from '@/lib/utils';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { RouteBullet } from '@/components/transit/RouteBullet';
 import { TrackLoader } from '@/components/transit/TrackLoader';
@@ -411,7 +412,7 @@ export default function TagsIndex() {
             tree={categoriesTree}
             activeSlug={categorySlug ?? null}
             paramsSuffix={paramsSuffix}
-            className="sticky top-[76px] hidden self-start lg:block"
+            className={cn('sticky hidden self-start lg:block', STICKY_RAIL_UNDER_HEADER)}
           />
           <CategoryTreeRail
             tree={categoriesTree}
