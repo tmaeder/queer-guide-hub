@@ -1,6 +1,7 @@
 import { forwardRef } from 'react';
 import { Link, useLocation, useParams } from 'react-router';
 import { DEFAULT_LOCALE, isSupportedLocale } from '@/i18n/languages';
+import { isLocaleExemptPath } from '@/lib/locale';
 import type { ComponentProps } from 'react';
 
 type LinkProps = ComponentProps<typeof Link>;
@@ -24,8 +25,8 @@ export const LocalizedLink = forwardRef<HTMLAnchorElement, LinkProps>(function L
 
   let localizedTo = to;
   if (typeof to === 'string') {
-    // Don't prefix admin, auth, or external paths
-    if (!to.startsWith('/admin') && !to.startsWith('/auth') && !to.startsWith('http')) {
+    // Top-level routes (and external URLs) have no locale variant.
+    if (!isLocaleExemptPath(to)) {
       localizedTo = currentLocale === DEFAULT_LOCALE ? to : `/${currentLocale}${to}`;
     }
   }

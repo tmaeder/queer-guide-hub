@@ -1419,6 +1419,10 @@
       "errors": {
         "mismatch": "[DE] Both passwords must match."
       }
+    },
+    "profileSetup": {
+      "usernameBlurb": "[DE] We picked one for you. Change it if you like, or change it again later.",
+      "avatarBlurb": "[DE] Pick an avatar. Nothing here is public yet."
     }
   },
   "onboarding": {
@@ -1430,7 +1434,12 @@
     "passkeyAlreadyEnrolled": "Passkey bereits aktiviert",
     "passkeyEnrolled": "Passkey aktiviert",
     "continue": "Weiter zu Queer Guide",
-    "skip": "Erstmal überspringen"
+    "skip": "Erstmal überspringen",
+    "steps": {
+      "profile": "[DE] Your handle",
+      "profileDesc": "[DE] Pick a username and avatar, or keep the ones we assigned."
+    },
+    "profileBlurb": "[DE] Your account is ready. We gave you a handle and an avatar. Keep them or make them yours."
   },
   "sos": {
     "button": "SOS",

@@ -4,15 +4,19 @@ import { User, Session } from '@supabase/supabase-js';
 import { startRegistration, startAuthentication } from '@simplewebauthn/browser';
 import { supabase } from '@/integrations/supabase/client';
 
+/**
+ * Metadata forwarded to `auth.users.raw_user_meta_data` at signup.
+ *
+ * Consent timestamps only. Everything else the profile needs is derived
+ * server-side by `handle_new_user` (migration 20260915090000): display_name,
+ * username and avatar are minted there, and signup_provider is read from
+ * `raw_app_meta_data`, which GoTrue sets and a client cannot forge.
+ *
+ * The previous shape listed nine fields, most of which no trigger ever read —
+ * `preferred_language` in particular had no column to land in, so the client
+ * was writing it into the void. Anything added here needs a reader.
+ */
 interface SignUpMetadata {
-  display_name?: string;
-  username?: string;
-  first_name?: string;
-  last_name?: string;
-  location?: string;
-  pronouns?: string;
-  preferred_language?: string;
-  interests?: string[];
   terms_accepted_at?: string;
   privacy_accepted_at?: string;
   age_confirmed_at?: string;
@@ -75,7 +79,6 @@ interface AuthContextType {
   ) => Promise<{ error: unknown }>;
   signIn: (email: string, password: string, captchaToken?: string) => Promise<{ error: unknown }>;
   signInWithOAuth: (provider: OAuthProvider) => Promise<{ error: unknown }>;
-  resendVerification: (email: string) => Promise<{ error: unknown }>;
   resetPassword: (email: string, captchaToken?: string) => Promise<{ error: unknown }>;
   updatePassword: (password: string) => Promise<{ error: unknown }>;
   signOut: () => Promise<void>;
@@ -226,17 +229,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           access_type: 'offline',
           prompt: 'consent',
         },
-      },
-    });
-    return { error };
-  };
-
-  const resendVerification = async (email: string) => {
-    const { error } = await supabase.auth.resend({
-      type: 'signup',
-      email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/`,
       },
     });
     return { error };
@@ -478,7 +470,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signUp,
         signIn,
         signInWithOAuth,
-        resendVerification,
         resetPassword,
         updatePassword,
         signOut,

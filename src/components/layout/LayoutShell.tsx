@@ -5,7 +5,6 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
 import { TripContextBar } from '@/components/trips/TripContextBar';
-import { EmailVerifyBanner } from '@/components/auth/EmailVerifyBanner';
 import { RecoveryRedirect } from '@/components/auth/RecoveryRedirect';
 import { BreadcrumbBar } from '@/components/breadcrumbs/BreadcrumbBar';
 import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker';
@@ -129,7 +128,6 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
           </ErrorBoundary>
           <div className="relative z-10">
             <ErrorBoundary section="banners" fallback={null}>
-              <EmailVerifyBanner />
               <TripContextBar />
             </ErrorBoundary>
             {!isFullBleedMap && (

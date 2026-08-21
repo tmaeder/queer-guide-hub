@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { DEFAULT_LOCALE, isSupportedLocale } from '@/i18n/languages';
+import { isLocaleExemptPath } from '@/lib/locale';
 import type { NavigateOptions } from 'react-router';
 
 export function useLocalizedNavigate() {
@@ -16,8 +17,8 @@ export function useLocalizedNavigate() {
         return;
       }
 
-      // Don't prefix admin, auth, or external paths
-      if (to.startsWith('/admin') || to.startsWith('/auth') || to.startsWith('http')) {
+      // Top-level routes (and external URLs) have no locale variant.
+      if (isLocaleExemptPath(to)) {
         navigate(to, options);
         return;
       }

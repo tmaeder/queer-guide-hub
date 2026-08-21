@@ -73,9 +73,15 @@ export default function Auth() {
 
   // Navigating in the render body is a side effect during render: it warns,
   // and it re-fires on every render until the route actually changes.
+  //
+  // Suppressed in signup mode: autoconfirm means signUp resolves with a live
+  // session, so `user` flips while Signup is still deciding where to go. This
+  // effect would win the race and dump a brand-new account on "/" — which is
+  // exactly how the old verification screen became unreachable. Signup owns
+  // its own destination (onboarding).
   useEffect(() => {
-    if (user && !passwordRecovery) navigate(redirectTo);
-  }, [user, passwordRecovery, navigate, redirectTo]);
+    if (user && !passwordRecovery && mode !== 'signup') navigate(redirectTo);
+  }, [user, passwordRecovery, mode, navigate, redirectTo]);
 
   // A recovery link mints a session, so this MUST come before the `user` check
   // below — otherwise the redirect wins and the user is bounced home with no
@@ -85,7 +91,9 @@ export default function Auth() {
     return <Navigate to="/auth/reset-password" replace />;
   }
 
-  if (user) {
+  // In signup mode a signed-in `user` is the account we just created; keep
+  // rendering so Signup can complete its navigation to onboarding.
+  if (user && mode !== 'signup') {
     return null;
   }
 
@@ -164,7 +172,7 @@ export default function Auth() {
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.2 }}
             >
-              <Signup onBack={() => setMode('signin')} />
+              <Signup onBack={() => setMode('signin')} redirectTo={redirectTo} />
             </motion.div>
           </AnimatePresence>
         </PageContainer>

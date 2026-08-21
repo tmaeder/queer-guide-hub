@@ -48,6 +48,28 @@ export function isAdminRoute(pathname: string): boolean {
 }
 
 /**
+ * Route roots mounted at the TOP LEVEL of routes.tsx, outside the optional
+ * `/:locale` parent — so they have no locale-prefixed variant and a link or
+ * navigation to them must never be prefixed.
+ *
+ * Prefixing one produces `/de/onboarding/welcome`, which matches no route:
+ * LocaleRouter parses `de` as the locale, finds no child, and renders NotFound.
+ * That is a silent 404 reachable only from a non-English page.
+ *
+ * This list is the single source of truth for both `LocalizedLink` and
+ * `useLocalizedNavigate`. It exists because those two each carried their own
+ * copy naming only /admin and /auth, and neither learned about /onboarding or
+ * /claim-username when routes.tsx mounted them top-level — two copies of a
+ * rule is how the rule goes stale.
+ */
+const LOCALE_EXEMPT_ROOTS = ['/admin', '/auth', '/onboarding', '/claim-username'];
+
+export function isLocaleExemptPath(to: string): boolean {
+  if (to.startsWith('http')) return true;
+  return LOCALE_EXEMPT_ROOTS.some((root) => to === root || to.startsWith(`${root}/`));
+}
+
+/**
  * Whether the path takes the COMPACT footer ("Header and Footer.dc.html",
  * panel 09: "Used on print-adjacent pages, single-purpose flows, and anything
  * inside an account").

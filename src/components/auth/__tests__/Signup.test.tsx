@@ -15,7 +15,11 @@ vi.mock('@/hooks/useSignupFunnel', () => ({
 }));
 
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (_k: string, d: unknown) => (typeof d === 'string' ? d : (d as { defaultValue?: string })?.defaultValue ?? _k), i18n: { language: 'en' } }),
+  useTranslation: () => ({
+    t: (_k: string, d: unknown) =>
+      typeof d === 'string' ? d : ((d as { defaultValue?: string })?.defaultValue ?? _k),
+    i18n: { language: 'en' },
+  }),
   Trans: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
@@ -28,26 +32,19 @@ vi.mock('@/hooks/useLocalizedNavigate', () => ({
   useLocalizedNavigate: () => vi.fn(),
 }));
 
-// EmailVerificationScreen calls useLocalizedNavigate via a separate import
-// path and the alias-based mock above doesn't reach it under vitest. Stub
-// the component entirely — this test is about Signup, not verification UX.
-vi.mock('../EmailVerificationScreen', () => ({
-  EmailVerificationScreen: () => <div data-testid="email-verification" />,
-}));
-
-// UsernameSelector hits supabase.functions.invoke; stub it with a button that
-// picks a fixed username so tests can drive the two-step flow.
-vi.mock('../UsernameSelector', () => ({
-  UsernameSelector: ({ onChange }: { value: string | null; onChange: (u: string) => void }) => (
-    <button data-testid="pick-username" onClick={() => onChange('TravelKinkArt')}>
-      pick
-    </button>
-  ),
-}));
+// No EmailVerificationScreen / UsernameSelector stubs: Signup imports neither
+// any more. The verification screen was deleted (autoconfirm made it
+// unreachable) and username selection moved to onboarding.
 
 // PasswordStrengthMeter lazy-loads zxcvbn; stub it to call onScoreChange immediately.
 vi.mock('../PasswordStrengthMeter', () => ({
-  PasswordStrengthMeter: ({ password, onScoreChange }: { password: string; onScoreChange?: (s: 0 | 1 | 2 | 3 | 4) => void }) => {
+  PasswordStrengthMeter: ({
+    password,
+    onScoreChange,
+  }: {
+    password: string;
+    onScoreChange?: (s: 0 | 1 | 2 | 3 | 4) => void;
+  }) => {
     const score = password.length >= 12 ? 3 : password.length >= 8 ? 2 : 0;
     onScoreChange?.(score as 0 | 1 | 2 | 3 | 4);
     return <div data-testid="strength" data-score={score} />;
@@ -92,27 +89,47 @@ describe('Signup (single-screen)', { timeout: 20000 }, () => {
     expect(screen.getByRole('alert')).toBeInTheDocument();
   });
 
-  it('submits with email + password + consent + username and defaults display_name to email local-part', async () => {
+  it('creates the account from ONE screen — no username or avatar step', async () => {
     render(<Signup onBack={onBack} />);
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'alice@example.com' } });
     fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'mypassword-strong' } });
     fireEvent.click(screen.getByRole('checkbox'));
     fireEvent.click(screen.getByRole('button', { name: /Create account/i }));
 
-    // Now on username step
-    fireEvent.click(await screen.findByTestId('pick-username'));
+    // The old flow needed a SECOND screen and a second click before signUp ran.
+    await waitFor(() => expect(mockSignUp).toHaveBeenCalledTimes(1));
+    // Exactly three controls on the screen: email, password, consent.
+    expect(screen.getAllByRole('textbox')).toHaveLength(1); // email
+    expect(screen.getAllByRole('checkbox')).toHaveLength(1); // consent
+  });
+
+  it('sends ONLY consent timestamps — everything else is derived server-side', async () => {
+    render(<Signup onBack={onBack} />);
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'alice@example.com' } });
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'mypassword-strong' } });
+    fireEvent.click(screen.getByRole('checkbox'));
     fireEvent.click(screen.getByRole('button', { name: /Create account/i }));
 
     await waitFor(() => expect(mockSignUp).toHaveBeenCalled());
-    const args = mockSignUp.mock.calls[0];
-    expect(args[0]).toBe('alice@example.com');
-    expect(args[1]).toBe('mypassword-strong');
-    expect(args[2].display_name).toBe('alice');
-    expect(args[2].username).toBe('TravelKinkArt');
-    expect(args[2].preferred_language).toBe('en');
+    const [email, password, metadata] = mockSignUp.mock.calls[0];
+    expect(email).toBe('alice@example.com');
+    expect(password).toBe('mypassword-strong');
+
+    expect(Object.keys(metadata).sort()).toEqual([
+      'age_confirmed_at',
+      'privacy_accepted_at',
+      'terms_accepted_at',
+    ]);
+    // Regressions worth naming: display_name derived from the email is an
+    // outing vector, username/avatar are minted by the trigger, and
+    // preferred_language has no column to land in.
+    expect(metadata.display_name).toBeUndefined();
+    expect(metadata.username).toBeUndefined();
+    expect(metadata.avatar_config).toBeUndefined();
+    expect(metadata.preferred_language).toBeUndefined();
   });
 
-  it('shows error and returns to form when signUp rejects', async () => {
+  it('shows the error and stays on the form when signUp rejects', async () => {
     mockSignUp.mockResolvedValue({ error: { message: 'User already registered' } });
     render(<Signup onBack={onBack} />);
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'a@b.co' } });
@@ -120,15 +137,13 @@ describe('Signup (single-screen)', { timeout: 20000 }, () => {
     fireEvent.click(screen.getByRole('checkbox'));
     fireEvent.click(screen.getByRole('button', { name: /Create account/i }));
 
-    fireEvent.click(await screen.findByTestId('pick-username'));
-    fireEvent.click(screen.getByRole('button', { name: /Create account/i }));
-
     await waitFor(() =>
       expect(screen.getByRole('alert').textContent).toMatch(/already registered/i),
     );
+    expect(screen.getByLabelText('Email')).toBeInTheDocument();
   });
 
-  it('emits signup_landing_view on mount and signup_completed on success', async () => {
+  it('emits landing, submit_attempt and completed', async () => {
     render(<Signup onBack={onBack} />);
     expect(mockEmit).toHaveBeenCalledWith('signup_landing_view');
 
@@ -137,11 +152,23 @@ describe('Signup (single-screen)', { timeout: 20000 }, () => {
     fireEvent.click(screen.getByRole('checkbox'));
     fireEvent.click(screen.getByRole('button', { name: /Create account/i }));
 
-    fireEvent.click(await screen.findByTestId('pick-username'));
-    fireEvent.click(screen.getByRole('button', { name: /Create account/i }));
-
+    // Emitted BEFORE validation, so a blocked submit is still measurable —
+    // this is what separates "never tried" from "tried and was stopped".
+    expect(mockEmit).toHaveBeenCalledWith('signup_submit_attempt');
     await waitFor(() =>
       expect(mockEmit).toHaveBeenCalledWith('signup_completed', { provider: 'email' }),
     );
+  });
+
+  it('emits submit_attempt even when validation blocks the submit', async () => {
+    render(<Signup onBack={onBack} />);
+    // No consent — rejected. Native validation would have swallowed this
+    // silently before noValidate.
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'a@b.co' } });
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'mypassword-strong' } });
+    fireEvent.click(screen.getByRole('button', { name: /Create account/i }));
+
+    expect(mockEmit).toHaveBeenCalledWith('signup_submit_attempt');
+    await waitFor(() => expect(mockSignUp).not.toHaveBeenCalled());
   });
 });

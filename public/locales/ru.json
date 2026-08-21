@@ -1284,6 +1284,10 @@
       "errors": {
         "mismatch": "[RU] Both passwords must match."
       }
+    },
+    "profileSetup": {
+      "usernameBlurb": "[RU] We picked one for you. Change it if you like, or change it again later.",
+      "avatarBlurb": "[RU] Pick an avatar. Nothing here is public yet."
     }
   },
   "onboarding": {
@@ -1295,7 +1299,12 @@
     "passkeyAlreadyEnrolled": "Passkey уже включён",
     "passkeyEnrolled": "Passkey включён",
     "continue": "Перейти к Queer Guide",
-    "skip": "Пропустить"
+    "skip": "Пропустить",
+    "steps": {
+      "profile": "[RU] Your handle",
+      "profileDesc": "[RU] Pick a username and avatar, or keep the ones we assigned."
+    },
+    "profileBlurb": "[RU] Your account is ready. We gave you a handle and an avatar. Keep them or make them yours."
   },
   "events": {
     "title": "Мероприятия",

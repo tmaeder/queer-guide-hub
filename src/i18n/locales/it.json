@@ -1252,6 +1252,10 @@
       "errors": {
         "mismatch": "[IT] Both passwords must match."
       }
+    },
+    "profileSetup": {
+      "usernameBlurb": "[IT] We picked one for you. Change it if you like, or change it again later.",
+      "avatarBlurb": "[IT] Pick an avatar. Nothing here is public yet."
     }
   },
   "onboarding": {
@@ -1263,7 +1267,12 @@
     "passkeyAlreadyEnrolled": "Passkey già attiva",
     "passkeyEnrolled": "Passkey attivata",
     "continue": "Vai a Queer Guide",
-    "skip": "Salta per ora"
+    "skip": "Salta per ora",
+    "steps": {
+      "profile": "[IT] Your handle",
+      "profileDesc": "[IT] Pick a username and avatar, or keep the ones we assigned."
+    },
+    "profileBlurb": "[IT] Your account is ready. We gave you a handle and an avatar. Keep them or make them yours."
   },
   "events": {
     "title": "Eventi",
