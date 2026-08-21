@@ -43,7 +43,7 @@ import {
   formatEventDate,
 } from './EventDetail.parts';
 import { PageContainer } from '@/components/layout/PageContainer';
-import { SinglePage } from '@/components/transit/SinglePage';
+import { SinglePage, StickyRailGroup } from '@/components/transit/SinglePage';
 import { PhotoInset } from '@/components/transit/PhotoInset';
 import { ProvenanceLine } from '@/components/transit/ProvenanceLine';
 import { SingleSectionList, SingleRouteRail } from '@/components/transit/SingleSections';
@@ -452,20 +452,22 @@ export default function EventDetail() {
             <ErrorBoundary section="event-decision-card" fallback={null}>
               {decisionCard}
             </ErrorBoundary>
-            <SingleRouteRail
-              sections={sections}
-              activeId={activeId}
-              onNavigate={select}
-              orientation="vertical"
-              track="blue"
-              label={t('events.detail.sections', 'Sections')}
-              className="hidden lg:block"
-            />
-            <ProvenanceLine
-              addedAt={event.created_at}
-              checkedAt={event.last_verified_at ?? null}
-              correctHref="/contact"
-            />
+            <StickyRailGroup>
+              <SingleRouteRail
+                sections={sections}
+                activeId={activeId}
+                onNavigate={select}
+                orientation="vertical"
+                track="blue"
+                label={t('events.detail.sections', 'Sections')}
+                className="hidden lg:block"
+              />
+              <ProvenanceLine
+                addedAt={event.created_at}
+                checkedAt={event.last_verified_at ?? null}
+                correctHref="/contact"
+              />
+            </StickyRailGroup>
           </>
         }
         footer={

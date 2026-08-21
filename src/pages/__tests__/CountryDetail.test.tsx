@@ -7,6 +7,7 @@ import { MemoryRouter, Route, Routes } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const state = vi.hoisted(() => ({ country: null as unknown }));
+const milestones = vi.hoisted(() => ({ data: [] as unknown[] }));
 
 vi.mock('@/hooks/useAuth', () => ({
   useAuth: () => ({ user: null, session: null, loading: false }),
@@ -27,9 +28,16 @@ vi.mock('@/hooks/useEvents', () => ({
   useEvents: () => ({ events: [], loading: false, fetchEvents: vi.fn() }),
 }));
 vi.mock('@/hooks/useNews', () => ({
-  useNews: () => ({ articles: [], loading: false, fetchArticles: vi.fn(), incrementViews: vi.fn() }),
+  useNews: () => ({
+    articles: [],
+    loading: false,
+    fetchArticles: vi.fn(),
+    incrementViews: vi.fn(),
+  }),
 }));
-vi.mock('@/hooks/useMilestones', () => ({ useMilestonesForCountry: () => ({ data: [] }) }));
+vi.mock('@/hooks/useMilestones', () => ({
+  useMilestonesForCountry: () => ({ data: milestones.data }),
+}));
 // maplibre's worker URL is not resolvable under vitest.
 vi.mock('@/components/map/EntityMap', () => ({ EntityMap: () => <div data-testid="map" /> }));
 vi.mock('@/components/admin/AdminEditButton', () => ({ AdminEditButton: () => null }));
@@ -111,5 +119,30 @@ describe('CountryDetail', () => {
     state.country = germany;
     renderPage();
     expect(screen.queryByText('Legal record')).not.toBeInTheDocument();
+  });
+
+  it('renders the legal record inside #rights, keeping the #history deep-link target', () => {
+    // The record is a sub-block of rights, not its own section — but old
+    // `#history` links must still land, so the wrapper carries the id.
+    milestones.data = [
+      { id: 'm1', date: '2017-10-01', title: 'Marriage equality', category: 'legal' },
+    ];
+    const { container } = renderPage();
+    const history = container.querySelector('#history');
+    expect(history).not.toBeNull();
+    expect(container.querySelector('section#rights')?.contains(history)).toBe(true);
+    // And it is no longer a station on the route rail.
+    expect(container.querySelector('section#history')).toBeNull();
+    milestones.data = [];
+  });
+
+  it('renders the merged fact sheet once — capital appears exactly once', () => {
+    // FactGrid + CountryPracticalInfo were the same idea twice; the fact
+    // sheet is the single surviving fact surface.
+    state.country = germany;
+    renderPage();
+    expect(screen.getAllByText('Capital')).toHaveLength(1);
+    expect(screen.getByText('Berlin')).toBeInTheDocument();
+    expect(screen.getByText('84.0M')).toBeInTheDocument();
   });
 });

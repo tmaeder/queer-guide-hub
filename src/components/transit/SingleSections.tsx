@@ -7,7 +7,7 @@ export function SingleSectionList({ sections }: { sections: SingleSectionDef[] }
   return (
     <>
       {sections.map((s) => (
-        <SingleSection key={s.id} id={s.id} title={s.title} note={s.note}>
+        <SingleSection key={s.id} id={s.id} title={s.title} note={s.note} variant={s.variant}>
           {s.content}
         </SingleSection>
       ))}

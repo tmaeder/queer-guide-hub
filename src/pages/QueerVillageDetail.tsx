@@ -15,7 +15,7 @@ import { useEntityDetail } from '@/hooks/useEntityDetail';
 import { useSlugRedirect } from '@/hooks/useSlugRedirect';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
-import { SinglePage } from '@/components/transit/SinglePage';
+import { SinglePage, StickyRailGroup } from '@/components/transit/SinglePage';
 import { FactGrid, type Fact } from '@/components/transit/FactGrid';
 import { ProvenanceLine } from '@/components/transit/ProvenanceLine';
 import { TrackLoader } from '@/components/transit/TrackLoader';
@@ -359,20 +359,22 @@ export default function QueerVillageDetail() {
                 : undefined
             }
           />
-          <GeoRouteRail
-            sections={sections}
-            activeId={activeId}
-            onNavigate={select}
-            orientation="vertical"
-            track="green"
-            label={t('village.sections', 'Sections')}
-            className="hidden lg:block"
-          />
-          <ProvenanceLine
-            addedAt={village.created_at}
-            checkedAt={village.last_verified_at ?? null}
-            correctHref="/contact"
-          />
+          <StickyRailGroup>
+            <GeoRouteRail
+              sections={sections}
+              activeId={activeId}
+              onNavigate={select}
+              orientation="vertical"
+              track="green"
+              label={t('village.sections', 'Sections')}
+              className="hidden lg:block"
+            />
+            <ProvenanceLine
+              addedAt={village.created_at}
+              checkedAt={village.last_verified_at ?? null}
+              correctHref="/contact"
+            />
+          </StickyRailGroup>
         </>
       }
       footer={

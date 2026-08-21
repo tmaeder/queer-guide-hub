@@ -5,8 +5,6 @@ import { MapInset } from '@/components/transit/MapInset';
 import { StopList, type Stop } from '@/components/transit/StopList';
 import { OccurrenceList, type Occurrence } from '@/components/transit/OccurrenceList';
 import { VersionHistory, type Revision } from '@/components/transit/VersionHistory';
-import { VenueCard } from '@/components/venues/VenueCard';
-import { NewsCard } from '@/components/news/NewsCard';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import LGBTJurisdictionInfo from '@/components/country/LGBTJurisdictionInfo';
 import { ReportButton } from '@/components/moderation/ReportButton';
@@ -143,7 +141,7 @@ export function CountryLegalRecord({
  * are sequence, not merit — the order is the caller's (population desc).
  */
 export function countryCityStops(cities: CityRelation[]): Stop[] {
-  return cities.map((c: CityRelation) => ({
+  return cities.slice(0, 8).map((c: CityRelation) => ({
     id: c.id,
     name: c.name,
     type: 'city',
@@ -158,15 +156,27 @@ export function CountryCitiesTab({ cities }: { cities: CityRelation[] }) {
   return <StopList stops={countryCityStops(cities)} />;
 }
 
+/**
+ * Venues as compact stops, not cards. Full `VenueCard`s belong on directory
+ * pages; on a country single the venues are context, and a 3-across card grid
+ * was the page's single tallest section (~1,200px for 12 venues). Six rows
+ * plus a see-all link carry the same information in a quarter of the height,
+ * in the same `StopList` grammar the cities section already uses.
+ */
+export function countryVenueStops(venues: VenueRelation[]): Stop[] {
+  return venues.slice(0, 6).map((v: VenueRelation) => ({
+    id: v.id,
+    name: v.name,
+    type: 'venue',
+    href: v.slug ? `/venues/${v.slug}` : undefined,
+    walkFromPrevious: null,
+    accessNote: [v.category, v.city].filter(Boolean).join(' · ') || null,
+  }));
+}
+
 export function CountryVenuesTab({ venues }: { venues: VenueRelation[] }) {
   if (venues.length === 0) return null;
-  return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {venues.map((venue: VenueRelation) => (
-        <VenueCard key={venue.id} venue={venue} />
-      ))}
-    </div>
-  );
+  return <StopList stops={countryVenueStops(venues)} />;
 }
 
 /** Spec module 03 — the next departures nationwide. */
@@ -260,21 +270,57 @@ export function CountryTravelTab({
   );
 }
 
+/**
+ * News as dated headline rows in the `OccurrenceList` grammar — replaces six
+ * full `NewsCard`s (931px on Germany, 2,649px on Iran, where the card grid
+ * fell to one column). A country page's news module is context, not a feed;
+ * the feed is one link away. `floodFirst` is off: the ink-flooded first row
+ * means "your next departure", and the newest headline is not that.
+ */
+export function countryNewsRows(
+  articles: ArticleRelation[],
+  locale: string,
+  openLabel: string,
+  onViewArticle?: (id: string) => void,
+): Occurrence[] {
+  return articles.slice(0, 5).map((a: ArticleRelation) => {
+    const d = a.published_at ? new Date(a.published_at) : null;
+    const date =
+      d && !Number.isNaN(d.getTime())
+        ? d.toLocaleDateString(locale, { day: 'numeric', month: 'short' }).toUpperCase()
+        : '';
+    return {
+      id: a.id,
+      date,
+      detail: a.title,
+      action: a.slug ? (
+        <LocalizedLink
+          to={`/news/${a.slug}`}
+          aria-label={a.title}
+          onClick={() => onViewArticle?.(a.id)}
+          className="text-2xs font-bold uppercase tracking-label underline"
+        >
+          {openLabel}
+        </LocalizedLink>
+      ) : undefined,
+    };
+  });
+}
+
 export function CountryNewsTab({
   articles,
+  locale,
+  openLabel,
   onViewArticle,
 }: {
   articles: ArticleRelation[];
+  locale: string;
+  openLabel: string;
   onViewArticle?: (id: string) => void;
 }) {
-  if (articles.length === 0) return null;
-  return (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-      {articles.slice(0, 6).map((article: ArticleRelation) => (
-        <NewsCard key={article.id} article={article} onViewArticle={onViewArticle} />
-      ))}
-    </div>
-  );
+  const rows = countryNewsRows(articles, locale, openLabel, onViewArticle);
+  if (rows.length === 0) return null;
+  return <OccurrenceList occurrences={rows} floodFirst={false} />;
 }
 
 /**
