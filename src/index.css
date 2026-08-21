@@ -829,6 +829,17 @@ body {
   outline: none;
 }
 
+/* The search plate's field is the full height of the plate's first row and sits
+   flush against its top edge, so a 2px-OUTSET ring lands outside the plate's
+   `overflow-hidden` clip: it renders as two severed pink arcs, cut level with
+   the plate edge above and the hairline rule below. Draw it inside the field
+   instead — same 2px pink track, same contrast, nothing left to clip. Unlayered
+   + `!important` because that is what the global rule above is, and a Tailwind
+   utility cannot beat it. */
+.search-plate-field input:focus-visible {
+  outline-offset: -2px !important;
+}
+
 /* ── Touch target minimum (WCAG 2.5.5) ─────────────────────────────── */
 
 @layer base {
