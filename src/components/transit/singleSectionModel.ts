@@ -5,6 +5,8 @@ export interface SingleSectionDef {
   id: string;
   title: string;
   note?: string;
+  /** `compact` tightens `SingleSection`'s internal spacing for context modules. */
+  variant?: 'default' | 'compact';
   /** Rendered inside `SingleSection`. A section with no content is dropped. */
   content: React.ReactNode;
 }

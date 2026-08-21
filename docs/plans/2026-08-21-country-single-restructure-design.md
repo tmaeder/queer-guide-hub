@@ -90,3 +90,18 @@ section · mid-body GeoPhotoInset placement.
   8pt spacing, i18n keys for all new strings.
 - City/village pick up the sticky TOC automatically; briefing-band adoption
   for them is a follow-up, not this PR.
+
+## Measured result (local dev, 1440px viewport, 2026-08-21)
+
+- Germany: preamble before `#rights` 1,090 → **586px**; venues 1,206 → 525;
+  news 931 → 429; cities 1,033 → 717; total ~8,150px with the full rights +
+  legal-record content intact.
+- Iran: preamble 4,360 → **918px** (editorial clamped 2,569 → 218; merged fact
+  sheet 1,497 → 346); total **5,777px** (was 17,312 as measured).
+- Sticky TOC verified `position: sticky` at lg; at 390px the horizontal TOC
+  renders, the vertical one hides inside the group, provenance still shows,
+  no horizontal overflow.
+- Note: the pre-restructure Iran figure was captured while the browser pane
+  had collapsed to a narrow viewport, so it overstates the desktop baseline —
+  the per-module deltas above (same-width before/after) are the honest
+  comparison.

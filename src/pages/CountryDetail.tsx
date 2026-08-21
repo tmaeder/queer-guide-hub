@@ -9,12 +9,11 @@ import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useSlugRedirect } from '@/hooks/useSlugRedirect';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { SinglePage } from '@/components/transit/SinglePage';
-import { FactGrid, type Fact } from '@/components/transit/FactGrid';
-import { StatLine } from '@/components/transit/StatLine';
+import { SinglePage, StickyRailGroup } from '@/components/transit/SinglePage';
 import { ProvenanceLine } from '@/components/transit/ProvenanceLine';
+import { ClampedProse } from '@/components/ui/ClampedProse';
 import { SafetyVerdict } from '@/components/country/SafetyVerdict';
-import { CountryPracticalInfo } from '@/components/country/CountryPracticalInfo';
+import { CountryFactSheet } from '@/components/country/CountryFactSheet';
 import { CountryStatsBand } from '@/components/country/CountryStatsBand';
 import { GeoCensus } from '@/components/geo/GeoCensus';
 import { GeoPhotoInset } from '@/components/geo/GeoPhotoInset';
@@ -194,27 +193,41 @@ export default function CountryDetail() {
   // Built unconditionally so the route rail's stations and the rendered list
   // come from one array, and so the hook below never sits behind an early
   // return.
+  //
+  // The legal record is a SUB-BLOCK of rights, not its own station: the
+  // timeline is the rights story's evidence, and folding it in moved #rights —
+  // the reason the platform exists — one full section higher. The wrapper
+  // keeps id="history" so old #history deep links still land.
   const sections: GeoSection[] = country
     ? geoSections([
         {
           id: 'rights',
           title: t('country.section.rights', 'Rights & safety'),
-          content: <CountryRightsTab country={country} />,
-        },
-        {
-          id: 'history',
-          title: t('country.section.history', 'Legal record'),
-          note: t(
-            'country.section.historyNote',
-            'What changed and when. Safety information without a date is not safety information.',
+          content: (
+            <>
+              <CountryRightsTab country={country} />
+              {legalRecord?.length ? (
+                <div id="history" className="mt-10 scroll-mt-8">
+                  <h3 className="font-display text-title leading-tight">
+                    {t('country.section.history', 'Legal record')}
+                  </h3>
+                  <p className="mt-1 text-13 leading-relaxed text-muted-foreground">
+                    {t(
+                      'country.section.historyNote',
+                      'What changed and when. Safety information without a date is not safety information.',
+                    )}
+                  </p>
+                  <div className="mt-4">
+                    <CountryLegalRecord
+                      countryId={country.id}
+                      countryName={country.name}
+                      seeAllLabel={t('country.history.seeAll', 'Full timeline')}
+                    />
+                  </div>
+                </div>
+              ) : null}
+            </>
           ),
-          content: legalRecord?.length ? (
-            <CountryLegalRecord
-              countryId={country.id}
-              countryName={country.name}
-              seeAllLabel={t('country.history.seeAll', 'Full timeline')}
-            />
-          ) : null,
         },
         {
           id: 'cities',
@@ -247,6 +260,7 @@ export default function CountryDetail() {
         {
           id: 'travel',
           title: t('country.section.travel', 'Travel'),
+          variant: 'compact',
           content: (
             <CountryTravelTab
               country={country}
@@ -266,6 +280,7 @@ export default function CountryDetail() {
         {
           id: 'stats',
           title: t('country.section.stats', 'In numbers'),
+          variant: 'compact',
           content: hasStats ? (
             <CountryStatsBand country={country} worldBankData={worldBankData} sdgData={sdgData} />
           ) : null,
@@ -273,9 +288,15 @@ export default function CountryDetail() {
         {
           id: 'news',
           title: t('country.section.news', 'News'),
+          variant: 'compact',
           content:
             articles.length > 0 ? (
-              <CountryNewsTab articles={articles} onViewArticle={incrementViews} />
+              <CountryNewsTab
+                articles={articles}
+                locale={i18n.language}
+                openLabel={t('cities.detail.openEvent', 'Open')}
+                onViewArticle={incrementViews}
+              />
             ) : null,
         },
       ])
@@ -309,24 +330,6 @@ export default function CountryDetail() {
       </PageContainer>
     );
   }
-
-  // Module 01 — the shared fact strip, so a country reads like every other
-  // single (spec rule 1).
-  //
-  // EQUALITY IS DELIBERATELY NOT HERE. <SafetyVerdict> already carries the
-  // score WITH its tier label and the legal verdict around it; a bare "22/100"
-  // cell sitting between Capital and Cities flattens a legal finding into
-  // trivia, which is the same reason the city single keeps its safety block
-  // outside the grid. It is also the worse of the two copies, and a headline
-  // fact lives once.
-  const facts: Fact[] = [
-    { label: t('country.facts.capital', 'Capital'), value: country.capital || null },
-    {
-      label: t('country.facts.population', 'Population'),
-      value: country.population ? `${(country.population / 1e6).toFixed(1)}M` : null,
-    },
-    { label: t('country.facts.cities', 'Cities'), value: cities.length || null },
-  ];
 
   // Rendered unconditionally, zeros included — a masthead row that appears and
   // disappears shifts the page under the reader (the /marketplace lesson).
@@ -383,23 +386,32 @@ export default function CountryDetail() {
               moving to the 360px rail. */}
           <SafetyVerdict countryId={country.id} equalityScore={country.equality_score ?? null} />
           <TripCoveringBanner target={{ type: 'country', countryId: country.id }} />
+          {/* The briefing band — spec module 01 (fact strip) as ONE compact
+              surface. `editorial_long` arrives as an unbroken string (2,569px
+              of <p> on Iran before the clamp); `CountryFactSheet` merges the
+              old FactGrid + CountryPracticalInfo pair and absorbs the rail
+              StatLine's one non-duplicate cell (weather). The photo sits
+              beside the facts instead of claiming its own 400px band. Both
+              stay in the body slot: the sheet's 2-col grid and the photo need
+              more than the 360px rail. */}
           {country.editorial_long && (
-            <p className="max-w-reading text-body-lg leading-relaxed">{country.editorial_long}</p>
+            <ClampedProse
+              text={country.editorial_long}
+              moreLabel={t('country.editorial.more', 'Read more')}
+              lessLabel={t('country.editorial.less', 'Show less')}
+              className="max-w-reading text-body-lg leading-relaxed"
+            />
           )}
-          {/* Spec module 01 is slot HEAD, not rail: `FactGrid` is a
-              1/2/3-column grid keyed to the VIEWPORT, so in the 360px rail its
-              cells collapse to ~110px on a desktop. Same for
-              `CountryPracticalInfo`. The rail carries the rail-slot modules —
-              map inset (16) and stat line (15). */}
-          <FactGrid facts={facts} />
-          <CountryPracticalInfo country={country} />
-          <GeoPhotoInset
-            src={resolveEntityImage('country', country).url}
-            alt={country.name}
-            fallbackKey={country.id}
-            priority
-            caption={country.capital ?? null}
-          />
+          <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
+            <CountryFactSheet country={country} weatherNow={weatherNow} />
+            <GeoPhotoInset
+              src={resolveEntityImage('country', country).url}
+              alt={country.name}
+              fallbackKey={country.id}
+              priority
+              caption={country.capital ?? null}
+            />
+          </div>
           <GeoRouteRail
             sections={sections}
             activeId={activeId}
@@ -419,39 +431,29 @@ export default function CountryDetail() {
             caption={country.capital ?? undefined}
             openLabel={t('country.openMap', 'Open the full map')}
           />
-          <div className="bg-muted rounded-element p-4">
-            <StatLine
-              stats={[
-                { label: t('country.facts.cities', 'Cities'), value: cities.length || null },
-                { label: t('country.stats.venues', 'Venues'), value: venues.length || null },
-                {
-                  label: t('country.stats.events', 'Upcoming events'),
-                  value: events.length || null,
-                },
-                {
-                  label: t('country.stats.weather', 'Now in {{city}}', {
-                    city: country.capital || country.name,
-                  }),
-                  value: weatherNow != null ? `${Math.round(Number(weatherNow))}°C` : null,
-                },
-              ]}
+          {/* The StatLine block is gone: cities/venues/events triplicated the
+              census strip and weather moved into the fact sheet. What remains
+              follows the reader — the aside stretches to the full body height,
+              so the sticky group keeps the TOC on screen for the whole page
+              instead of scrolling away 1,500px in. */}
+          <StickyRailGroup>
+            <GeoRouteRail
+              sections={sections}
+              activeId={activeId}
+              onNavigate={select}
+              orientation="vertical"
+              track="yellow"
+              label={t('country.sections', 'Sections')}
+              className="hidden lg:block"
             />
-          </div>
-          <GeoRouteRail
-            sections={sections}
-            activeId={activeId}
-            onNavigate={select}
-            orientation="vertical"
-            track="yellow"
-            label={t('country.sections', 'Sections')}
-            className="hidden lg:block"
-          />
-          {/* `checkedAt` is null on purpose, and the component then prints
-              "Not independently checked yet." `countries` has no
-              `last_verified_at` column — unlike `cities` and `queer_villages`,
-              which do — so there is no check date to state. Saying so out loud
-              beats implying freshness by omission. */}
-          <ProvenanceLine addedAt={country.created_at} checkedAt={null} correctHref="/contact" />
+            {/* `checkedAt` is null on purpose, and the component then prints
+                "Not independently checked yet." `countries` has no
+                `last_verified_at` column — unlike `cities` and
+                `queer_villages`, which do — so there is no check date to
+                state. Saying so out loud beats implying freshness by
+                omission. */}
+            <ProvenanceLine addedAt={country.created_at} checkedAt={null} correctHref="/contact" />
+          </StickyRailGroup>
         </>
       }
       footer={

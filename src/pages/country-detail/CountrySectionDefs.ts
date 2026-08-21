@@ -7,9 +7,12 @@
 // events/travel/news/map) keep old `?tab=` / `?section=` deep links resolving,
 // and `#rights` is the jump target the safety verdict links to.
 //
-// `history` is new and is the type's OWNER module (spec module 12): "a country
-// page is a living legal record; safety information without a date is
-// dangerous." It had never been rendered.
+// `history` is the type's OWNER module (spec module 12): "a country page is a
+// living legal record; safety information without a date is dangerous." It is
+// no longer its own SECTION: the timeline renders as a sub-block inside
+// `rights` (the record is the rights story's evidence), wrapped in a
+// `div#history` so old `#history` deep links still land. That is why the id is
+// absent from the order below but must never be reused for a new section.
 //
 // `personalities` and `nearby` are NOT sections. Both are composite rails that
 // self-hide from inside their own bodies, which the section filter cannot see,
@@ -22,18 +25,10 @@
 // from the one actually rendered.
 
 export type CountrySectionId =
-  | 'rights'
-  | 'history'
-  | 'cities'
-  | 'venues'
-  | 'events'
-  | 'travel'
-  | 'stats'
-  | 'news';
+  'rights' | 'cities' | 'venues' | 'events' | 'travel' | 'stats' | 'news';
 
 export const COUNTRY_SECTION_ORDER: CountrySectionId[] = [
   'rights',
-  'history',
   'cities',
   'venues',
   'events',

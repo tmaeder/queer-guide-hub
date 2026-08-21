@@ -1,5 +1,6 @@
 import { DetailMasthead } from './DetailMasthead';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { cn } from '@/lib/utils';
 
 /**
  * The single-page shell — spine parts S2/S3 plus the two-column frame every
@@ -80,11 +81,16 @@ export function SinglePage({
 /**
  * A body section with the shared heading rank. Every module on every type sits
  * under one of these, so the h2 level and spacing cannot drift per page.
+ *
+ * `compact` keeps the h2 token (the rank table stays intact — a demoted
+ * section is still a section) and only tightens the internal spacing; it marks
+ * context modules (stats, news) whose content is already row-shaped.
  */
 export function SingleSection({
   id,
   title,
   note,
+  variant = 'default',
   children,
   className,
 }: {
@@ -93,6 +99,7 @@ export function SingleSection({
   id?: string;
   title: string;
   note?: string;
+  variant?: 'default' | 'compact';
   children: React.ReactNode;
   className?: string;
 }) {
@@ -100,7 +107,28 @@ export function SingleSection({
     <section id={id} className={className}>
       <h2 className="font-display text-headline leading-tight">{title}</h2>
       {note && <p className="mt-1 text-13 leading-relaxed text-muted-foreground">{note}</p>}
-      <div className="mt-4">{children}</div>
+      <div className={variant === 'compact' ? 'mt-2' : 'mt-4'}>{children}</div>
     </section>
   );
+}
+
+/**
+ * Sticky tail of the rail. The aside stretches to the full body height (grid
+ * default), which used to mean 80%+ of the column was empty AND the vertical
+ * route rail scrolled away 1,500px in — an 8-section page lost its navigation
+ * for most of its length. Wrapping the TOC (+ provenance) in this group lets
+ * it travel with the reader through the whole stretched column.
+ *
+ * Sticky, not fixed: it stays inside the aside's bounds, so it can never
+ * overlap the footer. Callers keep non-following modules (map, verdict) as
+ * ordinary siblings ABOVE the group.
+ */
+export function StickyRailGroup({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return <div className={cn('flex flex-col gap-4 lg:sticky lg:top-8', className)}>{children}</div>;
 }

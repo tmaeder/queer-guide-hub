@@ -27,7 +27,7 @@ import { SimilarCities } from '@/components/personalization/SimilarCities';
 import { CreateTripDialog } from '@/components/trips/CreateTripDialog';
 import { TripCoveringBanner } from '@/components/trips/TripCoveringBanner';
 import { PlanTripFromHereButton } from '@/components/trips/PlanTripFromHereButton';
-import { SinglePage } from '@/components/transit/SinglePage';
+import { SinglePage, StickyRailGroup } from '@/components/transit/SinglePage';
 import { StatLine } from '@/components/transit/StatLine';
 import { ProvenanceLine } from '@/components/transit/ProvenanceLine';
 import { TrackLoader } from '@/components/transit/TrackLoader';
@@ -461,20 +461,22 @@ export default function CityDetail() {
                 ]}
               />
             </div>
-            <GeoRouteRail
-              sections={sections}
-              activeId={activeId}
-              onNavigate={select}
-              orientation="vertical"
-              track="green"
-              label={t('cities.detail.sections', 'Sections')}
-              className="hidden lg:block"
-            />
-            <ProvenanceLine
-              addedAt={city.created_at}
-              checkedAt={city.last_verified_at ?? null}
-              correctHref="/contact"
-            />
+            <StickyRailGroup>
+              <GeoRouteRail
+                sections={sections}
+                activeId={activeId}
+                onNavigate={select}
+                orientation="vertical"
+                track="green"
+                label={t('cities.detail.sections', 'Sections')}
+                className="hidden lg:block"
+              />
+              <ProvenanceLine
+                addedAt={city.created_at}
+                checkedAt={city.last_verified_at ?? null}
+                correctHref="/contact"
+              />
+            </StickyRailGroup>
           </>
         }
         footer={
