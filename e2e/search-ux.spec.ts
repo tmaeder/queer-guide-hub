@@ -3,7 +3,7 @@
  *   - ⌘K hotkey opens the searchbar dropdown
  *   - Voice / Saved / Map view / Back-to-top buttons all wired
  *   - Active filter chips appear and remove cleanly
- *   - LoadMoreSentinel appends instead of paginating
+ *   - LoadMore appends instead of paginating
  *   - Did-you-mean banner surfaces on zero-result queries
  *   - "Search this area" map refinement updates URL filters
  *
@@ -107,14 +107,14 @@ test.describe('search UX — results page', () => {
     await expect(page).not.toHaveURL(/types=venue/);
   });
 
-  test('LoadMoreSentinel appends page 2 results without pagination buttons', async ({ page }) => {
+  test('LoadMore appends page 2 results without pagination buttons', async ({ page }) => {
     await page.route(SEARCH_HOST_RE, mockSearch({ 1: page1Venues, 2: page2Venues }, 25));
     await page.goto('/search?q=berlin');
     await expect(page.getByText('Venue 1', { exact: true })).toBeVisible();
     // No paginated "Next page" button — this UI is infinite-scroll only.
     await expect(page.getByRole('button', { name: /Next page/i })).toHaveCount(0);
 
-    // The IntersectionObserver inside LoadMoreSentinel auto-loads when the
+    // The IntersectionObserver inside LoadMore auto-loads when the
     // sentinel scrolls into view; scrolling to the bottom of results is the
     // same gesture a real user performs.
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));

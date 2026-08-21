@@ -34,6 +34,7 @@ import type { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { MarketplaceMasthead } from '@/components/marketplace/MarketplaceMasthead';
+import { LoadMore } from '@/components/transit/LoadMore';
 import { VirtualizedGrid } from '@/components/ui/VirtualizedGrid';
 import { useGridColumns } from '@/components/ui/useGridColumns';
 import { useTranslation } from 'react-i18next';
@@ -128,13 +129,10 @@ function MainGridSection({
         )}
       />
 
-      {canLoadMore && (
-        <div className="flex items-center justify-center mt-10">
-          <Button onClick={onLoadMore} variant="outline" size="lg" disabled={loading}>
-            {loading ? 'Loading…' : 'Load more'}
-          </Button>
-        </div>
-      )}
+      {/* autoLoadLimit={0} — this grid is virtualized and the hub is a browse
+          surface, so scroll-to-load would keep fetching while the reader is
+          only skimming. The button stays the sole trigger, as it was. */}
+      <LoadMore hasMore={canLoadMore} loading={loading} onLoadMore={onLoadMore} autoLoadLimit={0} />
     </>
   );
 }
