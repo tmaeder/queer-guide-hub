@@ -1,6 +1,6 @@
 {
   "project": "tsconfig.app.json",
-  "total": 842,
+  "total": 840,
   "files": {
     "src/assets/intimate/pictograms.tsx": {
       "TS2503": 2
@@ -133,17 +133,11 @@
       "TS2604": 1,
       "TS2786": 1
     },
-    "src/components/auth/EmailVerificationScreen.tsx": {
-      "TS2339": 1
-    },
     "src/components/auth/OAuthButtons.tsx": {
       "TS2339": 2
     },
     "src/components/auth/PasskeyButton.tsx": {
       "TS2339": 2
-    },
-    "src/components/auth/Signup.tsx": {
-      "TS2353": 1
     },
     "src/components/cms/AuditLog.tsx": {
       "TS2345": 1

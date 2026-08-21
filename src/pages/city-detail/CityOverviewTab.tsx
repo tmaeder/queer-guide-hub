@@ -76,7 +76,10 @@ export function CityOverviewTab({ city, showDescription = true }: CityOverviewTa
   const sisterCities: string[] = city.sister_cities ?? [];
 
   return (
-    <div className="flex flex-col gap-8">
+    /* `gap-6`, not `gap-8`: this stack is a handful of short blocks (facts,
+       cost of living, two chip lists, weather), so at 32px the gaps alone came
+       to more height than any single block inside it. */
+    <div className="flex flex-col gap-6">
       {showDescription && city.description && (
         <p className="max-w-reading text-body-lg leading-relaxed">{city.description}</p>
       )}

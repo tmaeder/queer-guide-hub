@@ -1,17 +1,8 @@
-import { VenueCard } from '@/components/venues/VenueCard';
 import { StopList, type Stop } from '@/components/transit/StopList';
 import { OccurrenceList, type Occurrence } from '@/components/transit/OccurrenceList';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { BentoSection, spansForPreset } from '@/components/discovery';
+import { venueStops } from '@/components/transit/entityRows';
 import type { VenueRelation, VillageRelation, EventRelation } from './types';
-
-const VENUE_SPAN_CLASS: Record<string, string> = {
-  sm: 'col-span-12 sm:col-span-6 md:col-span-4',
-  md: 'col-span-12 sm:col-span-6 md:col-span-4',
-  lg: 'col-span-12 sm:col-span-6 md:col-span-6',
-  wide: 'col-span-12 md:col-span-8',
-  tall: 'col-span-12 sm:col-span-6 md:col-span-4 row-span-2',
-};
 
 export interface CityVenuesTabProps {
   venues: VenueRelation[];
@@ -27,21 +18,18 @@ export interface CityVenuesTabProps {
  * The "Planning a trip to X?" panel is gone too: the masthead now carries the
  * trip actions, and repeating a call to action inside a content section is the
  * scaffolding the rebuild is removing.
+ *
+ * Rows, not a bento of cards. The mosaic spent 1,909px on Berlin — the single
+ * tallest thing on the page — showing twelve photographs the reader is not
+ * choosing between; six named rows plus the section's existing "See all" carry
+ * the same decision in a quarter of the height, in the `StopList` grammar the
+ * districts section above it already uses and the country single now uses for
+ * its own venues. `includeCity` is off: every venue here is in this city, so
+ * printing its name on all six rows is noise.
  */
 export function CityVenuesTab({ venues }: CityVenuesTabProps) {
   if (venues.length === 0) return null;
-  return (
-    <BentoSection preset="featured">
-      {venues.map((venue: VenueRelation, i: number) => (
-        <div
-          key={venue.id}
-          className={VENUE_SPAN_CLASS[spansForPreset('featured', i, venues.length)]}
-        >
-          <VenueCard venue={venue} />
-        </div>
-      ))}
-    </BentoSection>
-  );
+  return <StopList stops={venueStops(venues, { limit: 6, includeCity: false })} />;
 }
 
 /**

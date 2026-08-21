@@ -286,7 +286,15 @@ export default function CityDetail() {
         {
           id: 'news',
           title: t('cities.detail.section.news', 'In the news'),
-          content: articles.length > 0 ? <CityNewsTab articles={articles} /> : null,
+          variant: 'compact',
+          content:
+            articles.length > 0 ? (
+              <CityNewsTab
+                articles={articles}
+                locale={i18n.language}
+                openLabel={t('cities.detail.openEvent', 'Open')}
+              />
+            ) : null,
         },
       ])
     : [];
@@ -507,7 +515,12 @@ export default function CityDetail() {
           </>
         }
         footer={
-          <div className="flex flex-col gap-10">
+          /* `gap-8`. The rail LIST is not trimmed further here: it was curated
+             from ten to seven with a stated reason per cut (see below), and
+             cutting more without new evidence is taste, not measurement. The
+             gaps are the part that was measurable — 40px between five tall
+             rails is ~200px of nothing. */
+          <div className="flex flex-col gap-8">
             {/* Rails live here, not in `sections`: each self-hides from inside
                 its own body, which the section filter cannot see, so a station
                 would point at nothing.
