@@ -20,6 +20,7 @@ import { FactGrid, type Fact } from '@/components/transit/FactGrid';
 import { ProvenanceLine } from '@/components/transit/ProvenanceLine';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { GatedDetailFallback } from '@/components/safety/GatedDetailFallback';
 import { GeoCensus } from '@/components/geo/GeoCensus';
 import { GeoSafetyBanner, GeoSafetyVerdict } from '@/components/geo/GeoSafetyBlock';
 import { GeoSectionList, GeoRouteRail } from '@/components/geo/GeoSections';
@@ -228,7 +229,7 @@ export default function QueerVillageDetail() {
   }
 
   if (!village) {
-    return (
+    const villageNotFound = (
       <PageContainer>
         <h1 className="font-display text-display leading-none">
           {t('village.notFound.title', 'No such district.')}
@@ -243,6 +244,11 @@ export default function QueerVillageDetail() {
           {t('village.notFound.cta', 'All queer villages')}
         </LocalizedLink>
       </PageContainer>
+    );
+    // Safety layer: a logged-out visitor with a direct link to a gated village
+    // gets `null` from RLS — indistinguishable from a genuinely missing one.
+    return (
+      <GatedDetailFallback entityType="queer_village" slug={slug} notFound={villageNotFound} />
     );
   }
 
