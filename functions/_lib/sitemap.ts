@@ -14,8 +14,12 @@ export type Env = {
   SUPABASE_ANON_KEY?: string;
   SUPABASE_SERVICE_ROLE_KEY?: string;
   ASSETS: { fetch: typeof fetch };
-  /** Set by Cloudflare Pages on every deployment. Used to key the SPA-shell
-   *  subrequest per build — see the fallback branch in _middleware.ts. */
+  /** NOT set on this project's deployments. Cloudflare injects it into its own
+   *  Pages builds; we direct-upload from GitHub Actions and declare no such
+   *  project variable, so assume it is undefined at runtime. Kept only as the
+   *  last fallback for the SPA-shell subrequest key, which now comes from
+   *  /build-id.txt — see getBuildKey() in _middleware.ts. Do not add a new
+   *  reader of this without first proving it is populated. */
   CF_PAGES_COMMIT_SHA?: string;
 };
 
