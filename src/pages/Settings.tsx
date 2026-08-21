@@ -41,6 +41,7 @@ import { StatusEditor } from '@/components/status/StatusEditor';
 import { IdentityPreviewCard } from '@/components/profile/IdentityPreviewCard';
 import { AvatarChooser, type AvatarSaveData } from '@/components/profile/AvatarChooser';
 import { UsernamePanel } from '@/components/profile/UsernamePanel';
+import { ChangePasswordPanel } from '@/components/profile/ChangePasswordPanel';
 import { PreferencesMirrorCard } from '@/components/profile/PreferencesMirrorCard';
 import { userModeLabel } from '@/lib/userMode';
 import { pronounDisplay } from '@/components/ui/pronoun-utils';
@@ -611,6 +612,11 @@ function ProfileSettingsContent({
                   autoAssigned={px?.username_auto_assigned ?? false}
                   onChanged={() => void refetchProfile()}
                 />
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <ChangePasswordPanel />
               </CardContent>
             </Card>
             <TravelForwardingSettings username={username} />

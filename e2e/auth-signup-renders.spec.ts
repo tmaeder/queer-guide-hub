@@ -49,3 +49,41 @@ test.describe('auth page renders without React #185 loop', () => {
     expect(errors.join('\n')).not.toMatch(/Minified React error #185|Maximum update depth/);
   });
 });
+
+// Password reset used to be a dead end: the emailed link signed the user in
+// and dropped them on "/", and no update-password UI existed anywhere. These
+// guard the route that closes it.
+//
+// Deliberately additive to THIS file rather than a new spec: the PR suite in
+// .github/workflows/e2e-pr.yml is a hardcoded file list, so a new spec would
+// run in no workflow at all.
+test.describe('password reset', () => {
+  test.use({ storageState: { cookies: [], origins: [] } });
+
+  test('reset page states its case instead of rendering blank', async ({ page }) => {
+    await page.goto('/auth/reset-password');
+
+    // Without a recovery session this must be an explicit dead-link message
+    // with a way forward — not an empty card and not a 404.
+    await expect(page.getByRole('heading', { name: /expired/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /request a new link/i })).toBeVisible();
+  });
+
+  test('forgot-password form is reachable and submits', async ({ page }) => {
+    await page.goto('/auth');
+    await page.getByRole('button', { name: /forgot/i }).click();
+
+    await expect(page.getByRole('heading', { name: /reset password/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /send reset link/i })).toBeVisible();
+  });
+});
+
+test.describe('auth redirect params', () => {
+  test.use({ storageState: { cookies: [], origins: [] } });
+
+  test('preserves ?redirect= on the auth page', async ({ page }) => {
+    await page.goto('/auth?redirect=%2Ftravel');
+    await expect(page.getByRole('heading', { name: /welcome back/i })).toBeVisible();
+    expect(page.url()).toContain('redirect=');
+  });
+});

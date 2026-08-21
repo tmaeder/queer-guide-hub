@@ -364,7 +364,7 @@
       "emailRequired": "Email is required",
       "emailInvalid": "Please enter a valid email address",
       "passwordRequired": "Password is required",
-      "passwordTooShort": "Password must be at least 10 characters",
+      "passwordTooShort": "Password must be at least {{n}} characters",
       "passwordTooWeak": "Please choose a stronger password",
       "consentRequired": "Please accept the terms, privacy policy, and confirm you are 18+",
       "displayNameRequired": "Display name is required",
@@ -456,6 +456,20 @@
       "resendShort": "Resend",
       "gateTitle": "Verify your email first",
       "gateDescription": "Confirm your email to contribute or message other members."
+    },
+    "reset": {
+      "title": "Set a new password",
+      "blurb": "Choose a new password for your account.",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm new password",
+      "submit": "Update password",
+      "success": "Password updated.",
+      "expiredTitle": "This reset link has expired",
+      "expiredBody": "Reset links work once and only in the browser that requested them. Request a new one to continue.",
+      "requestNew": "Request a new link",
+      "errors": {
+        "mismatch": "Both passwords must match."
+      }
     }
   },
   "onboarding": {
