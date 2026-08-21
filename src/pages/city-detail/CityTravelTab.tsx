@@ -36,18 +36,18 @@ export function CityTravelTab({
   const { t } = useTranslation();
   const highRisk = hasAnyCriminalizationSignal(city.countries?.lgbti_criminalization);
 
+  // The head fact strip (`CityAtAGlance`) already states the airport code, so
+  // this grid only carries what the strip cannot: the distance to a nearby
+  // airport when the city has none of its own, and the full code list when
+  // there is genuinely more than one. Repeating "Major airport: BER" one
+  // section below "Airport: BER" was noise, not information.
   const airportFacts: Fact[] = [];
-  if (city.major_airport_code)
-    airportFacts.push({
-      label: t('cities.detail.travel.majorAirport', 'Major airport'),
-      value: city.major_airport_code,
-    });
   if (!hasAirport && nearestAirport)
     airportFacts.push({
       label: t('cities.detail.travel.nearestAirport', 'Nearest airport'),
       value: `${nearestAirport.iata_code} · ${nearestAirport.distanceKm} km`,
     });
-  if (city.airport_codes?.length)
+  if (city.airport_codes && city.airport_codes.length > 1)
     airportFacts.push({
       label: t('cities.detail.travel.allCodes', 'All airport codes'),
       value: city.airport_codes.join(', '),

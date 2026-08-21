@@ -486,6 +486,28 @@ Four rules, each of which was a bug before it was a rule:
   non-zero count unmounts a masthead row and shifts the page under the reader
   (`/marketplace` learned this one).
 
+The city single is the **compact** variant of the family (2026-08-21), and its
+four decisions are deliberate, not drift:
+
+- **One fact, one home.** The head strip (`CityAtAGlance`) is the home for
+  headline facts; About dropped its duplicate timezone, the travel section its
+  duplicate airport code, and the rail its `StatLine` — which repeated the
+  masthead census's exact three counts one viewport below it. Module 15 is
+  carried by the census on this type.
+- **The description renders once.** Without an `editorial_hook` (96.5% of live
+  cities) the masthead lead falls back to `description`, so the page passes
+  `showDescription={!!editorial_hook}` to About instead of printing the same
+  paragraph twice.
+- **Facts and photo share one band from `lg`** (photo capped at 420px, gated on
+  the photo existing so a miss never pins the facts to half width), which
+  brings "Safety & rights" a scroll earlier. The desktop route rail is sticky
+  under the header, matching what the horizontal strip already does on mobile.
+- **The footer is a curated seven**, ordered in-this-city → community → onward,
+  ending on the End-of-line band. `TrendingStrip` (re-surfaced the body's own
+  venues/events) and `SimilarItems` filtered to cities (same question
+  `SimilarCities` answers with equality-aware ranking) were cut as duplicates;
+  Save moved from below the footer into the masthead action row.
+
 Safety composes rather than restyles: `GeoSafetyBanner` wraps the unmodified
 `SafetyAlertBanner` + `GatedContentNotice`, and `GeoSafetyVerdict` is the shared
 verdict tile. It stays monochrome + `--destructive`, gates on `useTripSafety`'s
