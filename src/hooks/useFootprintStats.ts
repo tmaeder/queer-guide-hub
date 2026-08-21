@@ -36,9 +36,7 @@ export function useFootprintStats() {
     queryKey: ['footprint-stats', user?.id],
     enabled: !!user,
     queryFn: async (): Promise<FootprintStats> => {
-      const { data, error } = await untypedSupabase.rpc('footprint_stats', {
-        p_user_id: user!.id,
-      });
+      const { data, error } = await untypedSupabase.rpc('footprint_stats_self');
       if (error) throw error;
       const row = Array.isArray(data) ? data[0] : data;
       return toStats(row);
@@ -61,9 +59,7 @@ export function useFootprintReturnNudge() {
     queryKey: ['footprint-return-nudge', user?.id],
     enabled: !!user,
     queryFn: async (): Promise<FootprintReturnNudge | null> => {
-      const { data, error } = await untypedSupabase.rpc('footprint_return_nudge', {
-        p_user_id: user!.id,
-      });
+      const { data, error } = await untypedSupabase.rpc('footprint_return_nudge_self');
       if (error) throw error;
       const row = Array.isArray(data) ? data[0] : data;
       if (!row) return null;

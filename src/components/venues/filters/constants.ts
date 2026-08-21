@@ -47,15 +47,9 @@ export const commonServices = [
   'art-exhibitions',
 ];
 
-/** Shared remove-badge X hit-area style (12px glyph, 8px padding for tap target). */
-export const xStyle = {
-  width: 12,
-  height: 12,
-  cursor: 'pointer',
-  padding: 8,
-  margin: -8,
-  boxSizing: 'content-box' as const,
-};
+// `xStyle` lived here: a negative-margin hit-area shim that existed only to give
+// an unfocusable `<X role="button">` a tap target. Both remove controls are real
+// <button>s now and carry their own padding, so it has no callers.
 
 /** A selectable facet option. */
 export interface FilterOption {

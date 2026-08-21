@@ -26,6 +26,7 @@
 import type { DetectedItem as SchemaDetectedItem } from "./schema";
 import { extractFromJsonLd, parseLdJson } from "../../../client-sdk/jsonld-core";
 import { buildOgItem, type MetaMap } from "../../../client-sdk/og-core";
+import { assertPublicHttpUrl } from "../../_shared/ssrf-guard";
 
 const FETCH_TIMEOUT_MS = 8000;
 const EXTRACT_TIMEOUT_MS = 20000;
@@ -121,6 +122,7 @@ async function renderViaWorker(
 }
 
 async function fetchHtml(url: string): Promise<Response> {
+  assertPublicHttpUrl(url);
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT_MS);
   try {

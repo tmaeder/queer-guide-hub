@@ -7,7 +7,7 @@
 // either. A hashed URL that cannot be purged can only be escaped by changing
 // its bytes, which is what this comment does. Do not remove it to "tidy up" —
 // deleting it re-emits the poisoned hash.
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useSearchParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
@@ -43,6 +43,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
+import { LoadMore } from '@/components/transit/LoadMore';
 import { MapPin, Grid, Map } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 import { VirtualizedGrid } from '@/components/ui/VirtualizedGrid';
@@ -227,8 +228,6 @@ const Venues = () => {
   );
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 24;
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
-  const [autoLoadedCount, setAutoLoadedCount] = useState(0);
 
   // `userLocation` / `nearMe` are passed through currentFilters for ranking
   // but they don't count as user-applied filters — keep rails visible while
@@ -277,10 +276,26 @@ const Venues = () => {
     [user],
   );
 
+  /** The one next-page fetch. Was written out twice — once inside an unlatched
+   *  IntersectionObserver and once in the button's onClick — and the observer
+   *  copy could re-enter before React re-rendered with `loading=true`, calling
+   *  `setPage` again off the same stale `page` and skipping a page outright.
+   *  `LoadMore` owns the latch now; this is just the fetch. */
+  const loadNextPage = useCallback(async () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    await fetchVenues(
+      mergeChipFilters({
+        ...currentFilters,
+        userLocation: userLocation ?? undefined,
+      }) as Parameters<typeof fetchVenues>[0],
+      baseFetchOptions({ page: nextPage, pageSize: PAGE_SIZE, append: true, sort: sortBy }),
+    );
+  }, [page, currentFilters, userLocation, mergeChipFilters, baseFetchOptions, sortBy, fetchVenues]);
+
   const handleFiltersChange = async (filters: Record<string, unknown>) => {
     setCurrentFilters(filters);
     setPage(1);
-    setAutoLoadedCount(0);
     const list = (v: unknown) =>
       Array.isArray(v) && v.length > 0 ? (v as string[]).join(',') : undefined;
     const nextParams = {
@@ -324,7 +339,6 @@ const Venues = () => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     setCurrentFilters(baseNext);
     setPage(1);
-    setAutoLoadedCount(0);
     fetchVenues(
       mergeChipFilters(baseNext) as Parameters<typeof fetchVenues>[0],
       baseFetchOptions({ page: 1, pageSize: PAGE_SIZE, append: false, sort: sortBy }),
@@ -365,38 +379,6 @@ const Venues = () => {
       for (const l of links) l.remove();
     };
   }, [loading, venues, viewMode]);
-
-  useEffect(() => {
-    if (!sentinelRef.current) return;
-    const el = sentinelRef.current;
-    const observer = new IntersectionObserver(
-      async (entries) => {
-        const [entry] = entries;
-        if (entry.isIntersecting && !loading && hasMore && autoLoadedCount < 50) {
-          const nextPage = page + 1;
-          setPage(nextPage);
-          const result = await fetchVenues(
-            mergeChipFilters({
-              ...currentFilters,
-              userLocation: userLocation ?? undefined,
-            }) as Parameters<typeof fetchVenues>[0],
-            baseFetchOptions({
-              page: nextPage,
-              pageSize: PAGE_SIZE,
-              append: true,
-              sort: sortBy,
-            }),
-          );
-          const fetched = result?.fetched ?? PAGE_SIZE;
-          setAutoLoadedCount((c) => Math.min(50, c + fetched));
-        }
-      },
-      { rootMargin: '200px' },
-    );
-    observer.observe(el);
-    return () => observer.unobserve(el);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, loading, hasMore, currentFilters, autoLoadedCount]);
 
   // pb-6 preserves the inter-row gap between absolutely-positioned virtual rows.
   const gridClass = 'grid gap-6 pb-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4';
@@ -669,36 +651,13 @@ const Venues = () => {
                 />
               )}
 
-              {!loading && venues.length > 0 && (
-                <div className="mt-12 text-center">
-                  {hasMore && autoLoadedCount >= 50 && (
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      className="px-8"
-                      onClick={async () => {
-                        setAutoLoadedCount(0);
-                        const nextPage = page + 1;
-                        setPage(nextPage);
-                        await fetchVenues(
-                          mergeChipFilters({
-                            ...currentFilters,
-                            userLocation: userLocation ?? undefined,
-                          }) as Parameters<typeof fetchVenues>[0],
-                          baseFetchOptions({
-                            page: nextPage,
-                            pageSize: PAGE_SIZE,
-                            append: true,
-                            sort: sortBy,
-                          }),
-                        );
-                      }}
-                    >
-                      {t('common.loadMore', 'Load more')}
-                    </Button>
-                  )}
-                  <div ref={sentinelRef} className="h-px" />
-                </div>
+              {venues.length > 0 && (
+                <LoadMore
+                  hasMore={hasMore}
+                  loading={loading}
+                  onLoadMore={loadNextPage}
+                  resetKey={chipKey}
+                />
               )}
             </motion.div>
           ) : (

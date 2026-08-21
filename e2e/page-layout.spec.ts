@@ -388,3 +388,63 @@ test.describe('page layout — mobile density', () => {
     });
   }
 });
+
+/**
+ * A page's sticky bar must clear the header — the thing STICKY_UNDER_HEADER
+ * exists to guarantee and nothing asserted.
+ *
+ * The constant was `top-[60px] md:top-[64px]`, measured against a header
+ * welded to `top: 0`. When the chrome became a floating island (#2874) the
+ * header's underside moved down by `--island-inset` and the constant did not
+ * follow, so every bar it positions — RouteStrip, SectionNav, StickyLetterBar,
+ * the /events and /cities filter bars — pinned INSIDE the header: 10px behind
+ * the paper bar at 390px, 18px behind the ink flood at 1440px, measured on
+ * prod 2026-08-21. The alignment block above could not see it; it reads
+ * horizontal edges at rest, and this is a vertical failure that only exists
+ * once the page has scrolled.
+ *
+ * Asserted as a RELATIONSHIP (bar top >= header bottom), so re-tuning the
+ * island inset or the bar's own height keeps it meaningful. The scroll is what
+ * makes it real: the header must be in its PINNED state, which on desktop is
+ * the compact one-line collapse, and both bars must have detached.
+ */
+const STICKY_BAR_ROUTES = ['/events', '/cities'];
+
+test.describe('page layout — sticky bars clear the header', () => {
+  for (const width of [390, 1440]) {
+    for (const route of STICKY_BAR_ROUTES) {
+      test(`${route} pins its bar below the header at ${width}px`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto(route);
+        await page.waitForLoadState('domcontentloaded');
+        await page.waitForTimeout(600);
+        await page.evaluate(() => window.scrollTo(0, 1400));
+        // Past the compact header's 40px latch, and past the bar detaching.
+        await page.waitForTimeout(800);
+
+        const r = await page.evaluate(() => {
+          const header = document.querySelector('header');
+          const bars = Array.from(document.querySelectorAll('main *')).filter(
+            (n) => getComputedStyle(n).position === 'sticky',
+          );
+          const outer = bars.filter((n) => !bars.some((o) => o !== n && o.contains(n)));
+          return {
+            headerBottom: header ? Math.round(header.getBoundingClientRect().bottom) : null,
+            barTops: outer.map((n) => Math.round(n.getBoundingClientRect().top)),
+          };
+        });
+
+        expect(r.headerBottom, 'no header').not.toBeNull();
+        // Absence proves nothing — a route listed here with no sticky bar has
+        // lost the bar this test is about, which is itself the regression.
+        expect(r.barTops.length, `${route} @${width} renders no sticky bar`).toBeGreaterThan(0);
+        for (const top of r.barTops) {
+          expect(
+            top,
+            `${route} @${width}: sticky bar pins at ${top}, header ends at ${r.headerBottom}`,
+          ).toBeGreaterThanOrEqual(r.headerBottom as number);
+        }
+      });
+    }
+  }
+});
