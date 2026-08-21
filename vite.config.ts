@@ -9,11 +9,28 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Pinned per build. Used by src/utils/buildVersion.ts to detect that a
-// new version has shipped while a tab is open. Prefer the CF Pages
-// commit SHA so two builds of the same source share a version; fall
-// back to a build-time timestamp for local builds.
-const BUILD_ID = process.env.CF_PAGES_COMMIT_SHA || `local-${Date.now()}`;
+// The commit this bundle was built from. Names the build in /build-id.txt
+// (src/utils/buildVersion.ts) and is the Sentry release, both for the
+// source-map upload below and for the runtime tag the client reports.
+//
+// CF_PAGES_COMMIT_SHA is injected only by Cloudflare's OWN Pages build system,
+// and this project does not use it: .github/workflows/deploy-pages.yml builds
+// in a GitHub Actions runner and pushes the result with `wrangler pages
+// deploy`. So it was never set on the live deploy path and the timestamp
+// always won — measured on prod 2026-08-21, /build-id.txt served
+// `local-1787327428937`, naming no commit, and VITE_SENTRY_RELEASE below was
+// the empty string on every release ever shipped. GITHUB_SHA is set
+// automatically in every Actions runner, so it covers deploy-pages.yml and the
+// mirror build with nothing declared in either workflow. CF_PAGES_COMMIT_SHA
+// stays first in case the native Pages build is ever reconnected.
+const COMMIT_SHA = process.env.CF_PAGES_COMMIT_SHA || process.env.GITHUB_SHA || '';
+
+// Pinned per build. Used by src/utils/buildVersion.ts to detect that a new
+// version has shipped while a tab is open. Two builds of the same commit now
+// genuinely share a version — which is the stated intent, and also means a
+// same-commit redeploy no longer rotates the entry chunk's hash. See the
+// built-asset sweep in scripts/smoke-pages.sh, which reasons about that.
+const BUILD_ID = COMMIT_SHA || `local-${Date.now()}`;
 
 // Emit /build-id.txt into the build output so the running app can
 // fetch it on visibilitychange and compare against the build it booted
@@ -116,7 +133,7 @@ export default defineConfig(({ mode }) => ({
         project: process.env.SENTRY_PROJECT || 'javascript-react',
         authToken: process.env.SENTRY_AUTH_TOKEN,
         release: {
-          name: process.env.CF_PAGES_COMMIT_SHA || undefined,
+          name: COMMIT_SHA || undefined,
         },
         sourcemaps: {
           filesToDeleteAfterUpload: ['./dist/assets/js/*.map'],
@@ -133,7 +150,11 @@ export default defineConfig(({ mode }) => ({
       }),
   ].filter(Boolean),
   define: {
-    'import.meta.env.VITE_SENTRY_RELEASE': JSON.stringify(process.env.CF_PAGES_COMMIT_SHA || ''),
+    // Must resolve to the SAME string as the sentryVitePlugin release above,
+    // or the maps upload under one release and the events arrive tagged with
+    // another (or, as until 2026-08-21, with none at all — src/sentry.ts maps
+    // '' to undefined) and no stack trace symbolicates.
+    'import.meta.env.VITE_SENTRY_RELEASE': JSON.stringify(COMMIT_SHA),
     __BUILD_ID__: JSON.stringify(BUILD_ID),
   },
   resolve: {
