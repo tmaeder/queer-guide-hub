@@ -23,7 +23,15 @@ export const milestoneFields: FieldConfig[] = [
   },
   { name: 'slug', label: 'Slug', type: 'text', group: 'basic' },
   { name: 'description', label: 'Description', type: 'textarea', group: 'basic', colSpan: 2 },
-  { name: 'date', label: 'Date', type: 'date', required: true, group: 'basic', sortable: true, listColumn: true },
+  {
+    name: 'date',
+    label: 'Date',
+    type: 'date',
+    required: true,
+    group: 'basic',
+    sortable: true,
+    listColumn: true,
+  },
   {
     name: 'date_precision',
     label: 'Date precision',
@@ -33,7 +41,13 @@ export const milestoneFields: FieldConfig[] = [
     helpText: "Year-precision dates store Jan 1 — the precision controls how they're rendered.",
   },
   { name: 'date_end', label: 'End date', type: 'date', group: 'basic' },
-  { name: 'date_end_precision', label: 'End date precision', type: 'select', group: 'basic', options: PRECISION_OPTIONS },
+  {
+    name: 'date_end_precision',
+    label: 'End date precision',
+    type: 'select',
+    group: 'basic',
+    options: PRECISION_OPTIONS,
+  },
   {
     name: 'category',
     label: 'Category',
@@ -73,7 +87,13 @@ export const milestoneFields: FieldConfig[] = [
     sortable: true,
   },
   // Location
-  { name: 'location', label: 'Location (free text)', type: 'text', group: 'location', placeholder: 'Stonewall Inn, Christopher Street' },
+  {
+    name: 'location',
+    label: 'Location (free text)',
+    type: 'text',
+    group: 'location',
+    placeholder: 'Stonewall Inn, Christopher Street',
+  },
   { name: 'region', label: 'Region', type: 'text', group: 'location' },
   {
     name: 'city_name',
@@ -133,8 +153,32 @@ export const milestoneFields: FieldConfig[] = [
   { name: 'seo_indexable', label: 'SEO indexable', type: 'boolean', group: 'settings' },
   { name: 'is_featured', label: 'Featured', type: 'boolean', group: 'settings', filterable: true },
   // External / computed
-  { name: 'safety_gated', label: 'Safety gated', type: 'boolean', group: 'external', readOnly: true, helpText: 'Derived from the country legal status (criminalizing / death penalty) — recomputed automatically.' },
-  { name: 'quality_score', label: 'Quality score', type: 'number', group: 'external', readOnly: true },
+  {
+    name: 'safety_gated',
+    label: 'Safety gated',
+    type: 'boolean',
+    group: 'external',
+    readOnly: true,
+    helpText:
+      'Derived from the country legal status (criminalizing / death penalty) — recomputed automatically.',
+  },
+  {
+    name: 'completeness_score',
+    label: 'Completeness score',
+    type: 'number',
+    group: 'external',
+    readOnly: true,
+  },
+  { name: 'trust_score', label: 'Trust score', type: 'number', group: 'external', readOnly: true },
+  {
+    name: 'needs_attention',
+    label: 'Needs attention',
+    type: 'boolean',
+    group: 'external',
+    readOnly: true,
+    filterable: true,
+    listColumn: true,
+  },
 ];
 
 export const milestoneContentType: ContentTypeConfig = {
@@ -179,7 +223,7 @@ export const milestoneContentType: ContentTypeConfig = {
     dedup: {
       searchType: 'milestone',
       metaTable: 'milestones',
-      metaCols: 'id, quality_score, created_at, is_featured',
+      metaCols: 'id, quality_score:completeness_score, trust_score, created_at, is_featured',
       mergePath: 'entities',
     },
   },
