@@ -852,24 +852,34 @@ select net.http_post(
 );`);
 }
 
-async function countPending(column) {
+/**
+ * Count rows a stage can ACTUALLY act on — its own selector, not just
+ * "status is pending".
+ *
+ * pipeline-deduplicate additionally requires ai_validation_status='approved',
+ * so the rows validate parked as 'needs_review' are permanently invisible to
+ * it, by design: they are waiting on a human. Counting them as pending work
+ * makes a finished drain look stalled — measured, it halted at exactly the 64
+ * needs_review rows and never reached the commit step.
+ */
+async function countActionable(predicate) {
   const res = await sql(`
 select count(*)::int as n from public.ingestion_staging
 where source_name='spartacus' and target_table='venues'
-  and disposition = 'pending' and ${column} = 'pending';`);
+  and disposition = 'pending' and ${predicate};`);
   const rows = res.result ?? res;
   return Number(rows[0].n);
 }
 
-async function drainStage(label, fn, column, batchSize) {
+async function drainStage(label, fn, predicate, batchSize) {
   let stallRounds = 0;
-  let prev = await countPending(column);
+  let prev = await countActionable(predicate);
   console.log(`[drain] ${label}: ${prev} pending`);
 
   while (prev > 0) {
     await firePipelineStage(fn, batchSize);
     await sleep(35_000);
-    const now = await countPending(column);
+    const now = await countActionable(predicate);
     if (now >= prev) {
       // No forward progress. One retry covers a slow response landing late;
       // a second identical reading means the stage is parking rows in a
@@ -889,9 +899,19 @@ async function drainStage(label, fn, column, batchSize) {
 }
 
 async function phaseDrain() {
-  const okValidate = await drainStage('validate', 'pipeline-validate', 'ai_validation_status', 500);
+  const okValidate = await drainStage(
+    'validate',
+    'pipeline-validate',
+    "ai_validation_status = 'pending'",
+    500,
+  );
   if (!okValidate) return;
-  const okDedup = await drainStage('dedup', 'pipeline-deduplicate', 'dedup_status', 500);
+  const okDedup = await drainStage(
+    'dedup',
+    'pipeline-deduplicate',
+    "ai_validation_status = 'approved' and dedup_status = 'pending'",
+    500,
+  );
   if (!okDedup) return;
 
   // Commit is pure SQL, so it runs synchronously in-statement. 200/batch keeps
