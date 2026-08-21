@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { useDebounce } from '@/hooks/useDebounce';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Check, X, ExternalLink, ListChecks } from 'lucide-react';
@@ -86,7 +88,7 @@ function CategoryRow({ c }: { c: VenueReviewCandidate }) {
   const busy = decide.isPending;
 
   return (
-    <li className="grid gap-4 border-b border-border-hairline py-4 last:border-b-0 md:grid-cols-[1fr_auto] md:items-start">
+    <li className="grid gap-4 border-b border-foreground/10 py-4 last:border-b-0 md:grid-cols-[1fr_auto] md:items-start">
       <Evidence c={c} />
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-13 font-bold tabular-nums">
@@ -138,7 +140,7 @@ function NonvenueRow({ c }: { c: VenueReviewCandidate }) {
   const busy = decide.isPending;
 
   return (
-    <li className="grid gap-4 border-b border-border-hairline py-4 last:border-b-0 md:grid-cols-[1fr_auto] md:items-start">
+    <li className="grid gap-4 border-b border-foreground/10 py-4 last:border-b-0 md:grid-cols-[1fr_auto] md:items-start">
       <Evidence c={c} />
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-13 text-muted-foreground">
@@ -181,8 +183,12 @@ function NonvenueRow({ c }: { c: VenueReviewCandidate }) {
  */
 export function VenueReviewQueuePanel() {
   const [kind, setKind] = useState<ReviewKind>('category');
+  const [city, setCity] = useState('');
+  // Debounced: the queue is ~1,300 rows behind a SECURITY DEFINER function, and a
+  // per-keystroke refetch would run it once per character typed.
+  const debouncedCity = useDebounce(city, 300);
   const { data: counts } = useVenueReviewCounts();
-  const { data: rows = [], isLoading } = useVenueReviewCandidates(kind);
+  const { data: rows = [], isLoading } = useVenueReviewCandidates(kind, 25, debouncedCity);
 
   return (
     <Card className="mb-6">
@@ -211,6 +217,13 @@ export function VenueReviewQueuePanel() {
               {k === 'category' ? 'Categories' : 'Non-venues'}
             </Button>
           ))}
+          <Input
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            placeholder="Filter by city"
+            aria-label="Filter review queue by city"
+            className="h-8 w-40 text-13"
+          />
           <LocalizedLink
             to="/admin/content/venues"
             className="ms-auto self-center text-13 font-bold no-underline"
@@ -223,8 +236,9 @@ export function VenueReviewQueuePanel() {
           <AdminTableSkeleton rows={5} columns={3} />
         ) : rows.length === 0 ? (
           <p className="py-6 text-13 text-muted-foreground">
-            Nothing waiting. The engine leaves rows it cannot judge as &lsquo;other&rsquo; rather
-            than guessing.
+            {debouncedCity.trim()
+              ? `Nothing waiting for “${debouncedCity.trim()}”.`
+              : 'Nothing waiting. The engine leaves rows it cannot judge as ‘other’ rather than guessing.'}
           </p>
         ) : (
           <ul className="m-0 list-none p-0">

@@ -448,3 +448,93 @@ test.describe('page layout — sticky bars clear the header', () => {
     }
   }
 });
+
+/**
+ * Bleeding out and re-padding is a ROUND TRIP: a bled bar's row must land back
+ * on its own parent's content box.
+ *
+ * These bars use `PAGE_BLEED` to push their rule to the container edge and then
+ * re-apply `PAGE_GUTTER` inside so the items line back up. The trap is adding a
+ * *second* cap to that inner row: `SectionNav` carried `max-w-screen-2xl`
+ * (1536) while the bleed had landed it on the page container's 1600 box, so
+ * `mx-auto` split the 64px difference into 32px of margin per side and the tabs
+ * sat 32px right of the cards below — measured on prod at 1990px, tabs at 259
+ * vs content at 227. Exactly zero below 1536px, which is why it survived: the
+ * indent is `max(0, (min(1600, vw) - 1536) / 2)`, so only large desktops saw it.
+ *
+ * **Against the bar's PARENT, not against the page column.** The first version
+ * of this compared every row to the page container and failed `/tags` at 288
+ * and 448 — because that bar is not page-level at all: it sits inside the
+ * glossary's two-column body, bleeding against a column whose content starts at
+ * 448. Its row landing at 448 is correct. Asserting the round trip is the
+ * invariant that holds for a bar at any nesting depth, and it still catches
+ * SectionNav, whose parent IS the page container.
+ *
+ * Measured on the row's own content box rather than its first item, because
+ * these rows are `overflow-x-auto` and SectionNav scrolls its active tab into
+ * view — a first-item assertion would be a coin flip on which tab is active.
+ */
+const BLED_BAR_ROUTES = ['/going-out', '/tags'];
+
+test.describe('page layout — bled bars align with the content column', () => {
+  for (const width of [1440, 1920]) {
+    for (const route of BLED_BAR_ROUTES) {
+      test(`${route} aligns its sticky bar row at ${width}px`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto(route);
+        await page.waitForLoadState('domcontentloaded');
+        // These bars render after their data resolves — /tags' filter spine
+        // took longer than a flat 600ms wait and the run reported it as ABSENT,
+        // which the absence assertion below then read as a regression. Wait for
+        // the thing being measured, never for a guessed duration.
+        await page
+          .locator('main [class*="top-[var(--header-pinned-bottom)]"]')
+          .first()
+          .waitFor({ state: 'attached', timeout: 15_000 });
+
+        const r = await page.evaluate(() => {
+          const cs = (n: Element, k: string) =>
+            Math.round(parseFloat(getComputedStyle(n)[k as never]) || 0);
+          const contentLeft = (n: Element) =>
+            Math.round(n.getBoundingClientRect().left) + cs(n, 'paddingLeft');
+
+          // BLED bars only, identified by a NEGATIVE LEFT MARGIN — which is
+          // literally what PAGE_BLEED is (`-mx-4 sm:-mx-6 md:-mx-8`) and so
+          // cannot be confused by anything else on the page. /tags also carries
+          // a sticky SIDEBAR rail sitting inside the column, whose first child
+          // is not a bled row and would report a bogus misalignment.
+          //
+          // Comparing the bar's left against `min(pageLefts)` was tried and is
+          // WRONG: /tags renders a full-bleed ink band, so the minimum page-
+          // container edge already equals the bar's own left and a `<` test
+          // excluded the very bar it was meant to select — reported as "no bled
+          // sticky bar row", i.e. as an absence rather than as a bad filter.
+          const bars = Array.from(document.querySelectorAll('main *')).filter(
+            (n) =>
+              getComputedStyle(n).position === 'sticky' &&
+              (parseFloat(getComputedStyle(n).marginLeft) || 0) < 0,
+          );
+
+          // The row is the bar's FIRST ELEMENT CHILD, not a `ul, ol` query:
+          // SectionNav and RouteStrip use a list, TagsFilterSpine a plain div.
+          return bars
+            .filter((b) => b.firstElementChild && b.parentElement)
+            .map((b) => ({
+              parent: contentLeft(b.parentElement as Element),
+              row: contentLeft(b.firstElementChild as Element),
+            }));
+        });
+
+        // Absence is a regression, not a skip — the route is listed BECAUSE it
+        // has such a bar.
+        expect(r.length, `${route} @${width}: no bled sticky bar row`).toBeGreaterThan(0);
+        for (const { parent, row } of r) {
+          expect(
+            row,
+            `${route} @${width}: bar row content at ${row}, its container's content at ${parent}`,
+          ).toBe(parent);
+        }
+      });
+    }
+  }
+});

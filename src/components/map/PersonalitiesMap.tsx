@@ -264,7 +264,7 @@ export function PersonalitiesMap({ personalities, height = 600 }: PersonalitiesM
             <div style="display:flex;gap:8px;align-items:center;">
               ${
                 props.image_url
-                  ? `<img src="${props.image_url}" alt="" referrerpolicy="no-referrer" style="width:40px;height:40px;border-radius:6px;object-fit:cover;flex-shrink:0;" />`
+                  ? `<img src="${escapeHtml(props.image_url)}" alt="" referrerpolicy="no-referrer" style="width:40px;height:40px;border-radius:6px;object-fit:cover;flex-shrink:0;" />`
                   : ''
               }
               <div style="min-width:0;">

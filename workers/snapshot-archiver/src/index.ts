@@ -27,7 +27,8 @@ export interface Env {
   SNAPSHOT_BUCKET: R2Bucket;
   /** Optional override — default 500. */
   BATCH_LIMIT?: string;
-  /** Optional shared secret for manual invocation. */
+  /** Shared secret for manual invocation. Typed optional (env var may be
+   *  unset), but unset means POST / is refused entirely — never open. */
   ADMIN_SECRET?: string;
 }
 
@@ -158,10 +159,13 @@ export default {
     if (req.method !== 'POST') {
       return new Response('POST only', { status: 405 });
     }
-    // Optional shared-secret gate for manual invocation.
-    if (env.ADMIN_SECRET) {
-      const got = req.headers.get('x-admin-secret');
-      if (got !== env.ADMIN_SECRET) return new Response('forbidden', { status: 403 });
+    // Shared-secret gate for manual invocation. Fails CLOSED: if ADMIN_SECRET
+    // was never configured in this environment, every manual POST is refused
+    // rather than allowed through — this endpoint runs with the service-role
+    // key, so an unset secret must not mean "no gate."
+    const got = req.headers.get('x-admin-secret');
+    if (!env.ADMIN_SECRET || got !== env.ADMIN_SECRET) {
+      return new Response('forbidden', { status: 403 });
     }
     const body = await req.json().catch(() => ({})) as { limit?: number };
     const limit = Math.max(1, Math.min(5000, body.limit ?? parseInt(env.BATCH_LIMIT ?? '500', 10)));

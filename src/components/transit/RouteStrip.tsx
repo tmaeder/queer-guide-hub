@@ -100,10 +100,17 @@ export function RouteStrip({
 
            Both geometry values come from PageContainer, which owns the page
            frame — `PAGE_BLEED` cancels the gutter and `STICKY_UNDER_HEADER`
-           is the site header's PINNED height (60px on mobile, 64px from md
-           where it collapses to the one-line ink flood; a flat `top-16` left
-           a 4px slot on mobile for content to slide through). Restating
-           either here is how the two drift apart. */
+           clears the site header. Restating either here is how the two drift
+           apart, and this comment proved its own point: it spelled out "60px
+           on mobile, 64px from md", which stopped being true the moment the
+           header became a floating island and moved its underside down by
+           `--island-inset`. The constant is derived from
+           `--header-pinned-bottom` now and carries no literal, so neither
+           does this.
+
+           Note the row below takes the gutter and NO cap — the bleed already
+           landed it on the page container's box. Adding a second, narrower cap
+           there is what indented SectionNav's tabs 32px on wide screens. */
         className={cn(
           `sticky ${STICKY_UNDER_HEADER} z-30 border-b border-border-hairline bg-background`,
           PAGE_BLEED,
