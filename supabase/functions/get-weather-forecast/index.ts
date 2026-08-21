@@ -1,11 +1,21 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { getCorsHeaders } from '../_shared/supabase-client.ts'
+import { checkIpRateLimit } from '../_shared/ip-rate-limit.ts'
 
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req)
 
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Public, unauthenticated endpoint proxying the paid OpenWeather key — cap
+  // per-IP request volume so scripted abuse can't burn the project's quota.
+  if (!(await checkIpRateLimit(req, 'get-weather-forecast', 20, 60))) {
+    return new Response(
+      JSON.stringify({ error: 'Rate limit exceeded' }),
+      { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   }
 
   try {
