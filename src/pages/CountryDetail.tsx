@@ -208,7 +208,7 @@ export default function CountryDetail() {
               <CountryRightsTab country={country} />
               {legalRecord?.length ? (
                 <div id="history" className="mt-10 scroll-mt-8">
-                  <h3 className="font-display text-title leading-tight">
+                  <h3 className="text-title font-bold leading-tight">
                     {t('country.section.history', 'Legal record')}
                   </h3>
                   <p className="mt-1 text-13 leading-relaxed text-muted-foreground">
