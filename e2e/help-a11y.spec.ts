@@ -61,7 +61,7 @@ test('/help does not scroll horizontally at 320px', async ({ page }) => {
 });
 
 test('the emergency numbers survive a failed i18n load', async ({ page }) => {
-  // The life-safety guarantee: EmergencyBand and the triage panel render from
+  // The life-safety guarantee: CrisisBar and the triage panel render from
   // inline English defaults, so a dead locale bundle must not blank them. This
   // is the regression that inline defaults exist to prevent.
   await page.route('**/locales/*.json', (r) => r.abort());

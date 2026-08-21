@@ -748,8 +748,12 @@ exemption" for this — **that section does not exist**; this is the spec.
   pages every visual distinction a reader makes is a risk judgement; teach
   them that hue means "content type" and the red warning becomes just another
   line color. `TransitIcon` is fine — it is `currentColor` by construction.
-- **Weight comes from inversion and rules**, never hue: 3px ink borders, one
-  ink-flooded panel (`SidebarCard tone="ink"` is the shared idiom), `--shadow-hard`.
+- **Weight comes from inversion and rules**, never hue: one ink-flooded plate
+  (`rounded-panel` + `shadow-soft`; `SidebarCard tone="ink"` is the shared
+  idiom), hairline dividers, and outline-on-ink buttons whose border IS the
+  component. (This line said "3px ink borders + `--shadow-hard`" until
+  2026-08-21 — that was the pre-soft-re-skin idiom; the tokens no longer
+  exist.)
 - **`--destructive` is rationed to danger _to the reader_.** On `/help` that
   is exactly three things: the emergency band, `QuickExit`, and the per-line
   "may contact police without your consent" strip. A fourth candidate must
