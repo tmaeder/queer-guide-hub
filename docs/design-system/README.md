@@ -618,6 +618,19 @@ asserts that a page container's content edge and the header's differ by exactly
 inset in `src/index.css` and the guard follows. Hard-code 22 anywhere and it
 will not.
 
+**Two offsets, both derived.** A full-width control band pins flush at
+`STICKY_UNDER_HEADER`; a sidebar rail pins at `STICKY_RAIL_UNDER_HEADER`
+(header + 1rem), because a tall column of links butting against the bar reads
+as a collision where a band reads as a stack. The rails had already invented
+that gap and each hard-coded its own version of it against the pre-island 64px
+header — `top-[76px]` (64+12) on the glossary tree, `top-20` (64+16) on the
+legal TOC, `top-24` (64+32) on News / Sitemap / Donate / EventDetail /
+GuidePickBlock. When the header's underside moved to 82 the first two ended up
+*behind* it (6px and 2px, measured on prod); the `top-24` group survived only
+because its gap happened to exceed the drift. Flattening them all onto the band
+offset would have thrown away a real intent, so the gap is expressed once and
+derived.
+
 **The island moved the header's underside, and one constant did not follow.**
 `STICKY_UNDER_HEADER` carried `top-[60px] md:top-[64px]`, measured against a
 header welded to `top: 0`. Once the header floats, its underside is
