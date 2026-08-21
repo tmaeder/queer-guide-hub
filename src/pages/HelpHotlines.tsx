@@ -8,7 +8,7 @@
  *     and the JSON-LD cannot drift apart again.
  *
  * Crisis UX invariants:
- *   - EmergencyBand and CrisisTriage render OUTSIDE the loading/error branch,
+ *   - CrisisBar and CrisisTriage render OUTSIDE the loading/error branch,
  *     so first paint always carries life-safety info even before i18n resolves
  *     or the CMS returns.
  *   - QuickExit (ESC) and HideScreen are the first things in the container.
@@ -36,11 +36,10 @@ import { useGeoCountry } from '@/hooks/useGeoCountry';
 import { useOrganizationsList } from '@/hooks/useOrganization';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { QuickExit } from '@/components/safety/QuickExit';
-import { HideScreen } from '@/components/safety/HideScreen';
-import { EmergencyBand } from '@/components/help/EmergencyBand';
+import { CrisisBar } from '@/components/help/CrisisBar';
 import { CrisisTriage } from '@/components/help/CrisisTriage';
 import { HelpFilterSpine } from '@/components/help/HelpFilterSpine';
-import { HotlineCard } from '@/components/help/HotlineCard';
+import { HotlineRow } from '@/components/help/HotlineRow';
 import { DirectoryList } from '@/components/help/DirectoryList';
 import { MoreSupportBand } from '@/components/help/MoreSupportBand';
 import {
@@ -189,13 +188,11 @@ export default function HelpHotlines() {
     <PageContainer>
       <QuickExit />
 
-      <div className="mb-6 flex flex-wrap items-center gap-2">
-        <HideScreen />
-      </div>
+      {/* First in the DOM, synchronous, carries HideScreen — no dead rows above
+          the life-safety strip. */}
+      <CrisisBar />
 
-      <EmergencyBand />
-
-      <div className="mt-8">
+      <div className="mt-6">
         <CrisisTriage
           hotlines={hotlines}
           hero={hero}
@@ -209,7 +206,7 @@ export default function HelpHotlines() {
       {/* The seam. Everything above answers "what do I do now"; everything
           below is for browsing, and the rule says so out loud. */}
       <section className="mt-12 border-t border-border-hairline pt-8" aria-labelledby="help-browse">
-        <h2 id="help-browse" className="font-display text-display leading-tight">
+        <h2 id="help-browse" className="font-display text-headline leading-tight">
           {t('help.browse_title', 'Browse every line')}
         </h2>
 
@@ -242,7 +239,7 @@ export default function HelpHotlines() {
             <button
               type="button"
               onClick={resetFilters}
-              className="mt-4 px-4 py-2 text-13 font-bold transition-colors hover:bg-foreground hover:text-background"
+              className="mt-4 rounded-element px-4 py-2 text-13 font-bold transition-colors hover:bg-foreground hover:text-background"
             >
               {t('help.reset_filters', 'Reset filters')}
             </button>
@@ -250,10 +247,10 @@ export default function HelpHotlines() {
         ) : (
           <>
             {callNow.length > 0 && (
-              <ul className="m-0 mt-6 grid list-none grid-cols-1 gap-4 p-0 md:grid-cols-2">
+              <ul className="m-0 mt-6 list-none bg-card p-0 rounded-container shadow-soft">
                 {callNow.map((h) => (
-                  <li key={h.id}>
-                    <HotlineCard
+                  <li key={h.id} className="border-b border-border-hairline last:border-b-0">
+                    <HotlineRow
                       hotline={h}
                       isKept={isBookmarked(h.id)}
                       toggleKeep={toggleBookmark}
@@ -266,7 +263,7 @@ export default function HelpHotlines() {
 
             {directories.length > 0 && (
               <div className="mt-10">
-                <h3 className="font-display text-headline leading-tight">
+                <h3 className="text-title font-bold leading-tight">
                   {t('help.directories_title', 'Directories & further support')}
                 </h3>
                 <p className="mb-4 mt-2 max-w-prose text-15 text-muted-foreground">
