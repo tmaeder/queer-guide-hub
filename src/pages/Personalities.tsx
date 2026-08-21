@@ -406,7 +406,6 @@ export default function Personalities() {
               })
         }
         size="sm"
-        effect="none"
       >
         {user ? <AddPersonalityDialog onSuccess={() => window.location.reload()} /> : null}
       </PageHero>
