@@ -114,22 +114,67 @@ export function parseCountries(html: string): Array<{ id: string; name: string }
   const out: Array<{ id: string; name: string }> = []
   for (const m of sel[0].matchAll(/<option value="([^"]*)"[^>]*>([\s\S]*?)<\/option>/g)) {
     const id = m[1].trim()
-    const name = decodeEntities(m[2].replace(/<[^>]+>/g, '')).trim()
+    const name = decodeEntities(stripTags(m[2])).trim()
     if (id && name) out.push({ id, name })
   }
   return out
 }
 
+const NAMED_ENTITIES: Record<string, string> = {
+  amp: '&', quot: '"', apos: "'", lt: '<', gt: '>', nbsp: ' ',
+  uuml: 'ü', auml: 'ä', ouml: 'ö', szlig: 'ß', eacute: 'é', egrave: 'è',
+  agrave: 'à', ccedil: 'ç', ntilde: 'ñ', aacute: 'á', iacute: 'í',
+  oacute: 'ó', uacute: 'ú',
+}
+
+/**
+ * Decode HTML entities in a SINGLE pass.
+ *
+ * Chaining `.replace()` calls double-unescapes: resolving `&amp;` -> `&`
+ * first turns `&amp;lt;` into `&lt;`, which the next replace then turns into
+ * a literal `<`. Source text that escaped a tag comes back out as markup.
+ * One regex over all entity forms cannot do that, because scanning resumes
+ * AFTER each match rather than re-examining what it just produced.
+ */
 export function decodeEntities(s: string): string {
-  const named: Record<string, string> = {
-    amp: '&', quot: '"', lt: '<', gt: '>', nbsp: ' ',
-    uuml: 'ü', auml: 'ä', ouml: 'ö', szlig: 'ß', eacute: 'é', egrave: 'è',
-    agrave: 'à', ccedil: 'ç', ntilde: 'ñ', aacute: 'á', iacute: 'í',
-    oacute: 'ó', uacute: 'ú',
-  }
-  return s
-    .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
-    .replace(/&([a-z]+);/gi, (full, n) => named[String(n).toLowerCase()] ?? full)
+  return String(s).replace(/&(#[xX][0-9a-fA-F]+|#\d+|[a-zA-Z]+);/g, (full, body: string) => {
+    if (body[0] === '#') {
+      const cp = body[1] === 'x' || body[1] === 'X'
+        ? parseInt(body.slice(2), 16)
+        : parseInt(body.slice(1), 10)
+      if (!Number.isFinite(cp) || cp <= 0 || cp > 0x10ffff) return full
+      try {
+        return String.fromCodePoint(cp)
+      } catch {
+        return full
+      }
+    }
+    return NAMED_ENTITIES[body.toLowerCase()] ?? full
+  })
+}
+
+/**
+ * Strip markup to plain text.
+ *
+ * Two steps, and the second is the one that matters. Removing complete
+ * `<...>` tags is idempotent on its own — the pattern always consumes the
+ * leading `<`, so a removal can never splice a new tag into existence — but
+ * it leaves an UNTERMINATED tag untouched, because there is no closing `>`
+ * to match. `Bar <script src=evil` passes through with `<script` intact.
+ * Dropping any dangling `<...` that runs to end-of-input closes that.
+ *
+ * This output becomes venues.name / venues.description, which
+ * functions/_lib/detail.ts re-renders into the crawler JSON-LD, so it has to
+ * be markup-free rather than merely tag-balanced.
+ */
+export function stripTags(html: string): string {
+  let s = String(html)
+  let prev: string
+  do {
+    prev = s
+    s = s.replace(/<[^>]*>/g, '')
+  } while (s !== prev)
+  return s.replace(/<[^>]*$/, '')
 }
 
 /**

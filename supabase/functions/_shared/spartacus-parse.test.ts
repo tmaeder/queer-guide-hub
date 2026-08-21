@@ -11,6 +11,8 @@ import {
   parseMarkers,
   parseCountries,
   mapCategory,
+  decodeEntities,
+  stripTags,
 } from './spartacus-parse.ts'
 
 Deno.test('parseDetailUrl handles the two-segment (country/city) form', () => {
@@ -96,6 +98,47 @@ Deno.test('parseCountries reads the country dropdown', () => {
   assertEquals(got.length, 3)
   assertEquals(got[0], { id: '7', name: 'Germany' })
   assertEquals(got[2].name, 'Caribbean - Curaçao')
+})
+
+// --- sanitisation ------------------------------------------------------
+// These two are scraped-content-to-stored-content paths: the output becomes
+// venues.name / venues.description, which functions/_lib/detail.ts re-renders
+// into the crawler JSON-LD. Both bugs below were real (CodeQL, PR #2898).
+
+Deno.test('stripTags removes complete tags', () => {
+  assertEquals(stripTags('<b>Tom Bar</b>'), 'Tom Bar')
+  assertEquals(stripTags('a<br/>b'), 'ab')
+  assertEquals(stripTags('plain'), 'plain')
+  assertEquals(stripTags(''), '')
+})
+
+Deno.test('stripTags removes an UNTERMINATED trailing tag', () => {
+  // The real hole: with no closing '>' there is nothing for the tag pattern
+  // to match, so `<script` survives a complete-tag strip untouched.
+  assertEquals(stripTags('Bar <script src=evil'), 'Bar ')
+  assertEquals(stripTags('<scr<script>ipt'), 'ipt')
+  for (const probe of ['<script', 'x<script src=a', '<img onerror=1']) {
+    assertEquals(stripTags(probe).includes('<'), false, `${probe} left a '<'`)
+  }
+})
+
+Deno.test('decodeEntities does not double-unescape', () => {
+  // Chained replaces resolve &amp; first, so &amp;lt; becomes &lt; and then a
+  // literal '<'. Text that deliberately escaped a tag must stay escaped.
+  assertEquals(decodeEntities('&amp;lt;script&amp;gt;'), '&lt;script&gt;')
+  assertEquals(decodeEntities('&amp;amp;'), '&amp;')
+  assertEquals(decodeEntities('Ben &amp; Jerry'), 'Ben & Jerry')
+})
+
+Deno.test('decodeEntities handles named, decimal and hex forms', () => {
+  assertEquals(decodeEntities('Cura&ccedil;ao'), 'Curaçao')
+  assertEquals(decodeEntities('caf&#233;'), 'café')
+  assertEquals(decodeEntities('caf&#xE9;'), 'café')
+  assertEquals(decodeEntities('Salvina&#39;s'), "Salvina's")
+  // Unknown entities and malformed codepoints pass through untouched rather
+  // than silently becoming something else.
+  assertEquals(decodeEntities('&notarealentity;'), '&notarealentity;')
+  assertEquals(decodeEntities('&#99999999;'), '&#99999999;')
 })
 
 Deno.test('mapCategory maps marker stems and labels to the venues vocabulary', () => {

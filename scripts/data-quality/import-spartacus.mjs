@@ -112,7 +112,7 @@ function parseCountries(html) {
   const out = [];
   for (const m of sel[0].matchAll(/<option value="([^"]*)"[^>]*>([\s\S]*?)<\/option>/g)) {
     const id = m[1].trim();
-    const name = decodeEntities(m[2].replace(/<[^>]+>/g, '')).trim();
+    const name = decodeEntities(stripTags(m[2])).trim();
     if (id && name) out.push({ id, name });
   }
   return out;
@@ -135,34 +135,74 @@ function fixMojibake(s) {
   }
 }
 
+const NAMED_ENTITIES = {
+  amp: '&',
+  quot: '"',
+  apos: "'",
+  lt: '<',
+  gt: '>',
+  nbsp: ' ',
+  uuml: 'ü',
+  auml: 'ä',
+  ouml: 'ö',
+  szlig: 'ß',
+  eacute: 'é',
+  egrave: 'è',
+  agrave: 'à',
+  ccedil: 'ç',
+  ntilde: 'ñ',
+  aacute: 'á',
+  iacute: 'í',
+  oacute: 'ó',
+  uacute: 'ú',
+};
+
+/**
+ * Decode HTML entities in a SINGLE pass.
+ *
+ * Chaining `.replace()` calls double-unescapes: resolving `&amp;` -> `&`
+ * first turns `&amp;lt;` into `&lt;`, which a later replace turns into a
+ * literal `<`, so source text that deliberately escaped a tag comes back out
+ * as markup. One regex over all entity forms cannot do that, because scanning
+ * resumes AFTER each match instead of re-reading what it just produced.
+ */
 function decodeEntities(s) {
-  return s
-    .replace(/&amp;/g, '&')
-    .replace(/&quot;/g, '"')
-    .replace(/&#0?39;/g, "'")
-    .replace(/&#8217;/g, '’')
-    .replace(/&#8230;/g, '…')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&([a-z]+);/gi, (full, name) => {
-      const map = {
-        uuml: 'ü',
-        auml: 'ä',
-        ouml: 'ö',
-        szlig: 'ß',
-        eacute: 'é',
-        egrave: 'è',
-        agrave: 'à',
-        ccedil: 'ç',
-        ntilde: 'ñ',
-        aacute: 'á',
-        iacute: 'í',
-        oacute: 'ó',
-        uacute: 'ú',
-      };
-      return map[name.toLowerCase()] ?? full;
-    });
+  return String(s).replace(/&(#[xX][0-9a-fA-F]+|#\d+|[a-zA-Z]+);/g, (full, body) => {
+    if (body[0] === '#') {
+      const cp =
+        body[1] === 'x' || body[1] === 'X'
+          ? parseInt(body.slice(2), 16)
+          : parseInt(body.slice(1), 10);
+      if (!Number.isFinite(cp) || cp <= 0 || cp > 0x10ffff) return full;
+      try {
+        return String.fromCodePoint(cp);
+      } catch {
+        return full;
+      }
+    }
+    return NAMED_ENTITIES[body.toLowerCase()] ?? full;
+  });
+}
+
+/**
+ * Strip markup to plain text.
+ *
+ * Removing complete `<...>` tags is idempotent on its own — the pattern
+ * always consumes the leading `<`, so a removal cannot splice a new tag into
+ * existence — but it leaves an UNTERMINATED tag untouched, because there is
+ * no closing `>` to match: `Bar <script src=evil` passes through with
+ * `<script` intact. Dropping a dangling `<...` at end-of-input closes that.
+ * This text becomes venues.name / venues.description, which
+ * functions/_lib/detail.ts re-renders into the crawler JSON-LD.
+ */
+function stripTags(html) {
+  let s = String(html);
+  let prev;
+  do {
+    prev = s;
+    s = s.replace(/<[^>]*>/g, '');
+  } while (s !== prev);
+  return s.replace(/<[^>]*$/, '');
 }
 
 /**
@@ -231,10 +271,21 @@ function parseDetailUrl(url) {
   };
 }
 
-const strip = (h) =>
-  decodeEntities(String(h).replace(/<[^>]+>/g, ' '))
-    .replace(/\s+/g, ' ')
-    .trim();
+/**
+ * Tag-strip to plain text, replacing tags with a space so adjacent inline
+ * elements do not fuse into one word. Loops for the same reason as stripTags:
+ * one pass leaves `<script>` behind on `<scr<script>ipt>`.
+ */
+const strip = (h) => {
+  let s = String(h);
+  let prev;
+  do {
+    prev = s;
+    s = s.replace(/<[^>]*>/g, ' ');
+  } while (s !== prev);
+  s = s.replace(/<[^>]*$/, ' '); // unterminated trailing tag — see stripTags
+  return decodeEntities(s).replace(/\s+/g, ' ').trim();
+};
 
 /**
  * Full record from a venue detail page. The markup is stable and classed, so
@@ -446,7 +497,9 @@ async function buildCountryIso() {
   for (const r of rows) byName.set(String(r.name).toLowerCase(), String(r.code).toUpperCase());
 
   return (label) => {
-    const k = String(label || '').toLowerCase().trim();
+    const k = String(label || '')
+      .toLowerCase()
+      .trim();
     if (COUNTRY_OVERRIDES[k]) return COUNTRY_OVERRIDES[k];
     if (byName.has(k)) return byName.get(k);
     // "Caribbean - Cuba" -> "Cuba", "China - Hong Kong" -> "Hong Kong"
@@ -566,7 +619,8 @@ function toNormalized(rec, isoFor) {
   if (category === 'sauna') tags.push('sauna');
 
   const iso = isoFor(rec.country_name);
-  if (!iso) throw new Error(`unresolved country "${rec.country_name}" (venue ${rec.id} ${rec.name})`);
+  if (!iso)
+    throw new Error(`unresolved country "${rec.country_name}" (venue ${rec.id} ${rec.name})`);
 
   return {
     entityType: 'venue',
