@@ -56,7 +56,6 @@ export interface IntentVenue {
   tags: string[] | null;
   price_range: number | null;
   verified: boolean | null;
-  verification_status: string | null;
   closed_at: string | null;
 }
 
@@ -70,7 +69,7 @@ export function useNightlifeVenues(cityId: string | null | undefined, limit = 12
       const { data, error } = await supabase
         .from('venues')
         .select(
-          'id, name, slug, category, city, state, description, images, hours, tags, price_range, verified, verification_status, closed_at',
+          'id, name, slug, category, city, state, description, images, hours, tags, price_range, verified, closed_at',
         )
         .eq('city_id', cityId!)
         .is('duplicate_of_id', null)
