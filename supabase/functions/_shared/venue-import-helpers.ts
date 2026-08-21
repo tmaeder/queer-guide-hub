@@ -91,57 +91,6 @@ export async function getOrCreateCity(
   return null
 }
 
-export async function getOrCreateVenueCategory(
-  supabase: SupabaseClient,
-  categoryName: string,
-  categorySlug: string,
-  source: string = 'import'
-) {
-  const { data: existing } = await supabase
-    .from('venue_categories')
-    .select('id')
-    .eq('slug', categorySlug)
-    .maybeSingle()
-
-  if (existing) {
-    return existing.id
-  }
-
-  // Determine icon based on slug (merged from all import sources)
-  let icon = 'MapPin'
-  if (categorySlug.includes('entertainment')) icon = 'Music'
-  else if (categorySlug.includes('restaurant') || categorySlug.includes('dining')) icon = 'UtensilsCrossed'
-  else if (categorySlug.includes('community')) icon = 'Users'
-  else if (categorySlug.includes('lodging') || categorySlug.includes('hotel') || categorySlug.includes('accommodation')) icon = 'Bed'
-  else if (categorySlug.includes('bar')) icon = 'Wine'
-
-  // Determine color based on slug (merged from all import sources)
-  let color = '#6366f1'
-  if (categorySlug.includes('entertainment')) color = '#8b5cf6'
-  else if (categorySlug.includes('community')) color = '#10b981'
-  else if (categorySlug.includes('restaurant') || categorySlug.includes('dining') || categorySlug.includes('bar')) color = '#ef4444'
-  else if (categorySlug.includes('lodging') || categorySlug.includes('hotel') || categorySlug.includes('accommodation')) color = '#f59e0b'
-
-  const { data: newCategory, error } = await supabase
-    .from('venue_categories')
-    .insert({
-      name: categoryName,
-      slug: categorySlug,
-      description: `Auto-created from ${source} import`,
-      icon,
-      color
-    })
-    .select('id')
-    .maybeSingle()
-
-  if (!error && newCategory) {
-    console.log(`Created new venue category: ${categoryName}`)
-    return newCategory.id
-  }
-
-  return null
-}
-
 export async function getOrCreateService(
   supabase: SupabaseClient,
   serviceName: string,

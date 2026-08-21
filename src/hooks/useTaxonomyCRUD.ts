@@ -3,7 +3,7 @@ import { untypedFrom } from '@/integrations/supabase/untyped';
 /**
  * DUP-4 hook for the simple admin taxonomy CRUD pattern shared across
  * event_amenities, event_services, event_types,
- * venue_categories, venue_services, accessibility_attributes,
+ * venue_services, accessibility_attributes,
  * target_groups, etc.
  *
  * The page passes the table name + a typed form payload; this hook
@@ -23,8 +23,7 @@ export function useTaxonomyCRUD(table: string) {
           .eq('id' as never, editingId as never);
         return { error: error as Error | null };
       }
-      const { error } = await untypedFrom(table)
-        .insert([form] as never);
+      const { error } = await untypedFrom(table).insert([form] as never);
       return { error: error as Error | null };
     },
     async remove(id: string): Promise<{ error: Error | null }> {

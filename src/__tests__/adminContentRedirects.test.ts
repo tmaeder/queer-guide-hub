@@ -40,7 +40,6 @@ describe('admin content redirects', () => {
 
   it('routes each retired vocabulary page to its registry type', () => {
     const map = Object.fromEntries(redirects().map((r) => [r.from, r.to]));
-    expect(map['settings/venue-categories']).toBe('venue_categories');
     expect(map['settings/venue-services']).toBe('venue_services');
     expect(map['settings/event-types']).toBe('event_types');
     expect(map['settings/event-amenities']).toBe('event_amenities');

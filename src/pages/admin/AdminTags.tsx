@@ -64,7 +64,6 @@ interface TagRow {
 const columnHelper = createColumnHelper<AdminTableFeatures, TagRow>();
 
 const TAXONOMY_PAGES: Array<{ label: string; route: string }> = [
-  { label: 'Venue categories', route: '/admin/settings/venue-categories' },
   { label: 'Venue services', route: '/admin/settings/venue-services' },
   { label: 'Event types', route: '/admin/settings/event-types' },
   { label: 'Event amenities', route: '/admin/settings/event-amenities' },
