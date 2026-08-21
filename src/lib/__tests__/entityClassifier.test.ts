@@ -169,3 +169,74 @@ describe('isEntityTypeMismatch', () => {
     expect(isEntityTypeMismatch(cls, 'personalities')).toBe(true);
   });
 });
+
+// --- nested NormalizedItem shape (regression, 2026-08-21) --------------------
+// Mirrors supabase/functions/_tests/entity-classifier.test.ts. Every `source-*`
+// adapter emits `location.{address,lat,lng}` rather than flat fields, and
+// pipeline-validate passes normalized_data straight in. Measured on production
+// ingestion_staging: 38,126 of 39,002 venue rows nested it, 790 were flat — so
+// the classifier scored ~98% of venue rows with no address and no geo.
+describe('nested location shape', () => {
+  it('reads location.{address,lat,lng}', () => {
+    const cls = classifyEntity({
+      name: 'Tom Bar',
+      location: {
+        address: '1 Crucifix Hill, Floriana',
+        city: 'Valletta',
+        lat: 35.89335,
+        lng: 14.50576,
+      },
+    });
+    expect(cls.classified_as).toBe('venue');
+    expect(cls.signals).toContain('venue:has_address (+3)');
+    expect(cls.signals).toContain('venue:has_geo (+2)');
+  });
+
+  it('prefers flat keys when both are present', () => {
+    const cls = classifyEntity({
+      name: 'Somewhere',
+      address: 'Flat Street 1',
+      location: { address: 'Nested Street 2' },
+    });
+    expect(cls.signals).toContain('venue:has_address (+3)');
+  });
+
+  it('no longer returns unknown/0 for a geo-bearing row', () => {
+    const cls = classifyEntity({ name: 'Fusion', location: { lat: 41.38, lng: 2.17 } });
+    expect(cls.classified_as === 'unknown' && cls.confidence === 0).toBe(false);
+  });
+});
+
+// All 35 E_ENTITY_TYPE_MISMATCH rejections in the Spartacus import were real
+// venues whose names are acronyms. A glossary term has no map pin.
+describe('acronym venue names', () => {
+  it.each([
+    ['XXL', 41.2358, 1.8055],
+    ['GMF', 52.52, 13.405],
+    ['DYMK', 1.3521, 103.8198],
+    ['AXM', 53.4808, -2.2426],
+    ['SPQR', -36.8485, 174.7633],
+  ])('%s with coordinates is not a glossary-term mismatch', (name, lat, lng) => {
+    const cls = classifyEntity({ name: name as string, location: { lat, lng } });
+    expect(isEntityTypeMismatch(cls, 'venues')).toBe(false);
+  });
+
+  it('geo alone beats the name-shape rule', () => {
+    const cls = classifyEntity({ name: 'IDM', location: { lat: 48.8717, lng: 2.3522 } });
+    expect(cls.classified_as).not.toBe('glossary_term');
+  });
+
+  it('still classifies a real glossary term', () => {
+    expect(classifyEntity({ name: 'AFAB' }).classified_as).toBe('glossary_term');
+    expect(
+      classifyEntity({ name: 'twink', description: 'A slang term for a young gay man.' })
+        .classified_as,
+    ).toBe('glossary_term');
+  });
+
+  it('null island does not count as a location', () => {
+    expect(classifyEntity({ name: 'AFAB', location: { lat: 0, lng: 0 } }).classified_as).toBe(
+      'glossary_term',
+    );
+  });
+});
