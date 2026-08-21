@@ -1,6 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
+import type { ReactNode } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
@@ -13,18 +14,25 @@ vi.mock('react-router', async () => {
   return { ...actual, useNavigate: () => mockNavigate };
 });
 
-vi.mock('@/hooks/useAuth', () => ({
-  useAuth: () => ({ passwordRecovery }),
+// Importing the real useAuth module pulls in the supabase client; stub it so
+// this suite stays a pure unit test.
+vi.mock('@/integrations/supabase/client', () => ({
+  supabase: {
+    auth: { onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }) },
+  },
 }));
 
 import { RecoveryRedirect } from '../RecoveryRedirect';
+import { AuthContext } from '@/hooks/useAuth';
+
+// The REAL context, not a mocked useAuth — so this suite breaks if the
+// component stops reading the context it is supposed to read.
+const withAuth = (children: ReactNode) => (
+  <AuthContext.Provider value={{ passwordRecovery } as never}>{children}</AuthContext.Provider>
+);
 
 const renderAt = (path: string) =>
-  render(
-    <MemoryRouter initialEntries={[path]}>
-      <RecoveryRedirect />
-    </MemoryRouter>,
-  );
+  render(<MemoryRouter initialEntries={[path]}>{withAuth(<RecoveryRedirect />)}</MemoryRouter>);
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -32,6 +40,21 @@ beforeEach(() => {
 });
 
 describe('RecoveryRedirect', () => {
+  it('is inert with no AuthProvider instead of crashing the shell', () => {
+    // Note the deliberate absence of withAuth(). This component mounts in
+    // LayoutShell, above most of the tree, and useAuth() THROWS without a
+    // provider — which took down 7 LayoutShell tests in CI. A shell-level
+    // component must degrade to a no-op rather than kill everything below it.
+    expect(() =>
+      render(
+        <MemoryRouter initialEntries={['/']}>
+          <RecoveryRedirect />
+        </MemoryRouter>,
+      ),
+    ).not.toThrow();
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
   it('does nothing without a recovery session', async () => {
     renderAt('/');
     await waitFor(() => expect(mockNavigate).not.toHaveBeenCalled());
@@ -70,9 +93,7 @@ describe('RecoveryRedirect', () => {
     await waitFor(() => expect(mockNavigate).toHaveBeenCalledTimes(1));
 
     rerender(
-      <MemoryRouter initialEntries={['/venues']}>
-        <RecoveryRedirect />
-      </MemoryRouter>,
+      <MemoryRouter initialEntries={['/venues']}>{withAuth(<RecoveryRedirect />)}</MemoryRouter>,
     );
     await waitFor(() => expect(mockNavigate).toHaveBeenCalledTimes(1));
   });

@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useContext, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router';
-import { useAuth } from '@/hooks/useAuth';
+import { AuthContext } from '@/hooks/useAuth';
 
 const RESET_PATH = '/auth/reset-password';
 
@@ -19,7 +19,12 @@ const RESET_PATH = '/auth/reset-password';
  * Mounted app-wide (LayoutShell) rather than inside Auth so it sees every path.
  */
 export function RecoveryRedirect() {
-  const { passwordRecovery } = useAuth();
+  // useContext(AuthContext) rather than useAuth(): useAuth THROWS when no
+  // provider is mounted, and this component sits in the app shell, above most
+  // of the tree. A missing provider should make the redirect inert, not take
+  // the whole shell down — LayoutShell renders in contexts that legitimately
+  // have no AuthProvider (its own unit tests are one, and they crashed).
+  const passwordRecovery = useContext(AuthContext)?.passwordRecovery ?? false;
   const location = useLocation();
   const navigate = useNavigate();
   // One-shot. The recovery flag survives the whole tab session (it has to —
