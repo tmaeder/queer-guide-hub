@@ -50,15 +50,19 @@ export function useVenueReviewCounts() {
   });
 }
 
-export function useVenueReviewCandidates(kind: ReviewKind, limit = 25) {
+/** `city` is a substring match on the venue's city TEXT, not on city_id — the rows a
+ *  cleanup most wants to see are often the ones whose city never resolved to an id
+ *  ('Canton of Zurich', a pasted Notion URL), so matching the id would hide them. */
+export function useVenueReviewCandidates(kind: ReviewKind, limit = 25, city = '') {
   return useQuery({
-    queryKey: ['venue-review-candidates', kind, limit],
+    queryKey: ['venue-review-candidates', kind, limit, city],
     staleTime: 30_000,
     queryFn: async (): Promise<VenueReviewCandidate[]> => {
       const { data, error } = await untypedRpc<VenueReviewCandidate[]>('venue_review_candidates', {
         p_kind: kind,
         p_limit: limit,
         p_offset: 0,
+        p_city: city.trim() || null,
       });
       if (error) throw error;
       return data ?? [];
