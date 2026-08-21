@@ -1252,6 +1252,10 @@
       "errors": {
         "mismatch": "[ZH] Both passwords must match."
       }
+    },
+    "profileSetup": {
+      "usernameBlurb": "[ZH] We picked one for you. Change it if you like, or change it again later.",
+      "avatarBlurb": "[ZH] Pick an avatar. Nothing here is public yet."
     }
   },
   "onboarding": {
@@ -1263,7 +1267,12 @@
     "passkeyAlreadyEnrolled": "Passkey already enabled",
     "passkeyEnrolled": "Passkey enabled",
     "continue": "Continue to Queer Guide",
-    "skip": "Skip for now"
+    "skip": "Skip for now",
+    "steps": {
+      "profile": "[ZH] Your handle",
+      "profileDesc": "[ZH] Pick a username and avatar, or keep the ones we assigned."
+    },
+    "profileBlurb": "[ZH] Your account is ready. We gave you a handle and an avatar. Keep them or make them yours."
   },
   "events": {
     "title": "活动",

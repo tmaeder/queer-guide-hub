@@ -88,10 +88,15 @@ export default function AuthCallback() {
       }
       setStatus('ok');
 
-      // OAuth providers don't populate raw_user_meta_data.username, so the
-      // handle_new_user() trigger leaves profiles.username = NULL. Force a
-      // one-time claim step before landing on the app. If a username already
-      // exists (returning user), skip straight to home.
+      // Route a first-time OAuth user through onboarding.
+      //
+      // This used to branch on `username IS NULL` — the signal that the user
+      // had never done the claim step. Since migration 20260915090000 the
+      // trigger ALWAYS mints a username, so that condition can never be true
+      // and the branch is dead: every OAuth user would go straight to "/".
+      // `onboarding_completed_at` is the durable "has this person been
+      // welcomed" flag, and Welcome writes it on skip as well as on finish,
+      // so this cannot loop.
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -103,11 +108,11 @@ export default function AuthCallback() {
         // eslint-disable-next-line queerguide/no-supabase-from-in-pages
         const { data: profileRow } = await supabase
           .from('profiles')
-          .select('username')
+          .select('onboarding_completed_at')
           .eq('user_id', user.id)
           .maybeSingle();
-        if (!profileRow?.username) {
-          destination = '/claim-username';
+        if (!profileRow?.onboarding_completed_at) {
+          destination = '/onboarding/welcome';
         }
       }
       setTimeout(() => {

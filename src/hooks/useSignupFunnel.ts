@@ -1,8 +1,20 @@
 import { useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
+/**
+ * MUST stay in sync with the `signup_funnel_events_event_check` CHECK
+ * constraint (widened in migration 20260915090000).
+ *
+ * These two drifted once and it was invisible: `signup_validation_error` was
+ * in this union and NOT in the constraint, so Postgres rejected every insert
+ * and the fire-and-forget writer below swallowed the rejection into a
+ * console.debug. The funnel then reported zero validation errors, which was
+ * read as a fact about users rather than a row that could never be written.
+ * Adding a name here without widening the constraint recreates that exactly.
+ */
 export type FunnelEvent =
   | 'signup_landing_view'
+  | 'signup_submit_attempt'
   | 'oauth_start'
   | 'oauth_complete'
   | 'signup_validation_error'
@@ -10,6 +22,8 @@ export type FunnelEvent =
   | 'email_verified'
   | 'onboarding_skipped'
   | 'onboarding_completed'
+  | 'password_reset_requested'
+  | 'password_reset_completed'
   // Retained for back-compat with OAuthButtons / legacy paths
   | 'step_started'
   | 'step_completed'

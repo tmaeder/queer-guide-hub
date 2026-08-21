@@ -1256,6 +1256,10 @@
       "errors": {
         "mismatch": "[FR] Both passwords must match."
       }
+    },
+    "profileSetup": {
+      "usernameBlurb": "[FR] We picked one for you. Change it if you like, or change it again later.",
+      "avatarBlurb": "[FR] Pick an avatar. Nothing here is public yet."
     }
   },
   "onboarding": {
@@ -1267,7 +1271,12 @@
     "passkeyAlreadyEnrolled": "Passkey déjà activée",
     "passkeyEnrolled": "Passkey activée",
     "continue": "Accéder à Queer Guide",
-    "skip": "Passer pour l'instant"
+    "skip": "Passer pour l'instant",
+    "steps": {
+      "profile": "[FR] Your handle",
+      "profileDesc": "[FR] Pick a username and avatar, or keep the ones we assigned."
+    },
+    "profileBlurb": "[FR] Your account is ready. We gave you a handle and an avatar. Keep them or make them yours."
   },
   "events": {
     "title": "Événements",

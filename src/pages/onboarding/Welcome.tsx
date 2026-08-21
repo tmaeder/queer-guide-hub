@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Button } from '@/components/ui/button';
@@ -10,10 +11,16 @@ import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 import { StepperShell, type StepperStep } from '@/components/ui/StepperShell';
 import { TierUpgradeOverlay } from '@/components/ui/TierUpgradeOverlay';
+import { ProfileSetupStep } from '@/components/onboarding/ProfileSetupStep';
+import { useProfile, type Profile } from '@/hooks/useProfile';
+import { sanitizeRedirect } from '@/lib/authRedirect';
+import type { AvatarConfig } from '@/components/profile/avatarConfig';
 
 export default function Welcome() {
   const navigate = useLocalizedNavigate();
+  const [searchParams] = useSearchParams();
   const { user, loading, hasPasskey, enrollPasskey } = useAuth();
+  const { profile, updateProfile } = useProfile();
   const { emit } = useSignupFunnel();
   const { toast } = useToast();
   const { t } = useTranslation();
@@ -21,6 +28,19 @@ export default function Welcome() {
   const [enrollErr, setEnrollErr] = useState<string | null>(null);
   const [step, setStep] = useState(0);
   const [showUpgrade, setShowUpgrade] = useState(false);
+
+  const px = profile as (Profile & { username?: string | null }) | null;
+  const [profileSaving, setProfileSaving] = useState(false);
+
+  // Derived, not synced-by-effect: the edit is an OVERRIDE on top of whatever
+  // handle_new_user already assigned. Seeding state from `profile` in an
+  // effect instead would cascade a render and, worse, race the profile fetch —
+  // if it resolved after mount the step would open blank and "Continue" would
+  // look like it was about to clear the user's handle.
+  const [usernameOverride, setUsernameOverride] = useState<string | null>(null);
+  const [avatarOverride, setAvatarOverride] = useState<AvatarConfig | null>(null);
+  const username = usernameOverride ?? px?.username ?? null;
+  const avatar = avatarOverride ?? (px?.avatar_config as unknown as AvatarConfig) ?? null;
 
   useEffect(() => {
     if (!loading && !user) {
@@ -33,6 +53,14 @@ export default function Welcome() {
 
   const steps: StepperStep[] = useMemo(
     () => [
+      {
+        id: 'profile',
+        label: t('onboarding.steps.profile', 'Your handle'),
+        description: t(
+          'onboarding.steps.profileDesc',
+          'Pick a username and avatar, or keep the ones we assigned.',
+        ),
+      },
       {
         id: 'passkey',
         label: t('onboarding.steps.passkey', 'Secure access'),
@@ -67,13 +95,44 @@ export default function Welcome() {
     }
   };
 
-  const finish = (skipped: boolean) => {
+  const finish = async (skipped: boolean) => {
     emit(skipped ? 'onboarding_skipped' : 'onboarding_completed');
     setShowUpgrade(false);
-    navigate('/', { replace: true });
+
+    // Stamped on BOTH exits. A skipped onboarding is a finished one — recording
+    // only completions would re-show this flow to every skipper on each OAuth
+    // return, forever. The funnel event above is what distinguishes the two.
+    // Column existed since launch and was never written by anything.
+    if (user) {
+      await updateProfile({
+        onboarding_completed_at: new Date().toISOString(),
+      } as Partial<Profile>);
+    }
+
+    // Honour where the user was headed before being gated into auth.
+    navigate(sanitizeRedirect(searchParams.get('redirect')) ?? '/', { replace: true });
   };
 
-  const handleNext = () => {
+  const stepId = steps[step]?.id;
+
+  const handleNext = async () => {
+    // Persist the profile step before leaving it. Both values are already
+    // non-null (the trigger assigned them), so this only writes a change the
+    // user actually made.
+    if (stepId === 'profile' && user) {
+      // Only the overrides are a change; the derived values equal what the
+      // trigger already stored.
+      const changed = usernameOverride !== null || avatarOverride !== null;
+      if (changed) {
+        setProfileSaving(true);
+        await updateProfile({
+          ...(username ? { username } : {}),
+          ...(avatar ? { avatar_config: avatar, avatar_url: null, avatar_type: 'builder' } : {}),
+        } as Partial<Profile>);
+        setProfileSaving(false);
+      }
+    }
+
     if (step === steps.length - 1) {
       setShowUpgrade(true);
       return;
@@ -98,8 +157,10 @@ export default function Welcome() {
         current={step}
         onNext={handleNext}
         onPrev={handlePrev}
-        onSkip={() => finish(true)}
+        onSkip={() => void finish(true)}
         showSkip={step < steps.length - 1}
+        // Blocks double-submit while the profile step writes.
+        canGoNext={!profileSaving}
         nextLabel={
           step === steps.length - 1
             ? t('onboarding.finish', 'Enter Queer Guide')
@@ -107,7 +168,30 @@ export default function Welcome() {
         }
         variant="celebrate"
       >
-        {step === 0 && (
+        {stepId === 'profile' && (
+          <div className="max-w-xl">
+            <div className="mb-8">
+              <Heart size={40} className="mb-4 text-foreground" style={{ fill: 'currentcolor' }} />
+              <h1 className="text-headline font-bold tracking-tight mb-2">
+                {t('onboarding.welcome', 'Welcome to Queer Guide')}
+              </h1>
+              <p className="text-muted-foreground leading-relaxed">
+                {t(
+                  'onboarding.profileBlurb',
+                  'Your account is ready. We gave you a handle and an avatar. Keep them or make them yours.',
+                )}
+              </p>
+            </div>
+            <ProfileSetupStep
+              username={username}
+              onUsernameChange={setUsernameOverride}
+              avatar={avatar}
+              onAvatarChange={setAvatarOverride}
+            />
+          </div>
+        )}
+
+        {stepId === 'passkey' && (
           <div className="max-w-xl">
             <div className="mb-8">
               <Heart size={40} className="mb-4 text-foreground" style={{ fill: 'currentcolor' }} />
@@ -156,7 +240,7 @@ export default function Welcome() {
           </div>
         )}
 
-        {step === 1 && (
+        {stepId === 'personalize' && (
           <div className="max-w-xl">
             <h1 className="text-headline font-bold tracking-tight mb-2">
               {t('onboarding.personalizeTitle', 'Personalize your discovery')}
@@ -175,7 +259,7 @@ export default function Welcome() {
           </div>
         )}
 
-        {step === 2 && (
+        {stepId === 'trust' && (
           <div className="max-w-xl">
             <ShieldCheck size={40} className="mb-4 text-foreground" />
             <h1 className="text-headline font-bold tracking-tight mb-2">
@@ -209,7 +293,7 @@ export default function Welcome() {
           "You've joined Queer Guide. Welcome to the community.",
         )}
         icon={<Heart size={42} style={{ fill: 'currentcolor' }} />}
-        onDismiss={() => finish(false)}
+        onDismiss={() => void finish(false)}
       />
     </>
   );

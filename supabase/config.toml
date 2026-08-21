@@ -22,6 +22,19 @@ uri = "pg-functions://postgres/public/custom_access_token_hook"
 [auth.email]
 enable_signup = true
 double_confirm_changes = true
+# Autoconfirm. Measured on prod 2026-08-21: mean gap between
+# auth.users.created_at and email_confirmed_at is 1.2s, i.e. the address is
+# never actually proved.
+#
+# The signup flow DEPENDS on this: signUp resolves with a live session, so the
+# client routes straight to /onboarding/welcome. Turning confirmations back on
+# without restoring a "check your email" screen leaves new accounts staring at
+# onboarding they are not yet entitled to. The screen was deleted in the
+# one-screen-signup change because autoconfirm made it unreachable — see git
+# history for src/components/auth/EmailVerificationScreen.tsx.
+#
+# Trade-off accepted knowingly: anyone can create an account on someone else's
+# address. Revisit if abuse appears.
 enable_confirmations = false
 
 [auth.sms]

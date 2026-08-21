@@ -1258,6 +1258,10 @@
       "errors": {
         "mismatch": "[AR] Both passwords must match."
       }
+    },
+    "profileSetup": {
+      "usernameBlurb": "[AR] We picked one for you. Change it if you like, or change it again later.",
+      "avatarBlurb": "[AR] Pick an avatar. Nothing here is public yet."
     }
   },
   "onboarding": {
@@ -1269,7 +1273,12 @@
     "passkeyAlreadyEnrolled": "Passkey already enabled",
     "passkeyEnrolled": "Passkey enabled",
     "continue": "Continue to Queer Guide",
-    "skip": "Skip for now"
+    "skip": "Skip for now",
+    "steps": {
+      "profile": "[AR] Your handle",
+      "profileDesc": "[AR] Pick a username and avatar, or keep the ones we assigned."
+    },
+    "profileBlurb": "[AR] Your account is ready. We gave you a handle and an avatar. Keep them or make them yours."
   },
   "events": {
     "title": "الفعاليات",

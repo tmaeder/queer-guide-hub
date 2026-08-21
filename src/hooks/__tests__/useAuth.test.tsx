@@ -67,7 +67,9 @@ describe('useAuth', () => {
     expect(typeof result.current.signIn).toBe('function');
     expect(typeof result.current.signOut).toBe('function');
     expect(typeof result.current.signInWithOAuth).toBe('function');
-    expect(typeof result.current.resendVerification).toBe('function');
+    // resendVerification was removed with the verification screen: prod runs
+    // autoconfirm, so there is never an unconfirmed email to resend to.
+    expect('resendVerification' in result.current).toBe(false);
     expect(typeof result.current.resetPassword).toBe('function');
     expect(typeof result.current.enrollPasskey).toBe('function');
     expect(typeof result.current.signInWithPasskey).toBe('function');
