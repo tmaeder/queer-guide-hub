@@ -57,6 +57,9 @@ const has = (n) => args.includes(`--${n}`);
 const PHASE = flag('phase', 'list');
 const LIMIT = flag('limit') ? Number(flag('limit')) : Infinity;
 const DRY = has('dry-run');
+// --refresh also rewrites the payload of venues staged by an EARLIER import,
+// which plain INSERT ... ON CONFLICT DO NOTHING silently leaves stale.
+const REFRESH = has('refresh');
 // --country "Malta,Iceland" restricts the sweep; used for smoke-testing the
 // parsers without paying for a full 190-request crawl.
 const ONLY = flag('country')
@@ -677,18 +680,48 @@ function token() {
   return Buffer.from(raw.replace(/^go-keyring-base64:/, ''), 'base64').toString('utf8');
 }
 
-async function sql(query) {
-  const res = await fetch(`https://api.supabase.com/v1/projects/${PROJECT}/database/query`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token()}`,
-      'Content-Type': 'application/json',
-      'User-Agent': 'Mozilla/5.0',
-    },
-    body: JSON.stringify({ query }),
-  });
-  if (!res.ok) throw new Error(`mgmt API ${res.status}: ${(await res.text()).slice(0, 400)}`);
-  return res.json();
+/**
+ * Management-API query with retry.
+ *
+ * A drain makes hundreds of calls over ~20 minutes, so a single transient
+ * network blip must not kill the run — one `getaddrinfo ENOTFOUND` on
+ * api.supabase.com did exactly that mid-drain. Retries cover transport
+ * errors and 5xx/429; a 4xx is a real query error and fails immediately,
+ * because retrying a malformed statement just delays the report.
+ */
+async function sql(query, attempt = 1) {
+  const MAX_ATTEMPTS = 5;
+  try {
+    const res = await fetch(`https://api.supabase.com/v1/projects/${PROJECT}/database/query`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token()}`,
+        'Content-Type': 'application/json',
+        'User-Agent': 'Mozilla/5.0',
+      },
+      body: JSON.stringify({ query }),
+      signal: AbortSignal.timeout(180_000),
+    });
+    if (!res.ok) {
+      const body = (await res.text()).slice(0, 400);
+      const retriable = res.status === 429 || res.status >= 500;
+      if (retriable && attempt < MAX_ATTEMPTS) {
+        console.warn(`[sql] ${res.status}, retry ${attempt}/${MAX_ATTEMPTS - 1}`);
+        await sleep(2000 * attempt);
+        return sql(query, attempt + 1);
+      }
+      throw new Error(`mgmt API ${res.status}: ${body}`);
+    }
+    return res.json();
+  } catch (e) {
+    // Transport-level failure (DNS, reset, timeout) — no HTTP status at all.
+    if (e instanceof Error && !/^mgmt API \d/.test(e.message) && attempt < MAX_ATTEMPTS) {
+      console.warn(`[sql] ${e.message}, retry ${attempt}/${MAX_ATTEMPTS - 1}`);
+      await sleep(2000 * attempt);
+      return sql(query, attempt + 1);
+    }
+    throw e;
+  }
 }
 
 async function phaseStage() {
@@ -722,15 +755,19 @@ async function phaseStage() {
   // 100 rows/statement: the disk-constrained DB plus the per-row venue triggers
   // make bigger batches a false economy.
   //
-  // Re-runs are safe and are a NO-OP by design: the ingestion_staging
-  // idempotency trigger derives idempotency_key from
-  // sha1(source_name || ':' || source_entity_id), which is constant per venue,
-  // and ux_ingestion_staging_source_idem then makes ON CONFLICT DO NOTHING
-  // skip any venue already staged. Refreshing a venue's DATA therefore needs
-  // the existing row cleared or the source-adapter `refresh` path, not a
-  // second run of this script.
+  // INSERT is a no-op for anything already staged. The idempotency trigger
+  // derives idempotency_key from sha1(source_name || ':' || source_entity_id),
+  // which is constant per venue, so ux_ingestion_staging_source_idem makes
+  // ON CONFLICT DO NOTHING skip it — that is what keeps a re-run safe, but it
+  // also means a venue staged by an EARLIER import keeps that older, thinner
+  // payload forever. `--refresh` is the second statement that fixes this: it
+  // rewrites normalized_data in place and re-opens the row to 'pending' when
+  // the payload actually changed, mirroring the source-adapter `refresh` path.
+  // Commit's UPDATE branch is coalesce(existing, new), so re-committing fills
+  // nulls without clobbering curated values.
   const CHUNK = 100;
   let done = 0;
+  let refreshed = 0;
   for (let i = 0; i < rows.length; i += CHUNK) {
     const chunk = rows.slice(i, i + CHUNK);
     const payload = JSON.stringify(chunk);
@@ -751,15 +788,129 @@ select
 from jsonb_array_elements($J$${payload}$J$::jsonb) as n
 on conflict do nothing;`;
     await sql(q);
+
+    if (REFRESH) {
+      const r = await sql(`
+update public.ingestion_staging s
+set normalized_data = n,
+    raw_data = jsonb_build_object('source','spartacus','url', n->'metadata'->>'url'),
+    payload_hash = encode(extensions.digest(n::text,'sha256'),'hex'),
+    -- Load-bearing: rows staged before entity_type existed carry NULL, and
+    -- pipeline-validate selects with .eq('entity_type','venue'), so a
+    -- re-opened row would be invisible to the validator and sit at 'pending'
+    -- forever. Re-opening a row means restoring every field the stages
+    -- select on, not just the payload.
+    entity_type = 'venue',
+    target_table = 'venues',
+    disposition = 'pending',
+    ai_validation_status = 'pending',
+    dedup_status = 'pending',
+    enrichment_status = 'pending',
+    review_status = 'auto',
+    error_message = null,
+    processed_at = null,
+    updated_at = now()
+from jsonb_array_elements($J$${payload}$J$::jsonb) as n
+where s.source_name = 'spartacus'
+  and s.source_entity_id = n->>'sourceId'
+  and s.payload_hash is distinct from encode(extensions.digest(n::text,'sha256'),'hex')
+returning 1;`);
+      refreshed += (r.result ?? r ?? []).length;
+    }
+
     done += chunk.length;
-    console.log(`[stage] ${done}/${rows.length}`);
+    console.log(`[stage] ${done}/${rows.length}${REFRESH ? ` (refreshed ${refreshed})` : ''}`);
   }
   console.log(`[stage] done`);
 }
 
+// ---------------------------------------------------------------- drain
+
+const ANON_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxZWFjcGFrYWRxZnhqeGpjZXdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0Mzk1MDQsImV4cCI6MjA2ODAxNTUwNH0.o38QZPRBDyi52MWrMHT2qMvByx1z_u_Ox_r5rmRBxK8';
+
+/**
+ * Fire one pipeline stage via pg_net so the internal-invoke secret is read
+ * from the vault inside the database and never leaves it.
+ *
+ * These calls MUST be serialised. The stage functions select their work with
+ * a plain `.eq(status,'pending')` + limit and no FOR UPDATE SKIP LOCKED, so
+ * concurrent invocations all grab the SAME rows: measured, six parallel
+ * validate calls advanced 500 rows, exactly what one call does.
+ */
+async function firePipelineStage(fn, batchSize) {
+  await sql(`
+select net.http_post(
+  url := 'https://xqeacpakadqfxjxjcewc.supabase.co/functions/v1/${fn}',
+  headers := jsonb_build_object(
+    'Content-Type','application/json',
+    'Authorization','Bearer ${ANON_KEY}',
+    'x-internal-secret', (select decrypted_secret from vault.decrypted_secrets where name='internal_invoke_secret')
+  ),
+  body := '{"entityType":"venue","batch_size":${batchSize}}'::jsonb,
+  timeout_milliseconds := 150000
+);`);
+}
+
+async function countPending(column) {
+  const res = await sql(`
+select count(*)::int as n from public.ingestion_staging
+where source_name='spartacus' and target_table='venues'
+  and disposition = 'pending' and ${column} = 'pending';`);
+  const rows = res.result ?? res;
+  return Number(rows[0].n);
+}
+
+async function drainStage(label, fn, column, batchSize) {
+  let stallRounds = 0;
+  let prev = await countPending(column);
+  console.log(`[drain] ${label}: ${prev} pending`);
+
+  while (prev > 0) {
+    await firePipelineStage(fn, batchSize);
+    await sleep(35_000);
+    const now = await countPending(column);
+    if (now >= prev) {
+      // No forward progress. One retry covers a slow response landing late;
+      // a second identical reading means the stage is parking rows in a
+      // status this loop does not count, and spinning would be an infinite
+      // loop rather than a wait.
+      if (++stallRounds >= 2) {
+        console.warn(`[drain] ${label}: STALLED at ${now} — stopping, inspect manually`);
+        return false;
+      }
+    } else {
+      stallRounds = 0;
+    }
+    prev = now;
+    console.log(`[drain] ${label}: ${now} pending`);
+  }
+  return true;
+}
+
+async function phaseDrain() {
+  const okValidate = await drainStage('validate', 'pipeline-validate', 'ai_validation_status', 500);
+  if (!okValidate) return;
+  const okDedup = await drainStage('dedup', 'pipeline-deduplicate', 'dedup_status', 500);
+  if (!okDedup) return;
+
+  // Commit is pure SQL, so it runs synchronously in-statement. 200/batch keeps
+  // each statement well inside the API timeout while the per-row venue
+  // triggers fire.
+  let total = 0;
+  for (;;) {
+    const res = await sql(`select count(*)::int as n from public.commit_venue_staging_batch(200);`);
+    const n = Number((res.result ?? res)[0].n);
+    if (!n) break;
+    total += n;
+    console.log(`[drain] committed ${total}`);
+  }
+  console.log(`[drain] done — ${total} committed`);
+}
+
 // ---------------------------------------------------------------- main
 
-const PHASES = { list: phaseList, detail: phaseDetail, stage: phaseStage };
+const PHASES = { list: phaseList, detail: phaseDetail, stage: phaseStage, drain: phaseDrain };
 if (!PHASES[PHASE]) {
   console.error(`unknown --phase ${PHASE}; expected one of ${Object.keys(PHASES).join(', ')}`);
   process.exit(1);
