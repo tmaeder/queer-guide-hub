@@ -1,6 +1,6 @@
 {
   "project": "tsconfig.app.json",
-  "total": 843,
+  "total": 842,
   "files": {
     "src/assets/intimate/pictograms.tsx": {
       "TS2503": 2
@@ -572,8 +572,7 @@
       "TS2345": 2
     },
     "src/hooks/useAuth.tsx": {
-      "TS2322": 1,
-      "TS6133": 1
+      "TS2322": 1
     },
     "src/hooks/useCMSAudit.tsx": {
       "TS2345": 5,

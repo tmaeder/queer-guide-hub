@@ -408,41 +408,87 @@ test.describe('page layout — mobile density', () => {
  * makes it real: the header must be in its PINNED state, which on desktop is
  * the compact one-line collapse, and both bars must have detached.
  */
-const STICKY_BAR_ROUTES = ['/events', '/cities'];
+/**
+ * Every page-level sticky element — control bands AND sidebar rails.
+ *
+ * `/events` and `/cities` were the whole list when this block was written to
+ * catch the island drift, and that scope hid four more instances of the very
+ * same bug: `/help`'s emergency-numbers spine at `top-16` (18px behind),
+ * `/tags`' category rail at `top-[76px]` (6px), `/privacy`'s TOC rail at
+ * `top-20` (2px), and `TripWorkspace`'s bar at `top-16`. All four were
+ * literals measured against the pre-island 64px header, all confirmed on prod
+ * 2026-08-21. A guard is only as broad as its route list.
+ *
+ * Asserted on the CSS OFFSET, not on a measured rect after scrolling — which
+ * is what the first version did, and it cannot be extended to these routes:
+ * a sticky element is RELEASED when its container's bottom passes, so
+ * `/privacy`'s RouteStrip legitimately measures `top: 0` mid-scroll and a
+ * rect-based check fails it for no defect. The offset is static, needs no
+ * scroll, and is the thing actually under test.
+ */
+const STICKY_BAR_ROUTES = ['/events', '/cities', '/help', '/tags', '/privacy', '/news'];
 
-test.describe('page layout — sticky bars clear the header', () => {
+test.describe('page layout — sticky elements clear the header', () => {
   for (const width of [390, 1440]) {
     for (const route of STICKY_BAR_ROUTES) {
-      test(`${route} pins its bar below the header at ${width}px`, async ({ page }) => {
+      test(`${route} pins below the header at ${width}px`, async ({ page }) => {
         await page.setViewportSize({ width, height: 900 });
         await page.goto(route);
         await page.waitForLoadState('domcontentloaded');
-        await page.waitForTimeout(600);
-        await page.evaluate(() => window.scrollTo(0, 1400));
-        // Past the compact header's 40px latch, and past the bar detaching.
-        await page.waitForTimeout(800);
+        // Wait for the thing under test, never for a guessed duration. These
+        // bars render after their data resolves: a flat 1200ms reported
+        // `/tags` @390 as having NO page-level sticky when it has two, i.e. an
+        // absence assertion firing on a slow render rather than on a defect.
+        await page.waitForFunction(
+          () =>
+            Array.from(document.querySelectorAll('main *')).some(
+              (n) => getComputedStyle(n).position === 'sticky',
+            ),
+          undefined,
+          { timeout: 15_000 },
+        );
 
         const r = await page.evaluate(() => {
-          const header = document.querySelector('header');
-          const bars = Array.from(document.querySelectorAll('main *')).filter(
-            (n) => getComputedStyle(n).position === 'sticky',
+          // Resolve --header-pinned-bottom through a probe: it is a calc(), so
+          // reading the raw custom property gives "calc(22px + 60px)".
+          const probe = document.createElement('div');
+          probe.style.cssText = 'position:fixed;visibility:hidden;top:var(--header-pinned-bottom)';
+          document.body.appendChild(probe);
+          const pinned = Math.round(parseFloat(getComputedStyle(probe).top) || 0);
+          probe.remove();
+
+          // Page-level only. A sticky row inside its own scroll container (an
+          // admin table head, a horizontally-scrolling rail) pins relative to
+          // THAT container, and the page header is none of its business.
+          const inOwnScroller = (n: Element) => {
+            for (let p = n.parentElement; p && p !== document.body; p = p.parentElement) {
+              const o = getComputedStyle(p);
+              if (/(auto|scroll)/.test(o.overflowY + o.overflowX)) return true;
+            }
+            return false;
+          };
+
+          const sticky = Array.from(document.querySelectorAll('main *')).filter(
+            (n) => getComputedStyle(n).position === 'sticky' && !inOwnScroller(n),
           );
-          const outer = bars.filter((n) => !bars.some((o) => o !== n && o.contains(n)));
           return {
-            headerBottom: header ? Math.round(header.getBoundingClientRect().bottom) : null,
-            barTops: outer.map((n) => Math.round(n.getBoundingClientRect().top)),
+            pinned,
+            offsets: sticky.map((n) => ({
+              top: Math.round(parseFloat(getComputedStyle(n).top) || 0),
+              cls: (n.className || '').toString().slice(0, 60),
+            })),
           };
         });
 
-        expect(r.headerBottom, 'no header').not.toBeNull();
-        // Absence proves nothing — a route listed here with no sticky bar has
-        // lost the bar this test is about, which is itself the regression.
-        expect(r.barTops.length, `${route} @${width} renders no sticky bar`).toBeGreaterThan(0);
-        for (const top of r.barTops) {
+        expect(r.pinned, 'could not resolve --header-pinned-bottom').toBeGreaterThan(0);
+        // Absence proves nothing — a route listed here with no sticky element
+        // has lost the thing this test is about, which is itself a regression.
+        expect(r.offsets.length, `${route} @${width}: no page-level sticky`).toBeGreaterThan(0);
+        for (const { top, cls } of r.offsets) {
           expect(
             top,
-            `${route} @${width}: sticky bar pins at ${top}, header ends at ${r.headerBottom}`,
-          ).toBeGreaterThanOrEqual(r.headerBottom as number);
+            `${route} @${width}: sticky pins at ${top}, header ends at ${r.pinned} — ${cls}`,
+          ).toBeGreaterThanOrEqual(r.pinned);
         }
       });
     }

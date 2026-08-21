@@ -1,5 +1,5 @@
 import { DetailMasthead } from './DetailMasthead';
-import { PageContainer } from '@/components/layout/PageContainer';
+import { PageContainer, STICKY_UNDER_HEADER } from '@/components/layout/PageContainer';
 import { cn } from '@/lib/utils';
 
 /**
@@ -121,7 +121,8 @@ export function SingleSection({
  *
  * Sticky, not fixed: it stays inside the aside's bounds, so it can never
  * overlap the footer. Callers keep non-following modules (map, verdict) as
- * ordinary siblings ABOVE the group.
+ * ordinary siblings ABOVE the group. Pins to `STICKY_UNDER_HEADER`, not a raw
+ * top offset — a raw `top-8` slides the TOC under the pinned header.
  */
 export function StickyRailGroup({
   children,
@@ -130,5 +131,9 @@ export function StickyRailGroup({
   children: React.ReactNode;
   className?: string;
 }) {
-  return <div className={cn('flex flex-col gap-4 lg:sticky lg:top-8', className)}>{children}</div>;
+  return (
+    <div className={cn('flex flex-col gap-4 lg:sticky', STICKY_UNDER_HEADER, className)}>
+      {children}
+    </div>
+  );
 }

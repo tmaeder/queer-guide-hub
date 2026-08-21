@@ -9,6 +9,15 @@ on:
       - "workers/assistant/**"
       - "workers/submit/**"
       - "workers/image-cdn/**"
+      # Load-bearing: four of the five workers below compile code from
+      # workers/_shared (search-proxy + assistant → supabase-jwt, submit →
+      # ssrf-guard + supabase-jwt-jose, image-cdn → supabase-jwt-jose). Without
+      # this line a commit touching ONLY _shared matches no path, the workflow
+      # never runs, and the change ships to nobody while CI stays green — which
+      # is worst for exactly the security-critical modules that live there:
+      # supabase-jwt.ts is the JWT verification that gates safety_gated content
+      # for high-risk countries in search-proxy.
+      - "workers/_shared/**"
       - ".github/workflows/deploy.yml"
   workflow_dispatch: {}
 

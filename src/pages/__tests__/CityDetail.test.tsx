@@ -34,7 +34,9 @@ vi.mock('@/hooks/usePlaces', () => ({
 vi.mock('@/hooks/useQueerVillages', () => ({
   useQueerVillages: () => ({ villages: [], loading: false, fetchVillages: vi.fn() }),
 }));
-vi.mock('@/hooks/useNearestAirport', () => ({ useNearestAirport: () => ({ nearestAirport: null }) }));
+vi.mock('@/hooks/useNearestAirport', () => ({
+  useNearestAirport: () => ({ nearestAirport: null }),
+}));
 vi.mock('@/hooks/useTrackEvent', () => ({ useTrackEvent: () => ({ track: vi.fn() }) }));
 vi.mock('@/hooks/useTrackView', () => ({ useTrackView: () => {} }));
 vi.mock('@/hooks/useTripSafety', () => ({
@@ -109,6 +111,56 @@ describe('CityDetail', () => {
     // <img>. 96.5% of cities had no editorial_hook to put under it and ~6% had
     // no usable photograph at all.
     expect(h1.querySelector('img')).toBeNull();
+  });
+
+  it('renders the description once when there is no editorial hook', () => {
+    // Without an editorial_hook (96.5% of live cities) the masthead lead falls
+    // back to the description — so the About section must not print the same
+    // paragraph again one screen below.
+    state.city = {
+      id: 'c1',
+      name: 'Berlin',
+      slug: 'berlin',
+      description: 'Capital of Germany.',
+      created_at: '2024-01-01',
+      countries: { id: 'co1', slug: 'germany', name: 'Germany', equality_score: 83 },
+    };
+    renderPage();
+    expect(screen.getAllByText('Capital of Germany.')).toHaveLength(1);
+  });
+
+  it('renders the description in About when the lead used the editorial hook', () => {
+    state.city = {
+      id: 'c1',
+      name: 'Berlin',
+      slug: 'berlin',
+      description: 'Capital of Germany.',
+      editorial_hook: 'Where the queer century keeps starting over.',
+      created_at: '2024-01-01',
+      countries: { id: 'co1', slug: 'germany', name: 'Germany', equality_score: 83 },
+    };
+    renderPage();
+    expect(screen.getByText('Where the queer century keeps starting over.')).toBeInTheDocument();
+    expect(screen.getAllByText('Capital of Germany.')).toHaveLength(1);
+  });
+
+  it('carries the save action in the masthead, not at the end of the footer', () => {
+    state.city = {
+      id: 'c1',
+      name: 'Berlin',
+      slug: 'berlin',
+      created_at: '2024-01-01',
+      countries: { id: 'co1', slug: 'germany', name: 'Germany', equality_score: 83 },
+    };
+    renderPage();
+    const save = screen.getByRole('button', { name: 'Save to favorites' });
+    // The masthead block precedes every section; the old placement was the
+    // last element of the page, after ten footer rails.
+    const firstSection = document.querySelector('article section[id]');
+    expect(firstSection).not.toBeNull();
+    expect(
+      save.compareDocumentPosition(firstSection!) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
   });
 
   it('states the safety verdict in the rail once the report has settled', () => {

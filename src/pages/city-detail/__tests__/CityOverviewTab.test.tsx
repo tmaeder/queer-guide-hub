@@ -28,8 +28,22 @@ describe('CityOverviewTab', () => {
       </MemoryRouter>,
     );
     expect(screen.getByText(/A creative capital/)).toBeInTheDocument();
-    expect(screen.getByText('Timezone')).toBeInTheDocument();
+    // Timezone is deliberately NOT repeated here — the head fact strip
+    // (`CityAtAGlance`) carries it, and a headline fact lives once.
+    expect(screen.queryByText('Timezone')).not.toBeInTheDocument();
     expect(screen.getByText('HU Berlin')).toBeInTheDocument();
+  });
+
+  it('hides the description when the masthead lead already rendered it', () => {
+    // showDescription={false} is passed by the page when there is no
+    // editorial_hook — the lead fell back to the description, so About must
+    // not print the same paragraph again.
+    render(
+      <MemoryRouter>
+        <CityOverviewTab city={city} showDescription={false} />
+      </MemoryRouter>,
+    );
+    expect(screen.queryByText(/A creative capital/)).not.toBeInTheDocument();
   });
 
   it('prints every cost_of_living key, including the scope caveat', () => {
