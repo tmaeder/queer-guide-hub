@@ -278,6 +278,50 @@ a second sanctioned treatment.
   `SectionNav`). Stations are `<a href="#id">`, never buttons — see below.
 - **Buttons** — `default` (ink fill), `outline` (2px ink border, hover fills
   ink), `accent` (pink), `brand` (blue), `destructive` unchanged.
+- **`LoadMore`** — sentinel plus button. See _Loading more_ below.
+
+### Loading more
+
+Five surfaces paginated five different ways, and only `/search` was correct:
+
+| Surface          | What it had                                             |
+| ---------------- | ------------------------------------------------------- |
+| `/search`        | Observer, latched, disconnect before the await          |
+| `/venues`        | Observer, async callback, **no latch**, cap of 50 items |
+| `/personalities` | Observer, async callback, **no latch**, cap of 48 items |
+| `/events`        | **No observer at all**, button gated on a dead counter  |
+| `/marketplace`   | Manual button only                                      |
+
+**The latch is the point.** An `IntersectionObserver` keeps delivering entries
+until it is disconnected, and the two async callbacks awaited a fetch before
+React had re-rendered with `loading = true`. Every entry in that window
+re-entered, read the same `page` from the same stale closure, and called
+`setPage(page + 1)` again — so the list could skip a page. Guarding on
+`!loading` cannot fix that; disconnecting before the await is what does.
+
+**`autoLoadLimit` is what makes the latch safe to have**, and it arrives in the
+same change for a reason. The observer re-arms when `loading` settles, and on a
+virtualized grid that instant can be an unmeasured frame — rows unsized, the
+sentinel sitting under a collapsed container, trivially inside the margin. So a
+correct latch turns "fires twice by accident" into "walks the list forward on
+its own": `/personalities` reached **page 3 before the reader touched
+anything**. The old double-fire had hidden this by re-reading the same stale
+page, producing one net advance from two ticks.
+
+The cap is counted in **loads, not items**. The two pages that had one expressed
+it in items against a page size of 24 and picked different numbers — 50 and 48 —
+which nobody decided: 50 buys a silent third auto-load (24 → 48 → 72, clamped)
+where 48 stops after the second. Two loads is the documented default.
+
+`autoLoadLimit={0}` is button-only, and two surfaces take it: `/marketplace`
+(a browse grid that should not fetch while someone skims) and `/personalities`
+(which owns a `?page=N` deep-link contract, so an auto-load walks the URL
+forward as well as the layout).
+
+**The button is not a fallback.** It is the primary control for anyone using a
+keyboard, and it renders whether or not the sentinel ever fires. `/venues` and
+`/events` previously gated theirs behind a counter, so on `/venues` no button
+existed until 50 items had auto-loaded, and on `/events` none could ever exist.
 
 ### City network diagrams
 

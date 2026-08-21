@@ -13,8 +13,8 @@ import { EventsTimelineView } from '@/components/events/EventsTimelineView';
 const EventsMapView = lazy(() =>
   import('@/components/events/EventsMapView').then((m) => ({ default: m.EventsMapView })),
 );
-import { Button } from '@/components/ui/button';
 import { PageHero } from '@/components/discovery';
+import { LoadMore } from '@/components/transit/LoadMore';
 import { GuidesRail } from '@/components/guides/GuidesRail';
 import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
 import { Calendar } from 'lucide-react';
@@ -379,31 +379,26 @@ const Events = () => {
           </Suspense>
         )}
 
-        {/* Load More */}
-        {!loading && events.length > 0 && (
-          <div className="text-center mt-12">
-            {hasMore && f.autoLoadedCount >= 50 && (
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={async () => {
-                  f.setAutoLoadedCount(0);
-                  const nextPage = f.page + 1;
-                  f.setPage(nextPage);
-                  await fetchEvents(
-                    {},
-                    {
-                      page: nextPage,
-                      pageSize: PAGE_SIZE,
-                      append: true,
-                    },
-                  );
-                }}
-              >
-                Load More Events
-              </Button>
-            )}
-          </div>
+        {/* This page was hard-capped at ONE page of results.
+         *
+         *  The button was gated on `autoLoadedCount >= 50`, and the only write
+         *  to that counter anywhere in the app — besides five resets in
+         *  useEventFilters — was the `setAutoLoadedCount(0)` inside this very
+         *  onClick. Nothing incremented it, and /events had no
+         *  IntersectionObserver either, so the gate could never open and the
+         *  button could never render. The `>= 50` shape was copied from a page
+         *  that DOES auto-load; here only the gate arrived. */}
+        {events.length > 0 && (
+          <LoadMore
+            hasMore={hasMore}
+            loading={loading}
+            resetKey={f.listGeneration}
+            onLoadMore={async () => {
+              const nextPage = f.page + 1;
+              f.setPage(nextPage);
+              await fetchEvents({}, { page: nextPage, pageSize: PAGE_SIZE, append: true });
+            }}
+          />
         )}
 
         {/* Editorial cross-links go AFTER the events, not before them.
