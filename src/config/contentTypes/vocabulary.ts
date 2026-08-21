@@ -2,10 +2,10 @@ import type { LucideIcon } from 'lucide-react';
 import type { ContentTypeConfig, FieldConfig, SelectOption } from '@/types/cms';
 
 /**
- * Controlled-vocabulary content types (venue categories, event types, target
+ * Controlled-vocabulary content types (venue services, event types, target
  * groups, professions, …).
  *
- * These eight tables are structurally the same — name, description, icon, a
+ * These tables are structurally the same — name, description, icon, a
  * colour or a category, sort order, active flag, optionally a slug — and were
  * previously served by their own shell (`TaxonomyAdminPage`) sitting beside the
  * CMS registry. That split meant a taxonomy change, which reclassifies content
@@ -13,7 +13,7 @@ import type { ContentTypeConfig, FieldConfig, SelectOption } from '@/types/cms';
  * workflow state, no shared validation, and a separate save path.
  *
  * Registering them here puts every content type on one shell. The factory
- * exists because eight near-identical configs written out longhand is exactly
+ * exists because several near-identical configs written out longhand is exactly
  * the duplication being removed.
  */
 
@@ -22,7 +22,7 @@ export interface VocabularyOptions {
   table: string;
   icon: LucideIcon;
   label: { singular: string; plural: string };
-  /** Vocabularies with a public-facing slug (venue_categories, venue_services, professions). */
+  /** Vocabularies with a public-facing slug (venue_services, professions). */
   hasSlug?: boolean;
   /** Vocabularies that group their terms rather than colour-code them. */
   categoryOptions?: SelectOption[];
@@ -126,14 +126,24 @@ export function vocabularyContentType(options: VocabularyOptions): ContentTypeCo
       group: 'settings',
       filterable: true,
       listColumn: true,
-      helpText: 'Inactive terms stay attached to existing content but are not offered for new content.',
+      helpText:
+        'Inactive terms stay attached to existing content but are not offered for new content.',
     },
     ...extraFields,
   );
 
-  const listSelect = ['id', 'name', hasSlug ? 'slug' : null, 'description', 'icon',
-    categoryOptions ? 'category' : null, hasColor ? 'color' : null,
-    'sort_order', 'is_active', 'updated_at']
+  const listSelect = [
+    'id',
+    'name',
+    hasSlug ? 'slug' : null,
+    'description',
+    'icon',
+    categoryOptions ? 'category' : null,
+    hasColor ? 'color' : null,
+    'sort_order',
+    'is_active',
+    'updated_at',
+  ]
     .filter(Boolean)
     .join(',');
 

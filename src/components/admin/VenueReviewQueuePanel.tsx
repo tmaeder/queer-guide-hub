@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Check, X, ExternalLink, ListChecks } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { VENUE_CATEGORIES } from '@/lib/venueCategories';
 import { AdminStat } from '@/components/admin/primitives/AdminStat';
 import { AdminTableSkeleton } from '@/components/admin/primitives/AdminLoading';
 import {
@@ -16,25 +17,11 @@ import {
   type VenueReviewCandidate,
 } from '@/hooks/useVenueReviewQueue';
 
-/** The engine's own vocabulary. A reviewer overriding a suggestion picks from
- *  the same closed list the classifier writes, so review cannot introduce a
- *  category that no filter or facet knows about. */
-const CATEGORIES = [
-  'bar',
-  'club',
-  'cafe',
-  'restaurant',
-  'sauna',
-  'cruising',
-  'event-venue',
-  'shop',
-  'hotel',
-  'theater',
-  'gallery',
-  'outdoor',
-  'community_center',
-  'other',
-] as const;
+/** The canonical vocabulary (drift-tested against venues_category_check). A
+ *  hand-rolled 14-value copy lived here before and omitted `toilet`, which made
+ *  a miscategorized restroom unfixable through this panel — the correct value
+ *  was not in the select. */
+const CATEGORIES = VENUE_CATEGORIES;
 
 const REASON_LABEL: Record<string, string> = {
   looks_like_event: 'Looks like an event',

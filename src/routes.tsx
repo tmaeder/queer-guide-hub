@@ -513,10 +513,6 @@ export const AppRoutes = () => {
                   {/* Settings -- taxonomy management pages */}
                   <Route path="settings" element={<AdminTags />} />
                   <Route
-                    path="settings/venue-categories"
-                    element={<Navigate to="/admin/content/venue_categories" replace />}
-                  />
-                  <Route
                     path="settings/venue-services"
                     element={<Navigate to="/admin/content/venue_services" replace />}
                   />
@@ -587,10 +583,6 @@ export const AppRoutes = () => {
                   <Route path="cms" element={<Navigate to="/admin/content" replace />} />
                   <Route path="import-hub" element={<Navigate to="/admin/pipelines" replace />} />
                   <Route path="festivals" element={<Navigate to="/admin/events" replace />} />
-                  <Route
-                    path="venue-categories"
-                    element={<Navigate to="/admin/settings/venue-categories" replace />}
-                  />
                   <Route
                     path="venue-services"
                     element={<Navigate to="/admin/settings/venue-services" replace />}

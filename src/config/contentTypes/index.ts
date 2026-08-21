@@ -23,20 +23,26 @@ import {
   Briefcase,
   CalendarCog,
   ConciergeBell,
-  Shapes,
   Sparkles,
   Users,
   Wrench,
 } from 'lucide-react';
 
 const titleCase = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-const asOptions = (values: string[]) =>
-  values.map((v) => ({ value: v, label: titleCase(v) }));
+const asOptions = (values: string[]) => values.map((v) => ({ value: v, label: titleCase(v) }));
 
 /** Ported verbatim from the pages these replaced. */
 const SERVICE_CATEGORIES = asOptions([
-  'general', 'beauty', 'business', 'dining', 'entertainment',
-  'events', 'fitness', 'professional', 'retail', 'wellness',
+  'general',
+  'beauty',
+  'business',
+  'dining',
+  'entertainment',
+  'events',
+  'fitness',
+  'professional',
+  'retail',
+  'wellness',
 ]);
 const ACCESSIBILITY_CATEGORIES = [
   { value: 'general', label: 'General' },
@@ -66,16 +72,10 @@ export const contentTypeRegistry: Record<string, ContentTypeConfig> = {
   guides: guideContentType,
   redirects: redirectContentType,
 
-  // Controlled vocabularies. Previously eight standalone pages on their own
-  // shell; now on the same registry as every other content type, which is what
-  // gives them revision history and the shared editor.
-  venue_categories: vocabularyContentType({
-    table: 'venue_categories',
-    icon: Shapes,
-    label: { singular: 'Venue Category', plural: 'Venue Categories' },
-    hasSlug: true,
-    hasColor: true,
-  }),
+  // Controlled vocabularies. Previously standalone pages on their own shell;
+  // now on the same registry as every other content type, which is what gives
+  // them revision history and the shared editor. (venue_categories was dropped
+  // with its table — venues.category is governed by src/lib/venueCategories.ts.)
   venue_services: vocabularyContentType({
     table: 'venue_services',
     icon: Wrench,

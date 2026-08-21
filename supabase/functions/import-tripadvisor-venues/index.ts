@@ -1,7 +1,7 @@
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.50.5";
 import { enrichVenueWithAI } from '../_shared/ai-enrichment.ts';
 import { getCorsHeaders, requireAdmin, getServiceClient } from '../_shared/supabase-client.ts';
-import { getOrCreateCity, getOrCreateVenueCategory, getOrCreateService } from '../_shared/venue-import-helpers.ts';
+import { getOrCreateCity, getOrCreateService } from '../_shared/venue-import-helpers.ts';
 
 interface TripAdvisorLocation {
   location_id: string;
@@ -53,39 +53,26 @@ interface TripAdvisorLocation {
 }
 
 async function mapVenueCategoryAndAmenities(supabase: SupabaseClient, venue: TripAdvisorLocation, keyword: string) {
-  let categoryName: string
-  let categorySlug: string
   let category: string
-  
+
   const amenityNames = []
   const serviceNames = []
   const serviceIds = []
 
   // Determine category based on keyword and venue data
   if (keyword.includes('sauna')) {
-    categoryName = 'Health & Wellness'
-    categorySlug = 'health-wellness'
     category = 'sauna'
     serviceNames.push('Wellness Services', 'Relaxation')
   } else if (venue.category?.name?.toLowerCase().includes('restaurant')) {
-    categoryName = 'Restaurants & Dining'
-    categorySlug = 'restaurants-dining'
     category = 'restaurant'
     serviceNames.push('Dine-In', 'Food Service')
   } else if (venue.category?.name?.toLowerCase().includes('hotel')) {
-    categoryName = 'Accommodation'
-    categorySlug = 'accommodation'
     category = 'hotel'
     serviceNames.push('Accommodation', 'Lodging')
   } else {
-    categoryName = 'Entertainment & Nightlife'
-    categorySlug = 'entertainment-nightlife'
     category = 'bar'
     serviceNames.push('Beverages', 'Entertainment')
   }
-
-  // Get or create category
-  const categoryId = await getOrCreateVenueCategory(supabase, categoryName, categorySlug, 'TripAdvisor')
 
   // Basic amenities
   if (venue.phone) {
@@ -105,7 +92,6 @@ async function mapVenueCategoryAndAmenities(supabase: SupabaseClient, venue: Tri
 
   return {
     category,
-    categoryId,
     amenityNames,
     serviceNames,
     serviceIds
@@ -247,7 +233,7 @@ Deno.serve(async (req) => {
               const _cityId = await getOrCreateCity(supabase, cityName, countryCode, parseFloat(venue.latitude), parseFloat(venue.longitude))
 
               // Map category, amenities, and services
-              const { category, _categoryId, amenityNames, serviceNames, _serviceIds } = await mapVenueCategoryAndAmenities(supabase, venue, keyword)
+              const { category, amenityNames, serviceNames } = await mapVenueCategoryAndAmenities(supabase, venue, keyword)
 
               // Download and store photos
               const imageUrls: string[] = [];

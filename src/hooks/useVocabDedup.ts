@@ -14,7 +14,6 @@ export interface VocabDef {
   label: string;
 }
 export const VOCABULARIES: VocabDef[] = [
-  { key: 'venue_categories', label: 'Venue categories' },
   { key: 'venue_services', label: 'Venue services' },
   { key: 'event_types', label: 'Event types' },
   { key: 'event_amenities', label: 'Event amenities' },

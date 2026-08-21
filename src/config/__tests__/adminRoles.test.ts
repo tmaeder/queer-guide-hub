@@ -36,7 +36,7 @@ describe('getRouteMinRole', () => {
 
   it('inherits parent tier via longest-prefix for sub-routes', () => {
     // settings sub-pages inherit the moderator tier of /admin/settings
-    expect(getRouteMinRole('/admin/settings/venue-categories')).toBe('moderator');
+    expect(getRouteMinRole('/admin/settings/venue-services')).toBe('moderator');
     // a content sub-path inherits editor
     expect(getRouteMinRole('/admin/content/venues/anything')).toBe('editor');
   });

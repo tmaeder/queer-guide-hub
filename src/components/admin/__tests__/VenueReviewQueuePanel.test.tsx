@@ -4,6 +4,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, fireEvent, act } from '@testing-library/react';
 import { renderWithProviders } from '@/test/test-utils';
+import { VENUE_CATEGORIES } from '@/lib/venueCategories';
 
 const state = vi.hoisted(() => ({
   rows: [] as unknown[],
@@ -102,8 +103,10 @@ describe('VenueReviewQueuePanel', () => {
     expect(state.categoryCalls).toEqual([{ venueId: 'v1', accept: false }]);
   });
 
-  it('offers only the engine’s own category vocabulary', () => {
-    // A free-text category would invent a value no filter or facet knows about.
+  it('offers exactly the canonical category vocabulary', () => {
+    // A free-text category would invent a value no filter or facet knows about,
+    // and a partial copy makes some rows unfixable — the panel shipped without
+    // `toilet`, so a restroom miscategorized as a cafe could not be corrected.
     state.rows = [candidate()];
     renderWithProviders(<VenueReviewQueuePanel />);
     const select = screen.getByLabelText(/category for cine hoyts/i) as HTMLSelectElement;
@@ -114,11 +117,7 @@ describe('VenueReviewQueuePanel', () => {
     const values = Array.from(select.options)
       .map((o) => o.value)
       .filter(Boolean);
-    expect(values).toContain('bar');
-    expect(values).toContain('sauna');
-    // Every option is a category the classifier itself can write.
-    expect(values).toEqual(expect.arrayContaining(['club', 'restaurant', 'theater', 'other']));
-    expect(values.some((v) => /\s/.test(v))).toBe(false);
+    expect(values).toEqual([...VENUE_CATEGORIES]);
   });
 
   it('switches to the non-venue queue and asks a different question', () => {

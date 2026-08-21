@@ -29,7 +29,8 @@ export const ADMIN_AREA_DESCRIPTIONS: Record<string, string> = {
   '/admin/content/hotels': 'Hotels and BnBs. Edit listings and amenities.',
   '/admin/business':
     'Every business on the platform on one spine — directory plus hotels, merchants, brands and partners. Adoption link review lives on /admin/quality.',
-  '/admin/content/queer_villages': 'Queer villages and neighborhoods. Edit listings, scores, and venue links.',
+  '/admin/content/queer_villages':
+    'Queer villages and neighborhoods. Edit listings, scores, and venue links.',
   '/admin/content/marketplace_listings':
     'Marketplace products. Edit listings, prices, and affiliate links.',
   '/admin/content/guides': 'Guides. Curate editorial guides, lists, and community quests.',
@@ -66,7 +67,7 @@ export const ADMIN_AREA_DESCRIPTIONS: Record<string, string> = {
 
 /**
  * Resolve the description for a pathname using longest-prefix matching, so
- * sub-routes (e.g. /admin/settings/venue-categories) inherit /admin/settings.
+ * sub-routes (e.g. /admin/settings/venue-services) inherit /admin/settings.
  */
 export function getAreaDescription(pathname: string): string | undefined {
   let best: { desc: string; len: number } | undefined;

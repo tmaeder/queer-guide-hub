@@ -4,12 +4,11 @@ import { vocabularyContentType } from '../vocabulary';
 import { contentTypeRegistry, getContentType, getFieldGroups } from '../index';
 
 /**
- * The eight controlled vocabularies moved off their own admin shell onto the
+ * The controlled vocabularies moved off their own admin shell onto the
  * CMS registry. These pin the parts that were easy to get silently wrong.
  */
 
 const VOCABULARIES = [
-  'venue_categories',
   'venue_services',
   'event_types',
   'event_amenities',
@@ -46,7 +45,10 @@ describe('vocabulary registry entries', () => {
     const config = getContentType(id)!;
     const selected = new Set((config.listSelect ?? '').split(',').map((s) => s.trim()));
     for (const field of config.fields.filter((f) => f.listColumn)) {
-      expect(selected.has(field.name), `${id}: ${field.name} is a list column but not selected`).toBe(true);
+      expect(
+        selected.has(field.name),
+        `${id}: ${field.name} is a list column but not selected`,
+      ).toBe(true);
     }
   });
 

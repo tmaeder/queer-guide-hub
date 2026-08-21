@@ -536,7 +536,7 @@ export function resolveItemMinRole(item: AdminNavItem, section?: AdminNavSection
 
 /**
  * Minimum role to access a pathname, for AdminShell's per-route enforcement.
- * Uses longest-prefix matching so sub-routes (e.g. /admin/settings/venue-categories)
+ * Uses longest-prefix matching so sub-routes (e.g. /admin/settings/venue-services)
  * inherit the tier of their nearest configured nav item (/admin/settings).
  * Unknown admin routes default to 'editor' (the console entry floor).
  */
