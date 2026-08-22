@@ -156,19 +156,35 @@ export function RightsMapControls({
   const railRef = useRef<HTMLDivElement>(null);
 
   /**
-   * Keep the active chip on screen.
+   * Keep the active chip on screen — by moving the RAIL, never the page.
    *
    * At 390px the rail shows about two and a half of its 18 chips, so a reader
-   * arriving on an `identity` topic would see "Criminalisation & freedoms" at
-   * the left edge and no selection anywhere — the control would read as having
-   * none. RouteStrip solves the same problem the same way; the one difference
-   * is `behavior: 'auto'`, because its `'smooth'` is animation and this page
-   * does not animate.
+   * arriving on an `identity` topic would see the first family at the left edge
+   * and no selection anywhere: the control would read as having none.
+   *
+   * This used `scrollIntoView({ block: 'nearest', inline: 'center' })`, which
+   * is wrong here in a way that only shows up on a deep link. `block: 'nearest'`
+   * still scrolls ANCESTORS vertically when the element is off screen, and on
+   * `/rights#marriage` the rail sits ~3,900px above the target (measured on
+   * prod: railTop -3877 while the ledger row sat at 178). Whether the reader
+   * stayed at the row they asked for came down to whether this effect or the
+   * page's hash poller wrote last — a race that failed once in a full prod run
+   * and passed three times in isolation.
+   *
+   * Setting `scrollLeft` touches one axis of one element and cannot move the
+   * document, so the race is gone rather than made less likely. Offsets come
+   * from bounding rects, not `offsetLeft`, which is relative to whatever
+   * `offsetParent` happens to be and would silently mis-centre if the rail ever
+   * stops being the nearest positioned ancestor.
    */
   useEffect(() => {
-    railRef.current
-      ?.querySelector<HTMLElement>(`[data-topic="${topic.slug}"]`)
-      ?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'auto' });
+    const rail = railRef.current;
+    const chip = rail?.querySelector<HTMLElement>(`[data-topic="${topic.slug}"]`);
+    if (!rail || !chip) return;
+    const railBox = rail.getBoundingClientRect();
+    const chipBox = chip.getBoundingClientRect();
+    const centred = chipBox.left - railBox.left - (rail.clientWidth - chipBox.width) / 2;
+    rail.scrollLeft = Math.max(0, rail.scrollLeft + centred);
   }, [topic.slug]);
 
   return (
@@ -251,10 +267,26 @@ export function RightsMapControls({
           <FilterChip
             key={option.value}
             active={option.value === lens}
-            disabled={lensDisabled}
-            onClick={() => onLensChange(option.value)}
+            // `aria-disabled`, NOT `disabled`. Two reasons, and the first is a
+            // measured a11y failure: a `disabled` button is not focusable, so
+            // on mobile — where this rail scrolls — the scrollable region held
+            // no focusable content at all and a keyboard user could not reach
+            // it (axe `scrollable-region-focusable`, serious, caught on
+            // /rights [mobile/light]).
+            //
+            // The second is the point of keeping these visible in the first
+            // place. `disabled` also drops them out of tab order, so a screen
+            // reader user tabbing the page would never learn the lens exists
+            // for this law — the exact limitation this control is here to
+            // state. Dimmed-but-reachable announces "Gender identity,
+            // unavailable" and the sentence below explains why.
+            aria-disabled={lensDisabled || undefined}
+            onClick={lensDisabled ? undefined : () => onLensChange(option.value)}
             label={t(`rights.map.lens.${option.value}`, option.label)}
-            className={cn('whitespace-nowrap', lensDisabled && 'opacity-50')}
+            className={cn(
+              'whitespace-nowrap',
+              lensDisabled && 'opacity-50 hover:bg-background hover:text-foreground',
+            )}
           />
         ))}
       </div>
