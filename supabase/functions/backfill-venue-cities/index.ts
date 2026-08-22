@@ -7,6 +7,7 @@ import {
   hasLocalityContext,
   isBareStreetAddress,
   isLocalityFallback,
+  normPostal,
   postalContradicts,
   stampGeocode,
   type CountryRef,
@@ -312,6 +313,173 @@ async function forwardGeocode(
   }
 
   return { ok: false, reason: lastReason, query: queries[queries.length - 1], country }
+}
+
+// ── Repair sweep: rewrite a coordinate only when it is provably wrong ────────
+//
+// Distinct from forward_audit, which measures and writes nothing. This one
+// writes, so every rule below is about NOT writing.
+//
+// The audit found the wrong-coordinate rate is ~16% of verifiable rows, and it
+// also found that the 1-25 km band cannot be adjudicated from the data we have.
+// All three of these live in it:
+//
+//   Dunkin'/Haffner's  4.9 km  a genuinely wrong town (Chelmsford vs Westford)
+//   Massamara          1.4 km  a street MIDPOINT vs a precise stored venue pin
+//   Zamboanga Electric 4.8 km  a wrong BUSINESS on the right road ("Toyota …")
+//
+// Rewriting the second replaces a good pin with a worse one and rewriting the
+// third moves a venue to an unrelated company. So the near band is flagged for
+// a human and never auto-written; only the far band is repaired.
+
+const REPAIR_MIN_KM = 25   // below this a difference can be precision, not error
+const REPAIR_AGREE_KM = 1
+
+// A repair needs a SECOND, independent signal beyond "the new answer is far
+// from the old one" — the same rule as the same-name city work. Passing the
+// postal guard is not enough, because that guard passes on ABSENCE of a
+// postcode; here the postcode must actually match, or the returned locality
+// must be the row's own city.
+function repairCorroboration(v: GeoVenue, hit: NominatimResult): string | null {
+  const rowPc = normPostal(v.postal_code)
+  const hitPc = normPostal(hit.address?.postcode)
+  if (rowPc && hitPc && rowPc.slice(0, 4) === hitPc.slice(0, 4)) return 'postcode'
+  const rowCity = (v.city || '').trim().toLowerCase()
+  const hitCity = (extractCity(hit.address || {}) || '').trim().toLowerCase()
+  if (rowCity && hitCity && (rowCity === hitCity || rowCity.includes(hitCity) || hitCity.includes(rowCity))) {
+    return 'city'
+  }
+  return null
+}
+
+async function processForwardRepair(
+  supabase: ReturnType<typeof getServiceClient>,
+  batchSize: number,
+  dryRun: boolean,
+): Promise<Record<string, unknown>> {
+  // Resumable by STAMP, not by offset: every row examined gets
+  // enrichment_status.geocode.verified_at, so the pool drains and a re-run is
+  // idempotent. An offset cursor would re-walk repaired rows and, worse, would
+  // silently stall the moment the window filled with rows the sweep skips —
+  // the same starvation that pinned cities_due_for_refresh to 545 shells.
+  const { data: rows, error } = await supabase
+    .from('venues')
+    .select('id, name, address, city, postal_code, country, country_id, city_id, latitude, longitude, enrichment_status')
+    .is('duplicate_of_id', null)
+    .eq('geocode_attempted', true)
+    .not('address', 'is', null)
+    .neq('address', '')
+    .not('address', 'like', '%,%')
+    .not('latitude', 'is', null)
+    .not('longitude', 'is', null)
+    .filter('enrichment_status->geocode->>verified_at', 'is', null)
+    .order('id')
+    .limit(batchSize * 3)
+
+  if (error) throw error
+  if (!rows?.length) return { done: true, examined: 0, remaining: 0 }
+
+  // `not.like.%,%` is expressible in PostgREST; the "no 4+ digit run" half of
+  // isBareStreetAddress is not. Those rows are stamped out_of_scope rather than
+  // left unstamped — an unstamped skip would be re-fetched forever and the
+  // sweep would stop making progress once the window filled with them.
+  const outOfScope = rows.filter(r => !isBareStreetAddress(r.address!))
+  for (const r of outOfScope.slice(0, batchSize)) {
+    if (dryRun) continue
+    await supabase.from('venues').update({
+      enrichment_status: stampGeocode(r.enrichment_status, {
+        state: 'out_of_scope', verified_at: new Date().toISOString(),
+      }),
+    }).eq('id', r.id)
+  }
+
+  const batch = rows.filter(r => isBareStreetAddress(r.address!)).slice(0, batchSize)
+  const startedAt = Date.now()
+  const counts = { examined: 0, agreed: 0, repaired: 0, flagged: 0, unverifiable: 0, skipped_uncorroborated: 0 }
+  const repairs: Record<string, unknown>[] = []
+
+  for (const v of batch) {
+    if (Date.now() - startedAt > MAX_RUN_MS) break
+    counts.examined++
+
+    const stored: [number, number] = [Number(v.latitude), Number(v.longitude)]
+    const outcome = await forwardGeocode(supabase, v as GeoVenue)
+    const now = new Date().toISOString()
+
+    if (!outcome.ok) {
+      counts.unverifiable++
+      if (!dryRun) {
+        await supabase.from('venues').update({
+          enrichment_status: stampGeocode(v.enrichment_status, {
+            state: 'unverifiable', reason: outcome.reason, verified_at: now,
+          }),
+        }).eq('id', v.id)
+      }
+      await sleep(SLEEP_MS)
+      continue
+    }
+
+    const km = haversineKm(stored[0], stored[1], outcome.lat!, outcome.lon!)
+    const corroboration = repairCorroboration(v as GeoVenue, outcome.hit!)
+
+    let state: string
+    const patch: Record<string, unknown> = {}
+
+    if (km < REPAIR_AGREE_KM) {
+      state = 'verified'
+      counts.agreed++
+    } else if (km >= REPAIR_MIN_KM && corroboration) {
+      state = 'repaired'
+      counts.repaired++
+      patch.latitude = outcome.lat
+      patch.longitude = outcome.lon
+      repairs.push({
+        id: v.id, name: v.name, km: Math.round(km * 10) / 10,
+        from: stored, to: [outcome.lat, outcome.lon],
+        corroborated_by: corroboration, hit: outcome.hit!.display_name?.slice(0, 80),
+      })
+    } else {
+      // Far but uncorroborated, or inside the unadjudicable near band. Raise
+      // needs_attention and leave the coordinate exactly as it is.
+      state = km >= REPAIR_MIN_KM ? 'review_uncorroborated' : 'review_near'
+      if (km >= REPAIR_MIN_KM) counts.skipped_uncorroborated++
+      else counts.flagged++
+      patch.needs_attention = true
+    }
+
+    patch.enrichment_status = stampGeocode(v.enrichment_status, {
+      state,
+      verified_at: now,
+      km: Math.round(km * 10) / 10,
+      query: outcome.query,
+      hit_type: outcome.hit!.addresstype || outcome.hit!.class,
+      corroborated_by: corroboration,
+      ...(state === 'repaired' ? { previous: stored } : {}),
+    })
+
+    if (!dryRun) await supabase.from('venues').update(patch).eq('id', v.id)
+    await sleep(SLEEP_MS)
+  }
+
+  const { count } = await supabase
+    .from('venues')
+    .select('id', { count: 'exact', head: true })
+    .is('duplicate_of_id', null)
+    .eq('geocode_attempted', true)
+    .not('address', 'is', null)
+    .neq('address', '')
+    .not('address', 'like', '%,%')
+    .not('latitude', 'is', null)
+    .not('longitude', 'is', null)
+    .filter('enrichment_status->geocode->>verified_at', 'is', null)
+
+  return {
+    dry_run: dryRun,
+    ...counts,
+    out_of_scope_stamped: dryRun ? 0 : outOfScope.slice(0, batchSize).length,
+    remaining: count ?? 0,
+    repairs,
+  }
 }
 
 // ── Reverse geocode: coords → city ──────────────────────────────────────────
@@ -1058,6 +1226,13 @@ Deno.serve(async (req) => {
       return jsonResponse({ success: true, mode: 'forward_audit', ...audit }, 200, req)
     }
 
+    // Writes. dry_run defaults to TRUE — a mode that rewrites coordinates must
+    // not do so because a caller forgot a flag.
+    if (mode === 'forward_repair') {
+      const repair = await processForwardRepair(supabase, batchSize, body.dry_run !== false)
+      return jsonResponse({ success: true, mode: 'forward_repair', ...repair }, 200, req)
+    }
+
     let result: { results: VenueResult[]; remaining: number }
 
     switch (mode) {
@@ -1068,7 +1243,7 @@ Deno.serve(async (req) => {
         result = await processForward(supabase, batchSize)
         break
       default:
-        return errorResponse(`Unknown mode: ${mode}. Use "reverse", "forward", "forward_audit" or "postal".`, 400, req)
+        return errorResponse(`Unknown mode: ${mode}. Use "reverse", "forward", "forward_audit", "forward_repair" or "postal".`, 400, req)
     }
 
     if (!result.results.length) {
