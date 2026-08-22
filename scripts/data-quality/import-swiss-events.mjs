@@ -195,6 +195,20 @@ function resolveCountry({ country, address, city }) {
  * and `city` is what run_event_city_link keys on, so leaving it null costs
  * city_id and everything derived from it.
  */
+/**
+ * A city that is only digits is a postal code in the wrong field.
+ *
+ * Two display-magazin venue records carry city='8002' and city='4053', and
+ * `venues_city_nonjunk_check` / `events_city_nonjunk_check` both forbid a
+ * purely numeric city — so passing it straight through does not produce a bad
+ * row, it produces a rejected staging item. Route it to postal_code instead.
+ */
+const cityOrPostal = (raw) => {
+  const s = String(raw || '').trim();
+  if (!s) return { city: null, postal: null };
+  return /^\d{4,5}$/.test(s) ? { city: null, postal: s } : { city: s, postal: null };
+};
+
 function cityFromAddress(address) {
   const m = String(address || '')
     .trim()
@@ -566,19 +580,29 @@ function buildVenueRegistry() {
     const name = stripTags(v.venue);
     if (!name) continue;
     const fromAddr = cityFromAddress(v.address);
-    const city = stripTags(v.city) || fromAddr.city;
+    const raw = cityOrPostal(stripTags(v.city));
+    const city = raw.city || fromAddr.city;
     reg.set(`dm:${v.id}`, {
       source: 'display-magazin',
       sourceId: String(v.id),
       name,
       street: stripTags(v.address) || null,
-      postal: fromAddr.postal,
+      postal: fromAddr.postal || raw.postal,
       city,
       state: stripTags(v.stateprovince || v.province) || null,
-      country: resolveCountry({ country: v.country, address: v.address, city }),
+      country: resolveCountry({
+        country: v.country,
+        address: `${v.address || ''} ${raw.postal || ''}`,
+        city,
+      }),
       url: v.url || null,
-      // NEVER fall back to the bare venue name — see geocodable().
-      geoQuery: [stripTags(v.address), city, v.country].filter(Boolean).join(', ') || null,
+      // NEVER fall back to the bare venue name — see geocodable(). The postal
+      // code is included because for the records whose `city` was really a
+      // postal code it is the ONLY locality signal left after cityOrPostal().
+      geoQuery:
+        [stripTags(v.address), fromAddr.postal || raw.postal, city, v.country]
+          .filter(Boolean)
+          .join(', ') || null,
     });
   }
 
@@ -820,7 +844,8 @@ function dmEventPayload(e, geo) {
   // Same shape-recovery as the venue registry — and it MUST match, because the
   // geo lookup key is derived from the city.
   const fromAddr = v ? cityFromAddress(v.address) : { postal: null, city: null };
-  const city = v ? stripTags(v.city) || fromAddr.city : null;
+  const rawCity = cityOrPostal(v ? stripTags(v.city) : null);
+  const city = rawCity.city || fromAddr.city;
   const g = v ? geo[`${slug(stripTags(v.venue))}|${slug(city || '')}`] : null;
   const explicitCountry = v
     ? resolveCountry({ country: v.country, address: v.address, city })
@@ -843,7 +868,7 @@ function dmEventPayload(e, geo) {
     location: {
       address: v ? stripTags(v.address) || null : null,
       city,
-      postal_code: fromAddr.postal,
+      postal_code: fromAddr.postal || rawCity.postal,
       state: v ? stripTags(v.stateprovince || v.province) || null : null,
       country: countryOf(explicitCountry, g),
       lat: g?.lat ?? null,
@@ -996,6 +1021,12 @@ set normalized_data = n,
 from jsonb_array_elements($J$${payload}$J$::jsonb) as n
 where s.source_name = '${sourceName}'
   and s.source_entity_id = n->>'sourceId'
+  -- A rejected row is invisible to ux_ingestion_staging_source_idem (the index is
+  -- partial on disposition <> 'rejected'), so the INSERT above already re-added it
+  -- as a fresh pending row carrying this exact payload_hash. Updating the rejected
+  -- row too would then collide on uk_ingestion_staging_idem
+  -- (source_type, source_entity_id, payload_hash) and abort the whole run.
+  and s.disposition <> 'rejected'
   and s.payload_hash is distinct from encode(extensions.digest(n::text,'sha256'),'hex')
 returning 1;`);
       refreshed += (r.result ?? r ?? []).length;
