@@ -267,10 +267,26 @@ export function RightsMapControls({
           <FilterChip
             key={option.value}
             active={option.value === lens}
-            disabled={lensDisabled}
-            onClick={() => onLensChange(option.value)}
+            // `aria-disabled`, NOT `disabled`. Two reasons, and the first is a
+            // measured a11y failure: a `disabled` button is not focusable, so
+            // on mobile — where this rail scrolls — the scrollable region held
+            // no focusable content at all and a keyboard user could not reach
+            // it (axe `scrollable-region-focusable`, serious, caught on
+            // /rights [mobile/light]).
+            //
+            // The second is the point of keeping these visible in the first
+            // place. `disabled` also drops them out of tab order, so a screen
+            // reader user tabbing the page would never learn the lens exists
+            // for this law — the exact limitation this control is here to
+            // state. Dimmed-but-reachable announces "Gender identity,
+            // unavailable" and the sentence below explains why.
+            aria-disabled={lensDisabled || undefined}
+            onClick={lensDisabled ? undefined : () => onLensChange(option.value)}
             label={t(`rights.map.lens.${option.value}`, option.label)}
-            className={cn('whitespace-nowrap', lensDisabled && 'opacity-50')}
+            className={cn(
+              'whitespace-nowrap',
+              lensDisabled && 'opacity-50 hover:bg-background hover:text-foreground',
+            )}
           />
         ))}
       </div>

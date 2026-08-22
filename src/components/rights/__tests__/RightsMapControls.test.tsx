@@ -97,18 +97,35 @@ describe('RightsMapControls — line selector', () => {
 });
 
 describe('RightsMapControls — lens selector', () => {
-  it('disables the lens buttons with an explanation for a non-matrix topic', () => {
+  it('marks the lens buttons unavailable — reachable, not removed — for a non-matrix topic', () => {
     render(<RightsMapControls {...baseProps({ topic: criminalisation })} />);
-    expect(screen.getByRole('button', { name: 'Everyone' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Sexual orientation' })).toBeDisabled();
+    const everyone = screen.getByRole('button', { name: 'Everyone' });
+    // aria-disabled, not the `disabled` attribute: a disabled button is not
+    // focusable, which left the mobile lens rail a scrollable region with no
+    // focusable content (axe scrollable-region-focusable, serious) AND took
+    // the chips out of tab order, so a screen reader user would never learn
+    // the lens exists for this law — the very limitation it is here to state.
+    expect(everyone).toHaveAttribute('aria-disabled', 'true');
+    expect(everyone).not.toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Sexual orientation' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
     expect(
       screen.getByText('This law is recorded once for everyone — no per-group reading exists.'),
     ).toBeInTheDocument();
   });
 
+  it('does not change the lens when an unavailable chip is clicked', async () => {
+    const onLensChange = vi.fn();
+    render(<RightsMapControls {...baseProps({ topic: criminalisation, onLensChange })} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Gender identity' }));
+    expect(onLensChange).not.toHaveBeenCalled();
+  });
+
   it('enables the lens buttons for a protection-matrix topic (employment)', () => {
     render(<RightsMapControls {...baseProps({ topic: employment })} />);
-    expect(screen.getByRole('button', { name: 'Everyone' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Everyone' })).not.toHaveAttribute('aria-disabled');
     expect(screen.getByRole('button', { name: 'Gender identity' })).toBeEnabled();
     expect(
       screen.queryByText('This law is recorded once for everyone — no per-group reading exists.'),
