@@ -420,12 +420,54 @@ async function discoverGaychUrls() {
         : await getCached(
             `${GAYCH}/@@search?portal_type=Event&sort_on=created&b_start:int=${start}`,
           );
-    for (const m of html.matchAll(/https:\/\/gay\.ch\/parties\/[a-z0-9][a-z0-9-]*/g))
+    // Underscores are legal in a Plone id ("copy_of_lila-26-queer-festival-samstag")
+    // and omitting them truncates the URL to a prefix that 404s.
+    for (const m of html.matchAll(/https:\/\/gay\.ch\/parties\/[a-z0-9][a-z0-9_-]*/g))
       found.add(m[0]);
     if (start % 500 === 0) console.log(`[discover] ${start}/${total} → ${found.size} party urls`);
     if (start > 0) await sleep(200);
   }
   return found;
+}
+
+/**
+ * Slugs that must exist but appear in NEITHER index.
+ *
+ * The catalog turned out to be incomplete too, not just the sitemap:
+ * `@@search?SearchableText=Kweeraoke` returns exactly 24 items and
+ * `kweeraoke-22` … `-39` are not among them, yet `kweeraoke-30` serves a real
+ * event dated 2025-11-20. Those pages are viewable and simply not indexed, so
+ * no index-based enumeration can ever reach them — probing the site's own
+ * numbering is the only mechanism left. Spot-checked before building on it:
+ * kweeraoke-22, karaoke-kweer-35 and night-pride-40 all answer 200 with 2025
+ * dates, and kweeraoke-999 answers a clean 404.
+ *
+ * Only DENSE, low-numbered runs are treated as a series. A slug ending in a
+ * year ("eurovision-2016", "molke-4000") is a title, not an index, and probing
+ * its "gaps" would mean thousands of requests for nothing.
+ *
+ * This converges: once a round fills 22..39, the next round finds no gaps.
+ */
+function gapSlugs(parsed) {
+  const series = new Map();
+  for (const e of parsed) {
+    const m = /^(.*?)-(\d+)$/.exec(e.sourceId);
+    if (!m) continue;
+    if (!series.has(m[1])) series.set(m[1], new Set());
+    series.get(m[1]).add(Number(m[2]));
+  }
+  const out = [];
+  for (const [base, nums] of series) {
+    const max = Math.max(...nums);
+    if (max > 300 || nums.size < 5 || nums.size / max < 0.35) continue;
+    for (let n = 1; n < max; n++) if (!nums.has(n)) out.push(`${base}-${n}`);
+    // Past the end, for a series whose TAIL is the uncatalogued part. The
+    // window is wide because `heldenbar-zh` is weekly and its whole 2025 run is
+    // invisible to both indexes: a narrow window advances by its own width per
+    // round and would need ~20 passes. A 404 costs one cached request.
+    for (let n = max + 1; n <= max + 25; n++) out.push(`${base}-${n}`);
+  }
+  return out;
 }
 
 async function phaseFetchGaych() {
@@ -448,12 +490,15 @@ async function phaseFetchGaych() {
   // Union, not replacement: the catalog is the authority on what exists, but a
   // quirk in one enumeration must not silently drop what the other found.
   const fromCatalog = await discoverGaychUrls();
-  const urls = [...new Set([...fromSitemap, ...fromCatalog])];
-  console.log(
-    `[fetch-gaych] sitemap ${fromSitemap.length}, catalog ${fromCatalog.size}, union ${urls.length}`,
-  );
 
   const outPath = join(OUT, 'gaych-events.ndjson');
+  const probes = gapSlugs(readNdjson(outPath)).map((s) => `${GAYCH}/parties/${s}`);
+  const urls = [...new Set([...fromSitemap, ...fromCatalog, ...probes])];
+  console.log(
+    `[fetch-gaych] sitemap ${fromSitemap.length}, catalog ${fromCatalog.size}, ` +
+      `series probes ${probes.length}, union ${urls.length}`,
+  );
+
   const donePath = join(OUT, 'gaych-done.txt');
   const done = existsSync(donePath)
     ? new Set(readFileSync(donePath, 'utf8').split('\n').filter(Boolean))
