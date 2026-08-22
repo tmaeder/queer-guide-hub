@@ -49,7 +49,16 @@ export function BrandMark({
         className,
       )}
     >
-      <span aria-hidden="true" className={cn('leading-none', monogramClassName)}>
+      <span
+        aria-hidden="true"
+        // Hidden, not absent, while a logo is expected: nearly every merchant
+        // logo is a transparent PNG, so a monogram left visible underneath
+        // shows THROUGH the artwork (found on prod — cherrykitten's pink
+        // wordmark had an ink "C" sitting inside its counters). `invisible`
+        // keeps it in the layout so the onError below can bring it back with
+        // an inline style, which beats the class.
+        className={cn('leading-none', logoUrl && 'invisible', monogramClassName)}
+      >
         {brandMonogram(name)}
       </span>
       {logoUrl && (
@@ -65,6 +74,8 @@ export function BrandMark({
           // component stateless.
           onError={(e) => {
             e.currentTarget.style.display = 'none';
+            const monogram = e.currentTarget.previousElementSibling;
+            if (monogram instanceof HTMLElement) monogram.style.visibility = 'visible';
           }}
           className={cn('absolute inset-0 h-full w-full object-contain', padding)}
         />

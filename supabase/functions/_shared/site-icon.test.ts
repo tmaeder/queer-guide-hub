@@ -194,3 +194,35 @@ Deno.test('a lookalike CDN host does not get treated as Shopify', () => {
   assertEquals(isResizableCdnUrl(evil), false)
   assertEquals(isResizableCdnUrl('https://cdn.shopifycdn.com/logo.png?width=32'), true)
 })
+
+// ── Masthead vs the rest of the page ────────────────────────────────────────
+
+Deno.test('a press strip is not the shop\'s logo, however its alt reads', () => {
+  // unboundbabes.com published ULTA BEAUTY's mark as Unbound's: the "as seen
+  // in" row is class="press__logo-image" with the retailer's name in alt.
+  const html = `<header>
+      <img class="press__logo-image" src="/cdn/shop/files/Ulta_Logo.png" alt="Ulta Beauty logo">
+    </header>`
+  assertEquals(pickSiteIcon(html, BASE), null)
+})
+
+Deno.test('alt alone never qualifies an image — class or id must say logo', () => {
+  const html = `<header><img src="/tee.jpg" alt="Debbie Harry x Wildfang logo tee"></header>`
+  assertEquals(pickSiteIcon(html, BASE), null)
+})
+
+Deno.test('a logo img outside the masthead ranks BELOW every icon', () => {
+  // wildfang.com's product grid carries a "logo" class far down the page; its
+  // favicon must win. barcodeberlin.com's only real mark is in the FOOTER, so
+  // the tail arm still has to exist.
+  const withIcon = `
+    <header></header>
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+    <div class="product-logo"><img class="logo" src="/tee.jpg"></div>`
+  assertEquals(pickSiteIcon(withIcon, BASE)?.url, 'https://cherrykitten.com/favicon-192.png')
+
+  const footerOnly = `<header></header><footer><img class="logo-footer" src="/mark.png"></footer>`
+  const hit = pickSiteIcon(footerOnly, BASE)
+  assertEquals(hit?.kind, 'header-img')
+  assertEquals(hit?.url, 'https://cherrykitten.com/mark.png')
+})
