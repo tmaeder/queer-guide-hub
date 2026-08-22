@@ -61,6 +61,39 @@ export function countryContradicts(rowCode?: string | null, hitCode?: string | n
 }
 
 /**
+ * Nominatim answers a query it cannot place at street level with the enclosing
+ * settlement, and that answer passes both guards above — a city centroid IS in
+ * the right city and the right country. Writing it would re-create exactly the
+ * pollution 20260827100000_venue_centroid_repair.sql exists to remove, which
+ * NULLs city-centroid coordinates because they are worse than no coordinate.
+ *
+ * Measured 2026-08-22 against live Nominatim: a bogus street inside a real city
+ * returns ZERO results rather than degrading, so this does not fire often. It
+ * fires on the case this repo already knows about — `venues.address` that is
+ * itself a place name ("Puerto Vallarta" -> addresstype=city, "Le Marais" ->
+ * addresstype=suburb), the same collision class that made 15 of 65 name_exact
+ * venue matches wrong.
+ *
+ * DENY-list, not an allow-list: the address-level space is open-ended and a
+ * real house came back as `class=place / type=house / addresstype=place`, so
+ * an allow-list built from the obvious types would have refused a correct hit.
+ */
+const LOCALITY_ADDRESSTYPES = new Set([
+  'city', 'town', 'village', 'hamlet', 'municipality', 'suburb', 'neighbourhood',
+  'quarter', 'borough', 'district', 'county', 'state', 'province', 'region',
+  'country', 'continent', 'postcode', 'administrative', 'island', 'archipelago',
+  'locality', 'city_district', 'subdistrict', 'political',
+])
+
+export function isLocalityFallback(hit: { addresstype?: string; class?: string; type?: string }): boolean {
+  const t = (hit.addresstype || '').toLowerCase()
+  if (t && LOCALITY_ADDRESSTYPES.has(t)) return true
+  // boundary/administrative comes back with addresstype=administrative already,
+  // but a boundary relation is never a venue location under any type.
+  return (hit.class || '').toLowerCase() === 'boundary'
+}
+
+/**
  * Build the query from everything the row already knows, skipping any component
  * the address string already spells out so "Möhnestraße 59, 59755 Arnsberg"
  * does not become "…, 59755, Arnsberg".

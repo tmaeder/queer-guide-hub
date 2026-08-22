@@ -6,6 +6,7 @@ import {
   haversineKm,
   hasLocalityContext,
   isBareStreetAddress,
+  isLocalityFallback,
   postalContradicts,
   stampGeocode,
   type CountryRef,
@@ -44,6 +45,10 @@ interface NominatimAddress {
 interface NominatimResult {
   lat?: string
   lon?: string
+  class?: string
+  type?: string
+  addresstype?: string
+  display_name?: string
   address?: NominatimAddress
 }
 
@@ -293,6 +298,13 @@ async function forwardGeocode(
       }
       if (postalContradicts(v.postal_code, hit.address?.postcode ?? null)) {
         lastReason = `postal_mismatch:${hit.address?.postcode || '?'}_vs_${v.postal_code}`
+        continue
+      }
+      // A settlement-level hit is in the right city and the right country, so
+      // both guards above pass it — and it is a centroid, which this codebase
+      // has already decided is worse than NULL.
+      if (isLocalityFallback(hit)) {
+        lastReason = `locality_fallback:${hit.addresstype || hit.class || '?'}`
         continue
       }
       return { ok: true, hit, lat, lon, query: q, country }
@@ -576,8 +588,15 @@ interface AuditRow {
   id: string
   name: string
   address: string
+  row_city: string | null
+  row_postal: string | null
   stored: [number, number]
   regeocoded?: [number, number]
+  // What the corrected query actually resolved to. Without these a
+  // disagreement is unjudgeable: the question is never "did the number move"
+  // but "which of the two is the venue's town".
+  hit?: string
+  hit_type?: string
   distance_km?: number
   verdict: string
   reason?: string
@@ -615,16 +634,24 @@ async function processForwardAudit(
     const stored: [number, number] = [Number(v.latitude), Number(v.longitude)]
     const outcome = await forwardGeocode(supabase, v as GeoVenue)
 
+    const base = {
+      id: v.id,
+      name: v.name,
+      address: v.address!,
+      row_city: v.city,
+      row_postal: v.postal_code,
+      stored,
+    }
+
     if (!outcome.ok) {
-      rows.push({
-        id: v.id, name: v.name, address: v.address!, stored,
-        verdict: 'unverifiable', reason: outcome.reason,
-      })
+      rows.push({ ...base, verdict: 'unverifiable', reason: outcome.reason })
     } else {
       const km = haversineKm(stored[0], stored[1], outcome.lat!, outcome.lon!)
       rows.push({
-        id: v.id, name: v.name, address: v.address!, stored,
+        ...base,
         regeocoded: [outcome.lat!, outcome.lon!],
+        hit: outcome.hit!.display_name?.slice(0, 90),
+        hit_type: outcome.hit!.addresstype || outcome.hit!.class,
         distance_km: Math.round(km * 10) / 10,
         verdict: km < 1 ? 'agrees' : km < 25 ? 'disagrees_near' : 'disagrees_far',
       })

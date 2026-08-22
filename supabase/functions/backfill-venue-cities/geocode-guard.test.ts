@@ -5,6 +5,7 @@ import {
   hasLocalityContext,
   haversineKm,
   isBareStreetAddress,
+  isLocalityFallback,
   normPostal,
   postalContradicts,
   stampGeocode,
@@ -88,6 +89,20 @@ Deno.test('a bare street with no locality anywhere is not asked at all', () => {
   assert(hasLocalityContext(venue({ address: 'Möhnestraße 59', postal_code: '59755' }), null))
   assert(hasLocalityContext(bare, 'Germany'))
   assert(hasLocalityContext(venue({ address: 'Möhnestraße 59, Arnsberg' }), null))
+})
+
+Deno.test('a settlement-level hit is refused — it passes both other guards', () => {
+  // Live shapes, captured 2026-08-22.
+  assert(isLocalityFallback({ class: 'place', type: 'city', addresstype: 'city' })) // "Puerto Vallarta"
+  assert(isLocalityFallback({ class: 'place', type: 'suburb', addresstype: 'suburb' })) // "Le Marais"
+  assert(isLocalityFallback({ class: 'boundary', type: 'administrative', addresstype: 'administrative' }))
+  // A real house comes back as class=place/type=house/addresstype=place. An
+  // allow-list built from the obvious types would have refused this.
+  assertFalse(isLocalityFallback({ class: 'place', type: 'house', addresstype: 'place' })) // Storegade 11C
+  assertFalse(isLocalityFallback({ class: 'shop', type: 'convenience', addresstype: 'shop' })) // Haffner's
+  assertFalse(isLocalityFallback({ class: 'highway', type: 'primary', addresstype: 'road' })) // Viale Marconi
+  assertFalse(isLocalityFallback({ class: 'building', type: 'residential', addresstype: 'building' }))
+  assertFalse(isLocalityFallback({}))
 })
 
 Deno.test('audit population is exactly the old bare-street query shape', () => {
