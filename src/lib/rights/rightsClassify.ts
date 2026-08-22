@@ -1,4 +1,4 @@
-import type { RightTopic } from './rightsCatalog';
+import type { ProtectionAttr, RightTopic } from './rightsCatalog';
 import { readRightValue, topicScalarValue, type StatusKind } from './rightsValue';
 import { parseSsuDetails, getProtectionStatus } from '@/utils/equalityScore';
 
@@ -81,17 +81,48 @@ function isReadableScalar(value: unknown): value is string | boolean | null | un
 }
 
 /**
+ * Which people a protection question is asked about.
+ *
+ * ILGA records every protection-matrix column against four attributes, so the
+ * SAME column answers four different questions. `'all'` is the strict default
+ * the ledger uses — every declared attribute must read Yes — and a single
+ * attribute narrows it to one group.
+ *
+ * This is what lets one map answer the question TGEU's Trans Rights Map asks:
+ * `lens: 'gi'` reads employment / housing / health / hate-crime protection for
+ * GENDER IDENTITY specifically, rather than reporting a country as protective
+ * because it covers sexual orientation. It is our own ILGA data through a trans
+ * lens — NOT TGEU's 32-indicator index, which is a different dataset over 54
+ * countries and is not imported here.
+ */
+export type RightsLens = 'all' | ProtectionAttr;
+
+/**
  * Classify one country's reading for one topic.
+ *
+ * `lens` narrows a protection-matrix topic to a single attribute; it is ignored
+ * for every other kind, because those columns are not split by attribute and
+ * pretending otherwise would invent a trans-specific reading where the source
+ * has only one value for everyone.
  *
  * Never throws: a malformed or absent value reads as `'none'` rather than
  * propagating an exception up into a render.
  */
-export function classifyCountryRight(country: CountryRow, topic: RightTopic): StatusKind {
+export function classifyCountryRight(
+  country: CountryRow,
+  topic: RightTopic,
+  lens: RightsLens = 'all',
+): StatusKind {
   try {
     if (topic.kind === 'protection-matrix') {
       const status = getProtectionStatus(country?.[topic.column] as Record<string, unknown> | null);
-      const attrs =
+      const declared =
         topic.attributes.length > 0 ? topic.attributes : (['so', 'gi', 'ge', 'sc'] as const);
+      // A lens naming an attribute this topic does not record is not a "no" —
+      // the question was never asked of this column.
+      const attrs =
+        lens === 'all' ? declared : declared.includes(lens) ? ([lens] as const) : ([] as const);
+      if (attrs.length === 0) return 'none';
       const readings = attrs.map((a) => status[a]);
       // 'No data' is absence, not a negative — same rule as the scalar path.
       const known = readings.filter((r) => r !== 'No data');

@@ -75,6 +75,45 @@ Stations that cannot be aggregated (`gender-recognition`, `UNCOUNTED_SLUGS`) sti
 appear and still map — per-country values exist even where a worldwide count would
 be a guess. The legend for such a right shows classes without a total.
 
+## 2b · The trans lens (amendment, 2026-08-22)
+
+Requested mid-build: "add a map like TGEU's Trans Rights Map"
+(transrightsmap.tgeu.org). **We cannot reproduce that index and must not imply we
+have** — TGEU scores 54 Europe/Central Asia countries on 32 indicators across six
+categories (legal gender recognition, asylum, hate crime/speech, non-discrimination,
+health, family), maintained with country experts. That is a different dataset,
+not imported here, and its second PDF was unreadable for the same reason as the
+first.
+
+**What we can answer is the same question, from data we already hold at full
+coverage.** ILGA records every protection-matrix column against four attributes —
+sexual orientation, gender identity, gender expression, sex characteristics — so the
+same column answers four different questions. A second control on the map, **"Who
+the law protects"**, switches the lens:
+
+| lens | the map becomes |
+|---|---|
+| `all` (default) | the strict ledger bar — every declared attribute must read Yes |
+| `so` | sexual-orientation protection (the ILGA printed map's subject) |
+| **`gi`** | **gender-identity protection — the trans rights view** |
+| `ge` | gender expression |
+| `sc` | sex characteristics (intersex) |
+
+Implemented as an optional third argument to `classifyCountryRight`
+(`src/lib/rights/rightsClassify.ts`). Two rules are load-bearing and unit-tested:
+a country protecting only sexual orientation reads **`yes` under `so` and `no` under
+`gi`** (never "protective" by borrowing another group's protection), and a lens
+naming an attribute a topic does not record returns `'none'` — the question was
+never asked of that column, which is not the same as a no.
+
+`gender-recognition` is a first-class map view under any lens: the worldwide summary
+still refuses to aggregate it, but per-country readings are legitimate (see the
+`rightsClassify.ts` header), which is what makes a trans map possible at all.
+
+Not in scope: importing TGEU's index. That is a data project (new source,
+licensing, 32 indicators, 54 countries), not a UI change — and mixing their scores
+into an ILGA-derived map would misattribute both.
+
 ## 3 · The map
 
 - Geometry: `useCountryBoundaries(true, zoom)` → Natural Earth via the existing R2

@@ -120,3 +120,40 @@ describe('classifyCountryRight — never throws on malformed input', () => {
     expect(() => classifyCountryRight(undefined as never, topic)).not.toThrow();
   });
 });
+
+describe('classifyCountryRight — attribute lens', () => {
+  const employment = topicBySlug('employment')!;
+  const criminalisation = topicBySlug('criminalisation')!;
+
+  const row = (so: string, gi: string, ge: string, sc: string) => ({
+    lgbti_employment_protection: { so, gi, ge, sc },
+  });
+
+  it('reads a single attribute rather than requiring all four', () => {
+    // Protects sexual orientation only — the exact erasure the strict bar exists
+    // to refuse, and the exact case a trans lens must surface as unprotected.
+    const soOnly = row('Yes', 'No', 'No', 'No');
+    expect(classifyCountryRight(soOnly, employment, 'all')).toBe('partial');
+    expect(classifyCountryRight(soOnly, employment, 'so')).toBe('yes');
+    expect(classifyCountryRight(soOnly, employment, 'gi')).toBe('no');
+  });
+
+  it('a lensed attribute with no reading is none, not no', () => {
+    expect(
+      classifyCountryRight(row('Yes', 'No data', 'No data', 'No data'), employment, 'gi'),
+    ).toBe('none');
+  });
+
+  it('defaults to the strict all-four bar', () => {
+    const allYes = row('Yes', 'Yes', 'Yes', 'Yes');
+    expect(classifyCountryRight(allYes, employment)).toBe('yes');
+    expect(classifyCountryRight(allYes, employment, 'gi')).toBe('yes');
+  });
+
+  it('ignores the lens for non-matrix topics — one value covers everyone', () => {
+    const crim = { lgbti_criminalization: { legal: false } };
+    expect(classifyCountryRight(crim, criminalisation, 'gi')).toBe(
+      classifyCountryRight(crim, criminalisation, 'all'),
+    );
+  });
+});
