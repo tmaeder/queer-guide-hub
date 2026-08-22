@@ -408,11 +408,28 @@ begin
    limit 1;
   v_matched_ext := v_id is not null;
 
+  -- Domain adoption, but NEVER onto an org another testing site already owns.
+  --
+  -- `website_domain` identifies a business; it does NOT identify a LOCATION,
+  -- and this source is full of multi-branch providers whose every branch
+  -- publishes the same site. Measured on the real corpus: 35 domains are
+  -- shared by 124 centres — ghrn.ge covers 10 distinct Georgian sites,
+  -- kraujolaboratorija.lt 10 Lithuanian labs, hiv-testovani.cz 9 Czech ones.
+  -- Without the external_id guard the first centre adopts (or mints) a row and
+  -- the next nine adopt that SAME row, each overwriting its name, address,
+  -- coordinates and provenance: 530 payloads collapsed to 441 rows, losing
+  -- exactly the 89-row excess this arithmetic predicts.
+  --
+  -- So adopt only an org that no testing site has claimed yet. A genuine
+  -- pre-existing org still gets adopted by the first centre; every sibling
+  -- branch then mints its own row, which is correct — they are different
+  -- places.
   if v_id is null and v_domain is not null then
     select o.id into v_id
       from public.organizations o
      where lower(o.website_domain) = v_domain
        and o.duplicate_of_id is null
+       and o.field_provenance->'source'->>'external_id' is null
      limit 1;
   end if;
 
@@ -466,10 +483,14 @@ begin
       country_id     = coalesce(v_country_id, o.country_id),
       latitude       = coalesce(v_lat, o.latitude),
       longitude      = coalesce(v_lng, o.longitude),
-      tags           = (select array_agg(distinct t)
-                          from unnest(o.tags || coalesce(v_tags, '{}') || array['european-test-finder']) t),
-      target_groups  = (select array_agg(distinct g)
-                          from unnest(o.target_groups || coalesce(v_groups, '{}')) g),
+      -- coalesce the WHOLE aggregate: array_agg over an empty set returns
+      -- NULL, and both columns are NOT NULL. `tags` always has the provenance
+      -- tag so it cannot be empty today, but relying on that is how the next
+      -- edit reintroduces this.
+      tags           = coalesce((select array_agg(distinct t)
+                          from unnest(o.tags || coalesce(v_tags, '{}') || array['european-test-finder']) t), '{}'),
+      target_groups  = coalesce((select array_agg(distinct g)
+                          from unnest(o.target_groups || coalesce(v_groups, '{}')) g), '{}'),
       field_provenance = o.field_provenance || jsonb_build_object('source', coalesce(p->'source', '{}'::jsonb)),
       enrichment_status = o.enrichment_status || jsonb_build_object(
         'testfinder', coalesce(p->'detail', '{}'::jsonb)
@@ -490,10 +511,14 @@ begin
       country_id     = coalesce(o.country_id, v_country_id),
       latitude       = coalesce(o.latitude, v_lat),
       longitude      = coalesce(o.longitude, v_lng),
-      tags           = (select array_agg(distinct t)
-                          from unnest(o.tags || coalesce(v_tags, '{}') || array['european-test-finder']) t),
-      target_groups  = (select array_agg(distinct g)
-                          from unnest(o.target_groups || coalesce(v_groups, '{}')) g),
+      -- coalesce the WHOLE aggregate: array_agg over an empty set returns
+      -- NULL, and both columns are NOT NULL. `tags` always has the provenance
+      -- tag so it cannot be empty today, but relying on that is how the next
+      -- edit reintroduces this.
+      tags           = coalesce((select array_agg(distinct t)
+                          from unnest(o.tags || coalesce(v_tags, '{}') || array['european-test-finder']) t), '{}'),
+      target_groups  = coalesce((select array_agg(distinct g)
+                          from unnest(o.target_groups || coalesce(v_groups, '{}')) g), '{}'),
       field_provenance = o.field_provenance || jsonb_build_object('source', coalesce(p->'source', '{}'::jsonb)),
       enrichment_status = o.enrichment_status || jsonb_build_object(
         'testfinder', coalesce(p->'detail', '{}'::jsonb)
