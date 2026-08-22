@@ -213,6 +213,22 @@
      tracks clear 5.26 / 7.80 / 10.71 / 13.28:1. */
   --color-track-ring: hsl(var(--track-ring));
 
+  /* The plate a THIRD-PARTY logo sits on. Paper in BOTH modes, and a literal
+     rather than `var(--card)`, for the same reason --track-ring is ink in both:
+     it belongs to the mark, not to the theme. A merchant logo is a transparent
+     PNG drawn for a light ground — the marketplace's makers ship black
+     wordmarks almost without exception — so on a dark `--card` most of the
+     catalogue's logos would render as nothing at all. Mode-independent is the
+     only value that works, and it is why the plate cannot simply inherit the
+     card it sits in.
+
+     Declared HERE ONLY, following the --radius-panel precedent above: absent
+     from tokenCatalog.ts / branding.ts / branding_validate, so it costs no
+     migration and no headroom against that validator's 150-key cap. Operators
+     have no business retheming a plate whose whole job is to be neutral under
+     somebody else's artwork. */
+  --color-logo-plate: hsl(60 33% 97%);
+
   --color-card: hsl(var(--card));
   --color-card-foreground: hsl(var(--card-foreground));
 
