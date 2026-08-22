@@ -11,6 +11,31 @@ import { test, expect } from '@playwright/test';
  * surfaces by them, or shows them without their caveat is a real-world harm.
  */
 
+/**
+ * Resolve the documented-violence section, waiting for it the way a reader
+ * would — not the way `locator.count()` does.
+ *
+ * `count()` DOES NOT auto-wait. It answers about the DOM as it exists at that
+ * instant, and this section only mounts once TanStack Query has returned 250
+ * countries. So `if (!(await section.count())) test.skip()` skipped on EVERY
+ * run — including against production with the full TGEU import live — and the
+ * two assertions below, the ones that exist to stop a count being coloured as
+ * danger, had never executed once. `expect().toBeVisible()` auto-waits, which
+ * is why the sibling test passed on the same page in the same run and hid it.
+ *
+ * Waiting first makes the skip mean what it says: no data, rather than not yet
+ * rendered.
+ */
+async function documentedSection(page: import('@playwright/test').Page) {
+  const section = page.locator('#documented');
+  // The heading renders with the section, so this waits for the real mount.
+  await page
+    .locator('#documented-heading')
+    .waitFor({ state: 'attached', timeout: 20_000 })
+    .catch(() => {});
+  return section;
+}
+
 test.describe('/rights/trans', () => {
   test('renders the three axes with the reporting caveat leading the count section', async ({
     page,
@@ -24,7 +49,7 @@ test.describe('/rights/trans', () => {
     await expect(page.getByText(/requires surgery/i).first()).toBeVisible();
 
     // Axis 3 — the caveat must be present wherever counts are.
-    const documented = page.locator('#documented');
+    const documented = await documentedSection(page);
     if (await documented.count()) {
       await expect(documented).toContainText(/depend on local reporting/i);
       await expect(documented).toContainText(/not that a place is safe/i);
@@ -34,7 +59,7 @@ test.describe('/rights/trans', () => {
   test('never colours a documented-violence figure with the danger hue', async ({ page }) => {
     await page.goto('/rights/trans');
 
-    const section = page.locator('#documented');
+    const section = await documentedSection(page);
     if (!(await section.count())) test.skip(true, 'No TMM data imported yet');
 
     // `--destructive` is reserved for criminalisation and the death penalty.
@@ -46,7 +71,7 @@ test.describe('/rights/trans', () => {
 
   test('states that an unlisted country is not a safety finding', async ({ page }) => {
     await page.goto('/rights/trans');
-    const section = page.locator('#documented');
+    const section = await documentedSection(page);
     if (!(await section.count())) test.skip(true, 'No TMM data imported yet');
 
     // Absence renders as absence. Without this line the table reads as a
