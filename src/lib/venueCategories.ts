@@ -10,8 +10,11 @@ import { useTranslation } from 'react-i18next';
  * Before this existed there were five divergent copies. The costly one was the admin CMS
  * select (`src/config/contentTypes/venue.ts`), which offered `beach`, `cruise_club` and
  * `bookstore` — none of them legal — so choosing them produced a hard constraint
- * violation on save; it also omitted `organization` and `event-venue`, which are legal
- * and in use. Other copies offered `gym`/`salon` combinations matching ~2 rows total.
+ * violation on save. Other copies offered `gym`/`salon` combinations matching ~2 rows total.
+ *
+ * `organization` was retired 2026-08-21 (migration 20260915130000): a category answers
+ * "what kind of place is this", and an organization is not a kind of place — the
+ * organizations table and the nonvenue_candidate flow own that distinction.
  *
  * Mirrors the shape of `src/lib/eventTypes.ts` deliberately: same exports, same i18n
  * hook, so both taxonomies are consumed identically.
@@ -27,7 +30,6 @@ export const VENUE_CATEGORIES = [
   'outdoor',
   'shop',
   'community_center',
-  'organization',
   'event-venue',
   'theater',
   'gallery',
@@ -50,7 +52,6 @@ const FALLBACK_LABELS: Record<VenueCategory, string> = {
   outdoor: 'Outdoor',
   shop: 'Shop',
   community_center: 'Community',
-  organization: 'Organization',
   'event-venue': 'Event Venue',
   theater: 'Theater',
   gallery: 'Gallery',

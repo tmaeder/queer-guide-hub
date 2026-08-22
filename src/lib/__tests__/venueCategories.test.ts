@@ -25,8 +25,10 @@ function checkValues(migrationFile: string, constraintMarker: string): string[] 
 
 describe('venue category vocabulary', () => {
   it('matches venues_category_check', () => {
+    // Points at the LATEST migration that (re)defines the constraint — the CHECK
+    // was re-cut 2026-08-21 when `organization` was retired from the vocabulary.
     const dbValues = checkValues(
-      '20260810120100_venue_category_toilet.sql',
+      '20260915130000_venue_vocabulary_decisions.sql',
       'ADD CONSTRAINT venues_category_check',
     );
     expect([...VENUE_CATEGORIES].sort()).toEqual([...dbValues].sort());
