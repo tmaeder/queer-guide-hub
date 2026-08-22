@@ -74,6 +74,7 @@
  *   node scripts/data-quality/import-berlin-events.mjs --phase drain --entity venue
  *   node scripts/data-quality/import-berlin-events.mjs --phase drain --entity event
  *   node scripts/data-quality/import-berlin-events.mjs --phase tag
+ *   node scripts/data-quality/import-berlin-events.mjs --phase venues [--dry-run]
  *   node scripts/data-quality/import-berlin-events.mjs --phase link-venues [--dry-run]
  *   node scripts/data-quality/import-berlin-events.mjs --phase verify
  */
@@ -954,6 +955,158 @@ returning 1;`);
   console.log(`[tag] done — ${total} events updated`);
 }
 
+// --------------------------------------------------------- siegessaeule venues
+
+/**
+ * `venues_category_check` vocabulary, derived from which RAIL the venue's
+ * events appear on plus its name. The rail is the source's own classification
+ * of the EVENT, so it is evidence about the venue but not proof — a bar can
+ * host a `kultur` night. Name keywords override where they are unambiguous.
+ *
+ * Deliberately conservative: 'other' is honest, and a wrong category is a
+ * visible, user-facing claim on a directory page.
+ */
+function siegVenueCategory(name, rails) {
+  const n = name.toLowerCase();
+  if (/sauna|spa\b/.test(n)) return 'sauna';
+  if (/kino|pornokino|sexshop|cruis|darkroom/.test(n)) return 'cruising';
+  if (/theater|theatre|oper\b|oper$|palast|varieté|variete|bühne|buehne|schaubude/.test(n)) return 'theater';
+  if (/museum|galerie|gallery/.test(n)) return 'gallery';
+  if (/zentrum|verein|e\.\s?v\.|beratung|jugend|hilfe|projekt|initiative|bibliothek/.test(n)) return 'community_center';
+  if (/\bcafé|\bcafe\b|kaffee|konditorei/.test(n)) return 'cafe';
+  if (/restaurant|küche|kitchen|imbiss/.test(n)) return 'restaurant';
+  if (/hotel|hostel|pension/.test(n)) return 'hotel';
+  if (/\bshop\b|laden|buchhandlung|store/.test(n)) return 'shop';
+  if (/\bgym\b|fitness|sport/.test(n)) return 'gym';
+
+  const top = Object.entries(rails || {}).sort((a, b) => b[1] - a[1])[0]?.[0];
+  if (top === 'sex') return 'cruising';
+  if (top === 'clubs') return 'club';
+  if (top === 'bars') return 'bar';
+  if (top === 'kultur') return 'event-venue';
+  return 'other';
+}
+
+/**
+ * Siegessäule prints the address as
+ *   "<venue name>, <street>, <postcode> Berlin-<district>, Deutschland"
+ * and sometimes appends free text ("exakter Ort nach Anmeldung" — exact
+ * location on registration). Reduce it to the part a geocoder can use.
+ */
+function siegStreet(addr, name) {
+  if (!addr) return null;
+  let s = addr.replace(/,\s*Deutschland\s*$/i, '').trim();
+  // Drop a leading repetition of the venue name.
+  const bare = name.replace(/[^\p{L}\p{N}]/gu, '').toLowerCase();
+  const parts = s.split(',').map((p) => p.trim()).filter(Boolean);
+  if (parts.length > 1 && parts[0].replace(/[^\p{L}\p{N}]/gu, '').toLowerCase().startsWith(bare.slice(0, 8))) {
+    parts.shift();
+  }
+  const m = /^(.*?)(\d{5})\s*Berlin/i.exec(parts.join(', '));
+  if (!m) return parts.join(', ') || null;
+  return `${m[1].replace(/,\s*$/, '').trim()}, ${m[2]} Berlin`;
+}
+
+const postcodeOf = (addr) => (/(\d{5})/.exec(addr || '') || [])[1] ?? null;
+
+/** Photon (free, keyless) — the geocoder this repo already uses. */
+async function photon(query) {
+  const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&lang=en&limit=1&lat=52.52&lon=13.405`;
+  const body = await getCached(url, { minBytes: 2 });
+  try {
+    const f = JSON.parse(body)?.features?.[0];
+    if (!f) return null;
+    const [lng, lat] = f.geometry.coordinates;
+    const p = f.properties || {};
+    // Berlin only. A hit outside the metro means the query was too vague, and
+    // venue_coord_guard_trg would null the coordinates anyway.
+    if (Math.abs(lat - 52.52) > 0.4 || Math.abs(lng - 13.405) > 0.6) return null;
+    return { lat, lng, postal: p.postcode ?? null, street: p.street ?? null };
+  } catch {
+    return null;
+  }
+}
+
+async function phaseVenues() {
+  const det = readJson('sieg-details.json', {});
+  const refs = readJson('sieg-refs.json', []);
+
+  const byName = new Map();
+  for (const r of refs) {
+    const d = det[`${r.category}/${r.slug}`];
+    if (!d) continue;
+    const n = (d.venueName || '').trim();
+    if (!n) continue;
+    if (!byName.has(n)) byName.set(n, { name: n, url: d.venueUrl, addr: d.venueAddress, rails: {}, events: 0 });
+    const o = byName.get(n);
+    o.events++;
+    o.rails[r.category] = (o.rails[r.category] || 0) + 1;
+  }
+
+  // Skip anything already linked — those venues exist.
+  const done = new Set(
+    rows(await sql(`
+      select distinct e.venue_name from public.events e
+      join public.event_sources s on s.event_id = e.id
+      where s.source_slug='siegessaeule' and e.venue_id is not null;`)).map((r) => r.venue_name),
+  );
+
+  const todo = [...byName.values()].filter((v) => !done.has(v.name) && v.addr);
+  console.log(`[venues] ${byName.size} distinct, ${done.size} already linked, ${todo.length} to create (with an address)`);
+
+  const out = [];
+  for (const [i, v] of todo.entries()) {
+    const street = siegStreet(v.addr, v.name);
+    const g = street ? await photon(`${street}, Germany`) : null;
+    if (!g) {
+      console.warn(`[venues] no geocode: ${v.name} <- ${street ?? v.addr}`);
+      continue;
+    }
+    out.push({
+      sourceId: `venue:${v.name}`,
+      name: v.name,
+      category: siegVenueCategory(v.name, v.rails),
+      website: v.url && !NON_PROOF_HOSTS.has(hostOf(v.url)) ? v.url : null,
+      contacts: v.url && !NON_PROOF_HOSTS.has(hostOf(v.url)) ? { website: v.url } : {},
+      location: berlinLocation({
+        address: street,
+        postal_code: postcodeOf(v.addr) ?? g.postal,
+        state: 'Berlin',
+        lat: g.lat,
+        lng: g.lng,
+      }),
+      // NOT tagged 'lgbtq'. A venue that hosts queer events is not thereby a
+      // queer venue — Friedrichstadt-Palast and Grips Theater are mainstream
+      // houses. The queer signal belongs on the event, and asserting it on the
+      // venue would be a claim this import cannot support.
+      tags: ['berlin', ...Object.keys(v.rails).map((r) => `siegessaeule-${r}`)].slice(0, 20),
+      metadata: { url: v.url, source: 'siegessaeule', rails: v.rails, event_count: v.events },
+    });
+    if ((i + 1) % 25 === 0) console.log(`[venues] geocoded ${i + 1}/${todo.length}`);
+    await politeSleep();
+  }
+
+  console.log(`[venues] ${out.length} ready; categories ${JSON.stringify(tally(out, (r) => r.category))}`);
+  // Persist the geocode so link-venues can use coordinate proximity as a third
+  // signal — see the note there.
+  writeJson(
+    'sieg-venue-geo.json',
+    Object.fromEntries(out.map((r) => [r.name, { lat: r.location.lat, lng: r.location.lng }])),
+  );
+  if (DRY) {
+    writeJson('sieg-venues-staged.json', out.slice(0, 5));
+    console.log('[venues] DRY RUN — no writes');
+    return;
+  }
+  await insertBatch(out, { sourceName: 'siegessaeule', targetTable: 'venues', entityType: 'venue' });
+  console.log('[venues] staged — now run: --phase drain --entity venue, then --phase link-venues');
+  // `pipeline-deduplicate` matches venues on NAME alone: it merged a Berlin
+  // "Village" into an Osaka "Village" at score 1.000, and the fill-the-gaps
+  // commit then wrote Berlin's address, coordinates and website onto the
+  // Japanese row. --phase verify asserts this cannot pass unnoticed.
+  console.log('[venues] AFTER draining run --phase verify: it asserts none merged outside Berlin.');
+}
+
 // ------------------------------------------------------------ link-venues
 
 /**
@@ -1184,6 +1337,24 @@ async function phaseVerify() {
       and s.payload->'normalized'->'metadata'->>'category' = 'sex'
       and e.event_type <> 'fetish';`);
 
+  // `pipeline-deduplicate` matches venues on NAME ALONE, with no city or
+  // country gate. A Berlin "Village" merged into an Osaka "Village" at score
+  // 1.000 and the fill-the-gaps commit wrote Berlin's address, coordinates and
+  // website onto the Japanese row. One of 148 — luck, not design, kept it to
+  // one, so this is asserted rather than watched.
+  ok &= await q('venues this import created/updated OUTSIDE Berlin', `
+    select count(*)::int n from venues v
+    join venue_sources vs on vs.venue_id = v.id
+    where vs.source_slug = 'siegessaeule'
+      and v.city_id is distinct from '${BERLIN_CITY_ID}'::uuid;`);
+
+  ok &= await q('events linked to a venue outside Berlin', `
+    select count(*)::int n from events e
+    join event_sources s on s.event_id = e.id
+    join venues v on v.id = e.venue_id
+    where s.source_slug in ${SOURCES}
+      and v.city_id is distinct from '${BERLIN_CITY_ID}'::uuid;`);
+
   ok &= await q('staging rows rejected', `
     select count(*)::int n from ingestion_staging
     where source_name in ${SOURCES} and disposition = 'rejected';`);
@@ -1243,6 +1414,7 @@ const PHASES = {
   stage: phaseStage,
   drain: phaseDrain,
   tag: phaseTag,
+  venues: phaseVenues,
   'link-venues': phaseLinkVenues,
   verify: phaseVerify,
 };
