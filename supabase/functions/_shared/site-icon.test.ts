@@ -186,3 +186,11 @@ Deno.test('imageSize reads PNG, GIF and JPEG headers', () => {
 Deno.test('imageSize returns null for something that is not an image', () => {
   assertEquals(imageSize(new TextEncoder().encode('<!doctype html><html>')), null)
 })
+
+Deno.test('a lookalike CDN host does not get treated as Shopify', () => {
+  // `endsWith('shopifycdn.com')` alone also accepts an attacker-chosen host.
+  const evil = 'https://evil-shopifycdn.com/logo.png?width=32'
+  assertEquals(upsizeCdnUrl(evil), evil)
+  assertEquals(isResizableCdnUrl(evil), false)
+  assertEquals(isResizableCdnUrl('https://cdn.shopifycdn.com/logo.png?width=32'), true)
+})

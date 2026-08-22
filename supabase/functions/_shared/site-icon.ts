@@ -95,7 +95,12 @@ function largestSize(sizes: string | null): number {
 export function upsizeCdnUrl(url: string, width = 512): string {
   try {
     const u = new URL(url);
-    if (!/\/cdn\/shop(ify)?\//.test(u.pathname) && !u.hostname.endsWith('shopifycdn.com')) return url;
+    // The host test is anchored on a dot (or exact match): a bare
+    // `endsWith('shopifycdn.com')` also accepts `evil-shopifycdn.com`, which is
+    // an attacker-chosen host, not Shopify's CDN.
+    const host = u.hostname.toLowerCase();
+    const onShopifyCdn = host === 'shopifycdn.com' || host.endsWith('.shopifycdn.com');
+    if (!/\/cdn\/shop(ify)?\//.test(u.pathname) && !onShopifyCdn) return url;
     u.searchParams.delete('crop');
     u.searchParams.delete('height');
     u.searchParams.set('width', String(width));
