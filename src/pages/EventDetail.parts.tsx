@@ -278,7 +278,14 @@ export function EventActions({
     'inline-flex items-center gap-2 px-4 py-2 text-13 font-bold no-underline transition-colors hover:bg-foreground hover:text-background';
   return (
     <>
-      {event.ticket_url && (
+      {/* The SECOND ticket surface, and the more prominent one — this is the
+          masthead action row, above the fold, while the decision card sits in
+          the rail. Both needed the same `isEventPast` gate; fixing only the
+          card would have left a finished event still selling tickets in the
+          place the reader looks first. The `website` link below is deliberately
+          NOT gated: an event's homepage is still a legitimate reference after
+          the event, a ticket checkout is not. */}
+      {event.ticket_url && !isEventPast(event) && (
         <a href={event.ticket_url} target="_blank" rel="noopener noreferrer" className={OUTLINE}>
           Get tickets
         </a>
