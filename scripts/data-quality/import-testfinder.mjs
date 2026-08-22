@@ -70,6 +70,9 @@ const RETRIES = 3;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const UA = 'QueerGuideBot/1.0 (+https://queer.guide; sexual-health directory sync)';
+// Third-party facility sites, one request each — see verifyOne.
+const VERIFY_UA =
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36';
 
 // ------------------------------------------------------------------ fetching
 
@@ -259,8 +262,18 @@ async function verifyOne(row) {
 
   const started = Date.now();
   try {
+    // A BROWSER User-Agent here, deliberately, unlike the crawl.
+    //
+    // The crawl identifies itself as QueerGuideBot because it is hitting one
+    // known site repeatedly and should be attributable and blockable. This
+    // stage instead touches ~480 unrelated third-party hosts once each, and
+    // many sit behind a WAF that 403s an unknown UA on sight. Measured: of the
+    // 403s this produced, 3 of the first 4 re-tested return HTTP 200 from a
+    // normal browser UA — uke-infektionen.de, himerushealth.ie,
+    // sexualhealthwest.ie are all live. Treating a bot-block as a dead clinic
+    // withholds real testing sites from users.
     const res = await fetch(row.website, {
-      headers: { 'User-Agent': UA, Accept: 'text/html,*/*' },
+      headers: { 'User-Agent': VERIFY_UA, Accept: 'text/html,*/*' },
       redirect: 'follow',
       signal: AbortSignal.timeout(20_000),
     });
@@ -273,8 +286,14 @@ async function verifyOne(row) {
     const haystack = body.toLowerCase();
     const nameMatch = tokens.length > 0 && tokens.some((t) => haystack.includes(t));
 
+    // 401/403/429 are UNVERIFIABLE, not dead — the request was refused, which
+    // says nothing about whether the clinic exists. Only a 4xx that actually
+    // means "no such page" (404/410) or a 5xx is evidence against it. These
+    // stay draft rather than being promoted, because absence of evidence is
+    // not evidence of freshness — but they are not counted as link rot.
+    const blocked = res.status === 401 || res.status === 403 || res.status === 429;
     return {
-      status: res.ok ? 'live' : 'unreachable',
+      status: res.ok ? 'live' : blocked ? 'unverifiable' : 'unreachable',
       http_status: res.status,
       final_url: res.url,
       name_match: nameMatch,
@@ -309,9 +328,10 @@ async function phaseVerify() {
     while (idx < list.length) {
       const row = list[idx++];
       const cached = prior.get(row.slug);
-      const verification = cached?.verification?.checked_at
-        ? cached.verification
-        : await verifyOne(row);
+      // Reuse only a prior LIVE result. Anything else is re-checked, so a fix
+      // to the classifier or the UA actually reaches the records it was for.
+      const verification =
+        cached?.verification?.status === 'live' ? cached.verification : await verifyOne(row);
       out.push({ ...row, verification });
       done += 1;
       if (done % 50 === 0) console.log(`[verify]   ${done}/${list.length}`);
