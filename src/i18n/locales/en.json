@@ -1993,7 +1993,8 @@
       "guides": "Guides",
       "trips": "Trips",
       "organizations": "Organizations",
-      "wishlists": "Wishlists"
+      "wishlists": "Wishlists",
+      "transRights": "Trans rights"
     },
     "intents": {
       "goingOut": {

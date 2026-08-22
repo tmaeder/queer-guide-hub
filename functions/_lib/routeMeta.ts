@@ -253,6 +253,11 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'The source, refresh cadence, coverage and known limits behind the legal status we publish for every country and territory.',
   },
+  '/rights/trans': {
+    title: 'Trans Rights and Safety by Country',
+    description:
+      'Legal gender recognition worldwide, what changing a document costs, and TGEU’s record of documented anti-trans violence — kept separate, never combined into a score.',
+  },
   '/support': {
     title: 'Find LGBTQ+ Support Organizations Near You',
     description:

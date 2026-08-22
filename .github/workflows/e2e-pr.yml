@@ -107,6 +107,7 @@ jobs:
             e2e/singles.spec.ts \
             e2e/legal-pages.spec.ts \
             e2e/map-shell.spec.ts \
+            e2e/trans-rights.spec.ts \
             --reporter=line
           # e2e/auth.setup.ts is FIRST on the list and is load-bearing.
           # Passing explicit file paths filters EVERY project, including the
@@ -137,6 +138,14 @@ jobs:
           # A spec nothing runs does not just miss regressions, it manufactures
           # phantom ones. ~1.1m for 8 tests, against a job measured at 8-9m of
           # a 20m budget.
+          # trans-rights.spec.ts is on this list rather than left to the nightly
+          # because what it guards is a SAFETY INVARIANT, not a layout: TGEU's
+          # documented-violence counts rank countries close to inversely to legal
+          # risk, so a change that colours them with --destructive, drops the
+          # reporting caveat, or leaks a count into the trip-safety briefing
+          # turns the page into a danger ranking that is roughly the opposite of
+          # the truth. That regression must fail in the PR that writes it, not
+          # the morning after it merges.
           # tags-not-found.spec.ts must NEVER be added to this list, and it was
           # tried on 2026-08-20. It asserts `res.status() === 404` for an unknown
           # /tags/:slug, which is `functions/_middleware.ts` answering — and this
