@@ -5,6 +5,7 @@ import {
   RIGHT_SECTION_ORDER,
   RIGHT_SECTION_LABEL,
   topicsInSection,
+  topicListLabel,
   type RightTopic,
 } from '@/lib/rights/rightsCatalog';
 import type { RightsLens } from '@/lib/rights/rightsClassify';
@@ -48,6 +49,60 @@ interface RightsMapControlsProps {
   counts: Record<MapClass, number>;
   activeClass: MapClass | null;
   onActiveClassChange: (c: MapClass | null) => void;
+  /** Render the legend inline. The page renders it under the map instead. */
+  showLegend?: boolean;
+}
+
+interface RightsMapLegendProps {
+  counts: Record<MapClass, number>;
+  activeClass: MapClass | null;
+  onActiveClassChange: (c: MapClass | null) => void;
+}
+
+/**
+ * The route-strip legend: one station per class that has countries, ordered
+ * most-restrictive → most-protective, each carrying its count. Clicking a
+ * station filters the map to that class; clicking it again clears.
+ */
+export function RightsMapLegend({
+  counts,
+  activeClass,
+  onActiveClassChange,
+}: RightsMapLegendProps) {
+  const { t } = useTranslation();
+  return (
+    <ol
+      className="flex flex-wrap items-end gap-6"
+      aria-label={t('rights.map.legend', 'Country counts by status')}
+    >
+      {MAP_CLASS_ORDER.filter((cls) => counts[cls] > 0).map((cls) => {
+        const isActive = activeClass === cls;
+        return (
+          <li key={cls}>
+            <button
+              type="button"
+              aria-pressed={isActive}
+              onClick={() => onActiveClassChange(isActive ? null : cls)}
+              className={cn(
+                'flex flex-col items-start gap-1 rounded-element px-2 py-1',
+                isActive && 'bg-muted',
+              )}
+            >
+              <span
+                aria-hidden="true"
+                className="inline-block h-4 w-4 shrink-0 rounded-badge border border-border-hairline"
+                style={legendSwatchStyle(cls)}
+              />
+              <span className="font-display text-title tabular-nums">{counts[cls]}</span>
+              <span className="text-13 text-muted-foreground">
+                {t(`rights.map.class.${cls}`, MAP_CLASS_LABEL[cls])}
+              </span>
+            </button>
+          </li>
+        );
+      })}
+    </ol>
+  );
 }
 
 export function RightsMapControls({
@@ -58,6 +113,7 @@ export function RightsMapControls({
   counts,
   activeClass,
   onActiveClassChange,
+  showLegend = true,
 }: RightsMapControlsProps) {
   const { t } = useTranslation();
   const lensDisabled = topic.kind !== 'protection-matrix';
@@ -69,8 +125,15 @@ export function RightsMapControls({
         {RIGHT_SECTION_ORDER.map((section) => {
           const track = SECTION_TRACK[section];
           return (
-            <div key={section} className="space-y-2">
-              <div className="flex items-center gap-2">
+            // Line label and its stations share ONE row from `md` up. Stacked,
+            // the five families cost ~800px and pushed the map itself below the
+            // fold on a 900px viewport — on a page whose whole point is that
+            // the answer is visible without scrolling.
+            <div
+              key={section}
+              className="md:grid md:grid-cols-[13rem_1fr] md:items-center md:gap-x-4"
+            >
+              <div className="mb-2 flex items-center gap-2 md:mb-0">
                 <span
                   aria-hidden="true"
                   className={cn(
@@ -98,7 +161,7 @@ export function RightsMapControls({
                           : 'bg-muted text-muted-foreground',
                       )}
                     >
-                      {t(`country.rights.${stationTopic.labelKey}`, stationTopic.labelDefault)}
+                      {topicListLabel(stationTopic, t)}
                     </button>
                   );
                 })}
@@ -148,38 +211,19 @@ export function RightsMapControls({
         ) : null}
       </div>
 
-      {/* (c) Route-strip legend. */}
-      <ol
-        className="flex flex-wrap items-end gap-6"
-        aria-label={t('rights.map.legend', 'Country counts by status')}
-      >
-        {MAP_CLASS_ORDER.filter((cls) => counts[cls] > 0).map((cls) => {
-          const isActive = activeClass === cls;
-          return (
-            <li key={cls}>
-              <button
-                type="button"
-                aria-pressed={isActive}
-                onClick={() => onActiveClassChange(isActive ? null : cls)}
-                className={cn(
-                  'flex flex-col items-start gap-1 rounded-element px-2 py-1',
-                  isActive && 'bg-muted',
-                )}
-              >
-                <span
-                  aria-hidden="true"
-                  className="inline-block h-4 w-4 shrink-0 rounded-badge border border-border-hairline"
-                  style={legendSwatchStyle(cls)}
-                />
-                <span className="font-display text-title tabular-nums">{counts[cls]}</span>
-                <span className="text-13 text-muted-foreground">
-                  {t(`rights.map.class.${cls}`, MAP_CLASS_LABEL[cls])}
-                </span>
-              </button>
-            </li>
-          );
-        })}
-      </ol>
+      {/* (c) Route-strip legend.
+          Rendered here by default so this component stays self-contained, but
+          the page passes `showLegend={false}` and places <RightsMapLegend/>
+          BELOW the canvas: the legend reads the map back as counts, and three
+          stacked control blocks above it pushed the map itself off a 900px
+          viewport entirely. */}
+      {showLegend ? (
+        <RightsMapLegend
+          counts={counts}
+          activeClass={activeClass}
+          onActiveClassChange={onActiveClassChange}
+        />
+      ) : null}
     </div>
   );
 }

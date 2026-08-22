@@ -217,6 +217,31 @@ export function RightsWorldMap({
     };
   }, []);
 
+  /**
+   * Keep the canvas the size of its box.
+   *
+   * MapLibre measures the container once at construction and then only listens
+   * to WINDOW resize — it never notices its own container growing. Measured
+   * here: the wrapper is 520px tall at `md`, and the canvas came out 1376×300,
+   * so the map filled 58% of its box and the remaining 220px was bare
+   * `bg-surface-container`. It reads as a half-loaded panel, and the countries
+   * pushed off the bottom edge simply are not on the map.
+   *
+   * The height is a breakpoint (`h-[380px] md:h-[520px]`), so a window resize
+   * across `md` changes the box without the window handler helping — the
+   * observer covers both that and the first layout settling after mount.
+   */
+  useEffect(() => {
+    const el = mapContainer.current;
+    if (!el || !mapReady) return;
+    const map = mapRef.current;
+    if (!map) return;
+    map.resize();
+    const observer = new ResizeObserver(() => map.resize());
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [mapReady]);
+
   // Wire source + layers once; subsequent data changes go through setData.
   useEffect(() => {
     const map = mapRef.current;
@@ -365,7 +390,16 @@ export function RightsWorldMap({
       role="img"
       aria-label={ariaLabel}
     >
-      <div ref={mapContainer} className="absolute inset-0" />
+      {/* `h-full w-full`, NOT `absolute inset-0`.
+          MapLibre stamps `.maplibregl-map` on whatever container it is given,
+          and its stylesheet sets `position: relative` on that class. Same
+          specificity as Tailwind's `absolute`, later in the cascade, so it
+          wins — the div stops being positioned, collapses to zero height, and
+          MapLibre falls back to its 400×300 default. Measured: wrapper 520px,
+          `.maplibregl-map` clientHeight 0, canvas 1376×300, and a 220px band
+          of empty `bg-surface-container` under a map missing everything below
+          its own bottom edge. A percentage height survives the override. */}
+      <div ref={mapContainer} className="h-full w-full" />
       {!webglOk ? (
         <div className="absolute inset-0 flex items-center justify-center px-6 text-center">
           <p className="text-13 text-muted-foreground">

@@ -1,5 +1,5 @@
 import { CoverageNote } from '@/components/intent/CoverageNote';
-import { RightsMapControls } from './RightsMapControls';
+import { RightsMapControls, RightsMapLegend } from './RightsMapControls';
 import { RightsWorldMap } from './RightsWorldMap';
 import type { RightTopic } from '@/lib/rights/rightsCatalog';
 import type { RightsLens } from '@/lib/rights/rightsClassify';
@@ -51,6 +51,7 @@ export function RightsMapSection({
         counts={counts}
         activeClass={activeClass}
         onActiveClassChange={onActiveClassChange}
+        showLegend={false}
       />
       <div className="mt-6">
         <RightsWorldMap
@@ -59,6 +60,16 @@ export function RightsMapSection({
           lens={lens}
           activeClass={activeClass}
           onCountrySelect={onCountrySelect}
+        />
+      </div>
+      {/* Under the canvas, not above it: the legend reads the map back as
+          counts, and stacking it with the two selectors pushed the map itself
+          off the first screen. */}
+      <div className="mt-4">
+        <RightsMapLegend
+          counts={counts}
+          activeClass={activeClass}
+          onActiveClassChange={onActiveClassChange}
         />
       </div>
       {/* The map's counts and the table's counts are measured over different

@@ -143,6 +143,7 @@ const webglState = vi.hoisted(() => ({ supported: true }));
 const mapCalls = vi.hoisted(() => ({
   addSource: [] as { id: string; opts: { data: unknown } }[],
   instances: 0,
+  resize: 0,
 }));
 
 vi.mock('@/lib/webglSupport', () => ({
@@ -205,6 +206,17 @@ vi.mock('maplibre-gl', () => {
     setPaintProperty() {}
     setFeatureState() {}
     setFilter() {}
+    /**
+     * The component calls this from a ResizeObserver: MapLibre measures its
+     * container once at construction and never notices it grow, which left a
+     * 1376×300 canvas inside a 520px box on the real page. The mock omitted
+     * it, so the effect threw `map.resize is not a function` and took two
+     * otherwise-passing assertions down with it — a missing method on a hand
+     * -written stub reads exactly like a product bug.
+     */
+    resize() {
+      mapCalls.resize += 1;
+    }
     getCanvas() {
       return { style: {} };
     }
@@ -221,6 +233,7 @@ beforeEach(() => {
   webglState.supported = true;
   mapCalls.addSource = [];
   mapCalls.instances = 0;
+  mapCalls.resize = 0;
 });
 
 describe('RightsWorldMap', () => {
