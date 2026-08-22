@@ -428,8 +428,8 @@ export function parseSiegessaeuleDetail(html: string): SiegessaeuleDetail {
   // is full of `#fff`-style tokens that a naive hashtag scan would collect.
   const body = html
     .replace(/<footer[\s\S]*$/i, '')
-    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
-    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<script\b[\s\S]*?<\/script\b[^>]*>/gi, ' ')
+    .replace(/<style\b[\s\S]*?<\/style\b[^>]*>/gi, ' ')
 
   const plain = text(body)
 
