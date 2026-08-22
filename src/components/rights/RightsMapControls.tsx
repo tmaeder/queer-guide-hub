@@ -255,8 +255,19 @@ export function RightsMapControls({
           limitation with it, and that limitation — that this law has no
           per-group reading — is exactly what a reader checking trans
           protection needs told. */}
+      {/* tabIndex={0} is load-bearing, not decoration. This rail scrolls
+          horizontally at 390px, and the comment above explains why the chips
+          stay DISABLED rather than hidden for nine topics — but a disabled
+          control is out of the tab order, so in exactly that state the rail is
+          a scrollable region containing nothing focusable: reachable by mouse
+          or finger, unreachable by keyboard (axe `scrollable-region-focusable`,
+          serious, caught on /rights [mobile] in CI). Making the container
+          itself focusable restores arrow-key scrolling precisely when the chips
+          cannot. Do not remove it on the grounds that "the chips are focusable"
+          — they are, only while the lens applies. */}
       <div
         role="group"
+        tabIndex={0}
         aria-label={t('rights.map.lens.heading', 'Who the law protects')}
         className="-mx-1 flex snap-x items-center gap-2 overflow-x-auto px-1 pb-1 scrollbar-thin"
       >
