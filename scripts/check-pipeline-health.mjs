@@ -108,6 +108,24 @@ if (!hygieneRes.ok) {
   if (staleTotal > 3500) {
     console.warn(`⚠ Staging stale-pending rising: ${staleTotal} rows >48h (${JSON.stringify(stale)})`)
   }
+  // Human decisions the pipeline threw away (2026-08-22). A row that is
+  // disposition=pending AND review_status=approved AND ai_validation_status
+  // <> approved is stuck by definition: every stage from dedup to commit reads
+  // ai_validation_status, so nothing will ever look at it again. There is no
+  // baseline allowance — trg_staging_human_approval_clears_validation makes the
+  // state unreachable, so a single row means a writer bypassed the trigger (an
+  // INSERT, or a hard validator rejection nobody may auto-override).
+  //
+  // Deliberately NOT folded into the stale_pending thresholds above: 14 event
+  // rows sat under that 3,500-row warn floor for 40 days.
+  const stranded = hygiene.stranded_human_approved ?? {}
+  const strandedTotal = Object.values(stranded).reduce((a, b) => a + Number(b), 0)
+  if (strandedTotal > 0) {
+    console.error(`✗ ${strandedTotal} staging row(s) approved by a human but blocked from every downstream stage (${JSON.stringify(stranded)})`)
+    console.error('  They read ai_validation_status <> approved while review_status = approved.')
+    console.error('  Find the writer that set review_status without an UPDATE the promotion trigger can see.')
+    process.exit(1)
+  }
   console.log(`✓ Cron hygiene clean (${hygiene.cron_total} active jobs); staging pending_review=${pending}, stale_pending=${staleTotal}`)
 }
 
