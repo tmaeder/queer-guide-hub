@@ -1,0 +1,119 @@
+// Pure query-building and contradiction guards for the forward geocoder.
+//
+// Split out of index.ts only so they are reachable from a test — index.ts calls
+// Deno.serve at module scope and cannot be imported.
+//
+// Background: the forward pass used to send `q=<venues.address>` and write the
+// first global hit unvalidated. Nominatim answers a bare street name with
+// whatever street of that name it ranks highest ANYWHERE. Reproduced live
+// 2026-08-22:
+//
+//   "Möhnestraße 59"                          -> 51.4584822, 6.8222474 | Oberhausen 46049
+//   "Möhnestraße 59, 59755 Arnsberg, Germany" -> 51.4555545, 7.9688323 | Neheim     59755
+//
+// The venue row already carried city='Arnsberg' and postal_code='59755'. None
+// of it reached the query and none of it gated the answer, so a correct row was
+// overwritten with coordinates 85 km away plus Oberhausen's city_id — and
+// city_id feeds safety_gated via location_is_high_risk, so a wrong country here
+// is a safety-layer fault, not only a map pin.
+
+export interface GeoVenue {
+  id: string
+  name: string
+  address: string | null
+  city: string | null
+  postal_code: string | null
+  country: string | null
+  country_id: string | null
+  enrichment_status?: Record<string, unknown> | null
+}
+
+export interface CountryRef {
+  code: string
+  name: string
+}
+
+export function normPostal(p?: string | null): string | null {
+  const s = (p || '').toUpperCase().replace(/[^A-Z0-9]/g, '')
+  return s.length >= 3 ? s : null
+}
+
+/**
+ * Compared on the leading 4 characters, not byte-equality. A correct match can
+ * legitimately land in a neighbouring postal UNIT (NL 1011AB vs 1011AC, UK
+ * SW1A1AA vs SW1A2BB are the same block); it cannot land in a different postal
+ * DISTRICT. 59755 vs 46049 differs at character 1.
+ *
+ * A missing postcode on either side is absence of evidence, never a conflict.
+ */
+export function postalContradicts(rowPostal?: string | null, hitPostal?: string | null): boolean {
+  const a = normPostal(rowPostal)
+  const b = normPostal(hitPostal)
+  if (!a || !b) return false
+  if (a === b) return false
+  const n = Math.min(4, a.length, b.length)
+  return a.slice(0, n) !== b.slice(0, n)
+}
+
+export function countryContradicts(rowCode?: string | null, hitCode?: string | null): boolean {
+  if (!rowCode || !hitCode) return false
+  return rowCode.toUpperCase() !== hitCode.toUpperCase()
+}
+
+/**
+ * Build the query from everything the row already knows, skipping any component
+ * the address string already spells out so "Möhnestraße 59, 59755 Arnsberg"
+ * does not become "…, 59755, Arnsberg".
+ */
+export function buildForwardQuery(v: GeoVenue, countryName: string | null, withPostal: boolean): string {
+  const parts: string[] = []
+  const push = (s?: string | null) => {
+    const t = (s || '').trim()
+    if (!t) return
+    if (parts.join(', ').toLowerCase().includes(t.toLowerCase())) return
+    parts.push(t)
+  }
+  push(v.address)
+  if (withPostal) push(v.postal_code)
+  push(v.city)
+  push(countryName)
+  return parts.join(', ')
+}
+
+/**
+ * A bare street name with no locality anywhere — not in a column, not as a
+ * comma clause in the address — is exactly the query that produced Oberhausen.
+ * There is no question to ask, so we don't ask one.
+ */
+export function hasLocalityContext(v: GeoVenue, countryName: string | null): boolean {
+  if (v.city?.trim() || normPostal(v.postal_code) || countryName) return true
+  return (v.address || '').includes(',')
+}
+
+/** The population the old query shape produced: no comma, no 4+ digit run. */
+export function isBareStreetAddress(address: string): boolean {
+  return !address.includes(',') && !/\d{4,}/.test(address)
+}
+
+export function haversineKm(aLat: number, aLon: number, bLat: number, bLon: number): number {
+  const R = 6371
+  const dLat = ((bLat - aLat) * Math.PI) / 180
+  const dLon = ((bLon - aLon) * Math.PI) / 180
+  const s =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((aLat * Math.PI) / 180) * Math.cos((bLat * Math.PI) / 180) * Math.sin(dLon / 2) ** 2
+  return 2 * R * Math.asin(Math.sqrt(s))
+}
+
+/**
+ * Records the decision on the row itself. A refusal has to be legible as a
+ * refusal — "geocode_attempted with no coordinates" alone reads identically to
+ * "Nominatim has never heard of this street".
+ */
+export function stampGeocode(
+  prev: Record<string, unknown> | null | undefined,
+  patch: Record<string, unknown>,
+  now: string = new Date().toISOString(),
+): Record<string, unknown> {
+  return { ...(prev || {}), geocode: { ...patch, at: now } }
+}

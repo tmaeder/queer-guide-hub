@@ -1,5 +1,16 @@
 import { getServiceClient, requireAdmin, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
+import {
+  buildForwardQuery,
+  countryContradicts,
+  haversineKm,
+  hasLocalityContext,
+  isBareStreetAddress,
+  postalContradicts,
+  stampGeocode,
+  type CountryRef,
+  type GeoVenue,
+} from './geocode-guard.ts'
 
 // Batch geocode venues missing city data.
 // Two modes controlled by `mode` param:
@@ -13,6 +24,10 @@ import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
 const NOMINATIM_BASE = (Deno.env.get('NOMINATIM_URL') || 'https://nominatim.openstreetmap.org').replace(/\/$/, '')
 const NOMINATIM_AUTH = Deno.env.get('NOMINATIM_BASIC_AUTH') || ''
 const SLEEP_MS = Deno.env.get('NOMINATIM_URL') ? 50 : 1100
+// Soft deadline for a batch loop. The forward cron posts with
+// timeout_milliseconds := 55000; break early and resume next tick instead of
+// having the whole invocation cut off mid-write.
+const MAX_RUN_MS = Number(Deno.env.get('GEOCODE_MAX_RUN_MS') || 45000)
 
 interface NominatimAddress {
   city?: string
@@ -21,6 +36,7 @@ interface NominatimAddress {
   municipality?: string
   county?: string
   state?: string
+  postcode?: string
   country?: string
   country_code?: string
 }
@@ -172,6 +188,120 @@ function extractCity(addr: NominatimAddress): string | null {
   return addr.city || addr.town || addr.village || addr.municipality || null
 }
 
+// ── Forward geocode core: build from the whole row, refuse a contradiction ───
+//
+// This used to be `q=<address>` and nothing else, with the first global hit
+// written unvalidated. Nominatim answers a bare street name with whatever
+// street of that name it ranks highest ANYWHERE, so "Möhnestraße 59" resolved
+// to Oberhausen while the venue's own postal_code said 59755 Arnsberg — 85 km
+// away, with Oberhausen's coordinates and Oberhausen's city_id, and city_id
+// feeds safety_gated through location_is_high_risk. The row already carried
+// every fact needed to both ask the right question and catch the wrong answer;
+// nothing looked at any of it.
+//
+// Two rules, same as the same-name city collision work (20260802090844):
+// constrain the query with everything the row knows, and BLOCK rather than
+// guess when the answer contradicts the row. A null coordinate is recoverable,
+// a wrong one is not.
+//
+// The pure half (query building + the contradiction guards) lives in
+// ./geocode-guard.ts so it is testable — this module calls Deno.serve.
+
+const countryRefCache = new Map<string, CountryRef | null>()
+
+async function countryRefById(
+  supabase: ReturnType<typeof getServiceClient>,
+  id: string,
+): Promise<CountryRef | null> {
+  if (countryRefCache.has(id)) return countryRefCache.get(id)!
+  const { data } = await supabase
+    .from('countries')
+    .select('code, name')
+    .eq('id', id)
+    .maybeSingle()
+  const ref = data?.code ? { code: String(data.code).toUpperCase(), name: String(data.name || '') } : null
+  countryRefCache.set(id, ref)
+  return ref
+}
+
+// country_id is a real FK and is believed as-is. `venues.country` is free text
+// that mixes ISO-2 country codes with US state / Canadian province codes (CA,
+// DE, OR, ME…), so it is NEVER upper()'d into an ISO code here — it goes
+// through resolve_country_from_text, which demands city corroboration for an
+// ambiguous code and returns NULL rather than guessing (20260807100200).
+async function resolveVenueCountry(
+  supabase: ReturnType<typeof getServiceClient>,
+  v: GeoVenue,
+): Promise<CountryRef | null> {
+  if (v.country_id) return await countryRefById(supabase, v.country_id)
+  const txt = v.country?.trim()
+  if (!txt) return null
+  const { data } = await supabase.rpc('resolve_country_from_text', { p_country: txt, p_city: v.city })
+  if (!data || typeof data !== 'string') return null
+  return await countryRefById(supabase, data)
+}
+
+interface ForwardOutcome {
+  ok: boolean
+  reason?: string
+  query?: string
+  hit?: NominatimResult
+  lat?: number
+  lon?: number
+  country?: CountryRef | null
+}
+
+async function forwardGeocode(
+  supabase: ReturnType<typeof getServiceClient>,
+  v: GeoVenue,
+): Promise<ForwardOutcome> {
+  const country = await resolveVenueCountry(supabase, v)
+  if (!hasLocalityContext(v, country?.name ?? null)) {
+    return { ok: false, reason: 'insufficient_context', country }
+  }
+
+  const queries = [buildForwardQuery(v, country?.name ?? null, true)]
+  // Dropping the postcode from the free-text q is a RECALL retry, not a
+  // loosening: the postal guard below still runs against whatever comes back.
+  const loose = buildForwardQuery(v, country?.name ?? null, false)
+  if (loose !== queries[0]) queries.push(loose)
+
+  let lastReason = 'no_results'
+  let sent = 0
+
+  for (const q of queries) {
+    if (sent > 0) await sleep(SLEEP_MS)
+    sent++
+    // limit=5 + countrycodes: the top hit is not privileged, it is the first
+    // CANDIDATE. A lower-ranked hit whose postcode matches the row is better
+    // evidence than a higher-ranked one that contradicts it.
+    const url = `${NOMINATIM_BASE}/search?format=json&q=${encodeURIComponent(q)}&limit=5&addressdetails=1`
+      + (country?.code ? `&countrycodes=${country.code.toLowerCase()}` : '')
+    const res = await fetch(url, { headers: nominatimHeaders() })
+    if (!res.ok) return { ok: false, reason: `nominatim_error_${res.status}`, query: q, country }
+
+    const arr = (await res.json()) as NominatimResult[]
+    if (!arr?.length) continue
+
+    for (const hit of arr) {
+      const lat = hit.lat ? parseFloat(hit.lat) : NaN
+      const lon = hit.lon ? parseFloat(hit.lon) : NaN
+      if (!Number.isFinite(lat) || !Number.isFinite(lon) || (lat === 0 && lon === 0)) continue
+      if (countryContradicts(country?.code ?? null, hit.address?.country_code ?? null)) {
+        lastReason = `country_mismatch:${(hit.address?.country_code || '?').toUpperCase()}_vs_${country?.code}`
+        continue
+      }
+      if (postalContradicts(v.postal_code, hit.address?.postcode ?? null)) {
+        lastReason = `postal_mismatch:${hit.address?.postcode || '?'}_vs_${v.postal_code}`
+        continue
+      }
+      return { ok: true, hit, lat, lon, query: q, country }
+    }
+  }
+
+  return { ok: false, reason: lastReason, query: queries[queries.length - 1], country }
+}
+
 // ── Reverse geocode: coords → city ──────────────────────────────────────────
 
 async function processReverse(
@@ -280,7 +410,7 @@ async function processForward(
   // keeps it.
   const { data: venues, error } = await supabase
     .from('venues')
-    .select('id, name, address, city, country, country_id, city_id')
+    .select('id, name, address, city, postal_code, country, country_id, city_id, enrichment_status')
     .is('duplicate_of_id', null)
     .or('latitude.is.null,longitude.is.null')
     .not('address', 'is', null)
@@ -323,33 +453,51 @@ async function processForward(
   if (!batch.length) return { results: [], remaining: count || 0 }
 
   const results: VenueResult[] = []
+  const startedAt = Date.now()
 
   for (const venue of batch) {
+    // The cron calls this with timeout_milliseconds := 55000. A row can now
+    // cost two Nominatim requests instead of one, so stop on a deadline and
+    // let the next tick resume rather than losing the whole batch's writes.
+    if (Date.now() - startedAt > MAX_RUN_MS) break
+
     try {
-      const q = encodeURIComponent(venue.address!)
-      const url = `${NOMINATIM_BASE}/search?format=json&q=${q}&limit=1&addressdetails=1`
-      const res = await fetch(url, { headers: nominatimHeaders() })
-      if (!res.ok) {
-        results.push({ id: venue.id, status: `nominatim_error_${res.status}` })
+      const outcome = await forwardGeocode(supabase, venue as GeoVenue)
+
+      if (!outcome.ok && outcome.reason?.startsWith('nominatim_error')) {
+        // Transport failure, not an answer. Leave geocode_attempted alone so
+        // the row is retried — marking it would burn a venue on a 503.
+        results.push({ id: venue.id, status: outcome.reason })
         await sleep(SLEEP_MS)
         continue
       }
 
-      const data = (await res.json()) as NominatimResult[]
-      if (!data?.length) {
-        // Mark as attempted so we skip next time
+      if (!outcome.ok) {
+        // Refusal path. geocode_attempted is set so the row leaves the queue,
+        // but latitude/longitude/city_id stay NULL and the reason is recorded.
+        // Deliberately does NOT touch latitude/longitude: trg_venue_geocode is
+        // AFTER UPDATE OF latitude, longitude, address, so naming those columns
+        // in a no-op write re-enters this function.
         await supabase.from('venues').update({
           geocode_attempted: true,
+          enrichment_status: stampGeocode(venue.enrichment_status, {
+            state: 'rejected',
+            reason: outcome.reason,
+            query: outcome.query,
+          }),
           updated_at: new Date().toISOString(),
         }).eq('id', venue.id)
-        results.push({ id: venue.id, status: 'no_results' })
+        results.push({
+          id: venue.id,
+          status: outcome.reason === 'no_results' ? 'no_results' : `rejected_${outcome.reason}`,
+        })
         await sleep(SLEEP_MS)
         continue
       }
 
-      const hit = data[0]
-      const lat = hit.lat ? parseFloat(hit.lat) : null
-      const lon = hit.lon ? parseFloat(hit.lon) : null
+      const hit = outcome.hit!
+      const lat = outcome.lat!
+      const lon = outcome.lon!
       const addr = hit.address
       const cityName = addr ? extractCity(addr) : null
       const countryCode = addr?.country_code?.toUpperCase() || null
@@ -357,13 +505,17 @@ async function processForward(
       const update: Record<string, unknown> = {
         geocode_attempted: true,
         updated_at: new Date().toISOString(),
+        enrichment_status: stampGeocode(venue.enrichment_status, {
+          state: 'accepted',
+          query: outcome.query,
+          postcode: addr?.postcode ?? null,
+          country_code: countryCode,
+        }),
       }
 
-      // Set coordinates
-      if (lat && lon && lat !== 0 && lon !== 0) {
-        update.latitude = lat
-        update.longitude = lon
-      }
+      // Set coordinates — validated against the row before we get here.
+      update.latitude = lat
+      update.longitude = lon
 
       // Set city
       if (cityName) {
@@ -392,13 +544,10 @@ async function processForward(
       await supabase.from('venues').update(update).eq('id', venue.id)
       results.push({
         id: venue.id,
-        status: update.city_id
-          ? 'matched'
-          : update.latitude
-            ? 'coords_filled'
-            : cityName
-              ? 'geocoded_no_city_match'
-              : 'no_useful_data',
+        // An accepted outcome always carries coordinates now — a hit with no
+        // usable lat/lon is skipped as a candidate inside forwardGeocode — so
+        // the old 'geocoded_no_city_match' / 'no_useful_data' arms are gone.
+        status: update.city_id ? 'matched' : 'coords_filled',
         city_name: cityName || undefined,
         city_id: update.city_id as string | undefined,
       })
@@ -411,6 +560,96 @@ async function processForward(
   return { results, remaining: (count || 0) - results.length }
 }
 
+// ── Forward audit: report the blast radius, write NOTHING ───────────────────
+//
+// 3,588 live venues carry geocode_attempted=true with an address holding
+// neither a postal code nor a comma — i.e. they went through the old bare-street
+// query. Some fraction of them are somewhere else entirely.
+//
+// This mode re-asks the corrected question and compares against the STORED
+// coordinates. It is deliberately read-only: a large disagreement rate is a
+// finding to surface, not a batch to auto-apply, and re-geocoding blind would
+// also re-enter trg_venue_geocode on every row it touched.
+//   { "mode": "forward_audit", "batch_size": 25, "offset": 0 }
+
+interface AuditRow {
+  id: string
+  name: string
+  address: string
+  stored: [number, number]
+  regeocoded?: [number, number]
+  distance_km?: number
+  verdict: string
+  reason?: string
+}
+
+async function processForwardAudit(
+  supabase: ReturnType<typeof getServiceClient>,
+  batchSize: number,
+  offset: number,
+): Promise<Record<string, unknown>> {
+  const { data: venues, error } = await supabase
+    .from('venues')
+    .select('id, name, address, city, postal_code, country, country_id, latitude, longitude')
+    .is('duplicate_of_id', null)
+    .eq('geocode_attempted', true)
+    .not('address', 'is', null)
+    .neq('address', '')
+    .not('latitude', 'is', null)
+    .not('longitude', 'is', null)
+    .order('id')
+    .range(offset, offset + batchSize * 4 - 1)
+
+  if (error) throw error
+
+  const scanned = venues?.length ?? 0
+  const suspect = (venues ?? []).filter(v => isBareStreetAddress(v.address!)).slice(0, batchSize)
+
+  const rows: AuditRow[] = []
+  const startedAt = Date.now()
+  let consumed = 0
+
+  for (const v of suspect) {
+    if (Date.now() - startedAt > MAX_RUN_MS) break
+    consumed++
+    const stored: [number, number] = [Number(v.latitude), Number(v.longitude)]
+    const outcome = await forwardGeocode(supabase, v as GeoVenue)
+
+    if (!outcome.ok) {
+      rows.push({
+        id: v.id, name: v.name, address: v.address!, stored,
+        verdict: 'unverifiable', reason: outcome.reason,
+      })
+    } else {
+      const km = haversineKm(stored[0], stored[1], outcome.lat!, outcome.lon!)
+      rows.push({
+        id: v.id, name: v.name, address: v.address!, stored,
+        regeocoded: [outcome.lat!, outcome.lon!],
+        distance_km: Math.round(km * 10) / 10,
+        verdict: km < 1 ? 'agrees' : km < 25 ? 'disagrees_near' : 'disagrees_far',
+      })
+    }
+    await sleep(SLEEP_MS)
+  }
+
+  const by = (verdict: string) => rows.filter(r => r.verdict === verdict).length
+  return {
+    scanned,
+    suspect_in_window: (venues ?? []).filter(v => isBareStreetAddress(v.address!)).length,
+    checked: rows.length,
+    agrees: by('agrees'),
+    disagrees_near: by('disagrees_near'),
+    disagrees_far: by('disagrees_far'),
+    unverifiable: by('unverifiable'),
+    next_offset: offset + (consumed >= suspect.length ? scanned : 0),
+    worst: rows
+      .filter(r => r.distance_km !== undefined)
+      .sort((a, b) => (b.distance_km || 0) - (a.distance_km || 0))
+      .slice(0, 20),
+    note: 'read-only — nothing was written',
+  }
+}
+
 // ── Single venue (trigger mode) ────────────────────────────────────────────
 
 async function processSingleVenue(
@@ -419,7 +658,7 @@ async function processSingleVenue(
 ): Promise<{ venue_id: string; status: string; city_name?: string; city_id?: string }> {
   const { data: venue, error } = await supabase
     .from('venues')
-    .select('id, name, address, latitude, longitude, city, country, country_id, city_id')
+    .select('id, name, address, latitude, longitude, city, postal_code, country, country_id, city_id, enrichment_status')
     .eq('id', venueId)
     .single()
 
@@ -439,11 +678,25 @@ async function processSingleVenue(
       const res = await fetch(url, { headers: nominatimHeaders() })
       if (res.ok) nominatimData = await res.json() as NominatimResult
     } else if (hasAddress) {
-      const url = `${NOMINATIM_BASE}/search?format=json&q=${encodeURIComponent(venue.address!)}&limit=1&addressdetails=1`
-      const res = await fetch(url, { headers: nominatimHeaders() })
-      if (res.ok) {
-        const arr = await res.json() as NominatimResult[]
-        if (arr?.length) nominatimData = arr[0]
+      // Same guarded path as the batch pass. This is the call site that fired
+      // from trg_venue_geocode 1.1s after the eventfrog commit and replaced a
+      // correct Arnsberg row with Oberhausen's coordinates and city_id.
+      const outcome = await forwardGeocode(supabase, venue as GeoVenue)
+      if (outcome.ok) {
+        nominatimData = outcome.hit!
+      } else if (outcome.reason?.startsWith('nominatim_error')) {
+        return { venue_id: venueId, status: outcome.reason }
+      } else {
+        await supabase.from('venues').update({
+          geocode_attempted: true,
+          enrichment_status: stampGeocode(venue.enrichment_status, {
+            state: 'rejected',
+            reason: outcome.reason,
+            query: outcome.query,
+          }),
+          updated_at: new Date().toISOString(),
+        }).eq('id', venue.id)
+        return { venue_id: venueId, status: `rejected_${outcome.reason}` }
       }
     }
 
@@ -771,6 +1024,13 @@ Deno.serve(async (req) => {
       return jsonResponse({ success: true, mode: 'postal', ...postal }, 200, req)
     }
 
+    // Read-only. Reports how far the stored coordinates are from what the
+    // corrected query returns; writes nothing, by design.
+    if (mode === 'forward_audit') {
+      const audit = await processForwardAudit(supabase, batchSize, Number(body.offset) || 0)
+      return jsonResponse({ success: true, mode: 'forward_audit', ...audit }, 200, req)
+    }
+
     let result: { results: VenueResult[]; remaining: number }
 
     switch (mode) {
@@ -781,7 +1041,7 @@ Deno.serve(async (req) => {
         result = await processForward(supabase, batchSize)
         break
       default:
-        return errorResponse(`Unknown mode: ${mode}. Use "reverse", "forward" or "postal".`, 400, req)
+        return errorResponse(`Unknown mode: ${mode}. Use "reverse", "forward", "forward_audit" or "postal".`, 400, req)
     }
 
     if (!result.results.length) {
@@ -798,6 +1058,12 @@ Deno.serve(async (req) => {
     const geocoded = result.results.filter(r => ['geocoded_no_city_match', 'coords_only', 'city_text_only', 'coords_filled'].includes(r.status)).length
     const skipped = result.results.filter(r => ['no_results', 'no_address', 'no_city_in_response'].includes(r.status)).length
     const errors = result.results.filter(r => r.status.startsWith('error') || r.status.startsWith('nominatim_error')).length
+    // Refusals are their OWN number, never folded into `skipped`. A row the
+    // geocoder contradicted and a row the geocoder never heard of are different
+    // findings: the first says our data disagrees with the world, and a rising
+    // count there is the signal that something upstream is writing bad
+    // postal codes or bad country text.
+    const rejected = result.results.filter(r => r.status.startsWith('rejected_')).length
 
     return jsonResponse({
       success: true,
@@ -806,6 +1072,7 @@ Deno.serve(async (req) => {
       matched,
       geocoded,
       skipped,
+      rejected,
       errors,
       remaining: result.remaining,
       results: result.results,
