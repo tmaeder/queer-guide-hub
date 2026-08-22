@@ -39,4 +39,21 @@ describe('TagChip', () => {
     render(wrap(<TagChip tag="nightlife" count={42} />));
     expect(screen.getByRole('link')).toHaveTextContent('42');
   });
+
+  it('carries a glossary hover trigger in link mode only', () => {
+    // Radix HoverCardTrigger stamps data-state on the asChild link.
+    render(wrap(<TagChip tag="bear-bar" />));
+    expect(screen.getByRole('link')).toHaveAttribute('data-state', 'closed');
+  });
+
+  it('renders no hover trigger when preview is disabled or in linkless/removable modes', () => {
+    const { container: plain } = render(wrap(<TagChip tag="bear-bar" preview={false} />));
+    expect(plain.querySelector('[data-state]')).toBeNull();
+    const { container: inert } = render(wrap(<TagChip tag="bear-bar" linkless />));
+    expect(inert.querySelector('[data-state]')).toBeNull();
+    const { container: filter } = render(
+      wrap(<TagChip tag="bear-bar" removable onRemove={() => {}} />),
+    );
+    expect(filter.querySelector('[data-state]')).toBeNull();
+  });
 });

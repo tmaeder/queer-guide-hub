@@ -32,6 +32,9 @@ const INTENTS = [
   // asserted /support until 2026-08-10, i.e. it required the nav to link at a
   // redirect. /support itself still resolves and is still covered, by the
   // crisis-adjacent block at the bottom of this file.
+  // The tags wiki, promoted to a top-level intent (2026-08-22). /tags is the
+  // real glossary hub, no wrapper path.
+  { label: 'Glossary', href: '/tags' },
   { label: 'Support', href: '/help' },
   // /marketplace, not /shop, and for the same reason as Support above: /shop
   // was /marketplace's twin — two of its three sections were duplicates of
@@ -43,7 +46,7 @@ const INTENTS = [
 test.describe('desktop intent nav', () => {
   test.skip(({ isMobile }) => !!isMobile, 'desktop row is hidden below lg');
 
-  test('renders exactly the six intents in the primary landmark', async ({ page }) => {
+  test('renders exactly the seven intents in the primary landmark', async ({ page }) => {
     await page.goto('/');
     const nav = page.locator('header nav[aria-label="Primary"]');
     await expect(nav).toBeVisible();
@@ -82,12 +85,13 @@ test.describe('homepage intent map', () => {
     '/travel',
     '/people',
     '/search', // the interchange, where all four lines meet
+    '/tags', // glossary — the 7th intent
     '/rights',
     '/help',
     '/marketplace',
   ];
 
-  test('renders the six intents plus the interchange as stations', async ({ page }) => {
+  test('renders the seven intents plus the interchange as stations', async ({ page }) => {
     // The desktop visual snapshot masks `main section:first-of-type`, which
     // this section matches — so the screenshot does NOT guard the map. This
     // does. It also catches the CSS-only breakpoint split degrading into two
@@ -175,8 +179,15 @@ test.describe('honest coverage', () => {
     await page.goto('/rights');
     // The world list was `.slice(0, 12)` per tier with no expander, so only
     // 103 of 250 countries had any path from this page and — the lists being
-    // alphabetical — everything past B was unreachable.
+    // alphabetical — everything past B was unreachable. The #2930 restructure
+    // windows the table to 30 rows BY DESIGN (compact, no inner scrollbox on a
+    // crisis-adjacent page), so reachability now runs through the "Show all N
+    // countries" expander — the path this test takes. The button naming the
+    // FULL count is part of the contract: an expander that reveals another
+    // slice instead of everything is the old defect back. 250 is pinned, same
+    // as the coverage test above — the two move together if a territory lands.
     const world = page.locator('#world');
+    await world.getByRole('button', { name: 'Show all 250 countries' }).click();
     await expect(world.getByRole('link', { name: 'Germany', exact: true })).toBeVisible();
     await expect(world.getByRole('link', { name: 'Thailand', exact: true })).toBeVisible();
   });

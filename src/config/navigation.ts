@@ -135,7 +135,7 @@ export const DESTINATIONS: NavDestination[] = [
     labelKey: 'header.nav.members',
     cluster: 'community',
   },
-  { to: '/tags', icon: Tags, labelKey: 'header.nav.tags', cluster: 'shop' },
+  { to: '/tags', icon: Tags, labelKey: 'header.nav.tags', cluster: 'shop', searchType: 'tag' },
   { to: '/travel', icon: Plane, labelKey: 'header.nav.travel', cluster: 'places' },
   {
     to: '/personalities',
@@ -181,7 +181,8 @@ export const DESTINATIONS: NavDestination[] = [
  *    already had to be collapsed for exactly that reason.
  * Both are asserted in src/config/__tests__/navigation.test.ts.
  */
-export type IntentId = 'going-out' | 'travelling' | 'meet' | 'rights' | 'support' | 'shop';
+export type IntentId =
+  'going-out' | 'travelling' | 'meet' | 'rights' | 'glossary' | 'support' | 'shop';
 
 export interface IntentDestination {
   id: IntentId;
@@ -284,9 +285,36 @@ export const INTENT_NAV: IntentDestination[] = [
     // /rights owns no browse routes of its own — it is one composite page over
     // countries. Its column points at the two surfaces that carry the same
     // subject over time rather than padding to three with something unrelated.
+    // No /tags cross-link here: the Glossary column renders directly after
+    // this one, and a second same-name link to the same page is footer noise
+    // (and an ambiguous accessible name).
     children: [
       { to: '/history', labelKey: 'header.nav.history', fallback: 'History' },
       { to: '/news', labelKey: 'header.nav.news', fallback: 'News' },
+    ],
+  },
+  {
+    // The tags wiki, promoted to a top-level job ("what does this word/flag/
+    // code mean"). `to` is the real hub page — /tags carries the glossary
+    // index, category tree and graph view; no wrapper path is minted. Rides
+    // the pink line because glossary↔tag is 1:1 and ROUTE_BULLET_MAP.tag is
+    // the pink `#` bullet (asserted via ONE_TO_ONE in navigation.test.ts).
+    id: 'glossary',
+    to: '/tags',
+    icon: transitIcon('documents'),
+    labelKey: 'header.intents.glossary.label',
+    fallback: 'Glossary',
+    subtitleKey: 'header.intents.glossary.subtitle',
+    subtitleFallback: 'What every term, flag and code means',
+    activePrefixes: ['/tags'],
+    children: [
+      { to: '/tags', labelKey: 'header.nav.tagsAll', fallback: 'All terms' },
+      {
+        to: '/tags/interactions',
+        labelKey: 'header.nav.tagsInteractions',
+        fallback: 'Substance safety',
+      },
+      { to: '/tags/sti-guide', labelKey: 'header.nav.tagsStiGuide', fallback: 'STI guide' },
     ],
   },
   {
@@ -367,6 +395,7 @@ export const INTENT_SCOPE_BIAS: Record<IntentId, string[]> = {
   // index in search, so this deliberately does not pretend to surface people.
   meet: ['group', 'event'],
   rights: ['country', 'news'],
+  glossary: ['tag'],
   support: ['organization', 'news'],
   shop: ['marketplace', 'guide'],
 };
@@ -412,6 +441,7 @@ export const BOTTOM_NAV_TABS: BottomNavTab[] = [
       // and every intent page is a browse surface.
       '/going-out',
       '/rights',
+      '/tags',
       '/support',
       // The Support intent now lands on /help (the two pages were merged), so
       // Explore must light there too — otherwise the mobile tab goes dark the
@@ -544,6 +574,9 @@ export const INTENT_TRACK: Record<string, 'pink' | 'blue' | 'green' | 'yellow'> 
   travelling: 'blue',
   meet: 'green',
   rights: 'yellow',
+  // Forced, not chosen: glossary↔tag is 1:1 and ROUTE_BULLET_MAP.tag rides
+  // pink (`#` bullet) — the nav tab and every tag chip must agree.
+  glossary: 'pink',
   support: 'pink',
   shop: 'yellow',
 };

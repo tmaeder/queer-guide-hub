@@ -1872,6 +1872,11 @@
         "label": "[DE] Search everything",
         "subtitle": "[DE] Every line meets here"
       }
+    },
+    "glossary": {
+      "eyebrow": "[DE] Glossary",
+      "title": "[DE] Know the words",
+      "seeAll": "[DE] All terms"
     }
   },
   "header": {
@@ -1908,12 +1913,15 @@
       "personalities": "Persönlichkeiten",
       "hotels": "Hotels",
       "help": "Krisenhilfe",
-      "tags": "Tags",
       "history": "Geschichte",
       "guides": "Guides",
       "trips": "Reisen",
       "organizations": "Organisationen",
-      "wishlists": "Wunschlisten"
+      "wishlists": "Wunschlisten",
+      "tags": "[DE] Glossary",
+      "tagsAll": "[DE] All terms",
+      "tagsInteractions": "[DE] Substance safety",
+      "tagsStiGuide": "[DE] STI guide"
     },
     "intents": {
       "goingOut": {
@@ -1941,7 +1949,11 @@
         "subtitle": "Bücher, Mode, Kunst und Geschenke"
       },
       "sheetHeading": "Wofür bist du hier?",
-      "browseHeading": "Alles durchsuchen"
+      "browseHeading": "Alles durchsuchen",
+      "glossary": {
+        "label": "[DE] Glossary",
+        "subtitle": "[DE] What every term, flag and code means"
+      }
     },
     "userMenu": {
       "myTrips": "Meine Reisen",
@@ -4460,11 +4472,20 @@
       "notOneLaw": "Dies ist kein einzelnes Gesetz. Es wird Land für Land erfasst.",
       "seeByCountry": "Status nach Land ansehen",
       "spansAllRights": "Dies umfasst ein ganzes Rechtsgebiet, nicht ein einzelnes Gesetz. Wir erfassen 18 einzelne Rechte, Land für Land.",
-      "seeAllRights": "Alle 18 Rechte nach Land ansehen"
+      "seeAllRights": "Alle 18 Rechte nach Land ansehen",
+      "seeAllInSearch": "[DE] See all in search"
     },
     "flagWall": {
       "eyebrow": "Symbole",
       "title": "Die Flaggen"
+    },
+    "preview": {
+      "adultGated": "[DE] 18+ term. Open the entry to confirm your age.",
+      "open": "[DE] Read the entry"
+    },
+    "fromGlossary": {
+      "title": "[DE] From the glossary",
+      "all": "[DE] All terms"
     }
   },
   "village": {

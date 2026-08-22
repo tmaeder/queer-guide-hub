@@ -172,10 +172,50 @@ if (!hygieneRes.ok) {
   }
 }
 
-// 6. Search reindex queue (P1 overhaul, 2026-08): entity writes enqueue here;
-//    search_reindex_drain applies them every minute. A deep AND old queue means
-//    the drain is broken — search results are then frozen at their last index.
+// 6. Search reindex drain (P1 overhaul, 2026-08): entity writes enqueue into
+//    search_reindex_queue; search_reindex_drain applies them every minute. When
+//    it stops, nothing reaches search_documents and every newly committed
+//    venue/event/city is invisible to /search, autocomplete and the
+//    recommendation RPCs while the site itself looks entirely normal.
+//
+//    LIVENESS, NOT DEPTH, is the signal. This check used to fail only on
+//    `depth > 25000 && oldestMin > 60`, and on 2026-08-22 it sat through a real
+//    freeze: the drain had been auto-paused for 70 minutes with 9,565 rows
+//    queued, which cleared the age half and missed the depth half, so it warned
+//    and passed. Depth cannot decide this in either direction — a HEALTHY drain
+//    working through a 25k backfill at 400 rows/min legitimately leaves the
+//    oldest row an hour old, while a DEAD drain on a quiet day never gets deep
+//    at all. Whether it ran is unambiguous, so that is what fails the build.
 {
+  const drain = await get('admin_automations?slug=eq.search_reindex_drain&select=enabled')
+  if (!drain.length) {
+    // Not "nothing to check": the registry row IS the schedule for this job
+    // (sync_automations_to_cron drives pg_cron from it), so a missing row means
+    // nothing runs the drain at all.
+    console.error('✗ no admin_automations row for search_reindex_drain — nothing schedules the drain')
+    process.exit(1)
+  }
+  if (!drain[0].enabled) {
+    console.error('✗ search_reindex_drain is DISABLED — the whole search index is frozen')
+    console.error('  Check admin_automation_runs.summary for `auto_paused` before assuming a human did it:')
+    console.error('  a later success resets consecutive_failures/last_run_status but never re-enables the row.')
+    process.exit(1)
+  }
+
+  const stats = await get('search_reindex_drain_stats?select=ran_at,failed&limit=1')
+  if (!stats.length) {
+    console.warn('⚠ search_reindex_drain_stats empty — the drain has never run')
+  } else {
+    const staleMin = (Date.now() - new Date(stats[0].ran_at).getTime()) / 60000
+    if (staleMin > 15) {
+      console.error(`✗ search_reindex_drain last ran ${staleMin.toFixed(0)}min ago (schedule is every minute) — index frozen`)
+      process.exit(1)
+    }
+    if (stats[0].failed > 0) {
+      console.warn(`⚠ last drain re-queued ${stats[0].failed} row(s) after per-row errors`)
+    }
+  }
+
   const res = await fetch(`${BASE}/rest/v1/search_reindex_queue?select=created_at&order=id.asc&limit=1`, {
     headers: { ...headers, Prefer: 'count=exact' },
   })
@@ -185,14 +225,10 @@ if (!hygieneRes.ok) {
     const depth = Number(res.headers.get('content-range')?.split('/')[1] ?? 0)
     const rows = await res.json()
     const oldestMin = rows.length ? (Date.now() - new Date(rows[0].created_at).getTime()) / 60000 : 0
-    if (depth > 25000 && oldestMin > 60) {
-      console.error(`✗ search_reindex_queue stuck: depth=${depth}, oldest=${oldestMin.toFixed(0)}min — drain cron broken?`)
-      process.exit(1)
-    }
     if (depth > 5000 || oldestMin > 15) {
       console.warn(`⚠ search_reindex_queue busy: depth=${depth}, oldest=${oldestMin.toFixed(0)}min (backfill in flight is normal)`)
     } else {
-      console.log(`✓ search reindex queue healthy (depth=${depth})`)
+      console.log(`✓ search reindex drain healthy (depth=${depth})`)
     }
   }
 }

@@ -12,6 +12,7 @@ import { useEvents } from '@/hooks/useEvents';
 import { useNearbyMapPoints } from '@/hooks/useNearbyMapPoints';
 import { useVenueSafetyScore } from '@/hooks/useVenueSafetySignals';
 import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
+import { FromTheGlossary } from '@/components/tags/FromTheGlossary';
 import {
   fetchVenue,
   VenueActions,
@@ -266,6 +267,7 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
             {/* Self-hides when the venue is in no guide, so it stays out of
                 `sections` — a station pointing at nothing is a dead stop. */}
             <VenueGuides venue={venue} />
+            <FromTheGlossary tags={venue.tags} />
           </>
         ),
         tags: (

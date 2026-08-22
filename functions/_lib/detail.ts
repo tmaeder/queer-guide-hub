@@ -171,8 +171,12 @@ async function venueDetail(env: Env, slug: string, pathname: string): Promise<De
   const rows = await fetchRows(
     env,
     'venues',
-    'name,slug,description,address,city,state,country,postal_code,latitude,longitude,phone,website,images,category,venue_subtype,foursquare_rating,tripadvisor_rating,tomtom_rating,hours,updated_at,safety_gated',
-    `slug=eq.${encodeURIComponent(slug)}&duplicate_of_id=is.null`,
+    'name,slug,description,address,city,state,country,postal_code,latitude,longitude,phone,website,images,category,venue_subtype,foursquare_rating,tripadvisor_rating,tomtom_rating,hours,updated_at,safety_gated,review_status,seo_indexable',
+    // review_status=neq.archived: fetchRows runs with the service role, so the
+    // SPA's own archived filter (usePageFetchers → notFound) never applies here;
+    // without it every soft-archived venue kept serving full meta + JSON-LD to
+    // crawlers with HTTP 200.
+    `slug=eq.${encodeURIComponent(slug)}&duplicate_of_id=is.null&review_status=neq.archived`,
     1,
   );
   const row = rows[0] ?? null;
@@ -280,7 +284,7 @@ async function venueDetail(env: Env, slug: string, pathname: string): Promise<De
       : undefined,
   };
 
-  return { meta, body, jsonLd: renderLd(prune(localBusiness)) };
+  return { meta, body, jsonLd: renderLd(prune(localBusiness)), indexable: row.seo_indexable !== false };
 }
 
 function mapVenueType(subtype: string): string {
