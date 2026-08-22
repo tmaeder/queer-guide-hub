@@ -22,10 +22,42 @@ Follow-up to the read-only [2026-08-21 audit](./2026-08-21-marketplace-data-qual
 - Edge fns: `marketplace-description-enhance` (queue-driven), `marketplace-relevance-rescore` (600/night), `marketplace-link-checker` (feed-aware + concurrent)
 - Frontend: `src/lib/marketplaceTaxonomy.ts` (home department, film/calendars groups surfaced), `MarketplaceQualityStatsPanel` on `/admin/quality`
 
+## Shortlist guides: reviewed and published (2026-08-22, later same day)
+
+The seeded picks were ranked by `boutique_score` alone, and that is **not an editorial
+shortlist** — it ranks by merchant. Measured on the seeded rows: jewelry was **100% one
+brand** (Automic Gold), books/art and underwear **92% one brand**. Re-picked with three
+rules, applied as data (no schema change):
+
+1. **Max 2 picks per brand**, where brand identity is normalized
+   (`lower(regexp_replace(split_part(brand,'|',1),'[^a-zA-Z0-9]','','g'))`) — without that,
+   `TomboyX`/`tomboyx` and `WEGAN`/`WeGan` each defeat the cap as separate brands.
+2. **Queer-owned brands first**, then `boutique_score`.
+3. **The title must positively match the department's own vocabulary.** A blocklist was
+   tried first and leaked: socks in *Swimwear*, a mesh crop top in *Jewelry*, nipple clamps
+   in *Hygiene & Care*, and a bicycle mudguard in *Books & art* (it matched "comic").
+   Requiring positive evidence is what removes them. `department` stays as-is for browsing —
+   the stricter bar applies only to curated picks, which is an editorial artifact and can
+   demand more.
+
+Also excluded: gift cards/vouchers/samples, out-of-stock, imageless, and anything not
+`sfw`/`suggestive`.
+
+**Published (5):** apparel, underwear, swimwear, jewelry, books_art — each 12 picks,
+6–8 distinct brands, max 2 per brand, 8–12 of 12 queer-owned, 0 gated/out-of-stock/imageless.
+Verified live: published slugs return 200, held slugs 404, JSON-LD `Article` carries the dek.
+
+**Held in `status='review'` (2):** `hygiene` and `home`, each with a `meta.hold_reason`.
+Hygiene's eligible pool is dominated by intimate/anal-care products with **zero** queer-owned
+brands clearing the bar — that is a legitimate retail category but a different editorial
+frame, and the tone call belongs to a human. Home is thin (373 listings, 29 brands, only 3
+queer-owned) and mostly generic dropship beach towels.
+
 ## Deliberately NOT done
 
 - No venue/city relations on listings (Business Spine: address/geo stay per-location; products inherit through org).
-- No auto-publish of the department guides, no auto-approval of `ownership_tags` (queer-owned claims stay human-gated).
+- No auto-approval of `ownership_tags` (queer-owned claims stay human-gated). Guide publishing
+  was a reviewed human-triggered action, not automated — nothing in the pipeline self-publishes.
 - `marketplace-image-mirror`'s `image_hashes` starvation left as-is for now — the `image_asset_links` path serves 91% of listings; consolidating the two mirror pipelines is follow-up work.
 - `category_id`/`marketplace_categories` (11/69,738 populated) left untouched — retire-or-wire decision deferred.
 - `marketplace_price_history.price_usd` backfill deferred (analytics-only impact).
