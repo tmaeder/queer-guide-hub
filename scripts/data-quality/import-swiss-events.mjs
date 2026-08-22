@@ -114,20 +114,35 @@ async function getCached(url, { json = false } = {}) {
 
 // ---------------------------------------------------------------- helpers
 
+/**
+ * HTML -> plain text. Two orderings here are load-bearing, both flagged by
+ * CodeQL on the first version of this file:
+ *
+ * 1. `</script>` must be matched as `</script\s*>`. A closing tag may carry
+ *    whitespace before the `>`, and the strict form leaves the whole script
+ *    body in the extracted text (js/bad-tag-filter).
+ *
+ * 2. `&amp;` is decoded LAST. Decoding it first turns `&amp;lt;` into `&lt;`
+ *    and the next rule turns that into `<` — a literal, escaped "&lt;" in the
+ *    source silently becomes markup (js/double-escaping). Numeric entities run
+ *    before it for the same reason and are safe there, because `&amp;#60;`
+ *    contains no `&#60;` substring.
+ */
 const stripTags = (s) =>
   String(s || '')
-    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
-    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script\b[^>]*>/gi, ' ')
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style\b[^>]*>/gi, ' ')
     .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<\/p>/gi, '\n')
+    .replace(/<\/p\b[^>]*>/gi, '\n')
     .replace(/<[^>]+>/g, ' ')
+    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+    .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(Number(d)))
     .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
     .replace(/&quot;/g, '"')
-    .replace(/&#0?39;|&apos;|&#8217;/g, "'")
+    .replace(/&apos;/g, "'")
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
-    .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(Number(d)))
+    .replace(/&amp;/g, '&')
     .replace(/[ \t]+/g, ' ')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
