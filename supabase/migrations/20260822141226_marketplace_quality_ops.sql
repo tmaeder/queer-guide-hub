@@ -1,14 +1,28 @@
--- Marketplace quality ops. See repo migration 20260916120400 for full
--- rationale (prune generalization + freshness guard, brand triage,
--- feed-sync liveness credit, enhance queue, department shortlist guides,
--- automation throughput).
-SET statement_timeout = '900s';
-SET lock_timeout = '5s';
+-- Marketplace quality ops (2026-08-22 data-quality pass, part 2 of 3).
+-- Companions: 20260916120000/120100 (classifier v2 + STORED regen),
+-- 20260916120200/120300 (merchant_id + alt-text backfills).
+--
+-- Covers: prune generalization beyond ohmyfantasy.com, brand-queue triage,
+-- feed-sync liveness credit for the link checker, a boilerplate-first work
+-- queue for description enhancement, department shortlist guides (status
+-- 'review' — nothing publishes itself), and the automation registry updates
+-- that give the rescore/enhance/link-checker crons throughput matched to a
+-- 61k catalog.
 
+-- ── 1. Prune candidates: all domains, but only FRESH verdicts ────────────────
+-- The 2026-08-21 audit measured 770 active listings under the 0.60 relevance
+-- bar across 28 domains, and 0 of them on ohmyfantasy.com — the one domain the
+-- prune was hardcoded to. But part of that cohort carries scores from the
+-- pre-2026-06 miscalibrated model (teamm8 avg 0.04, mrsleather 0.02 — real
+-- queer shops), so archiving on a stale score would repeat the June mistake
+-- in reverse. The guard: a row only qualifies once the CURRENT kink/brand-
+-- aware rescorer has judged it recently (p_max_age, default 45 days). The
+-- weekly→daily rescore below feeds this; stale-scored rows simply wait their
+-- turn.
 DROP FUNCTION IF EXISTS public.marketplace_prune_candidates(text[], numeric, integer);
 
 CREATE FUNCTION public.marketplace_prune_candidates(
-  p_domains text[] DEFAULT NULL,
+  p_domains text[] DEFAULT NULL,          -- NULL = every domain
   p_max_relevance numeric DEFAULT 0.60,
   p_limit integer DEFAULT NULL,
   p_max_age interval DEFAULT interval '45 days'
@@ -98,6 +112,16 @@ AS $function$
   ) ELSE NULL END;
 $function$;
 
+-- ── 2. Brand queue triage ────────────────────────────────────────────────────
+-- 4,322 pending marketplace_brands, and NONE with 10+ live listings: the
+-- queue is dominated by book AUTHORS auto-detected from queerlit/salzgeber
+-- listings (Casey McQuiston, Alison Bechdel, …) — authors are not merch
+-- brands and must not become brand pages. Measured split: 3,874 author-like
+-- (>80% of their live listings are books_art), 102 real merch brands with
+-- 3+ live listings, ~350 small/ambiguous.
+-- Reject the authors with an explanatory note (rows are kept; a future
+-- author facet can re-read them). Approve the 102 for brand-page
+-- eligibility only — ownership_tags stay untouched and human-gated.
 WITH pend AS (
   SELECT b.id,
     (SELECT count(*) FROM public.marketplace_listings ml
@@ -119,24 +143,42 @@ FROM pend p
 WHERE b.id = p.id
   AND coalesce(b.ownership_tags, '{}') = '{}'
   AND (
-    (p.live >= 3 AND p.books::numeric / p.live <= 0.8)
-    OR (p.live > 0 AND p.books::numeric / p.live > 0.8)
+    (p.live >= 3 AND p.books::numeric / p.live <= 0.8)                -- approve
+    OR (p.live > 0 AND p.books::numeric / p.live > 0.8)               -- reject authors
   );
 
-SET session_replication_role = replica;
+-- ── 3. Feed sync is liveness evidence ────────────────────────────────────────
+-- A listing seen in its merchant's Shopify/Woo product feed in the last 14
+-- days provably exists — the feed literally enumerates it. 7,879 active rows
+-- were feed-confirmed yet counted as "never checked". Credit the feed pass so
+-- the HTTP checker spends its budget on rows with NO feed evidence.
+-- (link_health/link_checked_at feed nothing in search_documents; skip the
+-- unscoped sync trigger to avoid ~8k no-op reindex enqueues.)
+SET lock_timeout = '5s';
+ALTER TABLE public.marketplace_listings DISABLE TRIGGER trg_search_documents_marketplace;
+
 UPDATE public.marketplace_listings
 SET link_health = 'ok', link_checked_at = last_seen_at
 WHERE status = 'active'
   AND link_checked_at IS NULL
   AND last_seen_at > now() - interval '14 days';
-SET session_replication_role = DEFAULT;
 
+ALTER TABLE public.marketplace_listings ENABLE TRIGGER trg_search_documents_marketplace;
+
+-- ── 4. Description-enhance work queue (boilerplate → thin → backlog) ─────────
+-- The */5 enhance cron was pinned to merchant_domain=ohmyfantasy.com, so the
+-- 12,560 rows sharing 422 boilerplate spec-sheet descriptions and the 2,145
+-- thin ones on other sources were never eligible. A tiny claim-queue keeps
+-- the expensive priority computation (a full-table duplicate-description
+-- scan) to ONE pass per ~5,000 processed rows instead of one per cron tick
+-- on a disk-constrained DB.
 CREATE TABLE IF NOT EXISTS public.marketplace_enhance_queue (
   listing_id uuid PRIMARY KEY REFERENCES public.marketplace_listings(id) ON DELETE CASCADE,
-  priority smallint NOT NULL,
+  priority smallint NOT NULL,          -- 1 boilerplate, 2 thin, 3 never-enhanced backlog
   enqueued_at timestamptz NOT NULL DEFAULT now()
 );
 ALTER TABLE public.marketplace_enhance_queue ENABLE ROW LEVEL SECURITY;
+-- service-role only: no policies, no anon/authenticated grants.
 
 CREATE OR REPLACE FUNCTION public.marketplace_enhance_refill(p_max integer DEFAULT 5000)
  RETURNS integer
@@ -201,6 +243,11 @@ $function$;
 REVOKE ALL ON FUNCTION public.marketplace_enhance_refill(integer) FROM anon, authenticated;
 REVOKE ALL ON FUNCTION public.marketplace_enhance_claim(integer) FROM anon, authenticated;
 
+-- ── 5. Department shortlists as review-gated list guides ─────────────────────
+-- The entire marketplace↔editorial graph was 12 guide picks. Seed one
+-- 'list' guide per SFW department (top 12 by boutique_score, sfw/suggestive
+-- picks only) at status='review' — an admin publishes or edits them at
+-- /admin/content/guides; nothing goes public by itself.
 WITH depts(dept, title, slug) AS (
   VALUES
     ('apparel',   'Apparel shortlist',      'shop-apparel-shortlist'),
@@ -234,6 +281,14 @@ JOIN LATERAL (
   LIMIT 12
 ) pick ON true;
 
+-- ── 6. Automation registry: throughput matched to a 61k catalog ──────────────
+-- Registry stays canonical; sync_automations_to_cron() below reconciles the
+-- live cron jobs (including run-tracking re-wrap) in the same transaction.
+-- (a) relevance rescore: weekly Wed → nightly. 10,834 rows still sit at the
+--     0.60 default and prune eligibility requires a fresh verdict. The slug
+--     keeps its (now misnamed) _weekly suffix on purpose — run-tracking and
+--     auto-pause key on the slug. Schedule is altered on the LIVE job too,
+--     because the reconciler's drift branches cover command, not schedule.
 UPDATE public.admin_automations
 SET schedule = '20 2 * * *'
 WHERE slug = 'marketplace_relevance_rescore_weekly';
@@ -241,6 +296,8 @@ WHERE slug = 'marketplace_relevance_rescore_weekly';
 SELECT cron.alter_job(jobid, schedule => '20 2 * * *')
 FROM cron.job WHERE jobname = 'marketplace_relevance_rescore_weekly';
 
+-- (b) description enhance: drop the ohmyfantasy pin — the fn now claims from
+--     marketplace_enhance_queue (boilerplate-first) when no domain is given.
 UPDATE public.admin_automations
 SET action = jsonb_set(action, '{command}', to_jsonb(replace(
       action->>'command',
@@ -249,6 +306,9 @@ SET action = jsonb_set(action, '{command}', to_jsonb(replace(
 WHERE slug = 'marketplace_description_enhance'
   AND action->>'command' LIKE '%ohmyfantasy%';
 
+-- (c) link checker: 200/day cannot cover 46k unchecked rows. The fn now
+--     probes concurrently, so 400/day fits the same wall clock; feed-fresh
+--     rows are excluded fn-side.
 UPDATE public.admin_automations
 SET action = jsonb_set(action, '{command}', to_jsonb(replace(
       action->>'command',
@@ -257,4 +317,6 @@ SET action = jsonb_set(action, '{command}', to_jsonb(replace(
 WHERE slug = 'marketplace_link_checker'
   AND action->>'command' LIKE '%"batch_size":200%';
 
+-- Reconcile the live cron jobs against the updated registry (the command-
+-- drift branch re-derives the run-tracking-wrapped form for (b) and (c)).
 SELECT public.sync_automations_to_cron(true);

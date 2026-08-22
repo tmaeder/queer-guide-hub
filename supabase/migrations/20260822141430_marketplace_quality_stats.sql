@@ -1,6 +1,9 @@
--- Marketplace quality governance: nightly snapshot + admin RPC + registry row.
--- See repo migration 20260916120500.
-SET statement_timeout = '600s';
+-- Marketplace quality governance (2026-08-22 data-quality pass, part 3 of 3).
+-- One nightly pure-SQL snapshot of the quality dimensions this pass repaired,
+-- so a regression is a visible trend instead of a rediscovery two months
+-- later. The panel RPC reads the LATEST SNAPSHOT — the expensive parts
+-- (boilerplate detection is a full-table scan) run once nightly, never on
+-- page load.
 
 CREATE TABLE IF NOT EXISTS public.marketplace_quality_snapshots (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -8,6 +11,7 @@ CREATE TABLE IF NOT EXISTS public.marketplace_quality_snapshots (
   stats jsonb NOT NULL
 );
 ALTER TABLE public.marketplace_quality_snapshots ENABLE ROW LEVEL SECURITY;
+-- service-role writes; admins read through the SECURITY DEFINER RPC below.
 
 CREATE OR REPLACE FUNCTION public.run_marketplace_quality_snapshot()
  RETURNS jsonb
@@ -63,6 +67,7 @@ BEGIN
   FROM l;
 
   INSERT INTO public.marketplace_quality_snapshots (stats) VALUES (v_stats);
+  -- Keep a year of nightly rows; the table stays tiny.
   DELETE FROM public.marketplace_quality_snapshots WHERE taken_at < now() - interval '400 days';
   RETURN v_stats;
 END;
@@ -70,6 +75,8 @@ $function$;
 
 REVOKE ALL ON FUNCTION public.run_marketplace_quality_snapshot() FROM anon, authenticated;
 
+-- Panel RPC: latest snapshot + previous one for delta rendering. Admin-gated
+-- like marketplace_prune_stats.
 CREATE OR REPLACE FUNCTION public.marketplace_quality_stats()
  RETURNS jsonb
  LANGUAGE sql
@@ -86,6 +93,7 @@ $function$;
 
 GRANT EXECUTE ON FUNCTION public.marketplace_quality_stats() TO authenticated;
 
+-- Registry row + cron (sync_automations_to_cron creates the missing job).
 INSERT INTO public.admin_automations (slug, name, description, managed_by, enabled, "trigger", action, schedule)
 VALUES (
   'marketplace_quality_snapshot',
@@ -100,4 +108,5 @@ ON CONFLICT (slug) DO NOTHING;
 
 SELECT public.sync_automations_to_cron(true);
 
+-- First snapshot immediately, so the panel has data before tonight.
 SELECT public.run_marketplace_quality_snapshot();

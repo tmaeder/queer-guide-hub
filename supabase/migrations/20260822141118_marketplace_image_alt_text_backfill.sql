@@ -1,8 +1,12 @@
--- Alt text was empty on ALL 73,826 marketplace image assets. Deterministic
--- derivation from the owning listing (title — brand). Fill-if-empty only.
--- See repo migration 20260916120300.
-SET statement_timeout = '900s';
-
+-- Alt text was empty on ALL 73,826 marketplace image assets (measured
+-- 2026-08-22) — every product image rendered with no accessible name.
+-- Deterministic derivation from the owning listing: title, plus brand when
+-- the title doesn't already contain it. No LLM, no fabrication — the alt of
+-- a product photo is the product.
+--
+-- image_assets carries no search trigger (only updated_at + a BEFORE INSERT
+-- optimizer hook), so a bulk UPDATE here causes zero reindex churn.
+-- Fill-if-empty only: a curated alt is never overwritten.
 UPDATE public.image_assets ia
 SET alt_text = src.alt,
     alt_provenance = 'derived:listing_title'
