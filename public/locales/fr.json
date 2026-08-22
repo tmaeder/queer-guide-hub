@@ -1925,7 +1925,8 @@
       "tags": "[FR] Glossary",
       "tagsAll": "[FR] All terms",
       "tagsInteractions": "[FR] Substance safety",
-      "tagsStiGuide": "[FR] STI guide"
+      "tagsStiGuide": "[FR] STI guide",
+      "transRights": "Droits trans"
     },
     "intents": {
       "goingOut": {

@@ -1921,7 +1921,8 @@
       "tags": "[ZH] Glossary",
       "tagsAll": "[ZH] All terms",
       "tagsInteractions": "[ZH] Substance safety",
-      "tagsStiGuide": "[ZH] STI guide"
+      "tagsStiGuide": "[ZH] STI guide",
+      "transRights": "跨性别权利"
     },
     "intents": {
       "goingOut": {

@@ -2,8 +2,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { render, screen, within } from '@/test/test-utils';
 import userEvent from '@testing-library/user-event';
 import { RightsMapControls } from '../RightsMapControls';
-import { RIGHT_TOPICS, topicBySlug } from '@/lib/rights/rightsCatalog';
-import { MAP_CLASS_ORDER, type MapClass } from '@/lib/rights/rightsMapModel';
+import { RIGHT_SECTION_ORDER, RIGHT_TOPICS, topicBySlug } from '@/lib/rights/rightsCatalog';
+import { MAP_CLASS_ORDER, SECTION_TRACK, type MapClass } from '@/lib/rights/rightsMapModel';
 
 const criminalisation = topicBySlug('criminalisation')!;
 const employment = topicBySlug('employment')!;
@@ -42,6 +42,40 @@ describe('RightsMapControls — line selector', () => {
     expect(buttons.length).toBe(RIGHT_TOPICS.length);
   });
 
+  it('renders all 18 in ONE rail, not a row per family', () => {
+    // The five families are inline dividers now. Five stacked rows cost ~400px
+    // desktop / ~620px mobile — more than the map they filter — and every
+    // other filter bar in the app is one scrolling line. Asserting the shape
+    // because the height regression is invisible to every other test here.
+    const { container } = render(<RightsMapControls {...baseProps()} />);
+    const rail = screen.getByRole('group', { name: 'Rights' });
+    expect(rail.className).toContain('overflow-x-auto');
+    expect(rail.className).not.toContain('flex-wrap');
+    // One flex container holding every chip: no per-family sub-rows.
+    expect(within(rail).getAllByRole('button').length).toBe(RIGHT_TOPICS.length);
+    expect(container.querySelectorAll('[class*="grid-cols-"]').length).toBe(0);
+  });
+
+  it('marks each family with a track swatch rather than a row header', () => {
+    render(<RightsMapControls {...baseProps()} />);
+    const rail = screen.getByRole('group', { name: 'Rights' });
+    // TrackSwatch renders an aria-hidden span carrying the track fill; one per
+    // family, and it must stay border-gated (WCAG 1.4.11 — blue, green and
+    // yellow all measure under 3:1 on paper).
+    const swatches = rail.querySelectorAll('span[aria-hidden][class*="bg-track-"]');
+    expect(swatches.length).toBe(RIGHT_SECTION_ORDER.length);
+    swatches.forEach((s) => expect(s.className).toContain('border-track-ring'));
+  });
+
+  it('the active chip keeps the track fill, not the ink plate', () => {
+    // The map below is drawn in this track colour; an ink-plated active chip
+    // would break the only link between the control and the canvas.
+    render(<RightsMapControls {...baseProps({ topic: employment })} />);
+    const chip = screen.getByRole('button', { name: employment.labelDefault });
+    expect(chip.className).toContain(`bg-track-${SECTION_TRACK[employment.section]}`);
+    expect(chip.className).toContain('border-track-ring');
+  });
+
   it('clicking a station calls onTopicChange with that topic', async () => {
     const onTopicChange = vi.fn();
     render(<RightsMapControls {...baseProps({ onTopicChange })} />);
@@ -63,18 +97,35 @@ describe('RightsMapControls — line selector', () => {
 });
 
 describe('RightsMapControls — lens selector', () => {
-  it('disables the lens buttons with an explanation for a non-matrix topic', () => {
+  it('marks the lens buttons unavailable — reachable, not removed — for a non-matrix topic', () => {
     render(<RightsMapControls {...baseProps({ topic: criminalisation })} />);
-    expect(screen.getByRole('button', { name: 'Everyone' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Sexual orientation' })).toBeDisabled();
+    const everyone = screen.getByRole('button', { name: 'Everyone' });
+    // aria-disabled, not the `disabled` attribute: a disabled button is not
+    // focusable, which left the mobile lens rail a scrollable region with no
+    // focusable content (axe scrollable-region-focusable, serious) AND took
+    // the chips out of tab order, so a screen reader user would never learn
+    // the lens exists for this law — the very limitation it is here to state.
+    expect(everyone).toHaveAttribute('aria-disabled', 'true');
+    expect(everyone).not.toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Sexual orientation' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
     expect(
       screen.getByText('This law is recorded once for everyone — no per-group reading exists.'),
     ).toBeInTheDocument();
   });
 
+  it('does not change the lens when an unavailable chip is clicked', async () => {
+    const onLensChange = vi.fn();
+    render(<RightsMapControls {...baseProps({ topic: criminalisation, onLensChange })} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Gender identity' }));
+    expect(onLensChange).not.toHaveBeenCalled();
+  });
+
   it('enables the lens buttons for a protection-matrix topic (employment)', () => {
     render(<RightsMapControls {...baseProps({ topic: employment })} />);
-    expect(screen.getByRole('button', { name: 'Everyone' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Everyone' })).not.toHaveAttribute('aria-disabled');
     expect(screen.getByRole('button', { name: 'Gender identity' })).toBeEnabled();
     expect(
       screen.queryByText('This law is recorded once for everyone — no per-group reading exists.'),

@@ -224,6 +224,22 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
     ],
   },
 
+  // Paired with '/rights/trans' in STATIC_ROUTE_META, per the note above.
+  '/rights/trans': {
+    h1: 'Trans rights and safety',
+    paragraphs: [
+      'Whether a country will change your gender marker, and what it makes you give up first. A country can permit a document change and still require surgery, a psychiatric diagnosis or a divorce, so those are counted separately here rather than collapsed into a single "recognition" yes or no.',
+      'Alongside the law we show TGEU’s Trans Murder Monitoring: aggregate counts of documented killings of trans and gender-diverse people since 2008. These counts are never folded into a safety score. They depend on local reporting and trans-led organisations that do not exist everywhere, so a low number means little was recorded, not that a place is safe.',
+      'Our legal source does not record facility access, how identity documents are treated at borders, or access to gender-affirming healthcare. Those are often what decides how a journey actually goes, and we say so rather than letting a clean-looking verdict imply otherwise.',
+    ],
+    links: [
+      { href: '/rights', label: 'All LGBTQ+ rights by country' },
+      { href: '/rights/sources', label: 'Where this data comes from' },
+      { href: '/travel', label: 'Plan safer queer travel' },
+      { href: '/help', label: 'Crisis hotlines' },
+    ],
+  },
+
   // Tracks the page, which leads with places rather than a member grid. The
   // previous body promised friends/dates/travel-buddies first; the page now
   // opens on community spaces, groups and events, and a crawler body that

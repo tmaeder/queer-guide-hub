@@ -1921,7 +1921,8 @@
       "tags": "[KO] Glossary",
       "tagsAll": "[KO] All terms",
       "tagsInteractions": "[KO] Substance safety",
-      "tagsStiGuide": "[KO] STI guide"
+      "tagsStiGuide": "[KO] STI guide",
+      "transRights": "트랜스젠더 권리"
     },
     "intents": {
       "goingOut": {

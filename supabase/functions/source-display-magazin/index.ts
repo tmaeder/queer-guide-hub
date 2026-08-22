@@ -79,13 +79,26 @@ type StagedItem = Omit<NormalizedItem, 'location'> &
     location?: NonNullable<NormalizedItem['location']> & Record<string, unknown>
   }
 
+/**
+ * HTML -> plain text. `&amp;` is decoded LAST, deliberately: decoding it first
+ * turns `&amp;lt;` into `&lt;` and the next rule turns that into `<`, so text
+ * the source deliberately escaped silently becomes markup (js/double-escaping,
+ * flagged by CodeQL on the first version of this file). Numeric entities are
+ * safe ahead of it, because `&amp;#60;` contains no `&#60;` substring.
+ */
 const stripTags = (s: unknown): string =>
   String(s ?? '')
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script\b[^>]*>/gi, ' ')
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style\b[^>]*>/gi, ' ')
     .replace(/<[^>]+>/g, ' ')
+    .replace(/&#x([0-9a-f]+);/gi, (_m, h) => String.fromCodePoint(parseInt(h, 16)))
+    .replace(/&#(\d+);/g, (_m, d) => String.fromCodePoint(Number(d)))
     .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&#0?39;|&apos;|&#8217;/g, "'")
     .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
     .replace(/\s+/g, ' ')
     .trim()
 
