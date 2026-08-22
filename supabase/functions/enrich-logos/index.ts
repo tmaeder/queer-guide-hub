@@ -1,11 +1,12 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
-import { fetchRealLogo, delay } from '../_shared/logo-enrichment.ts'
+import { fetchRealLogo, extractDomain, delay } from '../_shared/logo-enrichment.ts'
 import { mirrorLogoToR2, logoMirrorConfigured } from '../_shared/logo-mirror.ts'
+import { pickSiteIcons, isAcceptableLogoType, imageSize } from '../_shared/site-icon.ts'
 
 /**
  * enrich-logos — Batch logo enrichment, mirrored to our own R2/CDN.
  *
- * POST { table?: "venues"|"events"|"all", batch_size?: number, dry_run?: boolean }
+ * POST { table?: "venues"|"events"|"marketplace_brands"|"all", batch_size?: number, dry_run?: boolean }
  *
  * Finds records with a website but no logo_url. For each, fetches the REAL logo
  * from logo.dev (probed with `fallback=404`, so generic monograms are rejected),
@@ -53,6 +54,10 @@ Deno.serve(async (req) => {
 
     if (table === 'events' || table === 'all') {
       results.events = await enrichTable(supabase, 'events', 'website', batchSize, dryRun)
+    }
+
+    if (table === 'marketplace_brands' || table === 'all') {
+      results.marketplace_brands = await enrichBrands(supabase, batchSize, dryRun)
     }
 
     return jsonResponse({ success: true, ...results }, 200, req)
@@ -152,6 +157,202 @@ async function enrichTable(
   return {
     processed: items.length,
     logos_found: logosFound,
+    mirror_failed: mirrorFailed,
+    errors,
+    remaining: (count || 0) - (dryRun ? items.length : 0),
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// marketplace_brands
+//
+// Brands do not have a `website` to key on — 23 of 885 live ones do — so the
+// domain comes from `marketplace_brand_logo_candidates`, which corroborates a
+// listing's merchant_domain against the brand's own name and returns NULL
+// rather than a retailer's domain when nothing corroborates (see that
+// function's migration for why "Custom" must never inherit automicgold.com).
+//
+// Two sources, in order. logo.dev first: it is one request and its
+// `fallback=404` probe guarantees a real mark. Then the shop's own declared
+// logo, because logo.dev knows household brands and this catalogue is mostly
+// independent makers running Shopify. A brand that yields neither is stamped
+// attempted and keeps its monogram.
+
+const BRAND_UA =
+  'Mozilla/5.0 (compatible; QueerGuideBot/1.0; +https://queer.guide/about) logo-enrichment'
+const MIN_LOGO_BYTES = 1000 // a 16x16 favicon; the monogram beats it in the plate
+const MAX_LOGO_BYTES = 2 * 1024 * 1024
+
+async function fetchWithTimeout(url: string, ms: number, accept: string): Promise<Response | null> {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), ms)
+  try {
+    return await fetch(url, {
+      signal: controller.signal,
+      redirect: 'follow',
+      headers: { 'User-Agent': BRAND_UA, Accept: accept },
+    })
+  } catch {
+    return null
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
+/**
+ * The shop's own declared brand mark, or null.
+ *
+ * Walks the ranked candidates rather than trusting the top one: the best-ranked
+ * mark can still fail the pixel check — a Shopify `rel=icon` whose asset really
+ * is 32×32 — and the next candidate down is often the wordmark. Measured over
+ * 25 of this catalogue's shops, walking recovers 20; taking only the head
+ * recovered 3.
+ */
+async function fetchSiteLogo(
+  domain: string,
+): Promise<{ bytes: Uint8Array; contentType: string; kind: string } | null> {
+  const site = `https://${domain}/`
+  const page = await fetchWithTimeout(site, 12000, 'text/html')
+  if (!page || !page.ok) return null
+  if (!(page.headers.get('content-type') || '').toLowerCase().includes('text/html')) return null
+
+  const html = (await page.text()).slice(0, 400_000)
+  for (const pick of pickSiteIcons(html, page.url || site, site).slice(0, 4)) {
+    const img = await fetchWithTimeout(pick.url, 12000, 'image/*')
+    if (!img || !img.ok) continue
+    const contentType = (img.headers.get('content-type') || '').split(';')[0].trim().toLowerCase()
+    if (!isAcceptableLogoType(contentType)) continue
+
+    const bytes = new Uint8Array(await img.arrayBuffer())
+    if (bytes.byteLength < MIN_LOGO_BYTES || bytes.byteLength > MAX_LOGO_BYTES) continue
+
+    // SVG is scalable, so it has nothing to measure and nothing to fail.
+    if (contentType !== 'image/svg+xml') {
+      const size = imageSize(bytes)
+      if (!size) continue
+      if (Math.max(size.width, size.height) < 96) continue
+      if (Math.min(size.width, size.height) < 24) continue // a sprite strip, not a mark
+    }
+    return { bytes, contentType, kind: pick.kind }
+  }
+  return null
+}
+
+interface BrandCandidate {
+  id: string
+  brand_key: string
+  display_name: string
+  domain: string | null
+  evidence: string | null
+}
+
+async function enrichBrands(
+  supabase: ReturnType<typeof getServiceClient>,
+  batchSize: number,
+  dryRun: boolean,
+) {
+  const { data, error } = await supabase.rpc('marketplace_brand_logo_candidates', {
+    p_limit: batchSize,
+  })
+  if (error) throw new Error(`marketplace_brand_logo_candidates: ${error.message}`)
+  const items = (data ?? []) as BrandCandidate[]
+
+  const stamp = async (id: string, patch: Record<string, unknown>) => {
+    if (dryRun) return
+    await supabase
+      .from('marketplace_brands')
+      .update({ ...patch, logo_fetched_at: new Date().toISOString() })
+      .eq('id', id)
+  }
+
+  let logosFound = 0
+  let fromLogoDev = 0
+  let fromSite = 0
+  let noDomain = 0
+  let notFound = 0
+  let mirrorFailed = 0
+  let errors = 0
+
+  for (const item of items) {
+    try {
+      const domain = extractDomain(item.domain)
+      if (!domain) {
+        noDomain++
+        await stamp(item.id, { logo_source: 'no_domain' })
+        continue
+      }
+
+      const logo = await fetchRealLogo(domain)
+      let bytes = logo?.bytes ?? null
+      let contentType = logo?.contentType ?? ''
+      let source = logo ? `logodev:${domain}` : ''
+
+      if (!bytes) {
+        const site = await fetchSiteLogo(domain)
+        if (site) {
+          bytes = site.bytes
+          contentType = site.contentType
+          source = `site:${site.kind}:${domain}`
+        }
+      }
+
+      if (!bytes) {
+        notFound++
+        await stamp(item.id, { logo_source: 'not_found' })
+        await delay(150)
+        continue
+      }
+
+      if (dryRun) {
+        logosFound++
+        if (source.startsWith('logodev')) fromLogoDev++
+        else fromSite++
+        await delay(150)
+        continue
+      }
+
+      const logoUrl = await mirrorLogoToR2(bytes, contentType)
+      if (!logoUrl) {
+        // Real logo, upload failed: leave logo_fetched_at null so it retries.
+        mirrorFailed++
+        await delay(150)
+        continue
+      }
+
+      await supabase
+        .from('marketplace_brands')
+        .update({
+          logo_url: logoUrl,
+          logo_source: source,
+          logo_fetched_at: new Date().toISOString(),
+        })
+        .eq('id', item.id)
+
+      logosFound++
+      if (source.startsWith('logodev')) fromLogoDev++
+      else fromSite++
+      await delay(150)
+    } catch (e) {
+      console.error(`Brand logo error for ${item.display_name}:`, (e as Error).message)
+      errors++
+    }
+  }
+
+  const { count } = await supabase
+    .from('marketplace_brands')
+    .select('id', { count: 'exact', head: true })
+    .eq('status', 'approved')
+    .gt('product_count', 0)
+    .is('logo_url', null)
+    .is('logo_fetched_at', null)
+
+  return {
+    processed: items.length,
+    logos_found: logosFound,
+    from_logodev: fromLogoDev,
+    from_site: fromSite,
+    no_domain: noDomain,
+    not_found: notFound,
     mirror_failed: mirrorFailed,
     errors,
     remaining: (count || 0) - (dryRun ? items.length : 0),
