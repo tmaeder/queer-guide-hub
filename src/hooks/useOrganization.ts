@@ -43,13 +43,11 @@ export interface Organization {
 // The organizations table + its RPCs were added after the generated Supabase
 // types snapshot, so call them through a thin untyped bridge (no `any`).
 type RpcResult<T> = { data: T | null; error: { message: string } | null };
-const callRpc = <T,>(name: string, args: Record<string, unknown>): Promise<RpcResult<T>> =>
-  (
-    supabase.rpc as unknown as (
-      n: string,
-      a: Record<string, unknown>,
-    ) => Promise<RpcResult<T>>
-  )(name, args);
+const callRpc = <T>(name: string, args: Record<string, unknown>): Promise<RpcResult<T>> =>
+  (supabase.rpc as unknown as (n: string, a: Record<string, unknown>) => Promise<RpcResult<T>>)(
+    name,
+    args,
+  );
 
 export function useOrganization(slug: string | undefined) {
   return useQuery({
@@ -106,7 +104,14 @@ export function useOrganizationsList(opts: {
 }) {
   const { role, q, countryId, countryCode, limit = 60, enabled = true } = opts;
   return useQuery({
-    queryKey: ['organizations-list', role ?? 'all', q ?? '', countryId ?? '', countryCode ?? '', limit],
+    queryKey: [
+      'organizations-list',
+      role ?? 'all',
+      q ?? '',
+      countryId ?? '',
+      countryCode ?? '',
+      limit,
+    ],
     enabled,
     staleTime: 60_000,
     queryFn: async (): Promise<OrgListItem[]> => {
@@ -117,6 +122,52 @@ export function useOrganizationsList(opts: {
         p_country_code: countryCode ?? null,
         p_limit: limit,
         p_offset: 0,
+      });
+      if (error) throw new Error(error.message);
+      return data ?? [];
+    },
+  });
+}
+
+export interface TestingSite extends OrgListItem {
+  website: string | null;
+  email: string | null;
+  phone: string | null;
+  address: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  tags: string[];
+  enrichment_status: Record<string, unknown> | null;
+}
+
+/**
+ * HIV / hepatitis / STI testing sites, optionally near a point.
+ *
+ * Backed by `list_testing_sites`, which carries its own copy of the
+ * safety-gate predicate — it is SECURITY DEFINER, so RLS does not apply and
+ * that predicate is the access control. Signed-out callers never see gated
+ * rows, which for this dataset means Turkmenistan and Uzbekistan.
+ */
+export function useTestingSites(opts: {
+  countryCode?: string;
+  cityId?: string;
+  lat?: number;
+  lng?: number;
+  limit?: number;
+  enabled?: boolean;
+}) {
+  const { countryCode, cityId, lat, lng, limit = 12, enabled = true } = opts;
+  return useQuery({
+    queryKey: ['testing-sites', countryCode ?? '', cityId ?? '', lat ?? '', lng ?? '', limit],
+    enabled,
+    staleTime: 300_000,
+    queryFn: async (): Promise<TestingSite[]> => {
+      const { data, error } = await callRpc<TestingSite[]>('list_testing_sites', {
+        p_country_code: countryCode ?? null,
+        p_city_id: cityId ?? null,
+        p_lat: lat ?? null,
+        p_lng: lng ?? null,
+        p_limit: limit,
       });
       if (error) throw new Error(error.message);
       return data ?? [];
