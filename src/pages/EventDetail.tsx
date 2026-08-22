@@ -36,6 +36,9 @@ import {
   EventDecisionCard,
   EventAbout,
   EventWhoIsGoing,
+  hasWhoIsGoingContent,
+  EventPeopleRail,
+  isEventPast,
   EventWhere,
   EventMobileBar,
   fetchEvent,
@@ -263,7 +266,10 @@ export default function EventDetail() {
   // ---- render states -------------------------------------------------
 
   const heroImage = event ? resolveEntityImage('event', event).url : undefined;
-  const isPast = event ? new Date(event.end_date || event.start_date) < new Date() : false;
+  // One definition, shared with the masthead's "Ended" chip — two copies of
+  // "has it happened yet" is how a page says Ended in one place and offers
+  // tickets in another.
+  const isPast = event ? isEventPast(event) : false;
 
   // Spec module order for `event`: 01 fact strip, 03 occurrences, 04 access,
   // 08 nested entity, 15 stat line.
@@ -300,9 +306,17 @@ export default function EventDetail() {
           ),
         },
         {
+          // Guarded, like every other section on every other single. Without
+          // this the section rendered its heading and nothing under it for any
+          // signed-out reader on a past event — 99.2% of the corpus. It was
+          // invisible to `e2e/singles.spec.ts` because the component ALSO
+          // rendered its own "Who's going" h2 and that guard strips only the
+          // first heading before checking for a body; both halves are fixed.
           id: 'going',
           title: t('events.detail.section.going', "Who's going"),
-          content: <EventWhoIsGoing event={event} user={user} isPast={isPast} />,
+          content: hasWhoIsGoingContent(event, isPast) ? (
+            <EventWhoIsGoing event={event} user={user} isPast={isPast} />
+          ) : null,
         },
       ])
     : [];
@@ -472,6 +486,12 @@ export default function EventDetail() {
         }
         footer={
           <div className="flex flex-col gap-12 pb-28 md:pb-12">
+            {/* Self-hiding composite rail: it belongs here, not in the
+                "Who's going" section, where its internal decision to render
+                nothing was invisible to the section filter. */}
+            <ErrorBoundary section="event-people" fallback={null}>
+              <EventPeopleRail event={event} />
+            </ErrorBoundary>
             <ErrorBoundary section="event-milestones" fallback={null}>
               <MilestonesForEntity entityType="event" entityId={event.id} />
             </ErrorBoundary>

@@ -36,6 +36,19 @@ const ROUTES = [
   // is the page that exposed the empty "Access" heading.
   { path: '/venues/lehighton', name: 'Lehighton', eyebrow: /Venue/ },
   { path: '/events/capital-pride-ottawa-2026', name: 'Capital Pride', eyebrow: /Event/ },
+  // A genuinely PAST event, for the same reason `/venues/lehighton` is above:
+  // without one the empty-section test never sees the state that 99.2% of the
+  // corpus is in (39,795 of 40,119 live events have finished).
+  //
+  // The route above is NOT that case and looks like it is — it is a multi-day
+  // festival whose `end_date` is still ahead, so it renders the "be the first
+  // to RSVP" prompt and its "Who's going" section has a body. `is_past` is
+  // `coalesce(end_date, start_date) < now()`, never `start_date` alone.
+  {
+    path: '/events/denver-pridefest-2026',
+    name: 'Denver PrideFest',
+    eyebrow: /Event/,
+  },
 ];
 
 async function open(page: Page, path: string) {
@@ -81,15 +94,31 @@ for (const route of ROUTES) {
       const empty = await page.evaluate(() =>
         [...document.querySelectorAll('article section[id]')]
           .filter((el) => {
-            const h = el.querySelector('h2');
-            const text = (el.textContent ?? '').replace(h?.textContent ?? '', '').trim();
+            // EVERY heading is stripped, not just the first.
+            //
+            // This read `el.querySelector('h2')` and removed that one string,
+            // which made the check defeatable by the very thing it should have
+            // flagged: the event single's "Who's going" section rendered the
+            // section h2 AND a second identical h2 from its own component, so
+            // the duplicate's text survived the strip, counted as a body, and
+            // the guard passed green on a section that was otherwise empty for
+            // every signed-out reader on a past event (99.2% of events). A
+            // section whose only content is headings has no body.
+            const clone = el.cloneNode(true) as HTMLElement;
+            clone.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach((h) => h.remove());
+            const text = (clone.textContent ?? '').trim();
             if (text.length > 0) return false;
             // Text is not the only content. `VenuePhotos` renders a grid of
             // <img> and nothing else, so a textContent-only check flagged it —
             // a false positive that would have taught everyone to ignore this
             // assertion. Media and controls count as a body.
+            //
+            // Measured against `clone`, i.e. headings already removed: a
+            // heading may carry its own icon (`<h2><ShieldCheck/>…</h2>`), and
+            // counting that svg as a body would reintroduce the same blind
+            // spot one layer down.
             return (
-              el.querySelectorAll('img, svg, video, canvas, iframe, picture, input').length === 0
+              clone.querySelectorAll('img, svg, video, canvas, iframe, picture, input').length === 0
             );
           })
           .map((el) => el.id),

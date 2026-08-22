@@ -46,7 +46,22 @@ describe('EventDetail.parts helpers', () => {
     // The status chip is a bordered ink outline in `DetailMasthead`, so an
     // event with nothing to say must return undefined rather than an empty
     // string — an empty chip is still a chip.
-    expect(eventStatusLabel(event)).toBeUndefined();
+    //
+    // The date is far-future ON PURPOSE and must stay that way. This assertion
+    // used the shared `event` fixture dated 2026-06-27, which was upcoming
+    // when it was written and quietly became a PAST event on the calendar —
+    // so once past events started reporting "Ended", the test failed on a
+    // correct implementation. A fixture that encodes "upcoming" as a literal
+    // date stops meaning that the moment the date passes.
+    expect(
+      eventStatusLabel({ ...event, start_date: '2999-01-01T00:00:00Z' } as never),
+    ).toBeUndefined();
+  });
+
+  it('eventStatusLabel says Ended once the event is over', () => {
+    expect(eventStatusLabel({ ...event, start_date: '2020-01-01T00:00:00Z' } as never)).toBe(
+      'Ended',
+    );
   });
 
   it('eventStatusLabel names a cancelled event', () => {
@@ -103,13 +118,15 @@ describe('EventMasthead', () => {
 });
 
 describe('EventActions', () => {
+  const upcoming = { ...event, start_date: '2999-01-01T00:00:00Z' };
+
   it('offers tickets only when there is a ticket url', () => {
-    renderWithProviders(<EventActions event={event} onShare={() => {}} />);
+    renderWithProviders(<EventActions event={upcoming as never} onShare={() => {}} />);
     expect(screen.queryByRole('link', { name: /tickets/i })).toBeNull();
 
     renderWithProviders(
       <EventActions
-        event={{ ...event, ticket_url: 'https://tickets.example/x' } as never}
+        event={{ ...upcoming, ticket_url: 'https://tickets.example/x' } as never}
         onShare={() => {}}
       />,
     );
@@ -117,5 +134,43 @@ describe('EventActions', () => {
       'href',
       'https://tickets.example/x',
     );
+  });
+
+  it('withdraws the ticket link once the event is over', () => {
+    // The masthead row is the SECOND ticket surface and the one above the
+    // fold; the decision card in the rail is the other. 443 live events are
+    // past and carry a ticket_url, and selling a seat at a finished event is
+    // the kind of wrong a layout change must not leave half-fixed.
+    renderWithProviders(
+      <EventActions
+        event={
+          {
+            ...event,
+            start_date: '2020-01-01T00:00:00Z',
+            end_date: null,
+            ticket_url: 'https://tickets.example/x',
+          } as never
+        }
+        onShare={() => {}}
+      />,
+    );
+    expect(screen.queryByRole('link', { name: /tickets/i })).toBeNull();
+  });
+
+  it('keeps the website link on a past event — a homepage still documents it', () => {
+    renderWithProviders(
+      <EventActions
+        event={
+          {
+            ...event,
+            start_date: '2020-01-01T00:00:00Z',
+            end_date: null,
+            website: 'https://example.org/pride',
+          } as never
+        }
+        onShare={() => {}}
+      />,
+    );
+    expect(screen.getByRole('link', { name: /website/i })).toBeInTheDocument();
   });
 });
