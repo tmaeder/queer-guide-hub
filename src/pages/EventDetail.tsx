@@ -37,6 +37,7 @@ import {
   EventAbout,
   EventWhoIsGoing,
   hasWhoIsGoingContent,
+  EventPeopleRail,
   isEventPast,
   EventWhere,
   EventMobileBar,
@@ -313,7 +314,7 @@ export default function EventDetail() {
           // first heading before checking for a body; both halves are fixed.
           id: 'going',
           title: t('events.detail.section.going', "Who's going"),
-          content: hasWhoIsGoingContent(event, user, isPast) ? (
+          content: hasWhoIsGoingContent(event, isPast) ? (
             <EventWhoIsGoing event={event} user={user} isPast={isPast} />
           ) : null,
         },
@@ -485,6 +486,12 @@ export default function EventDetail() {
         }
         footer={
           <div className="flex flex-col gap-12 pb-28 md:pb-12">
+            {/* Self-hiding composite rail: it belongs here, not in the
+                "Who's going" section, where its internal decision to render
+                nothing was invisible to the section filter. */}
+            <ErrorBoundary section="event-people" fallback={null}>
+              <EventPeopleRail event={event} />
+            </ErrorBoundary>
             <ErrorBoundary section="event-milestones" fallback={null}>
               <MilestonesForEntity entityType="event" entityId={event.id} />
             </ErrorBoundary>

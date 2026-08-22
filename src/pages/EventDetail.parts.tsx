@@ -805,13 +805,31 @@ export function EventWhoIsGoing({
               t('events.rsvpEmptyAnon', 'No RSVPs yet. Sign in to be the first.')}
         </p>
       )}
-
-      <PeopleHereRail
-        mode="locals"
-        eventId={event.id}
-        title={t('events.peopleYouMayKnow', 'People you may know')}
-      />
     </div>
+  );
+}
+
+/**
+ * "People you may know" at this event.
+ *
+ * It lives in the page FOOTER, not inside the "Who's going" section, because
+ * it is a self-hiding composite rail — it decides internally whether it has
+ * anything, and the section filter cannot see that decision. That is the
+ * house invariant ("a self-hiding rail is never a section"), and breaking it
+ * is what made the section render a heading with nothing under it for a
+ * SIGNED-IN reader on a past event: the count is zero, the "be the first"
+ * prompt is suppressed once the event is over, and the rail returns null when
+ * the discovery RPC finds no matches — which is the normal cold-start result.
+ * The footer has no stations, so a rail that hides itself there costs nothing.
+ */
+export function EventPeopleRail({ event }: { event: EventWithRelations }) {
+  const { t } = useTranslation();
+  return (
+    <PeopleHereRail
+      mode="locals"
+      eventId={event.id}
+      title={t('events.peopleYouMayKnow', 'People you may know')}
+    />
   );
 }
 
@@ -819,30 +837,26 @@ export function EventWhoIsGoing({
  * Whether the "Who's going" section has anything to say — read by the page so
  * the SECTION can be dropped, not just its body.
  *
- * A component that returns nothing from its own body is invisible to the
- * section filter, which is how this shipped a bare heading. The three inputs
- * are the three things the section can render:
- *   - a count, when anyone has RSVP'd;
- *   - the "no RSVPs yet" prompt, which is deliberately suppressed once the
- *     event is over (asking someone to be the first to attend a finished
- *     event is nonsense);
- *   - `PeopleHereRail`, which needs a signed-in viewer — `enabled` is
- *     `Boolean(user) && …` and its `emptyState` defaults to null.
+ * Now that the people rail has moved to the footer, the section's content is
+ * entirely deterministic from the row: a count when anyone has RSVP'd, or the
+ * "be the first" prompt while the event is still ahead. Once it is over with
+ * no RSVPs there is nothing to say, which is the state 99.2% of the corpus is
+ * in (39,795 of 40,119 live events have finished).
  *
- * So for a signed-out reader on a past event all three are empty, which is
- * 99.2% of the corpus (39,795 of 40,119 live events are in the past) for
- * every anonymous visitor and every crawler.
+ * Deliberately NOT a function of the signed-in user. The first version of this
+ * guard returned `Boolean(user)` on the grounds that a signed-in reader could
+ * still get the people rail — but "could" is not "does": the rail returns null
+ * whenever discovery finds no matches, which is the ordinary cold-start
+ * result. CI caught it because its chromium project carries an admin
+ * storageState, so it runs signed IN where the local check had run signed out.
+ * A guard that depends on what another component *might* render is the same
+ * mistake as no guard at all.
  */
-export function hasWhoIsGoingContent(
-  event: EventWithRelations,
-  user: { id: string } | null,
-  isPast: boolean,
-): boolean {
+export function hasWhoIsGoingContent(event: EventWithRelations, isPast: boolean): boolean {
   const going = event.attendee_counts?.going ?? 0;
   const interested = event.attendee_counts?.interested ?? 0;
   if (going > 0 || interested > 0) return true;
-  if (!isPast) return true; // the "be the first" prompt renders
-  return Boolean(user); // only a signed-in viewer can get the people rail
+  return !isPast; // the "be the first" prompt
 }
 
 /* ------------------------------------------------------------------ */

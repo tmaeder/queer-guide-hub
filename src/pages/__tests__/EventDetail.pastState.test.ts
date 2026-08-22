@@ -45,29 +45,32 @@ describe('eventStatusLabel — the Ended chip', () => {
 });
 
 describe('hasWhoIsGoingContent — the guard that stops a bare heading', () => {
-  const user = { id: 'u1' };
-
-  it('is false for a signed-out reader on a past event — the 99.2% case', () => {
-    // No count, the "be the first" prompt is suppressed once the event is
-    // over, and PeopleHereRail needs a signed-in viewer. Nothing renders, so
-    // the section must not either.
-    expect(hasWhoIsGoingContent(ev({ start_date: PAST }), null, true)).toBe(false);
+  it('is false on a past event with no RSVPs — the 99.2% case', () => {
+    // Nothing left to render: no count, and the "be the first" prompt is
+    // suppressed once the event is over.
+    expect(hasWhoIsGoingContent(ev({ start_date: PAST }), true)).toBe(false);
   });
 
   it('is true when anyone has RSVPd, even in the past', () => {
-    expect(
-      hasWhoIsGoingContent(ev({ attendee_counts: { going: 3, interested: 0 } }), null, true),
-    ).toBe(true);
-    expect(
-      hasWhoIsGoingContent(ev({ attendee_counts: { going: 0, interested: 2 } }), null, true),
-    ).toBe(true);
+    expect(hasWhoIsGoingContent(ev({ attendee_counts: { going: 3, interested: 0 } }), true)).toBe(
+      true,
+    );
+    expect(hasWhoIsGoingContent(ev({ attendee_counts: { going: 0, interested: 2 } }), true)).toBe(
+      true,
+    );
   });
 
   it('is true for an upcoming event — the "be the first" prompt renders', () => {
-    expect(hasWhoIsGoingContent(ev({}), null, false)).toBe(true);
+    expect(hasWhoIsGoingContent(ev({}), false)).toBe(true);
   });
 
-  it('is true for a signed-in reader on a past event — the people rail can render', () => {
-    expect(hasWhoIsGoingContent(ev({}), user, true)).toBe(true);
+  it('does not depend on who is looking', () => {
+    // The first version returned Boolean(user), reasoning that a signed-in
+    // reader could still get the people rail. "Could" is not "does" — the rail
+    // returns null whenever discovery finds no matches, so the section went
+    // empty again for signed-in readers. CI caught it (its chromium project
+    // carries an admin storageState); the rail now lives in the footer and
+    // this guard reads only the row.
+    expect(hasWhoIsGoingContent(ev({ start_date: PAST }), true)).toBe(false);
   });
 });
