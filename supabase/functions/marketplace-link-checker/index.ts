@@ -15,6 +15,7 @@ import { httpStatusSignal, insertSignals, type ExistenceSignal } from '../_share
 const TIMEOUT_MS    = 8_000
 const DEFAULT_BATCH = 200
 const DEFAULT_STALE = 30 // re-check after N days
+const CONCURRENCY   = 6  // parallel probes — serial probing capped a run at ~200 URLs
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
@@ -30,10 +31,16 @@ Deno.serve(async (req) => {
     const staleThreshold = new Date(Date.now() - staleDays * 86_400_000).toISOString()
 
     // Pick listings whose link hasn't been checked for staleDays, or never.
+    // Rows the merchant's product FEED enumerated recently are excluded —
+    // feed presence is liveness evidence (wf-marketplace-sync-merchants
+    // stamps last_seen_at hourly), so the HTTP budget goes to rows with no
+    // feed backing. The 2026-08-22 audit found 75% of the catalog
+    // never-checked while the checker re-probed feed-fresh rows.
     const { data: listings, error: fetchErr } = await supabase
       .from('marketplace_listings')
       .select('id, external_url, affiliate_url, link_health')
       .or(`link_checked_at.is.null,link_checked_at.lt.${staleThreshold}`)
+      .or(`last_seen_at.is.null,last_seen_at.lt.${staleThreshold}`)
       .order('link_checked_at', { ascending: true, nullsFirst: true })
       .limit(batchSize)
 
@@ -45,35 +52,45 @@ Deno.serve(async (req) => {
     let ok = 0, broken = 0, redirect = 0, timeout = 0, skipped = 0
     const sigs: ExistenceSignal[] = []
 
-    for (const listing of listings) {
-      const raw = (listing.external_url as string | null)?.trim()
-        || (listing.affiliate_url as string | null)?.trim()
-      if (!raw) { skipped++; continue }
+    // Bounded-concurrency worker pool: same probe semantics as before, but a
+    // 400-row batch finishes inside the edge wall clock instead of timing out
+    // serially. Different listings hit different merchant hosts, so modest
+    // parallelism doesn't hammer any one origin.
+    const queue = [...listings]
+    const worker = async () => {
+      for (;;) {
+        const listing = queue.shift()
+        if (!listing) return
+        const raw = (listing.external_url as string | null)?.trim()
+          || (listing.affiliate_url as string | null)?.trim()
+        if (!raw) { skipped++; continue }
 
-      const url = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`
+        const url = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`
 
-      // HEAD→GET probe. Only an explicit 404/410 is 'broken'; 401/403/405/429 are
-      // 'blocked' (alive, bot-protected), network errors 'timeout'. A listing is
-      // deactivated ONLY on a confirmed-dead link — bot walls / rate limits must
-      // never deactivate a live product (the false-positive bug that paused this cron).
-      const health = await probeLink(url, { timeoutMs: TIMEOUT_MS })
-      if (health === 'ok') ok++
-      else if (health === 'redirect') redirect++
-      else if (health === 'broken') broken++
-      else if (health === 'timeout') timeout++
+        // HEAD→GET probe. Only an explicit 404/410 is 'broken'; 401/403/405/429 are
+        // 'blocked' (alive, bot-protected), network errors 'timeout'. A listing is
+        // deactivated ONLY on a confirmed-dead link — bot walls / rate limits must
+        // never deactivate a live product (the false-positive bug that paused this cron).
+        const health = await probeLink(url, { timeoutMs: TIMEOUT_MS })
+        if (health === 'ok') ok++
+        else if (health === 'redirect') redirect++
+        else if (health === 'broken') broken++
+        else if (health === 'timeout') timeout++
 
-      const sig = httpStatusSignal('marketplace', listing.id as string, health)
-      if (sig) sigs.push(sig)
+        const sig = httpStatusSignal('marketplace', listing.id as string, health)
+        if (sig) sigs.push(sig)
 
-      if (!dryRun) {
-        const update: Record<string, unknown> = {
-          link_health:     health,
-          link_checked_at: new Date().toISOString(),
+        if (!dryRun) {
+          const update: Record<string, unknown> = {
+            link_health:     health,
+            link_checked_at: new Date().toISOString(),
+          }
+          if (isDeadLink(health)) update.status = 'inactive'
+          await supabase.from('marketplace_listings').update(update).eq('id', listing.id)
         }
-        if (isDeadLink(health)) update.status = 'inactive'
-        await supabase.from('marketplace_listings').update(update).eq('id', listing.id)
       }
     }
+    await Promise.all(Array.from({ length: Math.min(CONCURRENCY, queue.length) }, () => worker()))
 
     if (!dryRun) await insertSignals(supabase, sigs)
 
