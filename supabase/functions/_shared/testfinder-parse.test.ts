@@ -12,6 +12,7 @@ import {
   serviceTags,
   slugFromHref,
   splitDualTitle,
+  stripComments,
   splitList,
   targetPopulationTerms,
   unmappedServices,
@@ -215,6 +216,22 @@ Deno.test('entity-encoded non-Latin slugs survive the fragment guard', () => {
 Deno.test('cleanText strips comments before tags', () => {
   assertEquals(cleanText('<p>Hi <!-- Model.Value("x") --> there</p>'), 'Hi there')
   assertEquals(cleanText('LGBTQIA&#x2B;'), 'LGBTQIA+')
+})
+
+Deno.test('comment stripping is idempotent — one pass can splice a new comment', () => {
+  // Removing the inner comment joins '<!' + '-- payload -->' into a comment
+  // that never existed in the source. A single-pass replace leaves it standing,
+  // in the function whose whole job is that comment contents are never read as
+  // data. CodeQL flags this as incomplete multi-character sanitization.
+  assertEquals(stripComments('<!<!-- -->-- payload -->'), '')
+  assertEquals(cleanText('<p>a<!<!-- -->-- payload -->b</p>'), 'ab')
+
+  // An unterminated comment has no --> to match and must not survive either.
+  assertEquals(stripComments('ok <!-- dangling'), 'ok ')
+  assertEquals(cleanText('<p>ok <!-- Model.Value("x")'), 'ok')
+
+  // Ordinary content is untouched.
+  assertEquals(stripComments('<p>plain</p>'), '<p>plain</p>')
 })
 
 // --------------------------------------------------------------------------

@@ -121,13 +121,37 @@ export interface TestFinderCenterDetail extends TestFinderCenter {
 
 /** Strip comments first (trap 1), then tags, then decode, then collapse space. */
 export function cleanText(html: string): string {
-  const noComments = String(html).replace(/<!--[\s\S]*?-->/g, '')
-  return decodeEntities(stripTags(noComments)).replace(/\s+/g, ' ').trim()
+  return decodeEntities(stripTags(stripComments(html))).replace(/\s+/g, ' ').trim()
 }
 
-/** Remove HTML comments from a whole document before any field is read. */
+/**
+ * Remove HTML comments from a whole document before any field is read.
+ *
+ * LOOP UNTIL STABLE, for the same reason `stripTags` does. A single pass is
+ * not idempotent here: removing an inner `<!-- … -->` splices its neighbours
+ * together and can form a NEW comment that never existed in the source. Given
+ *
+ *     <!<!-- -->-- payload -->
+ *
+ * one pass removes `<!-- -->` and leaves `<!-- payload -->` intact — a
+ * surviving comment, in the function whose entire job is that nothing inside a
+ * comment is ever read as data (trap 1). CodeQL flags this as incomplete
+ * multi-character sanitization and is right to.
+ *
+ * The trailing replace closes the other hole: an UNTERMINATED comment has no
+ * `-->` to match, so it passes through with its markup intact. This output
+ * becomes `organizations.name` / `description`, which `functions/_lib/detail.ts`
+ * re-renders into the crawler JSON-LD, so it has to be markup-free rather than
+ * merely comment-balanced.
+ */
 export function stripComments(html: string): string {
-  return String(html).replace(/<!--[\s\S]*?-->/g, '')
+  let s = String(html)
+  let prev: string
+  do {
+    prev = s
+    s = s.replace(/<!--[\s\S]*?-->/g, '')
+  } while (s !== prev)
+  return s.replace(/<!--[\s\S]*$/, '')
 }
 
 /**
