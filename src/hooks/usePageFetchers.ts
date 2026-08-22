@@ -107,6 +107,31 @@ export function usePersonalitiesByProfession(profession?: string) {
   });
 }
 
+/**
+ * ProfessionDetail.tsx — canonical spelling of a /professions/:x slug.
+ *
+ * The 2026-09 German normalization rewrote `personalities.profession` corpus-wide,
+ * so a bookmarked or indexed `/professions/Schauspieler%2Fin` now matches nobody.
+ * A redirect table is not an option — there were 1,440 distinct legacy values — but
+ * normalize_profession() maps all of them in one call and is already granted to
+ * anon. Nothing in the app BUILDS these URLs (the route exists for external links
+ * and crawlers only), so this is queried on the empty-result path and cached long.
+ */
+export function useCanonicalProfession(profession: string | undefined, enabled: boolean) {
+  return useQuery({
+    queryKey: ['canonical-profession', profession ?? null],
+    enabled: enabled && !!profession,
+    staleTime: STALE_LONG,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('normalize_profession', {
+        p: profession as string,
+      });
+      if (error) throw error;
+      return (data as string | null) ?? null;
+    },
+  });
+}
+
 /** AdminGroups.tsx — delete community group. */
 export async function deleteCommunityGroup(id: string) {
   const { error } = await supabase.from('community_groups').delete().eq('id', id);
