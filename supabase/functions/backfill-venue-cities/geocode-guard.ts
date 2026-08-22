@@ -28,9 +28,13 @@ export interface GeoVenue {
   enrichment_status?: Record<string, unknown> | null
 }
 
+/**
+ * Deliberately CODE-ONLY. The country reaches Nominatim as `countrycodes=` and
+ * nowhere else; carrying the display name here would invite putting it back
+ * into `q`, which is the regression documented on buildForwardQuery.
+ */
 export interface CountryRef {
   code: string
-  name: string
 }
 
 export function normPostal(p?: string | null): string | null {

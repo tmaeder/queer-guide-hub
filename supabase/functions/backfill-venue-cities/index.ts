@@ -221,10 +221,10 @@ async function countryRefById(
   if (countryRefCache.has(id)) return countryRefCache.get(id)!
   const { data } = await supabase
     .from('countries')
-    .select('code, name')
+    .select('code')
     .eq('id', id)
     .maybeSingle()
-  const ref = data?.code ? { code: String(data.code).toUpperCase(), name: String(data.name || '') } : null
+  const ref = data?.code ? { code: String(data.code).toUpperCase() } : null
   countryRefCache.set(id, ref)
   return ref
 }
