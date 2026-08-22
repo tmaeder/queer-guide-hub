@@ -1,9 +1,3 @@
--- Recovery file for a live-applied migration (version 20260822055141, applied via MCP
--- apply_migration on 2026-08-22 by a concurrent session and never committed). Content
--- below is byte-for-byte what supabase_migrations.schema_migrations.statements holds
--- for this version. db push skips it (already in history); this file exists so the
--- drift monitor and check-migration-versions stay green.
-
 -- Backfill venues.platform_ids['google'] from the 2026-08-22 patroc import (PR #2940).
 -- venue_sources rows with source_slug='patroc' and a numeric source_entity_id carry a
 -- real Google Place ID at payload->'normalized'->'metadata'->>'google_place_id'
