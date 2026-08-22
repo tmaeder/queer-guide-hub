@@ -114,6 +114,23 @@ Deno.test('audit population is exactly the old bare-street query shape', () => {
   assertFalse(isBareStreetAddress('Möhnestraße 59 59755'))
 })
 
+Deno.test('the repair bands match the three cases the audit could not separate', () => {
+  // Every one of these was measured on prod and they all sit in 1-25 km, which
+  // is why that band is flagged for a human and never auto-written:
+  //   Dunkin'/Haffner's  4.9 km  genuinely wrong town (Chelmsford vs Westford)
+  //   Massamara          1.4 km  street MIDPOINT vs a precise stored pin
+  //   Zamboanga Electric 4.8 km  wrong BUSINESS on the right road ("Toyota …")
+  const near = [4.9, 1.4, 4.8]
+  for (const km of near) {
+    assert(km >= 1 && km < 25, `${km} must land in the review band, not the repair band`)
+  }
+  // The unambiguous ones — no venue's true location is 25 km from a correctly
+  // matched street inside its own postcode.
+  for (const km of [3806, 701.1, 311.5, 210.6, 26.3]) {
+    assert(km >= 25, `${km} must land in the repair band`)
+  }
+})
+
 Deno.test('haversine measures the reproduced 85 km error', () => {
   const km = haversineKm(51.4584822, 6.8222474, 51.4555545, 7.9688323)
   assert(km > 75 && km < 95, `expected ~80 km, got ${km}`)
