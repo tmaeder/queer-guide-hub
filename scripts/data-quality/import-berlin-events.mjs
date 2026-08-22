@@ -74,6 +74,7 @@
  *   node scripts/data-quality/import-berlin-events.mjs --phase drain --entity venue
  *   node scripts/data-quality/import-berlin-events.mjs --phase drain --entity event
  *   node scripts/data-quality/import-berlin-events.mjs --phase tag
+ *   node scripts/data-quality/import-berlin-events.mjs --phase link-venues [--dry-run]
  *   node scripts/data-quality/import-berlin-events.mjs --phase verify
  */
 
@@ -953,6 +954,189 @@ returning 1;`);
   console.log(`[tag] done — ${total} events updated`);
 }
 
+// ------------------------------------------------------------ link-venues
+
+/**
+ * Hosts that are NOT proof of identity: aggregators, directories and social
+ * profiles. `kompass.lgbt` is Siegessäule's OWN venue directory and appears
+ * as the "website" of venues that have none — matching on it would link every
+ * such venue to whatever else carries that link.
+ */
+const NON_PROOF_HOSTS = new Set([
+  'kompass.lgbt', 'siegessaeule.de', 'facebook.com', 'instagram.com', 'm.facebook.com',
+  'google.com', 'goo.gl', 'linktr.ee', 'eventbrite.de', 'eventbrite.com', 'business.site',
+]);
+
+/**
+ * Named exceptions, each a decision already made and documented elsewhere in
+ * this file — NOT a way to smuggle in name guesses.
+ *
+ *   "Theater im Keller"  the row is named "Theater im Keller - Travestieshow
+ *                        Berlin", so normalized-name equality misses it. Same
+ *                        venue the ticketcorner source already links to.
+ *   "Lab.oratory" /      each matches TWO rows (a spartacus row and an OSM
+ *   "Böse Buben"         stub). The spartacus row was chosen for those two
+ *                        sources; pinning here keeps siegessaeule consistent
+ *                        rather than leaving the same venue half-linked.
+ */
+const VENUE_PINS = new Map([
+  ['Theater im Keller', TIK_VENUE_ID],
+  ['Lab.oratory', LAB_VENUE_ID],
+  ['Böse Buben', BB_VENUE_ID],
+]);
+
+const hostOf = (u) => {
+  if (!u) return null;
+  const m = /^https?:\/\/(?:www\.)?([^/?#]+)/i.exec(u.trim());
+  return m ? m[1].toLowerCase() : null;
+};
+
+/**
+ * Resolve Siegessäule's venue NAMES to existing `venues` rows.
+ *
+ * NEVER on the name alone. The 2026-08 venue-linker incident measured a 23%
+ * error rate on `name_exact` matches because `venues` also contains cities and
+ * queer-village names ("San Francisco", "East Village"), and the same class
+ * mislinked 116 events on the city side. So a link needs TWO independent
+ * signals and the code blocks rather than guesses:
+ *
+ *   A. DOMAIN PROOF — the venue's own website host equals the host on the
+ *      `venues` row. Independent of the name entirely, so it is accepted
+ *      alone. Aggregator/social hosts are excluded (see NON_PROOF_HOSTS).
+ *   B. NAME + POSTCODE — normalized name equality AND the venue's postcode
+ *      appearing in Siegessäule's published street address. The postcode does
+ *      not descend from the name, so it is genuinely independent corroboration
+ *      rather than the same signal read twice.
+ *
+ * Anything matching more than one venue is left UNLINKED and reported: a null
+ * venue_id is recoverable, a wrong one is not. Writes are fill-only and never
+ * repoint an event that already has a venue.
+ */
+async function phaseLinkVenues() {
+  const det = readJson('sieg-details.json', {});
+  const byName = new Map();
+  for (const d of Object.values(det)) {
+    const n = (d.venueName || '').trim();
+    if (!n) continue;
+    if (!byName.has(n)) byName.set(n, { name: n, host: hostOf(d.venueUrl), addr: d.venueAddress || '' });
+  }
+  const rowsIn = [...byName.values()].map((v) => ({
+    ...v,
+    host: v.host && !NON_PROOF_HOSTS.has(v.host) ? v.host : null,
+  }));
+  console.log(`[link] ${rowsIn.length} distinct venue names; ${rowsIn.filter((r) => r.host).length} with a usable domain`);
+
+  const values = rowsIn
+    .map((r) => `(${[r.name, r.host, r.addr].map((x) => (x == null ? 'null' : `$Q$${x}$Q$`)).join(',')})`)
+    .join(',');
+  if (values.includes('$Q$)')) { /* an empty literal is fine */ }
+
+  const res = await sql(`
+with src(vname, host, addr) as (values ${values}),
+cand as (
+  select s.vname, s.host, s.addr, v.id, v.name, v.website, v.postal_code,
+    (s.host is not null and nullif(regexp_replace(lower(coalesce(v.website,'')),
+       '^https?://(www\\.)?([^/?#]+).*$', '\\2'), '') = s.host) as domain_ok,
+    (regexp_replace(lower(v.name), '[^a-z0-9]', '', 'g')
+       = regexp_replace(lower(s.vname), '[^a-z0-9]', '', 'g')) as name_ok,
+    (v.postal_code is not null and v.postal_code <> ''
+       and position(v.postal_code in coalesce(s.addr,'')) > 0) as postal_ok
+  from src s
+  join public.venues v
+    on v.city_id = '${BERLIN_CITY_ID}'::uuid and v.duplicate_of_id is null
+),
+hit as (
+  select * from cand where domain_ok or (name_ok and postal_ok)
+),
+agg as (
+  select vname, count(*) n, (array_agg(id order by domain_ok desc, id))[1] vid,
+         bool_or(domain_ok) via_domain, string_agg(distinct name, ' | ') names
+  from hit group by vname
+)
+select vname, n, vid::text, via_domain, names from agg order by n desc, vname;`);
+
+  const matched = rows(res);
+  const pinned = [...VENUE_PINS.entries()]
+    .filter(([name]) => byName.has(name))
+    .map(([vname, vid]) => ({ vname, vid, via_domain: false, pinned: true }));
+  const pinnedNames = new Set(pinned.map((p) => p.vname));
+  const unique = [
+    ...matched.filter((m) => Number(m.n) === 1 && !pinnedNames.has(m.vname)),
+    ...pinned,
+  ];
+  const ambiguous = matched.filter((m) => Number(m.n) > 1 && !pinnedNames.has(m.vname));
+  if (pinned.length) console.log(`[link] ${pinned.length} pinned by name exception: ${pinned.map((p) => p.vname).join(', ')}`);
+  console.log(
+    `[link] resolved ${unique.length} (${unique.filter((u) => u.via_domain).length} by domain proof), ` +
+      `${ambiguous.length} ambiguous -> left unlinked, ${rowsIn.length - matched.length} no match`,
+  );
+  for (const a of ambiguous.slice(0, 10)) console.log(`  ambiguous: ${a.vname} -> ${a.names}`);
+
+  if (DRY || !unique.length) {
+    writeJson('venue-links.json', { unique, ambiguous });
+    console.log('[link] DRY RUN (or nothing to do) — no writes');
+    return;
+  }
+
+  // Fill-only, batched: an events UPDATE fans out through the geo/search
+  // triggers and a 300-row batch measured 14.6 s.
+  const pairs = unique.map((u) => `($Q$${u.vname}$Q$, '${u.vid}'::uuid)`).join(',');
+
+  // `events_title_venue_start_unique` is on (lower(title), venue_id,
+  // start_date). Two events can share a title and a start while both have a
+  // NULL venue_id — giving them the same venue makes them collide and aborts
+  // the whole statement. That is NOT a bug to route around: siegessaeule.de
+  // genuinely lists the Mann-O-Meter Thursday slot twice, under two series
+  // slugs, with the same displayed title (verified against the live page —
+  // both teasers really do read "Jungschwuppen Late Night"), and the same for
+  // two Gayhane series. Those are near-duplicates for the dedup queue, not
+  // something a venue linker should force. So collisions are SKIPPED and
+  // reported: an unlinked event is recoverable, a merged pair is not.
+  //
+  // DISTINCT ON resolves two unlinked siblings inside one batch; NOT EXISTS
+  // resolves a sibling that is already linked.
+  const collisionSafeBatch = `
+  select distinct on (lower(btrim(e.title)), m.vid, e.start_date) e.id, m.vid
+  from public.events e
+  join public.event_sources s on s.event_id = e.id
+  join m on m.vname = e.venue_name
+  where s.source_slug = 'siegessaeule' and e.venue_id is null
+    and not exists (
+      select 1 from public.events x
+      where x.id <> e.id and x.venue_id = m.vid and x.start_date = e.start_date
+        and lower(btrim(x.title)) = lower(btrim(e.title))
+    )
+  order by lower(btrim(e.title)), m.vid, e.start_date, e.id
+  limit 200`;
+
+  let total = 0;
+  for (;;) {
+    const r = await sql(`
+with m(vname, vid) as (values ${pairs}),
+batch as (${collisionSafeBatch})
+update public.events e set venue_id = b.vid, updated_at = now()
+from batch b where e.id = b.id returning 1;`);
+    const n = rows(r).length;
+    if (!n) break;
+    total += n;
+    console.log(`[link] ${total}`);
+  }
+
+  const blocked = rows(await sql(`
+with m(vname, vid) as (values ${pairs})
+select e.venue_name, lower(btrim(e.title)) title, count(*)::int n
+from public.events e
+join public.event_sources s on s.event_id = e.id
+join m on m.vname = e.venue_name
+where s.source_slug = 'siegessaeule' and e.venue_id is null
+group by 1,2 order by 3 desc, 2 limit 20;`));
+  console.log(`[link] done — ${total} events linked`);
+  if (blocked.length) {
+    console.log('[link] left unlinked (title+venue+start collision — dedup candidates):');
+    console.table(blocked);
+  }
+}
+
 // ---------------------------------------------------------------- verify
 
 /**
@@ -1059,6 +1243,7 @@ const PHASES = {
   stage: phaseStage,
   drain: phaseDrain,
   tag: phaseTag,
+  'link-venues': phaseLinkVenues,
   verify: phaseVerify,
 };
 if (!PHASES[PHASE]) {
