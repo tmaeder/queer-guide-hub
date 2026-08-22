@@ -158,7 +158,9 @@ export function RightsCountryTable({
                 onClick={() =>
                   setScoreSort((s) => (s === 'none' ? 'desc' : s === 'desc' ? 'asc' : 'none'))
                 }
-                className="font-medium hover:text-foreground"
+                // Same 24px target-size floor as the country links below; the
+                // bare label was 18px tall inside a 48px header cell.
+                className="-mx-2 px-2 py-2 font-medium hover:text-foreground"
               >
                 Score{scoreSort === 'desc' ? ' ↓' : scoreSort === 'asc' ? ' ↑' : ''}
               </button>
@@ -171,16 +173,23 @@ export function RightsCountryTable({
             const risk = deathPenaltyRisk(c.lgbti_criminalization);
             return (
               <TableRow key={c.id}>
-                <TableCell className="font-medium">
+                {/* The cell's own padding moves onto the link so the whole cell
+                    is the tap target. As bare inline text the anchor measured
+                    18px tall on a 48-88px row — under the 24px minimum of WCAG
+                    2.2 target size (2.5.8) — so most of a thumb-sized press
+                    landed on nothing. TableCell sets `padding: 16` as an INLINE
+                    style, which a `p-0` class cannot override, hence the style
+                    prop; `px-4 py-4` restores the identical spacing. */}
+                <TableCell className="font-medium" style={{ padding: 0 }}>
                   {c.slug ? (
                     <LocalizedLink
                       to={`/country/${c.slug}`}
-                      className="no-underline hover:underline"
+                      className="block px-4 py-4 no-underline hover:underline"
                     >
                       {c.name}
                     </LocalizedLink>
                   ) : (
-                    c.name
+                    <span className="block px-4 py-4">{c.name}</span>
                   )}
                 </TableCell>
                 <TableCell>

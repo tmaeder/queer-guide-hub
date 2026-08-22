@@ -44,6 +44,33 @@ test('/rights reaches every country, not the first thirty', async ({ page }) => 
   await expect(world.getByRole('link', { name: 'Zimbabwe', exact: true })).toBeVisible();
 });
 
+/**
+ * WCAG 2.2 target size (2.5.8) on the country table, measured on a phone.
+ *
+ * The country name was a bare inline anchor in a cell whose padding belonged to
+ * the `<td>`: 18px tall inside a row 48-88px tall, so a thumb aimed at the row
+ * mostly landed on nothing. Asserted as a measured BOX, not as a class name —
+ * the padding lives on an inline style in `ui/table.tsx` that a utility class
+ * silently loses to, which is exactly the mistake this guards against.
+ */
+test('country rows are tappable on a phone, not 18px of text', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/rights');
+  await dismiss(page);
+  const world = page.locator('#world');
+  await expect(world.getByRole('searchbox')).toBeVisible({ timeout: 30_000 });
+
+  const link = world.getByRole('link', { name: 'Afghanistan', exact: true });
+  await expect(link).toBeVisible();
+  const box = await link.boundingBox();
+  expect(box, 'country link has no box').not.toBeNull();
+  expect(box!.height, `country link is ${box!.height}px tall`).toBeGreaterThanOrEqual(24);
+
+  const sort = world.getByRole('button', { name: /sort by score/i });
+  const sortBox = await sort.boundingBox();
+  expect(sortBox!.height, `score sort is ${sortBox!.height}px tall`).toBeGreaterThanOrEqual(24);
+});
+
 test('/rights separates confirmed from uncertain death penalty', async ({ page }) => {
   await page.goto('/rights');
   await dismiss(page);
