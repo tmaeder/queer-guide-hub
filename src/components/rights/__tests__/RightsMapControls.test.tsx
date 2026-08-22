@@ -2,8 +2,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { render, screen, within } from '@/test/test-utils';
 import userEvent from '@testing-library/user-event';
 import { RightsMapControls } from '../RightsMapControls';
-import { RIGHT_TOPICS, topicBySlug } from '@/lib/rights/rightsCatalog';
-import { MAP_CLASS_ORDER, type MapClass } from '@/lib/rights/rightsMapModel';
+import { RIGHT_SECTION_ORDER, RIGHT_TOPICS, topicBySlug } from '@/lib/rights/rightsCatalog';
+import { MAP_CLASS_ORDER, SECTION_TRACK, type MapClass } from '@/lib/rights/rightsMapModel';
 
 const criminalisation = topicBySlug('criminalisation')!;
 const employment = topicBySlug('employment')!;
@@ -40,6 +40,40 @@ describe('RightsMapControls — line selector', () => {
     const group = screen.getByRole('group', { name: 'Rights' });
     const buttons = within(group).getAllByRole('button');
     expect(buttons.length).toBe(RIGHT_TOPICS.length);
+  });
+
+  it('renders all 18 in ONE rail, not a row per family', () => {
+    // The five families are inline dividers now. Five stacked rows cost ~400px
+    // desktop / ~620px mobile — more than the map they filter — and every
+    // other filter bar in the app is one scrolling line. Asserting the shape
+    // because the height regression is invisible to every other test here.
+    const { container } = render(<RightsMapControls {...baseProps()} />);
+    const rail = screen.getByRole('group', { name: 'Rights' });
+    expect(rail.className).toContain('overflow-x-auto');
+    expect(rail.className).not.toContain('flex-wrap');
+    // One flex container holding every chip: no per-family sub-rows.
+    expect(within(rail).getAllByRole('button').length).toBe(RIGHT_TOPICS.length);
+    expect(container.querySelectorAll('[class*="grid-cols-"]').length).toBe(0);
+  });
+
+  it('marks each family with a track swatch rather than a row header', () => {
+    render(<RightsMapControls {...baseProps()} />);
+    const rail = screen.getByRole('group', { name: 'Rights' });
+    // TrackSwatch renders an aria-hidden span carrying the track fill; one per
+    // family, and it must stay border-gated (WCAG 1.4.11 — blue, green and
+    // yellow all measure under 3:1 on paper).
+    const swatches = rail.querySelectorAll('span[aria-hidden][class*="bg-track-"]');
+    expect(swatches.length).toBe(RIGHT_SECTION_ORDER.length);
+    swatches.forEach((s) => expect(s.className).toContain('border-track-ring'));
+  });
+
+  it('the active chip keeps the track fill, not the ink plate', () => {
+    // The map below is drawn in this track colour; an ink-plated active chip
+    // would break the only link between the control and the canvas.
+    render(<RightsMapControls {...baseProps({ topic: employment })} />);
+    const chip = screen.getByRole('button', { name: employment.labelDefault });
+    expect(chip.className).toContain(`bg-track-${SECTION_TRACK[employment.section]}`);
+    expect(chip.className).toContain('border-track-ring');
   });
 
   it('clicking a station calls onTopicChange with that topic', async () => {

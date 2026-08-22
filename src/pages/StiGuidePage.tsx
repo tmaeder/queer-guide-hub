@@ -6,6 +6,8 @@ import { PageContainer } from '@/components/layout/PageContainer';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useMeta } from '@/hooks/useMeta';
+import { useGeoCountry } from '@/hooks/useGeoCountry';
+import { TestingSitesBand } from '@/components/health/TestingSitesBand';
 import { untypedRpc } from '@/integrations/supabase/untyped';
 import { transmissionRiskVisual, TRANSMISSION_RISK_ORDER, BloodIcon } from '@/lib/stiRisk';
 
@@ -144,6 +146,7 @@ export default function StiGuidePage() {
   const { t } = useTranslation();
   const { data: matrix, isLoading: loadingMatrix } = useTransmissionMatrix();
   const { data: protection, isLoading: loadingProtection } = useProtectionMatrix();
+  const geo = useGeoCountry();
 
   useMeta({
     title: 'STI guide — transmission, testing, protection',
@@ -497,6 +500,11 @@ export default function StiGuidePage() {
         </div>
       </section>
 
+      {/* Was a one-line outbound link to testfinder.info. The band answers the
+          same question in-product and still credits + links the source; when it
+          has nothing for the reader's area it degrades to that same link. */}
+      <TestingSitesBand countryCode={geo.country} limit={8} />
+
       <p className="mt-8 text-13 leading-relaxed text-muted-foreground">
         {t('stiGuide.credit', 'Based on')}{' '}
         <a
@@ -506,12 +514,7 @@ export default function StiGuidePage() {
         >
           Depistage.be
         </a>{' '}
-        {t('stiGuide.creditVia', 'as presented by Kink Responsibly, Darklands.')}{' '}
-        {t('stiGuide.testFinder', 'Find a testing location near you at')}{' '}
-        <a href="https://testfinder.info/" target="_blank" rel="noopener noreferrer">
-          testfinder.info
-        </a>
-        .
+        {t('stiGuide.creditVia', 'as presented by Kink Responsibly, Darklands.')}
       </p>
     </PageContainer>
   );

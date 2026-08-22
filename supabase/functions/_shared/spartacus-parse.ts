@@ -120,11 +120,25 @@ export function parseCountries(html: string): Array<{ id: string; name: string }
   return out
 }
 
+/**
+ * Keys are matched CASE-SENSITIVELY first, then folded to lower case, because
+ * `&Auml;` and `&auml;` are different characters and a lowercase-only lookup
+ * silently downcased every capitalised German umlaut ("SIEGESSÄULE" came back
+ * "SIEGESSäULE"). The lowercase fallback keeps the pre-existing tolerance for
+ * sources that shout their entities.
+ */
 const NAMED_ENTITIES: Record<string, string> = {
   amp: '&', quot: '"', apos: "'", lt: '<', gt: '>', nbsp: ' ',
   uuml: 'ü', auml: 'ä', ouml: 'ö', szlig: 'ß', eacute: 'é', egrave: 'è',
   agrave: 'à', ccedil: 'ç', ntilde: 'ñ', aacute: 'á', iacute: 'í',
   oacute: 'ó', uacute: 'ú',
+  Uuml: 'Ü', Auml: 'Ä', Ouml: 'Ö',
+  // German/French typography: guillemets and low-9 quotes wrap the editorial
+  // body on siegessaeule.de, and en/em dashes are ordinary punctuation in
+  // German listings. Left undecoded they survive into titles as raw markup.
+  laquo: '«', raquo: '»', bdquo: '„', ldquo: '“', rdquo: '”',
+  lsquo: '‘', rsquo: '’', sbquo: '‚', ndash: '–', mdash: '—',
+  hellip: '…', middot: '·', bull: '•', euro: '€', deg: '°',
 }
 
 /**
@@ -149,7 +163,7 @@ export function decodeEntities(s: string): string {
         return full
       }
     }
-    return NAMED_ENTITIES[body.toLowerCase()] ?? full
+    return NAMED_ENTITIES[body] ?? NAMED_ENTITIES[body.toLowerCase()] ?? full
   })
 }
 

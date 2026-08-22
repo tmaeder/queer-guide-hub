@@ -21,8 +21,13 @@ import {
 // ============================================================
 
 const LLM_BATCH    = 25   // products per LLM call
-const DEFAULT_LIMIT = 250  // rows per invocation (stay under wall-clock)
-const WALL_CLOCK_MS = 50_000
+// 2026-08-22 DQ pass: 250/week left 10,834 rows parked at the 0.6 default
+// and the prune's freshness guard starving. The cron is nightly now; 600
+// rows/night clears the backlog in ~3 weeks and then keeps the 61k catalog
+// on a ~100-day re-verification cycle. Wall clock stays well under the edge
+// runtime ceiling; the loop breaks cleanly when it's hit.
+const DEFAULT_LIMIT = 600  // rows per invocation (stay under wall-clock)
+const WALL_CLOCK_MS = 120_000
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
