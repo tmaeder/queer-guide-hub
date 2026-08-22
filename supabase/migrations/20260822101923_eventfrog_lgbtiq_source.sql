@@ -11,7 +11,7 @@
 -- nights gay.ch's volunteer agenda does not (Floor Club Kloten, Kauz, Zinkbad,
 -- palais mascotte) and, because `?c=ALL` drops the country filter, the German
 -- and Austrian queer parties too. Measured 2026-08-22: 39 events across 27
--- venues, 2026-08-22 -> 2027-01-08, in one server-rendered page.
+-- venues, 2026-08-22 → 2027-01-08, in one server-rendered page.
 --
 -- CADENCE. Daily at 02:50, in the same quiet window as the other two. One
 -- listing fetch plus one request per upcoming event — ~40 requests — against a
