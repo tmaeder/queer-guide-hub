@@ -9,6 +9,7 @@ export const DEPARTMENT_LABELS: Record<string, string> = {
   swimwear: 'Swimwear',
   jewelry: 'Jewelry',
   books_art: 'Books & Art',
+  home: 'Home & Living',
   hygiene: 'Hygiene & Care',
   intimacy: 'Intimacy',
   bdsm_fetish: 'BDSM & Fetish',
@@ -18,7 +19,7 @@ export const DEPARTMENT_LABELS: Record<string, string> = {
 
 /** Browse order: SFW-friendly departments first, adult umbrellas last. */
 export const DEPARTMENT_ORDER = [
-  'apparel', 'underwear', 'swimwear', 'jewelry', 'books_art', 'hygiene',
+  'apparel', 'underwear', 'swimwear', 'jewelry', 'books_art', 'home', 'hygiene',
   'intimacy', 'bdsm_fetish', 'services', 'other',
 ] as const;
 
@@ -71,7 +72,8 @@ export const DEPARTMENT_GROUPS: Record<string, string[]> = {
   underwear: ['underwear', 'jockstraps', 'thongs', 'lingerie'],
   swimwear: ['swimwear'],
   jewelry: ['jewelry'],
-  books_art: ['books', 'art'],
+  books_art: ['books', 'art', 'film', 'calendars'],
+  home: ['home_goods'],
   hygiene: ['grooming'],
   intimacy: ['sex_toys', 'dildos', 'anal_toys', 'masturbators', 'vibrators', 'cock_rings', 'chastity', 'pumps', 'lubes', 'poppers', 'safer_sex'],
   bdsm_fetish: ['fetish_gear', 'bondage', 'impact_play', 'harnesses', 'collars', 'gags', 'hoods_masks', 'pup_play'],
@@ -82,7 +84,8 @@ export const GROUP_LABELS: Record<string, string> = {
   tops: 'Tops', bottoms: 'Bottoms', outerwear: 'Outerwear', bodywear: 'Bodywear',
   footwear: 'Footwear', headwear: 'Headwear', socks: 'Socks', accessories: 'Accessories',
   underwear: 'Underwear', jockstraps: 'Jockstraps', thongs: 'Thongs', lingerie: 'Lingerie',
-  swimwear: 'Swimwear', jewelry: 'Jewelry', books: 'Books', art: 'Art', grooming: 'Grooming',
+  swimwear: 'Swimwear', jewelry: 'Jewelry', books: 'Books', art: 'Art', film: 'Film',
+  calendars: 'Calendars', home_goods: 'Home goods', grooming: 'Grooming',
   sex_toys: 'Sex toys', dildos: 'Dildos', anal_toys: 'Anal toys', masturbators: 'Masturbators',
   vibrators: 'Vibrators', cock_rings: 'Cock rings', chastity: 'Chastity', pumps: 'Pumps',
   lubes: 'Lubes', poppers: 'Poppers', safer_sex: 'Safer sex',
