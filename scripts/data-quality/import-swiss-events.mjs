@@ -15,9 +15,11 @@
  *
  *   gay.ch              Plone 6 with plone.app.event. There is no usable API
  *                       (`++api++` answers NotFound, `/parties/ics_view` 500s), so
- *                       detail pages are parsed. 3,543 party pages back to 2015 come
- *                       from the sitemap; the /parties/ listing only ever shows the
- *                       ~33 upcoming ones.
+ *                       detail pages are parsed. The /parties/ listing only ever
+ *                       shows the ~32 upcoming ones, so the archive is enumerated
+ *                       from the sitemap UNIONED with the live catalog — see
+ *                       discoverGaychUrls() for why the sitemap alone silently
+ *                       lost 18 months.
  *
  * WHY GEOCODING IS PART OF THE IMPORT, not a follow-up backfill
  * ------------------------------------------------------------
@@ -384,6 +386,48 @@ function parseGayChEvent(html, url) {
   };
 }
 
+/**
+ * Enumerate every party URL from the LIVE Plone catalog.
+ *
+ * The sitemap is not a complete index and trusting it silently lost 18 months.
+ * It lists 3,543 party pages; `@@search?portal_type=Event` reports 4,507. The
+ * hole is 2025-01 through 2026-07, and it is provable rather than inferred:
+ * gay.ch numbers recurring series sequentially, the sitemap jumps straight from
+ * `kweeraoke-21` (2024-11) to `kweeraoke-40` (2026-08), and `kweeraoke-25`,
+ * `-30` and `-39` all answer 200. Nothing in the sitemap says it is partial.
+ *
+ * Results are batched 10 at a time, so this costs ~451 requests to avoid
+ * missing ~960 events. `sort_on=created` is required: the default is relevance,
+ * which is not a stable order to page through.
+ */
+async function discoverGaychUrls() {
+  const found = new Set();
+  const first = await getCached(
+    `${GAYCH}/@@search?portal_type=Event&sort_on=created&b_start:int=0`,
+  );
+  const total = Number(
+    first
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .match(/(\d+)\s*Inhalte gefunden/)?.[1] ?? 0,
+  );
+  console.log(`[discover] catalog reports ${total} Events`);
+
+  for (let start = 0; start <= total; start += 10) {
+    const html =
+      start === 0
+        ? first
+        : await getCached(
+            `${GAYCH}/@@search?portal_type=Event&sort_on=created&b_start:int=${start}`,
+          );
+    for (const m of html.matchAll(/https:\/\/gay\.ch\/parties\/[a-z0-9][a-z0-9-]*/g))
+      found.add(m[0]);
+    if (start % 500 === 0) console.log(`[discover] ${start}/${total} → ${found.size} party urls`);
+    if (start > 0) await sleep(200);
+  }
+  return found;
+}
+
 async function phaseFetchGaych() {
   const smPath = join(OUT, 'gaych-sitemap.xml');
   if (!existsSync(smPath)) {
@@ -393,7 +437,7 @@ async function phaseFetchGaych() {
     writeFileSync(smPath, gunzipSync(gz));
   }
   const xml = readFileSync(smPath, 'utf8');
-  const urls = [
+  const fromSitemap = [
     ...new Set(
       [...xml.matchAll(/<loc>(https:\/\/gay\.ch\/parties\/[^<]+)<\/loc>/g)].map((m) => m[1]),
     ),
@@ -401,7 +445,13 @@ async function phaseFetchGaych() {
     // /parties itself and the paged views are collections, not events.
     .filter((u) => !/\/parties\/?$/.test(u) && !/@@/.test(u));
 
-  console.log(`[fetch-gaych] ${urls.length} party urls in sitemap`);
+  // Union, not replacement: the catalog is the authority on what exists, but a
+  // quirk in one enumeration must not silently drop what the other found.
+  const fromCatalog = await discoverGaychUrls();
+  const urls = [...new Set([...fromSitemap, ...fromCatalog])];
+  console.log(
+    `[fetch-gaych] sitemap ${fromSitemap.length}, catalog ${fromCatalog.size}, union ${urls.length}`,
+  );
 
   const outPath = join(OUT, 'gaych-events.ndjson');
   const donePath = join(OUT, 'gaych-done.txt');
