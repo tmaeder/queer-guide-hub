@@ -49,6 +49,7 @@ export interface ClassifyInput {
     [k: string]: unknown
   } | null
   contacts?: { website?: string | null; [k: string]: unknown } | null
+  dates?: { start?: string | null; end?: string | null; [k: string]: unknown } | null
   // Anything else is ignored.
   [k: string]: unknown
 }
@@ -153,7 +154,10 @@ function asRecord(v: unknown): Record<string, unknown> {
 function coerceInput(input: ClassifyInput): ClassifyInput {
   const loc = asRecord(input.location)
   const contacts = asRecord(input.contacts)
-  if (!Object.keys(loc).length && !Object.keys(contacts).length) return input
+  const dates = asRecord(input.dates)
+  if (!Object.keys(loc).length && !Object.keys(contacts).length && !Object.keys(dates).length) {
+    return input
+  }
 
   return {
     ...input,
@@ -162,6 +166,12 @@ function coerceInput(input: ClassifyInput): ClassifyInput {
     latitude: input.latitude ?? ((loc.lat ?? loc.latitude) as number | string | undefined),
     longitude: input.longitude ?? ((loc.lng ?? loc.longitude) as number | string | undefined),
     website_url: input.website_url ?? (contacts.website as string | undefined),
+    // NormalizedItem carries `dates.{start,end}`, not flat start_date/end_date.
+    // Without this an event scores NO has_event_dates while still collecting
+    // the venue location signals below — which is how 2,110 real events were
+    // classified `venue` and hard-rejected.
+    start_date: input.start_date ?? (dates.start as string | undefined),
+    end_date: input.end_date ?? (dates.end as string | undefined),
   }
 }
 
@@ -215,12 +225,19 @@ export function classifyEntity(rawInput: ClassifyInput): ClassifyResult {
   }
 
   // ---- venue signals ----
+  // A VENUE has no start/end date. An event does, and it is held AT a place —
+  // so its address and coordinates describe the venue it occupies, not a venue
+  // record. Counting them as venue evidence is what let location outweigh the
+  // dates: 2,110 real events (ticketmaster, gaycities) scored `venue` and were
+  // hard-rejected as E_ENTITY_TYPE_MISMATCH. Same shape as the glossary guard
+  // below — the discriminating field vetoes the merely-suggestive one.
+  const hasEventDates = !!asString(input.start_date) || !!asString(input.end_date)
   const placeHit = PLACE_KEYWORDS.find(k => nameLc.includes(k))
-  if (placeHit) bumpSignal(scores, 'venue', 4, signals, `name_contains_${placeHit}`)
-  if (asString(input.address)) bumpSignal(scores, 'venue', 3, signals, 'has_address')
+  if (placeHit && !hasEventDates) bumpSignal(scores, 'venue', 4, signals, `name_contains_${placeHit}`)
+  if (asString(input.address) && !hasEventDates) bumpSignal(scores, 'venue', 3, signals, 'has_address')
   if (asString(input.accommodation_type)) bumpSignal(scores, 'venue', 4, signals, 'has_accommodation_type')
   const lat = Number(input.latitude), lng = Number(input.longitude)
-  if (Number.isFinite(lat) && Number.isFinite(lng) && lat !== 0 && lng !== 0) {
+  if (Number.isFinite(lat) && Number.isFinite(lng) && lat !== 0 && lng !== 0 && !hasEventDates) {
     bumpSignal(scores, 'venue', 2, signals, 'has_geo')
   }
   if (text.length > 0) {
