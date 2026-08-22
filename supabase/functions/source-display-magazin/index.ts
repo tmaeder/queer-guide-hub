@@ -113,12 +113,30 @@ function resolveCountry(country?: unknown, address?: unknown, city?: unknown): s
   return null
 }
 
-/** Tribe returns local wall time with no offset; the site is Europe/Zurich. */
+/**
+ * Tribe returns local WALL TIME with no offset ("2025-12-27 16:00:00") plus a
+ * separate IANA `timezone` field, so the offset must be resolved per instant —
+ * a fixed "+02:00" is right for July and an hour wrong for December. Round-trip
+ * through Intl to recover the zone's actual offset at that moment.
+ */
 function toIso(s: unknown, tz?: unknown): string | null {
   const raw = String(s ?? '').trim()
   if (!raw) return null
-  const t = new Date(raw.replace(' ', 'T') + (String(tz ?? '').includes('Zurich') || !tz ? '+02:00' : 'Z'))
-  return Number.isFinite(t.getTime()) ? t.toISOString() : null
+  const zone = String(tz ?? '') || 'Europe/Zurich'
+  const asUtc = new Date(raw.replace(' ', 'T') + 'Z')
+  if (!Number.isFinite(asUtc.getTime())) return null
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat('en-US', {
+      timeZone: zone, hour12: false,
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
+    }).formatToParts(asUtc).map((p) => [p.type, p.value]),
+  )
+  const back = Date.UTC(
+    Number(parts.year), Number(parts.month) - 1, Number(parts.day),
+    Number(parts.hour) % 24, Number(parts.minute), Number(parts.second),
+  )
+  return new Date(asUtc.getTime() - (back - asUtc.getTime())).toISOString()
 }
 
 async function getJson(url: string): Promise<Record<string, unknown>> {

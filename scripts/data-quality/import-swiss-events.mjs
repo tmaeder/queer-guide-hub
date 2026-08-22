@@ -561,6 +561,46 @@ async function phaseGeocode() {
 
 // ---------------------------------------------------------------- normalize
 
+/**
+ * Tribe returns local WALL TIME with no offset ("2025-12-27 16:00:00") plus a
+ * separate IANA `timezone` field, so the offset has to be resolved per instant
+ * — a fixed "+02:00" is right for July and an hour wrong for December, and the
+ * archive being imported spans both. Round-trip through Intl to recover the
+ * zone's actual offset at that moment.
+ *
+ * gay.ch needs none of this: its schema.org block already carries an explicit
+ * +01:00 / +02:00.
+ */
+function wallTimeToIso(s, tz = 'Europe/Zurich') {
+  const raw = String(s || '').trim();
+  if (!raw) return null;
+  const asUtc = new Date(raw.replace(' ', 'T') + 'Z');
+  if (!Number.isFinite(asUtc.getTime())) return null;
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat('en-US', {
+      timeZone: tz,
+      hour12: false,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    })
+      .formatToParts(asUtc)
+      .map((p) => [p.type, p.value]),
+  );
+  const back = Date.UTC(
+    Number(parts.year),
+    Number(parts.month) - 1,
+    Number(parts.day),
+    Number(parts.hour) % 24,
+    Number(parts.minute),
+    Number(parts.second),
+  );
+  return new Date(asUtc.getTime() - (back - asUtc.getTime())).toISOString();
+}
+
 /** display-magazin event category slug -> events_event_type_check vocabulary. */
 const DM_TYPE = {
   'party-nightlife': 'party',
@@ -608,7 +648,7 @@ function dmEventPayload(e, geo) {
   const city = v ? stripTags(v.city) || null : null;
   const g = v ? geo[`${slug(stripTags(v.venue))}|${slug(city || '')}`] : null;
   const type = DM_TYPE[e.categories?.[0]?.slug] || 'other';
-  const toIso = (s) => (s ? new Date(s.replace(' ', 'T') + '+02:00').toISOString() : null);
+  const toIso = (s) => wallTimeToIso(s, e.timezone || 'Europe/Zurich');
 
   return {
     sourceId: String(e.id),
