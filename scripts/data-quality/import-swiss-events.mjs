@@ -183,6 +183,25 @@ function resolveCountry({ country, address, city }) {
   return null;
 }
 
+/**
+ * Recover "<postal> <Town>" from the tail of a free-text address.
+ *
+ * Tribe's `city` field is optional and 59 of the 381 display-magazin venue
+ * records leave it empty while writing the town INTO the address
+ * ("Kasernenhof 8 4058 Basel", "Rämistrasse 6, Eingang Freieckgasse, 8001
+ * Zürich"). Those rows are not location-less, they are shaped differently —
+ * and `city` is what run_event_city_link keys on, so leaving it null costs
+ * city_id and everything derived from it.
+ */
+function cityFromAddress(address) {
+  const m = String(address || '')
+    .trim()
+    .replace(/,\s*$/, '')
+    .match(/(\d{4,5})\s+([^,\d]{2,})$/);
+  if (!m) return { postal: null, city: null };
+  return { postal: m[1], city: m[2].trim() };
+}
+
 /** Split "Heaven, Spitalgasse 5, 8001 Zürich" into its parts. */
 function splitGayChLocation(text) {
   const t = stripTags(text)
@@ -451,17 +470,20 @@ function buildVenueRegistry() {
   for (const v of JSON.parse(readFileSync(join(OUT, 'dm-venues.json'), 'utf8'))) {
     const name = stripTags(v.venue);
     if (!name) continue;
-    const city = stripTags(v.city) || null;
+    const fromAddr = cityFromAddress(v.address);
+    const city = stripTags(v.city) || fromAddr.city;
     reg.set(`dm:${v.id}`, {
       source: 'display-magazin',
       sourceId: String(v.id),
       name,
       street: stripTags(v.address) || null,
+      postal: fromAddr.postal,
       city,
       state: stripTags(v.stateprovince || v.province) || null,
       country: resolveCountry({ country: v.country, address: v.address, city }),
       url: v.url || null,
-      geoQuery: [stripTags(v.address), city, v.country].filter(Boolean).join(', ') || name,
+      // NEVER fall back to the bare venue name — see geocodable().
+      geoQuery: [stripTags(v.address), city, v.country].filter(Boolean).join(', ') || null,
     });
   }
 
@@ -494,6 +516,28 @@ const geoKey = (v) => `${slug(v.name)}|${slug(v.city || '')}`;
 
 const PHOTON = 'https://photon.komoot.io/api/';
 
+/**
+ * The only countries these two sources actually publish venues in.
+ *
+ * Not a guess: across the labelled subset, every venue resolves to CH or DE,
+ * and the unlabelled remainder is Swiss by postal code. AT/FR/IT/LI are here
+ * because a Zurich or Basel agenda legitimately reaches just over the border.
+ */
+const PLAUSIBLE_CC = new Set(['CH', 'DE', 'AT', 'FR', 'IT', 'LI']);
+
+/**
+ * A venue is geocodable only if the source gave a PLACE, not just a name.
+ *
+ * This guard exists because its absence was measured. `geoQuery` used to fall
+ * back to the bare venue name, and Photon dutifully resolved 'Swing Werk' to
+ * Swinging Limb Road, Tennessee; 'Komplex Klub' to a forested hill in Czechia;
+ * 'Ritmo' to Moscow; 'Kultarena' to Lund, Sweden. Six of the seven had NO
+ * address, NO city and NO country in the source — there was nothing to geocode
+ * and the right answer was to say so. A null coordinate is recoverable; a Basel
+ * bar plotted in Tel Aviv is not.
+ */
+const geocodable = (v) => Boolean(v.geoQuery && (v.street || v.city || v.postal));
+
 async function photon(q, countryHint) {
   if (!q) return null;
   const url = new URL(PHOTON);
@@ -512,9 +556,13 @@ async function photon(q, countryHint) {
   if (Math.abs(lat) < 0.001 && Math.abs(lng) < 0.001) return null; // Null Island
   // A hit in a different country than the address states is a mismatch, not a
   // near-miss — dropping it keeps a Zurich bar out of Zurich, Ontario.
-  const cc = f?.properties?.countrycode;
-  if (countryHint && cc && cc.toUpperCase() !== countryHint) return null;
-  return { lat, lng, cc: cc || null, matched: f?.properties?.name || null };
+  const cc = f?.properties?.countrycode ? String(f.properties.countrycode).toUpperCase() : null;
+  if (countryHint && cc && cc !== countryHint) return null;
+  // With no stated country there is nothing to compare against, so the result
+  // is judged against what these sources plausibly contain instead. Photon
+  // always answers something; "somewhere in Russia" is that answer being wrong.
+  if (!countryHint && cc && !PLAUSIBLE_CC.has(cc)) return null;
+  return { lat, lng, cc, matched: f?.properties?.name || null };
 }
 
 async function phaseGeocode() {
@@ -522,8 +570,22 @@ async function phaseGeocode() {
   const path = join(OUT, 'geo.json');
   const geo = existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : {};
 
-  const todo = [...reg.values()].filter((v) => !(geoKey(v) in geo)).slice(0, LIMIT);
-  console.log(`[geocode] ${reg.size} venues, ${todo.length} to geocode`);
+  // Record the un-geocodable ones as a decided null so they are never retried,
+  // and so `stage` can tell "no place in the source" from "not looked up yet".
+  let skipped = 0;
+  for (const v of reg.values()) {
+    if (!geocodable(v) && !(geoKey(v) in geo)) {
+      geo[geoKey(v)] = null;
+      skipped++;
+    }
+  }
+
+  const todo = [...reg.values()]
+    .filter((v) => geocodable(v) && !(geoKey(v) in geo))
+    .slice(0, LIMIT);
+  console.log(
+    `[geocode] ${reg.size} venues, ${todo.length} to geocode, ${skipped} with no address at all`,
+  );
 
   let hits = 0;
   for (let i = 0; i < todo.length; i++) {
@@ -617,6 +679,20 @@ const DM_TYPE = {
   weitere: 'other',
 };
 
+/**
+ * Country, in descending order of evidence.
+ *
+ * A street-level Photon hit is a real observation of where the address is, and
+ * it is already double-gated (it must agree with any stated country, and must
+ * be a country these sources plausibly cover), so it counts as evidence.
+ * A CITY-CENTROID hit does not: that came from resolving a bare town name, the
+ * exact move CLAUDE.md warns about. Null stays null there — `derive_entity_geo_address`
+ * fills country from city_id later, and a wrong country is not undoable.
+ */
+const countryOf = (explicit, g) => explicit || (g && !g.centroid && g.cc ? g.cc : null);
+const countrySource = (explicit, g) =>
+  explicit ? 'source' : countryOf(explicit, g) ? 'photon' : null;
+
 function venuePayload(v, geo) {
   const g = geo[geoKey(v)] || null;
   return {
@@ -628,7 +704,7 @@ function venuePayload(v, geo) {
       city: v.city || null,
       state: v.state || null,
       postal_code: v.postal || null,
-      country: v.country,
+      country: countryOf(v.country, g),
       lat: g?.lat ?? null,
       lng: g?.lng ?? null,
     },
@@ -638,6 +714,7 @@ function venuePayload(v, geo) {
       url: v.url || null,
       source: v.source,
       geo_source: g ? (g.centroid ? 'photon:city_centroid' : 'photon:address') : null,
+      country_source: countrySource(v.country, g),
       geo_matched: g?.matched ?? null,
     },
   };
@@ -645,8 +722,14 @@ function venuePayload(v, geo) {
 
 function dmEventPayload(e, geo) {
   const v = e.venue && !Array.isArray(e.venue) ? e.venue : null;
-  const city = v ? stripTags(v.city) || null : null;
+  // Same shape-recovery as the venue registry — and it MUST match, because the
+  // geo lookup key is derived from the city.
+  const fromAddr = v ? cityFromAddress(v.address) : { postal: null, city: null };
+  const city = v ? stripTags(v.city) || fromAddr.city : null;
   const g = v ? geo[`${slug(stripTags(v.venue))}|${slug(city || '')}`] : null;
+  const explicitCountry = v
+    ? resolveCountry({ country: v.country, address: v.address, city })
+    : null;
   const type = DM_TYPE[e.categories?.[0]?.slug] || 'other';
   const toIso = (s) => wallTimeToIso(s, e.timezone || 'Europe/Zurich');
 
@@ -665,8 +748,9 @@ function dmEventPayload(e, geo) {
     location: {
       address: v ? stripTags(v.address) || null : null,
       city,
+      postal_code: fromAddr.postal,
       state: v ? stripTags(v.stateprovince || v.province) || null : null,
-      country: v ? resolveCountry({ country: v.country, address: v.address, city }) : null,
+      country: countryOf(explicitCountry, g),
       lat: g?.lat ?? null,
       lng: g?.lng ?? null,
       timezone: e.timezone || 'Europe/Zurich',
@@ -681,6 +765,7 @@ function dmEventPayload(e, geo) {
       cost: e.cost || null,
       categories: (e.categories || []).map((c) => c.slug),
       geo_source: g ? (g.centroid ? 'photon:city_centroid' : 'photon:address') : null,
+      country_source: countrySource(explicitCountry, g),
     },
   };
 }
@@ -688,6 +773,9 @@ function dmEventPayload(e, geo) {
 function gaychEventPayload(e, geo) {
   const v = e.venue;
   const g = v ? geo[`${slug(v.name)}|${slug(v.city || '')}`] : null;
+  const explicitCountry = v
+    ? resolveCountry({ country: v.country, address: v.full, city: v.city })
+    : null;
   const desc = [e.description, e.body].filter(Boolean).join('\n\n').trim();
   return {
     sourceId: e.sourceId,
@@ -707,7 +795,7 @@ function gaychEventPayload(e, geo) {
       address: v?.street || null,
       city: v?.city || null,
       postal_code: v?.postal || null,
-      country: v ? resolveCountry({ country: v.country, address: v.full, city: v.city }) : null,
+      country: countryOf(explicitCountry, g),
       lat: g?.lat ?? null,
       lng: g?.lng ?? null,
       timezone: 'Europe/Zurich',
@@ -721,6 +809,7 @@ function gaychEventPayload(e, geo) {
       cost: e.cost || null,
       keywords: e.tags || [],
       geo_source: g ? (g.centroid ? 'photon:city_centroid' : 'photon:address') : null,
+      country_source: countrySource(explicitCountry, g),
     },
   };
 }
@@ -881,7 +970,7 @@ async function phaseStage() {
     const withCity = g.rows.filter((r) => r.location?.city).length;
     console.log(
       `[stage] ${g.sourceName}/${g.entityType}: ${g.rows.length} rows, ` +
-        `geo ${withGeo}, city ${withCity}, country ${tally(g.rows, (r) => r.location?.country)}`,
+        `geo ${withGeo}, city ${withCity}, country ${JSON.stringify(tally(g.rows, (r) => r.location?.country))}`,
     );
   }
 

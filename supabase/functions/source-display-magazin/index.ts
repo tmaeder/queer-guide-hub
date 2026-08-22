@@ -114,6 +114,20 @@ function resolveCountry(country?: unknown, address?: unknown, city?: unknown): s
 }
 
 /**
+ * Recover "<postal> <Town>" from the tail of a free-text address.
+ *
+ * Tribe's `city` field is optional and 59 of the 381 venue records leave it
+ * empty while writing the town INTO the address ("Kasernenhof 8 4058 Basel").
+ * Those rows are not location-less, just shaped differently — and `city` is
+ * what run_event_city_link keys on, so a null there costs city_id and
+ * everything derived from it.
+ */
+function cityFromAddress(address: unknown): { postal: string | null; city: string | null } {
+  const m = String(address ?? '').trim().replace(/,\s*$/, '').match(/(\d{4,5})\s+([^,\d]{2,})$/)
+  return m ? { postal: m[1], city: m[2].trim() } : { postal: null, city: null }
+}
+
+/**
  * Tribe returns local WALL TIME with no offset ("2025-12-27 16:00:00") plus a
  * separate IANA `timezone` field, so the offset must be resolved per instant —
  * a fixed "+02:00" is right for July and an hour wrong for December. Round-trip
@@ -178,7 +192,8 @@ const eventAdapter: SourceAdapter = {
   normalize(raw: RawItem): NormalizedItem {
     const e = raw.data
     const v = (e.venue && !Array.isArray(e.venue) ? e.venue : null) as Record<string, unknown> | null
-    const city = v ? stripTags(v.city) || null : null
+    const fromAddr = cityFromAddress(v?.address)
+    const city = v ? stripTags(v.city) || fromAddr.city : null
     const cats = (e.categories as { slug?: string }[]) ?? []
     const image = (e.image as { url?: string } | null)?.url ?? null
 
@@ -199,6 +214,7 @@ const eventAdapter: SourceAdapter = {
       location: {
         address: v ? stripTags(v.address) || undefined : undefined,
         city: city ?? undefined,
+        postal_code: fromAddr.postal ?? undefined,
         state: v ? stripTags(v.stateprovince ?? v.province) || undefined : undefined,
         country: (v ? resolveCountry(v.country, v.address, city) : null) ?? undefined,
         timezone: (e.timezone as string) || 'Europe/Zurich',
@@ -230,7 +246,8 @@ const venueAdapter: SourceAdapter = {
 
   normalize(raw: RawItem): NormalizedItem {
     const v = raw.data
-    const city = stripTags(v.city) || null
+    const fromAddr = cityFromAddress(v.address)
+    const city = stripTags(v.city) || fromAddr.city
     const item: StagedItem = {
       entityType: 'venue',
       sourceId: String(v.id),
@@ -242,6 +259,7 @@ const venueAdapter: SourceAdapter = {
       location: {
         address: stripTags(v.address) || undefined,
         city: city ?? undefined,
+        postal_code: fromAddr.postal ?? undefined,
         state: stripTags(v.stateprovince ?? v.province) || undefined,
         country: resolveCountry(v.country, v.address, city) ?? undefined,
       },
