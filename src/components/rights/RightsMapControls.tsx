@@ -5,7 +5,7 @@ import { FilterChip } from '@/components/transit/FilterChip';
 import { TrackSwatch } from '@/components/transit/TrackSwatch';
 import {
   RIGHT_SECTION_ORDER,
-  RIGHT_SECTION_LABEL,
+  RIGHT_SECTION_SHORT_LABEL,
   topicsInSection,
   topicListLabel,
   type RightTopic,
@@ -103,7 +103,7 @@ export function RightsMapLegend({
       // right on a phone is "Protected" and "No data" — not the death classes.
       // That is the correct end to lose on this page, and it is a consequence
       // of the order, so it is stated here rather than discovered later.
-      className="-mx-1 flex items-end gap-4 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      className="-mx-1 flex items-end gap-4 overflow-x-auto px-1 pb-1 scrollbar-thin"
       aria-label={t('rights.map.legend', 'Country counts by status')}
     >
       {MAP_CLASS_ORDER.filter((cls) => counts[cls] > 0).map((cls) => {
@@ -182,7 +182,13 @@ export function RightsMapControls({
         ref={railRef}
         role="group"
         aria-label={t('rights.map.lineSelector', 'Rights')}
-        className="-mx-1 flex items-center gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        // `scrollbar-thin`, NOT the hidden scrollbar the nav rails use
+        // (RouteStrip, PickerLine). Those are navigation you scroll past; this
+        // is a filter whose remaining options are the point, and with the bar
+        // hidden the rail just looked clipped at the right edge on desktop.
+        // PresetChips, CategoryChips and Rail all keep the bar for the same
+        // reason.
+        className="-mx-1 flex snap-x items-center gap-2 overflow-x-auto px-1 pb-1 scrollbar-thin"
       >
         {RIGHT_SECTION_ORDER.map((section) => {
           const track = SECTION_TRACK[section];
@@ -190,8 +196,12 @@ export function RightsMapControls({
             <Fragment key={section}>
               <span className="flex shrink-0 items-center gap-2 pl-2 first:pl-0">
                 <TrackSwatch track={track} />
+                {/* The SHORT line name: the five full headings measure ~600px
+                    inline, five chips' worth of an 18-chip rail. The full one
+                    stays the accessible name of nothing here — the chips carry
+                    their own names, and the ledger below prints the headings. */}
                 <span className="whitespace-nowrap text-2xs font-bold uppercase tracking-wide text-muted-foreground">
-                  {t(`country.rights.section.${section}`, RIGHT_SECTION_LABEL[section])}
+                  {t(`country.rights.sectionShort.${section}`, RIGHT_SECTION_SHORT_LABEL[section])}
                 </span>
               </span>
               {topicsInSection(section).map((stationTopic) => {
@@ -232,7 +242,7 @@ export function RightsMapControls({
       <div
         role="group"
         aria-label={t('rights.map.lens.heading', 'Who the law protects')}
-        className="-mx-1 flex items-center gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="-mx-1 flex snap-x items-center gap-2 overflow-x-auto px-1 pb-1 scrollbar-thin"
       >
         <span className="shrink-0 whitespace-nowrap text-2xs font-bold uppercase tracking-wide text-muted-foreground">
           {t('rights.map.lens.heading', 'Who the law protects')}
