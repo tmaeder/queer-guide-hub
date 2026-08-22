@@ -346,42 +346,98 @@ export interface SiegessaeuleDetail {
 /**
  * Read a `/termine/<cat>/<slug>/<date>/<time>/` detail page.
  *
- * The editorial body is wrapped in German quotation marks (»…«) in the source;
- * they are stripped so the description reads as prose rather than a quote.
+ * This is a Svelte/Sapper render with NO h1, NO h2 and no tag markup, so
+ * almost nothing is where a conventional page would put it:
+ *
+ *  - the title is only in `og:title`;
+ *  - the hashtags are plain TEXT ("#Cabaret #Musical #queer"), not links;
+ *  - the venue name is an `<h3>` that appears AFTER the "Veranstaltungsort"
+ *    heading, in a separate `<header>`, and the address is a `<li>` of the
+ *    following `info-list`;
+ *  - the editorial body is wrapped in German guillemets (»…«), which are
+ *    typography and are stripped.
+ *
+ * IMAGE — do NOT use `og:image`. It is a **signed Google Cloud Storage URL**
+ * carrying `X-Goog-Expires=86400`, so an imported event would show a working
+ * picture today and a broken one tomorrow. The rendered `<img>` points at the
+ * same asset through the unsigned `cdn.siegessaeule.de/images/…` path, which
+ * is stable; that is what gets stored.
  */
 export function parseSiegessaeuleDetail(html: string): SiegessaeuleDetail {
-  // Drop the site chrome: the footer repeats nav labels that otherwise leak
-  // into a naive whole-page text scrape.
-  const body = html.replace(/<footer[\s\S]*$/i, '')
+  // Drop chrome and scripts: the footer repeats nav labels and the inline JS
+  // is full of `#fff`-style tokens that a naive hashtag scan would collect.
+  const body = html
+    .replace(/<footer[\s\S]*$/i, '')
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
 
+  const plain = text(body)
+
+  // Hashtags are bare words in the prose. A tag may START WITH A DIGIT
+  // (`#1920er` is a real and common one here), so the first character cannot
+  // be required to be a letter — instead the token must contain at least one
+  // letter, which drops bare numbers, and a hex colour is excluded explicitly
+  // (`#fff`, `#1a2b3c`) because it satisfies every other rule.
   const hashtags: string[] = []
-  const hre = /#([\p{L}\p{N}_-]{2,40})/gu
-  const tagZone = firstMatch(
-    /<div[^>]*class="[^"]*(?:tags|hashtags)[^"]*"[^>]*>([\s\S]*?)<\/div>/,
-    body,
-  )
+  const seenTag = new Set<string>()
+  const hre = /#([\p{L}\p{N}][\p{L}\p{N}_-]{1,39})/gu
   let h: RegExpExecArray | null
-  while ((h = hre.exec(text(tagZone ?? '')))) hashtags.push(h[1])
+  while ((h = hre.exec(plain))) {
+    const t = h[1]
+    if (!/\p{L}/u.test(t)) continue
+    if (/^(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(t)) continue
+    const k = t.toLowerCase()
+    if (seenTag.has(k)) continue
+    seenTag.add(k)
+    hashtags.push(t)
+  }
 
+  // Everything from the "Veranstaltungsort" heading onwards.
+  const venueCut = body.indexOf('Veranstaltungsort')
+  const venueZone = body.slice(Math.max(0, venueCut))
+
+  // The editorial body is a `.richtext` div — but there are TWO on the page
+  // and the second is the VENUE's own blurb ("Zwischen Kanzleramt, Reichstag
+  // und Brandenburger Tor ist das Tipi Heimat von Chanson…"), which would
+  // otherwise be filed as this event's description on every event at that
+  // venue. Only the first, and only from above the venue section, counts.
+  // Some pages carry no richtext and quote the promoter in guillemets instead.
+  const above = venueCut > 0 ? body.slice(0, venueCut) : body
   const descRaw =
-    firstMatch(/<div[^>]*class="[^"]*(?:event-)?text[^"]*"[^>]*>([\s\S]*?)<\/div>/, body) ??
-    firstMatch(/»([\s\S]*?)«/, body)
-
-  const venueBlock =
-    firstMatch(/Veranstaltungsort([\s\S]{0,1200}?)(?:<\/section>|schliessen)/, body) ?? ''
+    firstMatch(/<div[^>]*class="[^"]*\brichtext\b[^"]*"[^>]*>([\s\S]*?)<\/div>/, above) ??
+    firstMatch(/»([\s\S]*?)«/, above)
+  const venueName = text(firstMatch(/<h3[^>]*>([\s\S]*?)<\/h3>/, venueZone.slice(20)))
+  // The map-pin list item holds "<name>, <street>, <postcode> Berlin-<district>".
+  const address = text(
+    firstMatch(/feather-map-pin[\s\S]{0,400}?<\/span>([\s\S]{0,300}?)<\/li>/, venueZone),
+  )
 
   return {
-    title: text(firstMatch(/<h1[^>]*>([\s\S]*?)<\/h1>/, body)) || null,
+    title: text(decodeEntities(firstMatch(/<meta property="og:title" content="([^"]+)"/, body) ?? '')) || null,
     subtitle:
-      text(firstMatch(/<div class="event-description[^"]*">([\s\S]*?)<\/div>/, body)) || null,
-    description: text(descRaw).replace(/^[»"']+|[«"']+$/g, '').trim() || null,
+      text(firstMatch(/<div class="event-description[^"]*"[^>]*>([\s\S]*?)<\/div>/, body)) || null,
+    // The hashtag run is appended to the prose ("Regie: Vincent Paterson
+    // #1920er#Cabaret#Musical"); it is captured separately and stripped here
+    // so the description reads as a sentence.
+    description:
+      text(descRaw)
+        // "Mehr Infos [& Tickets]: <domain>" sits inside the same richtext
+        // block and is a link label, not prose. It appears BOTH leading (yoga
+        // classes) and trailing (theatre listings), so it is stripped
+        // wherever it occurs rather than anchored to either end.
+        // The connector varies ("Mehr Infos:", "… & Tickets:", "… und
+        // Anmeldung:"), so anything short up to the colon is allowed.
+        .replace(/\s*Mehr Infos[^:]{0,30}:\s*\S*/gu, ' ')
+        .replace(/\s*(?:#[\p{L}][\p{L}\p{N}_-]{1,39})+\s*$/gu, '')
+        .replace(/^[»"']+|[«"']+$/g, '')
+        .trim() || null,
     hashtags,
-    venueName: text(firstMatch(/<h[34][^>]*>([\s\S]*?)<\/h[34]>/, venueBlock)) || null,
-    venueAddress:
-      text(firstMatch(/([^<>]*\d{5}\s*Berlin[^<>]*)/, venueBlock)) || null,
-    venueUrl: firstMatch(/href="(https?:\/\/(?!www\.siegessaeule\.de)[^"]+)"/, venueBlock),
-    infoUrl: firstMatch(/Mehr Infos:[\s\S]{0,200}?href="(https?:\/\/[^"]+)"/, body),
-    image: firstMatch(/<meta property="og:image" content="([^"]+)"/, body),
+    venueName: venueName || null,
+    venueAddress: address && /\d{5}/.test(address) ? address : null,
+    venueUrl: firstMatch(/href="(https?:\/\/(?!(?:www\.)?siegessaeule\.de|cdn\.siegessaeule\.de)[^"]+)"/, venueZone),
+    infoUrl: firstMatch(/Mehr Infos:[\s\S]{0,300}?href="(https?:\/\/[^"]+)"/, body),
+    // Unsigned CDN path only — never the expiring og:image.
+    image: firstMatch(/<img[^>]+src="(https:\/\/cdn\.siegessaeule\.de\/images\/[^"]+)"/, body),
   }
 }
 

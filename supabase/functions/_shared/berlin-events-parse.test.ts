@@ -191,38 +191,62 @@ Deno.test('parseSiegessaeuleDay: one occurrence is emitted once', () => {
 
 // ------------------------------------------------------ Siegessäule detail
 
-const SIEG_DETAIL = `<html><head><meta property="og:image" content="https://www.siegessaeule.de/img/yoga.jpg"></head><body>
-<h1>Yoga for Queers</h1>
-<div class="event-description typography--subtitle1">Wöchentlicher Kurs</div>
-<div class="event-text">&raquo;Yoga for Queers is back, and we are happy to share that we are offering weekly classes for FLINTA, Queers &amp; Allies. Join for a 75 minutes yoga class in the heart of Kreuzberg.&laquo;</div>
-<div class="tags">#Kreuzberg #Queer #Yoga</div>
-<p>Mehr Infos: <a href="https://eversports.de/s/yellow-yoga">eversports.de</a></p>
-<section><h3>Veranstaltungsort</h3><h4>Yellow Yoga Gelber Raum</h4>
-<div>Mariannenstra&szlig;e 48, 10997 Berlin-Bezirk Friedrichshain-Kreuzberg, Deutschland</div>
-<a href="https://yellow-yoga.com/gelber-raum/">yellow-yoga.com</a></section>
+// Verbatim excerpt of https://www.siegessaeule.de/termine/kultur/cabaret-24/
+// 2026-08-22/20:00/ — a Sapper render with NO h1/h2, hashtags as plain text,
+// TWO .richtext blocks (the second is the venue's own blurb) and an og:image
+// that is a signed, expiring GCS URL.
+const SIEG_DETAIL = `<html><head>
+<meta property="og:title" content="Cabaret &ndash; Das Musical im Tipi">
+<meta property="og:image" content="https://cdn.siegessaeule.de/original_images/CABARET.jpg?X-Goog-Algorithm=GOOG4-RSA-SHA256&amp;X-Goog-Expires=86400&amp;X-Goog-Signature=deadbeef">
+</head><body>
+<img alt="" src="https://cdn.siegessaeule.de/images/15.6.23-PR-CABARET_2019_-_Finale-c.708735cb.fill-720x360.jpg" srcset="https://cdn.siegessaeule.de/images/x.fill-320x160.jpg 320w">
+<div class="richtext svelte-1fmlr68"><!-- HTML_TAG_START --><p data-block-key="g18u3">In der Kult-Inszenierung von Madonnas Choreografen Vincent Paterson &uuml;ber das queere Treiben im KitKat Club tritt diesmal Sophie Berner als Sally Bowles an.</p><p data-block-key="e1ta0">Mehr Infos &amp; Tickets:<br/><a href="https://www.tipi-am-kanzleramt.de/de/programm/cabaret.html" target="_blank" rel="noopener noreferrer">tipi-am-kanzleramt</a></p><!-- HTML_TAG_END --></div>
+<p>Regie: Vincent Paterson #1920er#Cabaret#Musical#Tiergarten#queer</p>
+<div><div class="content related"><h3 class="">Veranstaltungsort</h3></div></div>
+<hr>
+<header class="svelte-5l0ta8"><div class="content">
+<h3 class="svelte-5l0ta8">Tipi am Kanzleramt</h3>
+<ul class="info-list"><li><span class="icon"><svg class="feather feather-map-pin "><path d="M21 10c0 7-9 13-9 13"></path></svg>
+</span>
+Tipi am Kanzleramt, Gro&szlig;e Querallee, 10557 Berlin</li>
+<li><a href="https://www.tipi-am-kanzleramt.de/" target="_blank" rel="noopener noreferrer">Website</a></li></ul>
+<div class="richtext svelte-1fmlr68"><p>Zwischen Kanzleramt, Reichstag und Brandenburger Tor ist das Tipi Heimat von Chanson, Varie&teacute; oder Musical-Comedy.</p></div>
+</div></header>
 <footer><a href="https://www.siegessaeule.de/abo">SIEGESS&Auml;ULE ABO</a></footer></body></html>`
+
+Deno.test('parseSiegessaeuleDetail: title comes from og:title (there is no h1)', () => {
+  const d = parseSiegessaeuleDetail(SIEG_DETAIL)
+  assertEquals(d.title, 'Cabaret – Das Musical im Tipi')
+})
 
 Deno.test('parseSiegessaeuleDetail: reads prose, tags, venue and links', () => {
   const d = parseSiegessaeuleDetail(SIEG_DETAIL)
-  assertEquals(d.title, 'Yoga for Queers')
-  assertEquals(d.subtitle, 'Wöchentlicher Kurs')
-  // The German quotation marks are typography, not part of the description.
-  assertEquals(d.description?.startsWith('Yoga for Queers is back'), true)
-  assertEquals(d.description?.includes('»'), false)
-  assertEquals(d.hashtags, ['Kreuzberg', 'Queer', 'Yoga'])
-  assertEquals(d.venueName, 'Yellow Yoga Gelber Raum')
-  assertEquals(
-    d.venueAddress,
-    'Mariannenstraße 48, 10997 Berlin-Bezirk Friedrichshain-Kreuzberg, Deutschland',
-  )
-  assertEquals(d.venueUrl, 'https://yellow-yoga.com/gelber-raum/')
-  assertEquals(d.infoUrl, 'https://eversports.de/s/yellow-yoga')
-  assertEquals(d.image, 'https://www.siegessaeule.de/img/yoga.jpg')
+  assertEquals(d.description?.startsWith('In der Kult-Inszenierung'), true)
+  // The trailing "Mehr Infos & Tickets:" link label is not prose.
+  assertEquals(d.description?.includes('Mehr Infos'), false)
+  assertEquals(d.hashtags, ['1920er', 'Cabaret', 'Musical', 'Tiergarten', 'queer'])
+  assertEquals(d.venueName, 'Tipi am Kanzleramt')
+  assertEquals(d.venueAddress, 'Tipi am Kanzleramt, Große Querallee, 10557 Berlin')
+  assertEquals(d.venueUrl, 'https://www.tipi-am-kanzleramt.de/')
+})
+
+Deno.test('parseSiegessaeuleDetail: the VENUE blurb is never the event description', () => {
+  // There are two .richtext blocks and the second describes the venue. Taking
+  // the wrong one files the same paragraph as the description of every event
+  // that venue ever hosts.
+  const d = parseSiegessaeuleDetail(SIEG_DETAIL)
+  assertEquals(d.description?.includes('Heimat von Chanson'), false)
+})
+
+Deno.test('parseSiegessaeuleDetail: image is the CDN path, never the signed og:image', () => {
+  // og:image is a signed GCS URL carrying X-Goog-Expires=86400 — storing it
+  // yields a working picture today and a broken one tomorrow.
+  const d = parseSiegessaeuleDetail(SIEG_DETAIL)
+  assertEquals(d.image, 'https://cdn.siegessaeule.de/images/15.6.23-PR-CABARET_2019_-_Finale-c.708735cb.fill-720x360.jpg')
+  assertEquals(d.image?.includes('X-Goog-Expires'), false)
 })
 
 Deno.test('parseSiegessaeuleDetail: the footer never leaks into the venue', () => {
-  // The site footer repeats nav labels and an abo link on every page; a naive
-  // whole-page scrape files them as venue data.
   const d = parseSiegessaeuleDetail(SIEG_DETAIL)
   assertEquals(d.venueUrl?.includes('siegessaeule.de'), false)
 })
