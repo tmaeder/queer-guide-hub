@@ -81,8 +81,7 @@ export function CityTravelHub({
 
   // Only deals that actually fly to this city, with a real price.
   const matchedDeals = (flightDeals ?? []).filter(
-    (deal) =>
-      deal.destination === destinationIata && Number.isFinite(deal.price) && deal.price > 0,
+    (deal) => deal.destination === destinationIata && Number.isFinite(deal.price) && deal.price > 0,
   );
 
   const { data: hotelResults, isLoading: hotelsLoading } = useHotelSearch({
@@ -98,7 +97,7 @@ export function CityTravelHub({
   });
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-6">
       {/* Flights */}
       <div>
         <SectionHeader
@@ -137,69 +136,67 @@ export function CityTravelHub({
         />
       )}
 
-      {/* Hotels */}
-      <div>
-        <SectionHeader
-          icon={Hotel}
-          title={`Hotels in ${destinationCity}`}
-          moreLink={`/travel?tab=hotels&city=${encodeURIComponent(destinationCity)}`}
+      {/* Hotels — rule 2: no results, no module. The old fallback printed
+          "No hotels found in Berlin" under a full section header, which is
+          112px spent telling the reader nothing they can act on. The same
+          cleanup already removed this shape from the news and districts
+          sections of this page. */}
+      {(hotelsLoading || (hotelResults && hotelResults.length > 0)) && (
+        <div>
+          <SectionHeader
+            icon={Hotel}
+            title={`Hotels in ${destinationCity}`}
+            moreLink={`/travel?tab=hotels&city=${encodeURIComponent(destinationCity)}`}
+          />
+          {hotelsLoading ? (
+            <LoadingRow />
+          ) : (
+            <ResultsRow>
+              {hotelResults!.slice(0, 3).map((hotel) => (
+                <UnifiedBookingCard key={hotel.id} result={hotel} />
+              ))}
+            </ResultsRow>
+          )}
+        </div>
+      )}
+
+      {/* Activities — same rule. Its empty state pointed at /events, which on
+          this page is the "Next departures" section a few hundred pixels up:
+          a 170px signpost to something already on screen. */}
+      {(activitiesLoading || (activityResults && activityResults.length > 0)) && (
+        <div>
+          <SectionHeader
+            icon={Ticket}
+            title={`Things to do in ${destinationCity}`}
+            moreLink={`/travel?tab=activities&city=${encodeURIComponent(destinationCity)}`}
+          />
+          {activitiesLoading ? (
+            <LoadingRow />
+          ) : (
+            <ResultsRow>
+              {activityResults!.slice(0, 3).map((a) => (
+                <UnifiedBookingCard key={a.id} result={a} />
+              ))}
+            </ResultsRow>
+          )}
+        </div>
+      )}
+
+      {/* Car rental, airport transfer and insurance are one row, not three.
+          Each is a single affiliate link behind a heading, and stacked they
+          cost ~230px of full-width bands to say three short things. Side by
+          side from `sm` they read as what they are — the book-the-rest-of-it
+          shelf — and stack back on a phone. */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <CarRentalSection city={destinationCity} compact />
+        <TransferSection
+          city={destinationCity}
+          equalityScore={equalityScore}
+          airportCode={destinationIata}
+          compact
         />
-        {hotelsLoading ? (
-          <LoadingRow />
-        ) : hotelResults && hotelResults.length > 0 ? (
-          <ResultsRow>
-            {hotelResults.slice(0, 3).map((hotel) => (
-              <UnifiedBookingCard key={hotel.id} result={hotel} />
-            ))}
-          </ResultsRow>
-        ) : (
-          <div className="text-center py-4 bg-accent rounded-element">
-            <p className="text-muted-foreground text-sm">No hotels found in {destinationCity}</p>
-          </div>
-        )}
+        <InsuranceSection compact />
       </div>
-
-      {/* Activities */}
-      <div>
-        <SectionHeader
-          icon={Ticket}
-          title={`Things to do in ${destinationCity}`}
-          moreLink={`/travel?tab=activities&city=${encodeURIComponent(destinationCity)}`}
-        />
-        {activitiesLoading ? (
-          <LoadingRow />
-        ) : activityResults && activityResults.length > 0 ? (
-          <ResultsRow>
-            {activityResults.slice(0, 3).map((a) => (
-              <UnifiedBookingCard key={a.id} result={a} />
-            ))}
-          </ResultsRow>
-        ) : (
-          <div className="text-center py-4 bg-accent rounded-element">
-            <p className="text-muted-foreground text-sm">
-              No activities found. Check{' '}
-              <LocalizedLink to="/events" className="underline">
-                events
-              </LocalizedLink>{' '}
-              for things happening in {destinationCity}.
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* Car Rental */}
-      <CarRentalSection city={destinationCity} compact />
-
-      {/* Airport Transfer (safety-aware) */}
-      <TransferSection
-        city={destinationCity}
-        equalityScore={equalityScore}
-        airportCode={destinationIata}
-        compact
-      />
-
-      {/* Travel Insurance */}
-      <InsuranceSection compact />
 
       {/* CTA */}
       <div className="text-center">

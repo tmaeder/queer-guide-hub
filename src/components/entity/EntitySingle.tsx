@@ -3,7 +3,7 @@ import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
 import { MoreLikeThisByTag } from '@/components/tags/MoreLikeThisByTag';
-import { SinglePage } from '@/components/transit/SinglePage';
+import { SinglePage, StickyRailGroup } from '@/components/transit/SinglePage';
 import { SingleSectionList, SingleRouteRail } from '@/components/transit/SingleSections';
 import { singleSections, useSingleActiveSection } from '@/components/transit/singleSectionModel';
 import { TrackLoader } from '@/components/transit/TrackLoader';
@@ -95,15 +95,17 @@ export function EntitySingle({
           single.rail ? (
             <>
               {single.rail}
-              <SingleRouteRail
-                sections={sections}
-                activeId={activeId}
-                onNavigate={select}
-                orientation="vertical"
-                track={single.track}
-                label="Sections"
-                className="hidden lg:block"
-              />
+              <StickyRailGroup>
+                <SingleRouteRail
+                  sections={sections}
+                  activeId={activeId}
+                  onNavigate={select}
+                  orientation="vertical"
+                  track={single.track}
+                  label="Sections"
+                  className="hidden lg:block"
+                />
+              </StickyRailGroup>
             </>
           ) : undefined
         }

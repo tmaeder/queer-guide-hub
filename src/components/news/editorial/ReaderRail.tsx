@@ -18,7 +18,7 @@ export function ReaderRail() {
           Sign in to build a reading streak, save stories, and pick up where you left off.
         </p>
         <LocalizedLink
-          to="/auth?intent=signin"
+          to="/auth"
           className="inline-flex w-fit items-center rounded-element bg-foreground text-background px-4 py-2 text-sm font-semibold no-underline hover:opacity-90"
           style={{ color: 'hsl(var(--background))' }}
         >

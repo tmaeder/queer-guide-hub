@@ -28,7 +28,7 @@ interface SupportOrg {
   website_domain?: string | null;
 }
 
-const COLUMN = 'flex min-w-0 flex-col bg-card p-6 rounded-container shadow-soft';
+const COLUMN = 'flex min-w-0 flex-col p-6';
 const ACTION =
   'mt-4 inline-flex items-center gap-1 self-start px-4 py-2 text-13 font-bold no-underline transition-colors hover:bg-foreground hover:text-background';
 
@@ -37,11 +37,13 @@ export function MoreSupportBand({ orgs }: { orgs: SupportOrg[] }) {
 
   return (
     <section className="mt-12 border-t border-border-hairline pt-8" aria-labelledby="help-more">
-      <h2 id="help-more" className="font-display text-display leading-tight">
+      <h2 id="help-more" className="font-display text-headline leading-tight">
         {t('help.more_support', 'More support')}
       </h2>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-3">
+      {/* One card, three columns split by hairlines — three floating cards was
+          three shadows and three radii for one band of equal-weight content. */}
+      <div className="mt-6 grid divide-y divide-border-hairline bg-card rounded-container shadow-soft lg:grid-cols-3 lg:divide-x lg:divide-y-0">
         <div className={COLUMN}>
           <p className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
             {t('help.support_orgs', 'Support organizations')}

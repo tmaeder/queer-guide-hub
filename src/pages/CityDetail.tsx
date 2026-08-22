@@ -25,11 +25,11 @@ import { SimilarCities } from '@/components/personalization/SimilarCities';
 import { CreateTripDialog } from '@/components/trips/CreateTripDialog';
 import { TripCoveringBanner } from '@/components/trips/TripCoveringBanner';
 import { PlanTripFromHereButton } from '@/components/trips/PlanTripFromHereButton';
-import { SinglePage } from '@/components/transit/SinglePage';
+import { SinglePage, StickyRailGroup } from '@/components/transit/SinglePage';
 import { ProvenanceLine } from '@/components/transit/ProvenanceLine';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { SeeAllLink } from '@/components/ui/SectionHeader';
-import { PageContainer, STICKY_UNDER_HEADER } from '@/components/layout/PageContainer';
+import { PageContainer } from '@/components/layout/PageContainer';
 import { GeoCensus } from '@/components/geo/GeoCensus';
 import { GeoPhotoInset } from '@/components/geo/GeoPhotoInset';
 import { GeoSafetyBanner, GeoSafetyVerdict } from '@/components/geo/GeoSafetyBlock';
@@ -286,7 +286,15 @@ export default function CityDetail() {
         {
           id: 'news',
           title: t('cities.detail.section.news', 'In the news'),
-          content: articles.length > 0 ? <CityNewsTab articles={articles} /> : null,
+          variant: 'compact',
+          content:
+            articles.length > 0 ? (
+              <CityNewsTab
+                articles={articles}
+                locale={i18n.language}
+                openLabel={t('cities.detail.openEvent', 'Open')}
+              />
+            ) : null,
         },
       ])
     : [];
@@ -482,7 +490,7 @@ export default function CityDetail() {
                 is that a count belongs only where it changes what the reader
                 does. A duplicate changes nothing; the census is the one
                 unconditional render. */}
-            <div className={`flex flex-col gap-4 lg:sticky ${STICKY_UNDER_HEADER}`}>
+            <StickyRailGroup>
               {/* Sticky from lg so the line map follows the reader — the
                   horizontal strip already does exactly this on mobile, pinned
                   under the header; without this the desktop TOC scrolls away
@@ -503,11 +511,16 @@ export default function CityDetail() {
                 checkedAt={city.last_verified_at ?? null}
                 correctHref="/contact"
               />
-            </div>
+            </StickyRailGroup>
           </>
         }
         footer={
-          <div className="flex flex-col gap-10">
+          /* `gap-8`. The rail LIST is not trimmed further here: it was curated
+             from ten to seven with a stated reason per cut (see below), and
+             cutting more without new evidence is taste, not measurement. The
+             gaps are the part that was measurable — 40px between five tall
+             rails is ~200px of nothing. */
+          <div className="flex flex-col gap-8">
             {/* Rails live here, not in `sections`: each self-hides from inside
                 its own body, which the section filter cannot see, so a station
                 would point at nothing.

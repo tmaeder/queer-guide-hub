@@ -3,6 +3,7 @@ import { withCircuitBreaker } from '../_shared/circuit-breaker.ts'
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
 import { writeToStaging } from '../_shared/source-adapter.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
+import { normalizeIso2Country } from '../_shared/venue-category.ts'
 
 // ============================================================
 // Source: Refuge Restrooms API
@@ -60,13 +61,19 @@ const refugeAdapter: SourceAdapter = {
       sourceId: raw.sourceId,
       sourceName: 'refuge-restrooms',
       name: String(d.name || 'Gender-Neutral Restroom'),
+      // REQUIRED. Without it commit_venue_staging_item substitutes 'unknown',
+      // which venues_category_check rejects — this source emitted no category
+      // at all and lost 907 of 1,851 rows (49%) that way. 'toilet' has been in
+      // the vocabulary since 20260810120100.
+      category: 'toilet',
       description: [d.comment, d.directions].filter(Boolean).join(' - '),
       location: {
         lat: Number(d.latitude) || undefined,
         lng: Number(d.longitude) || undefined,
         address: String(d.street || ''),
         city: String(d.city || ''),
-        country: String(d.country || ''),
+        // undefined, never '': the CHECK allows NULL but not ''.
+        country: normalizeIso2Country(d.country as string | undefined),
       },
       tags: ['restroom', 'gender-neutral', ...amenities],
       metadata: {
@@ -78,7 +85,9 @@ const refugeAdapter: SourceAdapter = {
         upvote: d.upvote,
         downvote: d.downvote,
       },
-    }
+      // `category` is not on the NormalizedItem interface but IS read by
+      // commit_venue_staging_item — same cast the other venue adapters use.
+    } as NormalizedItem
   },
   getSourceId(raw: RawItem): string { return raw.sourceId },
 }

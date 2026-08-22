@@ -37,6 +37,19 @@ export interface ClassifyInput {
   longitude?: number | string | null
   accommodation_type?: string | null
   event_type?: string | null
+  // The nested `NormalizedItem` shape every `source-*` adapter emits. Flattened
+  // by coerceInput() before scoring — see the note there for why this matters.
+  location?: {
+    address?: string | null
+    city?: string | null
+    lat?: number | string | null
+    lng?: number | string | null
+    latitude?: number | string | null
+    longitude?: number | string | null
+    [k: string]: unknown
+  } | null
+  contacts?: { website?: string | null; [k: string]: unknown } | null
+  dates?: { start?: string | null; end?: string | null; [k: string]: unknown } | null
   // Anything else is ignored.
   [k: string]: unknown
 }
@@ -109,12 +122,66 @@ function asString(v: unknown): string {
   return typeof v === 'string' ? v.trim() : ''
 }
 
+function asRecord(v: unknown): Record<string, unknown> {
+  return v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, unknown>) : {}
+}
+
+/**
+ * Accept BOTH the flat shape and the nested `NormalizedItem` shape.
+ *
+ * The scorer reads `address` / `city` / `latitude` / `longitude` at the top
+ * level, which is what the CSV upload preview passes. But every `source-*`
+ * adapter emits `_shared/source-adapter.ts`'s `NormalizedItem`, which nests
+ * them under `location` (`location.lat` / `location.lng` — note the short
+ * keys) and puts the site under `contacts.website`, and `pipeline-validate`
+ * hands `normalized_data` straight in.
+ *
+ * Measured on production `ingestion_staging`: of 39,002 venue rows only 790
+ * carried a flat `address`/`latitude`; 38,126 nested it. So for ~98% of rows
+ * the classifier scored venue with NO `has_address` (+3) and NO `has_geo`
+ * (+2). Two live failures fell out of that:
+ *
+ *   - Nothing scored at all -> `unknown` at confidence 0 -> W_ENTITY_TYPE_UNCLEAR
+ *     on ~90% of venue rows, padding the warning count toward the
+ *     needs_review threshold.
+ *   - For a short all-caps name the glossary acronym rule (+3) then ran
+ *     UNOPPOSED, winning at confidence 0.5 — over the 0.45 hard-reject bar.
+ *     35 of 35 such rows were real venues (GMF Berlin, XXL Sitges, DYMK
+ *     Singapore, AXM Manchester, SPQR Auckland) rejected as glossary terms.
+ *
+ * Flat keys win when both are present, so existing callers are unaffected.
+ */
+function coerceInput(input: ClassifyInput): ClassifyInput {
+  const loc = asRecord(input.location)
+  const contacts = asRecord(input.contacts)
+  const dates = asRecord(input.dates)
+  if (!Object.keys(loc).length && !Object.keys(contacts).length && !Object.keys(dates).length) {
+    return input
+  }
+
+  return {
+    ...input,
+    address: input.address ?? (loc.address as string | undefined),
+    city: input.city ?? (loc.city as string | undefined),
+    latitude: input.latitude ?? ((loc.lat ?? loc.latitude) as number | string | undefined),
+    longitude: input.longitude ?? ((loc.lng ?? loc.longitude) as number | string | undefined),
+    website_url: input.website_url ?? (contacts.website as string | undefined),
+    // NormalizedItem carries `dates.{start,end}`, not flat start_date/end_date.
+    // Without this an event scores NO has_event_dates while still collecting
+    // the venue location signals below — which is how 2,110 real events were
+    // classified `venue` and hard-rejected.
+    start_date: input.start_date ?? (dates.start as string | undefined),
+    end_date: input.end_date ?? (dates.end as string | undefined),
+  }
+}
+
 function bumpSignal(scores: Record<EntityKind, number>, kind: EntityKind, weight: number, signals: string[], reason: string) {
   scores[kind] += weight
   signals.push(`${kind}:${reason} (+${weight})`)
 }
 
-export function classifyEntity(input: ClassifyInput): ClassifyResult {
+export function classifyEntity(rawInput: ClassifyInput): ClassifyResult {
+  const input = coerceInput(rawInput)
   const scores: Record<EntityKind, number> = {
     person: 0, venue: 0, event: 0, glossary_term: 0, unknown: 0,
   }
@@ -158,12 +225,19 @@ export function classifyEntity(input: ClassifyInput): ClassifyResult {
   }
 
   // ---- venue signals ----
+  // A VENUE has no start/end date. An event does, and it is held AT a place —
+  // so its address and coordinates describe the venue it occupies, not a venue
+  // record. Counting them as venue evidence is what let location outweigh the
+  // dates: 2,110 real events (ticketmaster, gaycities) scored `venue` and were
+  // hard-rejected as E_ENTITY_TYPE_MISMATCH. Same shape as the glossary guard
+  // below — the discriminating field vetoes the merely-suggestive one.
+  const hasEventDates = !!asString(input.start_date) || !!asString(input.end_date)
   const placeHit = PLACE_KEYWORDS.find(k => nameLc.includes(k))
-  if (placeHit) bumpSignal(scores, 'venue', 4, signals, `name_contains_${placeHit}`)
-  if (asString(input.address)) bumpSignal(scores, 'venue', 3, signals, 'has_address')
+  if (placeHit && !hasEventDates) bumpSignal(scores, 'venue', 4, signals, `name_contains_${placeHit}`)
+  if (asString(input.address) && !hasEventDates) bumpSignal(scores, 'venue', 3, signals, 'has_address')
   if (asString(input.accommodation_type)) bumpSignal(scores, 'venue', 4, signals, 'has_accommodation_type')
   const lat = Number(input.latitude), lng = Number(input.longitude)
-  if (Number.isFinite(lat) && Number.isFinite(lng) && lat !== 0 && lng !== 0) {
+  if (Number.isFinite(lat) && Number.isFinite(lng) && lat !== 0 && lng !== 0 && !hasEventDates) {
     bumpSignal(scores, 'venue', 2, signals, 'has_geo')
   }
   if (text.length > 0) {
@@ -191,7 +265,17 @@ export function classifyEntity(input: ClassifyInput): ClassifyResult {
   const wordCount = name.length === 0 ? 0 : name.trim().split(/\s+/).length
   const isAllLower = name.length > 0 && name === name.toLowerCase() && /[a-z]/.test(name)
   const isShortAcronym = /^[A-Z]{2,5}$/.test(name) && !asString(input.wikidata_qid)
+  // A glossary term is a WORD — it has no street address and no map pin. The
+  // name-shape rule is weak (it fires on any short or lowercase name), so a row
+  // carrying a physical location must not be judged by it: "XXL", "GMF" and
+  // "DYMK" are club names, and the coordinate is what says so. Without this
+  // guard the rule beat a venue that had coordinates but no address, 3 to 2.
+  const hasPhysicalLocation =
+    !!asString(input.address) ||
+    (Number.isFinite(Number(input.latitude)) && Number.isFinite(Number(input.longitude)) &&
+      Number(input.latitude) !== 0 && Number(input.longitude) !== 0)
   if (wordCount > 0 && wordCount <= 4 && (isAllLower || isShortAcronym) &&
+      !hasPhysicalLocation &&
       !asString(input.birth_date) && !asString(input.death_date) && !qid) {
     bumpSignal(scores, 'glossary_term', 3, signals, 'short_lowercase_or_acronym')
   }

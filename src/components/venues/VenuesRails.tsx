@@ -232,7 +232,7 @@ function AnonPersonalizationPromo() {
         </div>
         <div className="flex gap-2 shrink-0">
           <Button asChild>
-            <LocalizedLink to="/auth?next=/onboarding/venues">
+            <LocalizedLink to="/auth?redirect=%2Fonboarding%2Fvenues">
               {t('venues.rails.forYouPromo.cta', 'Get started')}
             </LocalizedLink>
           </Button>
