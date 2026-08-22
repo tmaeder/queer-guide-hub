@@ -163,7 +163,23 @@ function statusPill(
   if (s.includes('sold')) return { label: 'Sold out', variant: 'outline' };
   if (s.includes('moved_online') || s === 'online')
     return { label: 'Moved online', variant: 'soft' };
+  // Last, so a cancelled or postponed event keeps the stronger label — those
+  // say something the date does not.
+  //
+  // "Ended" is the corpus's DOMINANT state and had no chip at all: 39,795 of
+  // 40,119 live events are in the past (324 upcoming), so the overwhelmingly
+  // common case was the one the reader had to infer by parsing a date. It is
+  // `outline`, not `destructive` — an event finishing is not a fault.
+  if (isEventPast(event)) return { label: 'Ended', variant: 'outline' };
   return null;
+}
+
+/** Single definition of "already happened", shared by the chip and the page. */
+export function isEventPast(event: EventWithRelations): boolean {
+  const end = event.end_date || event.start_date;
+  if (!end) return false;
+  const d = new Date(end);
+  return !Number.isNaN(d.getTime()) && d < new Date();
 }
 
 function humanizeRecurrence(pattern: string | null | undefined): string {
@@ -514,7 +530,12 @@ export function EventDecisionCard({
           </div>
         )}
 
-        {ticketHref ? (
+        {/* `!isPast` on the ticket CTA too. Every other control in this card
+            already checked it — both "Add to Trip" variants and the RSVP pair
+            — so the primary button was the one place a finished event still
+            invited the reader to buy a ticket. Measured: 443 live events are
+            past AND carry a `ticket_url`. */}
+        {ticketHref && !isPast ? (
           <Button asChild className="w-full">
             <a href={ticketHref} target="_blank" rel="noopener noreferrer">
               <Ticket size={16} className="mr-2" />
@@ -755,15 +776,17 @@ export function EventWhoIsGoing({
   const interested = event.attendee_counts?.interested ?? 0;
 
   return (
-    <section className="flex flex-col gap-4">
-      <div className="flex items-baseline justify-between gap-2">
-        <h2 className="text-title font-bold">Who's going</h2>
-        {(going > 0 || interested > 0) && (
-          <span className="text-sm text-muted-foreground">
-            {going} going · {interested} interested
-          </span>
-        )}
-      </div>
+    <div className="flex flex-col gap-4">
+      {/* No heading of its own. `SingleSection` already renders "Who's going"
+          as the section h2, so this printed the same words twice — and worse,
+          that second h2 is what hid the empty-section bug below from
+          `e2e/singles.spec.ts`, whose guard strips only the FIRST heading's
+          text before asking whether anything is left. */}
+      {(going > 0 || interested > 0) && (
+        <p className="text-sm text-muted-foreground">
+          {going} going · {interested} interested
+        </p>
+      )}
 
       {going === 0 && interested === 0 && !isPast && (
         <p className="text-sm text-muted-foreground">
@@ -781,8 +804,38 @@ export function EventWhoIsGoing({
         eventId={event.id}
         title={t('events.peopleYouMayKnow', 'People you may know')}
       />
-    </section>
+    </div>
   );
+}
+
+/**
+ * Whether the "Who's going" section has anything to say — read by the page so
+ * the SECTION can be dropped, not just its body.
+ *
+ * A component that returns nothing from its own body is invisible to the
+ * section filter, which is how this shipped a bare heading. The three inputs
+ * are the three things the section can render:
+ *   - a count, when anyone has RSVP'd;
+ *   - the "no RSVPs yet" prompt, which is deliberately suppressed once the
+ *     event is over (asking someone to be the first to attend a finished
+ *     event is nonsense);
+ *   - `PeopleHereRail`, which needs a signed-in viewer — `enabled` is
+ *     `Boolean(user) && …` and its `emptyState` defaults to null.
+ *
+ * So for a signed-out reader on a past event all three are empty, which is
+ * 99.2% of the corpus (39,795 of 40,119 live events are in the past) for
+ * every anonymous visitor and every crawler.
+ */
+export function hasWhoIsGoingContent(
+  event: EventWithRelations,
+  user: { id: string } | null,
+  isPast: boolean,
+): boolean {
+  const going = event.attendee_counts?.going ?? 0;
+  const interested = event.attendee_counts?.interested ?? 0;
+  if (going > 0 || interested > 0) return true;
+  if (!isPast) return true; // the "be the first" prompt renders
+  return Boolean(user); // only a signed-in viewer can get the people rail
 }
 
 /* ------------------------------------------------------------------ */

@@ -46,7 +46,22 @@ describe('EventDetail.parts helpers', () => {
     // The status chip is a bordered ink outline in `DetailMasthead`, so an
     // event with nothing to say must return undefined rather than an empty
     // string — an empty chip is still a chip.
-    expect(eventStatusLabel(event)).toBeUndefined();
+    //
+    // The date is far-future ON PURPOSE and must stay that way. This assertion
+    // used the shared `event` fixture dated 2026-06-27, which was upcoming
+    // when it was written and quietly became a PAST event on the calendar —
+    // so once past events started reporting "Ended", the test failed on a
+    // correct implementation. A fixture that encodes "upcoming" as a literal
+    // date stops meaning that the moment the date passes.
+    expect(
+      eventStatusLabel({ ...event, start_date: '2999-01-01T00:00:00Z' } as never),
+    ).toBeUndefined();
+  });
+
+  it('eventStatusLabel says Ended once the event is over', () => {
+    expect(eventStatusLabel({ ...event, start_date: '2020-01-01T00:00:00Z' } as never)).toBe(
+      'Ended',
+    );
   });
 
   it('eventStatusLabel names a cancelled event', () => {
