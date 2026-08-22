@@ -1,0 +1,3044 @@
+{
+ "_source": "https://www.ticketcorner.ch/artist/travestie-im-kiez-berlin/",
+ "_captured": "2026-08-22",
+ "_why": "ticketcorner.ch sits behind Akamai Bot Manager: curl/fetch from Node is reset at TLS (curl exit 92), so this host cannot be crawled by a script or a cron'd edge function. The JSON-LD EventSeries.subEvent[] arrays of ?pnum=1..4 are captured here verbatim. Refresh by re-running the capture documented in the importer header.",
+ "name": "Travestie im Kiez .... circus of drag queens!",
+ "seriesName": "Travestie im Kiez Berlin",
+ "description": "Der „Circus der Travestie“ hat seine magische Bühne für Sie in eine Zeitmaschine verwandelt. Begleiten sie uns auf eine Reise kreuz und quer durch die Zeit, zu einigen der berühmtesten Epochen und Momente der Geschichte. „Timetravel“ ist ein unglaubliches Spektakel voller Glanz und Glamour, welches seines Gleichen sucht. Die Drag Queens begrüßen Sie herzlich zu Berlins schillernder Travestieshow. Sexy Tanznummern, abwechslungsreicher Live-Gesang und freche Comedy-Einlagen ergänzen sich samt ausgeklügeltem Lichtdesign zu einem sensationellen Showerlebnis. Einlass ab 16 Jahren.",
+ "subEvent": [
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2026-09-04T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175484/",
+     "validFrom": "2026-01-08T12:40:56.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2026-09-04T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2026-09-05T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175420/",
+     "validFrom": "2026-01-08T12:40:56.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2026-09-05T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2026-09-11T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175434/",
+     "validFrom": "2026-01-08T12:40:56.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2026-09-11T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2026-09-12T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175459/",
+     "validFrom": "2026-01-08T12:40:56.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2026-09-12T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2026-09-18T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175441/",
+     "validFrom": "2026-01-08T12:40:56.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2026-09-18T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2026-09-19T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175444/",
+     "validFrom": "2026-01-08T12:40:56.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2026-09-19T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2026-09-25T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175466/",
+     "validFrom": "2026-01-08T12:40:56.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2026-09-25T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2026-09-26T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175496/",
+     "validFrom": "2026-01-08T12:40:57.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2026-09-26T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2026-10-02T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "52.80",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175460/",
+     "validFrom": "2026-01-08T12:40:56.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2026-10-02T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2026-10-03T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175452/",
+     "validFrom": "2026-01-08T12:40:56.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2026-10-03T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2026-10-09T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175422/",
+     "validFrom": "2026-01-08T12:40:56.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2026-10-09T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2026-10-10T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175485/",
+     "validFrom": "2026-01-08T12:40:56.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2026-10-10T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2026-10-16T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175451/",
+     "validFrom": "2026-01-08T12:40:56.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2026-10-16T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2026-10-17T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175499/",
+     "validFrom": "2026-01-08T12:40:57.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2026-10-17T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2026-10-23T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175482/",
+     "validFrom": "2026-01-08T12:40:56.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2026-10-23T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2026-10-24T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175432/",
+     "validFrom": "2026-01-08T12:40:56.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2026-10-24T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2026-10-30T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175491/",
+     "validFrom": "2026-01-08T12:40:56.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2026-10-30T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2026-10-31T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175448/",
+     "validFrom": "2026-01-08T12:40:56.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2026-10-31T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2026-11-06T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175427/",
+     "validFrom": "2026-01-08T12:40:56.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2026-11-06T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2026-11-07T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175489/",
+     "validFrom": "2026-01-08T12:40:56.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2026-11-07T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2026-11-13T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175469/",
+     "validFrom": "2026-01-08T12:40:57.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2026-11-13T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2026-11-14T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175464/",
+     "validFrom": "2026-01-08T12:40:57.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2026-11-14T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2026-11-20T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175453/",
+     "validFrom": "2026-01-08T12:40:56.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2026-11-20T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2026-11-21T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175492/",
+     "validFrom": "2026-01-08T12:40:56.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2026-11-21T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2026-11-27T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175476/",
+     "validFrom": "2026-01-08T12:40:57.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2026-11-27T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2026-11-28T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175423/",
+     "validFrom": "2026-01-08T12:40:56.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2026-11-28T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2026-12-04T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175426/",
+     "validFrom": "2026-01-08T12:40:56.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2026-12-04T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2026-12-05T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175465/",
+     "validFrom": "2026-01-08T12:40:56.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2026-12-05T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2026-12-11T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175474/",
+     "validFrom": "2026-01-08T12:40:57.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2026-12-11T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2026-12-12T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175493/",
+     "validFrom": "2026-01-08T12:40:57.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2026-12-12T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2026-12-18T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175479/",
+     "validFrom": "2026-01-08T12:40:56.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2026-12-18T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2026-12-19T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175443/",
+     "validFrom": "2026-01-08T12:40:56.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2026-12-19T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-01-08T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175437/",
+     "validFrom": "2026-01-08T12:40:56.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-01-08T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-01-09T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175450/",
+     "validFrom": "2026-02-01T00:00:00.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-01-09T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-01-15T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175462/",
+     "validFrom": "2026-02-01T00:00:00.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-01-15T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-01-16T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175483/",
+     "validFrom": "2026-02-01T00:00:00.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-01-16T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-01-22T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175470/",
+     "validFrom": "2026-02-01T00:00:00.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-01-22T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-01-23T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175419/",
+     "validFrom": "2026-02-01T00:00:00.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-01-23T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-01-29T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175475/",
+     "validFrom": "2026-02-01T00:00:00.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-01-29T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-01-30T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175497/",
+     "validFrom": "2026-02-01T00:00:00.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-01-30T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-02-05T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175477/",
+     "validFrom": "2026-03-01T00:00:00.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-02-05T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-02-06T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175433/",
+     "validFrom": "2026-03-01T00:00:00.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-02-06T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-02-12T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175494/",
+     "validFrom": "2026-03-01T00:00:00.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-02-12T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-02-13T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175478/",
+     "validFrom": "2026-03-01T00:00:00.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-02-13T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-02-19T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175490/",
+     "validFrom": "2026-03-01T00:00:00.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-02-19T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-02-20T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175431/",
+     "validFrom": "2026-03-01T00:00:00.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-02-20T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-02-26T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175435/",
+     "validFrom": "2026-03-01T00:00:00.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-02-26T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-02-27T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175456/",
+     "validFrom": "2026-03-01T00:00:00.000+01:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-02-27T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-03-05T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175461/",
+     "validFrom": "2026-04-01T00:00:00.000+02:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-03-05T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-03-06T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175447/",
+     "validFrom": "2026-04-01T00:00:00.000+02:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-03-06T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-03-12T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175446/",
+     "validFrom": "2026-04-01T00:00:00.000+02:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-03-12T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-03-13T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175449/",
+     "validFrom": "2026-04-01T00:00:00.000+02:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-03-13T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-03-19T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175473/",
+     "validFrom": "2026-04-01T00:00:00.000+02:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-03-19T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-03-20T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175463/",
+     "validFrom": "2026-04-01T00:00:00.000+02:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-03-20T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-03-26T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175468/",
+     "validFrom": "2026-04-01T00:00:00.000+02:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-03-26T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-03-27T20:30:00.000+01:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175480/",
+     "validFrom": "2026-04-01T00:00:00.000+02:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-03-27T20:30:00.000+01:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-04-02T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175436/",
+     "validFrom": "2026-05-01T00:00:00.000+02:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-04-02T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-04-03T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175472/",
+     "validFrom": "2026-05-01T00:00:00.000+02:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-04-03T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-04-09T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175495/",
+     "validFrom": "2026-05-01T00:00:00.000+02:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-04-09T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-04-10T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175424/",
+     "validFrom": "2026-05-01T00:00:00.000+02:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-04-10T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-04-16T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175445/",
+     "validFrom": "2026-05-01T00:00:00.000+02:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-04-16T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-04-17T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175500/",
+     "validFrom": "2026-05-01T00:00:00.000+02:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-04-17T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-04-23T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175454/",
+     "validFrom": "2026-05-01T00:00:00.000+02:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-04-23T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-04-24T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175455/",
+     "validFrom": "2026-05-01T00:00:00.000+02:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-04-24T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-04-30T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175430/",
+     "validFrom": "2026-05-01T00:00:00.000+02:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-04-30T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-05-01T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175425/",
+     "validFrom": "2026-06-01T00:00:00.000+02:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-05-01T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-05-07T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175421/",
+     "validFrom": "2026-06-01T00:00:00.000+02:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-05-07T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-05-08T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175428/",
+     "validFrom": "2026-06-01T00:00:00.000+02:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-05-08T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-05-14T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175467/",
+     "validFrom": "2026-06-01T00:00:00.000+02:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-05-14T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-05-15T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175486/",
+     "validFrom": "2026-06-01T00:00:00.000+02:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-05-15T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-05-21T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175487/",
+     "validFrom": "2026-06-01T00:00:00.000+02:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-05-21T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-05-22T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175438/",
+     "validFrom": "2026-06-01T00:00:00.000+02:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-05-22T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-05-28T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175458/",
+     "validFrom": "2026-06-01T00:00:00.000+02:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-05-28T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-05-29T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175439/",
+     "validFrom": "2026-06-01T00:00:00.000+02:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-05-29T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-06-04T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175442/",
+     "validFrom": "2026-07-01T00:00:00.000+02:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-06-04T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-06-05T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175471/",
+     "validFrom": "2026-07-01T00:00:00.000+02:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-06-05T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-06-11T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175481/",
+     "validFrom": "2026-07-01T00:00:00.000+02:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-06-11T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-06-12T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175488/",
+     "validFrom": "2026-07-01T00:00:00.000+02:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-06-12T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-06-18T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175440/",
+     "validFrom": "2026-07-01T00:00:00.000+02:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-06-18T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-06-19T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175429/",
+     "validFrom": "2026-07-01T00:00:00.000+02:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-06-19T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-06-25T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175457/",
+     "validFrom": "2026-07-01T00:00:00.000+02:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-06-25T20:30:00.000+02:00"
+  },
+  {
+   "@context": "https://schema.org",
+   "@type": "TheaterEvent",
+   "endDate": "2027-06-26T20:30:00.000+02:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "image": "https://www.ticketcorner.ch/obj/media/CH-eventim/galery/222x222/2025/travestie-im-kiez-2025-xb.jpg",
+   "location": {
+    "@context": "https://schema.org",
+    "@type": "EventVenue",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "DE",
+     "addressLocality": "BERLIN / NEUKÖLLN",
+     "postalCode": "12047",
+     "streetAddress": "Weserstr. 211 beim Hermannplatz"
+    },
+    "name": "tikberlin.de - THEATER IM KELLER"
+   },
+   "name": "Travestie im Kiez .... circus of drag queens!",
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "category": "Preiskategorie 1",
+     "price": "48.65",
+     "priceCurrency": "CHF",
+     "url": "https://www.ticketcorner.ch/event/travestie-im-kiez-tikberlin-de-theater-im-keller-21175498/",
+     "validFrom": "2026-07-01T00:00:00.000+02:00"
+    }
+   ],
+   "performer": {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Travestie im Kiez Berlin"
+   },
+   "startDate": "2027-06-26T20:30:00.000+02:00"
+  }
+ ]
+}
