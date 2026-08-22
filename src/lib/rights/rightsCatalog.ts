@@ -293,6 +293,25 @@ export const RIGHT_SECTION_LABEL: Record<RightSection, string> = {
 };
 
 /**
+ * Line names for a chip rail, where the full headings do not fit.
+ *
+ * `RIGHT_SECTION_LABEL` is the heading the country card and the ledger use, and
+ * it is right for a block that owns its own line. Inline on the map's rail the
+ * five of them measure ~600px — five chips' worth of a rail that has 18 to
+ * show — and "Anti-discrimination protection" alone is 30 characters against a
+ * 12-character chip beside it. Same split `topicListLabel` makes just below:
+ * the flat-list rendering gets its own string rather than overloading a
+ * heading that is already correct where it is used.
+ */
+export const RIGHT_SECTION_SHORT_LABEL: Record<RightSection, string> = {
+  criminalisation: 'Criminal law',
+  antiDiscrimination: 'Discrimination',
+  criminalJustice: 'Justice',
+  family: 'Family',
+  identity: 'Identity',
+};
+
+/**
  * Display label for a topic listed on its own, disambiguating the one
  * collision the catalog deliberately keeps.
  *
