@@ -227,7 +227,7 @@ BEGIN
   -- The promotion moves no status column, so trg_staging_review_audit does not
   -- fire for it and it needs its own record.
   INSERT INTO public.ingestion_events (staging_id, stage, old_status, new_status, actor, payload)
-  SELECT c.id, 'validate', c.was_status, 'approved', 'migration:20260915190000',
+  SELECT c.id, 'validate', c.was_status, 'approved', 'migration:20260916120000',
          jsonb_build_object('repair', 'stranded_human_approved', 'target_table', c.target_table)
   FROM cleared c;
 
