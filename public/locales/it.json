@@ -1921,7 +1921,8 @@
       "tags": "[IT] Glossary",
       "tagsAll": "[IT] All terms",
       "tagsInteractions": "[IT] Substance safety",
-      "tagsStiGuide": "[IT] STI guide"
+      "tagsStiGuide": "[IT] STI guide",
+      "transRights": "Diritti trans"
     },
     "intents": {
       "goingOut": {
