@@ -25,7 +25,9 @@
 //   node scripts/data-quality/normalize-professions.mjs              # phase 1 + 2
 //   node scripts/data-quality/normalize-professions.mjs --phase1     # normalize only
 //   node scripts/data-quality/normalize-professions.mjs --phase2     # wikidata fill only
-//   node scripts/data-quality/normalize-professions.mjs --batch 500  # phase-1 batch size
+//   node scripts/data-quality/normalize-professions.mjs --batch 300  # phase-1 batch size
+//   node scripts/data-quality/normalize-professions.mjs --report     # print the
+//                                                                    # review queue, write nothing
 
 import { execFileSync } from 'node:child_process'
 
@@ -33,7 +35,11 @@ const PROJECT = 'xqeacpakadqfxjxjcewc'
 const args = process.argv.slice(2)
 const ONLY_1 = args.includes('--phase1')
 const ONLY_2 = args.includes('--phase2')
-const BATCH = Number(args[args.indexOf('--batch') + 1]) || 500
+const REPORT = args.includes('--report')
+// 300 to agree with run_profession_normalize_backfill's own default. Every row
+// updated here enqueues a search_documents reindex and this DB is disk-constrained;
+// a statement timeout mid-batch is a full rollback, not a partial write.
+const BATCH = Number(args[args.indexOf('--batch') + 1]) || 300
 const WD_UA = 'queer.guide-dataquality/1.0 (tmaeder@me.com)'
 
 function token() {
@@ -64,15 +70,51 @@ const lit = (s) => `'${String(s).replace(/'/g, "''")}'`
 async function phase1() {
   console.log(`[phase1] draining run_profession_normalize_backfill(${BATCH}) …`)
   let total = 0
+  let rejected = 0
+  let fallback = 0
   for (;;) {
     const [row] = await sql(`SELECT * FROM run_profession_normalize_backfill(${BATCH});`)
     const processed = Number(row?.processed ?? 0)
     total += processed
-    if (processed > 0) console.log(`  processed ${processed} (changed ${row.changed}), running total ${total}`)
+    rejected += Number(row?.rejected ?? 0)
+    fallback += Number(row?.fallback ?? 0)
     if (processed === 0) break
-    await sleep(200) // let WAL / search-sync settle between batches
+    // Queue depth is the thing that actually bounds this loop: the search sync
+    // enqueues rather than indexing inline (20260816090100), so a backlog here is
+    // the early warning that the drain is falling behind the backfill.
+    const [q] = await sql(`SELECT count(*)::int AS n FROM search_reindex_queue;`)
+    console.log(
+      `  processed ${processed} (changed ${row.changed}, rejected ${row.rejected}, ` +
+        `fallback ${row.fallback}) — total ${total}, reindex queue ${q?.n ?? '?'}`
+    )
+    await sleep(500) // let WAL / the reindex drain settle between batches
   }
-  console.log(`[phase1] done — ${total} rows normalized`)
+  console.log(`[phase1] done — ${total} rows normalized (${rejected} rejected, ${fallback} unmatched)`)
+  if (fallback > 0) console.log(`[phase1] run with --report to see the unmatched tail`)
+}
+
+// The unmatched tail as a ranked worklist. Same idea as englishify-tags.mjs: this
+// is a REPORT a human drains by adding aliases to professions.aliases in the CMS,
+// never a heuristic that widens itself. Writes nothing.
+async function report() {
+  const rows = await sql(`
+    SELECT profession, people, on_public_site, looks_german
+    FROM profession_review_queue ORDER BY people DESC, profession LIMIT 100;`)
+  if (!rows.length) {
+    console.log('[report] profession_review_queue is empty — every value resolved to the vocabulary.')
+    console.log('[report] that is the exit criterion for deleting src/lib/professionDisplay.ts.')
+    return
+  }
+  const [{ n, ppl }] = await sql(
+    `SELECT count(*)::int n, coalesce(sum(people),0)::int ppl FROM profession_review_queue;`
+  )
+  console.log(`[report] ${n} unmatched values over ${ppl} people. Top ${rows.length}:`)
+  for (const r of rows) {
+    const flags = [r.looks_german ? 'DE' : null, r.on_public_site ? 'PUBLIC' : null]
+      .filter(Boolean)
+      .join(',')
+    console.log(`  ${String(r.people).padStart(4)}  ${r.profession}${flags ? `  [${flags}]` : ''}`)
+  }
 }
 
 async function phase2() {
@@ -98,20 +140,30 @@ async function phase2() {
   if (first.size === 0) return console.log('[phase2] no occupations returned')
 
   const values = [...first].map(([qid, occ]) => `(${lit(qid)},${lit(occ)})`).join(',')
+  // `raw` is coalesced, never overwritten: a row whose German profession this pass
+  // is about to replace with a Wikidata label still holds the ONLY copy of that
+  // original in enrichment_status. Same clobber guard as the phase-1 RPC.
   const r = await sql(`
-    WITH m(qid, occ) AS (VALUES ${values})
+    WITH m(qid, occ) AS (VALUES ${values}),
+    calc AS (SELECT m.*, public.normalize_profession_full(m.occ) AS nf FROM m)
     UPDATE public.personalities p SET
-      profession = public.normalize_profession(m.occ),
+      profession = c.nf ->> 'profession',
       enrichment_status = jsonb_set(
         coalesce(p.enrichment_status,'{}'::jsonb), '{profession}',
-        jsonb_build_object('raw', m.occ, 'all', to_jsonb(ARRAY[m.occ]),
+        jsonb_build_object('raw', coalesce(p.enrichment_status->'profession'->>'raw', c.occ),
+                           'all', c.nf -> 'all', 'match', c.nf ->> 'match', 'version', 'v2',
                            'normalized_at', now(), 'source', 'wikidata_p106'), true)
-    FROM m
-    WHERE p.wikidata_qid = m.qid AND (p.profession IS NULL OR btrim(p.profession)='')
+    FROM calc c
+    WHERE p.wikidata_qid = c.qid AND (p.profession IS NULL OR btrim(p.profession)='')
     RETURNING 1;`)
   console.log(`[phase2] filled ${Array.isArray(r) ? r.length : 0} of ${first.size} resolvable rows`)
 }
 
-if (!ONLY_2) await phase1()
-if (!ONLY_1) await phase2()
+if (REPORT) {
+  await report()
+} else {
+  if (!ONLY_2) await phase1()
+  if (!ONLY_1) await phase2()
+  await report()
+}
 console.log('done.')
