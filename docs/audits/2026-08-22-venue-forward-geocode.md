@@ -37,7 +37,7 @@ contradicted the answer and nothing looked.**
 This is not only a map-pin problem. `city_id` feeds `safety_gated` through
 `location_is_high_risk`, so a wrong country here is a safety-layer fault.
 
-## The fix (deployed, `backfill-venue-cities` v71)
+## The fix
 
 1. **Query composed from the row** — street + `postal_code` + `city`, skipping any
    component the address already spells out.
