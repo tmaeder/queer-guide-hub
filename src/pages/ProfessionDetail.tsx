@@ -3,7 +3,7 @@ import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
-import { usePersonalitiesByProfession } from '@/hooks/usePageFetchers';
+import { useCanonicalProfession, usePersonalitiesByProfession } from '@/hooks/usePageFetchers';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -41,6 +41,20 @@ export default function ProfessionDetail() {
     (p) => (p as { id: string }).id,
   );
   const { assets: imageAssets } = useEntityImageAssets('personality', professionPersonalityIds);
+
+  // Self-heal a legacy URL. The German normalization rewrote every stored value,
+  // so `/professions/Schauspieler%2Fin` and the other ~1,440 pre-normalization
+  // spellings now match nobody. Ask the same normalizer the column went through
+  // and redirect once, rather than shipping a redirect table. Only fires on the
+  // empty-result path, so a live profession never pays for it.
+  const noMatches = !loading && !queryError && professionData?.totalCount === 0;
+  const { data: canonicalProfession } = useCanonicalProfession(decodedProfession, noMatches);
+
+  useEffect(() => {
+    if (!noMatches || !canonicalProfession || !decodedProfession) return;
+    if (canonicalProfession.toLowerCase() === decodedProfession.toLowerCase()) return;
+    navigate(`/professions/${encodeURIComponent(canonicalProfession)}`, { replace: true });
+  }, [noMatches, canonicalProfession, decodedProfession, navigate]);
 
   useEffect(() => {
     if (!professionName) return;
