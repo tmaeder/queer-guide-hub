@@ -130,10 +130,10 @@ async function getCached(url, { json = false } = {}) {
  */
 const stripTags = (s) =>
   String(s || '')
-    .replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi, ' ')
-    .replace(/<style\b[^>]*>[\s\S]*?<\/style\s*>/gi, ' ')
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script\b[^>]*>/gi, ' ')
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style\b[^>]*>/gi, ' ')
     .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<\/p\s*>/gi, '\n')
+    .replace(/<\/p\b[^>]*>/gi, '\n')
     .replace(/<[^>]+>/g, ' ')
     .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
     .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(Number(d)))

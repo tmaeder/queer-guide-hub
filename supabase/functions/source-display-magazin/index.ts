@@ -88,8 +88,8 @@ type StagedItem = Omit<NormalizedItem, 'location'> &
  */
 const stripTags = (s: unknown): string =>
   String(s ?? '')
-    .replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi, ' ')
-    .replace(/<style\b[^>]*>[\s\S]*?<\/style\s*>/gi, ' ')
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script\b[^>]*>/gi, ' ')
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style\b[^>]*>/gi, ' ')
     .replace(/<[^>]+>/g, ' ')
     .replace(/&#x([0-9a-f]+);/gi, (_m, h) => String.fromCodePoint(parseInt(h, 16)))
     .replace(/&#(\d+);/g, (_m, d) => String.fromCodePoint(Number(d)))
