@@ -104,6 +104,7 @@ jobs:
             e2e/locale-prefix.spec.ts \
             e2e/hotels-filters.spec.ts \
             e2e/nested-interactive.spec.ts \
+            e2e/intent-nav.spec.ts \
             e2e/glossary-integration.spec.ts \
             e2e/singles.spec.ts \
             e2e/legal-pages.spec.ts \
