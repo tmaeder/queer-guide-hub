@@ -175,8 +175,15 @@ test.describe('honest coverage', () => {
     await page.goto('/rights');
     // The world list was `.slice(0, 12)` per tier with no expander, so only
     // 103 of 250 countries had any path from this page and — the lists being
-    // alphabetical — everything past B was unreachable.
+    // alphabetical — everything past B was unreachable. The #2930 restructure
+    // windows the table to 30 rows BY DESIGN (compact, no inner scrollbox on a
+    // crisis-adjacent page), so reachability now runs through the "Show all N
+    // countries" expander — the path this test takes. The button naming the
+    // FULL count is part of the contract: an expander that reveals another
+    // slice instead of everything is the old defect back. 250 is pinned, same
+    // as the coverage test above — the two move together if a territory lands.
     const world = page.locator('#world');
+    await world.getByRole('button', { name: 'Show all 250 countries' }).click();
     await expect(world.getByRole('link', { name: 'Germany', exact: true })).toBeVisible();
     await expect(world.getByRole('link', { name: 'Thailand', exact: true })).toBeVisible();
   });
