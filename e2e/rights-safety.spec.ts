@@ -320,7 +320,18 @@ test('/rights#marriage still lands on the ledger row with the map section above 
     // scrollIntoView({block:'start'}) lands the element at (or very near) the
     // top of the viewport, not merely "somewhere on screen".
     expect(box!.y, `#marriage sat at y=${box!.y}`).toBeLessThan(200);
-  }).toPass({ timeout: 5_000 });
+  }).toPass({ timeout: 15_000 });
+
+  // ...AND STAYS THERE. The map's chip rail centres its active chip on mount,
+  // and the rail sits ~3,900px above this row: an implementation that reveals
+  // the chip by scrolling the page (scrollIntoView does, even with
+  // `block: 'nearest'`) yanks the reader off the row they deep-linked to. That
+  // shipped once and failed exactly one prod run out of four, because whether
+  // it broke came down to which effect wrote last. Re-reading after the rail
+  // has certainly mounted is what makes the race visible instead of flaky.
+  await page.waitForTimeout(3_000);
+  const settled = await target.boundingBox();
+  expect(settled!.y, `#marriage drifted to y=${settled!.y} after settling`).toBeLessThan(200);
 });
 
 test('a criminalising country reads criminalised on every lens', async ({ page }) => {
