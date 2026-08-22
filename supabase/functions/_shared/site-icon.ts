@@ -255,19 +255,30 @@ function logoFromJsonLd(node: unknown, depth = 0): string | null {
 /**
  * `<img>` elements the page itself calls its logo, in document order.
  *
- * Restricted to a logo-ish `class`/`id`/`alt` so a payment badge or a partner
- * mark in the same header cannot be mistaken for the store's own. Sprite sheets
- * and tracking pixels are excluded by the caller's dimension check, not here.
+ * **Scoped to the masthead**, everything up to the first `</header>`. Scanning
+ * the whole document was measured and is wrong: on Shopify storefronts it
+ * returned a Debbie Harry graphic tee (wildfang.com), a packer pouch
+ * (newyorktoycollective.com) and an award badge (origamicustoms.com), because
+ * a product image only has to carry the word "logo" *somewhere* to qualify. A
+ * store's own mark is in the masthead; a match further down the page is
+ * something else.
+ *
+ * `alt` is deliberately NOT part of the haystack for the same reason —
+ * unboundbabes.com's "as seen in" strip is `class="press__logo-image"` with the
+ * retailer's name in `alt`, and taking it published **Ulta Beauty's logo as
+ * Unbound's**. Class and id are authored by the theme; alt is authored about
+ * whatever is in the picture.
  */
-function headerLogoImages(html: string, baseUrl: string): string[] {
+function logoImagesIn(html: string, baseUrl: string): string[] {
   const out: string[] = [];
   for (const m of html.matchAll(/<img\b[^>]*>/gi)) {
     const tag = m[0];
-    const hay = `${attr(tag, 'class') ?? ''} ${attr(tag, 'id') ?? ''} ${attr(tag, 'alt') ?? ''}`;
+    const hay = `${attr(tag, 'class') ?? ''} ${attr(tag, 'id') ?? ''}`;
     if (!/logo|wordmark|brand-?mark/i.test(hay)) continue;
-    // "logout", "logo-slider" (a partner carousel) and payment-icon strips are
-    // the recurring false friends.
-    if (/logout|payment|partner|sponsor|slider|carousel/i.test(hay)) continue;
+    // The recurring false friends: a logout icon, a partner/press carousel, a
+    // payment-method strip, an award badge.
+    if (/logout|payment|partner|sponsor|slider|carousel|press|award|badge|featured|as-seen/i.test(hay))
+      continue;
     const href = attr(tag, 'src') ?? attr(tag, 'data-src');
     if (!href || href.startsWith('data:')) continue;
     const url = absolutize(href, baseUrl);
@@ -275,6 +286,24 @@ function headerLogoImages(html: string, baseUrl: string): string[] {
     if (out.length >= 3) break;
   }
   return out;
+}
+
+/**
+ * Logo `<img>`s split by where they sit: masthead first, then the rest of the
+ * document as a LAST resort.
+ *
+ * The tail is scored below every icon, not dropped, because some themes put the
+ * only real wordmark in the footer (barcodeberlin.com) or outside a `<header>`
+ * element altogether (gc2b.co, humanbynature.co). Ranking it under the icons is
+ * what keeps it safe: every one of the four shops that produced a wrong logo
+ * from a document-wide scan also declares a favicon, so the icon wins and the
+ * product photo never surfaces.
+ */
+function headerLogoImages(html: string, baseUrl: string): { masthead: string[]; rest: string[] } {
+  const end = html.search(/<\/header\b/i);
+  const masthead = logoImagesIn(end > 0 ? html.slice(0, end) : html.slice(0, 60_000), baseUrl);
+  const seen = new Set(masthead);
+  return { masthead, rest: logoImagesIn(html, baseUrl).filter((u) => !seen.has(u)) };
 }
 
 /**
@@ -331,9 +360,11 @@ export function pickSiteIcons(
     }
   }
 
-  for (const url of headerLogoImages(head, baseUrl)) {
-    candidates.push({ url, kind: 'header-img', score: 300 });
-  }
+  const logoImgs = headerLogoImages(head, baseUrl);
+  for (const url of logoImgs.masthead) candidates.push({ url, kind: 'header-img', score: 300 });
+  // 90 sits below the icon arm's floor of 100 — see logoImagesIn's note on why
+  // a logo img outside the masthead must never outrank a declared icon.
+  for (const url of logoImgs.rest) candidates.push({ url, kind: 'header-img', score: 90 });
 
   const seen = new Set<string>();
   return candidates

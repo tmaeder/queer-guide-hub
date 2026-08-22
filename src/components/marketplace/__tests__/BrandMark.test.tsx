@@ -26,14 +26,24 @@ describe('BrandMark', () => {
     expect(img?.getAttribute('alt')).toBe('');
   });
 
-  it('hides a failed logo so the monogram is what shows', () => {
+  it('hides the monogram behind a logo — transparent PNGs show it through', () => {
+    // Found on prod: cherrykitten's pink wordmark is transparent, and the ink
+    // "C" underneath sat inside its counters.
+    const { getByText } = render(<BrandMark name="cherrykitten" logoUrl="https://x/l.png" />);
+    expect(getByText('C').className).toContain('invisible');
+  });
+
+  it('hides a failed logo and brings the monogram back', () => {
     // The monogram sitting underneath is not enough on its own: Chrome paints
     // its torn-page glyph over the plate for a broken image even with alt="".
-    const { container } = render(<BrandMark name="cherrykitten" logoUrl="https://x/dead.png" />);
+    const { container, getByText } = render(
+      <BrandMark name="cherrykitten" logoUrl="https://x/dead.png" />,
+    );
     const img = container.querySelector('img')!;
     expect(img.style.display).toBe('');
     fireEvent.error(img);
     expect(img.style.display).toBe('none');
+    expect(getByText('C').style.visibility).toBe('visible');
   });
 
   it('never crops the logo — a brand mark is a fixed composition', () => {
