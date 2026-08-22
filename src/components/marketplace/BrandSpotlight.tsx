@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { MarketplaceCard } from './MarketplaceCard';
+import { BrandMark } from './BrandMark';
 import { useCuratedIds } from './useCuratedIds';
 import {
   useBrandTopListings,
@@ -61,17 +62,13 @@ export function BrandSpotlight() {
             <p className="mb-4 text-2xs uppercase tracking-wider text-muted-foreground">
               Brand spotlight
             </p>
-            {brand.logo_url ? (
-              <img
-                src={brand.logo_url}
-                alt=""
-                className="mb-4 h-12 w-12 rounded-element bg-background object-contain p-1.5"
-              />
-            ) : (
-              <span className="mb-4 flex h-12 w-12 items-center justify-center rounded-element bg-surface-container text-title font-bold">
-                {brand.display_name.charAt(0).toUpperCase()}
-              </span>
-            )}
+            <BrandMark
+              name={brand.display_name}
+              logoUrl={brand.logo_url}
+              className="mb-4 h-12 w-12 rounded-element"
+              monogramClassName="text-title font-bold"
+              padding="p-1"
+            />
             <h2 id="brand-spotlight" className="mb-2 font-display text-headline tracking-tight">
               {brand.display_name}
             </h2>
