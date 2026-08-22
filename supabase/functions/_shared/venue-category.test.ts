@@ -76,3 +76,16 @@ Deno.test('normalizeIso2Country upper-cases a valid code', () => {
 Deno.test('every vocabulary member round-trips', () => {
   for (const c of VENUE_CATEGORIES) assertEquals(normalizeVenueCategory(c), c)
 })
+
+// pipeline-normalize used to only lower-case raw.category. A community
+// submitter typing "nightclub" produced a value no vocabulary member matches;
+// pipeline-validate approved the row and commit rejected it on
+// venues_category_check. Normalizing at the normalize stage keeps the MEANING
+// ('club'); commit's backstop would only flatten it to 'other'.
+Deno.test('submitter free-text maps to meaning, not to the fallback', () => {
+  assertEquals(normalizeVenueCategory('nightclub'), 'club')
+  assertEquals(normalizeVenueCategory('Night Club'), 'club')
+  assertEquals(normalizeVenueCategory('NIGHTCLUB'), 'club')
+  // Only genuinely unmappable input should reach the fallback.
+  assertEquals(normalizeVenueCategory('zzz'), 'other')
+})

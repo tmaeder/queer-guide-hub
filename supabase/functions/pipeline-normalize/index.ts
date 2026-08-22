@@ -12,6 +12,7 @@ import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { coerceLgbtiConnection } from '../_shared/lgbti-connection.ts'
 import { resolveContentType } from '../_shared/content-registry.ts'
 import { extractSocialUrlsFromText, normalizeSocialLinks, detectPlatform, canonicalizeUrl } from '../_shared/social.ts'
+import { normalizeVenueCategory } from '../_shared/venue-category.ts'
 
 // ============================================================
 // Pipeline Normalize
@@ -261,9 +262,21 @@ function normalizeItem(raw: Record<string, unknown>, entityType: string): Record
   if (entityType === 'venue' || entityType === 'event' || entityType === 'place') {
     n.name_normalized = normalizeName(n.name as string)
     if (raw.category || raw.categories) {
-      n.category = Array.isArray(raw.categories)
-        ? String(raw.categories[0] ?? '').toLowerCase()
-        : String(raw.category ?? '').toLowerCase()
+      const rawCategory = Array.isArray(raw.categories)
+        ? String(raw.categories[0] ?? '')
+        : String(raw.category ?? '')
+      // Only the VENUE branch is coerced to a vocabulary: venues.category is
+      // CHECK-constrained (venues_category_check), events are not and their
+      // category vocabulary is unrelated.
+      //
+      // Lower-casing alone was not enough. A community submitter typing
+      // "nightclub" produced a value no member matches; pipeline-validate
+      // approved the row anyway, and commit_venue_staging_item then rejected
+      // it on the constraint. commit degrades an unmapped value to 'other' as
+      // a backstop (20260915131700), but doing it HERE keeps the MEANING —
+      // 'nightclub' becomes 'club' instead of being flattened to 'other'.
+      n.category =
+        entityType === 'venue' ? normalizeVenueCategory(rawCategory) : rawCategory.toLowerCase()
     }
   }
 
