@@ -1872,6 +1872,11 @@
         "label": "[ZH] Search everything",
         "subtitle": "[ZH] Every line meets here"
       }
+    },
+    "glossary": {
+      "eyebrow": "[ZH] Glossary",
+      "title": "[ZH] Know the words",
+      "seeAll": "[ZH] All terms"
     }
   },
   "header": {
@@ -1908,12 +1913,15 @@
       "personalities": "名人",
       "hotels": "酒店",
       "help": "帮助",
-      "tags": "标签",
       "history": "历史",
       "guides": "指南",
       "trips": "行程",
       "organizations": "组织",
-      "wishlists": "心愿单"
+      "wishlists": "心愿单",
+      "tags": "[ZH] Glossary",
+      "tagsAll": "[ZH] All terms",
+      "tagsInteractions": "[ZH] Substance safety",
+      "tagsStiGuide": "[ZH] STI guide"
     },
     "intents": {
       "goingOut": {
@@ -1941,7 +1949,11 @@
         "subtitle": "书籍、服饰、艺术与礼物"
       },
       "sheetHeading": "你想做什么？",
-      "browseHeading": "浏览全部"
+      "browseHeading": "浏览全部",
+      "glossary": {
+        "label": "[ZH] Glossary",
+        "subtitle": "[ZH] What every term, flag and code means"
+      }
     },
     "userMenu": {
       "myTrips": "我的行程",
@@ -4458,11 +4470,20 @@
       "notOneLaw": "这不是单一法律，而是逐国记录的。",
       "seeByCountry": "查看各国状态",
       "spansAllRights": "这涵盖整个法律领域，而非单一法律。我们逐国记录 18 项独立权利。",
-      "seeAllRights": "查看各国的 18 项权利"
+      "seeAllRights": "查看各国的 18 项权利",
+      "seeAllInSearch": "[ZH] See all in search"
     },
     "flagWall": {
       "eyebrow": "符号",
       "title": "旗帜一览"
+    },
+    "preview": {
+      "adultGated": "[ZH] 18+ term. Open the entry to confirm your age.",
+      "open": "[ZH] Read the entry"
+    },
+    "fromGlossary": {
+      "title": "[ZH] From the glossary",
+      "all": "[ZH] All terms"
     }
   },
   "village": {

@@ -34,22 +34,14 @@ import {
  */
 
 export type RightSection =
-  | 'criminalisation'
-  | 'antiDiscrimination'
-  | 'criminalJustice'
-  | 'family'
-  | 'identity';
+  'criminalisation' | 'antiDiscrimination' | 'criminalJustice' | 'family' | 'identity';
 
 /**
  * How the value is shaped, which decides how it renders and how a lens reads
  * it. `protection-matrix` is the only kind split across so/gi/ge/sc.
  */
 export type RightKind =
-  | 'criminalisation'
-  | 'protection-matrix'
-  | 'union'
-  | 'gender-recognition'
-  | 'status';
+  'criminalisation' | 'protection-matrix' | 'union' | 'gender-recognition' | 'status';
 
 /** Sexual orientation, gender identity, gender expression, sex characteristics. */
 export type ProtectionAttr = 'so' | 'gi' | 'ge' | 'sc';
@@ -299,6 +291,35 @@ export const RIGHT_SECTION_LABEL: Record<RightSection, string> = {
   family: 'Family & relationships',
   identity: 'Identity & health',
 };
+
+/**
+ * Display label for a topic listed on its own, disambiguating the one
+ * collision the catalog deliberately keeps.
+ *
+ * `marriage` and `civil-union` share `labelKey: 'unions'` because the country
+ * card renders them together inside one bespoke union block, where "Same-sex
+ * unions" is the correct heading for the pair. ANY flat list of topics — the
+ * `/rights` ledger, the map's line selector — instead renders two adjacent
+ * controls both reading "Same-sex unions", which looks like a duplicate and,
+ * in the selector's case, gives two different buttons the same accessible
+ * name. It shipped that way on the map before this helper existed.
+ *
+ * Callers pass their own `t` so the i18n key stays the catalog's, with the
+ * disambiguated English as the fallback.
+ */
+const FLAT_LIST_LABEL: Record<string, string> = {
+  marriage: 'Marriage equality',
+  'civil-union': 'Civil unions',
+};
+
+export function topicListLabel(
+  topic: RightTopic,
+  t: (key: string, fallback: string) => string,
+): string {
+  const override = FLAT_LIST_LABEL[topic.slug];
+  if (override) return t(`country.rights.topic.${topic.slug}`, override);
+  return t(`country.rights.${topic.labelKey}`, topic.labelDefault);
+}
 
 export function topicsInSection(section: RightSection): readonly RightTopic[] {
   return RIGHT_TOPICS.filter((r) => r.section === section);

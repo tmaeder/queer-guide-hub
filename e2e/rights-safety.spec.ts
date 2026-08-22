@@ -235,6 +235,94 @@ test('the verdict names what our source does not record', async ({ page }) => {
   );
 });
 
+/**
+ * The world-map section (Task D of docs/plans/2026-08-22-rights-world-map-design.md).
+ *
+ * WebGL may be unavailable in CI's headless chromium — `RightsWorldMap`
+ * falls back to a labelled panel carrying the SAME `role="img"` +
+ * `aria-label` the live map uses (see `buildMapAriaLabel`), so these assert
+ * the label rather than canvas pixels.
+ */
+test('the map renders and is labelled', async ({ page }) => {
+  await page.goto('/rights');
+  await dismiss(page);
+  const mapSection = page.locator('#map');
+  const map = mapSection.getByRole('img', { name: /World map/i });
+  await expect(map).toBeVisible({ timeout: 30_000 });
+  const label = await map.getAttribute('aria-label');
+  expect(label, `map aria-label was ${JSON.stringify(label)}`).toMatch(/\d/);
+});
+
+test('the trans lens changes the reading', async ({ page }) => {
+  await page.goto('/rights');
+  await dismiss(page);
+  const mapSection = page.locator('#map');
+  await expect(mapSection.getByRole('img', { name: /World map/i })).toBeVisible({
+    timeout: 30_000,
+  });
+
+  // Employment is a protection-matrix topic, so the lens is enabled there
+  // (unlike criminalisation, the default station).
+  await mapSection.getByRole('button', { name: 'Employment' }).click();
+
+  const legend = mapSection.getByRole('list', { name: /country counts by status/i });
+  await expect(legend).toBeVisible();
+  const everyoneText = await legend.innerText();
+
+  await mapSection.getByRole('button', { name: 'Gender identity' }).click();
+  await expect(legend).toBeVisible();
+  const giText = await legend.innerText();
+
+  // Documented invariant (rightsClassify.ts): a country protecting only
+  // sexual orientation reads `yes` under `so` and `no` under `gi` — it can
+  // never be "protective" by borrowing another group's protection. So the
+  // legend must not be pixel-identical between the two lenses; assert the
+  // real relationship (a re-render with a different total for at least one
+  // class) rather than a specific number, which could coincidentally match
+  // in live data and make the test vacuous.
+  expect(giText, 'legend text was identical under Everyone vs Gender identity').not.toBe(
+    everyoneText,
+  );
+});
+
+test('no-data is never presented as protected', async ({ page }) => {
+  await page.goto('/rights');
+  await dismiss(page);
+  const mapSection = page.locator('#map');
+  await expect(mapSection.getByRole('img', { name: /World map/i })).toBeVisible({
+    timeout: 30_000,
+  });
+
+  // Default station is Same-sex activity (criminalisation) — 11 territories
+  // carry no recorded reading there (see the withLegalStatus comment above).
+  // Matched by visible text rather than accessible name — the button's
+  // count and label are separate spans and accname join spacing is not
+  // worth depending on here.
+  const legend = mapSection.getByRole('list', { name: /country counts by status/i });
+  const noDataStation = legend.locator('button', { hasText: /No data/i });
+  await expect(noDataStation).toBeVisible();
+  const noDataText = await noDataStation.innerText();
+  expect(noDataText).not.toMatch(/protected/i);
+  const count = parseInt(noDataText.match(/\d+/)?.[0] ?? '0', 10);
+  expect(count, `no-data station text was ${JSON.stringify(noDataText)}`).toBeGreaterThan(0);
+});
+
+test('/rights#marriage still lands on the ledger row with the map section above it', async ({
+  page,
+}) => {
+  await page.goto('/rights#marriage');
+  await dismiss(page);
+  const target = page.locator('#marriage');
+  await expect(target).toBeVisible({ timeout: 30_000 });
+  await expect(async () => {
+    const box = await target.boundingBox();
+    expect(box, 'target has no box').not.toBeNull();
+    // scrollIntoView({block:'start'}) lands the element at (or very near) the
+    // top of the viewport, not merely "somewhere on screen".
+    expect(box!.y, `#marriage sat at y=${box!.y}`).toBeLessThan(200);
+  }).toPass({ timeout: 5_000 });
+});
+
 test('a criminalising country reads criminalised on every lens', async ({ page }) => {
   await page.goto('/country/afghanistan');
   await dismiss(page);

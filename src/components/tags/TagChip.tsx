@@ -1,7 +1,10 @@
+import { useState } from 'react';
 import { Tag as TagIcon, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { normalizeTagName } from '@/utils/tagNormalization';
+import { HoverCard, HoverCardTrigger } from '@/components/ui/hover-card';
+import { TagChipHoverContent } from './TagChipHover';
 
 export interface TagChipProps {
   /** Tag slug (the value stored in entity `tags[]` columns) — used for the link target. */
@@ -19,6 +22,8 @@ export interface TagChipProps {
   active?: boolean;
   /** Render as a non-interactive span (use inside card links — nested <a> is invalid HTML). */
   linkless?: boolean;
+  /** Disable the glossary hover card (dense/admin surfaces). Link mode only. */
+  preview?: boolean;
   onRemove?: () => void;
   className?: string;
 }
@@ -47,10 +52,12 @@ export function TagChip({
   removable = false,
   active = false,
   linkless = false,
+  preview = true,
   onRemove,
   className,
 }: TagChipProps) {
   const label = name ? normalizeTagName(name) : displayFromSlug(tag);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   // min-h-6 keeps all three render modes the same height. index.css only grants
   // `a.rounded-badge` / `button.rounded-badge` a 24px minimum, so without this the
@@ -100,7 +107,7 @@ export function TagChip({
     );
   }
 
-  return (
+  const link = (
     <LocalizedLink
       to={tagHref(tag)}
       data-tag-slug={tag}
@@ -109,5 +116,19 @@ export function TagChip({
     >
       {content}
     </LocalizedLink>
+  );
+
+  if (!preview) return link;
+
+  // Glossary preview on hover/focus (link mode only). Radix HoverCard never
+  // opens on touch — a tap keeps its existing meaning, navigating to the wiki
+  // entry itself, so mobile needs no long-press affordance. The content (and
+  // its data fetch) mounts only while the card is open, and it portals to
+  // body, so no interactive element nests inside the trigger link.
+  return (
+    <HoverCard open={previewOpen} onOpenChange={setPreviewOpen} openDelay={350} closeDelay={100}>
+      <HoverCardTrigger asChild>{link}</HoverCardTrigger>
+      {previewOpen && <TagChipHoverContent slug={tag} />}
+    </HoverCard>
   );
 }

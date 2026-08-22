@@ -4,13 +4,22 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useMeta } from '@/hooks/useMeta';
 import { IntentPageLayout } from '@/components/intent/IntentPageLayout';
 import { CoverageNote } from '@/components/intent/CoverageNote';
-import { useAllCountriesRightsFull, useIntentNews } from '@/hooks/useIntentData';
+import {
+  useAllCountriesRightsFull,
+  useIntentNews,
+  type RightsCountry,
+} from '@/hooks/useIntentData';
 import { summariseRightsWorldwide } from '@/lib/rights/rightsWorldSummary';
 import { useIntentLocation } from '@/hooks/useIntentLocation';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { hasAnyCriminalizationSignal, deathPenaltyRisk } from '@/utils/equalityScore';
 import { RightsScopeBar } from '@/components/rights/RightsScopeBar';
 import { RightsCountryTable, type CountryFilter } from '@/components/rights/RightsCountryTable';
 import { RightsLedger } from '@/components/rights/RightsLedger';
+import { RightsMapSection } from '@/components/rights/RightsMapSection';
+import { topicBySlug, type RightTopic } from '@/lib/rights/rightsCatalog';
+import type { RightsLens } from '@/lib/rights/rightsClassify';
+import { summariseMapClasses, type MapClass } from '@/lib/rights/rightsMapModel';
 import type { SectionDef } from '@/components/entity/editorial';
 import { scrollToIdSettled } from '@/lib/scrollSettle';
 
@@ -45,6 +54,41 @@ export default function RightsIntent() {
     (countries ?? []) as unknown as Record<string, unknown>[],
   );
   const { countryCode } = useIntentLocation();
+  const navigate = useLocalizedNavigate();
+
+  // World-map state — see docs/plans/2026-08-22-rights-world-map-design.md
+  // Task D. Default station is Same-sex activity (the safety question); the
+  // lens defaults to the strict "everyone" reading.
+  const [mapTopic, setMapTopic] = useState<RightTopic>(() => topicBySlug('criminalisation')!);
+  const [mapLens, setMapLens] = useState<RightsLens>('all');
+  const [mapActiveClass, setMapActiveClass] = useState<MapClass | null>(null);
+
+  // A class filter picked on the previous right is meaningless on a new one
+  // — leaving it set would silently dim most of the map for no visible
+  // reason, so both control changes clear it.
+  const handleMapTopicChange = (topic: RightTopic) => {
+    setMapTopic(topic);
+    setMapActiveClass(null);
+  };
+  const handleMapLensChange = (lens: RightsLens) => {
+    setMapLens(lens);
+    setMapActiveClass(null);
+  };
+
+  const mapCounts = useMemo(
+    () =>
+      summariseMapClasses(
+        (countries ?? []) as unknown as Record<string, unknown>[],
+        mapTopic,
+        mapLens,
+      ),
+    [countries, mapTopic, mapLens],
+  );
+
+  const handleMapCountrySelect = (country: RightsCountry) => {
+    if (!country.slug) return;
+    navigate(`/country/${country.slug}`);
+  };
 
   // Deep links into a single right (`/rights#marriage`), which is where the
   // glossary sends every class-of-law tag — see src/lib/rights/tagRightTopics.ts.
@@ -152,6 +196,25 @@ export default function RightsIntent() {
   };
 
   const sections: SectionDef[] = [
+    {
+      id: 'map',
+      label: 'The map',
+      kicker: 'Every country, one law at a time',
+      hidden: !countries || countries.length === 0,
+      content: (
+        <RightsMapSection
+          countries={countries ?? []}
+          topic={mapTopic}
+          onTopicChange={handleMapTopicChange}
+          lens={mapLens}
+          onLensChange={handleMapLensChange}
+          activeClass={mapActiveClass}
+          onActiveClassChange={setMapActiveClass}
+          counts={mapCounts}
+          onCountrySelect={handleMapCountrySelect}
+        />
+      ),
+    },
     {
       id: 'world',
       label: 'The world',

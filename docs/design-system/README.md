@@ -3,7 +3,9 @@
 Paper and ink plus four track colors. The identity borrows the visual language
 of a metropolitan subway map: identities are tracks that travel independently,
 run parallel, or meet at communal hubs. Loud, legible, built for everyone on
-the map. Light-only — the poster does not have a dark mode.
+the map. **Light and dark are both supported** — see §Dark mode. (This line
+read "Light-only — the poster does not have a dark mode" until 2026-08-22;
+that was wrong, and a stale negative claim is the expensive kind.)
 
 Source design: claude.ai/design project "Queer Guide subway map design"
 (`Pattern Library.dc.html` + `Brand Guidelines.dc.html` + `Icon System.dc.html`).
@@ -42,7 +44,10 @@ document is prose; where the two disagree, the catalog is right.
 
 ## Tokens (src/index.css)
 
-All colors are HSL channel values used via `hsl(var(--token))`. Light-only.
+All colors are HSL channel values used via `hsl(var(--token))`. The table below
+is the light mode; every token also carries a dark value (`.dark` in
+`src/index.css`, `t.dark` in the catalog), and `tokenContrast.test.ts` gates
+both.
 
 | Token                                    | Value                                                     | Usage                                          |
 | ---------------------------------------- | --------------------------------------------------------- | ---------------------------------------------- |
@@ -648,7 +653,7 @@ that gap and each hard-coded its own version of it against the pre-island 64px
 header — `top-[76px]` (64+12) on the glossary tree, `top-20` (64+16) on the
 legal TOC, `top-24` (64+32) on News / Sitemap / Donate / EventDetail /
 GuidePickBlock. When the header's underside moved to 82 the first two ended up
-*behind* it (6px and 2px, measured on prod); the `top-24` group survived only
+_behind_ it (6px and 2px, measured on prod); the `top-24` group survived only
 because its gap happened to exceed the drift. Flattening them all onto the band
 offset would have thrown away a real intent, so the gap is expressed once and
 derived.
@@ -658,7 +663,7 @@ derived.
 header welded to `top: 0`. Once the header floats, its underside is
 `--island-inset` lower, so every bar that constant positions — RouteStrip,
 SectionNav, StickyLetterBar, the `/events` and `/cities` filter bars — pinned
-*inside* the header: 10px behind it at 390px, 18px at 1440px, measured on prod.
+_inside_ the header: 10px behind it at 390px, 18px at 1440px, measured on prod.
 It now reads `--header-pinned-bottom` (`--island-inset` + the bar's pinned
 height: 56px on phones where it never collapses, 60px from `md` where it does),
 and so does `html { scroll-padding-top }`, which had drifted the same way and
@@ -795,9 +800,15 @@ exemption" for this — **that section does not exist**; this is the spec.
 - **Life-safety blocks render synchronously** — outside any `loading`/`ready`
   branch, with inline English `t()` defaults, so a dead locale bundle or a
   failed CMS fetch cannot blank them. Guarded by `e2e/help-a11y.spec.ts`.
-- **A card is not a lift unless it is one click target.** Hotline cards carry
-  a Call button, channel buttons, a keep toggle and a report dialog, so they
-  take no `.card-lift`; directory rows and org rows do.
+- **A card is not a lift unless it is one click target.** A hotline row
+  (`HotlineRow`) carries a Call button, a channel button, a keep toggle and an
+  expander, so it takes no `.card-lift`; directory rows and org rows do.
+- **The crisis warning never collapses.** `/help` renders its lines as
+  expandable rows (2026-08-21), and the `reports_to_police === true` strip sits
+  OUTSIDE the collapsed region — a warning behind a disclosure is a warning the
+  reader does not get. Everything hidden by the expander is research detail
+  (description, provenance, topics); everything a reader in crisis acts on —
+  name, open state, Call, and the first non-voice channel — stays visible.
 
 Guarded by `e2e/help-a11y.spec.ts` (axe at 320 + 1280, no 320px overflow,
 i18n-failure paint) and `e2e/help-crisis.spec.ts` (structured data matches the
@@ -806,13 +817,29 @@ directories are never callable, unstructured hours never read as closed).
 
 ## Dark mode
 
-Removed 2026-08. `ThemeProvider` always reports light and strips persisted
-dark state; the `.dark` CSS block is gone; `dark:` utilities in components are
-inert and get deleted surface-by-surface in later phases.
+**Live and supported.** This section said "Removed 2026-08 — `ThemeProvider`
+always reports light and strips persisted dark state; the `.dark` CSS block is
+gone; `dark:` utilities in components are inert" until 2026-08-22. All three
+claims were false, and acting on them would have deleted working code:
+`src/index.css` carries a full `.dark {}` token block, `ThemeToggle.tsx` exists
+and renders from `Footer.tsx` and `MobileNavSheet.tsx`, `ThemeProvider` resolves
+`dark | light | system` and applies the class, and the `dark:` utilities in
+components are load-bearing. The source design agrees — `Brand Guidelines.dc.html`
+carries `body[data-theme="dark"]` with the same ink/paper swap. CLAUDE.md was
+corrected on this point on 2026-08-19; this file lagged behind.
+
+Consequences for authoring:
+
+- A new token needs a value in **both** blocks — `tokenContrast.test.ts`
+  iterates `MODES = ['light','dark']` and will fail on a missing dark value.
+- **A track colour does not flip.** The four tracks are identity, so type on a
+  track fill takes `--track-ring` (ink in both modes), never `--foreground`.
+- Shadows are authored as literal `rgba(17,17,17,α)`, never
+  `hsl(var(--foreground)/α)` — the latter inverts into a white glow in dark.
 
 ## Enforcement
 
-- `tokenCatalog.test.ts` — catalog ↔ index.css drift (light-only model).
+- `tokenCatalog.test.ts` — catalog ↔ index.css drift (both modes).
 - `tokenContrast.test.ts` — AA pairs, fill-only + border-gated track rules,
   hue distance from destructive.
 - `e2e/design-system.spec.ts` — radius tokens, no shadow at rest + hard
@@ -829,3 +856,42 @@ inert and get deleted surface-by-surface in later phases.
   another `no-restricted-syntax` selector — that rule is replaced WHOLESALE per
   file in flat config, so a new selector would have to be re-stated in all four
   blocks and one miss silently disables load-bearing ones; precedent #2049).
+
+## Regenerating visual baselines
+
+After an intentional UI change, the `*-linux.png` baselines under
+`e2e/**-snapshots/` have to be regenerated **on ubuntu/amd64**, so that they
+match the browser build CI compares against. `*-darwin.png` is gitignored — a
+local run writes one and fails once while doing so, which is Playwright telling
+you it created a missing snapshot, not a regression.
+
+Dispatch `update-visual-baselines.yml` **on a non-main branch**:
+
+```bash
+gh workflow run update-visual-baselines.yml --ref <branch> \
+  -f base_url=https://queer.guide -f commit=true
+```
+
+The branch matters. The workflow's `gh pr create` arm is gated on
+`GITHUB_REF_NAME == DEFAULT_BRANCH`, and Actions cannot create PRs in this repo,
+so dispatching on `main` fails at the last step after ~30 minutes of
+screenshotting. On any other branch it takes the `git push origin HEAD:<branch>`
+arm instead and every step passes. Then commit the PNGs yourself, so the head
+commit is yours — a `GITHUB_TOKEN`-authored head leaves required checks at
+`action_required` and the PR sits blocked forever.
+
+Two checks before merging, both of which have caught real problems:
+
+1. **Take only the file you came for.** The workflow always regenerates all
+   three visual specs, so the diff routinely carries baselines you did not
+   intend to touch. `git checkout <baselines-branch> -- <one/path.png>` onto a
+   branch off `main`. An unrelated baseline riding along is an unreviewed UI
+   change — and `/trips` is the suite's ONLY `fullPage` route, gated at **0.03**
+   where everything else sits at 0.15 or 0.5.
+2. **Open the PNG and look at it.** Byte size is necessary, not sufficient: a
+   past regeneration produced a 64 KB screenshot that was just a loading
+   spinner. **Dimensions are the sharper signal** — check the spec's
+   `STATIC_ROUTES` set to learn whether a route is `fullPage` or a viewport
+   crop, then confirm the height matches. A `fullPage` capture that comes back
+   at exactly one viewport height has either lost its content or genuinely
+   changed shape, and only looking tells you which.

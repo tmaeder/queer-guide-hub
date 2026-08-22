@@ -56,6 +56,7 @@ import {
   type SingleSectionDef,
 } from '@/components/transit/singleSectionModel';
 import { TagChipRow } from '@/components/tags/TagChipRow';
+import { FromTheGlossary } from '@/components/tags/FromTheGlossary';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
 
 export default function EventDetail() {
@@ -489,6 +490,9 @@ export default function EventDetail() {
             {/* Self-hiding composite rail: it belongs here, not in the
                 "Who's going" section, where its internal decision to render
                 nothing was invisible to the section filter. */}
+            <ErrorBoundary section="event-glossary" fallback={null}>
+              <FromTheGlossary tags={event.tags} />
+            </ErrorBoundary>
             <ErrorBoundary section="event-people" fallback={null}>
               <EventPeopleRail event={event} />
             </ErrorBoundary>
