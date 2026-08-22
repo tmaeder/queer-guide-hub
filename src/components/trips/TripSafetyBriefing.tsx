@@ -217,6 +217,31 @@ function CountryAccordion({
   );
   const warningCount = (country.criminalized ? 1 : 0) + (country.deathPenalty ? 1 : 0);
 
+  /**
+   * The one trans-specific fact this briefing carries, and it is a LEGAL one:
+   * whether the destination will change a gender marker, and what it demands
+   * first. Documents that do not match how you present are the border risk the
+   * criminalisation-based tier above cannot see at all.
+   *
+   * TGEU's documented-violence counts are deliberately NOT surfaced here. This
+   * is the locked traffic-light surface, and those counts rank countries close
+   * to inversely to legal risk — sat beside a risk tier they would read as a
+   * ranking of danger, which is the opposite of what they measure. They live on
+   * /rights/trans and the country page.
+   */
+  const genderRecognition = (() => {
+    const lgr = country.lgbti_gender_recognition as Record<string, unknown> | null;
+    if (!lgr || typeof lgr !== 'object') return null;
+    const marker = String(lgr.gender_marker ?? '').trim();
+    if (!marker || /^(no data|unknown|n\/a)$/i.test(marker)) return null;
+    const costs: string[] = [];
+    if (/^yes$/i.test(String(lgr.requires_surgery ?? '')))
+      costs.push(t('trips.safety.detail.gr.surgery', 'surgery required'));
+    if (/^yes$/i.test(String(lgr.requires_diagnosis ?? '')))
+      costs.push(t('trips.safety.detail.gr.diagnosis', 'diagnosis required'));
+    return costs.length > 0 ? `${marker} — ${costs.join(', ')}` : marker;
+  })();
+
   return (
     <Card>
       <Collapsible open={open} onOpenChange={setOpen}>
@@ -298,6 +323,12 @@ function CountryAccordion({
 
               <DetailRow label={t('trips.safety.detail.ssu')} value={ssuSummary} />
               <DetailRow label={t('trips.safety.detail.employment')} value={protectionStatus.so} />
+              {genderRecognition && (
+                <DetailRow
+                  label={t('trips.safety.detail.genderRecognition', 'Gender marker change')}
+                  value={genderRecognition}
+                />
+              )}
 
               <div className="mt-0.5 p-1.5 rounded-badge bg-muted flex items-start gap-1">
                 <Info className="w-3.5 h-3.5 mt-0.5 opacity-60 flex-shrink-0" aria-hidden="true" />

@@ -143,6 +143,11 @@ verify_jwt = false
 [functions.import-ilga-data]
 verify_jwt = false
 
+# Same shape as import-ilga-data: invoked by pg_cron through net.http_post, and
+# it gates itself with requireInternalOrAdmin (x-internal-secret or admin JWT).
+[functions.import-tgeu-tmm]
+verify_jwt = false
+
 [functions.scrape-web-sources]
 verify_jwt = false
 
