@@ -67,7 +67,7 @@ export function CountryScope({
         <DialogTrigger asChild>
           <button
             type="button"
-            className="border border-background bg-transparent px-4 py-1 text-13 font-bold text-background transition-colors hover:bg-background hover:text-foreground"
+            className="border rounded-element border-background bg-transparent px-4 py-1 text-13 font-bold text-background transition-colors hover:bg-background hover:text-foreground"
           >
             {t('help.scope_change', 'Change')}
           </button>
@@ -91,7 +91,7 @@ export function CountryScope({
                     type="button"
                     onClick={() => pick(code)}
                     aria-current={active ? 'true' : undefined}
-                    className={`w-full border-border-hairline px-2 py-2 text-13 font-bold transition-colors ${
+                    className={`w-full rounded-element border-border-hairline px-2 py-2 text-13 font-bold transition-colors ${
                       active
                         ? 'bg-foreground text-background'
                         : 'bg-background hover:bg-surface-container'

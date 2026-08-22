@@ -103,7 +103,7 @@ export function HelpFilterSpine({
                 type="button"
                 onClick={() => onTopic('ALL')}
                 aria-pressed={topic === 'ALL'}
-                className={`shrink-0 border-border-hairline px-4 py-1 text-13 font-bold transition-colors ${
+                className={`shrink-0 rounded-badge border-border-hairline px-4 py-1 text-13 font-bold transition-colors ${
                   topic === 'ALL'
                     ? 'bg-foreground text-background'
                     : 'bg-background hover:bg-surface-container'
@@ -117,7 +117,7 @@ export function HelpFilterSpine({
                   type="button"
                   onClick={() => onTopic(tp)}
                   aria-pressed={topic === tp}
-                  className={`shrink-0 border-border-hairline px-4 py-1 text-13 font-bold transition-colors ${
+                  className={`shrink-0 rounded-badge border-border-hairline px-4 py-1 text-13 font-bold transition-colors ${
                     topic === tp
                       ? 'bg-foreground text-background'
                       : 'bg-background hover:bg-surface-container'

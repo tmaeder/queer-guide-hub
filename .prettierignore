@@ -11,3 +11,10 @@ package-lock.json
 # which broke the fieldColumnTypes guard that parses this file as the schema
 # of record (and produced a 36k-line diff for nothing).
 src/integrations/supabase/types.ts
+
+# Kept byte-identical to supabase/functions/_shared/entity-classifier.ts (see
+# that file's header). supabase/functions is prettier-ignored above, so the Deno
+# copy is written in Deno style; running prettier here rewrites this one with
+# semicolons and silently breaks the twin. lint-staged's prettier pass did
+# exactly that on the way in — same failure mode as the types.ts entry above.
+src/lib/entityClassifier.ts

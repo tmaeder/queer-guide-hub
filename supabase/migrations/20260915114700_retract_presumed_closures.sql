@@ -182,8 +182,11 @@ COMMENT ON FUNCTION public.run_venue_closure_decision(boolean) IS
 -- ---------------------------------------------------------------------------
 -- 3. The existence engine writes the same vocabulary
 -- ---------------------------------------------------------------------------
+-- Defaults restated from the live definitions: CREATE OR REPLACE errors with 42P13
+-- ("cannot remove parameter defaults") if an existing default is dropped.
 CREATE OR REPLACE FUNCTION public._existence_apply_archive(
-  p_entity_type text, p_entity_id uuid, p_reason text, p_signals jsonb, p_actor uuid)
+  p_entity_type text, p_entity_id uuid, p_reason text,
+  p_signals jsonb DEFAULT '{}'::jsonb, p_actor uuid DEFAULT NULL::uuid)
 RETURNS bigint
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -220,7 +223,7 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION public._existence_apply_reopen(p_entity_type text, p_entity_id uuid, p_actor uuid)
+CREATE OR REPLACE FUNCTION public._existence_apply_reopen(p_entity_type text, p_entity_id uuid, p_actor uuid DEFAULT NULL::uuid)
 RETURNS boolean
 LANGUAGE plpgsql
 SECURITY DEFINER

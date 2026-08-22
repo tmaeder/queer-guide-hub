@@ -2,6 +2,7 @@ import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInt
 import { writeToStaging } from '../_shared/source-adapter.ts'
 import type { RawItem, NormalizedItem } from '../_shared/source-adapter.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
+import { normalizeVenueCategory, normalizeIso2Country } from '../_shared/venue-category.ts'
 
 // Source: OpenStreetMap (Overpass API) — LGBTQ+ venues
 // Queries OSM for nodes/ways tagged lgbtq=yes or similar identifiers
@@ -74,12 +75,18 @@ const CITIES: Array<{ name: string; bbox: [number, number, number, number] }> = 
   { name: 'Montreal',      bbox: [45.400, -73.971, 45.705, -73.476] },
 ]
 
+// OSM amenity/tourism tag -> venues.category. Values MUST be members of the
+// vocabulary in _shared/venue-category.ts; `community-center` with a hyphen
+// lived here and had every such row rejected at commit by
+// venues_category_check (203 of 381 osm rows, 53%). normalizeVenueCategory()
+// below now backstops this map, so a typo degrades to 'other' instead of
+// dropping the row.
 const AMENITY_TO_CATEGORY: Record<string, string> = {
   bar: 'bar', pub: 'bar', nightclub: 'club', restaurant: 'restaurant',
-  cafe: 'cafe', fast_food: 'cafe', community_centre: 'community-center',
-  sauna: 'sauna', cinema: 'other', library: 'other', theatre: 'other',
+  cafe: 'cafe', fast_food: 'cafe', community_centre: 'community_center',
+  sauna: 'sauna', cinema: 'theater', library: 'other', theatre: 'theater',
   hotel: 'hotel', hostel: 'hotel', guest_house: 'hotel',
-  shop: 'shop', boutique: 'shop',
+  shop: 'shop', boutique: 'shop', toilets: 'toilet',
 }
 
 function osmToNormalized(el: Record<string, unknown>, city: string): NormalizedItem {
@@ -89,7 +96,7 @@ function osmToNormalized(el: Record<string, unknown>, city: string): NormalizedI
   const lat = el.lat as number | undefined
   const lon = el.lon as number | undefined
   const amenity = tags.amenity ?? tags.tourism ?? ''
-  const category = AMENITY_TO_CATEGORY[amenity] ?? 'other'
+  const category = normalizeVenueCategory(AMENITY_TO_CATEGORY[amenity] ?? amenity)
 
   const osmTags: string[] = ['osm']
   if (tags.lgbtq === 'primary' || tags['lgbtq:primary'] === 'yes') osmTags.push('lgbtq-primary')
@@ -115,7 +122,8 @@ function osmToNormalized(el: Record<string, unknown>, city: string): NormalizedI
       lng:      lon ?? null,
       address,
       city:     tags['addr:city'] ?? city,
-      country:  tags['addr:country'] ?? '',
+      // undefined, never '': venues_country_iso2_check allows NULL but not ''.
+      country:  normalizeIso2Country(tags['addr:country']),
       postcode: tags['addr:postcode'] ?? '',
     },
     urls:     website ? [website] : [],

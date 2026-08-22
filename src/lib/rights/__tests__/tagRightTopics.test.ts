@@ -53,9 +53,15 @@ describe('rightTopicHref', () => {
   });
 
   it('every mapped topic has an anchor target rendered on /rights', () => {
-    // The anchor only resolves because Rights.tsx stamps id={topic.slug} on each
-    // card. Without that line the links are silently inert.
-    const page = readFileSync(resolve(__dirname, '../../../pages/intent/Rights.tsx'), 'utf8');
+    // The anchor only resolves because RightsLedger stamps id={topic.slug} on
+    // each row, and Rights.tsx renders <RightsLedger> in its 'rights' section
+    // (2026-08-21 restructure — the id used to be stamped inline on Rights.tsx
+    // itself, before the ledger was extracted into its own component).
+    // Without that line the links are silently inert.
+    const page = readFileSync(
+      resolve(__dirname, '../../../components/rights/RightsLedger.tsx'),
+      'utf8',
+    );
     expect(page).toMatch(/id=\{topic\.slug\}/);
   });
 });

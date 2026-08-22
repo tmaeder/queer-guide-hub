@@ -131,6 +131,31 @@ describe('Auth — redirect resolution', () => {
     await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/'));
   });
 
+  it('accepts the deprecated ?next= alias', async () => {
+    // Never read before, so every ?next= link silently landed on the homepage.
+    authState = { user: { id: 'u1' }, passwordRecovery: false };
+    renderAuth('/auth?next=/travel');
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/travel'));
+  });
+
+  it('prefers ?redirect= over ?next= when both are present', async () => {
+    authState = { user: { id: 'u1' }, passwordRecovery: false };
+    renderAuth('/auth?redirect=/venues&next=/travel');
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/venues'));
+  });
+
+  it('refuses an off-site redirect and falls back to /', async () => {
+    authState = { user: { id: 'u1' }, passwordRecovery: false };
+    renderAuth('/auth?redirect=https%3A%2F%2Fevil.com');
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/'));
+  });
+
+  it('refuses a protocol-relative redirect', async () => {
+    authState = { user: { id: 'u1' }, passwordRecovery: false };
+    renderAuth('/auth?redirect=%2F%2Fevil.com');
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/'));
+  });
+
   it('does not navigate during render', () => {
     // The redirect must come from an effect. If it fired in the render body
     // React logs "Cannot update a component while rendering a different one".

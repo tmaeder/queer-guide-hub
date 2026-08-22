@@ -8,14 +8,72 @@ import { VenueSafetySignalPrompt } from './VenueSafetySignalPrompt';
 
 interface Props {
   venueId: string;
+  /**
+   * Drop the card frame and the component's own "Visitor signals" title.
+   *
+   * The venue single renders this inside a `SingleSection`, which already
+   * supplies that exact heading as the section h2 — so unbared it printed the
+   * title TWICE (h2 from the shell, h3 from `CardTitle`), and the h3 carried
+   * shadcn's raw `text-lg`, a size the rank table does not contain. Same
+   * duplication class as the city description that #2916 removed.
+   */
+  bare?: boolean;
 }
 
-export function VenueSafetySignalDisplay({ venueId }: Props) {
+export function VenueSafetySignalDisplay({ venueId, bare = false }: Props) {
   const { data, isLoading } = useVenueSafetyScore(venueId);
   const { user } = useAuth();
   const [promptOpen, setPromptOpen] = useState(false);
 
   const visible = (data ?? []).filter((r) => r.n_responses >= 3 && r.score !== null);
+
+  const body = (
+    <div className="flex flex-col gap-4">
+      {isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
+
+      {!isLoading && visible.length === 0 && (
+        <p className="text-sm text-muted-foreground">
+          No signals yet. Be the first to share what this place was like.
+        </p>
+      )}
+
+      {visible.map((row) => {
+        const pct = Math.round((row.score ?? 0) * 100);
+        const lo = Math.round((row.confidence_low ?? 0) * 100);
+        const hi = Math.round((row.confidence_high ?? 0) * 100);
+        return (
+          <div key={row.question_slug} className="flex flex-col gap-2">
+            <div className="flex items-baseline justify-between gap-4">
+              <p className="text-sm">{row.prompt}</p>
+              <span className="text-xs text-muted-foreground tabular-nums">
+                {pct}% yes · {row.n_responses}
+              </span>
+            </div>
+            <ConfidenceBar pct={pct} lo={lo} hi={hi} />
+          </div>
+        );
+      })}
+
+      <p className="text-xs text-muted-foreground">
+        Recency-weighted, 90-day half-life. Older answers fade automatically.
+      </p>
+
+      {user && (
+        <Button
+          variant="outline"
+          size="sm"
+          className="self-start"
+          onClick={() => setPromptOpen(true)}
+        >
+          Were you here?
+        </Button>
+      )}
+
+      <VenueSafetySignalPrompt venueId={venueId} open={promptOpen} onOpenChange={setPromptOpen} />
+    </div>
+  );
+
+  if (bare) return body;
 
   return (
     <Card>
@@ -25,55 +83,7 @@ export function VenueSafetySignalDisplay({ venueId }: Props) {
           Visitor signals
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col gap-4">
-        {isLoading && (
-          <p className="text-sm text-muted-foreground">Loading…</p>
-        )}
-
-        {!isLoading && visible.length === 0 && (
-          <p className="text-sm text-muted-foreground">
-            No signals yet. Be the first to share what this place was like.
-          </p>
-        )}
-
-        {visible.map((row) => {
-          const pct = Math.round((row.score ?? 0) * 100);
-          const lo = Math.round((row.confidence_low ?? 0) * 100);
-          const hi = Math.round((row.confidence_high ?? 0) * 100);
-          return (
-            <div key={row.question_slug} className="flex flex-col gap-2">
-              <div className="flex items-baseline justify-between gap-4">
-                <p className="text-sm">{row.prompt}</p>
-                <span className="text-xs text-muted-foreground tabular-nums">
-                  {pct}% yes · {row.n_responses}
-                </span>
-              </div>
-              <ConfidenceBar pct={pct} lo={lo} hi={hi} />
-            </div>
-          );
-        })}
-
-        <p className="text-xs text-muted-foreground">
-          Recency-weighted, 90-day half-life. Older answers fade automatically.
-        </p>
-
-        {user && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="self-start"
-            onClick={() => setPromptOpen(true)}
-          >
-            Were you here?
-          </Button>
-        )}
-
-        <VenueSafetySignalPrompt
-          venueId={venueId}
-          open={promptOpen}
-          onOpenChange={setPromptOpen}
-        />
-      </CardContent>
+      <CardContent>{body}</CardContent>
     </Card>
   );
 }

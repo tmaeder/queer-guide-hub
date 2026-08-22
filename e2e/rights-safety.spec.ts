@@ -10,7 +10,8 @@ import { test, expect } from '@playwright/test';
  *
  * Each one corresponds to a defect that shipped to production:
  *   - "239 of 250"      the note rendered {n} of {n} and could never fail
- *   - Germany reachable the world list was .slice(0, 12) with no expander
+ *   - Germany reachable  the world list was .slice(0, 12) with no expander;
+ *                       now a table whose search + Show-all must reach everything
  *   - 7 vs 5 death      "No legal certainty" was read as "No" on 5 countries
  *   - never "Welcoming" the empty report is indistinguishable from measured-safe
  *
@@ -28,12 +29,19 @@ test('/rights states real coverage, not a tautology', async ({ page }) => {
   await expect(page.locator('main')).toContainText(/239 of 250/, { timeout: 30_000 });
 });
 
-test('/rights reaches every country, not the first twelve per tier', async ({ page }) => {
+test('/rights reaches every country, not the first thirty', async ({ page }) => {
   await page.goto('/rights');
   await dismiss(page);
   const world = page.locator('#world');
-  await expect(world.getByRole('link', { name: 'Germany', exact: true })).toBeVisible({ timeout: 30_000 });
+  await expect(world.getByRole('searchbox')).toBeVisible({ timeout: 30_000 });
+  await world.getByRole('searchbox').fill('germany');
+  await expect(world.getByRole('link', { name: 'Germany', exact: true })).toBeVisible();
+  await world.getByRole('searchbox').fill('thailand');
   await expect(world.getByRole('link', { name: 'Thailand', exact: true })).toBeVisible();
+  // And the unfiltered set is fully expandable — no reachable-only-by-search rows.
+  await world.getByRole('searchbox').fill('');
+  await world.getByRole('button', { name: /show all \d+ countries/i }).click();
+  await expect(world.getByRole('link', { name: 'Zimbabwe', exact: true })).toBeVisible();
 });
 
 test('/rights separates confirmed from uncertain death penalty', async ({ page }) => {
@@ -47,12 +55,17 @@ test('/rights separates confirmed from uncertain death penalty', async ({ page }
 test('an unscored country is never filed as Protected or Mixed', async ({ page }) => {
   await page.goto('/rights');
   await dismiss(page);
-  await expect(page.locator('#world')).toContainText(/Not scored/, { timeout: 30_000 });
+  const world = page.locator('#world');
+  await expect(world.getByRole('searchbox')).toBeVisible({ timeout: 30_000 });
   // North Korea scores 60 purely because the formula opens at 50; it must not
   // read as Protected on an LGBTQ+ safety page.
-  const world = await page.locator('#world').innerText();
-  const protectedBlock = world.split('Mixed')[0];
-  expect(protectedBlock).not.toContain('North Korea');
+  await world.getByRole('button', { name: /^Protected \d+$/ }).click();
+  await world.getByRole('searchbox').fill('north korea');
+  await expect(world.getByRole('table')).not.toContainText('North Korea');
+  // Unscored rows exist and are labelled honestly.
+  await world.getByRole('button', { name: /^Not scored \d+$/ }).click();
+  await world.getByRole('searchbox').fill('');
+  await expect(world.getByRole('table')).toContainText('Not scored');
 });
 
 test('Afghanistan warns about the death penalty rather than calling it criminalised only', async ({ page }) => {
