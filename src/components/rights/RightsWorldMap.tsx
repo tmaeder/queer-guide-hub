@@ -145,7 +145,29 @@ export function RightsWorldMap({
   const hoveredIdRef = useRef<number | null>(null);
   const selectedIdRef = useRef<number | null>(null);
 
-  const { data: boundaries } = useCountryBoundaries(true, 1);
+  /**
+   * 50m boundaries, NOT the 110m set every other map surface uses.
+   *
+   * Measured against the live worker: 110m carries 175 country polygons, 50m
+   * carries 237. The 62 it adds are small states and territories — Singapore,
+   * Saint Lucia, Saint Vincent, Samoa, Tonga, the Caribbean and Pacific
+   * dependencies — and on THIS map that gap is not cosmetic. Painted from
+   * 110m, the canvas showed 46 criminalising and 7 death-penalty
+   * jurisdictions while the country table 300px below reported 66 and 12:
+   * twenty criminalising countries silently absent from a map a reader opens
+   * to decide whether somewhere is safe to enter, and no way to tell an
+   * undrawn country from an unmeasured one.
+   *
+   * The cost is real and deliberate: 231 KB gzipped against 20 KB. It is
+   * fetched once per hour (React Query staleTime) on a single route, and the
+   * cache key is shared with every other surface that asks for 50m. A
+   * data map that omits the data is the worse trade.
+   *
+   * 13 of our 250 rows still have no polygon at this resolution; the section's
+   * coverage note says so rather than letting the two counts disagree in
+   * silence.
+   */
+  const { data: boundaries } = useCountryBoundaries(true, 5);
   const webglOk = isWebglSupported();
 
   // Refs for values the click/hover handlers need fresh, without re-running

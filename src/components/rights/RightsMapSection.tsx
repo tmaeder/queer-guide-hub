@@ -61,9 +61,15 @@ export function RightsMapSection({
           onCountrySelect={onCountrySelect}
         />
       </div>
+      {/* The map's counts and the table's counts are measured over different
+          sets — polygons drawn vs. rows held — so they do not match, and a
+          reader comparing "criminalised" here against the chips below must be
+          told why rather than left to assume one of them is wrong. */}
       <CoverageNote>
         Legal status from the ILGA World Database, re-imported nightly. Countries with no recorded
-        reading are shown as no data, never as safe.
+        reading are shown as no data, never as safe. A few territories have no boundary to draw at
+        this scale and cannot appear on the map at all — the table below holds every one of them,
+        which is why its counts run slightly higher than the map’s.
       </CoverageNote>
     </div>
   );
