@@ -149,7 +149,7 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
             under a heading is the one thing in a footer nobody clicks. */}
         <nav
           aria-label="Footer navigation"
-          className="mt-8 grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-3 lg:grid-cols-6"
+          className="mt-8 grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7"
         >
           {INTENT_NAV.map((intent) => {
             const active = isIntentActive(intent, localePath);

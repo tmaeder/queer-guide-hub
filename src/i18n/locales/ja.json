@@ -1872,6 +1872,11 @@
         "label": "[JA] Search everything",
         "subtitle": "[JA] Every line meets here"
       }
+    },
+    "glossary": {
+      "eyebrow": "[JA] Glossary",
+      "title": "[JA] Know the words",
+      "seeAll": "[JA] All terms"
     }
   },
   "header": {
@@ -1908,12 +1913,15 @@
       "personalities": "著名人",
       "hotels": "ホテル",
       "help": "ヘルプ",
-      "tags": "タグ",
       "history": "歴史",
       "guides": "ガイド",
       "trips": "旅行",
       "organizations": "団体",
-      "wishlists": "ウィッシュリスト"
+      "wishlists": "ウィッシュリスト",
+      "tags": "[JA] Glossary",
+      "tagsAll": "[JA] All terms",
+      "tagsInteractions": "[JA] Substance safety",
+      "tagsStiGuide": "[JA] STI guide"
     },
     "intents": {
       "goingOut": {
@@ -1941,7 +1949,11 @@
         "subtitle": "本、ファッション、アート、ギフト"
       },
       "sheetHeading": "今日は何をお探しですか？",
-      "browseHeading": "すべて見る"
+      "browseHeading": "すべて見る",
+      "glossary": {
+        "label": "[JA] Glossary",
+        "subtitle": "[JA] What every term, flag and code means"
+      }
     },
     "userMenu": {
       "myTrips": "マイトリップ",
@@ -4458,11 +4470,20 @@
       "notOneLaw": "これは単一の法律ではありません。国ごとに記録されています。",
       "seeByCountry": "国別の状況を見る",
       "spansAllRights": "これは単一の法律ではなく、法分野全体を指します。18の権利を国ごとに記録しています。",
-      "seeAllRights": "18の権利を国別に見る"
+      "seeAllRights": "18の権利を国別に見る",
+      "seeAllInSearch": "[JA] See all in search"
     },
     "flagWall": {
       "eyebrow": "シンボル",
       "title": "フラッグ一覧"
+    },
+    "preview": {
+      "adultGated": "[JA] 18+ term. Open the entry to confirm your age.",
+      "open": "[JA] Read the entry"
+    },
+    "fromGlossary": {
+      "title": "[JA] From the glossary",
+      "all": "[JA] All terms"
     }
   },
   "village": {

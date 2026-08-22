@@ -1948,6 +1948,11 @@
       "title": "Born this week",
       "seeAll": "All personalities",
       "celebrate": "Celebrate {{name}}"
+    },
+    "glossary": {
+      "eyebrow": "Glossary",
+      "title": "Know the words",
+      "seeAll": "All terms"
     }
   },
   "header": {
@@ -1983,7 +1988,7 @@
       "members": "Members",
       "marketplace": "Marketplace",
       "resources": "Resources",
-      "tags": "Tags",
+      "tags": "Glossary",
       "news": "News",
       "travel": "Travel",
       "personalities": "Personalities",
@@ -1993,7 +1998,10 @@
       "guides": "Guides",
       "trips": "Trips",
       "organizations": "Organizations",
-      "wishlists": "Wishlists"
+      "wishlists": "Wishlists",
+      "tagsAll": "All terms",
+      "tagsInteractions": "Substance safety",
+      "tagsStiGuide": "STI guide"
     },
     "intents": {
       "goingOut": {
@@ -2021,7 +2029,11 @@
         "subtitle": "Books, apparel, art and gifts"
       },
       "sheetHeading": "What are you here for?",
-      "browseHeading": "Browse everything"
+      "browseHeading": "Browse everything",
+      "glossary": {
+        "label": "Glossary",
+        "subtitle": "What every term, flag and code means"
+      }
     },
     "userMenu": {
       "you": "You",
@@ -4425,11 +4437,20 @@
         "slang": "Slang"
       },
       "spansAllRights": "This covers a whole field of law, not one statute. We track 18 separate rights, country by country.",
-      "seeAllRights": "See all 18 rights by country"
+      "seeAllRights": "See all 18 rights by country",
+      "seeAllInSearch": "See all in search"
     },
     "flagWall": {
       "eyebrow": "Symbols",
       "title": "The flags"
+    },
+    "preview": {
+      "adultGated": "18+ term. Open the entry to confirm your age.",
+      "open": "Read the entry"
+    },
+    "fromGlossary": {
+      "title": "From the glossary",
+      "all": "All terms"
     }
   },
   "village": {

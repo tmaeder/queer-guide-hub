@@ -1872,6 +1872,11 @@
         "label": "[PT] Search everything",
         "subtitle": "[PT] Every line meets here"
       }
+    },
+    "glossary": {
+      "eyebrow": "[PT] Glossary",
+      "title": "[PT] Know the words",
+      "seeAll": "[PT] All terms"
     }
   },
   "header": {
@@ -1908,12 +1913,15 @@
       "personalities": "Personalidades",
       "hotels": "Hotéis",
       "help": "Ajuda",
-      "tags": "Tags",
       "history": "História",
       "guides": "Guias",
       "trips": "Viagens",
       "organizations": "Organizações",
-      "wishlists": "Listas de desejos"
+      "wishlists": "Listas de desejos",
+      "tags": "[PT] Glossary",
+      "tagsAll": "[PT] All terms",
+      "tagsInteractions": "[PT] Substance safety",
+      "tagsStiGuide": "[PT] STI guide"
     },
     "intents": {
       "goingOut": {
@@ -1941,7 +1949,11 @@
         "subtitle": "Livros, moda, arte e presentes"
       },
       "sheetHeading": "O que procuras?",
-      "browseHeading": "Explorar tudo"
+      "browseHeading": "Explorar tudo",
+      "glossary": {
+        "label": "[PT] Glossary",
+        "subtitle": "[PT] What every term, flag and code means"
+      }
     },
     "userMenu": {
       "myTrips": "Minhas Viagens",
@@ -4460,11 +4472,20 @@
       "notOneLaw": "Não é uma única lei. É registada país a país.",
       "seeByCountry": "Ver o estado por país",
       "spansAllRights": "Isto abrange todo um domínio do direito, não uma única lei. Registamos 18 direitos distintos, país a país.",
-      "seeAllRights": "Ver os 18 direitos por país"
+      "seeAllRights": "Ver os 18 direitos por país",
+      "seeAllInSearch": "[PT] See all in search"
     },
     "flagWall": {
       "eyebrow": "Símbolos",
       "title": "As bandeiras"
+    },
+    "preview": {
+      "adultGated": "[PT] 18+ term. Open the entry to confirm your age.",
+      "open": "[PT] Read the entry"
+    },
+    "fromGlossary": {
+      "title": "[PT] From the glossary",
+      "all": "[PT] All terms"
     }
   },
   "village": {

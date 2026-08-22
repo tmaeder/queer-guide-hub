@@ -525,7 +525,7 @@ export default function TagDetail() {
 
       <TagInterchange tagId={tag.id} tagName={tag.name} />
 
-      <TagLinkedContent tagId={tag.id} tagName={tag.name} />
+      <TagLinkedContent tagId={tag.id} tagName={tag.name} tagSlug={tag.slug} />
 
       {!tag.description && !tag.long_description && (
         <SingleSection title={t('tags.detail.about', 'About')}>

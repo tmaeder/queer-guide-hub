@@ -32,6 +32,9 @@ const INTENTS = [
   // asserted /support until 2026-08-10, i.e. it required the nav to link at a
   // redirect. /support itself still resolves and is still covered, by the
   // crisis-adjacent block at the bottom of this file.
+  // The tags wiki, promoted to a top-level intent (2026-08-22). /tags is the
+  // real glossary hub, no wrapper path.
+  { label: 'Glossary', href: '/tags' },
   { label: 'Support', href: '/help' },
   // /marketplace, not /shop, and for the same reason as Support above: /shop
   // was /marketplace's twin — two of its three sections were duplicates of
@@ -43,7 +46,7 @@ const INTENTS = [
 test.describe('desktop intent nav', () => {
   test.skip(({ isMobile }) => !!isMobile, 'desktop row is hidden below lg');
 
-  test('renders exactly the six intents in the primary landmark', async ({ page }) => {
+  test('renders exactly the seven intents in the primary landmark', async ({ page }) => {
     await page.goto('/');
     const nav = page.locator('header nav[aria-label="Primary"]');
     await expect(nav).toBeVisible();
@@ -82,12 +85,13 @@ test.describe('homepage intent map', () => {
     '/travel',
     '/people',
     '/search', // the interchange, where all four lines meet
+    '/tags', // glossary — the 7th intent
     '/rights',
     '/help',
     '/marketplace',
   ];
 
-  test('renders the six intents plus the interchange as stations', async ({ page }) => {
+  test('renders the seven intents plus the interchange as stations', async ({ page }) => {
     // The desktop visual snapshot masks `main section:first-of-type`, which
     // this section matches — so the screenshot does NOT guard the map. This
     // does. It also catches the CSS-only breakpoint split degrading into two

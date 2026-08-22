@@ -2,7 +2,7 @@ import { INTENT_NAV, INTENT_TRACK, type IntentDestination } from '@/config/navig
 import type { Track } from '@/components/transit/routeBulletMap';
 
 /**
- * Geometry for the homepage intent map — the six intents as stations on the
+ * Geometry for the homepage intent map — the seven intents as stations on the
  * four track lines, plus the interchange where all four meet.
  *
  * Pure data, no JSX, so the coordinates have exactly one home and the
@@ -36,8 +36,13 @@ export const VIEWBOX = { w: 1440, h: 360 } as const;
  */
 export const TRACK_PATHS: Record<Track, string> = {
   pink:
+    // The (430,148)→(760,180) segment is a de Casteljau subdivision (t=0.65,
+    // rounded) of the original `C 530 165 665 180 760 180` — the drawn curve
+    // is unchanged to within a pixel; the split exists so the glossary
+    // station has a true endpoint at (649,175), the only below-lane slot the
+    // plate-collision guard admits on the pink line.
     'M -40 155 C -7 142 82 81 160 80 C 238 79 330 131 430 148 ' +
-    'C 530 165 665 180 760 180 C 855 180 930 165 1000 148 ' +
+    'C 495 159 575 169 649 175 C 689 178 727 180 760 180 C 855 180 930 165 1000 148 ' +
     'C 1070 131 1100 80 1180 80 C 1260 80 1430 138 1480 150',
   green:
     'M -40 172 C 7 170 153 172 240 158 C 327 144 393 81 480 85 ' +
@@ -87,6 +92,13 @@ const STATION_POINTS: Record<string, { x: number; y: number; lane: Lane }> = {
   // rights already holds (980, 280). It sits 60px from support in x but in the
   // opposite lane, so the two name plates cannot collide.
   shop: { x: 1240, y: 212, lane: 'below' },
+  // Sits on the endpoint minted by the pink path's subdivision (see
+  // TRACK_PATHS). Below lane: neighbours are travelling (320) and rights
+  // (980), both ≥247 viewBox units away — the collision guard's minimum at
+  // 1024px. Both of pink's pre-existing free endpoints fail that guard
+  // ((1000,148) is 240 from the interchange plate; (430,148) is 110 from
+  // travelling), which is why the path gained a node instead.
+  glossary: { x: 649, y: 175, lane: 'below' },
 };
 
 /**
@@ -111,8 +123,9 @@ export const INTERCHANGE: Station = {
 };
 
 /**
- * The seven stations in left-to-right order, which is also DOM order — so
- * focus order matches reading order (WCAG 1.3.2 / 2.4.3).
+ * The eight stations (seven intents + interchange) in left-to-right order,
+ * which is also DOM order — so focus order matches reading order
+ * (WCAG 1.3.2 / 2.4.3).
  *
  * Track assignment comes from INTENT_TRACK, never a local literal: the header,
  * the footer and this map must agree on which line an intent belongs to.

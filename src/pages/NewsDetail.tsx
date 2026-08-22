@@ -56,6 +56,7 @@ import {
   type NewsArticleFull,
 } from './NewsDetail.parts';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { FromTheGlossary } from '@/components/tags/FromTheGlossary';
 
 interface DbCategory {
   slug: string;
@@ -554,6 +555,8 @@ export default function NewsDetail() {
           />
         </div>
       </div>
+
+      <FromTheGlossary tags={tags} className="mt-12" />
 
       <div className="mt-12">
         <MilestonesForEntity entityType="news" entityId={article.id} />

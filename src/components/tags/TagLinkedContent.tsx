@@ -28,6 +28,7 @@ import { NestedEntityCard } from '@/components/transit/NestedEntityCard';
 import { DepartureRow } from '@/components/transit/DepartureRow';
 import { Roster } from '@/components/transit/Roster';
 import { Skeleton } from '@/components/ui/skeleton';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 
 const MAX_NEWS = 6;
 
@@ -74,7 +75,28 @@ function shortDate(iso: string | null): string {
 // icon-level offsets), and `no-restricted-syntax` flags the odd ones.
 const GRID = 'grid grid-cols-1 gap-4 sm:grid-cols-2';
 
-export function TagLinkedContent({ tagId, tagName }: { tagId: string; tagName: string }) {
+/** Full-list exit for a capped section: tag-filtered, type-scoped search. */
+function SectionSeeAll({ tagSlug, type }: { tagSlug: string; type: string }) {
+  const { t } = useTranslation();
+  return (
+    <LocalizedLink
+      to={`/search?tags=${encodeURIComponent(tagSlug)}&types=${type}`}
+      className="mt-4 inline-block text-13 font-medium underline underline-offset-4"
+    >
+      {t('tags.detail.seeAllInSearch', 'See all in search')}
+    </LocalizedLink>
+  );
+}
+
+export function TagLinkedContent({
+  tagId,
+  tagName,
+  tagSlug,
+}: {
+  tagId: string;
+  tagName: string;
+  tagSlug?: string;
+}) {
   const { t } = useTranslation();
   const { data, isLoading } = useTagContent(tagId, tagName);
 
@@ -118,6 +140,7 @@ export function TagLinkedContent({ tagId, tagName }: { tagId: string; tagName: s
               />
             ))}
           </div>
+          {tagSlug && <SectionSeeAll tagSlug={tagSlug} type="venue" />}
         </SingleSection>
       )}
 
@@ -139,6 +162,7 @@ export function TagLinkedContent({ tagId, tagName }: { tagId: string; tagName: s
               />
             ))}
           </div>
+          {tagSlug && <SectionSeeAll tagSlug={tagSlug} type="event" />}
         </SingleSection>
       )}
 
@@ -184,6 +208,7 @@ export function TagLinkedContent({ tagId, tagName }: { tagId: string; tagName: s
               />
             ))}
           </div>
+          {tagSlug && <SectionSeeAll tagSlug={tagSlug} type="news" />}
         </SingleSection>
       )}
 
@@ -217,6 +242,7 @@ export function TagLinkedContent({ tagId, tagName }: { tagId: string; tagName: s
               />
             ))}
           </div>
+          {tagSlug && <SectionSeeAll tagSlug={tagSlug} type="marketplace" />}
         </SingleSection>
       )}
 
