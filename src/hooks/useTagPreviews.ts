@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { isAdultTag } from '@/components/resources/categoryMeta';
 
 /**
  * Lightweight glossary previews for tag chips, rails and the homepage band.
@@ -55,6 +56,47 @@ export function useTagPreview(slug: string, { enabled = true }: { enabled?: bool
     queryFn: async () => (await fetchTagPreviews([normalized]))[0] ?? null,
     enabled: enabled && normalized.length > 0,
     staleTime: STALE_TIME,
+  });
+}
+
+/**
+ * Deterministic term-of-the-day rotation: the same date shows the same terms
+ * for everyone (no Math.random — testable, hydration-safe). Wraps around the
+ * pool so every term gets its day.
+ */
+export function pickOfTheDay<T>(pool: T[], date: Date, count: number): T[] {
+  if (pool.length === 0) return [];
+  const startOfYear = Date.UTC(date.getUTCFullYear(), 0, 0);
+  const dayOfYear = Math.floor((date.getTime() - startOfYear) / 86_400_000);
+  const start = dayOfYear % pool.length;
+  return Array.from(
+    { length: Math.min(count, pool.length) },
+    (_, i) => pool[(start + i) % pool.length],
+  );
+}
+
+/**
+ * Quality-ranked, non-adult, defined-term pool for the homepage glossary
+ * band. The adult-category predicate is applied client-side too, catching
+ * rows whose is_adult flag lags their category.
+ */
+export function useHomeGlossaryPool() {
+  return useQuery({
+    queryKey: ['home-glossary-pool'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('unified_tags')
+        .select(TAG_PREVIEW_COLUMNS)
+        .eq('status', 'active')
+        .eq('is_adult', false)
+        .eq('seo_indexable', true)
+        .not('short_description', 'is', null)
+        .order('quality_score', { ascending: false, nullsFirst: false })
+        .limit(24);
+      if (error) throw error;
+      return ((data ?? []) as TagPreview[]).filter((p) => !isAdultTag(p));
+    },
+    staleTime: 24 * 60 * 60_000,
   });
 }
 

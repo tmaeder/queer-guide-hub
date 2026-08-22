@@ -18,6 +18,7 @@ import { PageContainer } from '@/components/layout/PageContainer';
 const NewsMagazine = lazyOptional(() => import('@/components/home/NewsMagazine'));
 const HomeShoppingSection = lazyOptional(() => import('@/components/home/HomeShoppingSection'));
 const ArchiveBand = lazyOptional(() => import('@/components/home/ArchiveBand'));
+const GlossaryBand = lazyOptional(() => import('@/components/home/GlossaryBand'));
 
 // ── Section shells ───────────────────────────────────────────────────────────
 
@@ -123,6 +124,11 @@ const Index = React.memo(() => {
            quiet day loses a column instead of two whole sections ──────── */}
       <HomeDeferred section="archive" skeleton={null}>
         <ArchiveBand />
+      </HomeDeferred>
+
+      {/* ── Glossary — rotating terms from the tags wiki (self-hides) ── */}
+      <HomeDeferred section="glossary" skeleton={null}>
+        <GlossaryBand />
       </HomeDeferred>
 
       {/* ── Support — the closing band ────────────────────────────────── */}
