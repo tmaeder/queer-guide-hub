@@ -414,10 +414,17 @@ returning 1;`);
 }
 
 async function phaseStage() {
-  const venues = readNdjson(join(OUT, 'venues.ndjson'))
-    .filter((r) => r.name && r.name.trim())
-    .map(venueToNormalized);
   const eventsRaw = readNdjson(join(OUT, 'events.ndjson'));
+  // A record can be dual-listed: a venue-shaped block on one page and a dated
+  // vevent on another (Oktoberfest, Queer Lisboa, Bear Necessity…). A real
+  // venue is never also a dated vevent, so on id collision the EVENT reading
+  // wins and the venue reading is dropped — the reverse of keeping both,
+  // which would re-create the events-filed-as-bars junk this importer exists
+  // to avoid.
+  const eventIds = new Set(eventsRaw.map((r) => r.id));
+  const venues = readNdjson(join(OUT, 'venues.ndjson'))
+    .filter((r) => r.name && r.name.trim() && !eventIds.has(r.id))
+    .map(venueToNormalized);
   const dateless = eventsRaw.filter((r) => !r.startDate);
   const events = eventsRaw
     .filter((r) => r.title && r.startDate)
