@@ -42,18 +42,34 @@ type StagedItem = Omit<NormalizedItem, 'location'> &
     location?: NonNullable<NormalizedItem['location']> & Record<string, unknown>
   }
 
+/**
+ * HTML -> plain text. Two orderings are load-bearing, both flagged by CodeQL:
+ *
+ * 1. `</script>` must be matched as `</script\s*>` — a closing tag may carry
+ *    whitespace before the `>`, and the strict form leaves the entire script
+ *    body in the extracted text (js/bad-tag-filter). That matters here: the
+ *    schema.org payload this file reads IS inside a <script>.
+ *
+ * 2. `&amp;` is decoded LAST. Decoding it first turns `&amp;lt;` into `&lt;`
+ *    and the next rule turns that into `<`, so escaped text silently becomes
+ *    markup (js/double-escaping). Numeric entities are safe before it, because
+ *    `&amp;#60;` contains no `&#60;` substring.
+ */
 const stripTags = (s: unknown): string =>
   String(s ?? '')
-    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
-    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script\b[^>]*>/gi, ' ')
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style\b[^>]*>/gi, ' ')
     .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<\/p>/gi, '\n')
+    .replace(/<\/p\b[^>]*>/gi, '\n')
     .replace(/<[^>]+>/g, ' ')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&quot;/g, '"')
-    .replace(/&#0?39;|&apos;|&#8217;/g, "'")
+    .replace(/&#x([0-9a-f]+);/gi, (_m, h) => String.fromCodePoint(parseInt(h, 16)))
     .replace(/&#(\d+);/g, (_m, d) => String.fromCodePoint(Number(d)))
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
     .replace(/[ \t]+/g, ' ')
     .replace(/\n{3,}/g, '\n\n')
     .trim()
@@ -151,7 +167,7 @@ function parseEvent(html: string, url: string): ParsedEvent | null {
   const start = (ld?.startDate as string) || html.match(/<abbr class="dtstart" title="([^"]+)"/)?.[1] || null
   if (!title || !start) return null
 
-  let venue: ParsedVenue | null = null
+  let venue: ParsedVenue | null
   const place = ld?.location as Record<string, unknown> | undefined
   if (place?.name) {
     const a = (place.address ?? {}) as Record<string, unknown>

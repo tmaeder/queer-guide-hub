@@ -14,7 +14,7 @@ import {
 import { deathPenaltyRisk, hasAnyCriminalizationSignal } from '@/utils/equalityScore';
 import { TIER_LABEL, TIER_ORDER, tierOf, type Tier } from '@/lib/rights/rightsTiers';
 import type { RightsCountry } from '@/hooks/useIntentData';
-import { cn } from '@/lib/utils';
+import { FilterChip } from '@/components/transit/FilterChip';
 
 /**
  * All 250 countries as ONE searchable, filterable table — replaces the four
@@ -112,31 +112,37 @@ export function RightsCountryTable({
 
   return (
     <div>
-      <div className="mb-4 flex flex-col gap-4">
-        <Input
-          type="search"
-          aria-label="Search countries"
-          placeholder="Search countries…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="max-w-sm"
-        />
-        <div className="flex flex-wrap gap-2" role="group" aria-label="Filter countries">
+      {/* The house control-bar shape: `gap-2 md:gap-4`, search row then ONE
+          scrolling chip line. This bar used to wrap its seven chips and give
+          the search a whole 44px row to itself at `max-w-sm` — 176px on a
+          phone for controls that measure 116, and a second chip recipe on the
+          same screen as the map's. Both are FilterChip now. */}
+      <div className="mb-4 flex flex-col gap-2 md:gap-4">
+        <div className="min-w-0 flex-1 md:max-w-[480px]">
+          <Input
+            type="search"
+            aria-label="Search countries"
+            placeholder="Search countries…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <div
+          className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          role="group"
+          aria-label="Filter countries"
+        >
           {chips.map((chip) => (
-            <button
+            <FilterChip
               key={chip.key}
-              type="button"
-              aria-pressed={filter === chip.key}
+              active={filter === chip.key}
               onClick={() => onFilterChange(chip.key)}
-              className={cn(
-                'rounded-badge px-2 py-1 text-13 font-medium',
-                filter === chip.key
-                  ? 'bg-foreground text-background'
-                  : 'bg-muted text-muted-foreground hover:text-foreground',
-              )}
-            >
-              {chip.label} {chip.count}
-            </button>
+              className="whitespace-nowrap"
+              // One flat string, not label + count in separate spans: the
+              // accessible name is asserted verbatim ("All 250"), and adjacent
+              // spans can compute it without the space.
+              label={`${chip.label} ${chip.count}`}
+            />
           ))}
         </div>
       </div>

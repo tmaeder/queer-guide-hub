@@ -1921,7 +1921,8 @@
       "tags": "[JA] Glossary",
       "tagsAll": "[JA] All terms",
       "tagsInteractions": "[JA] Substance safety",
-      "tagsStiGuide": "[JA] STI guide"
+      "tagsStiGuide": "[JA] STI guide",
+      "transRights": "トランスの権利"
     },
     "intents": {
       "goingOut": {

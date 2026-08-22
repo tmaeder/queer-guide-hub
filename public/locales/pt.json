@@ -1921,7 +1921,8 @@
       "tags": "[PT] Glossary",
       "tagsAll": "[PT] All terms",
       "tagsInteractions": "[PT] Substance safety",
-      "tagsStiGuide": "[PT] STI guide"
+      "tagsStiGuide": "[PT] STI guide",
+      "transRights": "Direitos trans"
     },
     "intents": {
       "goingOut": {
