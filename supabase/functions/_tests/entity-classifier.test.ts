@@ -126,3 +126,51 @@ Deno.test('null island coordinates do not count as a location', () => {
   const cls = classifyEntity({ name: 'AFAB', location: { lat: 0, lng: 0 } })
   assertEquals(cls.classified_as, 'glossary_term')
 })
+
+// --- events carry nested dates too (regression, 2026-08-22) -----------------
+// NormalizedItem puts them at `dates.{start,end}`, not flat start_date/end_date.
+// 2,110 real events (ticketmaster, gaycities) scored `venue` and were
+// hard-rejected: no has_event_dates fired, while the event's own address and
+// coordinates were counted as VENUE evidence.
+
+Deno.test('classifyEntity reads nested dates', () => {
+  const cls = classifyEntity({
+    name: "Dine 'N' Drag Dinner Show",
+    dates: { start: '2026-06-06T03:00:00Z', end: '2026-06-06T04:20:00Z' },
+    location: { lat: 36.11504, lng: -115.13013, city: 'Las Vegas', address: '1700 E Flamingo Rd' },
+  })
+  assertEquals(cls.classified_as, 'event')
+  assertEquals(isEntityTypeMismatch(cls, 'events'), false)
+})
+
+Deno.test('an event at a venue address is not classified as a venue', () => {
+  // The address and coordinates describe the venue the event OCCUPIES. A venue
+  // has no start date, so the dates veto the location signals.
+  const cls = classifyEntity({
+    name: 'Drag Brunch at The Eagle Bar',
+    dates: { start: '2026-07-01T12:00:00Z' },
+    location: { address: '100 Main St', lat: 40.7, lng: -74.0 },
+  })
+  assertEquals(cls.classified_as, 'event')
+  assertEquals(cls.signals.some((s) => s.startsWith('venue:has_address')), false)
+  assertEquals(cls.signals.some((s) => s.startsWith('venue:has_geo')), false)
+})
+
+Deno.test('a venue with an address and NO dates is still a venue', () => {
+  // The guard must only fire when dates are actually present.
+  const cls = classifyEntity({
+    name: 'The Eagle Bar',
+    location: { address: '100 Main St', lat: 40.7, lng: -74.0 },
+  })
+  assertEquals(cls.classified_as, 'venue')
+  assertEquals(cls.signals.some((s) => s.startsWith('venue:has_address')), true)
+})
+
+Deno.test('flat start_date still wins over nested dates', () => {
+  const cls = classifyEntity({
+    name: 'Thing',
+    start_date: '2026-01-01',
+    dates: { start: '2030-12-31' },
+  })
+  assertEquals(cls.classified_as, 'event')
+})

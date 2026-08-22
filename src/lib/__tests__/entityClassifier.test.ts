@@ -240,3 +240,51 @@ describe('acronym venue names', () => {
     );
   });
 });
+
+// Mirrors supabase/functions/_tests/entity-classifier.test.ts. NormalizedItem
+// puts event dates at `dates.{start,end}`, not flat start_date/end_date — 2,110
+// real events scored `venue` and were hard-rejected because no has_event_dates
+// fired while the event's own address counted as VENUE evidence.
+describe('nested event dates', () => {
+  it('reads dates.{start,end}', () => {
+    const cls = classifyEntity({
+      name: "Dine 'N' Drag Dinner Show",
+      dates: { start: '2026-06-06T03:00:00Z', end: '2026-06-06T04:20:00Z' },
+      location: {
+        lat: 36.11504,
+        lng: -115.13013,
+        city: 'Las Vegas',
+        address: '1700 E Flamingo Rd',
+      },
+    });
+    expect(cls.classified_as).toBe('event');
+    expect(isEntityTypeMismatch(cls, 'events')).toBe(false);
+  });
+
+  it('an event at a venue address is not a venue', () => {
+    const cls = classifyEntity({
+      name: 'Drag Brunch at The Eagle Bar',
+      dates: { start: '2026-07-01T12:00:00Z' },
+      location: { address: '100 Main St', lat: 40.7, lng: -74.0 },
+    });
+    expect(cls.classified_as).toBe('event');
+    expect(cls.signals.some((s: string) => s.startsWith('venue:has_address'))).toBe(false);
+  });
+
+  it('a venue with an address and no dates is still a venue', () => {
+    const cls = classifyEntity({
+      name: 'The Eagle Bar',
+      location: { address: '100 Main St', lat: 40.7, lng: -74.0 },
+    });
+    expect(cls.classified_as).toBe('venue');
+  });
+
+  it('flat start_date still wins over nested dates', () => {
+    const cls = classifyEntity({
+      name: 'Thing',
+      start_date: '2026-01-01',
+      dates: { start: '2030-12-31' },
+    });
+    expect(cls.classified_as).toBe('event');
+  });
+});
