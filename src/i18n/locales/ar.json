@@ -1882,6 +1882,11 @@
         "label": "[AR] Search everything",
         "subtitle": "[AR] Every line meets here"
       }
+    },
+    "glossary": {
+      "eyebrow": "[AR] Glossary",
+      "title": "[AR] Know the words",
+      "seeAll": "[AR] All terms"
     }
   },
   "header": {
@@ -1918,12 +1923,15 @@
       "personalities": "شخصيات",
       "hotels": "الفنادق",
       "help": "مساعدة",
-      "tags": "الوسوم",
       "history": "التاريخ",
       "guides": "الأدلة",
       "trips": "الرحلات",
       "organizations": "المنظمات",
-      "wishlists": "قوائم الرغبات"
+      "wishlists": "قوائم الرغبات",
+      "tags": "[AR] Glossary",
+      "tagsAll": "[AR] All terms",
+      "tagsInteractions": "[AR] Substance safety",
+      "tagsStiGuide": "[AR] STI guide"
     },
     "intents": {
       "goingOut": {
@@ -1951,7 +1959,11 @@
         "subtitle": "كتب وأزياء وفنون وهدايا"
       },
       "sheetHeading": "ما الذي تبحث عنه؟",
-      "browseHeading": "تصفح كل شيء"
+      "browseHeading": "تصفح كل شيء",
+      "glossary": {
+        "label": "[AR] Glossary",
+        "subtitle": "[AR] What every term, flag and code means"
+      }
     },
     "userMenu": {
       "myTrips": "رحلاتي",
@@ -4468,11 +4480,20 @@
       "notOneLaw": "هذا ليس قانونًا واحدًا، بل يُسجَّل لكل دولة على حدة.",
       "seeByCountry": "اطّلع على الحالة حسب الدولة",
       "spansAllRights": "هذا يشمل مجالًا قانونيًا كاملًا، لا قانونًا واحدًا. نتتبّع 18 حقًا منفصلًا لكل دولة.",
-      "seeAllRights": "اطّلع على الحقوق الـ18 حسب الدولة"
+      "seeAllRights": "اطّلع على الحقوق الـ18 حسب الدولة",
+      "seeAllInSearch": "[AR] See all in search"
     },
     "flagWall": {
       "eyebrow": "رموز",
       "title": "الأعلام"
+    },
+    "preview": {
+      "adultGated": "[AR] 18+ term. Open the entry to confirm your age.",
+      "open": "[AR] Read the entry"
+    },
+    "fromGlossary": {
+      "title": "[AR] From the glossary",
+      "all": "[AR] All terms"
     }
   },
   "village": {

@@ -296,7 +296,7 @@ export function Header() {
             {/* Icon + label, per the mock's nav row. The icon is a TransitIcon
                 binding (see INTENT_NAV) drawing in currentColor, so it inverts
                 with the active tab's ink fill for free — no active variant. */}
-            <span className="flex items-center gap-2 whitespace-nowrap px-4 pb-2 pt-4 text-15 font-bold lg:px-6">
+            <span className="flex items-center gap-2 whitespace-nowrap px-2.5 pb-2 pt-4 text-15 font-bold lg:px-6">
               <Icon size={18} className="shrink-0" />
               {label}
             </span>
@@ -445,7 +445,16 @@ export function Header() {
                inside it take the page cap so tab 1 starts on the same vertical
                as the page content below. */
             <div className="border-t border-border-hairline">
-              <div className={cn('mx-auto flex w-full max-w-page items-stretch', PAGE_GUTTER)}>
+              {/* Seven tabs overflow 768–1023px viewports; the row scrolls
+                  (never wraps or clips) with tighter md padding on the tabs
+                  themselves. This IS the "different layout" the old six-tab
+                  ceiling comment in navigation.test.ts demanded. */}
+              <div
+                className={cn(
+                  'no-scrollbar mx-auto flex w-full max-w-page items-stretch overflow-x-auto',
+                  PAGE_GUTTER,
+                )}
+              >
                 {desktopNav}
               </div>
             </div>

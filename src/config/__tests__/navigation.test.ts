@@ -47,13 +47,15 @@ describe('navigation config', () => {
 });
 
 describe('INTENT_NAV', () => {
-  it('has six intents with unique ids and routes', () => {
-    // Six is the ceiling: the desktop row is one flex line shared with the
-    // search field across 11 locales, and every label is held to <=11 chars
-    // below. A seventh needs a different layout, not a seventh entry.
-    expect(INTENT_NAV).toHaveLength(6);
-    expect(new Set(INTENT_NAV.map((i) => i.id)).size).toBe(6);
-    expect(new Set(INTENT_NAV.map((i) => i.to)).size).toBe(6);
+  it('has seven intents with unique ids and routes', () => {
+    // Seven is the ceiling under the CURRENT layout contract: the desktop row
+    // is its own full-width line (not shared with the search field), tabs
+    // tighten to px-3 below lg, and the row scrolls horizontally instead of
+    // wrapping (Header.tsx). Every label is still held to <=11 chars below.
+    // An eighth needs another layout change, not an eighth entry.
+    expect(INTENT_NAV).toHaveLength(7);
+    expect(new Set(INTENT_NAV.map((i) => i.id)).size).toBe(7);
+    expect(new Set(INTENT_NAV.map((i) => i.to)).size).toBe(7);
   });
 
   it('never uses a 2-letter first path segment', () => {
@@ -263,6 +265,7 @@ describe('INTENT_TRACK', () => {
     // not do. Add a row here only for a genuinely 1:1 intent.
     const ONE_TO_ONE: Record<string, keyof typeof ROUTE_BULLET_MAP> = {
       shop: 'marketplace',
+      glossary: 'tag',
     };
     for (const [intentId, type] of Object.entries(ONE_TO_ONE)) {
       expect(
@@ -279,6 +282,7 @@ describe('findActiveIntent', () => {
     expect(findActiveIntent('/venues/some-bar')?.id).toBe('going-out');
     expect(findActiveIntent('/city/berlin')?.id).toBe('travelling');
     expect(findActiveIntent('/community/groups')?.id).toBe('meet');
+    expect(findActiveIntent('/tags/bear-bar')?.id).toBe('glossary');
   });
 
   it('returns undefined off an intent route, so the mode fallback applies', () => {

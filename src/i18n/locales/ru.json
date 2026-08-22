@@ -1904,6 +1904,11 @@
         "label": "[RU] Search everything",
         "subtitle": "[RU] Every line meets here"
       }
+    },
+    "glossary": {
+      "eyebrow": "[RU] Glossary",
+      "title": "[RU] Know the words",
+      "seeAll": "[RU] All terms"
     }
   },
   "header": {
@@ -1940,12 +1945,15 @@
       "personalities": "Личности",
       "hotels": "Отели",
       "help": "Помощь",
-      "tags": "Теги",
       "history": "История",
       "guides": "Гиды",
       "trips": "Поездки",
       "organizations": "Организации",
-      "wishlists": "Списки желаний"
+      "wishlists": "Списки желаний",
+      "tags": "[RU] Glossary",
+      "tagsAll": "[RU] All terms",
+      "tagsInteractions": "[RU] Substance safety",
+      "tagsStiGuide": "[RU] STI guide"
     },
     "intents": {
       "goingOut": {
@@ -1973,7 +1981,11 @@
         "subtitle": "Книги, одежда, искусство и подарки"
       },
       "sheetHeading": "Что вас интересует?",
-      "browseHeading": "Смотреть всё"
+      "browseHeading": "Смотреть всё",
+      "glossary": {
+        "label": "[RU] Glossary",
+        "subtitle": "[RU] What every term, flag and code means"
+      }
     },
     "userMenu": {
       "myTrips": "Мои поездки",
@@ -4494,11 +4506,20 @@
       "notOneLaw": "Это не один закон. Статус фиксируется по каждой стране отдельно.",
       "seeByCountry": "Посмотреть статус по странам",
       "spansAllRights": "Это целая область права, а не один закон. Мы отслеживаем 18 отдельных прав по каждой стране.",
-      "seeAllRights": "Посмотреть все 18 прав по странам"
+      "seeAllRights": "Посмотреть все 18 прав по странам",
+      "seeAllInSearch": "[RU] See all in search"
     },
     "flagWall": {
       "eyebrow": "Символы",
       "title": "Флаги"
+    },
+    "preview": {
+      "adultGated": "[RU] 18+ term. Open the entry to confirm your age.",
+      "open": "[RU] Read the entry"
+    },
+    "fromGlossary": {
+      "title": "[RU] From the glossary",
+      "all": "[RU] All terms"
     }
   },
   "village": {

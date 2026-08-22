@@ -1876,6 +1876,11 @@
         "label": "[FR] Search everything",
         "subtitle": "[FR] Every line meets here"
       }
+    },
+    "glossary": {
+      "eyebrow": "[FR] Glossary",
+      "title": "[FR] Know the words",
+      "seeAll": "[FR] All terms"
     }
   },
   "header": {
@@ -1912,12 +1917,15 @@
       "personalities": "Personnalités",
       "hotels": "Hôtels",
       "help": "Aide",
-      "tags": "Tags",
       "history": "Histoire",
       "guides": "Guides",
       "trips": "Voyages",
       "organizations": "Organisations",
-      "wishlists": "Listes de souhaits"
+      "wishlists": "Listes de souhaits",
+      "tags": "[FR] Glossary",
+      "tagsAll": "[FR] All terms",
+      "tagsInteractions": "[FR] Substance safety",
+      "tagsStiGuide": "[FR] STI guide"
     },
     "intents": {
       "goingOut": {
@@ -1945,7 +1953,11 @@
         "subtitle": "Livres, mode, art et cadeaux"
       },
       "sheetHeading": "Que cherchez-vous ?",
-      "browseHeading": "Tout parcourir"
+      "browseHeading": "Tout parcourir",
+      "glossary": {
+        "label": "[FR] Glossary",
+        "subtitle": "[FR] What every term, flag and code means"
+      }
     },
     "userMenu": {
       "myTrips": "Mes voyages",
@@ -4464,11 +4476,20 @@
       "notOneLaw": "Il ne s'agit pas d'une seule loi. Le statut est établi pays par pays.",
       "seeByCountry": "Voir le statut par pays",
       "spansAllRights": "Il s'agit de tout un domaine du droit, pas d'une seule loi. Nous suivons 18 droits distincts, pays par pays.",
-      "seeAllRights": "Voir les 18 droits par pays"
+      "seeAllRights": "Voir les 18 droits par pays",
+      "seeAllInSearch": "[FR] See all in search"
     },
     "flagWall": {
       "eyebrow": "Symboles",
       "title": "Les drapeaux"
+    },
+    "preview": {
+      "adultGated": "[FR] 18+ term. Open the entry to confirm your age.",
+      "open": "[FR] Read the entry"
+    },
+    "fromGlossary": {
+      "title": "[FR] From the glossary",
+      "all": "[FR] All terms"
     }
   },
   "village": {
