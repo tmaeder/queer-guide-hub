@@ -1,6 +1,10 @@
 // src/components/rights/RightsLedger.tsx
 import { useTranslation } from 'react-i18next';
-import { RIGHT_SECTION_ORDER, RIGHT_SECTION_LABEL } from '@/lib/rights/rightsCatalog';
+import {
+  RIGHT_SECTION_ORDER,
+  RIGHT_SECTION_LABEL,
+  topicListLabel,
+} from '@/lib/rights/rightsCatalog';
 import type { RightWorldSummary } from '@/lib/rights/rightsWorldSummary';
 
 /**
@@ -8,20 +12,13 @@ import type { RightWorldSummary } from '@/lib/rights/rightsWorldSummary';
  * Compresses the former 2-col card grid to roughly half its height while
  * keeping every anchor (`/rights#<slug>`) and every honesty rule — an
  * uncounted right renders without a number rather than being dropped.
+ *
+ * The marriage / civil-union label disambiguation lived here as a private
+ * const until the map's line selector needed exactly the same fix and did not
+ * get it — shipping two adjacent buttons both reading "Same-sex unions". It is
+ * `topicListLabel` in the catalog now, so the next flat list of topics cannot
+ * repeat that.
  */
-
-/**
- * Two topics share `labelKey: 'unions'` in the catalog — on the country card
- * they render inside one bespoke union block, so the collision never showed.
- * A flat per-right list produces two rows both reading "Same-sex unions", with
- * different numbers, which looks like a data error. Disambiguated here rather
- * than in the catalog: the country card's combined block is still correct for
- * its own layout.
- */
-const SUMMARY_LABEL: Record<string, string> = {
-  marriage: 'Marriage equality',
-  'civil-union': 'Civil unions',
-};
 
 export function RightsLedger({ summary }: { summary: RightWorldSummary[] }) {
   const { t } = useTranslation();
@@ -52,10 +49,7 @@ export function RightsLedger({ summary }: { summary: RightWorldSummary[] }) {
                     className="flex items-center gap-4 border-b border-border py-2 scroll-mt-24"
                   >
                     <Icon size={16} aria-hidden="true" className="shrink-0" />
-                    <span className="min-w-0 flex-1 font-medium">
-                      {SUMMARY_LABEL[topic.slug] ??
-                        t(`country.rights.${topic.labelKey}`, topic.labelDefault)}
-                    </span>
+                    <span className="min-w-0 flex-1 font-medium">{topicListLabel(topic, t)}</span>
                     {uncounted ? (
                       // WITHOUT a number rather than dropped: an omitted right
                       // reads as "this does not exist"; an uncounted one reads
