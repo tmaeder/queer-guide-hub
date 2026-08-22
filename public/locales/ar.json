@@ -1931,7 +1931,8 @@
       "tags": "[AR] Glossary",
       "tagsAll": "[AR] All terms",
       "tagsInteractions": "[AR] Substance safety",
-      "tagsStiGuide": "[AR] STI guide"
+      "tagsStiGuide": "[AR] STI guide",
+      "transRights": "حقوق العابرين جنسيًا"
     },
     "intents": {
       "goingOut": {

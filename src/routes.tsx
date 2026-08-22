@@ -40,6 +40,7 @@ const Wishlists = lazyRetry(() => import('./pages/Wishlists'));
 const GoingOut = lazyRetry(() => import('./pages/intent/GoingOut'));
 const RightsIntent = lazyRetry(() => import('./pages/intent/Rights'));
 const RightsSources = lazyRetry(() => import('./pages/rights/RightsSources'));
+const TransRights = lazyRetry(() => import('./pages/rights/TransRights'));
 const TagsIndex = lazyRetry(() => import('./pages/TagsIndex'));
 const TagDetail = lazyRetry(() => import('./pages/TagDetail'));
 const SubstanceInteractionsPage = lazyRetry(() => import('./pages/SubstanceInteractionsPage'));
@@ -738,6 +739,7 @@ export const AppRoutes = () => {
                       at 17 unconditionally. A param here would tie at 17 and
                       resolve to NotFound for an unknown "locale"; see rule 2. */}
                   <Route path="rights/sources" element={<RightsSources />} />
+                  <Route path="rights/trans" element={<TransRights />} />
                   {/* /support was the org-directory slice of /help wrapped in
                     intent chrome: same hook, same `role: 'support'` filter, and its
                     own crisis band was just a link to /help. Its two unique pieces

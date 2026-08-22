@@ -379,6 +379,45 @@ export function useAllCountriesRightsFull() {
 }
 
 /**
+ * The TRANS fetch: the wide rights payload plus the two TGEU columns.
+ *
+ * A third select literal rather than widening RIGHTS_SELECT_COLUMNS, following
+ * the same reasoning as the narrow/wide split above: /rights and /travel would
+ * otherwise download two more jsonb columns on 250 rows to render pages that
+ * never read them. Its own query key keeps the caches independent.
+ */
+export const TRANS_RIGHTS_SELECT_COLUMNS =
+  `${RIGHTS_SELECT_COLUMNS}, trans_violence_documented, trans_rights_index` as const;
+
+export interface TransRightsCountry extends RightsCountry {
+  /**
+   * Fetched by RIGHTS_SELECT_COLUMNS but not declared on `RightsCountry`, which
+   * names only the columns /travel reads. Declared here because this page reads
+   * the recognition requirements field by field rather than through the verdict.
+   */
+  lgbti_gender_recognition: Record<string, unknown> | null;
+  /** TGEU Trans Murder Monitoring aggregates. `{}` means no recorded case. */
+  trans_violence_documented: Record<string, unknown> | null;
+  /** TGEU Trans Rights Index. `{}` means OUT OF SCOPE, not a score of zero. */
+  trans_rights_index: Record<string, unknown> | null;
+}
+
+export function useAllCountriesTransRights() {
+  return useQuery({
+    queryKey: ['intent-rights-countries', 'trans'],
+    staleTime: 600_000,
+    queryFn: async (): Promise<TransRightsCountry[]> => {
+      const { data, error } = await supabase
+        .from('countries')
+        .select(TRANS_RIGHTS_SELECT_COLUMNS)
+        .order('name', { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as unknown as TransRightsCountry[];
+    },
+  });
+}
+
+/**
  * Cities worth recommending as destinations.
  *
  * Deliberately delegates to the existing `fetchTrendingCities`, which leads with

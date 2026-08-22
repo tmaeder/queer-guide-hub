@@ -41,6 +41,12 @@ export interface CountrySafety {
   lgbti_same_sex_unions: unknown;
   lgbti_adoption_rights: unknown;
   lgbti_conversion_therapy_regulation: unknown;
+  /**
+   * Already in the fetch above for `computeRightsProfile`; exposed so the
+   * briefing can state the one trans-specific fact a traveller acts on — whether
+   * their documents can be made to match, and what that costs.
+   */
+  lgbti_gender_recognition: unknown;
 }
 
 export interface CrossBorderWarning {
@@ -111,8 +117,10 @@ export function worstCountryOf(countries: readonly CountrySafety[]): CountrySafe
   return [...pool].sort((a, b) => {
     const byVerdict = VERDICT_ORDER[a.verdict] - VERDICT_ORDER[b.verdict];
     if (byVerdict !== 0) return byVerdict;
-    return (a.equality_score ?? Number.POSITIVE_INFINITY) -
-      (b.equality_score ?? Number.POSITIVE_INFINITY);
+    return (
+      (a.equality_score ?? Number.POSITIVE_INFINITY) -
+      (b.equality_score ?? Number.POSITIVE_INFINITY)
+    );
   })[0];
 }
 
@@ -180,15 +188,14 @@ export function useTripSafety(countryIds: string[]) {
       scoreBreakdown: getScoreLabel(c.equality_score),
       criminalized: isCriminalized(c.lgbti_criminalization as Record<string, unknown> | null),
       deathPenalty: hasDeathPenalty(c.lgbti_criminalization as Record<string, unknown> | null),
-      deathPenaltyRisk: deathPenaltyRisk(
-        c.lgbti_criminalization as Record<string, unknown> | null,
-      ),
+      deathPenaltyRisk: deathPenaltyRisk(c.lgbti_criminalization as Record<string, unknown> | null),
       verdict: computeRightsProfile(c as Record<string, unknown>).general.verdict,
       lgbti_criminalization: c.lgbti_criminalization,
       lgbti_employment_protection: c.lgbti_employment_protection,
       lgbti_same_sex_unions: c.lgbti_same_sex_unions,
       lgbti_adoption_rights: c.lgbti_adoption_rights,
       lgbti_conversion_therapy_regulation: c.lgbti_conversion_therapy_regulation,
+      lgbti_gender_recognition: c.lgbti_gender_recognition,
     }));
 
     // Cross-border warnings: flag when traveling between countries with very different scores

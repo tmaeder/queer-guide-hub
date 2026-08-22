@@ -289,6 +289,9 @@ export const INTENT_NAV: IntentDestination[] = [
     // this one, and a second same-name link to the same page is footer noise
     // (and an ambiguous accessible name).
     children: [
+      // Inside activePrefixes, so it needs no DESTINATIONS entry — see the
+      // assertion in src/config/__tests__/navigation.test.ts.
+      { to: '/rights/trans', labelKey: 'header.nav.transRights', fallback: 'Trans rights' },
       { to: '/history', labelKey: 'header.nav.history', fallback: 'History' },
       { to: '/news', labelKey: 'header.nav.news', fallback: 'News' },
     ],

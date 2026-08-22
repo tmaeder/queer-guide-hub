@@ -31,6 +31,7 @@ import { useVenues } from '@/hooks/useVenues';
 import { useEvents } from '@/hooks/useEvents';
 import { useNews } from '@/hooks/useNews';
 import { useMilestonesForCountry } from '@/hooks/useMilestones';
+import { TransSafetyBand } from '@/components/rights/TransSafetyBand';
 import { TripCoveringBanner } from '@/components/trips/TripCoveringBanner';
 import { PlanTripFromHereButton } from '@/components/trips/PlanTripFromHereButton';
 import { PersonalitiesForEntity } from '@/components/discovery/PersonalitiesForEntity';
@@ -206,6 +207,9 @@ export default function CountryDetail() {
           content: (
             <>
               <CountryRightsTab country={country} />
+              {/* Self-hiding on data; see the component header. Placed above the
+                  legal record because it is about the reader's own documents. */}
+              <TransSafetyBand country={country as unknown as Record<string, unknown>} />
               {legalRecord?.length ? (
                 <div id="history" className="mt-10 scroll-mt-8">
                   <h3 className="text-title font-bold leading-tight">
