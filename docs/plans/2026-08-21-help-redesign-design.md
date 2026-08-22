@@ -1,5 +1,22 @@
 # /help redesign — "One plate, one list" (2026-08-21)
 
+**SHIPPED.** #2923 (the redesign), #2926 (the locale keys it dropped — see
+below), #2934 (the regenerated visual baseline). Verified on production: all 14
+`/help` e2e specs green against `https://queer.guide`, the `/help` visual
+baseline passes on CI linux, `/help` holds the page-layout invariant at
+390/768/1440/1920 and its sticky spine clears the header, and `/de/help` renders
+the hand-translated keys with no English leak.
+
+**One incident worth carrying forward:** the redesign merged with every code
+change and _zero_ locale keys. `public/locales/` is a BUILD ARTIFACT —
+`src/i18n/locales/` is canonical and `npm run i18n:sync` regenerates `public/`
+during the build, silently reverting hand edits made to the wrong tree. Nothing
+failed, because both new call sites carry inline English `t()` defaults, so the
+e2e suite stayed green while non-EN locales served English fragments. Edit
+`src/i18n/locales/`, run `i18n:sync`, commit both — and verify what a commit
+actually contains with `git show HEAD --stat` rather than trusting the working
+tree.
+
 Approved concept for restructuring `/help` on the soft design system
 (2026-08-17 re-skin). Goal: same crisis-UX invariants, ~40% less vertical
 height, coherent soft skin. Predecessor: triage-first rebuild #2725
