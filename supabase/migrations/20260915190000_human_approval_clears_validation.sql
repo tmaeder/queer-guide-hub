@@ -180,87 +180,57 @@ $$;
 -- The trigger fires on a TRANSITION, so it cannot reach rows that are already
 -- sitting at review_status='approved'. This is the one-shot.
 --
--- Events are dispositioned by their own date, not flipped wholesale: a row
--- approved 40 days ago was approved as an UPCOMING event, and publishing it
--- now that it has happened is not what the reviewer agreed to. Undated rows
--- are rejected too — commit_event_staging_item RAISEs event_missing_start_date
--- on them, so promoting one only converts a silent strand into a noisy one.
--- Everything else is honoured as approved.
+-- EVERY stranded row is published, past-dated events included (user decision,
+-- 2026-08-22). An earlier draft dispositioned events by their own date on the
+-- reasoning that a row approved 40 days ago was approved as an *upcoming*
+-- event. That was rejected, and the corpus is why: `events` deliberately holds
+-- ~36.5k past events (the Wayback import), so a past date is not a defect here
+-- and "already happened" is not grounds to discard a human approval. The 14
+-- live rows are all gaycities pride/festival imports flagged
+-- W_PRIDE_TIME_WINDOW + W_PRIDE_NOT_SATURDAY + W_NO_GEO, and 5 of them had
+-- ended by the time this was written.
+--
+-- Undated rows are promoted too rather than pre-rejected: commit RAISEs
+-- event_missing_start_date and the batch handler records that on the row, so
+-- the commit path dispositions them with a real reason instead of this
+-- migration guessing.
 
 DO $$
 DECLARE
-  v_events_rejected int := 0;
-  v_events_cleared  int := 0;
-  v_other_cleared   int := 0;
+  v_cleared int := 0;
 BEGIN
-  CREATE TEMP TABLE _stranded ON COMMIT DROP AS
-  SELECT
-    s.id,
-    s.target_table,
-    s.ai_validation_status AS was_status,
-    -- Guarded cast: one malformed date string must not abort the migration.
-    CASE
-      WHEN COALESCE(NULLIF(s.normalized_data->>'end_date', ''),
-                    NULLIF(s.normalized_data->>'start_date', '')) ~ '^\d{4}-\d{2}-\d{2}'
-      THEN COALESCE(NULLIF(s.normalized_data->>'end_date', ''),
-                    NULLIF(s.normalized_data->>'start_date', ''))::timestamptz
-    END AS ends_at
-  FROM public.ingestion_staging s
-  WHERE s.disposition = 'pending'
-    AND s.review_status = 'approved'
-    AND s.ai_validation_status IN ('pending', 'needs_review');
-
-  -- (a) past-dated or undated events → reject, with the reason on the row
-  UPDATE public.ingestion_staging s
-     SET review_status = 'rejected',
-         disposition   = 'rejected',
-         review_notes  = COALESCE(s.review_notes || ' | ', '')
-                         || 'stranded-repair: approved by a human but never drained '
-                         || '(ai_validation_status was ' || s.ai_validation_status
-                         || '); the event date has passed, so it is rejected rather than published',
-         updated_at    = now()
-    FROM _stranded x
-   WHERE s.id = x.id
-     AND x.target_table = 'events'
-     AND (x.ends_at IS NULL OR x.ends_at < now());
-  GET DIAGNOSTICS v_events_rejected = ROW_COUNT;
-
-  -- (b) everything still live → honour the approval
-  UPDATE public.ingestion_staging s
-     SET ai_validation_status = 'approved',
-         ai_validation_result = jsonb_set(
-           COALESCE(s.ai_validation_result, '{}'::jsonb),
-           '{human_override}',
-           jsonb_build_object(
-             'from',   s.ai_validation_status,
-             'by',     s.reviewed_by,
-             'at',     now(),
-             'reason', 'stranded-repair: approval recorded before the promotion trigger existed'
+  WITH cleared AS (
+    UPDATE public.ingestion_staging s
+       SET ai_validation_status = 'approved',
+           ai_validation_result = jsonb_set(
+             COALESCE(s.ai_validation_result, '{}'::jsonb),
+             '{human_override}',
+             jsonb_build_object(
+               'from',   s.ai_validation_status,
+               'by',     s.reviewed_by,
+               'at',     now(),
+               'reason', 'stranded-repair: approval recorded before the promotion trigger existed'
+             ),
+             true
            ),
-           true
-         ),
-         updated_at = now()
-    FROM _stranded x
-   WHERE s.id = x.id
-     AND s.disposition = 'pending';
-
-  SELECT count(*) FILTER (WHERE x.target_table = 'events'),
-         count(*) FILTER (WHERE x.target_table <> 'events')
-    INTO v_events_cleared, v_other_cleared
-    FROM _stranded x
-    JOIN public.ingestion_staging s ON s.id = x.id
-   WHERE s.ai_validation_status = 'approved';
-
-  -- The rejections are logged by the existing trg_staging_review_audit, which
-  -- fires on review_status transitions. The promotions move no status column,
-  -- so they need their own record.
+           updated_at = now()
+     WHERE s.disposition = 'pending'
+       AND s.review_status = 'approved'
+       AND s.ai_validation_status IN ('pending', 'needs_review')
+    -- RETURNING sees the NEW row, so the pre-repair value is read back out of
+    -- the stamp rather than from s.ai_validation_status (OLD in RETURNING is
+    -- PG18; this runs on 17).
+    RETURNING s.id,
+              s.target_table,
+              s.ai_validation_result->'human_override'->>'from' AS was_status
+  )
+  -- The promotion moves no status column, so trg_staging_review_audit does not
+  -- fire for it and it needs its own record.
   INSERT INTO public.ingestion_events (staging_id, stage, old_status, new_status, actor, payload)
-  SELECT x.id, 'validate', x.was_status, 'approved', 'migration:20260915190000',
-         jsonb_build_object('repair', 'stranded_human_approved', 'target_table', x.target_table)
-  FROM _stranded x
-  JOIN public.ingestion_staging s ON s.id = x.id
-  WHERE s.ai_validation_status = 'approved';
+  SELECT c.id, 'validate', c.was_status, 'approved', 'migration:20260915190000',
+         jsonb_build_object('repair', 'stranded_human_approved', 'target_table', c.target_table)
+  FROM cleared c;
 
-  RAISE NOTICE 'stranded_human_approved repair: % event(s) rejected as past-dated, % event(s) cleared, % other row(s) cleared',
-    v_events_rejected, v_events_cleared, v_other_cleared;
+  GET DIAGNOSTICS v_cleared = ROW_COUNT;
+  RAISE NOTICE 'stranded_human_approved repair: % row(s) cleared to proceed', v_cleared;
 END $$;
