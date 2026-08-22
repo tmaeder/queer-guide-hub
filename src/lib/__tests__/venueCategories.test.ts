@@ -28,7 +28,7 @@ describe('venue category vocabulary', () => {
     // Points at the LATEST migration that (re)defines the constraint — the CHECK
     // was re-cut 2026-08-21 when `organization` was retired from the vocabulary.
     const dbValues = checkValues(
-      '20260915130000_venue_vocabulary_decisions.sql',
+      '20260915140000_venue_vocabulary_decisions.sql',
       'ADD CONSTRAINT venues_category_check',
     );
     expect([...VENUE_CATEGORIES].sort()).toEqual([...dbValues].sort());

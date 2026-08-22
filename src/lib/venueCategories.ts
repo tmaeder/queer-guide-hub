@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next';
  * `bookstore` — none of them legal — so choosing them produced a hard constraint
  * violation on save. Other copies offered `gym`/`salon` combinations matching ~2 rows total.
  *
- * `organization` was retired 2026-08-21 (migration 20260915130000): a category answers
+ * `organization` was retired 2026-08-21 (migration 20260915140000): a category answers
  * "what kind of place is this", and an organization is not a kind of place — the
  * organizations table and the nonvenue_candidate flow own that distinction.
  *
