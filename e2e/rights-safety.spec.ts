@@ -249,8 +249,17 @@ test('the map renders and is labelled', async ({ page }) => {
   const mapSection = page.locator('#map');
   const map = mapSection.getByRole('img', { name: /World map/i });
   await expect(map).toBeVisible({ timeout: 30_000 });
-  const label = await map.getAttribute('aria-label');
-  expect(label, `map aria-label was ${JSON.stringify(label)}`).toMatch(/\d/);
+  // POLL the label, don't read it once. The container renders immediately and
+  // is visible long before the 250-country query resolves, and until it does
+  // the map says exactly that — "no countries measured yet" — rather than
+  // inventing counts it does not have (`buildMapAriaLabel`). So a single read
+  // after `toBeVisible` races the fetch: on a cold prod load it caught the
+  // empty state at 4.3s three times running, while the same page read at 12s
+  // had the full counts. The empty label is correct behaviour and must stay,
+  // so the test waits for the populated one instead of asserting the race away.
+  await expect
+    .poll(async () => (await map.getAttribute('aria-label')) ?? '', { timeout: 30_000 })
+    .toMatch(/\d/);
 });
 
 test('the trans lens changes the reading', async ({ page }) => {
