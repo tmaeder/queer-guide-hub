@@ -437,7 +437,15 @@ function siegPayloads() {
     if (!title || !start) continue;
 
     const adult = r.category === 'sex';
-    const inferred = P.inferEventType(title, d.subtitle, d.description, d.hashtags?.join(' '));
+    // Layered, not flat: title outranks prose outranks hashtags, and `pride`
+    // is honoured only from the title. A flat scan typed a concert whose
+    // blurb mentioned the CSD stage, a kinky sex party tagged #pride, a
+    // museum tour and a workshop ABOUT the CSD attack all as Pride events.
+    const inferred = P.inferEventTypeLayered(
+      title,
+      [d.subtitle, d.description].filter(Boolean).join(' '),
+      (d.hashtags ?? []).join(' '),
+    );
 
     out.push({
       sourceId: `${r.category}/${r.slug}/${r.date}/${r.time}`,
@@ -996,9 +1004,25 @@ async function phaseVerify() {
     select count(*)::int n from ingestion_staging
     where source_name in ${SOURCES} and disposition = 'rejected';`);
 
-  ok &= await q('staging rows still pending', `
+  // A row parked at review_status='pending_review' is NOT stuck — the commit
+  // batch deliberately excludes it and a human owns it. Counting it as a
+  // failure conflates "waiting for a person" with "the pipeline stalled",
+  // which is the one thing this assertion exists to detect.
+  ok &= await q('staging rows stalled (excludes human review)', `
     select count(*)::int n from ingestion_staging
-    where source_name in ${SOURCES} and disposition = 'pending';`);
+    where source_name in ${SOURCES} and disposition = 'pending'
+      and coalesce(review_status,'auto') not in ('pending_review','rejected');`);
+
+  const review = rows(await sql(`
+    select source_name, ai_validation_status, dedup_status, count(*)::int n
+    from ingestion_staging
+    where source_name in ${SOURCES} and disposition = 'pending'
+      and review_status = 'pending_review'
+    group by 1,2,3 order by 4 desc;`));
+  if (review.length) {
+    console.log('  -- awaiting human review (expected, not a failure):');
+    console.table(review);
+  }
 
   const per = rows(await sql(`
     select s.source_slug, count(*)::int n, min(e.start_date)::date lo, max(e.start_date)::date hi

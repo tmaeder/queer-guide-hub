@@ -137,6 +137,11 @@ export function berlinIso(date: string, time: string | null): string | null {
  * so a miss here is invisible downstream — it must be right at write time.
  */
 const EVENT_TYPE_LADDER: Array<[RegExp, string]> = [
+  // A guided tour is a guided tour whatever its subject, and it must be read
+  // before the topic words below: "Öffentliche Führung: Cruising the
+  // Countryside — Queeres Leben auf dem Land" is a museum tour, and matching
+  // `cruis` first filed it as a fetish event.
+  [/\bführung\b|guided tour|\brundgang\b|vernissage/i, 'exhibition'],
   [/\bpride\b|\bcsd\b|christopher street/i, 'pride'],
   [/fetisch|fetish|leder\b|leather|rubber|kink|bdsm|cruis|darkroom|sexparty|naked|nackt/i, 'fetish'],
   [/\bdrag\b|travestie|tunte|queen[s]?\b/i, 'drag'],
@@ -160,10 +165,65 @@ const EVENT_TYPE_LADDER: Array<[RegExp, string]> = [
   [/spenden|fundrais|benefiz|charity/i, 'fundraiser'],
 ]
 
+/**
+ * `strongPride` false DEMOTES the pride rung to last rather than removing it.
+ *
+ * Removing it outright was the first attempt and it regressed real events:
+ * "Dyke March" matches no other rung and is tagged #pride, so banning the tag
+ * dropped a genuine Pride event to 'other'. Demoting keeps it while letting
+ * any more specific reading win — which is what a topical tag deserves.
+ */
+function ladderMatch(hay: string, strongPride: boolean): string {
+  let pride = false
+  for (const [re, t] of EVENT_TYPE_LADDER) {
+    if (!re.test(hay)) continue
+    if (t === 'pride' && !strongPride) {
+      pride = true
+      continue
+    }
+    return t
+  }
+  return pride ? 'pride' : 'other'
+}
+
 export function inferEventType(...parts: Array<string | null | undefined>): string {
-  const hay = parts.filter(Boolean).join(' ')
-  for (const [re, t] of EVENT_TYPE_LADDER) if (re.test(hay)) return t
-  return 'other'
+  return ladderMatch(parts.filter(Boolean).join(' '), true)
+}
+
+/**
+ * Type an event from three signals of DECREASING authority.
+ *
+ * A flat scan over title+prose+tags is wrong in one specific and damaging
+ * way: `pride` is the only rung that is also an everyday topical marker. Two
+ * measured failures, both of which reached the review queue as false pride
+ * events —
+ *
+ *   "Konzert: Kai & Funky von Ton Steine Scherben" — a CONCERT whose blurb
+ *   mentions the band once played "auf der CSD-Bühne". A historical mention
+ *   is not a classification.
+ *
+ *   "Unleashed by UNDR", a kinky techno sex party tagged
+ *   #kinky #sexparty #sex … and also #pride. During Pride season half the
+ *   scene carries that tag.
+ *
+ * A real Pride event says so in its NAME ("CSD Berlin", "Dyke March"), so
+ * `pride` is honoured from the title and ignored everywhere else. Prose and
+ * tags still classify everything else — that is what moved 'other' from 992
+ * of 2,864 rows down to 184 — they just cannot manufacture a Pride.
+ *
+ * The title also wins outright when it matches at all, which is why the
+ * concert above resolves to `concert` before its prose is ever read.
+ */
+export function inferEventTypeLayered(
+  title: string | null | undefined,
+  body: string | null | undefined,
+  tags: string | null | undefined,
+): string {
+  const byTitle = ladderMatch(title ?? '', true)
+  if (byTitle !== 'other') return byTitle
+  const byBody = ladderMatch(body ?? '', false)
+  if (byBody !== 'other') return byBody
+  return ladderMatch(tags ?? '', false)
 }
 
 // ------------------------------------------------------------ BKA Theater

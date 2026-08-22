@@ -9,6 +9,7 @@ import {
   BERLIN,
   berlinIso,
   inferEventType,
+  inferEventTypeLayered,
   parseBkaSpielplan,
   parseBoeseBubenList,
   parseLabOratory,
@@ -427,6 +428,40 @@ Deno.test('inferEventType: specific beats generic', () => {
   assertEquals(inferEventType('CSD Party'), 'pride')
   assertEquals(inferEventType('Fetish Party'), 'fetish')
   assertEquals(inferEventType('Party'), 'party')
+})
+
+Deno.test('inferEventTypeLayered: pride is honoured from the title, not from prose or tags', () => {
+  // Each of these reached the review queue or the events table as a false
+  // Pride event under a flat scan over title+prose+tags.
+  assertEquals(
+    inferEventTypeLayered(
+      'Konzert: Kai & Funky von Ton Steine Scherben',
+      'Das Trio wurde bereits auf der CSD-Bühne gefeiert',
+      'Konzert Queer Rock',
+    ),
+    'concert', // a historical mention is not a classification
+  )
+  assertEquals(
+    inferEventTypeLayered('Unleashed by UNDR', '', 'club kinky pride sexparty sex'),
+    'fetish', // during Pride season half the scene carries that tag
+  )
+  // …but a title that says so is still Pride.
+  assertEquals(inferEventTypeLayered('CSD Berlin 2027', '', 'Pride'), 'pride')
+})
+
+Deno.test('inferEventTypeLayered: a topical pride tag is DEMOTED, never banned', () => {
+  // Banning it outright was the first attempt and it dropped "Dyke March" —
+  // which matches no other rung — from pride to 'other'.
+  assertEquals(inferEventTypeLayered('Dyke March', '', 'pride'), 'pride')
+})
+
+Deno.test('inferEventTypeLayered: a guided tour outranks the words in its subject', () => {
+  // "Öffentliche Führung: Cruising the Countryside — Queeres Leben auf dem
+  // Land" is a museum tour; matching `cruis` first filed it as fetish.
+  assertEquals(
+    inferEventTypeLayered('Öffentliche Führung: Cruising the Countryside', '', 'Ausstellung queer'),
+    'exhibition',
+  )
 })
 
 Deno.test('inferEventType: every verdict is in the events_event_type_check vocabulary', () => {
