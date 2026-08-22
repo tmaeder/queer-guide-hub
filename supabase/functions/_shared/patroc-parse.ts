@@ -62,8 +62,6 @@ export interface PatrocEvent {
   googlePlaceId: string | null
 }
 
-const CITY_RE = /https:\/\/www\.patroc\.com\/gay\/([a-z-]+)\//
-
 /** The fixed city catalogue: slug -> country ISO2 + IANA timezone.
  * Gran Canaria is the one non-obvious pair: Canary Islands are Atlantic/Canary,
  * an hour off Europe/Madrid. */

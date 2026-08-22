@@ -265,16 +265,31 @@ function eventToNormalized(rec) {
       ? rec.venueName
       : undefined;
 
-  const start = rec.startTime ? `${rec.startDate}T${rec.startTime}:00` : rec.startDate;
+  // Patroc writes after-midnight starts as "24:30" (half past midnight the
+  // NEXT day) — a raw `T24:30:00` is an invalid timestamp and got four real
+  // parties rejected with E_INVALID_START_DATE. Roll hours ≥24 into the next
+  // calendar day.
+  const composeTs = (date, time) => {
+    if (!time) return date;
+    let [h, m] = time.split(':').map(Number);
+    const d = new Date(`${date}T00:00:00Z`);
+    if (h >= 24) {
+      d.setUTCDate(d.getUTCDate() + Math.floor(h / 24));
+      h = h % 24;
+    }
+    return `${d.toISOString().slice(0, 10)}T${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00`;
+  };
+
+  const start = composeTs(rec.startDate, rec.startTime);
   let end;
   if (rec.endDate) {
-    end = rec.endTime ? `${rec.endDate}T${rec.endTime}:00` : rec.endDate;
+    end = composeTs(rec.endDate, rec.endTime);
   } else if (rec.endTime && rec.startTime) {
     // Overnight party: 20:00 – 10:00 with a single dtstart date.
     const overnight = rec.endTime < rec.startTime;
     const d = new Date(`${rec.startDate}T00:00:00Z`);
     if (overnight) d.setUTCDate(d.getUTCDate() + 1);
-    end = `${d.toISOString().slice(0, 10)}T${rec.endTime}:00`;
+    end = composeTs(d.toISOString().slice(0, 10), rec.endTime);
   }
 
   return {
