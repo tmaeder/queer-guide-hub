@@ -35,20 +35,21 @@ const KUNSTWERK = venue({
   country_id: 'de-uuid',
 })
 
-Deno.test('query carries every locality fact the row already has', () => {
-  assertEquals(
-    buildForwardQuery(KUNSTWERK, 'Germany', true),
-    'Möhnestraße 59, 59755, Arnsberg, Germany',
-  )
+Deno.test('query carries the row locality facts — but never the country name', () => {
+  // The country is a countrycodes= FILTER, not a search term. Putting the name
+  // in q took four findable prod addresses to zero results (see geocode-guard.ts).
+  assertEquals(buildForwardQuery(KUNSTWERK, true), 'Möhnestraße 59, 59755, Arnsberg')
 })
 
 Deno.test('a component already spelled out in the address is not repeated', () => {
   const v = venue({ address: 'Möhnestraße 59, 59755 Arnsberg', city: 'Arnsberg', postal_code: '59755' })
-  assertEquals(buildForwardQuery(v, 'Germany', true), 'Möhnestraße 59, 59755 Arnsberg, Germany')
+  assertEquals(buildForwardQuery(v, true), 'Möhnestraße 59, 59755 Arnsberg')
 })
 
 Deno.test('the postal-free retry is a recall retry, not a looser query', () => {
-  assertEquals(buildForwardQuery(KUNSTWERK, 'Germany', false), 'Möhnestraße 59, Arnsberg, Germany')
+  assertEquals(buildForwardQuery(KUNSTWERK, false), 'Möhnestraße 59, Arnsberg')
+  // Rung 2 must actually DIFFER from rung 1, or the retry is a wasted request.
+  assert(buildForwardQuery(KUNSTWERK, false) !== buildForwardQuery(KUNSTWERK, true))
 })
 
 Deno.test('the Oberhausen answer is refused by the row Arnsberg postal code', () => {
@@ -82,13 +83,15 @@ Deno.test('country contradiction refuses, unknown country does not', () => {
   assertFalse(countryContradicts('DE', null)) // hit carries no country_code
 })
 
-Deno.test('a bare street with no locality anywhere is not asked at all', () => {
-  const bare = venue({ address: 'Möhnestraße 59' })
-  assertFalse(hasLocalityContext(bare, null))
-  assert(hasLocalityContext(venue({ address: 'Möhnestraße 59', city: 'Arnsberg' }), null))
-  assert(hasLocalityContext(venue({ address: 'Möhnestraße 59', postal_code: '59755' }), null))
-  assert(hasLocalityContext(bare, 'Germany'))
-  assert(hasLocalityContext(venue({ address: 'Möhnestraße 59, Arnsberg' }), null))
+Deno.test('a bare street with no locality is not asked at all', () => {
+  assertFalse(hasLocalityContext(venue({ address: 'Möhnestraße 59' })))
+  assert(hasLocalityContext(venue({ address: 'Möhnestraße 59', city: 'Arnsberg' })))
+  assert(hasLocalityContext(venue({ address: 'Möhnestraße 59', postal_code: '59755' })))
+  assert(hasLocalityContext(venue({ address: 'Möhnestraße 59, Arnsberg' })))
+  // A country is NOT locality, even though it is enforced via countrycodes=.
+  // "Storegade 11" restricted to Denmark is still every Danish town's main
+  // street — that ambiguity put Cafe Davids 210 km from Vordingborg.
+  assertFalse(hasLocalityContext(venue({ address: 'Storegade 11', country: 'DK', country_id: 'dk-uuid' })))
 })
 
 Deno.test('a settlement-level hit is refused — it passes both other guards', () => {

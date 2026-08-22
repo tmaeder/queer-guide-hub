@@ -261,14 +261,14 @@ async function forwardGeocode(
   v: GeoVenue,
 ): Promise<ForwardOutcome> {
   const country = await resolveVenueCountry(supabase, v)
-  if (!hasLocalityContext(v, country?.name ?? null)) {
+  if (!hasLocalityContext(v)) {
     return { ok: false, reason: 'insufficient_context', country }
   }
 
-  const queries = [buildForwardQuery(v, country?.name ?? null, true)]
+  const queries = [buildForwardQuery(v, true)]
   // Dropping the postcode from the free-text q is a RECALL retry, not a
   // loosening: the postal guard below still runs against whatever comes back.
-  const loose = buildForwardQuery(v, country?.name ?? null, false)
+  const loose = buildForwardQuery(v, false)
   if (loose !== queries[0]) queries.push(loose)
 
   let lastReason = 'no_results'

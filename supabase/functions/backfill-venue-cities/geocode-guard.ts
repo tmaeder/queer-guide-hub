@@ -94,11 +94,29 @@ export function isLocalityFallback(hit: { addresstype?: string; class?: string; 
 }
 
 /**
- * Build the query from everything the row already knows, skipping any component
- * the address string already spells out so "Möhnestraße 59, 59755 Arnsberg"
- * does not become "…, 59755, Arnsberg".
+ * Build the query from what the row knows, skipping any component the address
+ * string already spells out so "Möhnestraße 59, 59755 Arnsberg" does not become
+ * "…, 59755, Arnsberg".
+ *
+ * The COUNTRY IS DELIBERATELY ABSENT. Nominatim free-text is conjunctive — every
+ * token you add is a constraint it must satisfy — so a component that does not
+ * parse takes the whole result set to zero. Measured 2026-08-22:
+ *
+ *   "2496 Riva Road, Annapolis"                     -> 1 hit
+ *   "2496 Riva Road, Annapolis, United States"      -> 0
+ *   "2496 Riva Road, 21401, Annapolis"              -> 0
+ *   "2496 Riva Road, 21401, Annapolis, United States" -> 0
+ *
+ * The country belongs in the `countrycodes=` PARAMETER, which is a filter rather
+ * than a search term: it applies the same restriction at zero recall cost. The
+ * first version of this function put the name in `q` and took four findable prod
+ * addresses to no_results.
+ *
+ * The postcode stays a rung-1 term because it disambiguates strongly where it
+ * does parse (it is what separates 59755 Arnsberg from 46049 Oberhausen), and
+ * rung 2 drops it precisely because of the recall cost shown above.
  */
-export function buildForwardQuery(v: GeoVenue, countryName: string | null, withPostal: boolean): string {
+export function buildForwardQuery(v: GeoVenue, withPostal: boolean): string {
   const parts: string[] = []
   const push = (s?: string | null) => {
     const t = (s || '').trim()
@@ -109,17 +127,22 @@ export function buildForwardQuery(v: GeoVenue, countryName: string | null, withP
   push(v.address)
   if (withPostal) push(v.postal_code)
   push(v.city)
-  push(countryName)
   return parts.join(', ')
 }
 
 /**
- * A bare street name with no locality anywhere — not in a column, not as a
- * comma clause in the address — is exactly the query that produced Oberhausen.
- * There is no question to ask, so we don't ask one.
+ * A bare street name with no locality — not in a column, not as a comma clause
+ * in the address — is exactly the query that produced Oberhausen. There is no
+ * question to ask, so we don't ask one.
+ *
+ * A COUNTRY IS NOT LOCALITY, even though it is now enforced via countrycodes=.
+ * "Storegade 11" restricted to Denmark is still ambiguous — Storegade is the
+ * main street of nearly every Danish town, and that ambiguity is what put Cafe
+ * Davids 210 km from Vordingborg. Country narrows the haystack; it does not
+ * identify the needle.
  */
-export function hasLocalityContext(v: GeoVenue, countryName: string | null): boolean {
-  if (v.city?.trim() || normPostal(v.postal_code) || countryName) return true
+export function hasLocalityContext(v: GeoVenue): boolean {
+  if (v.city?.trim() || normPostal(v.postal_code)) return true
   return (v.address || '').includes(',')
 }
 
