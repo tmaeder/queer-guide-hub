@@ -93,7 +93,12 @@ export function RightsMapLegend({
                 className="inline-block h-4 w-4 shrink-0 rounded-badge border border-border-hairline"
                 style={legendSwatchStyle(cls)}
               />
-              <span className="font-display text-title tabular-nums">{counts[cls]}</span>
+              {/* `text-headline`, not `text-title`: rank 4 is Space Grotesk and
+                  never Anton (src/test/__tests__/rankFourFace.test.ts — a
+                  source scan, because the ESLint design blocks can be
+                  silently replaced wholesale). The legend counts want the
+                  display face, so they take the rank that carries it. */}
+              <span className="font-display text-headline tabular-nums">{counts[cls]}</span>
               <span className="text-13 text-muted-foreground">
                 {t(`rights.map.class.${cls}`, MAP_CLASS_LABEL[cls])}
               </span>
