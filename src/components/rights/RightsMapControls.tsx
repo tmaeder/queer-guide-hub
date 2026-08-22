@@ -1,6 +1,8 @@
-import type { CSSProperties } from 'react';
+import { Fragment, useEffect, useRef, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
+import { FilterChip } from '@/components/transit/FilterChip';
+import { TrackSwatch } from '@/components/transit/TrackSwatch';
 import {
   RIGHT_SECTION_ORDER,
   RIGHT_SECTION_LABEL,
@@ -24,13 +26,33 @@ import { TRACK_BG, TRACK_TEXT } from '@/components/transit/routeBulletMap';
  * protection-matrix reading, plus the route-strip legend that reads the
  * result back as counts.
  *
- * Crisis-adjacent page (CLAUDE.md § Design — Crisis & safety pages are
- * animation-free): no `transition-*` / `animate-*` / `duration-*` anywhere
- * in this file, matching HelpHotlines. Track colours are wayfinding, never
- * risk — only the line selector's active station takes a track fill, and it
- * always carries `border-track-ring` (WCAG 1.4.11, fill-vs-ring). The legend
- * is the one place `--destructive` may appear, reserved for the two
- * criminal-exposure-with-death classes.
+ * LAYOUT: one rail, never five rows. The first version gave each of the five
+ * rights families its own labelled row, which cost ~400px on desktop and
+ * ~620px on mobile — more than the map it filters, and a shape no other filter
+ * bar in this app has. Every one of them (events, cities, marketplace, tags)
+ * is at most two rows with a single horizontally-scrolling chip line, and
+ * EventsControlBar's header states the rule: nothing wraps, because a wrapped
+ * row is height subtracted from every screen for the whole session
+ * (CitiesControlBar measured 76px of it). The families survive as inline
+ * `TrackSwatch` dividers — a swatch says in 20px what a row header said in 60.
+ *
+ * MOTION, reconciled with composed primitives. The rule this page holds is
+ * that nothing MOVES: no entrance, no exit, no reveal, no fly-to — someone may
+ * be reading it to decide whether a border is safe to cross. `FilterChip`
+ * bakes in `transition-colors duration-fast`, and that is not motion: it
+ * changes no position, size or opacity of content, only the hover state of the
+ * control under the pointer. So this file composes the shared chip rather than
+ * forking it — a `transition-none` override here would make these the only
+ * chips in the app that snap, invisibly to whoever next edits FilterChip. What
+ * remains banned is the house "chip opens a popover" pattern: PopoverContent
+ * bakes in `zoom-in-95` / `slide-in-from-top-2`, which IS motion, and cannot
+ * be cancelled from a className (tailwind-merge does not know
+ * tailwindcss-animate's `animate-in`).
+ *
+ * Track colours are wayfinding, never risk — only the active station takes a
+ * track fill, and it always carries `border-track-ring` (WCAG 1.4.11,
+ * fill-vs-ring). The legend is the one place `--destructive` may appear,
+ * reserved for the two criminal-exposure-with-death classes.
  */
 
 const LENS_OPTIONS: readonly { value: RightsLens; label: string }[] = [
@@ -72,13 +94,22 @@ export function RightsMapLegend({
   const { t } = useTranslation();
   return (
     <ol
-      className="flex flex-wrap items-end gap-6"
+      // Scrolls, never wraps. At 390px seven classes at ~146px each wrapped to
+      // four rows of ~88px — ~420px, which made this legend the tallest single
+      // block on the page, taller than the filters and taller than the map's
+      // own controls. One line costs ~92px.
+      //
+      // MAP_CLASS_ORDER is most-restrictive-first, so what scrolls off the
+      // right on a phone is "Protected" and "No data" — not the death classes.
+      // That is the correct end to lose on this page, and it is a consequence
+      // of the order, so it is stated here rather than discovered later.
+      className="-mx-1 flex items-end gap-4 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       aria-label={t('rights.map.legend', 'Country counts by status')}
     >
       {MAP_CLASS_ORDER.filter((cls) => counts[cls] > 0).map((cls) => {
         const isActive = activeClass === cls;
         return (
-          <li key={cls}>
+          <li key={cls} className="shrink-0">
             <button
               type="button"
               aria-pressed={isActive}
@@ -122,99 +153,112 @@ export function RightsMapControls({
 }: RightsMapControlsProps) {
   const { t } = useTranslation();
   const lensDisabled = topic.kind !== 'protection-matrix';
+  const railRef = useRef<HTMLDivElement>(null);
+
+  /**
+   * Keep the active chip on screen.
+   *
+   * At 390px the rail shows about two and a half of its 18 chips, so a reader
+   * arriving on an `identity` topic would see "Criminalisation & freedoms" at
+   * the left edge and no selection anywhere — the control would read as having
+   * none. RouteStrip solves the same problem the same way; the one difference
+   * is `behavior: 'auto'`, because its `'smooth'` is animation and this page
+   * does not animate.
+   */
+  useEffect(() => {
+    railRef.current
+      ?.querySelector<HTMLElement>(`[data-topic="${topic.slug}"]`)
+      ?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'auto' });
+  }, [topic.slug]);
 
   return (
-    <div className="space-y-6">
-      {/* (a) Line selector — 5 lines, 18 stations. */}
-      <div className="space-y-4" role="group" aria-label={t('rights.map.lineSelector', 'Rights')}>
+    <div className="flex flex-col gap-2 md:gap-4">
+      {/* (a) Every right, one rail. The family is an inline swatch rather than
+          a row of its own — see the header. `Fragment` and not a wrapping div
+          so the chips stay direct flex children and the gap between a family's
+          last chip and the next family's label is the same rhythm as between
+          chips. */}
+      <div
+        ref={railRef}
+        role="group"
+        aria-label={t('rights.map.lineSelector', 'Rights')}
+        className="-mx-1 flex items-center gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
         {RIGHT_SECTION_ORDER.map((section) => {
           const track = SECTION_TRACK[section];
           return (
-            // Line label and its stations share ONE row from `md` up. Stacked,
-            // the five families cost ~800px and pushed the map itself below the
-            // fold on a 900px viewport — on a page whose whole point is that
-            // the answer is visible without scrolling.
-            <div
-              key={section}
-              className="md:grid md:grid-cols-[13rem_1fr] md:items-center md:gap-x-4"
-            >
-              <div className="mb-2 flex items-center gap-2 md:mb-0">
-                <span
-                  aria-hidden="true"
-                  className={cn(
-                    'inline-block h-2.5 w-2.5 shrink-0 rounded-full border border-track-ring',
-                    TRACK_BG[track],
-                  )}
-                />
-                <span className="text-2xs font-bold uppercase tracking-wide text-muted-foreground">
+            <Fragment key={section}>
+              <span className="flex shrink-0 items-center gap-2 pl-2 first:pl-0">
+                <TrackSwatch track={track} />
+                <span className="whitespace-nowrap text-2xs font-bold uppercase tracking-wide text-muted-foreground">
                   {t(`country.rights.section.${section}`, RIGHT_SECTION_LABEL[section])}
                 </span>
-              </div>
-              <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                {topicsInSection(section).map((stationTopic) => {
-                  const isActive = stationTopic.slug === topic.slug;
-                  return (
-                    <button
-                      key={stationTopic.slug}
-                      type="button"
-                      aria-pressed={isActive}
-                      onClick={() => onTopicChange(stationTopic)}
-                      className={cn(
-                        'shrink-0 whitespace-nowrap rounded-element px-4 py-1.5 text-13 font-bold',
-                        isActive
-                          ? cn('border border-track-ring', TRACK_BG[track], TRACK_TEXT[track])
-                          : 'bg-muted text-muted-foreground',
-                      )}
-                    >
-                      {topicListLabel(stationTopic, t)}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+              </span>
+              {topicsInSection(section).map((stationTopic) => {
+                const isActive = stationTopic.slug === topic.slug;
+                return (
+                  <FilterChip
+                    key={stationTopic.slug}
+                    active={isActive}
+                    data-topic={stationTopic.slug}
+                    onClick={() => onTopicChange(stationTopic)}
+                    label={topicListLabel(stationTopic, t)}
+                    // The active chip keeps the TRACK fill instead of
+                    // FilterChip's ink plate: the track colour is this
+                    // control's wayfinding and the map below is drawn in it.
+                    // `className` is last into `cn`, so tailwind-merge resolves
+                    // the bg/text conflict in favour of the track.
+                    className={cn(
+                      'whitespace-nowrap',
+                      isActive &&
+                        cn('border border-track-ring', TRACK_BG[track], TRACK_TEXT[track]),
+                    )}
+                  />
+                );
+              })}
+            </Fragment>
           );
         })}
       </div>
 
-      {/* (b) Lens selector — "Who the law protects". */}
-      <div className="space-y-2">
-        <span className="block text-2xs font-bold uppercase tracking-wide text-muted-foreground">
+      {/* (b) Who the law protects. Same rail treatment, its heading inline as
+          the rail's first item rather than a line of its own.
+
+          The buttons stay DISABLED rather than hidden for the nine topics
+          recorded once for everyone: a control that vanishes takes its own
+          limitation with it, and that limitation — that this law has no
+          per-group reading — is exactly what a reader checking trans
+          protection needs told. */}
+      <div
+        role="group"
+        aria-label={t('rights.map.lens.heading', 'Who the law protects')}
+        className="-mx-1 flex items-center gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        <span className="shrink-0 whitespace-nowrap text-2xs font-bold uppercase tracking-wide text-muted-foreground">
           {t('rights.map.lens.heading', 'Who the law protects')}
         </span>
-        <div
-          className="flex flex-wrap gap-2"
-          role="group"
-          aria-label={t('rights.map.lens.heading', 'Who the law protects')}
-        >
-          {LENS_OPTIONS.map((option) => {
-            const isActive = option.value === lens;
-            return (
-              <button
-                key={option.value}
-                type="button"
-                aria-pressed={isActive}
-                disabled={lensDisabled}
-                onClick={() => onLensChange(option.value)}
-                className={cn(
-                  'shrink-0 whitespace-nowrap rounded-element px-4 py-1.5 text-13 font-bold',
-                  lensDisabled && 'opacity-50',
-                  isActive ? 'bg-foreground text-background' : 'bg-muted text-muted-foreground',
-                )}
-              >
-                {t(`rights.map.lens.${option.value}`, option.label)}
-              </button>
-            );
-          })}
-        </div>
-        {lensDisabled ? (
-          <p className="text-13 text-muted-foreground">
-            {t(
-              'rights.map.lens.disabledNote',
-              'This law is recorded once for everyone — no per-group reading exists.',
-            )}
-          </p>
-        ) : null}
+        {LENS_OPTIONS.map((option) => (
+          <FilterChip
+            key={option.value}
+            active={option.value === lens}
+            disabled={lensDisabled}
+            onClick={() => onLensChange(option.value)}
+            label={t(`rights.map.lens.${option.value}`, option.label)}
+            className={cn('whitespace-nowrap', lensDisabled && 'opacity-50')}
+          />
+        ))}
       </div>
+      {/* The reason sits UNDER the rail, not inside it: at 390px a rail item
+          scrolls, and a reason you have to scroll sideways to find is reachable
+          rather than visible. */}
+      {lensDisabled ? (
+        <p className="text-13 text-muted-foreground">
+          {t(
+            'rights.map.lens.disabledNote',
+            'This law is recorded once for everyone — no per-group reading exists.',
+          )}
+        </p>
+      ) : null}
 
       {/* (c) Route-strip legend.
           Rendered here by default so this component stays self-contained, but
