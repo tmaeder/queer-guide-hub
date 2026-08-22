@@ -18,6 +18,7 @@ import { VillageQualityPanel } from '@/components/admin/VillageQualityPanel';
 import { PersonalityQualityPanel } from '@/components/admin/PersonalityQualityPanel';
 import { MarketplaceTagQualityPanel } from '@/components/admin/MarketplaceTagQualityPanel';
 import { MarketplacePruneCard } from '@/components/admin/MarketplacePruneCard';
+import { MarketplaceQualityStatsPanel } from '@/components/admin/MarketplaceQualityStatsPanel';
 import { FreigabeFunnel } from '@/components/admin/FreigabeFunnel';
 import { PersonalityFreigabeQueue } from '@/components/admin/PersonalityFreigabeQueue';
 import { DedupPendingLink } from '@/components/admin/DedupPendingLink';
@@ -136,11 +137,12 @@ const SECTIONS: EngineSection[] = [
   },
   {
     value: 'marketplace',
-    title: 'Marketplace tags',
+    title: 'Marketplace — quality & tags',
     editRoute: '/admin/content/marketplace_listings',
     editLabel: 'Edit listings',
     render: () => (
       <>
+        <MarketplaceQualityStatsPanel />
         <MarketplacePruneCard />
         <MarketplaceTagQualityPanel />
         <DedupPendingLink entityType="marketplace" />

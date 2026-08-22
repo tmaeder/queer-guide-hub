@@ -79,14 +79,32 @@ Deno.serve(async (req) => {
   const supabase = client()
   try {
     const body = await req.json().catch(() => ({}))
-    const merchantDomain = (body.merchant_domain as string) || 'ohmyfantasy.com'
+    // A merchant_domain in the body scopes a manual run; the cron passes none
+    // and works the marketplace_enhance_claim queue instead — boilerplate
+    // spec-sheet groups first, then thin descriptions, then the never-enhanced
+    // backlog, across ALL sources. (The old default pinned the */5 cron to
+    // ohmyfantasy.com forever, so 12.5k boilerplate rows elsewhere never
+    // became eligible.)
+    const merchantDomain = typeof body.merchant_domain === 'string' ? (body.merchant_domain as string) : null
     const batchSize = Math.min(Number(body.batch_size ?? 25), 60)
     const dryRun = body.dry_run || false
     // Opt-in strong model for manual runs; the default is the cheap 8B.
     const modelOverride = typeof body.model === 'string' && body.model.startsWith('@cf/') ? (body.model as string) : undefined
-    const { data: rows, error } = await supabase.from('marketplace_listings').select('id, title, description, description_i18n').eq('status', 'active').eq('merchant_domain', merchantDomain).not('description', 'is', null).order('updated_at', { ascending: true }).limit(batchSize * 4)
-    if (error) return json({ success: false, error: error.message }, 500)
-    const pending = (rows || []).filter((r) => { const i18n = (r.description_i18n ?? {}) as Record<string, unknown>; return !i18n._enhanced_at && (r.description as string).trim().length > 20 }).slice(0, batchSize)
+    let rows: { id: string; title: unknown; description: unknown; description_i18n: unknown }[] | null
+    if (merchantDomain) {
+      const res = await supabase.from('marketplace_listings').select('id, title, description, description_i18n').eq('status', 'active').eq('merchant_domain', merchantDomain).not('description', 'is', null).order('updated_at', { ascending: true }).limit(batchSize * 4)
+      if (res.error) return json({ success: false, error: res.error.message }, 500)
+      rows = res.data
+    } else {
+      const claim = await supabase.rpc('marketplace_enhance_claim', { p_limit: batchSize })
+      if (claim.error) return json({ success: false, error: claim.error.message }, 500)
+      const ids = (claim.data ?? []) as string[]
+      if (ids.length === 0) return json({ success: true, items: 0, message: 'queue empty' })
+      const res = await supabase.from('marketplace_listings').select('id, title, description, description_i18n').in('id', ids)
+      if (res.error) return json({ success: false, error: res.error.message }, 500)
+      rows = res.data
+    }
+    const pending = (rows || []).filter((r) => { const i18n = (r.description_i18n ?? {}) as Record<string, unknown>; return !i18n._enhanced_at && String(r.description ?? '').trim().length > 20 }).slice(0, batchSize)
     if (pending.length === 0) return json({ success: true, items: 0, message: 'nothing to enhance' })
     // Central daily cap (llm_budget, seeded 500/day — migration 20260817090000):
     // this fn previously ran the */5 cron with NO cap. One consume for the whole
