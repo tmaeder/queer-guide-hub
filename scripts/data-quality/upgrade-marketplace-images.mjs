@@ -62,6 +62,7 @@ const flag = (name, fallback) => {
 const DRY_RUN = !args.includes('--apply')
 const LIMIT = args.includes('--all') ? null : Number(flag('limit', 200))
 const SOURCE = flag('source', null)
+const RECHECK = args.includes('--recheck')
 // Merchants rate-limit, and being rate-limited mid-sweep is worse than being
 // slow: mr-s-leather and misterb both answer 403 under a 16-thread probe and
 // 200 at a walking pace, and a 403 is indistinguishable from "no bigger copy
@@ -88,13 +89,21 @@ const TOKEN = token()
 /**
  * One statement against the management API, retried on transport faults.
  *
- * The write phase is a loop of hundreds of statements, and without this a
- * single DNS blip aborts the whole run — measured: one `getaddrinfo` failure
- * against api.supabase.com killed a pass that had already measured 300
- * listings, throwing away ~9 minutes of merchant requests for a fault that
- * cleared in seconds. HTTP errors are NOT retried: a 4xx here means the SQL is
- * wrong and repeating it just fails slower.
+ * The write phase is a loop of hundreds of statements, and a run that dies
+ * partway wastes all the merchant requests that produced it. Two faults were
+ * measured doing exactly that, and they need DIFFERENT treatment:
+ *
+ *   - transport (`getaddrinfo` against api.supabase.com) — one blip killed a
+ *     pass that had already measured 300 listings;
+ *   - `429 ThrottlerException` — the management API rate-limits a few hundred
+ *     statements in quick succession, which killed a pass at 200 of 400
+ *     writes.
+ *
+ * So 429 and 5xx retry with backoff; every other HTTP status does not, because
+ * a 4xx there means the SQL is wrong and repeating it just fails slower.
  */
+const RETRYABLE_STATUS = /^mgmt API (429|5\d\d):/
+
 async function sql(query, attempt = 0) {
   try {
     const res = await fetch(`https://api.supabase.com/v1/projects/${PROJECT}/database/query`, {
@@ -106,8 +115,13 @@ async function sql(query, attempt = 0) {
     if (!res.ok) throw new Error(`mgmt API ${res.status}: ${(await res.text()).slice(0, 400)}`)
     return res.json()
   } catch (e) {
-    if (String(e?.message ?? '').startsWith('mgmt API ') || attempt >= 4) throw e
-    await new Promise((r) => setTimeout(r, 1000 * 2 ** attempt))
+    const msg = String(e?.message ?? '')
+    const isHttp = msg.startsWith('mgmt API ')
+    const retryable = !isHttp || RETRYABLE_STATUS.test(msg)
+    if (!retryable || attempt >= 6) throw e
+    // 429 needs a real pause, not a 1s nudge: the limiter is per-minute.
+    const base = RETRYABLE_STATUS.test(msg) && msg.includes('429') ? 5000 : 1000
+    await new Promise((r) => setTimeout(r, base * 2 ** attempt))
     return sql(query, attempt + 1)
   }
 }
@@ -164,6 +178,15 @@ async function main() {
     `l.status = 'active'`,
     `l.images is not null`,
     SOURCE ? `l.source_type = ${lit(SOURCE)}` : null,
+    // Terminal sentinel. A listing whose derivative URL has no bigger sibling
+    // stays matching the derivative filter forever, so without this the
+    // work-list never shrinks and every pass re-measures the same unfixable
+    // head — measured on invinciblerubber, where three passes over `order by
+    // id limit 300` kept reporting 521 remaining because 246 of each 300 have
+    // no larger original. Same starvation as the city-fields selector before
+    // `data_unavailable` was introduced. `--recheck` clears the stamp's effect
+    // for when a rule changes and past verdicts are worth revisiting.
+    RECHECK ? null : `not (l.attributes ? 'image_upscale')`,
     // Only rows carrying evidence of a derivative. Mirrors the rules in
     // image-upscale.ts; a row that slips through simply yields no candidates.
     `exists (
@@ -191,6 +214,9 @@ async function main() {
   // first misdiagnosed as permanently blocking bot traffic when it was
   // answering 200 to a slower caller the whole time.
   const skipReasons = new Map()
+  // Listings where at least one image could not be measured at all. These are
+  // excluded from the terminal stamp below — see the note there.
+  const skippedListingIds = new Set()
   const stats = { images: 0, unchanged: 0, skipped: 0, retracted: 0 }
   // Every accepted upgrade, kept flat so the placeholder backstop below can
   // retract individual images before any listing array is assembled.
@@ -211,6 +237,7 @@ async function main() {
       if (result.skipped) {
         stats.skipped++
         skipReasons.set(result.skipped, (skipReasons.get(result.skipped) ?? 0) + 1)
+        skippedListingIds.add(row.id)
         continue
       }
       const { from, to } = result
@@ -308,6 +335,32 @@ async function main() {
     if (++written % 25 === 0) process.stdout.write(`  wrote ${written}/${pending.length}\r`)
   }
   console.log(`\nwrote ${written} listings`)
+
+  // Stamp the listings this pass actually MEASURED, upgraded or not — a "no
+  // bigger copy exists" verdict is the result that most needs recording, since
+  // it is the one that would otherwise be recomputed on every future pass.
+  //
+  // A listing whose probes were BLOCKED is deliberately not stamped. Stamping
+  // it would record a 403 as a verdict and write the merchant off permanently
+  // — 2,194 misterb listings sit behind a bot wall right now, and if that wall
+  // ever comes down they must be reachable again. This is the same distinction
+  // the skip-reason tally exists to surface, applied to what gets persisted.
+  // Batched because the management API throttles a few hundred statements in a
+  // row.
+  const blocked = new Set(skippedListingIds)
+  const examined = rows.map((r) => r.id).filter((id) => !blocked.has(id))
+  if (blocked.size) {
+    console.log(`${blocked.size} listing(s) left unstamped — their images could not be measured, which is not a verdict`)
+  }
+  for (let i = 0; i < examined.length; i += 200) {
+    const chunk = examined.slice(i, i + 200)
+    await sql(`
+      update marketplace_listings
+      set attributes = coalesce(attributes, '{}'::jsonb)
+        || jsonb_build_object('image_upscale', jsonb_build_object('attempted_at', now()))
+      where id in (${chunk.map(lit).join(',')});`)
+  }
+  console.log(`stamped ${examined.length} listings as examined`)
   console.log('R2 mirrors follow whenever optimize-images-batch next runs; until then the card serves the upgraded merchant URL.')
 }
 
