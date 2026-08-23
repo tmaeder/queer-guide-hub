@@ -47,6 +47,7 @@
 @source inline("rounded-{t,b,l,r,tl,tr,bl,br}-{container,element,badge,panel}");
 @source inline("{,hover:,dark:}{text,bg,border}-text-{primary,secondary,muted}");
 @source inline("{,dark:}border-border-hairline");
+@source inline("bg-swatch-{black,white,grey,red,orange,yellow,green,blue,navy,purple,pink,brown,beige,cream,gold,silver,rose-gold,clear}");
 /* PASTE-UP inks (deprecated aliases) + subway-map track colors. Safelisted
    so the utilities exist before consumers do — Tailwind would otherwise
    purge them and the transit primitives would resolve to nothing. */
@@ -239,6 +240,35 @@
      artwork, so neither plate may follow the theme. Same rule as
      `--track-ring`, which is ink in both modes for the same reason. */
   --color-logo-plate-ink: hsl(0 0% 6.7%);
+
+  /* ── Marketplace colour swatches — PRODUCT colour, not theme colour ──
+     Mode-independent LITERALS for the same reason --color-logo-plate is:
+     the swatch depicts the merchandise ("black tee"), so it must not invert
+     in dark mode. WCAG 1.4.1: the swatch is decoration inside a text-labelled
+     chip — the label + chip fill carry the state, never the swatch — and
+     every swatch wears ring-border-hairline so white survives light mode.
+     Slugs mirror the color-* vocabulary (migration 20260926100300);
+     rainbow/multicolor render label-only (no single colour depicts them).
+     Declared HERE ONLY (the --radius-panel / --color-logo-plate precedent):
+     absent from tokenCatalog.ts / branding.ts / branding_validate. */
+  --color-swatch-black: hsl(0 0% 8%);
+  --color-swatch-white: hsl(0 0% 100%);
+  --color-swatch-grey: hsl(0 0% 55%);
+  --color-swatch-red: hsl(0 72% 45%);
+  --color-swatch-orange: hsl(26 90% 55%);
+  --color-swatch-yellow: hsl(48 95% 55%);
+  --color-swatch-green: hsl(140 55% 40%);
+  --color-swatch-blue: hsl(210 80% 50%);
+  --color-swatch-navy: hsl(220 60% 25%);
+  --color-swatch-purple: hsl(275 55% 45%);
+  --color-swatch-pink: hsl(330 80% 65%);
+  --color-swatch-brown: hsl(25 45% 35%);
+  --color-swatch-beige: hsl(35 35% 75%);
+  --color-swatch-cream: hsl(45 60% 92%);
+  --color-swatch-gold: hsl(45 70% 52%);
+  --color-swatch-silver: hsl(0 0% 78%);
+  --color-swatch-rose-gold: hsl(15 55% 70%);
+  --color-swatch-clear: hsl(200 30% 92%);
 
   --color-card: hsl(var(--card));
   --color-card-foreground: hsl(var(--card-foreground));

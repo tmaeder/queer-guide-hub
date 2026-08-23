@@ -21,17 +21,21 @@ import {
 import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { X } from 'lucide-react';
 import { TagSelector } from '@/components/tags/TagSelector';
+import { SizeChipGrid } from '@/components/marketplace/SizeChipGrid';
+import { ColorSwatchGrid } from '@/components/marketplace/ColorSwatchGrid';
 import type { MarketplaceFiltersInput } from '@/hooks/useMarketplace';
 import {
   useMarketplaceFacets,
   useMarketplaceSubcategoryTiles,
   useMarketplaceDepartmentCounts,
   useMarketplaceAttributeVocab,
+  useMarketplaceAttributeFacets,
 } from '@/hooks/useMarketplaceQueries';
 import {
   DEPARTMENT_ORDER,
   departmentLabel,
   departmentOf,
+  attributeFacetsForDepartment,
   ATTRIBUTE_KIND_LABELS,
   type MarketplaceAttributeKind,
 } from '@/lib/marketplaceTaxonomy';
@@ -92,6 +96,11 @@ export function MarketplaceFilterSheet({
   const { data: subcategoryOptions } = useMarketplaceSubcategoryTiles(null, includeAdult);
   const { data: departmentCountData } = useMarketplaceDepartmentCounts(includeAdult);
   const { data: attributeVocab } = useMarketplaceAttributeVocab();
+  const { data: attributeFacets } = useMarketplaceAttributeFacets(
+    filters.department,
+    filters.subcategoryGroup,
+    includeAdult,
+  );
   const fmtCount = (n: number | undefined) =>
     n != null && n > 0 ? ` (${n.toLocaleString()})` : '';
 
@@ -159,6 +168,24 @@ export function MarketplaceFilterSheet({
 
   const attributesByKind = (kind: MarketplaceAttributeKind) =>
     attributeVocab.filter((a) => a.kind === kind);
+
+  // Which facets exist for the selected department (a catalogue-wide size
+  // facet is meaningless). Size + color read column-derived counts and push
+  // down as `size-<bare>` / `color-<bare>` URL tokens — bare values reach the
+  // GENERATED sizes/colors arrays, so numeric sizes with no size-* tag filter
+  // too. Everything else stays junction-backed vocab chips.
+  const visibleKinds = attributeFacetsForDepartment(filters.department);
+  const sizeOptions = attributeFacets.filter((f) => f.kind === 'size');
+  const colorOptions = attributeFacets.filter((f) => f.kind === 'color');
+  const selectedSizes = attributeTags
+    .filter((t) => t.startsWith('size-'))
+    .map((t) => t.slice('size-'.length));
+  const selectedColors = attributeTags
+    .filter((t) => t.startsWith('color-'))
+    .map((t) => t.slice('color-'.length));
+  const chipKinds = (
+    ['material', 'occasion', 'vibe', 'genre', 'fit'] as MarketplaceAttributeKind[]
+  ).filter((k) => visibleKinds.includes(k));
 
   const clearAll = () => onFiltersChange(filters.search ? { search: filters.search } : {});
 
@@ -241,7 +268,27 @@ export function MarketplaceFilterSheet({
             </AccordionTrigger>
             <AccordionContent>
               <div className="flex flex-col gap-4 pt-2">
-                {(['material', 'occasion', 'vibe'] as MarketplaceAttributeKind[]).map((kind) => {
+                {visibleKinds.includes('size') && sizeOptions.length > 0 && (
+                  <div className="flex flex-col gap-2">
+                    <Label>{ATTRIBUTE_KIND_LABELS.size}</Label>
+                    <SizeChipGrid
+                      options={sizeOptions}
+                      selected={selectedSizes}
+                      onToggle={(bare) => toggleAttribute(`size-${bare}`)}
+                    />
+                  </div>
+                )}
+                {visibleKinds.includes('color') && colorOptions.length > 0 && (
+                  <div className="flex flex-col gap-2">
+                    <Label>{ATTRIBUTE_KIND_LABELS.color}</Label>
+                    <ColorSwatchGrid
+                      options={colorOptions}
+                      selected={selectedColors}
+                      onToggle={(bare) => toggleAttribute(`color-${bare}`)}
+                    />
+                  </div>
+                )}
+                {chipKinds.map((kind) => {
                   const opts = attributesByKind(kind);
                   if (opts.length === 0) return null;
                   return (

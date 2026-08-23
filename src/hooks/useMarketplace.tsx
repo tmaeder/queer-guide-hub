@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import type { Database } from '@/integrations/supabase/types';
+import type { Database, Json } from '@/integrations/supabase/types';
 import { queryWithRetry } from '@/utils/fetchWithRetry';
 import { searchFetch } from '@/lib/searchFetch';
+import { splitTagSelections, hasTagFilters } from '@/lib/marketplaceTagFilter';
 
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 type MarketplaceListingInsert = Database['public']['Tables']['marketplace_listings']['Insert'];
@@ -26,6 +27,8 @@ export interface MarketplaceFiltersInput {
   subcategory?: string;
   /** canonical fine bucket (tops, dildos, harnesses, …) — generated `subcategory_group` column. */
   subcategoryGroup?: string;
+  /** nullable third tier (t_shirts, binders, latex, …) — generated `subcategory_fine` column. */
+  subcategoryFine?: string;
   location?: string;
   priceRange?: { min: number; max: number };
   tags?: string[];
@@ -82,11 +85,21 @@ export function useMarketplace() {
       setLoadingTimedOut(false);
       setError(null);
 
-      // Resolve tag slugs → entity ids via unified_tag_assignments. The
-      // listings table has no `tags` column; tags live in the junction.
-      // Mirrors the pattern in useHotels.
+      // Tag selections split by axis: size-*/color-* push down onto the
+      // generated sizes/colors arrays; everything else resolves through the
+      // junction (OR within an axis, AND across axes).
+      const tagSplit = splitTagSelections(filters?.tags);
+
+      // SEARCH-branch constraint set only: the search path still needs a flat
+      // candidate id set to intersect with the search hits. Resolved via the
+      // junction OR-union (legacy semantics — search + tags is a narrow case).
       let tagFilteredIds: string[] | null = null;
-      if (filters?.tags && filters.tags.length > 0) {
+      if (
+        filters?.search &&
+        filters.search.trim().length >= 2 &&
+        filters?.tags &&
+        filters.tags.length > 0
+      ) {
         const { data: tagRows } = await supabase
           .from('unified_tag_assignments')
           .select('entity_id, unified_tags!inner(slug)')
@@ -129,15 +142,15 @@ export function useMarketplace() {
             page,
           });
           const hits = data?.hits ?? [];
-          const ids = hits
-            .map((h) => (h?.id ?? h?.objectID ?? '').toString())
-            .filter(Boolean);
+          const ids = hits.map((h) => (h?.id ?? h?.objectID ?? '').toString()).filter(Boolean);
           if (ids.length === 0) {
             setListings([]);
             setTotal(data?.totalHits ?? 0);
             return;
           }
-          const constrainedIds = tagFilteredIds ? ids.filter((id) => tagFilteredIds!.includes(id)) : ids;
+          const constrainedIds = tagFilteredIds
+            ? ids.filter((id) => tagFilteredIds!.includes(id))
+            : ids;
           if (constrainedIds.length === 0) {
             setListings([]);
             setTotal(0);
@@ -165,6 +178,70 @@ export function useMarketplace() {
           // surface — the user gets results either way.
           console.warn('marketplace search-proxy failed, falling back', searchErr);
         }
+      }
+
+      // ── Tag/attribute-filtered branch (no search) ─────────────────
+      // marketplace_browse_page does AND-of-OR tag groups + the full filter
+      // matrix + sort + pagination in SQL and returns one PAGE of ids —
+      // the old client path resolved up to 5,000 ids and passed them back
+      // via `.in()`, which breaks on URL length at concept-tag scale.
+      if (!filters?.search && hasTagFilters(tagSplit)) {
+        const rpcFilters: Record<string, unknown> = {
+          department: filters?.department ?? null,
+          subcategory_group: filters?.subcategoryGroup ?? null,
+          subcategory_fine: filters?.subcategoryFine ?? null,
+          category: filters?.category ?? null,
+          subcategory_slug: filters?.subcategory
+            ? filters.subcategory.toLowerCase().replace(/[\s-]+/g, '_')
+            : null,
+          location: filters?.location ?? null,
+          business_type: filters?.businessType ?? null,
+          merchant_domain: filters?.merchantDomain ?? null,
+          brand_key: filters?.brandKey ?? null,
+          price_min: filters?.priceRange?.min ?? null,
+          price_max: filters?.priceRange?.max ?? null,
+          currency: filters?.currency ?? null,
+          in_stock: filters?.availability !== 'any',
+          verified_days:
+            filters?.verifiedWithinDays && filters.verifiedWithinDays > 0
+              ? filters.verifiedWithinDays
+              : null,
+          include_adult: !!filters?.includeAdult,
+        };
+        if (filters?.communityOwned?.length) rpcFilters.community_owned = filters.communityOwned;
+        if (tagSplit.sizes.length) rpcFilters.sizes = tagSplit.sizes;
+        if (tagSplit.colors.length) rpcFilters.colors = tagSplit.colors;
+
+        const { data: pageRows, error: pageErr } = await supabase.rpc('marketplace_browse_page', {
+          p_tag_groups: tagSplit.tagGroups as unknown as Json,
+          p_filters: rpcFilters as Json,
+          p_sort: sort,
+          p_page: page,
+          p_page_size: PAGE_SIZE,
+        });
+        if (pageErr) throw pageErr;
+        const pageIds = ((pageRows ?? []) as Array<{ id: string; total_count: number }>).map(
+          (r) => r.id,
+        );
+        const totalCount =
+          (pageRows as Array<{ total_count: number }> | null)?.[0]?.total_count ?? 0;
+        if (pageIds.length === 0) {
+          setListings([]);
+          setTotal(0);
+          return;
+        }
+        const { data: rows, error: rowsErr } = await supabase
+          .from('marketplace_listings')
+          .select(
+            `*, marketplace_reviews(rating), marketplace_favorites(id), venues(name, address, city)`,
+          )
+          .in('id', pageIds);
+        if (rowsErr) throw rowsErr;
+        const byId = new Map((rows ?? []).map((r) => [r.id, r] as const));
+        const ordered = pageIds.map((id) => byId.get(id)).filter(Boolean) as MarketplaceListing[];
+        setListings(ordered);
+        setTotal(Number(totalCount));
+        return;
       }
 
       let query = supabase
@@ -243,13 +320,15 @@ export function useMarketplace() {
         query = query.eq('subcategory_group', filters.subcategoryGroup);
       }
 
+      if (filters?.subcategoryFine) {
+        query = query.eq('subcategory_fine', filters.subcategoryFine);
+      }
+
       if (filters?.subcategory) {
         // Match against the canonical generated column so the URL slug
         // (`fetish_gear`) lines up with stored values that may have come
         // through hyphenated or title-cased ("Fetish Gear").
-        const slug = filters.subcategory
-          .toLowerCase()
-          .replace(/[\s-]+/g, '_');
+        const slug = filters.subcategory.toLowerCase().replace(/[\s-]+/g, '_');
         query = query.eq('subcategory_slug', slug);
       }
 

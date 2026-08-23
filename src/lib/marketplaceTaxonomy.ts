@@ -311,16 +311,78 @@ export function brandSlug(brand: string | null | undefined): string | null {
   return slug || null;
 }
 
-// ── Attribute facets (material / occasion / vibe) ────────────────────────────
-// unified_tags slugs are namespaced (mat-cotton, occ-pride, vibe-minimal) so they
-// can't collide with the global tag vocabulary; labels come from unified_tags.name.
-export type MarketplaceAttributeKind = 'material' | 'occasion' | 'vibe';
+// ── Attribute facets ─────────────────────────────────────────────────────────
+// unified_tags slugs are namespaced (mat-cotton, occ-pride, size-m, color-black)
+// so they can't collide with the global tag vocabulary; labels come from
+// unified_tags.name. Kind resolves from the slug PREFIX — `category` text is
+// glossary-derived since the tag-category consolidation and no longer usable.
+export type MarketplaceAttributeKind =
+  'material' | 'occasion' | 'vibe' | 'size' | 'color' | 'genre' | 'fit';
 
 export const ATTRIBUTE_KIND_LABELS: Record<MarketplaceAttributeKind, string> = {
   material: 'Material',
   occasion: 'Occasion',
   vibe: 'Vibe',
+  size: 'Size',
+  color: 'Color',
+  genre: 'Genre',
+  fit: 'Fit',
 };
+
+export const ATTRIBUTE_PREFIX_TO_KIND: Record<string, MarketplaceAttributeKind> = {
+  mat: 'material',
+  occ: 'occasion',
+  vibe: 'vibe',
+  size: 'size',
+  color: 'color',
+  genre: 'genre',
+  fit: 'fit',
+};
+
+export function attributeKindOfSlug(slug: string): MarketplaceAttributeKind | null {
+  return ATTRIBUTE_PREFIX_TO_KIND[slug.split('-', 1)[0]] ?? null;
+}
+
+/** Canonical size display order — never alphabetical. Mirrors SIZE_LADDER in
+ *  supabase/functions/_shared/marketplace-attributes.ts. */
+export const SIZE_ORDER = [
+  'xxs',
+  'xs',
+  's',
+  'm',
+  'l',
+  'xl',
+  '2xl',
+  '3xl',
+  '4xl',
+  '5xl',
+  'one-size',
+] as const;
+
+/**
+ * Which attribute facets make sense per department — a catalogue-wide size
+ * facet is meaningless. `null` key = no department selected.
+ */
+export const ATTRIBUTE_FACETS_BY_DEPARTMENT: Record<string, MarketplaceAttributeKind[]> = {
+  apparel: ['size', 'color', 'material', 'fit', 'occasion', 'vibe'],
+  underwear: ['size', 'color', 'material', 'fit', 'occasion', 'vibe'],
+  swimwear: ['size', 'color', 'material', 'fit', 'occasion', 'vibe'],
+  jewelry: ['color', 'material', 'occasion', 'vibe'],
+  books_art: ['genre', 'vibe', 'occasion'],
+  home: ['color', 'material', 'vibe', 'occasion'],
+  hygiene: ['vibe', 'occasion'],
+  intimacy: ['size', 'color', 'material', 'vibe'],
+  bdsm_fetish: ['size', 'color', 'material', 'vibe'],
+  services: ['vibe', 'occasion'],
+};
+const DEFAULT_ATTRIBUTE_FACETS: MarketplaceAttributeKind[] = ['material', 'occasion', 'vibe'];
+
+export function attributeFacetsForDepartment(
+  department: string | null | undefined,
+): MarketplaceAttributeKind[] {
+  if (!department) return DEFAULT_ATTRIBUTE_FACETS;
+  return ATTRIBUTE_FACETS_BY_DEPARTMENT[department] ?? DEFAULT_ATTRIBUTE_FACETS;
+}
 
 /**
  * One-tap browse chips (occasion axis). Slugs are unified_tags slugs.

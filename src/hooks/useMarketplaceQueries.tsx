@@ -12,7 +12,11 @@ interface SubcategoryTile {
   count: number;
 }
 
-function useAsync<T>(deps: React.DependencyList, run: () => Promise<T>, initial: T): { data: T; loading: boolean } {
+function useAsync<T>(
+  deps: React.DependencyList,
+  run: () => Promise<T>,
+  initial: T,
+): { data: T; loading: boolean } {
   const [data, setData] = useState<T>(initial);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
@@ -76,7 +80,10 @@ export function useMarketplaceDepartmentCounts(includeAdult = false) {
       if (error || !data) return [];
       type Row = { department: string | null; count: number | string | null };
       return (data as Row[])
-        .filter((r): r is { department: string; count: number | string } => !!r.department && r.count != null)
+        .filter(
+          (r): r is { department: string; count: number | string } =>
+            !!r.department && r.count != null,
+        )
         .map((r) => ({ slug: r.department, count: toCount(r.count) }));
     },
     [],
@@ -84,7 +91,10 @@ export function useMarketplaceDepartmentCounts(includeAdult = false) {
 }
 
 /** Finer sub-tile counts within a department (canonical groups), content-rating gated. */
-export function useMarketplaceSubcategoryGroupCounts(department: string | null | undefined, includeAdult = false) {
+export function useMarketplaceSubcategoryGroupCounts(
+  department: string | null | undefined,
+  includeAdult = false,
+) {
   return useAsync<DepartmentCount[]>(
     [department, includeAdult],
     async () => {
@@ -106,7 +116,7 @@ export function useMarketplaceSubcategoryGroupCounts(department: string | null |
 export interface MarketplaceTagFacet {
   slug: string;
   name: string;
-  kind: 'material' | 'occasion' | 'vibe';
+  kind: 'material' | 'occasion' | 'vibe' | 'size' | 'color' | 'genre' | 'fit';
   count: number;
 }
 
@@ -125,11 +135,23 @@ export function useMarketplaceTagFacets(
         p_include_adult: includeAdult,
       });
       if (error || !data) return [];
-      type Row = { slug: string | null; name: string | null; kind: string | null; count: number | string | null };
+      type Row = {
+        slug: string | null;
+        name: string | null;
+        kind: string | null;
+        count: number | string | null;
+      };
       return (data as Row[])
-        .filter((r): r is { slug: string; name: string; kind: string; count: number | string } =>
-          !!r.slug && !!r.name && r.count != null)
-        .map((r) => ({ slug: r.slug, name: r.name, kind: r.kind as MarketplaceTagFacet['kind'], count: toCount(r.count) }));
+        .filter(
+          (r): r is { slug: string; name: string; kind: string; count: number | string } =>
+            !!r.slug && !!r.name && r.count != null,
+        )
+        .map((r) => ({
+          slug: r.slug,
+          name: r.name,
+          kind: r.kind as MarketplaceTagFacet['kind'],
+          count: toCount(r.count),
+        }));
     },
     [],
   );
@@ -166,26 +188,94 @@ export function useDepartmentCovers() {
 }
 
 export interface MarketplaceAttributeOption {
-  slug: string;       // namespaced unified_tags slug (mat-cotton, occ-pride, vibe-minimal)
+  slug: string; // namespaced unified_tags slug (mat-cotton, size-m, color-black)
   name: string;
-  kind: 'material' | 'occasion' | 'vibe';
+  kind: MarketplaceTagFacet['kind'];
 }
 
-/** Controlled attribute vocabulary (material / occasion / vibe) from unified_tags. */
+/** Controlled attribute vocabulary from unified_tags — PREFIX-keyed: the old
+ *  `category IN ('material','occasion','vibe')` load matched ZERO rows after
+ *  the tag-category consolidation rewrote category text (the Attributes
+ *  accordion has been silently empty on prod). */
 export function useMarketplaceAttributeVocab() {
   return useAsync<MarketplaceAttributeOption[]>(
     [],
     async () => {
       const { data, error } = await supabase
         .from('unified_tags')
-        .select('slug, name, category')
-        .in('category', ['material', 'occasion', 'vibe'])
+        .select('slug, name')
+        .or(
+          'slug.like.mat-%,slug.like.occ-%,slug.like.vibe-%,slug.like.size-%,slug.like.color-%,slug.like.genre-%,slug.like.fit-%',
+        )
         .eq('status', 'active')
         .order('name');
       if (error || !data) return [];
+      const { attributeKindOfSlug } = await import('@/lib/marketplaceTaxonomy');
       return data
-        .filter((t): t is { slug: string; name: string; category: string } => !!t.slug && !!t.name)
-        .map((t) => ({ slug: t.slug, name: t.name, kind: t.category as MarketplaceAttributeOption['kind'] }));
+        .filter((t): t is { slug: string; name: string } => !!t.slug && !!t.name)
+        .map((t) => {
+          const kind = attributeKindOfSlug(t.slug);
+          return kind ? { slug: t.slug, name: t.name, kind } : null;
+        })
+        .filter((t): t is MarketplaceAttributeOption => t !== null);
+    },
+    [],
+  );
+}
+
+/** Column-derived attribute facet counts (size/color/material/genre/fit) —
+ *  covers the numeric sizes that deliberately have no size-* tag. */
+export function useMarketplaceAttributeFacets(
+  department: string | null | undefined,
+  group: string | null | undefined,
+  includeAdult = false,
+) {
+  return useAsync<MarketplaceTagFacet[]>(
+    [department, group, includeAdult],
+    async () => {
+      const { data, error } = await supabase.rpc('get_marketplace_attribute_facets', {
+        p_department: department ?? undefined,
+        p_subcategory_group: group ?? undefined,
+        p_include_adult: includeAdult,
+      });
+      if (error || !data) return [];
+      type Row = { kind: string | null; slug: string | null; count: number | string | null };
+      return (data as Row[])
+        .filter(
+          (r): r is { kind: string; slug: string; count: number | string } =>
+            !!r.kind && !!r.slug && r.count != null,
+        )
+        .map((r) => ({
+          slug: r.slug,
+          name: r.slug,
+          kind: r.kind as MarketplaceTagFacet['kind'],
+          count: toCount(r.count),
+        }));
+    },
+    [],
+  );
+}
+
+/** Fine-tier counts within a department/group (subcategory_fine), gated. */
+export function useMarketplaceFineCounts(
+  department: string | null | undefined,
+  group: string | null | undefined,
+  includeAdult = false,
+) {
+  return useAsync<DepartmentCount[]>(
+    [department, group, includeAdult],
+    async () => {
+      if (!department && !group) return [];
+      const { data, error } = await supabase.rpc('get_marketplace_subcategory_fine_counts', {
+        p_department: department ?? undefined,
+        p_subcategory_group: group ?? undefined,
+        p_include_adult: includeAdult,
+      });
+      if (error || !data) return [];
+      type Row = { fine: string | null; count: number | string | null };
+      return (data as Row[])
+        .filter((r): r is { fine: string; count: number | string } => !!r.fine && r.count != null)
+        .map((r) => ({ slug: r.fine, count: toCount(r.count) }));
     },
     [],
   );
@@ -236,7 +326,9 @@ export function useMarketplaceTopCities(limit = 10) {
         .eq('status', 'active')
         .limit(2000);
       if (error || !data) return [];
-      type Row = { venues: { city: string | null; cities?: { slug: string | null } | null } | null };
+      type Row = {
+        venues: { city: string | null; cities?: { slug: string | null } | null } | null;
+      };
       const counts = new Map<string, { count: number; slug: string | null }>();
       for (const row of data as unknown as Row[]) {
         const city = row.venues?.city;
@@ -469,7 +561,8 @@ export function useMarketplaceFacets(opts: {
         }
         return m;
       };
-      const total = typeof payload.total === 'string' ? parseInt(payload.total, 10) : payload.total ?? 0;
+      const total =
+        typeof payload.total === 'string' ? parseInt(payload.total, 10) : (payload.total ?? 0);
       return {
         category: toMap(payload.by_category),
         subcategory: toMap(payload.by_subcategory),
