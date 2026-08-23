@@ -27,6 +27,13 @@
 -- Events stay nightly on purpose. An event's `website` is usually a ticketing
 -- page rather than an organisation, and the historical hit rate reflects that;
 -- there is no backlog worth draining faster.
+--
+-- NOTE on the `::text` casts below: `to_jsonb()` is polymorphic (anyelement),
+-- and a dollar-quoted literal arrives as type `unknown`, so without the cast
+-- Postgres cannot resolve the call — `42804: could not determine polymorphic
+-- type because input has type unknown`. The first version of this migration
+-- shipped without them and `supabase db push` aborted on it, which is why the
+-- deploy went red rather than half-applying.
 
 update public.admin_automations
 set action = jsonb_set(
@@ -42,7 +49,7 @@ set action = jsonb_set(
     body := '{"table": "venues", "batch_size": 100}'::jsonb,
     timeout_milliseconds := 250000
   ) AS request_id;
-  $cmd$)
+  $cmd$::text)
     ),
     schedule = '0 * * * *'
 where slug = 'enrich_logos_venues';
@@ -61,7 +68,7 @@ set action = jsonb_set(
     body := '{"table": "events", "batch_size": 100}'::jsonb,
     timeout_milliseconds := 250000
   ) AS request_id;
-  $cmd$)
+  $cmd$::text)
     )
 where slug = 'enrich_logos_events';
 
