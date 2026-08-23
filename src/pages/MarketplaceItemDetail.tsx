@@ -375,7 +375,7 @@ export default function MarketplaceItemDetail() {
       tags={
         <div className="flex flex-col gap-4">
           <CommunityTags listing={listing} />
-          <ProductTags tags={tags} />
+          <ProductTags tags={tags} department={listing.department} />
         </div>
       }
       action={

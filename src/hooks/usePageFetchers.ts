@@ -658,7 +658,11 @@ export async function fetchRelatedNewsArticles<T = unknown>(
 
 export interface ListingTag {
   name: string;
-  /** unified_tags.category — 'material' | 'occasion' | 'vibe' | other | null */
+  /** unified_tags.slug — canonical; attribute kind derives from its prefix
+   *  (mat-/occ-/vibe-/size-/color-/genre-/fit-), never from `category`,
+   *  which is glossary-derived since the tag-category consolidation. */
+  slug: string;
+  /** unified_tags.category — glossary category text (NOT the attribute kind). */
   category: string | null;
 }
 
@@ -706,16 +710,20 @@ export async function fetchMarketplaceListingBundle<TListing, TReview>(
   }
   const { data: tagRows } = await supabase
     .from('unified_tag_assignments')
-    .select('unified_tags!inner(name, category, status)')
+    .select('unified_tags!inner(name, slug, category, status)')
     .eq('entity_type', 'marketplace_listing')
     .eq('entity_id', typed.id);
   const tags: ListingTag[] = (
     (tagRows as Array<{
-      unified_tags: { name: string; category: string | null; status: string | null };
+      unified_tags: { name: string; slug: string; category: string | null; status: string | null };
     }> | null) ?? []
   )
-    .filter((t) => t.unified_tags?.status !== 'inactive')
-    .map((t) => ({ name: t.unified_tags.name, category: t.unified_tags.category }));
+    .filter((t) => t.unified_tags?.status === 'active')
+    .map((t) => ({
+      name: t.unified_tags.name,
+      slug: t.unified_tags.slug,
+      category: t.unified_tags.category,
+    }));
   return {
     listing: typed,
     reviews: (reviews ?? []) as TReview[],

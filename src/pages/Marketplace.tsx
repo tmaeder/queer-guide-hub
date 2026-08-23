@@ -42,8 +42,10 @@ import {
   FILTER_PARAM_KEYS,
   filtersToParams,
   hasActiveFilters as hasActiveFiltersFn,
+  isAttributeTag,
   parseFiltersFromParams,
 } from '@/lib/marketplaceFilterParams';
+import { FromTheGlossary } from '@/components/tags/FromTheGlossary';
 import { PageContainer, STICKY_UNDER_HEADER } from '@/components/layout/PageContainer';
 
 // Must mirror the grid classes' breakpoint column counts (sm/lg/2xl).
@@ -301,6 +303,12 @@ const Marketplace = () => {
 
   const hasActiveFilters = useMemo(() => hasActiveFiltersFn(combinedFilters), [combinedFilters]);
 
+  // Exactly one active CONCEPT tag (non-attribute) → the glossary teaser slug.
+  const conceptTeaserTag = useMemo(() => {
+    const concepts = (combinedFilters.tags ?? []).filter((t) => !isAttributeTag(t));
+    return concepts.length === 1 ? concepts[0] : null;
+  }, [combinedFilters.tags]);
+
   useEffect(() => {
     fetchListings(combinedFilters, page, sortBy);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -496,6 +504,14 @@ const Marketplace = () => {
         </section>
 
         <PageContainer className="relative">
+          {/* "About this tag" — the browse ↔ glossary round-trip. Renders only
+              when exactly ONE non-attribute (concept) tag is active: an
+              attribute like mat-cotton has no wiki entry, and two concepts
+              would make the teaser ambiguous. Self-hiding when the tag has no
+              glossary definition. */}
+          {conceptTeaserTag && (
+            <FromTheGlossary tags={[conceptTeaserTag]} max={1} className="mb-6" />
+          )}
           <div className="mb-6">
             {error && (
               <ErrorState

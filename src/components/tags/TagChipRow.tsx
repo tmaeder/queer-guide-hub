@@ -8,6 +8,8 @@ export interface TagChipItem {
   tag: string;
   name?: string;
   count?: number;
+  /** Filter-scoped href override (suppresses the glossary hover preview). */
+  to?: string;
 }
 
 export interface TagChipRowProps {
@@ -84,12 +86,7 @@ export function TagChipRow({
             +{hidden} more
           </LocalizedLink>
         ) : (
-          <span
-            className={cn(
-              'text-muted-foreground',
-              size === 'sm' ? 'text-2xs' : 'text-xs2',
-            )}
-          >
+          <span className={cn('text-muted-foreground', size === 'sm' ? 'text-2xs' : 'text-xs2')}>
             +{hidden}
           </span>
         ))}
