@@ -181,6 +181,17 @@ Deno.test('the (tba) placeholder is not a venue', () => {
   assertEquals(parseLocation(html, 'https://www.gaybasel.org/locations/6640/tba'), null)
 })
 
+// Found on the first live prod run: 20 of 540 venues staged with city="Website"
+// because that link sits inside the address block and passes a "letters only"
+// city test.
+Deno.test('a UI label inside the address block is never read as the city', () => {
+  const html = `<html><body><a>${MARKER}</a><h1>Acanto</h1><h2>Adresse</h2>` +
+    `<p>Acanto</p><p>Steinenvorstadt 67</p><a>Website</a><p>Basel</p></body></html>`
+  const v = parseLocation(html, 'https://www.gaybasel.org/locations/700/acanto')!
+  assertEquals(v.city, 'Basel')
+  assertEquals(v.street, 'Steinenvorstadt 67')
+})
+
 Deno.test('a location with no coordinates still parses — 40% of them have none', () => {
   const html = `<html><body><a>${MARKER}</a><h1>Kaserne</h1><h2>Adresse</h2><p>Kaserne</p><p>Klybeckstrasse 1b</p><p>4057 Basel</p></body></html>`
   const v = parseLocation(html, 'https://www.gaybasel.org/locations/123/kaserne')!
