@@ -2,8 +2,11 @@
 // Three sources, run per venue in cost order:
 //   extract  (free)    re-classify existing amenities+tags+desc into clean canonical
 //                      buckets via _shared/amenity-normalize. Auto-applies.
-//   places   (deferred) Google Places structured booleans -> slugs. Auto-applies.
-//                      No-op until place_ids are resolved (Phase 7); 0 venues have one.
+//   places   (key-gated) Google Places Details v1 booleans -> slugs. Auto-applies
+//                      (structured provider data, not inference). Selector targets the
+//                      744 venues carrying platform_ids.google; silent no-op until the
+//                      GOOGLE_PLACES_API_KEY secret is provisioned. Field mask stays in
+//                      the free monthly tier at the default daily cap.
 //   llm      (gated)   extract amenities from description, constrained to the vocab.
 //                      Amenities auto-apply at >=0.8; ACCESSIBILITY is ALWAYS review-gated.
 //
@@ -25,12 +28,15 @@ const AUTO_APPLY_CONFIDENCE = 0.8
 
 type Source = 'extract' | 'places' | 'llm'
 
-// Google Places v1 boolean field -> { kind, slug }. Ready for Phase 7; unused until
-// place_ids exist. accessibilityOptions.* and the serving/seating booleans.
-const _PLACES_BOOLEAN_MAP: Record<string, { kind: 'amenity' | 'accessibility'; slug: string }> = {
-  'wheelchairAccessibleEntrance': { kind: 'accessibility', slug: 'wheelchair-accessible' },
-  'wheelchairAccessibleRestroom': { kind: 'accessibility', slug: 'accessible-restroom' },
-  'wheelchairAccessibleParking': { kind: 'accessibility', slug: 'accessible-parking' },
+// Google Places v1 boolean field -> { kind, slug }. The wheelchair booleans live
+// inside `accessibilityOptions`; the rest are top-level place fields. Every slug is
+// verified present in public.amenities — a value outside the vocabulary must never
+// be written. (`restroom` used to map to 'food-service'; that pairing was wrong and
+// the field carries no amenity we track, so it is deliberately absent.)
+const PLACES_BOOLEAN_MAP: Record<string, { kind: 'amenity' | 'accessibility'; slug: string }> = {
+  'accessibilityOptions.wheelchairAccessibleEntrance': { kind: 'accessibility', slug: 'wheelchair-accessible' },
+  'accessibilityOptions.wheelchairAccessibleRestroom': { kind: 'accessibility', slug: 'accessible-restroom' },
+  'accessibilityOptions.wheelchairAccessibleParking': { kind: 'accessibility', slug: 'accessible-parking' },
   'outdoorSeating': { kind: 'amenity', slug: 'outdoor-seating' },
   'liveMusic': { kind: 'amenity', slug: 'live-music' },
   'servesBeer': { kind: 'amenity', slug: 'beer' },
@@ -38,8 +44,12 @@ const _PLACES_BOOLEAN_MAP: Record<string, { kind: 'amenity' | 'accessibility'; s
   'servesCoffee': { kind: 'amenity', slug: 'coffee' },
   'servesBreakfast': { kind: 'amenity', slug: 'breakfast' },
   'allowsDogs': { kind: 'amenity', slug: 'pets-allowed' },
-  'restroom': { kind: 'amenity', slug: 'food-service' },
 }
+
+const PLACES_FIELD_MASK = [
+  'accessibilityOptions',
+  ...Object.keys(PLACES_BOOLEAN_MAP).filter((k) => !k.startsWith('accessibilityOptions.')),
+].join(',')
 
 function uniqSorted(...arrs: (string[] | null | undefined)[]): string[] {
   const s = new Set<string>()
@@ -58,7 +68,10 @@ interface VenueRow {
   platform_ids: Record<string, unknown> | null
 }
 
-/** Google Places — deferred. Returns empty until place_ids are resolved (Phase 7). */
+/** Google Places Details (v1) — Phase 7. No-op without GOOGLE_PLACES_API_KEY or a
+ *  place id, so the routine cron stays free until the key is provisioned. Only
+ *  booleans that are literally `true` map to slugs; absent/false/unknown write
+ *  nothing (absence of data, never a negative claim). */
 async function fetchPlacesFeatures(
   _supabase: ReturnType<typeof getServiceClient>,
   placeId: string | null,
@@ -66,9 +79,34 @@ async function fetchPlacesFeatures(
   const empty = { amenities: [], accessibility: [] }
   const apiKey = Deno.env.get('GOOGLE_PLACES_API_KEY')
   if (!placeId || !apiKey) return empty
-  // Phase 7: call places.googleapis.com/v1/places/{id} with a field mask over
-  // PLACES_BOOLEAN_MAP keys, map true booleans -> slugs. Intentionally inert now.
-  return empty
+
+  let body: Record<string, unknown>
+  try {
+    const res = await fetch(`https://places.googleapis.com/v1/places/${encodeURIComponent(placeId)}`, {
+      headers: { 'X-Goog-Api-Key': apiKey, 'X-Goog-FieldMask': PLACES_FIELD_MASK },
+    })
+    // 404 = stale/merged place id; anything else non-OK is transport/quota. Both
+    // yield empty rather than throwing — one bad id must not kill the batch.
+    if (!res.ok) {
+      console.warn(`places details ${placeId}: HTTP ${res.status}`)
+      return empty
+    }
+    body = await res.json()
+  } catch (e) {
+    console.warn(`places details ${placeId}: ${e instanceof Error ? e.message : e}`)
+    return empty
+  }
+
+  const amenities: string[] = []
+  const accessibility: string[] = []
+  for (const [path, m] of Object.entries(PLACES_BOOLEAN_MAP)) {
+    const value = path.split('.').reduce<unknown>(
+      (acc, key) => (acc && typeof acc === 'object' ? (acc as Record<string, unknown>)[key] : undefined),
+      body,
+    )
+    if (value === true) (m.kind === 'accessibility' ? accessibility : amenities).push(m.slug)
+  }
+  return { amenities: amenities.sort(), accessibility: accessibility.sort() }
 }
 
 Deno.serve(async (req: Request) => {
@@ -108,6 +146,21 @@ Deno.serve(async (req: Request) => {
       .from('venues')
       .select('id, name, category, description, tags, amenities, accessibility_attributes, platform_ids')
       .in('id', venueIds)
+    if (error) return jsonResponse({ error: error.message, success: false }, 500, req)
+    venues = (data ?? []) as VenueRow[]
+  } else if (wantPlaces) {
+    // Places runs only make sense for venues that CARRY a place id (744 backfilled
+    // from the patroc import, 20260822055141) — the generic selector ranks by
+    // amenity emptiness and would feed this run venues the source cannot see.
+    // amenities_verified marks a completed Places pass, so re-runs drain the rest.
+    const { data, error } = await supabase
+      .from('venues')
+      .select('id, name, category, description, tags, amenities, accessibility_attributes, platform_ids')
+      .is('duplicate_of_id', null)
+      .not('platform_ids->google', 'is', null)
+      .not('amenities_verified', 'is', true)
+      .order('id')
+      .limit(remaining)
     if (error) return jsonResponse({ error: error.message, success: false }, 500, req)
     venues = (data ?? []) as VenueRow[]
   } else {
