@@ -666,7 +666,10 @@ export interface ListingTag {
   category: string | null;
 }
 
-/** MarketplaceItemDetail.tsx — slug→uuid fallback + reviews + favorite state + tags. */
+export type ListingVariantRow =
+  import('@/integrations/supabase/types').Database['public']['Tables']['marketplace_listing_variants']['Row'];
+
+/** MarketplaceItemDetail.tsx — slug→uuid fallback + reviews + favorite state + tags + variants. */
 export async function fetchMarketplaceListingBundle<TListing, TReview>(
   slug: string,
   userId: string | undefined,
@@ -675,6 +678,7 @@ export async function fetchMarketplaceListingBundle<TListing, TReview>(
   reviews: TReview[];
   isFavorited: boolean;
   tags: ListingTag[];
+  variants: ListingVariantRow[];
 } | null> {
   let { data: listing, error } = await supabase
     .from('marketplace_listings')
@@ -724,11 +728,17 @@ export async function fetchMarketplaceListingBundle<TListing, TReview>(
       slug: t.unified_tags.slug,
       category: t.unified_tags.category,
     }));
+  const { data: variantRows } = await supabase
+    .from('marketplace_listing_variants')
+    .select('*')
+    .eq('listing_id', typed.id)
+    .order('position', { ascending: true, nullsFirst: false });
   return {
     listing: typed,
     reviews: (reviews ?? []) as TReview[],
     isFavorited,
     tags,
+    variants: (variantRows ?? []) as ListingVariantRow[],
   };
 }
 

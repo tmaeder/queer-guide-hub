@@ -20,6 +20,7 @@ import { useMeta } from '@/hooks/useMeta';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { toast } from '@/hooks/use-toast';
 import { fetchMarketplaceListingBundle, toggleMarketplaceFavorite } from '@/hooks/usePageFetchers';
+import { VariantAvailability } from '@/components/marketplace/VariantAvailability';
 import {
   type MarketplaceListing,
   type MarketplaceReview,
@@ -38,7 +39,7 @@ import { MarketplaceGallery } from '@/components/marketplace/MarketplaceGallery'
 import { useBrandMoreFrom, useMarketplaceBrand } from '@/hooks/useMarketplaceBrands';
 import { brandSlug } from '@/lib/marketplaceTaxonomy';
 import { formatListingPrice } from '@/components/marketplace/marketplaceHelpers';
-import type { ListingTag } from '@/hooks/usePageFetchers';
+import type { ListingTag, ListingVariantRow } from '@/hooks/usePageFetchers';
 import { FeaturedInGuides } from '@/components/guides/FeaturedInGuides';
 import { PageContainer } from '@/components/layout/PageContainer';
 
@@ -47,6 +48,7 @@ interface ListingBundle {
   reviews: MarketplaceReview[];
   isFavorited: boolean;
   tags: ListingTag[];
+  variants: ListingVariantRow[];
 }
 
 async function fetchListingBundle(
@@ -308,6 +310,7 @@ export default function MarketplaceItemDetail() {
     ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
     : 0;
   const tags = data?.tags ?? [];
+  const variants = data?.variants ?? [];
   const price = formatListingPrice(listing);
 
   // Bordered ink chip, never a filled track colour — availability is a state,
@@ -323,6 +326,7 @@ export default function MarketplaceItemDetail() {
     <>
       <MarketplaceGallery listingId={listing.id} images={listing.images} title={listing.title} />
       <ProductFacts listing={listing} curatedName={curatedName} />
+      {variants.length > 0 && <VariantAvailability variants={variants} />}
       <MarketplaceContent listing={listing} reviews={reviews} onContentUpdated={refetch} />
       <FeaturedInGuides entityType="marketplace" entityId={listing.id} />
       {/* NOT wrapped in a SingleSection: BrandStoryBlock renders its own

@@ -281,20 +281,30 @@ export function ProductFacts({
   //                     brand, not only those with a story.
   //   12 history      — MarketplacePriceHistory below.
   //   15 stat line    — ProductStats above, in the rail.
-  //   09 variants     — UNRENDERABLE, and deliberately left that way. No
-  //                     variant/size/option/SKU column exists, and rule 2 is
-  //                     "a module with no data does not render". The design
-  //                     mock shows an S–4XL size picker; wiring an empty one to
-  //                     match it would invent options the maker never offered.
-  //                     Resolving this needs a variants data model, which is
-  //                     its own spec (singleModules.ts:82-95).
+  //   09 variants     — VariantAvailability (page body), fed by
+  //                     marketplace_listing_variants since the 2026-08
+  //                     finer-categorisation program. Still self-hiding when a
+  //                     listing has no variant rows (rule 2).
   //   11 vouches      — deliberately not rendered. Vouches takes a Roster of
   //                     PEOPLE; marketplace reviews are rated prose, so routing
   //                     them through it would drop the rating and the text.
+  // Colour/material come from the structured attributes jsonb the variant
+  // backfill maintains; absent keys simply render no row.
+  const attrs = (listing.attributes ?? {}) as { color?: string[]; material?: string[] };
+  const colorFact =
+    Array.isArray(attrs.color) && attrs.color.length > 0
+      ? attrs.color.map((c) => humanize(c)).join(', ')
+      : null;
+  const materialFact =
+    Array.isArray(attrs.material) && attrs.material.length > 0
+      ? attrs.material.map((m) => humanize(m)).join(', ')
+      : null;
   const facts = [
     { label: 'Brand', value: displayBrandOf(listing, curatedName) },
     { label: 'Department', value: dept },
     { label: 'Category', value: subcat },
+    { label: 'Color', value: colorFact },
+    { label: 'Material', value: materialFact },
     { label: 'Availability', value: availability },
     { label: 'Ships from', value: listing.location },
     { label: 'Listed', value: new Date(listing.created_at).toLocaleDateString() },
