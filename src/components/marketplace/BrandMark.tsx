@@ -54,7 +54,11 @@ export function BrandMark({
         // dead logo falls back to an ink monogram on paper.
         logoUrl
           ? onInk
-            ? 'bg-foreground text-background'
+            ? // NOT `bg-foreground`: that token flips with the theme, so in dark
+              // mode the "ink plate" renders PAPER and the white mark it exists
+              // to rescue disappears again. Both plates are mode-independent
+              // literals because polarity belongs to the artwork.
+              'bg-logo-plate-ink text-logo-plate'
             : 'bg-logo-plate text-track-ring'
           : 'bg-card',
         className,

@@ -229,6 +229,17 @@
      somebody else's artwork. */
   --color-logo-plate: hsl(60 33% 97%);
 
+  /* The ink counterpart, for the ~8% of marks that are white-on-transparent
+     and would be invisible on the plate above. It is a LITERAL for exactly the
+     same reason `--color-logo-plate` is, and the reason is not symmetry — it is
+     that `bg-foreground` LOOKS correct and silently inverts. Shipped that way
+     first and caught on prod: in dark mode `--foreground` IS paper, so the
+     "ink plate" rendered paper-on-paper and the white logo vanished again, in
+     precisely the mode the fix existed to survive. Polarity belongs to the
+     artwork, so neither plate may follow the theme. Same rule as
+     `--track-ring`, which is ink in both modes for the same reason. */
+  --color-logo-plate-ink: hsl(0 0% 6.7%);
+
   --color-card: hsl(var(--card));
   --color-card-foreground: hsl(var(--card-foreground));
 
