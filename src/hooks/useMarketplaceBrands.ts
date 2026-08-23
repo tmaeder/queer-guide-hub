@@ -13,6 +13,7 @@ export interface MarketplaceBrand {
   product_count: number;
   website: string | null;
   logo_url: string | null;
+  logo_on_ink: boolean | null;
   story: string | null;
   ownership_tags: string[];
   is_approved: boolean;
@@ -23,6 +24,7 @@ export interface SpotlightBrand {
   display_name: string;
   product_count: number;
   logo_url: string | null;
+  logo_on_ink: boolean | null;
   ownership_tags: string[];
 }
 
@@ -43,6 +45,7 @@ export interface DirectoryBrand {
   slug: string;
   display_name: string;
   logo_url: string | null;
+  logo_on_ink: boolean | null;
   story: string | null;
   product_count: number | null;
   ownership_tags: string[] | null;
@@ -84,7 +87,7 @@ export function useMarketplaceBrandsDirectory(opts: {
     queryFn: async (): Promise<{ brands: DirectoryBrand[]; total: number }> => {
       let q = supabase
         .from('marketplace_brands')
-        .select('slug, display_name, logo_url, story, product_count, ownership_tags', {
+        .select('slug, display_name, logo_url, logo_on_ink, story, product_count, ownership_tags', {
           count: 'exact',
         })
         .eq('status', 'approved')
@@ -191,6 +194,7 @@ export interface VerifiedBrand {
   brand_key: string;
   slug: string | null;
   logo_url: string | null;
+  logo_on_ink: boolean | null;
   product_count: number | null;
   ownership_tags: string[] | null;
 }
@@ -225,7 +229,9 @@ export function useVerifiedOwnedBrands(limit = 24) {
         // right set. Written as `.not()` rather than `.neq()` because the
         // generated column type is `string[]` and `.neq()` will not accept the
         // `'{}'` array literal PostgREST needs; `.not()` takes the raw value.
-        .select('id, display_name, brand_key, slug, logo_url, product_count, ownership_tags')
+        .select(
+          'id, display_name, brand_key, slug, logo_url, logo_on_ink, product_count, ownership_tags',
+        )
         .not('ownership_tags', 'eq', '{}')
         .order('product_count', { ascending: false, nullsFirst: false })
         .limit(limit);
