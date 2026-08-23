@@ -31,6 +31,7 @@ export function BrandPlate({ brand }: { brand: DirectoryBrand }) {
         <BrandMark
           name={brand.display_name}
           logoUrl={brand.logo_url}
+          onInk={brand.logo_on_ink ?? false}
           className="h-14 w-14 rounded-container"
           /* The monogram is `text-title font-bold`, not the display face: rank 4
              is Space Grotesk and `rankFourFace.test.ts` scans for the pairing.
