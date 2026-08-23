@@ -61,20 +61,55 @@ async function getText(url: string, retry = true): Promise<string | null> {
   return null
 }
 
-/** The WP REST list: ids, slugs and links for the whole corpus, no dates. */
-async function fetchList(cap: number): Promise<Record<string, unknown>[]> {
+/**
+ * The WP REST list: ids, slugs and links, no dates.
+ *
+ * A 2xx HERE DOES NOT MEAN JSON. Under rate limiting this host serves an HTML
+ * challenge page with a 2xx status, so `res.ok` is satisfied and `res.json()`
+ * throws — which killed an entire production run before any row was staged.
+ * Same shape as the detail-page 403/202 behaviour, and the same shape as
+ * gaybasel's 200-with-a-shell: on these hosts the status code is not evidence
+ * about the body. Content-type is checked, the parse is guarded, and an HTML
+ * body is treated as backpressure rather than as data.
+ *
+ * The walk also stops as soon as it has enough UNSEEN ids. Walking all 48 pages
+ * before fetching a single detail page put the run near the pg_net timeout for
+ * no benefit — after the first backfill almost every id is already known.
+ */
+async function fetchList(cap: number, skip: Set<string>): Promise<Record<string, unknown>[]> {
   const out: Record<string, unknown>[] = []
+  let unseen = 0
   for (let page = 1; page <= 60; page++) {
-    const res = await fetch(
-      `${BASE}/wp-json/wp/v2/ajde_events?per_page=50&page=${page}&orderby=date&order=desc`,
-      { headers: { 'User-Agent': UA, Accept: 'application/json' } },
-    )
-    if (!res.ok) break
-    const rows = await res.json() as Record<string, unknown>[]
-    if (!rows.length) break
+    let res: Response
+    try {
+      res = await fetch(
+        `${BASE}/wp-json/wp/v2/ajde_events?per_page=50&page=${page}&orderby=date&order=desc`,
+        { headers: { 'User-Agent': UA, Accept: 'application/json' } },
+      )
+    } catch { break }
+    if (!res.ok) {
+      if (res.status !== 403) break
+      await sleep(DELAY_MS * 3) // rate limited — one polite retry, then give up
+      continue
+    }
+    if (!/json/i.test(res.headers.get('content-type') ?? '')) {
+      // An HTML body with a 2xx is this host saying "slow down".
+      await res.body?.cancel()
+      await sleep(DELAY_MS * 3)
+      continue
+    }
+    let rows: Record<string, unknown>[]
+    try {
+      rows = await res.json() as Record<string, unknown>[]
+    } catch {
+      break // malformed despite the content-type; do not kill the run
+    }
+    if (!Array.isArray(rows) || !rows.length) break
     out.push(...rows)
+    unseen += rows.filter((r) => !skip.has(String(r.id))).length
     const total = Number(res.headers.get('x-wp-totalpages') ?? 1)
-    if (page >= total || out.length >= cap * 40) break
+    // Enough new work for this batch, or the corpus is exhausted.
+    if (page >= total || unseen >= cap) break
   }
   return out
 }
@@ -104,7 +139,7 @@ function makeAdapter(skip: Set<string>): SourceAdapter {
     entityType: 'event',
 
     async fetch(config: AdapterConfig): Promise<RawItem[]> {
-      const list = (await fetchList(config.batchSize)).filter((r) => !skip.has(String(r.id)))
+      const list = (await fetchList(config.batchSize, skip)).filter((r) => !skip.has(String(r.id)))
       const items: RawItem[] = []
       for (const row of list) {
         if (items.length >= config.batchSize) break

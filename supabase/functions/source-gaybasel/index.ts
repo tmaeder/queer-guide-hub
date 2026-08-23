@@ -56,6 +56,58 @@ async function getText(url: string): Promise<string> {
   return await res.text()
 }
 
+/** `resolvedCountry` is attached to the parsed venue after the batch lookup. */
+type MaybeCountry = GbVenue & { resolvedCountry?: string | null }
+
+/**
+ * Country from the CITY, resolved against our own `cities` table — not from a
+ * coordinate, and not from a bounding box.
+ *
+ * The first version of this function left `country` NULL on every venue,
+ * reasoning that a point kilometres from the CH/DE/FR corner cannot settle it.
+ * That was right about coordinates and wrong about the outcome: `W_NO_COUNTRY`
+ * is the third warning alongside `W_NO_CONTACT` and `W_SHORT_DESCRIPTION`, which
+ * is exactly `pipeline-validate`'s threshold — so all 540 venues landed in
+ * `needs_review` and none could commit.
+ *
+ * The city settles what the coordinate cannot. Measured over the live corpus,
+ * every city present resolves to exactly ONE tri-border country:
+ * Basel(352)->CH, Zürich(43)->CH, Bern(11)->CH, Luzern(8)->CH,
+ * Freiburg(8)->**DE**, Lörrach(6)->**DE**. The German towns resolve correctly,
+ * which a Switzerland-only rule would have got wrong.
+ *
+ * The uniqueness requirement is load-bearing: a name matching two of the three
+ * countries yields NULL rather than a coin flip, which is the same rule the rest
+ * of this codebase applies to same-name places.
+ */
+async function resolveCountriesByCity(
+  supabase: ReturnType<typeof getServiceClient>,
+  cities: string[],
+): Promise<Map<string, string>> {
+  const out = new Map<string, string>()
+  const wanted = [...new Set(cities.map((c) => c.trim()).filter(Boolean))]
+  if (!wanted.length) return out
+
+  const { data, error } = await supabase
+    .from('cities')
+    .select('name, countries!inner(code)')
+    .in('name', wanted)
+    .in('countries.code', ['CH', 'DE', 'FR'])
+  if (error || !data) return out
+
+  const byCity = new Map<string, Set<string>>()
+  for (const row of data as { name: string; countries: { code: string } | { code: string }[] }[]) {
+    const codes = Array.isArray(row.countries) ? row.countries : [row.countries]
+    const key = row.name.toLowerCase()
+    const set = byCity.get(key) ?? new Set<string>()
+    for (const c of codes) if (c?.code) set.add(c.code)
+    byCity.set(key, set)
+  }
+  // Exactly one country, or nothing.
+  for (const [city, codes] of byCity) if (codes.size === 1) out.set(city, [...codes][0])
+  return out
+}
+
 const eventAdapter: SourceAdapter = {
   name: 'gaybasel',
   entityType: 'event',
@@ -149,9 +201,9 @@ const venueAdapter: SourceAdapter = {
         address: v.street ?? undefined,
         city: v.city ?? undefined,
         postal_code: v.postal ?? undefined,
-        // Deliberately NO country: these sit on the CH/DE/FR corner and a
-        // coordinate kilometres from a border cannot settle it. NULL is filled
-        // from the linked city later; a wrong value drives safety-gating.
+        // Resolved from the CITY against our own `cities` table, never guessed
+        // from a coordinate near a border — see resolveCountriesByCity.
+        country: (v as MaybeCountry).resolvedCountry ?? undefined,
         lat: v.lat ?? undefined,
         lng: v.lng ?? undefined,
       },
@@ -184,6 +236,17 @@ Deno.serve(withErrorReporting('source-gaybasel', async (req) => {
 
     const rawEvents = await eventAdapter.fetch(config)
     const rawVenues = await venueAdapter.fetch(config)
+
+    // One lookup for the whole batch (~30 distinct cities), then stamped onto
+    // each parsed venue so the synchronous normalize() can read it.
+    const cityCountry = await resolveCountriesByCity(
+      supabase,
+      rawVenues.map((r) => String((r.data as unknown as GbVenue).city ?? '')),
+    )
+    for (const r of rawVenues) {
+      const v = r.data as unknown as MaybeCountry
+      v.resolvedCountry = v.city ? (cityCountry.get(v.city.toLowerCase()) ?? null) : null
+    }
 
     if (config.dryRun) {
       return jsonResponse({
