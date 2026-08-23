@@ -165,9 +165,9 @@ export default {
 		// file header and DEFAULT_DRAIN_LIMIT.
 		const limit = Number(env.DRAIN_LIMIT) || DEFAULT_DRAIN_LIMIT;
 		ctx.waitUntil(
-			drainStale(env, limit).then((r) => {
-				console.log(`drain: ${JSON.stringify(r)}`);
-			}),
+			drainStale(env, limit)
+				.then((r) => console.log(`drain: ${JSON.stringify(r)}`))
+				.catch((e) => console.error("drain failed", e)),
 		);
 	},
 	async queue(batch: MessageBatch, env: Env): Promise<void> {
@@ -366,9 +366,9 @@ async function handleBackfill(request: Request, env: Env, ctx: ExecutionContext)
 	// cost 2 subrequests each, so a batchSize of 50 spent ~101 and could not run
 	// on Workers Free at all.
 	ctx.waitUntil(
-		indexRows(env, rows.map((row) => ({ table, row }))).then((r) => {
-			console.log(`backfill ${table}: ${JSON.stringify(r)}`);
-		}),
+		indexRows(env, rows.map((row) => ({ table, row })))
+			.then((r) => console.log(`backfill ${table}: ${JSON.stringify(r)}`))
+			.catch((e) => console.error(`backfill ${table} failed`, e)),
 	);
 
 	return jres({ accepted: rows.length, cursor: lastIdSync, done: rows.length < batchSize });
