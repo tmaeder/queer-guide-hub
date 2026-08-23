@@ -86,7 +86,9 @@ export interface GuideDetail {
 export type QuestPhase = 'scheduled' | 'active' | 'completed';
 
 /** Quest lifecycle is derived from the publish window, not a status machine. */
-export function questPhase(guide: Pick<Guide, 'format' | 'status' | 'starts_at' | 'ends_at'>): QuestPhase | null {
+export function questPhase(
+  guide: Pick<Guide, 'format' | 'status' | 'starts_at' | 'ends_at'>,
+): QuestPhase | null {
   if (guide.format !== 'quest' || guide.status !== 'published') return null;
   if (!guide.starts_at || !guide.ends_at) return null;
   const now = Date.now();
@@ -120,7 +122,25 @@ export interface GuidesFilter {
   category?: string;
   featuredFirst?: boolean;
   limit?: number;
+  /**
+   * Restrict to the generated department shortlists for ONE department, or —
+   * with `false` — exclude every generated shortlist. See
+   * `GENERATED_SHORTLIST_MARKER`.
+   */
+  department?: string | false;
 }
+
+/**
+ * The marker that tells a hand-written guide from a generated one.
+ *
+ * The `shop-*-shortlist` rows are stamped `meta.generated_by` by the job that
+ * built them and carry `meta.department`. That stamp is the only reliable
+ * discriminator — they are `format: 'list'` like any curated rail, they sit
+ * under `category: 'shopping'` like the editorial guides, and matching on the
+ * slug prefix would break the moment a human writes a guide called
+ * "shop-something".
+ */
+export const GENERATED_SHORTLIST_MARKER = 'generated_by';
 
 export function useGuides(filter: GuidesFilter = {}) {
   return useQuery({
@@ -131,12 +151,28 @@ export function useGuides(filter: GuidesFilter = {}) {
       if (filter.entityType) q = q.eq('primary_entity_type', filter.entityType);
       if (filter.cityId) q = q.eq('city_id', filter.cityId);
       if (filter.category) q = q.eq('category', filter.category);
+      // Department scoping is a jsonb containment test, so it runs server-side
+      // rather than over-fetching and filtering in the client.
+      if (typeof filter.department === 'string') {
+        q = q.contains('meta', { department: filter.department });
+      }
       if (filter.featuredFirst !== false) q = q.order('is_featured', { ascending: false });
       q = q.order('published_at', { ascending: false, nullsFirst: false });
-      if (filter.limit) q = q.limit(filter.limit);
+      // The exclusion arm has to be applied AFTER the fetch — PostgREST cannot
+      // express "this jsonb key is absent" — so the limit is applied after it
+      // too, or a page asking for 3 could come back with fewer once the
+      // generated rows are dropped. That is exactly what the hub rail hit:
+      // two of its three cards were shortlists.
+      const excludeGenerated = filter.department === false;
+      if (filter.limit && !excludeGenerated) q = q.limit(filter.limit);
       const { data, error } = await q;
       if (error) throw error;
-      return (data ?? []) as unknown as Guide[];
+      let rows = (data ?? []) as unknown as Guide[];
+      if (excludeGenerated) {
+        rows = rows.filter((g) => !(g.meta && GENERATED_SHORTLIST_MARKER in g.meta));
+        if (filter.limit) rows = rows.slice(0, filter.limit);
+      }
+      return rows;
     },
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
@@ -180,10 +216,7 @@ export function useGuide(slug: string | undefined) {
       if (!guide) return null;
 
       const [picksRes, sectionsRes] = await Promise.all([
-        untypedFrom('guide_picks')
-          .select('*')
-          .eq('guide_id', guide.id)
-          .eq('is_orphaned', false),
+        untypedFrom('guide_picks').select('*').eq('guide_id', guide.id).eq('is_orphaned', false),
         untypedFrom('guide_sections')
           .select('*')
           .eq('guide_id', guide.id)
@@ -227,10 +260,7 @@ export function useActiveQuestGuide() {
 }
 
 /** Reverse lookup: published guides featuring a given entity. */
-export function useGuideAppearances(
-  entityType: GuideEntityType,
-  entityId: string | undefined,
-) {
+export function useGuideAppearances(entityType: GuideEntityType, entityId: string | undefined) {
   return useQuery({
     queryKey: ['guide-appearances', entityType, entityId],
     enabled: !!entityId,
@@ -244,9 +274,7 @@ export function useGuideAppearances(
       if (error) throw error;
       const rows = (data ?? []) as unknown as { guide: Guide }[];
       const seen = new Set<string>();
-      return rows
-        .map((r) => r.guide)
-        .filter((g) => g && !seen.has(g.id) && seen.add(g.id));
+      return rows.map((r) => r.guide).filter((g) => g && !seen.has(g.id) && seen.add(g.id));
     },
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
@@ -278,9 +306,12 @@ export function useQuestProgress(guideId: string | undefined) {
       });
       if (error) throw error;
       const row = Array.isArray(data) ? data[0] : data;
-      return (
-        row ?? { accepted_count: 0, pending_count: 0, contributor_count: 0, target_count: 0 }
-      ) as QuestProgress;
+      return (row ?? {
+        accepted_count: 0,
+        pending_count: 0,
+        contributor_count: 0,
+        target_count: 0,
+      }) as QuestProgress;
     },
   });
 }

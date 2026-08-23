@@ -1,6 +1,6 @@
 {
   "project": "tsconfig.app.json",
-  "total": 840,
+  "total": 837,
   "files": {
     "src/assets/intimate/pictograms.tsx": {
       "TS2503": 2
@@ -928,10 +928,6 @@
       "TS2538": 1,
       "TS2719": 1,
       "TS2769": 2
-    },
-    "src/pages/ProfessionDetail.tsx": {
-      "TS2345": 2,
-      "TS2769": 1
     },
     "src/pages/Settings.tsx": {
       "TS2322": 2,

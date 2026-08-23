@@ -7,6 +7,7 @@ import { MarketplaceMasthead } from '@/components/marketplace/MarketplaceMasthea
 import { FilterChip } from '@/components/transit/FilterChip';
 import { DeadEndTrack } from '@/components/transit/DeadEndTrack';
 import { MarketplaceFilteredView } from '@/components/marketplace/MarketplaceFilteredView';
+import { GuidesRail } from '@/components/guides/GuidesRail';
 import { AdultContentGate } from '@/components/marketplace/AdultContentGate';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
@@ -272,6 +273,21 @@ export default function MarketplaceCategory() {
           emptyTitle={`No ${name.toLowerCase()} listings yet.`}
           emptyAction={{ label: 'Browse all departments', to: '/marketplace/categories' }}
         />
+
+        {/* Where the generated shortlists moved to. On the hub they restated
+            the Departments grid directly above them; here a shortlist of THIS
+            department is the editorial layer over the grid the reader is
+            already looking at. Self-hides — most departments have no shortlist
+            (two were held by the generating job for thin or badly-framed
+            pools), and this rail deliberately does NOT pass `alwaysRender`:
+            the hub rail is the load-bearing path into /guides, this one is
+            not. */}
+        {isDepartment && (
+          <GuidesRail
+            title={`${name} guides`}
+            filters={{ entityType: 'marketplace', department: subcategory, limit: 3 }}
+          />
+        )}
       </PageContainer>
       <AdultContentGate active={isAdultCategorySlug(subcategory)} fallbackPath="/marketplace" />
     </div>

@@ -109,6 +109,40 @@ export const TRANSIT_ICON_PATHS = {
     'M 28 18 C 44 16 56 16 72 18 C 74 44 74 62 72 84 C 56 86 44 86 28 84 C 26 62 26 44 28 18 Z M 62 52 C 57 52 52 52 47 52 M 68 52 a 5 5 0 1 0 -10 0 a 5 5 0 1 0 10 0',
   outdoor:
     'M 50 16 C 40 30 32 42 26 52 C 34 55 42 56 50 56 C 58 56 66 55 74 52 C 68 42 60 30 50 16 Z M 50 56 C 50 68 50 78 50 86',
+
+  // ── Marketplace departments (added 2026-08-23) ───────────────────────────
+  // Category art for the M line's stop list. The department tiles used to show
+  // a product photograph picked by `boutique_score`, which put a sport sock on
+  // Apparel and a pair of PRIDE socks on Hygiene & Care — a product photo can
+  // only ever depict ONE item, so it is the wrong kind of image for a slot that
+  // has to stand for 18,000 of them. These seven fill the gaps the wayfinding
+  // and venue sets left; the other four departments reuse marks that already
+  // exist (`library`, `collar`, `community`, `shop` — see `departmentArt.ts`).
+  //
+  // Drawn to the same grammar as everything above: stroke-only, cubic, round
+  // caps, nothing dead straight. They render at 44-56px inside the art plate,
+  // roughly twice the map's pin size, so they carry a little more interior
+  // detail than the venue glyphs — but not much: the plate also renders at
+  // 28px in the department page's masthead.
+  apparel:
+    'M 38 24 C 32 25 26 28 20 33 C 18 39 18 45 20 51 C 24 51 28 50 32 48 C 31 59 31 71 32 82 C 44 84 56 84 68 82 C 69 71 69 59 68 48 C 72 50 76 51 80 51 C 82 45 82 39 80 33 C 74 28 68 25 62 24 C 58 30 54 33 50 33 C 46 33 42 30 38 24 Z',
+  underwear:
+    'M 22 34 C 41 31 59 31 78 34 M 22 34 C 23 46 26 56 31 64 C 34 69 36 74 37 80 C 41 81 45 81 48 80 C 49 70 49 62 50 56 C 51 62 51 70 52 80 C 55 81 59 81 63 80 C 64 74 66 69 69 64 C 74 56 77 46 78 34',
+  swimwear:
+    'M 22 33 C 41 30 59 30 78 33 C 77 45 75 57 73 69 C 66 71 59 71 52 69 C 51 63 50 57 50 51 C 50 57 49 63 48 69 C 41 71 34 71 27 69 C 25 57 23 45 22 33 Z M 43 41 C 46 44 54 44 57 41',
+  jewelry:
+    'M 20 26 C 30 40 40 48 50 48 C 60 48 70 40 80 26 M 50 48 C 45 53 41 59 41 65 C 41 73 45 79 50 79 C 55 79 59 73 59 65 C 59 59 55 53 50 48 Z',
+  homeware:
+    'M 34 45 C 38 33 42 24 50 24 C 58 24 62 33 66 45 C 55 47 45 47 34 45 Z M 50 47 C 49 57 49 67 50 75 M 36 79 C 45 77 55 77 64 79',
+  selfcare:
+    'M 38 45 C 37 57 37 69 38 79 C 46 81 54 81 62 79 C 63 69 63 57 62 45 C 54 43 46 43 38 45 Z M 44 45 C 44 39 45 35 46 33 C 50 32 54 32 58 33 M 46 33 C 42 31 38 28 36 24 C 40 22 44 22 48 24',
+  // Two interlocking rings. Intimacy is a department of the catalogue, not a
+  // depiction: the fine buckets under it (`sex_toys`, `chastity`, …) have no
+  // mark that is both legible at 44px and printable on a page that is SFW by
+  // default, and this tile renders BEFORE the 18+ opt-in on a visitor who has
+  // asked not to see explicit imagery.
+  intimacy:
+    'M 56 50 a 18 18 0 1 0 -36 0 a 18 18 0 1 0 36 0 M 80 50 a 18 18 0 1 0 -36 0 a 18 18 0 1 0 36 0',
 } as const;
 
 export type TransitIconName = keyof typeof TRANSIT_ICON_PATHS;

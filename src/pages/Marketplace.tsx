@@ -597,7 +597,21 @@ const Marketplace = () => {
                 nothing linked /guides at all; letting this rail self-hide on a
                 thin query would re-orphan it. Guarded by
                 "the shop hub links to the guides family" in e2e/guides.spec.ts. */}
-            <GuidesRail filters={{ entityType: 'marketplace', limit: 3 }} alwaysRender />
+            {/* `department: false` drops the generated `shop-*-shortlist`
+                rows. They are the same taxonomy as the Departments grid at the
+                top of this very page — a "Jewelry shortlist" card under a
+                "Jewelry" tile — and because they were published later than the
+                hand-written guides they outranked them on `published_at`: the
+                rail was rendering Swimwear shortlist + Underwear shortlist +
+                one real guide, i.e. two thirds duplicate navigation. They are
+                not deleted, they are RELOCATED — each one now opens on its own
+                department page, where a shortlist of that department is the
+                useful thing rather than a restatement of the tile above it. */}
+            <GuidesRail
+              title="Buying guides"
+              filters={{ entityType: 'marketplace', department: false, limit: 3 }}
+              alwaysRender
+            />
             <AffiliateDisclosure />
           </PageContainer>
         </div>

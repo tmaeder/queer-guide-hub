@@ -1,9 +1,9 @@
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { useDepartmentCovers, useMarketplaceDepartmentCounts } from '@/hooks/useMarketplaceQueries';
+import { useMarketplaceDepartmentCounts } from '@/hooks/useMarketplaceQueries';
 import { useAdultAcknowledgement } from '@/hooks/useAdultContent';
 import { ADULT_DEPARTMENTS, DEPARTMENT_ORDER, departmentLabel } from '@/lib/marketplaceTaxonomy';
 import { horizontalLine } from '@/components/transit/lineGeometry';
-import { Image } from '@/components/ui/Image';
+import { DepartmentArt } from '@/components/marketplace/DepartmentArt';
 import { cn } from '@/lib/utils';
 
 /**
@@ -63,7 +63,6 @@ export function MarketplaceLineIndex({ activeDepartment }: { activeDepartment?: 
   // the visitor has opted in (their category pages are age-gated anyway).
   const { acknowledged } = useAdultAcknowledgement();
   const { data: departments, loading } = useMarketplaceDepartmentCounts(acknowledged);
-  const { data: covers } = useDepartmentCovers();
 
   const counts = new Map(departments.map((d) => [d.slug, d.count]));
   const tiles = DEPARTMENT_ORDER.filter((d) => d !== 'other' && (counts.get(d) ?? 0) > 0)
@@ -91,14 +90,21 @@ export function MarketplaceLineIndex({ activeDepartment }: { activeDepartment?: 
       {loading ? (
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
           {Array.from({ length: 10 }).map((_, i) => (
-            <div key={i} aria-hidden="true" className="h-[132px] animate-pulse bg-muted" />
+            // Skeleton is the plate box plus the label block, so the grid does
+            // not jump height when the counts land.
+            <div key={i} aria-hidden="true" className="bg-card">
+              <div className="aspect-[16/10] animate-pulse bg-muted" />
+              <div className="flex flex-col gap-2 p-4">
+                <div className="h-4 w-2/3 animate-pulse bg-muted" />
+                <div className="h-3 w-1/2 animate-pulse bg-muted" />
+              </div>
+            </div>
           ))}
         </div>
       ) : (
         <ul className="m-0 grid list-none grid-cols-2 gap-4 p-0 md:grid-cols-3 lg:grid-cols-5">
-          {tiles.map((tile) => {
+          {tiles.map((tile, i) => {
             const active = tile.slug === activeDepartment;
-            const cover = covers.get(tile.slug);
             return (
               <li key={tile.slug}>
                 <LocalizedLink
@@ -112,19 +118,43 @@ export function MarketplaceLineIndex({ activeDepartment }: { activeDepartment?: 
                     active ? 'bg-foreground text-background' : 'bg-card card-lift-sm',
                   )}
                 >
-                  {cover ? (
-                    <div className="border-b border-border-hairline">
-                      <Image src={cover} alt="" aspect="card" rounded="none" />
-                    </div>
-                  ) : null}
+                  {/* Every tile carries a plate — that is the point of drawing
+                      it rather than fetching one. The old cover query resolved
+                      for six of eleven departments, so this grid mixed image
+                      tiles with text-only tiles of a different height. `i` and
+                      `tiles.length` window one shared line, so the plates read
+                      left-to-right as a route; see `DepartmentArt`. */}
+                  <DepartmentArt
+                    slug={tile.slug}
+                    index={i}
+                    count={tiles.length}
+                    active={active}
+                    className={cn(
+                      'border-b',
+                      active ? 'border-background/25' : 'border-border-hairline',
+                    )}
+                  />
                   <div className="flex flex-col gap-1 p-4">
                     {/* Space Grotesk 700, NOT Anton. The design project's
                         category hub sets these tiles in the display face, but
                         rank 4 is Space Grotesk here and `rankFourFace.test.ts`
                         enforces it — `text-title` may never carry a display
                         face. The repo's rank table outranks the mock. */}
-                    <span className="text-title font-bold leading-tight text-balance">
-                      {departmentLabel(tile.slug)}
+                    <span className="flex items-baseline gap-2">
+                      {/* Stop number. A stop list numbers its stops, and the
+                          plate above already shows this tile's slice of the
+                          line — the figure names the position the art draws. */}
+                      <span
+                        className={cn(
+                          'text-2xs tabular-nums',
+                          active ? 'text-background/70' : 'text-muted-foreground',
+                        )}
+                      >
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                      <span className="text-title font-bold leading-tight text-balance">
+                        {departmentLabel(tile.slug)}
+                      </span>
                     </span>
                     <span
                       className={cn(
