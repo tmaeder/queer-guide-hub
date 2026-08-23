@@ -1,3 +1,9 @@
+-- Applied live at version 20260823063714 (already in schema_migrations, so
+-- `db push` matches by version and skips it — applying is a no-op). A parallel
+-- session recovered this same file byte-for-byte from
+-- schema_migrations.statements as drift repair while this PR was in flight;
+-- the SQL is identical, this header is the authored one.
+--
 -- INCIDENT 2026-08-22: generalizing the catalog prune past ohmyfantasy.com
 -- archived 638 live listings from the queer retailers this site exists to
 -- promote — Mister B (41), DeMask (52), RodeoH (19), Spectrum Boutique (17),
