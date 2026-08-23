@@ -153,14 +153,30 @@ async function mapLimit(items, limit, fn) {
  * not the first — a URL can carry two independent shrinkers (a Shopify size
  * token AND a `width=` param) and they do not always agree on which is bigger.
  */
-async function bestUpgrade(current) {
+async function bestUpgrade(current, servedUrl) {
   const candidates = upscaleCandidates(current).filter((c) => !looksLikePlaceholder(c.url))
   if (!candidates.length) return null
 
-  const now = await probe(current)
-  // Without a baseline there is nothing to compare against, and "bigger than
-  // unknown" is not a judgement. A merchant that is briefly rate-limiting us
-  // must not have its whole catalogue rewritten on a guess.
+  // The baseline is what the READER actually sees, which is not always the
+  // stored URL. misterb's 2,194 stored covers are all `/cache/<hash>/…` paths
+  // whose derivatives Magento has purged: every one 403s, while every stripped
+  // original 200s. Probing only the stored URL therefore returned "cannot
+  // measure" for the entire merchant and skipped it — a DEAD image reading as
+  // "nothing better exists", which is how this was first written off as
+  // unfixable bot-blocking. The site meanwhile serves the old R2 mirror (143px
+  // in the worst cases), so that mirror is the honest thing to beat.
+  let now = await probe(current)
+  let baseline = 'stored'
+  if (now.error && servedUrl && servedUrl !== current) {
+    const served = await probe(servedUrl)
+    if (served.w) {
+      now = served
+      baseline = 'served_mirror'
+    }
+  }
+  // Both dead: there is nothing to compare against, and "bigger than unknown"
+  // is not a judgement. A merchant that is briefly rate-limiting us must not
+  // have its whole catalogue rewritten on a guess.
   if (now.error) return { skipped: `current_${now.error}` }
 
   let best = null
@@ -170,7 +186,7 @@ async function bestUpgrade(current) {
     if (!isRealUpgrade(now, got, c.preservesAspect)) continue
     if (!best || got.w > best.probe.w) best = { ...c, probe: got }
   }
-  return best ? { from: now, to: best } : null
+  return best ? { from: now, to: best, baseline } : null
 }
 
 async function main() {
@@ -199,9 +215,15 @@ async function main() {
      )`,
   ].filter(Boolean)
 
+  // `served_url` is the mirror the card actually paints, used as the baseline
+  // when the stored merchant URL is dead — see bestUpgrade().
   const rows = await sql(`
-    select l.id, l.source_type, l.images
+    select l.id, l.source_type, l.images, ia.optimized_url as served_url
     from marketplace_listings l
+    left join image_asset_links k
+      on k.entity_type = 'marketplace_listing' and k.entity_id = l.id and k.sort_order = 0
+    left join image_assets ia
+      on ia.id = k.asset_id and ia.optimization_status in ('optimized', 'cdn_optimized')
     where ${filters.join(' and ')}
     order by l.id
     ${LIMIT ? `limit ${LIMIT}` : ''}`)
@@ -229,7 +251,9 @@ async function main() {
       const url = images[i]
       if (!url) continue
       stats.images++
-      const result = await bestUpgrade(url)
+      // Only the cover has a mirror to fall back on as a baseline; gallery
+      // images are compared against themselves or not at all.
+      const result = await bestUpgrade(url, i === 0 ? row.served_url : null)
       if (!result) {
         stats.unchanged++
         continue
@@ -244,7 +268,9 @@ async function main() {
       hashHits.set(to.probe.hash, (hashHits.get(to.probe.hash) ?? 0) + 1)
       wins.push({ id: row.id, source_type: row.source_type, index: i, url: to.url, hash: to.probe.hash, rule: to.rule, from, to: to.probe })
       if (i === 0) {
-        console.log(`  ${row.source_type}: ${from.w}×${from.h} → ${to.probe.w}×${to.probe.h}  (${to.rule})`)
+        console.log(
+          `  ${row.source_type}: ${from.w}×${from.h} → ${to.probe.w}×${to.probe.h}  (${to.rule}${result.baseline === 'served_mirror' ? ', vs served mirror — stored URL is dead' : ''})`,
+        )
       }
     }
     if (++done % 50 === 0) process.stdout.write(`  scanned ${done}/${rows.length}\r`)
