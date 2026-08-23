@@ -301,7 +301,13 @@ export const AppRoutes = () => {
     // StrictMode double-invoke, neither of which is a navigation.
     if (previousPath === null || previousPath === location.pathname) return;
     requestAnimationFrame(() => {
-      mainRef.current?.focus({ preventScroll: false });
+      // `preventScroll: true` since ScrollManager exists. Focusing a
+      // `tabIndex={-1}` <main> otherwise scrolls it into view, which made
+      // focus a second, uncoordinated scroll actuator: it would undo a
+      // Back-restore (main spans the page, so "into view" means its top) and
+      // it is what produced the 127px first-load jump described above. One
+      // owner of the scroll offset, and it is not this effect.
+      mainRef.current?.focus({ preventScroll: true });
       // Announce route change to screen readers
       const title = document.title || location.pathname.replace(/\//g, ' ').trim() || 'Home';
       setRouteAnnouncement(t('a11y.navigatedTo', 'Navigated to {{title}}', { title }));
