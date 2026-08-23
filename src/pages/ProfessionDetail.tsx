@@ -12,6 +12,7 @@ import { ArrowLeft, Users, MapPin, Calendar, User } from 'lucide-react';
 import { PersonalityCard } from '@/components/personalities/PersonalityCard';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { calculateAge } from '@/lib/personAge';
 
 interface ProfessionData {
   name: string;
@@ -174,21 +175,29 @@ export default function ProfessionDetail() {
               <Calendar size={16} className="text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <p className="text-xl font-bold">
-                {(() => {
-                  const ages = professionData.personalities
-                    .map((p) =>
-                      p.birth_date
-                        ? new Date().getFullYear() - new Date(p.birth_date).getFullYear()
-                        : null,
-                    )
-                    .filter(Boolean);
-                  if (ages.length === 0) return 'N/A';
-                  const min = Math.min(...ages);
-                  const max = Math.max(...ages);
-                  return min === max ? `${min}` : `${min}-${max}`;
-                })()}
-              </p>
+              {(() => {
+                // This card read "32-434" on /professions/Politician because it
+                // aged everyone against today and ignored `death_date`. Ages now
+                // come from the shared calculator, which ends a life at its death
+                // date and returns null for anything a human cannot have been.
+                const ages = professionData.personalities
+                  .map((p) =>
+                    calculateAge(p.birth_date as string | null, p.death_date as string | null),
+                  )
+                  .filter((age): age is number => age !== null);
+                const deceased = professionData.personalities.some((p) => p.death_date);
+                if (ages.length === 0) return <p className="text-xl font-bold">N/A</p>;
+                const min = Math.min(...ages);
+                const max = Math.max(...ages);
+                return (
+                  <>
+                    <p className="text-xl font-bold">{min === max ? `${min}` : `${min}-${max}`}</p>
+                    {deceased && (
+                      <p className="text-2xs text-muted-foreground">Age at death where known</p>
+                    )}
+                  </>
+                );
+              })()}
             </CardContent>
           </Card>
         </div>
