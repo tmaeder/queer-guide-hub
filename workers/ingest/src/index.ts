@@ -16,10 +16,12 @@
  * writes for that reason (search_reindex_queue); this path follows it.
  *
  * So the drain is sized as a primary path, not a trickle: get_stale_embeddings
- * is FIFO (migration 20260927123000), and one run costs ~20 subrequests for 200
+ * is FIFO (migration 20260927123000), and one run costs ~24 subrequests for 100
  * rows because rows are fetched, embedded and upserted in BATCHES rather than
  * three subrequests each. That stays under the Workers Free 50/invocation cap,
- * so throughput does not depend on which plan the account is on.
+ * so throughput does not depend on which plan the account is on. The three
+ * batch sizes are NOT interchangeable — see UPSERT_BATCH, which is small
+ * because a large one was measured to blow the statement timeout.
  *
  * /webhook is kept (auth: X-QG-Token must match INGEST_TOKEN) so a webhook can
  * be pointed back at it without a redeploy, but nothing calls it today.
@@ -50,19 +52,40 @@ export interface Env {
 const DEFAULT_EMBED_MODEL = "@cf/baai/bge-m3"; // 1024-dim, multilingual
 
 /**
- * Rows per drain run. At 200 a run costs roughly 1 (work list) + <=15 (row
- * fetches, one request per table per 100 ids) + 4 (embed, 50 texts per AI call)
- * + 4 (upsert, 50 rows per POST) = ~24 subrequests, i.e. still under the
- * Workers Free cap of 50 per invocation. On the five-minute cron that is 57,600
- * rows/day, against 2,160/day before. Raise via the DRAIN_LIMIT var, but check
- * the subrequest arithmetic above first — going past ~400 needs Workers Paid.
+ * Rows per drain run. At 100 a run costs roughly 1 (work list) + <=11 (row
+ * fetches, one request per table per 100 ids) + 2 (embed, 50 texts per AI call)
+ * + 10 (upsert, 10 rows per POST) = ~24 subrequests, i.e. still under the
+ * Workers Free cap of 50 per invocation. On the five-minute cron that is 28,800
+ * rows/day, against 2,160/day before. Raise via the DRAIN_LIMIT var, but redo
+ * the arithmetic first — the upsert leg is 1 subrequest per 10 rows, so this is
+ * what binds, and going past ~150 needs Workers Paid.
  */
-const DEFAULT_DRAIN_LIMIT = 200;
+const DEFAULT_DRAIN_LIMIT = 100;
 /** Hard ceiling for the operator-driven POST /drain, for the same reason. */
-const MAX_DRAIN_LIMIT = 500;
-/** Texts per Workers AI call, and rows per PostgREST request. */
+const MAX_DRAIN_LIMIT = 300;
+/** Texts per Workers AI call. bge-m3 takes an array; 50 is comfortable. */
 const EMBED_BATCH = 50;
 const FETCH_BATCH = 100;
+/**
+ * Rows per content_embeddings upsert, and it is 10 rather than 50 because 50
+ * was MEASURED to fail. Live tail, 2026-08-23, first run after the batching
+ * landed:
+ *
+ *   (error) upsert batch failed … pgvector upsert 500: {"code":"57014", …}   ×3
+ *   (log)   drain: {"claimed":200,"embedded":60,"missing":0,"failed":140}
+ *
+ * Exactly one of the four 50-row batches got through per tick. The row count is
+ * not free on this table: an upsert fires the bridge trigger into
+ * search_embeddings, whose HNSW index has to be maintained per row, inside ONE
+ * statement racing the PostgREST statement timeout. The old code never met this
+ * because it sent one row per POST.
+ *
+ * So the two batch sizes are independent knobs and must stay that way — the
+ * embed leg wants them large (one AI call per 50 texts) and the write leg wants
+ * them small (one statement per 10 rows). Collapsing them back into a single
+ * constant re-introduces the 140-rows-per-run failure.
+ */
+const UPSERT_BATCH = 10;
 /**
  * A batch that fails is retried row-by-row so one poison row cannot stall a
  * FIFO queue at its head forever — but only this many times per run, because
@@ -278,7 +301,7 @@ async function indexRows(
 	out.failed += work.length - pending.length;
 
 	let singleRetries = 0;
-	for (const part of chunk(pending, EMBED_BATCH)) {
+	for (const part of chunk(pending, UPSERT_BATCH)) {
 		try {
 			await upsertEmbeddings(
 				env,

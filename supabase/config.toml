@@ -446,6 +446,14 @@ verify_jwt = false
 [functions.marketplace-tag-backfill]
 verify_jwt = false
 
+# Cron-invoked via net.http_post with X-Webhook-Secret, exactly like its
+# sibling above. Without this the platform gateway rejects the request with
+# 401 UNAUTHORIZED_NO_AUTH_HEADER before the function's own secret check ever
+# runs — and because cron.job_run_details reports "succeeded" the moment the
+# request is ENQUEUED, the job looks healthy while doing nothing at all.
+[functions.marketplace-variant-backfill]
+verify_jwt = false
+
 # Passkey ops: enroll/verify-enrollment do a manual JWT check in code; the
 # authenticate/verify-authentication actions run for logged-out users, so
 # platform JWT verification must be off.

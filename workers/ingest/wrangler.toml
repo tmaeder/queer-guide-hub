@@ -17,10 +17,12 @@ id = "a54963b21b5a497aa0ef76e08fc8923c"
 [vars]
 AI_GATEWAY_NAME = "qg-search"
 EMBED_MODEL = "@cf/baai/bge-m3"
-# Rows per scheduled drain. 200 costs ~24 subrequests because the drain fetches,
+# Rows per scheduled drain. 100 costs ~24 subrequests because the drain fetches,
 # embeds and upserts in BATCHES — read DEFAULT_DRAIN_LIMIT in src/index.ts
-# before raising this, the subrequest arithmetic is what bounds it.
-DRAIN_LIMIT = "200"
+# before raising this. It was 200 for one afternoon; the upsert leg is 1
+# subrequest per 10 rows (UPSERT_BATCH, sized against a measured statement
+# timeout), so that is what binds now, not the embed leg.
+DRAIN_LIMIT = "100"
 
 # Secrets (set via wrangler secret put NAME):
 #   SUPABASE_URL
@@ -35,7 +37,7 @@ DRAIN_LIMIT = "200"
 # were vector-invisible, and a newest-first work list meant the tail was never
 # reached at all.
 #
-# Now 200 rows every 5 minutes = 57,600/day. The earlier objection to a tighter
+# Now 100 rows every 5 minutes = 28,800/day. The earlier objection to a tighter
 # cron still stands and is why this is not "* * * * *": the work-list RPC is
 # ~0.5s against a disk-constrained database, so 288 runs/day costs ~2.4 min of
 # DB time where 1,440 would cost 12. Throughput comes from the batch, not the
