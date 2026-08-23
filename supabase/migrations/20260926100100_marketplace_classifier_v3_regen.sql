@@ -21,7 +21,62 @@
 -- search storm). Split is deliberate: the sizes/colors generation expressions
 -- reference the attributes column, and referencing a column added in the same
 -- ALTER is not portable — a second rewrite is cheap; a failed migration is not.
-SET lock_timeout = '5s';
+--
+-- LOCK ACQUISITION IS A RETRY LOOP, NOT A SINGLE SHOT. The v2 precedent
+-- (20260822131224) took one 5s attempt at the AccessExclusive lock and got it;
+-- this migration's first production run did NOT — `db push` aborted with
+-- SQLSTATE 55P03 at 12:49 UTC and the six migrations behind it never applied,
+-- while the edge functions deployed anyway (new code, old schema).
+-- `marketplace_listings` is read continuously by browse, so a 5s window only
+-- succeeds if it happens to land in a gap. Fail-fast is still right — queueing
+-- an AccessExclusive request behind live traffic stalls every reader behind it
+-- — but the correct shape is fail fast AND try again: each attempt waits at
+-- most 5s, releases on timeout (so no reader ever queues behind us), sleeps,
+-- and retries. Bounded at ~2 min so a genuinely stuck table still fails the
+-- run loudly instead of hanging CI.
+--
+-- The lock is taken in the same transaction as the ALTERs, so once acquired it
+-- is held through both rewrites and they cannot block.
+--
+-- STATEMENT_TIMEOUT MUST BE RAISED, AND AS ITS OWN TOP-LEVEL STATEMENT. The
+-- cluster default is 2min. The second production attempt DID acquire the lock
+-- and then died at ~2min mid-rewrite (`canceling statement due to statement
+-- timeout`) — the rewrite recomputes three generated columns per row and the
+-- new fine ladder alone evaluates ~90 regexes on each of 62k rows. Raising the
+-- GUC from inside a DO block would be a no-op: the timer is armed when the
+-- top-level statement starts, so a function cannot extend its own budget
+-- (measured 2026-08-19, see the pg_cron precedent in 20260819* / PR #2871).
+-- Issued here as a standalone statement, it is in force when each ALTER below
+-- is armed. Session-scoped (not LOCAL) so it holds whether or not the CLI
+-- wraps this file in a transaction.
+--
+-- COST, MEASURED: the first ALTER alone ran >2min, so the two rewrites block
+-- all marketplace reads for roughly 3-5 minutes. That is the price of
+-- recomputing the taxonomy in place and it is paid once.
+SET statement_timeout = '15min';
+
+DO $$
+DECLARE
+  v_attempt int := 0;
+BEGIN
+  LOOP
+    BEGIN
+      SET LOCAL lock_timeout = '5s';
+      LOCK TABLE public.marketplace_listings IN ACCESS EXCLUSIVE MODE;
+      EXIT;
+    EXCEPTION WHEN lock_not_available THEN
+      v_attempt := v_attempt + 1;
+      IF v_attempt >= 12 THEN
+        RAISE EXCEPTION
+          'marketplace_listings stayed busy for % attempts — regen not applied', v_attempt;
+      END IF;
+      PERFORM pg_sleep(5);
+    END;
+  END LOOP;
+END $$;
+
+-- Lock already held; this only bounds incidental index/toast locks below.
+SET LOCAL lock_timeout = '30s';
 
 ALTER TABLE public.marketplace_listings
   DROP COLUMN subcategory_group,
