@@ -176,6 +176,30 @@ describe('ScrollManager', () => {
     }
   });
 
+  it('keeps re-asserting the top so a late scroller cannot win', () => {
+    // The browse grids virtualize with useWindowVirtualizer, which samples
+    // window.scrollY during RENDER — before any layout effect — so it reads
+    // the offset of the page being left and then scrolls back to it, 8ms
+    // after this manager has gone to 0. Measured against real production
+    // data, forward navigation landed on the previous page's offset in 6 of
+    // 6 runs. A single write loses that race; the settle wins it.
+    const { getByRole } = renderApp('/about');
+    readerScrollsTo(4163);
+    act(() => {
+      getByRole('button').click(); // -> /venues
+    });
+    expect(scrolls).toEqual([0]);
+
+    // A late scroller drags the page back, as the virtualizer does.
+    readerScrollsTo(3089);
+    act(() => {
+      vi.advanceTimersByTime(400);
+    });
+    // The manager must have corrected it, not accepted it.
+    expect(scrolls.filter((y) => y === 0).length).toBeGreaterThan(1);
+    expect(scrollTop).toBe(0);
+  });
+
   it('leaves the reader alone when only the query changes', () => {
     const { getByRole } = renderApp('/venues');
     scrollTop = 639;

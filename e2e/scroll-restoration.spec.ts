@@ -88,26 +88,43 @@ test.describe('scroll on navigation', () => {
 
     await page.goBack();
     await page.waitForTimeout(1500);
-    // Within a line or two — the restore settles as the list re-renders.
-    expect(Math.abs((await scroll(page)).y - left)).toBeLessThanOrEqual(40);
+    // Near where they were, not pixel-identical. These listings virtualize,
+    // and after the restore the virtualizer corrects estimated row heights to
+    // measured ones — which holds the same CONTENT in view while shifting its
+    // pixel offset. Measured against real data the delta reached 337px, so a
+    // tolerance under half a viewport is the honest bar: it still fails by
+    // thousands of pixels for the defect this guards, where Back landed on
+    // the offset of the page being left instead.
+    const back = (await scroll(page)).y;
+    expect(back).toBeGreaterThan(0);
+    expect(Math.abs(back - left)).toBeLessThanOrEqual(450);
   });
 
-  // Forward (a POP onto an entry the reader opened but never scrolled) is NOT
-  // covered here, and that is a measurement, not an oversight. Against a
-  // production build with no backend it passes 9/9; in CI, with real data
-  // behind /venues and /cities, it failed on every attempt of two separate
-  // runs, landing on the offset of the page before it (3291 / 3108 / 3592,
-  // then 2910). Waiting on each hop's URL rather than a fixed delay fixed a
-  // genuine race in the test and did not fix this, so the remaining cause is
-  // unresolved — it is either an assumption in the test I have not cracked or
-  // a real timing limit in the restore settle when a data-heavy page takes
-  // longer than its 2s budget to reach full height.
-  //
-  // Either way it does not belong on a shared gate while it is red, and
-  // guessing at it by pushing speculative fixes through CI is not diagnosis.
-  // The decision itself is covered deterministically by
-  // src/lib/__tests__/scrollBehavior.test.ts, which pins every POP branch
-  // including this one ("falls back to the top when there is neither").
+  test('forward opens a page the reader has not read at its top', async ({ page }) => {
+    // This case was removed once as unexplained CI-only flake. It was not
+    // flake: the browse grids virtualize with useWindowVirtualizer, which
+    // samples window.scrollY during RENDER and then scrolls back to it, so
+    // forward navigation landed on the PREVIOUS page's offset. It only ever
+    // showed up with real data behind the listings, which is why a local run
+    // against an empty backend passed 9/9 while CI failed every attempt.
+    // ScrollManager now re-asserts the landing point instead of writing it
+    // once; measured against production data, 6 of 6 runs land at 0.
+    await page.goto('/venues');
+    await waitForScrollable(page);
+    await toBottom(page);
+    await followLink(page, '/cities');
+
+    await page.goBack();
+    await page.waitForURL(/\/venues(\?|$)/);
+    await waitForScrollable(page);
+    await page.waitForTimeout(1500);
+
+    await page.goForward();
+    await page.waitForURL(/\/cities(\?|$)/);
+    await waitForScrollable(page);
+    await page.waitForTimeout(2000);
+    expect((await scroll(page)).y).toBe(0);
+  });
 
   // A same-page query change — a tab, a filter, a facet, a sort — must not
   // move the reader. That is the invariant the naive patch (a reset on every
