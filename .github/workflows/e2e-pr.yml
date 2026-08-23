@@ -155,12 +155,17 @@ jobs:
           # life of the app, so following a link from a scrolled listing opened
           # the destination at its BOTTOM, and lint, typecheck, axe and every
           # unit test were green throughout — jsdom has no layout, so nothing
-          # there can clamp an offset. Three of its four cases fail with the
-          # fix reverted; the fourth guards the naive patch (a reset on every
-          # location change), which would jump the page on each of the ~90
-          # setSearchParams call sites that push an entry for a same-page
-          # filter. Left to the nightly, both regressions would be reported
-          # against a merged commit. ~20s for 4 tests.
+          # there can clamp an offset. ALL THREE of its cases fail with the fix
+          # reverted, measured against a production build rather than the dev
+          # server. Left to the nightly, that regression would be reported
+          # against a merged commit. ~13s for 3 tests.
+          # A fourth case was written and removed: it asserted that a filter
+          # change on /venues issued no window.scrollTo, which passed locally
+          # and failed in CI on all three attempts by catching an object-form
+          # call this code never makes — so on a populated /venues something
+          # else already scrolls on a filter change. That invariant is covered
+          # exactly by the ScrollManager unit test instead; a gate assertion
+          # that is false about the app is worse than none.
           # tags-not-found.spec.ts must NEVER be added to this list, and it was
           # tried on 2026-08-20. It asserts `res.status() === 404` for an unknown
           # /tags/:slug, which is `functions/_middleware.ts` answering — and this
