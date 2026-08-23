@@ -56,6 +56,15 @@ begin
   perform public.assert_admin_or_internal();
   perform set_config('app.actor', 'job:event_tag_link', true);
 
+  -- `on commit drop` drops at COMMIT, not at RETURN, so a SECOND call inside
+  -- one transaction finds the tables still standing and dies with 42P07
+  -- "relation _raw already exists". The cron never hits it — each tick is its
+  -- own transaction — but the seed block at the bottom of this migration loops
+  -- up to three times, so it aborted on pass 2, and because a failed statement
+  -- aborts the whole `db push`, EVERY migration queued behind this one stopped
+  -- reaching prod as well.
+  drop table if exists _raw, _amb, _map, _batch;
+
   -- Small side, built once. `distinct` because a tag whose slug and name
   -- normalize to the same string would otherwise appear twice.
   create temp table _raw on commit drop as
@@ -139,18 +148,20 @@ on conflict (slug) do update set schedule = excluded.schedule, enabled = exclude
 select cron.schedule('event_tag_link', '*/10 * * * *',
   $cron$ select public.run_event_tag_link(2000); $cron$);
 
--- Seed the drain rather than waiting 10 minutes for the first tick. Bounded to
--- a few passes so the migration cannot run long; the cron finishes the rest.
+-- Seed the drain rather than waiting 10 minutes for the first tick. ONE pass,
+-- not three: every call in this block shares the migration's single
+-- transaction, and the drop guard above is the only thing that makes a repeat
+-- call survive at all. Keeping the seed to one pass means the guard never has
+-- to work here — it is insurance for a future caller, not the mechanism — so
+-- this migration cannot be re-broken by a plpgsql plan-cache subtlety in a
+-- code path nobody can rehearse before `db push` runs it against prod. The
+-- cost is that the 35,131-event backlog starts draining 20 minutes later on a
+-- job that runs every 10 minutes.
 do $$
-declare r record; i int := 0; v_ev int := 0; v_ln int := 0;
+declare r record;
 begin
-  loop
-    i := i + 1;
-    select * into r from public.run_event_tag_link(2000);
-    v_ev := v_ev + r.events_scanned; v_ln := v_ln + r.links_created;
-    exit when r.events_scanned = 0 or i >= 3;
-  end loop;
-  raise notice 'event tag link seed: % events scanned, % links created over % pass(es)', v_ev, v_ln, i;
+  select * into r from public.run_event_tag_link(2000);
+  raise notice 'event tag link seed: % events scanned, % links created', r.events_scanned, r.links_created;
 end $$;
 
 -- Coverage counter, so the remaining backlog is visible rather than assumed
