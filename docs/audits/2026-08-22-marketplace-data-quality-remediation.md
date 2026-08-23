@@ -10,7 +10,7 @@ Follow-up to the read-only [2026-08-21 audit](./2026-08-21-marketplace-data-qual
 | `content_rating` false negatives | 188+ German toys rated `sfw` (audit: "Vibrationskugel", "Penisextender", "Fingerstimulator") — a live Safe Mode hole | Rating vocabulary extended (`vibrat`, klitoris/clitoris, stimulator, love egg, g-spot/g-punkt, …); STORED column regenerated; flipped rows **deleted from search_documents** in the same migration (the indexer never deletes newly-ineligible rows on its own) |
 | Descriptions | 12,560 rows share 422 boilerplate spec-sheet templates; 2,145 thin; 1,650 empty (591 = salzgeber-buch) | `marketplace_enhance_queue` + claim RPC (boilerplate → thin → backlog); the */5 enhance cron un-pinned from `ohmyfantasy.com` |
 | Images | 91% of listings serve from R2 via `image_asset_links` (the 08-21 audit's 94.7% figure measured the *other*, starved `marketplace-image-mirror` path — user-facing delivery is healthy); **alt text 0/73,826** | Deterministic alt-text backfill (title — brand) for all marketplace assets, `alt_provenance='derived:listing_title'`; fill-if-empty |
-| Relevance | 10,834 rows frozen at the 0.6 trust-stamp default; prune hardcoded to `ohmyfantasy.com` (0 of the 770 sub-gate rows are on it); part of the sub-gate cohort carries scores from the pre-06/2026 miscalibrated model | Rescore cron weekly→nightly (600/night); prune generalized to all domains **but gated on a fresh verdict** (`classified_at` within 45d) so stale miscalibrated scores can't archive real queer shops |
+| Relevance | 10,834 rows frozen at the 0.6 trust-stamp default; prune hardcoded to `ohmyfantasy.com` (0 of the 770 sub-gate rows are on it); part of the sub-gate cohort carries scores from the pre-06/2026 miscalibrated model | Rescore cron weekly→nightly (600/night). **The prune generalization was REVERTED — see the incident below. It archived 638 live listings from real queer retailers before it was caught.** |
 | Relations | `merchant_id` NULL on 100% (domains resolve once `www.` is stripped; salzgeber disambiguated via `source_type=slug`); 4,322 pending brands are mostly **book authors**; 12 marketplace guide picks total | merchant_id backfilled; brand queue triaged (3,874 authors rejected with note, 102 real merch brands approved page-only, ~350 left for humans); 7 department shortlist guides seeded at `status='review'` (nothing self-publishes) |
 | Link health | 46,551 (75%) never checked at 200 serial probes/day; meanwhile feed-synced rows (Shopify `products.json`) are re-proven live hourly | Feed presence credited as liveness (7,879 rows stamped from `last_seen_at`); checker excludes feed-fresh rows, probes with bounded concurrency, batch 200→400 |
 | Search | 42,049 indexed; the 19,578 "missing" are all explicit/adult — **by design**, not a bug | none needed |
@@ -21,6 +21,39 @@ Follow-up to the read-only [2026-08-21 audit](./2026-08-21-marketplace-data-qual
 - Migrations `20260916120000`–`20260916120500` (classifier v2 + regen, merchant_id, alt text, quality ops, snapshot governance)
 - Edge fns: `marketplace-description-enhance` (queue-driven), `marketplace-relevance-rescore` (600/night), `marketplace-link-checker` (feed-aware + concurrent)
 - Frontend: `src/lib/marketplaceTaxonomy.ts` (home department, film/calendars groups surfaced), `MarketplaceQualityStatsPanel` on `/admin/quality`
+
+## INCIDENT: the prune generalization archived 638 real listings (2026-08-22, caught same day)
+
+Generalizing `marketplace_catalog_prune` past its hardcoded `ohmyfantasy.com` scope
+archived **638 live listings in ~12 hours** — from precisely the retailers this site
+exists to promote: **fetchshop.co.uk (157), Marek Richard (78), DeMask (52), Mister B (41),
+cherrykitten (42), RodeoH (19), Spectrum Boutique (17), garconmodel (13), teamm8 (11),
+jockstraps.com (28)**. All 638 restored to `status='active'` and re-queued for reindex;
+`archived_reason='prune_low_relevance_2026_08'` is now 0 rows.
+
+**The 45-day freshness guard did not work, and the reason matters more than the bug.**
+It assumed a recent `classified_at` implied a trustworthy verdict. But the miscalibrated
+scorer was still running right up to the cutover, so recency proved nothing — measured,
+`misterb.com` and `fetchshop.co.uk` rows classified the *same day* still scored **0.06–0.2**.
+Freshness was never the variable that separated good verdicts from bad ones.
+
+**The deeper error: `lgbti_relevance_score` cannot drive deletion for this corpus at all.**
+It scores a plain black jockstrap from a gay leather retailer near zero because the *title*
+carries no queer vocabulary — the queerness is in the **merchant**, not the product noun.
+The `ownership_tags` escape hatch meant to protect such brands is empty on virtually every
+row (the brand triage approved brands *page-only, no ownership claim*), so it protected
+nothing. A score that is blind to the axis that matters must not be wired to an irreversible
+action.
+
+**Fix** (`20260823063714_marketplace_prune_fail_closed.sql`): the prune **fails closed** —
+`p_domains` NULL or empty now selects *nothing* rather than *everything*, and the runner
+skips with `no_domain_allowlist` unless `admin_automations.conditions.domains` names an
+explicit list. Verified: NULL → 0 candidates, `ARRAY[]` → 0, and `run_..._prune(300, true)`
+with `--force` and no allowlist archives 0. The automation is left **disabled**.
+
+**Rule:** a deletion tool whose default argument means "the entire catalog" is a defect on
+its own terms, independent of how good the scoring signal is. Bulk archival needs an explicit
+opt-in list, not an opt-out guard.
 
 ## Shortlist guides: reviewed and published (2026-08-22, later same day)
 
