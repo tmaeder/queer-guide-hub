@@ -198,8 +198,14 @@ export function parseLocation(html: unknown, url: string): GbVenue | null {
 
   const ai = lines.findIndex((l) => /^Adresse$/i.test(l))
   const block = ai >= 0 ? lines.slice(ai + 1, ai + 6) : []
-  // The block repeats the venue name, then street, then city.
-  const rest = block.filter((l) => l !== name && !/^Karte$/i.test(l) && !/^\d{4}\s*-$/.test(l))
+  // The block repeats the venue name, then street, then city — but it can also
+  // carry UI labels, and those look exactly like a city to a "letters only"
+  // test. Measured on the first live run: 20 venues were staged with
+  // city="Website" because that link sits inside the address block. Any label
+  // added here must also be excluded, hence a list rather than one special case.
+  const LABELS = /^(Karte|Website|Webseite|Details|Telefon|Tel\.?|E-?Mail|Kontakt|Anfahrt|Öffnungszeiten|Facebook|Instagram)$/i
+  const rest = block.filter((l) =>
+    l !== name && !LABELS.test(l) && !/^\d{4}\s*-$/.test(l))
   const cityIdx = rest.findIndex((l) => /^(\d{4,5}\s+)?[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ .'-]+$/.test(l) && !/strasse|str\.|gasse|weg|platz|allee|\d+\s*[A-Za-z]?$/i.test(l))
   const cityRaw = cityIdx >= 0 ? rest[cityIdx] : null
   const street = rest.find((l) => l !== cityRaw) ?? null
