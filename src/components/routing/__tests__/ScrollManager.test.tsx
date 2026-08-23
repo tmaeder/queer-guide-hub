@@ -128,6 +128,34 @@ describe('ScrollManager', () => {
     expect(stored).toEqual([4163, 0]);
   });
 
+  it('ignores a scroll that is not the page — a card rail, a menu, the map', () => {
+    // The listener is registered in the capture phase on `document`, which is
+    // the only way to hear the admin console's inner container — but it
+    // therefore also hears every horizontally-scrolling rail and every open
+    // dropdown. Those are not the page moving, and recording an offset for
+    // them is both wrong and needless work on the scroll path.
+    const rail = document.createElement('div');
+    document.body.appendChild(rail);
+    try {
+      const { getByRole } = renderApp('/about');
+      readerScrollsTo(4163);
+      // A rail scrolls while the page has not moved.
+      scrollTop = 0;
+      rail.dispatchEvent(new Event('scroll'));
+      act(() => {
+        getByRole('button').click();
+      });
+      // /about is still recorded at the offset the reader actually left it at,
+      // not at the rail's.
+      const stored = Object.values(
+        JSON.parse(sessionStorage.getItem('qg:scroll-positions') ?? '{}') as Record<string, number>,
+      );
+      expect(stored[0]).toBe(4163);
+    } finally {
+      rail.remove();
+    }
+  });
+
   it("scrolls the admin console's own container, not the window", () => {
     // AdminShell renders an `overflow-auto` main and the window never scrolls
     // inside the console, so a window-only implementation would reset nothing

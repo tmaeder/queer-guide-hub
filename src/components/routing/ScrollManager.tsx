@@ -74,6 +74,33 @@ function getScroller(): HTMLElement | null {
   return document.querySelector<HTMLElement>('[data-scroll-container]');
 }
 
+/**
+ * Whether a `scroll` event came from the surface that scrolls the PAGE.
+ *
+ * The listener below is registered in the capture phase on `document`, which
+ * is the only way to hear the admin console's inner container — but that also
+ * means it hears every horizontally-scrolling card rail, every dropdown, the
+ * map, and the message list. Those are not the page moving, and recording an
+ * offset for them is both wrong and needless work on the scroll path.
+ *
+ * Window scrolling reports `document` as the target; an element reports
+ * itself.
+ */
+function isPageScroller(target: EventTarget | null): boolean {
+  if (!target) return false;
+  if (target === document || target === document.documentElement || target === document.body) {
+    return true;
+  }
+  return target instanceof Element && target.hasAttribute('data-scroll-container');
+}
+
+/** The offset of a surface `isPageScroller` has already accepted. */
+function topOfScroller(target: EventTarget | null): number {
+  return target instanceof Element && target.hasAttribute('data-scroll-container')
+    ? target.scrollTop
+    : window.scrollY;
+}
+
 function readTop(): number {
   const el = getScroller();
   if (el) return el.scrollTop;
@@ -116,8 +143,13 @@ export const ScrollManager = () => {
   // inner scroll container. Capture hears every one of them.
   useEffect(() => {
     let throttle = 0;
-    const onScroll = () => {
-      liveTopRef.current = readTop();
+    const onScroll = (event: Event) => {
+      // Read from the event's own target rather than re-resolving the
+      // scroller: this runs on every frame of every scroll gesture, and a
+      // `document.querySelector` there is exactly the kind of unthrottled
+      // scroll-path work `useActiveStation` documents having had to remove.
+      if (!isPageScroller(event.target)) return;
+      liveTopRef.current = topOfScroller(event.target);
       if (throttle) return;
       throttle = window.setTimeout(() => {
         throttle = 0;
