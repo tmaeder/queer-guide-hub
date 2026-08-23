@@ -53,6 +53,16 @@ jobs:
         if: ${{ !cancelled() && env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
         run: node scripts/check-anon-function-grants.mjs
 
+      # Tag data-quality ratchet. Phase 0 of the tag DQ program fixed the corpus
+      # while the image gaps GREW underneath it (image-without-license 1,167 ->
+      # 1,215 in a day, image-without-alt likewise) because nothing was watching.
+      # Fails only when a defect count grows past scripts/tag-hygiene-baseline.json,
+      # so the existing backlog does not block unrelated PRs but the next
+      # regression does.
+      - name: Tag hygiene has not regressed
+        if: ${{ !cancelled() && env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
+        run: node scripts/check-tag-hygiene.mjs
+
       # The published legal citations on /tags/:slug are external URLs on other
       # people's servers, and they rot. NOT run on pull_request on purpose: the
       # failure lives on third-party hosts, so wiring it to PRs would let a UN
