@@ -26,8 +26,14 @@ export function VenuesHero() {
       <div className="grid md:grid-cols-2">
         {visual.src && (
           <div
-            className={`relative h-56 md:h-full min-h-[240px] bg-muted bg-center bg-no-repeat ${
-              visual.isLogo ? 'bg-origin-content bg-contain p-6' : 'bg-cover'
+            className={`relative h-56 md:h-full min-h-[240px] bg-center bg-no-repeat ${
+              visual.isLogo
+                ? `bg-origin-content bg-contain p-6 ${
+                    // Same rule as the card tile: a logo's ground must not flip
+                    // with the theme, or the mark is erased in one of the two.
+                    visual.plate === 'ink' ? 'bg-logo-plate-ink' : 'bg-logo-plate'
+                  }`
+                : 'bg-muted bg-cover'
             }`}
             style={{ backgroundImage: `url(${visual.src})` }}
             aria-hidden
