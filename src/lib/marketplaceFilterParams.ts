@@ -43,6 +43,8 @@ const uncsv = (v: string | null) =>
 export const FILTER_PARAM_KEYS = [
   'q',
   'dept',
+  'grp',
+  'f',
   'cat',
   'type',
   'loc',
@@ -62,6 +64,13 @@ export function parseFiltersFromParams(sp: URLSearchParams): MarketplaceFiltersI
   if (q) f.search = q;
   const dept = sp.get('dept');
   if (dept) f.department = dept;
+  // grp = canonical subcategory_group; f = fine tier. Deliberately NOT
+  // overloaded onto `cat`, which matches the legacy raw-merchant
+  // subcategory_slug and has inbound links depending on that.
+  const grp = sp.get('grp');
+  if (grp) f.subcategoryGroup = grp;
+  const fine = sp.get('f');
+  if (fine) f.subcategoryFine = fine;
   const cat = sp.get('cat');
   if (cat) f.subcategory = cat;
   const type = sp.get('type');
@@ -87,6 +96,8 @@ export function filtersToParams(f: MarketplaceFiltersInput): Record<string, stri
   return {
     q: f.search?.trim() || undefined,
     dept: f.department || undefined,
+    grp: f.subcategoryGroup || undefined,
+    f: f.subcategoryFine || undefined,
     cat: f.subcategory || undefined,
     type: f.category || undefined,
     loc: f.location || undefined,
@@ -95,7 +106,8 @@ export function filtersToParams(f: MarketplaceFiltersInput): Record<string, stri
     tags: csv(f.tags),
     cur: f.currency || undefined,
     avail: f.availability === 'any' ? 'any' : undefined,
-    verified: f.verifiedWithinDays && f.verifiedWithinDays > 0 ? String(f.verifiedWithinDays) : undefined,
+    verified:
+      f.verifiedWithinDays && f.verifiedWithinDays > 0 ? String(f.verifiedWithinDays) : undefined,
   };
 }
 
@@ -104,6 +116,8 @@ export function countActiveFilters(f: MarketplaceFiltersInput): number {
     (f.search ? 1 : 0) +
     (f.category ? 1 : 0) +
     (f.department ? 1 : 0) +
+    (f.subcategoryGroup ? 1 : 0) +
+    (f.subcategoryFine ? 1 : 0) +
     (f.subcategory ? 1 : 0) +
     (f.location ? 1 : 0) +
     (f.businessType ? 1 : 0) +
@@ -120,7 +134,10 @@ export function hasActiveFilters(f: MarketplaceFiltersInput): boolean {
   return countActiveFilters(f) > 0;
 }
 
-/** Attribute tags are namespaced unified_tags slugs (mat-*, occ-*, vibe-*). */
+/** Attribute tags are namespaced unified_tags slugs (mat-*, occ-*, vibe-*,
+ *  color-*, size-*, genre-*, fit-*). Known collision: the deprecated glossary
+ *  tag `size-queen` also matches — it is excluded from every attribute surface
+ *  by status filters, so prefix matching stays safe. */
 export function isAttributeTag(slug: string): boolean {
-  return /^(mat|occ|vibe)-/.test(slug);
+  return /^(mat|occ|vibe|color|size|genre|fit)-/.test(slug);
 }

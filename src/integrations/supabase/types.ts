@@ -11486,11 +11486,93 @@ export type Database = {
           },
         ]
       }
+      marketplace_listing_variants: {
+        Row: {
+          available: boolean | null
+          currency: string | null
+          first_seen_at: string
+          id: string
+          image_url: string | null
+          inventory_quantity: number | null
+          last_seen_at: string
+          listing_id: string
+          option_color: string | null
+          option_color_raw: string | null
+          option_material: string | null
+          option_size: string | null
+          option_size_raw: string | null
+          options: Json
+          position: number | null
+          price: number | null
+          price_usd: number | null
+          sku: string | null
+          source_slug: string
+          source_variant_id: string | null
+          title: string | null
+        }
+        Insert: {
+          available?: boolean | null
+          currency?: string | null
+          first_seen_at?: string
+          id?: string
+          image_url?: string | null
+          inventory_quantity?: number | null
+          last_seen_at?: string
+          listing_id: string
+          option_color?: string | null
+          option_color_raw?: string | null
+          option_material?: string | null
+          option_size?: string | null
+          option_size_raw?: string | null
+          options?: Json
+          position?: number | null
+          price?: number | null
+          price_usd?: number | null
+          sku?: string | null
+          source_slug: string
+          source_variant_id?: string | null
+          title?: string | null
+        }
+        Update: {
+          available?: boolean | null
+          currency?: string | null
+          first_seen_at?: string
+          id?: string
+          image_url?: string | null
+          inventory_quantity?: number | null
+          last_seen_at?: string
+          listing_id?: string
+          option_color?: string | null
+          option_color_raw?: string | null
+          option_material?: string | null
+          option_size?: string | null
+          option_size_raw?: string | null
+          options?: Json
+          position?: number | null
+          price?: number | null
+          price_usd?: number | null
+          sku?: string | null
+          source_slug?: string
+          source_variant_id?: string | null
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_listing_variants_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       marketplace_listings: {
         Row: {
           affiliate_url: string | null
           archived_at: string | null
           archived_reason: string | null
+          attributes: Json
+          attributes_extracted_at: string | null
           availability: string | null
           boutique_score: number | null
           brand: string | null
@@ -11500,6 +11582,7 @@ export type Database = {
           category: string
           category_id: string | null
           classified_at: string | null
+          colors: string[] | null
           community_owned_tags: string[]
           completeness_score: number | null
           contact_email: string | null
@@ -11536,12 +11619,14 @@ export type Database = {
           sensitivity_flags: Json | null
           shipping_available: boolean | null
           shipping_info: string | null
+          sizes: string[] | null
           slug: string
           social_media: Json | null
           source_entity_id: string | null
           source_type: string | null
           status: string | null
           subcategory: string | null
+          subcategory_fine: string | null
           subcategory_group: string | null
           subcategory_slug: string | null
           tagged_at: string | null
@@ -11557,6 +11642,8 @@ export type Database = {
           affiliate_url?: string | null
           archived_at?: string | null
           archived_reason?: string | null
+          attributes?: Json
+          attributes_extracted_at?: string | null
           availability?: string | null
           boutique_score?: number | null
           brand?: string | null
@@ -11566,6 +11653,7 @@ export type Database = {
           category: string
           category_id?: string | null
           classified_at?: string | null
+          colors?: string[] | null
           community_owned_tags?: string[]
           completeness_score?: number | null
           contact_email?: string | null
@@ -11602,12 +11690,14 @@ export type Database = {
           sensitivity_flags?: Json | null
           shipping_available?: boolean | null
           shipping_info?: string | null
+          sizes?: string[] | null
           slug: string
           social_media?: Json | null
           source_entity_id?: string | null
           source_type?: string | null
           status?: string | null
           subcategory?: string | null
+          subcategory_fine?: string | null
           subcategory_group?: string | null
           subcategory_slug?: string | null
           tagged_at?: string | null
@@ -11623,6 +11713,8 @@ export type Database = {
           affiliate_url?: string | null
           archived_at?: string | null
           archived_reason?: string | null
+          attributes?: Json
+          attributes_extracted_at?: string | null
           availability?: string | null
           boutique_score?: number | null
           brand?: string | null
@@ -11632,6 +11724,7 @@ export type Database = {
           category?: string
           category_id?: string | null
           classified_at?: string | null
+          colors?: string[] | null
           community_owned_tags?: string[]
           completeness_score?: number | null
           contact_email?: string | null
@@ -11668,12 +11761,14 @@ export type Database = {
           sensitivity_flags?: Json | null
           shipping_available?: boolean | null
           shipping_info?: string | null
+          sizes?: string[] | null
           slug?: string
           social_media?: Json | null
           source_entity_id?: string | null
           source_type?: string | null
           status?: string | null
           subcategory?: string | null
+          subcategory_fine?: string | null
           subcategory_group?: string | null
           subcategory_slug?: string | null
           tagged_at?: string | null
@@ -32130,6 +32225,18 @@ export type Database = {
           website: string
         }[]
       }
+      get_marketplace_attribute_facets: {
+        Args: {
+          p_department?: string
+          p_include_adult?: boolean
+          p_subcategory_group?: string
+        }
+        Returns: {
+          count: number
+          kind: string
+          slug: string
+        }[]
+      }
       get_marketplace_department_counts: {
         Args: { p_include_adult?: boolean }
         Returns: {
@@ -32162,6 +32269,17 @@ export type Database = {
         Returns: {
           count: number
           slug: string
+        }[]
+      }
+      get_marketplace_subcategory_fine_counts: {
+        Args: {
+          p_department?: string
+          p_include_adult?: boolean
+          p_subcategory_group?: string
+        }
+        Returns: {
+          count: number
+          fine: string
         }[]
       }
       get_marketplace_subcategory_group_counts: {
@@ -33255,11 +33373,30 @@ export type Database = {
         Args: { p_subcategory: string }
         Returns: string
       }
+      marketplace_browse_page: {
+        Args: {
+          p_filters?: Json
+          p_page?: number
+          p_page_size?: number
+          p_sort?: string
+          p_tag_groups?: Json
+        }
+        Returns: {
+          id: string
+          total_count: number
+        }[]
+      }
       marketplace_due_for_existence_check: {
         Args: { p_limit?: number }
         Returns: {
           check_reason: string
           external_url: string
+          id: string
+        }[]
+      }
+      marketplace_due_for_variant_extract: {
+        Args: { p_limit?: number }
+        Returns: {
           id: string
         }[]
       }

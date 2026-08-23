@@ -25,6 +25,7 @@ import { useTranslation } from 'react-i18next';
 import { useTagContent, type TagContentResult } from '@/hooks/useTagContent';
 import { SingleSection } from '@/components/transit/SinglePage';
 import { NestedEntityCard } from '@/components/transit/NestedEntityCard';
+import { TagShopRail } from '@/components/tags/TagShopRail';
 import { DepartureRow } from '@/components/transit/DepartureRow';
 import { Roster } from '@/components/transit/Roster';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -230,19 +231,26 @@ export function TagLinkedContent({
 
       {marketplace.length > 0 && (
         <SingleSection id="shop" title={t('tags.detail.shop', 'Shop')}>
-          <div className={GRID}>
-            {marketplace.map((m) => (
-              <NestedEntityCard
-                key={m.id}
-                type="marketplace"
-                eyebrow={m.brand ?? m.business_name ?? null}
-                name={m.title}
-                description={m.category}
-                href={m.slug ? `/marketplace/${m.slug}` : undefined}
-              />
-            ))}
-          </div>
-          {tagSlug && <SectionSeeAll tagSlug={tagSlug} type="marketplace" />}
+          {/* Real product cards (image, brand, price) + a department-aware
+              "Shop all" into filtered /marketplace — replaces the generic
+              NestedEntityCard grid and the /search see-all for this section
+              only. Section id stays `shop` (RouteStrip invariant). */}
+          {tagSlug ? (
+            <TagShopRail items={marketplace} tagSlug={tagSlug} />
+          ) : (
+            <div className={GRID}>
+              {marketplace.map((m) => (
+                <NestedEntityCard
+                  key={m.id}
+                  type="marketplace"
+                  eyebrow={m.brand ?? m.business_name ?? null}
+                  name={m.title}
+                  description={m.category}
+                  href={m.slug ? `/marketplace/${m.slug}` : undefined}
+                />
+              ))}
+            </div>
+          )}
         </SingleSection>
       )}
 

@@ -272,27 +272,37 @@ function stripPrefix(kind: AttributeKind, slug: string): string {
   return slug.startsWith(p) ? slug.slice(p.length) : slug
 }
 
-/** Build a vocab object from raw unified_tags rows (bare or namespaced slug — testable). */
-export function buildAttributeVocab(rows: Array<{ slug: string; category: string }>): AttributeVocab {
+/** Build a vocab object from raw unified_tags rows (bare or namespaced slug — testable).
+ *  Kind resolves from the slug PREFIX first — `category` is trigger-derived from the
+ *  glossary tree since the tag-category consolidation (20260919100000) and no longer
+ *  says 'material'/'occasion'/'vibe' on prod; it survives only as a fallback for
+ *  bare-slug test fixtures. */
+export function buildAttributeVocab(rows: Array<{ slug: string; category?: string | null }>): AttributeVocab {
   const v: AttributeVocab = { material: new Set(), occasion: new Set(), vibe: new Set() }
   for (const r of rows) {
     if (!r?.slug) continue
-    if (r.category === 'material') v.material.add(stripPrefix('material', r.slug))
-    else if (r.category === 'occasion') v.occasion.add(stripPrefix('occasion', r.slug))
-    else if (r.category === 'vibe') v.vibe.add(stripPrefix('vibe', r.slug))
+    if (r.slug.startsWith(ATTRIBUTE_PREFIX.material)) v.material.add(stripPrefix('material', r.slug))
+    else if (r.slug.startsWith(ATTRIBUTE_PREFIX.occasion)) v.occasion.add(stripPrefix('occasion', r.slug))
+    else if (r.slug.startsWith(ATTRIBUTE_PREFIX.vibe)) v.vibe.add(stripPrefix('vibe', r.slug))
+    else if (r.category === 'material') v.material.add(r.slug)
+    else if (r.category === 'occasion') v.occasion.add(r.slug)
+    else if (r.category === 'vibe') v.vibe.add(r.slug)
   }
   return v
 }
 
 let _cache: AttributeVocab | null = null
 
-/** Load + cache the marketplace attribute vocabulary from unified_tags. */
+/** Load + cache the marketplace attribute vocabulary from unified_tags.
+ *  Prefix-keyed: the category-keyed load matched ZERO rows after the tag-category
+ *  consolidation rewrote `category` (measured 2026-08-23 — the engine was silently
+ *  running on an empty vocabulary). */
 export async function loadAttributeVocabulary(supabase: SupabaseClient, force = false): Promise<AttributeVocab> {
   if (_cache && !force) return _cache
   const { data, error } = await supabase
     .from('unified_tags')
     .select('slug, category')
-    .in('category', ['material', 'occasion', 'vibe'])
+    .or('slug.like.mat-%,slug.like.occ-%,slug.like.vibe-%')
     .eq('status', 'active')
   if (error) throw new Error(`loadAttributeVocabulary: ${error.message}`)
   _cache = buildAttributeVocab((data ?? []) as Array<{ slug: string; category: string }>)

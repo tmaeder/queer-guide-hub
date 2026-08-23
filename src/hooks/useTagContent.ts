@@ -63,6 +63,8 @@ export interface TagMarketplaceItem {
   brand: string | null;
   business_name: string | null;
   category: string | null;
+  /** Browse umbrella — powers the department-aware "Shop all" link. */
+  department?: string | null;
   price: number | null;
   price_usd: number | null;
   currency: string | null;

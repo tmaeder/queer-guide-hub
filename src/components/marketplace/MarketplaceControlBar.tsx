@@ -14,11 +14,18 @@ import { MarketplaceSearchSuggestions } from './MarketplaceSearchSuggestions';
 import { MarketplaceFilterSheet } from './MarketplaceFilterSheet';
 import { SavedSearchesButton } from './SavedSearchesButton';
 import type { MarketplaceFiltersInput, MarketplaceSort } from '@/hooks/useMarketplace';
-import { useMarketplaceSubcategoryTiles } from '@/hooks/useMarketplaceQueries';
+import {
+  useMarketplaceSubcategoryTiles,
+  useMarketplaceAttributeFacets,
+  useMarketplaceAttributeVocab,
+  useMarketplaceTagFacets,
+} from '@/hooks/useMarketplaceQueries';
 import {
   DEPARTMENT_ORDER,
+  SIZE_ORDER,
   departmentLabel,
   departmentOf,
+  attributeFacetsForDepartment,
   OCCASION_CHIPS,
 } from '@/lib/marketplaceTaxonomy';
 import { PRICE_BANDS, countActiveFilters, priceToToken } from '@/lib/marketplaceFilterParams';
@@ -183,6 +190,64 @@ export function MarketplaceControlBar({
     });
   };
 
+  // ONE contextual attribute chip, department-gated: Size for garment
+  // departments, Genre for books_art. The full attribute surface lives in
+  // the sheet — the band stays chips-not-forms.
+  const deptKinds = attributeFacetsForDepartment(filters.department);
+  const wantSizeChip = Boolean(filters.department) && deptKinds.includes('size');
+  const wantGenreChip = filters.department === 'books_art';
+  const { data: attributeFacetData } = useMarketplaceAttributeFacets(
+    wantSizeChip || wantGenreChip ? filters.department : null,
+    filters.subcategoryGroup,
+    includeAdult,
+  );
+  const { data: attributeVocab } = useMarketplaceAttributeVocab();
+  // Facet-driven tag chips after the divider (occasion kind first) — the
+  // hardcoded OCCASION_CHIPS survive as the loading/empty fallback so the
+  // band never jumps. Chips toggle their slug in ?tags= (multi-select);
+  // legacy ?occ= bookmarks keep parsing in Marketplace.tsx but nothing
+  // writes ?occ= anymore.
+  const { data: tagFacetData } = useMarketplaceTagFacets(
+    filters.department,
+    filters.subcategoryGroup,
+    includeAdult,
+  );
+  const facetChips = tagFacetData
+    .filter((f) => f.kind === 'occasion' || f.kind === 'vibe')
+    .sort((a, b) => (a.kind === b.kind ? b.count - a.count : a.kind === 'occasion' ? -1 : 1))
+    .slice(0, 6)
+    .map((f) => ({ slug: f.slug, label: f.name }));
+  const bandChips = facetChips.length > 0 ? facetChips : OCCASION_CHIPS;
+  const [attrOpen, setAttrOpen] = useState(false);
+  const selectedTags = filters.tags ?? [];
+  const toggleTagSlug = (slug: string) => {
+    const next = selectedTags.includes(slug)
+      ? selectedTags.filter((t) => t !== slug)
+      : [...selectedTags, slug];
+    onFiltersChange({ ...filters, tags: next.length > 0 ? next : undefined });
+  };
+  // Alpha ladder only in the band (numerics live in the sheet), in ladder
+  // order — never count order (that puts M before S before XL randomly).
+  const sizeChipOptions = wantSizeChip
+    ? attributeFacetData
+        .filter((f) => f.kind === 'size' && (SIZE_ORDER as readonly string[]).includes(f.slug))
+        .sort(
+          (a, b) =>
+            (SIZE_ORDER as readonly string[]).indexOf(a.slug) -
+            (SIZE_ORDER as readonly string[]).indexOf(b.slug),
+        )
+    : [];
+  const genreNameBySlug = new Map(
+    attributeVocab
+      .filter((a) => a.kind === 'genre')
+      .map((a) => [a.slug.slice('genre-'.length), a.name]),
+  );
+  const genreChipOptions = wantGenreChip
+    ? attributeFacetData.filter((f) => f.kind === 'genre')
+    : [];
+  const activeSizeCount = selectedTags.filter((t) => t.startsWith('size-')).length;
+  const activeGenreCount = selectedTags.filter((t) => t.startsWith('genre-')).length;
+
   const activeCount = countActiveFilters(filters);
   const facets = describeActiveFilters(filters);
 
@@ -312,13 +377,66 @@ export function MarketplaceControlBar({
             </PopoverContent>
           </Popover>
 
+          {(sizeChipOptions.length > 0 || genreChipOptions.length > 0) && (
+            <Popover open={attrOpen} onOpenChange={setAttrOpen}>
+              <PopoverTrigger asChild>
+                <FilterChip
+                  active={wantGenreChip ? activeGenreCount > 0 : activeSizeCount > 0}
+                  aria-label={wantGenreChip ? 'Filter by genre' : 'Filter by size'}
+                  label={
+                    wantGenreChip
+                      ? activeGenreCount > 0
+                        ? `Genre · ${activeGenreCount}`
+                        : 'Genre'
+                      : activeSizeCount > 0
+                        ? `Size · ${activeSizeCount}`
+                        : 'Size'
+                  }
+                />
+              </PopoverTrigger>
+              <PopoverContent align="start" className="w-56 p-2">
+                <ul className="m-0 flex list-none flex-col p-0">
+                  {(wantGenreChip ? genreChipOptions : sizeChipOptions).map((opt) => {
+                    const slug = wantGenreChip ? `genre-${opt.slug}` : `size-${opt.slug}`;
+                    const label = wantGenreChip
+                      ? (genreNameBySlug.get(opt.slug) ?? opt.slug)
+                      : opt.slug === 'one-size'
+                        ? 'One size'
+                        : opt.slug.toUpperCase();
+                    return (
+                      <li key={opt.slug}>
+                        <PickerRow
+                          selected={selectedTags.includes(slug)}
+                          onClick={() => toggleTagSlug(slug)}
+                        >
+                          <span>
+                            {label}
+                            <span className="ml-1.5 text-xs tabular-nums opacity-70">
+                              {opt.count.toLocaleString()}
+                            </span>
+                          </span>
+                        </PickerRow>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </PopoverContent>
+            </Popover>
+          )}
+
           <span className="mx-1 h-5 w-px shrink-0 bg-foreground" aria-hidden="true" />
 
-          {OCCASION_CHIPS.map((c) => (
+          {bandChips.map((c) => (
             <FilterChip
               key={c.slug}
-              active={activeOcc === c.slug}
-              onClick={() => toggleOcc(c.slug)}
+              active={selectedTags.includes(c.slug) || activeOcc === c.slug}
+              onClick={() => {
+                // Retire legacy single-select ?occ= writes: an active legacy
+                // chip clears via the old param; everything else multi-selects
+                // through ?tags=.
+                if (activeOcc === c.slug) toggleOcc(c.slug);
+                else toggleTagSlug(c.slug);
+              }}
               label={c.label}
             />
           ))}
