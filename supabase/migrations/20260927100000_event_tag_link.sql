@@ -56,6 +56,13 @@ begin
   perform public.assert_admin_or_internal();
   perform set_config('app.actor', 'job:event_tag_link', true);
 
+  -- `on commit drop` drops these at COMMIT, not at function exit, so a second
+  -- call inside one transaction hits 42P07 "relation _raw already exists".
+  -- The seed block at the end of this migration loops up to three passes in a
+  -- single transaction, so without this the migration fails deterministically
+  -- whenever there is a backlog to drain — which is exactly when it runs.
+  drop table if exists _raw, _amb, _map, _batch;
+
   -- Small side, built once. `distinct` because a tag whose slug and name
   -- normalize to the same string would otherwise appear twice.
   create temp table _raw on commit drop as
