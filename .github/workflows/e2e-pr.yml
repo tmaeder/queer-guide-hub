@@ -110,6 +110,7 @@ jobs:
             e2e/legal-pages.spec.ts \
             e2e/map-shell.spec.ts \
             e2e/trans-rights.spec.ts \
+            e2e/scroll-restoration.spec.ts \
             --reporter=line
           # e2e/auth.setup.ts is FIRST on the list and is load-bearing.
           # Passing explicit file paths filters EVERY project, including the
@@ -148,6 +149,18 @@ jobs:
           # turns the page into a danger ranking that is roughly the opposite of
           # the truth. That regression must fail in the PR that writes it, not
           # the morning after it merges.
+          # scroll-restoration.spec.ts is on this list for the reason singles
+          # and map-shell are: what it guards is invisible to every other
+          # check. Nothing owned the scroll offset across navigation for the
+          # life of the app, so following a link from a scrolled listing opened
+          # the destination at its BOTTOM, and lint, typecheck, axe and every
+          # unit test were green throughout — jsdom has no layout, so nothing
+          # there can clamp an offset. Three of its four cases fail with the
+          # fix reverted; the fourth guards the naive patch (a reset on every
+          # location change), which would jump the page on each of the ~90
+          # setSearchParams call sites that push an entry for a same-page
+          # filter. Left to the nightly, both regressions would be reported
+          # against a merged commit. ~20s for 4 tests.
           # tags-not-found.spec.ts must NEVER be added to this list, and it was
           # tried on 2026-08-20. It asserts `res.status() === 404` for an unknown
           # /tags/:slug, which is `functions/_middleware.ts` answering — and this
