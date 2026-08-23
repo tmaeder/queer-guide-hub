@@ -5,6 +5,7 @@
   "dangling_category_id": 0,
   "duplicate_active_name": 9,
   "event_tag_strings_unresolved": 363,
+  "events_with_tags_unlinked": 35131,
   "image_alt_column_empty": 1217,
   "image_without_license": 1217,
   "indexable_without_description": 0,
@@ -17,7 +18,8 @@
     "image_without_license",
     "image_alt_column_empty",
     "sensitive_without_description",
-    "event_tag_strings_unresolved"
+    "event_tag_strings_unresolved",
+    "events_with_tags_unlinked"
   ],
   "_notes": {
     "duplicate_active_name": "9 is correct, not a backlog: the deliberate mat-* sense splits (mat-leather vs leather) excluded by 20260916110000. Growth means a real twin pair regrew.",
@@ -28,6 +30,7 @@
     "sensitive_without_description": "Grows as the profession pipeline lands is_adult German profession tags with no description yet — not a regression introduced by the tag DQ program.",
     "event_tag_strings_unresolved": "Phase 4 scope marker. events does not use the unified tag system at all — 35,131 events carry a free-text tags[] array and unified_tag_assignments has ZERO entity_type='event' rows. 363 of 535 distinct strings resolve to no tag, German-heavy (1920er, ableismus, aidshilfe, austellung/ausstellungen, ballet/ballett). The plan estimated 40 of 80. Tracked, not fixed: reconciling needs Phase 1.3's hand-reviewed disposition at 363x the size.",
     "merged_but_not_status_merged": "1 is community-center, live on prod right now. 20260926110000 clears its merged_into_id (it is the only live tag in its cluster and community-centers is merged INTO it, so it IS the canonical), taking this to a true zero — tighten with --update once that applies. Baselined at the LIVE value on purpose: CI measures prod, so baselining the post-migration 0 fails every PR until the migration lands. The other 8 were repaired by 20260921130000.",
-    "_advisory": "Metrics in _advisory WARN instead of failing. They drift continuously from writers outside the tag glossary (the profession pipeline lands is_adult tags and new images every day), so gating a PR on them would red unrelated work for a change its author did not make — the same reasoning that keeps check-legal-citation-links off pull_request. The remaining metrics are true zero-or-fixed invariants and stay hard gates."
+    "_advisory": "Metrics in _advisory WARN instead of failing. They drift continuously from writers outside the tag glossary (the profession pipeline lands is_adult tags and new images every day), so gating a PR on them would red unrelated work for a change its author did not make — the same reasoning that keeps check-legal-citation-links off pull_request. The remaining metrics are true zero-or-fixed invariants and stay hard gates.",
+    "events_with_tags_unlinked": "Baselined at the LIVE value (all 35,131 events with tags[] are unlinked right now), not the post-migration 0 — CI measures prod, so baselining the target fails every PR until 20260927100000 applies. Advisory while the cron drains it; tighten to 0 with --update once it reaches zero, after which non-zero means the job stopped."
   }
 }
