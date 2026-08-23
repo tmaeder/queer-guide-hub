@@ -56,8 +56,20 @@ describe('BrandMark', () => {
     const { container: ink } = render(
       <BrandMark name="SUPAWEAR" logoUrl="https://x/white.png" onInk />,
     );
-    expect(ink.firstElementChild?.className).toContain('bg-foreground');
-    expect(ink.firstElementChild?.className).not.toContain('bg-logo-plate');
+    expect(ink.firstElementChild?.className).toContain('bg-logo-plate-ink');
+  });
+
+  it('uses mode-INDEPENDENT plates, never theme tokens', () => {
+    // Caught on prod, not in review: `bg-foreground` reads as "ink" and is ink
+    // in light mode — but in dark mode --foreground IS paper, so the ink plate
+    // rendered paper-on-paper and the white logo vanished again, in exactly the
+    // mode the fix existed to survive. Both plates must be literals.
+    const themeTokens = ['bg-foreground', 'bg-background', 'bg-card ', 'text-foreground'];
+    for (const onInk of [true, false]) {
+      const { container } = render(<BrandMark name="X" logoUrl="https://x/l.png" onInk={onInk} />);
+      const cls = container.firstElementChild?.className ?? '';
+      for (const t of themeTokens) expect(cls).not.toContain(t);
+    }
   });
 
   it('never crops the logo — a brand mark is a fixed composition', () => {
