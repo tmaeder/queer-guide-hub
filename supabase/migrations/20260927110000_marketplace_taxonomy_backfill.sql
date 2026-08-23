@@ -14,6 +14,39 @@
 -- it only selects rows whose stored values actually disagree with the freshly
 -- computed ones.
 
+-- ── Trigger gate must also fire for rows that were NEVER derived ────────────
+-- 20260926100100 gated derivation on "subcategory or title changed". The
+-- backfill below re-assigns `subcategory` its own value to trip that gate —
+-- except IS DISTINCT FROM is false for an unchanged value, so the gate never
+-- fires, nothing is derived, taxonomy_v3_at stays NULL, and the job re-selects
+-- the same 500 rows every minute forever while bumping updated_at (and a
+-- search reindex) each time. Measured on prod before shipping: self-assignment
+-- left the row unstamped, a genuine title change stamped it.
+--
+-- Adding "never derived" to the gate fixes it at the source and gives a useful
+-- property for free: setting taxonomy_v3_at back to NULL on any row queues it
+-- for re-derivation.
+CREATE OR REPLACE FUNCTION public.marketplace_listings_derive_taxonomy()
+RETURNS trigger LANGUAGE plpgsql AS $fn$
+BEGIN
+  IF TG_OP = 'INSERT'
+     OR NEW.taxonomy_v3_at IS NULL
+     OR NEW.subcategory IS DISTINCT FROM OLD.subcategory
+     OR NEW.title IS DISTINCT FROM OLD.title THEN
+    NEW.subcategory_group := public.marketplace_subcategory_group(NEW.subcategory, NEW.title);
+    NEW.department        := public.marketplace_department(NEW.subcategory, NEW.title);
+    NEW.subcategory_fine  := public.marketplace_subcategory_fine(NEW.subcategory, NEW.title);
+    NEW.taxonomy_v3_at    := now();
+  END IF;
+
+  IF TG_OP = 'INSERT' OR NEW.attributes IS DISTINCT FROM OLD.attributes THEN
+    NEW.sizes  := public.jsonb_text_array(NEW.attributes -> 'size');
+    NEW.colors := public.jsonb_text_array(NEW.attributes -> 'color');
+  END IF;
+
+  RETURN NEW;
+END $fn$;
+
 CREATE OR REPLACE FUNCTION public.run_marketplace_taxonomy_backfill(p_batch integer DEFAULT 500)
 RETURNS jsonb
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp AS $$
