@@ -251,4 +251,65 @@ if (!hygieneRes.ok) {
   }
 }
 
+// 7. Embedding drain (2026-08). `workers/ingest` is the ONLY writer of the
+//    1024-dim vectors in content_embeddings, which feed search_embeddings — the
+//    vector arm of search_hybrid. Nothing checked it, and it had been starving
+//    for months: sized as a "backstop" for a Supabase DB webhook that does not
+//    exist (zero triggers reach net.http_request), at 15 rows / 10 min for all
+//    eleven entity types, with a newest-first work list so the tail was never
+//    reached. 6,209 marketplace listings were keyword-searchable and
+//    vector-invisible; nothing anywhere said so.
+//
+//    LIVENESS FAILS, DEPTH ONLY WARNS — the same rule the search_reindex_drain
+//    check above had to learn. A big import legitimately makes this deep and
+//    old for a few hours, so depth cannot decide it; but workers/ingest is the
+//    sole writer of the table, so "nothing has been embedded in 30 minutes
+//    while work is queued" is unambiguous.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/get_stale_embedding_backlog`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    console.warn(`⚠ get_stale_embedding_backlog → HTTP ${res.status} (RPC missing?)`)
+  } else {
+    const b = await res.json()
+    const missing = Number(b.total_missing ?? 0)
+    const stale = Number(b.total_stale ?? 0)
+    const depth = missing + stale
+    const lastMin = b.last_embedded_at
+      ? (Date.now() - new Date(b.last_embedded_at).getTime()) / 60000
+      : Infinity
+
+    // The cron is every 5 minutes; 30 covers a couple of missed runs.
+    if (depth > 0 && lastMin > 30) {
+      console.error(
+        `✗ embedding drain silent for ${Number.isFinite(lastMin) ? lastMin.toFixed(0) + 'min' : 'ever'} ` +
+          `with ${depth} rows queued (${missing} never embedded) — new content is vector-invisible`,
+      )
+      console.error('  Check the queer-guide-search-ingest cron in the Cloudflare dashboard.')
+      console.error('  A 1027 on any *.queer.guide worker means the account request quota, not this worker.')
+      process.exit(1)
+    }
+
+    const oldestH = b.oldest_dirty_at
+      ? (Date.now() - new Date(b.oldest_dirty_at).getTime()) / 3600000
+      : 0
+    // No baseline allowance is set here yet on purpose: at 200 rows every 5
+    // minutes the drain clears 57,600/day, so once the 2026-08 backlog is gone
+    // a steady-state depth in the thousands means intake outran the drain and
+    // DRAIN_LIMIT needs raising. Measure a week of steady state before turning
+    // either of these into a hard failure.
+    if (missing > 5000 || oldestH > 24) {
+      console.warn(
+        `⚠ embedding backlog: ${missing} missing + ${stale} stale, head of queue ${oldestH.toFixed(0)}h old ` +
+          `(${JSON.stringify(b.missing ?? {})}) — raise DRAIN_LIMIT if this is steady state, not an import`,
+      )
+    } else {
+      console.log(`✓ embedding drain healthy (depth=${depth}, last write ${lastMin.toFixed(0)}min ago)`)
+    }
+  }
+}
+
 console.log('✓ Pipeline health check passed')
