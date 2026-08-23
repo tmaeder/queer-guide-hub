@@ -61,7 +61,15 @@ if (UPDATE) {
 const t = stats.totals ?? {}
 console.log(`tag corpus: ${t.active_tags} active tags, ${t.categories} categories, ${t.assignments} assignments`)
 
+// Metrics that drift continuously from writers OUTSIDE the tag glossary — the
+// profession pipeline lands is_adult tags and new images every day. Gating a PR
+// on those reds unrelated work for a change its author did not make, the same
+// reasoning that keeps check-legal-citation-links off pull_request. They still
+// report, loudly, and a step change is still visible in the run log.
+const ADVISORY = new Set(baseline._advisory ?? [])
+
 const regressions = []
+const drift = []
 const improvements = []
 const missing = []
 
@@ -74,11 +82,14 @@ for (const k of metrics.sort()) {
     missing.push(`${k} = ${now}`)
     continue
   }
-  if (now > was) regressions.push(`${k}: ${was} → ${now}  (+${now - was})`)
-  else if (now < was) improvements.push(`${k}: ${was} → ${now}  (-${was - now})`)
+  if (now > was) {
+    const line = `${k}: ${was} → ${now}  (+${now - was})`
+    ;(ADVISORY.has(k) ? drift : regressions).push(line)
+  } else if (now < was) improvements.push(`${k}: ${was} → ${now}  (-${was - now})`)
 }
 
 for (const line of improvements) console.log(`  ✓ improved  ${line}`)
+for (const line of drift) console.warn(`  ⚠ drift     ${line}`)
 
 if (missing.length) {
   console.error(`\n✗ ${missing.length} metric(s) have no baseline entry:`)
@@ -98,10 +109,11 @@ if (regressions.length) {
 
 if (regressions.length || missing.length) process.exit(1)
 
+const tail = drift.length ? ` (${drift.length} advisory metric(s) drifted — see ⚠ above)` : ''
 if (improvements.length) {
   console.log(
-    `\n✓ no regressions (${improvements.length} improved — re-baseline with --update to lock them in)`,
+    `\n✓ no regressions${tail} — ${improvements.length} improved; re-baseline with --update to lock them in`,
   )
 } else {
-  console.log('✓ no tag hygiene regressions')
+  console.log(`✓ no tag hygiene regressions${tail}`)
 }

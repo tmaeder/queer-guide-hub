@@ -113,6 +113,7 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
             <Image
               src={visual.src}
               fit={visual.fit}
+              plate={visual.plate ?? undefined}
               alt={venue.name}
               aspect="card"
               imageRole="cover"

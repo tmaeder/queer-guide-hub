@@ -116,6 +116,7 @@ async function enrichTable(
   let logosFound = 0
   let mirrorFailed = 0
   let errors = 0
+  let inkPlates = 0
   const logodev = newTally()
   let aborted: 'unauthorized' | 'rate_limited' | null = null
 
@@ -153,10 +154,24 @@ async function enrichTable(
       }
 
       if (logoUrl) {
-        await supabase
-          .from(table)
-          .update({ logo_url: logoUrl, logo_fetched_at: new Date().toISOString() })
-          .eq('id', item.id)
+        // Polarity, measured from the bytes we just mirrored. The venue tile is
+        // `bg-muted`, a THEME token, so a dark wordmark dies in dark mode and a
+        // white one dies in light — both directions, unlike the marketplace
+        // plate. `logo_on_ink` lets the tile pin itself to a fixed ground.
+        // Venues only: `events` has no such column and no logo-first surface.
+        const patch: Record<string, unknown> = {
+          logo_url: logoUrl,
+          logo_fetched_at: new Date().toISOString(),
+        }
+        if (table === 'venues') {
+          const onInk =
+            logo && logo.contentType.split(';')[0].trim().toLowerCase() === 'image/png'
+              ? needsInkPlate(await pngInk(logo.bytes))
+              : false
+          patch.logo_on_ink = onInk
+          if (onInk) inkPlates++
+        }
+        await supabase.from(table).update(patch).eq('id', item.id)
         logosFound++
       } else if (!logo) {
         // No real logo for this domain — mark attempted, keep photos.
@@ -187,6 +202,7 @@ async function enrichTable(
   return {
     processed: items.length,
     logos_found: logosFound,
+    ink_plates: inkPlates,
     mirror_failed: mirrorFailed,
     errors,
     logodev,

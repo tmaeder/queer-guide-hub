@@ -59,6 +59,13 @@ interface ImageProps {
    * and icon tile always stay `cover` regardless.
    */
   fit?: 'cover' | 'contain';
+  /**
+   * Pin a CONTAINED image's ground to a mode-independent literal instead of the
+   * themed `bg-muted`. Logo artwork has a polarity of its own: on a ground that
+   * flips with the theme, a dark mark is erased in dark mode and a light one in
+   * light mode. Ignored for `cover`, which fills its own tile.
+   */
+  plate?: 'paper' | 'ink';
   /** Fixed pixel height escape hatch; overrides `aspect` when set. */
   heightPx?: number;
   /** Named `imageRole` (not `role`) to avoid the ARIA `role` attribute. */
@@ -134,6 +141,7 @@ export const Image = ({
   sizes,
   widths,
   className,
+  plate,
   children,
 }: ImageProps) => {
   // Source ladder, best first. `resolveImageUrl` prefers the R2 mirror, so when
@@ -265,7 +273,6 @@ export const Image = ({
   const scrimClass = SCRIM_CLASS[scrim];
 
   const photo = (
-     
     <img
       ref={imgRef}
       src={effectiveSrc ?? undefined}
@@ -296,7 +303,14 @@ export const Image = ({
   return (
     <div
       className={cn(
-        'relative overflow-hidden bg-muted',
+        'relative overflow-hidden',
+        // A pinned plate only applies while the image is actually contained —
+        // a fallback tile or a cover photo must keep the themed ground.
+        useContain && plate === 'ink'
+          ? 'bg-logo-plate-ink'
+          : useContain && plate === 'paper'
+            ? 'bg-logo-plate'
+            : 'bg-muted',
         heightPx == null && ASPECT_CLASS[aspect],
         ROUNDED_CLASS[rounded],
       )}
