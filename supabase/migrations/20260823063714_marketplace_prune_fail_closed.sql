@@ -1,16 +1,9 @@
--- RECOVERED, not authored. Applied to prod at version 20260823063714 with no file in
--- version control and no PR carrying it. Migration drift makes `supabase db push`
--- SKIP for the WHOLE repo, so every open PR fails migration-versions as
--- collateral and no merged migration reaches prod.
+-- Applied live at version 20260823063714 (already in schema_migrations, so
+-- `db push` matches by version and skips it — applying is a no-op). A parallel
+-- session recovered this same file byte-for-byte from
+-- schema_migrations.statements as drift repair while this PR was in flight;
+-- the SQL is identical, this header is the authored one.
 --
--- Byte-for-byte from supabase_migrations.schema_migrations.statements
--- (6848 chars, md5 af27d66e995628a7b88135913f53b4d8), transported as base64 and decoded locally
--- so no hand-transcription could mangle an escape. Already live: applying it is
--- a no-op; the file exists so db push can match the version.
---
--- One of SEVEN orphans applied inside ~25 minutes on 2026-08-23 by concurrent
--- sessions. `apply_migration` is not done until the file is MERGED TO MAIN.
-
 -- INCIDENT 2026-08-22: generalizing the catalog prune past ohmyfantasy.com
 -- archived 638 live listings from the queer retailers this site exists to
 -- promote — Mister B (41), DeMask (52), RodeoH (19), Spectrum Boutique (17),
