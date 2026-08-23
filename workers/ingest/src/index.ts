@@ -16,7 +16,7 @@
  * writes for that reason (search_reindex_queue); this path follows it.
  *
  * So the drain is sized as a primary path, not a trickle: get_stale_embeddings
- * is FIFO (migration 20260926120000), and one run costs ~20 subrequests for 200
+ * is FIFO (migration 20260927123000), and one run costs ~20 subrequests for 200
  * rows because rows are fetched, embedded and upserted in BATCHES rather than
  * three subrequests each. That stays under the Workers Free 50/invocation cap,
  * so throughput does not depend on which plan the account is on.
