@@ -314,6 +314,11 @@ export function AdminShell() {
             <main
               id="admin-main-content"
               tabIndex={-1}
+              // The admin console scrolls THIS element, not the window, so
+              // ScrollManager has to be told where to look — without the
+              // marker it would reset a window that never moves and admin
+              // would keep landing at the previous page's offset.
+              data-scroll-container=""
               className={`flex-1 overflow-auto ${PAGE_GUTTER} ${PAGE_VERTICAL}`}
             >
               <div className="mx-auto w-full max-w-page">
