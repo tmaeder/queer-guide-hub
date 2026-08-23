@@ -88,7 +88,7 @@ export function TagShopRail({ items, tagSlug }: { items: TagMarketplaceItem[]; t
         to={seeAllHref}
         className="self-start text-13 font-bold underline underline-offset-4"
       >
-        {t('tags.detail.shopAll', 'Shop all →')}
+        {t('tags.detail.shopAll', 'Shop all')} <span aria-hidden="true">&rarr;</span>
       </LocalizedLink>
     </div>
   );
