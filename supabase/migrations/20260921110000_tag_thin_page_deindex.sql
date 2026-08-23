@@ -159,7 +159,27 @@ begin
     'indexable_without_description', (
       select count(*) from active
        where seo_indexable
-         and coalesce(nullif(btrim(description), ''), short_description) is null)
+         and coalesce(nullif(btrim(description), ''), short_description) is null),
+
+    -- Phase 4 scope marker, measured not fixed. `events` does not use the
+    -- unified tag system at all: 35,131 events carry a free-text tags[] array
+    -- and unified_tag_assignments holds ZERO rows with entity_type='event'.
+    -- Of 535 distinct strings in that array, 363 resolve to no tag at all —
+    -- and they are German-heavy in exactly the way the Phase 1.3 tail was
+    -- (1920er, ableismus, aidshilfe, ausstellungen, austellung/ausstellung,
+    -- ballet/ballett). The plan estimated "40 of 80 distinct strings
+    -- unresolved"; it is 363 of 535. Reconciling them needs the same
+    -- hand-reviewed disposition that made Phase 1.3 safe, at 363x the size, so
+    -- it is tracked here rather than guessed at.
+    'event_tag_strings_unresolved', (
+      select count(*) from (
+        select distinct lower(btrim(t)) as s
+          from events, unnest(coalesce(tags, '{}'::text[])) t
+         where btrim(t) <> ''
+      ) e
+      where not exists (
+        select 1 from unified_tags u
+         where lower(u.name) = e.s or lower(u.slug) = e.s))
   ) into v;
 
   return v;
