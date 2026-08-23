@@ -24519,6 +24519,7 @@ export type Database = {
           latitude: number | null
           lgbti_relevance_score: number | null
           logo_fetched_at: string | null
+          logo_on_ink: boolean
           logo_url: string | null
           longitude: number | null
           name: string
@@ -24606,6 +24607,7 @@ export type Database = {
           latitude?: number | null
           lgbti_relevance_score?: number | null
           logo_fetched_at?: string | null
+          logo_on_ink?: boolean
           logo_url?: string | null
           longitude?: number | null
           name: string
@@ -24693,6 +24695,7 @@ export type Database = {
           latitude?: number | null
           lgbti_relevance_score?: number | null
           logo_fetched_at?: string | null
+          logo_on_ink?: boolean
           logo_url?: string | null
           longitude?: number | null
           name?: string
