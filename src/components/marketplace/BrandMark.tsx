@@ -25,12 +25,19 @@ import { brandMonogram } from './marketplaceHelpers';
 export function BrandMark({
   name,
   logoUrl,
+  onInk = false,
   className,
   monogramClassName,
   padding = 'p-1.5',
 }: {
   name: string;
   logoUrl?: string | null;
+  /**
+   * This logo has no dark pixels and would be invisible on the paper plate —
+   * measured from the mirrored bytes, never guessed. See the `logo_on_ink`
+   * column. Seven of the catalogue's eighty marks are white-on-transparent.
+   */
+  onInk?: boolean;
   /** Plate size and radius — the caller owns both. */
   className?: string;
   /** Type rank for the monogram; differs by plate size. */
@@ -45,7 +52,11 @@ export function BrandMark({
         // on the image itself still paints when the image 404s, which would
         // leave a blank square and defeat the layering above. On the plate, a
         // dead logo falls back to an ink monogram on paper.
-        logoUrl ? 'bg-logo-plate text-track-ring' : 'bg-card',
+        logoUrl
+          ? onInk
+            ? 'bg-foreground text-background'
+            : 'bg-logo-plate text-track-ring'
+          : 'bg-card',
         className,
       )}
     >

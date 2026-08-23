@@ -58,6 +58,7 @@ export function VerifiedOwnedBrands() {
                   <BrandMark
                     name={b.display_name ?? b.brand_key}
                     logoUrl={b.logo_url}
+                    onInk={b.logo_on_ink ?? false}
                     className="ml-auto h-12 w-12 rounded-element"
                     padding="p-1"
                   />

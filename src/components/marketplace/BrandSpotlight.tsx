@@ -65,6 +65,7 @@ export function BrandSpotlight() {
             <BrandMark
               name={brand.display_name}
               logoUrl={brand.logo_url}
+              onInk={brand.logo_on_ink ?? false}
               className="mb-4 h-12 w-12 rounded-element"
               monogramClassName="text-title font-bold"
               padding="p-1"
