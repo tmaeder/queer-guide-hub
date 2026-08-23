@@ -119,6 +119,7 @@ export default function MarketplaceBrand() {
                 <BrandMark
                   name={brand.display_name}
                   logoUrl={brand.logo_url}
+                  onInk={brand.logo_on_ink ?? false}
                   className="h-20 w-20 rounded-container"
                   monogramClassName="font-display text-headline"
                   padding="p-2.5"
