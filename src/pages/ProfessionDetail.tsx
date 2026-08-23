@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { useCanonicalProfession, usePersonalitiesByProfession } from '@/hooks/usePageFetchers';
+import { useMeta } from '@/hooks/useMeta';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -90,6 +91,30 @@ export default function ProfessionDetail() {
       : null,
   );
 
+  // Every one of these ~233 pages shared the site-default <title> and had no
+  // description or canonical, so they were mutually indistinguishable to a crawler.
+  // Worth fixing now and not before: until the German normalization landed, the
+  // profession names these titles are built from were values like
+  // "Schauspieler/in" and "Musik-", so a unique title would have been a uniquely
+  // broken one. Canonical is the DECODED name re-encoded, so
+  // /professions/Drag%20queen and /professions/Drag+queen collapse to one URL.
+  useMeta({
+    title: professionData ? `${professionData.name} — LGBTQ+ People | Queer Guide` : undefined,
+    description: professionData
+      ? `${professionData.totalCount} LGBTQ+ ${professionData.totalCount === 1 ? 'person' : 'people'} in the Queer Guide archive whose work is recorded under ${professionData.name}.`
+      : undefined,
+    canonicalPath: professionData
+      ? `/professions/${encodeURIComponent(professionData.name)}`
+      : undefined,
+    // 161 of the 233 profession pages have ZERO publicly visible people — the
+    // corpus is mostly drafts, and `personalities` RLS hides them from anon. Giving
+    // all 233 a unique title without this would have invited Google to index 161
+    // empty pages, which is thin content at a scale that hurts the whole domain.
+    // Measured, not assumed: 161 zero / 41 one-or-two / 31 three-plus.
+    // A page that gains people starts indexing itself on the next crawl.
+    noIndex: !professionData || professionData.totalCount === 0,
+  });
+
   if (loading) {
     return (
       <PageContainer>
@@ -136,13 +161,22 @@ export default function ProfessionDetail() {
         {/* Header */}
         <div className="flex items-center gap-4">
           <User size={32} className="text-primary" />
-          <h4 className="text-2xl font-bold">{professionData.name}</h4>
+          {/* Was an <h4>, with an <h6> below it and no <h1> anywhere on the page —
+              axe `page-has-heading-one`, and a heading order that jumps h4 -> h6.
+              The visual rank was always page-title; only the element was wrong. */}
+          <h1 className="text-headline font-bold">{professionData.name}</h1>
           <Badge variant="secondary">
             {professionData.totalCount} {professionData.totalCount === 1 ? 'person' : 'people'}
           </Badge>
         </div>
 
-        {/* Stats Overview */}
+        {/* Stats Overview.
+            The three cards below use CardTitle, which is a hard <h3>. With the page
+            title now a real <h1>, that would jump h1 -> h3 and trip axe
+            `heading-order`, so the section carries its own h2. It is sr-only because
+            the cards are self-labelling on screen — this names the group for a
+            screen reader without duplicating a visible label. */}
+        <h2 className="sr-only">Overview</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -204,7 +238,7 @@ export default function ProfessionDetail() {
 
         {/* People Grid */}
         <div>
-          <h6 className="text-base font-semibold mb-4">People in {professionData.name}</h6>
+          <h2 className="text-title font-semibold mb-4">People in {professionData.name}</h2>
           {professionData.personalities.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {professionData.personalities.map((personality) => {
