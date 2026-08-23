@@ -269,6 +269,7 @@
         "npm:maplibre-gl@^6.3.0",
         "npm:motion@^13.1.0",
         "npm:pdfjs-dist@^6.2.108",
+        "npm:playwright@^1.62.1",
         "npm:postcss@^8.5.26",
         "npm:prettier@^3.9.6",
         "npm:react-day-picker@^10.0.1",
