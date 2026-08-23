@@ -8,7 +8,7 @@
   "image_alt_column_empty": 1217,
   "image_without_license": 1217,
   "indexable_without_description": 0,
-  "merged_but_not_status_merged": 1,
+  "merged_but_not_status_merged": 0,
   "nonclean_entity_type": 0,
   "redirect_to_non_canonical": 58,
   "sensitive_without_description": 19,
@@ -21,13 +21,13 @@
   ],
   "_notes": {
     "duplicate_active_name": "9 is correct, not a backlog: the deliberate mat-* sense splits (mat-leather vs leather) excluded by 20260916110000. Growth means a real twin pair regrew.",
-    "redirect_to_non_canonical": "301s into a 404. PR #2828 fixed this class once and it has regrown to 58; recorded so the 59th is caught, not so 58 is blessed.",
+    "redirect_to_non_canonical": "INERT rows, not live 301-into-404s — retracted 2026-08-23. The edge lookup filters redirect targets on status=active (PR #2828), so /tags/alex-j-rgen returns a clean 404 in one hop rather than redirecting into one; verified on prod. 57 of the 58 are accent-folding pairs (alex-j-rgen -> alex-jurgen, bisexualit-t -> bisexualitat). Kept, not deleted: a deprecated tag can be revived and 20260910181447 re-mints redirects when that happens. Hygiene counter, not exposure.",
     "image_without_license": "1,193 of these are self-hosted (supabase.co, img.queer.guide) with no image_source, no image_attribution and no image_prompt — the provenance was never captured and CANNOT be recovered from the database, so this is a ratchet, not a target. See 20260921100000. Only commons_image_without_license is actionable.",
     "image_alt_column_empty": "NOT an accessibility gate. Every render path already emits alt=\"\" when this is null (TagIndexCard, MoreLikeThisByTag, FollowedTagsFeed hardcode it; TagDetail falls back to ''), which is correct for an image whose meaning is carried by the adjacent tag name.",
     "indexable_without_description": "869 thin public pages advertised in sitemap-tags.xml. 20260921110000 deindexes them and re-indexes on prose, after which this becomes a real zero-invariant rather than a backlog.",
     "sensitive_without_description": "Grows as the profession pipeline lands is_adult German profession tags with no description yet — not a regression introduced by the tag DQ program.",
     "event_tag_strings_unresolved": "Phase 4 scope marker. events does not use the unified tag system at all — 35,131 events carry a free-text tags[] array and unified_tag_assignments has ZERO entity_type='event' rows. 363 of 535 distinct strings resolve to no tag, German-heavy (1920er, ableismus, aidshilfe, austellung/ausstellungen, ballet/ballett). The plan estimated 40 of 80. Tracked, not fixed: reconciling needs Phase 1.3's hand-reviewed disposition at 363x the size.",
-    "merged_but_not_status_merged": "1 is community-center, deliberately NOT repaired by 20260921130000: its canonical community-center-venue is deprecated, so flipping it would 301 into a 404. The other 8 (pride, sports, lgbtq-rights, discrimination, education, queere-community, charit, jannik-sch-mann) were repaired. Growth means the invariant broke again.",
+    "merged_but_not_status_merged": "Now a true zero. 20260921130000 repaired 8 (pride, sports, lgbtq-rights, discrimination, education, queere-community, charit, jannik-sch-mann); 20260922100000 closed the last one by clearing community-center's merged_into_id — it is the only live tag in its cluster and something is already merged INTO it, so it is the canonical and the pointer was wrong data. Any growth means the invariant broke again.",
     "_advisory": "Metrics in _advisory WARN instead of failing. They drift continuously from writers outside the tag glossary (the profession pipeline lands is_adult tags and new images every day), so gating a PR on them would red unrelated work for a change its author did not make — the same reasoning that keeps check-legal-citation-links off pull_request. The remaining metrics are true zero-or-fixed invariants and stay hard gates."
   }
 }
