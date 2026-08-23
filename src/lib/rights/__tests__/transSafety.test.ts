@@ -1,11 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import {
-  readTransViolence,
-  readTransRightsIndex,
-  summariseRecognition,
-  TRI_CATEGORIES,
-  GENDER_RECOGNITION_TOPIC,
-} from '../transSafety';
+import { readTransViolence, summariseRecognition, GENDER_RECOGNITION_TOPIC } from '../transSafety';
+import * as transSafety from '../transSafety';
 
 /**
  * The failure that matters here is a CONFIDENT WRONG NUMBER shown to a trans
@@ -89,32 +84,18 @@ describe('readTransViolence — absence is never a zero', () => {
   });
 });
 
-describe('readTransRightsIndex — out of scope is not a zero score', () => {
-  it('reports covered=false for a country the index does not assess', () => {
-    const r = readTransRightsIndex({});
-    expect(r.covered).toBe(false);
-    expect(r.total).toBeNull();
+describe('TGEU Trans Rights Index is linked, never copied', () => {
+  // The index is CC BY-NC-SA and re-scored every year on IDAHOBIT, so this repo
+  // keeps no local copy of its scores — no reader, no column, only an
+  // attributed outbound link. These two assertions are the guard: if someone
+  // re-adds a score parser without re-reading why it was removed, they fail.
+  it('exports no Trans Rights Index score reader', () => {
+    expect(transSafety).not.toHaveProperty('readTransRightsIndex');
+    expect(transSafety).not.toHaveProperty('TRI_CATEGORIES');
   });
 
-  it('reports covered=true for a genuine score of zero', () => {
-    // A real 0/100 is a finding. It must not collapse into "not assessed".
-    const r = readTransRightsIndex({ total: 0, max: 100, source_year: 2026 });
-    expect(r.covered).toBe(true);
-    expect(r.total).toBe(0);
-  });
-
-  it('keeps only the six known categories and ignores unknown keys', () => {
-    const r = readTransRightsIndex({
-      total: 40,
-      max: 100,
-      categories: { health: 5, asylum: 3, made_up_category: 99, family: 'x' },
-    });
-    expect(Object.keys(r.categories).sort()).toEqual(['asylum', 'health']);
-    expect(r.categories.health).toBe(5);
-  });
-
-  it('exposes exactly the six TGEU categories', () => {
-    expect(TRI_CATEGORIES).toHaveLength(6);
+  it('still exports the outbound link the page attributes to', () => {
+    expect(transSafety.TGEU_TRI_URL).toMatch(/^https:\/\/[^/]*tgeu\.org/);
   });
 });
 

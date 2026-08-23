@@ -7,10 +7,7 @@ import { useAllCountriesTransRights } from '@/hooks/useIntentData';
 import { TgeuSourceLine } from '@/components/rights/SourceLine';
 import {
   readTransViolence,
-  readTransRightsIndex,
   summariseRecognition,
-  TRI_CATEGORIES,
-  TRI_CATEGORY_LABEL,
   TGEU_TMM_URL,
   TGEU_TRI_URL,
   TMM_REPORTING_CAVEAT,
@@ -127,15 +124,6 @@ export default function TransRights() {
 
   const violenceTotal = violence.reduce((sum, e) => sum + (e.record.total ?? 0), 0);
   const fetchedAt = violence[0]?.record.fetchedAt ?? null;
-
-  const indexed = useMemo(
-    () =>
-      rows
-        .map((c) => ({ country: c, record: readTransRightsIndex(c.trans_rights_index) }))
-        .filter((e) => e.record.covered)
-        .sort((a, b) => (b.record.total ?? 0) - (a.record.total ?? 0)),
-    [rows],
-  );
 
   useMeta({
     title: t('rights.trans.metaTitle', 'Trans rights and safety, country by country'),
@@ -256,63 +244,60 @@ export default function TransRights() {
       : []),
 
     // ---------------------------------------------------------------------
-    // Axis 2 — TGEU Trans Rights Index. Self-hiding until the annual seed
-    // lands, so an unseeded deploy shows nothing rather than 54 blank rows.
+    // Axis 2 — TGEU Trans Rights Index. We deliberately keep NO local copy of
+    // its scores and send the reader to TGEU instead.
+    //
+    // Two reasons, and the second is the load-bearing one:
+    //
+    //  1. Licence. The Trans Rights Map is CC BY-NC-SA 4.0. This site takes
+    //     payments and affiliate commission, so reproducing their scored
+    //     dataset here is the use the NonCommercial clause is written about.
+    //     A link is unambiguously fine; a copy is not.
+    //
+    //  2. Freshness, which outlives the licence question. The index is
+    //     re-scored every year on IDAHOBIT and 2026 was the first year in
+    //     thirteen that it went BACKWARDS. A transcribed snapshot silently
+    //     becomes wrong the day they republish, and a stale trans-rights score
+    //     is worse than no score: it tells someone a border is passable on
+    //     last year's law. `safety_notes_composer` is this codebase's own
+    //     precedent — a derived field that outlived its input served the wrong
+    //     country's law to 86 cities for two months.
+    //
+    // So this section is always rendered and always current, because it is a
+    // pointer rather than a copy.
     // ---------------------------------------------------------------------
-    ...(indexed.length > 0
-      ? [
-          {
-            id: 'index',
-            label: t('rights.trans.section.index', 'Trans Rights Index'),
-            kicker: t('rights.trans.kicker.index', 'Europe and Central Asia only'),
-            content: (
-              <div>
-                <p className="mb-4 max-w-prose">
-                  {t(
-                    'rights.trans.body.index',
-                    'TGEU scores 54 countries in Europe and Central Asia across 32 areas of trans-specific law. Every other country on this site is outside its scope — blank here means not assessed, never a score of zero. TGEU notes these scores read legal text only, and take no account of how laws are applied.',
-                  )}
-                </p>
-                <ul className="list-none p-0 m-0 mb-4">
-                  {indexed.map(({ country, record }) => (
-                    <li
-                      key={country.id}
-                      className="flex items-baseline justify-between gap-4 border-b border-border py-2"
-                    >
-                      <span>
-                        {country.slug ? (
-                          <LocalizedLink to={`/country/${country.slug}`}>
-                            {country.name}
-                          </LocalizedLink>
-                        ) : (
-                          country.name
-                        )}
-                        <span className="block text-xs text-muted-foreground">
-                          {TRI_CATEGORIES.filter((k) => record.categories[k] != null)
-                            .map((k) => `${TRI_CATEGORY_LABEL[k]} ${record.categories[k]}`)
-                            .join(' · ')}
-                        </span>
-                      </span>
-                      <span className="flex shrink-0 items-center gap-2">
-                        <Bar value={record.total ?? 0} of={record.max ?? 100} />
-                        <span className="text-13 tabular-nums text-muted-foreground">
-                          {record.total}
-                          {record.max ? ` / ${record.max}` : ''}
-                        </span>
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-                <TgeuSourceLine
-                  href={TGEU_TRI_URL}
-                  label={t('rights.trans.triSource', 'Trans Rights Index & Map')}
-                  updatedAt={null}
-                />
-              </div>
-            ),
-          } satisfies SectionDef,
-        ]
-      : []),
+    {
+      id: 'index',
+      label: t('rights.trans.section.index', 'Trans Rights Index'),
+      kicker: t('rights.trans.kicker.index', 'Europe and Central Asia only'),
+      content: (
+        <div>
+          <p className="mb-4 max-w-prose">
+            {t(
+              'rights.trans.body.index',
+              'TGEU scores 54 countries in Europe and Central Asia across 32 areas of trans-specific law, in six categories: legal gender recognition, asylum, hate crime and hate speech, non-discrimination, health, and family. It is the most detailed reading of trans-specific law anywhere, and it covers only those 54 countries — the rest of the world is outside its scope, which is not the same as scoring zero.',
+            )}
+          </p>
+          <p className="mb-4 max-w-prose">
+            {t(
+              'rights.trans.body.indexNoCopy',
+              'We do not reproduce their scores here. They are re-scored every year and a copy would go quietly out of date, which for a trans-rights score means telling you a border is passable on last year’s law. Read them from TGEU, where they are current.',
+            )}
+          </p>
+          <p className="mb-4 max-w-prose text-13 text-muted-foreground">
+            {t(
+              'rights.trans.body.indexCaveat',
+              'TGEU notes these scores read legal text only. They take no account of how a law is applied at a particular border, clinic or police station.',
+            )}
+          </p>
+          <TgeuSourceLine
+            href={TGEU_TRI_URL}
+            label={t('rights.trans.triSource', 'Trans Rights Index & Map')}
+            updatedAt={null}
+          />
+        </div>
+      ),
+    } satisfies SectionDef,
 
     // ---------------------------------------------------------------------
     // Axis 3 — documented violence. Caveat FIRST, uncoloured, display only.
