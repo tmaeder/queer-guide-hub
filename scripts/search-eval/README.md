@@ -9,9 +9,41 @@ as the cutover gate of the Meilisearch → Postgres migration (complete since
 | File | Purpose |
 |------|---------|
 | `search-test.mjs` | **End-to-end API/contract/resilience suite — no credentials needed.** Hits the live `search-proxy` HTTP API (`/search`, `/autocomplete`, `/health`) and asserts the contract, filters, geo, pagination, edge cases, entity-type coverage + a latency sample. Agent-runnable (see below). |
-| `run.mjs` | Dependency-free Node runner. Hits `search_hybrid` via PostgREST, checks a curated golden set + a zero-hit probe + p95 latency, exits non-zero on regression. (Needs Supabase service key.) |
+| `run.mjs` | Dependency-free Node runner. Hits `search_hybrid` via PostgREST, checks a curated golden set + a zero-hit probe + p95 latency, exits non-zero on regression. (Needs Supabase service key.) **Keyword leg only — see the blind spot below.** |
+| `vector-arm.mjs` | **The vector-leg gate `run.mjs` structurally cannot be.** Asserts that a hit failing the keyword predicate never ranks above one satisfying it, and A/Bs a candidate `search_hybrid` body against the live one. (Needs `SUPABASE_ACCESS_TOKEN`.) |
 | `golden.json` | Curated query → expected result assertions + thresholds. |
 | `known-item.sql` | SQL-side known-item retrieval eval (Recall@10 / MRR@10) over a random sample. Run in `psql` / Supabase SQL editor. |
+
+## The blind spot `run.mjs` has by construction
+
+`run.mjs` passes `p_query_vec = null` so CI is deterministic. That is the right
+call, and it also means **it exercises the keyword leg only** — it cannot see any
+defect in the vector leg or in the RRF fusion between the two. This is not
+theoretical: on 2026-08-23 prod served `/search?q=fentanyl test strips` as 66 hits
+of "String Tank"/"Stripe" apparel with zero of the six exactly-matching listings,
+while the golden set was green throughout, because the losing rows entered only
+through the vector arm (`20260823225808_search_hybrid_keyword_precedence.sql`).
+
+`vector-arm.mjs` covers that half. A real query embedding is not obtainable from
+SQL (bge-m3 lives in the CF worker), so it simulates the vector arm
+**adversarially** — `p_query_vec` is the stored embedding of a document that is
+*not* a keyword match for the query — and asserts a property rather than a
+ranking: semantic proximity may add recall, it may not displace a lexical match.
+
+```bash
+node scripts/search-eval/vector-arm.mjs                                   # gate the live function
+node scripts/search-eval/vector-arm.mjs --candidate supabase/migrations/<file>.sql
+node scripts/search-eval/vector-arm.mjs --detail "leather bar"            # per-hit listing
+```
+
+The candidate body is lifted out of the migration file and installed into
+`pg_temp` for the life of one request, so the public schema is never touched and
+the thing under test is byte-identical to the thing that ships. In `--candidate`
+mode the run FAILS if the candidate changes any query's `total` — a ranking change
+must be ordering-only, or the golden set's recall guarantees no longer transfer.
+
+**Run both before shipping a `search_hybrid` change**, plus
+`select public.assert_search_hybrid_contract();`.
 
 ## Running the E2E suite (for a Claude / cowork agent)
 
