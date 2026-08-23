@@ -1,0 +1,38 @@
+-- ============================================================================
+-- Drop countries.trans_rights_index — the TGEU index is LINKED, never copied
+-- ----------------------------------------------------------------------------
+-- 20260822091446 added this column alongside trans_violence_documented, on the
+-- plan that TGEU's Trans Rights Index would be transcribed into an annual seed.
+-- That seed is not going to be written, and the column should not sit here
+-- looking like it is merely waiting for one.
+--
+-- Two reasons, and the second is the one that would still hold even with
+-- permission in hand:
+--
+--  1. Licence. The Trans Rights Map is published CC BY-NC-SA 4.0. This site
+--     takes payments (Stripe), affiliate commission and marketplace revenue,
+--     so reproducing TGEU's scored dataset here is squarely the use the
+--     NonCommercial clause exists to govern. Linking is unambiguously fine.
+--
+--  2. Freshness. The index is re-scored every year on IDAHOBIT, and the 2026
+--     edition was the first in thirteen years to move BACKWARDS. A transcribed
+--     snapshot is wrong the day TGEU republishes and nothing in this repo would
+--     notice. For a trans-rights score that failure mode is not cosmetic: it
+--     tells a reader a border is passable under last year's law.
+--
+--     This codebase has already paid for exactly that class of bug. The safety
+--     notes composer (see 20260816112824) published 86 city notes describing a
+--     DIFFERENT country's laws, because a derived value outlived the input it
+--     was derived from and nothing revalidated it. A field we cannot refresh
+--     automatically is a field we should not store.
+--
+-- Verified before dropping: trans_rights_index was non-empty on 0 of 250 rows,
+-- so this discards no data. trans_violence_documented is untouched and stays —
+-- TMM is aggregate counts on 90 countries, refreshed weekly by tgeu_tmm_import.
+--
+-- Re-adding: put the column back in the SAME migration that adds the reader in
+-- src/lib/rights/transSafety.ts, so the parse and the storage never drift apart.
+-- ============================================================================
+
+ALTER TABLE public.countries
+  DROP COLUMN IF EXISTS trans_rights_index;

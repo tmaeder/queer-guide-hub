@@ -1,15 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { TgeuSourceLine } from '@/components/rights/SourceLine';
-import {
-  readTransViolence,
-  readTransRightsIndex,
-  TRI_CATEGORIES,
-  TRI_CATEGORY_LABEL,
-  TGEU_TMM_URL,
-  TGEU_TRI_URL,
-  TMM_REPORTING_CAVEAT,
-} from '@/lib/rights/transSafety';
+import { readTransViolence, TGEU_TMM_URL, TMM_REPORTING_CAVEAT } from '@/lib/rights/transSafety';
 
 /**
  * The trans-specific facts for one country, under Rights & safety.
@@ -54,11 +46,12 @@ export function TransSafetyBand({ country }: { country: Record<string, unknown> 
   const lgr = (country.lgbti_gender_recognition ?? {}) as Record<string, unknown>;
   const hasLgr = Object.keys(lgr).length > 0;
   const violence = readTransViolence(country.trans_violence_documented);
-  const index = readTransRightsIndex(country.trans_rights_index);
 
-  // Nothing recorded on any of the three axes — render nothing rather than a
-  // heading over three em dashes.
-  if (!hasLgr && violence.state !== 'documented' && !index.covered) return null;
+  // Nothing recorded on either axis this band renders — show nothing rather
+  // than a heading over two em dashes. (The TGEU Trans Rights Index is a third
+  // axis, but it is linked rather than copied — see the `index` section of
+  // src/pages/rights/TransRights.tsx for why — so it cannot gate this band.)
+  if (!hasLgr && violence.state !== 'documented') return null;
 
   const marker = String(lgr.gender_marker ?? '').trim();
   const yes = t('rights.trans.yes', 'Yes');
@@ -113,33 +106,6 @@ export function TransSafetyBand({ country }: { country: Record<string, unknown> 
             />
           ) : null}
         </ul>
-      )}
-
-      {index.covered && (
-        <div className="mt-6">
-          <p className="text-13">
-            <span className="font-medium">
-              {t('rights.trans.indexScore', 'Trans Rights Index')}
-            </span>{' '}
-            <span className="tabular-nums">
-              {index.total}
-              {index.max ? ` / ${index.max}` : ''}
-            </span>
-            {index.sourceYear ? (
-              <span className="text-muted-foreground"> · {index.sourceYear}</span>
-            ) : null}
-          </p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {TRI_CATEGORIES.filter((k) => index.categories[k] != null)
-              .map((k) => `${TRI_CATEGORY_LABEL[k]} ${index.categories[k]}`)
-              .join(' · ')}
-          </p>
-          <TgeuSourceLine
-            href={TGEU_TRI_URL}
-            label={t('rights.trans.triSource', 'Trans Rights Index & Map')}
-            className="mt-2"
-          />
-        </div>
       )}
 
       {violence.state === 'documented' && (

@@ -120,75 +120,26 @@ export function readTransViolence(raw: unknown): TransViolenceRecord {
 }
 
 // ---------------------------------------------------------------------------
-// Axis 2 — TGEU Trans Rights Index
+// Axis 2 — TGEU Trans Rights Index — LINKED, NEVER COPIED
 // ---------------------------------------------------------------------------
-
-export const TRI_CATEGORIES = [
-  'legal_gender_recognition',
-  'asylum',
-  'hate_crime_speech',
-  'non_discrimination',
-  'health',
-  'family',
-] as const;
-
-export type TriCategory = (typeof TRI_CATEGORIES)[number];
-
-export const TRI_CATEGORY_LABEL: Readonly<Record<TriCategory, string>> = {
-  legal_gender_recognition: 'Legal gender recognition',
-  asylum: 'Asylum',
-  hate_crime_speech: 'Hate crime & hate speech',
-  non_discrimination: 'Non-discrimination',
-  health: 'Health',
-  family: 'Family',
-};
-
-export interface TransRightsIndexRecord {
-  /**
-   * `false` means this country is OUT OF SCOPE for the index (it covers Europe
-   * and Central Asia only), not that it scored zero. Every surface must render
-   * those two differently.
-   */
-  covered: boolean;
-  total: number | null;
-  max: number | null;
-  sourceYear: number | null;
-  categories: Readonly<Partial<Record<TriCategory, number>>>;
-  sourceUrl: string | null;
-}
-
-const EMPTY_TRI: TransRightsIndexRecord = {
-  covered: false,
-  total: null,
-  max: null,
-  sourceYear: null,
-  categories: {},
-  sourceUrl: null,
-};
-
-export function readTransRightsIndex(raw: unknown): TransRightsIndexRecord {
-  if (!raw || typeof raw !== 'object') return EMPTY_TRI;
-  const blob = raw as Record<string, unknown>;
-
-  const total = typeof blob.total === 'number' ? blob.total : null;
-  if (total === null) return EMPTY_TRI;
-
-  const src = (blob.categories ?? {}) as Record<string, unknown>;
-  const categories: Partial<Record<TriCategory, number>> = {};
-  for (const key of TRI_CATEGORIES) {
-    const v = src[key];
-    if (typeof v === 'number' && Number.isFinite(v)) categories[key] = v;
-  }
-
-  return {
-    covered: true,
-    total,
-    max: typeof blob.max === 'number' ? blob.max : null,
-    sourceYear: typeof blob.source_year === 'number' ? blob.source_year : null,
-    categories,
-    sourceUrl: typeof blob.source_url === 'string' ? blob.source_url : null,
-  };
-}
+//
+// There is deliberately no reader here, and `countries.trans_rights_index` was
+// dropped rather than left waiting to be filled. The index is rendered as an
+// attributed outbound link (`TGEU_TRI_URL`) in the `index` section of
+// src/pages/rights/TransRights.tsx.
+//
+// Two reasons. The licence one is real — the Trans Rights Map is CC BY-NC-SA
+// 4.0 and this site takes payments and affiliate commission — but the durable
+// one is freshness: the index is re-scored every year on IDAHOBIT, and 2026 was
+// the first year in thirteen that it moved BACKWARDS. A transcribed snapshot
+// goes wrong the day TGEU republishes, and nothing in this repo would notice.
+// This codebase has already paid for that mistake once: see the safety-notes
+// composer, where a derived field outlived the input it was derived from and
+// served 86 cities another country's law for two months.
+//
+// If a licensed, structured feed ever arrives, add the reader back HERE and
+// re-add the column in the same migration — do not scatter parsing into the
+// components.
 
 // ---------------------------------------------------------------------------
 // Axis 1 — the gender-recognition ledger

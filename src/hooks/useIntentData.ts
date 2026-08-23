@@ -379,15 +379,18 @@ export function useAllCountriesRightsFull() {
 }
 
 /**
- * The TRANS fetch: the wide rights payload plus the two TGEU columns.
+ * The TRANS fetch: the wide rights payload plus the one TGEU column we store.
  *
  * A third select literal rather than widening RIGHTS_SELECT_COLUMNS, following
  * the same reasoning as the narrow/wide split above: /rights and /travel would
- * otherwise download two more jsonb columns on 250 rows to render pages that
- * never read them. Its own query key keeps the caches independent.
+ * otherwise download another jsonb column on 250 rows to render pages that
+ * never read it. Its own query key keeps the caches independent.
+ *
+ * There is no Trans Rights Index column here on purpose — that axis is an
+ * attributed outbound link, never a local copy. See src/lib/rights/transSafety.ts.
  */
 export const TRANS_RIGHTS_SELECT_COLUMNS =
-  `${RIGHTS_SELECT_COLUMNS}, trans_violence_documented, trans_rights_index` as const;
+  `${RIGHTS_SELECT_COLUMNS}, trans_violence_documented` as const;
 
 export interface TransRightsCountry extends RightsCountry {
   /**
@@ -398,8 +401,6 @@ export interface TransRightsCountry extends RightsCountry {
   lgbti_gender_recognition: Record<string, unknown> | null;
   /** TGEU Trans Murder Monitoring aggregates. `{}` means no recorded case. */
   trans_violence_documented: Record<string, unknown> | null;
-  /** TGEU Trans Rights Index. `{}` means OUT OF SCOPE, not a score of zero. */
-  trans_rights_index: Record<string, unknown> | null;
 }
 
 export function useAllCountriesTransRights() {
