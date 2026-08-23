@@ -108,10 +108,12 @@ Deno.serve(async (req: Request) => {
   if (!listings.length) return jsonResponse({ processed: 0, message: 'no listings due' }, 200, req)
 
   // Controlled vocab (bare slugs) + namespaced tag ids for assignments.
+  // Prefix-keyed: `category` is glossary-derived since the tag-category
+  // consolidation and matches zero attribute rows (measured 2026-08-23).
   const vocab = await loadAttributeVocabulary(supabase, true)
   const { data: tagRows, error: tagErr } = await supabase
     .from('unified_tags').select('id, slug, category')
-    .in('category', ['material', 'occasion', 'vibe']).eq('status', 'active')
+    .or('slug.like.mat-%,slug.like.occ-%,slug.like.vibe-%').eq('status', 'active')
   if (tagErr) return jsonResponse({ error: tagErr.message, success: false }, 500, req)
   const tagIdBySlug = new Map<string, string>((tagRows ?? []).map((t) => [t.slug, t.id]))
 
