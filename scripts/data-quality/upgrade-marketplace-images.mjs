@@ -180,13 +180,24 @@ async function bestUpgrade(current, servedUrl) {
   if (now.error) return { skipped: `current_${now.error}` }
 
   let best = null
+  // A candidate we could not MEASURE is not a candidate we rejected. Without
+  // this the blocked case falls through to "unchanged", and the listing is then
+  // STAMPED — writing the merchant off on the strength of a 403.
+  let measured = 0
+  const errors = []
   for (const c of candidates) {
     const got = await probe(c.url)
-    if (got.error) continue
+    if (got.error) {
+      errors.push(got.error)
+      continue
+    }
+    measured++
     if (!isRealUpgrade(now, got, c.preservesAspect)) continue
     if (!best || got.w > best.probe.w) best = { ...c, probe: got }
   }
-  return best ? { from: now, to: best, baseline } : null
+  if (best) return { from: now, to: best, baseline }
+  if (measured === 0) return { skipped: `candidate_${errors[0] ?? 'unknown'}` }
+  return null
 }
 
 async function main() {
