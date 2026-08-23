@@ -33,7 +33,7 @@
 do $$
 declare v_fixed int; v_left int;
 begin
-  perform set_config('app.actor', 'migration:20260922100000_tag_community_center_canonical', true);
+  perform set_config('app.actor', 'migration:20260926110000_tag_community_center_canonical', true);
 
   update unified_tags u
      set merged_into_id = null
