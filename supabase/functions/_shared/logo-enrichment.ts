@@ -116,27 +116,58 @@ export interface FetchedLogo {
 }
 
 /**
- * Fetch the REAL logo image bytes for a website, or null when no real logo
- * exists. Probes logo.dev with `fallback=404`, so a 200 body is guaranteed to be
- * an actual brand logo (never the generic monogram). Returned bytes are meant to
- * be mirrored to our own R2/CDN, so the logo.dev token never reaches a public
- * URL. Tiny/empty responses are treated as "no logo".
+ * Outcome of one logo.dev probe. The OUTCOME is the point: `fetchRealLogo`
+ * collapsed every non-200 into null, so an expired token, a rate limit and a
+ * genuine "we don't have this brand" were indistinguishable — all three read as
+ * "no logo exists", the batch stamped the row attempted, and the run reported
+ * success. A caller that cannot tell those apart cannot notice its upstream has
+ * died.
  */
+export type LogoProbeOutcome =
+  | 'found'
+  | 'not_indexed' // 404 with fallback=404 — logo.dev genuinely has no logo
+  | 'unauthorized' // 401/403 — the token is missing, wrong or expired
+  | 'rate_limited' // 429
+  | 'unconfigured' // no LOGO_DEV_API_KEY, or no usable domain in the website
+  | 'error' // 5xx, network failure, or a 200 too small to be an image
+
+export interface LogoProbe {
+  outcome: LogoProbeOutcome
+  logo: FetchedLogo | null
+  status?: number
+}
+
+/**
+ * Probe logo.dev for a website's REAL logo, reporting WHY when there isn't one.
+ *
+ * `fallback=404` is what makes a 200 trustworthy: without it logo.dev answers
+ * every domain with a generic first-letter monogram, which under the logo-first
+ * display rule would mask a venue's own photos.
+ */
+export async function probeRealLogo(website: string | null | undefined): Promise<LogoProbe> {
+  const probeUrl = buildLogoProbeUrl(extractDomain(website) ?? '')
+  if (!probeUrl) return { outcome: 'unconfigured', logo: null }
+  try {
+    const res = await fetch(probeUrl, { method: 'GET' })
+    if (res.status === 404) return { outcome: 'not_indexed', logo: null, status: 404 }
+    if (res.status === 401 || res.status === 403)
+      return { outcome: 'unauthorized', logo: null, status: res.status }
+    if (res.status === 429) return { outcome: 'rate_limited', logo: null, status: 429 }
+    if (!res.ok) return { outcome: 'error', logo: null, status: res.status }
+    const bytes = new Uint8Array(await res.arrayBuffer())
+    if (bytes.byteLength < 100) return { outcome: 'error', logo: null, status: res.status }
+    const contentType = res.headers.get('content-type') || 'image/png'
+    return { outcome: 'found', logo: { bytes, contentType }, status: res.status }
+  } catch {
+    return { outcome: 'error', logo: null }
+  }
+}
+
+/** Bytes-or-null wrapper over {@link probeRealLogo}, for callers that only act on a hit. */
 export async function fetchRealLogo(
   website: string | null | undefined,
 ): Promise<FetchedLogo | null> {
-  const probeUrl = buildLogoProbeUrl(extractDomain(website) ?? '')
-  if (!probeUrl) return null
-  try {
-    const res = await fetch(probeUrl, { method: 'GET' })
-    if (!res.ok) return null
-    const bytes = new Uint8Array(await res.arrayBuffer())
-    if (bytes.byteLength < 100) return null // logo.dev sometimes 200s a 1px blank
-    const contentType = res.headers.get('content-type') || 'image/png'
-    return { bytes, contentType }
-  } catch {
-    return null
-  }
+  return (await probeRealLogo(website)).logo
 }
 
 /** Small delay helper for rate limiting in batch operations */

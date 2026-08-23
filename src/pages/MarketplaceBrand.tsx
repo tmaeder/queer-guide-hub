@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useMeta } from '@/hooks/useMeta';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { MarketplaceFilteredView } from '@/components/marketplace/MarketplaceFilteredView';
-import { brandMonogram } from '@/components/marketplace/marketplaceHelpers';
+import { BrandMark } from '@/components/marketplace/BrandMark';
 import { COMMUNITY_OWNED_OPTIONS } from '@/components/marketplace/marketplaceFilterOptions';
 import { MarketplaceLineArt } from '@/components/marketplace/MarketplaceLineArt';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -12,7 +12,6 @@ import { FactGrid } from '@/components/transit/FactGrid';
 import { DeadEndTrack } from '@/components/transit/DeadEndTrack';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Image } from '@/components/ui/Image';
 import { useMarketplaceBrand } from '@/hooks/useMarketplaceBrands';
 import { PageContainer } from '@/components/layout/PageContainer';
 
@@ -117,15 +116,14 @@ export default function MarketplaceBrand() {
               </div>
 
               <div className="mt-4 flex items-start gap-4">
-                <div className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden bg-card rounded-container shadow-soft">
-                  {brand.logo_url ? (
-                    <Image src={brand.logo_url} alt="" aspect="square" rounded="none" />
-                  ) : (
-                    <span aria-hidden="true" className="font-display text-headline leading-none">
-                      {brandMonogram(brand.display_name)}
-                    </span>
-                  )}
-                </div>
+                <BrandMark
+                  name={brand.display_name}
+                  logoUrl={brand.logo_url}
+                  onInk={brand.logo_on_ink ?? false}
+                  className="h-20 w-20 rounded-container"
+                  monogramClassName="font-display text-headline"
+                  padding="p-2.5"
+                />
                 <h1 className="min-w-0 font-display text-display leading-[0.95] md:text-hero">
                   {brand.display_name}
                 </h1>

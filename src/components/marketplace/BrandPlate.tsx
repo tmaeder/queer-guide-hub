@@ -1,8 +1,7 @@
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Badge } from '@/components/ui/badge';
-import { Image } from '@/components/ui/Image';
 import { COMMUNITY_OWNED_OPTIONS } from './marketplaceFilterOptions';
-import { brandMonogram } from './marketplaceHelpers';
+import { BrandMark } from './BrandMark';
 import type { DirectoryBrand } from '@/hooks/useMarketplaceBrands';
 
 const OWNERSHIP_LABEL = new Map(COMMUNITY_OWNED_OPTIONS.map((o) => [o.value, o.label]));
@@ -29,19 +28,16 @@ export function BrandPlate({ brand }: { brand: DirectoryBrand }) {
   return (
     <div className="card-lift group relative flex h-full flex-col gap-4 bg-card p-4 shadow-soft">
       <div className="flex items-start gap-4">
-        <div className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden bg-card rounded-container shadow-soft">
-          {/* The monogram is `text-title font-bold`, not the display face:
-              rank 4 is Space Grotesk and `rankFourFace.test.ts` scans for the
-              pairing. The 80px plate on the maker page is rank 3, where Anton
-              is legal. */}
-          {brand.logo_url ? (
-            <Image src={brand.logo_url} alt="" aspect="square" rounded="none" />
-          ) : (
-            <span aria-hidden="true" className="text-title font-bold leading-none">
-              {brandMonogram(brand.display_name)}
-            </span>
-          )}
-        </div>
+        <BrandMark
+          name={brand.display_name}
+          logoUrl={brand.logo_url}
+          onInk={brand.logo_on_ink ?? false}
+          className="h-14 w-14 rounded-container"
+          /* The monogram is `text-title font-bold`, not the display face: rank 4
+             is Space Grotesk and `rankFourFace.test.ts` scans for the pairing.
+             The 80px plate on the maker page is rank 3, where Anton is legal. */
+          monogramClassName="text-title font-bold"
+        />
         <div className="min-w-0 flex-1">
           <p className="text-title font-bold leading-tight text-balance">{brand.display_name}</p>
           <p className="mt-0.5 text-2xs uppercase tracking-label tabular-nums text-muted-foreground">

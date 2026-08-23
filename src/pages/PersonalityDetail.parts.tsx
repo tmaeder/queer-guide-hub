@@ -1,6 +1,7 @@
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { formatProfession } from '@/lib/professionDisplay';
+import { calculateAge } from '@/lib/personAge';
 import {
   ExternalLink,
   Calendar,
@@ -94,16 +95,9 @@ export async function fetchPersonalityBySlug(
   return transformPersonality(data);
 }
 
-export function calculateAge(birthDate: string, deathDate?: string) {
-  const birth = new Date(birthDate);
-  const end = deathDate ? new Date(deathDate) : new Date();
-  const age = end.getFullYear() - birth.getFullYear();
-  const monthDiff = end.getMonth() - birth.getMonth();
-  if (monthDiff < 0 || (monthDiff === 0 && end.getDate() < birth.getDate())) {
-    return age - 1;
-  }
-  return age;
-}
+// Canonical implementation lives in `@/lib/personAge` — re-exported here because
+// this page's tests and callers already import it from this module.
+export { calculateAge };
 
 // Admin-curated cause-of-death slugs (see config/contentTypes/personality.ts)
 // → public display labels. Unknown/other stay hidden — no speculation.
@@ -277,12 +271,20 @@ export function PersonalityHero({
             </div>
           </div>
 
-          {personality.birth_date && (
-            <p className="text-sm text-muted-foreground mb-4">
-              Age: {calculateAge(personality.birth_date, personality.death_date || undefined)}
-              {personality.is_living ? ' years old' : ' years'}
-            </p>
-          )}
+          {/* An age is only stated when it is a real one: age at death when the
+              death date is known, current age for the living. A historical figure
+              with no recorded death date has no age we can state — and aging them
+              against today is what produced "434" on the professions pages. */}
+          {(() => {
+            const age = calculateAge(personality.birth_date, personality.death_date);
+            if (age === null) return null;
+            if (personality.death_date)
+              return (
+                <p className="text-sm text-muted-foreground mb-4">Age at death: {age} years</p>
+              );
+            if (personality.is_living === false) return null;
+            return <p className="text-sm text-muted-foreground mb-4">Age: {age} years old</p>;
+          })()}
 
           {personality.fields.length > 0 && (
             <div className="flex flex-wrap gap-2">

@@ -3,7 +3,7 @@ import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
-import { usePersonalitiesByProfession } from '@/hooks/usePageFetchers';
+import { useCanonicalProfession, usePersonalitiesByProfession } from '@/hooks/usePageFetchers';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +12,7 @@ import { ArrowLeft, Users, MapPin, Calendar, User } from 'lucide-react';
 import { PersonalityCard } from '@/components/personalities/PersonalityCard';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { calculateAge } from '@/lib/personAge';
 
 interface ProfessionData {
   name: string;
@@ -41,6 +42,20 @@ export default function ProfessionDetail() {
     (p) => (p as { id: string }).id,
   );
   const { assets: imageAssets } = useEntityImageAssets('personality', professionPersonalityIds);
+
+  // Self-heal a legacy URL. The German normalization rewrote every stored value,
+  // so `/professions/Schauspieler%2Fin` and the other ~1,440 pre-normalization
+  // spellings now match nobody. Ask the same normalizer the column went through
+  // and redirect once, rather than shipping a redirect table. Only fires on the
+  // empty-result path, so a live profession never pays for it.
+  const noMatches = !loading && !queryError && professionData?.totalCount === 0;
+  const { data: canonicalProfession } = useCanonicalProfession(decodedProfession, noMatches);
+
+  useEffect(() => {
+    if (!noMatches || !canonicalProfession || !decodedProfession) return;
+    if (canonicalProfession.toLowerCase() === decodedProfession.toLowerCase()) return;
+    navigate(`/professions/${encodeURIComponent(canonicalProfession)}`, { replace: true });
+  }, [noMatches, canonicalProfession, decodedProfession, navigate]);
 
   useEffect(() => {
     if (!professionName) return;
@@ -160,21 +175,29 @@ export default function ProfessionDetail() {
               <Calendar size={16} className="text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <p className="text-xl font-bold">
-                {(() => {
-                  const ages = professionData.personalities
-                    .map((p) =>
-                      p.birth_date
-                        ? new Date().getFullYear() - new Date(p.birth_date).getFullYear()
-                        : null,
-                    )
-                    .filter(Boolean);
-                  if (ages.length === 0) return 'N/A';
-                  const min = Math.min(...ages);
-                  const max = Math.max(...ages);
-                  return min === max ? `${min}` : `${min}-${max}`;
-                })()}
-              </p>
+              {(() => {
+                // This card read "32-434" on /professions/Politician because it
+                // aged everyone against today and ignored `death_date`. Ages now
+                // come from the shared calculator, which ends a life at its death
+                // date and returns null for anything a human cannot have been.
+                const ages = professionData.personalities
+                  .map((p) =>
+                    calculateAge(p.birth_date as string | null, p.death_date as string | null),
+                  )
+                  .filter((age): age is number => age !== null);
+                const deceased = professionData.personalities.some((p) => p.death_date);
+                if (ages.length === 0) return <p className="text-xl font-bold">N/A</p>;
+                const min = Math.min(...ages);
+                const max = Math.max(...ages);
+                return (
+                  <>
+                    <p className="text-xl font-bold">{min === max ? `${min}` : `${min}-${max}`}</p>
+                    {deceased && (
+                      <p className="text-2xs text-muted-foreground">Age at death where known</p>
+                    )}
+                  </>
+                );
+              })()}
             </CardContent>
           </Card>
         </div>

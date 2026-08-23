@@ -1,6 +1,7 @@
 import { CoverageNote } from '@/components/intent/CoverageNote';
 import { NestedEntityCard } from '@/components/transit/NestedEntityCard';
 import { useVerifiedOwnedBrands } from '@/hooks/useMarketplaceBrands';
+import { BrandMark } from './BrandMark';
 
 /**
  * Brands whose queer ownership we have actually checked — the one section of
@@ -47,6 +48,22 @@ export function VerifiedOwnedBrands() {
                   : null
               }
               href={b.slug ? `/marketplace/brands/${b.slug}` : undefined}
+              /* Logo only, never the monogram fallback: the card already leads
+                 with the marketplace bullet and states the name, so a monogram
+                 on the trailing edge would repeat the name as a second graphic
+                 and give a logo-less brand a heavier card than one with a real
+                 mark. Absent stays absent. */
+              media={
+                b.logo_url ? (
+                  <BrandMark
+                    name={b.display_name ?? b.brand_key}
+                    logoUrl={b.logo_url}
+                    onInk={b.logo_on_ink ?? false}
+                    className="ml-auto h-12 w-12 rounded-element"
+                    padding="p-1"
+                  />
+                ) : undefined
+              }
             />
           </li>
         ))}
