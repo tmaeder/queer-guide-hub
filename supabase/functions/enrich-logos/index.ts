@@ -1,7 +1,13 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
-import { fetchRealLogo, extractDomain, delay } from '../_shared/logo-enrichment.ts'
+import {
+  probeRealLogo,
+  extractDomain,
+  delay,
+  type LogoProbeOutcome,
+} from '../_shared/logo-enrichment.ts'
 import { mirrorLogoToR2, logoMirrorConfigured } from '../_shared/logo-mirror.ts'
 import { pickSiteIcons, isAcceptableLogoType, imageSize } from '../_shared/site-icon.ts'
+import { needsInkPlate, pngInk } from '../_shared/png-luminance.ts'
 
 /**
  * enrich-logos — Batch logo enrichment, mirrored to our own R2/CDN.
@@ -60,7 +66,14 @@ Deno.serve(async (req) => {
       results.marketplace_brands = await enrichBrands(supabase, batchSize, dryRun)
     }
 
-    return jsonResponse({ success: true, ...results }, 200, req)
+    // One dead token writes off every row it touches, so it is reported at the
+    // top level rather than buried in a per-table count.
+    const authFailed = Object.values(results).some(
+      (r) => typeof r === 'object' && r !== null && (r as { logodev?: LogoDevTally }).logodev?.unauthorized,
+    )
+    if (authFailed) console.error('[enrich-logos] logo.dev rejected the token — logos were NOT written off legitimately')
+
+    return jsonResponse({ success: true, logodev_unauthorized: authFailed, ...results }, 200, req)
   } catch (error) {
     console.error('enrich-logos error:', error)
     return errorResponse((error as Error).message, 500, req)
@@ -103,11 +116,28 @@ async function enrichTable(
   let logosFound = 0
   let mirrorFailed = 0
   let errors = 0
+  const logodev = newTally()
+  let aborted: 'unauthorized' | 'rate_limited' | null = null
 
   for (const item of items) {
     try {
       const website = item[websiteColumn] as string
-      const logo = await fetchRealLogo(website)
+      const probe = await probeRealLogo(website)
+      logodev[probe.outcome]++
+
+      // logo.dev is the ONLY source for venues and events, so a rejected token
+      // or a rate limit is not information about this row — it is the absence
+      // of information. Stamping logo_fetched_at here would write the row off
+      // permanently for a reason that has nothing to do with it, and that is
+      // precisely what the old code did silently: it collapsed 401 into null
+      // and every venue it touched while the token was dead is now recorded as
+      // "probed, no logo". Abort the batch instead.
+      if (probe.outcome === 'unauthorized' || probe.outcome === 'rate_limited') {
+        aborted = probe.outcome
+        break
+      }
+
+      const logo = probe.logo
 
       // Dry run: only measure how many have a real logo; no upload, no writes.
       if (dryRun) {
@@ -159,8 +189,27 @@ async function enrichTable(
     logos_found: logosFound,
     mirror_failed: mirrorFailed,
     errors,
+    logodev,
+    aborted,
     remaining: (count || 0) - (dryRun ? items.length : 0),
   }
+}
+
+/**
+ * Why logo.dev said no, counted per run.
+ *
+ * Not diagnostics-for-their-own-sake: for as long as this function has existed a
+ * dead token and an unindexed domain were the same null, so an upstream that
+ * stopped answering would have looked exactly like a corpus it does not cover —
+ * a green run, rows stamped attempted, and nothing to notice. The counts are
+ * returned so the caller can tell those apart, and `unauthorized` is surfaced
+ * as a top-level flag because it means EVERY row in the batch was written off
+ * for a reason that has nothing to do with the row.
+ */
+type LogoDevTally = Record<LogoProbeOutcome, number>
+
+function newTally(): LogoDevTally {
+  return { found: 0, not_indexed: 0, unauthorized: 0, rate_limited: 0, unconfigured: 0, error: 0 }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -272,6 +321,8 @@ async function enrichBrands(
   let notFound = 0
   let mirrorFailed = 0
   let errors = 0
+  let inkPlates = 0
+  const logodev = newTally()
 
   for (const item of items) {
     try {
@@ -282,10 +333,11 @@ async function enrichBrands(
         continue
       }
 
-      const logo = await fetchRealLogo(domain)
-      let bytes = logo?.bytes ?? null
-      let contentType = logo?.contentType ?? ''
-      let source = logo ? `logodev:${domain}` : ''
+      const probe = await probeRealLogo(domain)
+      logodev[probe.outcome]++
+      let bytes = probe.logo?.bytes ?? null
+      let contentType = probe.logo?.contentType ?? ''
+      let source = probe.logo ? `logodev:${domain}` : ''
 
       if (!bytes) {
         const site = await fetchSiteLogo(domain)
@@ -319,11 +371,18 @@ async function enrichBrands(
         continue
       }
 
+      // Measure the bytes we just mirrored, not the ones we might fetch back:
+      // this is the only moment the image is in hand, and the answer belongs in
+      // the same UPDATE as the url it describes so the two cannot drift.
+      const onInk = contentType === 'image/png' ? needsInkPlate(await pngInk(bytes)) : false
+      if (onInk) inkPlates++
+
       await supabase
         .from('marketplace_brands')
         .update({
           logo_url: logoUrl,
           logo_source: source,
+          logo_on_ink: onInk,
           logo_fetched_at: new Date().toISOString(),
         })
         .eq('id', item.id)
@@ -351,10 +410,12 @@ async function enrichBrands(
     logos_found: logosFound,
     from_logodev: fromLogoDev,
     from_site: fromSite,
+    ink_plates: inkPlates,
     no_domain: noDomain,
     not_found: notFound,
     mirror_failed: mirrorFailed,
     errors,
+    logodev,
     remaining: (count || 0) - (dryRun ? items.length : 0),
   }
 }

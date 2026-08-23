@@ -46,6 +46,20 @@ describe('BrandMark', () => {
     expect(getByText('C').style.visibility).toBe('visible');
   });
 
+  it('puts a white-on-transparent logo on an INK plate', () => {
+    // Seven of the catalogue's eighty marks have no dark pixel at all and are
+    // simply invisible on paper. The flag is measured from the mirrored bytes,
+    // never guessed — an unmeasured logo stays on paper.
+    const { container: paper } = render(<BrandMark name="TomboyX" logoUrl="https://x/l.png" />);
+    expect(paper.firstElementChild?.className).toContain('bg-logo-plate');
+
+    const { container: ink } = render(
+      <BrandMark name="SUPAWEAR" logoUrl="https://x/white.png" onInk />,
+    );
+    expect(ink.firstElementChild?.className).toContain('bg-foreground');
+    expect(ink.firstElementChild?.className).not.toContain('bg-logo-plate');
+  });
+
   it('never crops the logo — a brand mark is a fixed composition', () => {
     const { container } = render(<BrandMark name="TomboyX" logoUrl="https://x/l.png" />);
     const cls = container.querySelector('img')?.className ?? '';

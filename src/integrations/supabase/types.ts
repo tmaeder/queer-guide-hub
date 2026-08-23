@@ -11163,6 +11163,7 @@ export type Database = {
           evidence: string | null
           id: string
           is_spotlight: boolean
+          logo_on_ink: boolean
           logo_url: string | null
           organization_id: string | null
           ownership_tags: string[]
@@ -11188,6 +11189,7 @@ export type Database = {
           evidence?: string | null
           id?: string
           is_spotlight?: boolean
+          logo_on_ink?: boolean
           logo_url?: string | null
           organization_id?: string | null
           ownership_tags?: string[]
@@ -11213,6 +11215,7 @@ export type Database = {
           evidence?: string | null
           id?: string
           is_spotlight?: boolean
+          logo_on_ink?: boolean
           logo_url?: string | null
           organization_id?: string | null
           ownership_tags?: string[]

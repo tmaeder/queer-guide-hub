@@ -238,9 +238,11 @@ do $$
 declare n bigint;
 begin
   -- No stored value may disagree with its own normalizer once the backfill has run.
+  -- `like 'v2%'` not `= 'v2'`: the backfill now stamps v2.1 / v2.2, and an equality
+  -- test would silently stop covering every row the later passes touched.
   select count(*) into n from public.personalities
    where profession is not null
-     and enrichment_status->'profession'->>'version' = 'v2'
+     and enrichment_status->'profession'->>'version' like 'v2%'
      and public.normalize_profession(profession) is distinct from profession;
   if n > 0 then raise exception 'FAIL: % normalized rows are not stable under re-normalization', n; end if;
 
@@ -248,6 +250,83 @@ begin
   select count(*) into n from public.personality_profession_facets
    where profession ilike '%adult%' or profession ilike '%porn%';
   if n > 0 then raise exception 'FAIL: adult cohort leaked into the public facet list'; end if;
+
+  -- No stored value may be a bare German compound-ellipsis prefix or a
+  -- parenthetical-only epithet. Both were live defects (David Geffen published as
+  -- "Musik-", two people as "(Lady Of Llangollen)").
+  select count(*) into n from public.personalities
+   where profession ~ '-\s*$' or profession ~ '^\s*\(' or profession ~ '--';
+  if n > 0 then raise exception 'FAIL: % rows hold a truncated/parenthetical profession', n; end if;
+end $$;
+
+-- ---------------------------------------------------------------------------
+-- 12. German compound ellipsis: "Musik- und Filmproduzent" = Musik[produzent] und
+-- Filmproduzent. The hanging-hyphen member is a PREFIX, never a profession, so it
+-- must be dropped and the following complete compound must supply the value.
+-- ---------------------------------------------------------------------------
+do $$
+declare
+  v text;
+begin
+  foreach v in array array[
+    'Musik- und Filmproduzent, Unternehmer',
+    'Mode-/Kostümdesigner',
+    'Intersex- und Transgender-Aktivist/in',
+    'Drag-/Ballroom-Performer/in',
+    'Travestie-/Drag-Künstler/in'
+  ] loop
+    if public.normalize_profession(v) ~ '-\s*$' then
+      raise exception 'FAIL compound ellipsis: % -> %', v, public.normalize_profession(v);
+    end if;
+    if public.normalize_profession(v) is null then
+      raise exception 'FAIL compound ellipsis: % resolved to NULL', v;
+    end if;
+  end loop;
+
+  -- An internal hyphen is NOT an ellipsis and must survive untouched.
+  foreach v in array array['Singer-songwriter','Zen-Lehrer','Ex-Schweizergardist'] loop
+    if public.normalize_profession(v) is null then
+      raise exception 'FAIL: hyphenated term % was dropped', v;
+    end if;
+  end loop;
+
+  -- A value that is only a parenthetical is not a profession.
+  if public.normalize_profession('(Lady of Llangollen)') is not null then
+    raise exception 'FAIL: parenthetical-only resolved to %',
+      public.normalize_profession('(Lady of Llangollen)');
+  end if;
+end $$;
+
+-- ---------------------------------------------------------------------------
+-- 13. Translation tier. A German term with no vocabulary equivalent must still
+-- come out in English, and an english=NULL row must CLEAR the value rather than
+-- storing the source term.
+-- ---------------------------------------------------------------------------
+do $$
+begin
+  if public.normalize_profession('König von Preußen') <> 'King of Prussia' then
+    raise exception 'FAIL translation: König von Preußen -> %',
+      public.normalize_profession('König von Preußen');
+  end if;
+
+  -- Multi-word titles must be matched whole, never split into "könig" + "preußen".
+  if public.normalize_profession('Königin von Schweden') <> 'Queen of Sweden' then
+    raise exception 'FAIL translation: royal title was split';
+  end if;
+
+  if public.normalize_profession('Charitable Organization') is not null then
+    raise exception 'FAIL: english=NULL translation did not clear the value';
+  end if;
+
+  -- The vocabulary still wins over a translation, so slugs/roles keep working.
+  if public.normalize_profession('Schauspieler/in') <> 'Actor' then
+    raise exception 'FAIL: translation tier displaced the vocabulary';
+  end if;
+
+  -- Drag king must not collapse into Drag queen (see 20260822223231).
+  if public.normalize_profession('Drag king') <> 'Drag king' then
+    raise exception 'FAIL: drag king collapsed to %', public.normalize_profession('Drag king');
+  end if;
 end $$;
 
 rollback;
