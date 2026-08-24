@@ -397,6 +397,10 @@ verify_jwt = false
 [functions.marketplace-image-mirror]
 verify_jwt = false
 
+# Paced image-upscale sweep — internal-secret gated in-function (cron caller)
+[functions.marketplace-image-upscale]
+verify_jwt = false
+
 # DAM phash backfill — internal-secret gated in-function (cron caller)
 [functions.image-phash-backfill]
 verify_jwt = false

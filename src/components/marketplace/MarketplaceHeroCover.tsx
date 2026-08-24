@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   useMarketplaceCollections,
   useMarketplaceCollectionListings,
@@ -9,6 +9,17 @@ import { useCuratedIds } from '@/components/marketplace/useCuratedIds';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Image } from '@/components/ui/Image';
 import { useAuth } from '@/hooks/useAuth';
+
+/**
+ * Minimum natural width for an image standing in as the cover plate.
+ *
+ * The plate renders around 768-900 CSS px, so a product thumbnail dropped into
+ * it is magnified across the most prominent element on the page. Measured on
+ * prod: a misterb listing whose only surviving copy is 143x190 was being scaled
+ * 5.4x here. 800 is not a new opinion — `_shared/image-gate.ts` already uses it
+ * as `COVER_MIN_W` for exactly this judgement on the ingest side.
+ */
+const HERO_COVER_MIN_WIDTH = 800;
 
 /**
  * Cover story — the pinned hero collection opens the page like a magazine
@@ -28,9 +39,38 @@ export function MarketplaceHeroCover() {
     register('hero', listingIds);
   }, [listingIds, register]);
 
+  // An editor's `cover_image_url` is a deliberate choice and is never second-
+  // guessed. The FALLBACK is a product thumbnail standing in for an
+  // art-directed plate, and merchant images cannot be assumed large — 40% of
+  // this catalogue is under 1000px and some of it under 200px, because the
+  // merchant never had anything bigger. So the stand-in is measured before it
+  // is trusted, and omitted when it cannot carry the slot: an empty plate reads
+  // as a layout choice, a 5x-magnified thumbnail reads as a broken site.
+  const fallbackCover = listings[0]?.images?.[0] ?? null;
+  const needsMeasuring = !hero?.cover_image_url && !!fallbackCover;
+  const [fallbackUsable, setFallbackUsable] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (!needsMeasuring || !fallbackCover) return;
+    let cancelled = false;
+    const probe = new window.Image();
+    probe.onload = () => {
+      if (!cancelled) setFallbackUsable(probe.naturalWidth >= HERO_COVER_MIN_WIDTH);
+    };
+    probe.onerror = () => {
+      if (!cancelled) setFallbackUsable(false);
+    };
+    probe.src = fallbackCover;
+    return () => {
+      cancelled = true;
+    };
+  }, [needsMeasuring, fallbackCover]);
+
   if (!hero || listings.length === 0) return null;
 
-  const cover = hero.cover_image_url ?? listings[0]?.images?.[0] ?? null;
+  // While the measurement is in flight the plate stays empty rather than
+  // flashing a thumbnail it may be about to reject.
+  const cover = hero.cover_image_url ?? (fallbackUsable ? fallbackCover : null);
 
   return (
     <section aria-labelledby={`hero-collection-${hero.slug}`} className="mb-16 lg:mb-24">
