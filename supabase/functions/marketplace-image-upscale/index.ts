@@ -209,6 +209,9 @@ Deno.serve(async (req) => {
     }
     const measure = (u: string) => pacer.run(u, async () => note(u, await probe(u)))
     const examined: string[] = []
+    // Visited but not measurable — an attempt, not a verdict. See the note by
+    // the marketplace_note_image_upscale_attempt call below.
+    const attempted: string[] = []
     let stoppedOnDeadline = false
 
     for (const row of rows) {
@@ -325,15 +328,33 @@ Deno.serve(async (req) => {
       // ours, and stamping is what lets the work-list finish.
       if (!blocked) {
         examined.push(row.id)
-      } else if ([...touchedHosts].every((h) => (hostOk.get(h) ?? 0) > 0)) {
+      } else if (touchedHosts.size > 0 && [...touchedHosts].every((h) => (hostOk.get(h) ?? 0) > 0)) {
+        // The host answered us elsewhere in this run, so the missing file is
+        // the merchant's, not ours: a real verdict.
         examined.push(row.id)
         deadAssets++
+      } else {
+        attempted.push(row.id)
       }
     }
 
     if (!dryRun && examined.length) {
       const { error: stampErr } = await supabase.rpc('marketplace_stamp_image_upscale', { p_ids: examined })
       if (stampErr) console.error(`[upscale] stamp: ${stampErr.message}`)
+    }
+
+    // Rows we could not measure get an ATTEMPT recorded rather than a verdict.
+    // Refusing to judge one 403 is right; refusing forever does not terminate —
+    // at misterb's ~1% survival rate a whole batch is usually unmeasurable, so
+    // nothing corroborates, nothing is stamped, and the next run draws the same
+    // 2,150 listings. The count bounds it: three unmeasurable visits and the
+    // work-list drops the row. Same shape as the city-fields backfill's
+    // data_unavailable-after-3-attempts.
+    if (!dryRun && attempted.length) {
+      const { error: attemptErr } = await supabase.rpc('marketplace_note_image_upscale_attempt', {
+        p_ids: attempted,
+      })
+      if (attemptErr) console.error(`[upscale] attempt: ${attemptErr.message}`)
     }
 
     return jsonResponse(
@@ -346,7 +367,8 @@ Deno.serve(async (req) => {
         unchanged,
         skipped,
         stamped: dryRun ? 0 : examined.length,
-        left_unstamped: rows.length - examined.length,
+        attempts_recorded: dryRun ? 0 : attempted.length,
+        left_untouched: rows.length - examined.length - attempted.length,
         skip_reasons: skipReasons,
         candidate_errors: candidateErrors,
         dead_assets: deadAssets,
