@@ -1,0 +1,12 @@
+DROP INDEX IF EXISTS public.tag_relations_uniq;
+DROP INDEX IF EXISTS public.hotels_closure_status_idx;
+DROP INDEX IF EXISTS public.queer_villages_closure_status_idx;
+DROP INDEX IF EXISTS public.geo_landmark_profiles_closure_status_idx;
+DROP INDEX IF EXISTS public.idx_marketplace_listings_attributes;
+DROP INDEX IF EXISTS public.idx_marketplace_listings_sizes;
+DROP INDEX IF EXISTS public.idx_marketplace_listings_colors;
+DROP INDEX IF EXISTS public.marketplace_listing_variants_size_idx;
+DROP INDEX IF EXISTS public.marketplace_listing_variants_color_idx;
+DROP INDEX IF EXISTS public.idx_milestone_quality_signals_mid;
+DROP INDEX IF EXISTS public.idx_milestone_quality_signals_created;
+DROP INDEX IF EXISTS public.idx_milestone_coverage_gaps_status;
