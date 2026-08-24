@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
   loadPersistedState,
   persistState,
@@ -25,6 +25,46 @@ describe('ContentListPanel/types', () => {
 
   it('relativeTime returns string', () => {
     expect(typeof relativeTime(new Date().toISOString())).toBe('string');
+  });
+
+  describe('relativeTime', () => {
+    // Fixed clock so 'this year' vs 'other year' is deterministic.
+    const NOW = new Date('2026-06-15T12:00:00Z');
+    const at = (ms: number) => new Date(NOW.getTime() + ms).toISOString();
+    const MIN = 60_000;
+    const HOUR = 60 * MIN;
+    const DAY = 24 * HOUR;
+
+    beforeEach(() => vi.setSystemTime(NOW));
+    afterEach(() => vi.useRealTimers());
+
+    it('past ladder is unchanged', () => {
+      expect(relativeTime(at(-30 * 1000))).toBe('just now');
+      expect(relativeTime(at(-5 * MIN))).toBe('5m ago');
+      expect(relativeTime(at(-2 * HOUR))).toBe('2h ago');
+      expect(relativeTime(at(-DAY))).toBe('yesterday');
+      expect(relativeTime(at(-3 * DAY))).toBe('3d ago');
+    });
+
+    it('past beyond a week falls back to the date', () => {
+      expect(relativeTime(at(-30 * DAY))).toBe('May 16');
+    });
+
+    // The bug: a negative diff satisfied `diffSec < 60`, so every upcoming
+    // event date rendered as 'just now'.
+    it('a future date shows the date, not "just now"', () => {
+      const out = relativeTime(at(30 * DAY));
+      expect(out).not.toBe('just now');
+      expect(out).toBe('Jul 15');
+    });
+
+    it('a far-future date includes the year', () => {
+      expect(relativeTime(at(400 * DAY))).toBe('Jul 20, 2027');
+    });
+
+    it('keeps clock skew in the "just now" bucket', () => {
+      expect(relativeTime(at(10 * 1000))).toBe('just now');
+    });
   });
 
   it('extractStatus returns string or undefined', () => {

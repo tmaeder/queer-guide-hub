@@ -41,8 +41,17 @@ export const eventFields: FieldConfig[] = [
     required: true,
     group: 'basic',
     sortable: true,
+    listColumn: true,
   },
-  { name: 'end_date', label: 'End Date', type: 'datetime', group: 'basic' },
+  // Not sortable on purpose: null on most single-day events, so a sort here
+  // orders mostly by where nulls land rather than by date.
+  {
+    name: 'end_date',
+    label: 'End Date',
+    type: 'datetime',
+    group: 'basic',
+    listColumn: true,
+  },
   { name: 'timezone', label: 'Timezone', type: 'text', group: 'basic' },
   {
     name: 'status',
@@ -262,6 +271,7 @@ export const eventContentType: ContentTypeConfig = {
     verification_status: 'pending',
   },
   validate: validateEvent,
+  defaultSort: { field: 'start_date', dir: 'desc' },
   fieldGroupOrder: ['basic', 'location', 'details', 'media', 'settings', 'external'],
   translatableFields: ['title', 'description', 'accessibility_notes'],
   commentable: true,
