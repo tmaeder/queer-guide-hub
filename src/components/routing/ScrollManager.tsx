@@ -217,13 +217,24 @@ export const ScrollManager = () => {
 function perform(action: ScrollAction): (() => void) | null {
   if (action.kind === 'keep') return null;
 
-  if (action.kind === 'top') {
-    // Zero is reachable in every document state, so this needs no settle —
-    // and adding one would fight any page that legitimately scrolls itself on
-    // mount.
-    writeTop(0);
-    return null;
-  }
+  // 'top' is carried out as a settled target of 0 rather than a single write.
+  // A single write is not enough, and the reason is measured rather than
+  // theoretical: the browse grids virtualize with `useWindowVirtualizer`,
+  // which samples `window.scrollY` during RENDER — before any layout effect
+  // can run — so at that moment it reads the offset of the page being left.
+  // It then works to keep the reader there, and 8ms after this manager
+  // scrolls to 0 it scrolls back:
+  //
+  //   t=5270  scrollTo(0, 0)          /cities   <- here
+  //   t=5278  scrollTo({top: 3089})   /cities   <- _willUpdate -> _scrollToOffset
+  //   t=5321  {top:3086} {3083} {3080} {3077} {3074}  <- resizeItem adjustments
+  //
+  // Measured against production data, forward navigation landed on the
+  // PREVIOUS page's offset in 6 of 6 runs. Acting earlier is not available —
+  // the virtualizer reads during render — so the landing point has to hold
+  // instead, which is what the settle does. It still abandons on the first
+  // real gesture, so a reader who scrolls during that window keeps their
+  // scroll.
 
   let elapsed = 0;
   let confirmations = 0;
@@ -244,9 +255,10 @@ function perform(action: ScrollAction): (() => void) | null {
     elapsed += SETTLE_STEP_MS;
     let onTarget = false;
 
-    if (action.kind === 'restore') {
-      writeTop(action.top);
-      onTarget = Math.abs(readTop() - action.top) <= 2;
+    if (action.kind !== 'hash') {
+      const goal = action.kind === 'top' ? 0 : action.top;
+      writeTop(goal);
+      onTarget = Math.abs(readTop() - goal) <= 2;
     } else {
       const el = document.getElementById(action.id);
       if (el) {
