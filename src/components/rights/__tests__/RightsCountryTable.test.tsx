@@ -54,6 +54,22 @@ describe('RightsCountryTable', () => {
     expect(within(table).getAllByRole('row').length).toBe(45);
   });
 
+  // The window is reset during render rather than in an effect. Narrowing to a
+  // result set that is ITSELF longer than the window is what makes this a real
+  // assertion: the row count only falls back to 30 if the expander was reset,
+  // and the expander only re-reads 40 if it is naming the new result set.
+  it('narrowing the view collapses an expanded window back onto the new result set', async () => {
+    render(<Harness />);
+    const table = screen.getByRole('table');
+    await userEvent.click(screen.getByRole('button', { name: /show all 44/i }));
+    expect(within(table).getAllByRole('row').length).toBe(45);
+
+    await userEvent.type(screen.getByRole('searchbox'), 'safeland');
+
+    expect(within(table).getAllByRole('row').length).toBe(31); // header + 30
+    expect(screen.getByRole('button', { name: /show all 40/i })).toBeInTheDocument();
+  });
+
   it('search narrows to matching countries', async () => {
     render(<Harness />);
     await userEvent.type(screen.getByRole('searchbox'), 'grim');

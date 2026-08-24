@@ -254,7 +254,7 @@ async function drainStale(env: Env, limit: number): Promise<DrainResult> {
 	const work: Array<{ table: string; row: TableRow }> = [];
 	for (const [table, ids] of byTable) {
 		for (const part of chunk(ids, FETCH_BATCH)) {
-			let rows: TableRow[] = [];
+			let rows: TableRow[];
 			try {
 				rows = await fetchRows(env, table, part);
 			} catch (e) {
