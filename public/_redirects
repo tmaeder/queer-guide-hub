@@ -27,6 +27,31 @@
 /cities/:slug    /city/:slug    301
 /countries/:slug /country/:slug 301
 
+# 14 rows in `queer_villages` were never districts — they were the whole town,
+# imported as if the town were a neighbourhood of itself, so /villages/x and
+# /city/x published two competing pages about the same place. The village rows
+# were hard-merged into their city (migration 20260928100000) and no longer
+# exist, so these paths would otherwise render the SPA 404.
+#
+# STATIC rules on purpose: Cloudflare caps :placeholder/splat rules at 100 per
+# project, and these carry no pattern. Unprefixed only, like the rules above —
+# `src/lib/mergedVillageRedirects.ts` covers the /:lang/ paths and client-side
+# navigation, which _redirects never sees.
+/villages/asbury-park      /city/asbury-park      301
+/villages/guerneville      /city/guerneville      301
+/villages/hudson-ny        /city/hudson           301
+/villages/new-hope-pa      /city/new-hope         301
+/villages/northampton      /city/northampton      301
+/villages/ogunquit         /city/ogunquit         301
+/villages/palm-springs     /city/palm-springs     301
+/villages/pine-city        /city/pine-city        301
+/villages/provincetown     /city/provincetown     301
+/villages/rehoboth-beach   /city/rehoboth-beach   301
+/villages/saugatuck        /city/saugatuck        301
+/villages/sitges           /city/sitges           301
+/villages/west-hollywood   /city/west-hollywood   301
+/villages/wilton-manors    /city/wilton-manors    301
+
 # /help is the canonical crisis hub; /help-hotlines is the legacy URL and
 # was never a React Router route, so it rendered the SPA 404 — on the one
 # page where that is least acceptable. It still has inbound links (and the

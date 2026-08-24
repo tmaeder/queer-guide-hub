@@ -13,6 +13,7 @@ import { useVenues } from '@/hooks/useVenues';
 import { useEvents } from '@/hooks/useEvents';
 import { useEntityDetail } from '@/hooks/useEntityDetail';
 import { useSlugRedirect } from '@/hooks/useSlugRedirect';
+import { mergedVillageCitySlug } from '@/lib/mergedVillageRedirects';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { SinglePage, StickyRailGroup } from '@/components/transit/SinglePage';
@@ -85,6 +86,16 @@ export default function QueerVillageDetail() {
   useEffect(() => {
     if (redirectVillageSlug) navigate(`/villages/${redirectVillageSlug}`, { replace: true });
   }, [redirectVillageSlug, navigate]);
+
+  // 14 villages were hard-merged into their city and their rows are gone, so
+  // village_slug_redirects above cannot resolve them (it cascaded away with the
+  // spine row, and it only ever points at another /villages/:slug).
+  // public/_redirects 301s the unprefixed paths at the edge; this covers the
+  // /:lang/ ones and in-app navigation, which those rules never see.
+  const mergedCitySlug = !isLoading && !village ? mergedVillageCitySlug(slug) : null;
+  useEffect(() => {
+    if (mergedCitySlug) navigate(`/city/${mergedCitySlug}`, { replace: true });
+  }, [mergedCitySlug, navigate]);
 
   const villageId = village?.id;
   const { venues, loading: venuesLoading, fetchVenues } = useVenues(false);
