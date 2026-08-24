@@ -1,13 +1,98 @@
 -- search_hybrid: a lexical match must not be displaced by semantic proximity alone.
--- Full rationale + measurements in supabase/migrations/20260927140000_search_hybrid_keyword_precedence.sql
 --
--- Two ordering defects, both fixed here, both ordering-only (`cand` untouched, so
--- the result set and `total` are unchanged — verified on 16 queries, all totals equal):
---   1. `kw as (... where greatest(kw_rank,trg) > 0)` gave a keyword rank to every
---      row admitted by the VECTOR arm, because `trg` is raw similarity() (0.171 for
---      the apparel) while admission needs `title % q` (>= 0.3). -> gate on kw_hit.
---   2. RRF gives each leg up to 1/(60+1)=0.01639, so a row in both legs beat an
---      exact lexical match present in only one. -> + 0.03 * kw_hit, above that max.
+-- REPRODUCTION (prod, 2026-08-23)
+--   POST https://search.queer.guide/search {"query":"fentanyl test strips"}
+--     -> 66 hits, the first 20 all "String Tank"/"Stripe" apparel from one merchant,
+--        ZERO of the 6 DanceSafe fentanyl-test-strip listings that match exactly.
+--   select search_hybrid('fentanyl test strips', null, ...)   -- vector arm OFF
+--     -> ranks 1-6 ARE the DanceSafe listings.
+--   So the keyword leg was never weak; the vector leg inverted the result set.
+--
+-- MEASURED CAUSE
+--   | title                                      | tsv   | trgm  | similarity |
+--   | Madrid Stripes String Tank- Red            | false | false | 0.171      |
+--   | DanceSafe Fentanyl Test Strips – Box of 500| true  | true  | 0.500      |
+--   The winning rows are not keyword candidates at all. `kwvec` admits
+--   `keyword-predicate matches UNION vnn` (top-200 by embedding distance), so the
+--   apparel can only have entered through `vnn` — bge-m3 places "fentanyl test
+--   strips" near "String Tank"/"Stripes" titles. Two independent defects then let
+--   those rows win, and BOTH are ordering defects, not admission defects:
+--
+--   1. The keyword leg scored rows that never matched a keyword.
+--      `kw as (... from cand where greatest(kw_rank,trg) > 0)`. `trg` is raw
+--      `similarity()`, which is > 0 for almost any pair of non-trivial strings —
+--      0.171 for the apparel here — while ADMISSION uses `title % q`, i.e.
+--      similarity ABOVE pg_trgm.similarity_threshold. So every vector-only row
+--      also collected a keyword rank, both taking RRF mass of its own and pushing
+--      the genuine keyword matches down the keyword ranking that is supposed to
+--      be theirs alone.
+--
+--   2. A vector-only row could out-score a lexical match outright.
+--      RRF gives each leg up to 1/(60+1) = 0.01639. A row present in BOTH legs
+--      therefore beats a row present in one, regardless of how exact the one is —
+--      an exact-title keyword match outside the vnn top-200 gets 0.01639 total,
+--      a semantically-adjacent tank top in both gets up to 0.0328.
+--
+-- THE FIX (both deltas are ORDERING-ONLY — `cand` is untouched, so the result set
+-- and `total` are byte-identical to before; only the sequence changes)
+--   a. `kw_hit`: the row satisfies the same keyword predicate that admits rows into
+--      `kwvec` (`search_tsv @@ q` OR `title % q`). The keyword leg now ranks exactly
+--      the rows the keyword arm admitted — no tuned constant, just consistency
+--      between admission and scoring. Typo/diacritic tolerance is preserved because
+--      the `%` operator is what provides it and it is the same operator here.
+--   b. `+ 0.03 * kw_hit` in `scored`. 0.03 > 1/(60+1) = 0.01639, the vector leg's
+--      maximum possible contribution, so semantic proximity alone can no longer
+--      displace a lexical match. It is deliberately BELOW the city boost (0.05) and
+--      the exact-title boost (0.08), which stay dominant, and it is constant across
+--      keyword hits so it never reorders them among themselves.
+--
+-- WHAT THIS DOES NOT DO: `vnn` still admits 200 semantic neighbours unconditionally,
+-- so `total` still counts them (66 for the query above). Narrowing ADMISSION — e.g.
+-- an absolute distance cut, or skipping vnn when the keyword leg is already deep —
+-- changes recall and needs its own calibration; it is a separate change, not this one.
+--
+-- MEASURED (prod, before/after, candidate installed in pg_temp for one session):
+--   * The reproduction itself: query vector = the embedding of "Madrid Stripes
+--     String Tank- Red", i.e. the real failure topology (keyword matches outside
+--     the vnn top-200, apparel inside). Live -> 10 tank tops. Candidate -> the six
+--     DanceSafe fentanyl strips at ranks 1-6. total = 65 in BOTH.
+--   * Ordering inversions (a non-keyword-match ranked above a keyword match, top-20,
+--     adversarial vector, 16 queries): live had 61 on "binder", 44 "rooftop bar",
+--     27 "bookshop", 23 "trans friendly", 12 "harvey milk", 3 "kitkatclub",
+--     3 "naloxone" — candidate has ZERO on all 16. `total` equal on all 16.
+--     Note this defect was never DanceSafe-specific; it was ranking apparel over
+--     chest binders and semantic noise over bookshops platform-wide.
+--   * Keyword-only path (p_query_vec => null — what run.mjs + golden.json exercise):
+--     28/28 queries byte-identical in hit ORDER and total. Only the absolute
+--     _rankingScore shifts, by a uniform +0.03, because with no vector every
+--     candidate is a keyword hit. Nothing in the app compares that number against a
+--     threshold (grep: 5 references, all display/sort), and the golden assertions
+--     match on title+city+rank, so they are unaffected.
+--   * Latency, min-of-4 alternating: "pride" (8,787 candidates) 512 -> 556 ms
+--     (+9%), "gay bar berlin" 427 -> 446, "leather bar" 306 -> 316, "sauna"
+--     305 -> 284, "fentanyl test strips" 226 -> 256. The cost is the extra
+--     per-candidate `@@` + `%`. Accepted against the 1,500 ms p95 gate. If it ever
+--     needs reclaiming, hoist websearch_to_tsquery into p2 and derive the trigram
+--     arm from the `trg` value already computed — but that changes the plan shape,
+--     which is exactly what 20260713100710 got wrong, so measure it.
+--
+-- VERSION. Applied via MCP apply_migration, which stamps the version from its own
+-- call time — hence 20260823225808 and not the 20260927140000 this file was
+-- authored as. The filename MUST match the stamped version or `db push` re-runs it.
+-- Between applying and committing, the drift monitor caught this version and a
+-- recovery PR reconstructed the file on main straight out of
+-- schema_migrations.statements, so main briefly carried a copy whose header
+-- pointed at the 20260927140000 filename that no longer exists. This file
+-- supersedes that copy: same SQL, real rationale, no dangling reference. The
+-- assert_search_hybrid_contract body below is kept byte-identical to the applied
+-- version so replaying this file cannot silently reword what is deployed.
+--
+-- KEEP THE SHAPE. This body is 20260810170000 (plpgsql + dynamic EXECUTE +
+-- force_custom_plan + narrow `cand` + vnn carrying vdist) with only the two deltas
+-- above. 20260713100710 lost all of that by CREATE OR REPLACE-ing from a stale
+-- LANGUAGE sql copy and cost prod every broad query for three weeks. If this is ever
+-- redefined again, start from the CURRENT definition, not from a copy in a branch.
+
 CREATE OR REPLACE FUNCTION public.search_hybrid(p_query text DEFAULT ''::text, p_query_vec vector DEFAULT NULL::vector, p_content_types text[] DEFAULT NULL::text[], p_filters jsonb DEFAULT '{}'::jsonb, p_lat double precision DEFAULT NULL::double precision, p_lng double precision DEFAULT NULL::double precision, p_radius_km double precision DEFAULT NULL::double precision, p_now timestamp with time zone DEFAULT now(), p_limit integer DEFAULT 20, p_offset integer DEFAULT 0, p_date_from timestamp with time zone DEFAULT NULL::timestamp with time zone, p_date_to timestamp with time zone DEFAULT NULL::timestamp with time zone, p_price_min numeric DEFAULT NULL::numeric, p_price_max numeric DEFAULT NULL::numeric, p_sort text DEFAULT NULL::text)
  RETURNS jsonb
  LANGUAGE plpgsql
@@ -67,6 +152,10 @@ return result;
 end
 $function$;
 
+-- Pin both deltas. This function has been silently reverted twice by rewrites
+-- started from a stale copy (target_groups filter, then the whole perf shape), so
+-- the guard names each property it must keep rather than trusting the next author
+-- to diff against prod. Body below is byte-identical to the applied version.
 create or replace function public.assert_search_hybrid_contract()
 returns text language plpgsql stable security definer set search_path to 'public','extensions','pg_temp' as $$
 declare def text; full_n int; filt_n int;
