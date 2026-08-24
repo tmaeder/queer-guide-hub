@@ -92,7 +92,7 @@ export function describeActiveFilters(f: MarketplaceFiltersInput): FilterFacet[]
     });
   }
   for (const tag of f.tags ?? []) {
-    const pretty = tag.replace(/^(mat|occ|vibe)-/, '').replace(/-/g, ' ');
+    const pretty = tag.replace(/^(mat|occ|vibe|color|size|genre|fit)-/, '').replace(/-/g, ' ');
     facets.push({
       noun: pretty,
       relaxLabel: `Remove tag "${pretty}"`,
@@ -112,6 +112,22 @@ export function describeActiveFilters(f: MarketplaceFiltersInput): FilterFacet[]
       noun: pretty,
       relaxLabel: `Show all ${pretty} alternatives`,
       next: { ...f, subcategory: undefined },
+    });
+  }
+  if (f.subcategoryGroup) {
+    const pretty = f.subcategoryGroup.replace(/_/g, ' ');
+    facets.push({
+      noun: pretty,
+      relaxLabel: `Show the whole department instead of ${pretty}`,
+      next: { ...f, subcategoryGroup: undefined, subcategoryFine: undefined },
+    });
+  }
+  if (f.subcategoryFine) {
+    const pretty = f.subcategoryFine.replace(/_/g, ' ');
+    facets.push({
+      noun: pretty,
+      relaxLabel: `Show all ${pretty} alternatives`,
+      next: { ...f, subcategoryFine: undefined },
     });
   }
   if (f.location) {
@@ -140,7 +156,13 @@ export function describeActiveFilters(f: MarketplaceFiltersInput): FilterFacet[]
     facets.push({
       noun: f.department.replace(/_/g, ' '),
       relaxLabel: 'Search all departments',
-      next: { ...f, department: undefined, subcategory: undefined },
+      next: {
+        ...f,
+        department: undefined,
+        subcategory: undefined,
+        subcategoryGroup: undefined,
+        subcategoryFine: undefined,
+      },
     });
   }
   return facets;

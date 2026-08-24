@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useMeta } from '@/hooks/useMeta';
@@ -14,8 +14,15 @@ import { isAdultCategorySlug, useAdultAcknowledgement } from '@/hooks/useAdultCo
 import {
   useMarketplaceSubcategoryGroupCounts,
   useMarketplaceTagFacets,
+  useMarketplaceFineCounts,
 } from '@/hooks/useMarketplaceQueries';
-import { DEPARTMENT_GROUPS, DEPARTMENT_LABELS, groupLabel } from '@/lib/marketplaceTaxonomy';
+import {
+  DEPARTMENT_GROUPS,
+  DEPARTMENT_LABELS,
+  GROUP_FINE,
+  fineLabel,
+  groupLabel,
+} from '@/lib/marketplaceTaxonomy';
 import { PageContainer } from '@/components/layout/PageContainer';
 
 function prettify(slug: string): string {
@@ -56,7 +63,17 @@ export default function MarketplaceCategory() {
   const includeAdult = acknowledged;
 
   const activeGroup = searchParams.get('g') || '';
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const activeFine = searchParams.get('f') || '';
+  // Tag refinements live in ?tags= so a refined view is shareable / back-button
+  // safe (they were useState-only before — invisible in the URL).
+  const selectedTags = useMemo(
+    () =>
+      (searchParams.get('tags') ?? '')
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean),
+    [searchParams],
+  );
 
   const { data: groups } = useMarketplaceSubcategoryGroupCounts(
     isDepartment ? subcategory : null,
@@ -67,6 +84,23 @@ export default function MarketplaceCategory() {
     activeGroup || null,
     includeAdult,
   );
+  const { data: fineCounts } = useMarketplaceFineCounts(
+    isDepartment ? subcategory : null,
+    activeGroup || null,
+    includeAdult,
+  );
+
+  // Fine tiles only where the classifier has a ladder for the active group,
+  // in the canonical display order; NULL-fine listings simply stay under the
+  // group tile, so "All" is always present.
+  const fineTiles = useMemo(() => {
+    if (!isDepartment || !activeGroup) return [];
+    const counts = new Map(fineCounts.map((f) => [f.slug, f.count]));
+    const order = GROUP_FINE[activeGroup] ?? [];
+    return order
+      .filter((f) => (counts.get(f) ?? 0) > 0)
+      .map((f) => ({ slug: f, count: counts.get(f) ?? 0 }));
+  }, [fineCounts, isDepartment, activeGroup]);
 
   // Order groups by the department's canonical display order; keep only non-empty.
   const groupTiles = useMemo(() => {
@@ -84,6 +118,19 @@ export default function MarketplaceCategory() {
         const next = new URLSearchParams(prev);
         if (g) next.set('g', g);
         else next.delete('g');
+        next.delete('f'); // a fine tier belongs to its group
+        return next;
+      },
+      { replace: true },
+    );
+  };
+
+  const setFine = (f: string) => {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (f) next.set('f', f);
+        else next.delete('f');
         return next;
       },
       { replace: true },
@@ -91,21 +138,38 @@ export default function MarketplaceCategory() {
   };
 
   const toggleTag = (tagSlug: string) => {
-    setSelectedTags((prev) =>
-      prev.includes(tagSlug) ? prev.filter((s) => s !== tagSlug) : [...prev, tagSlug],
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        const current = (next.get('tags') ?? '')
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean);
+        const updated = current.includes(tagSlug)
+          ? current.filter((s) => s !== tagSlug)
+          : [...current, tagSlug];
+        if (updated.length) next.set('tags', updated.join(','));
+        else next.delete('tags');
+        return next;
+      },
+      { replace: true },
     );
   };
 
   const filters = useMemo(() => {
     const base = isDepartment
-      ? { department: subcategory, ...(activeGroup ? { subcategoryGroup: activeGroup } : {}) }
+      ? {
+          department: subcategory,
+          ...(activeGroup ? { subcategoryGroup: activeGroup } : {}),
+          ...(activeFine ? { subcategoryFine: activeFine } : {}),
+        }
       : { subcategory };
     return {
       ...base,
       includeAdult,
       ...(selectedTags.length ? { tags: selectedTags } : {}),
     };
-  }, [isDepartment, subcategory, activeGroup, includeAdult, selectedTags]);
+  }, [isDepartment, subcategory, activeGroup, activeFine, includeAdult, selectedTags]);
 
   useMeta({
     title: name ? `${name} — Marketplace` : 'Marketplace category',
@@ -115,10 +179,16 @@ export default function MarketplaceCategory() {
 
   useBreadcrumbs(
     subcategory
-      ? [
-          { label: t('breadcrumb.marketplace', 'Marketplace'), href: '/marketplace' },
-          { label: name },
-        ]
+      ? activeGroup
+        ? [
+            { label: t('breadcrumb.marketplace', 'Marketplace'), href: '/marketplace' },
+            { label: name, href: `/marketplace/category/${subcategory}` },
+            { label: groupLabel(activeGroup) },
+          ]
+        : [
+            { label: t('breadcrumb.marketplace', 'Marketplace'), href: '/marketplace' },
+            { label: name },
+          ]
       : null,
   );
 
@@ -165,6 +235,20 @@ export default function MarketplaceCategory() {
                 active={activeGroup === g.slug}
                 label={chipLabel(groupLabel(g.slug), g.count, activeGroup === g.slug)}
                 onClick={() => setGroup(g.slug)}
+              />
+            ))}
+          </div>
+        )}
+
+        {isDepartment && activeGroup && fineTiles.length > 1 && (
+          <div className="mb-6 flex flex-wrap gap-2" aria-label="Filter by fine category">
+            <FilterChip active={!activeFine} label="All" onClick={() => setFine('')} />
+            {fineTiles.map((f) => (
+              <FilterChip
+                key={f.slug}
+                active={activeFine === f.slug}
+                label={chipLabel(fineLabel(f.slug), f.count, activeFine === f.slug)}
+                onClick={() => setFine(f.slug)}
               />
             ))}
           </div>

@@ -1,15 +1,34 @@
 /**
  * queer-guide-search-ingest
  *
- * Receives Supabase DB webhooks (INSERT/UPDATE/DELETE) for indexed tables,
- * embeds content via Workers AI and upserts to content_embeddings (Supabase
- * pgvector), which feeds the Postgres search_documents engine. (Meilisearch
- * indexing was removed in the Meili → Postgres decommission.)
+ * Embeds content via Workers AI and upserts to content_embeddings (Supabase
+ * pgvector), which feeds search_embeddings — the vector arm of search_hybrid.
+ * (Meilisearch indexing was removed in the Meili → Postgres decommission.)
  *
- * Webhook auth: X-QG-Token header must match INGEST_TOKEN secret.
+ * THE CRON DRAIN IS THE ONLY WRITE PATH. This file and wrangler.toml used to
+ * describe the scheduled drain as a "backstop" for a Supabase DB webhook that
+ * was "the fast path". No such webhook exists — measured 2026-08-23, zero
+ * triggers in the database reach net.http_request — and it is deliberately not
+ * being restored: a per-row http_post trigger re-couples every writer to an
+ * external POST, and the batch-capped backfills (300-1500 rows a pass) would
+ * each enqueue thousands of pg_net requests whose responses are retained ~6h.
+ * The 2026-08 pipeline overhaul already decoupled search_documents from entity
+ * writes for that reason (search_reindex_queue); this path follows it.
  *
- * Also exposes POST /backfill to re-embed + re-index all rows of a given type,
- * driven by a cursor in kv.
+ * So the drain is sized as a primary path, not a trickle: get_stale_embeddings
+ * is FIFO (migration 20260927123000), and one run costs ~24 subrequests for 100
+ * rows because rows are fetched, embedded and upserted in BATCHES rather than
+ * three subrequests each. That stays under the Workers Free 50/invocation cap,
+ * so throughput does not depend on which plan the account is on. The three
+ * batch sizes are NOT interchangeable — see UPSERT_BATCH, which is small
+ * because a large one was measured to blow the statement timeout.
+ *
+ * /webhook is kept (auth: X-QG-Token must match INGEST_TOKEN) so a webhook can
+ * be pointed back at it without a redeploy, but nothing calls it today.
+ *
+ * Also exposes POST /backfill to re-embed all rows of a type via a kv cursor,
+ * and POST /drain to run the stale drain on demand with a caller-chosen limit
+ * (for clearing a backlog without waiting on the cron).
  */
 
 import { Toucan } from "toucan-js";
@@ -23,12 +42,56 @@ export interface Env {
 	INGEST_TOKEN: string;
 	AI_GATEWAY_NAME?: string;
 	EMBED_MODEL?: string;
+	/** Rows per scheduled drain. See DEFAULT_DRAIN_LIMIT. */
+	DRAIN_LIMIT?: string;
 	SENTRY_DSN?: string;
 	SENTRY_ENV?: string;
 	SENTRY_RELEASE?: string;
 }
 
 const DEFAULT_EMBED_MODEL = "@cf/baai/bge-m3"; // 1024-dim, multilingual
+
+/**
+ * Rows per drain run. At 100 a run costs roughly 1 (work list) + <=11 (row
+ * fetches, one request per table per 100 ids) + 2 (embed, 50 texts per AI call)
+ * + 10 (upsert, 10 rows per POST) = ~24 subrequests, i.e. still under the
+ * Workers Free cap of 50 per invocation. On the five-minute cron that is 28,800
+ * rows/day, against 2,160/day before. Raise via the DRAIN_LIMIT var, but redo
+ * the arithmetic first — the upsert leg is 1 subrequest per 10 rows, so this is
+ * what binds, and going past ~150 needs Workers Paid.
+ */
+const DEFAULT_DRAIN_LIMIT = 100;
+/** Hard ceiling for the operator-driven POST /drain, for the same reason. */
+const MAX_DRAIN_LIMIT = 300;
+/** Texts per Workers AI call. bge-m3 takes an array; 50 is comfortable. */
+const EMBED_BATCH = 50;
+const FETCH_BATCH = 100;
+/**
+ * Rows per content_embeddings upsert, and it is 10 rather than 50 because 50
+ * was MEASURED to fail. Live tail, 2026-08-23, first run after the batching
+ * landed:
+ *
+ *   (error) upsert batch failed … pgvector upsert 500: {"code":"57014", …}   ×3
+ *   (log)   drain: {"claimed":200,"embedded":60,"missing":0,"failed":140}
+ *
+ * Exactly one of the four 50-row batches got through per tick. The row count is
+ * not free on this table: an upsert fires the bridge trigger into
+ * search_embeddings, whose HNSW index has to be maintained per row, inside ONE
+ * statement racing the PostgREST statement timeout. The old code never met this
+ * because it sent one row per POST.
+ *
+ * So the two batch sizes are independent knobs and must stay that way — the
+ * embed leg wants them large (one AI call per 50 texts) and the write leg wants
+ * them small (one statement per 10 rows). Collapsing them back into a single
+ * constant re-introduces the 140-rows-per-run failure.
+ */
+const UPSERT_BATCH = 10;
+/**
+ * A batch that fails is retried row-by-row so one poison row cannot stall a
+ * FIFO queue at its head forever — but only this many times per run, because
+ * each retry is another subrequest against the cap above.
+ */
+const MAX_SINGLE_RETRIES = 10;
 
 // Minimal row shape — Supabase REST returns arbitrary table columns; we only
 // reach for a handful of fields. Use index-signature for unknown extras.
@@ -86,6 +149,14 @@ export default {
 			if (url.pathname === "/backfill" && request.method === "POST") {
 				return await handleBackfill(request, env, ctx);
 			}
+			if (url.pathname === "/drain" && request.method === "POST") {
+				// Operator-driven backlog clearing: same work list the cron uses,
+				// caller-chosen depth. Synchronous so a driver script can loop on
+				// the result instead of guessing how long a run takes.
+				const body = (await request.json().catch(() => ({}))) as { limit?: number };
+				const limit = Math.min(Number(body.limit) || DEFAULT_DRAIN_LIMIT, MAX_DRAIN_LIMIT);
+				return jres(await drainStale(env, limit));
+			}
 			if (url.pathname === "/reembed-one" && request.method === "POST") {
 				const body = (await request.json()) as { table: string; id: string };
 				const row = await fetchRow(env, body.table, body.id);
@@ -113,11 +184,14 @@ export default {
 		}
 	},
 	async scheduled(event: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
-		// Every run (cron now */10, see wrangler.toml): drain up to 15 rows whose
-		// row updated_at > embedding updated_at.
-		// This catches anything the DB webhook missed (e.g. direct SQL updates).
-		// 15 rows × 3 subreqs = 45 — under Workers Free 50 subrequest limit per invocation.
-		ctx.waitUntil(drainStale(env, 15));
+		// The only path that ever writes an embedding — not a backstop. See the
+		// file header and DEFAULT_DRAIN_LIMIT.
+		const limit = Number(env.DRAIN_LIMIT) || DEFAULT_DRAIN_LIMIT;
+		ctx.waitUntil(
+			drainStale(env, limit)
+				.then((r) => console.log(`drain: ${JSON.stringify(r)}`))
+				.catch((e) => console.error("drain failed", e)),
+		);
 	},
 	async queue(batch: MessageBatch, env: Env): Promise<void> {
 		for (const m of batch.messages) {
@@ -138,7 +212,20 @@ export default {
 	},
 };
 
-async function drainStale(env: Env, limit: number): Promise<void> {
+type DrainResult = { claimed: number; embedded: number; missing: number; failed: number };
+
+/**
+ * Work through get_stale_embeddings in batches.
+ *
+ * The old shape spent 3 subrequests PER ROW (fetch, embed, upsert), which is
+ * what pinned the batch at 15 and the platform at 2,160 rows/day. All three
+ * collapse into batch calls here: PostgREST takes `id=in.(...)`, bge-m3 takes an
+ * array of texts, and content_embeddings takes an array upsert. Cost per run is
+ * now roughly constant in the number of TABLES, not rows.
+ */
+async function drainStale(env: Env, limit: number): Promise<DrainResult> {
+	const out: DrainResult = { claimed: 0, embedded: 0, missing: 0, failed: 0 };
+
 	const res = await fetch(`${env.SUPABASE_URL}/rest/v1/rpc/get_stale_embeddings`, {
 		method: "POST",
 		headers: {
@@ -149,19 +236,101 @@ async function drainStale(env: Env, limit: number): Promise<void> {
 		body: JSON.stringify({ p_limit: limit }),
 	});
 	if (!res.ok) {
-		console.error("drainStale rpc failed", res.status);
-		return;
+		console.error("drainStale rpc failed", res.status, await res.text().catch(() => ""));
+		return out;
 	}
 	const stale = (await res.json()) as Array<{ table_name: string; id: string }>;
-	console.log(`drain: ${stale.length} stale rows`);
+	out.claimed = stale.length;
+	if (!stale.length) return out;
+
+	// 1. Fetch the rows, one request per (table, 100 ids).
+	const byTable = new Map<string, string[]>();
 	for (const s of stale) {
-		try {
-			const row = await fetchRow(env, s.table_name, s.id);
-			if (row) await indexRow(env, s.table_name, row);
-		} catch (e) {
-			console.error("drain one failed", s, e);
+		if (!TABLE_MAP[s.table_name]) continue;
+		const ids = byTable.get(s.table_name) ?? [];
+		ids.push(s.id);
+		byTable.set(s.table_name, ids);
+	}
+	const work: Array<{ table: string; row: TableRow }> = [];
+	for (const [table, ids] of byTable) {
+		for (const part of chunk(ids, FETCH_BATCH)) {
+			let rows: TableRow[] = [];
+			try {
+				rows = await fetchRows(env, table, part);
+			} catch (e) {
+				console.error("drain fetch failed", table, e);
+				out.failed += part.length;
+				continue;
+			}
+			// A row the work list named but the table no longer has was deleted
+			// between the two calls. Not a failure, and not retried — the next
+			// run's work list simply will not contain it.
+			out.missing += part.length - rows.length;
+			for (const row of rows) work.push({ table, row });
 		}
 	}
+	const indexed = await indexRows(env, work);
+	out.embedded += indexed.embedded;
+	out.failed += indexed.failed;
+	return out;
+}
+
+/** Embed and upsert a set of already-fetched rows, in batches. */
+async function indexRows(
+	env: Env,
+	work: Array<{ table: string; row: TableRow }>,
+): Promise<{ embedded: number; failed: number }> {
+	const out = { embedded: 0, failed: 0 };
+	if (!work.length) return out;
+	const texts = work.map((w) => embedTextFor(w.table, w.row));
+
+	let vectors: Array<number[] | null>;
+	try {
+		vectors = await embedTexts(env, texts);
+	} catch (e) {
+		console.error("embed batch failed", e);
+		out.failed += work.length;
+		return out;
+	}
+
+	const pending = work
+		.map((w, i) => ({ w, text: texts[i], vec: vectors[i] }))
+		.filter((p): p is { w: (typeof work)[number]; text: string; vec: number[] } =>
+			Array.isArray(p.vec),
+		);
+	out.failed += work.length - pending.length;
+
+	let singleRetries = 0;
+	for (const part of chunk(pending, UPSERT_BATCH)) {
+		try {
+			await upsertEmbeddings(
+				env,
+				part.map((p) => embeddingRecord(p.w.table, p.w.row, p.text, p.vec)),
+			);
+			out.embedded += part.length;
+		} catch (e) {
+			// One bad row must not cost the whole batch: with FIFO ordering the
+			// same rows come back at the head of the next run, so a batch that
+			// always fails as a batch would stall the queue permanently. Retry
+			// individually, but bounded — each retry is another subrequest.
+			console.error("upsert batch failed, retrying singly", e);
+			for (const p of part) {
+				if (singleRetries >= MAX_SINGLE_RETRIES) {
+					out.failed += 1;
+					continue;
+				}
+				singleRetries += 1;
+				try {
+					await upsertEmbeddings(env, [embeddingRecord(p.w.table, p.w.row, p.text, p.vec)]);
+					out.embedded += 1;
+				} catch (e2) {
+					console.error("upsert row failed", p.w.table, p.w.row.id, e2);
+					out.failed += 1;
+				}
+			}
+		}
+	}
+	return out;
 }
 
 async function handleWebhook(request: Request, env: Env): Promise<Response> {
@@ -216,32 +385,58 @@ async function handleBackfill(request: Request, env: Env, ctx: ExecutionContext)
 		}
 	}
 
-	// Run actual indexing in background.
+	// Run actual indexing in background — batched, like the drain. Row-at-a-time
+	// cost 2 subrequests each, so a batchSize of 50 spent ~101 and could not run
+	// on Workers Free at all.
 	ctx.waitUntil(
-		(async () => {
-			for (const r of rows) {
-				try {
-					await indexRow(env, table, r);
-				} catch (e) {
-					console.error(`backfill ${table} ${r.id}`, e);
-				}
-			}
-		})(),
+		indexRows(env, rows.map((row) => ({ table, row })))
+			.then((r) => console.log(`backfill ${table}: ${JSON.stringify(r)}`))
+			.catch((e) => console.error(`backfill ${table} failed`, e)),
 	);
 
 	return jres({ accepted: rows.length, cursor: lastIdSync, done: rows.length < batchSize });
 }
 
 async function indexRow(env: Env, table: string, row: TableRow): Promise<void> {
-	const tm = TABLE_MAP[table];
-	if (!tm) return;
+	if (!TABLE_MAP[table]) return;
 
-	// 1. Compose embed text (multilingual concat when available).
+	const text = embedTextFor(table, row);
+	const [vec] = await embedTexts(env, [text]);
+	if (!vec) throw new Error("embed: no vector");
+	await upsertEmbeddings(env, [embeddingRecord(table, row, text, vec)]);
+}
+
+/**
+ * Composed text, never empty. An empty string is not embeddable, and with a
+ * FIFO work list a row that cannot be embedded is a row that sits at the head
+ * of the queue forever, so a row with no title and no description falls back to
+ * something stable rather than being skipped.
+ */
+function embedTextFor(table: string, row: TableRow): string {
 	const text = composeEmbedText(table, row);
-	const vec = await embedText(env, text);
+	return text.trim() || `${TABLE_MAP[table]?.contentType ?? table} ${row.slug ?? row.id}`;
+}
 
-	// 2. Upsert pgvector embedding (feeds search_documents).
-	await upsertEmbedding(env, tm.contentType, row.id, text, vec, extractMetadata(table, row));
+function embeddingRecord(
+	table: string,
+	row: TableRow,
+	text: string,
+	embedding: number[],
+): Record<string, unknown> {
+	return {
+		content_type: TABLE_MAP[table].contentType,
+		content_id: row.id,
+		content_text: text,
+		embedding: `[${embedding.join(",")}]`,
+		metadata: extractMetadata(table, row),
+		updated_at: new Date().toISOString(),
+	};
+}
+
+function chunk<T>(items: T[], size: number): T[][] {
+	const out: T[][] = [];
+	for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));
+	return out;
 }
 
 async function deleteRow(env: Env, table: string, id?: string): Promise<void> {
@@ -272,6 +467,25 @@ async function fetchRow(env: Env, table: string, id: string): Promise<TableRow |
 	);
 	const rows = (await r.json()) as TableRow[];
 	return rows?.[0] ?? null;
+}
+
+/**
+ * One request per <=FETCH_BATCH ids. PostgREST caps an `in.()` list well above
+ * 100, but the URL is what breaks first, and 100 uuids is already ~3.7 KB.
+ */
+async function fetchRows(env: Env, table: string, ids: string[]): Promise<TableRow[]> {
+	const url = new URL(`${env.SUPABASE_URL}/rest/v1/${table}`);
+	url.searchParams.set("select", "*");
+	url.searchParams.set("id", `in.(${ids.join(",")})`);
+	url.searchParams.set("limit", String(ids.length));
+	const r = await fetch(url.toString(), {
+		headers: {
+			apikey: env.SUPABASE_SERVICE_KEY,
+			authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+		},
+	});
+	if (!r.ok) throw new Error(`fetchRows ${table} ${r.status}: ${await r.text()}`);
+	return (await r.json()) as TableRow[];
 }
 
 // ─── text composition ─────────────────────────
@@ -314,52 +528,70 @@ function extractMetadata(_table: string, r: TableRow): Record<string, unknown> {
 }
 
 // ─── AI ───────────────────────────────────────
-async function embedText(env: Env, text: string): Promise<number[]> {
+/**
+ * Embed many texts with one Workers AI call per EMBED_BATCH.
+ *
+ * bge-m3 already took an array — the old single-text path sent `{text:[t]}` and
+ * read `data[0]` — so batching costs nothing but bookkeeping and is what turns
+ * the drain from 1 subrequest per row into 1 per 50. KV lookups are checked
+ * first and are NOT subrequests, so a cache hit is free either way.
+ *
+ * Returns one entry per input, positionally; null where the model returned no
+ * vector for that text. The caller counts those as failures rather than
+ * upserting a hole.
+ */
+async function embedTexts(env: Env, texts: string[]): Promise<Array<number[] | null>> {
 	const model = env.EMBED_MODEL || DEFAULT_EMBED_MODEL;
-	const key = `emb:${model}:${await sha256(text)}`;
-	const cached = (await env.EMBED_CACHE.get(key, { type: "json" })) as number[] | null;
-	if (Array.isArray(cached)) return cached;
+	const keys = await Promise.all(texts.map(async (t) => `emb:${model}:${await sha256(t)}`));
+	const out: Array<number[] | null> = await Promise.all(
+		keys.map(async (k) => {
+			try {
+				const v = (await env.EMBED_CACHE.get(k, { type: "json" })) as number[] | null;
+				return Array.isArray(v) ? v : null;
+			} catch {
+				return null;
+			}
+		}),
+	);
+
+	const misses = out.map((v, i) => (v ? -1 : i)).filter((i) => i >= 0);
+	if (!misses.length) return out;
 
 	const gateway = env.AI_GATEWAY_NAME ? { id: env.AI_GATEWAY_NAME, cacheTtl: 86400 * 7 } : undefined;
-	const res = (await env.AI.run(
-		model as Parameters<typeof env.AI.run>[0],
-		{ text: [text] } as Parameters<typeof env.AI.run>[1],
-		gateway ? { gateway } : undefined,
-	)) as unknown;
-	const candidate =
-		(res as { data?: unknown })?.data ??
-		(res as { [n: number]: unknown })?.[0];
-	const vec: number[] = Array.isArray(candidate) && Array.isArray(candidate[0])
-		? (candidate[0] as number[])
-		: (candidate as number[]);
-	if (!Array.isArray(vec)) throw new Error("embed: no vector");
-	try {
-		await env.EMBED_CACHE.put(key, JSON.stringify(vec), { expirationTtl: 86400 * 30 });
-	} catch (e) {
-		console.warn("EMBED_CACHE put skipped", (e as Error)?.message);
+	for (const part of chunk(misses, EMBED_BATCH)) {
+		const res = (await env.AI.run(
+			model as Parameters<typeof env.AI.run>[0],
+			{ text: part.map((i) => texts[i]) } as Parameters<typeof env.AI.run>[1],
+			gateway ? { gateway } : undefined,
+		)) as unknown;
+		const data =
+			(res as { data?: unknown })?.data ?? (res as { [n: number]: unknown })?.[0];
+		if (!Array.isArray(data)) throw new Error("embed: no vectors");
+		part.forEach((i, j) => {
+			const vec = data[j];
+			out[i] = Array.isArray(vec) ? (vec as number[]) : null;
+		});
 	}
-	return vec;
+
+	// Best-effort cache fill. A KV failure must not fail the drain — the vector
+	// is already in hand and about to be written to the database.
+	await Promise.all(
+		misses.map(async (i) => {
+			const vec = out[i];
+			if (!vec) return;
+			try {
+				await env.EMBED_CACHE.put(keys[i], JSON.stringify(vec), { expirationTtl: 86400 * 30 });
+			} catch (e) {
+				console.warn("EMBED_CACHE put skipped", (e as Error)?.message);
+			}
+		}),
+	);
+	return out;
 }
 
 // ─── Supabase upsert ──────────────────────────
-async function upsertEmbedding(
-	env: Env,
-	contentType: string,
-	contentId: string,
-	contentText: string,
-	embedding: number[],
-	metadata: Record<string, unknown>,
-): Promise<void> {
-	const body = [
-		{
-			content_type: contentType,
-			content_id: contentId,
-			content_text: contentText,
-			embedding: `[${embedding.join(",")}]`,
-			metadata,
-			updated_at: new Date().toISOString(),
-		},
-	];
+async function upsertEmbeddings(env: Env, body: Array<Record<string, unknown>>): Promise<void> {
+	if (!body.length) return;
 	const res = await fetch(`${env.SUPABASE_URL}/rest/v1/content_embeddings?on_conflict=content_type,content_id`, {
 		method: "POST",
 		headers: {

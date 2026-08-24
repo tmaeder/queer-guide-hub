@@ -20,7 +20,9 @@ function makeAdapter(shopId: string): SourceAdapter {
       if (!apiKey) throw new MissingCredentialsError('ETSY_API_KEY')
       const limit = Math.min(config.batchSize || 50, 100)
       const url = new URL(`https://openapi.etsy.com/v3/application/shops/${shopId}/listings/active`)
-      url.searchParams.set('limit', String(limit)); url.searchParams.set('includes', 'Images,Shop')
+      // Inventory carries the variations (size/colour property_values + offerings)
+      // that marketplace-variant-backfill extracts from the retained raw payload.
+      url.searchParams.set('limit', String(limit)); url.searchParams.set('includes', 'Images,Shop,Inventory')
       const supabase = getServiceClient()
       const data = await withCircuitBreaker(supabase, 'etsy', async () => {
         const res = await fetch(url, { headers: { 'x-api-key': apiKey, 'Accept': 'application/json' } })

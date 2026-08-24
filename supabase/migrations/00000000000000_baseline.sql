@@ -35362,6 +35362,216 @@ ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT SELECT ON 
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT SELECT ON TABLES TO "algolia_supabase_connector_postgres_1755537511";
 
 
+-- ---------------------------------------------------------------------------
+-- RECOVERED TABLES — six tables that exist in production but had no CREATE TABLE
+-- anywhere in supabase/migrations/, so `supabase db reset` from a clean database
+-- failed at the first migration that ALTERed one of them (`professions` at
+-- 20260411140000).
+--
+-- Measured 2026-08-23 against the live catalogue: 471 base tables in production
+-- vs. every CREATE TABLE across all 1,227 migration files. Fourteen names had no
+-- CREATE. Five arrive via ALTER TABLE ... RENAME TO (the *_review_queue_legacy
+-- set) and are fine. Three are one-off backup snapshots taken by ad-hoc SQL
+-- (milestones_backup_20260721, news_tags_cleanup_backup_20260618,
+-- tag_sensitivity_cleanup_backup_20260618) and deliberately stay out of the
+-- schema. These six are the real gap.
+--
+-- WHY HERE AND NOT A NEW MIGRATION FILE. Each of these is ALTERed by a migration
+-- far below the current remote max, so a recovery file would have to sort *before*
+-- that to help — and check 3 of scripts/check-migration-versions.mjs rejects a new
+-- file sorting below remote max. The baseline is the schema snapshot, is already
+-- applied (so `db push` skips it and production is untouched), and runs first on a
+-- reset. It is the only placement that actually repairs the reset path.
+--
+-- WHY IT SITS AFTER THE ALTER DEFAULT PRIVILEGES ABOVE, NOT NEXT TO THE OTHER
+-- CREATE TABLEs. Those statements are what give anon INSERT/UPDATE/DELETE but
+-- *not* SELECT (see the anon line above — SELECT is absent from the default by
+-- design). Creating these tables afterwards means they inherit exactly the grant
+-- shape production has, so only the two tables where anon really can read need an
+-- explicit GRANT SELECT. Moving this block earlier would silently change grants.
+--
+-- The DDL is generated from the live catalogue (pg_get_constraintdef /
+-- pg_get_indexdef / pg_policies), not hand-written, and was verified by building
+-- all six in a throwaway schema on production and diffing: 0 column differences
+-- (the only reported delta was the scratch schema qualifying its own bigserial
+-- sequence), 18/18 constraints identical, 16/16 indexes identical.
+--
+-- marketplace_listing_variants is referenced by no migration, edge function or
+-- frontend file and holds 0 rows. It is recovered for schema fidelity; whether to
+-- drop it is a separate decision.
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS "public"."professions" (
+  "id" uuid DEFAULT gen_random_uuid() NOT NULL,
+  "name" text NOT NULL,
+  "description" text,
+  "icon" text,
+  "color" text DEFAULT '#6366f1'::text,
+  "is_active" boolean DEFAULT true NOT NULL,
+  "sort_order" integer DEFAULT 0,
+  "created_at" timestamp with time zone DEFAULT now(),
+  "updated_at" timestamp with time zone DEFAULT now(),
+  "slug" text,
+  "aliases" text[] DEFAULT '{}'::text[] NOT NULL,
+  "category" text,
+  "icon_name" text,
+  CONSTRAINT "professions_pkey" PRIMARY KEY ("id"),
+  CONSTRAINT "professions_name_key" UNIQUE ("name")
+);
+CREATE UNIQUE INDEX IF NOT EXISTS "professions_slug_key" ON "public"."professions" USING btree ("slug");
+ALTER TABLE "public"."professions" ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE IF NOT EXISTS "public"."personality_profession_tags" (
+  "id" bigserial NOT NULL,
+  "profession_kw" text NOT NULL,
+  "tag_id" uuid NOT NULL,
+  "created_at" timestamp with time zone DEFAULT now() NOT NULL,
+  CONSTRAINT "personality_profession_tags_pkey" PRIMARY KEY ("id"),
+  CONSTRAINT "personality_profession_tags_profession_kw_tag_id_key" UNIQUE ("profession_kw", "tag_id"),
+  CONSTRAINT "personality_profession_tags_tag_id_fkey" FOREIGN KEY ("tag_id")
+    REFERENCES "public"."unified_tags"("id") ON DELETE CASCADE
+);
+ALTER TABLE "public"."personality_profession_tags" ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE IF NOT EXISTS "public"."tag_relationship_exclusions" (
+  "id" uuid DEFAULT gen_random_uuid() NOT NULL,
+  "tag1_id" uuid NOT NULL,
+  "tag2_id" uuid NOT NULL,
+  "reason" text,
+  "created_by" uuid,
+  "created_at" timestamp with time zone DEFAULT now() NOT NULL,
+  CONSTRAINT "tag_relationship_exclusions_pkey" PRIMARY KEY ("id"),
+  CONSTRAINT "tag_relationship_exclusions_tag1_id_tag2_id_key" UNIQUE ("tag1_id", "tag2_id"),
+  -- The exclusion is symmetric, so the pair is stored once in a fixed order.
+  CONSTRAINT "tag_relationship_exclusions_check" CHECK (("tag1_id" < "tag2_id")),
+  CONSTRAINT "tag_relationship_exclusions_tag1_id_fkey" FOREIGN KEY ("tag1_id")
+    REFERENCES "public"."unified_tags"("id") ON DELETE CASCADE,
+  CONSTRAINT "tag_relationship_exclusions_tag2_id_fkey" FOREIGN KEY ("tag2_id")
+    REFERENCES "public"."unified_tags"("id") ON DELETE CASCADE,
+  CONSTRAINT "tag_relationship_exclusions_created_by_fkey" FOREIGN KEY ("created_by")
+    REFERENCES "auth"."users"("id") ON DELETE SET NULL
+);
+ALTER TABLE "public"."tag_relationship_exclusions" ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE IF NOT EXISTS "public"."cms_pages_translations" (
+  "id" uuid DEFAULT gen_random_uuid() NOT NULL,
+  "page_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "title" text,
+  "subtitle" text,
+  "body_html" text,
+  "body_json" jsonb,
+  "updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+  CONSTRAINT "cms_pages_translations_pkey" PRIMARY KEY ("id"),
+  CONSTRAINT "cms_pages_translations_page_id_locale_key" UNIQUE ("page_id", "locale"),
+  CONSTRAINT "cms_pages_translations_locale_check" CHECK (("locale" ~ '^[a-z]{2}(-[A-Z]{2})?$'::text)),
+  CONSTRAINT "cms_pages_translations_page_id_fkey" FOREIGN KEY ("page_id")
+    REFERENCES "public"."cms_pages"("id") ON DELETE CASCADE
+);
+ALTER TABLE "public"."cms_pages_translations" ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE IF NOT EXISTS "public"."geo_relink_audit" (
+  "id" bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  "entity_type" text NOT NULL,
+  "entity_id" uuid NOT NULL,
+  "old_city_id" uuid,
+  "new_city_id" uuid,
+  "method" text NOT NULL,
+  "created_at" timestamp with time zone DEFAULT now() NOT NULL,
+  CONSTRAINT "geo_relink_audit_pkey" PRIMARY KEY ("id")
+);
+ALTER TABLE "public"."geo_relink_audit" ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE IF NOT EXISTS "public"."marketplace_listing_variants" (
+  "id" uuid DEFAULT gen_random_uuid() NOT NULL,
+  "listing_id" uuid NOT NULL,
+  "source_slug" text NOT NULL,
+  "source_variant_id" text,
+  "sku" text,
+  "title" text,
+  "option_size" text,
+  "option_size_raw" text,
+  "option_color" text,
+  "option_color_raw" text,
+  "option_material" text,
+  "options" jsonb DEFAULT '{}'::jsonb NOT NULL,
+  "price" numeric,
+  "currency" text,
+  "price_usd" numeric,
+  "available" boolean,
+  "inventory_quantity" integer,
+  "position" integer,
+  "image_url" text,
+  "first_seen_at" timestamp with time zone DEFAULT now() NOT NULL,
+  "last_seen_at" timestamp with time zone DEFAULT now() NOT NULL,
+  CONSTRAINT "marketplace_listing_variants_pkey" PRIMARY KEY ("id"),
+  CONSTRAINT "marketplace_listing_variants_listing_id_fkey" FOREIGN KEY ("listing_id")
+    REFERENCES "public"."marketplace_listings"("id") ON DELETE CASCADE
+);
+-- Two partial unique indexes, not one: a source that supplies its own variant id
+-- is keyed on it, and a source that does not is keyed on a hash of its options.
+CREATE UNIQUE INDEX IF NOT EXISTS "marketplace_listing_variants_src_uniq"
+  ON "public"."marketplace_listing_variants" USING btree ("listing_id", "source_slug", "source_variant_id")
+  WHERE ("source_variant_id" IS NOT NULL);
+CREATE UNIQUE INDEX IF NOT EXISTS "marketplace_listing_variants_opts_uniq"
+  ON "public"."marketplace_listing_variants" USING btree ("listing_id", "source_slug", md5(("options")::text))
+  WHERE ("source_variant_id" IS NULL);
+CREATE INDEX IF NOT EXISTS "marketplace_listing_variants_listing_idx"
+  ON "public"."marketplace_listing_variants" USING btree ("listing_id");
+CREATE INDEX IF NOT EXISTS "marketplace_listing_variants_color_idx"
+  ON "public"."marketplace_listing_variants" USING btree ("option_color") WHERE ("option_color" IS NOT NULL);
+CREATE INDEX IF NOT EXISTS "marketplace_listing_variants_size_idx"
+  ON "public"."marketplace_listing_variants" USING btree ("option_size") WHERE ("option_size" IS NOT NULL);
+ALTER TABLE "public"."marketplace_listing_variants" ENABLE ROW LEVEL SECURITY;
+
+-- Policies, reproduced from pg_policies.
+DROP POLICY IF EXISTS "Public read access for professions" ON "public"."professions";
+CREATE POLICY "Public read access for professions" ON "public"."professions" FOR SELECT TO public USING (true);
+DROP POLICY IF EXISTS "Admins can insert professions" ON "public"."professions";
+CREATE POLICY "Admins can insert professions" ON "public"."professions" FOR INSERT TO authenticated WITH CHECK (has_role_jwt('admin'::app_role));
+DROP POLICY IF EXISTS "Admins can update professions" ON "public"."professions";
+CREATE POLICY "Admins can update professions" ON "public"."professions" FOR UPDATE TO authenticated USING (has_role_jwt('admin'::app_role));
+DROP POLICY IF EXISTS "Admins can delete professions" ON "public"."professions";
+CREATE POLICY "Admins can delete professions" ON "public"."professions" FOR DELETE TO authenticated USING (has_role_jwt('admin'::app_role));
+
+DROP POLICY IF EXISTS "ppt_public_read" ON "public"."personality_profession_tags";
+CREATE POLICY "ppt_public_read" ON "public"."personality_profession_tags" FOR SELECT TO public USING (true);
+DROP POLICY IF EXISTS "ppt_admin_insert" ON "public"."personality_profession_tags";
+CREATE POLICY "ppt_admin_insert" ON "public"."personality_profession_tags" FOR INSERT TO authenticated WITH CHECK (has_any_role_jwt(ARRAY['admin'::app_role]));
+DROP POLICY IF EXISTS "ppt_admin_update" ON "public"."personality_profession_tags";
+CREATE POLICY "ppt_admin_update" ON "public"."personality_profession_tags" FOR UPDATE TO authenticated USING (has_any_role_jwt(ARRAY['admin'::app_role])) WITH CHECK (has_any_role_jwt(ARRAY['admin'::app_role]));
+DROP POLICY IF EXISTS "ppt_admin_delete" ON "public"."personality_profession_tags";
+CREATE POLICY "ppt_admin_delete" ON "public"."personality_profession_tags" FOR DELETE TO authenticated USING (has_any_role_jwt(ARRAY['admin'::app_role]));
+
+DROP POLICY IF EXISTS "Admins manage exclusions" ON "public"."tag_relationship_exclusions";
+CREATE POLICY "Admins manage exclusions" ON "public"."tag_relationship_exclusions" FOR ALL TO public USING (has_role_jwt('admin'::app_role));
+
+DROP POLICY IF EXISTS "Read page translations" ON "public"."cms_pages_translations";
+CREATE POLICY "Read page translations" ON "public"."cms_pages_translations" FOR SELECT TO anon, authenticated USING (((EXISTS ( SELECT 1
+   FROM cms_pages p
+  WHERE ((p.id = cms_pages_translations.page_id) AND (p.workflow_state = 'published'::cms_workflow_state) AND (p.visibility_level = 'public'::cms_visibility_level)))) OR has_any_role_jwt(ARRAY['admin'::app_role, 'moderator'::app_role, 'editor'::app_role])));
+DROP POLICY IF EXISTS "Editors insert page translations" ON "public"."cms_pages_translations";
+CREATE POLICY "Editors insert page translations" ON "public"."cms_pages_translations" FOR INSERT TO authenticated WITH CHECK (has_any_role_jwt(ARRAY['admin'::app_role, 'moderator'::app_role, 'editor'::app_role]));
+DROP POLICY IF EXISTS "Editors update page translations" ON "public"."cms_pages_translations";
+CREATE POLICY "Editors update page translations" ON "public"."cms_pages_translations" FOR UPDATE TO authenticated USING (has_any_role_jwt(ARRAY['admin'::app_role, 'moderator'::app_role, 'editor'::app_role])) WITH CHECK (has_any_role_jwt(ARRAY['admin'::app_role, 'moderator'::app_role, 'editor'::app_role]));
+DROP POLICY IF EXISTS "Editors delete page translations" ON "public"."cms_pages_translations";
+CREATE POLICY "Editors delete page translations" ON "public"."cms_pages_translations" FOR DELETE TO authenticated USING (has_any_role_jwt(ARRAY['admin'::app_role, 'moderator'::app_role, 'editor'::app_role]));
+
+DROP POLICY IF EXISTS "geo_relink_audit_admin_read" ON "public"."geo_relink_audit";
+CREATE POLICY "geo_relink_audit_admin_read" ON "public"."geo_relink_audit" FOR SELECT TO authenticated USING (has_any_role_jwt(ARRAY['admin'::app_role]));
+
+DROP POLICY IF EXISTS "Variants are publicly readable" ON "public"."marketplace_listing_variants";
+CREATE POLICY "Variants are publicly readable" ON "public"."marketplace_listing_variants" FOR SELECT TO public USING (true);
+DROP POLICY IF EXISTS "Service role manages variants" ON "public"."marketplace_listing_variants";
+CREATE POLICY "Service role manages variants" ON "public"."marketplace_listing_variants" FOR ALL TO public USING ((( SELECT auth.role() AS role) = 'service_role'::text)) WITH CHECK ((( SELECT auth.role() AS role) = 'service_role'::text));
+
+-- anon's default grant above deliberately omits SELECT, which is already the
+-- correct shape for four of these six. Only these two are readable by anon in
+-- production, so only these two need an explicit grant.
+GRANT SELECT ON TABLE "public"."professions" TO "anon";
+GRANT SELECT ON TABLE "public"."marketplace_listing_variants" TO "anon";
+
+
 
 
 

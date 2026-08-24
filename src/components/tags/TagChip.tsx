@@ -24,6 +24,13 @@ export interface TagChipProps {
   linkless?: boolean;
   /** Disable the glossary hover card (dense/admin surfaces). Link mode only. */
   preview?: boolean;
+  /**
+   * Href override for FILTER-scoped chips (e.g. an attribute chip on a
+   * product linking into filtered /marketplace browse instead of the
+   * glossary). Also suppresses the glossary hover preview — a filter link
+   * must not preview a wiki entry.
+   */
+  to?: string;
   onRemove?: () => void;
   className?: string;
 }
@@ -53,6 +60,7 @@ export function TagChip({
   active = false,
   linkless = false,
   preview = true,
+  to,
   onRemove,
   className,
 }: TagChipProps) {
@@ -109,7 +117,7 @@ export function TagChip({
 
   const link = (
     <LocalizedLink
-      to={tagHref(tag)}
+      to={to ?? tagHref(tag)}
       data-tag-slug={tag}
       onClick={(e) => e.stopPropagation()}
       className={base}
@@ -118,7 +126,7 @@ export function TagChip({
     </LocalizedLink>
   );
 
-  if (!preview) return link;
+  if (to || !preview) return link;
 
   // Glossary preview on hover/focus (link mode only). Radix HoverCard never
   // opens on touch — a tap keeps its existing meaning, navigating to the wiki

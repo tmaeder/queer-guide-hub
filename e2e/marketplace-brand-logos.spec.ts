@@ -32,6 +32,10 @@ import { test, expect, type Browser } from '@playwright/test';
  * that hardcoded list would be a false alarm, not extra coverage.
  */
 
+/** The two literals a logo ground may ever be. Both are mode-independent. */
+const PAPER = 'rgb(250, 250, 245)';
+const INK = 'rgb(17, 17, 17)';
+
 /** A brand measured as white-on-transparent — its plate must be ink. */
 const INK_BRAND = 'automic-gold';
 /** A brand with an ordinary dark wordmark — its plate must stay paper. */
@@ -143,5 +147,50 @@ test.describe('marketplace brand logos', () => {
         `${slug} plate repainted between themes (${light.plateBg} → ${dark.plateBg})`,
       ).toBe(light.plateBg);
     }
+  });
+
+  test('venue logo tiles are pinned, never the themed ground', async ({ browser }) => {
+    // Venues had it worse than brands: the tile was `bg-muted`, a THEME token
+    // (rgb(234,234,222) light / rgb(28,28,25) dark), so a dark wordmark died in
+    // dark mode and a white one in light — 19.5% of measured logos invisible in
+    // one of the two. The assertion is on the SET of grounds rather than on a
+    // named venue, so it survives ranking changes and new imports.
+    const read = async (colorScheme: 'light' | 'dark') => {
+      const ctx = await browser.newContext({ colorScheme });
+      try {
+        const page = await ctx.newPage();
+        await page.goto('/venues?q=sauna');
+        await expect(page.locator('img[src*="/logos/"]').first()).toBeVisible({ timeout: 20_000 });
+        await page.waitForLoadState('networkidle');
+        return await page.evaluate(() => {
+          const imgs = [...document.querySelectorAll('img[src*="/logos/"]')] as HTMLImageElement[];
+          return {
+            htmlClass: document.documentElement.className,
+            grounds: imgs
+              .map((i) => getComputedStyle(i.parentElement as Element).backgroundColor)
+              .sort(),
+          };
+        });
+      } finally {
+        await ctx.close();
+      }
+    };
+
+    const light = await read('light');
+    const dark = await read('dark');
+    expect(light.htmlClass, 'light pass did not render in light mode').toContain('light');
+    expect(dark.htmlClass, 'dark pass did not render in dark mode').toContain('dark');
+    expect(light.grounds.length, 'no venue logos on the page to assert about').toBeGreaterThan(0);
+
+    for (const [mode, r] of [
+      ['light', light],
+      ['dark', dark],
+    ] as const) {
+      for (const bg of r.grounds) {
+        expect([PAPER, INK], `${mode}: venue tile used a themed ground (${bg})`).toContain(bg);
+      }
+    }
+    // The invariant itself: the same page paints the same grounds either way.
+    expect(dark.grounds, 'venue tiles repainted between themes').toEqual(light.grounds);
   });
 });

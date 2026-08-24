@@ -17,19 +17,33 @@ id = "a54963b21b5a497aa0ef76e08fc8923c"
 [vars]
 AI_GATEWAY_NAME = "qg-search"
 EMBED_MODEL = "@cf/baai/bge-m3"
+# Rows per scheduled drain. 100 costs ~24 subrequests because the drain fetches,
+# embeds and upserts in BATCHES — read DEFAULT_DRAIN_LIMIT in src/index.ts
+# before raising this. It was 200 for one afternoon; the upsert leg is 1
+# subrequest per 10 rows (UPSERT_BATCH, sized against a measured statement
+# timeout), so that is what binds now, not the embed leg.
+DRAIN_LIMIT = "100"
 
 # Secrets (set via wrangler secret put NAME):
 #   SUPABASE_URL
 #   SUPABASE_SERVICE_KEY
-#   INGEST_TOKEN   (random 32+ bytes; used by Supabase webhook and backfill caller)
+#   INGEST_TOKEN   (random 32+ bytes; gates /webhook, /backfill and /drain)
 
-# Backstop drain for rows the DB webhook missed. Was "* * * * *": with
-# get_stale_embeddings averaging 1.4s (timeouts at 8s) that burned ~33 min/day
-# of DB time and 1,440 Workers invocations/day for a webhook-miss trickle.
-# The RPC is fixed (uuid join, ~0.5s) and 10-minute staleness is fine for a
-# backstop — the webhook remains the fast path.
+# This is the ONLY path that writes an embedding. The comment here used to call
+# it a "backstop" for a Supabase DB webhook that was "the fast path"; that
+# webhook does not exist and never did on this project — measured 2026-08-23,
+# zero triggers reach net.http_request. Sized as a backstop (15 rows / 10 min =
+# 2,160/day for all eleven entity types) it starved: 6,209 marketplace listings
+# were vector-invisible, and a newest-first work list meant the tail was never
+# reached at all.
+#
+# Now 100 rows every 5 minutes = 28,800/day. The earlier objection to a tighter
+# cron still stands and is why this is not "* * * * *": the work-list RPC is
+# ~0.5s against a disk-constrained database, so 288 runs/day costs ~2.4 min of
+# DB time where 1,440 would cost 12. Throughput comes from the batch, not the
+# frequency.
 [triggers]
-crons = ["*/10 * * * *"]
+crons = ["*/5 * * * *"]
 
 [observability]
 enabled = true

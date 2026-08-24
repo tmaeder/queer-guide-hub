@@ -2,16 +2,12 @@
 --
 -- `l.attributes->'image_upscale'` is NULL for every listing the sweep has never
 -- touched, `NULL ? 'resolved_at'` is NULL, and `NOT NULL` is NULL — which is not
--- true, so WHERE drops the row. The work-list introduced in 20260823234618
--- therefore excluded exactly the rows it exists to return, and the function
--- reported "nothing to upscale" with 2,150 listings outstanding.
+-- true, so WHERE drops the row. The work-list therefore excluded exactly the
+-- rows it exists to return, and the function reported "nothing to upscale" with
+-- 2,150 listings outstanding. A three-valued-logic bug that reads as success is
+-- the worst kind: the job goes green and does nothing.
 --
--- A three-valued-logic bug that reads as SUCCESS is the worst kind: the cron
--- went green, the run summary said `processed: 0, message: "nothing to
--- upscale"`, and only counting the outstanding rows separately showed it was
--- doing nothing. COALESCE both predicates to false so an absent key means
--- "not yet judged".
-
+-- COALESCE both predicates to false so an absent key means "not yet judged".
 CREATE OR REPLACE FUNCTION public.marketplace_image_upscale_worklist(
   p_limit integer DEFAULT 25,
   p_source_type text DEFAULT NULL
@@ -84,4 +80,3 @@ $fn$;
 
 REVOKE ALL ON FUNCTION public.marketplace_image_upscale_worklist(integer, text) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.marketplace_image_upscale_worklist(integer, text) TO service_role;
-

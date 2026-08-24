@@ -1,30 +1,14 @@
 -- Give the planner a CONSTANT anchor. This is the whole fix.
 --
--- The work-list timed out under PostgREST ("canceling statement due to statement
--- timeout"), and three failures in a row tripped the auto-pause net, disabling
--- the automation. Two separate mistakes got it there:
+-- The previous version computed the random anchor in a CTE, and a CTE value is
+-- not a constant the planner can push into an index condition — so it fell back
+-- to scanning and the function took 3.2s, still slow enough to be a risk under
+-- PostgREST's tighter statement_timeout. Measured with a literal uuid the exact
+-- same predicate runs in 59ms: index scan on the primary key, 1,472 rows
+-- examined, stops at 60. So compute the anchor into a plpgsql variable first and
+-- the shape the planner sees is `id >= <constant>`.
 --
--- 1. `ORDER BY random()` has to materialise EVERY matching row before it sorts,
---    and the predicate is a regex over an array evaluated per row: 60,725 rows
---    scanned to return 60. It measured ~1.15s through the management API, which
---    is why it looked fine — the edge function goes through PostgREST, whose
---    statement_timeout is far tighter.
--- 2. Replacing it with a random ANCHOR into the primary-key index was right, but
---    computing that anchor in a CTE is not: a CTE value is not a constant the
---    planner can push into an index condition, so it still scanned. 3.2s.
---
--- Computing the anchor into a plpgsql variable gives the planner `id >= <const>`.
--- Measured: index scan on the pk, 1,472 rows examined, stops at 60 — 59ms for
--- the raw query, 89ms through the function. 3.2s -> 89ms with no change to
--- meaning.
---
--- Why an anchor rather than an ordered scan: `id` is a random uuid, so ordering
--- by the primary key IS a random order and a contiguous id-range is a uniform
--- random sample. That property is load-bearing, not cosmetic — the dead/blocked
--- discriminator only stamps a 403 as "file gone" once the host has answered
--- something in the SAME run, and misterb's dead assets cluster by id, so a slice
--- from the low end is all-dead, corroborates nothing and stamps nothing. The
--- second UNION arm wraps around so an anchor near the top still fills a batch.
+-- 3.2s -> 59ms, ~55x, with no change to what the query means.
 CREATE OR REPLACE FUNCTION public.marketplace_image_upscale_worklist(
   p_limit integer DEFAULT 25,
   p_source_type text DEFAULT NULL
@@ -96,9 +80,6 @@ $fn$;
 REVOKE ALL ON FUNCTION public.marketplace_image_upscale_worklist(integer, text) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.marketplace_image_upscale_worklist(integer, text) TO service_role;
 
--- Un-pause. The auto-pause was CORRECT — the job really was failing — so this
--- clears the counter only after the cause above is fixed, never as a way to
--- silence it.
 UPDATE public.admin_automations
 SET enabled = true, consecutive_failures = 0
 WHERE slug = 'marketplace_image_upscale';
