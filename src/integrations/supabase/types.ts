@@ -36210,6 +36210,7 @@ export type Database = {
           sample_items: string
         }[]
       }
+      tag_hygiene_stats: { Args: never; Returns: Json }
       tag_merge_queue: {
         Args: { p_limit?: number }
         Returns: {

@@ -12,6 +12,27 @@
 -- column-scoped search trigger, so a nightly write over the corpus would churn
 -- both for a number nobody reads between CI runs.
 --
+-- CORRECTION 2026-08-24: "and rendered on /admin/tags" was a plan, not a
+-- description, and stayed false for a month — `grep -rn tag_hygiene_stats src`
+-- returned nothing at all, not even a generated types.ts entry. That mattered
+-- because it silently changed what the six `_advisory` metrics in
+-- scripts/tag-hygiene-baseline.json mean: they WARN instead of failing on the
+-- stated ground that they are watched somewhere, and the only place they
+-- surfaced was a console line on a PASSING CI run. `events_with_tags_unlinked`
+-- is the drain gauge for run_event_tag_link and is supposed to be read as a
+-- trend to zero; nobody could read it.
+--
+-- The route was wrong too, and would have sent a reader to a page that cannot
+-- carry this: `/admin/tags` is a `<Navigate>` to `/admin/content/unified_tags`,
+-- the generic CMS entity table. Every tag quality panel — TagQualityPanel,
+-- TagVocabularyHealthPanel, SensitiveTagReviewPanel, TagSuggestionsReviewPanel
+-- — actually lives in `src/pages/admin/AdminTags.tsx`, which is mounted at
+-- **/admin/settings** and labelled "Vocabularies" in the admin nav. The new
+-- TagHygienePanel is rendered there with its siblings; its metric set is pinned
+-- to this function's jsonb keys by
+-- src/lib/__tests__/tagHygienePanelMetrics.test.ts, so a counter added below
+-- fails CI until the panel renders it.
+--
 -- Every metric is a COUNT OF THINGS THAT SHOULD BE ZERO, so the ratchet in CI
 -- is a plain "not worse than the committed baseline" comparison and a new
 -- metric can be added without teaching the script what "good" means.
