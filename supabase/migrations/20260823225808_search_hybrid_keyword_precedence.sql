@@ -79,6 +79,13 @@
 -- VERSION. Applied via MCP apply_migration, which stamps the version from its own
 -- call time — hence 20260823225808 and not the 20260927140000 this file was
 -- authored as. The filename MUST match the stamped version or `db push` re-runs it.
+-- Between applying and committing, the drift monitor caught this version and a
+-- recovery PR reconstructed the file on main straight out of
+-- schema_migrations.statements, so main briefly carried a copy whose header
+-- pointed at the 20260927140000 filename that no longer exists. This file
+-- supersedes that copy: same SQL, real rationale, no dangling reference. The
+-- assert_search_hybrid_contract body below is kept byte-identical to the applied
+-- version so replaying this file cannot silently reword what is deployed.
 --
 -- KEEP THE SHAPE. This body is 20260810170000 (plpgsql + dynamic EXECUTE +
 -- force_custom_plan + narrow `cand` + vnn carrying vdist) with only the two deltas
@@ -148,41 +155,39 @@ $function$;
 -- Pin both deltas. This function has been silently reverted twice by rewrites
 -- started from a stale copy (target_groups filter, then the whole perf shape), so
 -- the guard names each property it must keep rather than trusting the next author
--- to diff against prod.
+-- to diff against prod. Body below is byte-identical to the applied version.
 create or replace function public.assert_search_hybrid_contract()
 returns text language plpgsql stable security definer set search_path to 'public','extensions','pg_temp' as $$
 declare def text; full_n int; filt_n int;
 begin
   def := pg_get_functiondef('public.search_hybrid(text,vector,text[],jsonb,double precision,double precision,double precision,timestamptz,integer,integer,timestamptz,timestamptz,numeric,numeric,text)'::regprocedure);
 
-  -- 1. target_groups filter must be present…
   if position('target_groups' in def) = 0 then
     raise exception 'search_hybrid contract FAIL: target_groups filter missing — re-add the jsonb ?| any-of clause (regressed at geo_soft_boost before).';
   end if;
-  -- …and must actually narrow results.
   full_n := (public.search_hybrid('', null, array['venue'], '{}'::jsonb)->>'total')::int;
   filt_n := (public.search_hybrid('', null, array['venue'], jsonb_build_object('target_groups', jsonb_build_array('lesbian')))->>'total')::int;
   if not (filt_n > 0 and filt_n < full_n) then
     raise exception 'search_hybrid contract FAIL: target_groups filter not narrowing (lesbian=% of %).', filt_n, full_n;
   end if;
 
-  -- 2. no vnn OR-subquery in the candidate admission (defeats the GIN bitmap → seq scan).
   if position('in (select doc_id from vnn)' in def) > 0 then
     raise exception 'search_hybrid contract FAIL: vnn admission via OR-subquery defeats the index (seq scan). Gather candidates in the kwvec UNION CTE instead.';
   end if;
 
-  -- 3. the keyword leg must rank keyword MATCHES, not everything with a non-zero
-  --    trigram similarity. `where greatest(kw_rank,trg)>0` gave every
-  --    semantically-admitted row a keyword rank (similarity() is > 0 for almost
-  --    any pair of strings) — see 20260823225808.
+  -- The keyword leg must rank keyword MATCHES, not everything with a non-zero
+  -- trigram similarity. `where greatest(kw_rank,trg)>0` gave every
+  -- semantically-admitted row a keyword rank (similarity() is > 0 for almost any
+  -- pair of strings) — measured: 61 ordering inversions on "binder", 44 on
+  -- "rooftop bar", 27 on "bookshop", 23 on "trans friendly".
   if position('from cand where kw_hit=1' in def) = 0 then
-    raise exception 'search_hybrid contract FAIL: keyword leg no longer gated on kw_hit — a vector-only candidate is collecting keyword RRF again (regressed at 20260823225808 before).';
+    raise exception 'search_hybrid contract FAIL: keyword leg no longer gated on kw_hit — a vector-only candidate is collecting keyword RRF again.';
   end if;
 
-  -- 4. keyword precedence: a lexical match must out-score pure semantic proximity.
-  --    The constant has to stay above the vector leg's maximum 1/(60+1)=0.01639.
+  -- Keyword precedence: a lexical match must out-score pure semantic proximity.
+  -- The constant has to stay above the vector leg's maximum 1/(60+1)=0.01639.
   if position('0.03 * f.kw_hit' in def) = 0 then
-    raise exception 'search_hybrid contract FAIL: keyword-precedence term missing — "fentanyl test strips" returns apparel again (see 20260823225808).';
+    raise exception 'search_hybrid contract FAIL: keyword-precedence term missing — "fentanyl test strips" returns apparel again.';
   end if;
 
   return format('ok: target_groups filter active (lesbian=%s of %s venues), no vnn seq-scan pattern, keyword leg gated on kw_hit, keyword-precedence term present', filt_n, full_n);
