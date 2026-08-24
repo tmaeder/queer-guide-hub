@@ -32,9 +32,10 @@ describe('TransitIcon', () => {
   // Exact count on purpose — it is the guard against a vacuous "every icon
   // renders" pass over an accidentally-empty set. 42 wayfinding icons from the
   // rebrand + 10 venue-category glyphs added 2026-08-10 so the map could drop
-  // lucide from its pins.
-  it('has 52 icons and bumps stroke weight below 32px', () => {
-    expect(TRANSIT_ICON_NAMES).toHaveLength(52);
+  // lucide from its pins + 7 marketplace department glyphs added 2026-08-23 so
+  // the department tiles could stop using a product photograph as category art.
+  it('has 59 icons and bumps stroke weight below 32px', () => {
+    expect(TRANSIT_ICON_NAMES).toHaveLength(59);
     const { container } = render(<TransitIcon name="search" size={24} />);
     expect(container.querySelector('path')!.getAttribute('stroke-width')).toBe('10');
     const { container: big } = render(<TransitIcon name="search" size={48} />);

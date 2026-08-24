@@ -1,25 +1,33 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import {
   useMarketplaceCollections,
   useMarketplaceCollectionListings,
 } from '@/hooks/useMarketplaceCollections';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
+import { PicksPlate } from '@/components/marketplace/PicksPlate';
 import { useCuratedIds } from '@/components/marketplace/useCuratedIds';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Image } from '@/components/ui/Image';
 import { useAuth } from '@/hooks/useAuth';
 
-/**
- * Minimum natural width for an image standing in as the cover plate.
+/*
+ * `HERO_COVER_MIN_WIDTH` (800) and the `naturalWidth` probe that used it were
+ * REMOVED here, and the reason is that the thing they guarded is gone.
  *
- * The plate renders around 768-900 CSS px, so a product thumbnail dropped into
- * it is magnified across the most prominent element on the page. Measured on
- * prod: a misterb listing whose only surviving copy is 143x190 was being scaled
- * 5.4x here. 800 is not a new opinion — `_shared/image-gate.ts` already uses it
- * as `COVER_MIN_W` for exactly this judgement on the ingest side.
+ * #3033 measured a real defect — the plate renders at 768-900 CSS px, and a
+ * misterb listing whose only surviving copy is 143x190 was being magnified 5.4x
+ * across the most prominent element on the page — and fixed it by refusing to
+ * use a stand-in narrower than 800px. That made the FALLBACK safe. This change
+ * deletes the fallback itself: a cover has to describe a SET, and the first
+ * pick's product shot describes one member of it. With no product photo in this
+ * slot there is nothing left to measure, so the probe would be an image request
+ * and a state update whose result can no longer be read.
+ *
+ * The 800 itself is not lost — `_shared/image-gate.ts` still carries it as
+ * `COVER_MIN_W` for the same judgement on the ingest side, which is where
+ * #3033's finding keeps paying off.
  */
-const HERO_COVER_MIN_WIDTH = 800;
 
 /**
  * Cover story — the pinned hero collection opens the page like a magazine
@@ -39,38 +47,15 @@ export function MarketplaceHeroCover() {
     register('hero', listingIds);
   }, [listingIds, register]);
 
-  // An editor's `cover_image_url` is a deliberate choice and is never second-
-  // guessed. The FALLBACK is a product thumbnail standing in for an
-  // art-directed plate, and merchant images cannot be assumed large — 40% of
-  // this catalogue is under 1000px and some of it under 200px, because the
-  // merchant never had anything bigger. So the stand-in is measured before it
-  // is trusted, and omitted when it cannot carry the slot: an empty plate reads
-  // as a layout choice, a 5x-magnified thumbnail reads as a broken site.
-  const fallbackCover = listings[0]?.images?.[0] ?? null;
-  const needsMeasuring = !hero?.cover_image_url && !!fallbackCover;
-  const [fallbackUsable, setFallbackUsable] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    if (!needsMeasuring || !fallbackCover) return;
-    let cancelled = false;
-    const probe = new window.Image();
-    probe.onload = () => {
-      if (!cancelled) setFallbackUsable(probe.naturalWidth >= HERO_COVER_MIN_WIDTH);
-    };
-    probe.onerror = () => {
-      if (!cancelled) setFallbackUsable(false);
-    };
-    probe.src = fallbackCover;
-    return () => {
-      cancelled = true;
-    };
-  }, [needsMeasuring, fallbackCover]);
-
   if (!hero || listings.length === 0) return null;
 
-  // While the measurement is in flight the plate stays empty rather than
-  // flashing a thumbnail it may be about to reject.
-  const cover = hero.cover_image_url ?? (fallbackUsable ? fallbackCover : null);
+  // An editor's cover wins; otherwise the collection is DRAWN. What is gone is
+  // the old `?? listings[0]?.images?.[0]` third arm, which published the first
+  // pick's product photograph as the cover for the whole set — and since no
+  // collection has ever had a `cover_image_url`, that arm was not a fallback,
+  // it WAS the behaviour: on prod it made a leather vest the face of "Pride
+  // essentials". See `PicksPlate`.
+  const cover = hero.cover_image_url ?? null;
 
   return (
     <section aria-labelledby={`hero-collection-${hero.slug}`} className="mb-16 lg:mb-24">
@@ -95,21 +80,28 @@ export function MarketplaceHeroCover() {
             See the collection →
           </LocalizedLink>
         </header>
-        {cover && (
-          <div className="order-1 lg:order-2 lg:col-span-7">
-            {/* Cover plate in a muted tray — nested borders, no scrim, no shadow. */}
-            <div className="rounded-container bg-muted p-2">
-              <LocalizedLink
-                to={`/marketplace/collection/${hero.slug}`}
-                aria-label={hero.title}
-                tabIndex={-1}
-                className="block"
-              >
+        <div className="order-1 lg:order-2 lg:col-span-7">
+          {/* Cover plate in a muted tray — nested borders, no scrim, no shadow.
+              Always renders now: the drawn plate needs no data, so the hero can
+              no longer collapse to a title with a blank column beside it. */}
+          <div className="rounded-container bg-muted p-2">
+            <LocalizedLink
+              to={`/marketplace/collection/${hero.slug}`}
+              aria-label={hero.title}
+              tabIndex={-1}
+              className="block"
+            >
+              {/* `item_count`, not `listings.length` — the listings query is
+                  capped at 3 for the lead cards below, so the plate would
+                  otherwise draw every collection as a three-stop line. */}
+              {cover ? (
                 <Image src={cover} alt={hero.title} aspect="card" rounded="element" priority />
-              </LocalizedLink>
-            </div>
+              ) : (
+                <PicksPlate stops={hero.item_count} className="rounded-element" />
+              )}
+            </LocalizedLink>
           </div>
-        )}
+        </div>
       </div>
 
       <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-3 lg:gap-8">

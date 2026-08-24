@@ -157,35 +157,22 @@ export function useMarketplaceTagFacets(
   );
 }
 
-/**
- * Representative cover image per department for the browse bento —
- * first image of the highest-boutique-score SFW listing in each umbrella.
+/*
+ * `useDepartmentCovers` lived here and was DELETED 2026-08-23.
+ *
+ * It took the global top-60 active SFW listings by `boutique_score` and
+ * deduped them by department, which fails twice over. The sort is global, so
+ * jewelry alone occupied 38 of the 60 rows and five departments (books_art,
+ * intimacy, bdsm_fetish, home, services) resolved to NO cover at all — the
+ * browse grid rendered image tiles beside bare text tiles. And of the six it
+ * did resolve, apparel came back as a sport sock and hygiene as a pair of
+ * PRIDE socks, because "highest-scoring single product" is not a picture of a
+ * department.
+ *
+ * Raising the limit would have fixed the coverage and left the second fault
+ * untouched, so departments are drawn instead — see `DepartmentArt.tsx`. There
+ * is no replacement query; the tiles need no listing data beyond their counts.
  */
-export function useDepartmentCovers() {
-  return useAsync<Map<string, string>>(
-    [],
-    async () => {
-      const { data, error } = await supabase
-        .from('marketplace_listings')
-        .select('department, images')
-        .eq('status', 'active')
-        .in('content_rating', SFW_RATINGS)
-        .not('images', 'is', null)
-        .not('department', 'is', null)
-        .order('boutique_score', { ascending: false, nullsFirst: false })
-        .limit(60);
-      if (error || !data) return new Map();
-      const covers = new Map<string, string>();
-      for (const row of data as Array<{ department: string | null; images: string[] | null }>) {
-        if (!row.department || covers.has(row.department)) continue;
-        const img = row.images?.[0];
-        if (img) covers.set(row.department, img);
-      }
-      return covers;
-    },
-    new Map(),
-  );
-}
 
 export interface MarketplaceAttributeOption {
   slug: string; // namespaced unified_tags slug (mat-cotton, size-m, color-black)

@@ -1,8 +1,9 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Clock, Flag } from 'lucide-react';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
+import { PicksPlate } from '@/components/marketplace/PicksPlate';
 import type { GuideFormat } from '@/hooks/useGuides';
 import type { GuideBoostReason } from '@/hooks/useRecommendedGuides';
 
@@ -97,6 +98,7 @@ export const GuideCard = memo(function GuideCard({
 }: GuideCardProps) {
   const { t } = useTranslation();
   const hero = resolveImageUrl({ imageUrl: guide.hero_image_path });
+  const [heroFailed, setHeroFailed] = useState(false);
   const isHero = size === 'hero';
   const detailUrl = `/guides/${guide.slug}`;
   const isQuest = guide.format === 'quest';
@@ -118,16 +120,30 @@ export const GuideCard = memo(function GuideCard({
         }
         aria-label={`${t('guides.card.open', 'Open guide:')} ${guide.title}`}
       >
-        {hero ? (
+        {hero && !heroFailed ? (
           <img
             src={hero}
             alt=""
             loading={priority ? 'eager' : 'lazy'}
+            // A guide's `hero_image_path` is frequently a MERCHANT CDN url —
+            // "Pride briefs" points at a 300x300 webp on supergayunderwear.com
+            // — and those hotlink-block or 404 without warning. Chrome then
+            // paints its torn-page glyph even with `alt=""`, so the one card in
+            // the family that HAD a picture rendered worse than the ten that
+            // didn't. Same failure `BrandMark` hit with mirrored logos: the
+            // fallback has to be armed on `onError`, not just on a null field.
+            onError={() => setHeroFailed(true)}
             className="absolute inset-0 size-full object-cover transition-transform duration-slow group-hover:scale-[1.02]"
           />
         ) : (
-          <div className="absolute inset-0 grid place-items-center text-muted-foreground text-xs2 uppercase tracking-[0.15em]">
-            {t('guides.card.placeholder', 'Editorial')}
+          // Drawn, not captioned. This branch is the common case, not the edge:
+          // 10 of the 12 published guides carry no `hero_image_path`, and it
+          // used to render a grey box with the word "Editorial" in it — the
+          // weakest surface in the family, on most of the family. The plate
+          // draws the guide's picks as stops on the line, so a card with no
+          // photograph still says something true about what is inside it.
+          <div className="absolute inset-0 grid place-items-center">
+            <PicksPlate stops={guide.pick_count} tone="paper" />
           </div>
         )}
       </LocalizedLink>
@@ -140,13 +156,7 @@ export const GuideCard = memo(function GuideCard({
         }
       >
         <Eyebrow guide={guide} />
-        <h3
-          className={
-            isHero
-              ? 'text-headline leading-tight'
-              : 'text-title leading-tight'
-          }
-        >
+        <h3 className={isHero ? 'text-headline leading-tight' : 'text-title leading-tight'}>
           <LocalizedLink to={detailUrl} className="no-underline hover:underline underline-offset-4">
             {guide.title}
           </LocalizedLink>

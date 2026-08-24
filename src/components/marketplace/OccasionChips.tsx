@@ -19,7 +19,24 @@ export function OccasionChips({
   /** Which chip kinds to render — the control bar owns occasion toggles now. */
   kinds?: Array<'occasion' | 'collection'>;
 }) {
-  const { collections } = useMarketplaceCollections('chip');
+  const { collections: chipCollections } = useMarketplaceCollections('chip');
+  // The hero collections are fetched only to be SUBTRACTED. `marketplace_
+  // collections` holds two published rows titled "Pride essentials" —
+  // `pride-essentials` (chip, 12 items) and `this-week-pride-essentials`
+  // (hero, 4 items, a subset of the first) — and /marketplace renders both,
+  // so the page carried the same headline twice with different contents
+  // behind each. They are different slugs, so nothing keyed on id or slug
+  // notices; the collision is in the only thing a reader can see.
+  //
+  // Deduped by TITLE, and on the chip side rather than the hero side, because
+  // the hero is the editorial moment the page is built around and the chip is
+  // the cheaper restatement of it. The chip's fuller 12-item set stays
+  // reachable — the hero's "See the collection →" is one tap away — so this
+  // hides a duplicate label, not a destination.
+  const { collections: heroCollections } = useMarketplaceCollections('hero');
+  const heroTitles = new Set(heroCollections.map((c) => c.title.trim().toLowerCase()));
+  const collections = chipCollections.filter((c) => !heroTitles.has(c.title.trim().toLowerCase()));
+
   const [searchParams, setSearchParams] = useSearchParams();
   const activeOcc = searchParams.get('occ') ?? '';
   const showOccasions = kinds.includes('occasion');
