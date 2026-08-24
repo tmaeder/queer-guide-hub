@@ -862,7 +862,7 @@ async function villageDetail(
   const rows = await fetchRows(
     env,
     'queer_villages',
-    'name,slug,description,history,latitude,longitude,images,image_url,notable_landmarks,website,updated_at',
+    'name,slug,description,history,latitude,longitude,images,image_url,notable_landmarks,website,updated_at,seo_indexable',
     `slug=eq.${encodeURIComponent(slug)}&duplicate_of_id=is.null`,
     1,
   );
@@ -922,7 +922,12 @@ async function villageDetail(
         : undefined,
   };
 
-  return { meta, body, jsonLd: renderLd(prune(placeLd)) };
+  // seo_indexable was missing from both the select list and this return until
+  // 2026-08-24, so every village page was indexable no matter what the column
+  // said — the same hole personalityDetail had (see the comment at its return).
+  // run_village_trust_recompute now sets the column false for the zero-content
+  // 'ghost' tier, and this is the half that makes that visible to crawlers.
+  return { meta, body, jsonLd: renderLd(prune(placeLd)), indexable: row.seo_indexable !== false };
 }
 
 // Tags — /tags/:slug
