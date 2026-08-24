@@ -59,9 +59,23 @@ export function persistState(key: string, state: PersistedState) {
 }
 
 export function relativeTime(dateStr: string): string {
+  const d = new Date(dateStr);
   const now = Date.now();
-  const then = new Date(dateStr).getTime();
+  const then = d.getTime();
   const diffSec = Math.floor((now - then) / 1000);
+
+  // The absolute date, which is also the tail of the past ladder below.
+  const absolute = () => {
+    const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+    if (d.getFullYear() !== new Date().getFullYear()) opts.year = 'numeric';
+    return d.toLocaleDateString('en-US', opts);
+  };
+
+  // A FUTURE timestamp has a negative diff, which the past-relative ladder
+  // below reports as 'just now' — so every upcoming event date read as
+  // happening right this second. Show the date instead. The 60s tolerance
+  // keeps ordinary clock skew in the 'just now' bucket.
+  if (diffSec < -60) return absolute();
 
   if (diffSec < 60) return 'just now';
   const diffMin = Math.floor(diffSec / 60);
@@ -71,12 +85,7 @@ export function relativeTime(dateStr: string): string {
   const diffDay = Math.floor(diffHr / 24);
   if (diffDay === 1) return 'yesterday';
   if (diffDay < 7) return `${diffDay}d ago`;
-  const d = new Date(dateStr);
-  const thisYear = new Date().getFullYear();
-  if (d.getFullYear() === thisYear) {
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  }
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return absolute();
 }
 
 import type { ContentTypeConfig } from '@/types/cms';
