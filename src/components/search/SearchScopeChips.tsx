@@ -17,6 +17,7 @@ const SCOPE_ORDER = [
   'personality',
   'city',
   'queer_village',
+  'tag',
 ];
 
 const SCOPE_I18N_KEY: Record<string, string> = {
@@ -28,6 +29,7 @@ const SCOPE_I18N_KEY: Record<string, string> = {
   city: 'cities',
   country: 'cities',
   queer_village: 'places',
+  tag: 'tags',
 };
 
 interface SearchScopeChipsProps {

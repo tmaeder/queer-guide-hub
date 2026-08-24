@@ -114,7 +114,8 @@
       "news": "News",
       "people": "People",
       "cities": "Cities",
-      "places": "Places"
+      "places": "Places",
+      "tags": "[AR] Tags"
     },
     "quickLinks": {
       "places": "Places",

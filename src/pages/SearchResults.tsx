@@ -628,6 +628,7 @@ function ZeroState({
             { label: t('nav.personalities', 'Personalities'), path: '/personalities' },
             { label: t('nav.news', 'News'), path: '/news' },
             { label: t('nav.places', 'Places'), path: '/places' },
+            { label: t('header.nav.tags', 'Glossary'), path: '/tags' },
           ].map((c) => (
             <Button key={c.label} variant="ghost" size="sm" onClick={() => onBrowse(c.path)}>
               {c.label}
