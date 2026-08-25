@@ -39,11 +39,7 @@ export const HYGIENE_METRICS: HygieneMetric[] = [
   { key: 'nonclean_entity_type', label: 'Unnormalized entity_type', zero: true },
   { key: 'commons_image_without_license', label: 'Commons image, no license', zero: true },
   { key: 'indexable_without_description', label: 'Indexable, no prose', zero: true },
-  {
-    key: 'merged_but_not_status_merged',
-    label: 'Merged but still active',
-    hint: 'Baselined at 1 (community-center) while 20260926110000 drains it; re-baseline to 0 and this becomes a hard zero.',
-  },
+  { key: 'merged_but_not_status_merged', label: 'Merged but still active', zero: true },
   {
     key: 'duplicate_active_name',
     label: 'Duplicate active names',
