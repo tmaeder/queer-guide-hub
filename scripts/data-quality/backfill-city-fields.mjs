@@ -16,7 +16,7 @@
 // unprobed row cannot be told from a probed negative by its value, and
 // enrichment_status.capital_scope carries that distinction instead. It never
 // writes is_capital: the national flag is derived from countries.capital and
-// keeps a single writer (migration 20260930091000).
+// keeps a single writer (migration 20261001110100).
 //
 // Like classify-personhood.mjs, this calls the edge function FROM POSTGRES via
 // pg_net and polls net._http_response, so CITY_QUALITY_WEBHOOK_SECRET never
