@@ -296,6 +296,82 @@ if (!hygieneRes.ok) {
   }
 }
 
+// 6b. Auto-paused-then-recovered automations, for EVERY slug (2026-08-25).
+//
+//    Check 6 above has described this exact mechanism in prose since 2026-08-22
+//    — "a later success resets consecutive_failures/last_run_status but never
+//    re-enables the row" — while testing it for ONE automation out of ~240.
+//    Four days later the same mechanism took `workflow_dispatcher_1min` out and
+//    nothing noticed for 40 hours: it is the sole stepper for every DAG, so all
+//    seven ingestion pipelines stopped mid-run, news/events/venue ingest went to
+//    ~0 rows/day, and push notifications died with it. It was the THIRD
+//    occurrence (search_reindex_drain 2026-08-22, admin_automation_reap
+//    2026-08-16). A sentinel that names the failure mode but scopes itself to a
+//    single slug is how a known bug keeps landing.
+//
+//    THE PAUSE ERASES ITS OWN EVIDENCE, which is what makes this hard to see by
+//    hand: auto-pause sets enabled=false, then any later success resets
+//    consecutive_failures to 0 and last_run_status to 'success' WITHOUT
+//    re-enabling. The row then reads exactly like a deliberate human retirement.
+//    The only durable record is `summary.auto_paused` on the historical run row,
+//    so that — not the automation row — is what this reads.
+//
+//    FAIL vs WARN is the whole design. "Disabled" alone cannot fail the build:
+//    plenty of rows are legitimately retired or genuinely broken
+//    (marketplace_variant_backfill sits at 288 real consecutive failures and
+//    SHOULD stay paused). The false-disable has a distinct shape — it was
+//    auto-paused, and then it went back to succeeding, and it is still off:
+//
+//        auto_paused in history  AND  consecutive_failures = 0
+//                                AND  last_run_status = 'success'
+//                                AND  enabled = false
+//
+//    Verified against production 2026-08-25: this rule flags exactly the
+//    false-disables (it caught marketplace_taxonomy_backfill, an 8th victim of
+//    the same sweep that the by-hand restore had missed — 21,613 listings still
+//    unclassified, so demonstrably not a retirement) and leaves all ten
+//    genuinely-paused/retired rows on the warn path.
+{
+  const since = new Date(Date.now() - 14 * 864e5).toISOString()
+  const disabled = await get('admin_automations?enabled=is.false&select=id,slug,consecutive_failures,last_run_status')
+  if (disabled.length) {
+    const ids = disabled.map((a) => a.id).join(',')
+    const pausedRuns = await get(
+      `admin_automation_runs?automation_id=in.(${ids})&summary->>auto_paused=eq.true&started_at=gte.${since}&select=automation_id`,
+    )
+    const pausedIds = new Set(pausedRuns.map((r) => r.automation_id))
+    const suspects = disabled.filter((a) => pausedIds.has(a.id))
+    // Recovered but still switched off — the row's own columns say "healthy".
+    const falseDisabled = suspects.filter(
+      (a) => Number(a.consecutive_failures) === 0 && a.last_run_status === 'success',
+    )
+    const stillFailing = suspects.filter((a) => !falseDisabled.includes(a))
+
+    if (stillFailing.length) {
+      console.warn(
+        `⚠ ${stillFailing.length} automation(s) auto-paused and still failing (expected to stay off): ` +
+          stillFailing.map((a) => `${a.slug}(${a.consecutive_failures})`).join(', '),
+      )
+    }
+    if (falseDisabled.length) {
+      console.error(
+        `✗ ${falseDisabled.length} automation(s) auto-paused, then RECOVERED, and never re-enabled: ` +
+          falseDisabled.map((a) => a.slug).join(', '),
+      )
+      console.error('  Their last recorded run SUCCEEDED — the pause was a transient blip, not a decision.')
+      console.error('  They are off and, if pg_cron has already been reconciled, unscheduled as well.')
+      console.error('  Restore: UPDATE admin_automations SET enabled=true, consecutive_failures=0 WHERE slug IN (…);')
+      console.error("  then SELECT sync_automations_to_cron(true) — and CHECK its `recreated` list actually names them:")
+      console.error("  an action of type 'rpc' carries no action.command, so the reconciler CANNOT reschedule it and")
+      console.error('  the cron must be recreated from the migration that first scheduled it.')
+      process.exit(1)
+    }
+    if (!falseDisabled.length) {
+      console.log(`✓ No auto-paused-then-recovered automations (${disabled.length} disabled row(s) checked)`)
+    }
+  }
+}
+
 // 7. Embedding drain (2026-08). `workers/ingest` is the ONLY writer of the
 //    1024-dim vectors in content_embeddings, which feed search_embeddings — the
 //    vector arm of search_hybrid. Nothing checked it, and it had been starving
