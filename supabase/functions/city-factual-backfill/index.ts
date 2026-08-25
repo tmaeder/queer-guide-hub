@@ -9,7 +9,9 @@
 //     English Wikipedia extract/image/coords via the cached sitelink title.
 //
 //   'sparql' — batched reverse lookups a claim read cannot answer: airports
-//     serving the city (P931 + P238) and universities located in it. WDQS is
+//     serving the city (P931 + P238), universities located in it, and the
+//     capital role (P1376, classified into national vs first-level-regional).
+//     WDQS is
 //     slow and flaky (measured HTTP 500 at 60s on transitive queries, and a 502
 //     under load), so it has its own circuit breaker and never runs inside the
 //     per-city loop.
@@ -25,10 +27,11 @@ import { safeErrCode } from '../_shared/safe-error.ts'
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
 import { cityNameCandidates } from '../_shared/city-name-normalize.ts'
 import {
-  airportQuery, applyLabels, parseCityFacts, parseCityNames, pickAirports, pickUniversities,
-  resolveLabels, sparqlUrl, universityQuery, CITY_NAME_LANGS, CITY_NAME_SITES,
-  type AirportPick, type Claims, type CityNameAlias, type CityWdFacts, type Json,
-  type SparqlBinding, type WdAliases, type WdLabels, type WdSitelinks,
+  airportQuery, applyLabels, capitalQuery, parseCityFacts, parseCityNames, pickAirports,
+  pickCapitals, pickUniversities, resolveLabels, sparqlUrl, universityQuery,
+  CITY_NAME_LANGS, CITY_NAME_SITES,
+  type AirportPick, type CapitalPick, type Claims, type CityNameAlias, type CityWdFacts,
+  type Json, type SparqlBinding, type WdAliases, type WdLabels, type WdSitelinks,
 } from '../_shared/wikidata-city.ts'
 
 const DEFAULT_BATCH_LIMIT = 40
@@ -209,6 +212,13 @@ function addCandidate(prov: Prov, field: string, source: string, value: unknown)
 interface FieldState {
   state: 'pending' | 'resolved' | 'data_unavailable'
   source?: string; attempts?: number; at: string; qid?: string
+  /**
+   * Findings that belong to the probe rather than to a column. `capital_scope`
+   * uses it to record that Wikidata called this city a NATIONAL capital: that is
+   * worth keeping visible, but it must never reach `is_capital`, whose source of
+   * truth is `countries.capital` and whose single writer stays the repair path.
+   */
+  detail?: Record<string, unknown>
 }
 type Status = Record<string, FieldState>
 
@@ -293,6 +303,7 @@ interface CityRow {
   local_language: string | null; mayor: string | null; climate_type: string | null
   airport_codes: string[] | null; major_airport_code: string | null
   transportation_info: Record<string, unknown> | null
+  is_regional_capital: boolean | null; capital_of_region: string | null
   field_provenance: Prov | null; enrichment_status: Status | null
   wikidata_qid: string | null; wikipedia_title: string | null
   country_id: string | null; countries: { name?: string } | null
@@ -303,6 +314,7 @@ const CITY_COLUMNS =
   'population, area_km2, elevation_m, founded_year, official_website, postal_codes, area_codes, ' +
   'sister_cities, economy_sectors, universities, local_language, mayor, climate_type, ' +
   'airport_codes, major_airport_code, transportation_info, ' +
+  'is_regional_capital, capital_of_region, ' +
   'field_provenance, enrichment_status, wikidata_qid, wikipedia_title, country_id, countries(name)'
 
 /**
@@ -682,6 +694,7 @@ async function runSparqlPhase(
 
   const airports = new Map<string, AirportPick>()
   const universities = new Map<string, string[]>()
+  const capitals = new Map<string, CapitalPick>()
   const qids = [...byQid.keys()]
 
   try {
@@ -689,6 +702,7 @@ async function runSparqlPhase(
       const chunk = qids.slice(i, i + SPARQL_CHUNK)
       for (const [q, v] of pickAirports(await runSparql(supabase, airportQuery(chunk)))) airports.set(q, v)
       for (const [q, v] of pickUniversities(await runSparql(supabase, universityQuery(chunk)))) universities.set(q, v)
+      for (const [q, v] of pickCapitals(await runSparql(supabase, capitalQuery(chunk)))) capitals.set(q, v)
     }
   } catch (e) {
     if (e instanceof CircuitOpenError) {
@@ -737,6 +751,50 @@ async function runSparqlPhase(
       markResolved(state, 'universities', 'wikidata.sparql', qid)
     } else {
       bumpMiss(state, 'universities', 'wikidata.sparql')
+    }
+
+    // Capital scope. Unlike every other field here this one is NOT fill-if-empty,
+    // because `is_regional_capital` is NOT NULL DEFAULT false and an unprobed row
+    // is therefore indistinguishable from a probed negative. The state key
+    // `capital_scope` carries that distinction instead, and it is what decides
+    // whether this is a first write or a correction.
+    //
+    // Every city in this batch was asked (both catch branches above return, so
+    // the loop is only reached when all chunks succeeded), so a city absent from
+    // `capitals` is a NEGATIVE finding — Wikidata holds no live P1376 for it —
+    // not an unanswered one. `bumpMiss` would be wrong here: it would eventually
+    // stamp data_unavailable on a city we have a perfectly good answer for.
+    const cap = capitals.get(qid)
+    const wantRegional = cap?.regional ?? false
+    const wantRegionOf = cap?.regionOf ?? null
+    // Read the guard BEFORE addCandidate: addCandidate rewrites prov[field] with
+    // the fresh value, so a guard read afterwards compares the NEW value against
+    // the OLD column and concludes a human curated it. That is the trap that let
+    // Buenos Aires keep a wrong mayor through two relink passes.
+    const capIsOurs = state.capital_scope?.state !== 'resolved'
+      || ourWikidataValue(prov, 'is_regional_capital', c.is_regional_capital ?? false)
+    addCandidate(prov, 'is_regional_capital', 'wikidata.sparql', wantRegional)
+    if (wantRegionOf) addCandidate(prov, 'capital_of_region', 'wikidata.sparql', wantRegionOf)
+    if (capIsOurs) {
+      if ((c.is_regional_capital ?? false) !== wantRegional) update.is_regional_capital = wantRegional
+      if ((c.capital_of_region ?? null) !== wantRegionOf) update.capital_of_region = wantRegionOf
+    }
+    // Written as one assignment rather than markResolved + a follow-up mutation,
+    // so `detail` does not depend on how the Status index type narrows.
+    //
+    // `national` is RECORDED, never applied: `is_capital` is derived from
+    // `countries.capital` and keeps exactly one writer. A Wikidata disagreement
+    // is something to look at, not something to act on automatically.
+    state.capital_scope = {
+      state: 'resolved',
+      source: 'wikidata.sparql',
+      at: new Date().toISOString(),
+      qid,
+      detail: {
+        national: cap?.national ?? false,
+        regional: wantRegional,
+        units: cap?.units ?? [],
+      },
     }
 
     const filled = Object.keys(update)

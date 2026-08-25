@@ -2870,6 +2870,8 @@
       "about": {
         "status": "[FR] Status",
         "capital": "[FR] Capital city",
+        "regionalCapital": "[FR] Regional capital",
+        "capitalOfRegion": "[FR] Capital of",
         "majorCity": "[FR] Major city",
         "region": "[FR] Region",
         "timezone": "[FR] Timezone",
@@ -2901,6 +2903,7 @@
       }
     },
     "capital": "[FR] Capital",
+    "regionalCapital": "[FR] Regional capital",
     "continentClear": "[FR] Clear",
     "continentsTitle": "[FR] Continents",
     "counting": "[FR] Counting…",

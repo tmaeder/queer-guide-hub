@@ -29,6 +29,21 @@ export const cityFields: FieldConfig[] = [
   },
   { name: 'population', label: 'Population', type: 'number', group: 'details', sortable: true },
   { name: 'is_capital', label: 'Capital City', type: 'boolean', group: 'details' },
+  {
+    name: 'is_regional_capital',
+    label: 'Regional Capital',
+    type: 'boolean',
+    group: 'details',
+    helpText:
+      'Capital of a first-level subdivision (Bundesland, state, région). Independent of Capital City — a city-state is both. Kept in step by the Wikidata P1376 backfill; editing it here wins until that runs again.',
+  },
+  {
+    name: 'capital_of_region',
+    label: 'Capital Of',
+    type: 'text',
+    group: 'details',
+    helpText: 'The subdivision this city is the capital of. Not the same as Region.',
+  },
   { name: 'is_major_city', label: 'Major City', type: 'boolean', group: 'details' },
   { name: 'latitude', label: 'Latitude', type: 'number', group: 'location', min: -90, max: 90 },
   { name: 'longitude', label: 'Longitude', type: 'number', group: 'location', min: -180, max: 180 },

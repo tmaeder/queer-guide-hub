@@ -41,11 +41,15 @@ function CityStationCardImpl({ city, nextPride, selected = false }: CityStationC
   // directory are ambiguous (Berlin DE vs Berlin US, Brighton twice, Wellington
   // three times) — but no two rows share a name AND a country, so the country
   // alone fully disambiguates every one of them.
-  const place = [
-    city.is_capital ? t('cities.capital', 'Capital') : null,
-    countryName,
-    city.region_name,
-  ]
+  // National outranks regional and they are never both shown: a city-state like
+  // Hamburg is both, and "Capital · Regional capital · Germany" reads as two
+  // conflicting claims rather than one place.
+  const capitalLabel = city.is_capital
+    ? t('cities.capital', 'Capital')
+    : city.is_regional_capital
+      ? t('cities.regionalCapital', 'Regional capital')
+      : null;
+  const place = [capitalLabel, countryName, city.region_name]
     .filter(Boolean)
     .join(' · ');
 

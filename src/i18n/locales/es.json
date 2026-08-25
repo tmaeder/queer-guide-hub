@@ -2866,6 +2866,8 @@
       "about": {
         "status": "[ES] Status",
         "capital": "[ES] Capital city",
+        "regionalCapital": "[ES] Regional capital",
+        "capitalOfRegion": "[ES] Capital of",
         "majorCity": "[ES] Major city",
         "region": "[ES] Region",
         "timezone": "[ES] Timezone",
@@ -2897,6 +2899,7 @@
       }
     },
     "capital": "[ES] Capital",
+    "regionalCapital": "[ES] Regional capital",
     "continentClear": "[ES] Clear",
     "continentsTitle": "[ES] Continents",
     "counting": "[ES] Counting…",
