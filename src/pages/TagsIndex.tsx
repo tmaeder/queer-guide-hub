@@ -326,9 +326,33 @@ export default function TagsIndex() {
   });
 
   if (loading) {
+    // THE HEADING IS PART OF THE LOADING STATE, NOT PART OF THE PAYLOAD.
+    //
+    // This branch used to render the spinner alone, so /tags had no `h1` at
+    // all until `useCentralizedTags()` resolved. That made the page's identity
+    // a function of database latency: `e2e/intent-nav.spec.ts` asserts
+    // `main h1` is visible with a 5s timeout, and on 2026-08-24 it failed
+    // three times in a row on an unrelated PR while the tag tables were slow
+    // (`tag_hygiene_stats()` was returning 57014 statement timeouts in the same
+    // window). Nothing was broken about /tags — the query was just slower than
+    // the assertion, and a required check went red on a change that had not
+    // touched tags.
+    //
+    // The fix is not a longer timeout. A page that cannot say what it is until
+    // its data arrives is worse for a screen reader and for anyone on a slow
+    // connection, who gets an unlabelled spinner instead of "The glossary".
+    // `title` needs no data on the index (`scope` is null without a
+    // `categorySlug`), and on a scoped page it degrades to the family name
+    // until the real one loads — honest, and it stops the heading moving.
     return (
-      <PageContainer>
-        <TrackLoader label={t('tags.loading', 'Loading the glossary')} />
+      <PageContainer as="header">
+        <Eyebrow variant="kicker" as="div">
+          {t('tags.hero.eyebrow', 'Glossary')}
+        </Eyebrow>
+        <h1 className="mt-6 text-hero leading-[0.95]">{title}</h1>
+        <div className="mt-10">
+          <TrackLoader label={t('tags.loading', 'Loading the glossary')} />
+        </div>
       </PageContainer>
     );
   }
