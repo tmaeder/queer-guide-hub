@@ -47,9 +47,12 @@ const ADULT = tag({
 });
 
 let corpus: unknown[] = PLAIN;
+// Mutable so a test can hold the page in its loading state, the same way
+// `corpus` and `aliasHits` are swapped above.
+let tagsLoading = false;
 vi.mock('@/hooks/useCentralizedTags', () => ({
   useCentralizedTags: () => ({
-    allTags: corpus,
+    allTags: tagsLoading ? [] : corpus,
     categoriesTree: [
       {
         id: 'p1',
@@ -72,7 +75,7 @@ vi.mock('@/hooks/useCentralizedTags', () => ({
         ],
       },
     ],
-    loading: false,
+    loading: tagsLoading,
     error: null,
   }),
   useTagUsageCounts: () => ({ data: { Bear: 5, Drag: 2 } }),
@@ -105,10 +108,27 @@ const renderAt = (route: string) =>
 beforeEach(() => {
   corpus = PLAIN;
   aliasHits = [];
+  tagsLoading = false;
   localStorage.clear();
 });
 
 describe('TagsIndex', () => {
+  // A page must be able to say what it is before its data arrives.
+  //
+  // The loading branch used to render the spinner alone, so /tags had no `h1`
+  // until `useCentralizedTags()` resolved — which made the page's identity a
+  // function of database latency. `e2e/intent-nav.spec.ts` asserts `main h1`
+  // is visible within 5s, and on 2026-08-24 that failed three times running on
+  // a PR that had not touched tags, while the tag tables were slow enough that
+  // `tag_hygiene_stats()` was returning 57014 statement timeouts. The right fix
+  // is a heading that does not wait, not a longer timeout — a screen reader on
+  // a slow connection got an unlabelled spinner too.
+  it('names itself while still loading, so the heading never waits on the query', () => {
+    tagsLoading = true;
+    renderAt('/tags');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/glossary/i);
+  });
+
   it('leads with browse and search, not a help hub', () => {
     // The regression this guards: the page it replaces was headlined "Help &
     // resources." and hid the glossary behind a collapsed disclosure.
