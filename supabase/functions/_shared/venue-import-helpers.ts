@@ -6,6 +6,22 @@ import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5
  * venue fetchers were folded into their source-* peers, overhaul P7).
  */
 
+/**
+ * Turn an imported city name into a city_id.
+ *
+ * Delegates to `city_resolve_or_create`. The probe that used to live here —
+ * country + ilike(name), excluding merged rows — was right about the country
+ * scoping and wrong in two ways the RPC fixes: it only ever matched the string,
+ * so an exonym or an official long form read as a new city; and by filtering
+ * `duplicate_of_id IS NULL` it was blind to the two TOTAL unique indexes, so a
+ * name whose only twin had been merged away probed clean and then collided on
+ * insert. The 23505 re-read that compensated for that is now inside the RPC,
+ * under the same advisory lock as the insert.
+ *
+ * Contract is unchanged for the caller: a city_id, or null when we decline to
+ * guess. `import-tripadvisor-venues` treats null as "leave city_id unset",
+ * which stays the right behaviour — a venue with no city is recoverable.
+ */
 export async function getOrCreateCity(
   supabase: SupabaseClient,
   cityName: string,
@@ -13,82 +29,37 @@ export async function getOrCreateCity(
   lat: number,
   lon: number
 ) {
-  // Resolve the country FIRST — every lookup below is scoped to it.
-  //
-  // This used to match on `.eq('name', cityName)` alone, across all countries:
-  // the collision class documented for run_event_city_link (Portland ME →
-  // Portland OR). `cities` holds at most one row per (name, country), so a
-  // name-only hit cannot be told apart from an unrepresentable twin, and there
-  // is no safe way to read one.
-  const { data: country } = await supabase
-    .from('countries')
-    .select('id')
-    .eq('code', countryCode)
-    .maybeSingle()
+  const { data, error } = await supabase.rpc('city_resolve_or_create', {
+    p_name: cityName,
+    p_country_code: countryCode,
+    p_lat: lat ?? null,
+    p_lng: lon ?? null,
+    p_source_slug: 'tripadvisor-import',
+    p_actor: 'venue-import',
+  })
 
-  if (!country?.id) {
-    // The insert below used to pass `country_id: country?.id || null` into a
-    // NOT NULL column, so an unresolved country failed at the database and the
-    // error was swallowed by `if (!error && newCity)` — the caller only saw
-    // null. Refuse out loud instead; a venue with no city_id is recoverable.
-    console.warn(
-      `getOrCreateCity: unresolved country code "${countryCode}" for "${cityName}" — not linking`,
+  if (error) {
+    console.error(
+      `getOrCreateCity: resolver failed for "${cityName}" (${countryCode}): ${error.message}`,
     )
     return null
   }
 
-  // Exclude merged duplicates: a merged row keeps its name, so without this
-  // an importer stamps a city_id that a merge already consolidated away.
-  const { data: existingCity } = await supabase
-    .from('cities')
-    .select('id')
-    .eq('country_id', country.id)
-    .ilike('name', cityName)
-    .is('duplicate_of_id', null)
-    .maybeSingle()
+  const row = (Array.isArray(data) ? data[0] : data) as
+    | { city_id: string | null; action: string; reason: string | null }
+    | undefined
 
-  if (existingCity) {
-    return existingCity.id
-  }
-
-  const { data: newCity, error } = await supabase
-    .from('cities')
-    .insert({
-      name: cityName,
-      country_id: country.id,
-      latitude: lat,
-      longitude: lon,
-      is_major_city: false
-    })
-    .select('id')
-    .maybeSingle()
-
-  if (newCity) {
-    console.log(`Created new city: ${cityName} (${countryCode})`)
-    return newCity.id
-  }
-
-  // A unique violation means either a concurrent caller won the race, or the
-  // name normalized onto an existing row — trg_cities_aa_split_name strips a
-  // recognised region suffix, so "Springfield, Illinois" lands on
-  // "Springfield". Re-read instead of reporting failure.
-  if (error?.code === '23505') {
-    const { data: raced } = await supabase
-      .from('cities')
-      .select('id')
-      .eq('country_id', country.id)
-      .ilike('name', cityName)
-      .is('duplicate_of_id', null)
-      .maybeSingle()
-    if (raced) return raced.id
-  }
-
-  if (error) {
-    console.error(
-      `getOrCreateCity: insert failed for "${cityName}" (${countryCode}): ${error.message}`,
+  if (!row || row.action === 'refused' || !row.city_id) {
+    console.warn(
+      `getOrCreateCity: not linking "${cityName}" (${countryCode}) — ${row?.reason ?? 'no result'}`,
     )
+    return null
   }
-  return null
+
+  if (row.action === 'created') {
+    console.log(`Created new city: ${cityName} (${countryCode})`)
+  }
+  return row.city_id
 }
 
 export async function getOrCreateService(
