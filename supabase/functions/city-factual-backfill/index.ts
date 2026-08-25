@@ -25,9 +25,10 @@ import { safeErrCode } from '../_shared/safe-error.ts'
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
 import { cityNameCandidates } from '../_shared/city-name-normalize.ts'
 import {
-  airportQuery, applyLabels, parseCityFacts, pickAirports, pickUniversities,
-  resolveLabels, sparqlUrl, universityQuery,
-  type AirportPick, type Claims, type CityWdFacts, type Json, type SparqlBinding,
+  airportQuery, applyLabels, parseCityFacts, parseCityNames, pickAirports, pickUniversities,
+  resolveLabels, sparqlUrl, universityQuery, CITY_NAME_LANGS, CITY_NAME_SITES,
+  type AirportPick, type Claims, type CityNameAlias, type CityWdFacts, type Json,
+  type SparqlBinding, type WdAliases, type WdLabels, type WdSitelinks,
 } from '../_shared/wikidata-city.ts'
 
 const DEFAULT_BATCH_LIMIT = 40
@@ -127,14 +128,70 @@ async function searchQid(query: string, country?: string | null): Promise<string
   return fallback
 }
 
-async function fetchEntity(qid: string): Promise<{ claims: Claims; enwikiTitle?: string } | null> {
+/**
+ * One request, and since 2026-08-25 it also carries the NAMES.
+ *
+ * `props` gained `labels|aliases` and `sitefilter` widened from enwiki to the
+ * harvest languages. That is a query-string change with no extra round trip and
+ * no new rate-limit exposure -- the response was already being fetched for
+ * claims and the enwiki title. It is what fills `city_aliases`, and
+ * `city_aliases` is what lets `city_resolve_or_create` know that Kapstadt is
+ * Cape Town before a second row gets created.
+ */
+async function fetchEntity(qid: string): Promise<
+  { claims: Claims; enwikiTitle?: string; names: CityNameAlias[] } | null
+> {
   const d = await fetchJson(
     `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${encodeURIComponent(qid)}` +
-    `&props=claims|sitelinks&sitefilter=enwiki&format=json`,
+    `&props=claims|sitelinks|labels|aliases` +
+    `&languages=${CITY_NAME_LANGS.join('|')}` +
+    `&sitefilter=${['enwiki', ...CITY_NAME_SITES].join('|')}&format=json`,
   )
-  const ent = (d?.entities as Record<string, { claims?: Claims; sitelinks?: { enwiki?: { title?: string } } }> | undefined)?.[qid]
+  const ent = (d?.entities as Record<string, {
+    claims?: Claims
+    labels?: WdLabels
+    aliases?: WdAliases
+    sitelinks?: WdSitelinks
+  }> | undefined)?.[qid]
   if (!ent) return null
-  return { claims: ent.claims ?? {}, enwikiTitle: ent.sitelinks?.enwiki?.title }
+  return {
+    claims: ent.claims ?? {},
+    enwikiTitle: ent.sitelinks?.enwiki?.title,
+    names: parseCityNames(ent.claims ?? {}, ent.labels, ent.aliases, ent.sitelinks),
+  }
+}
+
+/**
+ * Write harvested names to city_aliases.
+ *
+ * Fill-only: `ignoreDuplicates` leans on the pre-existing unique index
+ * (city_id, alias_key) so a re-visit is a no-op rather than a rewrite, and a
+ * curated or merge-minted alias is never overwritten by a Wikidata label.
+ *
+ * A failure here is logged and swallowed on purpose. The aliases are an
+ * optimisation for a LATER write's resolution; losing a batch of them costs a
+ * repeat harvest, whereas letting the error propagate would abandon the facts
+ * this run already fetched for the city itself.
+ */
+async function writeCityAliases(
+  supabase: Db,
+  cityId: string,
+  cityName: string,
+  names: CityNameAlias[],
+): Promise<number> {
+  const own = cityName.trim().toLowerCase()
+  const rows = names
+    .filter(n => n.alias.toLowerCase() !== own)
+    .map(n => ({ city_id: cityId, alias: n.alias, locale: n.locale }))
+  if (rows.length === 0) return 0
+  const { error } = await supabase
+    .from('city_aliases')
+    .upsert(rows, { onConflict: 'city_id,alias_key', ignoreDuplicates: true })
+  if (error) {
+    console.warn(`[city-factual-backfill] alias write failed for ${cityId}: ${error.message}`)
+    return 0
+  }
+  return rows.length
 }
 
 // ------------------------------------------------------------------ state
@@ -321,7 +378,7 @@ async function runLinkPhase(
   }
 
   const labelCache = new Map<string, string>()
-  let processed = 0, updated = 0, skipped = 0, failed = 0
+  let processed = 0, updated = 0, skipped = 0, failed = 0, aliasesWritten = 0
   const results: Array<Record<string, unknown>> = []
 
   for (const c of rows) {
@@ -380,6 +437,14 @@ async function runLinkPhase(
           markResolved(state, 'wikidata_link', 'wikidata', qid)
           if (c.wikidata_qid !== qid) update.wikidata_qid = qid
           if (enwikiTitle && c.wikipedia_title !== enwikiTitle) update.wikipedia_title = enwikiTitle
+          // Names ride in the same response. Written immediately rather than
+          // batched with `update`: they go to a different table, they are
+          // fill-only, and they must survive a later failure in this city's own
+          // column write -- an alias is useful to the NEXT city that gets
+          // created, not to this row.
+          if (!dryRun && ent.names.length > 0) {
+            aliasesWritten += await writeCityAliases(supabase, c.id, c.name, ent.names)
+          }
         }
       }
 
@@ -587,7 +652,7 @@ async function runLinkPhase(
     }
   }
 
-  return jsonResponse({ phase: 'link', processed, updated, skipped, failed, dry_run: dryRun, results }, 200, req)
+  return jsonResponse({ phase: 'link', processed, updated, skipped, failed, aliases_written: aliasesWritten, dry_run: dryRun, results }, 200, req)
 }
 
 // ------------------------------------------------------------------ phase: sparql
