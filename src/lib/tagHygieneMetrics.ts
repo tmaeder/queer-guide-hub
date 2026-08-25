@@ -24,7 +24,7 @@ export interface HygieneMetric {
    * committed baseline for this counter is 0, and pinned to it by the drift
    * test — a counter whose accepted level is a documented non-zero constant
    * (`duplicate_active_name` 14, the marketplace facet vocabulary colliding
-   * with the glossary by design; `redirect_to_non_canonical` 58 inert
+   * with the glossary by design; `redirect_to_non_canonical` 57 inert
    * accent-folding rows) would otherwise render permanently red, which teaches
    * admins to ignore red.
    */
@@ -42,7 +42,8 @@ export const HYGIENE_METRICS: HygieneMetric[] = [
   {
     key: 'merged_but_not_status_merged',
     label: 'Merged but still active',
-    hint: 'Baselined at 1 (community-center) while 20260926110000 drains it; re-baseline to 0 and this becomes a hard zero.',
+    zero: true,
+    hint: 'Ratcheted to 0 once 20260926110000 cleared community-center. Non-zero means a tag carries merged_into_id without status=merged.',
   },
   {
     key: 'duplicate_active_name',
