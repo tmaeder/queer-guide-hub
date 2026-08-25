@@ -523,3 +523,108 @@ export function pickCapitals(bindings: SparqlBinding[]): Map<string, CapitalPick
   }
   return out
 }
+
+// --------------------------------------------------------------- city names
+//
+// Alias harvesting. This is the only source that can teach the resolver that
+// "Kapstadt" and "Cape Town" are one place: `merge_cities` mints an alias for
+// every name it drops, but that only ever covers names somebody already noticed
+// and merged (207 of 210 on production), and it can never cover a name that has
+// not been typed yet. Wikidata carries them all as labels and altLabels.
+//
+// It costs ZERO extra requests. `fetchEntity` already calls wbgetentities for
+// claims and the enwiki sitelink; `labels` and `aliases` ride along in the same
+// response, so this is a change to a query string, not a new API dependency.
+//
+// MONOLINGUAL PROPERTIES GO THROUGH bestStatement like everything else in this
+// file -- P1448 (official name), P1705 (native label) and P1813 (short name)
+// are ordinary statements and can be deprecated, which is how Wikidata retracts
+// a wrong name. Reading array position would resurrect exactly those.
+//
+// A SITELINK TITLE IS ONLY USABLE AFTER ITS DISAMBIGUATOR IS REMOVED, and only
+// when the disambiguator is parenthetical: "Bern (Stadt)" -> "Bern" is the same
+// place, but "Washington, D.C." -> "Washington" is a DIFFERENT and famously
+// ambiguous one, and an alias is a claim of identity. Comma-qualified titles are
+// therefore dropped rather than trimmed.
+
+export interface CityNameAlias {
+  alias: string
+  locale: string | null
+  source: 'label' | 'altlabel' | 'official' | 'native' | 'short' | 'sitelink'
+}
+
+export interface WdLabels { [lang: string]: { language?: string; value?: string } }
+export interface WdAliases { [lang: string]: Array<{ language?: string; value?: string }> }
+export interface WdSitelinks { [site: string]: { title?: string } }
+
+/** Languages worth harvesting: the platform's own 11 plus the scripts this
+ *  corpus already contains as primary city names. */
+export const CITY_NAME_LANGS = [
+  'en', 'de', 'fr', 'es', 'it', 'pt', 'nl', 'pl', 'ru', 'ja', 'zh',
+  'el', 'ko', 'he', 'ar', 'uk', 'sr', 'ka', 'th', 'hy',
+]
+
+export const CITY_NAME_SITES = CITY_NAME_LANGS.map(l => `${l}wiki`)
+
+const MAX_CITY_ALIASES = 40
+const PAREN_RE = /\s*\([^)]*\)\s*$/
+
+function cleanAlias(raw: unknown): string | null {
+  if (typeof raw !== 'string') return null
+  const s = raw.replace(PAREN_RE, '').trim()
+  // 2 chars is the floor a meaningful place name can occupy in any script
+  // ("Ny", "Ur"); below that a match would be noise, and city_canonical_key
+  // keeps punctuation so a 1-char value is almost always a parse artifact.
+  if (s.length < 2 || s.length > 120) return null
+  if (s.includes(',')) return null   // see header: a comma qualifier is not a synonym
+  if (/https?:\/\//i.test(s)) return null
+  return s
+}
+
+/**
+ * Every name Wikidata knows for this entity, deduplicated case-insensitively,
+ * capped. The cap is a guard against a handful of entities with dozens of
+ * historical spellings, not a quality judgement -- the DB is the real filter,
+ * since city_aliases.alias_key is generated and uniquely indexed per city.
+ */
+export function parseCityNames(
+  claims: Claims,
+  labels?: WdLabels,
+  aliases?: WdAliases,
+  sitelinks?: WdSitelinks,
+): CityNameAlias[] {
+  const out: CityNameAlias[] = []
+  const seen = new Set<string>()
+
+  const push = (raw: unknown, locale: string | null, source: CityNameAlias['source']) => {
+    const alias = cleanAlias(raw)
+    if (!alias) return
+    const k = alias.toLowerCase()
+    if (seen.has(k)) return
+    seen.add(k)
+    out.push({ alias, locale, source })
+  }
+
+  for (const lang of CITY_NAME_LANGS) {
+    push(labels?.[lang]?.value, lang, 'label')
+  }
+  for (const lang of CITY_NAME_LANGS) {
+    for (const a of aliases?.[lang] ?? []) push(a?.value, lang, 'altlabel')
+  }
+
+  // Monolingual-text claims carry their own language tag.
+  const mono = (p: string, source: CityNameAlias['source']) => {
+    const v = valueOf(bestStatement(claims[p])?.mainsnak) as { text?: string; language?: string } | string | undefined
+    if (typeof v === 'string') push(v, null, source)
+    else if (v && typeof v === 'object') push(v.text, v.language ?? null, source)
+  }
+  mono('P1448', 'official')
+  mono('P1705', 'native')
+  mono('P1813', 'short')
+
+  for (const lang of CITY_NAME_LANGS) {
+    push(sitelinks?.[`${lang}wiki`]?.title, lang, 'sitelink')
+  }
+
+  return out.slice(0, MAX_CITY_ALIASES)
+}

@@ -144,6 +144,34 @@ export const cityContentType: ContentTypeConfig = {
   label: { singular: 'City', plural: 'Cities' },
   color: 'hsl(var(--foreground))',
   fields: cityFields,
+  // Creation goes through the resolver, not a plain insert.
+  //
+  // `cities` carries four unique indexes and all four key on the string, so
+  // they cannot stop the one duplicate class that still occurs: the same place
+  // under a different name. Measured on production 2026-08-25, exact-name, QID
+  // and slug duplicate groups are all zero while 196 pairs sit within 2 km of
+  // each other in the same country. The resolver additionally probes
+  // city_aliases and the Wikidata QID, follows duplicate_of_id to the surviving
+  // row, and refuses when two candidates are equally plausible — `cities` holds
+  // at most one row per (name, country), so it cannot represent Charleston SC
+  // beside Charleston IL and a "best match" would silently pick one.
+  //
+  // p_actor: 'admin' waives the resolver's evidence bar, which is correct here
+  // and only here — a person is looking at the form and can vouch for a city
+  // that has no coordinates yet. Automated callers must not pass it.
+  createRpc: {
+    fn: 'city_resolve_or_create',
+    args: (saveData) => ({
+      p_name: saveData.name,
+      p_country_id: saveData.country_id ?? null,
+      p_region_hint: saveData.region_name ?? null,
+      p_lat: saveData.latitude ?? null,
+      p_lng: saveData.longitude ?? null,
+      p_wikidata_qid: saveData.wikidata_qid ?? null,
+      p_source_slug: 'admin-cms',
+      p_actor: 'admin',
+    }),
+  },
   listSelect: '*,countries(name,equality_score),venues(count),events(count)',
   fieldGroupOrder: ['basic', 'location', 'details', 'lgbtq', 'media', 'external'],
   translatableFields: ['name', 'description'],

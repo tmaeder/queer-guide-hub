@@ -126,7 +126,52 @@ if (!hygieneRes.ok) {
     console.error('  Find the writer that set review_status without an UPDATE the promotion trigger can see.')
     process.exit(1)
   }
+  // City duplication (2026-08-25). Every unique key on `cities` keys on the
+  // string, so exact-name duplicates are already impossible — measured 0 groups
+  // over 5,552 live rows — and the class that survives is "same place, different
+  // string": Kapstadt beside Cape Town, Teheran beside Tehran. Nothing counted
+  // it before this block, so a writer that starts minting exonyms again was
+  // invisible.
+  //
+  // Baselines are the live values at introduction. near_pairs FAILS on growth
+  // rather than on an absolute number, because the standing 196 are existing
+  // work for the coordinate sweep arm and clearing them is a separate,
+  // human-reviewed job — what must never happen is the number going UP.
+  const city = hygiene.city_dup_signals ?? {}
+  const CITY_NEAR_PAIR_BASELINE = 196
+  const nearPairs = Number(city.near_pairs ?? 0)
+  if (nearPairs > CITY_NEAR_PAIR_BASELINE) {
+    console.error(`✗ City near-duplicate pairs rose to ${nearPairs} (baseline ${CITY_NEAR_PAIR_BASELINE})`)
+    console.error('  A path is creating cities without going through city_resolve_or_create.')
+    console.error('  Check the five writers: backfill-venue-cities, resolve-or-create-city,')
+    console.error('  venue-import-helpers, commit_city_staging_item, useCMSEditor.')
+    process.exit(1)
+  }
+  // The queue is the sink for every refusal. A refusal nobody drains is a
+  // silent loss, which is the exact failure refusing exists to prevent — so
+  // this is about the drain being ALIVE, not about the depth. Phrased as
+  // depth AND age together: a real import burst is legitimately deep for a
+  // few minutes; a dead drain is deep and old.
+  const qPending = Number(city.resolve_queue_pending ?? 0)
+  const qOldestH = Number(city.resolve_queue_oldest_pending_hours ?? 0)
+  if (qPending > 50 && qOldestH > 48) {
+    console.error(`✗ city_resolve_queue: ${qPending} pending, oldest ${qOldestH}h — the drain is dead`)
+    console.error('  Expected job: city_resolve_drain (*/15). Check admin_automations.enabled and cron.job.')
+    process.exit(1)
+  }
+  // Warnings only: these are the machinery that makes prevention structural,
+  // and they improve over nights, not over one CI run. A stall is worth saying
+  // out loud — city-factual-backfill once filled nothing for 36 days without
+  // anything going red.
+  const qidPct = Number(city.qid_coverage_pct ?? 0)
+  if (qidPct < 51) {
+    console.warn(`⚠ City Wikidata coverage fell to ${qidPct}% (was 51% at baseline) — city_qid_gap_link may be stalled`)
+  }
+  if (Number(city.alias_rows ?? 0) <= 386 && Number(city.cities_without_aliases ?? 0) > 0) {
+    console.warn(`⚠ city_aliases still at ${city.alias_rows} rows with ${city.cities_without_aliases} cities uncovered — city_alias_harvest has not run`)
+  }
   console.log(`✓ Cron hygiene clean (${hygiene.cron_total} active jobs); staging pending_review=${pending}, stale_pending=${staleTotal}`)
+  console.log(`✓ City dup signals: near_pairs=${nearPairs}, qid=${qidPct}%, aliases=${city.alias_rows}, queue=${qPending}`)
 }
 
 // 5b. Automation run-tracking gaps (2026-09). Until this landed, 142 of 144

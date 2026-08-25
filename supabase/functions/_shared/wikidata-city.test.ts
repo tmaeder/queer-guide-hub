@@ -5,6 +5,7 @@ import {
   currentStatements,
   capitalQuery,
   parseCityFacts,
+  parseCityNames,
   pickAirports,
   pickCapitals,
   pickUniversities,
@@ -356,4 +357,66 @@ Deno.test('among several regional units the answer does not depend on row order'
   ]
   assertEquals(pickCapitals(rows).get('Q1')!.regionOf, 'Alsace')
   assertEquals(pickCapitals([...rows].reverse()).get('Q1')!.regionOf, 'Alsace')
+})
+
+// --------------------------------------------------------------- parseCityNames
+
+const monoStatement = (text: string, language: string, rank: 'preferred' | 'normal' | 'deprecated' = 'normal') => ({
+  rank,
+  mainsnak: { snaktype: 'value', datavalue: { value: { text, language }, type: 'monolingualtext' } },
+})
+
+Deno.test('parseCityNames: harvests the exonym that makes the resolver work', () => {
+  const names = parseCityNames(
+    {},
+    { en: { value: 'Cape Town' }, de: { value: 'Kapstadt' }, fr: { value: 'Le Cap' } },
+    { de: [{ value: 'Kaapstad' }] },
+    {},
+  )
+  const values = names.map(n => n.alias)
+  assertEquals(values.includes('Kapstadt'), true)
+  assertEquals(values.includes('Le Cap'), true)
+  assertEquals(values.includes('Kaapstad'), true)
+  // The locale rides along so a later reader can tell a German exonym from an
+  // English label; the resolver itself ignores it and matches on alias_key.
+  assertEquals(names.find(n => n.alias === 'Kapstadt')?.locale, 'de')
+  assertEquals(names.find(n => n.alias === 'Kaapstad')?.source, 'altlabel')
+})
+
+Deno.test('parseCityNames: a comma-qualified sitelink is NOT a synonym', () => {
+  // "Bern (Stadt)" is the same place with a disambiguator; "Washington, D.C."
+  // trimmed to "Washington" is a different and famously ambiguous one. An alias
+  // is a claim of identity, so only the parenthetical form may be trimmed.
+  const names = parseCityNames({}, {}, {}, {
+    dewiki: { title: 'Bern (Stadt)' },
+    enwiki: { title: 'Washington, D.C.' },
+  })
+  const values = names.map(n => n.alias)
+  assertEquals(values.includes('Bern'), true)
+  assertEquals(values.some(v => v.startsWith('Washington')), false)
+})
+
+Deno.test('parseCityNames: monolingual claims respect rank', () => {
+  // Wikidata retracts a wrong name by DEPRECATING it, not by deleting it.
+  // Reading array position would resurrect exactly those.
+  const claims = {
+    P1448: [
+      monoStatement('Wrong Official Name', 'de', 'deprecated'),
+      monoStatement('Freie und Hansestadt Hamburg', 'de', 'preferred'),
+    ],
+  } as unknown as Claims
+  const names = parseCityNames(claims, {}, {}, {})
+  const official = names.filter(n => n.source === 'official').map(n => n.alias)
+  assertEquals(official, ['Freie und Hansestadt Hamburg'])
+})
+
+Deno.test('parseCityNames: deduplicates case-insensitively and drops junk', () => {
+  const names = parseCityNames(
+    {},
+    { en: { value: 'Lyss' }, de: { value: 'lyss' } },
+    { en: [{ value: 'https://www.notion.so/Lyss-CH-6045c2ad' }, { value: 'L' }] },
+    { enwiki: { title: 'Lyss' } },
+  )
+  assertEquals(names.length, 1)
+  assertEquals(names[0].alias, 'Lyss')
 })
