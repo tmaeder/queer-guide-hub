@@ -1456,6 +1456,7 @@ export type Database = {
           area_km2: number | null
           best_time_to_visit: string | null
           canonical_key: string | null
+          capital_of_region: string | null
           climate_type: string | null
           completeness_score: number
           cost_of_living: Json | null
@@ -1480,6 +1481,7 @@ export type Database = {
           image_url: string | null
           is_capital: boolean | null
           is_major_city: boolean | null
+          is_regional_capital: boolean | null
           last_refreshed_at: string | null
           last_synced_at: string | null
           last_verified_at: string | null
@@ -1522,6 +1524,7 @@ export type Database = {
           area_km2?: number | null
           best_time_to_visit?: string | null
           canonical_key?: string | null
+          capital_of_region?: string | null
           climate_type?: string | null
           completeness_score?: number
           cost_of_living?: Json | null
@@ -1546,6 +1549,7 @@ export type Database = {
           image_url?: string | null
           is_capital?: boolean | null
           is_major_city?: boolean | null
+          is_regional_capital?: boolean | null
           last_refreshed_at?: string | null
           last_synced_at?: string | null
           last_verified_at?: string | null
@@ -1588,6 +1592,7 @@ export type Database = {
           area_km2?: number | null
           best_time_to_visit?: string | null
           canonical_key?: string | null
+          capital_of_region?: string | null
           climate_type?: string | null
           completeness_score?: number
           cost_of_living?: Json | null
@@ -1612,6 +1617,7 @@ export type Database = {
           image_url?: string | null
           is_capital?: boolean | null
           is_major_city?: boolean | null
+          is_regional_capital?: boolean | null
           last_refreshed_at?: string | null
           last_synced_at?: string | null
           last_verified_at?: string | null
@@ -7205,6 +7211,7 @@ export type Database = {
           area_codes: string[] | null
           area_km2: number | null
           best_time_to_visit: string | null
+          capital_of_region: string | null
           climate_type: string | null
           completeness_score: number
           cost_of_living: Json | null
@@ -7218,6 +7225,7 @@ export type Database = {
           historical_names: Json
           is_capital: boolean | null
           is_major_city: boolean | null
+          is_regional_capital: boolean | null
           last_synced_at: string | null
           last_verified_at: string | null
           lgbt_friendly_rating: number | null
@@ -7250,6 +7258,7 @@ export type Database = {
           area_codes?: string[] | null
           area_km2?: number | null
           best_time_to_visit?: string | null
+          capital_of_region?: string | null
           climate_type?: string | null
           completeness_score?: number
           cost_of_living?: Json | null
@@ -7263,6 +7272,7 @@ export type Database = {
           historical_names?: Json
           is_capital?: boolean | null
           is_major_city?: boolean | null
+          is_regional_capital?: boolean | null
           last_synced_at?: string | null
           last_verified_at?: string | null
           lgbt_friendly_rating?: number | null
@@ -7295,6 +7305,7 @@ export type Database = {
           area_codes?: string[] | null
           area_km2?: number | null
           best_time_to_visit?: string | null
+          capital_of_region?: string | null
           climate_type?: string | null
           completeness_score?: number
           cost_of_living?: Json | null
@@ -7308,6 +7319,7 @@ export type Database = {
           historical_names?: Json
           is_capital?: boolean | null
           is_major_city?: boolean | null
+          is_regional_capital?: boolean | null
           last_synced_at?: string | null
           last_verified_at?: string | null
           lgbt_friendly_rating?: number | null
@@ -25645,6 +25657,7 @@ export type Database = {
       }
       cities_admin: {
         Row: {
+          capital_of_region: string | null
           continent_id: string | null
           country_id: string | null
           country_name: string | null
@@ -25654,6 +25667,7 @@ export type Database = {
           id: string | null
           is_capital: boolean | null
           is_major_city: boolean | null
+          is_regional_capital: boolean | null
           latitude: number | null
           lgbt_legal_status: string | null
           lgbt_rights_status: string | null
@@ -29195,6 +29209,7 @@ export type Database = {
           area_km2: number | null
           best_time_to_visit: string | null
           canonical_key: string | null
+          capital_of_region: string | null
           climate_type: string | null
           completeness_score: number
           cost_of_living: Json | null
@@ -29219,6 +29234,7 @@ export type Database = {
           image_url: string | null
           is_capital: boolean | null
           is_major_city: boolean | null
+          is_regional_capital: boolean | null
           last_refreshed_at: string | null
           last_synced_at: string | null
           last_verified_at: string | null
@@ -29423,6 +29439,7 @@ export type Database = {
               area_km2: number | null
               best_time_to_visit: string | null
               canonical_key: string | null
+              capital_of_region: string | null
               climate_type: string | null
               completeness_score: number
               cost_of_living: Json | null
@@ -29447,6 +29464,7 @@ export type Database = {
               image_url: string | null
               is_capital: boolean | null
               is_major_city: boolean | null
+              is_regional_capital: boolean | null
               last_refreshed_at: string | null
               last_synced_at: string | null
               last_verified_at: string | null
@@ -29498,6 +29516,7 @@ export type Database = {
               area_km2: number | null
               best_time_to_visit: string | null
               canonical_key: string | null
+              capital_of_region: string | null
               climate_type: string | null
               completeness_score: number
               cost_of_living: Json | null
@@ -29522,6 +29541,7 @@ export type Database = {
               image_url: string | null
               is_capital: boolean | null
               is_major_city: boolean | null
+              is_regional_capital: boolean | null
               last_refreshed_at: string | null
               last_synced_at: string | null
               last_verified_at: string | null
@@ -29573,6 +29593,7 @@ export type Database = {
               area_km2: number | null
               best_time_to_visit: string | null
               canonical_key: string | null
+              capital_of_region: string | null
               climate_type: string | null
               completeness_score: number
               cost_of_living: Json | null
@@ -29597,6 +29618,7 @@ export type Database = {
               image_url: string | null
               is_capital: boolean | null
               is_major_city: boolean | null
+              is_regional_capital: boolean | null
               last_refreshed_at: string | null
               last_synced_at: string | null
               last_verified_at: string | null
@@ -29648,6 +29670,7 @@ export type Database = {
               area_km2: number | null
               best_time_to_visit: string | null
               canonical_key: string | null
+              capital_of_region: string | null
               climate_type: string | null
               completeness_score: number
               cost_of_living: Json | null
@@ -29672,6 +29695,7 @@ export type Database = {
               image_url: string | null
               is_capital: boolean | null
               is_major_city: boolean | null
+              is_regional_capital: boolean | null
               last_refreshed_at: string | null
               last_synced_at: string | null
               last_verified_at: string | null
@@ -29723,6 +29747,7 @@ export type Database = {
               area_km2: number | null
               best_time_to_visit: string | null
               canonical_key: string | null
+              capital_of_region: string | null
               climate_type: string | null
               completeness_score: number
               cost_of_living: Json | null
@@ -29747,6 +29772,7 @@ export type Database = {
               image_url: string | null
               is_capital: boolean | null
               is_major_city: boolean | null
+              is_regional_capital: boolean | null
               last_refreshed_at: string | null
               last_synced_at: string | null
               last_verified_at: string | null
@@ -29800,6 +29826,7 @@ export type Database = {
               area_km2: number | null
               best_time_to_visit: string | null
               canonical_key: string | null
+              capital_of_region: string | null
               climate_type: string | null
               completeness_score: number
               cost_of_living: Json | null
@@ -29824,6 +29851,7 @@ export type Database = {
               image_url: string | null
               is_capital: boolean | null
               is_major_city: boolean | null
+              is_regional_capital: boolean | null
               last_refreshed_at: string | null
               last_synced_at: string | null
               last_verified_at: string | null
@@ -29875,6 +29903,7 @@ export type Database = {
               area_km2: number | null
               best_time_to_visit: string | null
               canonical_key: string | null
+              capital_of_region: string | null
               climate_type: string | null
               completeness_score: number
               cost_of_living: Json | null
@@ -29899,6 +29928,7 @@ export type Database = {
               image_url: string | null
               is_capital: boolean | null
               is_major_city: boolean | null
+              is_regional_capital: boolean | null
               last_refreshed_at: string | null
               last_synced_at: string | null
               last_verified_at: string | null
@@ -29950,6 +29980,7 @@ export type Database = {
               area_km2: number | null
               best_time_to_visit: string | null
               canonical_key: string | null
+              capital_of_region: string | null
               climate_type: string | null
               completeness_score: number
               cost_of_living: Json | null
@@ -29974,6 +30005,7 @@ export type Database = {
               image_url: string | null
               is_capital: boolean | null
               is_major_city: boolean | null
+              is_regional_capital: boolean | null
               last_refreshed_at: string | null
               last_synced_at: string | null
               last_verified_at: string | null
@@ -34341,6 +34373,7 @@ export type Database = {
           area_km2: number | null
           best_time_to_visit: string | null
           canonical_key: string | null
+          capital_of_region: string | null
           climate_type: string | null
           completeness_score: number
           cost_of_living: Json | null
@@ -34365,6 +34398,7 @@ export type Database = {
           image_url: string | null
           is_capital: boolean | null
           is_major_city: boolean | null
+          is_regional_capital: boolean | null
           last_refreshed_at: string | null
           last_synced_at: string | null
           last_verified_at: string | null

@@ -37,6 +37,10 @@ interface CitiesDirectoryRow {
   latitude: number | null;
   longitude: number | null;
   is_capital: boolean | null;
+  /** Absent, not false, when the city is not a regional capital — the RPC nulls
+   *  it so jsonb_strip_nulls drops it from ~3,000 rows that would all say false. */
+  is_regional_capital?: boolean | null;
+  capital_of_region?: string | null;
   editorial_hook: string | null;
   country_id: string | null;
   country_name: string | null;
@@ -65,6 +69,9 @@ export interface DirectoryCity extends CityForFilter {
   latitude?: number | null;
   longitude?: number | null;
   is_capital?: boolean | null;
+  /** Capital of a first-level subdivision (Bundesland, state, région). */
+  is_regional_capital?: boolean | null;
+  capital_of_region?: string | null;
   editorial_hook?: string | null;
   /** Approved venues. Counted for gated cities too — see the migration. */
   venue_count: number;
@@ -109,6 +116,8 @@ function toDirectoryCity(row: CitiesDirectoryRow): DirectoryCity {
     latitude: row.latitude,
     longitude: row.longitude,
     is_capital: row.is_capital,
+    is_regional_capital: row.is_regional_capital ?? false,
+    capital_of_region: row.capital_of_region ?? null,
     editorial_hook: row.editorial_hook,
     venue_count: row.venue_count,
     upcoming_event_count: row.upcoming_event_count,

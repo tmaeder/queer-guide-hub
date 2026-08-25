@@ -2900,6 +2900,8 @@
       "about": {
         "status": "[RU] Status",
         "capital": "[RU] Capital city",
+        "regionalCapital": "[RU] Regional capital",
+        "capitalOfRegion": "[RU] Capital of",
         "majorCity": "[RU] Major city",
         "region": "[RU] Region",
         "timezone": "[RU] Timezone",
@@ -2931,6 +2933,7 @@
       }
     },
     "capital": "[RU] Capital",
+    "regionalCapital": "[RU] Regional capital",
     "continentClear": "[RU] Clear",
     "continentsTitle": "[RU] Continents",
     "counting": "[RU] Counting…",

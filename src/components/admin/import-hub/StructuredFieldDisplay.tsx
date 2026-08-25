@@ -67,6 +67,8 @@ const FIELD_DEFINITIONS: Record<string, FieldDef[]> = {
     { key: 'latitude', label: 'Latitude', type: 'number' },
     { key: 'longitude', label: 'Longitude', type: 'number' },
     { key: 'is_capital', label: 'Capital', type: 'boolean' },
+    { key: 'is_regional_capital', label: 'Regional capital', type: 'boolean' },
+    { key: 'capital_of_region', label: 'Capital of', type: 'text' },
     { key: 'is_major_city', label: 'Major City', type: 'boolean' },
     { key: 'lgbt_friendly_rating', label: 'LGBTQ+ Rating', type: 'number' },
     { key: 'official_website', label: 'Website', type: 'text' },

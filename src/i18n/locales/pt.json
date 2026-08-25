@@ -2866,6 +2866,8 @@
       "about": {
         "status": "[PT] Status",
         "capital": "[PT] Capital city",
+        "regionalCapital": "[PT] Regional capital",
+        "capitalOfRegion": "[PT] Capital of",
         "majorCity": "[PT] Major city",
         "region": "[PT] Region",
         "timezone": "[PT] Timezone",
@@ -2897,6 +2899,7 @@
       }
     },
     "capital": "[PT] Capital",
+    "regionalCapital": "[PT] Regional capital",
     "continentClear": "[PT] Clear",
     "continentsTitle": "[PT] Continents",
     "counting": "[PT] Counting…",

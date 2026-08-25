@@ -9,6 +9,15 @@
 // had starved onto ~545 unresolvable import shells. See the migrations
 // 20260801133714 / 20260801133923 and supabase/functions/_shared/wikidata-city.ts.
 //
+// The `sparql` phase also resolves CAPITAL SCOPE (added 2026-08-25): Wikidata
+// P1376 classified into national vs first-level-regional, writing
+// is_regional_capital / capital_of_region. Unlike every other field here that
+// one is not fill-if-empty — the column is NOT NULL DEFAULT false, so an
+// unprobed row cannot be told from a probed negative by its value, and
+// enrichment_status.capital_scope carries that distinction instead. It never
+// writes is_capital: the national flag is derived from countries.capital and
+// keeps a single writer (migration 20260930091000).
+//
 // Like classify-personhood.mjs, this calls the edge function FROM POSTGRES via
 // pg_net and polls net._http_response, so CITY_QUALITY_WEBHOOK_SECRET never
 // leaves the database — the operator only needs a Supabase PAT.

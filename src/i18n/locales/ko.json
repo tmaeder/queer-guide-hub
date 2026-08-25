@@ -2864,6 +2864,8 @@
       "about": {
         "status": "[KO] Status",
         "capital": "[KO] Capital city",
+        "regionalCapital": "[KO] Regional capital",
+        "capitalOfRegion": "[KO] Capital of",
         "majorCity": "[KO] Major city",
         "region": "[KO] Region",
         "timezone": "[KO] Timezone",
@@ -2895,6 +2897,7 @@
       }
     },
     "capital": "[KO] Capital",
+    "regionalCapital": "[KO] Regional capital",
     "continentClear": "[KO] Clear",
     "continentsTitle": "[KO] Continents",
     "counting": "[KO] Counting…",
