@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * The one-shot delete of 58 non-place `cities` rows (Bundesländer, US/BR/MX
+ * The one-shot delete of 57 non-place `cities` rows (Bundesländer, US/BR/MX
  * states, counties, countries, one continent) lives in three files that must
  * agree, and nothing else makes them agree:
  *
@@ -11,7 +11,7 @@ import { join } from 'node:path';
  *     classifier ranked, `approved_ids` being the bucket minus the hand review.
  *   - `scripts/data-quality/out/nonplace-city-review.json` — the rows a human
  *     took back OUT of the delete list, with a reason each.
- *   - `supabase/migrations/20260929100000_delete_nonplace_city_shells.sql` —
+ *   - `supabase/migrations/20261001120000_delete_nonplace_city_shells.sql` —
  *     the ids actually deleted.
  *
  * Re-running the classifier after a data change rewrites the candidates file.
@@ -35,7 +35,7 @@ const MIGRATION = join(
   ROOT,
   'supabase',
   'migrations',
-  '20260929100000_delete_nonplace_city_shells.sql',
+  '20261001120000_delete_nonplace_city_shells.sql',
 );
 const CANDIDATES = join(ROOT, 'scripts', 'data-quality', 'out', 'nonplace-city-candidates.json');
 const REVIEW = join(ROOT, 'scripts', 'data-quality', 'out', 'nonplace-city-review.json');
@@ -54,7 +54,7 @@ function migrationIds(): string[] {
 describe('non-place city deletion', () => {
   it('deletes exactly the approved ids, in agreement with the classifier output', () => {
     const inMigration = migrationIds();
-    expect(inMigration).toHaveLength(58);
+    expect(inMigration).toHaveLength(57);
     expect(new Set(inMigration).size).toBe(inMigration.length);
     expect([...inMigration].sort()).toEqual([...candidates.approved_ids].sort());
   });
@@ -108,6 +108,15 @@ describe('non-place city deletion', () => {
       expect(sql, `${table} not cleaned`).toContain(`DELETE FROM ${table}`);
     }
     expect(sql).toContain('SET death_city_id = NULL');
+  });
+
+  it('refuses to run if a reviewed row was merged away since review', () => {
+    // Not hypothetical: `Tunesien` was merged into `Tunis` by
+    // 20260929110000_city_exonym_merges between the review and this PR, which
+    // turned it into a redirect with a `city_merge_audit` row. Deleting that
+    // breaks the redirect and blocks `unmerge_cities`.
+    expect(sql).toContain('merged away since review');
+    expect(sql).toContain('c.duplicate_of_id IS NOT NULL');
   });
 
   it('refuses to run if a reviewed row has gained content since review', () => {

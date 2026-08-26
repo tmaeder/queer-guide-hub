@@ -1,16 +1,16 @@
 {
   "generated_from": "scripts/data-quality/classify-nonplace-cities.mjs",
-  "shell_count": 1456,
+  "shell_count": 1408,
   "counts": {
-    "nonplace": 58,
-    "ambiguous_place_name": 96,
-    "exonym_dupe": 71,
-    "keep": 1222,
+    "nonplace": 57,
+    "ambiguous_place_name": 91,
+    "exonym_dupe": 68,
+    "keep": 1183,
     "rejected_by_review": 9
   },
   "arms": {
     "macro_region": 1,
-    "country": 24,
+    "country": 23,
     "subdivision": 13,
     "suffix": 18,
     "subdivision_other_country": 2,
@@ -75,7 +75,6 @@
     "e7ab8d65-d056-4ca3-8bbf-846394422ad7",
     "9a3c0d8a-3d21-4dac-81c6-b1ba4b0bac1b",
     "ebf5c081-dfc4-43ae-ae05-d7309ab223ae",
-    "67f48fc0-1c5c-4ee5-93d0-bbe390f8c68b",
     "e59141fb-c5b8-4944-a882-ca1e9a932c31"
   ],
   "buckets": {
@@ -955,21 +954,6 @@
         }
       },
       {
-        "id": "67f48fc0-1c5c-4ee5-93d0-bbe390f8c68b",
-        "name": "Tunesien",
-        "country": "TN",
-        "population": null,
-        "birth_refs": 1,
-        "death_refs": 0,
-        "bucket": "nonplace",
-        "arms": [
-          "country"
-        ],
-        "detail": {
-          "country": "TN"
-        }
-      },
-      {
         "id": "e59141fb-c5b8-4944-a882-ca1e9a932c31",
         "name": "Westbengalen",
         "country": "IN",
@@ -991,29 +975,6 @@
       }
     ],
     "ambiguous_place_name": [
-      {
-        "id": "f5e1a7f2-7da9-4b4c-b5c9-ec3c2d7feb8f",
-        "name": "Teheran",
-        "country": "IR",
-        "population": 7711230,
-        "birth_refs": 2,
-        "death_refs": 0,
-        "bucket": "ambiguous_place_name",
-        "arms": [
-          "subdivision"
-        ],
-        "detail": {
-          "subdivision": {
-            "name": "Tehran",
-            "type": "province",
-            "iso": "IR-23",
-            "qid": "Q590866"
-          }
-        },
-        "demoted": [
-          "subdivision_named_after_its_own_city"
-        ]
-      },
       {
         "id": "a01cdf4f-1b49-462b-be34-360f0e18cc64",
         "name": "Khartum",
@@ -1278,30 +1239,6 @@
         ]
       },
       {
-        "id": "18bd88c1-af38-44d9-852d-4da8b2fd285e",
-        "name": "Querétaro",
-        "country": "MX",
-        "population": 794789,
-        "birth_refs": 1,
-        "death_refs": 0,
-        "bucket": "ambiguous_place_name",
-        "arms": [
-          "subdivision"
-        ],
-        "detail": {
-          "subdivision": {
-            "name": "Querétaro",
-            "type": "state",
-            "iso": "MX-QUE",
-            "qid": "Q79754"
-          }
-        },
-        "demoted": [
-          "city_of_that_name_exists",
-          "subdivision_named_after_its_own_city"
-        ]
-      },
-      {
         "id": "dc9e22c5-cbcd-4e10-823d-7683acffd018",
         "name": "Malacca",
         "country": "MY",
@@ -1346,29 +1283,6 @@
         },
         "demoted": [
           "city_of_that_name_exists",
-          "subdivision_named_after_its_own_city"
-        ]
-      },
-      {
-        "id": "2bd3f4f4-5c4f-442e-8e1d-e25f03e62f8e",
-        "name": "Jaroslawl",
-        "country": "RU",
-        "population": 591486,
-        "birth_refs": 1,
-        "death_refs": 0,
-        "bucket": "ambiguous_place_name",
-        "arms": [
-          "subdivision"
-        ],
-        "detail": {
-          "subdivision": {
-            "name": "Yaroslavl",
-            "type": "administrative region",
-            "iso": "RU-YAR",
-            "qid": "Q2448"
-          }
-        },
-        "demoted": [
           "subdivision_named_after_its_own_city"
         ]
       },
@@ -1558,29 +1472,6 @@
         },
         "demoted": [
           "city_of_that_name_exists"
-        ]
-      },
-      {
-        "id": "5f1030c4-94f0-473c-815c-394bfb4b2d87",
-        "name": "Triest",
-        "country": "IT",
-        "population": 204420,
-        "birth_refs": 1,
-        "death_refs": 1,
-        "bucket": "ambiguous_place_name",
-        "arms": [
-          "subdivision"
-        ],
-        "detail": {
-          "subdivision": {
-            "name": "Trieste",
-            "type": "decentralized regional entity",
-            "iso": "IT-TS",
-            "qid": "Q16293"
-          }
-        },
-        "demoted": [
-          "subdivision_named_after_its_own_city"
         ]
       },
       {
@@ -1892,29 +1783,6 @@
         },
         "demoted": [
           "city_of_that_name_exists",
-          "subdivision_named_after_its_own_city"
-        ]
-      },
-      {
-        "id": "069678d5-9397-4dd5-8c3d-7bdf957c7520",
-        "name": "Sliwen",
-        "country": "BG",
-        "population": 109559,
-        "birth_refs": 1,
-        "death_refs": 0,
-        "bucket": "ambiguous_place_name",
-        "arms": [
-          "subdivision"
-        ],
-        "detail": {
-          "subdivision": {
-            "name": "Sliven",
-            "type": "district",
-            "iso": "BG-20",
-            "qid": "Q113120"
-          }
-        },
-        "demoted": [
           "subdivision_named_after_its_own_city"
         ]
       },
@@ -3276,28 +3144,6 @@
     ],
     "exonym_dupe": [
       {
-        "id": "1a3c514b-1cd8-4561-9483-e43078db7a8f",
-        "name": "Singapur",
-        "country": "SG",
-        "population": 5399200,
-        "birth_refs": 2,
-        "death_refs": 0,
-        "bucket": "exonym_dupe",
-        "arms": [
-          "city_state"
-        ],
-        "dupes": [
-          {
-            "id": "be0d453f-4520-4d4e-a456-c87bf192a3cd",
-            "name": "Singapore",
-            "slug": "singapore",
-            "country_code": "SG",
-            "content": 77,
-            "same_country": true
-          }
-        ]
-      },
-      {
         "id": "e4aad542-deca-4301-89c6-102d963f6e4c",
         "name": "Hong Kong",
         "country": "CN",
@@ -3380,7 +3226,7 @@
             "name": "Vienna",
             "slug": "vienna",
             "country_code": "AT",
-            "content": 222,
+            "content": 256,
             "same_country": false
           }
         ]
@@ -3403,28 +3249,6 @@
             "slug": "alicante-es-3mzpw",
             "country_code": "ES",
             "content": 25,
-            "same_country": true
-          }
-        ]
-      },
-      {
-        "id": "7bc8c9f0-ad88-449d-9669-3ede8c5aa573",
-        "name": "Belém, Pará",
-        "country": "BR",
-        "population": 1393399,
-        "birth_refs": 1,
-        "death_refs": 0,
-        "bucket": "exonym_dupe",
-        "arms": [
-          "canonical_match"
-        ],
-        "dupes": [
-          {
-            "id": "74d2741c-f0de-4743-b562-1ec33b347923",
-            "name": "Belém",
-            "slug": "belem",
-            "country_code": "BR",
-            "content": 5,
             "same_country": true
           }
         ]
@@ -3534,7 +3358,7 @@
             "name": "Dublin",
             "slug": "dublin",
             "country_code": "IE",
-            "content": 281,
+            "content": 282,
             "same_country": false
           }
         ]
@@ -3622,7 +3446,7 @@
             "name": "Tirana",
             "slug": "tirana",
             "country_code": "AL",
-            "content": 2,
+            "content": 3,
             "same_country": false
           }
         ]
@@ -3718,7 +3542,7 @@
             "name": "Basel",
             "slug": "basel",
             "country_code": "CH",
-            "content": 835,
+            "content": 836,
             "same_country": false
           }
         ]
@@ -3740,7 +3564,7 @@
             "name": "Geneva",
             "slug": "geneva",
             "country_code": "CH",
-            "content": 30,
+            "content": 44,
             "same_country": false
           },
           {
@@ -3749,6 +3573,28 @@
             "slug": "geneva-1",
             "country_code": "US",
             "content": 11,
+            "same_country": false
+          }
+        ]
+      },
+      {
+        "id": "7226f194-1558-4f74-a4a8-8ebd66e84510",
+        "name": "Saint-Denis, Île-de-France",
+        "country": "FR",
+        "population": 146321,
+        "birth_refs": 2,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "3b969d3f-3971-49af-95f8-ed6bd7d03a1f",
+            "name": "Saint-Denis",
+            "slug": "saint-denis-1",
+            "country_code": "RE",
+            "content": 0,
             "same_country": false
           }
         ]
@@ -3770,7 +3616,7 @@
             "name": "Manchester",
             "slug": "manchester",
             "country_code": "GB",
-            "content": 463,
+            "content": 464,
             "same_country": false
           }
         ]
@@ -3990,7 +3836,7 @@
             "name": "Lyss",
             "slug": "lyss",
             "country_code": "CH",
-            "content": 15,
+            "content": 20,
             "same_country": false
           }
         ]
@@ -4174,7 +4020,15 @@
             "name": "Kingston",
             "slug": "kingston",
             "country_code": "JM",
-            "content": 29,
+            "content": 30,
+            "same_country": false
+          },
+          {
+            "id": "5b0bda3d-a4b9-43b0-8445-40398ab64f51",
+            "name": "Kingston",
+            "slug": "kingston-1",
+            "country_code": "NF",
+            "content": 0,
             "same_country": false
           }
         ]
@@ -4226,7 +4080,7 @@
             "name": "Berlin",
             "slug": "berlin",
             "country_code": "DE",
-            "content": 4860,
+            "content": 4861,
             "same_country": false
           },
           {
@@ -4345,28 +4199,6 @@
             "slug": "cannes-fr-l6853",
             "country_code": "FR",
             "content": 76,
-            "same_country": true
-          }
-        ]
-      },
-      {
-        "id": "b41c81e5-72fd-45a8-a33d-d705bbf7b031",
-        "name": "Culiacán Rosales, Sinaloa",
-        "country": "MX",
-        "population": null,
-        "birth_refs": 1,
-        "death_refs": 0,
-        "bucket": "exonym_dupe",
-        "arms": [
-          "canonical_match"
-        ],
-        "dupes": [
-          {
-            "id": "8a81015b-2c14-4812-8d8a-66da6a0c542c",
-            "name": "Culiacán Rosales",
-            "slug": "culiacan-rosales",
-            "country_code": "MX",
-            "content": 1,
             "same_country": true
           }
         ]
@@ -4674,7 +4506,7 @@
             "name": "Nice",
             "slug": "nice",
             "country_code": "FR",
-            "content": 82,
+            "content": 89,
             "same_country": true
           }
         ]
@@ -4812,28 +4644,6 @@
         ]
       },
       {
-        "id": "6c0b0be2-5dab-4dfa-be8c-6ea09707f4ff",
-        "name": "Straßburg, Elsaß",
-        "country": "FR",
-        "population": null,
-        "birth_refs": 1,
-        "death_refs": 0,
-        "bucket": "exonym_dupe",
-        "arms": [
-          "canonical_match"
-        ],
-        "dupes": [
-          {
-            "id": "9665e1de-6ef1-4574-a599-36476d1a4a42",
-            "name": "Strassburg",
-            "slug": "strassburg",
-            "country_code": "FR",
-            "content": 8,
-            "same_country": true
-          }
-        ]
-      },
-      {
         "id": "81b86b50-c60b-4691-83f6-3094957d799b",
         "name": "Torremolinos, Andalusia",
         "country": "ES",
@@ -4878,7 +4688,7 @@
         ]
       }
     ],
-    "keep": "1222 rows omitted; re-run with --full",
+    "keep": "1183 rows omitted; re-run with --full",
     "rejected_by_review": [
       {
         "id": "bc7f4432-e92c-4c9e-b4a8-acf2c047a5ce",
@@ -4969,7 +4779,7 @@
         "name": "Saint Thomas",
         "country": "VI",
         "population": 51634,
-        "birth_refs": 1,
+        "birth_refs": 2,
         "death_refs": 0,
         "bucket": "nonplace",
         "arms": [

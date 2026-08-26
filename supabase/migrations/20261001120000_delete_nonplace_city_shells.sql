@@ -1,4 +1,4 @@
--- Delete 58 `cities` rows that are not cities.
+-- Delete 57 `cities` rows that are not cities.
 --
 -- `public.cities` carried a row "Hessen" — a German Bundesland, population
 -- 6,045,425, zero venues/events/hotels/news/villages — reachable from site
@@ -10,7 +10,7 @@
 -- indexer filters only `duplicate_of_id`), so "Hessen", "Texas", "Americas" and
 -- "Czechoslovakia" all answered a search with a city result.
 --
--- The 58 ids below are the hand-reviewed non-places out of that cohort:
+-- The 57 ids below are the hand-reviewed non-places out of that cohort:
 -- first-level subdivisions (Hessen, Mississippi, Amazonas, Rio Grande do Sul,
 -- Manitoba, Yucatán, Westbengalen, England, Schottland), counties and districts
 -- (Ventura, Sonoma, Stanislaus, Prince William, Tolland, Comanche, Wythe, Page,
@@ -142,7 +142,6 @@ INSERT INTO _nonplace_ids (id, city_name, country_code, reason) VALUES
     ('e7ab8d65-d056-4ca3-8bbf-846394422ad7'::uuid, 'Südafrika', 'ZA', 'country'),
     ('9a3c0d8a-3d21-4dac-81c6-b1ba4b0bac1b'::uuid, 'Südkorea', 'KR', 'country'),
     ('ebf5c081-dfc4-43ae-ae05-d7309ab223ae'::uuid, 'Trinidad und Tobago', 'TT', 'country'),
-    ('67f48fc0-1c5c-4ee5-93d0-bbe390f8c68b'::uuid, 'Tunesien', 'TN', 'country'),
     ('e59141fb-c5b8-4944-a882-ca1e9a932c31'::uuid, 'Westbengalen', 'IN', 'subdivision');
 
 -- ── 3. Guard ────────────────────────────────────────────────────────────────
@@ -156,6 +155,7 @@ DO $$
 DECLARE
   v_present  integer;
   v_content  integer;
+  v_merged   integer;
   v_names    text;
 BEGIN
   SELECT count(*) INTO v_present
@@ -183,7 +183,25 @@ BEGIN
     RAISE EXCEPTION 'nonplace delete aborted: % reviewed row(s) gained content since review (%)', v_content, v_names;
   END IF;
 
-  RAISE NOTICE 'nonplace delete: % of 58 reviewed rows present', v_present;
+  -- A reviewed row can also be merged away by concurrent work rather than gain
+  -- content. That happened between review and this PR: `Tunesien` was merged
+  -- into `Tunis` by 20260929110000_city_exonym_merges, which set
+  -- `duplicate_of_id`, wrote a `city_merge_audit` row and made the row a
+  -- redirect. Deleting such a row breaks the redirect and makes
+  -- `unmerge_cities` impossible, so it is no longer an unreferenced non-place
+  -- and must not be deleted here. `Tunesien` was taken off the list by hand;
+  -- this guard catches the next one instead of trusting that it was the last.
+  SELECT count(*), coalesce(string_agg(c.name, ', '), '')
+    INTO v_merged, v_names
+  FROM public.cities c
+  JOIN _nonplace_ids t ON t.id = c.id
+  WHERE c.duplicate_of_id IS NOT NULL;
+
+  IF v_merged > 0 THEN
+    RAISE EXCEPTION 'nonplace delete aborted: % reviewed row(s) were merged away since review (%)', v_merged, v_names;
+  END IF;
+
+  RAISE NOTICE 'nonplace delete: % of 57 reviewed rows present', v_present;
 END $$;
 
 -- ── 4. Snapshot ─────────────────────────────────────────────────────────────
@@ -209,7 +227,7 @@ JOIN _nonplace_ids t ON t.id = c.id;
 --
 -- Measured across the whole shell cohort: 75 personalities carry a city_id and
 -- no birth_place text at all, so for those the city NAME is the only human-
--- readable record of where the person was born. Six of them sit on these 58.
+-- readable record of where the person was born. Six of them sit on these 57.
 -- `personalities.country_id` is untouched and stays set, so the person keeps a
 -- country either way.
 
@@ -231,8 +249,8 @@ WHERE p.death_city_id = c.id
 --
 -- No FK covers any of these. A missed column here is a dangling uuid nobody
 -- ever gets an error about. Counts measured on prod before writing this:
--- city_quality_signals 466, personalities.city_id 89, content_embeddings 58,
--- city_coverage_gaps 58, image_asset_links 20, city_review_queue_legacy 18,
+-- city_quality_signals 494, personalities.city_id 88, content_embeddings 57,
+-- city_coverage_gaps 57, image_asset_links 20, city_review_queue_legacy 17,
 -- personalities.death_city_id 2. `geo_city_profiles` is NOT listed because its
 -- FK to `geo_places` really does CASCADE, and `entity_review_queue` (19) is
 -- handled by `trg_erq_cascade`.
