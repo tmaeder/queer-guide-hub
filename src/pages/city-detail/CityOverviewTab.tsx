@@ -39,13 +39,26 @@ export function CityOverviewTab({ city, showDescription = true }: CityOverviewTa
   const { t } = useTranslation();
 
   const facts: Fact[] = [];
+  // One Status line, ranked. A city-state (Berlin, Hamburg, Vienna) is both a
+  // national and a regional capital; naming only the higher rank is not a loss,
+  // because the regional half is carried by the "Capital of" row below.
   const civicStatus = city.is_capital
     ? t('cities.detail.about.capital', 'Capital city')
-    : city.is_major_city
-      ? t('cities.detail.about.majorCity', 'Major city')
-      : null;
+    : city.is_regional_capital
+      ? t('cities.detail.about.regionalCapital', 'Regional capital')
+      : city.is_major_city
+        ? t('cities.detail.about.majorCity', 'Major city')
+        : null;
   if (civicStatus)
     facts.push({ label: t('cities.detail.about.status', 'Status'), value: civicStatus });
+  // The unit this city is the capital OF, which is the evidence for the flag.
+  // Not the same field as Region: `region_name` is half-empty across the corpus
+  // and on many capitals holds a numeric FIPS code rather than a name.
+  if (city.is_regional_capital && city.capital_of_region)
+    facts.push({
+      label: t('cities.detail.about.capitalOfRegion', 'Capital of'),
+      value: city.capital_of_region,
+    });
   if (city.region_name)
     facts.push({ label: t('cities.detail.about.region', 'Region'), value: city.region_name });
   // Timezone is NOT repeated here — the head fact strip (`CityAtAGlance`)

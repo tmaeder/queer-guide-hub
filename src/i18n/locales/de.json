@@ -2866,6 +2866,8 @@
       "about": {
         "status": "[DE] Status",
         "capital": "[DE] Capital city",
+        "regionalCapital": "Landeshauptstadt",
+        "capitalOfRegion": "Hauptstadt von",
         "majorCity": "[DE] Major city",
         "region": "[DE] Region",
         "timezone": "[DE] Timezone",
@@ -2897,6 +2899,7 @@
       }
     },
     "capital": "[DE] Capital",
+    "regionalCapital": "Landeshauptstadt",
     "continentClear": "[DE] Clear",
     "continentsTitle": "[DE] Continents",
     "counting": "[DE] Counting…",

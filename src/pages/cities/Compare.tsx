@@ -9,6 +9,7 @@ import {
   type GeoSelection,
 } from '@/components/trips/create/CityCountryAutocomplete';
 import { useCityCompareData, type CityComparison } from '@/hooks/useCityCompareData';
+import { cityAirportCell } from '@/pages/city-detail/cityAirports';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { CityNetwork } from '@/components/home/subway/CityNetwork';
 import { hasCityNetwork } from '@/components/home/subway/cityNetworkGeometry';
@@ -176,8 +177,8 @@ function ComparisonTable({
     },
     {
       label: t('cities.compare.row.airport', 'Airport'),
-      aValue: a.major_airport_code || '—',
-      bValue: b.major_airport_code || '—',
+      aValue: cityAirportCell(a, a.major_airport_code),
+      bValue: cityAirportCell(b, b.major_airport_code),
     },
   ];
 
