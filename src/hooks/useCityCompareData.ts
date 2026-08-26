@@ -9,6 +9,8 @@ export interface CityComparison {
   timezone: string | null;
   local_language: string | null;
   major_airport_code: string | null;
+  /** Airports whose own municipality names this city — see `cityAirports.ts`. */
+  local_airport_codes: string[] | null;
   latitude: number | null;
   longitude: number | null;
   image_url: string | null;
@@ -39,7 +41,7 @@ export function useCityCompareData(ids: string[]) {
       const { data, error } = await supabase
         .from('cities')
         .select(
-          'id, name, slug, population, timezone, local_language, major_airport_code, latitude, longitude, image_url, is_capital, is_major_city, countries(id, name, slug, code, flag_emoji, equality_score, currency)',
+          'id, name, slug, population, timezone, local_language, major_airport_code, local_airport_codes, latitude, longitude, image_url, is_capital, is_major_city, countries(id, name, slug, code, flag_emoji, equality_score, currency)',
         )
         .in('id', ids);
       if (error) throw error;

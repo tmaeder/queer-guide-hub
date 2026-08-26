@@ -70,6 +70,29 @@ export function readCityAirports(city: unknown): CityAirportColumnsView {
   };
 }
 
+/**
+ * One cell naming a city's airport, for a table that has room for a code and
+ * nothing else (`/cities/compare`).
+ *
+ * Same rule as the city single: name the city's OWN airport, and mark a merely
+ * nearby one with "~". `majorAirportCode` is the flight-BOOKING code and is
+ * frequently an airport in a different city — Brighton's is Gatwick, 36 km away
+ * — so printing it flat under a header reading "Airport" asserts Brighton has
+ * one.
+ *
+ * Lives here rather than in `Compare.tsx` so it is importable by a test without
+ * exporting a non-component from a page module.
+ */
+export function cityAirportCell(
+  city: unknown,
+  majorAirportCode: string | null | undefined,
+  emptyValue = '—',
+): string {
+  const { localIata } = readCityAirports(city);
+  if (localIata) return localIata;
+  return majorAirportCode ? `~${majorAirportCode}` : emptyValue;
+}
+
 /** The nearest-airport shape `useNearestAirport` returns, narrowed to what is read. */
 export interface NearestAirportLike {
   iata_code?: string | null;
