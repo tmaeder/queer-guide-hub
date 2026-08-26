@@ -85,17 +85,19 @@ const EMBED_BATCH = 50;
  * reporting `outcome: "ok"` because the throw was caught and counted as failed
  * rows. The keyword arm of search kept working, so nothing user-visible said so.
  *
- * 48,000 characters is the budget because the ratio is corpus-dependent and this
- * corpus is multilingual: the failing call was ~1.42 chars/token, but CJK text
- * approaches 1.0, so the budget is set to survive the pessimistic case — 48k
- * chars is ~34k tokens at the observed ratio and still only ~48k tokens if every
- * character were its own token. Both sit under 60k with room to spare.
+ * 20,000 characters, and the number was corrected once by measurement. The first
+ * attempt reasoned "worst case is one token per character" and set 48,000 — then
+ * a batch under that budget came back at 75,302 tokens, i.e. ~1.57 tokens PER
+ * CHARACTER. Non-Latin scripts routinely emit several tokens per character, so
+ * the pessimistic direction was the opposite of the assumed one. 20,000 chars
+ * holds at up to ~3 tokens/char.
  *
- * Do NOT raise this to "use the context better". The gain is a few subrequests;
- * the loss, when a batch tips over, is the entire vector index going stale in
- * silence.
+ * This is a budget, not a guarantee — `runBatch` halves and retries on overflow,
+ * which is what actually makes the drain safe for any corpus. Do NOT raise this
+ * to "use the context better": the gain is a few subrequests, and the loss, when
+ * a batch tips over, was 56 hours of a silently stale vector index.
  */
-const MAX_EMBED_CHARS_PER_CALL = 48_000;
+const MAX_EMBED_CHARS_PER_CALL = 20_000;
 
 /**
  * Group indices into calls that respect BOTH the count ceiling and the character
@@ -613,20 +615,57 @@ async function embedTexts(env: Env, texts: string[]): Promise<Array<number[] | n
 	if (!misses.length) return out;
 
 	const gateway = env.AI_GATEWAY_NAME ? { id: env.AI_GATEWAY_NAME, cacheTtl: 86400 * 7 } : undefined;
-	for (const part of embedBatches(misses, texts)) {
-		const res = (await env.AI.run(
-			model as Parameters<typeof env.AI.run>[0],
-			{ text: part.map((i) => texts[i]) } as Parameters<typeof env.AI.run>[1],
-			gateway ? { gateway } : undefined,
-		)) as unknown;
-		const data =
-			(res as { data?: unknown })?.data ?? (res as { [n: number]: unknown })?.[0];
-		if (!Array.isArray(data)) throw new Error("embed: no vectors");
-		part.forEach((i, j) => {
-			const vec = data[j];
-			out[i] = Array.isArray(vec) ? (vec as number[]) : null;
-		});
-	}
+
+	/**
+	 * Run one batch, and on a context overflow SPLIT IT AND RETRY.
+	 *
+	 * The character budget above is a good guess, and a good guess is not enough
+	 * here — the tokens-per-character ratio is a property of the corpus, not of
+	 * the code. Measured on this one: the first failure was 70,391 tokens for
+	 * ~100k chars (~1.42 chars/token), and after the budget was introduced a
+	 * batch of <=48,000 chars still produced 75,302 tokens — i.e. ~1.57 tokens
+	 * PER CHARACTER, the opposite direction. Non-Latin scripts can emit several
+	 * tokens per character, so no fixed character budget is safe for every batch
+	 * this corpus can present.
+	 *
+	 * Halving on overflow is correct by construction instead: it needs no ratio,
+	 * it costs nothing on the common path (the budget usually holds), and it
+	 * converges in log2 steps. A single text that still overflows is recorded as
+	 * null — the caller counts it failed and the drain moves on, rather than the
+	 * whole run dying on one pathological row, which is exactly how 32,559 rows
+	 * came to be queued behind a single throw.
+	 */
+	const runBatch = async (part: number[]): Promise<void> => {
+		try {
+			const res = (await env.AI.run(
+				model as Parameters<typeof env.AI.run>[0],
+				{ text: part.map((i) => texts[i]) } as Parameters<typeof env.AI.run>[1],
+				gateway ? { gateway } : undefined,
+			)) as unknown;
+			const data =
+				(res as { data?: unknown })?.data ?? (res as { [n: number]: unknown })?.[0];
+			if (!Array.isArray(data)) throw new Error("embed: no vectors");
+			part.forEach((i, j) => {
+				const vec = data[j];
+				out[i] = Array.isArray(vec) ? (vec as number[]) : null;
+			});
+		} catch (e) {
+			if (part.length === 1) {
+				console.warn("embed skipped one row", (e as Error)?.message);
+				out[part[0]] = null;
+				return;
+			}
+			const mid = Math.ceil(part.length / 2);
+			console.warn(
+				`embed batch of ${part.length} failed, splitting`,
+				(e as Error)?.message,
+			);
+			await runBatch(part.slice(0, mid));
+			await runBatch(part.slice(mid));
+		}
+	};
+
+	for (const part of embedBatches(misses, texts)) await runBatch(part);
 
 	// Best-effort cache fill. A KV failure must not fail the drain — the vector
 	// is already in hand and about to be written to the database.
