@@ -63,8 +63,63 @@ const DEFAULT_EMBED_MODEL = "@cf/baai/bge-m3"; // 1024-dim, multilingual
 const DEFAULT_DRAIN_LIMIT = 100;
 /** Hard ceiling for the operator-driven POST /drain, for the same reason. */
 const MAX_DRAIN_LIMIT = 300;
-/** Texts per Workers AI call. bge-m3 takes an array; 50 is comfortable. */
+/**
+ * Upper bound on texts per Workers AI call. This is a CEILING, not the batch
+ * size — `embedBatches()` also enforces a character budget, and that is usually
+ * what binds.
+ */
 const EMBED_BATCH = 50;
+/**
+ * Character budget per Workers AI call, and it is the reason the drain died.
+ *
+ * bge-m3 accepts an array, so batching by COUNT alone looked free. It is not:
+ * the model has a 60,000-token context for the whole call, and
+ * `composeEmbedText` caps each row at 2,000 chars, so 50 rows can present
+ * 100,000 characters at once. Measured on a live tail 2026-08-26:
+ *
+ *   AiError 3030: Max context reached 70391 tokens but model supports only 60000
+ *     at embedTexts → indexRows → drainStale
+ *
+ * That threw on EVERY scheduled run from the batching deploy (2026-08-23 22:23)
+ * onward — 56 hours, 32,559 rows queued, 0 embedded, while the cron itself kept
+ * reporting `outcome: "ok"` because the throw was caught and counted as failed
+ * rows. The keyword arm of search kept working, so nothing user-visible said so.
+ *
+ * 48,000 characters is the budget because the ratio is corpus-dependent and this
+ * corpus is multilingual: the failing call was ~1.42 chars/token, but CJK text
+ * approaches 1.0, so the budget is set to survive the pessimistic case — 48k
+ * chars is ~34k tokens at the observed ratio and still only ~48k tokens if every
+ * character were its own token. Both sit under 60k with room to spare.
+ *
+ * Do NOT raise this to "use the context better". The gain is a few subrequests;
+ * the loss, when a batch tips over, is the entire vector index going stale in
+ * silence.
+ */
+const MAX_EMBED_CHARS_PER_CALL = 48_000;
+
+/**
+ * Group indices into calls that respect BOTH the count ceiling and the character
+ * budget. A single text can never exceed the budget on its own (2,000-char cap
+ * in `composeEmbedText`), but the guard below keeps that from becoming a silent
+ * infinite loop if that cap ever moves.
+ */
+function embedBatches(misses: number[], texts: string[]): number[][] {
+	const batches: number[][] = [];
+	let cur: number[] = [];
+	let chars = 0;
+	for (const i of misses) {
+		const len = texts[i]?.length ?? 0;
+		if (cur.length && (cur.length >= EMBED_BATCH || chars + len > MAX_EMBED_CHARS_PER_CALL)) {
+			batches.push(cur);
+			cur = [];
+			chars = 0;
+		}
+		cur.push(i);
+		chars += len;
+	}
+	if (cur.length) batches.push(cur);
+	return batches;
+}
 const FETCH_BATCH = 100;
 /**
  * Rows per content_embeddings upsert, and it is 10 rather than 50 because 50
@@ -558,7 +613,7 @@ async function embedTexts(env: Env, texts: string[]): Promise<Array<number[] | n
 	if (!misses.length) return out;
 
 	const gateway = env.AI_GATEWAY_NAME ? { id: env.AI_GATEWAY_NAME, cacheTtl: 86400 * 7 } : undefined;
-	for (const part of chunk(misses, EMBED_BATCH)) {
+	for (const part of embedBatches(misses, texts)) {
 		const res = (await env.AI.run(
 			model as Parameters<typeof env.AI.run>[0],
 			{ text: part.map((i) => texts[i]) } as Parameters<typeof env.AI.run>[1],
