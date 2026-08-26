@@ -42,10 +42,16 @@ export function CityTravelTab({
   // there is genuinely more than one. Repeating "Major airport: BER" one
   // section below "Airport: BER" was noise, not information.
   const airportFacts: Fact[] = [];
-  if (!hasAirport && nearestAirport)
+  if (!hasAirport && nearestAirport?.iata_code)
     airportFacts.push({
       label: t('cities.detail.travel.nearestAirport', 'Nearest airport'),
-      value: `${nearestAirport.iata_code} · ${nearestAirport.distanceKm} km`,
+      // The distance can be absent when the code came from the client-side
+      // fallback rather than `cities.nearest_airport_km`; show the code alone
+      // rather than "LGW · null km".
+      value:
+        nearestAirport.distanceKm != null
+          ? `${nearestAirport.iata_code} · ${nearestAirport.distanceKm} km`
+          : nearestAirport.iata_code,
     });
   if (city.airport_codes && city.airport_codes.length > 1)
     airportFacts.push({
