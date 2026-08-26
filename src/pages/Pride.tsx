@@ -16,6 +16,7 @@ import {
   type PrideFilters,
 } from '@/components/pride/PrideFilterRail';
 import { exportPrideIcs } from '@/utils/prideIcs';
+import { usePrideProgrammeIndex } from '@/hooks/usePrideProgrammeIndex';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageContainer } from '@/components/layout/PageContainer';
 
@@ -84,6 +85,12 @@ export default function PridePage() {
 
   const filtered = useMemo(() => applyPrideFilters(events, filters), [events, filters]);
 
+  // Shared with PrideTable via react-query's cache (same key), so the .ics
+  // export ships the parade / festival / week breakdown without a second fetch.
+  const { data: programmeByParent } = usePrideProgrammeIndex(
+    useMemo(() => filtered.map((e) => e.id), [filtered]),
+  );
+
   const summary = useMemo(
     () => ({
       total: filtered.length,
@@ -141,7 +148,7 @@ export default function PridePage() {
           </div>
           <Button
             variant="outline"
-            onClick={() => exportPrideIcs(filtered, year)}
+            onClick={() => exportPrideIcs(filtered, year, programmeByParent)}
             disabled={filtered.length === 0}
           >
             <Download className="size-4 mr-1.5" />

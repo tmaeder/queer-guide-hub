@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { ArrowUp, ArrowDown, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { continentOf } from '@/components/pride/PrideFilterRail';
+import { ProgrammeSummary } from '@/components/pride/ProgrammeSummary';
+import { usePrideProgrammeIndex } from '@/hooks/usePrideProgrammeIndex';
 import type { PrideCalendarEvent } from '@/hooks/usePrideCalendar';
 
 interface PrideTableProps {
@@ -24,6 +26,9 @@ function fmtDate(iso: string, end: string | null): string {
 
 export function PrideTable({ events, selectedId, onSelect }: PrideTableProps) {
   const { t } = useTranslation();
+  // One batched request for every umbrella on screen, not one per row.
+  const parentIds = useMemo(() => events.map((e) => e.id), [events]);
+  const { data: programmeByParent } = usePrideProgrammeIndex(parentIds);
   const [sortKey, setSortKey] = useState<SortKey>('date');
   const [sortAsc, setSortAsc] = useState(true);
 
@@ -156,6 +161,13 @@ export function PrideTable({ events, selectedId, onSelect }: PrideTableProps) {
                     <span className="block text-xs2 text-foreground/60 sm:hidden">
                       {[e.city, e.country].filter(Boolean).join(', ')}
                     </span>
+                    {/* What the span in the date column actually contains. A
+                        bare "3 – 6 Jul" cannot tell a reader whether the parade
+                        is on the Saturday or the Sunday. */}
+                    <ProgrammeSummary
+                      entries={programmeByParent?.get(e.id) ?? []}
+                      className="block text-xs2 text-muted-foreground"
+                    />
                   </td>
                   <td className="py-2 px-4 align-top text-foreground/80 hidden sm:table-cell">
                     {[e.city, e.country].filter(Boolean).join(', ')}

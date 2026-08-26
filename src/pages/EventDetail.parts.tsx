@@ -20,6 +20,7 @@ import {
   ShieldCheck,
   CircleCheck,
   Sparkles,
+  Flag,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EntitySocialLinks } from '@/components/entity/EntitySocialLinks';
@@ -87,6 +88,14 @@ export type EventWithRelations = Database['public']['Tables']['events']['Row'] &
     lgbti_criminalization: Record<string, unknown> | null;
   } | null;
   festivals?: { id: string; name: string } | null;
+  /** The umbrella this event belongs to, when it is a programme child. */
+  parent?: {
+    id: string;
+    slug: string;
+    title: string;
+    start_date: string;
+    end_date: string | null;
+  } | null;
   organizer?: {
     id: string;
     slug?: string;
@@ -107,6 +116,7 @@ export const EVENT_SELECT_FIELDS = `
   cities(id, slug, name, country_id, countries:country_id(id, slug, name, equality_score, lgbti_criminalization)),
   countries(id, slug, name, equality_score, lgbti_criminalization),
   festivals:festival_id(id, name),
+  parent:events!events_parent_event_id_fkey(id, slug, title, start_date, end_date),
   organizer:venues!organizer_id(id, slug, name, website, email, instagram, phone, organizer_handles)
 `;
 
@@ -378,8 +388,26 @@ export function EventMasthead({
         <LiveStateLine event={event} />
       </div>
 
-      {(event.festivals?.id || event.countries?.equality_score != null) && (
+      {(event.parent?.id ||
+        event.festivals?.id ||
+        event.countries?.equality_score != null) && (
         <div className="flex flex-wrap items-center gap-4">
+          {/* The umbrella this event belongs to. Linked, unlike the festival
+              line below it: the parent is a real event with its own page that
+              carries the full programme, which is the whole point of the
+              backlink. */}
+          {event.parent?.id && (
+            <span className="inline-flex items-center gap-1.5 text-13 text-muted-foreground">
+              <Flag size={13} aria-hidden="true" />
+              Part of{' '}
+              <LocalizedLink
+                to={`/events/${event.parent.slug || event.parent.id}`}
+                className="font-semibold text-foreground"
+              >
+                {event.parent.title}
+              </LocalizedLink>
+            </span>
+          )}
           {event.festivals?.id && (
             <span className="inline-flex items-center gap-1.5 text-13 text-muted-foreground">
               <Music size={13} aria-hidden="true" />
