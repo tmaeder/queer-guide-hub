@@ -124,6 +124,18 @@ describe('People hub', () => {
     expect(screen.getByRole('link', { name: 'Kreis 4' })).toHaveAttribute('href', '/place/kreis-4');
   });
 
+  // `/community/groups` is the LIST page; the detail route is `/groups/:groupId`.
+  // This card pointed at `/community/groups/:id`, which matches no route and so
+  // 404'd every group on the hub — 14 reports on the admin error board, all of
+  // them real, public, otherwise-reachable groups.
+  it('links a group to the group detail route, not under the community list', () => {
+    renderWithProviders(<People />);
+    expect(screen.getByRole('link', { name: 'Queer Hiking' })).toHaveAttribute(
+      'href',
+      '/groups/g1',
+    );
+  });
+
   it('says so when the spaces came from the country rather than the city', () => {
     spacesScope = 'country';
     renderWithProviders(<People />);

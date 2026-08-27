@@ -2874,6 +2874,8 @@
       "about": {
         "status": "[AR] Status",
         "capital": "[AR] Capital city",
+        "regionalCapital": "[AR] Regional capital",
+        "capitalOfRegion": "[AR] Capital of",
         "majorCity": "[AR] Major city",
         "region": "[AR] Region",
         "timezone": "[AR] Timezone",
@@ -2905,6 +2907,7 @@
       }
     },
     "capital": "[AR] Capital",
+    "regionalCapital": "[AR] Regional capital",
     "continentClear": "[AR] Clear",
     "continentsTitle": "[AR] Continents",
     "counting": "[AR] Counting…",

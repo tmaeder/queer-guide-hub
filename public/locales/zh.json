@@ -2864,6 +2864,8 @@
       "about": {
         "status": "[ZH] Status",
         "capital": "[ZH] Capital city",
+        "regionalCapital": "[ZH] Regional capital",
+        "capitalOfRegion": "[ZH] Capital of",
         "majorCity": "[ZH] Major city",
         "region": "[ZH] Region",
         "timezone": "[ZH] Timezone",
@@ -2895,6 +2897,7 @@
       }
     },
     "capital": "[ZH] Capital",
+    "regionalCapital": "[ZH] Regional capital",
     "continentClear": "[ZH] Clear",
     "continentsTitle": "[ZH] Continents",
     "counting": "[ZH] Counting…",

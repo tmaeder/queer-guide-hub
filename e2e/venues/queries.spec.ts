@@ -12,6 +12,26 @@ import { test, expect } from '@playwright/test';
 const SUPABASE_PATTERN = /supabase.*\/rest\/v1\//;
 const MAX_REQUESTS = 20;
 
+// This budget describes an ANONYMOUS first load, and it has to say so.
+//
+// The `chromium` project attaches the admin storageState to every spec as soon
+// as E2E_ADMIN_EMAIL / _PASSWORD resolve, which they started doing between the
+// 2026-08-18 and 08-19 nightlies. From then on this test measured a signed-in
+// page: the fixed set above was still there, but ~22 auth-only requests rode in
+// on top of it — user_passkey_enrollment, user_community_score, get_inbox_feed
+// x2, get_inbox_unread_count, user_roles x3, profiles x4, user_achievements x3,
+// user_gamification, achievements, reservations, trip_members x2,
+// venue_favorites — and the count landed at 39. Every nightly since has failed
+// here.
+//
+// Raising MAX_REQUESTS would have been the wrong repair: the auth chrome scales
+// with the signed-in header, not with the number of venue cards, so a bigger
+// ceiling would have hidden exactly the per-card N+1 this test exists to catch.
+// Pinning the spec signed-out restores the measurement the budget was written
+// for and keeps ≤ 20 meaningful (page size ≥ 12, so a per-card query still blows
+// straight through it).
+test.use({ storageState: { cookies: [], origins: [] } });
+
 test.describe('Venues — query batching', () => {
   test('first page load issues a fixed (non-N+1) number of Supabase REST calls', async ({ page }) => {
     const supabaseRequests: string[] = [];

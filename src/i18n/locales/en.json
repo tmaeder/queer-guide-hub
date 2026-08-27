@@ -2857,6 +2857,7 @@
   },
   "cities": {
     "capital": "Capital",
+    "regionalCapital": "Regional capital",
     "continentClear": "Clear",
     "continentCount_one": "{{count}} city",
     "continentCount_other": "{{count}} cities",
@@ -2914,6 +2915,8 @@
       "about": {
         "status": "Status",
         "capital": "Capital city",
+        "regionalCapital": "Regional capital",
+        "capitalOfRegion": "Capital of",
         "majorCity": "Major city",
         "region": "Region",
         "timezone": "Timezone",

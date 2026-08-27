@@ -2864,6 +2864,8 @@
       "about": {
         "status": "[JA] Status",
         "capital": "[JA] Capital city",
+        "regionalCapital": "[JA] Regional capital",
+        "capitalOfRegion": "[JA] Capital of",
         "majorCity": "[JA] Major city",
         "region": "[JA] Region",
         "timezone": "[JA] Timezone",
@@ -2895,6 +2897,7 @@
       }
     },
     "capital": "[JA] Capital",
+    "regionalCapital": "[JA] Regional capital",
     "continentClear": "[JA] Clear",
     "continentsTitle": "[JA] Continents",
     "counting": "[JA] Counting…",

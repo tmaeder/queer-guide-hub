@@ -191,6 +191,29 @@ export interface ContentTypeConfig {
   id: string;
   /** Database table name */
   tableName: string;
+  /**
+   * RPC that owns creation for this type, instead of a plain insert into
+   * `tableName`.
+   *
+   * Set this when the table has an identity problem a unique index cannot
+   * express, so that "does this already exist?" is answered in one place rather
+   * than re-implemented per writer. `cities` is the case it was added for:
+   * every unique key on that table keys on the string, so an exonym
+   * ("Kapstadt" beside "Cape Town") passes every constraint and lands as a
+   * second row. `city_resolve_or_create` probes aliases, Wikidata QID and both
+   * total unique keys, and refuses rather than guessing when two candidates
+   * are equally plausible.
+   *
+   * The RPC must return at least `{ city_id | id, action, reason }`; `action`
+   * of 'refused' is surfaced to the editor as a save error with the reason,
+   * never silently swallowed.
+   */
+  createRpc?: {
+    /** Postgres function name. */
+    fn: string;
+    /** Maps the editor's form values to the RPC's arguments. */
+    args: (saveData: Record<string, unknown>) => Record<string, unknown>;
+  };
   /** Primary key column (usually 'id') */
   primaryKey: string;
   /** Column used as title in lists */

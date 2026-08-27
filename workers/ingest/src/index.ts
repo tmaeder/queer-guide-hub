@@ -63,8 +63,65 @@ const DEFAULT_EMBED_MODEL = "@cf/baai/bge-m3"; // 1024-dim, multilingual
 const DEFAULT_DRAIN_LIMIT = 100;
 /** Hard ceiling for the operator-driven POST /drain, for the same reason. */
 const MAX_DRAIN_LIMIT = 300;
-/** Texts per Workers AI call. bge-m3 takes an array; 50 is comfortable. */
+/**
+ * Upper bound on texts per Workers AI call. This is a CEILING, not the batch
+ * size — `embedBatches()` also enforces a character budget, and that is usually
+ * what binds.
+ */
 const EMBED_BATCH = 50;
+/**
+ * Character budget per Workers AI call, and it is the reason the drain died.
+ *
+ * bge-m3 accepts an array, so batching by COUNT alone looked free. It is not:
+ * the model has a 60,000-token context for the whole call, and
+ * `composeEmbedText` caps each row at 2,000 chars, so 50 rows can present
+ * 100,000 characters at once. Measured on a live tail 2026-08-26:
+ *
+ *   AiError 3030: Max context reached 70391 tokens but model supports only 60000
+ *     at embedTexts → indexRows → drainStale
+ *
+ * That threw on EVERY scheduled run from the batching deploy (2026-08-23 22:23)
+ * onward — 56 hours, 32,559 rows queued, 0 embedded, while the cron itself kept
+ * reporting `outcome: "ok"` because the throw was caught and counted as failed
+ * rows. The keyword arm of search kept working, so nothing user-visible said so.
+ *
+ * 20,000 characters, and the number was corrected once by measurement. The first
+ * attempt reasoned "worst case is one token per character" and set 48,000 — then
+ * a batch under that budget came back at 75,302 tokens, i.e. ~1.57 tokens PER
+ * CHARACTER. Non-Latin scripts routinely emit several tokens per character, so
+ * the pessimistic direction was the opposite of the assumed one. 20,000 chars
+ * holds at up to ~3 tokens/char.
+ *
+ * This is a budget, not a guarantee — `runBatch` halves and retries on overflow,
+ * which is what actually makes the drain safe for any corpus. Do NOT raise this
+ * to "use the context better": the gain is a few subrequests, and the loss, when
+ * a batch tips over, was 56 hours of a silently stale vector index.
+ */
+const MAX_EMBED_CHARS_PER_CALL = 20_000;
+
+/**
+ * Group indices into calls that respect BOTH the count ceiling and the character
+ * budget. A single text can never exceed the budget on its own (2,000-char cap
+ * in `composeEmbedText`), but the guard below keeps that from becoming a silent
+ * infinite loop if that cap ever moves.
+ */
+function embedBatches(misses: number[], texts: string[]): number[][] {
+	const batches: number[][] = [];
+	let cur: number[] = [];
+	let chars = 0;
+	for (const i of misses) {
+		const len = texts[i]?.length ?? 0;
+		if (cur.length && (cur.length >= EMBED_BATCH || chars + len > MAX_EMBED_CHARS_PER_CALL)) {
+			batches.push(cur);
+			cur = [];
+			chars = 0;
+		}
+		cur.push(i);
+		chars += len;
+	}
+	if (cur.length) batches.push(cur);
+	return batches;
+}
 const FETCH_BATCH = 100;
 /**
  * Rows per content_embeddings upsert, and it is 10 rather than 50 because 50
@@ -558,20 +615,57 @@ async function embedTexts(env: Env, texts: string[]): Promise<Array<number[] | n
 	if (!misses.length) return out;
 
 	const gateway = env.AI_GATEWAY_NAME ? { id: env.AI_GATEWAY_NAME, cacheTtl: 86400 * 7 } : undefined;
-	for (const part of chunk(misses, EMBED_BATCH)) {
-		const res = (await env.AI.run(
-			model as Parameters<typeof env.AI.run>[0],
-			{ text: part.map((i) => texts[i]) } as Parameters<typeof env.AI.run>[1],
-			gateway ? { gateway } : undefined,
-		)) as unknown;
-		const data =
-			(res as { data?: unknown })?.data ?? (res as { [n: number]: unknown })?.[0];
-		if (!Array.isArray(data)) throw new Error("embed: no vectors");
-		part.forEach((i, j) => {
-			const vec = data[j];
-			out[i] = Array.isArray(vec) ? (vec as number[]) : null;
-		});
-	}
+
+	/**
+	 * Run one batch, and on a context overflow SPLIT IT AND RETRY.
+	 *
+	 * The character budget above is a good guess, and a good guess is not enough
+	 * here — the tokens-per-character ratio is a property of the corpus, not of
+	 * the code. Measured on this one: the first failure was 70,391 tokens for
+	 * ~100k chars (~1.42 chars/token), and after the budget was introduced a
+	 * batch of <=48,000 chars still produced 75,302 tokens — i.e. ~1.57 tokens
+	 * PER CHARACTER, the opposite direction. Non-Latin scripts can emit several
+	 * tokens per character, so no fixed character budget is safe for every batch
+	 * this corpus can present.
+	 *
+	 * Halving on overflow is correct by construction instead: it needs no ratio,
+	 * it costs nothing on the common path (the budget usually holds), and it
+	 * converges in log2 steps. A single text that still overflows is recorded as
+	 * null — the caller counts it failed and the drain moves on, rather than the
+	 * whole run dying on one pathological row, which is exactly how 32,559 rows
+	 * came to be queued behind a single throw.
+	 */
+	const runBatch = async (part: number[]): Promise<void> => {
+		try {
+			const res = (await env.AI.run(
+				model as Parameters<typeof env.AI.run>[0],
+				{ text: part.map((i) => texts[i]) } as Parameters<typeof env.AI.run>[1],
+				gateway ? { gateway } : undefined,
+			)) as unknown;
+			const data =
+				(res as { data?: unknown })?.data ?? (res as { [n: number]: unknown })?.[0];
+			if (!Array.isArray(data)) throw new Error("embed: no vectors");
+			part.forEach((i, j) => {
+				const vec = data[j];
+				out[i] = Array.isArray(vec) ? (vec as number[]) : null;
+			});
+		} catch (e) {
+			if (part.length === 1) {
+				console.warn("embed skipped one row", (e as Error)?.message);
+				out[part[0]] = null;
+				return;
+			}
+			const mid = Math.ceil(part.length / 2);
+			console.warn(
+				`embed batch of ${part.length} failed, splitting`,
+				(e as Error)?.message,
+			);
+			await runBatch(part.slice(0, mid));
+			await runBatch(part.slice(mid));
+		}
+	};
+
+	for (const part of embedBatches(misses, texts)) await runBatch(part);
 
 	// Best-effort cache fill. A KV failure must not fail the drain — the vector
 	// is already in hand and about to be written to the database.

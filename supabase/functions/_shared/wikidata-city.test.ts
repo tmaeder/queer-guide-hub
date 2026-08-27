@@ -3,8 +3,11 @@ import {
   applyLabels,
   bestStatement,
   currentStatements,
+  capitalQuery,
   parseCityFacts,
+  parseCityNames,
   pickAirports,
+  pickCapitals,
   pickUniversities,
   resolveLabels,
   type Claims,
@@ -245,4 +248,175 @@ Deno.test('pickUniversities dedupes, sorts and drops unlabelled QID echoes', () 
     { city: { value: 'e/Q60' }, xLabel: { value: 'Q12345' } },
   ]
   assertEquals(pickUniversities(rows).get('Q60'), ['Columbia University', 'New York University'])
+})
+
+// --- capital scope (P1376) --------------------------------------------------
+
+const cb = (
+  city: string,
+  unit: string,
+  label: string,
+  flags: {
+    country?: boolean
+    countryClass?: boolean
+    firstLevel?: boolean
+    /** Defaults true — the same-country case is the ordinary one. */
+    sameCountry?: boolean
+  } = {},
+) => ({
+  city: { value: `http://www.wikidata.org/entity/${city}` },
+  unit: { value: `http://www.wikidata.org/entity/${unit}` },
+  unitLabel: { value: label },
+  isCountry: { value: String(!!flags.country) },
+  isCountryClass: { value: String(!!flags.countryClass) },
+  isFirstLevel: { value: String(!!flags.firstLevel) },
+  sameCountry: { value: String(flags.sameCountry !== false) },
+})
+
+Deno.test('capitalQuery excludes former capitals and deprecated statements', () => {
+  const q = capitalQuery(['Q64', 'Q1726'])
+  // A P582 (end time) qualifier is what marks Bonn or Rio as a FORMER capital,
+  // and deprecated rank is how Wikidata retracts a wrong claim without deleting
+  // it. Both have to be filtered in the query, not after it.
+  assertEquals(q.includes('FILTER NOT EXISTS { ?st pq:P582 ?ended }'), true)
+  assertEquals(q.includes('FILTER NOT EXISTS { ?st wikibase:rank wikibase:DeprecatedRank }'), true)
+  // Measured live against WDQS: without this, Cologne publishes as the capital
+  // of the Electorate of Cologne — a first-level subdivision by class that
+  // simply ceased to exist in 1803, with no end qualifier on the statement to
+  // give it away. Cologne is not a Landeshauptstadt; Düsseldorf is.
+  assertEquals(q.includes('FILTER NOT EXISTS { ?unit wdt:P576 ?dissolved }'), true)
+  // Reified statements, not wdt: — a truthy path cannot see the qualifiers the
+  // two filters above depend on.
+  assertEquals(q.includes('?city p:P1376 ?st'), true)
+  assertEquals(q.includes('wd:Q64'), true)
+})
+
+Deno.test('a national capital is not a regional one (Berlin)', () => {
+  const got = pickCapitals([cb('Q64', 'Q183', 'Germany', { country: true })])
+  assertEquals(got.get('Q64')!.national, true)
+  assertEquals(got.get('Q64')!.regional, false)
+  assertEquals(got.get('Q64')!.regionOf, undefined)
+})
+
+Deno.test('a first-level subdivision capital resolves with its label (Munich)', () => {
+  const got = pickCapitals([cb('Q1726', 'Q980', 'Bavaria', { firstLevel: true })])
+  assertEquals(got.get('Q1726')!.regional, true)
+  assertEquals(got.get('Q1726')!.national, false)
+  assertEquals(got.get('Q1726')!.regionOf, 'Bavaria')
+})
+
+Deno.test('a dependent territory reads as national via class, not via P17', () => {
+  // The city's P17 is the parent sovereign state (United Kingdom) while P1376
+  // points at the territory, so isCountry is false. Without the class arm this
+  // would be published as a REGIONAL capital.
+  const got = pickCapitals([cb('Q1410', 'Q1410', 'Gibraltar', { countryClass: true })])
+  assertEquals(got.get('Q1410')!.national, true)
+  assertEquals(got.get('Q1410')!.regional, false)
+})
+
+Deno.test('a first-level unit in another country is not a regional capital', () => {
+  // The corroborating signal. A P1376 that points across a border cannot
+  // publish a flag; a null column is recoverable, a wrong one is not.
+  const got = pickCapitals([cb('Q1', 'Q2', 'Some State', { firstLevel: true, sameCountry: false })])
+  assertEquals(got.get('Q1')!.regional, false)
+  assertEquals(got.get('Q1')!.regionOf, undefined)
+})
+
+Deno.test('a district capital qualifies for neither arm', () => {
+  const got = pickCapitals([cb('Q1', 'Q2', 'Some Landkreis')])
+  assertEquals(got.get('Q1')!.national, false)
+  assertEquals(got.get('Q1')!.regional, false)
+  assertEquals(got.get('Q1')!.units, ['Q2'])
+})
+
+Deno.test('a city that is both national and regional keeps both flags', () => {
+  // City-states: Berlin, Vienna, Hamburg, Bremen. This is exactly why the
+  // schema carries two booleans instead of one scope enum.
+  const got = pickCapitals([
+    cb('Q1055', 'Q183', 'Germany', { country: true }),
+    cb('Q1055', 'Q1055', 'Hamburg', { firstLevel: true }),
+  ])
+  assertEquals(got.get('Q1055')!.national, true)
+  assertEquals(got.get('Q1055')!.regional, true)
+  assertEquals(got.get('Q1055')!.regionOf, 'Hamburg')
+})
+
+Deno.test('an unlabelled unit keeps the flag but publishes no region name', () => {
+  // The label service echoes the QID when there is no English label. The
+  // classification still held, so the flag stands; the column stays empty
+  // rather than rendering "Q1221156".
+  const got = pickCapitals([cb('Q1', 'Q1221156', 'Q1221156', { firstLevel: true })])
+  assertEquals(got.get('Q1')!.regional, true)
+  assertEquals(got.get('Q1')!.regionOf, undefined)
+})
+
+Deno.test('among several regional units the answer does not depend on row order', () => {
+  const rows = [
+    cb('Q1', 'Q10', 'Zealand', { firstLevel: true }),
+    cb('Q1', 'Q11', 'Alsace', { firstLevel: true }),
+  ]
+  assertEquals(pickCapitals(rows).get('Q1')!.regionOf, 'Alsace')
+  assertEquals(pickCapitals([...rows].reverse()).get('Q1')!.regionOf, 'Alsace')
+})
+
+// --------------------------------------------------------------- parseCityNames
+
+const monoStatement = (text: string, language: string, rank: 'preferred' | 'normal' | 'deprecated' = 'normal') => ({
+  rank,
+  mainsnak: { snaktype: 'value', datavalue: { value: { text, language }, type: 'monolingualtext' } },
+})
+
+Deno.test('parseCityNames: harvests the exonym that makes the resolver work', () => {
+  const names = parseCityNames(
+    {},
+    { en: { value: 'Cape Town' }, de: { value: 'Kapstadt' }, fr: { value: 'Le Cap' } },
+    { de: [{ value: 'Kaapstad' }] },
+    {},
+  )
+  const values = names.map(n => n.alias)
+  assertEquals(values.includes('Kapstadt'), true)
+  assertEquals(values.includes('Le Cap'), true)
+  assertEquals(values.includes('Kaapstad'), true)
+  // The locale rides along so a later reader can tell a German exonym from an
+  // English label; the resolver itself ignores it and matches on alias_key.
+  assertEquals(names.find(n => n.alias === 'Kapstadt')?.locale, 'de')
+  assertEquals(names.find(n => n.alias === 'Kaapstad')?.source, 'altlabel')
+})
+
+Deno.test('parseCityNames: a comma-qualified sitelink is NOT a synonym', () => {
+  // "Bern (Stadt)" is the same place with a disambiguator; "Washington, D.C."
+  // trimmed to "Washington" is a different and famously ambiguous one. An alias
+  // is a claim of identity, so only the parenthetical form may be trimmed.
+  const names = parseCityNames({}, {}, {}, {
+    dewiki: { title: 'Bern (Stadt)' },
+    enwiki: { title: 'Washington, D.C.' },
+  })
+  const values = names.map(n => n.alias)
+  assertEquals(values.includes('Bern'), true)
+  assertEquals(values.some(v => v.startsWith('Washington')), false)
+})
+
+Deno.test('parseCityNames: monolingual claims respect rank', () => {
+  // Wikidata retracts a wrong name by DEPRECATING it, not by deleting it.
+  // Reading array position would resurrect exactly those.
+  const claims = {
+    P1448: [
+      monoStatement('Wrong Official Name', 'de', 'deprecated'),
+      monoStatement('Freie und Hansestadt Hamburg', 'de', 'preferred'),
+    ],
+  } as unknown as Claims
+  const names = parseCityNames(claims, {}, {}, {})
+  const official = names.filter(n => n.source === 'official').map(n => n.alias)
+  assertEquals(official, ['Freie und Hansestadt Hamburg'])
+})
+
+Deno.test('parseCityNames: deduplicates case-insensitively and drops junk', () => {
+  const names = parseCityNames(
+    {},
+    { en: { value: 'Lyss' }, de: { value: 'lyss' } },
+    { en: [{ value: 'https://www.notion.so/Lyss-CH-6045c2ad' }, { value: 'L' }] },
+    { enwiki: { title: 'Lyss' } },
+  )
+  assertEquals(names.length, 1)
+  assertEquals(names[0].alias, 'Lyss')
 })

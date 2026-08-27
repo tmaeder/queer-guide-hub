@@ -1,0 +1,41 @@
+-- Restore security_invoker on cities_admin, and revoke the API-role write set.
+--
+-- 20261001110000 (capital scope) recreated this view with CREATE OR REPLACE VIEW
+-- and no WITH (security_invoker = on). CREATE OR REPLACE VIEW PRESERVES grants
+-- but RESETS reloptions, so the option was silently stripped while the existing
+-- anon/authenticated INSERT/UPDATE/DELETE/TRUNCATE grants stayed exactly where
+-- they were.
+--
+-- Those grants were harmless for as long as security_invoker was on: the view
+-- ran as the caller, so RLS on public.cities still applied. Stripping the option
+-- made the view run as its owner, which turned a dormant grant set into
+-- anonymous write access to cities that bypasses RLS entirely. That is why the
+-- migration's own comment about not wanting to "take the view's grants with it"
+-- was reasoning about the wrong half -- the grants survived; the option did not.
+--
+-- Measured on production before this ran:
+--   security_invoker = (null)
+--   anon:          DELETE, INSERT, TRUNCATE, UPDATE
+--   authenticated: DELETE, INSERT, TRUNCATE, UPDATE
+--
+-- Fix both halves rather than just the option, so a future CREATE OR REPLACE
+-- that strips it again cannot re-open a write path:
+--   1. security_invoker back on  -> RLS applies to reads and writes again.
+--   2. revoke the write set      -> defence in depth. Nothing writes through
+--      this view (no client code, no DB function -- only generated types name
+--      it), so this is behaviour-preserving, same rationale as
+--      20260806180000_revoke_api_write_on_security_definer_views.sql.
+--
+-- SELECT is deliberately left in place: the view is the admin city console and
+-- with security_invoker restored its reads are gated by cities' own RLS.
+--
+-- This is the second time a replaced view has lost the option
+-- (20260810160000_restore_security_invoker_on_replaced_views). The standing
+-- rule is to write the body as
+--   CREATE OR REPLACE VIEW ... WITH (security_invoker = on) AS ...
+-- so the option is restated every time the body is, rather than relying on it
+-- surviving a replace. `Critical data-quality gates` is what catches it.
+
+alter view public.cities_admin set (security_invoker = on);
+
+revoke insert, update, delete, truncate on public.cities_admin from anon, authenticated;
