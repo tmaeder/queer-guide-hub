@@ -345,10 +345,17 @@ declare v_bad int; v_missing int;
 begin
   -- Every refusal artifact and wrong-entity string this migration exists to
   -- remove. Matching the OLD strings, not "did an update run".
+  --
+  -- `ketamine` is NOT in this list even though it carries the same refusal
+  -- artifact: it is repaired one migration later, in
+  -- 20261002100300_substance_tag_corrections, which asserts it there. An
+  -- earlier draft included it here and this block correctly failed the deploy —
+  -- an assertion must only cover what its own migration changed, or it reports
+  -- the migration order as a defect in the data.
   select count(*) into v_bad from public.unified_tags
    where coalesce(long_description,'')||' '||coalesce(description,'') ~*
      '(not a topic related to LGBTQ|not supported or promoted by our|no specific information provided about its relation|not directly related to LGBTQ|not mentioned in the provided sources|Paxillus|17.{0,3}Estradiol is a minor and weak|chronic hepatitis B and as part of)'
-     and slug in ('heroin','cocaine','ketamine','paxil','estradiol','descovy','cialis','levitra','sildenafil','tadalafil','vardenafil','avanafil');
+     and slug in ('heroin','cocaine','paxil','estradiol','descovy','cialis','levitra','sildenafil','tadalafil','vardenafil','avanafil');
   if v_bad > 0 then
     raise exception 'clinical fix: % row(s) still carry a refusal or wrong-entity artifact', v_bad;
   end if;
