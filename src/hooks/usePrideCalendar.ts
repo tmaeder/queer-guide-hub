@@ -17,6 +17,7 @@ export interface PrideCalendarEvent {
   is_featured: boolean;
   verification_status: string;
   description: string | null;
+  pride_subtypes: string[] | null;
 }
 
 interface UsePrideCalendarOptions {
@@ -38,10 +39,14 @@ export function usePrideCalendar({ year, enabled = true }: UsePrideCalendarOptio
           `id, slug, title, start_date, end_date,
            city, city_id, country, country_id,
            latitude, longitude, images,
-           is_featured, verification_status, description`,
+           is_featured, verification_status, description, pride_subtypes`,
         )
         .eq('event_type', 'pride')
         .eq('status', 'active')
+        // Only umbrellas belong on the calendar. A programme child (a parade or
+        // an afterparty typed `pride`) would otherwise show up as a second
+        // "Pride" for the same city on the same weekend.
+        .is('parent_event_id', null)
         .gte('start_date', start)
         .lt('start_date', end)
         .is('duplicate_of_id', null)
