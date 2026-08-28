@@ -27,6 +27,17 @@
 -- 1000/min — a few minutes of queue depth, no inline index storm. The
 -- unified_tags audit trigger writes the same count of change-log rows. One-off.
 
+-- ── 0. Name the actor ───────────────────────────────────────────────────────
+-- log_unified_tag_change() (the unified_tags_audit trigger) hard-blocks any
+-- non-derived-column UPDATE on a human_reviewed tag when app.actor is unset
+-- (it defaults to 'system:trigger'). The first db push of this migration died
+-- on exactly that: "human_reviewed tag 1e7ed28b-… cannot be modified by
+-- system:trigger". This is a deliberate, human-decided retirement, so it names
+-- itself — same convention as 20260725120000 ('recount:usage-sync') and
+-- 20260725170000 ('silo-fold'). Transaction-local (is_local=true): migrations
+-- run in one transaction, so the setting cannot leak past this file.
+select set_config('app.actor', 'migration:tag-image-retirement', true);
+
 -- ── 1. Preserve, then clear ─────────────────────────────────────────────────
 
 create table if not exists public.tag_image_retirement (
