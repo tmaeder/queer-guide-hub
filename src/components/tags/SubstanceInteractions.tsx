@@ -23,6 +23,11 @@ import { interactionVisual, INTERACTION_ORDER, type InteractionStatus } from '@/
  * the icon+label are what carry the meaning for a colour-blind reader.
  */
 
+/** Display names for source keys stored lowercase by the importers. */
+const SOURCE_LABEL: Record<string, string> = {
+  tripsit: 'TripSit',
+};
+
 interface Props {
   tagId: string;
   tagName: string;
@@ -48,11 +53,28 @@ export function SubstanceInteractions({ tagId, tagName }: Props) {
     );
   }, [rows]);
 
+  // Every distinct source in what is actually on screen, in the order the rows
+  // arrive (worst-first), deduped by URL.
+  //
+  // THIS USED TO BE `rows[0]` UNDER A HARDCODED "TripSit" LABEL, which was true
+  // only while TripSit was the sole importer. It is not any more: the poppers
+  // combinations are cited to FDA labels, because TripSit's chart does not cover
+  // PDE5 inhibitors and the omission left this readership's most relevant
+  // interaction absent from an interaction chart. Attributing an FDA label to
+  // TripSit would be a false claim about provenance on a safety surface — and
+  // since the rows sort worst-first, `rows[0]` on /tags/poppers would have been
+  // exactly one of those.
+  const sources = useMemo(() => {
+    const seen = new Map<string, string>();
+    for (const r of rows) {
+      if (r.source_url && !seen.has(r.source_url)) seen.set(r.source_url, r.source ?? '');
+    }
+    return [...seen].map(([url, name]) => ({ url, name: SOURCE_LABEL[name] ?? name }));
+  }, [rows]);
+
   // Render nothing rather than an empty shell: most glossary terms are not
   // substances and have no row in this table at all.
   if (isLoading || rows.length === 0) return null;
-
-  const attribution = rows[0];
 
   return (
     <section className="border border-border-hairline">
@@ -116,12 +138,19 @@ export function SubstanceInteractions({ tagId, tagName }: Props) {
         >
           {t('tags.interactions.seeAll', 'See the full interaction chart')}
         </LocalizedLink>
-        <p className="mt-2 text-2xs uppercase tracking-label text-muted-foreground">
-          {t('tags.interactions.credit', 'Interaction data by')}{' '}
-          <a href={attribution.source_url} target="_blank" rel="noopener noreferrer">
-            TripSit
-          </a>
-        </p>
+        {sources.length > 0 && (
+          <p className="mt-2 text-2xs uppercase tracking-label text-muted-foreground">
+            {t('tags.interactions.credit', 'Interaction data by')}{' '}
+            {sources.map((s, i) => (
+              <span key={s.url}>
+                {i > 0 && ', '}
+                <a href={s.url} target="_blank" rel="noopener noreferrer">
+                  {s.name}
+                </a>
+              </span>
+            ))}
+          </p>
+        )}
       </footer>
     </section>
   );
