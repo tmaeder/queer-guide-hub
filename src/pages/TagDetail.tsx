@@ -350,7 +350,6 @@ export default function TagDetail() {
         name: tag.name,
         slug: tag.slug,
         description,
-        image_url: tag.image_url,
         wikipedia_url: tag.wikipedia_url,
       },
       legalSources,
@@ -358,7 +357,6 @@ export default function TagDetail() {
     return {
       title: tag.name,
       description,
-      ogImage: tag.image_url || undefined,
       ogType: 'article' as const,
       canonicalPath: `/tags/${tag.slug}`,
       jsonLd,
@@ -448,28 +446,6 @@ export default function TagDetail() {
           orientation="horizontal"
           label={t('tags.detail.sections', 'Sections')}
         />
-      )}
-
-      {tag.image_url && (
-        <figure className="m-0 bg-muted rounded-element">
-          <img
-            src={tag.image_url}
-            alt={(tag as { image_alt?: string | null }).image_alt ?? ''}
-            loading="lazy"
-            className="block aspect-[16/9] w-full object-cover"
-            onError={(e) => {
-              (e.currentTarget.closest('figure') as HTMLElement | null)?.style.setProperty(
-                'display',
-                'none',
-              );
-            }}
-          />
-          {tag.image_attribution && (
-            <figcaption className="border-t border-border-hairline px-4 py-2 text-2xs text-muted-foreground">
-              {tag.image_attribution}
-            </figcaption>
-          )}
-        </figure>
       )}
 
       {facts.length > 0 && <FactGrid facts={facts} />}

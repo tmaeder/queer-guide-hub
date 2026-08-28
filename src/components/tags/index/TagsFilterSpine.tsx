@@ -60,8 +60,6 @@ interface TagsFilterSpineProps {
   onDir: () => void;
   usage: TagUsageFilter;
   onUsage: (v: TagUsageFilter) => void;
-  hasImage: boolean;
-  onHasImage: (v: boolean) => void;
 }
 
 export function TagsFilterSpine({
@@ -75,8 +73,6 @@ export function TagsFilterSpine({
   onDir,
   usage,
   onUsage,
-  hasImage,
-  onHasImage,
 }: TagsFilterSpineProps) {
   const { t } = useTranslation();
 
@@ -179,14 +175,6 @@ export function TagsFilterSpine({
           className={cn(CHIP, usage === 'unused' ? CHIP_ON : CHIP_OFF)}
         >
           {t('tags.filter.unused', 'Unused')}
-        </button>
-        <button
-          type="button"
-          onClick={() => onHasImage(!hasImage)}
-          aria-pressed={hasImage}
-          className={cn(CHIP, hasImage ? CHIP_ON : CHIP_OFF)}
-        >
-          {t('tags.filter.withImage', 'Illustrated')}
         </button>
       </div>
     </>
