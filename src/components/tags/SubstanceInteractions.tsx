@@ -64,12 +64,21 @@ export function SubstanceInteractions({ tagId, tagName }: Props) {
   // TripSit would be a false claim about provenance on a safety surface — and
   // since the rows sort worst-first, `rows[0]` on /tags/poppers would have been
   // exactly one of those.
+  // KEYED BY DISPLAY NAME, NOT BY URL. Deduping on the URL printed
+  // "Interaction data by FDA label, FDA label, FDA label, FDA label" on
+  // /tags/poppers: the seven PDE5 combinations cite four different DailyMed
+  // documents, because sildenafil/Viagra, tadalafil/Cialis and
+  // vardenafil/Levitra each share a label while avanafil has its own. A credit
+  // line names WHO the data came from, so one entry per source is the whole
+  // point; the first URL for that name is the one it links to.
   const sources = useMemo(() => {
     const seen = new Map<string, string>();
     for (const r of rows) {
-      if (r.source_url && !seen.has(r.source_url)) seen.set(r.source_url, r.source ?? '');
+      if (!r.source_url) continue;
+      const name = SOURCE_LABEL[r.source ?? ''] ?? r.source ?? '';
+      if (!seen.has(name)) seen.set(name, r.source_url);
     }
-    return [...seen].map(([url, name]) => ({ url, name: SOURCE_LABEL[name] ?? name }));
+    return [...seen].map(([name, url]) => ({ name, url }));
   }, [rows]);
 
   // Render nothing rather than an empty shell: most glossary terms are not

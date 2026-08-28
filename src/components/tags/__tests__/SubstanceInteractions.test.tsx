@@ -60,6 +60,25 @@ describe('SubstanceInteractions attribution', () => {
     expect(screen.getAllByRole('link', { name: 'TripSit' })).toHaveLength(1);
   });
 
+  // The shape /tags/poppers actually has, and the reason dedup is keyed by
+  // display name rather than by URL. The seven PDE5 combinations cite four
+  // different DailyMed documents — sildenafil/Viagra, tadalafil/Cialis and
+  // vardenafil/Levitra each share a label — so a URL-keyed dedup rendered
+  // "Interaction data by FDA label, FDA label, FDA label, FDA label" on
+  // production.
+  it('credits one source once even when its rows cite different documents', () => {
+    mockRows.mockReturnValue([
+      row({ other_slug: 'viagra', source: 'FDA label', source_url: 'https://dailymed/a' }),
+      row({ other_slug: 'cialis', source: 'FDA label', source_url: 'https://dailymed/b' }),
+      row({ other_slug: 'levitra', source: 'FDA label', source_url: 'https://dailymed/c' }),
+      row({ other_slug: 'avanafil', source: 'FDA label', source_url: 'https://dailymed/d' }),
+    ]);
+    renderWithProviders(<SubstanceInteractions tagId="t1" tagName="Poppers" />);
+    const credits = screen.getAllByRole('link', { name: 'FDA label' });
+    expect(credits).toHaveLength(1);
+    expect(credits[0]).toHaveAttribute('href', 'https://dailymed/a');
+  });
+
   it('renders nothing when the term has no interaction rows', () => {
     mockRows.mockReturnValue([]);
     const { container } = renderWithProviders(
