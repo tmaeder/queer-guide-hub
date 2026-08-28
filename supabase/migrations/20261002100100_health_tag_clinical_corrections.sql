@@ -340,6 +340,32 @@ Its cardiovascular effects are the ones that put people in hospital: it constric
 Combined with alcohol, the body forms cocaethylene, a compound that lasts longer than cocaine itself and places additional strain on the heart — the two together are more cardiotoxic than either alone. Combined with opioids, the stimulant can mask how much opioid has been taken and wears off first, which is a documented route to respiratory arrest.'
 where slug = 'cocaine';
 
+-- KETAMINE was listed in this migration's verification block but never given a
+-- correction, which is why the migration raised
+-- `clinical fix: 1 row(s) still carry a refusal or wrong-entity artifact` and
+-- rolled back in full on 2026-08-28 -- taking every later migration with it,
+-- since `db push` stops at the first failure while the edge functions had
+-- already deployed. The row's `description` was already accurate (it names the
+-- bladder damage and the k-hole); only `long_description` carried the refusal
+-- artifact, and its closing sentence -- "As there is no specific information
+-- provided about its relation to LGBTQ+ travel or community" -- is the model
+-- declining to answer, preserved as if it were content.
+--
+-- The replacement asserts nothing the row did not already assert, plus the
+-- airway mechanism, which is the reason the dissociation matters rather than
+-- being merely unpleasant. No figures are invented: ketamine-induced uropathy
+-- has no clean dose threshold to quote, so the text states the direction and
+-- declines a number, as the estradiol correction above does.
+update public.unified_tags set long_description =
+'Ketamine is a dissociative anaesthetic, used in human and veterinary medicine and taken recreationally for the detached, dreamlike state it produces. It works mainly by blocking NMDA receptors, which is a different mechanism from the depressants it is often taken alongside.
+
+The harm from regular heavy use is urological. Ketamine damages the lining of the bladder, causing urinary urgency, frequency and pain, and over time a shrunken bladder that holds less. The damage can persist after use stops and in some cases does not fully reverse. There is no established safe threshold to quote, but the risk tracks how heavily and how often it is used, and urinary symptoms are the signal to stop and see a clinician rather than wait.
+
+The acute risk is the airway. Ketamine depresses breathing less than most anaesthetics, so the danger is not usually respiratory arrest — it is that high doses immobilise, a state known as a k-hole, while the drug also commonly causes vomiting. Someone who cannot move cannot clear their own airway or roll over. That is why it should not be combined with alcohol, GHB or benzodiazepines, which add sedation on top, and why being with someone who stays alert matters more here than with most drugs.
+
+The same immobility is why it carries a particular risk in sexual settings: a person in a k-hole cannot meaningfully consent, withdraw consent, or call for help.'
+where slug = 'ketamine';
+
 do $verify$
 declare v_bad int; v_missing int;
 begin
