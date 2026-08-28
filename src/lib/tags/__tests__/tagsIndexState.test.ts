@@ -5,7 +5,6 @@ import {
   applyTagsParams,
   normalizeLetter,
   letterFor,
-  isRealTagImage,
   hasActiveFilters,
   DEFAULT_TAGS_STATE,
 } from '../tagsIndexState';
@@ -59,7 +58,7 @@ describe('parseTagsParams', () => {
     for (const input of [
       '',
       'q=bear&view=chips',
-      'sort=recent&dir=asc&letter=Q&usage=used&hasImage=1&adult=1',
+      'sort=recent&dir=asc&letter=Q&usage=used&adult=1',
       'view=graph',
       'sort=usage&dir=desc&view=grid&usage=all&hasImage=0',
       'view=nonsense&letter=99',
@@ -151,22 +150,17 @@ describe('normalizeLetter', () => {
   });
 });
 
-describe('isRealTagImage', () => {
-  it('accepts absolute and root-relative urls', () => {
-    expect(isRealTagImage('https://img.queer.guide/tags/bear.webp')).toBe(true);
-    expect(isRealTagImage('/images/bear.webp')).toBe(true);
-  });
-
-  it('rejects placeholders, gradients, data URIs and blanks', () => {
-    expect(isRealTagImage('https://x/placeholder-bear.png')).toBe(false);
-    expect(isRealTagImage('https://x/gradient-3.png')).toBe(false);
-    expect(isRealTagImage('data:image/svg+xml;base64,AAA')).toBe(false);
-    expect(isRealTagImage('   ')).toBe(false);
-    expect(isRealTagImage(null)).toBe(false);
-  });
-
-  it('rejects a relative path with no scheme', () => {
-    expect(isRealTagImage('bear.webp')).toBe(false);
+describe('the retired hasImage param', () => {
+  // The "Illustrated" filter left with glossary photography (TagPlate,
+  // 2026-08-28). The key must be treated as legacy: reported as drift so the
+  // caller's rewrite strips it from shared links, and never re-serialized.
+  it('reports drift for any hasImage value and strips it on apply', () => {
+    const { state, changed } = parseTagsParams(sp('hasImage=1&view=list'));
+    expect(changed).toBe(true);
+    expect(serializeTagsParams(state).toString()).toBe('view=list');
+    const next = applyTagsParams(sp('hasImage=1&view=list'), state);
+    expect(next.get('hasImage')).toBeNull();
+    expect(next.get('view')).toBe('list');
   });
 });
 
@@ -184,6 +178,5 @@ describe('hasActiveFilters', () => {
     expect(hasActiveFilters({ ...DEFAULT_TAGS_STATE, q: 'bear' })).toBe(true);
     expect(hasActiveFilters({ ...DEFAULT_TAGS_STATE, letter: 'B' })).toBe(true);
     expect(hasActiveFilters({ ...DEFAULT_TAGS_STATE, usage: 'unused' })).toBe(true);
-    expect(hasActiveFilters({ ...DEFAULT_TAGS_STATE, hasImage: true })).toBe(true);
   });
 });

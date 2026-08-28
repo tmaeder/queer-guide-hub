@@ -42,7 +42,6 @@ export interface TagsIndexState {
   dir: 'asc' | 'desc';
   letter: string | null;
   usage: TagUsageFilter;
-  hasImage: boolean;
   /** Opt in to 18+ terms. Absent means safe mode's verdict stands. */
   adult: boolean;
 }
@@ -54,7 +53,6 @@ export const DEFAULT_TAGS_STATE: TagsIndexState = {
   dir: 'desc',
   letter: null,
   usage: 'all',
-  hasImage: false,
   adult: false,
 };
 
@@ -93,7 +91,6 @@ export function parseTagsParams(
     dir: searchParams.get('dir') === 'asc' ? 'asc' : 'desc',
     letter: normalizeLetter(searchParams.get('letter')),
     usage: oneOf(TAG_USAGE_FILTERS, searchParams.get('usage'), DEFAULT_TAGS_STATE.usage),
-    hasImage: searchParams.get('hasImage') === '1',
     adult: searchParams.get('adult') === '1',
   };
 
@@ -133,12 +130,16 @@ export function parseTagsParams(
     const v = searchParams.get(key);
     if (v !== null) owned.set(key, v);
   }
-  const changed = owned.toString() !== canonical.toString();
+  // `hasImage` is the retired "Illustrated" filter (photography left the
+  // glossary with the 2026-08-28 TagPlate change). Reporting `changed` makes
+  // the caller rewrite the URL, which strips the dead key from shared links.
+  const changed =
+    owned.toString() !== canonical.toString() || searchParams.get('hasImage') !== null;
 
   return { state, changed };
 }
 
-const OWNED_KEYS = ['q', 'view', 'sort', 'dir', 'letter', 'usage', 'hasImage', 'adult'] as const;
+const OWNED_KEYS = ['q', 'view', 'sort', 'dir', 'letter', 'usage', 'adult'] as const;
 
 export function serializeTagsParams(state: TagsIndexState): URLSearchParams {
   const p = new URLSearchParams();
@@ -148,7 +149,6 @@ export function serializeTagsParams(state: TagsIndexState): URLSearchParams {
   if (state.dir === 'asc') p.set('dir', 'asc');
   if (state.letter) p.set('letter', state.letter);
   if (state.usage !== DEFAULT_TAGS_STATE.usage) p.set('usage', state.usage);
-  if (state.hasImage) p.set('hasImage', '1');
   if (state.adult) p.set('adult', '1');
   return p;
 }
@@ -163,6 +163,8 @@ export function applyTagsParams(previous: URLSearchParams, state: TagsIndexState
   next.delete('cat');
   next.delete('category');
   next.delete('profession');
+  // Retired "Illustrated" filter — see the note in parseTagsParams.
+  next.delete('hasImage');
   for (const [k, v] of serializeTagsParams(state)) next.append(k, v);
   return next;
 }
@@ -179,32 +181,11 @@ export function letterFor(name: string): string {
   return first >= 'A' && first <= 'Z' ? first : LETTER_OTHER;
 }
 
-/**
- * Whether a tag's `image_url` is a real editorial image rather than a gradient
- * placeholder. Moved verbatim from the deleted resourceHelpers so the "with
- * image" filter and the card's fallback plate agree on one definition.
- *
- * Without width/height/MIME on the client this is a URL heuristic: require an
- * http(s) or storage path, reject data: URIs and obvious placeholder markers.
- * False negatives (a real image named "*placeholder*") are acceptable; false
- * positives (a gradient showing up under "With image") are not.
- */
-export function isRealTagImage(url: string | null | undefined): boolean {
-  if (!url) return false;
-  const trimmed = url.trim();
-  if (trimmed.length === 0) return false;
-  if (trimmed.startsWith('data:')) return false;
-  const lower = trimmed.toLowerCase();
-  if (lower.includes('placeholder') || lower.includes('gradient')) return false;
-  return /^https?:\/\//i.test(trimmed) || trimmed.startsWith('/');
-}
-
 export function hasActiveFilters(state: TagsIndexState): boolean {
   return (
     !!state.q.trim() ||
     state.letter !== null ||
     state.usage !== DEFAULT_TAGS_STATE.usage ||
-    state.hasImage ||
     state.sort !== DEFAULT_TAGS_STATE.sort ||
     state.dir !== DEFAULT_TAGS_STATE.dir
   );

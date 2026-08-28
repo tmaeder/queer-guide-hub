@@ -116,9 +116,6 @@ verify_jwt = false
 [functions.get-weather-forecast]
 verify_jwt = false
 
-[functions.store-tag-images]
-verify_jwt = false
-
 [functions.tag-enrichment-sweep]
 verify_jwt = false
 
