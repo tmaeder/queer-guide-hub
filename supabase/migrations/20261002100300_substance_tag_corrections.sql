@@ -114,8 +114,19 @@ begin
     raise exception 'substance fix: lithium claim not properly qualified';
   end if;
 
+  -- Match the OLD CLAIM, not the phrase. A correction has to NAME a
+  -- misconception in order to refute it, and this one does: the replacement
+  -- above ends "...not, as is sometimes said, as a general anaesthetic". A bare
+  -- `~* 'general an(a)?esthetic'` is therefore tripped by the corrected text
+  -- itself, so the migration could never pass -- it failed `db push` on
+  -- 2026-08-28 and, because push stops at the first failure, held back every
+  -- later migration while the edge functions deployed regardless.
+  -- The old string was "...including as a general anesthetic and to treat
+  -- conditions like cataplexy and narcolepsy", which the affirmative form below
+  -- matches and the refutation does not.
   select count(*) into v_bad from public.unified_tags
-   where slug = 'ghb' and coalesce(long_description,'') ~* 'general an(a)?esthetic';
+   where slug = 'ghb'
+     and coalesce(long_description,'') ~* 'including as a general an(a)?esthetic';
   if v_bad > 0 then
     raise exception 'substance fix: ghb still claims a general-anaesthetic indication';
   end if;
