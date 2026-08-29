@@ -1,3 +1,9 @@
+-- (Version history, so the next reader does not re-derive it: this file was
+-- authored as 20261007140000, collided there with `prevention_bathroom_plural_twin`
+-- and `wrong_entity_wikidata_repair`, and was renumbered here by #3124. #3130
+-- fixed the same collision concurrently and produced a second copy at
+-- 20261008120000; that duplicate is deleted and this file is the one that runs.)
+--
 -- 77 tag search documents publish a category that no longer exists.
 --
 -- These are the rename half of the v3 swap, one surface further out than
