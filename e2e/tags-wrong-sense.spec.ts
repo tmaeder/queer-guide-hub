@@ -10,7 +10,7 @@ import { test, expect } from '@playwright/test';
 // published Otto von Guericke's 1650 invention; "Furniture" (Gear) published
 // IKEA prose; "Clothing-Optional" (a venue policy) published nude bike rides.
 // Measured 2026-08-29 at ~20% of a random prose sample. Hand-retracted in
-// 20261011100500; the recurring detector is tag-enrichment-sweep mode='prose'
+// 20261012090500; the recurring detector is tag-enrichment-sweep mode='prose'
 // and the producer is sealed by the 'generic-sense' gate in tag-wiki-guard.
 //
 // Same discipline as the sibling spec: crawler HTML (the surface a wrong sense
@@ -90,7 +90,7 @@ test.describe('@smoke glossary entries do not publish the generic sense', () => 
   }
 
   test('placeholder prose is retracted, not published', async ({ request }) => {
-    // 20261011100000 nulled 175 "No information available" stamps; a blank is
+    // 20261012090000 nulled 175 "No information available" stamps; a blank is
     // measurable and the thin-page machinery deindexes it, a stamp reads as
     // content. lash-bearer was one of the 109 active carriers.
     const res = await request.get('/tags/lash-bearer', { headers: { 'User-Agent': BOT_UA } });

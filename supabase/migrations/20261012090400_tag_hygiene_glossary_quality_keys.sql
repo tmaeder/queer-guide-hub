@@ -12,7 +12,7 @@
 --                            corruption, never a spelling ("M?Llerian").
 --   refusal_prose_active     0-invariant — "No information available" stamps
 --                            and LLM refusal essays published as definitions
---                            (175 + 38 nulled by 20261011100000).
+--                            (175 + 38 nulled by 20261012090000).
 --   unreviewed_typed_alias   advisory — typed (non-multilingual) alias rows
 --                            still review_status='auto': displayed nowhere,
 --                            trusted by nothing, awaiting human review.
