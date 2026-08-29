@@ -51,7 +51,9 @@ import {
   parseTagsParams,
   serializeTagsParams,
   DEFAULT_TAGS_STATE,
+  KIND_FILTER_MATCHES,
   MIN_SERVER_QUERY,
+  type TagKindFilter,
   type TagSort,
   type TagUsageFilter,
   type TagView,
@@ -193,10 +195,34 @@ export default function TagsIndex() {
   const base = useMemo(
     () =>
       entries.filter((e) => {
+        const entityKind = (e.tag as { entity_kind?: string | null }).entity_kind ?? 'concept';
+        // Proper names are not glossary content — never on the public index.
+        if (entityKind === 'person') return false;
+        if (state.kind !== 'all' && !KIND_FILTER_MATCHES[state.kind].has(entityKind)) {
+          return false;
+        }
         if (hideAdult && safeMode.shouldHide(e.categoryNames)) return false;
-        return inScope(e);
+        if (!inScope(e)) return false;
+        // Default curation: the unscoped index shows every dictionary term
+        // (unused kink vocabulary included — it ranks last under the usage
+        // sort) but hides UNUSED descriptors/labels — an unused descriptor is
+        // pure noise, not a definition. Any explicit filter or search widens
+        // back to everything, and category pages always show their whole stop.
+        if (
+          !scope &&
+          state.usage === 'all' &&
+          state.kind === 'all' &&
+          !state.q.trim() &&
+          entityKind !== 'concept' &&
+          entityKind !== 'practice' &&
+          entityKind !== 'aesthetic' &&
+          (usageCounts[e.tag.name] || 0) === 0
+        ) {
+          return false;
+        }
+        return true;
       }),
-    [entries, hideAdult, safeMode, inScope],
+    [entries, hideAdult, safeMode, inScope, scope, state.kind, state.usage, state.q, usageCounts],
   );
 
   /** Letter counts reflect every filter EXCEPT the letter itself — otherwise
@@ -461,6 +487,8 @@ export default function TagsIndex() {
               onDir={() => patch({ dir: state.dir === 'asc' ? 'desc' : 'asc' })}
               usage={state.usage}
               onUsage={(usage: TagUsageFilter) => patch({ usage })}
+              kind={state.kind}
+              onKind={(kind: TagKindFilter) => patch({ kind })}
             />
 
             {state.view !== 'graph' && (

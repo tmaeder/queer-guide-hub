@@ -86,10 +86,16 @@ Deno.serve(async (req) => {
 
     // Parse optional body params
     let recategorize = false;
+    let onlyMisfiled = false;
     let batchSize = 20;
     try {
       const body = await req.json();
       recategorize = body?.recategorize === true;
+      // only_misfiled: re-file ONLY tags whose primary category is not under
+      // a v3 root (the post-deterministic remainder of the 2026-08-29
+      // program) — unlike `recategorize`, it never overwrites a correct v3
+      // filing with a fresh LLM opinion.
+      onlyMisfiled = body?.only_misfiled === true;
       if (body?.batch_size && typeof body.batch_size === 'number') {
         batchSize = Math.min(Math.max(5, body.batch_size), 50);
       }
@@ -97,7 +103,7 @@ Deno.serve(async (req) => {
       // No body or invalid JSON — use defaults
     }
 
-    console.log(`Starting tag categorization (recategorize=${recategorize}, batch_size=${batchSize})...`);
+    console.log(`Starting tag categorization (recategorize=${recategorize}, only_misfiled=${onlyMisfiled}, batch_size=${batchSize})...`);
 
     // Load categories dynamically from the DB
     const { data: allCategories, error: categoriesError } = await supabase
@@ -133,7 +139,7 @@ Deno.serve(async (req) => {
       .select('id, name, category_id')
       .eq('status', 'active');
 
-    if (!recategorize) {
+    if (!recategorize && !onlyMisfiled) {
       // Only uncategorized tags (no category_id AND no assignments)
       tagsQuery = tagsQuery.is('category_id', null);
     }
@@ -144,9 +150,17 @@ Deno.serve(async (req) => {
       throw new Error(`Failed to fetch tags: ${fetchError.message}`);
     }
 
-    // When not recategorizing, also filter out tags that already have assignments
     let tagsToProcess = tags || [];
-    if (!recategorize && tagsToProcess.length > 0) {
+
+    if (onlyMisfiled) {
+      // Keep only tags whose current category is OUTSIDE the v3 scope —
+      // the valid v3 category ids are exactly `categories` (already scoped).
+      const v3Ids = new Set(categories.map(c => c.id));
+      tagsToProcess = tagsToProcess.filter(t => t.category_id && !v3Ids.has(t.category_id));
+    }
+
+    // When not recategorizing, also filter out tags that already have assignments
+    if (!recategorize && !onlyMisfiled && tagsToProcess.length > 0) {
       const tagIds = tagsToProcess.map(t => t.id);
       const { data: existingAssignments } = await supabase
         .from('tag_category_assignments')
