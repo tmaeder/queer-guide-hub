@@ -34,7 +34,7 @@ const PLAIN = [
     id: '2',
     name: 'Drag',
     slug: 'drag',
-    categories: cat('c2', 'Expression & Presentation', 'Identity & Expression'),
+    categories: cat('c2', 'Expression & Style', 'Identity'),
   }),
 ];
 
@@ -43,7 +43,7 @@ const ADULT = tag({
   id: '3',
   name: 'Puppy play',
   slug: 'puppy-play',
-  categories: cat('c3', 'Practices & Play', 'Sexuality & Kink'),
+  categories: cat('c3', 'Practices & Play', 'Sex & Kink'),
 });
 
 let corpus: unknown[] = PLAIN;
@@ -56,8 +56,8 @@ vi.mock('@/hooks/useCentralizedTags', () => ({
     categoriesTree: [
       {
         id: 'p1',
-        name: 'Identity & Expression',
-        slug: 'identity-expression',
+        name: 'Identity',
+        slug: 'identity',
         level: 0,
         sort_order: 0,
         tag_count: 1,
@@ -65,7 +65,7 @@ vi.mock('@/hooks/useCentralizedTags', () => ({
         children: [
           {
             id: 'c2',
-            name: 'Expression & Presentation',
+            name: 'Expression & Style',
             slug: 'expression-presentation',
             level: 1,
             sort_order: 0,
@@ -161,7 +161,7 @@ describe('TagsIndex', () => {
   });
 
   it('narrows to one line on /tags/c/:categorySlug and drops the site-wide stats', () => {
-    renderAt('/tags/c/identity-expression');
+    renderAt('/tags/c/identity');
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Identity/);
     expect(screen.getByRole('link', { name: /Drag/ })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /Bear/ })).not.toBeInTheDocument();

@@ -155,23 +155,12 @@ async function categorizePass(
   })
   if (!uncat || uncat.length === 0) return
 
-  const { data: allCats } = await supabase
+  // The v2→v3 coexistence scope that used to filter this list is gone with
+  // the old tree (20261006150000): one taxonomy again.
+  const { data: cats } = await supabase
     .from('tag_categories')
     .select('id,slug,name,level,parent_id,description')
     .order('sort_order')
-  // Taxonomy v3 coexistence scope (migration 20261006140000): two trees live
-  // in tag_categories until PR E deletes the old one — only v3 roots and
-  // their children are valid filing targets. Remove with PR E.
-  const v3Roots = new Set([
-    'identity', 'sex-kink', 'relationships-family', 'health', 'safety-consent',
-    'culture-community', 'history-rights', 'places-scene',
-  ])
-  const rootIds = new Set(
-    (allCats ?? []).filter((c) => c.level === 0 && v3Roots.has(c.slug)).map((c) => c.id),
-  )
-  const cats = (allCats ?? []).filter(
-    (c) => (c.level === 0 && rootIds.has(c.id)) || (c.parent_id !== null && rootIds.has(c.parent_id)),
-  )
   if (!cats || cats.length === 0) return
 
   const slugToId = new Map(cats.map((c) => [c.slug, c.id]))

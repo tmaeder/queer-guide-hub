@@ -44,6 +44,7 @@ import { RouteBullet } from '@/components/transit/RouteBullet';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { getCategoryShortName, parentOrder } from '@/components/resources/categoryMeta';
 import { CATEGORY_LINE_ORDER, lineForCategory } from '@/lib/tags/categoryIdentity';
+import { redirectedCategorySlug } from '@/lib/tags/categorySlugRedirects';
 import {
   applyTagsParams,
   hasActiveFilters,
@@ -95,14 +96,40 @@ export default function TagsIndex() {
         );
         if (child) return child.slug;
       }
-      return null;
+      // Retired v2 category. The tree stopped carrying these when 20261006150000
+      // deleted them, so the live loop above can no longer resolve a legacy
+      // `?cat=`/`?category=` link and `parseTagsParams` would hold the param
+      // forever — the reader lands on an unfiltered glossary instead of the
+      // category they asked for. categorySlugRedirects' own header says it
+      // serves these params; this is the call that makes that true.
+      //
+      // Both spellings have to be tried: the map is keyed by SLUG, while
+      // `?cat=` carries the display NAME ("Health & Wellness"), which is what
+      // the page emitted when these links were minted. The slugify rule is the
+      // one the v2 slugs were derived under, so "Body Types & Archetypes"
+      // collapses the ampersand into the separator run and lands on
+      // `body-types-archetypes`.
+      return (
+        redirectedCategorySlug(lower) ??
+        redirectedCategorySlug(lower.replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''))
+      );
     },
     [categoriesTree],
   );
 
   const { state, changed, redirectTo } = parseTagsParams(searchParams, resolveCategorySlug);
 
+  // A retired v2 category slug reaching the SPA (an in-app link, a bookmark
+  // restored by the router, a ?cat= resolution) never touches Cloudflare, so
+  // the 301s in public/_redirects cannot help it. Same map, client side.
+  const retiredSlugTarget = redirectedCategorySlug(categorySlug);
+
   useEffect(() => {
+    if (retiredSlugTarget) {
+      const qs = searchParams.toString();
+      navigate(`/tags/c/${retiredSlugTarget}${qs ? `?${qs}` : ''}`, { replace: true });
+      return;
+    }
     if (redirectTo) {
       navigate(redirectTo, { replace: true });
       return;
@@ -110,7 +137,7 @@ export default function TagsIndex() {
     if (changed) setSearchParams(applyTagsParams(searchParams, state), { replace: true });
     // `state` is derived from `searchParams`; including it would loop.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [redirectTo, changed, searchParams]);
+  }, [retiredSlugTarget, redirectTo, changed, searchParams]);
 
   // `state` is re-derived from the URL on every render, so it is a fresh object
   // each time and cannot be a dependency without making `patch` unstable (and
