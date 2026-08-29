@@ -132,7 +132,13 @@ describe('unified_tags status/deprecated_at agreement', () => {
     // whole-file assertion green. Scope to the revive CTE.
     const reviveStart = repairs.search(/with revive as/i);
     expect(reviveStart).toBeGreaterThan(-1);
-    const revive = repairs.slice(reviveStart, repairs.search(/update public\.unified_tags/i));
+    // Slice FORWARD from the CTE to the update it feeds. Slicing to the first
+    // `update` in the whole file silently yields '' now that step 0b adds an
+    // earlier one — and `expect('').toMatch(...)` fails loudly, but the same
+    // shape could just as easily have passed vacuously.
+    const after = repairs.slice(reviveStart);
+    const revive = after.slice(0, after.search(/update public\.unified_tags/i));
+    expect(revive.length).toBeGreaterThan(200);
     expect(revive).toMatch(/_referenced_tag_keys/);
 
     // `usage_count` is NOT an acceptable substitute: the same reconciler
@@ -143,6 +149,44 @@ describe('unified_tags status/deprecated_at agreement', () => {
     expect(code).not.toMatch(/usage_count\s*[><=]/);
     // Guard the strip itself, so this cannot pass by emptying the haystack.
     expect(code).toMatch(/update public\.unified_tags/i);
+  });
+
+  /**
+   * The bad revision ran on prod at 2026-08-29 11:55:14Z and committed — 215
+   * revived, 82 delisted, 81 of them wrongly — but `schema_migrations` never
+   * recorded the version, because the file carried its own `begin;`/`commit;`
+   * and the explicit COMMIT closed the transaction before `supabase db push`
+   * could write its bookkeeping row. Data stuck, bookkeeping rolled back.
+   */
+  it('does not manage its own transaction', () => {
+    const { sql } = latestConstraintMigration('unified_tags_status_matches_deprecated_at');
+    const code = sql.replace(/--[^\n]*/g, '');
+    expect(code).not.toMatch(/^\s*begin\s*;/im);
+    expect(code).not.toMatch(/^\s*commit\s*;/im);
+    // The actor must therefore be set the way the repo's working migrations do
+    // it — transaction-local, inside a block — not via a bare `set local`.
+    expect(code).toMatch(/set_config\(\s*'app\.actor'/);
+  });
+
+  it('repairs the rows a previous run of itself wrongly delisted', () => {
+    const { sql } = latestConstraintMigration('unified_tags_status_matches_deprecated_at');
+    const code = sql.replace(/--[^\n]*/g, '');
+    // Keyed on this migration's own actor string, so it touches only its own
+    // damage and never a legitimately deprecated tag from another cohort.
+    expect(code).toMatch(/tag_change_log/);
+    expect(code).toMatch(/actor\s*=\s*'migration:20261008110000'/);
+    // And re-checked against the reference set, so a genuinely dead row stays dead.
+    const repair = code.slice(code.indexOf('tag_change_log'));
+    expect(repair.slice(0, 900)).toMatch(/_referenced_tag_keys|unified_tag_assignments/);
+  });
+
+  it('can re-run against a database that already has the constraint', () => {
+    const { sql } = latestConstraintMigration('unified_tags_status_matches_deprecated_at');
+    // A bare ADD would abort the re-run with "already exists", stranding the
+    // wrongly-delisted rows and blocking every later migration behind it.
+    expect(sql).toMatch(
+      /drop\s+constraint\s+if\s+exists\s+unified_tags_status_matches_deprecated_at/i,
+    );
   });
 
   it('refuses to run if the reference check goes blind', () => {

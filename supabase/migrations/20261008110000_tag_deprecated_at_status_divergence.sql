@@ -71,11 +71,27 @@
 -- possible while two columns can contradict each other and each reader believes
 -- a different one.
 
-begin;
+-- NO explicit `begin;`/`commit;` in this file, deliberately, and this is the
+-- reason the bad revision's damage persisted while its bookkeeping did not.
+-- `supabase db push` sends the migration and then INSERTs the
+-- `supabase_migrations.schema_migrations` row; an explicit COMMIT inside the
+-- file closes that transaction early, so on 2026-08-29 the data changes stuck
+-- and the version was never recorded -- the migration stayed "pending" while
+-- prod already carried its effects. Every writer here therefore runs inside one
+-- DO block, matching the pattern in `20261006140100_tag_refile_deterministic`
+-- and `20261006140000_tag_taxonomy_v3_tree`, both of which verifiably set
+-- `app.actor` on prod.
+do $migration$
+declare
+  v_delisted int;
+  v_bad      int;
+begin
 
 -- The audit stamped 51 human_reviewed rows; log_unified_tag_change() raises if a
--- `system:%` actor touches one, and 'system:trigger' is the default.
-set local app.actor = 'migration:20261008110000';
+-- `system:%` actor touches one, and 'system:trigger' is the default. It must be
+-- set INSIDE this block: set_config(..., true) is transaction-local, and a bare
+-- `set local` outside a transaction only warns and does nothing.
+perform set_config('app.actor', 'migration:20261008110000', true);
 
 -- ---------------------------------------------------------------------------
 -- 0. Every tag string any entity actually carries, from the free-text `tags[]`
@@ -111,6 +127,44 @@ create temp table _referenced_tag_keys on commit drop as
   ) s
   where tag is not null and trim(tag) <> '';
 create index on _referenced_tag_keys (k);
+
+-- ---------------------------------------------------------------------------
+-- 0b. SELF-REPAIR of a previous run of THIS migration.
+--
+--     An earlier revision of this file shipped without the step-0 free-text
+--     check and ran on prod at 2026-08-29 11:55:14Z. It committed -- 215 revived,
+--     82 delisted -- but `supabase_migrations` never recorded the version,
+--     because this file carries its own `begin;`/`commit;` and the explicit
+--     COMMIT closed the transaction before db push could write its bookkeeping
+--     row. So the data changed and the migration still counts as pending, which
+--     is why this corrected file gets to run again at all.
+--
+--     81 of those 82 were wrongly delisted -- live German profession vocabulary.
+--     Step 1 below cannot rescue them: it only considers rows that are still
+--     `status='active'`, and these are now `deprecated`. They are identified
+--     from `tag_change_log` by this migration's own actor string, which is
+--     exact -- no guessing at which rows were ours -- and re-checked against the
+--     free-text set so a row that genuinely deserved delisting stays delisted.
+--
+--     Harmless on a database where the bad revision never ran: the change-log
+--     predicate simply matches nothing.
+-- ---------------------------------------------------------------------------
+update public.unified_tags t
+   set status             = 'active',
+       deprecated_at      = null,
+       deprecation_reason = null
+ where t.status = 'deprecated'
+   and exists (
+     select 1 from public.tag_change_log l
+      where l.tag_id = t.id
+        and l.actor = 'migration:20261008110000'
+        and l.before_data->>'status' = 'active'
+        and l.after_data->>'status'  = 'deprecated'
+   )
+   and (
+        exists (select 1 from _referenced_tag_keys k where k.k in (t.slug, lower(t.name)))
+     or exists (select 1 from public.unified_tag_assignments a where a.tag_id = t.id)
+   );
 
 -- ---------------------------------------------------------------------------
 -- 1. Revive: the tag is linked, is referenced by an entity's own free text, or
@@ -158,10 +212,7 @@ update public.unified_tags t
 -- The UPDATE lives inside the block because GET DIAGNOSTICS only reports the
 -- row count of a statement in its OWN PL/pgSQL block -- a separate `do $$` after
 -- a bare UPDATE reads zero and the guard would pass vacuously.
-do $$
-declare v_delisted int;
-begin
-  update public.unified_tags t
+update public.unified_tags t
      set status = 'deprecated'
    where t.status = 'active'
      and t.deprecated_at is not null;
@@ -171,7 +222,6 @@ begin
   if v_delisted > 25 then
     raise exception 'refusing to delist % tags: expected ~1. The free-text reference check in step 0 has probably gone blind -- verify it before re-running.', v_delisted;
   end if;
-end $$;
 
 -- ---------------------------------------------------------------------------
 -- 3. The mirror image: deprecated with no timestamp, so the page 404s while the
@@ -190,6 +240,14 @@ update public.unified_tags
 --    timestamp (192/192) and must keep it, so the constraint is stated as the
 --    equivalence the two readers assume: active <=> not deprecated.
 -- ---------------------------------------------------------------------------
+end $migration$;
+
+-- DROP-then-ADD, because the bad revision described in step 0b already created
+-- this constraint on prod and a bare ADD would abort the re-run with
+-- "constraint already exists" -- leaving the 81 wrongly-delisted tags dead and
+-- blocking every later migration in the queue behind it.
+alter table public.unified_tags
+  drop constraint if exists unified_tags_status_matches_deprecated_at;
 alter table public.unified_tags
   add constraint unified_tags_status_matches_deprecated_at
   check ((status = 'active') = (deprecated_at is null));
@@ -204,4 +262,3 @@ begin
   end if;
 end $$;
 
-commit;
