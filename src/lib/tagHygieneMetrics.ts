@@ -44,7 +44,18 @@ export const HYGIENE_METRICS: HygieneMetric[] = [
     hint: 'Glossary photography retired 2026-08-28 (tags render drawn TagPlates). Non-zero means a writer is reintroducing photos.',
   },
   { key: 'indexable_without_description', label: 'Indexable, no prose', zero: true },
+  {
+    key: 'denorm_category_missing',
+    label: 'Category not denormalized',
+    zero: true,
+    hint: 'The junction says a category, unified_tags.category_id says nothing. 435 rows on 2026-08-29, incl. doxy-pep and naloxone — this is the state a newly shipped tag lands in.',
+  },
   { key: 'merged_but_not_status_merged', label: 'Merged but still active', zero: true },
+  {
+    key: 'placeholder_description_active',
+    label: 'Placeholder as definition',
+    hint: 'A bulk-import stamp ("Sexual activity tag", "Toys tag") published as the lead paragraph. Invisible to "Indexable, no prose", which only sees an EMPTY description.',
+  },
   {
     key: 'duplicate_active_name',
     label: 'Duplicate active names',

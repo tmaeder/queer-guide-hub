@@ -26,6 +26,16 @@ export interface TagHygieneStats {
   merged_but_not_status_merged: number;
   sensitive_without_description: number;
   indexable_without_description: number;
+  /** The junction names a category, `unified_tags.category_id` names none. The
+   *  junction is the source of truth and the column is derived from it, so
+   *  non-zero means a writer inserted an assignment without letting the denorm
+   *  follow — which is how doxy-pep and naloxone shipped. */
+  denorm_category_missing: number;
+  /** A bulk-import stamp ("Sexual activity tag", "Toys tag") published as a
+   *  definition. Deliberately NOT covered by `indexable_without_description`,
+   *  which only sees an empty column — a stamp is not empty, so it passed every
+   *  check while /tags/anal-sex served four words as its lead paragraph. */
+  placeholder_description_active: number;
   event_tag_strings_unresolved: number;
   events_with_tags_unlinked: number;
 }
