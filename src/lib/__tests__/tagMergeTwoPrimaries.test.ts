@@ -72,11 +72,36 @@ describe('tag merge left two primaries', () => {
   });
 
   it('is scoped to tags that actually have more than one primary', () => {
+    // The violating set is captured BEFORE the demote — afterwards those tags
+    // are no longer identifiable, and part 2 has to resync exactly them.
+    const capture = statements.find(
+      (s) => s.includes('create temp table _two_primaries') && s.includes('having count(*) > 1'),
+    );
+    expect(capture, 'the pre-demote capture of violating tags was not found').toBeDefined();
+
     const write = statements.find((s) => s.startsWith('update tag_category_assignments'))!;
-    expect(write).toContain('having count(*) > 1');
+    expect(write).toContain('_two_primaries');
     // A corpus-wide re-assertion would silently re-file tags whose single
     // primary merely disagrees with category_id — a different, unreviewed class.
     expect(write).toContain('t.category_id is not null');
+  });
+
+  it('resyncs the text mirror, or it creates the disagreement it removes', () => {
+    // Measured: demoting the intruder on `u-equals-u` left category_id and the
+    // search facet on Sexual Health while `unified_tags.category` still read
+    // Orientation — and assertion 4 then fired. The first dry run did exactly
+    // this.
+    const resync = statements.find(
+      (s) => s.startsWith('update unified_tags') && s.includes('set category = c.name'),
+    );
+    expect(resync, 'the text-mirror resync was not found').toBeDefined();
+    // Read from category_id's own category, never spelled out.
+    expect(resync).toContain('c.id = t.category_id');
+    expect(resync).toContain('_two_primaries');
+    expect(resync).toContain('t.category is distinct from c.name');
+    // Writing `category` is what fires the column-scoped search trigger; a
+    // category_id write would not.
+    expect(resync).not.toMatch(/set [^;]*\bcategory_id\s*=/);
   });
 
   it('asserts no tag was left with zero primaries', () => {
@@ -100,10 +125,19 @@ describe('tag merge left two primaries', () => {
       (s) =>
         s.includes('into v_n') &&
         s.includes('having count(*) > 1') &&
-        !s.startsWith('update tag_category_assignments'),
+        !s.startsWith('update tag_category_assignments') &&
+        !s.includes('create temp table'),
     );
     expect(invariant, 'the corpus-wide primary-count assertion was not found').toBeDefined();
-    expect(invariant).not.toContain('gender-neutral-bathroom');
+  });
+
+  it('names no slug anywhere — the offending row moved twice', () => {
+    // gender-neutral-bathroom was repaired by a concurrent session and
+    // u-equals-u took its place while the count stayed at exactly 1. A slug
+    // literal would assert someone else's fix and miss the live defect.
+    for (const slug of ['gender-neutral-bathroom', 'u-equals-u']) {
+      expect(code, `${slug} must not appear in the migration body`).not.toContain(slug);
+    }
   });
 
   it('re-asserts the census that surfaced this', () => {
