@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
@@ -49,32 +49,19 @@ import { join } from 'node:path';
  * without credentials — same pattern as `tagCategoryTextJunctionDisagreement`.
  */
 
-const MIGRATIONS_DIR = join(process.cwd(), 'supabase', 'migrations');
-
-/**
- * Resolved by SUFFIX, never by a frozen version.
- *
- * This file was pinned to `20261006200000_ssc_consent_stop.sql` and that turned
- * a routine renumber into a red CI run. The migration merged but never applied:
- * higher versions reached prod first, so `supabase db push` refused the whole
- * batch as out-of-order and four consecutive deploys failed. The documented fix
- * is to renumber above the remote max — which is a thing that will happen again
- * to any migration that sits unapplied while other PRs land, so the version is
- * not a stable identifier and must not be treated as one. The suffix is.
- */
-const MIGRATION_FILE = readdirSync(MIGRATIONS_DIR)
+/** Located by SUFFIX, never by version. This test pinned the full filename and
+ *  so failed with ENOENT the moment the file had to be renumbered — which is
+ *  routine here: `db push` aborts on an unapplied migration sorting below prod's
+ *  head, so any migration that waits behind another PR gets renamed, not
+ *  rewritten. A version-pinned path turns that bookkeeping into a red test. */
+const MIGRATIONS = join(process.cwd(), 'supabase', 'migrations');
+const FILE = readdirSync(MIGRATIONS)
   .filter((f) => f.endsWith('_ssc_consent_stop.sql'))
   .sort()
-  .at(-1);
+  .pop();
+if (!FILE) throw new Error('no *_ssc_consent_stop.sql migration found');
 
-if (!MIGRATION_FILE) {
-  throw new Error(
-    'No *_ssc_consent_stop.sql in supabase/migrations — the migration this suite guards is gone, ' +
-      'which is a real regression rather than a reason to skip.',
-  );
-}
-
-const sql = readFileSync(join(MIGRATIONS_DIR, MIGRATION_FILE), 'utf8');
+const sql = readFileSync(join(MIGRATIONS, FILE), 'utf8');
 
 /** The migration minus its `--` comment lines, so prose cannot satisfy a test. */
 const code = sql
