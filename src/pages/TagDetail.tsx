@@ -41,23 +41,17 @@ import { TagLegalSource } from '@/components/tags/TagLegalSource';
 import { buildTagJsonLd } from '@/lib/tags/tagJsonLd';
 import type { CentralizedTag } from '@/hooks/useCentralizedTags';
 import { useTagUsageBreakdown, totalUses } from '@/hooks/useTagUsageBreakdown';
-import {
-  useSimilarTags,
-  useTagReferenceLinks,
-  useSubstanceInteractions,
-} from '@/hooks/useTagRelationships';
+import { useTagReferenceLinks, useSubstanceInteractions } from '@/hooks/useTagRelationships';
 import { useActiveStation } from '@/hooks/useActiveStation';
 import { useMeta } from '@/hooks/useMeta';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { useSafeMode } from '@/providers/SafeModeProvider';
 import { useAgeAffirmation } from '@/hooks/useAgeAffirmation';
 import { extractSections } from '@/lib/htmlSections';
-import { rankSimilarTags } from '@/components/tags/rankSimilarTags';
 import { getCategoryShortName } from '@/components/resources/categoryMeta';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { SinglePage, SingleSection } from '@/components/transit/SinglePage';
 import { RouteStrip, type RouteStation } from '@/components/transit/RouteStrip';
-import { RouteBullet } from '@/components/transit/RouteBullet';
 import { FactGrid, type Fact } from '@/components/transit/FactGrid';
 import { StatLine } from '@/components/transit/StatLine';
 import { ProvenanceLine } from '@/components/transit/ProvenanceLine';
@@ -193,7 +187,6 @@ export default function TagDetail() {
   const childName = primary?.level === 1 ? primary.name : undefined;
 
   const { data: usage } = useTagUsageBreakdown(tag?.id);
-  const { data: similar } = useSimilarTags(tag?.id ?? null, 15);
   // Fetched here as well as inside the band so the route strip and the rail can
   // both react to whether this term is coded at all. React Query dedupes the
   // request; the band owns the rendering.
@@ -221,11 +214,6 @@ export default function TagDetail() {
   // to Wikipedia.
   const { data: referenceLinks } = useTagReferenceLinks(tag?.id ?? null);
   const references = referenceLinks ?? [];
-
-  const relatedByEmbedding = useMemo(
-    () => rankSimilarTags(similar ?? [], primary?.name, safeMode.enabled).slice(0, 10),
-    [similar, primary?.name, safeMode.enabled],
-  );
 
   // Parses the document with the DOM, so it must not run in the render body.
   const wiki = useMemo(() => {
@@ -642,26 +630,11 @@ export default function TagDetail() {
         {t('tags.detail.searchTagged', 'Search everything tagged {{name}}', { name: tag.name })}
       </LocalizedLink>
 
-      {relatedByEmbedding.length > 0 && (
-        <>
-          <p className="mt-8 text-2xs font-bold uppercase tracking-label text-background/70">
-            {t('tags.detail.moreOnThisLine', 'More on this line')}
-          </p>
-          <ul className="mt-2 flex list-none flex-wrap gap-2 p-0">
-            {relatedByEmbedding.map((r) => (
-              <li key={r.tag_id}>
-                <LocalizedLink
-                  to={`/tags/${encodeURIComponent(r.slug || r.name)}`}
-                  className="border inline-flex items-center gap-2 border-background px-2 py-1 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
-                >
-                  <RouteBullet type="tag" size={20} />
-                  {r.name}
-                </LocalizedLink>
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
+      {/* The embedding-similarity pool ("More on this line") is gone from this
+          page: at its 0.70 floor it published pairs like Tickler↔God as if
+          they were related terms. Related terms are the curated, typed
+          `tag_relations` rendered by TagInterchange; the pool stays as an
+          internal candidate signal for that ontology, never a display. */}
     </section>
   );
 

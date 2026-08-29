@@ -5,6 +5,8 @@
  * already reading; routing it somewhere would either loop back to this page or
  * imply a separate entry that does not exist. Grouped by `alias_type` so
  * "abbreviation" and "historical term" are not presented as equivalent.
+ *
+ * Approved aliases only: an unreviewed alias must not publish as a synonym.
  */
 
 import { useMemo } from 'react';
@@ -23,7 +25,7 @@ const TYPE_LABELS: Record<string, string> = {
 
 export function TagAliasesDisplay({ tagId }: { tagId: string }) {
   const { t } = useTranslation();
-  const { aliases } = useTagAliases(tagId);
+  const { aliases } = useTagAliases(tagId, { publicOnly: true });
 
   const groups = useMemo(() => {
     const map = new Map<string, TagAlias[]>();
