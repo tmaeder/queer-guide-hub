@@ -70,7 +70,7 @@ grant execute on function public.tag_prose_apply(uuid, text, text, boolean) to s
 do $$
 declare v int;
 begin
-  perform set_config('app.actor', 'migration:20261012093000_retraction_deindexes_the_page', true);
+  perform set_config('app.actor', 'migration:20261015093000_retraction_deindexes_the_page', true);
 
   update public.unified_tags
   set seo_indexable = false, updated_at = now()
