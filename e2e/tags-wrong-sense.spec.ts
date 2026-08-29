@@ -103,12 +103,30 @@ test.describe('@smoke glossary entries do not publish the generic sense', () => 
 });
 
 test.describe('glossary synonyms display', () => {
+  // POSITIVE CONTROL, and it must run first: the negative test below passes
+  // just as happily if the synonym band stopped rendering entirely, or if the
+  // alias query broke. This proves an APPROVED alias still reaches the reader.
+  test('approved aliases still publish as synonyms', async ({ page }) => {
+    await page.goto('/tags/chosen-family');
+    await expect(page.locator('h1')).toContainText(/chosen family/i);
+    // Body text, not getByText: the chip label also appears in the tag's own
+    // prose, and a strict locator throws on the second match rather than
+    // reporting the thing under test.
+    await expect(page.locator('body')).toContainText('Found family');
+  });
+
   test('unreviewed machine aliases do not publish as synonyms', async ({ page }) => {
-    // SPA surface — aliases never reach the crawler HTML. "Neptunic" carried
+    // SPA surface — aliases never reach the crawler HTML. "Neptunic" carries
     // "IMO 8805614" (a SHIP registration, the wrong entity's sitelink) as an
-    // auto multilingual alias; the display gate is approved-only since
-    // 2026-08-29, so this holds even before the data purge lands.
+    // auto multilingual alias; verified still present in tag_aliases on
+    // 2026-08-29, so this asserts the approved-only display gate, not an
+    // absence in the data.
     await page.goto('/tags/neptunic');
+    // The h1 settling is the render gate: the alias band mounts with the rest
+    // of the page, so asserting absence after it is not a half-rendered read.
+    // Verified live 2026-08-29: with the gate the band renders NOTHING here
+    // (the sole alias is unreviewed), while chosen-family above still shows
+    // its approved ones — the pair is what makes this absence meaningful.
     await expect(page.locator('h1')).toContainText(/neptunic/i);
     await expect(page.locator('body')).not.toContainText('IMO 8805614');
   });
