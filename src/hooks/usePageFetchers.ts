@@ -199,13 +199,33 @@ export async function fetchEventBySlugOrId<T extends { id: string }>(
     })
   | null
 > {
+  // `status='cancelled'` is what the existence engine writes to archive an
+  // event, and useEvents.tsx already filters the list on `status='active'` —
+  // but this detail fetcher did not, so an archived event kept its public page.
+  //
+  // `neq` rather than `eq('active')`: the date lifecycle also writes 'completed'
+  // for past events, and this corpus is ~99% past events that legitimately keep
+  // their page.
+  //
+  // The `status.is.null` arm is not defensive noise: the column is NULLABLE
+  // (default 'active'), and a bare `.neq()` drops NULL rows because NULL<>'x'
+  // is NULL, not true. A NULL-status event would 404 forever with no way to
+  // see why. It also keeps this agreeing with the marketplace RLS predicate,
+  // which coalesces NULL to 'active'.
+  const NOT_CANCELLED = 'status.is.null,status.neq.cancelled';
   let { data, error } = await supabase
     .from('events')
     .select(selectFields)
     .eq('slug', slug)
+    .or(NOT_CANCELLED)
     .single();
   if (error && /uuid|invalid|no rows/i.test(error.message || '')) {
-    const fb = await supabase.from('events').select(selectFields).eq('id', slug).single();
+    const fb = await supabase
+      .from('events')
+      .select(selectFields)
+      .eq('id', slug)
+      .or(NOT_CANCELLED)
+      .single();
     data = fb.data;
     error = fb.error;
   }
@@ -680,13 +700,26 @@ export async function fetchMarketplaceListingBundle<TListing, TReview>(
   tags: ListingTag[];
   variants: ListingVariantRow[];
 } | null> {
+  // `status='inactive'` archives a listing (the link-rot sweeper and the merge
+  // path both write it; 8,198 rows carry it). RLS was supposed to be the gate
+  // but could never work — its `venue_id IS NULL` disjunct made the status test
+  // a no-op — so this fetcher published every archived listing. RLS is repaired
+  // in 20261014100000; this is the client half, and the two must agree on how
+  // NULL is read (both treat it as active — the column is nullable).
+  const LISTING_VISIBLE = 'status.is.null,status.eq.active';
   let { data: listing, error } = await supabase
     .from('marketplace_listings')
     .select('*')
     .eq('slug', slug)
+    .or(LISTING_VISIBLE)
     .single();
   if (error && /uuid|invalid|no rows/i.test(error.message || '')) {
-    const fb = await supabase.from('marketplace_listings').select('*').eq('id', slug).single();
+    const fb = await supabase
+      .from('marketplace_listings')
+      .select('*')
+      .eq('id', slug)
+      .or(LISTING_VISIBLE)
+      .single();
     listing = fb.data;
     error = fb.error;
   }

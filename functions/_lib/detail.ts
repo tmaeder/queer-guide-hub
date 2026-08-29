@@ -306,8 +306,13 @@ async function eventDetail(env: Env, slug: string, pathname: string): Promise<De
   const rows = await fetchRows(
     env,
     'events',
-    'title,slug,description,address,city,state,country,postal_code,start_date,end_date,latitude,longitude,images,ticket_url,organizer_name,venue_name,price_min,price_max,is_free,event_type,timezone,updated_at,safety_gated',
-    `slug=eq.${encodeURIComponent(slug)}&duplicate_of_id=is.null`,
+    'title,slug,description,address,city,state,country,postal_code,start_date,end_date,latitude,longitude,images,ticket_url,organizer_name,venue_name,price_min,price_max,is_free,event_type,timezone,updated_at,safety_gated,status,seo_indexable',
+    // status=neq.cancelled is the archive gate — the existence engine writes
+    // 'cancelled' to archive an event, and sitemap-events.xml.ts already
+    // excludes it, but this renderer did not, so an archived event kept a fully
+    // indexable crawler page. 'completed' is deliberately NOT excluded: this
+    // corpus is ~99% past events and they legitimately keep their pages.
+    `slug=eq.${encodeURIComponent(slug)}&duplicate_of_id=is.null&status=neq.cancelled`,
     1,
   );
   const row = rows[0] ?? null;
@@ -397,7 +402,10 @@ async function eventDetail(env: Env, slug: string, pathname: string): Promise<De
         : undefined,
   };
 
-  return { meta, body, jsonLd: renderLd(prune(eventLd)) };
+  // seo_indexable was in neither the select nor this return, so an event page
+  // was indexable whatever the column said. The stale comment further down this
+  // file claiming eventDetail "already" honoured it was simply wrong.
+  return { meta, body, jsonLd: renderLd(prune(eventLd)), indexable: row.seo_indexable !== false };
 }
 
 // News articles
@@ -561,10 +569,15 @@ async function personalityDetail(
   };
 
   // Honour the row's own indexability gate, the way newsDetail (`indexable:
-  // row.seo_indexable !== false`) and eventDetail already do. Omitting it made
-  // `detail.indexable !== false` in _middleware trivially true, so a personality
-  // page was ALWAYS indexable — `seo_indexable=false`, which the thin-content
-  // trigger sets, had no effect on this route at all.
+  // row.seo_indexable !== false`) does. Omitting it made `detail.indexable !==
+  // false` in _middleware trivially true, so a personality page was ALWAYS
+  // indexable — `seo_indexable=false`, which the thin-content trigger sets, had
+  // no effect on this route at all.
+  //
+  // This comment also named eventDetail as already doing it. That was false
+  // when written and stayed false until 2026-08-29 — eventDetail had
+  // seo_indexable in neither its select nor its return. Both it and cityDetail
+  // carry the gate now.
   return {
     meta,
     body,
@@ -576,14 +589,26 @@ async function personalityDetail(
 // City — programmatic SEO surface for /city/:slug
 
 async function cityDetail(env: Env, slug: string, pathname: string): Promise<DetailResult | null> {
+  // shell_status + seo_indexable were absent from this select entirely, so the
+  // crawler response was unconditionally indexable regardless of what either
+  // column said — the same hole villageDetail and personalityDetail had. This
+  // ran with the service role, so RLS could never have covered it.
   const cityRow = await fetchOne(
     env,
     'cities',
     'slug',
     slug,
-    'id,name,slug,description,image_url,latitude,longitude,country_id,is_capital,is_major_city,population,lgbt_friendly_rating,updated_at',
+    'id,name,slug,description,image_url,latitude,longitude,country_id,is_capital,is_major_city,population,lgbt_friendly_rating,shell_status,seo_indexable,updated_at',
   );
   if (!cityRow) return null;
+
+  // 'ghost' is the archived disposition archive_city_as_nonplace writes for a
+  // row that is not a place at all — a Bundesland, a continent, a country in
+  // German. Returning null makes the middleware serve a hard 404, which matches
+  // what the SPA now does, rather than publishing "LGBTQ+ guide to Hessen" with
+  // a mere noindex. 'merged' is left to resolveSlugRedirect, which turns it
+  // into a 301 — a redirect is better than a 404 when a canonical row exists.
+  if (stringField(cityRow, 'shell_status') === 'ghost') return null;
 
   const name = stringField(cityRow, 'name') ?? slug;
   const description = stringField(cityRow, 'description') ?? '';
@@ -698,7 +723,7 @@ async function cityDetail(env: Env, slug: string, pathname: string): Promise<Det
 
   const jsonLd = renderLd(prune(placeLd)) + (itemList ? '\n' + renderLd(prune(itemList)) : '');
 
-  return { meta, body, jsonLd };
+  return { meta, body, jsonLd, indexable: cityRow.seo_indexable !== false };
 }
 
 // Country — /country/:slug
@@ -712,7 +737,7 @@ async function countryDetail(
   const rows = await fetchRows(
     env,
     'countries',
-    'id,name,slug,code,description,editorial_hook,editorial_long,image_url,capital,latitude,longitude,equality_score,lgbti_same_sex_unions,population,updated_at',
+    'id,name,slug,code,description,editorial_hook,editorial_long,image_url,capital,latitude,longitude,equality_score,lgbti_same_sex_unions,population,seo_indexable,updated_at',
     `slug=eq.${encodeURIComponent(slug)}&duplicate_of_id=is.null`,
     1,
   );
@@ -763,7 +788,10 @@ async function countryDetail(
     url: `${SITE_ORIGIN}${pathname}`,
   };
 
-  return { meta, body, jsonLd: renderLd(prune(countryLd)) };
+  // `countries` carries seo_indexable and this renderer ignored it — the same
+  // omission as personalityDetail, villageDetail, tagDetail, eventDetail and
+  // cityDetail. Found 2026-08-29 while fixing the last two.
+  return { meta, body, jsonLd: renderLd(prune(countryLd)), indexable: row.seo_indexable !== false };
 }
 
 // Hotels — /hotels/:slug
