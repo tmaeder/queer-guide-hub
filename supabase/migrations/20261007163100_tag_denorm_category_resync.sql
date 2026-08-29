@@ -9,7 +9,7 @@
 -- original version could never have run. `20261006110000` on main cites this
 -- migration by its OLD number in three comments; those references are stale by
 -- name only, the delegation they describe is unchanged and is honoured here.
--- Same rename applied to its sibling 20261007140000.
+-- Same rename applied to its sibling 20261007163000.
 --
 -- WHAT WAS MEASURED, ON PROD, BEFORE WRITING THIS
 --
@@ -19,7 +19,16 @@
 -- denormalised `unified_tags.category` are derived from it by
 -- sync_tag_category() / its AFTER counterpart.
 --
--- Corpus-wide on 2026-08-29:
+-- THE COUNT MOVES, AND NOTHING HERE DEPENDS ON IT. 435 when first measured,
+-- 360 when re-measured later the same day — several sessions were repairing
+-- this table throughout. The loop selects whatever is null at apply time and
+-- the counter asserts zero afterwards, so a changed figure is not a stale
+-- premise. `20261007160000` on main backfills the same rows from the same
+-- source; if it applies first, this loop writes 0 and the assertion still
+-- holds. That is why it is written to be idempotent rather than to match a
+-- number.
+--
+-- Corpus-wide on 2026-08-29 (first measurement):
 --     435 tags   category_id IS NULL while a junction row EXISTS
 --       0 tags   category_id present but NOT among the junction rows
 --       0 tags   category_id present with no junction row at all
@@ -126,7 +135,7 @@ begin
     select * from unified_tags where status = 'active' and merged_into_id is null
   ),
   -- A short description shared by many tags is a bulk-import stamp, not a
-  -- definition. See the header of 20261007140100.
+  -- definition. See the header of 20261007163100.
   stamps as (
     select btrim(description) as d
       from unified_tags
@@ -148,7 +157,7 @@ begin
       select count(*) from unified_tags u where u.category_id is not null
         and not exists (select 1 from tag_categories c where c.id = u.category_id)),
     -- The junction is the source of truth; this counts rows where it says one
-    -- thing and the denormalised column says nothing. Zero after 20261007140100.
+    -- thing and the denormalised column says nothing. Zero after 20261007163100.
     'denorm_category_missing', (
       select count(*) from unified_tags u
        where u.category_id is null

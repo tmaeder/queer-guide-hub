@@ -275,4 +275,4 @@ comment on column public.unified_tags.wikidata_id is
   'Wikidata QID. INPUT to tag_medical_codes_sync and tag_wikidata_hierarchy (both weekly) '
   'and to the public "Elsewhere" rail — a wrong value regenerates wrong derived data every '
   'week, so correct it whenever the prose above it is corrected. Prefer NULL to a guess. '
-  'See 20261007140000_wrong_entity_wikidata_repair.sql.';
+  'See 20261007163000_wrong_entity_wikidata_repair.sql.';
