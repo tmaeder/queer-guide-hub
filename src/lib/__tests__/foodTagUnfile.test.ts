@@ -22,7 +22,7 @@ import { join } from 'node:path';
  *    assertion sampled ten slugs, none of which was one of the twenty, so it
  *    passed. A sample containing only rows the loop could reach proves nothing.
  *
- * `20261004100200` fixes both. These tests pin the two properties that made the
+ * `20261004110400` fixes both. These tests pin the two properties that made the
  * fix a fix, so a later "tidy up the food list" migration cannot reintroduce
  * either. Text check against the migrations directory, not the database, so it
  * runs in CI without credentials — same pattern as `tagCategoryTriggers.test.ts`.
@@ -49,7 +49,7 @@ describe('food tags are unfiled regardless of status, across every filing surfac
   const { file, sql } = latestFoodUnfileMigration();
 
   it('is the migration that fixed both faults, or something newer', () => {
-    expect(file >= '20261004100200_food_unfile_all_statuses_and_surfaces.sql').toBe(true);
+    expect(file >= '20261004110400_food_unfile_all_statuses_and_surfaces.sql').toBe(true);
   });
 
   it('does not gate the tag lookup on status — a live food tag must be reachable', () => {
