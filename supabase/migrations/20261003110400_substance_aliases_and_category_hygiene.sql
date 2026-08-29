@@ -24,6 +24,23 @@
 -- tagging rule. Recorded, resolvable, never trusted — the same disposition
 -- 20260816105401 gave `rack`.
 --
+-- CORRECTION (2026-08-29, measured on prod). The paragraph above is half wrong,
+-- and the wrong half is the load-bearing one. The trigger does fire and does
+-- write search_synonyms with no review_status filter — that part is right. But
+-- it writes `status='approved'`, and the query-expansion layer reads only
+-- `status=eq.active` (workers/search-proxy/src/pgSynonyms.ts). 20260429100000
+-- chose that gap deliberately: "Status is 'approved' (not 'active') by design
+-- ... NOT projected ... until an admin explicitly activates them." So a German
+-- query did NOT resolve. Of nine terms tried against prod after this shipped,
+-- only two returned their tag and both by trigram luck ("Naloxon" is one letter
+-- from "naloxone"); Lachgas, Koks, Pilze, Mischkonsum, Hitzschlag, Feinwaage
+-- and Drogennotfall all returned unrelated fuzzy matches.
+--
+-- The mistake was verifying the MECHANISM (does the trigger filter on
+-- review_status?) and never the OUTCOME (does a German query find the tag?).
+-- 20261006150000 activates the unambiguous subset and says why the ordinary
+-- words must stay inactive.
+--
 -- SHORT ALIASES ARE DROPPED ENTIRELY
 --
 -- The handbook lists "K", "G", "H", "Mo", "C" as scene names. Even as search
