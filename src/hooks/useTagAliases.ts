@@ -7,7 +7,9 @@ export interface TagAlias {
   alias_name: string;
   alias_slug: string;
   alias_type: string;
-  review_status: string;
+  // Nullable in the generated DB types; DB default is 'auto'. Treat null as
+  // unreviewed everywhere.
+  review_status: string | null;
   created_at: string;
 }
 
