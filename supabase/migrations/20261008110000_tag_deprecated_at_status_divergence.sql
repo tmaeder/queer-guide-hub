@@ -55,7 +55,20 @@
 -- possible while two columns can contradict each other and each reader believes
 -- a different one.
 
-begin;
+-- NO `begin;` / `commit;` HERE, AND THAT IS THE ACTUAL ROOT CAUSE OF THE ABORT.
+--
+-- This file used to carry its own transaction. `supabase db push` opens one,
+-- sends the migration body, and THEN inserts the `schema_migrations` row. The
+-- explicit COMMIT closed that transaction early, so on 2026-08-29 11:55:14Z the
+-- DATA committed (215 revived, 82 delisted, the constraint created) while the
+-- VERSION was never recorded -- prod carried the full effects and `db push`
+-- still considered the file pending. The next push re-ran it, hit
+-- `42710 constraint already exists` on the un-guarded ADD below, and stopped
+-- sixteen migrations short of the head.
+--
+-- So the guard alone is not enough: without removing the COMMIT the version
+-- still never records and this file re-runs on every deploy forever.
+-- `set local` works without it because db push supplies the transaction.
 
 -- The audit stamped 51 human_reviewed rows; log_unified_tag_change() raises if a
 -- `system:%` actor touches one, and 'system:trigger' is the default.
@@ -114,9 +127,10 @@ update public.unified_tags
 --    timestamp (192/192) and must keep it, so the constraint is stated as the
 --    equivalence the two readers assume: active <=> not deprecated.
 -- ---------------------------------------------------------------------------
---    Guarded because the constraint was hand-applied to prod before this file
---    reached `db push`, and a bare ADD CONSTRAINT raises 42710 ("already
---    exists") — which aborts the push and takes every LATER migration with it.
+--    Guarded because this file's OWN earlier run created the constraint — see the
+--    transaction note at the top; nobody hand-applied it — and a bare ADD
+--    CONSTRAINT raises 42710 ("already exists"), which aborts the push and takes
+--    every LATER migration with it.
 --    That is what happened at 12:30Z: sixteen migrations applied, then this one
 --    stopped the queue. Skipping when present loses nothing, because the
 --    existing constraint is definitionally identical
@@ -148,5 +162,3 @@ begin
     raise exception 'status/deprecated_at divergence not cleared: % rows', v_bad;
   end if;
 end $$;
-
-commit;
