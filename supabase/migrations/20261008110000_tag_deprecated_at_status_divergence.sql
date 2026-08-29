@@ -114,9 +114,32 @@ update public.unified_tags
 --    timestamp (192/192) and must keep it, so the constraint is stated as the
 --    equivalence the two readers assume: active <=> not deprecated.
 -- ---------------------------------------------------------------------------
-alter table public.unified_tags
-  add constraint unified_tags_status_matches_deprecated_at
-  check ((status = 'active') = (deprecated_at is null));
+--    THE CONSTRAINT IS ALREADY ON PROD AND THIS MIGRATION HAS NEVER APPLIED.
+--    Measured 2026-08-29: `unified_tags_status_matches_deprecated_at` exists on
+--    `unified_tags`, convalidated, with this exact definition — while version
+--    20261008110000 is absent from `supabase_migrations.schema_migrations`
+--    (remote head sat at 20261007140000). That is the signature of SQL run
+--    through the Management API or MCP, which applies the statement and does
+--    NOT record history. A bare ALTER therefore raises 42710 "constraint
+--    already exists", and `db push` abandons every migration behind it — which
+--    is where the queue was stuck.
+--
+--    Guarded rather than DROP-then-ADD: dropping a validated CHECK and
+--    re-adding it re-scans the table for nothing, and leaves a window where the
+--    invariant is unenforced. The three UPDATEs above are already idempotent by
+--    their own WHERE clauses, so this is the only statement that needed it.
+do $add_constraint$
+begin
+  if not exists (
+    select 1 from pg_constraint
+     where conrelid = 'public.unified_tags'::regclass
+       and conname  = 'unified_tags_status_matches_deprecated_at'
+  ) then
+    alter table public.unified_tags
+      add constraint unified_tags_status_matches_deprecated_at
+      check ((status = 'active') = (deprecated_at is null));
+  end if;
+end $add_constraint$;
 
 do $$
 declare v_bad int;
