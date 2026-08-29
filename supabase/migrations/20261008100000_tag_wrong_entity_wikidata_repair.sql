@@ -49,6 +49,14 @@
 -- value is snapshotted in `tag_wikidata_repair_audit` and the full row in
 -- `tag_change_log`, so this is reversible.
 --
+-- KNOWN, ACCEPTED COST. `tag_hygiene_stats().sensitive_without_description` moves
+-- 19 -> 23: four adult tags whose only prose described the wrong entity end up with
+-- none. That metric is ADVISORY in scripts/tag-hygiene-baseline.json and the rows are
+-- deindexed by the same statement, and an adult glossary entry reading "Municipality
+-- in Capiz, Philippines" is worse than one reading nothing. The HARD gate,
+-- `indexable_without_description`, is held at its zero-invariant by the deindex arm —
+-- measured, not assumed.
+--
 -- RELATION TO 20261007160200_tag_wikidata_chimera_retraction. A concurrent session
 -- hand-read 44 of these rows and retracted their bodies the same week (`passing`,
 -- `seafood`, `flogger`→a MiG-23, `public`→PubMed). That pass and this one are the same
@@ -1941,6 +1949,22 @@ begin
          wikipedia_url     = null,
          short_description = case when r.clear_short then null else u.short_description end,
          long_description  = case when r.clear_long  then null else u.long_description  end,
+         -- RETRACTING THE LAST PROSE ON A ROW MUST ALSO DEINDEX IT. `description`
+         -- is never touched here, but on a row that never had one the retracted
+         -- `short_description` was the only text the page had, and leaving it
+         -- indexable publishes an empty glossary entry into sitemap-tags.xml.
+         -- Measured: without this, `tag_hygiene_stats().indexable_without_description`
+         -- goes 0 -> 26 and the ratchet's hard zero-invariant breaks. Same predicate
+         -- and same direction as run_tag_thin_page_reindex() (20260921110000), which
+         -- owns the row afterwards and RE-INDEXES it the moment it gains prose — so
+         -- this is a self-healing state, not a one-way door.
+         seo_indexable     = case
+                               when coalesce(
+                                      nullif(btrim(u.description), ''),
+                                      case when r.clear_short then null else u.short_description end
+                                    ) is null then false
+                               else u.seo_indexable
+                             end,
          updated_at        = now()
     from _repair r
    where r.tag_id = u.id and r.disposition = 'cleared';
@@ -1987,5 +2011,13 @@ begin
   if exists (select 1 from public.unified_tags u join _repair r on r.tag_id = u.id
               where r.disposition = 'review' and u.wikidata_id is null) then
     raise exception 'wrong-entity repair: a review-only tag was modified';
+  end if;
+  -- The prose retraction must not leave a public page with nothing on it. Scoped
+  -- to the rows this migration touched, so a pre-existing thin page elsewhere is
+  -- somebody else's backlog and not reported here as ours.
+  if exists (select 1 from public.unified_tags u join _repair r on r.tag_id = u.id
+              where r.disposition = 'cleared' and u.status = 'active' and u.seo_indexable
+                and coalesce(nullif(btrim(u.description), ''), u.short_description) is null) then
+    raise exception 'wrong-entity repair: a cleared tag is still indexable with no prose left';
   end if;
 end $repair$;
