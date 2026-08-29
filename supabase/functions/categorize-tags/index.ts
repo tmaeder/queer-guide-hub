@@ -231,15 +231,21 @@ Return ONLY valid JSON — tag names as keys, category slugs as values:
             continue;
           }
 
-          // 2. Upsert into tag_category_assignments with is_primary = true
-          if (recategorize) {
-            // Remove existing primary assignment before re-assigning
-            await supabase
-              .from('tag_category_assignments')
-              .delete()
-              .eq('tag_id', tag.id)
-              .eq('is_primary', true);
-          }
+          // 2. Upsert into tag_category_assignments with is_primary = true.
+          //
+          // DEMOTE FIRST, ALWAYS. This was gated on `recategorize`, so every
+          // other path upserted a second primary onto a tag that already had
+          // one — the tag then has two, and which one a reader sees depends on
+          // which query ordering they hit. Demoting rather than DELETEing
+          // keeps the old filing as a cross-listing instead of discarding it,
+          // and the partial unique index added in 20261008130000 now makes the
+          // two-primary state impossible to write at all.
+          await supabase
+            .from('tag_category_assignments')
+            .update({ is_primary: false })
+            .eq('tag_id', tag.id)
+            .eq('is_primary', true)
+            .neq('category_id', categoryId);
 
           const { error: assignError } = await supabase
             .from('tag_category_assignments')
