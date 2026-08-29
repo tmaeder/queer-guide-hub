@@ -276,6 +276,36 @@ begin
       and status <> 'active';
   end loop;
 
+  -- Repair category_id <-> junction drift on the rows this wave revives.
+  --
+  -- trg_sync_tag_category_after fires only when category_id CHANGES, so a row
+  -- whose junction already disagreed with its category_id is never corrected by
+  -- flipping status alone. Measured on prod: rows exist with category_id = X and
+  -- exactly one is_primary junction row pointing at Y. The first deploy of this
+  -- wave failed on precisely that ("3 row(s) have no primary junction row"),
+  -- which is the assertion doing its job — a half-written taxonomy is what it
+  -- exists to refuse.
+  --
+  -- unified_tags.category_id is the canonical side (it is what
+  -- tag_hygiene_stats().uncategorized_active reads and what has an FK), so the
+  -- junction is moved to agree with it, not the other way round. This does
+  -- exactly what the AFTER trigger would have done, and is idempotent.
+  for r in select t.id, t.category_id from _rev k
+             join public.unified_tags t on t.slug = k.slug
+            where t.category_id is not null
+              and not exists (
+                select 1 from public.tag_category_assignments a
+                 where a.tag_id = t.id and a.category_id = t.category_id and a.is_primary)
+  loop
+    update public.tag_category_assignments
+       set is_primary = false
+     where tag_id = r.id and is_primary and category_id <> r.category_id;
+
+    insert into public.tag_category_assignments (tag_id, category_id, is_primary)
+    values (r.id, r.category_id, true)
+    on conflict (tag_id, category_id) do update set is_primary = true;
+  end loop;
+
   ------------------------------------------------------------------ assertions
   select count(*) into v_bad from _rev k
     join public.unified_tags t on t.slug = k.slug
