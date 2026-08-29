@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
@@ -49,14 +49,32 @@ import { join } from 'node:path';
  * without credentials — same pattern as `tagCategoryTextJunctionDisagreement`.
  */
 
-const MIGRATION = join(
-  process.cwd(),
-  'supabase',
-  'migrations',
-  '20261006200000_ssc_consent_stop.sql',
-);
+const MIGRATIONS_DIR = join(process.cwd(), 'supabase', 'migrations');
 
-const sql = readFileSync(MIGRATION, 'utf8');
+/**
+ * Resolved by SUFFIX, never by a frozen version.
+ *
+ * This file was pinned to `20261006200000_ssc_consent_stop.sql` and that turned
+ * a routine renumber into a red CI run. The migration merged but never applied:
+ * higher versions reached prod first, so `supabase db push` refused the whole
+ * batch as out-of-order and four consecutive deploys failed. The documented fix
+ * is to renumber above the remote max — which is a thing that will happen again
+ * to any migration that sits unapplied while other PRs land, so the version is
+ * not a stable identifier and must not be treated as one. The suffix is.
+ */
+const MIGRATION_FILE = readdirSync(MIGRATIONS_DIR)
+  .filter((f) => f.endsWith('_ssc_consent_stop.sql'))
+  .sort()
+  .at(-1);
+
+if (!MIGRATION_FILE) {
+  throw new Error(
+    'No *_ssc_consent_stop.sql in supabase/migrations — the migration this suite guards is gone, ' +
+      'which is a real regression rather than a reason to skip.',
+  );
+}
+
+const sql = readFileSync(join(MIGRATIONS_DIR, MIGRATION_FILE), 'utf8');
 
 /** The migration minus its `--` comment lines, so prose cannot satisfy a test. */
 const code = sql
