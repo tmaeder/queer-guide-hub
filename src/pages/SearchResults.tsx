@@ -247,23 +247,16 @@ export default function SearchResults() {
     setSearchParams(params);
   }, [searchQuery, searchParams, setSearchParams]);
 
-  const navigateToResult = useCallback(
+  // Analytics only. The result card navigates itself through a real anchor
+  // (`hrefForSearchResult`), so this must NOT also call `navigate()` — that
+  // would push a second, identical history entry and make Back need two
+  // presses. The route mapping that used to live here moved into
+  // `hrefForSearchResult` so the card can render an href.
+  const trackResultClick = useCallback(
     (result: SearchResult) => {
       trackClick({ type: result.type, id: result.objectID }, 'search', { query });
-      navigate(
-        hrefForEntity({
-          type: result.type,
-          // Never send the objectID as a slug — id-keyed types (group/user)
-          // resolve via `id`; slug-keyed types fall back to a fresh search
-          // when no canonical slug exists rather than a /type/<uuid> dead link.
-          slug: result.slug || (result.metadata?.slug as string),
-          id: result.objectID,
-          title: result.title,
-          isCountry: Boolean(result.metadata?.isCountry),
-        }),
-      );
     },
-    [navigate, trackClick, query],
+    [trackClick, query],
   );
 
   // ── Inline AI ──────────────────────────────────────────────────────────
@@ -523,7 +516,7 @@ export default function SearchResults() {
           <ResultsMapView results={accumulated} />
         ) : effectiveView === 'calendar' ? (
           <div className={cn(loading && 'opacity-60 transition-opacity')} aria-busy={loading}>
-            <SearchCalendarView results={accumulated} query={query} onSelect={navigateToResult} />
+            <SearchCalendarView results={accumulated} query={query} onActivate={trackResultClick} />
             <LoadMore
               hasMore={hasMore}
               loading={loading}
@@ -544,7 +537,7 @@ export default function SearchResults() {
                   result={r}
                   view={effectiveView === 'grid' ? 'grid' : 'list'}
                   query={query}
-                  onSelect={navigateToResult}
+                  onActivate={trackResultClick}
                   onTagClick={handleTagRefine}
                   activeTags={filters.tags}
                 />

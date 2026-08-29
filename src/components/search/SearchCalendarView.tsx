@@ -8,7 +8,8 @@ import { SearchResultCard } from './SearchResultCard';
 export interface SearchCalendarViewProps {
   results: SearchResult[];
   query: string;
-  onSelect: (result: SearchResult) => void;
+  /** Analytics only — the cards navigate themselves via a real anchor. */
+  onActivate?: (result: SearchResult) => void;
 }
 
 function dayKey(d: Date): string {
@@ -21,7 +22,7 @@ function dayKey(d: Date): string {
  * scrolls the agenda to it. Undated results fall into a trailing section.
  * Read-only over the current result set (no fetch of its own).
  */
-export function SearchCalendarView({ results, query, onSelect }: SearchCalendarViewProps) {
+export function SearchCalendarView({ results, query, onActivate }: SearchCalendarViewProps) {
   const { t } = useTranslation();
   const agendaRef = useRef<HTMLDivElement>(null);
   const dayRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -122,7 +123,7 @@ export function SearchCalendarView({ results, query, onSelect }: SearchCalendarV
                   result={r}
                   view="list"
                   query={query}
-                  onSelect={onSelect}
+                  onActivate={onActivate}
                 />
               ))}
             </div>
@@ -141,7 +142,7 @@ export function SearchCalendarView({ results, query, onSelect }: SearchCalendarV
                   result={r}
                   view="list"
                   query={query}
-                  onSelect={onSelect}
+                  onActivate={onActivate}
                 />
               ))}
             </div>
