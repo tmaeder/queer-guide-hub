@@ -47,7 +47,6 @@ import { CATEGORY_LINE_ORDER, lineForCategory } from '@/lib/tags/categoryIdentit
 import {
   applyTagsParams,
   hasActiveFilters,
-  isRealTagImage,
   letterFor,
   parseTagsParams,
   serializeTagsParams,
@@ -72,7 +71,6 @@ interface TagIndexEntry {
   letter: string;
   parentName: string | null;
   categoryNames: (string | null | undefined)[];
-  hasImage: boolean;
 }
 
 export default function TagsIndex() {
@@ -150,7 +148,6 @@ export default function TagsIndex() {
         letter: letterFor(tag.name),
         parentName: primary?.parent_name ?? primary?.name ?? null,
         categoryNames,
-        hasImage: isRealTagImage(tag.image_url),
       };
     });
     return { entries: list, byId: new Map(list.map((e) => [e.tag.id, e])) };
@@ -210,11 +207,10 @@ export default function TagsIndex() {
       if (state.q.trim() && !e.haystack.includes(state.q.trim().toLowerCase())) continue;
       if (state.usage === 'used' && (usageCounts[e.tag.name] || 0) === 0) continue;
       if (state.usage === 'unused' && (usageCounts[e.tag.name] || 0) > 0) continue;
-      if (state.hasImage && !e.hasImage) continue;
       counts[e.letter] = (counts[e.letter] ?? 0) + 1;
     }
     return counts;
-  }, [base, state.q, state.usage, state.hasImage, usageCounts]);
+  }, [base, state.q, state.usage, usageCounts]);
 
   const narrow = useCallback(
     (list: TagIndexEntry[]) =>
@@ -222,10 +218,9 @@ export default function TagsIndex() {
         if (state.letter && e.letter !== state.letter) return false;
         if (state.usage === 'used' && (usageCounts[e.tag.name] || 0) === 0) return false;
         if (state.usage === 'unused' && (usageCounts[e.tag.name] || 0) > 0) return false;
-        if (state.hasImage && !e.hasImage) return false;
         return true;
       }),
-    [state.letter, state.usage, state.hasImage, usageCounts],
+    [state.letter, state.usage, usageCounts],
   );
 
   const sortEntries = useCallback(
@@ -374,7 +369,6 @@ export default function TagsIndex() {
     );
   }
 
-  const illustrated = entries.filter((e) => e.hasImage).length;
   const stopCount = categoriesTree.reduce((n, c) => n + (c.children?.length ?? 0), 0);
   const filtered = hasActiveFilters(state);
 
@@ -409,12 +403,11 @@ export default function TagsIndex() {
             <Eyebrow as="p" className="text-background/70">
               {t('tags.stats.kicker', 'The corpus')}
             </Eyebrow>
-            <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-4">
+            <dl className="mt-6 grid grid-cols-3 gap-x-6 gap-y-8">
               {[
                 { value: entries.length, label: t('tags.stats.terms', 'Terms') },
                 { value: parentOrder.length, label: t('tags.stats.lines', 'Lines') },
                 { value: stopCount, label: t('tags.stats.stops', 'Stops') },
-                { value: illustrated, label: t('tags.stats.illustrated', 'Illustrated') },
               ].map((s) => (
                 <div key={s.label}>
                   <dd className="font-display text-display leading-none tabular-nums md:text-hero">
@@ -462,8 +455,6 @@ export default function TagsIndex() {
               onDir={() => patch({ dir: state.dir === 'asc' ? 'desc' : 'asc' })}
               usage={state.usage}
               onUsage={(usage: TagUsageFilter) => patch({ usage })}
-              hasImage={state.hasImage}
-              onHasImage={(hasImage) => patch({ hasImage })}
             />
 
             {state.view !== 'graph' && (

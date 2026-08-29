@@ -37,6 +37,12 @@ export const HYGIENE_METRICS: HygieneMetric[] = [
   { key: 'assignment_to_non_active_tag', label: 'Assignments to dead tags', zero: true },
   { key: 'dangling_category_id', label: 'Dangling category id', zero: true },
   { key: 'nonclean_entity_type', label: 'Unnormalized entity_type', zero: true },
+  {
+    key: 'active_tags_with_image_url',
+    label: 'Photos on active tags',
+    zero: true,
+    hint: 'Glossary photography retired 2026-08-28 (tags render drawn TagPlates). Non-zero means a writer is reintroducing photos.',
+  },
   { key: 'commons_image_without_license', label: 'Commons image, no license', zero: true },
   { key: 'indexable_without_description', label: 'Indexable, no prose', zero: true },
   { key: 'merged_but_not_status_merged', label: 'Merged but still active', zero: true },
@@ -76,16 +82,20 @@ export const HYGIENE_METRICS: HygieneMetric[] = [
     advisory: true,
     hint: 'Free-text event tags that match no tag name or slug. Phase 4 scope marker, German-heavy.',
   },
+  // Legacy trio from the photo era: 0 since the 2026-08-28 retirement. Kept
+  // transitionally (with the SQL and baseline in lockstep) so the
+  // prod-measuring CI gate stayed green across the merge window; a follow-up
+  // migration may drop all three from all three surfaces at once.
   {
     key: 'image_without_license',
     label: 'Image, no license',
     advisory: true,
-    hint: 'Mostly self-hosted images whose provenance was never captured and cannot be recovered. Ratchet, not a target.',
+    hint: 'Photo-era counter — 0 since the 2026-08-28 retirement.',
   },
   {
     key: 'image_alt_column_empty',
     label: 'Image, no alt column',
     advisory: true,
-    hint: 'Not an accessibility gate — every render path already emits alt="" for these.',
+    hint: 'Photo-era counter — 0 since the 2026-08-28 retirement.',
   },
 ];

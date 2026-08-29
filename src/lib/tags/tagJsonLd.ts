@@ -12,7 +12,6 @@ export interface TagJsonLdInput {
   name: string;
   slug: string;
   description: string;
-  image_url?: string | null;
   wikipedia_url?: string | null;
 }
 
@@ -32,7 +31,6 @@ export function buildTagJsonLd(
       url: 'https://queer.guide/tags',
     },
   };
-  if (tag.image_url) jsonLd.image = tag.image_url;
 
   const cited = legalSources.filter((s) => s.official_title && s.source_url);
 

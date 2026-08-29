@@ -5,9 +5,19 @@
 // scheduled_service='yes' AND type IN (large_airport, medium_airport,
 // small_airport). Ranking is wikibase:sitelinks first, P3872 passengers second;
 // neither may ever be read as proof an airport is open.
+//
+// Every failure exit returns a 5xx, deliberately. This function is a tracked
+// automation (`admin_automations.airport_service_refresh`, wrapped in pg_cron
+// with the run-begin shim), and `admin_automation_reap_runs()` classifies a
+// response as an error on `status_code >= 400 OR error_msg IS NOT NULL` --
+// a success then RESETS `consecutive_failures`. Returning 200 with an
+// `{error: ...}` body, as this did until 2026-08-28, meant a month where
+// OurAirports was down or the upsert failed was recorded as a healthy run and
+// auto-pause could never fire. A 200 here must mean the gate was rebuilt.
 
 import { getCorsHeaders, getServiceClient, requireInternalOrAdmin, jsonResponse } from '../_shared/supabase-client.ts'
 import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
+import { safeErrCode } from '../_shared/safe-error.ts'
 
 const CSV_URL = 'https://davidmegginson.github.io/ourairports-data/airports.csv'
 const WDQS = 'https://query.wikidata.org/sparql'
@@ -154,10 +164,15 @@ Deno.serve(async (req: Request) => {
   try {
     gate = buildGate(await fetchText(CSV_URL, CSV_TIMEOUT))
   } catch (e) {
-    return jsonResponse({ error: 'ourairports_unavailable', detail: String(e).slice(0, 120) }, 200, req)
+    // Allowlist, not redaction: `String(e)` here carries the fetch/parse failure
+    // verbatim, which is CWE-209 (CodeQL js/stack-trace-exposure alert 73). No
+    // caller parses `detail` -- the sole caller is the fire-and-forget pg_cron
+    // post -- so the real text goes to the server log and the body carries a
+    // code we chose.
+    return jsonResponse({ error: 'ourairports_unavailable', detail: safeErrCode(e, [], 'airport-service-refresh/fetch') }, 503, req)
   }
   if (gate.rows.length < 1000) {
-    return jsonResponse({ error: 'gate_implausibly_small', rows: gate.rows.length }, 200, req)
+    return jsonResponse({ error: 'gate_implausibly_small', rows: gate.rows.length }, 500, req)
   }
 
   const rank = await loadRanking()
@@ -180,14 +195,17 @@ Deno.serve(async (req: Request) => {
       .from('airport_service')
       .upsert(payload.slice(i, i + CHUNK).map(a => ({ ...a, source: 'ourairports', refreshed_at: new Date().toISOString() })),
         { onConflict: 'iata_code' })
-    if (error) return jsonResponse({ error: 'upsert_failed', detail: error.message, written }, 200, req)
+    // CodeQL flagged only the fetch path above, but a PostgREST message is the
+    // worse leak of the two: it names columns, relations and constraints. Same
+    // treatment; the whole error object still reaches the server log.
+    if (error) return jsonResponse({ error: 'upsert_failed', detail: safeErrCode(error, [], 'airport-service-refresh/upsert'), written }, 500, req)
     written += Math.min(CHUNK, payload.length - i)
   }
 
   const { data: removed, error: delErr } = await supabase
     .from('airport_service').delete().eq('source', 'ourairports').lt('refreshed_at', startedAt)
     .select('iata_code')
-  if (delErr) return jsonResponse({ error: 'prune_failed', detail: delErr.message, written }, 200, req)
+  if (delErr) return jsonResponse({ error: 'prune_failed', detail: safeErrCode(delErr, [], 'airport-service-refresh/prune'), written }, 500, req)
 
   return jsonResponse({
     written, removed: removed?.length ?? 0, by_type: gate.byType, skipped: gate.skipped,

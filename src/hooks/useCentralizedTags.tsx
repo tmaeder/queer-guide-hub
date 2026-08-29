@@ -318,7 +318,6 @@ export const useCentralizedTags = () => {
     slug: string;
     category?: string | null;
     description?: string | null;
-    image_url?: string | null;
   }): Promise<CentralizedTag | null> => {
     try {
       const normalizedName = normalizeTagName(tagData.name);

@@ -2,13 +2,12 @@
 // tag-enrichment-sweep — content-quality enrichment PRODUCER for unified_tags
 // ----------------------------------------------------------------------------
 // Batches ACTIVE tags ordered by quality_score ASC and fills the lowest missing
-// content dimensions (wiki link → description → image) for each, free sources
-// first. Hybrid-by-confidence routing:
+// content dimensions (wiki link → description) for each, free sources first.
+// Hybrid-by-confidence routing:
 //
 //   AUTO-APPLY (direct write):
 //     - wiki links (wikidata_id/wikipedia_url) — always source-grounded
 //     - description sourced from Wikipedia, for NON-sensitive/adult tags
-//     - stock image (store-tag-images), for NON-sensitive/adult tags
 //
 //   QUEUE to ai_suggestions (status='pending', entity_type='unified_tags'):
 //     - pure-LLM description guesses (no Wikipedia grounding)
@@ -16,6 +15,12 @@
 //     (suggestion_type 'description'; applied later via applySuggestion when an
 //      admin approves in the /admin/tags review panel, which also flips
 //      human_reviewed=true and releases the SEO sensitivity gate.)
+//
+// The IMAGE dimension is retired (2026-08-28): glossary photography is gone —
+// tags render drawn TagPlates — so the sweep must never write image_url, and
+// `image_url.is.null` must NOT be in the work-list filter (after the
+// retirement migration it is null on EVERY tag, which would make the sweep
+// re-select the whole corpus forever).
 //
 // Auth: dedicated webhook secret (parks the cron until set) OR internal-secret
 // OR service-role OR admin. Mirrors the Phase 4 i18n cron parking pattern.
@@ -29,8 +34,6 @@ import {
 } from '../_shared/supabase-client.ts'
 
 const supabase = getServiceClient()
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
-const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
 /** Provenance source label matching chatCompletion's actual backend. */
 function llmSource(): 'workers-ai' | 'openai' {
@@ -42,7 +45,6 @@ interface TagRow {
   id: string
   name: string
   description: string | null
-  image_url: string | null
   wikidata_id: string | null
   wikipedia_url: string | null
   is_sensitive: boolean | null
@@ -240,25 +242,6 @@ async function categorizePass(
   }
 }
 
-/** Invoke store-tag-images (free Pexels/Unsplash → tag-images bucket) for a tag. */
-async function fillImage(tagId: string, tagName: string): Promise<boolean> {
-  try {
-    const res = await fetch(`${SUPABASE_URL}/functions/v1/store-tag-images`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${SERVICE_ROLE_KEY}`,
-      },
-      body: JSON.stringify({ tagId, tagName }),
-    })
-    if (!res.ok) return false
-    const j = await res.json().catch(() => ({}))
-    return j?.success === true
-  } catch {
-    return false
-  }
-}
-
 /** Insert a pending description suggestion, skipping if one already exists for this tag. */
 async function queueDescription(
   tag: TagRow,
@@ -323,11 +306,9 @@ Deno.serve(async (req) => {
   // so reruns before the nightly recompute don't re-pick handled tags.
   const { data: tags, error } = await supabase
     .from('unified_tags')
-    .select('id,name,description,image_url,wikidata_id,wikipedia_url,is_sensitive,is_adult')
+    .select('id,name,description,wikidata_id,wikipedia_url,is_sensitive,is_adult')
     .eq('status', 'active')
-    .or(
-      'description.is.null,image_url.is.null,and(wikidata_id.is.null,wikipedia_url.is.null)',
-    )
+    .or('description.is.null,and(wikidata_id.is.null,wikipedia_url.is.null)')
     .order('quality_score', { ascending: true, nullsFirst: true })
     .limit(batchLimit)
 
@@ -343,7 +324,6 @@ Deno.serve(async (req) => {
     links_applied: 0,
     desc_applied: 0,
     desc_queued: 0,
-    images_applied: 0,
     cat_applied: 0,
     cat_queued: 0,
     skipped: 0,
@@ -357,7 +337,6 @@ Deno.serve(async (req) => {
     const sensitive = tag.is_sensitive === true || tag.is_adult === true
     const needsDesc = !tag.description || tag.description.trim().length < 30
     const needsLinks = !tag.wikidata_id && !tag.wikipedia_url
-    const needsImage = !tag.image_url
 
     let didSomething = false
 
@@ -410,14 +389,6 @@ Deno.serve(async (req) => {
             }
           }
         }
-      }
-    }
-
-    // 3. Image — auto-apply only for non-sensitive tags (free stock sources).
-    if (needsImage && !sensitive) {
-      if (await fillImage(tag.id, tag.name)) {
-        stats.images_applied++
-        didSomething = true
       }
     }
 

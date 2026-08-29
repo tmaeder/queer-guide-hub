@@ -104,9 +104,50 @@ async function run() {
     HARD(res && res.ok, `/health not 200 (${res?.status})`);
   });
 
-  await scenario('S3', 'Empty query rejected gracefully (400 validation, not 500)', async ({ HARD }) => {
+  // An empty query is NOT an error — it is the filter-only browse entry point (the
+  // `query.trim().length === 0` branch in workers/search-proxy/src/index.ts), which
+  // powers the tag-glossary "Search everything tagged X" bridge and every facet-only
+  // browse surface. This asserted `400` until 2026-08-24, long after the worker
+  // started answering 200, so the suite sat permanently at 35/36 — and a
+  // permanently-red gate teaches everyone to ignore it. Both halves of the branch
+  // are pinned below; the invariant the old assertion was really protecting —
+  // malformed input must validate, never 500 — moves to S3c, where it still holds.
+  await scenario('S3a', 'Empty query + no filters → 200 empty-set with a reason', async ({ HARD }) => {
     const r = await search({ query: '', hitsPerPage: 5 });
-    HARD(r.status === 400, `empty query status ${r.status} (expected 400 validation)`);
+    HARD(r.status === 200, `status ${r.status} (expected 200 — empty query is browse, not an error)`);
+    HARD(isArr(r.json?.hits) && r.json.hits.length === 0, 'expected an empty hits array');
+    HARD(r.json?.reason === 'empty_query_no_filters',
+      `expected reason "empty_query_no_filters", got ${JSON.stringify(r.json?.reason)}`);
+    HARD('facetDistribution' in (r.json ?? {}), 'no facetDistribution');
+  });
+
+  await scenario('S3b', 'Empty query + a browse filter actually browses', async ({ HARD, SOFT }) => {
+    // The half that carries the product value. Without it, S3a alone would still
+    // pass if filter-only browse were broken and returned the empty set for
+    // everything — which is exactly the failure S3a's `reason` check cannot see.
+    //
+    // `city` is what makes this a browse; `types` alone is NOT in hasBrowseFilters()
+    // (index.ts), so dropping the city here silently routes to the no-filters branch
+    // — and then `cities.every(...)` passes VACUOUSLY on the empty array. Verified by
+    // hand: {types:['venue']} alone returns 0 hits + reason "empty_query_no_filters".
+    // The length and reason assertions below are what stop that being a false green,
+    // so keep them ahead of the every(). Filter discrimination confirmed against a
+    // second city: city=Berlin -> berlin only, city=Paris -> paris only.
+    const r = await search({ query: '', filters: { types: ['venue'], city: 'Berlin' }, hitsPerPage: 10 });
+    HARD(r.status === 200, `status ${r.status}`);
+    HARD(isArr(r.json?.hits), 'hits is not an array');
+    HARD((r.json?.hits?.length ?? 0) > 0, 'filter-only browse returned nothing for venues in Berlin');
+    HARD(r.json?.reason === 'filter_browse',
+      `expected reason "filter_browse", got ${JSON.stringify(r.json?.reason)}`);
+    const cities = (r.json?.hits ?? []).map((h) => String(h.city ?? '').toLowerCase());
+    HARD(cities.every((c) => c === 'berlin'), `city filter leaked: ${[...new Set(cities)].join(', ')}`);
+    SOFT(types(r).every((t) => t === 'venue'), `type filter leaked: ${[...new Set(types(r))].join(', ')}`);
+  });
+
+  await scenario('S3c', 'Empty query + malformed params still validates, never 500', async ({ HARD }) => {
+    const r = await search({ query: '', hitsPerPage: -5 });
+    HARD(r.status !== 500, 'empty query + bad hitsPerPage returned 500');
+    HARD(r.status === 400 || r.status === 200, `expected 400 (validation) or 200 (clamped), got ${r.status}`);
   });
 
   await scenario('S4', 'Nonsense query returns gracefully (no crash)', async ({ HARD, SOFT }) => {

@@ -60,7 +60,26 @@ node scripts/search-eval/search-test.mjs --json     # machine-readable summary f
   pagination, clamping, graceful validation). These gate the run.
 - **SOFT** checks = relevance/ranking (data-dependent) — printed as warnings, never fail the run, so an
   agent can eyeball quality without flakiness.
-- Prints a server + wall-clock latency sample (p50/p95). Last green baseline: 36/36 hard, server p50 ~430 ms / p95 ~640 ms (warm).
+- Prints a server + wall-clock latency sample (p50/p95). Last green baseline (2026-08-24):
+  **46/46 hard**, server p50 ~820 ms / p95 ~920 ms (warm), over a 115k-document corpus.
+
+  The previous baseline in this file read "36/36 hard, p50 ~430 ms / p95 ~640 ms" and was
+  stale in both halves. The hard count moved because **S3 was replaced** (see below); the
+  latency roughly doubled as the corpus grew — it is not a regression from any one change,
+  and the `search_hybrid` keyword-precedence fix accounts for at most +44 ms of it
+  (measured min-of-4 on the broadest query). Re-measure warm: the first run after a deploy
+  hits cold isolates and reads ~1.4 s / ~2.0 s.
+
+**S3 was asserting the opposite of the intended behaviour.** It expected `400` for an empty
+query; the worker deliberately answers `200 {reason:"empty_query_no_filters"}` because an
+empty query is the **filter-only browse** entry point (the `query.trim().length === 0`
+branch in `workers/search-proxy/src/index.ts`), which powers the tag-glossary "Search
+everything tagged X" bridge. The suite therefore sat permanently at 35/36 — a
+permanently-red gate teaches everyone to ignore it, which is worse than no gate. Replaced
+by `S3a` (no filters → empty set + reason), `S3b` (a filter actually browses, and the
+filter does not leak — without this, `S3a` alone would pass even if browse were broken and
+returned nothing for everything) and `S3c` (malformed params still validate, never 500 —
+the invariant the old assertion was really protecting).
 
 **Scenario coverage:** smoke/contract (S*), relevance (R*, soft), keyword robustness — typo/diacritics (K*),
 filters incl. type/city/facets (F*), geo radius (G*), autocomplete (A*), pagination (PG*), edge cases —

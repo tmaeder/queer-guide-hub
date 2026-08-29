@@ -4,12 +4,14 @@ import { test, expect } from '@playwright/test';
 // live in query params; the CATEGORY lives in the path.
 //
 // Param names are deliberately unchanged from the page this replaces (`sort`,
-// `dir`, `view`, `usage`, `hasImage`) so existing shared links keep working.
+// `dir`, `view`, `usage`) so existing shared links keep working. `hasImage`
+// (the "Illustrated" filter) retired with glossary photography — TagPlate,
+// 2026-08-28 — and is now a legacy key that gets stripped like `cat=`.
 
 test.describe('@p1-1 /tags URL state', () => {
   test('hydrates state from URL on direct visit', async ({ page }) => {
-    await page.goto('/tags?sort=alphabetical&dir=asc&view=list&hasImage=1');
-    await expect(page).toHaveURL(/\/tags\?.*sort=alphabetical.*dir=asc.*view=list.*hasImage=1/);
+    await page.goto('/tags?sort=alphabetical&dir=asc&view=list');
+    await expect(page).toHaveURL(/\/tags\?.*sort=alphabetical.*dir=asc.*view=list/);
   });
 
   test('typing in search updates the URL', async ({ page }) => {

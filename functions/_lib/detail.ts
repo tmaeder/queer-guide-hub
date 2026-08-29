@@ -944,7 +944,7 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
   const rows = await fetchRows(
     env,
     'unified_tags',
-    'id,name,slug,description,short_description,long_description,image_url,category,wikipedia_url,wikidata_id,updated_at',
+    'id,name,slug,description,short_description,long_description,category,wikipedia_url,wikidata_id,updated_at',
     `slug=eq.${encodeURIComponent(slug)}&status=eq.active`,
     1,
   );
@@ -1007,7 +1007,6 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
     stringField(row, 'short_description') ??
     stringField(row, 'long_description') ??
     '';
-  const image = stringField(row, 'image_url');
   const category = stringField(row, 'category');
 
   const meta: RouteMeta = {
@@ -1019,7 +1018,9 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
       summary || `Articles, venues and events about ${name} on Queer Guide.`,
       MAX_DESC,
     ),
-    ogImage: safeOgImage(image ?? DEFAULT_OG_IMAGE),
+    // Glossary photography is retired (tags render drawn TagPlates); the SPA's
+    // useMeta emits no ogImage either, so both surfaces fall to the site card.
+    ogImage: safeOgImage(DEFAULT_OG_IMAGE),
   };
 
   const body = `<main data-prerendered="bot-ua">
@@ -1060,7 +1061,6 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
     // summary-first `description`, and the two DefinedTerm documents for one
     // URL must not disagree.
     description: summary || undefined,
-    image,
     url: `${SITE_ORIGIN}${pathname}`,
     sameAs: [stringField(row, 'wikipedia_url'), ...citations.map((c) => c.url)].filter(Boolean)
       .length

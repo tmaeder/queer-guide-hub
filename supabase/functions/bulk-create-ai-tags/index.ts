@@ -1,7 +1,6 @@
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 import { chatCompletion } from '../_shared/openai-client.ts';
 import { requireAdmin, getCorsHeaders, getServiceClient } from '../_shared/supabase-client.ts';
-import { mirrorImageToR2 } from '../_shared/logo-mirror.ts';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -70,9 +69,6 @@ Deno.serve(async (req) => {
           // Use AI to categorize and enhance description
           const aiResponse = await categorizeWithAI(supabaseClient, cleanTerm, wikiData.description, categories);
           
-          // Fetch and upload image
-          const imageUrl = await fetchAndStoreImage(cleanTerm, supabaseClient);
-          
           // Resolve category_id from slug
           const categoryId = slugToId.get(aiResponse.category) || null;
 
@@ -85,7 +81,6 @@ Deno.serve(async (req) => {
               category: aiResponse.category,
               category_id: categoryId,
               description: aiResponse.description,
-              image_url: imageUrl,
               wikipedia_url: wikiData.url,
               usage_count: 0
             })
@@ -119,7 +114,6 @@ Deno.serve(async (req) => {
               tag: newTag,
               category: aiResponse.category,
               description: aiResponse.description,
-              image_url: imageUrl,
               wikipedia_url: wikiData.url
             });
           }
@@ -257,131 +251,5 @@ Respond with JSON in this format:
       category: 'general',
       description: wikiDescription || `Information about ${term}`
     };
-  }
-}
-
-async function fetchAndStoreImage(term: string, supabaseClient: unknown): Promise<string | null> {
-  try {
-    console.log(`Fetching image for term: ${term}`);
-    
-    // Try Wikimedia Commons first
-    let imageUrl = await getWikimediaImage(term);
-    
-    // If no Wikimedia image, try Unsplash
-    if (!imageUrl) {
-      imageUrl = await getUnsplashImage(term);
-    }
-    
-    if (!imageUrl) {
-      console.log(`No image found for term: ${term}`);
-      return null;
-    }
-    
-    // Download and upload to Supabase storage
-    const storedImageUrl = await downloadAndStoreImage(imageUrl, term, supabaseClient);
-    return storedImageUrl;
-    
-  } catch (error) {
-    console.error(`Error fetching image for "${term}":`, error);
-    return null;
-  }
-}
-
-async function getWikimediaImage(term: string): Promise<string | null> {
-  try {
-    // Search for images on Wikimedia Commons
-    const searchUrl = `https://commons.wikimedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(term)}&srnamespace=6&format=json&origin=*&srlimit=5`;
-    
-    const searchResponse = await fetch(searchUrl);
-    const searchData = await searchResponse.json();
-    
-    if (searchData.query?.search?.length > 0) {
-      // Get the first image file
-      const fileName = searchData.query.search[0].title;
-      
-      // Get image info
-      const imageInfoUrl = `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(fileName)}&prop=imageinfo&iiprop=url&iiurlwidth=800&format=json&origin=*`;
-      
-      const imageResponse = await fetch(imageInfoUrl);
-      const imageData = await imageResponse.json();
-      
-      const pages = imageData.query?.pages;
-      if (pages) {
-        const pageId = Object.keys(pages)[0];
-        const imageInfo = pages[pageId]?.imageinfo?.[0];
-        
-        if (imageInfo?.thumburl) {
-          console.log(`Found Wikimedia image for "${term}": ${imageInfo.thumburl}`);
-          return imageInfo.thumburl;
-        }
-      }
-    }
-  } catch (error) {
-    console.log(`Wikimedia search failed for "${term}":`, error.message);
-  }
-  
-  return null;
-}
-
-async function getUnsplashImage(term: string): Promise<string | null> {
-  try {
-    const unsplashAccessKey = Deno.env.get('UNSPLASH_ACCESS_KEY');
-    if (!unsplashAccessKey) {
-      console.log('Unsplash access key not configured');
-      return null;
-    }
-    
-    const searchUrl = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(term)}&per_page=1&orientation=landscape`;
-    
-    const response = await fetch(searchUrl, {
-      headers: {
-        'Authorization': `Client-ID ${unsplashAccessKey}`
-      }
-    });
-    
-    if (response.ok) {
-      const data = await response.json();
-      if (data.results?.length > 0) {
-        const imageUrl = data.results[0].urls.regular;
-        console.log(`Found Unsplash image for "${term}": ${imageUrl}`);
-        return imageUrl;
-      }
-    }
-  } catch (error) {
-    console.log(`Unsplash search failed for "${term}":`, error.message);
-  }
-  
-  return null;
-}
-
-async function downloadAndStoreImage(imageUrl: string, _term: string, _supabaseClient: unknown): Promise<string | null> {
-  try {
-    console.log(`Downloading image from: ${imageUrl}`);
-    
-    // Download the image
-    const response = await fetch(imageUrl);
-    if (!response.ok) {
-      throw new Error(`Failed to download image: ${response.status}`);
-    }
-    
-    const imageBlob = await response.blob();
-    const arrayBuffer = await imageBlob.arrayBuffer();
-
-    // Mirror to Cloudflare R2 (img.queer.guide) — no image hosting on Supabase.
-    const r2Url = await mirrorImageToR2(
-      new Uint8Array(arrayBuffer),
-      imageBlob.type || 'image/jpeg',
-      'tag-images',
-    );
-    if (!r2Url) {
-      console.error('R2 upload failed (IMAGE_CDN_ADMIN_SECRET unset?)');
-      return null;
-    }
-    console.log(`Image stored successfully: ${r2Url}`);
-    return r2Url;
-
-  } catch (error) {
-    console.error('Error downloading and storing image:', error);
-    return null;
   }
 }

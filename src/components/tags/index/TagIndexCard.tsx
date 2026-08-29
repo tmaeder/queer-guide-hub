@@ -7,33 +7,30 @@
  *
  * `card-lift` and NO ink-flood hover — a card lifts or fills, never both.
  *
- * Two changes from the card this replaces:
- *
- * - The usage count leaves the image overlay for the footer row. It was a
- *   `rgba(0,0,0,0.6)` plate, which the design lint rejects in new code, and it
- *   covered part of the illustration to say something the row below can say.
- * - A term with no real image gets an ink plate carrying its line's icon rather
- *   than a generated gradient. It reads as "no illustration yet" instead of
- *   "here is a picture", and it makes the taxonomy line legible at a glance.
+ * Every card carries a drawn `TagPlate`, never a photograph — see TagPlate's
+ * header for why glossary photography was retired. `index` is the plate's
+ * window onto the shared line; pass the position in the RENDERED list so a
+ * filtered grid still reads as one continuous route.
  */
 
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { RouteBullet } from '@/components/transit/RouteBullet';
-import { TransitIcon } from '@/components/transit/TransitIcon';
-import { DEFAULT_CATEGORY_ICON, type CategoryLine } from '@/lib/tags/categoryIdentity';
-import { isRealTagImage } from '@/lib/tags/tagsIndexState';
+import { TagPlate } from '@/components/tags/TagPlate';
+import type { CategoryLine } from '@/lib/tags/categoryIdentity';
 import type { CentralizedTag } from '@/hooks/useCentralizedTags';
 
 export interface TagIndexItemProps {
   tag: CentralizedTag;
   uses: number;
-  /** The tag's parent taxonomy line, for the icon plate and the category label. */
+  /** The tag's parent taxonomy line, for the plate glyph and the category label. */
   line?: CategoryLine;
   categoryLabel?: string;
   /** The query reached this term through one of its synonyms. */
   aliasMatch?: boolean;
+  /** Position in the rendered list — the plate's window onto the shared line. */
+  index?: number;
 }
 
 function AliasPip({ label }: { label: string }) {
@@ -44,31 +41,23 @@ function AliasPip({ label }: { label: string }) {
   );
 }
 
-export function TagIndexCard({ tag, uses, line, categoryLabel, aliasMatch }: TagIndexItemProps) {
+export function TagIndexCard({
+  tag,
+  uses,
+  line,
+  categoryLabel,
+  aliasMatch,
+  index,
+}: TagIndexItemProps) {
   const { t } = useTranslation();
-  const hasImage = isRealTagImage(tag.image_url);
 
   return (
     <LocalizedLink
       to={`/tags/${encodeURIComponent(tag.slug)}`}
       className="card-lift group flex h-full flex-col bg-card text-inherit no-underline rounded-container shadow-soft"
     >
-      <div className="relative aspect-[4/3] w-full border-b border-border-hairline bg-muted">
-        {hasImage ? (
-          <img
-            src={tag.image_url}
-            alt=""
-            loading="lazy"
-            className="h-full w-full object-cover"
-            onError={(e) => {
-              (e.currentTarget as HTMLImageElement).style.display = 'none';
-            }}
-          />
-        ) : (
-          <span className="grid h-full w-full place-items-center text-muted-foreground">
-            <TransitIcon name={line?.icon ?? DEFAULT_CATEGORY_ICON} size={40} />
-          </span>
-        )}
+      <div className="w-full border-b border-border-hairline">
+        <TagPlate line={line} index={index} />
       </div>
 
       <div className="flex flex-1 flex-col gap-1 p-4">

@@ -20,7 +20,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Plus, Edit, Trash2, ImageOff } from 'lucide-react';
+import { Plus, Edit, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
 import {
@@ -38,7 +38,6 @@ import { TagSuggestionsReviewPanel } from '@/components/admin/TagSuggestionsRevi
 import { SensitiveTagReviewPanel } from '@/components/admin/SensitiveTagReviewPanel';
 import { TagsCsvImport } from '@/components/admin/TagsCsvImport';
 import { TagMergeReviewQueue } from '@/components/admin/TagMergeReviewQueue';
-import { TagImageUpload } from '@/components/admin/TagImageUpload';
 import BulkCreateAITags from '@/components/admin/BulkCreateAITags';
 import { TagAliasesSection } from '@/components/admin/TagAliasesSection';
 import { TagLegalSourcesSection } from '@/components/admin/TagLegalSourcesSection';
@@ -57,7 +56,6 @@ interface TagRow {
   description: string | null;
   usage_count: number;
   status: string;
-  image_url: string | null;
   deprecation_reason: string | null;
   created_at: string;
 }
@@ -85,11 +83,10 @@ export default function AdminTags() {
     name: '',
     category: '',
     description: '',
-    image_url: '' as string | null,
   });
 
   const resetForm = () => {
-    setFormData({ name: '', category: '', description: '', image_url: null });
+    setFormData({ name: '', category: '', description: '' });
     setEditingTag(null);
   };
 
@@ -100,7 +97,6 @@ export default function AdminTags() {
         name: normalizeTagName(formData.name),
         category: formData.category?.trim() || null,
         description: formData.description?.trim() || null,
-        image_url: formData.image_url || null,
       };
       if (editingTag) {
         await updateTag(editingTag.id, cleanData);
@@ -127,7 +123,6 @@ export default function AdminTags() {
       name: tag.name,
       category: tag.category,
       description: tag.description || '',
-      image_url: tag.image_url || null,
     });
     setEditingTag(tag);
     setIsCreateDialogOpen(true);
@@ -169,28 +164,6 @@ export default function AdminTags() {
 
   const columns = useMemo(
     () => [
-      columnHelper.accessor('image_url', {
-        header: 'Image',
-        cell: (info) => {
-          const url = info.getValue();
-          if (!url) return <ImageOff className="h-4 w-4 text-muted-foreground opacity-40" />;
-          return (
-            <img
-              src={url}
-              alt=""
-              role="presentation"
-              className="h-8 w-8 rounded-element object-cover"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = 'none';
-              }}
-            />
-          );
-        },
-        meta: {
-          defaultVisible: true,
-          hideable: true,
-        } satisfies AdminColumnMeta,
-      }),
       columnHelper.accessor('name', {
         header: 'Name',
         cell: (info) => <span className="font-medium">{info.getValue()}</span>,
@@ -279,8 +252,7 @@ export default function AdminTags() {
   const tableConfig: AdminTableConfig<TagRow> = useMemo(
     () => ({
       tableName: 'unified_tags',
-      select:
-        'id,name,slug,category,description,usage_count,status,image_url,deprecation_reason,created_at',
+      select: 'id,name,slug,category,description,usage_count,status,deprecation_reason,created_at',
       columns,
       defaultSort: { column: 'name', direction: 'asc' },
       defaultPageSize: 50,
@@ -307,16 +279,6 @@ export default function AdminTags() {
             { value: 'merged', label: 'Merged' },
           ],
         },
-        {
-          key: 'has_image',
-          label: 'Has Image',
-          type: 'select',
-          column: 'image_url',
-          options: [
-            { value: 'not.is.null', label: 'With image' },
-            { value: 'is.null', label: 'Without image' },
-          ],
-        },
       ],
       bulkEditFields: [
         { key: 'category', label: 'Category', type: 'text', column: 'category' },
@@ -334,20 +296,6 @@ export default function AdminTags() {
       ],
       rowActions: [
         { key: 'edit', label: 'Edit', icon: Edit, onClick: handleEdit },
-        {
-          key: 'clear-image',
-          label: 'Clear Image',
-          icon: ImageOff,
-          onClick: async (tag: TagRow) => {
-            if (!tag.image_url) return;
-            try {
-              await updateTag(tag.id, { image_url: null });
-              toast.success('Image cleared', { description: `Removed image from "${tag.name}"` });
-            } catch {
-              toast.error('Error: Failed to clear image');
-            }
-          },
-        },
         {
           key: 'delete',
           label: 'Delete',
@@ -441,11 +389,6 @@ export default function AdminTags() {
                     rows={3}
                   />
                 </div>
-                <TagImageUpload
-                  currentImageUrl={formData.image_url}
-                  onImageChange={(url) => setFormData((p) => ({ ...p, image_url: url }))}
-                  tagName={formData.name}
-                />
                 {editingTag && <TagAliasesSection tagId={editingTag.id} />}
                 {editingTag && <TagLegalSourcesSection tagId={editingTag.id} />}
                 <Button type="submit" className="w-full">

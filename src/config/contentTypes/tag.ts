@@ -75,11 +75,9 @@ export const tagFields: FieldConfig[] = [
       { value: 'rejected', label: 'Rejected' },
     ],
   },
-  { name: 'image_url', label: 'Image', type: 'image', group: 'media' },
-  { name: 'image_alt', label: 'Image Alt Text', type: 'text', group: 'media' },
-  { name: 'image_source', label: 'Image Source', type: 'text', group: 'media' },
-  { name: 'image_license', label: 'Image License', type: 'text', group: 'media' },
-  { name: 'image_attribution', label: 'Image Attribution', type: 'text', group: 'media' },
+  // No media group: glossary photography is retired (2026-08-28) — tags render
+  // drawn TagPlates, and exposing image fields here would let the CMS editor
+  // quietly regrow the photo corpus the retirement migration cleared.
 ];
 
 export const unifiedTagsContentType: ContentTypeConfig = {
@@ -88,13 +86,12 @@ export const unifiedTagsContentType: ContentTypeConfig = {
   primaryKey: 'id',
   titleField: 'name',
   descriptionField: 'description',
-  imageField: 'image_url',
   icon: Tag,
   label: { singular: 'Tag', plural: 'Tags' },
   color: 'hsl(var(--foreground))',
   fields: tagFields,
   defaults: { status: 'active' },
-  fieldGroupOrder: ['basic', 'details', 'media'],
+  fieldGroupOrder: ['basic', 'details'],
   translatableFields: ['name', 'description', 'short_description', 'long_description'],
   // Aliases were reachable only from the separate tag console's edit dialog, so
   // the registry editor could not fully edit a tag — which is what kept that

@@ -18,6 +18,7 @@ const sample = (overrides: Partial<PrideCalendarEvent> = {}): PrideCalendarEvent
   is_featured: true,
   verification_status: 'unverified',
   description: 'Annual LGBTQ+ pride march in Berlin.',
+  pride_subtypes: null,
   ...overrides,
 });
 
@@ -65,5 +66,49 @@ describe('buildPrideIcs', () => {
   it('omits DESCRIPTION line when description is null', () => {
     const ics = buildPrideIcs([sample({ description: null })], 2026);
     expect(ics).not.toContain('DESCRIPTION:');
+  });
+});
+
+describe('buildPrideIcs — programme children', () => {
+  const child = (over: Record<string, unknown> = {}) =>
+    ({
+      id: 'child-1',
+      slug: 'berlin-pride-parade-2026',
+      title: 'CSD Parade',
+      start_date: '2026-07-25T11:00:00.000Z',
+      end_date: '2026-07-25T16:00:00.000Z',
+      venue_name: 'Kurfürstendamm',
+      ...over,
+    }) as never;
+
+  it('emits one extra VEVENT per programme child', () => {
+    const ics = buildPrideIcs(
+      [sample()],
+      2026,
+      new Map([['evt-1', [child(), child({ id: 'child-2', slug: 'x', title: 'Street Festival' })]]]),
+    );
+    expect(ics.split('\r\n').filter((l) => l === 'BEGIN:VEVENT')).toHaveLength(3);
+    expect(ics).toContain('SUMMARY:CSD Parade');
+    expect(ics).toContain('SUMMARY:Street Festival');
+  });
+
+  it("uses the child's own venue as LOCATION", () => {
+    const ics = buildPrideIcs([sample()], 2026, new Map([['evt-1', [child()]]]));
+    expect(ics).toContain('LOCATION:Kurfürstendamm');
+  });
+
+  it("falls back to the umbrella's location when the child has no venue", () => {
+    const ics = buildPrideIcs(
+      [sample()],
+      2026,
+      new Map([['evt-1', [child({ venue_name: null, address: null })]]]),
+    );
+    expect(ics).toContain('LOCATION:Berlin\\, DE');
+  });
+
+  it('is unchanged for an umbrella with no programme', () => {
+    const withIndex = buildPrideIcs([sample()], 2026, new Map());
+    const without = buildPrideIcs([sample()], 2026);
+    expect(withIndex).toBe(without);
   });
 });
