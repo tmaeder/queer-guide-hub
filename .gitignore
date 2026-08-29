@@ -108,3 +108,6 @@ out-patroc/
 out-swiss-events/
 out-berlin-events/
 out-testfinder/
+# Kinktionary scrape cache + the browser profile whose cf_clearance cookie is
+# what gets the run past Cloudflare. The fetcher is committed; the fetch is not.
+scripts/data-quality/out-kinktionary/
