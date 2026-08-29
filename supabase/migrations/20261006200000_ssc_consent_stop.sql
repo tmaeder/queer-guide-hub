@@ -97,11 +97,19 @@
 --   after SET category   = ...       25   <- enqueued
 --
 -- 20261006140100 re-files by writing `category_id`, so this is not theoretical:
--- **106 active tags currently publish a search facet naming a category that no
--- longer exists** — `Body Types & Archetypes`, `Queer History by Region`,
--- `Friendship & Community` — while their own column reads the v3 stop. The
--- reindex queue is EMPTY and the drain is healthy, so nothing was going to
--- correct them; `piss-slut`, one of this PR's own five, is among them.
+-- active tags publish a search facet naming a category that **no longer
+-- exists** — `Body Types & Archetypes`, `Queer History by Region`, `Friendship
+-- & Community` — while their own column reads the v3 stop. The reindex queue is
+-- EMPTY and the drain is healthy, so nothing was going to correct them;
+-- `piss-slut`, one of this PR's own five, is among them.
+--
+-- THE COUNT IS NOT FIXED, AND THAT IS THE FINDING RATHER THAN A CAVEAT.
+-- Measured at 106 while this was written, and at 119 an hour later after
+-- 20261006160000 and 20261006170000 landed — both of which also re-file by
+-- writing `category_id`. Every migration in the v3 program feeds this cohort,
+-- so a frozen number would already be wrong by the time CI applied this. Hence
+-- a structural predicate, and a cap that is a REVIEW BOUND rather than an
+-- expected value.
 --
 -- Part 2 re-indexes every active tag whose search facet disagrees with its
 -- column, which is this row plus that cohort. The predicate is STRUCTURAL, so
@@ -111,9 +119,9 @@
 -- bounded set inside a migration can then be ASSERTED — an enqueue would leave
 -- the post-condition to a cron this migration cannot observe.
 --
--- Fixing #3098's collateral here is deliberate. This PR's whole claim is that
--- the two reader-visible surfaces agree; shipping it while 106 live rows say
--- otherwise, for the same reason, would make the claim false on the day it
+-- Fixing that collateral here is deliberate. This PR's whole claim is that the
+-- two reader-visible surfaces agree; shipping it while a hundred-odd live rows
+-- say otherwise, for the same reason, would make the claim false on the day it
 -- landed.
 --
 -- The tag's `Slang & Terminology` junction row — the one the pre-#3087 revival
@@ -175,7 +183,7 @@ begin
    where t.status = 'active' and t.deprecated_at is null
      and coalesce(t.category, '') is distinct from coalesce(s.facets ->> 'category', '');
 
-  -- Reviewed at 107 (the 106 measured plus this PR's own row). A far larger set
+  -- Measured at 107, then 120, as sibling v3 migrations landed. A far larger set
   -- means something new happened upstream and the reindex should be sized and
   -- batched deliberately rather than run inline here.
   if v_stale > 400 then
