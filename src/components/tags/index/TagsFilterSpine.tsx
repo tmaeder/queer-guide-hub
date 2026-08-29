@@ -27,6 +27,7 @@ import {
   type TagSort,
   type TagView,
   type TagUsageFilter,
+  type TagKindFilter,
 } from '@/lib/tags/tagsIndexState';
 
 const VIEW_TABS: { key: TagView; icon: TransitIconName; labelKey: string; fallback: string }[] = [
@@ -60,6 +61,8 @@ interface TagsFilterSpineProps {
   onDir: () => void;
   usage: TagUsageFilter;
   onUsage: (v: TagUsageFilter) => void;
+  kind: TagKindFilter;
+  onKind: (v: TagKindFilter) => void;
 }
 
 export function TagsFilterSpine({
@@ -73,6 +76,8 @@ export function TagsFilterSpine({
   onDir,
   usage,
   onUsage,
+  kind,
+  onKind,
 }: TagsFilterSpineProps) {
   const { t } = useTranslation();
 
@@ -175,6 +180,35 @@ export function TagsFilterSpine({
           className={cn(CHIP, usage === 'unused' ? CHIP_ON : CHIP_OFF)}
         >
           {t('tags.filter.unused', 'Unused')}
+        </button>
+
+        <span aria-hidden className="mx-1 h-5 w-[2px] bg-foreground" />
+
+        {/* Kind axis (2026-08-29 program): dictionary terms vs the tags
+            content wears vs geography. Toggle chips, same grammar as usage. */}
+        <button
+          type="button"
+          onClick={() => onKind(kind === 'concept' ? 'all' : 'concept')}
+          aria-pressed={kind === 'concept'}
+          className={cn(CHIP, kind === 'concept' ? CHIP_ON : CHIP_OFF)}
+        >
+          {t('tags.filter.kindConcept', 'Terms')}
+        </button>
+        <button
+          type="button"
+          onClick={() => onKind(kind === 'descriptor' ? 'all' : 'descriptor')}
+          aria-pressed={kind === 'descriptor'}
+          className={cn(CHIP, kind === 'descriptor' ? CHIP_ON : CHIP_OFF)}
+        >
+          {t('tags.filter.kindDescriptor', 'Labels')}
+        </button>
+        <button
+          type="button"
+          onClick={() => onKind(kind === 'place' ? 'all' : 'place')}
+          aria-pressed={kind === 'place'}
+          className={cn(CHIP, kind === 'place' ? CHIP_ON : CHIP_OFF)}
+        >
+          {t('tags.filter.kindPlace', 'Places')}
         </button>
       </div>
     </>
