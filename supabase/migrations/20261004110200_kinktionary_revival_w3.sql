@@ -365,21 +365,43 @@ begin
   -- which is the assertion doing its job — a half-written taxonomy is what it
   -- exists to refuse.
   --
-  -- unified_tags.category_id is the canonical side (it is what
-  -- tag_hygiene_stats().uncategorized_active reads and what has an FK), so the
-  -- junction is moved to agree with it, not the other way round. This does
-  -- exactly what the AFTER trigger would have done, and is idempotent.
+  -- DIRECTION OF THE REPAIR: THE JUNCTION WINS WHERE ONE EXISTS.
+  --
+  -- An earlier draft moved the junction to agree with category_id, on the
+  -- reasoning that category_id is canonical (it carries the FK and is what
+  -- tag_hygiene_stats().uncategorized_active reads). That is the wrong way
+  -- round, and it took reading the renderer to see why: fetchTagWithCategories
+  -- selects from tag_category_assignments, so THE JUNCTION IS WHAT THE PAGE
+  -- SHOWS. Rewriting it would silently reclassify live pages — measured, 24 of
+  -- the drifted rows in waves 2-4, moving them off a curated child category
+  -- (Sexual Health) and onto whatever parent category_id happened to hold
+  -- (Health & Wellness). That is precisely the "second, unreviewed change riding
+  -- along" this program's header refuses.
+  --
+  -- So where a primary junction exists, category_id is moved to match IT. That
+  -- also keeps unified_tags.category text correct: the BEFORE trigger derives
+  -- it from category_id, and the text already agrees with the junction on these
+  -- rows, so this direction changes no rendered category anywhere. Same
+  -- direction, and the same reasoning, as 20260829054833.
+  for r in select t.id, a.category_id from _rev k
+             join public.unified_tags t on t.slug = k.slug
+             join public.tag_category_assignments a
+               on a.tag_id = t.id and a.is_primary
+            where t.category_id is distinct from a.category_id
+  loop
+    update public.unified_tags set category_id = r.category_id where id = r.id;
+  end loop;
+
+  -- The other half: a row with a category_id and NO junction at all. Here there
+  -- is nothing curated to defer to, so the junction is created from the column.
+  -- Corpus-wide this shape is 59 rows; the AFTER trigger cannot produce it
+  -- because it only fires when category_id changes.
   for r in select t.id, t.category_id from _rev k
              join public.unified_tags t on t.slug = k.slug
             where t.category_id is not null
               and not exists (
-                select 1 from public.tag_category_assignments a
-                 where a.tag_id = t.id and a.category_id = t.category_id and a.is_primary)
+                select 1 from public.tag_category_assignments a where a.tag_id = t.id)
   loop
-    update public.tag_category_assignments
-       set is_primary = false
-     where tag_id = r.id and is_primary and category_id <> r.category_id;
-
     insert into public.tag_category_assignments (tag_id, category_id, is_primary)
     values (r.id, r.category_id, true)
     on conflict (tag_id, category_id) do update set is_primary = true;
