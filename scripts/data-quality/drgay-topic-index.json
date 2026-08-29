@@ -1,0 +1,2182 @@
+{
+  "_license": "drgay.ch carries NO open licence (Impressum states no terms; default all rights reserved). Vocabulary signal only: page titles and concept labels. NO definitions, NO meta descriptions, NO body text is stored or paraphrased. Every word of queer.guide prose is written from WHO / CDC / EACS / UNAIDS.",
+  "_source": "https://drgay.ch/en/",
+  "_publisher": "Aids-Hilfe Schweiz / Swiss AIDS Federation",
+  "_captured": "2026-08-29",
+  "_pages": 80,
+  "_count": 362,
+  "topics": [
+    {
+      "label": "Love and friendship",
+      "section": "root",
+      "url": "https://drgay.ch/en/lieben/",
+      "kind": "concept"
+    },
+    {
+      "label": "Being trans",
+      "section": "root",
+      "url": "https://drgay.ch/en/lieben/",
+      "kind": "concept"
+    },
+    {
+      "label": "Life",
+      "section": "root",
+      "url": "https://drgay.ch/en/lieben/",
+      "kind": "concept"
+    },
+    {
+      "label": "Mental health",
+      "section": "root",
+      "url": "https://drgay.ch/en/lieben/",
+      "kind": "concept"
+    },
+    {
+      "label": "Trans identity",
+      "section": "lieben",
+      "url": "https://drgay.ch/en/lieben/for-trans-people/",
+      "kind": "concept"
+    },
+    {
+      "label": "Transition",
+      "section": "lieben",
+      "url": "https://drgay.ch/en/lieben/for-trans-people/",
+      "kind": "concept"
+    },
+    {
+      "label": "Etiquette for cis people",
+      "section": "lieben",
+      "url": "https://drgay.ch/en/lieben/for-trans-people/",
+      "kind": "concept"
+    },
+    {
+      "label": "More about the topic Being trans",
+      "section": "lieben/for-trans-people",
+      "url": "https://drgay.ch/en/lieben/for-trans-people/nettikette-fur-cis-personen/",
+      "kind": "concept"
+    },
+    {
+      "label": "Being trans is rewarding",
+      "section": "lieben/for-trans-people",
+      "url": "https://drgay.ch/en/lieben/for-trans-people/transidentitat/",
+      "kind": "concept"
+    },
+    {
+      "label": "Sexual relationships",
+      "section": "lieben/for-trans-people",
+      "url": "https://drgay.ch/en/lieben/for-trans-people/transidentitat/",
+      "kind": "concept"
+    },
+    {
+      "label": "Dysphoria",
+      "section": "lieben/for-trans-people",
+      "url": "https://drgay.ch/en/lieben/for-trans-people/transidentitat/",
+      "kind": "concept"
+    },
+    {
+      "label": "Fetishisation",
+      "section": "lieben/for-trans-people",
+      "url": "https://drgay.ch/en/lieben/for-trans-people/transidentitat/",
+      "kind": "concept"
+    },
+    {
+      "label": "T4T",
+      "section": "lieben/for-trans-people",
+      "url": "https://drgay.ch/en/lieben/for-trans-people/transidentitat/",
+      "kind": "concept"
+    },
+    {
+      "label": "Sexual health",
+      "section": "lieben/for-trans-people",
+      "url": "https://drgay.ch/en/lieben/for-trans-people/transidentitat/",
+      "kind": "concept"
+    },
+    {
+      "label": "Further resources",
+      "section": "lieben/for-trans-people",
+      "url": "https://drgay.ch/en/lieben/for-trans-people/transidentitat/",
+      "kind": "concept"
+    },
+    {
+      "label": "Transgender Network Switzerland",
+      "section": "lieben/for-trans-people",
+      "url": "https://drgay.ch/en/lieben/for-trans-people/transidentitat/",
+      "kind": "concept"
+    },
+    {
+      "label": "Trans Safety Emergency Fund",
+      "section": "lieben/for-trans-people",
+      "url": "https://drgay.ch/en/lieben/for-trans-people/transidentitat/",
+      "kind": "concept"
+    },
+    {
+      "label": "Coming Out",
+      "section": "lieben/for-trans-people",
+      "url": "https://drgay.ch/en/lieben/for-trans-people/transition/",
+      "kind": "concept"
+    },
+    {
+      "label": "Temporary Changes",
+      "section": "lieben/for-trans-people",
+      "url": "https://drgay.ch/en/lieben/for-trans-people/transition/",
+      "kind": "concept"
+    },
+    {
+      "label": "Important",
+      "section": "lieben/for-trans-people",
+      "url": "https://drgay.ch/en/lieben/for-trans-people/transition/",
+      "kind": "concept"
+    },
+    {
+      "label": "Hormones",
+      "section": "lieben/for-trans-people",
+      "url": "https://drgay.ch/en/lieben/for-trans-people/transition/",
+      "kind": "concept"
+    },
+    {
+      "label": "Testosterone",
+      "section": "lieben/for-trans-people",
+      "url": "https://drgay.ch/en/lieben/for-trans-people/transition/",
+      "kind": "concept"
+    },
+    {
+      "label": "Oestrogen / Testosterone Blockers",
+      "section": "lieben/for-trans-people",
+      "url": "https://drgay.ch/en/lieben/for-trans-people/transition/",
+      "kind": "concept"
+    },
+    {
+      "label": "Tips and Tricks",
+      "section": "lieben/for-trans-people",
+      "url": "https://drgay.ch/en/lieben/for-trans-people/transition/",
+      "kind": "concept"
+    },
+    {
+      "label": "Erectile dysfunction",
+      "section": "lieben/for-trans-people",
+      "url": "https://drgay.ch/en/lieben/for-trans-people/transition/",
+      "kind": "concept"
+    },
+    {
+      "label": "Atrophy (thinning of the tissues)",
+      "section": "lieben/for-trans-people",
+      "url": "https://drgay.ch/en/lieben/for-trans-people/transition/",
+      "kind": "concept"
+    },
+    {
+      "label": "Pain after Vaginoplasty",
+      "section": "lieben/for-trans-people",
+      "url": "https://drgay.ch/en/lieben/for-trans-people/transition/",
+      "kind": "concept"
+    },
+    {
+      "label": "HIV and Transition Measures",
+      "section": "lieben/for-trans-people",
+      "url": "https://drgay.ch/en/lieben/for-trans-people/transition/",
+      "kind": "concept"
+    },
+    {
+      "label": "Safer Hormone Use",
+      "section": "lieben/for-trans-people",
+      "url": "https://drgay.ch/en/lieben/for-trans-people/transition/",
+      "kind": "concept"
+    },
+    {
+      "label": "Being single",
+      "section": "lieben",
+      "url": "https://drgay.ch/en/lieben/love-friendship/",
+      "kind": "concept"
+    },
+    {
+      "label": "Types of relationships",
+      "section": "lieben",
+      "url": "https://drgay.ch/en/lieben/love-friendship/",
+      "kind": "concept"
+    },
+    {
+      "label": "Maintain and cultivate relationships",
+      "section": "lieben",
+      "url": "https://drgay.ch/en/lieben/love-friendship/",
+      "kind": "concept"
+    },
+    {
+      "label": "Ghosting",
+      "section": "lieben",
+      "url": "https://drgay.ch/en/lieben/love-friendship/",
+      "kind": "concept"
+    },
+    {
+      "label": "More about the topic Love and friendship",
+      "section": "lieben/love-friendship",
+      "url": "https://drgay.ch/en/lieben/love-friendship/being-single/",
+      "kind": "concept"
+    },
+    {
+      "label": "Honesty and communication",
+      "section": "lieben/love-friendship",
+      "url": "https://drgay.ch/en/lieben/love-friendship/beziehungen-halten-pflegen/",
+      "kind": "concept"
+    },
+    {
+      "label": "Difficulties in the relationship",
+      "section": "lieben/love-friendship",
+      "url": "https://drgay.ch/en/lieben/love-friendship/beziehungen-halten-pflegen/",
+      "kind": "concept"
+    },
+    {
+      "label": "Dealing with jealousy",
+      "section": "lieben/love-friendship",
+      "url": "https://drgay.ch/en/lieben/love-friendship/beziehungsformen/",
+      "kind": "concept"
+    },
+    {
+      "label": "Partnerschaft mit Abmachung",
+      "section": "lieben/love-friendship",
+      "url": "https://drgay.ch/en/lieben/love-friendship/beziehungsformen/",
+      "kind": "concept"
+    },
+    {
+      "label": "Sadness",
+      "section": "lieben",
+      "url": "https://drgay.ch/en/lieben/psychische-gesundheit/",
+      "kind": "concept"
+    },
+    {
+      "label": "Loneliness",
+      "section": "lieben",
+      "url": "https://drgay.ch/en/lieben/psychische-gesundheit/",
+      "kind": "concept"
+    },
+    {
+      "label": "Domestic Violence",
+      "section": "lieben",
+      "url": "https://drgay.ch/en/lieben/psychische-gesundheit/",
+      "kind": "concept"
+    },
+    {
+      "label": "I’m not doing very well",
+      "section": "lieben",
+      "url": "https://drgay.ch/en/lieben/psychische-gesundheit/",
+      "kind": "concept"
+    },
+    {
+      "label": "Finding support",
+      "section": "lieben",
+      "url": "https://drgay.ch/en/lieben/psychische-gesundheit/",
+      "kind": "concept"
+    },
+    {
+      "label": "More topics",
+      "section": "lieben",
+      "url": "https://drgay.ch/en/lieben/psychische-gesundheit/",
+      "kind": "concept"
+    },
+    {
+      "label": "More about the topic Life & Love",
+      "section": "lieben",
+      "url": "https://drgay.ch/en/lieben/psychische-gesundheit/",
+      "kind": "concept"
+    },
+    {
+      "label": "Opferhilfe Schweiz",
+      "section": "lieben/psychische-gesundheit",
+      "url": "https://drgay.ch/en/lieben/psychische-gesundheit/domestic-violence/",
+      "kind": "concept"
+    },
+    {
+      "label": "More about the topic Mental health",
+      "section": "lieben/psychische-gesundheit",
+      "url": "https://drgay.ch/en/lieben/psychische-gesundheit/domestic-violence/",
+      "kind": "concept"
+    },
+    {
+      "label": "pleasure & addiction",
+      "section": "lieben/psychische-gesundheit",
+      "url": "https://drgay.ch/en/lieben/psychische-gesundheit/lets-talk-about/",
+      "kind": "concept"
+    },
+    {
+      "label": "Highs & lows",
+      "section": "lieben/psychische-gesundheit",
+      "url": "https://drgay.ch/en/lieben/psychische-gesundheit/lets-talk-about/",
+      "kind": "concept"
+    },
+    {
+      "label": "Involved & excluded",
+      "section": "lieben/psychische-gesundheit",
+      "url": "https://drgay.ch/en/lieben/psychische-gesundheit/lets-talk-about/",
+      "kind": "concept"
+    },
+    {
+      "label": "Alone & lonely",
+      "section": "lieben/psychische-gesundheit",
+      "url": "https://drgay.ch/en/lieben/psychische-gesundheit/lets-talk-about/",
+      "kind": "concept"
+    },
+    {
+      "label": "Sex & shame",
+      "section": "lieben/psychische-gesundheit",
+      "url": "https://drgay.ch/en/lieben/psychische-gesundheit/lets-talk-about/",
+      "kind": "concept"
+    },
+    {
+      "label": "Thierry",
+      "section": "lieben/psychische-gesundheit",
+      "url": "https://drgay.ch/en/lieben/psychische-gesundheit/lets-talk-about/",
+      "kind": "concept"
+    },
+    {
+      "label": "Marlin & Iky",
+      "section": "lieben/psychische-gesundheit",
+      "url": "https://drgay.ch/en/lieben/psychische-gesundheit/lets-talk-about/",
+      "kind": "concept"
+    },
+    {
+      "label": "Laurent & Kelly",
+      "section": "lieben/psychische-gesundheit",
+      "url": "https://drgay.ch/en/lieben/psychische-gesundheit/lets-talk-about/",
+      "kind": "concept"
+    },
+    {
+      "label": "JJ & Julio",
+      "section": "lieben/psychische-gesundheit",
+      "url": "https://drgay.ch/en/lieben/psychische-gesundheit/lets-talk-about/",
+      "kind": "concept"
+    },
+    {
+      "label": "Dominik & Brian",
+      "section": "lieben/psychische-gesundheit",
+      "url": "https://drgay.ch/en/lieben/psychische-gesundheit/lets-talk-about/",
+      "kind": "concept"
+    },
+    {
+      "label": "Dani & Stef",
+      "section": "lieben/psychische-gesundheit",
+      "url": "https://drgay.ch/en/lieben/psychische-gesundheit/lets-talk-about/",
+      "kind": "concept"
+    },
+    {
+      "label": "Fiorella & Kira",
+      "section": "lieben/psychische-gesundheit",
+      "url": "https://drgay.ch/en/lieben/psychische-gesundheit/lets-talk-about/",
+      "kind": "concept"
+    },
+    {
+      "label": "Our community",
+      "section": "lieben",
+      "url": "https://drgay.ch/en/lieben/to-live/",
+      "kind": "concept"
+    },
+    {
+      "label": "Discrimination",
+      "section": "lieben",
+      "url": "https://drgay.ch/en/lieben/to-live/",
+      "kind": "concept"
+    },
+    {
+      "label": "Your Rhythm, Your Life",
+      "section": "lieben",
+      "url": "https://drgay.ch/en/lieben/to-live/",
+      "kind": "concept"
+    },
+    {
+      "label": "More about the topic Life",
+      "section": "lieben/to-live",
+      "url": "https://drgay.ch/en/lieben/to-live/coming-out/",
+      "kind": "concept"
+    },
+    {
+      "label": "Discrimination in the community",
+      "section": "lieben/to-live",
+      "url": "https://drgay.ch/en/lieben/to-live/rassismus-qpoc/",
+      "kind": "concept"
+    },
+    {
+      "label": "Sexualised discrimination: \"Not Fats, no Femmes, No Asians...\"",
+      "section": "lieben/to-live",
+      "url": "https://drgay.ch/en/lieben/to-live/rassismus-qpoc/",
+      "kind": "concept"
+    },
+    {
+      "label": "Terms",
+      "section": "lieben/to-live",
+      "url": "https://drgay.ch/en/lieben/to-live/rassismus-qpoc/",
+      "kind": "concept"
+    },
+    {
+      "label": "Heteronormativity and cisnormativity",
+      "section": "lieben/to-live",
+      "url": "https://drgay.ch/en/lieben/to-live/rassismus-qpoc/",
+      "kind": "concept"
+    },
+    {
+      "label": "Queerphobic",
+      "section": "lieben/to-live",
+      "url": "https://drgay.ch/en/lieben/to-live/rassismus-qpoc/",
+      "kind": "concept"
+    },
+    {
+      "label": "Internalised homonegativity",
+      "section": "lieben/to-live",
+      "url": "https://drgay.ch/en/lieben/to-live/rassismus-qpoc/",
+      "kind": "concept"
+    },
+    {
+      "label": "Solidarity",
+      "section": "lieben/to-live",
+      "url": "https://drgay.ch/en/lieben/to-live/unsere-community/",
+      "kind": "concept"
+    },
+    {
+      "label": "You don't always have to perform",
+      "section": "lieben/to-live",
+      "url": "https://drgay.ch/en/lieben/to-live/your-rhythm-your-life/",
+      "kind": "concept"
+    },
+    {
+      "label": "Queer life needs space",
+      "section": "lieben/to-live",
+      "url": "https://drgay.ch/en/lieben/to-live/your-rhythm-your-life/",
+      "kind": "concept"
+    },
+    {
+      "label": "It's about you",
+      "section": "lieben/to-live",
+      "url": "https://drgay.ch/en/lieben/to-live/your-rhythm-your-life/",
+      "kind": "concept"
+    },
+    {
+      "label": "Your rhythm",
+      "section": "lieben/to-live",
+      "url": "https://drgay.ch/en/lieben/to-live/your-rhythm-your-life/",
+      "kind": "concept"
+    },
+    {
+      "label": "For you",
+      "section": "lieben/to-live",
+      "url": "https://drgay.ch/en/lieben/to-live/your-rhythm-your-life/",
+      "kind": "concept"
+    },
+    {
+      "label": "Choose your rhythm",
+      "section": "lieben/to-live",
+      "url": "https://drgay.ch/en/lieben/to-live/your-rhythm-your-life/",
+      "kind": "concept"
+    },
+    {
+      "label": "Substances",
+      "section": "root",
+      "url": "https://drgay.ch/en/safer-drugs/",
+      "kind": "concept"
+    },
+    {
+      "label": "Safer Use",
+      "section": "root",
+      "url": "https://drgay.ch/en/safer-drugs/",
+      "kind": "concept"
+    },
+    {
+      "label": "Set and Setting",
+      "section": "root",
+      "url": "https://drgay.ch/en/safer-drugs/",
+      "kind": "concept"
+    },
+    {
+      "label": "(Re)act",
+      "section": "root",
+      "url": "https://drgay.ch/en/safer-drugs/",
+      "kind": "concept"
+    },
+    {
+      "label": "Substance information",
+      "section": "root",
+      "url": "https://drgay.ch/en/safer-drugs/",
+      "kind": "concept"
+    },
+    {
+      "label": "Mixed consumption",
+      "section": "root",
+      "url": "https://drgay.ch/en/safer-drugs/",
+      "kind": "concept"
+    },
+    {
+      "label": "Drug Checking",
+      "section": "root",
+      "url": "https://drgay.ch/en/safer-drugs/",
+      "kind": "concept"
+    },
+    {
+      "label": "Current substance alerts",
+      "section": "root",
+      "url": "https://drgay.ch/en/safer-drugs/",
+      "kind": "concept"
+    },
+    {
+      "label": "Reduce the risk",
+      "section": "root",
+      "url": "https://drgay.ch/en/safer-drugs/",
+      "kind": "concept"
+    },
+    {
+      "label": "Safer Use Rules",
+      "section": "root",
+      "url": "https://drgay.ch/en/safer-drugs/",
+      "kind": "concept"
+    },
+    {
+      "label": "Me and my consumption (Set)",
+      "section": "root",
+      "url": "https://drgay.ch/en/safer-drugs/",
+      "kind": "concept"
+    },
+    {
+      "label": "Context of consumption (setting)",
+      "section": "root",
+      "url": "https://drgay.ch/en/safer-drugs/",
+      "kind": "concept"
+    },
+    {
+      "label": "Self-assessment",
+      "section": "root",
+      "url": "https://drgay.ch/en/safer-drugs/",
+      "kind": "concept"
+    },
+    {
+      "label": "First aid and calling an ambulance",
+      "section": "root",
+      "url": "https://drgay.ch/en/safer-drugs/",
+      "kind": "concept"
+    },
+    {
+      "label": "Reduce the risk of infection",
+      "section": "root",
+      "url": "https://drgay.ch/en/safer-drugs/",
+      "kind": "concept"
+    },
+    {
+      "label": "Sexual violence and abuse",
+      "section": "root",
+      "url": "https://drgay.ch/en/safer-drugs/",
+      "kind": "concept"
+    },
+    {
+      "label": "There's support if you need it",
+      "section": "root",
+      "url": "https://drgay.ch/en/safer-drugs/",
+      "kind": "concept"
+    },
+    {
+      "label": "More about the topic Substances",
+      "section": "safer-drugs/get-to-know-the-drug",
+      "url": "https://drgay.ch/en/safer-drugs/get-to-know-the-drug/mixed-consumption/",
+      "kind": "concept"
+    },
+    {
+      "label": "Methamphetamines",
+      "section": "safer-drugs/get-to-know-the-drug",
+      "url": "https://drgay.ch/en/safer-drugs/get-to-know-the-drug/substance-info/",
+      "kind": "concept"
+    },
+    {
+      "label": "GHB / GBL",
+      "section": "safer-drugs/get-to-know-the-drug",
+      "url": "https://drgay.ch/en/safer-drugs/get-to-know-the-drug/substance-info/",
+      "kind": "concept"
+    },
+    {
+      "label": "Ketamine",
+      "section": "safer-drugs/get-to-know-the-drug",
+      "url": "https://drgay.ch/en/safer-drugs/get-to-know-the-drug/substance-info/",
+      "kind": "concept"
+    },
+    {
+      "label": "Poppers",
+      "section": "safer-drugs/get-to-know-the-drug",
+      "url": "https://drgay.ch/en/safer-drugs/get-to-know-the-drug/substance-info/",
+      "kind": "concept"
+    },
+    {
+      "label": "Cocaine",
+      "section": "safer-drugs/get-to-know-the-drug",
+      "url": "https://drgay.ch/en/safer-drugs/get-to-know-the-drug/substance-info/",
+      "kind": "concept"
+    },
+    {
+      "label": "Speed",
+      "section": "safer-drugs/get-to-know-the-drug",
+      "url": "https://drgay.ch/en/safer-drugs/get-to-know-the-drug/substance-info/",
+      "kind": "concept"
+    },
+    {
+      "label": "Ecstasy",
+      "section": "safer-drugs/get-to-know-the-drug",
+      "url": "https://drgay.ch/en/safer-drugs/get-to-know-the-drug/substance-info/",
+      "kind": "concept"
+    },
+    {
+      "label": "Cathinones (3-MMC, 4-MEC...)",
+      "section": "safer-drugs/get-to-know-the-drug",
+      "url": "https://drgay.ch/en/safer-drugs/get-to-know-the-drug/substance-info/",
+      "kind": "concept"
+    },
+    {
+      "label": "Onset of effect",
+      "section": "safer-drugs/get-to-know-the-drug",
+      "url": "https://drgay.ch/en/safer-drugs/get-to-know-the-drug/substance-info/",
+      "kind": "concept"
+    },
+    {
+      "label": "Benzodiazepines (Benzos)",
+      "section": "safer-drugs/get-to-know-the-drug",
+      "url": "https://drgay.ch/en/safer-drugs/get-to-know-the-drug/substance-info/",
+      "kind": "concept"
+    },
+    {
+      "label": "Anabolic Androgen Steroids",
+      "section": "safer-drugs/get-to-know-the-drug",
+      "url": "https://drgay.ch/en/safer-drugs/get-to-know-the-drug/substance-info/",
+      "kind": "concept"
+    },
+    {
+      "label": "More about the topic Safer Drugs",
+      "section": "safer-drugs",
+      "url": "https://drgay.ch/en/safer-drugs/react/",
+      "kind": "concept"
+    },
+    {
+      "label": "Reduce risks through preparation",
+      "section": "safer-drugs/safer-use",
+      "url": "https://drgay.ch/en/safer-drugs/safer-use/risiken-verkleinern/",
+      "kind": "concept"
+    },
+    {
+      "label": "Collect waste in a closed container",
+      "section": "safer-drugs/safer-use",
+      "url": "https://drgay.ch/en/safer-drugs/safer-use/risiken-verkleinern/",
+      "kind": "concept"
+    },
+    {
+      "label": "Paper tissues and household paper",
+      "section": "safer-drugs/safer-use",
+      "url": "https://drgay.ch/en/safer-drugs/safer-use/risiken-verkleinern/",
+      "kind": "concept"
+    },
+    {
+      "label": "HIV protection",
+      "section": "safer-drugs/safer-use",
+      "url": "https://drgay.ch/en/safer-drugs/safer-use/risiken-verkleinern/",
+      "kind": "concept"
+    },
+    {
+      "label": "Lubricant",
+      "section": "safer-drugs/safer-use",
+      "url": "https://drgay.ch/en/safer-drugs/safer-use/risiken-verkleinern/",
+      "kind": "concept"
+    },
+    {
+      "label": "Tracking Sheet for drug use",
+      "section": "safer-drugs/safer-use",
+      "url": "https://drgay.ch/en/safer-drugs/safer-use/risiken-verkleinern/",
+      "kind": "concept"
+    },
+    {
+      "label": "Sterile injection material for single use",
+      "section": "safer-drugs/safer-use",
+      "url": "https://drgay.ch/en/safer-drugs/safer-use/risiken-verkleinern/",
+      "kind": "concept"
+    },
+    {
+      "label": "More about the topic Safer Use",
+      "section": "safer-drugs/safer-use",
+      "url": "https://drgay.ch/en/safer-drugs/safer-use/risiken-verkleinern/",
+      "kind": "concept"
+    },
+    {
+      "label": "Know your substances",
+      "section": "safer-drugs/safer-use",
+      "url": "https://drgay.ch/en/safer-drugs/safer-use/the-rules-of-safer-use/",
+      "kind": "concept"
+    },
+    {
+      "label": "Measure out accurately",
+      "section": "safer-drugs/safer-use",
+      "url": "https://drgay.ch/en/safer-drugs/safer-use/the-rules-of-safer-use/",
+      "kind": "concept"
+    },
+    {
+      "label": "Avoid mixed consumption",
+      "section": "safer-drugs/safer-use",
+      "url": "https://drgay.ch/en/safer-drugs/safer-use/the-rules-of-safer-use/",
+      "kind": "concept"
+    },
+    {
+      "label": "Remember your medication",
+      "section": "safer-drugs/safer-use",
+      "url": "https://drgay.ch/en/safer-drugs/safer-use/the-rules-of-safer-use/",
+      "kind": "concept"
+    },
+    {
+      "label": "Get plenty of rest",
+      "section": "safer-drugs/safer-use",
+      "url": "https://drgay.ch/en/safer-drugs/safer-use/the-rules-of-safer-use/",
+      "kind": "concept"
+    },
+    {
+      "label": "Remember to eat and drink enough",
+      "section": "safer-drugs/safer-use",
+      "url": "https://drgay.ch/en/safer-drugs/safer-use/the-rules-of-safer-use/",
+      "kind": "concept"
+    },
+    {
+      "label": "Freshen up",
+      "section": "safer-drugs/safer-use",
+      "url": "https://drgay.ch/en/safer-drugs/safer-use/the-rules-of-safer-use/",
+      "kind": "concept"
+    },
+    {
+      "label": "Coming down",
+      "section": "safer-drugs/safer-use",
+      "url": "https://drgay.ch/en/safer-drugs/safer-use/the-rules-of-safer-use/",
+      "kind": "concept"
+    },
+    {
+      "label": "Safer Snorting",
+      "section": "safer-drugs/safer-use",
+      "url": "https://drgay.ch/en/safer-drugs/safer-use/wie-einnehmen/",
+      "kind": "concept"
+    },
+    {
+      "label": "Safer Dosing: Pills (e.g. Ecstasy)",
+      "section": "safer-drugs/safer-use",
+      "url": "https://drgay.ch/en/safer-drugs/safer-use/wie-einnehmen/",
+      "kind": "concept"
+    },
+    {
+      "label": "Safer Dosing: Liquids and powders",
+      "section": "safer-drugs/safer-use",
+      "url": "https://drgay.ch/en/safer-drugs/safer-use/wie-einnehmen/",
+      "kind": "concept"
+    },
+    {
+      "label": "Booty Bumps",
+      "section": "safer-drugs/safer-use",
+      "url": "https://drgay.ch/en/safer-drugs/safer-use/wie-einnehmen/",
+      "kind": "concept"
+    },
+    {
+      "label": "Safer Slamming",
+      "section": "safer-drugs/safer-use",
+      "url": "https://drgay.ch/en/safer-drugs/safer-use/wie-einnehmen/",
+      "kind": "concept"
+    },
+    {
+      "label": "Hepatitis C",
+      "section": "safer-drugs/safer-use",
+      "url": "https://drgay.ch/en/safer-drugs/safer-use/wie-einnehmen/",
+      "kind": "concept"
+    },
+    {
+      "label": "Disclaimer",
+      "section": "safer-drugs/set-and-setting",
+      "url": "https://drgay.ch/en/safer-drugs/set-and-setting/selftest/",
+      "kind": "concept"
+    },
+    {
+      "label": "Use of alcohol and other substances",
+      "section": "safer-drugs/set-and-setting",
+      "url": "https://drgay.ch/en/safer-drugs/set-and-setting/selftest/",
+      "kind": "concept"
+    },
+    {
+      "label": "Yes",
+      "section": "safer-drugs/set-and-setting",
+      "url": "https://drgay.ch/en/safer-drugs/set-and-setting/selftest/",
+      "kind": "concept"
+    },
+    {
+      "label": "No",
+      "section": "safer-drugs/set-and-setting",
+      "url": "https://drgay.ch/en/safer-drugs/set-and-setting/selftest/",
+      "kind": "concept"
+    },
+    {
+      "label": "Back",
+      "section": "safer-drugs/set-and-setting",
+      "url": "https://drgay.ch/en/safer-drugs/set-and-setting/selftest/",
+      "kind": "concept"
+    },
+    {
+      "label": "More about the topic Set and Setting",
+      "section": "safer-drugs/set-and-setting",
+      "url": "https://drgay.ch/en/safer-drugs/set-and-setting/selftest/",
+      "kind": "concept"
+    },
+    {
+      "label": "Party contexts",
+      "section": "safer-drugs/set-and-setting",
+      "url": "https://drgay.ch/en/safer-drugs/set-and-setting/setting/",
+      "kind": "concept"
+    },
+    {
+      "label": "Sexual contexts",
+      "section": "safer-drugs/set-and-setting",
+      "url": "https://drgay.ch/en/safer-drugs/set-and-setting/setting/",
+      "kind": "concept"
+    },
+    {
+      "label": "Chemsex",
+      "section": "safer-drugs/set-and-setting",
+      "url": "https://drgay.ch/en/safer-drugs/set-and-setting/setting/",
+      "kind": "concept"
+    },
+    {
+      "label": "Mpox",
+      "section": "root",
+      "url": "https://drgay.ch/en/safer-sex/",
+      "kind": "concept"
+    },
+    {
+      "label": "Protection",
+      "section": "root",
+      "url": "https://drgay.ch/en/safer-sex/",
+      "kind": "concept"
+    },
+    {
+      "label": "Getting Vaccinated and Tested",
+      "section": "root",
+      "url": "https://drgay.ch/en/safer-sex/",
+      "kind": "concept"
+    },
+    {
+      "label": "Risk Reducing",
+      "section": "root",
+      "url": "https://drgay.ch/en/safer-sex/",
+      "kind": "concept"
+    },
+    {
+      "label": "Facts About HIV",
+      "section": "root",
+      "url": "https://drgay.ch/en/safer-sex/",
+      "kind": "concept"
+    },
+    {
+      "label": "Facts About other STI",
+      "section": "root",
+      "url": "https://drgay.ch/en/safer-sex/",
+      "kind": "concept"
+    },
+    {
+      "label": "All about vaccination",
+      "section": "root",
+      "url": "https://drgay.ch/en/safer-sex/",
+      "kind": "concept"
+    },
+    {
+      "label": "Vaccination sites",
+      "section": "root",
+      "url": "https://drgay.ch/en/safer-sex/",
+      "kind": "concept"
+    },
+    {
+      "label": "What you need to know",
+      "section": "root",
+      "url": "https://drgay.ch/en/safer-sex/",
+      "kind": "concept"
+    },
+    {
+      "label": "Undetectable (HIV)",
+      "section": "root",
+      "url": "https://drgay.ch/en/safer-sex/",
+      "kind": "concept"
+    },
+    {
+      "label": "Condom",
+      "section": "root",
+      "url": "https://drgay.ch/en/safer-sex/",
+      "kind": "concept"
+    },
+    {
+      "label": "PrEP (HIV)",
+      "section": "root",
+      "url": "https://drgay.ch/en/safer-sex/",
+      "kind": "concept"
+    },
+    {
+      "label": "PEP (HIV)",
+      "section": "root",
+      "url": "https://drgay.ch/en/safer-sex/",
+      "kind": "concept"
+    },
+    {
+      "label": "DoxyPEP (STI)",
+      "section": "root",
+      "url": "https://drgay.ch/en/safer-sex/",
+      "kind": "concept"
+    },
+    {
+      "label": "Arrangement In Relationships",
+      "section": "root",
+      "url": "https://drgay.ch/en/safer-sex/",
+      "kind": "concept"
+    },
+    {
+      "label": "ⓘ Health insurance covers PrEP",
+      "section": "root",
+      "url": "https://drgay.ch/en/safer-sex/",
+      "kind": "concept"
+    },
+    {
+      "label": "Testing Recommendations",
+      "section": "root",
+      "url": "https://drgay.ch/en/safer-sex/",
+      "kind": "concept"
+    },
+    {
+      "label": "Vaccinations Advice",
+      "section": "root",
+      "url": "https://drgay.ch/en/safer-sex/",
+      "kind": "concept"
+    },
+    {
+      "label": "Where To Get Vaccinated",
+      "section": "root",
+      "url": "https://drgay.ch/en/safer-sex/",
+      "kind": "concept"
+    },
+    {
+      "label": "«I have symptoms.»",
+      "section": "safer-sex/mpox",
+      "url": "https://drgay.ch/en/safer-sex/mpox/need-to-know/",
+      "kind": "concept"
+    },
+    {
+      "label": "«My result is positive.»",
+      "section": "safer-sex/mpox",
+      "url": "https://drgay.ch/en/safer-sex/mpox/need-to-know/",
+      "kind": "concept"
+    },
+    {
+      "label": "«Someone I know has Mpox.»",
+      "section": "safer-sex/mpox",
+      "url": "https://drgay.ch/en/safer-sex/mpox/need-to-know/",
+      "kind": "concept"
+    },
+    {
+      "label": "More about the topic Mpox",
+      "section": "safer-sex/mpox",
+      "url": "https://drgay.ch/en/safer-sex/mpox/need-to-know/",
+      "kind": "concept"
+    },
+    {
+      "label": "I had contact with a person with Mpox",
+      "section": "safer-sex/mpox",
+      "url": "https://drgay.ch/en/safer-sex/mpox/vac/",
+      "kind": "concept"
+    },
+    {
+      "label": "Monogamous Relationship",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/agreements-in-relationships/",
+      "kind": "concept"
+    },
+    {
+      "label": "Open Relationships",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/agreements-in-relationships/",
+      "kind": "concept"
+    },
+    {
+      "label": "More about the topic Protection",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/agreements-in-relationships/",
+      "kind": "concept"
+    },
+    {
+      "label": "Quality",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/condom/",
+      "kind": "concept"
+    },
+    {
+      "label": "Size",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/condom/",
+      "kind": "concept"
+    },
+    {
+      "label": "Lube",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/condom/",
+      "kind": "concept"
+    },
+    {
+      "label": "Sex toys",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/condom/",
+      "kind": "concept"
+    },
+    {
+      "label": "Manual",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/condom/",
+      "kind": "concept"
+    },
+    {
+      "label": "Opening",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/condom/",
+      "kind": "concept"
+    },
+    {
+      "label": "Putting It On",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/condom/",
+      "kind": "concept"
+    },
+    {
+      "label": "Taking It Off",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/condom/",
+      "kind": "concept"
+    },
+    {
+      "label": "Fucking",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/condom/",
+      "kind": "concept"
+    },
+    {
+      "label": "Removing",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/condom/",
+      "kind": "concept"
+    },
+    {
+      "label": "Antibiotic PEP against bacterial STIs",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/doxypep/",
+      "kind": "concept"
+    },
+    {
+      "label": "Notice",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/doxypep/",
+      "kind": "concept"
+    },
+    {
+      "label": "Proven effectiveness",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/doxypep/",
+      "kind": "concept"
+    },
+    {
+      "label": "Risks and side effects",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/doxypep/",
+      "kind": "concept"
+    },
+    {
+      "label": "Info",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/doxypep/",
+      "kind": "concept"
+    },
+    {
+      "label": "When and how to take DoxyPEP",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/doxypep/",
+      "kind": "concept"
+    },
+    {
+      "label": "Where to obtain DoxyPEP",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/doxypep/",
+      "kind": "concept"
+    },
+    {
+      "label": "Recommendations cis men",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/prep-forgotten/",
+      "kind": "concept"
+    },
+    {
+      "label": "4 or more days",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/prep-forgotten/",
+      "kind": "concept"
+    },
+    {
+      "label": "on less than 4 days",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/prep-forgotten/",
+      "kind": "concept"
+    },
+    {
+      "label": "Recommendations cis women, trans people and non-binary people",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/prep-forgotten/",
+      "kind": "concept"
+    },
+    {
+      "label": "6 or more days",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/prep-forgotten/",
+      "kind": "concept"
+    },
+    {
+      "label": "on less than 6 days",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/prep-forgotten/",
+      "kind": "concept"
+    },
+    {
+      "label": "PrEP more than 48h ago",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/prep-forgotten/",
+      "kind": "concept"
+    },
+    {
+      "label": "Conditions und criteria",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/prep-okp/",
+      "kind": "concept"
+    },
+    {
+      "label": "Group 1",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/prep-okp/",
+      "kind": "concept"
+    },
+    {
+      "label": "Group 2",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/prep-okp/",
+      "kind": "concept"
+    },
+    {
+      "label": "Group 3",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/prep-okp/",
+      "kind": "concept"
+    },
+    {
+      "label": "Suitable for everyone",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/prep/",
+      "kind": "concept"
+    },
+    {
+      "label": "For cis men only",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/prep/",
+      "kind": "concept"
+    },
+    {
+      "label": "Update (5 March)",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/suppy-disruption/",
+      "kind": "concept"
+    },
+    {
+      "label": "What is important now",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/suppy-disruption/",
+      "kind": "concept"
+    },
+    {
+      "label": "Show solidarity",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/suppy-disruption/",
+      "kind": "concept"
+    },
+    {
+      "label": "Check availability abroad",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/suppy-disruption/",
+      "kind": "concept"
+    },
+    {
+      "label": "Use condoms",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/suppy-disruption/",
+      "kind": "concept"
+    },
+    {
+      "label": "Stay informed",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/suppy-disruption/",
+      "kind": "concept"
+    },
+    {
+      "label": "HIV medication and hormone therapies",
+      "section": "safer-sex/prevention",
+      "url": "https://drgay.ch/en/safer-sex/prevention/undetectable/",
+      "kind": "concept"
+    },
+    {
+      "label": "HIV and syphilis",
+      "section": "safer-sex/tested-and-vaccinated",
+      "url": "https://drgay.ch/en/safer-sex/tested-and-vaccinated/testing-advice/",
+      "kind": "concept"
+    },
+    {
+      "label": "Gonorrhea and chlamydia",
+      "section": "safer-sex/tested-and-vaccinated",
+      "url": "https://drgay.ch/en/safer-sex/tested-and-vaccinated/testing-advice/",
+      "kind": "concept"
+    },
+    {
+      "label": "At a test centre",
+      "section": "safer-sex/tested-and-vaccinated",
+      "url": "https://drgay.ch/en/safer-sex/tested-and-vaccinated/testing-advice/",
+      "kind": "concept"
+    },
+    {
+      "label": "HIV self-test",
+      "section": "safer-sex/tested-and-vaccinated",
+      "url": "https://drgay.ch/en/safer-sex/tested-and-vaccinated/testing-advice/",
+      "kind": "concept"
+    },
+    {
+      "label": "Clinic or hospital",
+      "section": "safer-sex/tested-and-vaccinated",
+      "url": "https://drgay.ch/en/safer-sex/tested-and-vaccinated/testing-advice/",
+      "kind": "concept"
+    },
+    {
+      "label": "HIV testing",
+      "section": "safer-sex/tested-and-vaccinated",
+      "url": "https://drgay.ch/en/safer-sex/tested-and-vaccinated/testing-advice/",
+      "kind": "concept"
+    },
+    {
+      "label": "STI testing",
+      "section": "safer-sex/tested-and-vaccinated",
+      "url": "https://drgay.ch/en/safer-sex/tested-and-vaccinated/testing-advice/",
+      "kind": "concept"
+    },
+    {
+      "label": "Without Symptoms",
+      "section": "safer-sex/tested-and-vaccinated",
+      "url": "https://drgay.ch/en/safer-sex/tested-and-vaccinated/testing-advice/",
+      "kind": "concept"
+    },
+    {
+      "label": "With symptoms",
+      "section": "safer-sex/tested-and-vaccinated",
+      "url": "https://drgay.ch/en/safer-sex/tested-and-vaccinated/testing-advice/",
+      "kind": "concept"
+    },
+    {
+      "label": "More about the topic Getting Vaccinated and Tested",
+      "section": "safer-sex/tested-and-vaccinated",
+      "url": "https://drgay.ch/en/safer-sex/tested-and-vaccinated/testing-advice/",
+      "kind": "concept"
+    },
+    {
+      "label": "HPV",
+      "section": "safer-sex/tested-and-vaccinated",
+      "url": "https://drgay.ch/en/safer-sex/tested-and-vaccinated/vaccinations-advice/",
+      "kind": "concept"
+    },
+    {
+      "label": "Hepatitis A/B",
+      "section": "safer-sex/tested-and-vaccinated",
+      "url": "https://drgay.ch/en/safer-sex/tested-and-vaccinated/vaccinations-advice/",
+      "kind": "concept"
+    },
+    {
+      "label": "Further vaccinations",
+      "section": "safer-sex/tested-and-vaccinated",
+      "url": "https://drgay.ch/en/safer-sex/tested-and-vaccinated/vaccinations-advice/",
+      "kind": "concept"
+    },
+    {
+      "label": "Renewing vaccinations",
+      "section": "safer-sex/tested-and-vaccinated",
+      "url": "https://drgay.ch/en/safer-sex/tested-and-vaccinated/vaccinations-advice/",
+      "kind": "concept"
+    },
+    {
+      "label": "People living with HIV",
+      "section": "safer-sex/tested-and-vaccinated",
+      "url": "https://drgay.ch/en/safer-sex/tested-and-vaccinated/vaccinations-advice/",
+      "kind": "concept"
+    },
+    {
+      "label": "HIV-Risk: Touching and Kissing",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/facts-about-hiv/",
+      "kind": "concept"
+    },
+    {
+      "label": "HIV-Risk: Oral Sex",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/facts-about-hiv/",
+      "kind": "concept"
+    },
+    {
+      "label": "HIV-Risk: Rimming",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/facts-about-hiv/",
+      "kind": "concept"
+    },
+    {
+      "label": "HIV-Risk: Anal Sex",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/facts-about-hiv/",
+      "kind": "concept"
+    },
+    {
+      "label": "HIV-Risk: Dipping",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/facts-about-hiv/",
+      "kind": "concept"
+    },
+    {
+      "label": "HIV-Risk: Topping",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/facts-about-hiv/",
+      "kind": "concept"
+    },
+    {
+      "label": "HIV-Risk: Circumcision",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/facts-about-hiv/",
+      "kind": "concept"
+    },
+    {
+      "label": "In an emergency: HIV PEP",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/facts-about-hiv/",
+      "kind": "concept"
+    },
+    {
+      "label": "Detecing Primo Infection",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/facts-about-hiv/",
+      "kind": "concept"
+    },
+    {
+      "label": "No Longer Contagious Thanks To Medication",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/facts-about-hiv/",
+      "kind": "concept"
+    },
+    {
+      "label": "Bacterial STI",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/facts-about-sti/",
+      "kind": "concept"
+    },
+    {
+      "label": "Viral STI",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/facts-about-sti/",
+      "kind": "concept"
+    },
+    {
+      "label": "How to Protect Yourself",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/facts-about-sti/",
+      "kind": "concept"
+    },
+    {
+      "label": "Vaccination",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/facts-about-sti/",
+      "kind": "concept"
+    },
+    {
+      "label": "Testing",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/facts-about-sti/",
+      "kind": "concept"
+    },
+    {
+      "label": "Treatment",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/facts-about-sti/",
+      "kind": "concept"
+    },
+    {
+      "label": "Informing your partner(s)",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/facts-about-sti/",
+      "kind": "concept"
+    },
+    {
+      "label": "Hormonal Therapy and STIs",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/facts-about-sti/",
+      "kind": "concept"
+    },
+    {
+      "label": "The Major STIs",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/facts-about-sti/",
+      "kind": "concept"
+    },
+    {
+      "label": "Syphilis",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/facts-about-sti/",
+      "kind": "concept"
+    },
+    {
+      "label": "Gonorrhea",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/facts-about-sti/",
+      "kind": "concept"
+    },
+    {
+      "label": "Chlamydia and LGV",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/facts-about-sti/",
+      "kind": "concept"
+    },
+    {
+      "label": "LGV",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/facts-about-sti/",
+      "kind": "concept"
+    },
+    {
+      "label": "Other STIs",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/facts-about-sti/",
+      "kind": "concept"
+    },
+    {
+      "label": "HPV and condyloma (warts)",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/facts-about-sti/",
+      "kind": "concept"
+    },
+    {
+      "label": "Condyloma",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/facts-about-sti/",
+      "kind": "concept"
+    },
+    {
+      "label": "Hepatitis D/E",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/facts-about-sti/",
+      "kind": "concept"
+    },
+    {
+      "label": "Hepatitis D",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/facts-about-sti/",
+      "kind": "concept"
+    },
+    {
+      "label": "Hepatitis E",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/facts-about-sti/",
+      "kind": "concept"
+    },
+    {
+      "label": "Herpes (HSV)",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/facts-about-sti/",
+      "kind": "concept"
+    },
+    {
+      "label": "Mycoplasma genitalium",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/facts-about-sti/",
+      "kind": "concept"
+    },
+    {
+      "label": "Crabs",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/facts-about-sti/",
+      "kind": "concept"
+    },
+    {
+      "label": "Scabies",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/facts-about-sti/",
+      "kind": "concept"
+    },
+    {
+      "label": "Fungi (Candidosis)",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/facts-about-sti/",
+      "kind": "concept"
+    },
+    {
+      "label": "Dermatophytosis (Ringworm)",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/facts-about-sti/",
+      "kind": "concept"
+    },
+    {
+      "label": "Dermatophilosis (2026)",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/facts-about-sti/",
+      "kind": "concept"
+    },
+    {
+      "label": "Risk of HIV",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/risk-reducing/",
+      "kind": "concept"
+    },
+    {
+      "label": "Risk of bacterial STIs",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/risk-reducing/",
+      "kind": "concept"
+    },
+    {
+      "label": "Risk of HPV and Hepatitis A/B",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/risk-reducing/",
+      "kind": "concept"
+    },
+    {
+      "label": "Risk of Hepatitis C",
+      "section": "safer-sex/what-does-safer-sex-mean",
+      "url": "https://drgay.ch/en/safer-sex/what-does-safer-sex-mean/risk-reducing/",
+      "kind": "concept"
+    },
+    {
+      "label": "Your Body",
+      "section": "root",
+      "url": "https://drgay.ch/en/sexuality/",
+      "kind": "concept"
+    },
+    {
+      "label": "Your Rights & Swiss Laws",
+      "section": "root",
+      "url": "https://drgay.ch/en/sexuality/",
+      "kind": "concept"
+    },
+    {
+      "label": "Gender and Sexuality",
+      "section": "root",
+      "url": "https://drgay.ch/en/sexuality/",
+      "kind": "concept"
+    },
+    {
+      "label": "Penis",
+      "section": "root",
+      "url": "https://drgay.ch/en/sexuality/",
+      "kind": "concept"
+    },
+    {
+      "label": "Vulva and Vagina",
+      "section": "root",
+      "url": "https://drgay.ch/en/sexuality/",
+      "kind": "concept"
+    },
+    {
+      "label": "Anus",
+      "section": "root",
+      "url": "https://drgay.ch/en/sexuality/",
+      "kind": "concept"
+    },
+    {
+      "label": "Anal Douching",
+      "section": "root",
+      "url": "https://drgay.ch/en/sexuality/",
+      "kind": "concept"
+    },
+    {
+      "label": "Nutrition",
+      "section": "root",
+      "url": "https://drgay.ch/en/sexuality/",
+      "kind": "concept"
+    },
+    {
+      "label": "Sex Practices",
+      "section": "root",
+      "url": "https://drgay.ch/en/sexuality/",
+      "kind": "concept"
+    },
+    {
+      "label": "Tribes",
+      "section": "root",
+      "url": "https://drgay.ch/en/sexuality/",
+      "kind": "concept"
+    },
+    {
+      "label": "Safer Sex Dates",
+      "section": "root",
+      "url": "https://drgay.ch/en/sexuality/",
+      "kind": "concept"
+    },
+    {
+      "label": "Rimming",
+      "section": "root",
+      "url": "https://drgay.ch/en/sexuality/",
+      "kind": "concept"
+    },
+    {
+      "label": "Your Rights When Having Sex",
+      "section": "root",
+      "url": "https://drgay.ch/en/sexuality/",
+      "kind": "concept"
+    },
+    {
+      "label": "Age Of Consent",
+      "section": "root",
+      "url": "https://drgay.ch/en/sexuality/",
+      "kind": "concept"
+    },
+    {
+      "label": "Porn And Sexting",
+      "section": "root",
+      "url": "https://drgay.ch/en/sexuality/",
+      "kind": "concept"
+    },
+    {
+      "label": "Sex Work",
+      "section": "root",
+      "url": "https://drgay.ch/en/sexuality/",
+      "kind": "concept"
+    },
+    {
+      "label": "Outdoor sex",
+      "section": "root",
+      "url": "https://drgay.ch/en/sexuality/",
+      "kind": "concept"
+    },
+    {
+      "label": "A sensitive part",
+      "section": "sexuality/what-turns-me-on",
+      "url": "https://drgay.ch/en/sexuality/what-turns-me-on/rimming/",
+      "kind": "concept"
+    },
+    {
+      "label": "Variety is the spice of life",
+      "section": "sexuality/what-turns-me-on",
+      "url": "https://drgay.ch/en/sexuality/what-turns-me-on/rimming/",
+      "kind": "concept"
+    },
+    {
+      "label": "The deep-end",
+      "section": "sexuality/what-turns-me-on",
+      "url": "https://drgay.ch/en/sexuality/what-turns-me-on/rimming/",
+      "kind": "concept"
+    },
+    {
+      "label": "Suck me",
+      "section": "sexuality/what-turns-me-on",
+      "url": "https://drgay.ch/en/sexuality/what-turns-me-on/rimming/",
+      "kind": "concept"
+    },
+    {
+      "label": "On travels",
+      "section": "sexuality/what-turns-me-on",
+      "url": "https://drgay.ch/en/sexuality/what-turns-me-on/rimming/",
+      "kind": "concept"
+    },
+    {
+      "label": "Rimming and safer sex",
+      "section": "sexuality/what-turns-me-on",
+      "url": "https://drgay.ch/en/sexuality/what-turns-me-on/rimming/",
+      "kind": "concept"
+    },
+    {
+      "label": "Feeling Good About Yourself",
+      "section": "sexuality/what-turns-me-on",
+      "url": "https://drgay.ch/en/sexuality/what-turns-me-on/safer-sex-date/",
+      "kind": "concept"
+    },
+    {
+      "label": "Sending Nudes",
+      "section": "sexuality/what-turns-me-on",
+      "url": "https://drgay.ch/en/sexuality/what-turns-me-on/safer-sex-date/",
+      "kind": "concept"
+    },
+    {
+      "label": "Choosing a Location to Meet",
+      "section": "sexuality/what-turns-me-on",
+      "url": "https://drgay.ch/en/sexuality/what-turns-me-on/safer-sex-date/",
+      "kind": "concept"
+    },
+    {
+      "label": "Sharing Your Location",
+      "section": "sexuality/what-turns-me-on",
+      "url": "https://drgay.ch/en/sexuality/what-turns-me-on/safer-sex-date/",
+      "kind": "concept"
+    },
+    {
+      "label": "Touching and Kissing",
+      "section": "sexuality/what-turns-me-on",
+      "url": "https://drgay.ch/en/sexuality/what-turns-me-on/sex-practices/",
+      "kind": "concept"
+    },
+    {
+      "label": "Masturbating",
+      "section": "sexuality/what-turns-me-on",
+      "url": "https://drgay.ch/en/sexuality/what-turns-me-on/sex-practices/",
+      "kind": "concept"
+    },
+    {
+      "label": "Oral Sex",
+      "section": "sexuality/what-turns-me-on",
+      "url": "https://drgay.ch/en/sexuality/what-turns-me-on/sex-practices/",
+      "kind": "concept"
+    },
+    {
+      "label": "Anal Sex",
+      "section": "sexuality/what-turns-me-on",
+      "url": "https://drgay.ch/en/sexuality/what-turns-me-on/sex-practices/",
+      "kind": "concept"
+    },
+    {
+      "label": "Vaginal Sex",
+      "section": "sexuality/what-turns-me-on",
+      "url": "https://drgay.ch/en/sexuality/what-turns-me-on/sex-practices/",
+      "kind": "concept"
+    },
+    {
+      "label": "BDSM",
+      "section": "sexuality/what-turns-me-on",
+      "url": "https://drgay.ch/en/sexuality/what-turns-me-on/sex-practices/",
+      "kind": "concept"
+    },
+    {
+      "label": "Fisting",
+      "section": "sexuality/what-turns-me-on",
+      "url": "https://drgay.ch/en/sexuality/what-turns-me-on/sex-practices/",
+      "kind": "concept"
+    },
+    {
+      "label": "Piss Play",
+      "section": "sexuality/what-turns-me-on",
+      "url": "https://drgay.ch/en/sexuality/what-turns-me-on/sex-practices/",
+      "kind": "concept"
+    },
+    {
+      "label": "Scat (Faeces)",
+      "section": "sexuality/what-turns-me-on",
+      "url": "https://drgay.ch/en/sexuality/what-turns-me-on/sex-practices/",
+      "kind": "concept"
+    },
+    {
+      "label": "Body Modifications",
+      "section": "sexuality/what-turns-me-on",
+      "url": "https://drgay.ch/en/sexuality/what-turns-me-on/sex-practices/",
+      "kind": "concept"
+    },
+    {
+      "label": "STI-Risk: Touching and Kissing",
+      "section": "sexuality/what-turns-me-on",
+      "url": "https://drgay.ch/en/sexuality/what-turns-me-on/sex-practices/",
+      "kind": "concept"
+    },
+    {
+      "label": "Clothing",
+      "section": "sexuality/what-turns-me-on",
+      "url": "https://drgay.ch/en/sexuality/what-turns-me-on/tribes/",
+      "kind": "concept"
+    },
+    {
+      "label": "Bodies",
+      "section": "sexuality/what-turns-me-on",
+      "url": "https://drgay.ch/en/sexuality/what-turns-me-on/tribes/",
+      "kind": "concept"
+    },
+    {
+      "label": "Scents",
+      "section": "sexuality/what-turns-me-on",
+      "url": "https://drgay.ch/en/sexuality/what-turns-me-on/tribes/",
+      "kind": "concept"
+    },
+    {
+      "label": "Body Fluids",
+      "section": "sexuality/what-turns-me-on",
+      "url": "https://drgay.ch/en/sexuality/what-turns-me-on/tribes/",
+      "kind": "concept"
+    },
+    {
+      "label": "Fabrics",
+      "section": "sexuality/what-turns-me-on",
+      "url": "https://drgay.ch/en/sexuality/what-turns-me-on/tribes/",
+      "kind": "concept"
+    },
+    {
+      "label": "Facilities",
+      "section": "sexuality/what-turns-me-on",
+      "url": "https://drgay.ch/en/sexuality/what-turns-me-on/tribes/",
+      "kind": "concept"
+    },
+    {
+      "label": "Tools",
+      "section": "sexuality/what-turns-me-on",
+      "url": "https://drgay.ch/en/sexuality/what-turns-me-on/tribes/",
+      "kind": "concept"
+    },
+    {
+      "label": "Most of the time, sex will feel good",
+      "section": "sexuality/what-turns-me-on",
+      "url": "https://drgay.ch/en/sexuality/what-turns-me-on/what-is-good-sex/",
+      "kind": "concept"
+    },
+    {
+      "label": "Sexual abuse isn't \"just another bad experience\"",
+      "section": "sexuality/what-turns-me-on",
+      "url": "https://drgay.ch/en/sexuality/what-turns-me-on/what-is-good-sex/",
+      "kind": "concept"
+    },
+    {
+      "label": "Diet",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/anal-douching/",
+      "kind": "concept"
+    },
+    {
+      "label": "What You Should Avoid",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/anal-douching/",
+      "kind": "concept"
+    },
+    {
+      "label": "What Is Recommended",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/anal-douching/",
+      "kind": "concept"
+    },
+    {
+      "label": "Food Supplements",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/anal-douching/",
+      "kind": "concept"
+    },
+    {
+      "label": "Enema Bulb",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/anal-douching/",
+      "kind": "concept"
+    },
+    {
+      "label": "Shower Attachment",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/anal-douching/",
+      "kind": "concept"
+    },
+    {
+      "label": "Plastic Bottle",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/anal-douching/",
+      "kind": "concept"
+    },
+    {
+      "label": "Cleaning The Rectum – Here's How It Works",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/anal-douching/",
+      "kind": "concept"
+    },
+    {
+      "label": "Step 1",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/anal-douching/",
+      "kind": "concept"
+    },
+    {
+      "label": "Step 2",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/anal-douching/",
+      "kind": "concept"
+    },
+    {
+      "label": "Step 3",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/anal-douching/",
+      "kind": "concept"
+    },
+    {
+      "label": "Step 4",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/anal-douching/",
+      "kind": "concept"
+    },
+    {
+      "label": "Step 5",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/anal-douching/",
+      "kind": "concept"
+    },
+    {
+      "label": "Step 6",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/anal-douching/",
+      "kind": "concept"
+    },
+    {
+      "label": "Step 7",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/anal-douching/",
+      "kind": "concept"
+    },
+    {
+      "label": "Step 8",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/anal-douching/",
+      "kind": "concept"
+    },
+    {
+      "label": "Go to the toilet beforehand",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/anal-douching/",
+      "kind": "concept"
+    },
+    {
+      "label": "Prepare the water",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/anal-douching/",
+      "kind": "concept"
+    },
+    {
+      "label": "Insert? Not necessary",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/anal-douching/",
+      "kind": "concept"
+    },
+    {
+      "label": "Dose the amount of water",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/anal-douching/",
+      "kind": "concept"
+    },
+    {
+      "label": "Keep it in and release",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/anal-douching/",
+      "kind": "concept"
+    },
+    {
+      "label": "Repeat and observe",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/anal-douching/",
+      "kind": "concept"
+    },
+    {
+      "label": "Don't overdo it",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/anal-douching/",
+      "kind": "concept"
+    },
+    {
+      "label": "After-effects",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/anal-douching/",
+      "kind": "concept"
+    },
+    {
+      "label": "If It Does Happen",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/anal-douching/",
+      "kind": "concept"
+    },
+    {
+      "label": "Bottom Shaming",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/anal-douching/",
+      "kind": "concept"
+    },
+    {
+      "label": "More about the topic Your Body",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/anal-douching/",
+      "kind": "concept"
+    },
+    {
+      "label": "Prostate",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/anus/",
+      "kind": "concept"
+    },
+    {
+      "label": "Physical causes",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/erectile-dysfunction/",
+      "kind": "concept"
+    },
+    {
+      "label": "Psychologically causes",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/erectile-dysfunction/",
+      "kind": "concept"
+    },
+    {
+      "label": "Treatment options",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/erectile-dysfunction/",
+      "kind": "concept"
+    },
+    {
+      "label": "Prevention",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/erectile-dysfunction/",
+      "kind": "concept"
+    },
+    {
+      "label": "Potency Enhancers",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/erectile-dysfunction/",
+      "kind": "concept"
+    },
+    {
+      "label": "Testosterone Deficiency",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/erectile-dysfunction/",
+      "kind": "concept"
+    },
+    {
+      "label": "Your penis",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/erectile-dysfunction/",
+      "kind": "concept"
+    },
+    {
+      "label": "Water",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/nutrition/",
+      "kind": "concept"
+    },
+    {
+      "label": "Carbohydrates",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/nutrition/",
+      "kind": "concept"
+    },
+    {
+      "label": "Protein",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/nutrition/",
+      "kind": "concept"
+    },
+    {
+      "label": "Fibre",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/nutrition/",
+      "kind": "concept"
+    },
+    {
+      "label": "Fats",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/nutrition/",
+      "kind": "concept"
+    },
+    {
+      "label": "Vitamins",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/nutrition/",
+      "kind": "concept"
+    },
+    {
+      "label": "Minerals",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/nutrition/",
+      "kind": "concept"
+    },
+    {
+      "label": "Foreskin and Head of the penis",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/penis/",
+      "kind": "concept"
+    },
+    {
+      "label": "Testicles",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/penis/",
+      "kind": "concept"
+    },
+    {
+      "label": "Care and health",
+      "section": "sexuality/your-body",
+      "url": "https://drgay.ch/en/sexuality/your-body/vulva-vagina/",
+      "kind": "concept"
+    },
+    {
+      "label": "Legally Protected up until 18",
+      "section": "sexuality/your-rights-swiss-laws",
+      "url": "https://drgay.ch/en/sexuality/your-rights-swiss-laws/age-of-consent/",
+      "kind": "concept"
+    },
+    {
+      "label": "Nudity in public",
+      "section": "sexuality/your-rights-swiss-laws",
+      "url": "https://drgay.ch/en/sexuality/your-rights-swiss-laws/outdoorsex/",
+      "kind": "concept"
+    },
+    {
+      "label": "Pornography",
+      "section": "sexuality/your-rights-swiss-laws",
+      "url": "https://drgay.ch/en/sexuality/your-rights-swiss-laws/porn-and-sexting/",
+      "kind": "concept"
+    },
+    {
+      "label": "Sexting",
+      "section": "sexuality/your-rights-swiss-laws",
+      "url": "https://drgay.ch/en/sexuality/your-rights-swiss-laws/porn-and-sexting/",
+      "kind": "concept"
+    },
+    {
+      "label": "Over 18",
+      "section": "sexuality/your-rights-swiss-laws",
+      "url": "https://drgay.ch/en/sexuality/your-rights-swiss-laws/porn-and-sexting/",
+      "kind": "concept"
+    },
+    {
+      "label": "Between 16 and 18",
+      "section": "sexuality/your-rights-swiss-laws",
+      "url": "https://drgay.ch/en/sexuality/your-rights-swiss-laws/porn-and-sexting/",
+      "kind": "concept"
+    },
+    {
+      "label": "Under 16",
+      "section": "sexuality/your-rights-swiss-laws",
+      "url": "https://drgay.ch/en/sexuality/your-rights-swiss-laws/porn-and-sexting/",
+      "kind": "concept"
+    },
+    {
+      "label": "Law",
+      "section": "sexuality/your-rights-swiss-laws",
+      "url": "https://drgay.ch/en/sexuality/your-rights-swiss-laws/sex-work/",
+      "kind": "concept"
+    },
+    {
+      "label": "HIV und STI",
+      "section": "sexuality/your-rights-swiss-laws",
+      "url": "https://drgay.ch/en/sexuality/your-rights-swiss-laws/sex-work/",
+      "kind": "concept"
+    },
+    {
+      "label": "Drugs",
+      "section": "sexuality/your-rights-swiss-laws",
+      "url": "https://drgay.ch/en/sexuality/your-rights-swiss-laws/sex-work/",
+      "kind": "concept"
+    },
+    {
+      "label": "Tips for your work",
+      "section": "sexuality/your-rights-swiss-laws",
+      "url": "https://drgay.ch/en/sexuality/your-rights-swiss-laws/sex-work/",
+      "kind": "concept"
+    },
+    {
+      "label": "Consent: Only Yes Means Yes",
+      "section": "sexuality/your-rights-swiss-laws",
+      "url": "https://drgay.ch/en/sexuality/your-rights-swiss-laws/your-rights-when-having-sex/",
+      "kind": "concept"
+    },
+    {
+      "label": "Stealthing: Removing a Condom is Sexual Abuse",
+      "section": "sexuality/your-rights-swiss-laws",
+      "url": "https://drgay.ch/en/sexuality/your-rights-swiss-laws/your-rights-when-having-sex/",
+      "kind": "concept"
+    },
+    {
+      "label": "Sex and Pain",
+      "section": "sexuality/your-rights-swiss-laws",
+      "url": "https://drgay.ch/en/sexuality/your-rights-swiss-laws/your-rights-when-having-sex/",
+      "kind": "concept"
+    }
+  ]
+}
