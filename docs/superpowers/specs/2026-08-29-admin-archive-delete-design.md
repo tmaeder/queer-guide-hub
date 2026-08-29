@@ -113,6 +113,40 @@ All `SECURITY DEFINER`, `set search_path`, gated by `assert_admin_or_internal()`
 revoked from `anon`. Shape mirrors the existing `merge_entities` / `unmerge_entities`
 dispatcher pair.
 
+### Per-type dispatch table (researched against prod 2026-08-29)
+
+Reuse, no new SQL:
+
+| type | archive | restore |
+|---|---|---|
+| city | `archive_city_as_nonplace(id, reason, '{}')` | `unarchive_city(id)` |
+| personality | `archive_personality_as_nonperson(id, reason, '{}')` | `unarchive_personality(id)` |
+| venue | `decide_venue_nonvenue(id, true, reason)` | `restore_venue_from_nonvenue(id)` |
+| event | `_existence_apply_archive('event', id, reason, '{}', actor)` | `_existence_apply_reopen('event', id, actor)` |
+| marketplace | `_existence_apply_archive('marketplace', …)` | `_existence_apply_reopen('marketplace', …)` |
+
+New SQL, but the column already exists and its CHECK already admits the value:
+
+| type | archive state |
+|---|---|
+| guide | `status='archived'` — the value is in `guides_status_check` and **nothing has ever written it** |
+| milestone | `status='archived'` — in `milestones_status_check` |
+| queer_village | `shell_status='ghost'` + `seo_indexable=false` — `queer_villages_shell_status_check` is exactly `('real','ghost')` |
+| organization | `status='archived'` — column is free text (no CHECK), default `'active'` |
+
+**Four types have nowhere to put "archived" at all: `hotels`, `news_articles`,
+`countries`, `community_groups`.** None has a `status`, `visibility` or
+`review_status` column. They carry only `seo_indexable`, which governs crawlers
+and the sitemap — it does **not** remove a row from the site or from search. So
+for these four, "archive" cannot be expressed without a schema change, and
+pretending otherwise would ship a button that deindexes but does not hide —
+the same class of defect Phase B exists to fix.
+
+That decision is deliberately left open rather than guessed: the options are a
+shared `archived_at` column on just these four, or reusing `seo_indexable` and
+narrowing what Archive claims to do for them. It needs a product call, and it
+is the first thing to settle before Phase A is built.
+
 **`delete_entity('tag', …)` refuses when the tag has usage.** `unified_tags` is
 referenced by `tags text[]` on 13 entity tables plus two junction tables — that is
 what `merge_tag_concept` exists to repoint, and a hard delete orphans all of it
