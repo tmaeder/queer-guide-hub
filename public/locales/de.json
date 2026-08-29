@@ -4466,6 +4466,9 @@
         "slang": "Slang"
       },
       "sourceOfLaw": "Rechtsgrundlage",
+      "clinicalGuidance": "Klinische Leitlinien",
+      "guidanceEdition": "Ausgabe",
+      "notMedicalAdvice": "Die Definitionen hier stammen aus veröffentlichten klinischen Leitlinien. Sie sind keine medizinische Beratung. Folge dem Link für klinische Details und sprich mit einer Ärztin oder einem Arzt über deine eigene Behandlung.",
       "lawJurisdiction": "Geltungsbereich",
       "lawInternational": "International",
       "lawAdopted": "Verabschiedet",
