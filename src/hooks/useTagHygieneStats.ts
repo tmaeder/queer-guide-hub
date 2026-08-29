@@ -19,11 +19,6 @@ export interface TagHygieneStats {
   /** Glossary photography retired 2026-08-28 — any active tag carrying an
    *  image_url means a writer regrew the corpus the retirement cleared. */
   active_tags_with_image_url: number;
-  /** Legacy trio: 0 since the retirement; kept transitionally so the
-   *  prod-measuring CI gate stayed green across the merge window. */
-  image_without_license: number;
-  commons_image_without_license: number;
-  image_alt_column_empty: number;
   assignment_to_non_active_tag: number;
   nonclean_entity_type: number;
   duplicate_active_name: number;
