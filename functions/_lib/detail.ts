@@ -944,7 +944,7 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
   const rows = await fetchRows(
     env,
     'unified_tags',
-    'id,name,slug,description,short_description,long_description,category,wikipedia_url,wikidata_id,updated_at',
+    'id,name,slug,description,short_description,long_description,category,wikipedia_url,wikidata_id,seo_indexable,updated_at',
     `slug=eq.${encodeURIComponent(slug)}&status=eq.active`,
     1,
   );
@@ -1080,7 +1080,15 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
       : undefined,
   };
 
-  return { meta, body, jsonLd: renderLd(prune(thingLd)) };
+  // Honour the row's own SEO gate. Omitting this made every tag page
+  // unconditionally indexable to crawlers NO MATTER WHAT seo_indexable said —
+  // the same hole personalityDetail and villageDetail each had, and it silently
+  // defeated both writers of the column: run_tag_thin_page_reindex
+  // (20260921110000) and the 304-page verbatim-overlap deindex
+  // (20261007160100). Measured on prod before this fix: /tags/fetish,
+  // /tags/felching, /tags/compersion, /tags/hentai and /tags/gooning all had
+  // seo_indexable=false in the database and served NO robots meta at all.
+  return { meta, body, jsonLd: renderLd(prune(thingLd)), indexable: row.seo_indexable !== false };
 }
 
 // Milestones — queer-history timeline entries at /history/:slug
