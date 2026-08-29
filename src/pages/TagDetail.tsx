@@ -38,6 +38,7 @@ import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { fetchTagWithCategories, type TagLegalSourceRow } from '@/hooks/usePageFetchers';
 import { TagLegalSource } from '@/components/tags/TagLegalSource';
+import { TagClinicalSource } from '@/components/tags/TagClinicalSource';
 import { buildTagJsonLd } from '@/lib/tags/tagJsonLd';
 import type { CentralizedTag } from '@/hooks/useCentralizedTags';
 import { useTagUsageBreakdown, totalUses } from '@/hooks/useTagUsageBreakdown';
@@ -176,9 +177,22 @@ export default function TagDetail() {
   // Curated legal citations, for law tags only. `fetchTagWithCategories` attaches
   // them; the `CentralizedTag` cast above does not know about them, hence the
   // local widening — same shape as the `human_reviewed` read further down.
-  const legalSources = useMemo(
+  // One fetch, two cards. `fetchTagWithCategories` returns every published row for
+  // the tag; splitting here rather than issuing a second query keeps the page at
+  // one round trip. The split is by source_type because "Source of law" and
+  // "Clinical guidance" are different claims about different kinds of authority —
+  // a clinical citation rendered under a legal heading misleads about both.
+  const publishedSources = useMemo(
     () => (tag as { legal_sources?: TagLegalSourceRow[] } | null)?.legal_sources ?? [],
     [tag],
+  );
+  const legalSources = useMemo(
+    () => publishedSources.filter((s) => s.source_type !== 'clinical_guideline'),
+    [publishedSources],
+  );
+  const clinicalSources = useMemo(
+    () => publishedSources.filter((s) => s.source_type === 'clinical_guideline'),
+    [publishedSources],
   );
 
   const primary = tag?.categories?.find((c) => c.is_primary) ?? tag?.categories?.[0];
@@ -346,7 +360,10 @@ export default function TagDetail() {
         description,
         wikipedia_url: tag.wikipedia_url,
       },
-      legalSources,
+      // All published rows, not just the legal half — buildTagJsonLd picks the
+      // node type per row, and passing only `legalSources` would drop the citation
+      // from every health tag.
+      publishedSources,
     );
     return {
       title: tag.name,
@@ -359,13 +376,13 @@ export default function TagDetail() {
       // a five-line comment about re-asserting noIndex from the parent.
       noIndex: tag.seo_indexable === false || isAdult,
     };
-    // `legalSources` MUST stay in this list. It arrives with the same fetch as
+    // `publishedSources` MUST stay in this list. It arrives with the same fetch as
     // `tag`, but omitting it is the useMeta-freezing bug: the memo would keep the
     // first-computed jsonLd and publish a DefinedTerm with no `citation`.
     // `isLoading`/`isError` are load-bearing for the same reason: they gate the
     // two branches above, so leaving them out would pin the title to "Loading"
     // for the whole visit — exactly the bug this replaced.
-  }, [tag, legalSources, isAdult, isLoading, isError, t]);
+  }, [tag, publishedSources, isAdult, isLoading, isError, t]);
   useMeta(meta);
 
   if (isLoading) {
@@ -532,6 +549,7 @@ export default function TagDetail() {
           diagnostic-codes pointer below — a term is either clinical or legal,
           so in practice only one of the two ever renders. */}
       <TagLegalSource sources={legalSources} tagSlug={tag.slug} />
+      <TagClinicalSource sources={clinicalSources} />
 
       {/* The flag an identity HAS (lesbian → lesbian flag). The tag that IS a
           flag gets the full band in the body instead — never both. */}
