@@ -6,8 +6,21 @@
 // Hybrid-by-confidence routing:
 //
 //   AUTO-APPLY (direct write):
-//     - wiki links (wikidata_id/wikipedia_url) — always source-grounded
-//     - description sourced from Wikipedia, for NON-sensitive/adult tags
+//     - wiki links (wikidata_id/wikipedia_url) — ONLY when the resolved article and
+//       the linked entity both survive `mayAdoptWikiIdentity` (see below)
+//     - description sourced from Wikipedia, under the same verdict, for
+//       NON-sensitive/adult tags
+//
+// THE WIKI LOOKUP IS NAME-BASED AND THEREFORE UNTRUSTWORTHY BY DEFAULT. This header
+// used to claim wiki links are "always source-grounded". They are grounded in a lookup
+// of the RAW TAG NAME, which is a different thing: the REST summary endpoint follows
+// redirects, so `Golden shower` resolves to `Cassia_fistula`, `Passing` to `Death`,
+// `Amateur` to `Indianapolis` and `Anal` to `Analyst` (a journal). Measured 2026-08-29:
+// 1,535 of 4,772 linked tags had adopted an entity of a class a glossary term can never
+// be, and because `tag_medical_codes` / `tag_relations` are regenerated from that
+// identifier weekly, a trans-passing glossary entry was publishing the ICPC-2 code for
+// death. Every adoption now passes through `_shared/tag-wiki-guard.ts`; a refusal
+// leaves the tag unlinked, which is the cheap and reversible outcome.
 //
 //   QUEUE to ai_suggestions (status='pending', entity_type='unified_tags'):
 //     - pure-LLM description guesses (no Wikipedia grounding)
@@ -26,6 +39,7 @@
 // OR service-role OR admin. Mirrors the Phase 4 i18n cron parking pattern.
 // ============================================================================
 import { chatCompletion } from '../_shared/openai-client.ts'
+import { mayAdoptWikiIdentity } from '../_shared/tag-wiki-guard.ts'
 import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
 import {
   getCorsHeaders,
@@ -55,6 +69,51 @@ interface WikiSummary {
   extract: string
   wikidata_id: string | null
   wikipedia_url: string | null
+  /** Title Wikipedia actually served, AFTER following redirects. */
+  title: string | null
+}
+
+const WIKI_UA = 'queer.guide tag-enrichment (admin@queer.guide)'
+
+/**
+ * English labels of an entity's P31 (instance-of) statements. Two batched calls: the
+ * claims, then the labels of the classes they name. Failure returns [] — the caller
+ * treats an unknown class as "no evidence", never as "plausible", so a Wikidata outage
+ * degrades into refusing to link rather than into linking blind.
+ */
+async function fetchEntityClassLabels(qid: string): Promise<string[]> {
+  try {
+    const base = 'https://www.wikidata.org/w/api.php?action=wbgetentities&format=json'
+    const res = await fetch(`${base}&ids=${encodeURIComponent(qid)}&props=claims`, {
+      headers: { 'User-Agent': WIKI_UA },
+    })
+    if (!res.ok) return []
+    const j = await res.json()
+    const entity = j?.entities?.[qid]
+    if (!entity || entity.missing !== undefined) return []
+    const classIds = [
+      ...new Set(
+        ((entity.claims?.P31 ?? []) as Array<Record<string, never>>)
+          .filter((c: { rank?: string }) => c.rank !== 'deprecated')
+          .map((c: { mainsnak?: { datavalue?: { value?: { id?: string } } } }) =>
+            c.mainsnak?.datavalue?.value?.id
+          )
+          .filter((v: unknown): v is string => typeof v === 'string'),
+      ),
+    ]
+    if (classIds.length === 0) return []
+    const lr = await fetch(
+      `${base}&ids=${classIds.join('|')}&props=labels&languages=en`,
+      { headers: { 'User-Agent': WIKI_UA } },
+    )
+    if (!lr.ok) return []
+    const lj = await lr.json()
+    return classIds
+      .map((id) => lj?.entities?.[id]?.labels?.en?.value)
+      .filter((v: unknown): v is string => typeof v === 'string')
+  } catch {
+    return []
+  }
 }
 
 /** Wikipedia REST summary — one call yields a grounded extract + wikidata QID + page URL. */
@@ -63,7 +122,7 @@ async function fetchWikipediaSummary(name: string): Promise<WikiSummary | null> 
     const title = encodeURIComponent(name.trim().replace(/\s+/g, '_'))
     const res = await fetch(
       `https://en.wikipedia.org/api/rest_v1/page/summary/${title}`,
-      { headers: { 'User-Agent': 'queer.guide tag-enrichment (admin@queer.guide)' } },
+      { headers: { 'User-Agent': WIKI_UA } },
     )
     if (!res.ok) return null
     const j = await res.json()
@@ -75,6 +134,8 @@ async function fetchWikipediaSummary(name: string): Promise<WikiSummary | null> 
       extract: String(j.extract).trim(),
       wikidata_id: j.wikibase_item ?? null,
       wikipedia_url: j.content_urls?.desktop?.page ?? null,
+      // `titles.canonical` is the post-redirect article; `title` is its display form.
+      title: j.titles?.canonical ?? j.title ?? null,
     }
   } catch {
     return null
@@ -324,6 +385,7 @@ Deno.serve(async (req) => {
   const stats = {
     examined: tags?.length ?? 0,
     links_applied: 0,
+    links_refused: 0,
     desc_applied: 0,
     desc_queued: 0,
     cat_applied: 0,
@@ -342,9 +404,25 @@ Deno.serve(async (req) => {
 
     let didSomething = false
 
-    // 1+2. One Wikipedia call grounds both links and description.
+    // 1+2. One Wikipedia call grounds both links and description — but only if the
+    // article it served is actually about this tag. A refused summary is discarded
+    // wholesale: its extract describes the other subject just as wrongly as its QID
+    // identifies it, so queueing it for review would only invite a wrong approval.
     if (needsDesc || needsLinks) {
-      const wiki = await fetchWikipediaSummary(tag.name)
+      const raw = await fetchWikipediaSummary(tag.name)
+      let wiki: WikiSummary | null = null
+      if (raw) {
+        const p31Labels = raw.wikidata_id ? await fetchEntityClassLabels(raw.wikidata_id) : []
+        const verdict = mayAdoptWikiIdentity(tag.name, { title: raw.title, p31Labels })
+        if (verdict.adopt) {
+          wiki = raw
+        } else {
+          stats.links_refused++
+          console.log(
+            `tag-enrichment-sweep: refused "${tag.name}" → ${raw.title ?? '?'} (${raw.wikidata_id ?? 'no qid'}): ${verdict.reason}${verdict.detail ? ` [${verdict.detail}]` : ''}`,
+          )
+        }
+      }
 
       if (wiki && needsLinks) {
         const { error: e } = await supabase
