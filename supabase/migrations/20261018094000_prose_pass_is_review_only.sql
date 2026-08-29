@@ -69,7 +69,7 @@ revoke all on function public.tag_prose_apply(uuid, text, text, boolean) from pu
 grant execute on function public.tag_prose_apply(uuid, text, text, boolean) to service_role;
 
 comment on function public.tag_prose_apply(uuid, text, text, boolean) is
-  'Attributed writer for glossary prose (app.actor=llm:tag-prose-pass, required because log_unified_tag_change RAISEs on human_reviewed rows for an undeclared system: actor). Retraction is REMOVED — see 20261015094000. Refuses sensitive/adult rows outright.';
+  'Attributed writer for glossary prose (app.actor=llm:tag-prose-pass, required because log_unified_tag_change RAISEs on human_reviewed rows for an undeclared system: actor). Retraction is REMOVED — see 20261018094000. Refuses sensitive/adult rows outright.';
 
 -- MEASURED AND REJECTED: routing the wrong-subject verdict into
 -- `entity_review_queue` instead. It is the obvious move and it is wrong here.
@@ -96,7 +96,7 @@ comment on function public.tag_prose_apply(uuid, text, text, boolean) is
 -- never deleting it.
 update admin_automations
 set enabled = false,
-    description = 'tag-enrichment-sweep mode=prose. REVIEW-ONLY since 20261015094000 and DISABLED pending a human look at the entity_review_queue rows it produces — its auto-apply paths were measured wrong (13/16 retractions) on the first live batch.',
+    description = 'tag-enrichment-sweep mode=prose. REVIEW-ONLY since 20261018094000 and DISABLED: its auto-apply paths were measured wrong (13/16 retractions) on the first live batch. Wrong-subject verdicts are counted and logged only — deliberately not queued, at ~19% precision.',
     updated_at = now()
 where slug = 'tag_prose_pass';
 
