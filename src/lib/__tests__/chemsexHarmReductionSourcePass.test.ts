@@ -181,14 +181,18 @@ describe('chemsex harm-reduction source pass', () => {
     expect(code).toContain('published un-reviewed and so deindexed');
   });
 
-  it('repairs both known post-merge defects', () => {
-    expect(code).toContain('merge_tag_concept');
-    // (a) the loser's primary category assignment rides along as a second primary;
-    const demote = statements.find(
-      (s) => s.includes('update tag_category_assignments') && s.includes('is_primary = false'),
-    );
-    expect(demote, 'the two-primaries demote was not found').toBeDefined();
-    // (b) the loser's aliases are left pointing at the retired row.
+  it('demotes the loser BEFORE merging, not after', () => {
+    // `tag_category_assignments_one_primary_per_tag` is a partial unique index on
+    // (tag_id) WHERE is_primary, and merge_tag_concept() re-parents the loser's
+    // assignment rows VERBATIM including is_primary. So merging two tags filed under
+    // different primaries raises 23505 DURING the merge — a post-merge repair can never
+    // run. The first deploy of this file failed exactly there, at statement 9.
+    const demoteAt = code.indexOf('is_primary = false');
+    const mergeAt = code.indexOf('perform merge_tag_concept');
+    expect(demoteAt, 'the loser demote was not found').toBeGreaterThan(-1);
+    expect(mergeAt, 'the merge call was not found').toBeGreaterThan(-1);
+    expect(demoteAt, 'the demote must precede merge_tag_concept()').toBeLessThan(mergeAt);
+    // Still required afterwards: the merge does not re-parent the loser's aliases.
     const reparent = statements.find(
       (s) => s.includes('update tag_aliases') && s.includes('canonical_tag_id = v_canonical'),
     );
@@ -207,13 +211,21 @@ describe('chemsex harm-reduction source pass', () => {
     expect([...new Set(types)].sort()).toEqual(['broader', 'related']);
   });
 
-  it('declares a non-system actor, and re-declares it after the merge', () => {
-    // log_unified_tag_change() RAISEs when a `system:%` actor touches a human_reviewed
-    // row, and most of this corner is human_reviewed. merge_tag_concept() overwrites
-    // app.actor with its own value for the rest of the transaction.
-    const decls = [...code.matchAll(/set local app\.actor = '([^']+)'/g)].map((m) => m[1]);
+  it('sets the actor with set_config, never SET LOCAL', () => {
+    // `supabase db push` answers SET LOCAL with "WARNING (25P01): SET LOCAL can only be
+    // used in transaction blocks" and does not set it — measured on the first deploy of
+    // this file. With no actor every write runs as `system:trigger`, and
+    // log_unified_tag_change() RAISEs when a system actor touches a human_reviewed row,
+    // which most of this corner is.
+    expect(code, 'SET LOCAL does not survive db push').not.toMatch(/set\s+local\s+app\.actor/i);
+    const decls = [...code.matchAll(/set_config\(\s*'app\.actor'\s*,\s*'([^']+)'/g)].map(
+      (m) => m[1],
+    );
+    // Declared once up front and again after merge_tag_concept(), which overwrites it.
     expect(decls.length).toBeGreaterThanOrEqual(2);
     for (const a of decls) expect(a.startsWith('system:')).toBe(false);
+    // Session scope, not local: local is what failed.
+    expect(code).toMatch(/set_config\(\s*'app\.actor'[^)]*,\s*false\s*\)/);
   });
 
   it('asserts its own outcome, and the safety properties at zero', () => {
@@ -241,12 +253,43 @@ describe('chemsex harm-reduction source pass', () => {
     // assert someone else's fix and miss the live one.
     expect(repair).not.toContain('amateur');
     // And the invariant is re-asserted at zero after every later write.
-    expect(code).toContain('still have a junction row and no category_id');
+    expect(code).toContain('still have a primary junction row and no category_id');
+  });
+
+  it('asserts only over what it can actually repair', () => {
+    // `denorm_category_missing` counts any junction row, but a tag holding only
+    // NON-primary rows has no primary to derive a filing from — and choosing one is an
+    // editorial decision a migration must not make. Asserting the wider metric would
+    // therefore fail the deploy on a row this migration is deliberately not allowed to
+    // fix. Both the repair and its postcondition are scoped to `is_primary`.
+    const guard = statements.find(
+      (s) =>
+        s.includes('into v_n') && s.includes('a.is_primary') && s.includes('category_id is null'),
+    );
+    expect(guard, 'the primary-scoped postcondition was not found').toBeDefined();
+    expect(guard).toContain('a.is_primary');
   });
 
   it('aborts rather than silently repairing a set larger than was reviewed', () => {
     expect(code).toMatch(/if v_n > 25 then/);
     expect(code).toContain('a sweep is probably mid-write');
+  });
+
+  it('fixes the crawler-visible body, not only the reader-visible one', () => {
+    // functions/_lib/detail.ts renders `long_description ?? description ?? short`;
+    // the SPA renders `description` first. On a tag that has a long body — and ghb,
+    // mephedrone and chemsex all do — a fix written only to `description` is visible
+    // to readers and invisible to Google. Both safety facts must reach the long body.
+    const longWrites = statements.filter(
+      (s) => s.startsWith('update unified_tags') && s.includes('long_description'),
+    );
+    expect(longWrites.length, 'no long_description write found').toBeGreaterThanOrEqual(2);
+    // Guarded, so a re-run cannot double-append and a reworded anchor cannot silently
+    // half-apply.
+    for (const w of longWrites) expect(w).toContain('not like');
+    // And asserted, because a guarded no-op looks identical to success.
+    expect(code).toContain('did not land on /tags/ghb');
+    expect(code).toContain('did not land on /tags/mephedrone');
   });
 
   it('states the corpus counts as lower bounds', () => {

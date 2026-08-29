@@ -16,10 +16,16 @@
 -- Actor is declared so log_unified_tag_change() permits edits to human_reviewed rows.
 -- It is deliberately not a 'system:%' actor: this is an editorial pass with a citation.
 
--- No explicit BEGIN/COMMIT: db push wraps each migration in its own transaction, and an
--- explicit commit here would land the data while the history row rolls back with it.
--- SET LOCAL therefore binds to that wrapping transaction, which is what we want.
-set local app.actor = 'editorial:chemsex-harm-reduction-source-pass-2026';
+-- No explicit BEGIN/COMMIT: an explicit commit here would land the data while the
+-- schema_migrations row rolls back with it.
+--
+-- `set_config(..., false)` and NOT `SET LOCAL`. The first attempt used SET LOCAL on the
+-- stated belief that db push wraps each migration in a transaction; the CLI answered
+-- "WARNING (25P01): SET LOCAL can only be used in transaction blocks", so the actor was
+-- never set at all. That matters beyond tidiness: with no actor, every write below runs
+-- as `system:trigger`, and log_unified_tag_change() RAISEs when a system actor touches a
+-- human_reviewed row — which most of this corner is. Session scope works either way.
+select set_config('app.actor', 'editorial:chemsex-harm-reduction-source-pass-2026', false);
 
 -- ---------------------------------------------------------------------------
 -- Part 0. Adopt the junction where the mirrors were left blank.
@@ -100,6 +106,45 @@ where slug = 'mephedrone';
 update unified_tags set
   description = 'A liquid depressant used both in nightlife and in chemsex, along with its precursors GBL and BDO. The margin between the intended effect and unconsciousness is extremely small and is measured in millilitres. GBL is the stronger of the two and is not interchangeable with it: a volume of GBL matching an ordinary GHB dose can be fatal, so a dose is only meaningful once you know which of the two is in the bottle.'
 where slug = 'ghb';
+
+-- 1d. The three edits above all land in `description`, and `description` is NOT what a
+--     crawler reads. `functions/_lib/detail.ts` builds its <article> as
+--     `long_description ?? description ?? short_description`, while the SPA's TagDetail
+--     renders `description` first — so on any tag that has a long body, the fix above is
+--     visible to readers and invisible to Google. Both of these tags have one.
+--
+--     `long_description` is never touched by the LLM prose pass (curated bodies only),
+--     so these are APPENDS in the existing voice, not rewrites: every sentence already
+--     there survives verbatim.
+--
+--     GHB's body already quantifies the dose/unconsciousness gap and cites the
+--     co-ingestion figures, but it introduces GBL only as a precursor "which the body
+--     converts into it" and never says the two are not interchangeable by volume. That
+--     is the single most repeated warning in both sources.
+update unified_tags set
+  long_description = replace(
+    long_description,
+    'so the same measured amount is not the same dose twice.',
+    'so the same measured amount is not the same dose twice. GBL is the more concentrated of the two and is not interchangeable with GHB: a volume of GBL matching an ordinary GHB dose can be fatal, and the bottle rarely tells you which one you have.'
+  )
+where slug = 'ghb'
+  and long_description like '%so the same measured amount is not the same dose twice.%'
+  and long_description not like '%not interchangeable with GHB%';
+
+--     Mephedrone's body is the opposite case: a Wikipedia-derived stub that ends "It is
+--     a group of stereoisomers" and carries no harm-reduction content whatsoever. The
+--     chemistry is accurate, so it stays; what crawlers were missing is appended.
+update unified_tags set
+  long_description = long_description ||
+    E'\n\nIn a chemsex context two things drive most of its harm. The high is short, which pulls people into redosing through a session, and the doses stack faster than the comedown suggests. And cathinones constrict blood vessels and promote clotting: heart attacks happen on them, so chest pain or tightness lasting more than a few minutes is an emergency rather than a panic attack to breathe through. A pre-existing heart condition is a reason to avoid them entirely.'
+where slug = 'mephedrone'
+  and long_description is not null
+  and long_description not like '%constrict blood vessels%';
+
+-- Deliberately NOT edited: /tags/chemsex's own long body. It already separates the
+-- stimulants from GHB correctly ("crystal meth, mephedrone or 3-MMC, and GHB/GBL") and
+-- already carries the overdose and recovery-position guidance. The stimulant error was
+-- only ever in the short `description`, which 1a fixed.
 
 -- ---------------------------------------------------------------------------
 -- Part 2. Wrong-sense aliases, deleted.
@@ -183,26 +228,36 @@ begin
   select id into v_dup       from unified_tags where slug = 'party-and-play' and status = 'active';
 
   if v_canonical is not null and v_dup is not null then
+    -- DEMOTE THE LOSER'S PRIMARY FIRST. merge_tag_concept() re-parents the loser's
+    -- tag_category_assignments rows VERBATIM, `is_primary` included, and
+    -- `tag_category_assignments_one_primary_per_tag` is a partial unique index on
+    -- (tag_id) WHERE is_primary. So merging two tags filed under different primary
+    -- categories — which is exactly this pair, Substances & Recovery against Kink
+    -- Community & Scenes — aborts the whole migration on 23505. Measured: the first
+    -- deploy of this file failed here at statement 9.
+    --
+    -- The old "repair the second primary afterwards" shape cannot work: the index
+    -- fires during the merge, not after it. Demoting first is also the right end
+    -- state — chemsex keeps its own filing and the loser's becomes a secondary
+    -- cross-listing, which is how every cross-filed tag is represented.
+    update tag_category_assignments set is_primary = false
+     where tag_id = v_dup and is_primary;
+
     perform merge_tag_concept(
       v_canonical, v_dup,
       'editorial:chemsex-harm-reduction-source-pass-2026',
       'AAE chemsex manual 2023 s2.1; Chemsex First Aid 2018'
     );
 
-    -- Known post-merge defects, repaired rather than assumed away:
-    -- (a) the merge can leave the loser's category assignment as a second is_primary row;
-    update tag_category_assignments set is_primary = false
-    where tag_id = v_canonical and is_primary
-      and category_id <> (select category_id from unified_tags where id = v_canonical);
-    -- (b) the loser's aliases are not re-parented onto the winner.
+    -- Still required: the loser's aliases are not re-parented by the merge.
     update tag_aliases set canonical_tag_id = v_canonical
     where canonical_tag_id = v_dup;
   end if;
 end $$;
 
--- merge_tag_concept() sets app.actor to 'merge:…' for the rest of the transaction.
--- Restore ours so the remaining audit rows read as the editorial pass they are.
-set local app.actor = 'editorial:chemsex-harm-reduction-source-pass-2026';
+-- merge_tag_concept() overwrites app.actor with 'merge:…'. Restore ours so the
+-- remaining audit rows read as the editorial pass they are.
+select set_config('app.actor', 'editorial:chemsex-harm-reduction-source-pass-2026', false);
 
 -- "Party & Play" itself is added as an approved synonym by merge_tag_concept(), so only
 -- the two it cannot know about are added here. Neither is an ordinary English word, so
@@ -480,6 +535,10 @@ begin
 
   -- No tag may end this migration with two primaries, which is what merge_tag_concept
   -- leaves behind when the two sides were filed differently — and they were here.
+  -- Kept even though tag_category_assignments_one_primary_per_tag now makes this
+  -- unrepresentable: the index is what turned the old post-merge repair into a failed
+  -- deploy, and an assertion that can only ever pass is the cheapest possible record of
+  -- why the demote has to come first.
   select count(*) into v_n from (
     select a.tag_id from tag_category_assignments a
      where a.is_primary group by a.tag_id having count(*) > 1) x;
@@ -497,14 +556,26 @@ begin
     raise exception 'chemsex pass: % self-aliases', v_n;
   end if;
 
-  -- Part 0's invariant, re-asserted after every write above: nothing this migration
-  -- does may leave a tag whose junction says one thing and whose mirrors say nothing.
-  -- This is the key that blocked the deploy, and it is a zero-invariant in CI.
+  -- Part 0's invariant, re-asserted after every write above. Scoped to rows with a
+  -- PRIMARY junction, which is exactly what Part 0 repairs — not the full
+  -- `denorm_category_missing` population. A tag holding only NON-primary junction rows
+  -- counts toward that metric and has no primary to derive a filing from, so asserting
+  -- the whole metric would fail the deploy on a row this migration is deliberately not
+  -- allowed to fix: choosing a category for it is an editorial act, not a repair.
+  -- (20260829163633 draws the same distinction, for the same reason.)
   select count(*) into v_n from unified_tags u
    where u.category_id is null
-     and exists (select 1 from tag_category_assignments a where a.tag_id = u.id);
+     and exists (select 1 from tag_category_assignments a
+                  where a.tag_id = u.id and a.is_primary);
   if v_n > 0 then
-    raise exception 'chemsex pass: % tags still have a junction row and no category_id', v_n;
+    raise exception 'chemsex pass: % tags still have a primary junction row and no category_id', v_n;
+  end if;
+
+  if not exists (select 1 from unified_tags where slug='ghb' and long_description like '%not interchangeable with GHB%') then
+    raise exception 'chemsex pass: the GBL potency sentence did not land on /tags/ghb — the anchor sentence must have been reworded';
+  end if;
+  if not exists (select 1 from unified_tags where slug='mephedrone' and long_description like '%constrict blood vessels%') then
+    raise exception 'chemsex pass: the cathinone cardiac paragraph did not land on /tags/mephedrone';
   end if;
 
   -- Party & Play must have landed as a redirect, not as a second live page.
