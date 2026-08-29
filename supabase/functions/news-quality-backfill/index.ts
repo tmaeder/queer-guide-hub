@@ -15,7 +15,12 @@ async function loadCandidatePools(supabase: ReturnType<typeof getServiceClient>)
   const [countries, cities, tags] = await Promise.all([
     supabase.from('countries').select('name').limit(300),
     supabase.from('cities').select('name').order('population', { ascending: false, nullsFirst: false }).limit(500),
-    supabase.from('unified_tags').select('slug').limit(200),
+    // See the same call in pipeline-quality-enhance: an unordered `.limit(200)` is
+    // served from unified_tags_slug_key, so this handed the model the alphabetical
+    // head of the vocabulary instead of a relevant pool. Rank by usage and exclude
+    // deprecated/merged tags.
+    supabase.from('unified_tags').select('slug').eq('status', 'active').is('merged_into_id', null)
+      .order('usage_count', { ascending: false, nullsFirst: false }).limit(200),
   ])
   return {
     countries: (countries.data ?? []).map((r: { name: string }) => r.name).filter(Boolean),
