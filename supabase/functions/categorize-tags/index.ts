@@ -13,6 +13,33 @@ interface CategoryRow {
 }
 
 /**
+ * Taxonomy v3 roots (migration 20261006140000). During the swap's
+ * coexistence window `tag_categories` holds two trees; only v3 roots and
+ * their children are valid filing targets. Delete with PR E of the program.
+ */
+const V3_ROOT_SLUGS = new Set([
+  'identity',
+  'sex-kink',
+  'relationships-family',
+  'health',
+  'safety-consent',
+  'culture-community',
+  'history-rights',
+  'places-scene',
+]);
+
+function scopeToV3<T extends { id: string; slug: string; level: number; parent_id: string | null }>(
+  cats: T[],
+): T[] {
+  const rootIds = new Set(
+    cats.filter(c => c.level === 0 && V3_ROOT_SLUGS.has(c.slug)).map(c => c.id),
+  );
+  return cats.filter(
+    c => (c.level === 0 && rootIds.has(c.id)) || (c.parent_id !== null && rootIds.has(c.parent_id)),
+  );
+}
+
+/**
  * Build the AI prompt's category list dynamically from the DB rows.
  * Groups subcategories under their parent for clarity.
  */
@@ -59,10 +86,16 @@ Deno.serve(async (req) => {
 
     // Parse optional body params
     let recategorize = false;
+    let onlyMisfiled = false;
     let batchSize = 20;
     try {
       const body = await req.json();
       recategorize = body?.recategorize === true;
+      // only_misfiled: re-file ONLY tags whose primary category is not under
+      // a v3 root (the post-deterministic remainder of the 2026-08-29
+      // program) — unlike `recategorize`, it never overwrites a correct v3
+      // filing with a fresh LLM opinion.
+      onlyMisfiled = body?.only_misfiled === true;
       if (body?.batch_size && typeof body.batch_size === 'number') {
         batchSize = Math.min(Math.max(5, body.batch_size), 50);
       }
@@ -70,10 +103,10 @@ Deno.serve(async (req) => {
       // No body or invalid JSON — use defaults
     }
 
-    console.log(`Starting tag categorization (recategorize=${recategorize}, batch_size=${batchSize})...`);
+    console.log(`Starting tag categorization (recategorize=${recategorize}, only_misfiled=${onlyMisfiled}, batch_size=${batchSize})...`);
 
     // Load categories dynamically from the DB
-    const { data: categories, error: categoriesError } = await supabase
+    const { data: allCategories, error: categoriesError } = await supabase
       .from('tag_categories')
       .select('id, slug, name, level, parent_id, description')
       .order('sort_order');
@@ -81,6 +114,12 @@ Deno.serve(async (req) => {
     if (categoriesError) {
       throw new Error(`Failed to fetch categories: ${categoriesError.message}`);
     }
+
+    // Taxonomy v3 coexistence scope (2026-08-29 program): until PR E deletes
+    // the old tree, tag_categories holds TWO trees — unscoped, the model
+    // would file tags into either at random. Only v3 roots and their
+    // children are valid filing targets. Remove with PR E.
+    const categories = scopeToV3(allCategories ?? []);
 
     if (!categories || categories.length === 0) {
       throw new Error('No tag categories found in the database');
@@ -100,7 +139,7 @@ Deno.serve(async (req) => {
       .select('id, name, category_id')
       .eq('status', 'active');
 
-    if (!recategorize) {
+    if (!recategorize && !onlyMisfiled) {
       // Only uncategorized tags (no category_id AND no assignments)
       tagsQuery = tagsQuery.is('category_id', null);
     }
@@ -111,9 +150,17 @@ Deno.serve(async (req) => {
       throw new Error(`Failed to fetch tags: ${fetchError.message}`);
     }
 
-    // When not recategorizing, also filter out tags that already have assignments
     let tagsToProcess = tags || [];
-    if (!recategorize && tagsToProcess.length > 0) {
+
+    if (onlyMisfiled) {
+      // Keep only tags whose current category is OUTSIDE the v3 scope —
+      // the valid v3 category ids are exactly `categories` (already scoped).
+      const v3Ids = new Set(categories.map(c => c.id));
+      tagsToProcess = tagsToProcess.filter(t => t.category_id && !v3Ids.has(t.category_id));
+    }
+
+    // When not recategorizing, also filter out tags that already have assignments
+    if (!recategorize && !onlyMisfiled && tagsToProcess.length > 0) {
       const tagIds = tagsToProcess.map(t => t.id);
       const { data: existingAssignments } = await supabase
         .from('tag_category_assignments')
