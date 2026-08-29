@@ -294,6 +294,17 @@ async function categorizePass(
       })
       if (!error) stats.cat_queued++
     } else {
+      // Demote any existing primary first. Without this the upsert adds a
+      // SECOND primary to a tag that already had one — same hole as
+      // categorize-tags had. The partial unique index (20261008130000) now
+      // rejects that write outright, so this is what keeps the sweep working
+      // rather than erroring on every re-file.
+      await supabase
+        .from('tag_category_assignments')
+        .update({ is_primary: false })
+        .eq('tag_id', tag.id)
+        .eq('is_primary', true)
+        .neq('category_id', categoryId)
       const { error } = await supabase
         .from('tag_category_assignments')
         .upsert({ tag_id: tag.id, category_id: categoryId, is_primary: true }, { onConflict: 'tag_id,category_id' })
