@@ -29,6 +29,13 @@
 //      admin approves in the /admin/tags review panel, which also flips
 //      human_reviewed=true and releases the SEO sensitivity gate.)
 //
+// MODE 'prose' (body.mode='prose', own cron `tag_prose_pass`): the description
+// truth + voice pass. Walks tags that HAVE prose (the complement of the fill
+// work list) on the `prose_reviewed_at` cursor; retracts wrong-subject prose
+// (>=0.9) + clears the wiki identity, rewrites right-subject prose into the
+// house voice (auto-apply non-sensitive >=0.8, else ai_suggestions). See
+// prosePass() below and `_shared/tag-style.ts` for the voice.
+//
 // The IMAGE dimension is retired (2026-08-28): glossary photography is gone —
 // tags render drawn TagPlates — so the sweep must never write image_url, and
 // `image_url.is.null` must NOT be in the work-list filter (after the
@@ -40,6 +47,12 @@
 // ============================================================================
 import { chatCompletion } from '../_shared/openai-client.ts'
 import { mayAdoptWikiIdentity, titleAgrees } from '../_shared/tag-wiki-guard.ts'
+import {
+  TAG_STYLE_SYSTEM,
+  buildDefinePrompt,
+  buildProseReviewPrompt,
+  isSenseCategory,
+} from '../_shared/tag-style.ts'
 import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
 import {
   getCorsHeaders,
@@ -58,6 +71,7 @@ function llmSource(): 'workers-ai' | 'openai' {
 interface TagRow {
   id: string
   name: string
+  category: string | null
   description: string | null
   wikidata_id: string | null
   wikipedia_url: string | null
@@ -142,22 +156,22 @@ async function fetchWikipediaSummary(name: string): Promise<WikiSummary | null> 
   }
 }
 
-/** Pure-LLM glossary description fallback when no Wikipedia grounding exists. */
-async function generateDescription(name: string): Promise<string | null> {
+/**
+ * Pure-LLM glossary description fallback when no Wikipedia grounding exists.
+ * Sense-anchored: the category rides along so an ordinary-word tag ("Furniture"
+ * under Gear) is defined in its community sense, not its dictionary sense —
+ * name-only prompting is how the wrong-sense prose got written in the first
+ * place. A model that does not know the community sense says UNKNOWN, which
+ * beats a fluent guess (queue nothing over queueing fabrication).
+ */
+async function generateDescription(name: string, categoryName: string | null): Promise<string | null> {
   try {
     const r = await chatCompletion(supabase, {
       callerFn: 'tag-enrichment-sweep',
       model: 'gpt-4o-mini',
       messages: [
-        {
-          role: 'system',
-          content:
-            'You write neutral, factual glossary definitions for an LGBTQ+ community and travel platform. No marketing language, no "discover/explore", no second person. 2-3 sentences.',
-        },
-        {
-          role: 'user',
-          content: `Define the term "${name}" as it is used in LGBTQ+ / queer community and culture. If it is a place, identity, practice, or community term, explain it plainly.`,
-        },
+        { role: 'system', content: TAG_STYLE_SYSTEM },
+        { role: 'user', content: buildDefinePrompt(name, categoryName) },
       ],
       temperature: 0.3,
       max_tokens: 220,
@@ -165,6 +179,7 @@ async function generateDescription(name: string): Promise<string | null> {
     // Prose responses come back as strings; ignore non-string (object) content.
     const c = r.content as unknown
     const text = typeof c === 'string' ? c.trim() : ''
+    if (!text || /^unknown\b/i.test(text)) return null
     return text.length >= 30 ? text : null
   } catch {
     return null
@@ -305,6 +320,195 @@ async function categorizePass(
   }
 }
 
+interface ProseRow {
+  id: string
+  name: string
+  category: string | null
+  description: string | null
+  short_description: string | null
+  long_description: string | null
+  wikidata_id: string | null
+  wikipedia_url: string | null
+  is_sensitive: boolean | null
+  is_adult: boolean | null
+}
+
+interface ProseVerdict {
+  verdict: 'wrong_subject' | 'ok'
+  confidence: number
+  reason?: string
+  description?: string
+  short_description?: string
+}
+
+/**
+ * mode='prose' — the description truth + voice pass (2026-08-29 programme).
+ *
+ * Walks every active tag that HAS a description, oldest-unreviewed first
+ * (`prose_reviewed_at` is the round-robin cursor and is stamped on every
+ * visit, whatever the outcome — the city-fields lesson: an unstamped miss
+ * becomes a permanent queue head). One LLM call per tag answers two questions:
+ *
+ *   WRONG SUBJECT — the prose describes a different specific subject or the
+ *   generic sense of an ordinary word ("Vamp" = a Belgian DJ, "Bottom Bitch" =
+ *   a Doja Cat song, "Vacuum Pump" = industrial physics). At >=0.9 confidence
+ *   the prose is RETRACTED (all three fields) and the wiki identity cleared:
+ *   the weekly medical-codes / hierarchy syncs regenerate from wikidata_id, so
+ *   a wrong identifier rebuilds wrong data forever while a null one rebuilds
+ *   nothing, and a blank page is deindexed by run_tag_thin_page_reindex until
+ *   the fill path re-earns prose. Retraction only ever REMOVES a wrong claim;
+ *   replacement prose always re-enters through the grounded/queued fill paths.
+ *
+ *   VOICE REWRITE — subject is right: the model rewrites description (house
+ *   voice, facts preserved, boilerplate stripped) + derives short_description.
+ *   Non-sensitive + confidence >=0.8 auto-applies; sensitive/adult or lower
+ *   confidence queues to ai_suggestions (two suggestions, one per field — the
+ *   apply path takes {field, value}). long_description is NEVER rewritten:
+ *   the curated kinktionary/drgay HTML bodies must not be LLM-mangled.
+ */
+async function prosePass(
+  batchLimit: number,
+  stats: {
+    prose_examined: number
+    prose_retracted: number
+    prose_rewritten: number
+    prose_queued: number
+    prose_uncertain: number
+  },
+): Promise<void> {
+  const { data: rows } = await supabase
+    .from('unified_tags')
+    .select(
+      'id,name,category,description,short_description,long_description,wikidata_id,wikipedia_url,is_sensitive,is_adult',
+    )
+    .eq('status', 'active')
+    .not('description', 'is', null)
+    .order('prose_reviewed_at', { ascending: true, nullsFirst: true })
+    .limit(batchLimit)
+  if (!rows || rows.length === 0) return
+
+  for (const tag of rows as ProseRow[]) {
+    stats.prose_examined++
+    let out: ProseVerdict | null = null
+    try {
+      const r = await chatCompletion(supabase, {
+        callerFn: 'tag-enrichment-sweep',
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: TAG_STYLE_SYSTEM },
+          {
+            role: 'user',
+            content: buildProseReviewPrompt({
+              name: tag.name,
+              categoryName: tag.category,
+              description: tag.description,
+              shortDescription: tag.short_description,
+            }),
+          },
+        ],
+        temperature: 0.2,
+        max_tokens: 500,
+      })
+      const c = r.content as unknown
+      if (c && typeof c === 'object') {
+        out = c as ProseVerdict
+      } else {
+        const raw = String(c ?? '').replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+        const m = raw.match(/\{[\s\S]*\}/)
+        out = m ? (JSON.parse(m[0]) as ProseVerdict) : null
+      }
+    } catch (e) {
+      console.error(`prosePass "${tag.name}" LLM/parse failed:`, e instanceof Error ? e.message : e)
+    }
+
+    // Stamp the cursor FIRST, whatever happened — an unparseable answer or a
+    // dead breaker must not pin this tag at the head of the queue forever.
+    await supabase
+      .from('unified_tags')
+      .update({ prose_reviewed_at: new Date().toISOString() })
+      .eq('id', tag.id)
+    if (!out || (out.verdict !== 'wrong_subject' && out.verdict !== 'ok')) {
+      stats.prose_uncertain++
+      continue
+    }
+
+    const confidence = typeof out.confidence === 'number' ? out.confidence : 0
+    const sensitive = tag.is_sensitive === true || tag.is_adult === true
+
+    if (out.verdict === 'wrong_subject') {
+      if (confidence < 0.9) {
+        stats.prose_uncertain++
+        continue
+      }
+      const { error: e } = await supabase
+        .from('unified_tags')
+        .update({
+          description: null,
+          short_description: null,
+          long_description: null,
+          wikidata_id: null,
+          wikipedia_url: null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', tag.id)
+      if (!e) {
+        stats.prose_retracted++
+        console.log(
+          `prosePass: retracted "${tag.name}" (${tag.category ?? 'uncategorized'}): ${out.reason ?? 'wrong subject'}`,
+        )
+      }
+      continue
+    }
+
+    // verdict === 'ok' — voice rewrite.
+    const desc = typeof out.description === 'string' ? out.description.trim() : ''
+    const short = typeof out.short_description === 'string' ? out.short_description.trim().slice(0, 80) : ''
+    if (desc.length < 30) continue
+    // A rewrite that says nothing new is a no-op, not a write.
+    if (desc === (tag.description ?? '').trim() && (!short || short === (tag.short_description ?? '').trim())) {
+      continue
+    }
+
+    if (!sensitive && confidence >= 0.8) {
+      const patch: Record<string, unknown> = { description: desc, updated_at: new Date().toISOString() }
+      if (short) patch.short_description = short
+      const { error: e } = await supabase.from('unified_tags').update(patch).eq('id', tag.id)
+      if (!e) stats.prose_rewritten++
+    } else {
+      let queued = false
+      if (await queueDescription(tag as unknown as TagRow, desc, llmSource(), 'gpt-4o-mini', confidence)) {
+        queued = true
+      }
+      if (short && short !== (tag.short_description ?? '').trim()) {
+        const { data: existing } = await supabase
+          .from('ai_suggestions')
+          .select('id')
+          .eq('entity_type', 'unified_tags')
+          .eq('entity_id', tag.id)
+          .eq('suggestion_type', 'description')
+          .eq('status', 'pending')
+          .contains('proposed_value', { field: 'short_description' })
+          .maybeSingle()
+        if (!existing) {
+          const { error: e } = await supabase.from('ai_suggestions').insert({
+            suggestion_type: 'description',
+            entity_type: 'unified_tags',
+            entity_id: tag.id,
+            proposed_value: { field: 'short_description', value: short },
+            current_value: { value: tag.short_description ?? null },
+            source: llmSource(),
+            source_model: 'gpt-4o-mini',
+            confidence,
+            status: 'pending',
+          })
+          if (!e) queued = true
+        }
+      }
+      if (queued) stats.prose_queued++
+    }
+  }
+}
+
 /** Insert a pending description suggestion, skipping if one already exists for this tag. */
 async function queueDescription(
   tag: TagRow,
@@ -313,6 +517,9 @@ async function queueDescription(
   model: string | null,
   confidence: number,
 ): Promise<boolean> {
+  // Scoped to the same field: the prose pass can also queue a
+  // short_description suggestion for the same tag, and maybeSingle() over
+  // two rows errors rather than answering.
   const { data: existing } = await supabase
     .from('ai_suggestions')
     .select('id')
@@ -320,6 +527,8 @@ async function queueDescription(
     .eq('entity_id', tag.id)
     .eq('suggestion_type', 'description')
     .eq('status', 'pending')
+    .contains('proposed_value', { field: 'description' })
+    .limit(1)
     .maybeSingle()
   if (existing) return false
 
@@ -351,6 +560,7 @@ Deno.serve(async (req) => {
   let batchLimit = 15
   let catLimit = 0 // 0 → mirror batchLimit
   let triggeredBy = 'manual'
+  let mode: 'fill' | 'prose' = 'fill'
   try {
     const body = await req.json()
     if (typeof body?.batch_limit === 'number') {
@@ -360,8 +570,26 @@ Deno.serve(async (req) => {
       catLimit = Math.min(Math.max(0, body.cat_limit), 50)
     }
     if (typeof body?.triggered_by === 'string') triggeredBy = body.triggered_by
+    if (body?.mode === 'prose') mode = 'prose'
   } catch {
     // no body — defaults
+  }
+
+  // mode='prose' is its own pass with its own cursor and cron — it walks tags
+  // that HAVE prose, which is the complement of the fill work list.
+  if (mode === 'prose') {
+    const proseStats = {
+      prose_examined: 0,
+      prose_retracted: 0,
+      prose_rewritten: 0,
+      prose_queued: 0,
+      prose_uncertain: 0,
+    }
+    await prosePass(batchLimit, proseStats)
+    return new Response(
+      JSON.stringify({ success: true, triggered_by: triggeredBy, mode, ...proseStats }),
+      { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } },
+    )
   }
 
   // Worst tags first, restricted to those missing a fillable content dimension.
@@ -369,7 +597,7 @@ Deno.serve(async (req) => {
   // so reruns before the nightly recompute don't re-pick handled tags.
   const { data: tags, error } = await supabase
     .from('unified_tags')
-    .select('id,name,description,wikidata_id,wikipedia_url,is_sensitive,is_adult')
+    .select('id,name,category,description,wikidata_id,wikipedia_url,is_sensitive,is_adult')
     .eq('status', 'active')
     .or('description.is.null,and(wikidata_id.is.null,wikipedia_url.is.null)')
     .order('quality_score', { ascending: true, nullsFirst: true })
@@ -419,7 +647,15 @@ Deno.serve(async (req) => {
         const p31Labels = raw.wikidata_id && titleAgrees(tag.name, raw.title)
           ? await fetchEntityClassLabels(raw.wikidata_id)
           : []
-        const verdict = mayAdoptWikiIdentity(tag.name, { title: raw.title, p31Labels })
+        const verdict = mayAdoptWikiIdentity(tag.name, {
+          title: raw.title,
+          p31Labels,
+          // On a sense-category tag ("Vacuum Pump" under Fetishes) the generic
+          // article passes both classic gates; the extract must corroborate
+          // the queer/community sense or the whole summary is refused.
+          senseCategory: isSenseCategory(tag.category),
+          extract: raw.extract,
+        })
         if (verdict.adopt) {
           wiki = raw
         } else {
@@ -465,7 +701,7 @@ Deno.serve(async (req) => {
           }
         } else {
           // Pure-LLM guess → always queue for review (never auto-apply).
-          const guess = await generateDescription(tag.name)
+          const guess = await generateDescription(tag.name, tag.category)
           if (guess) {
             // chatCompletion routes to CF Workers AI when configured, else OpenAI.
             const src = llmSource()

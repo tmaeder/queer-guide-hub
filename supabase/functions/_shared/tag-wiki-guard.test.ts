@@ -106,3 +106,44 @@ Deno.test('an unknown class is not treated as proof of plausibility on a bad tit
     false,
   )
 })
+
+Deno.test('a sense-category tag refuses a generic-sense article even when title and class both pass', () => {
+  // The wrong-SENSE class the 2026-08-29 audit measured at ~20%: "Vacuum Pump"
+  // under Fetishes resolves to the industrial device — title agrees exactly and
+  // a device is a perfectly plausible class, so only the extract can tell.
+  assertEquals(
+    mayAdoptWikiIdentity('Vacuum Pump', {
+      title: 'Vacuum pump',
+      p31Labels: ['type of pump'],
+      senseCategory: true,
+      extract:
+        'A vacuum pump is a type of pump device that draws gas particles from a sealed volume in order to leave behind a partial vacuum.',
+    }),
+    { adopt: false, reason: 'generic-sense', detail: 'Vacuum pump' },
+  )
+
+  // The same shape WITH community corroboration adopts: the extract is about
+  // the queer/kink sense, so it may ground the tag.
+  assertEquals(
+    mayAdoptWikiIdentity('Pup Play', {
+      title: 'Pup play',
+      p31Labels: ['type of animal roleplay'],
+      senseCategory: true,
+      extract:
+        'Pup play is a form of BDSM roleplay in which participants take on the role of dogs, with a notable presence in gay leather subculture.',
+    }).adopt,
+    true,
+  )
+
+  // Tags outside sense categories are untouched by the gate — the generic
+  // sense IS the right one for a Venue Types tag.
+  assertEquals(
+    mayAdoptWikiIdentity('Beer Garden', {
+      title: 'Beer garden',
+      p31Labels: ['type of drinking establishment'],
+      senseCategory: false,
+      extract: 'A beer garden is an outdoor area in which beer and food are served.',
+    }).adopt,
+    true,
+  )
+})
