@@ -77,7 +77,21 @@ test.describe('@smoke glossary entries do not publish the generic sense', () => 
       expect(res.status(), `/tags/${c.slug} should resolve`).toBe(200);
       const article = articleOf(await res.text());
 
-      expect(article, `/tags/${c.slug} rendered no <article>`).not.toBe('');
+      // A DEINDEXED tag emits no <article> at all (`seo_indexable=false` →
+      // functions/_lib/detail.ts renders the shell with robots noindex), so
+      // this surface cannot see its prose — and the prose is still in the
+      // database. Skipping is the honest outcome: asserting "the wrong text
+      // is absent" against an empty string is a green that means nothing, and
+      // failing would report a defect the page does not have. The DB-side
+      // sentinels (`refusal_prose_active`, and the mode='prose' subject judge)
+      // are what cover a deindexed row. Measured 2026-08-29: vacuum-pump is
+      // exactly this shape — adult AND deindexed, so it is invisible to the
+      // crawler and age-gated in the SPA.
+      test.skip(
+        article === '',
+        `/tags/${c.slug} is deindexed — prose not observable on the crawler surface; covered by the DB sentinel`,
+      );
+
       expect(article, `/tags/${c.slug} lost even its own name`).toMatch(c.present);
 
       for (const bad of c.absent) {
@@ -89,17 +103,23 @@ test.describe('@smoke glossary entries do not publish the generic sense', () => 
     });
   }
 
-  test('placeholder prose is retracted, not published', async ({ request }) => {
-    // 20261012090000 nulled 175 "No information available" stamps; a blank is
-    // measurable and the thin-page machinery deindexes it, a stamp reads as
-    // content. lash-bearer was one of the 109 active carriers.
-    const res = await request.get('/tags/lash-bearer', { headers: { 'User-Agent': BOT_UA } });
-    expect(res.status()).toBe(200);
-    const article = articleOf(await res.text());
-    expect(article, '/tags/lash-bearer rendered no <article>').not.toBe('');
-    expect(article).toMatch(/lash/i);
-    expect(article, 'the placeholder stamp is back').not.toMatch(/No information available/i);
-  });
+  // NO TEST HERE FOR THE "No information available" STAMP, deliberately.
+  //
+  // 20261012090000 nulls 175 of them, and the obvious e2e for it cannot work
+  // on this surface: `tagDetail()` renders long_description → description →
+  // short_description, and every carrier measured on 2026-08-29 has a real
+  // `description`, so the stamp never reaches the page. Probed live on
+  // /tags/squat-cobbler — body, meta description and JSON-LD all carry the
+  // real definition and the string is absent from the document entirely,
+  // WHILE the column still holds it. A test here would have been green
+  // against an unfixed corpus, which is worse than no test.
+  //
+  // The stamp's actual reader surface is the SEARCH SNIPPET —
+  // `search_documents_index_tags` indexes `coalesce(short_description,
+  // description)` — and search specs in this repo are documented flaky.
+  // So the coverage for this class is the DB sentinel `refusal_prose_active`
+  // in tag_hygiene_stats(), a zero-invariant gated by
+  // scripts/check-tag-hygiene.mjs in CI.
 });
 
 test.describe('glossary synonyms display', () => {
