@@ -22,6 +22,56 @@
 set local app.actor = 'editorial:chemsex-harm-reduction-source-pass-2026';
 
 -- ---------------------------------------------------------------------------
+-- Part 0. Adopt the junction where the mirrors were left blank.
+-- ---------------------------------------------------------------------------
+-- Unrelated to chemsex, and here only because it blocks this deploy: the
+-- `denorm_category_missing` sentinel is a zero-invariant and went 0 -> 1 while this
+-- branch was in review. One row, `amateur`: migration 20261006140100 unfiled it at
+-- 09:32 (deleting its junction row and nulling both mirrors together, which is that
+-- migration's correct behaviour), and at 16:00 something inserted a fresh primary
+-- junction row -> "Expression & Style" WITHOUT writing `category_id` or `category`.
+--
+-- That half-write does not heal on its own. `run_tag_category_resync` (cron 03:10)
+-- looks like the job for it and is not: it writes only the `category` TEXT mirror from
+-- `tag_category_mirror_want()` and never touches `category_id`, which is the column the
+-- sentinel actually tests. Waiting a night would leave the gate red.
+--
+-- Direction is not a judgement call — `tag_hygiene_stats()` says it in its own comment
+-- on this key: "The junction is the source of truth; this counts rows where it says one
+-- thing and the denormalised column says nothing." So adopt the junction rather than
+-- re-file the tag, and write `category_id` rather than the text: the BEFORE trigger
+-- derives `category` from it, and the AFTER trigger reconciles the junction (a no-op
+-- here, since the row it would promote is already the primary). Writing the text
+-- directly would leave `category_id` null and fix nothing the sentinel measures.
+--
+-- Keyed on the SHAPE, not on the slug: the row moved once already, and a slug literal
+-- would assert someone else's fix while missing the live defect.
+do $$
+declare v_n int;
+begin
+  select count(*) into v_n
+    from unified_tags u
+   where u.category_id is null
+     and exists (select 1 from tag_category_assignments a where a.tag_id = u.id);
+
+  -- One row was reviewed. A much larger set means a sweep is mid-write and this
+  -- migration would be silently repairing rows nobody looked at, one search-reindex
+  -- enqueue each. Stop instead of guessing at scale.
+  if v_n > 25 then
+    raise exception
+      'chemsex pass: % tags carry a junction row with no category_id, far past the 1 reviewed; a sweep is probably mid-write', v_n;
+  end if;
+
+  update unified_tags u
+     set category_id = a.category_id
+    from tag_category_assignments a
+   where a.tag_id = u.id
+     and a.is_primary
+     and u.category_id is null
+     and exists (select 1 from tag_categories c where c.id = a.category_id);
+end $$;
+
+-- ---------------------------------------------------------------------------
 -- Part 1. Factual corrections to live, human-reviewed pages.
 -- ---------------------------------------------------------------------------
 
@@ -431,6 +481,16 @@ begin
    where a.alias_slug = t.slug;
   if v_n > 0 then
     raise exception 'chemsex pass: % self-aliases', v_n;
+  end if;
+
+  -- Part 0's invariant, re-asserted after every write above: nothing this migration
+  -- does may leave a tag whose junction says one thing and whose mirrors say nothing.
+  -- This is the key that blocked the deploy, and it is a zero-invariant in CI.
+  select count(*) into v_n from unified_tags u
+   where u.category_id is null
+     and exists (select 1 from tag_category_assignments a where a.tag_id = u.id);
+  if v_n > 0 then
+    raise exception 'chemsex pass: % tags still have a junction row and no category_id', v_n;
   end if;
 
   -- Party & Play must have landed as a redirect, not as a second live page.

@@ -223,6 +223,32 @@ describe('chemsex harm-reduction source pass', () => {
     expect(code).toContain('party-and-play is still a live tag');
   });
 
+  it('repairs the blank-mirror rows by writing category_id, not the text', () => {
+    // Part 0. `denorm_category_missing` counts `category_id IS NULL AND a junction row
+    // exists`. Writing `category` would satisfy a reader and leave that key firing
+    // forever — `run_tag_category_resync` already writes exactly that column nightly
+    // and is why the defect does not self-heal.
+    const repair = statements.find(
+      (s) =>
+        s.includes('update unified_tags u') &&
+        s.includes('set category_id = a.category_id') &&
+        s.includes('from tag_category_assignments a'),
+    );
+    expect(repair, 'the junction-adoption repair was not found').toBeDefined();
+    expect(repair).toContain('u.category_id is null');
+    expect(repair).toContain('a.is_primary');
+    // Never spelled out as a slug: the row moved once already, so a literal would
+    // assert someone else's fix and miss the live one.
+    expect(repair).not.toContain('amateur');
+    // And the invariant is re-asserted at zero after every later write.
+    expect(code).toContain('still have a junction row and no category_id');
+  });
+
+  it('aborts rather than silently repairing a set larger than was reviewed', () => {
+    expect(code).toMatch(/if v_n > 25 then/);
+    expect(code).toContain('a sweep is probably mid-write');
+  });
+
   it('states the corpus counts as lower bounds', () => {
     // Sibling sessions edit this table concurrently. An equality assertion turns
     // someone else's unrelated write into a failed deploy.
