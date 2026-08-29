@@ -451,22 +451,26 @@ async function prosePass(
         stats.prose_uncertain++
         continue
       }
-      const { error: e } = await supabase
-        .from('unified_tags')
-        .update({
-          description: null,
-          short_description: null,
-          long_description: null,
-          wikidata_id: null,
-          wikipedia_url: null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', tag.id)
+      if (sensitive) {
+        // Sensitive/adult never auto-retracts; the RPC below would refuse it
+        // anyway. Left for the review queue era of this pass.
+        stats.prose_uncertain++
+        continue
+      }
+      // tag_prose_apply declares app.actor='llm:tag-prose-pass' — a direct
+      // PostgREST update reads as 'system:trigger' and log_unified_tag_change
+      // RAISEs on the 79% of prose-bearing tags that are human_reviewed.
+      const { error: e } = await supabase.rpc('tag_prose_apply', {
+        p_tag_id: tag.id,
+        p_retract: true,
+      })
       if (!e) {
         stats.prose_retracted++
         console.log(
           `prosePass: retracted "${tag.name}" (${tag.category ?? 'uncategorized'}): ${out.reason ?? 'wrong subject'}`,
         )
+      } else {
+        console.error(`prosePass retract "${tag.name}":`, e.message)
       }
       continue
     }
@@ -481,10 +485,13 @@ async function prosePass(
     }
 
     if (!sensitive && confidence >= 0.8) {
-      const patch: Record<string, unknown> = { description: desc, updated_at: new Date().toISOString() }
-      if (short) patch.short_description = short
-      const { error: e } = await supabase.from('unified_tags').update(patch).eq('id', tag.id)
+      const { error: e } = await supabase.rpc('tag_prose_apply', {
+        p_tag_id: tag.id,
+        p_description: desc,
+        p_short_description: short || null,
+      })
       if (!e) stats.prose_rewritten++
+      else console.error(`prosePass rewrite "${tag.name}":`, e.message)
     } else {
       let queued = false
       if (await queueDescription(tag as unknown as TagRow, desc, llmSource(), 'gpt-4o-mini', confidence)) {
