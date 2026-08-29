@@ -123,7 +123,28 @@ no compendium.ch row exists on any tag.** Adding them needs no schema or UI
 change; `is_public` is not involved, because that flag is reserved for legal
 instruments by CHECK constraint.
 
-## What was written, and what is NOT deployed
+## Outcome (2026-08-29): all shipped and verified on production
+
+Everything below was written on 2026-08-28 and is now live. Re-measured against
+prod after every session's edits had landed:
+
+| Check | Result |
+|---|---|
+| Live tags carrying a refusal artifact or wrong-entity paragraph | **0** |
+| PDE5 tags with no nitrate/nitrite warning | **0** of 7 |
+| Dangerous combinations on `/tags/poppers` | **8** (was 0) |
+| Tags carrying a clinical citation | **52** (was 0) |
+
+`/tags/prep` no longer serves a paragraph on prepositional grammar; `/tags/trauma`
+no longer describes injury to plants. Both confirmed in the crawler-visible HTML,
+which is where the defect was confirmed in the first place.
+
+The eighth poppers combination is not ours — `poppers + ghb`, added from the
+eve&rave Substanzhandbuch by a parallel session. It is also the vindication of
+the attribution fix: that page now carries **two** distinct sources, so the
+hardcoded "TripSit" credit would have mislabelled both.
+
+## What was written
 
 | File | Does |
 |---|---|
@@ -139,26 +160,54 @@ instruments by CHECK constraint.
 provenance claim on a safety surface. The new test was run against the old
 implementation and fails on it.
 
-**None of this is applied.** The session's permission classifier blocked
-`apply_migration`, write-shaped `execute_sql` (including inside a rolled-back
-transaction), `git stash` and `git commit`. The migrations are therefore
-**unvalidated against the server** — only balanced quoting and dollar-quote
-nesting were checked locally. Each carries a `do $verify$` block that raises
-rather than passing silently, so a wrong assumption fails the migration instead
-of shipping quietly.
+Plus two tags added on 2026-08-29, after measuring the corpus rather than
+trusting this document's own first draft:
 
-`npm run typecheck` reports 16 new error groups. **None are in files touched
-here** — `@tanstack/react-table` is absent from this worktree's `node_modules`,
-so every one is TS2305/TS2307/TS2558/TS2724 in admin data-table and rights test
-files. A clean install should clear them; that was not runnable here either.
+| Migration | Adds |
+|---|---|
+| `20261004100100_doxy_pep_tag.sql` | `doxy-pep`, leading with the limits (no benefit shown in cisgender women; measured tetracycline resistance) rather than the effect size |
+| `20261004120000_fentanyl_test_strips_revival.sql` | revives `fentanyl-test-strips`, replacing LLM advocacy with the two limits that cut against a negative result |
 
-## Not done
+## Three self-inflicted failures, all caught by the guards
 
-- **`doxy-pep` has no tag at all**, despite strong trial evidence (chlamydia
-  RR 0.12, syphilis 0.13, gonorrhoea 0.45) — and two limits that must ship with
-  it: no benefit shown in cisgender women, and a measured tetracycline-resistance
-  signal.
-- `drug-checking`, `fentanyl-test-strips` and `slamming` are deprecated and 404,
-  so three harm-reduction tools have no page.
-- `events` still carries free-text `tags[]` with zero `unified_tag_assignments`
-  rows, so none of this reaches event content.
+Recorded because the guards worked and the mistakes were mine:
+
+1. **An assertion covered a fix from a LATER migration.** `…100100` asserted
+   `ketamine` was clean; `ketamine` is repaired in `…100300`. The block reported
+   the migration *order* as a defect in the data. **A guard may only cover what
+   its own migration changed.**
+2. **A guard tripped on its own correction.** The `ghb` check matched
+   `general an(a)?esthetic`, but the corrected prose NAMES the misconception in
+   order to refute it — "…not, as is sometimes said, as a general anaesthetic".
+   **Match the OLD CLAIM in full**, never a phrase the fix legitimately quotes.
+3. **A version collision.** `doxy-pep` was numbered by incrementing the max in
+   my own worktree, which did not yet have a migration that landed in between.
+   **Pick a version against `origin/main` and every worktree.**
+
+Two more from the same day, not mine but worth the same shelf:
+
+- **`DRIFT_DETECTED` does not mean drift.** The workflow labels several distinct
+  faults that way, including a `schema_migrations_pkey` violation from replaying
+  applied migrations. Read the `Applying migration … ERROR:` line, never the
+  summary. Reading the summary is how this audit spent an hour chasing a drift
+  that had already been fixed.
+- **A green run can be bought by hand-editing the rows an assertion names.**
+  `20261003110400` went failing → failing → green across three runs on an
+  identical `headSha` with no repo change. The assertion was working; the code
+  path it guarded was never exercised, and the row changes are in no migration.
+
+## Still not done
+
+- **`events` does not use the unified tag system at all** — 35k events carry
+  free-text `tags[]` and `unified_tag_assignments` has zero `entity_type='event'`
+  rows — so none of this reaches event content. Unchanged from the Phase 4
+  finding of the tag DQ programme.
+- `drug-checking` and `slamming` are listed above as gaps and **were not**:
+  the first had already been revived by the substance vocabulary work, and the
+  second is `status='merged'` into `safer-injecting` with a working 301 and both
+  spellings kept as aliases. Left visible rather than deleted, because "this
+  audit was wrong about two of its three gaps" is the useful part.
+- The nitazene blind spot on `fentanyl-test-strips` is a **class-level** claim,
+  sourced to the nitazene literature rather than to a manufacturer
+  cross-reactivity panel. Brands differ. It errs in the safe direction, but it
+  is not a per-product guarantee.
