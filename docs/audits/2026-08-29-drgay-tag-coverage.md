@@ -196,7 +196,15 @@ Deprecated but core to this domain, and candidates for revival with a reason eac
 | `src/lib/__tests__/drgayLicence.test.ts` | Makes storing their prose fail the build. |
 | `supabase/migrations/20261007100000_wrong_entity_wikidata_repair.sql` | Defect class 1. Validated in a rolled-back transaction on prod. |
 | `supabase/migrations/20261007100100_tag_denorm_category_resync.sql` | Defect class 3, plus two new hygiene counters. Validated in a rolled-back transaction on prod. |
+| `supabase/migrations/20261007100200_tag_primary_category_corrections.sql` | Defect class 4 — the six with a genuinely wrong primary. |
+| `supabase/migrations/20261007100300_drgay_absent_concepts.sql` | The six absent concepts, the U=U twin merges, and the aliases `u-equals-u` never had. |
+| `supabase/migrations/20261007100400_drgay_placeholder_prose_and_deindex.sql` | Defect class 2 — prose for seven, deindex for the rest. |
 | `src/lib/tagHygieneMetrics.ts`, `scripts/tag-hygiene-baseline.json` | The panel + baseline halves of those counters. |
+
+**Both migration versions were renumbered from `20261005*`.** `main` applied up to `20261006140100`
+while this branch was open, and `db push` aborts on an unapplied file that sorts *below* the applied
+head — so the original numbers could never have run. `20261006110000` on main cites
+`20261005100100` by its old number; that reference is stale by name only.
 
 Two counters were added because neither class had one:
 `denorm_category_missing` (baseline 0 — the resync and the function replacement land in the same
@@ -213,14 +221,23 @@ every migration. It now reads each file once.
 
 ## Not done
 
-- **Defect classes 2, 4 and 5 are measured but not repaired.** Prose for 137 placeholder tags and
-  47 thin ones, the ~16 category corrections, and the twin merges are the remaining work.
-- **No new tags created yet.** The absent list above is a disposition to review, not a plan of
-  record — and the community-language concepts (bottom shaming, fetishisation, T4T) need a
-  citable source before they get prose, which the clinical ones do not.
-- **The migration-guard block in `drgayLicence.test.ts` is skipped**, because no drgay-derived
-  migration exists yet. It arms itself when the first one lands. Skipped rather than
-  asserted-empty so it is visibly not running instead of passing green while checking nothing.
+- **`sauna` (1,370 uses) and `bathhouse` stay adult-gated.** Both derive `is_adult = true` from a
+  *secondary* Fetishes assignment, so a venue term is adult-gated and `/tags/sauna` sits behind it.
+  The obvious fix is to drop that secondary — but `20261006090100`, applied hours before this
+  branch was written, exists specifically to stop accidental `is_adult = false` flips during the
+  taxonomy swap and calls under-moderation "the worst failure class here". Flipping two live tags
+  to non-adult immediately after that guard shipped is not a call to make from a category audit.
+  Left for a human, deliberately.
+- **`sex-work` keeps its Sexual Health primary.** Arguable in both directions — sex work is not a
+  health condition, but Laws & Legal Rights is not obviously better for the practice as opposed to
+  its legal status. No correctness gain, and it would move a reader-visible facet.
+- **~122 placeholder tags were deindexed, not written.** They are Kinktionary fetish and toy
+  vocabulary (`algophilia`, `curry-comb`, `spreader-bar`), 122 of them with zero usage, and they
+  belong to the programme that owns that vocabulary rather than to a health audit. They stay active
+  and usable for tagging; `run_tag_thin_page_reindex()` re-indexes each one the moment prose exists.
+  **This is the handover list for the Kinktionary programme.**
+- **Community-language concepts still have no tag** — bottom shaming, fetishisation, T4T. They need
+  a citable source before they get prose, which the clinical concepts had and these do not.
 - **`out/drgay-disposition.json` is not committed**: generating it needs a service-role key, which
   this checkout does not carry. The measurements in this document were taken directly against prod
   through privileged SQL, using the real `normalize_tag_slug()` rather than the script's JS mirror.
