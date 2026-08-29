@@ -16,16 +16,16 @@ import { join } from 'node:path';
  * versions were already recorded applied, so `db push` will never re-run them.
  * 24 live pages kept the regression.
  *
- * 20261006110000 repairs them, and the shape of that repair is what these tests
- * pin, because two parts of it are easy to "simplify" back into a bug:
+ * 20261006110000 repairs 21 of them, and the shape of that repair is what these
+ * tests pin, because three parts of it are easy to "simplify" back into a bug:
  *
- *  1. PART 1 MUST NOT WRITE `category`. The argument for moving those rows is
- *     that the text is the surviving copy of the curated pre-06:08 junction. A
- *     repair that rewrote the text would destroy the evidence it relies on, so
- *     the migration asserts the text did not move and only ever writes
+ *  1. IT MUST NOT WRITE `category`. The argument for moving those rows is that
+ *     the text is the surviving copy of the curated pre-06:08 junction. A repair
+ *     that rewrote the text would destroy the evidence it relies on, so the
+ *     migration asserts the text did not move and only ever writes
  *     `category_id`, letting the owned triggers move the junction.
  *
- *  2. PART 1 IS RESTRICTED TO A STRICT PARENT -> CHILD MOVE. Without the
+ *  2. IT IS RESTRICTED TO A STRICT PARENT -> CHILD MOVE. Without the
  *     `parent_id` join the same predicate also matches three cross-branch and
  *     sibling rows, and following the text there is editorially WRONG rather
  *     than merely different: crossdresser-transvestite would move Gender
@@ -33,6 +33,12 @@ import { join } from 'node:path';
  *     safe-sane-and-consensual-ssc would move Safety & Practices -> Slang &
  *     Terminology (SSC is a consent framework, not slang). Dropping that join
  *     looks like a harmless generalisation and silently re-files both.
+ *
+ *  3. THE REMAINDER IS CHECKED BY SHAPE. 12 rows keep a disagreeing text on
+ *     purpose — 7 orphan-text rows owned by 20261005100100 and 5 active holds.
+ *     Replacing that shape check with a count would break the moment either
+ *     migration lands first, and replacing it with nothing would let a genuinely
+ *     new disagreement pass unnoticed.
  *
  * Text check against the migration file, not the database, so it runs in CI
  * without credentials — same pattern as `tagCategoryTriggers.test.ts`.
@@ -97,25 +103,46 @@ describe('tag category text/junction disagreement repair', () => {
     expect(code.replace(/\s+/g, ' ')).toContain('where t.category is distinct from r.text_before');
   });
 
-  it('asserts the class is empty corpus-wide, not over a sample', () => {
+  it('checks the remainder over the full corpus, not over a sample', () => {
     // The post-condition must select straight from unified_tags rather than
-    // from either temp table — a sampled assertion is how 20261003110400
-    // shipped believing it was complete while 20 of 81 rows had survived it.
+    // from the temp table — a sampled assertion is how 20261003110400 shipped
+    // believing it was complete while 20 of 81 rows had survived it.
     const corpusWide = statements.find(
       (s) =>
-        s.includes('into v_bad') &&
+        s.includes('into v_n') &&
         /from unified_tags t\s+join tag_category_assignments a/.test(s) &&
-        s.includes('t.category is distinct from c.name'),
+        s.includes('t.category is distinct from c.name') &&
+        s.includes('not in ('),
     );
-    expect(corpusWide, 'corpus-wide disagreement assertion not found').toBeDefined();
+    expect(corpusWide, 'corpus-wide remainder assertion not found').toBeDefined();
     expect(corpusWide).not.toContain('_revival_collateral');
-    expect(corpusWide).not.toContain('_junction_wins');
     expect(code).toContain('still disagree with their primary junction');
   });
 
-  it('aborts instead of blanket-writing if the class grew past what was reviewed', () => {
-    expect(code).toMatch(/v_part1 > \d+ or v_part2 > \d+/);
-    expect(code).toContain('class larger than reviewed');
+  it('enumerates the deliberately-untouched remainder by shape', () => {
+    // 12 rows keep a disagreeing text on purpose: 7 orphan-text rows owned by
+    // 20261005100100, and 5 active holds. Asserting the remainder by SHAPE
+    // rather than by count is what lets that migration apply before or after
+    // this one — it can only shrink the remainder, never add an unlisted shape.
+    const corpusWide = statements.find((s) => s.includes('into v_n') && s.includes('not in ('))!;
+    // orphan-text rows are excused via an EXISTS on tag_categories, not by slug
+    expect(corpusWide).toMatch(
+      /exists \(select 1 from tag_categories oc where oc\.name = t\.category\)/,
+    );
+    for (const slug of [
+      'crossdresser-transvestite',
+      'safe-sane-and-consensual-ssc',
+      'piss-slut',
+      'golden-shower',
+      'deli',
+    ]) {
+      expect(corpusWide, `hold not enumerated: ${slug}`).toContain(slug);
+    }
+  });
+
+  it('aborts instead of blanket-writing if the set grew past what was reviewed', () => {
+    expect(code).toMatch(/if v_n > \d+ then/);
+    expect(code).toContain('larger than the reviewed set');
   });
 
   it('sets a non-system actor so the human_reviewed audit guard does not reject the write', () => {
