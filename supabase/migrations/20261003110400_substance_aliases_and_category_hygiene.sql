@@ -38,7 +38,7 @@
 --
 -- The mistake was verifying the MECHANISM (does the trigger filter on
 -- review_status?) and never the OUTCOME (does a German query find the tag?).
--- 20261006150000 activates the unambiguous subset and says why the ordinary
+-- 20261007100000 activates the unambiguous subset and says why the ordinary
 -- words must stay inactive.
 --
 -- SHORT ALIASES ARE DROPPED ENTIRELY
