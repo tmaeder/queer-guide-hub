@@ -32,6 +32,11 @@ const SENSE_CATEGORY_KEYS = new Set([
   'practices-play',
   'gear-aesthetics',
   'kink-community',
+  // Positions is the sharpest sense category in the tree: its members are
+  // named Arch, Crab, Lotus, Superman, Warrior, Butterfly, Screw and Jockey.
+  // Every one of those has a dominant generic English sense, so an extract
+  // about a gymnastic arch or a crustacean is evidence of the WRONG subject.
+  'sex-positions',
   'slang-terminology',
   'subcultures',
   'relationship-structures',
@@ -44,6 +49,7 @@ const SENSE_CATEGORY_KEYS = new Set([
   'practices & play',
   'gear',
   'kink community & scenes',
+  'positions',
   'slang & language',
   'subcultures & scenes',
   'relationship structures',
