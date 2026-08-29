@@ -164,6 +164,8 @@ update public.unified_tags t
    and (
         exists (select 1 from _referenced_tag_keys k where k.k in (t.slug, lower(t.name)))
      or exists (select 1 from public.unified_tag_assignments a where a.tag_id = t.id)
+     or exists (select 1 from public.tag_slug_redirects r where r.tag_id = t.id)
+     or t.seo_indexable
    );
 
 -- ---------------------------------------------------------------------------
@@ -187,6 +189,16 @@ with revive as (
       or coalesce(length(t.long_description), 0) >= 200
       or t.wikidata_id is not null
       or exists (select 1 from public.tag_medical_codes mc where mc.tag_id = t.id)
+      -- A slug redirect IS a reference: something linked here under an older
+      -- slug, and delisting turns that redirect into a 404. `mavie-horbiger`
+      -- was delisted by the 11:55Z run for want of this arm.
+      or exists (select 1 from public.tag_slug_redirects r where r.tag_id = t.id)
+      -- An indexable page is one a crawler has been told to keep. Retiring one
+      -- is a product decision, not something a repair migration does in passing.
+      -- The earlier measurement that no seo_indexable row was a bare orphan was
+      -- true of the cohort AS MEASURED and stopped being true while concurrent
+      -- sessions edited the same table -- so it is asserted here, not assumed.
+      or t.seo_indexable
     )
 )
 update public.unified_tags t

@@ -189,6 +189,34 @@ describe('unified_tags status/deprecated_at agreement', () => {
     );
   });
 
+  /**
+   * Two arms added after the 11:55Z run delisted `mavie-horbiger`, which was
+   * `seo_indexable=true` AND had a slug redirect pointing at it. A redirect is a
+   * reference — something linked under an older slug, and delisting turns it
+   * into a 404. And an indexable page is one a crawler was told to keep;
+   * retiring one is a product decision, not a repair migration's business.
+   *
+   * The measurement that "no seo_indexable row is a bare orphan" was true of
+   * the cohort as measured and stopped being true while concurrent sessions
+   * edited the same table — so it is asserted, not assumed.
+   */
+  it('never delists an indexable page or one with a redirect pointing at it', () => {
+    const { sql } = latestConstraintMigration('unified_tags_status_matches_deprecated_at');
+    const code = sql.replace(/--[^\n]*/g, '');
+    const constraintAt = code.search(
+      /add\s+constraint\s+unified_tags_status_matches_deprecated_at/i,
+    );
+    const repairs = code.slice(0, constraintAt);
+
+    // Both predicates — the revive AND the self-repair — must carry both arms,
+    // or one path still delists what the other protects.
+    const redirectArms = (repairs.match(/tag_slug_redirects r where r\.tag_id = t\.id/g) || [])
+      .length;
+    const indexableArms = (repairs.match(/or t\.seo_indexable/g) || []).length;
+    expect(redirectArms).toBeGreaterThanOrEqual(2);
+    expect(indexableArms).toBeGreaterThanOrEqual(2);
+  });
+
   it('refuses to run if the reference check goes blind', () => {
     const { sql } = latestConstraintMigration('unified_tags_status_matches_deprecated_at');
     // A blast-radius guard: delisting is expected to touch ~1 row, so a future
