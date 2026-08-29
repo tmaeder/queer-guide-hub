@@ -17,8 +17,15 @@ export interface TagJsonLdInput {
 
 export function buildTagJsonLd(
   tag: TagJsonLdInput,
-  legalSources: TagLegalSourceRow[] = [],
+  /**
+   * Every PUBLISHED source row for the tag, legal and clinical alike. Named
+   * `sources` rather than `legalSources` since 20261011110300 added clinical
+   * guidance: the node type is chosen per row below, so passing only the legal
+   * half would silently drop the citation from every health tag.
+   */
+  sources: TagLegalSourceRow[] = [],
 ): Record<string, unknown> {
+  const legalSources = sources;
   const jsonLd: Record<string, unknown> = {
     '@context': 'https://schema.org',
     '@type': 'DefinedTerm',
@@ -44,6 +51,19 @@ export function buildTagJsonLd(
 
   if (cited.length > 0) {
     jsonLd.citation = cited.map((s) => {
+      // Clinical guidance is not law and must not be emitted as `Legislation` —
+      // that would assert to a consumer that the UCSF trans care guidelines are a
+      // legal instrument. Plain `CreativeWork` is the honest node: it is a
+      // published document, nothing more.
+      if (s.source_type === 'clinical_guideline') {
+        return {
+          '@type': 'CreativeWork',
+          name: s.official_title,
+          url: s.source_url,
+        };
+        // No `datePublished`, for the same reason `legislationDate` is omitted
+        // below: schema.org types it as a Date and we hold only a year.
+      }
       const node: Record<string, unknown> = {
         '@type': 'Legislation',
         name: s.official_title,
