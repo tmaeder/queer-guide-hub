@@ -944,7 +944,7 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
   const rows = await fetchRows(
     env,
     'unified_tags',
-    'id,name,slug,description,short_description,long_description,category,wikipedia_url,wikidata_id,updated_at',
+    'id,name,slug,description,short_description,long_description,category,wikipedia_url,wikidata_id,seo_indexable,updated_at',
     `slug=eq.${encodeURIComponent(slug)}&status=eq.active`,
     1,
   );
@@ -1080,7 +1080,28 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
       : undefined,
   };
 
-  return { meta, body, jsonLd: renderLd(prune(thingLd)) };
+  // A crawler that does not run JS only ever sees THIS response, so the row's
+  // own SEO gate has to be honoured here or it is not honoured at all for that
+  // consumer. Omitting it made the bot response unconditionally indexable no
+  // matter what `seo_indexable` said — the same hole villageDetail and
+  // personalityDetail each had, now closed for the last entity in this file.
+  //
+  // Measured on prod 2026-08-29, before the fix: /tags/curry-comb,
+  // /tags/algophilia and /tags/spreader-bar were all seo_indexable=false and
+  // absent from sitemap-tags.xml, yet every one returned a bot response with no
+  // robots meta at all. The SPA got it right (TagDetail.tsx sets noIndex from
+  // the same column), which is exactly why it went unnoticed — checking in a
+  // browser shows the correct behaviour.
+  //
+  // `!== false` rather than `=== true` so a NULL keeps the historical default of
+  // indexable, matching venueDetail and newsDetail. Events use `=== true`
+  // because their gate is opt-in; the tag gate is opt-out.
+  return {
+    meta,
+    body,
+    jsonLd: renderLd(prune(thingLd)),
+    indexable: row.seo_indexable !== false,
+  };
 }
 
 // Milestones — queer-history timeline entries at /history/:slug
