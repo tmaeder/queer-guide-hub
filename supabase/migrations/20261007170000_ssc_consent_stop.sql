@@ -1,6 +1,12 @@
 -- SSC is stranded on a level-0 root.
 --
--- RENUMBERED 20261006200000 -> 20261007150000, AND THE PREMISE BELOW MOVED.
+-- RENUMBERED 20261006200000 -> 20261007170000, AND THE PREMISE BELOW MOVED.
+--
+-- Renumbered TWICE, which is the point. The first pick (20261007150000) was
+-- correct when made and stale twenty minutes later, because other PRs merged
+-- migrations numbered 20261007160000-160400 while this one sat in CI. A
+-- version is only valid against a moving head, so it is not an identity — and
+-- the suite that reads this file now resolves it by SUFFIX for that reason.
 --
 -- This file merged in #3103 but never applied. Higher-numbered migrations
 -- (through 20261007120400) reached prod first, so `supabase db push` hit
