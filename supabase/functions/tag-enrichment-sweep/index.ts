@@ -239,7 +239,9 @@ async function categorizePass(
     .order('sort_order')
   if (!cats || cats.length === 0) return
 
-  const slugToId = new Map(cats.map((c) => [c.slug, c.id]))
+  const slugToCat = new Map(
+    cats.map((c) => [c.slug as string, { id: c.id as string, name: c.name as string }]),
+  )
   const names: string[] = uncat.map((t: { name: string }) => t.name)
   const prompt =
     `Categorize each tag for an inclusive LGBTQ+ community platform into the MOST SPECIFIC applicable category slug.\n\n` +
@@ -283,8 +285,9 @@ async function categorizePass(
 
   for (const tag of uncat as Array<{ id: string; name: string; is_sensitive: boolean | null; is_adult: boolean | null }>) {
     const slug = mapping[tag.name] ?? byNorm.get(tag.name.trim().toLowerCase())
-    const categoryId = slug ? slugToId.get(slug) : undefined
-    if (!categoryId) continue
+    const cat = slug ? slugToCat.get(slug) : undefined
+    if (!cat) continue
+    const categoryId = cat.id
     const sensitive = tag.is_sensitive === true || tag.is_adult === true
 
     if (sensitive) {
@@ -309,24 +312,35 @@ async function categorizePass(
       })
       if (!error) stats.cat_queued++
     } else {
-      // Demote any existing primary first. Without this the upsert adds a
-      // SECOND primary to a tag that already had one — same hole as
-      // categorize-tags had. The partial unique index (20261008130000) now
-      // rejects that write outright, so this is what keeps the sweep working
-      // rather than erroring on every re-file.
-      await supabase
-        .from('tag_category_assignments')
-        .update({ is_primary: false })
-        .eq('tag_id', tag.id)
-        .eq('is_primary', true)
-        .neq('category_id', categoryId)
+      // ONE statement, because `category_id` is the single lever and the
+      // triggers already do the rest atomically:
+      //   sync_tag_category_assignment       (BEFORE) derives the `category` text
+      //   sync_tag_category_assignment_after (AFTER)  demotes the old primary,
+      //                                               then inserts-or-promotes
+      //                                               this category's junction row
+      //
+      // This used to be three sequential PostgREST calls — demote, upsert the
+      // junction, then set category_id — which is a hand-rolled, NON-ATOMIC copy
+      // of that same AFTER trigger. If the process died between the upsert and
+      // the category_id update, the tag was left with a PRIMARY junction row and
+      // a NULL category_id: `denorm_category_missing`, a hard tag-hygiene gate,
+      // which reds every PR in the repo until someone repairs the row by hand.
+      // It happened twice on 2026-08-29 (`lace` 14:00:04Z, `amateur` 16:00:06Z —
+      // both on this job's `0 */2 * * *` boundary) and it was silent, because
+      // `cat_applied` is only incremented after the write that did not happen.
+      // Collapsing to one statement makes that state unrepresentable from here.
+      //
+      // `category` is named alongside `category_id` deliberately: the BEFORE
+      // trigger would fill it either way, but `trg_search_documents_tag` is
+      // scoped to the TEXT column and a column-scoped trigger fires on the
+      // columns named in the STATEMENT, not on what a BEFORE trigger mutated.
+      // Naming category_id alone filed the tag and left the search facet blank —
+      // which is what the old line 327 did on every pass.
       const { error } = await supabase
-        .from('tag_category_assignments')
-        .upsert({ tag_id: tag.id, category_id: categoryId, is_primary: true }, { onConflict: 'tag_id,category_id' })
-      if (!error) {
-        await supabase.from('unified_tags').update({ category_id: categoryId }).eq('id', tag.id)
-        stats.cat_applied++
-      }
+        .from('unified_tags')
+        .update({ category_id: categoryId, category: cat.name })
+        .eq('id', tag.id)
+      if (!error) stats.cat_applied++
     }
   }
 }
