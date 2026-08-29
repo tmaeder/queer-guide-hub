@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
@@ -32,6 +32,28 @@ import { describe, expect, it } from 'vitest';
 const read = (p: string) => readFileSync(join(process.cwd(), p), 'utf8');
 
 /**
+ * Resolve a migration by its NAME, not its version.
+ *
+ * The 14-digit prefix is not stable: this repo's migrations are routinely
+ * future-dated, so a branch that sits for a day is overtaken by whatever merges
+ * meanwhile and has to be renumbered before `db push` will accept it — which is
+ * exactly what happened to this one (20261014100000 -> 20261016110000, because
+ * main gained migrations dated two days ahead while the branch was open).
+ * Hardcoding the version here means the suite goes red for a rename that
+ * changed no SQL at all.
+ */
+function migration(nameSuffix: string): string {
+  const dir = join(process.cwd(), 'supabase/migrations');
+  const hits = readdirSync(dir).filter((f) => f.endsWith(nameSuffix));
+  if (hits.length !== 1) {
+    throw new Error(
+      `expected exactly one migration ending in "${nameSuffix}", found ${hits.length}: ${hits.join(', ')}`,
+    );
+  }
+  return readFileSync(join(dir, hits[0]), 'utf8');
+}
+
+/**
  * Slice one function body out of a module. The name may be followed by `(` or
  * by a generic parameter list — `fetchEventBySlugOrId<T extends {id: string}>(`
  * is real, and matching only `name(` silently returns '' for it, which is a
@@ -51,7 +73,7 @@ describe('archived cities are excluded', () => {
     // The migration carrying the CURRENT definition. `search_hybrid` reads
     // search_documents and never rejoins cities, so this WHERE clause IS search
     // visibility — there is no query-time gate behind it.
-    const sql = read('supabase/migrations/20261014100000_archived_rows_leave_search.sql');
+    const sql = migration('_archived_rows_leave_search.sql');
     expect(sql).toMatch(/search_documents_index_cities/);
     expect(
       /not in \('ghost', ?'merged'\)/.test(sql),
@@ -65,7 +87,7 @@ describe('archived cities are excluded', () => {
     // on-site search results. Gating search on it would cut a further 36% of the
     // city index, a different product decision. If someone "tidies" this into
     // the indexer, that is what they are silently changing.
-    const sql = read('supabase/migrations/20261014100000_archived_rows_leave_search.sql');
+    const sql = migration('_archived_rows_leave_search.sql');
     // The function BODY only — the header comment above it explains at length
     // why seo_indexable is the wrong predicate here, and slicing from the first
     // mention of the function name would swallow that prose and pass vacuously.
@@ -139,7 +161,7 @@ describe('archived marketplace listings are excluded', () => {
   });
 
   it('the RLS policy no longer ORs past the status test', () => {
-    const sql = read('supabase/migrations/20261014100000_archived_rows_leave_search.sql');
+    const sql = migration('_archived_rows_leave_search.sql');
     const policy = sql.slice(sql.indexOf('create policy "Marketplace listings read access"'));
     expect(policy).toMatch(/coalesce\(status, ?'active'\) = 'active'/);
     // The whole defect was `OR (venue_id IS NULL OR EXISTS(venue))`, which is

@@ -704,8 +704,8 @@ export async function fetchMarketplaceListingBundle<TListing, TReview>(
   // path both write it; 8,198 rows carry it). RLS was supposed to be the gate
   // but could never work — its `venue_id IS NULL` disjunct made the status test
   // a no-op — so this fetcher published every archived listing. RLS is repaired
-  // in 20261014100000; this is the client half, and the two must agree on how
-  // NULL is read (both treat it as active — the column is nullable).
+  // in _archived_rows_leave_search.sql; this is the client half, and the two
+  // must agree on how NULL is read (both treat it as active — it is nullable).
   const LISTING_VISIBLE = 'status.is.null,status.eq.active';
   let { data: listing, error } = await supabase
     .from('marketplace_listings')
