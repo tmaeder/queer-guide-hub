@@ -18,7 +18,7 @@ import {
  *
  * EACH CONSTRAINT IS READ FROM THE FILE THAT CURRENTLY DEFINES IT, which is not
  * one file. `source_type` and `public_requires_citation` were both redefined by
- * 20261011110300 when `clinical_guideline` was added; `instrument_status` was not
+ * 20261013110300 when `clinical_guideline` was added; `instrument_status` was not
  * touched and still lives in the 2026-09 legal-citations migration. Reading a
  * superseded definition is the failure mode here — the test passes while asserting
  * against SQL that no longer runs — so a constraint moved by a later migration
@@ -30,7 +30,7 @@ const migration = (file: string) =>
   readFileSync(resolve(__dirname, `../../../supabase/migrations/${file}`), 'utf8');
 
 /** Redefined by the clinical-guideline migration. */
-const CLINICAL_MIGRATION = '20261011110300_tag_sources_clinical_guideline.sql';
+const CLINICAL_MIGRATION = '20261013110300_tag_sources_clinical_guideline.sql';
 /** Still defined where it was introduced. */
 const LEGAL_MIGRATION = '20260906100000_tag_sources_legal_citations.sql';
 

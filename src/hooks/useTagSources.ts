@@ -29,7 +29,7 @@ export type LegalSourceType = (typeof LEGAL_SOURCE_TYPES)[number];
  * needs a jurisdiction; a guideline needs an edition year, because guidance goes
  * stale and how old it is is the reader's first question. Both halves are enforced
  * by `tag_sources_public_requires_citation` — see
- * `supabase/migrations/20261011110300_tag_sources_clinical_guideline.sql`.
+ * `supabase/migrations/20261013110300_tag_sources_clinical_guideline.sql`.
  */
 export const CLINICAL_SOURCE_TYPES = ['clinical_guideline'] as const;
 export type ClinicalSourceType = (typeof CLINICAL_SOURCE_TYPES)[number];

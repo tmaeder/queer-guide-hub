@@ -1,6 +1,6 @@
 -- The trans-health vocabulary: re-file what is misfiled, revive what was culled.
 --
--- Second of the UCSF pass (see 20261011110000 for the source, its 2016 date, and
+-- Second of the UCSF pass (see 20261013110000 for the source, its 2016 date, and
 -- the limits on how it may be used). This one covers the two structural faults
 -- behind the empty category rather than individual wrong descriptions.
 --
@@ -58,7 +58,7 @@
 -- rates, no aftercare protocol — the source is nine years old and this is not a
 -- clinical reference. Each links out.
 --
--- Mechanics are identical to 20261011110000 and were proven there: one tag per
+-- Mechanics are identical to 20261013110000 and were proven there: one tag per
 -- iteration; `category_id` AND `category` named together in one statement so the
 -- column-scoped `trg_search_documents_tag` actually fires; then the stale
 -- adult-category junction delete; then the seo_indexable restore. `human_reviewed`

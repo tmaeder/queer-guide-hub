@@ -114,7 +114,7 @@ begin
       ('medical-transition',             'overview',                     'Overview of gender-affirming treatments and procedures'),
       ('hysterectomy',                   'hysterectomy',                 'Hysterectomy'),
       -- No `chest-reconstruction-surgery` row: it stays deprecated as a duplicate
-      -- of `top-surgery` (see 20261011110100), and a published citation on a
+      -- of `top-surgery` (see 20261013110100), and a published citation on a
       -- deprecated tag renders nowhere.
       ('top-surgery',                    'chest-surgery-masculinizing',  'Postoperative care and common issues after masculinizing chest surgery'),
       ('silicone-injection',             'silicone-filler',              'Free silicone and other filler use'),

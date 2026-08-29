@@ -962,7 +962,7 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
   // as legal citations. Same trap as the draft-personalities leak.
   const tagId = stringField(row, 'id');
   //
-  // `source_type` is selected because since 20261011110300 this table publishes
+  // `source_type` is selected because since 20261013110300 this table publishes
   // TWO kinds of citation. Clinical guidance is not law, so it gets its own
   // heading and its own JSON-LD node type below — rendering the UCSF trans care
   // guidelines under "Source of law" would tell a crawler they are a legal

@@ -1,6 +1,6 @@
 -- Eight trans-health concepts with no row at all.
 --
--- Third of the UCSF pass (source, date and usage limits: 20261011110000). The two
+-- Third of the UCSF pass (source, date and usage limits: 20261013110000). The two
 -- earlier migrations repaired wrong rows and revived culled ones. These eight are
 -- absent — not deprecated, not thin: no row, checked by slug, prefix and alias.
 --

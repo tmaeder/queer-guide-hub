@@ -19,7 +19,7 @@ export function buildTagJsonLd(
   tag: TagJsonLdInput,
   /**
    * Every PUBLISHED source row for the tag, legal and clinical alike. Named
-   * `sources` rather than `legalSources` since 20261011110300 added clinical
+   * `sources` rather than `legalSources` since 20261013110300 added clinical
    * guidance: the node type is chosen per row below, so passing only the legal
    * half would silently drop the citation from every health tag.
    */
