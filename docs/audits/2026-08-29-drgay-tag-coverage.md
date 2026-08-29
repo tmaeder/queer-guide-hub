@@ -241,7 +241,38 @@ every migration. It now reads each file once.
 - **`out/drgay-disposition.json` is not committed**: generating it needs a service-role key, which
   this checkout does not carry. The measurements in this document were taken directly against prod
   through privileged SQL, using the real `normalize_tag_slug()` rather than the script's JS mirror.
-- **STI structured data not extended.** drgay's practice grid (13 practices, each with an HIV-risk
-  and an STI-risk statement) maps onto the existing `sti_practices` (11 rows) /
-  `sti_transmission_risks` (83 rows) tables. Whether it adds anything is a measurement not yet
-  taken, and any extension must be sourced from WHO/CDC/EACS, never from drgay.
+- **STI structured data not extended — but the measurement is now taken.** This entry previously
+  said only "a measurement not yet taken". It has been.
+
+  drgay's practice grid has **10 named practices**; `sti_practices` holds **11 rows** feeding an
+  11 STI × 11 practice matrix in `sti_transmission_risks`, sparse by design at **83 of 121 cells**
+  (a cell exists only where there is a risk to state).
+
+  | drgay practice | `sti_practices` |
+  |---|---|
+  | Touching and Kissing | `kissing` + `sexual-caress` |
+  | Oral Sex | `fellatio` + `cunnilingus` |
+  | Anal Sex | `anal-penetration` |
+  | Vaginal Sex | `vaginal-penetration` |
+  | Fisting | `fisting` |
+  | **Masturbating** | **absent** |
+  | **BDSM** | **absent** |
+  | **Piss Play** | **absent** |
+  | **Scat (Faeces)** | **absent** |
+  | **Body Modifications** | **absent** |
+
+  QG additionally carries `rimming`, `toy-sharing`, `straw-sharing` and `syringe-sharing`, which
+  drgay covers on their own pages rather than in the grid — all four are legitimate and stay.
+
+  **Five practices are genuinely absent, and they are not filler.** `scat` is faecal-oral, the same
+  route on which `rimming` already scores *high* for hepatitis A and shigella. `body-modification`
+  is blood-borne and would be the second non-sexual route beside `syringe-sharing`. QG already has
+  tags for `scat`, `piss-play` and `bdsm`, so the concepts exist; only the risk rows do not.
+
+  **Deliberately not written in this wave.** Filling those five costs roughly 25-35 new cells, and
+  every cell is a risk level a reader may act on. They also have to be calibrated *against the
+  existing matrix* rather than in isolation — `rimming = high` for hepatitis A is what sets the bar
+  `scat` must be judged on — so this is a sourcing-and-calibration pass against WHO/CDC/EACS with
+  its own review, not a tail-end addition to a vocabulary audit. Same reasoning as `sauna` above:
+  where the change is safety-facing and the session cannot review itself, the measurement is the
+  deliverable and the writing is a separate decision.
