@@ -127,6 +127,16 @@ export const ADULT_CATEGORY_NAMES: ReadonlySet<string> = new Set([
   'Practices & Play',
   'Gear & Aesthetics',
   'Body Types & Archetypes',
+  // Incoming taxonomy (2026-08-29 recategorization program, PR B renames the
+  // kink line + stops). The union must be live BEFORE any tag is re-filed,
+  // or a re-filed kink tag stops matching and loses its age gate. The SQL
+  // twin lives in unified_tags_recompute_is_adult() (20261006090100); PR E
+  // trims the outgoing names once the old tree is deleted.
+  'Sex & Kink',
+  'Dynamics & Roles',
+  'Fetishes',
+  'Gear',
+  'Kink Community & Scenes',
 ]);
 
 export function isAdultCategoryName(name: string | null | undefined): boolean {
