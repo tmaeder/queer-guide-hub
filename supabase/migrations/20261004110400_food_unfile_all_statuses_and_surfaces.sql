@@ -53,8 +53,19 @@
 -- the FULL 81, across all three filing surfaces.
 --
 -- Text-only filing is not a curiosity of the food rows: 39 of the 276 tags whose
--- `category` text names this category carry `category_id IS NULL`. The other 19
--- are real substances and are left alone.
+-- `category` text names this category carry `category_id IS NULL`. Twenty are
+-- the food slugs above. The other nineteen — aperitivo, bitters, bratwurst,
+-- cachaca, day-drinking, drug-education, hot-chocolate, kombucha, liqueurs,
+-- matcha, mezcal, moscow-mule, painkillers, pilsner, pinot-grigio, rye,
+-- schnapps, tequila, tropical-drinks — are NOT all defensible, and an earlier
+-- draft of this header claimed they were without reading them. Thirteen are
+-- alcohol and two (drug-education, painkillers) are squarely in scope, but
+-- bratwurst is a sausage and hot-chocolate, kombucha and matcha are ordinary
+-- drinks. All nineteen are `deprecated`, so none is reader-visible, and none is
+-- in the 81-slug cohort 20261003110400 defined. They are left alone
+-- DELIBERATELY: unfiling slugs the original list never named is a second
+-- vocabulary decision, and widening a repair migration past its reviewed scope
+-- is the move to avoid, not the thorough one.
 --
 -- WHY THE TEXT IS RECOMPUTED RATHER THAN NULLED
 --
