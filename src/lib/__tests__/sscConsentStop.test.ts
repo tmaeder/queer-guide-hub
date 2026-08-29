@@ -8,7 +8,7 @@ import { join } from 'node:path';
  * facet (`unified_tags.category` -> search_documents). 20261006140100 (taxonomy
  * v3, PR C) then re-filed the corpus and closed FOUR of them as a side effect.
  *
- * 20261006150000 is what is left: `safe-sane-and-consensual-ssc`, which now
+ * 20261006170000 is what is left: `safe-sane-and-consensual-ssc`, which now
  * agrees with itself — and is therefore invisible to the census — while sitting
  * on `Safety & Practices`, a LEGACY LEVEL-0 ROOT of the pre-v3 tree that PR E
  * deletes. Every peer consent framework, including this tag's own twin `ssc`,
@@ -53,7 +53,7 @@ const MIGRATION = join(
   process.cwd(),
   'supabase',
   'migrations',
-  '20261006150000_ssc_consent_stop.sql',
+  '20261006170000_ssc_consent_stop.sql',
 );
 
 const sql = readFileSync(MIGRATION, 'utf8');
