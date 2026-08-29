@@ -509,6 +509,121 @@ async function prosePass(
   }
 }
 
+interface PairRow {
+  id: string
+  similarity_score: number
+  a_id: string
+  a_name: string
+  a_category: string | null
+  a_short: string | null
+  b_id: string
+  b_name: string
+  b_category: string | null
+  b_short: string | null
+}
+
+interface PairVerdict {
+  relation: 'a_covers_b' | 'b_covers_a' | 'related' | 'none'
+  confidence: number
+  reason?: string
+}
+
+/**
+ * mode='relations' — verified promotion of embedding pairs into the curated
+ * ontology (2026-08-29 programme, phase 4).
+ *
+ * The similarity pool is an internal signal only (measured precision by hand:
+ * ~70% at >=0.90, ~50% at 0.85-0.90, ~25% at 0.80-0.85 — "Sexting↔Stretching"
+ * scores 0.93 on surface form). Pairs >=0.85 between active tags are put to an
+ * LLM that must NAME the relationship or reject it; a named verdict becomes a
+ * `tag_relations` row with review_status='pending' — never displayed until an
+ * admin approves (get_tag_ontology filters). `verified_at`/`verdict` on
+ * tag_relationships is the cursor, stamped whatever the outcome.
+ */
+async function relationsPass(
+  batchLimit: number,
+  stats: { rel_examined: number; rel_proposed: number; rel_none: number; rel_uncertain: number },
+): Promise<void> {
+  const { data: pairs } = await supabase.rpc('tag_relation_verify_worklist', { p_limit: batchLimit })
+  if (!pairs || pairs.length === 0) return
+
+  for (const p of pairs as PairRow[]) {
+    stats.rel_examined++
+    let out: PairVerdict | null = null
+    try {
+      const r = await chatCompletion(supabase, {
+        callerFn: 'tag-enrichment-sweep',
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content:
+              'You maintain the ontology of an LGBTQ+ community glossary. You only assert a relationship you can name and justify; when unsure, answer none. Respond with valid JSON only, no fences.',
+          },
+          {
+            role: 'user',
+            content:
+              `Two glossary terms:\n` +
+              `A: "${p.a_name}" (category: ${p.a_category ?? '?'})${p.a_short ? ` — ${p.a_short}` : ''}\n` +
+              `B: "${p.b_name}" (category: ${p.b_category ?? '?'})${p.b_short ? ` — ${p.b_short}` : ''}\n\n` +
+              `Classify their relationship:\n` +
+              `- "a_covers_b": A is the broader concept, B a kind/part/member of A\n` +
+              `- "b_covers_a": B is the broader concept, A a kind/part/member of B\n` +
+              `- "related": genuinely connected AND a reader following a link between them would immediately understand why (shared practice, community, or subject — surface word-similarity does not count)\n` +
+              `- "none": no relationship a glossary should assert\n\n` +
+              `JSON: {"relation":"a_covers_b"|"b_covers_a"|"related"|"none","confidence":0.0-1.0,"reason":"<one sentence>"}`,
+          },
+        ],
+        temperature: 0.1,
+        max_tokens: 160,
+      })
+      const c = r.content as unknown
+      if (c && typeof c === 'object') {
+        out = c as PairVerdict
+      } else {
+        const raw = String(c ?? '').replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+        const m = raw.match(/\{[\s\S]*\}/)
+        out = m ? (JSON.parse(m[0]) as PairVerdict) : null
+      }
+    } catch (e) {
+      console.error(`relationsPass ${p.a_name}↔${p.b_name} failed:`, e instanceof Error ? e.message : e)
+    }
+
+    const relation = out?.relation
+    const confidence = typeof out?.confidence === 'number' ? out.confidence : 0
+    const valid = relation === 'a_covers_b' || relation === 'b_covers_a' || relation === 'related' || relation === 'none'
+
+    // Cursor first — an unparseable answer must not pin the queue head.
+    await supabase
+      .from('tag_relationships')
+      .update({ verified_at: new Date().toISOString(), verdict: valid ? relation : 'unparseable' })
+      .eq('id', p.id)
+
+    if (!valid) {
+      stats.rel_uncertain++
+      continue
+    }
+    if (relation === 'none' || confidence < 0.7) {
+      stats.rel_none++
+      continue
+    }
+
+    // broader is stored child→parent (source = narrower, target = broader).
+    const row =
+      relation === 'related'
+        ? { source_tag_id: p.a_id, target_tag_id: p.b_id, relation_type: 'related' }
+        : relation === 'a_covers_b'
+          ? { source_tag_id: p.b_id, target_tag_id: p.a_id, relation_type: 'broader' }
+          : { source_tag_id: p.a_id, target_tag_id: p.b_id, relation_type: 'broader' }
+    const { error: e } = await supabase.from('tag_relations').upsert(
+      { ...row, confidence, review_status: 'pending' },
+      { onConflict: 'source_tag_id,target_tag_id,relation_type', ignoreDuplicates: true },
+    )
+    if (!e) stats.rel_proposed++
+    else console.error(`relationsPass upsert ${p.a_name}→${p.b_name}:`, e.message)
+  }
+}
+
 /** Insert a pending description suggestion, skipping if one already exists for this tag. */
 async function queueDescription(
   tag: TagRow,
@@ -560,7 +675,7 @@ Deno.serve(async (req) => {
   let batchLimit = 15
   let catLimit = 0 // 0 → mirror batchLimit
   let triggeredBy = 'manual'
-  let mode: 'fill' | 'prose' = 'fill'
+  let mode: 'fill' | 'prose' | 'relations' = 'fill'
   try {
     const body = await req.json()
     if (typeof body?.batch_limit === 'number') {
@@ -570,9 +685,19 @@ Deno.serve(async (req) => {
       catLimit = Math.min(Math.max(0, body.cat_limit), 50)
     }
     if (typeof body?.triggered_by === 'string') triggeredBy = body.triggered_by
-    if (body?.mode === 'prose') mode = 'prose'
+    if (body?.mode === 'prose' || body?.mode === 'relations') mode = body.mode
   } catch {
     // no body — defaults
+  }
+
+  // mode='relations' — verified promotion of embedding pairs (own cursor+cron).
+  if (mode === 'relations') {
+    const relStats = { rel_examined: 0, rel_proposed: 0, rel_none: 0, rel_uncertain: 0 }
+    await relationsPass(batchLimit, relStats)
+    return new Response(
+      JSON.stringify({ success: true, triggered_by: triggeredBy, mode, ...relStats }),
+      { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } },
+    )
   }
 
   // mode='prose' is its own pass with its own cursor and cron — it walks tags
