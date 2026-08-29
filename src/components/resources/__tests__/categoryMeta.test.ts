@@ -29,13 +29,13 @@ describe('categoryMeta', () => {
       expect(isAdultTag({ is_adult: true, category: null })).toBe(true);
     });
 
-    it('still honours the v2 category names when the flag is unset', () => {
+    it('still honours the category name when the flag is unset', () => {
       expect(isAdultTag({ category: 'Practices & Play' })).toBe(true);
-      expect(isAdultTag({ is_adult: false, category: 'Fetishes & Interests' })).toBe(true);
+      expect(isAdultTag({ is_adult: false, category: 'Fetishes' })).toBe(true);
     });
 
     it('leaves non-adult tags visible', () => {
-      expect(isAdultTag({ is_adult: false, category: 'Community & Culture' })).toBe(false);
+      expect(isAdultTag({ is_adult: false, category: 'Culture & Community' })).toBe(false);
       expect(isAdultTag({ category: null })).toBe(false);
       expect(isAdultTag({})).toBe(false);
     });

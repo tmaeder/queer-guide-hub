@@ -37,7 +37,7 @@ describe('TagDefinitionCard', () => {
   });
 
   it('gates on adult category names even when is_adult is false', () => {
-    const adult: TagPreview = { ...base, category: 'Sexuality & Kink' };
+    const adult: TagPreview = { ...base, category: 'Sex & Kink' };
     wrap(<TagDefinitionCard preview={adult} affirmed={false} />);
     expect(screen.queryByText(adult.short_description!)).not.toBeInTheDocument();
     expect(screen.getByText(/18\+ term/)).toBeInTheDocument();
