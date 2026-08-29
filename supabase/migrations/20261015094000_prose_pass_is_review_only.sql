@@ -105,3 +105,50 @@ do $$ begin
     perform cron.unschedule('tag_prose_pass');
   end if;
 end $$;
+
+-- ---------------------------------------------------------------------------
+-- The SIBLING engine fails the same way, so it stops too.
+--
+-- `tag_relation_verify` (mode='relations') had already written 46 proposals
+-- before anyone looked at them. Read by hand, the `broader` arm — which is
+-- stored child→parent — is roughly 29% correct:
+--
+--   * SIBLINGS asserted as parent/child: Heterosexual→Homosexual,
+--     Homosexual→Bisexual, Intersex Female→Intersex Male,
+--     Chastity Belt→Chastity Cage, Sub Frenzy→Dom Frenzy,
+--     Smart Ass Masochist→Smart Ass Sadist, Polysexual→Omnisexual.
+--   * BACKWARDS: Primal→Primal Top, Double Penetration→Triple Penetration.
+--   * CLINICALLY WRONG, and the reason this could not wait:
+--     `HIV Transmission → AIDS` conflates HIV with AIDS on a queer health
+--     glossary. That is the exact class of harm the wrong-entity repair
+--     existed to remove.
+--
+-- Every one of those carried confidence 1.000 — the same "confidently wrong"
+-- signature as the prose judge above, from a different prompt against a
+-- different table. Two independent measurements of the same lesson: a
+-- self-reported confidence score cannot gate a write, and the `related` arm
+-- being decent (~80%) does not redeem the `broader` arm.
+--
+-- Nothing was ever published: `get_tag_ontology` shows `related` only when
+-- approved, and these rows are not approved. The hazard is the QUEUE — an
+-- admin clicking approve on "Heterosexual is a kind of Homosexual".
+--
+-- The 46 rows are marked 'rejected' rather than deleted: the unique key
+-- (source_tag_id, target_tag_id, relation_type) turns a rejected row into a
+-- TOMBSTONE that the verifier's ignoreDuplicates upsert cannot re-propose,
+-- so re-enabling the cron cannot regurgitate the same junk.
+update public.tag_relations
+set review_status = 'rejected'
+where review_status = 'pending';
+
+update admin_automations
+set enabled = false,
+    description = 'tag-enrichment-sweep mode=relations. DISABLED 2026-08-29: its broader arm measured ~29% correct on the first 46 proposals (siblings asserted as parent/child, two backwards, and HIV Transmission→AIDS), all at confidence 1.000.',
+    updated_at = now()
+where slug = 'tag_relation_verify';
+
+do $$ begin
+  if exists (select 1 from cron.job where jobname = 'tag_relation_verify') then
+    perform cron.unschedule('tag_relation_verify');
+  end if;
+end $$;
