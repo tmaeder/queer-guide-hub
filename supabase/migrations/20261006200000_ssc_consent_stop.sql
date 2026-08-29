@@ -1,4 +1,38 @@
--- SSC is stranded on a legacy L0 root that PR E is going to delete.
+-- SSC is stranded on a level-0 root.
+--
+-- THE VERSION STAYS 20261006200000 BECAUSE PROD APPLIED IT AT THAT VERSION.
+--
+-- This file merged in #3103 and then sat unapplied. Higher-numbered migrations
+-- (through 20261007120400) reached prod first, so `supabase db push` hit
+--   "Found local migration files to be inserted before the last migration"
+-- and refused the WHOLE batch — four consecutive deploys failed while edge
+-- functions kept deploying, i.e. prod ran new code against the old schema.
+--
+-- The documented fix is to renumber above the remote max (never --include-all,
+-- which applies out-of-order and can silently revert a newer definition), and
+-- that is what this PR did — twice, 150000 then 170000, the first pick going
+-- stale within twenty minutes because 20261007160000-160400 merged while it
+-- sat in CI. Then, mid-PR, another session applied this migration DIRECTLY at
+-- its original version. That inverts the fix: an applied version with no repo
+-- file is drift, so renaming it is now the thing that breaks `db push`, and
+-- the original number is the only correct one. Both renames are reverted.
+--
+-- The lesson is the one this repo keeps re-learning: a migration version is
+-- valid only against a moving head, so it is not an identity. The suite that
+-- reads this file resolves it by SUFFIX, and therefore survived all three
+-- moves without an edit.
+--
+-- The header below was written when `Safety & Practices` still existed. That
+-- legacy root is GONE (PR E deleted it) and taxonomy v3 left SSC on
+-- `Safety & Consent` — the LINE, level 0 — not the deleted root and not the
+-- intended stop. Two dry runs on prod, in rolled-back transactions:
+--
+--   before it was applied:  from=Safety & Consent      stale_before=94 stale_after=0
+--   after:                  from=Consent & Negotiation stale_before=0  stale_after=0
+--   both:                   landed_on_all_three=1  still_level0=0  multi_primary=0
+--
+-- i.e. it did real work when it ran, and is a clean no-op now — which is what
+-- makes leaving it at its applied version safe.
 --
 -- THIS PR STARTED AS FIVE ROWS AND IS NOW ONE, BECAUSE THE TAXONOMY MOVED.
 --

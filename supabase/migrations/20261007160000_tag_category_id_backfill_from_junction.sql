@@ -52,10 +52,26 @@ select set_config('app.actor', 'migration:tag-category-id-backfill', true);
 
 do $mig$
 declare
-  r      record;
-  v_bad  int;
-  v_done int := 0;
+  r        record;
+  v_bad    int;
+  v_ambig  int;
+  v_done   int := 0;
 begin
+  -- A tag with MORE THAN ONE is_primary junction has no single answer, so it is
+  -- skipped rather than resolved arbitrarily.
+  --
+  -- This is not hypothetical. The first apply of this migration FAILED on its
+  -- own second assertion: `gender-neutral-bathroom` carries two is_primary rows
+  -- (gender-identity and safe-spaces), created by 20261007140000
+  -- prevention_bathroom_plural_twin which applied minutes earlier. The
+  -- unqualified join picked one arbitrarily, wrote it to the column, and the
+  -- assertion then correctly reported the other as disagreeing.
+  --
+  -- Picking either would manufacture a truth the data does not contain, and do
+  -- it silently: the column would disagree with a junction that still renders.
+  -- Nothing enforces one-primary-per-tag, so duplicate primaries are their own
+  -- defect and belong to whoever created them, not to a backfill. The count is
+  -- reported below so skipping cannot pass unnoticed.
   for r in
     select t.id, ca.category_id as cat_id, c.name as cat_name
       from public.unified_tags t
@@ -64,6 +80,8 @@ begin
       join public.tag_categories c
         on c.id = ca.category_id
      where t.category_id is null
+       and (select count(*) from public.tag_category_assignments p
+             where p.tag_id = t.id and p.is_primary) = 1
      order by t.slug
   loop
     update public.unified_tags
@@ -74,28 +92,40 @@ begin
     v_done := v_done + 1;
   end loop;
 
+  select count(*) into v_ambig
+    from (select ca.tag_id from public.tag_category_assignments ca
+           where ca.is_primary group by ca.tag_id having count(*) > 1) d;
+
   ------------------------------------------------------------------ assertions
-  -- Nothing may be left holding a junction but no column.
+  -- Both assertions are scoped to UNAMBIGUOUS rows — the ones this migration
+  -- actually claims to fix. Left corpus-wide they would fail on the duplicate-
+  -- primary rows above, which this migration deliberately does not touch, and
+  -- the only way to make them pass would be to guess.
   select count(*) into v_bad
     from public.unified_tags t
     join public.tag_category_assignments ca
       on ca.tag_id = t.id and ca.is_primary
-   where t.category_id is null;
+   where t.category_id is null
+     and (select count(*) from public.tag_category_assignments p
+           where p.tag_id = t.id and p.is_primary) = 1;
   if v_bad > 0 then
-    raise exception 'category_id backfill: % row(s) still have a junction but no category_id', v_bad;
+    raise exception 'category_id backfill: % row(s) still have a sole junction but no category_id', v_bad;
   end if;
 
-  -- And this must not have INTRODUCED a disagreement, which is the failure mode
-  -- a careless fill would create.
+  -- Must not have INTRODUCED a disagreement, the failure mode a careless fill
+  -- creates.
   select count(*) into v_bad
     from public.unified_tags t
     join public.tag_category_assignments ca
       on ca.tag_id = t.id and ca.is_primary
-   where t.category_id is distinct from ca.category_id;
+   where t.category_id is distinct from ca.category_id
+     and (select count(*) from public.tag_category_assignments p
+           where p.tag_id = t.id and p.is_primary) = 1;
   if v_bad > 0 then
-    raise exception 'category_id backfill: % row(s) now disagree with their junction', v_bad;
+    raise exception 'category_id backfill: % row(s) now disagree with their sole junction', v_bad;
   end if;
 
-  raise notice 'category_id backfill: % row(s) filled', v_done;
+  raise notice 'category_id backfill: % row(s) filled, % tag(s) skipped for having multiple primary junctions',
+    v_done, v_ambig;
 end
 $mig$;
