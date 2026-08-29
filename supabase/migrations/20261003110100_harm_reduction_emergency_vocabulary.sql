@@ -321,18 +321,19 @@ The limits are worth stating plainly. A negative result does not mean an allergy
 It tells you about allergy. It tells you nothing about strength, purity, or how the substance will interact with anything else.'),
 
   -- ── after the fact ──────────────────────────────────────────────────────
-  ('naloxone', 'Naloxone', 'substances-harm-reduction',
-   'Q282902', 'https://en.wikipedia.org/wiki/Naloxone',
-   'A drug that reverses an opioid overdose by displacing opioids from their receptors, usually given as a nasal spray. It wears off faster than most opioids do, which is the thing people most often do not know.',
-   'Naloxone blocks opioid receptors and pushes opioids off them, which can restore breathing in someone overdosing within minutes. It is available as a nasal spray designed to be used by bystanders with no training, and in many places it can be obtained in advance by anyone likely to be nearby when it is needed.
-
-The critical caveat is duration. Naloxone is shorter-acting than most opioids, so someone can wake up, appear recovered, and then slide back into overdose as it wears off. A dose may need repeating, and emergency services still need to be called every time — the reversal is a way of buying time, not a substitute for care.
-
-It also works less well against partial agonists such as buprenorphine, and against the opioid-like alkaloids in kratom, where higher and repeated dosing may be needed.
-
-It has no effect on overdoses that do not involve opioids, and no recreational effect of its own, so giving it to someone who turns out not to have taken opioids does no harm. If in doubt, use it.
-
-You cannot administer it to yourself once you are overdosing. That is the whole argument for other people having it and knowing where it is.'),
+  -- `naloxone` WAS HERE AND WAS REMOVED.
+  --
+  -- 20261002100100_health_tag_clinical_corrections reached main first with a
+  -- naloxone body written from the product labels, and it is better than the
+  -- one drafted here: it carries the nasal redosing interval, the alternating
+  -- nostrils, and the March 2023 change to over-the-counter availability in the
+  -- US. Keeping this row would have overwritten all of that with a more general
+  -- paragraph making the same central point about duration.
+  --
+  -- The tag is therefore already active, already reviewed and already correct,
+  -- so nothing here needs to touch it. What this file still contributes for
+  -- naloxone is the ontology edge below and the myth/fact rows in
+  -- 20261003110300 — different surfaces, no overlap.
 
   ('polydrug-use', 'Polydrug Use', 'substances-harm-reduction',
    null, null,

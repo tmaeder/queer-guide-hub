@@ -15,6 +15,10 @@
 --               The `description` above it is the correct saferparty text about
 --               phencyclidine, so the page rendered a correct lead over a body
 --               about a political party.
+--               THE PROSE HALF OF THIS IS ALREADY FIXED ON MAIN, independently,
+--               by 20261002100000_health_tag_wrong_entity_prose — which found
+--               the same body by sweeping health tags rather than substances.
+--               Only the identifiers are repaired here; see section 1.
 --   dependence  Entire body about farm outbuildings ("an outbuilding, also known
 --               as a dependency, is a separate building..."), wikidata_id
 --               Q3044808, wikipedia_url /wiki/Outbuilding, and a `description`
@@ -106,17 +110,23 @@ begin
     from public.tag_categories where slug = 'substances-harm-reduction';
 
   ---------------------------------------------------------------------------
-  -- 1. pcp — replace the political-party body and repoint the identifiers.
-  --    `description` is already correct and is deliberately left untouched.
+  -- 1. pcp — repoint the identifiers ONLY.
+  --
+  --    The prose half of this repair reached main first, in
+  --    20261002100000_health_tag_wrong_entity_prose, which found the same
+  --    Portuguese Communist Party body from the other direction — a sweep over
+  --    health tags rather than over substances — and replaced it. That text is
+  --    live and good, so long_description is no longer touched here; rewriting
+  --    it would overwrite equivalent work for nothing.
+  --
+  --    What that migration did NOT touch is any identifier. It contains zero
+  --    references to wikidata_id, so `pcp` still carries Q769829 — the party.
+  --    That matters more than the prose did: the identifier is what
+  --    run_tag_medical_codes_sync and run_tag_wikidata_hierarchy read, so a
+  --    wrong QID keeps generating wrong derived data indefinitely after the
+  --    visible text has been corrected.
   ---------------------------------------------------------------------------
   update public.unified_tags set
-    long_description = 'Phencyclidine, almost always called PCP, is a dissociative anaesthetic developed in the 1950s and withdrawn from human medicine because of what happened as patients came round from it: agitation, confusion and hallucinations severe enough to make it unusable in a clinical setting.
-
-It belongs to the same broad family as ketamine and works in a similar way, blocking a receptor that normally carries excitatory signalling in the brain. The experience is one of detachment — from the body, from surroundings, and from the sense that any of it is really happening. Distortion of time, distance and the boundary of one''s own body is characteristic.
-
-What distinguishes PCP from the other dissociatives is how steep and unpredictable the dose response is. The gap between a moderate experience and a severe one is narrow and varies between people and between batches, which is why the same amount does not reliably produce the same effect twice. Higher amounts can produce agitation, a lasting confusional state, and a dangerous loss of any sense of physical limits or pain.
-
-PCP also turns up in samples sold as something else entirely, which means people can encounter it without having chosen it. There is no antidote; care is supportive, and the priority in a crisis is a calm environment and medical help.',
     wikidata_id      = 'Q407324',
     wikipedia_url    = 'https://en.wikipedia.org/wiki/Phencyclidine',
     last_verified_at = now(),
@@ -268,17 +278,36 @@ Asking someone why they are not drinking is a bigger question than it sounds, an
   -- 9. Assertions. A silent partial repair is the failure worth paying for.
   ---------------------------------------------------------------------------
 
-  -- The wrong-entity check itself, run category-wide rather than on the three
-  -- known rows, so it also guards whatever the next import writes. A body that
-  -- never names its own tag is the shape both defects had.
+  -- The wrong-entity check, run category-wide rather than on the known rows so
+  -- it also guards whatever the next import writes.
+  --
+  -- THIS ASSERTS THE ABSENCE OF THE WRONG SUBJECT, NOT THE PRESENCE OF THE NAME.
+  -- The first draft required every body to contain its own tag's name, which is
+  -- how the two defects here were found. It is a good detector and a bad
+  -- invariant: 20261002100000_health_tag_wrong_entity_prose landed on main with
+  -- a correct `pcp` body that opens "Phencyclidine is a dissociative
+  -- anaesthetic" and never uses the acronym, and the name test rejects it. A
+  -- rule that fails on correct prose would either be disabled or would force
+  -- writers to work around it. The negative form — no body may contain a
+  -- subject we know is wrong — is precise, cannot false-positive on good
+  -- writing, and is the pattern that migration used.
   select count(*) into v_n
     from public.unified_tags
    where category = 'Substances & Harm Reduction'
      and status = 'active'
-     and coalesce(long_description, '') <> ''
-     and long_description not ilike '%' || name || '%';
+     and coalesce(long_description, '') ~* '(Portuguese Communist|Marxist.Leninist|an outbuilding|separate building|family name|Saint Louis Art Museum|pumping house|house music)';
   if v_n > 0 then
-    raise exception 'entity repairs: % active substance tag(s) still have a body that never names the tag', v_n;
+    raise exception 'entity repairs: % active substance tag(s) still carry a known-wrong subject', v_n;
+  end if;
+
+  -- Disambiguation stubs are their own defect and are cheap to detect.
+  select count(*) into v_n
+    from public.unified_tags
+   where category = 'Substances & Harm Reduction'
+     and status = 'active'
+     and coalesce(description, '') ~* 'may (also )?refer to:';
+  if v_n > 0 then
+    raise exception 'entity repairs: % active substance tag(s) still carry a Wikipedia disambiguation stub', v_n;
   end if;
 
   select count(*) into v_n

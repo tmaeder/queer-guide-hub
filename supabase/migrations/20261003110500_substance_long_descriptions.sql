@@ -425,13 +425,13 @@ They also lower blood pressure additively with other depressants.');
   end if;
 
   -- The wrong-entity guard, category-wide, as in every migration in this set.
+  -- Negative form -- see the note in 20261003110000.
   select count(*) into v_n
     from public.unified_tags
    where category = 'Substances & Harm Reduction' and status = 'active'
-     and coalesce(long_description, '') <> ''
-     and long_description not ilike '%' || name || '%';
+     and coalesce(long_description, '') ~* '(Portuguese Communist|Marxist.Leninist|an outbuilding|separate building|family name|Saint Louis Art Museum|pumping house|house music)';
   if v_n > 0 then
-    raise exception 'long descriptions: % active tag(s) have a body that never names the tag', v_n;
+    raise exception 'long descriptions: % active tag(s) still carry a known-wrong subject', v_n;
   end if;
 
   -- No body may carry the source's wrong ambulance number.

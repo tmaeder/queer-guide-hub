@@ -1,6 +1,7 @@
 -- Interaction-matrix gaps and myth/fact rows from the Substanzhandbuch.
 --
--- POPPERS WAS NOT IN THE MATRIX AT ALL
+-- POPPERS WAS NOT IN THE MATRIX AT ALL — AND ANOTHER MIGRATION FIXED THE WORST
+-- PART OF THAT WHILE THIS WAS BEING WRITTEN
 --
 -- `substance_interactions` carried 421 pairs over 31 substances, imported from
 -- TripSit (20260909172500). `poppers` was not one of the 31 — and poppers with
@@ -9,10 +10,20 @@
 -- description and in the existing chemsex myth/fact rows, and the one surface
 -- built to answer "can I combine these two?" could not express it.
 --
--- Also absent as nodes: methamphetamine (central to chemsex), the individual
--- opioids (heroin, morphine, oxycodone, fentanyl, kratom), the individual
--- benzodiazepines (only the class was present), 3-MMC and synthetic
--- cannabinoids. A reader on /tags/heroin saw no combinations at all.
+-- 20261002100200_health_tag_sources_and_pde5_revival reached main first and
+-- covered exactly that half, having found the same gap from the sexual-health
+-- side rather than the substance side. Its rows are written per drug from the
+-- FDA labels and are better evidence than anything drafted here, so this file
+-- no longer writes them — see the note at the poppers block below. The sentence
+-- above describes the state this work started from, not the state at merge.
+--
+-- What is still uncovered, and is what this file is now for: the rest of the
+-- poppers node (GHB, alcohol, benzodiazepines, cocaine, methamphetamine, MDMA),
+-- and the substances absent from the matrix entirely — methamphetamine (central
+-- to chemsex), the individual opioids (heroin, morphine, oxycodone, fentanyl,
+-- kratom), the individual benzodiazepines (only the class was present), 3-MMC
+-- and synthetic cannabinoids. A reader on /tags/heroin still sees no
+-- combinations at all.
 --
 -- EXISTING ROWS ARE NEVER MODIFIED
 --
@@ -74,9 +85,13 @@ begin
   for r in
     select * from (values
 
-    -- ── poppers: the whole node was missing ───────────────────────────────
-    ('poppers','viagra','dangerous',
-     'Both widen blood vessels and lower blood pressure. Together the drop can be sudden and severe enough that the heart cannot compensate, causing collapse. This is the best-documented dangerous combination in gay sexual culture and the reason the two should never be used in the same session — including erectile-dysfunction drugs taken hours earlier, which are still active.'),
+    -- ── poppers: everything except the PDE5 pairs ─────────────────────────
+    -- The poppers x erectile-dysfunction rows are deliberately NOT here.
+    -- 20261002100200 writes them from the FDA labels, per drug — sildenafil's
+    -- label naming nitrites in any form, tadalafil's 48-hour interval, and
+    -- avanafil's measured 28/23 mmHg fall — stamped source='FDA label'. Leaving
+    -- a weaker hand-written duplicate to lose an ON CONFLICT race would put the
+    -- worse row's fate down to migration ordering, so it was removed instead.
     ('poppers','ghb','dangerous',
      'Both lower blood pressure sharply. GHB also sedates, so someone whose circulation is failing may be unable to respond or call for help.'),
     ('poppers','alcohol','caution',
@@ -316,6 +331,11 @@ begin
     raise exception 'interactions: poppers still has no rows in the matrix';
   end if;
 
+  -- Cross-migration integration check. This file no longer writes the pair —
+  -- 20261002100200 does, from the FDA label — so this asserts that the two
+  -- migrations together leave the platform's most safety-critical combination
+  -- present and marked dangerous. If that migration is ever reverted or its
+  -- slugs change, this fails here rather than the pair silently disappearing.
   if not exists (
     select 1 from public.substance_interactions i
      join public.unified_tags a on a.id = i.tag_a_id

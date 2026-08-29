@@ -617,14 +617,15 @@ It also explains why withdrawal from them is the dangerous kind. The brain compe
     raise exception 'practice vocabulary: % tag(s) not filed under substances-harm-reduction', v_n;
   end if;
 
-  -- The wrong-entity guard, over everything active in the category.
+  -- The wrong-entity guard, over everything active in the category. Asserts the
+  -- absence of a known-wrong subject rather than the presence of the tag's own
+  -- name -- see the note in 20261003110000 on why the name form was withdrawn.
   select count(*) into v_n
     from public.unified_tags
    where category = 'Substances & Harm Reduction' and status = 'active'
-     and coalesce(long_description, '') <> ''
-     and long_description not ilike '%' || name || '%';
+     and coalesce(long_description, '') ~* '(Portuguese Communist|Marxist.Leninist|an outbuilding|separate building|family name|Saint Louis Art Museum|pumping house|house music)';
   if v_n > 0 then
-    raise exception 'practice vocabulary: % active tag(s) have a body that never names the tag', v_n;
+    raise exception 'practice vocabulary: % active tag(s) still carry a known-wrong subject', v_n;
   end if;
 
   -- The five audited QIDs must be corrected or cleared.
