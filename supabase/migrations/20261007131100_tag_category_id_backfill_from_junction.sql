@@ -1,3 +1,11 @@
+-- RENUMBERED from 20261006190000, content otherwise unchanged.
+--
+-- `supabase db push` aborts on an unapplied migration that sorts BELOW the
+-- newest version already applied to prod, and it aborts on the FIRST such file,
+-- taking every later migration with it. This file and five siblings were in that
+-- state, so from 2026-08-29 10:24Z every deploy-supabase-functions run failed and
+-- NO migration reached prod — six merged PRs' worth, not just their own.
+--
 -- Populate unified_tags.category_id from the primary junction on 435 rows.
 --
 -- WHAT THIS IS, AND WHAT IT IS NOT

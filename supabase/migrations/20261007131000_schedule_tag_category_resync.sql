@@ -1,3 +1,14 @@
+-- RENUMBERED from 20261006180000, content otherwise unchanged.
+--
+-- `supabase db push` aborts on an unapplied migration that sorts BELOW the
+-- newest version already applied to prod, and it aborts on the FIRST such file,
+-- taking every later migration with it. This file and five siblings were in that
+-- state, so from 2026-08-29 10:24Z every deploy-supabase-functions run failed and
+-- NO migration reached prod — six merged PRs' worth, not just their own.
+-- 20261006180000 was additionally a DUPLICATE version, which `db push` resolves by
+-- matching history on the version alone: it would have been silently SKIPPED as
+-- already-applied rather than reported.
+--
 -- `run_tag_category_resync` has existed since 20260802105740 and has never
 -- been scheduled: no `cron.job`, no `admin_automations` row. A repair
 -- function nothing calls is a repair that does not happen.

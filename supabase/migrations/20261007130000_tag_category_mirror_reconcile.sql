@@ -122,24 +122,40 @@
 -- (a counter, a report, a repair) resolves the same winner the job writes — the
 -- `embedding_candidates` lesson, one entity later.
 --
+-- ── THE SCHEDULE LANDED WHILE THIS WAS IN REVIEW, SO IT IS NOT HERE ─────────
+--
+-- Three sessions reached the same diagnosis on 2026-08-29 within a few hours,
+-- and `20261006180000_tag_category_text_mirror_reconciler` got there first: it
+-- is APPLIED on prod, and it registered `tag_category_text_resync` in
+-- `admin_automations` and scheduled it at `55 3 * * *` calling
+-- `run_tag_category_resync(500)`. Verified live, not assumed —
+-- `select jobname, schedule, command from cron.job where jobname ilike
+-- '%tag_category%'` returns exactly that one row.
+--
+-- So the "engine with no cron" half of this is DONE, by someone else, and this
+-- migration deliberately does not add a second cron for the same function. What
+-- 20261006180000 did NOT do is touch `run_tag_category_resync` itself — it calls
+-- the existing body in a loop — so both defects in that body are still live and
+-- are now scheduled to run nightly. That is what remains, and it is all this
+-- migration does: correct the function the new cron calls.
+--
+-- The fill-only guard is therefore FORWARD-LOOKING only. The rows it would have
+-- protected are already gone: 20261006180000's loop ran the unguarded predicate
+-- and erased them, and the cohort measured at 11 this morning reads 0 now. Its
+-- own assertions could not see that — they check only rows that HAVE a primary
+-- junction — which is exactly why the guard belongs in the function rather than
+-- in any one migration's post-conditions.
+--
 -- ── NO NEW HYGIENE COUNTER HERE, ON PURPOSE ─────────────────────────────────
 --
 -- 20261006110000 closes by asking that a counter for this class live alongside
 -- the ones added with the `category_id` repair, "so the two do not add competing
--- counters for adjacent classes". That repair is 20261007100100, on an unmerged
--- branch, and it adds `denorm_category_missing` + `placeholder_description_active`
--- by restating `tag_hygiene_stats()` in full. A second restatement here would
--- silently drop whichever pair merged first — the panel drift test reads the
--- LAST migration defining the function — so this migration does not touch it.
---
--- The schedule is watched by the machinery that already exists:
--- `admin_automation_project_cron_runs()` keys on
--- `COALESCE(action->>'jobname', slug)` having a live `cron.job`, so the registry
--- row below makes this a tracked run-tracking family C job — `cron.job_run_details`
--- is exact for pure synchronous SQL, failures are recorded for every family, and
--- `scripts/check-pipeline-health.mjs` fails on an auto-paused-then-recovered row.
--- The counter for the text class belongs with 20261007100100's, once the two
--- branches have settled.
+-- counters for adjacent classes". That repair is
+-- `20261007131100_tag_category_id_backfill_from_junction`, and it adds
+-- `denorm_category_missing` + `placeholder_description_active` by restating
+-- `tag_hygiene_stats()` in full. A second restatement here would silently drop
+-- its pair — the panel drift test reads the LAST migration defining the
+-- function, and this file sorts before it — so this migration does not touch it.
 
 select set_config('app.actor', 'migration:tag-category-mirror-reconcile', false);
 
@@ -214,42 +230,14 @@ grant execute on function public.run_tag_category_resync(integer) to service_rol
 -- 354 rows is well under one drain cycle and nowhere near a trigger storm.
 select public.run_tag_category_resync(5000);
 
--- ── 4. the schedule that never existed ──────────────────────────────────────
+-- ── 4. verify ───────────────────────────────────────────────────────────────
 --
--- `action->>'type' = 'rpc'` carries no `action.command`, so sync_automations_to_cron()
--- branch (d) structurally cannot recreate this job — every rpc automation is
--- scheduled by its own migration, which is why the cron.schedule below is not
--- optional bookkeeping. Pure synchronous SQL, so it is run-tracking family C:
--- cron.job_run_details is exact for it and no admin_automation_run_begin wrapper
--- belongs on the command (adding one would make a failure invisible, not visible).
---
--- 04:32 sits after tag_assignment_reconcile (03:45) and tag_plural_merge (04:25),
--- both of which can move a tag's filing out from under the mirror, and before
--- tag_cooccurrence_relations (04:40) and tag_ontology_recompute (04:50), which
--- read it.
-insert into public.admin_automations
-  (slug, name, description, enabled, managed_by, trigger, schedule, action, conditions, auto_pause_threshold)
-values (
-  'tag_category_resync',
-  'Resync denormalised tag category',
-  'Nightly: refills unified_tags.category from tag_category_assignments. The junction has no trigger writeback and a category rename updates no mirror, so without this a tag publishes a stale or empty category facet in search.',
-  true, 'system',
-  jsonb_build_object('type', 'schedule'),
-  '32 4 * * *',
-  jsonb_build_object('type', 'rpc', 'fn', 'run_tag_category_resync', 'jobname', 'tag_category_resync'),
-  '[]'::jsonb,
-  3
-)
-on conflict (slug) do update set
-  enabled     = true,
-  schedule    = excluded.schedule,
-  action      = excluded.action,
-  description = excluded.description;
-
-select cron.schedule('tag_category_resync', '32 4 * * *',
-                     $cron$ select public.run_tag_category_resync(2000); $cron$);
-
--- ── 5. verify ───────────────────────────────────────────────────────────────
+-- No cron or `admin_automations` row is created here: `20261006180000` already
+-- registered and scheduled `tag_category_text_resync`, and a second job calling
+-- the same function is redundancy, not redundancy-as-safety. The assertion below
+-- checks that schedule EXISTS rather than creating one, so if that migration is
+-- ever reverted this fails loudly instead of leaving the function corrected and
+-- nothing calling it.
 
 do $verify$
 declare v_n int; v_cat text;
@@ -279,24 +267,29 @@ begin
     raise exception '% tag(s) still have a NULL mirror with a resolvable category', v_n;
   end if;
 
-  -- ...and nothing whose assignments are gone was erased. 11 such rows exist,
-  -- all status='merged'; asserted as "> 0" rather than "= 11" so a concurrent
-  -- merge does not fail this, while a regression to the erasing predicate does.
-  select count(*) into v_n from public.unified_tags u
-   where u.category is not null
-     and not exists (select 1 from public.tag_category_assignments a where a.tag_id = u.id);
-  if v_n = 0 then
-    raise exception 'every unfiled mirror was erased — the fill-only guard is not holding';
-  end if;
+  -- THE FILL-ONLY GUARD IS DELIBERATELY NOT ASSERTED HERE. An earlier draft
+  -- asserted "at least one unfiled mirror still holds its text", which was true
+  -- when it was written and false four hours later: the loop in 20261006180000
+  -- had already erased all 11 with the unguarded predicate, invisibly to its own
+  -- post-conditions (they check only rows that HAVE a primary junction). A
+  -- migration assertion that depends on state another migration may legitimately
+  -- have cleared is a landmine in `db push`, and probing it by inserting a throw-
+  -- away tag would fire the slug, search and adult-recompute triggers to prove a
+  -- one-line predicate. The guard is a property of the FUNCTION TEXT, so it is
+  -- gated where that can be read directly and for free:
+  -- `src/lib/__tests__/tagCategoryMirror.test.ts` fails if `want is not null`
+  -- leaves the definition.
 
-  -- The schedule, which is the whole point — an engine with no cron is what
-  -- this migration exists to fix, so it fails rather than reports.
-  if not exists (select 1 from cron.job where jobname = 'tag_category_resync' and active) then
-    raise exception 'cron job tag_category_resync is missing or inactive';
+  -- The schedule this function is called by. Created by 20261006180000, asserted
+  -- (never created) here, so a revert of that migration surfaces as a failure
+  -- rather than as a corrected function nothing ever calls.
+  if not exists (select 1 from cron.job
+                  where jobname = 'tag_category_text_resync' and active) then
+    raise exception 'cron job tag_category_text_resync is missing or inactive — 20261006180000 must apply first';
   end if;
   if not exists (select 1 from public.admin_automations
-                  where slug = 'tag_category_resync' and enabled) then
-    raise exception 'admin_automations row tag_category_resync is missing or disabled';
+                  where slug = 'tag_category_text_resync' and enabled) then
+    raise exception 'admin_automations row tag_category_text_resync is missing or disabled';
   end if;
 end
 $verify$;

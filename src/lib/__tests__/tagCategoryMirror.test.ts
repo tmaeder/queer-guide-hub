@@ -23,29 +23,38 @@ const sqlFiles = () =>
     .filter((f) => f.endsWith('.sql'))
     .sort();
 
+/** One read pass for the whole file, shared by every case. The directory holds
+ *  ~1,350 migrations and re-reading it per assertion pushed this suite past the
+ *  15s default timeout on a loaded machine. */
+const cache = new Map<string, string>();
+const read = (f: string): string => {
+  let s = cache.get(f);
+  if (s === undefined) {
+    s = readFileSync(join(MIGRATIONS, f), 'utf8');
+    cache.set(f, s);
+  }
+  return s;
+};
+
 /** Newest migration that DEFINES the function — not one that merely mentions it
  *  in a GRANT, REVOKE, COMMENT or DROP, which is what broke the geo-spine scan. */
 function latestDefinition(fn: string): string {
   const re = new RegExp(`create\\s+(or\\s+replace\\s+)?function\\s+public\\.${fn}\\s*\\(`, 'i');
   const hit = sqlFiles()
-    .filter((f) => re.test(readFileSync(join(MIGRATIONS, f), 'utf8')))
+    .filter((f) => re.test(read(f)))
     .pop();
   expect(hit, `no migration defines public.${fn}`).toBeTruthy();
-  const sql = readFileSync(join(MIGRATIONS, hit!), 'utf8');
+  const sql = read(hit!);
   return sql.slice(sql.search(re));
 }
 
 /** The migration carrying this repair, found by the helper it introduces. */
 function reconcileMigration(): string {
   const file = sqlFiles()
-    .filter((f) =>
-      readFileSync(join(MIGRATIONS, f), 'utf8').includes(
-        'create or replace function public.tag_category_mirror_want',
-      ),
-    )
+    .filter((f) => read(f).includes('create or replace function public.tag_category_mirror_want'))
     .pop();
   expect(file, 'no migration defines tag_category_mirror_want').toBeTruthy();
-  return readFileSync(join(MIGRATIONS, file!), 'utf8');
+  return read(file!);
 }
 
 describe('tag category mirror', () => {
@@ -80,16 +89,23 @@ describe('tag category mirror', () => {
     expect(latestDefinition('run_tag_category_resync')).toMatch(/want\s+is\s+not\s+null/i);
   });
 
-  it('is scheduled in the same migration that defines it', () => {
-    // An `action->>'type'='rpc'` row carries no `action.command`, so
-    // sync_automations_to_cron() cannot recreate this job — the registry row
-    // alone leaves it on-but-unscheduled, which is the state the whole fix
-    // exists to correct.
-    const sql = reconcileMigration();
+  it('the corrected function has a schedule calling it', () => {
+    // The function is only worth correcting if something runs it. The cron is
+    // NOT created here — `20261006180000_tag_category_text_mirror_reconciler`
+    // registered and scheduled `tag_category_text_resync` first, and a second
+    // job on the same function is duplication, not safety. So: some migration
+    // must schedule it, and this one must assert that rather than compete.
+    const scheduler = sqlFiles().find((f) =>
+      /cron\.schedule\(\s*'tag_category_text_resync'/i.test(read(f)),
+    );
+    expect(scheduler, 'nothing schedules run_tag_category_resync').toBeTruthy();
+    expect(read(scheduler!)).toContain('run_tag_category_resync');
 
-    expect(sql).toContain("'tag_category_resync'");
-    expect(sql, 'registry row missing').toMatch(/insert into public\.admin_automations/i);
-    expect(sql, 'cron job missing').toMatch(/cron\.schedule\(\s*'tag_category_resync'/i);
+    const sql = reconcileMigration();
+    expect(sql, 'the reconcile migration must not create a competing cron').not.toMatch(
+      /cron\.schedule\(/i,
+    );
+    expect(sql, 'it must assert the schedule exists').toContain('tag_category_text_resync');
   });
 
   it('does not restate tag_hygiene_stats', () => {

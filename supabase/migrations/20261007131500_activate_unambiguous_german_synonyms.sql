@@ -1,3 +1,14 @@
+-- RENUMBERED from 20261007100000, content otherwise unchanged.
+--
+-- `supabase db push` aborts on an unapplied migration that sorts BELOW the
+-- newest version already applied to prod, and it aborts on the FIRST such file,
+-- taking every later migration with it. This file and five siblings were in that
+-- state, so from 2026-08-29 10:24Z every deploy-supabase-functions run failed and
+-- NO migration reached prod — six merged PRs' worth, not just their own.
+-- 20261007100000 was additionally a DUPLICATE version, which `db push` resolves by
+-- matching history on the version alone: it would have been silently SKIPPED as
+-- already-applied rather than reported.
+--
 -- Activate the German search synonyms that are safe to activate, and only those.
 --
 -- WHY THIS EXISTS
