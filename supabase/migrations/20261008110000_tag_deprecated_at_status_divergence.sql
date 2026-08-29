@@ -55,8 +55,25 @@
 -- possible while two columns can contradict each other and each reader believes
 -- a different one.
 
-begin;
-
+-- NO explicit `begin;`/`commit;` HERE, DELIBERATELY. This file wrapped itself
+-- in one, and that is what stranded the whole migration queue on 2026-08-29.
+--
+-- `supabase db push` runs each migration inside a transaction it opens itself,
+-- and records the version into `supabase_migrations.schema_migrations` in that
+-- SAME transaction. An explicit `commit;` ends that transaction early: the DDL
+-- and data commit, and the bookkeeping INSERT meant to ride along with them
+-- never happens. The result is the worst of both — prod HAS the change while
+-- history says it does not.
+--
+-- Measured: `unified_tags_status_matches_deprecated_at` existed and was
+-- validated on prod while version 20261008110000 was absent from
+-- schema_migrations. So every later push re-ran this file, hit 42710 on its own
+-- constraint, and aborted — stranding the four migrations behind it (120100,
+-- 124500, 130000) and failing five consecutive deploys.
+--
+-- `set local` still scopes correctly without an explicit block: db push's own
+-- transaction is the scope.
+--
 -- The audit stamped 51 human_reviewed rows; log_unified_tag_change() raises if a
 -- `system:%` actor touches one, and 'system:trigger' is the default.
 set local app.actor = 'migration:20261008110000';
@@ -114,9 +131,22 @@ update public.unified_tags
 --    timestamp (192/192) and must keep it, so the constraint is stated as the
 --    equivalence the two readers assume: active <=> not deprecated.
 -- ---------------------------------------------------------------------------
-alter table public.unified_tags
-  add constraint unified_tags_status_matches_deprecated_at
-  check ((status = 'active') = (deprecated_at is null));
+-- Guarded because the first, self-committing run already created it on prod.
+-- `add constraint` has no IF NOT EXISTS, so the bare form raises 42710 and
+-- aborts the entire push. Re-runnable DDL is what lets a migration recover from
+-- a partially-recorded state instead of requiring a hand repair.
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint
+     where conname = 'unified_tags_status_matches_deprecated_at'
+       and conrelid = 'public.unified_tags'::regclass
+  ) then
+    alter table public.unified_tags
+      add constraint unified_tags_status_matches_deprecated_at
+      check ((status = 'active') = (deprecated_at is null));
+  end if;
+end $$;
 
 do $$
 declare v_bad int;
@@ -127,5 +157,3 @@ begin
     raise exception 'status/deprecated_at divergence not cleared: % rows', v_bad;
   end if;
 end $$;
-
-commit;
