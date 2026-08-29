@@ -11,7 +11,7 @@
   "merged_but_not_status_merged": 0,
   "nonclean_entity_type": 0,
   "placeholder_description_active": 137,
-  "redirect_to_non_canonical": 58,
+  "redirect_to_non_canonical": 59,
   "sensitive_without_description": 19,
   "uncategorized_active": 14,
   "_advisory": [
@@ -22,7 +22,7 @@
   ],
   "_notes": {
     "duplicate_active_name": "9 is correct, not a backlog: the deliberate mat-* sense splits (mat-leather vs leather) excluded by 20260916110000. Growth means a real twin pair regrew.",
-    "redirect_to_non_canonical": "INERT rows, not live 301-into-404s \u2014 retracted 2026-08-23. The edge lookup filters redirect targets on status=active (PR #2828), so /tags/alex-j-rgen returns a clean 404 in one hop rather than redirecting into one; verified on prod. 57 of the 58 are accent-folding pairs (alex-j-rgen -> alex-jurgen, bisexualit-t -> bisexualitat). Kept, not deleted: a deprecated tag can be revived and 20260910181447 re-mints redirects when that happens. Hygiene counter, not exposure.",
+    "redirect_to_non_canonical": "INERT rows, not live 301-into-404s \u2014 retracted 2026-08-23. The edge lookup filters redirect targets on status=active (PR #2828), so /tags/alex-j-rgen returns a clean 404 in one hop rather than redirecting into one; verified on prod. 57 of the 58 are accent-folding pairs (alex-j-rgen -> alex-jurgen, bisexualit-t -> bisexualitat). Kept, not deleted: a deprecated tag can be revived and 20260910181447 re-mints redirects when that happens. Hygiene counter, not exposure. 58 -> 59 on 2026-08-29: one more tag was deprecated by concurrent glossary work the same day and its accent-folding redirect joined the count. Ambient corpus drift, not a new exposure and not caused by the PR that recorded it (a migration-file dedupe, which applies no SQL); re-verified on prod that every row in the set is still an inert accent-folding pair pointing at a deprecated tag.",
     "indexable_without_description": "869 thin public pages advertised in sitemap-tags.xml. 20260921110000 deindexes them and re-indexes on prose, after which this becomes a real zero-invariant rather than a backlog.",
     "sensitive_without_description": "Grows as the profession pipeline lands is_adult German profession tags with no description yet \u2014 not a regression introduced by the tag DQ program.",
     "uncategorized_active": "Advisory from 2026-08-23 because the number is a SAWTOOTH, not a level, and gating on its instantaneous value fails PRs at random. New tags arrive uncategorized continuously from the ingest and profession pipelines; tag-enrichment-sweep drains them by writing unified_tags.category_id (supabase/functions/tag-enrichment-sweep/index.ts:236), capped at cat_limit<=50 per run on the tag_enrichment_sweep cron, which is every TWO hours (0 */2 * * *) \u2014 so between sweeps the count climbs and a PR whose CI lands in the wrong half of the cycle reds on a backlog its author never touched. Measured, same commit and same prod: 25 at 19:35Z (which failed docs-only PR #3027) and 14 at 22:45Z, at which point the identical gate passed and #3027 auto-merged. Nine of those 14 were created that day and were waiting for the next sweep. The value is deliberately NOT re-baselined upward \u2014 14 is the drained floor and the right number; what was wrong was treating a queue depth as an invariant. If this ever needs to be a hard gate again, gate on rows uncategorized for longer than one sweep interval (age, not count), which is the quantity that actually means the sweep stopped.",
