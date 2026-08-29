@@ -66,8 +66,44 @@ export const HYGIENE_METRICS: HygieneMetric[] = [
     label: 'Redirects to non-canonical',
     hint: 'Inert, not live 301-into-404s — the edge lookup filters redirect targets on status=active.',
   },
+  {
+    key: 'alias_equals_name',
+    label: 'Alias equals tag name',
+    zero: true,
+    hint: '"Also called: Festival" on /tags/festival asserts nothing. 47 deleted 2026-08-29; a comeback means the sitelink importer regressed.',
+  },
+  {
+    key: 'alias_mojibake',
+    label: 'Mojibake aliases',
+    zero: true,
+    hint: 'U+FFFD in an alias is transport corruption, never a spelling.',
+  },
+  {
+    key: 'refusal_prose_active',
+    label: 'Refusal prose as definition',
+    zero: true,
+    hint: '"No information available" stamps and LLM refusal essays published as definitions. A blank is honest and gets deindexed; these read as content.',
+  },
 
   // Advisory: CI warns, never fails. This panel is their only human surface.
+  {
+    key: 'unreviewed_typed_alias',
+    label: 'Typed aliases awaiting review',
+    advisory: true,
+    hint: 'Displayed nowhere, trusted by nothing until approved. Review in the tag editor; ordinary-word street names (Speed, Acid) stay unapproved on purpose.',
+  },
+  {
+    key: 'relations_pending_review',
+    label: 'Relations awaiting review',
+    advisory: true,
+    hint: 'LLM-verified ontology proposals + legacy co-occurrence rows. A related chip is an editorial assertion; nothing here displays until approved.',
+  },
+  {
+    key: 'prose_unreviewed',
+    label: 'Prose not yet truth-checked',
+    advisory: true,
+    hint: 'The mode=prose pass drains ~300/day (subject check + house-voice rewrite). Read the trend.',
+  },
   {
     key: 'events_with_tags_unlinked',
     label: 'Events not linked to tags',

@@ -1,6 +1,8 @@
 {
   "_comment": "Ratchet baseline for scripts/check-tag-hygiene.mjs. Every value is a DEFECT COUNT that must not grow. Re-measured on prod 2026-08-23 after the whole tag DQ program landed (Phases 0-5). Tighten with `node scripts/check-tag-hygiene.mjs --update` after a cleanup; never loosen a number to make CI pass. duplicate_active_name 9 -> 14 on 2026-08-23: the marketplace facet vocabulary (color-*/size-*/genre-*/fit-*) is namespaced BY SLUG precisely so it can coexist with the glossary vocabulary, so a facet tag's display name colliding with a glossary tag's is by design, not a defect. The five new pairs are color-black/black, genre-history/history, genre-romance/romance, color-gold/mat-gold and color-silver/mat-silver \u2014 the same shape as the nine already baselined (mat-leather/leather, mat-denim/denim, occ-pride/news-pride ...). The vocabulary is a fixed 54-row seed, so this number is stable, not a trend.",
   "active_tags_with_image_url": 0,
+  "alias_equals_name": 0,
+  "alias_mojibake": 0,
   "assignment_to_non_active_tag": 0,
   "dangling_category_id": 0,
   "denorm_category_missing": 0,
@@ -11,16 +13,28 @@
   "merged_but_not_status_merged": 0,
   "nonclean_entity_type": 0,
   "placeholder_description_active": 137,
+  "prose_unreviewed": 2903,
   "redirect_to_non_canonical": 58,
+  "refusal_prose_active": 0,
+  "relations_pending_review": 120,
   "sensitive_without_description": 19,
   "uncategorized_active": 14,
+  "unreviewed_typed_alias": 70,
   "_advisory": [
     "event_tag_strings_unresolved",
     "events_with_tags_unlinked",
+    "prose_unreviewed",
+    "relations_pending_review",
     "sensitive_without_description",
-    "uncategorized_active"
+    "uncategorized_active",
+    "unreviewed_typed_alias"
   ],
   "_notes": {
+    "alias_equals_name": "Zero-invariant since 20261011100000 deleted the 47 rows. An alias identical to its own tag's name says nothing; the sitelink importer minted them alongside real aliases.",
+    "refusal_prose_active": "Zero-invariant since 20261011100000 nulled the 175 'No information available' stamps and 38 'There is no information available...' LLM refusal essays. Same class as placeholder_description_active but on short_description/long_description, which that counter never reads.",
+    "unreviewed_typed_alias": "Review queue depth, advisory by nature. ~65 after the 2026-08-29 alias truth pass approved everything mechanically safe; what remains is deliberately unapproved (ordinary-word street names like Speed/Acid/Ice are true synonyms but catastrophic auto-tagging rules) or awaiting a human. Growth means a producer is minting typed aliases as 'auto' again.",
+    "relations_pending_review": "Grows BY DESIGN while tag_relation_verify works through the >=0.85 embedding pairs (~1,700) - each named verdict lands here as review_status='pending' and displays nowhere. Baseline is the 120 legacy 'auto' co-occurrence rows the display gate hid on the same day. Drains only through admin approval.",
+    "prose_unreviewed": "Drain gauge for tag-enrichment-sweep mode='prose' (~300/day over the 2,903 prose-bearing tags). New tags refill it, so it is a sawtooth like uncategorized_active; a flat high number means the cron stopped.",
     "duplicate_active_name": "9 is correct, not a backlog: the deliberate mat-* sense splits (mat-leather vs leather) excluded by 20260916110000. Growth means a real twin pair regrew.",
     "redirect_to_non_canonical": "INERT rows, not live 301-into-404s \u2014 retracted 2026-08-23. The edge lookup filters redirect targets on status=active (PR #2828), so /tags/alex-j-rgen returns a clean 404 in one hop rather than redirecting into one; verified on prod. 57 of the 58 are accent-folding pairs (alex-j-rgen -> alex-jurgen, bisexualit-t -> bisexualitat). Kept, not deleted: a deprecated tag can be revived and 20260910181447 re-mints redirects when that happens. Hygiene counter, not exposure.",
     "indexable_without_description": "869 thin public pages advertised in sitemap-tags.xml. 20260921110000 deindexes them and re-indexes on prose, after which this becomes a real zero-invariant rather than a backlog.",

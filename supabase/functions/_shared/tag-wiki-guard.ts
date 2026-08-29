@@ -27,6 +27,8 @@
 // are all regenerated from it weekly, so a plausible-but-wrong QID rebuilds wrong data
 // forever while a null one rebuilds nothing.
 
+import { extractSupportsQueerSense } from './tag-style.ts'
+
 /** Lowercase, strip diacritics and every non-alphanumeric character. */
 export function normalizeForCompare(s: string | null | undefined): string {
   return (s ?? '')
@@ -107,17 +109,28 @@ export interface WikiIdentity {
   title: string | null
   /** P31 labels of the linked Wikidata entity, English. Empty when unknown. */
   p31Labels: readonly string[]
+  /**
+   * Set when the tag lives in a category whose members carry a queer/kink-
+   * specific sense (`isSenseCategory` in tag-style.ts). For such a tag pass
+   * the article's extract too: title agreement + a plausible class are
+   * exactly what the WRONG-SENSE failure produces — the article "Vacuum
+   * pump" really is titled Vacuum pump and a device is a plausible class,
+   * but on a Fetishes tag it is the wrong subject — so the extract must
+   * additionally corroborate the queer/community sense.
+   */
+  senseCategory?: boolean
+  extract?: string | null
 }
 
 export interface AdoptionVerdict {
   adopt: boolean
   /** Machine-readable reason, logged so a refusal is visible rather than silent. */
-  reason: 'ok' | 'title-mismatch' | 'implausible-class' | 'no-title'
+  reason: 'ok' | 'title-mismatch' | 'implausible-class' | 'no-title' | 'generic-sense'
   detail?: string
 }
 
 /**
- * Both gates. A refusal is a decision, not an error — the caller leaves the tag
+ * All gates. A refusal is a decision, not an error — the caller leaves the tag
  * unlinked rather than writing a guess.
  */
 export function mayAdoptWikiIdentity(tagName: string, id: WikiIdentity): AdoptionVerdict {
@@ -127,5 +140,8 @@ export function mayAdoptWikiIdentity(tagName: string, id: WikiIdentity): Adoptio
   }
   const bad = implausibleClassOf(id.p31Labels)
   if (bad) return { adopt: false, reason: 'implausible-class', detail: bad }
+  if (id.senseCategory && !extractSupportsQueerSense(id.extract)) {
+    return { adopt: false, reason: 'generic-sense', detail: id.title ?? undefined }
+  }
   return { adopt: true, reason: 'ok' }
 }
