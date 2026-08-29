@@ -1,54 +1,63 @@
 -- Cross-language tag lookup: index curated aliases into the tag's own tsvector.
 --
+-- APPLIED VIA MCP AND COMMITTED AT THE STAMPED VERSION, per the CLAUDE.md
+-- early-apply convention — the effect had to be measurable on prod before the
+-- claim below could be made honestly.
+--
 -- WHY THE SYNONYM TABLE COULD NOT DO THIS
 --
--- search_synonyms feeds query expansion in workers/search-proxy, and the
+-- search_synonyms feeds query expansion in workers/search-proxy, and that
 -- expansion reaches exactly one arm of the hybrid search:
 --
 --   const embedText = allSynonyms.length ? `${effectiveQ} ${allSynonyms...}` : effectiveQ;
 --   const pgArgs = { query: effectiveQ, queryVec: blendedVec, ... };
 --
--- The expanded string is used to build the EMBEDDING. The keyword arm receives
--- `effectiveQ` — the original, unexpanded query. So a synonym can only ever
--- influence the vector side, and for a rare foreign token the vector alone does
--- not outrank a strong lexical match.
+-- The expanded string builds the EMBEDDING. The keyword arm receives
+-- `effectiveQ` — the original, unexpanded query. A synonym therefore only ever
+-- influences the vector side, and for a rare foreign token the vector alone
+-- does not outrank a strong lexical match.
 --
--- Measured on prod: "Xanax" returns xanadu/xana, not alprazolam. "Valoron"
--- returns tiburon. "Lachgas" returns a person named Lachgar. Meanwhile
--- "Naloxon" DOES return naloxone and "Dissoziativa" DOES return dissociatives —
+-- Measured on prod before this change: "Xanax" returned xanadu, "Valoron"
+-- returned tiburon, "Lachgas" returned a person named Lachgar. Meanwhile
+-- "Naloxon" DID return naloxone and "Dissoziativa" DID return dissociatives —
 -- not because expansion worked, but because those German words are close enough
 -- to their English forms to match on trigram. That coincidence is what made the
--- synonym layer look like it was working; it never was, for keyword search.
+-- synonym layer look functional. For keyword search it never was.
 --
 -- WHAT THIS CHANGES
 --
 -- search_documents_index_tags already indexes name (A), category (B),
--- description (D) and the i18n name/description jsonb. It has never indexed
--- tag_aliases — zero occurrences of "alias" in the function. So 15k alias rows
--- across eleven languages, including every German term added for the
+-- description (D) and the i18n jsonb columns. It had never indexed
+-- tag_aliases — zero occurrences of "alias" in the function body. So ~15k alias
+-- rows across eleven languages, including every German term added for the
 -- harm-reduction vocabulary, were absent from the keyword index entirely.
 --
--- They are added at weight 'A', matching how name_i18n is already treated: an
--- alias is an alternative NAME, and the whole point is that it should match as
+-- Aliases are added at weight 'A', matching how name_i18n is already treated:
+-- an alias is an alternative NAME, and the point is that it should match as
 -- strongly as one.
 --
 -- THE SET IS CURATED BY CONSTRUCTION, WHICH IS THE SAFETY PROPERTY
 --
 -- Only aliases carrying an ACTIVE search_synonyms row are indexed. That set was
 -- hand-vetted in 20260829124635 precisely to exclude ordinary words: "Pilze" is
--- German for mushrooms, "Gras" is grass, "Schnee" is snow, and in English
--- Speed, Pot, Acid, Ice and Blotter are ordinary too. Indexing all 15k aliases
--- would make a search for mushroom restaurants return a psychedelic — the same
--- hazard that governs auto-tagging and query expansion, arriving by a third
--- route. The join to search_synonyms is what keeps that impossible: an alias
--- has to have been deliberately activated to be indexed.
+-- German for mushrooms, "Gras" is grass, "Schnee" is snow; in English Speed,
+-- Pot, Acid, Ice and Blotter are ordinary too. Indexing all 15k aliases would
+-- make a search for mushroom restaurants return a psychedelic — the same hazard
+-- that governs auto-tagging and query expansion, arriving by a third route. The
+-- join to search_synonyms makes that impossible: an alias must have been
+-- deliberately activated to be indexed.
+--
+-- Verified on prod after reindexing all tag documents:
+--   lachgas -> 1 tag doc, xanax -> 1, valoron -> 1
+--   pilze   -> 0 tag docs, gras -> 0
+-- and live search moved Lachgas -> nitrous-oxide, Valoron -> tilidine,
+-- Kreislaufkollaps -> circulatory-collapse, Krampfanfall -> seizure,
+-- Schadensminderung -> harm-reduction, Nachtschattengewaechse -> deliriants.
 --
 -- Nothing about query construction, ranking or the worker changes. This is a
--- data-shape change to tag documents only.
---
--- Also removes a duplicate active synonym row: "überdosis" -> "overdose"
--- existed twice, which fires the same expansion term twice and wastes a slot
--- against the 40-term expansion cap.
+-- data-shape change to tag documents only. Terms whose fuzzy competitors still
+-- win (Xanax vs xanadu, Horrortrip vs horror-bar) are an RRF weighting question
+-- and are deliberately left alone.
 
 create or replace function public.search_documents_index_tags(p_id uuid default null::uuid)
  returns void
@@ -84,7 +93,9 @@ as $function$
   on conflict (entity_type, entity_id) do update set title=excluded.title, description=excluded.description, search_tsv=excluded.search_tsv, facets=excluded.facets, geog=excluded.geog, trust_score=excluded.trust_score, liveness_status=excluded.liveness_status, is_featured=excluded.is_featured, quality_score=excluded.quality_score, closed_at=excluded.closed_at, start_date=excluded.start_date, end_date=excluded.end_date, is_free=excluded.is_free, price_min=excluded.price_min, price_max=excluded.price_max, slug=excluded.slug, image_url=excluded.image_url, city=excluded.city, country=excluded.country, content_language=excluded.content_language, updated_at=now();
 $function$;
 
--- Drop the duplicate "überdosis" row, keeping the oldest.
+-- Duplicate active synonym: "überdosis" -> "overdose" existed twice, which
+-- fires the same expansion term twice and wastes a slot against the 40-term
+-- expansion cap. Keep the oldest.
 delete from public.search_synonyms s
  using public.search_synonyms k
  where s.status = 'active' and k.status = 'active'
