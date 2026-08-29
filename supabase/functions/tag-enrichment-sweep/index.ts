@@ -39,7 +39,7 @@
 // OR service-role OR admin. Mirrors the Phase 4 i18n cron parking pattern.
 // ============================================================================
 import { chatCompletion } from '../_shared/openai-client.ts'
-import { mayAdoptWikiIdentity } from '../_shared/tag-wiki-guard.ts'
+import { mayAdoptWikiIdentity, titleAgrees } from '../_shared/tag-wiki-guard.ts'
 import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
 import {
   getCorsHeaders,
@@ -412,7 +412,13 @@ Deno.serve(async (req) => {
       const raw = await fetchWikipediaSummary(tag.name)
       let wiki: WikiSummary | null = null
       if (raw) {
-        const p31Labels = raw.wikidata_id ? await fetchEntityClassLabels(raw.wikidata_id) : []
+        // Title gate first, as a cost filter: it needs no network call, and a
+        // mismatch is refused whatever the class turns out to be. Only a candidate
+        // that already survived it is worth two more round trips — this batch can be
+        // 50 tags and the function has a gateway budget to stay inside.
+        const p31Labels = raw.wikidata_id && titleAgrees(tag.name, raw.title)
+          ? await fetchEntityClassLabels(raw.wikidata_id)
+          : []
         const verdict = mayAdoptWikiIdentity(tag.name, { title: raw.title, p31Labels })
         if (verdict.adopt) {
           wiki = raw
