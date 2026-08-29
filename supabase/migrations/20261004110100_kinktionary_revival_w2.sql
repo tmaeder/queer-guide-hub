@@ -1,0 +1,450 @@
+-- Kinktionary-corroborated revival, wave 2 of 4 — roles (A–L).
+--
+-- WHAT THIS FIXES
+--
+-- A one-off data-quality audit on 2026-06-05 set status='deprecated' on 4,355
+-- tags whose only fault was being "orphan (no entity assignments, relations,
+-- synonyms, or aliases)", and a separate "auto: zero usage" pass took 717 more.
+-- That is a USAGE test applied to a GLOSSARY. A glossary term's worth does not
+-- depend on whether a venue happens to be tagged with it.
+--
+-- Measured on prod before this migration: 4,130 of the orphan-deprecated rows
+-- still carry >200 characters of finished prose and 1,150 carry a wikidata_id.
+-- fetchTagWithCategories (src/hooks/usePageFetchers.ts) filters
+-- .eq('status','active'), so every one of them answers "No such term" today.
+-- /tags/felching, /tags/figging, /tags/bastinado and /tags/omorashi are each a
+-- finished page with 300-550 characters of prose and a Wikidata ID, serving a
+-- 404. Same shape as 20261002100200: the corrected pages do not exist.
+--
+-- WHY THE KINKTIONARY, AND WHAT IS AND IS NOT TAKEN FROM IT
+--
+-- FetLife's Kinktionary (https://fetlife.com/kinktionary) is a public,
+-- community-curated glossary of 1,892 terms. It is used here as INDEPENDENT
+-- CORROBORATION that a term is live kink vocabulary — that is what makes
+-- reviving these rows a measured decision rather than an arbitrary one.
+--
+-- NOT ONE WORD OF THEIR PROSE IS COPIED OR ADAPTED. Their licence
+-- (https://fetlife.com/kinktionary/license-zcfzz) is non-commercial only —
+-- "You may not use any material from the Kinktionary for commercial purposes
+-- without the express written consent of FetLife" — and queer.guide is
+-- commercial (marketplace, affiliate_partners, Stripe). The NC term binds
+-- adaptations too, so paraphrase is equally out. What is used is the term list
+-- and the section a term sits in: facts and short phrases, used only to decide
+-- WHICH of our own already-written rows deserve to be live. Every sentence on
+-- these pages is prose this project wrote. Same posture, and the same reason, as
+-- the "THE PROSE IS OURS" section of 20260907100000.
+--
+-- STATUS ONLY. CATEGORY IS DELIBERATELY NOT REWRITTEN.
+--
+-- 952 of the 961 corroborated rows already carry a category_id, and a
+-- section-by-category cross-tab showed them broadly consistent with the
+-- Kinktionary's own sectioning. Re-filing 961 rows on the strength of a foreign
+-- taxonomy would be a second, unreviewed change riding along with this one.
+-- Only the 3 row(s) in this wave that carry NO category at all are
+-- assigned, by hand, below. Genuine disagreements (26 gender terms filed under
+-- Sexual Orientation) are recorded for the separate correction pass.
+--
+-- category_id IS WRITTEN ON unified_tags, NOT INTO tag_category_assignments.
+-- tag_hygiene_stats().uncategorized_active counts unified_tags.category_id;
+-- 20260907100000 and 20260910171943 wrote only the junction, and their tags
+-- still read as uncategorized on prod today (444 such rows measured).
+-- trg_sync_tag_category_after owns the junction and fires on category_id.
+--
+-- NAME IS NEVER WRITTEN. normalize_tag_input() re-derives the slug from name on
+-- any UPDATE that changes it — 20260910171943 records 'Pride Flag' ->
+-- 'Rainbow Pride Flag' silently MOVING the row to a new slug. Across 961 rows
+-- that would be unrecoverable, so name does not appear in the UPDATE at all.
+--
+-- seo_indexable IS COMPUTED FROM THE PROSE, NOT SET BLIND.
+-- indexable_without_description is a zero-invariant in check-tag-hygiene.mjs,
+-- which measures PROD — a blanket true would red every open PR in the repo
+-- until run_tag_thin_page_reindex drained it at 400 rows/night. All rows in
+-- this wave were measured to have description or short_description, so the
+-- expression below evaluates true for all of them; it is written as an
+-- expression anyway so a drifted row degrades to deindexed instead of to red CI.
+--
+-- human_reviewed = true IS LOAD-BEARING TWICE: deprecate_unused_tags() skips
+-- human-reviewed rows (it is currently scheduled in no cron and no
+-- admin_automations row, but that is a fact about today, not a guarantee), and
+-- enforce_tag_seo_sensitivity_gate() forces seo_indexable := false on a
+-- sensitive or adult row that is not human-reviewed. 575 of these rows are
+-- is_adult, so without the flag most of this wave would revive deindexed.
+--
+-- KNOWN AND ACCEPTED CONSEQUENCE. run_tag_assignment_reconcile (nightly) builds
+-- its auto-tagging map from lower(name)/lower(slug) of every ACTIVE tag. 51 of
+-- the revived slugs match free-text tags on existing content and will attach to
+-- 503 rows on the next run. Most are correct (asexual, femme, chosen-family,
+-- abroromantic). ~15 are ordinary English words whose kink sense differs from
+-- the content's (teacher, queen, priest, lion, camp) and are recorded in
+-- docs/audits/ for the correction pass. This is a restoration of the state that
+-- held before 2026-06-05, not a new hazard, which is why it is accepted here
+-- rather than blocked — but it is named, because the same function's own
+-- comment records tagging 2,609 'culture' articles as Crops.
+
+set local statement_timeout = '600s';
+
+-- log_unified_tag_change() raises on any change to a human_reviewed row when
+-- app.actor is unset (it defaults to 'system:trigger'). Top level, not inside
+-- the DO block.
+select set_config('app.actor', 'migration:kinktionary-revival-w2', true);
+
+do $mig$
+declare
+  r      record;
+  v_bad  int;
+  v_live int;
+begin
+  create temp table _rev (slug text primary key) on commit drop;
+  insert into _rev (slug) values
+    ('adventurer'),
+    ('aesthetic-exhibitionist'),
+    ('affection-slut'),
+    ('age-regressor'),
+    ('ageplayer'),
+    ('alpha-pet'),
+    ('alpha-slave'),
+    ('alpha-submissive'),
+    ('anal-angel'),
+    ('anal-master'),
+    ('anal-princess'),
+    ('anal-slut'),
+    ('anguisette'),
+    ('ass-centric'),
+    ('asswhore'),
+    ('attention-whore'),
+    ('babyboy'),
+    ('babyfur'),
+    ('babyghoul'),
+    ('babygirl'),
+    ('bad-boy'),
+    ('bad-girl'),
+    ('bakushi'),
+    ('ballbustee'),
+    ('ballbuster'),
+    ('balloon'),
+    ('basorexic'),
+    ('battle-sub'),
+    ('bear-chaser'),
+    ('beast'),
+    ('bedroom-dom'),
+    ('bedroom-submissive'),
+    ('big-spoon'),
+    ('bimbo'),
+    ('blood-player'),
+    ('blue-booty-buddy'),
+    ('bobcat'),
+    ('bondage-bottom'),
+    ('bondage-slut'),
+    ('bondage-switch'),
+    ('bondage-top'),
+    ('bondmaid'),
+    ('boner-donor'),
+    ('book-daddy'),
+    ('boot-bitch'),
+    ('boot-slut'),
+    ('bossy-bottom'),
+    ('bottom-bitch'),
+    ('bottom-leaning-switch'),
+    ('brat-breaker'),
+    ('brat-handler'),
+    ('brat-king'),
+    ('brat-queen'),
+    ('brat-wrangler'),
+    ('bratochist'),
+    ('bratty-bottom'),
+    ('bratty-princess'),
+    ('bratty-sub'),
+    ('bratty-top'),
+    ('butterfly'),
+    ('captor'),
+    ('castratrix'),
+    ('catgirl'),
+    ('chain-mouse'),
+    ('chaos-gremlin'),
+    ('chaos-gremlin-tamer'),
+    ('chaos-kitten'),
+    ('chaos-top'),
+    ('cock-socket'),
+    ('cock-whore'),
+    ('concubus'),
+    ('cougar'),
+    ('crafter'),
+    ('cuckette'),
+    ('cuckold'),
+    ('cuckoldress'),
+    ('cuckquean'),
+    ('cuddle-slut'),
+    ('cuddle-top'),
+    ('cuddly-mogwai'),
+    ('cum-factory'),
+    ('cum-princess'),
+    ('cum-slut'),
+    ('cumdump'),
+    ('cunnilingus-slave'),
+    ('daddy-dom'),
+    ('damsel'),
+    ('dark-dom'),
+    ('degrader'),
+    ('delta'),
+    ('demdom'),
+    ('demon-daddy'),
+    ('demon-mommy'),
+    ('demonette'),
+    ('denial-bottom'),
+    ('denial-player'),
+    ('denial-top'),
+    ('diaperfur'),
+    ('disciplinarian'),
+    ('disciplinee'),
+    ('diva'),
+    ('doe'),
+    ('domina'),
+    ('dominant-little'),
+    ('dominant-masochist'),
+    ('dominant-sadist'),
+    ('dragon'),
+    ('duchess'),
+    ('duck'),
+    ('ducky'),
+    ('dungeon-master-dm'),
+    ('edge-bottom'),
+    ('edge-player'),
+    ('edge-switch'),
+    ('edge-top'),
+    ('electro-bottom'),
+    ('electro-switch'),
+    ('electro-top'),
+    ('emotional-sadomasochist'),
+    ('emotional-support'),
+    ('emotional-support-human-esh'),
+    ('energy-bottom'),
+    ('energy-player'),
+    ('energy-top'),
+    ('ethical-slut'),
+    ('evil-scientist'),
+    ('exhibitionist'),
+    ('exploring'),
+    ('fae'),
+    ('fairy'),
+    ('fallen-angel'),
+    ('familiar'),
+    ('fembull'),
+    ('femdaddy'),
+    ('femdom-submissive'),
+    ('feminizee'),
+    ('feminizer'),
+    ('femme-fatale'),
+    ('feral-muse'),
+    ('fire-bunny'),
+    ('fire-fairy'),
+    ('fire-top'),
+    ('fistee'),
+    ('fister'),
+    ('fitdom'),
+    ('floozy'),
+    ('food-daddy'),
+    ('food-player'),
+    ('foodslut'),
+    ('foot-bottom'),
+    ('foot-lover'),
+    ('foot-slut'),
+    ('foot-switch'),
+    ('foot-top'),
+    ('footgirl'),
+    ('footlady'),
+    ('foster-daddy'),
+    ('foster-mommy'),
+    ('freak'),
+    ('free-spirit'),
+    ('fuck-puppet'),
+    ('fuckboy'),
+    ('fuckdoll'),
+    ('gainer'),
+    ('gamma'),
+    ('giantess-foot-slave'),
+    ('girl-next-door'),
+    ('goblin-king'),
+    ('god'),
+    ('goddess'),
+    ('goddex'),
+    ('golden-retriever'),
+    ('good-boy'),
+    ('good-girl'),
+    ('gooner'),
+    ('goonette'),
+    ('guard-dog'),
+    ('guitarist'),
+    ('hard-dom-me'),
+    ('hard-masochist'),
+    ('hellkitten'),
+    ('hellpuppy'),
+    ('himbo'),
+    ('hole'),
+    ('hot-aunty'),
+    ('hothusband'),
+    ('hotwife'),
+    ('human-ashtray'),
+    ('human-canvas'),
+    ('human-fleshlight'),
+    ('human-furniture'),
+    ('humiliatrix'),
+    ('hypno-bottom'),
+    ('hypno-top'),
+    ('impact-bottom'),
+    ('impact-model'),
+    ('impact-partner'),
+    ('impact-switch'),
+    ('impact-top'),
+    ('inflatee'),
+    ('intellectual-masochist'),
+    ('intellectual-sadist'),
+    ('intellectual-sadomasochist'),
+    ('kajirus'),
+    ('king'),
+    ('kitsune'),
+    ('knight'),
+    ('lady'),
+    ('lamb'),
+    ('lap-pet'),
+    ('lash-bearer'),
+    ('latex-bottom'),
+    ('latex-kitten'),
+    ('latex-pony'),
+    ('latex-princess'),
+    ('latex-pup'),
+    ('latex-slut'),
+    ('latex-switch'),
+    ('latex-top'),
+    ('leather-bottom'),
+    ('leather-daddy'),
+    ('leather-dog'),
+    ('leather-dyke'),
+    ('leather-lover'),
+    ('leather-mommy'),
+    ('leather-person'),
+    ('leather-pet'),
+    ('leather-pony'),
+    ('leather-slut'),
+    ('leather-top'),
+    ('leatherboi'),
+    ('leatherboy'),
+    ('leathergirl'),
+    ('leatherman'),
+    ('leatherperson'),
+    ('leatherwoman'),
+    ('lion'),
+    ('lioness'),
+    ('little'),
+    ('little-bitch'),
+    ('little-girl'),
+    ('little-lamb'),
+    ('little-one'),
+    ('little-spoon'),
+    ('lone-wolf'),
+    ('lord'),
+    ('lover-girl'),
+    ('lycampire'),
+    ('lycan');
+
+  -- Every slug must already exist as a non-active row. A miss means the
+  -- committed disposition file has drifted from prod; report it rather than
+  -- inserting a fresh empty tag under that slug.
+  select count(*) into v_bad
+    from _rev k left join public.unified_tags t on t.slug = k.slug
+   where t.id is null;
+  if v_bad > 0 then
+    raise exception 'kinktionary revive w2: % slug(s) absent from unified_tags — disposition file is stale', v_bad;
+  end if;
+
+  -- One statement per slug. Cheap at this size and the reviewed convention.
+  for r in select slug from _rev order by slug loop
+    update public.unified_tags set
+      status              = 'active',
+      deprecated_at       = null,
+      deprecation_reason  = null,
+      merged_into_id      = null,
+      verification_status = 'reviewed',
+      human_reviewed      = true,
+      seo_indexable       = (coalesce(nullif(btrim(description), ''), short_description) is not null),
+      last_verified_at    = now(),
+      updated_at          = now()
+    where slug = r.slug
+      and status <> 'active';
+  end loop;
+
+  -- The rows in this wave that carried no category at all. Assigned by hand;
+  -- every other row keeps the category it already had.
+  for r in select * from (values
+      ('bear-chaser', 'body-types-archetypes'),
+      ('butterfly', 'slang-terminology'),
+      ('emotional-support', 'mental-health')
+  ) as v(slug, cat) loop
+    update public.unified_tags u set category_id = c.id
+      from public.tag_categories c
+     where u.slug = r.slug and c.slug = r.cat
+       and u.category_id is distinct from c.id;
+  end loop;
+
+  ------------------------------------------------------------------ assertions
+  select count(*) into v_bad from _rev k
+    join public.unified_tags t on t.slug = k.slug
+   where t.status <> 'active' or t.human_reviewed is not true
+      or t.verification_status <> 'reviewed'
+      or t.deprecated_at is not null or t.deprecation_reason is not null
+      or t.merged_into_id is not null;
+  if v_bad > 0 then
+    raise exception 'kinktionary revive w2: % row(s) did not reach the live state', v_bad;
+  end if;
+
+  -- The CI zero-invariant, asserted where it is caused rather than discovered
+  -- on an unrelated PR two hours later.
+  select count(*) into v_bad from _rev k
+    join public.unified_tags t on t.slug = k.slug
+   where t.seo_indexable
+     and coalesce(nullif(btrim(t.description), ''), t.short_description) is null;
+  if v_bad > 0 then
+    raise exception 'kinktionary revive w2: % indexable row(s) carry no description', v_bad;
+  end if;
+
+  -- Zero-invariant since the 2026-08-28 photo retirement.
+  select count(*) into v_bad from _rev k
+    join public.unified_tags t on t.slug = k.slug
+   where t.image_url is not null;
+  if v_bad > 0 then
+    raise exception 'kinktionary revive w2: % row(s) carry a retired image_url', v_bad;
+  end if;
+
+  -- Nothing in this wave may be left uncategorized: it would land straight in
+  -- tag_hygiene_stats().uncategorized_active.
+  select count(*) into v_bad from _rev k
+    join public.unified_tags t on t.slug = k.slug
+   where t.category_id is null;
+  if v_bad > 0 then
+    raise exception 'kinktionary revive w2: % revived row(s) have no category_id', v_bad;
+  end if;
+
+  -- Both sides of the category write. Asserting only category_id is how the
+  -- junction silently stayed empty in the migrations named in the header.
+  select count(*) into v_bad from _rev k
+    join public.unified_tags t on t.slug = k.slug
+   where not exists (
+     select 1 from public.tag_category_assignments a
+      where a.tag_id = t.id and a.category_id = t.category_id and a.is_primary);
+  if v_bad > 0 then
+    raise exception 'kinktionary revive w2: % row(s) have no primary junction row', v_bad;
+  end if;
+
+  -- Held back on purpose; see HOLD_BACK in the generator. If one of these is
+  -- live, something outside this migration revived it and the reason it was
+  -- held back needs re-reading.
+  select count(*) into v_bad from public.unified_tags
+   where slug in ('staff', 'genderfluid', 'boytoy', 'gun-play', 'gloryhole') and status = 'active';
+  if v_bad > 0 then
+    raise exception 'kinktionary revive w2: % held-back slug(s) are active', v_bad;
+  end if;
+
+  select count(*) into v_live from _rev k
+    join public.unified_tags t on t.slug = k.slug where t.status = 'active';
+  raise notice 'kinktionary revive w2: % of % now active', v_live, (select count(*) from _rev);
+end
+$mig$;
