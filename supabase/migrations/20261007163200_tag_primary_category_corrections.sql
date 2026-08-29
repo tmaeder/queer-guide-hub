@@ -137,6 +137,28 @@ begin
   raise notice 'primary category corrections: % moved, % skipped', v_moved, v_skipped;
 end $mig$;
 
+-- `u-equals-u` is repaired by 20260829120625_u_equals_u_single_primary_category,
+-- which sorts earlier and is already applied to prod. It is NOT repeated here.
+--
+-- That row is why db push was down: it held TWO is_primary junction rows
+-- (Orientation and Sexual Health) with category_id already on Sexual Health and
+-- the text still reading "Orientation", so 20261007160000's corpus-wide
+-- assertion failed on a row its fill-only loop could never reach — aborting the
+-- push and every migration behind it, eight deploys running.
+--
+-- A draft of this migration repaired it too, and got it wrong in a way worth
+-- recording: it guarded on "a primary already exists on sexual-health", which
+-- is TRUE while the duplicate is present, so it skipped and left the wrong row
+-- primary. That surfaced only as 21000 "more than one row returned by a
+-- subquery" in the verification — a duplicate primary is invisible to any check
+-- that reads the primary as a scalar. The migration that shipped deletes the
+-- orientation assignment outright rather than demoting it, which is the better
+-- call: as a secondary it would still list U=U on the Sexual Orientation
+-- category page, the same wrong claim with less visibility.
+--
+-- The verify block below still asserts the resulting state, because this
+-- migration's own six re-files share the mechanism that row exercised.
+
 -- Asserts ONLY the six rows this migration writes.
 do $verify$
 declare
@@ -193,6 +215,30 @@ begin
     and t.category is distinct from c.name;
   if v_bad is not null then
     raise exception 'primary category corrections: denorm text did not follow: %', v_bad;
+  end if;
+
+  -- u-equals-u ends with exactly ONE primary, on Sexual Health, and its text
+  -- agrees. Counted rather than read through a scalar subquery, because the
+  -- defect being fixed here — two is_primary rows — is precisely what a scalar
+  -- read cannot see (it raises 21000 or silently picks one).
+  select count(*) into v_n
+  from public.tag_category_assignments a
+  join public.unified_tags t on t.id = a.tag_id
+  where t.slug = 'u-equals-u' and a.is_primary;
+  if v_n <> 1 then
+    raise exception 'u-equals-u has % primary junction row(s), expected 1', v_n;
+  end if;
+
+  select string_agg(x, ', ') into v_bad from (
+    select t.slug || ' junction=' || c.name || ' text=' || coalesce(t.category, 'NULL') as x
+      from public.unified_tags t
+      join public.tag_category_assignments a on a.tag_id = t.id and a.is_primary
+      join public.tag_categories c on c.id = a.category_id
+     where t.slug = 'u-equals-u'
+       and (c.slug <> 'sexual-health' or t.category is distinct from c.name)
+  ) d;
+  if v_bad is not null then
+    raise exception 'u-equals-u not settled on Sexual Health: %', v_bad;
   end if;
 
   -- No tag gained is_adult. Raising it would deindex the page via

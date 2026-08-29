@@ -102,6 +102,134 @@ describe('unified_tags status/deprecated_at agreement', () => {
     expect(repairs).toMatch(/long_description/i);
     expect(repairs).toMatch(/wikidata_id/i);
   });
+
+  /**
+   * The arm that matters most, and the one a reasonable person deletes as
+   * redundant. `run_tag_assignment_reconcile` materializes
+   * `unified_tag_assignments` from venues / news_articles / community_groups and
+   * NEVER from personalities or events, so a tag carried only by those two has
+   * zero junction rows and reads as an orphan. Without this check the repair
+   * delisted 63 extra tags including `schriftsteller` (642 personalities),
+   * `aktivist` (475), `schauspieler` (452) and `politiker` (416) — the exact
+   * coverage-gap-mistaken-for-absence error that made the original audit wrong.
+   */
+  it('checks the entities own free-text tags[], not just the junction table', () => {
+    const { sql } = latestConstraintMigration('unified_tags_status_matches_deprecated_at');
+    const constraintAt = sql.search(
+      /add\s+constraint\s+unified_tags_status_matches_deprecated_at/i,
+    );
+    const repairs = sql.slice(0, constraintAt);
+
+    // All four free-text sources, unnested from the arrays themselves.
+    for (const table of ['venues', 'events', 'personalities', 'news_articles']) {
+      expect(repairs).toMatch(
+        new RegExp(`unnest\\(tags\\)\\s+(as tag\\s+)?from public\\.${table}`, 'i'),
+      );
+    }
+    // The set must GATE THE REVIVE, not merely be built. Asserting it appears
+    // somewhere in the file is vacuous — verified by deleting the arm from the
+    // revive predicate, which left the `create temp table` standing and kept a
+    // whole-file assertion green. Scope to the revive CTE.
+    const reviveStart = repairs.search(/with revive as/i);
+    expect(reviveStart).toBeGreaterThan(-1);
+    // Slice FORWARD from the CTE to the update it feeds. Slicing to the first
+    // `update` in the whole file silently yields '' now that step 0b adds an
+    // earlier one — and `expect('').toMatch(...)` fails loudly, but the same
+    // shape could just as easily have passed vacuously.
+    const after = repairs.slice(reviveStart);
+    const revive = after.slice(0, after.search(/update public\.unified_tags/i));
+    expect(revive.length).toBeGreaterThan(200);
+    expect(revive).toMatch(/_referenced_tag_keys/);
+
+    // `usage_count` is NOT an acceptable substitute: the same reconciler
+    // recomputes it from the same junction table, so it reads 0 for exactly the
+    // rows this arm exists to rescue. Two signals sharing an upstream are one.
+    // Comments stripped first — the prose above necessarily cites the value.
+    const code = repairs.replace(/--[^\n]*/g, '');
+    expect(code).not.toMatch(/usage_count\s*[><=]/);
+    // Guard the strip itself, so this cannot pass by emptying the haystack.
+    expect(code).toMatch(/update public\.unified_tags/i);
+  });
+
+  /**
+   * The bad revision ran on prod at 2026-08-29 11:55:14Z and committed — 215
+   * revived, 82 delisted, 81 of them wrongly — but `schema_migrations` never
+   * recorded the version, because the file carried its own `begin;`/`commit;`
+   * and the explicit COMMIT closed the transaction before `supabase db push`
+   * could write its bookkeeping row. Data stuck, bookkeeping rolled back.
+   */
+  it('does not manage its own transaction', () => {
+    const { sql } = latestConstraintMigration('unified_tags_status_matches_deprecated_at');
+    const code = sql.replace(/--[^\n]*/g, '');
+    expect(code).not.toMatch(/^\s*begin\s*;/im);
+    expect(code).not.toMatch(/^\s*commit\s*;/im);
+    // The actor must therefore be set the way the repo's working migrations do
+    // it — transaction-local, inside a block — not via a bare `set local`.
+    expect(code).toMatch(/set_config\(\s*'app\.actor'/);
+  });
+
+  it('repairs the rows a previous run of itself wrongly delisted', () => {
+    const { sql } = latestConstraintMigration('unified_tags_status_matches_deprecated_at');
+    const code = sql.replace(/--[^\n]*/g, '');
+    // Keyed on this migration's own actor string, so it touches only its own
+    // damage and never a legitimately deprecated tag from another cohort.
+    expect(code).toMatch(/tag_change_log/);
+    expect(code).toMatch(/actor\s*=\s*'migration:20261008110000'/);
+    // And re-checked against the reference set, so a genuinely dead row stays dead.
+    const repair = code.slice(code.indexOf('tag_change_log'));
+    expect(repair.slice(0, 900)).toMatch(/_referenced_tag_keys|unified_tag_assignments/);
+  });
+
+  it('can re-run against a database that already has the constraint', () => {
+    const { sql } = latestConstraintMigration('unified_tags_status_matches_deprecated_at');
+    // A bare ADD would abort the re-run with "already exists", stranding the
+    // wrongly-delisted rows and blocking every later migration behind it.
+    expect(sql).toMatch(
+      /drop\s+constraint\s+if\s+exists\s+unified_tags_status_matches_deprecated_at/i,
+    );
+  });
+
+  /**
+   * Two arms added after the 11:55Z run delisted `mavie-horbiger`, which was
+   * `seo_indexable=true` AND had a slug redirect pointing at it. A redirect is a
+   * reference — something linked under an older slug, and delisting turns it
+   * into a 404. And an indexable page is one a crawler was told to keep;
+   * retiring one is a product decision, not a repair migration's business.
+   *
+   * The measurement that "no seo_indexable row is a bare orphan" was true of
+   * the cohort as measured and stopped being true while concurrent sessions
+   * edited the same table — so it is asserted, not assumed.
+   */
+  it('never delists an indexable page or one with a redirect pointing at it', () => {
+    const { sql } = latestConstraintMigration('unified_tags_status_matches_deprecated_at');
+    const code = sql.replace(/--[^\n]*/g, '');
+    const constraintAt = code.search(
+      /add\s+constraint\s+unified_tags_status_matches_deprecated_at/i,
+    );
+    const repairs = code.slice(0, constraintAt);
+
+    // Both predicates — the revive AND the self-repair — must carry both arms,
+    // or one path still delists what the other protects.
+    const redirectArms = (repairs.match(/tag_slug_redirects r where r\.tag_id = t\.id/g) || [])
+      .length;
+    const indexableArms = (repairs.match(/or t\.seo_indexable/g) || []).length;
+    expect(redirectArms).toBeGreaterThanOrEqual(2);
+    expect(indexableArms).toBeGreaterThanOrEqual(2);
+  });
+
+  it('refuses to run if the reference check goes blind', () => {
+    const { sql } = latestConstraintMigration('unified_tags_status_matches_deprecated_at');
+    // A blast-radius guard: delisting is expected to touch ~1 row, so a future
+    // re-run that would 404 a large set must fail instead of proceeding.
+    expect(sql).toMatch(/raise exception[\s\S]{0,120}refusing to delist/i);
+    // GET DIAGNOSTICS only reports for a statement in its own PL/pgSQL block,
+    // so the UPDATE must live inside the DO block or the guard reads 0 and
+    // passes vacuously.
+    const block = sql.slice(sql.indexOf('do $$', sql.search(/refusing to delist/i) - 900));
+    expect(block.slice(0, block.indexOf('get diagnostics'))).toMatch(
+      /update public\.unified_tags/i,
+    );
+  });
 });
 
 describe('source-tags-extract', () => {
