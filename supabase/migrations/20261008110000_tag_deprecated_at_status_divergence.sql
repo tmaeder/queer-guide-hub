@@ -114,9 +114,30 @@ update public.unified_tags
 --    timestamp (192/192) and must keep it, so the constraint is stated as the
 --    equivalence the two readers assume: active <=> not deprecated.
 -- ---------------------------------------------------------------------------
-alter table public.unified_tags
-  add constraint unified_tags_status_matches_deprecated_at
-  check ((status = 'active') = (deprecated_at is null));
+--    Guarded because the constraint was hand-applied to prod before this file
+--    reached `db push`, and a bare ADD CONSTRAINT raises 42710 ("already
+--    exists") — which aborts the push and takes every LATER migration with it.
+--    That is what happened at 12:30Z: sixteen migrations applied, then this one
+--    stopped the queue. Skipping when present loses nothing, because the
+--    existing constraint is definitionally identical
+--    (`CHECK (((status = 'active'::text) = (deprecated_at IS NULL)))`,
+--    convalidated) and the assertion below runs either way.
+do $constraint$
+begin
+  if not exists (
+    select 1 from pg_constraint c
+      join pg_class t on t.oid = c.conrelid
+      join pg_namespace n on n.oid = t.relnamespace
+     where n.nspname = 'public'
+       and t.relname = 'unified_tags'
+       and c.conname = 'unified_tags_status_matches_deprecated_at'
+  ) then
+    alter table public.unified_tags
+      add constraint unified_tags_status_matches_deprecated_at
+      check ((status = 'active') = (deprecated_at is null));
+  end if;
+end
+$constraint$;
 
 do $$
 declare v_bad int;
