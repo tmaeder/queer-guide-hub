@@ -17,7 +17,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { classifyBoundaries, buildMapAriaLabel, RightsWorldMap } from '../RightsWorldMap';
+import { RightsWorldMap } from '../RightsWorldMap';
+import { classifyBoundaries, buildMapAriaLabel } from '../rightsWorldMapModel';
 import { topicBySlug } from '@/lib/rights/rightsCatalog';
 import type { RightsCountry } from '@/hooks/useIntentData';
 

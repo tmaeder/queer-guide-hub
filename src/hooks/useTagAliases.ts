@@ -7,21 +7,34 @@ export interface TagAlias {
   alias_name: string;
   alias_slug: string;
   alias_type: string;
+  // Nullable in the generated DB types; DB default is 'auto'. Treat null as
+  // unreviewed everywhere.
+  review_status: string | null;
   created_at: string;
 }
 
-export function useTagAliases(tagId: string | null) {
+/**
+ * `publicOnly` restricts the read to `review_status='approved'`. The public
+ * glossary page must pass it: auto-tagging (20260910151200) and the
+ * search-synonym bridge already trust approved aliases only, while the
+ * unreviewed pool is machine-minted from Wikidata sitelinks of a sometimes
+ * wrong entity — displaying it published junk as synonyms. Admin omits it.
+ */
+export function useTagAliases(tagId: string | null, opts?: { publicOnly?: boolean }) {
   const queryClient = useQueryClient();
+  const publicOnly = opts?.publicOnly ?? false;
 
   const { data: aliases = [], isLoading } = useQuery({
-    queryKey: ['tag-aliases', tagId],
+    queryKey: ['tag-aliases', tagId, publicOnly],
     queryFn: async (): Promise<TagAlias[]> => {
       if (!tagId) return [];
-      const { data, error } = await supabase
+      let query = supabase
         .from('tag_aliases')
         .select('*')
         .eq('canonical_tag_id', tagId)
         .order('alias_name');
+      if (publicOnly) query = query.eq('review_status', 'approved');
+      const { data, error } = await query;
       if (error) throw error;
       return data || [];
     },
@@ -38,7 +51,17 @@ export function useTagAliases(tagId: string | null) {
         .replace(/[^a-z0-9-]/g, '');
       const { data, error } = await supabase
         .from('tag_aliases')
-        .insert([{ canonical_tag_id: tagId, alias_name, alias_slug, alias_type }])
+        .insert([
+          // An admin typing an alias IS the review — land it approved so it
+          // displays publicly and is trusted by auto-tagging.
+          {
+            canonical_tag_id: tagId,
+            alias_name,
+            alias_slug,
+            alias_type,
+            review_status: 'approved',
+          },
+        ])
         .select()
         .single();
       if (error) throw error;

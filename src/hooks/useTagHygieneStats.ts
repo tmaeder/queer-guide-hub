@@ -38,6 +38,21 @@ export interface TagHygieneStats {
   placeholder_description_active: number;
   event_tag_strings_unresolved: number;
   events_with_tags_unlinked: number;
+  /** An alias identical to its own tag's name asserts nothing. */
+  alias_equals_name: number;
+  /** U+FFFD in an alias is transport corruption, never a spelling. */
+  alias_mojibake: number;
+  /** "No information available" stamps / LLM refusal essays published as prose. */
+  refusal_prose_active: number;
+  /** Typed (non-multilingual) aliases still review_status='auto' — displayed
+   *  nowhere, trusted by nothing, awaiting human review. */
+  unreviewed_typed_alias: number;
+  /** tag_relations awaiting review: LLM-proposed 'pending' + legacy 'auto'
+   *  related rows the display gate hides. A queue depth, not an invariant. */
+  relations_pending_review: number;
+  /** Active prose-bearing tags the mode='prose' truth+voice pass has not
+   *  visited yet. Drains ~300/day; new tags refill it. */
+  prose_unreviewed: number;
 }
 
 /**

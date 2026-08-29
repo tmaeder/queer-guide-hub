@@ -5,6 +5,8 @@
  * already reading; routing it somewhere would either loop back to this page or
  * imply a separate entry that does not exist. Grouped by `alias_type` so
  * "abbreviation" and "historical term" are not presented as equivalent.
+ *
+ * Approved aliases only: an unreviewed alias must not publish as a synonym.
  */
 
 import { useMemo } from 'react';
@@ -15,15 +17,22 @@ import { Eyebrow } from '@/components/ui/Eyebrow';
 const TYPE_LABELS: Record<string, string> = {
   synonym: 'Also called',
   abbreviation: 'Short for',
+  spelling_variant: 'Also written',
   plural: 'Plural',
   misspelling: 'Common misspelling',
-  historical: 'Historically',
+  historical: 'Formerly known as',
   slang: 'Slang',
+  brand_name: 'Brand names',
+  multilingual: 'In other languages',
+  // A narrower term deliberately routed here — a member of this group page,
+  // a product form, a preparation, a sub-topic. Not a synonym, and labelled
+  // so it never reads as one.
+  covers: 'Also covers',
 };
 
 export function TagAliasesDisplay({ tagId }: { tagId: string }) {
   const { t } = useTranslation();
-  const { aliases } = useTagAliases(tagId);
+  const { aliases } = useTagAliases(tagId, { publicOnly: true });
 
   const groups = useMemo(() => {
     const map = new Map<string, TagAlias[]>();

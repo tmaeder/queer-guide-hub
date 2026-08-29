@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { TrackLoader } from '@/components/transit/TrackLoader';
@@ -89,7 +89,7 @@ export default function Signup({ onBack, redirectTo }: Props) {
     register,
     handleSubmit,
     setValue,
-    watch,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -98,9 +98,13 @@ export default function Signup({ onBack, redirectTo }: Props) {
     defaultValues: { email: '', password: '', consent: false as never },
   });
 
-  const email = watch('email');
-  const password = watch('password');
-  const consent = watch('consent');
+  // `useWatch`, not the `watch()` returned by `useForm` — `watch` is a fresh
+  // unmemoizable function on every render, so React Compiler skips compiling
+  // this whole component (react-hooks/incompatible-library). `useWatch`
+  // subscribes to the same store and is compiler-safe.
+  const email = useWatch({ control, name: 'email' });
+  const password = useWatch({ control, name: 'password' });
+  const consent = useWatch({ control, name: 'consent' });
 
   useEffect(() => {
     emit('signup_landing_view');

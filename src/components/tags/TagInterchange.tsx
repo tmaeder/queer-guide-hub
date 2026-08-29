@@ -12,10 +12,10 @@
  *   related  → interchange chips          — change here for another line
  *
  * Only the CURATED ontology (`get_tag_ontology` over `tag_relations`) appears
- * here. The computed similarity pool (`get_similar_tags`) renders in the
- * end-of-line panel instead, so the page distinguishes "an editor said these
- * are connected" from "an embedding thinks these are close" structurally
- * rather than with a caption nobody reads.
+ * here — and since 2026-08-29 it is the ONLY related-terms surface on the
+ * page. The computed similarity pool (`get_similar_tags`) used to render in
+ * the end-of-line panel; at its 0.70 floor it published noise as relatedness,
+ * so it is now an internal candidate signal for this ontology, never display.
  */
 
 import { useMemo } from 'react';
