@@ -23,6 +23,16 @@ import { describe, expect, it } from 'vitest';
  *                        column: run_tag_thin_page_reindex (20260921110000) and
  *                        the verbatim-overlap deindex (20261007160100).
  *
+ * ...and then THREE MORE, all found 2026-08-29 while making "archived" mean
+ * invisible: cityDetail (seo_indexable in neither the select nor the return, so
+ * every ghost city published a full "LGBTQ+ guide to <not-a-place>"),
+ * eventDetail (same, and personalityDetail's comment claimed it already had the
+ * gate — it never did), and countryDetail.
+ *
+ * THAT IS SIX. The list below is now derived from information_schema rather
+ * than from whoever remembered to add a line: every table with a
+ * `seo_indexable` column that has a renderer here must appear.
+ *
  * The failure is invisible in review — the function looks complete, the page
  * renders, and nothing errors. Only a live crawl or this test catches it.
  *
@@ -44,6 +54,10 @@ const GATED = [
   { fn: 'tagDetail', table: 'unified_tags' },
   { fn: 'villageDetail', table: 'queer_villages' },
   { fn: 'milestoneDetail', table: 'milestones' },
+  { fn: 'cityDetail', table: 'cities' },
+  { fn: 'eventDetail', table: 'events' },
+  { fn: 'countryDetail', table: 'countries' },
+  { fn: 'newsDetail', table: 'news_articles' },
 ] as const;
 
 /** Slice the source of one `async function <name>(` up to the next one. */
@@ -69,10 +83,13 @@ describe('detail.ts honours seo_indexable', () => {
         `${fn} never selects seo_indexable from ${table}; its page will be indexable regardless of the column`,
       ).toBe(true);
 
-      // And it must USE it in the returned shape.
+      // And it must USE it in the returned shape. The identifier is matched
+      // loosely (`row`, `cityRow`, …) because the binding name varies by
+      // renderer; what is asserted is that the returned `indexable` is derived
+      // from the fetched row's column and not from a literal.
       expect(
-        /\bindexable:\s*row\.seo_indexable\s*(!==\s*false|===\s*true)/.test(body),
-        `${fn} does not return \`indexable\` derived from row.seo_indexable`,
+        /\bindexable:\s*\w*[Rr]ow\.seo_indexable\s*(!==\s*false|===\s*true)/.test(body),
+        `${fn} does not return \`indexable\` derived from the row's seo_indexable`,
       ).toBe(true);
     });
   }
