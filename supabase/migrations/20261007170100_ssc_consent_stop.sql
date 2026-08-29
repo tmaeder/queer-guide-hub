@@ -1,3 +1,10 @@
+-- RENUMBERED from 20261006200000. `supabase db push` aborts on an unapplied
+-- migration that sorts BELOW the newest version already applied to prod, and it
+-- aborts on the FIRST such file, abandoning every later one. This was the last
+-- of that cohort still stranded, so it alone was holding back every migration in
+-- the repo — including the five already renumbered by #3118 and the reconciler
+-- in this PR. Content unchanged.
+--
 -- SSC is stranded on a legacy L0 root that PR E is going to delete.
 --
 -- THIS PR STARTED AS FIVE ROWS AND IS NOW ONE, BECAUSE THE TAXONOMY MOVED.

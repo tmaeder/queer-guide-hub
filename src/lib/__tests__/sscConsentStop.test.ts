@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
@@ -49,14 +49,19 @@ import { join } from 'node:path';
  * without credentials — same pattern as `tagCategoryTextJunctionDisagreement`.
  */
 
-const MIGRATION = join(
-  process.cwd(),
-  'supabase',
-  'migrations',
-  '20261006200000_ssc_consent_stop.sql',
-);
+/** Located by SUFFIX, never by version. This test pinned the full filename and
+ *  so failed with ENOENT the moment the file had to be renumbered — which is
+ *  routine here: `db push` aborts on an unapplied migration sorting below prod's
+ *  head, so any migration that waits behind another PR gets renamed, not
+ *  rewritten. A version-pinned path turns that bookkeeping into a red test. */
+const MIGRATIONS = join(process.cwd(), 'supabase', 'migrations');
+const FILE = readdirSync(MIGRATIONS)
+  .filter((f) => f.endsWith('_ssc_consent_stop.sql'))
+  .sort()
+  .pop();
+if (!FILE) throw new Error('no *_ssc_consent_stop.sql migration found');
 
-const sql = readFileSync(MIGRATION, 'utf8');
+const sql = readFileSync(join(MIGRATIONS, FILE), 'utf8');
 
 /** The migration minus its `--` comment lines, so prose cannot satisfy a test. */
 const code = sql
