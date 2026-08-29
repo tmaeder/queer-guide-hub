@@ -1,4 +1,27 @@
--- SSC is stranded on a legacy L0 root that PR E is going to delete.
+-- SSC is stranded on a level-0 root.
+--
+-- RENUMBERED 20261006200000 -> 20261007150000, AND THE PREMISE BELOW MOVED.
+--
+-- This file merged in #3103 but never applied. Higher-numbered migrations
+-- (through 20261007120400) reached prod first, so `supabase db push` hit
+--   "Found local migration files to be inserted before the last migration"
+-- and refused the WHOLE batch — four consecutive deploys failed while edge
+-- functions kept deploying, i.e. prod ran new code against the old schema.
+-- The documented fix is to renumber above the remote max, never --include-all,
+-- which applies out-of-order and can silently revert a newer definition.
+--
+-- The body is unchanged and still does real work, but the header below was
+-- written when `Safety & Practices` still existed. Re-measured on prod before
+-- renumbering: that legacy root is GONE (PR E deleted it) and taxonomy v3 left
+-- SSC on `Safety & Consent` — the LINE, level 0 — not on the deleted root and
+-- not on the intended stop. So the row is still misfiled, still on a level-0
+-- root, and this migration still moves it to `Consent & Negotiation`.
+--
+-- Dry-run on prod in a rolled-back transaction, with app.actor set as below:
+--   from=Safety & Consent  stale_before=94  stale_after=0
+--   landed_on_all_three=1  still_level0=0  multi_primary=0
+-- The 94 is the reindex this file already performs; it clears every stale tag
+-- facet, which is what its own final assertion requires.
 --
 -- THIS PR STARTED AS FIVE ROWS AND IS NOW ONE, BECAUSE THE TAXONOMY MOVED.
 --
