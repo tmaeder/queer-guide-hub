@@ -71,7 +71,24 @@ test.describe('@p1-1 /tags URL state', () => {
   test('legacy ?profession= goes to the personalities facet', async ({ page }) => {
     // It used to force a tag-NAME search for the profession string, which
     // searches the wrong noun entirely.
+    //
+    // The value must be one the facet allowlist actually contains. /personalities
+    // re-validates `profession` against the loaded facets and strips anything
+    // that matches nothing, so asserting a value outside the vocabulary makes
+    // this a RACE: it passes only if the assertion samples the URL before the
+    // facets resolve. `Author` was such a value — measured on prod, the
+    // vocabulary carries zero of it and 61 public `Writer` — so this test
+    // passed or failed on facet latency rather than on the redirect it names.
+    await page.goto('/tags?profession=Writer');
+    await expect(page).toHaveURL(/\/personalities\?.*profession=Writer/, { timeout: 15_000 });
+  });
+
+  test('a profession outside the vocabulary is stripped, not carried', async ({ page }) => {
+    // The other half of the same behaviour, asserted deliberately instead of
+    // being depended on by accident: the redirect still fires, and the landing
+    // page refuses to show a filter chip for a facet that matches nothing.
     await page.goto('/tags?profession=Author');
-    await expect(page).toHaveURL(/\/personalities\?.*profession=Author/, { timeout: 15_000 });
+    await expect(page).toHaveURL(/\/personalities(\?|$)/, { timeout: 15_000 });
+    await expect(page).not.toHaveURL(/profession=Author/);
   });
 });
