@@ -21,12 +21,15 @@
 -- window-period, seroadaptation, serophobia, cybersex, ghosting, qpoc exists at
 -- any status.
 --
--- PROSE IS ORIGINAL AND SOURCE-GROUNDED. drgay.ch carries no open licence, so it
--- is used ONLY as a signal of which concepts matter to this readership; nothing
--- is copied or paraphrased from it, including meta descriptions. Facts come from
--- WHO / CDC / UNAIDS / EACS and are cited per tag in tag_sources. No Swiss
--- material — no cantonal services, no national coverage rules — so the concepts
--- stay jurisdiction-neutral.
+-- PROSE IS ORIGINAL AND SOURCE-GROUNDED. drgay.ch has no open licence — the
+-- Impressum names Aids-Hilfe Schweiz and nothing more, so it is all rights
+-- reserved by default. It is used ONLY as a signal of WHICH concepts matter to
+-- this readership. NOT ONE WORD OF THEIR PROSE IS COPIED, paraphrased or
+-- translated, and that includes their meta descriptions, which are prose too.
+-- Facts come from WHO / CDC / UNAIDS / EACS and are cited per tag in
+-- tag_sources — never to drgay.ch, which would assert their page as the source
+-- for text we wrote. No Swiss material — no cantonal services, no national
+-- coverage rules — so the concepts stay jurisdiction-neutral.
 --
 -- WHAT IS DELIBERATELY NOT ASSERTED
 --

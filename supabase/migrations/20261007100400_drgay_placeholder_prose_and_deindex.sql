@@ -43,12 +43,18 @@
 --
 -- PROSE RULES
 --
--- Original, grounded in WHO / CDC / UNAIDS / BASHH. drgay.ch is a coverage
--- signal only; nothing is copied or paraphrased from it. No dosage, route or
--- combination advice (the saferparty precedent). No Swiss material. Where a
--- practice carries a real risk the text names it plainly and names the
--- mitigation, because a reader on a risk page who is given euphemism has been
--- failed twice.
+-- Original, grounded in WHO / CDC / UNAIDS / BASHH. drgay.ch has no open licence
+-- — the Impressum names Aids-Hilfe Schweiz and nothing more, so it is all rights
+-- reserved by default — and is used ONLY as a signal of WHICH practices this
+-- readership needs risk information about.
+-- NOT ONE WORD OF THEIR PROSE IS COPIED, paraphrased or translated — their meta
+-- descriptions included, those being prose too. Nothing here cites drgay.ch as a
+-- source, because none of these claims come from them.
+--
+-- No dosage, route or combination advice (the saferparty precedent). No Swiss
+-- material. Where a practice carries a real risk the text names it plainly and
+-- names the mitigation, because a reader on a risk page who is given euphemism
+-- has been failed twice.
 --
 -- `app.actor` is set at top level because `log_unified_tag_change()` raises on a
 -- human_reviewed row without it — four of the seven are already human-reviewed.
