@@ -1,13 +1,20 @@
 #!/usr/bin/env node
 // Operator driver for the LLM remainder of the taxonomy-v3 re-filing
 // (2026-08-29 program, PR C). The deterministic migration
-// (20261006110000) covers ~94% of active tags; this drives the deployed
+// (20261006140100) covers ~94% of active tags; this drives the deployed
 // `categorize-tags` edge function with `only_misfiled: true` over the rest —
 // tags whose primary category still sits outside the v3 tree. Unlike
 // `recategorize`, that mode never overwrites a correct v3 filing.
 //
 // The cron sweep (`tag-enrichment-sweep`, <=50 categorizations / 2h) would
 // take weeks to drain this; explicit batches finish in minutes.
+//
+// It is a REFINEMENT, not a merge gate. The cutover (20261006150000) re-files
+// whatever is left on the retired tree itself, mapping a v2 line to its v3
+// line and a dissolved stop to its successor — the same map the URL redirects
+// use. That is honest but coarse: it preserves "this tag belongs to this
+// line" without inventing a stop. This driver is what turns a line-level
+// filing into a stop, and the nightly sweep keeps doing it afterwards.
 //
 // It calls the edge function from Postgres via pg_net (service secrets never
 // leave the database), then reports the remaining count from the same query

@@ -56,7 +56,7 @@ describe('rankSimilarTags', () => {
 
   it('also drops tags whose CATEGORY is adult but whose flag is not set', () => {
     // Erring toward hiding is deliberate: under-moderation is the worse failure.
-    const input = [tag({ tag_id: 'a', category: 'BDSM & Power Exchange' }), tag({ tag_id: 'b' })];
+    const input = [tag({ tag_id: 'a', category: 'Dynamics & Roles' }), tag({ tag_id: 'b' })];
     expect(rankSimilarTags(input, null, true).map((r) => r.tag_id)).toEqual(['b']);
   });
 

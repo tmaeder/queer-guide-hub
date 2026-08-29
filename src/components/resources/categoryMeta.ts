@@ -162,9 +162,12 @@ export const parentOrder: string[] = [
  * Both the parent "Sexuality & Kink" and every leaf under it are gated
  * behind the age affirmation modal + Safe mode in SafeModeProvider.
  *
- * These are v2 taxonomy names, held in `tag_categories` and reached through
+ * These are v3 taxonomy names, held in `tag_categories` and reached through
  * `tag_category_assignments`. That is the right axis for the age gate and the
- * noindex rule, which both read `selectedTag.categories`.
+ * noindex rule, which both read `selectedTag.categories`. The SQL twin is
+ * `unified_tags_recompute_is_adult()` (20261006150000) — renaming a kink stop
+ * means editing BOTH, and the union in between is how the v2→v3 swap avoided
+ * a window where a re-filed tag matched neither.
  *
  * It is the WRONG axis anywhere the category arrives as `unified_tags.category`
  * — the legacy free-text column, whose values ('Kink & Fetish', 'Power
@@ -173,19 +176,8 @@ export const parentOrder: string[] = [
  * below, which trusts the `is_adult` flag first.
  */
 export const ADULT_CATEGORY_NAMES: ReadonlySet<string> = new Set([
-  'Sexuality & Kink',
-  'Sexual Roles',
-  'BDSM & Power Exchange',
-  'Fetishes & Interests',
-  'Practices & Play',
-  'Gear & Aesthetics',
-  'Body Types & Archetypes',
-  // Incoming taxonomy (2026-08-29 recategorization program, PR B renames the
-  // kink line + stops). The union must be live BEFORE any tag is re-filed,
-  // or a re-filed kink tag stops matching and loses its age gate. The SQL
-  // twin lives in unified_tags_recompute_is_adult() (20261006090100); PR E
-  // trims the outgoing names once the old tree is deleted.
   'Sex & Kink',
+  'Practices & Play',
   'Dynamics & Roles',
   'Fetishes',
   'Gear',
