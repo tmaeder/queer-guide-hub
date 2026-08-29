@@ -107,7 +107,24 @@ test.describe('@smoke glossary health & drug facts', () => {
     // repeats is clinical convention, not a labelled figure), and tadalafil's
     // 48-hour nitrate exclusion OUTLASTS the 36 hours it is marketed as
     // working — "it has worn off" is not "it is safe".
-    expect(await tagHtml(request, 'sildenafil')).toMatch(/unknown|not.{0,20}stated|convention/i);
+    // Asserted on VIAGRA, not sildenafil, and that is the point of this comment.
+    //
+    // `sildenafil` was later merged into `viagra`, and the merge kept the
+    // surviving row's prose — which was the pre-audit stub, 361 chars against
+    // the 1,088-char label-checked version. The corrections survived on a row
+    // that `status='merged'` makes invisible, and every reader following
+    // /tags/sildenafil landed on a page without them. This test is what found
+    // that; the repair is 20261013100000.
+    //
+    // So the assertion follows the CANONICAL page a reader actually reaches.
+    // Asserting on the generic slug is what let the regression hide.
+    const viagra = await tagHtml(request, 'viagra');
+    expect(viagra, 'no label-stated interval — the "24 hours" is convention').toMatch(
+      /convention/i,
+    );
+    expect(viagra, 'riociguat is a hard contraindication and usually omitted').toMatch(
+      /riociguat/i,
+    );
     expect(await tagHtml(request, 'tadalafil')).toMatch(/48 hours/i);
   });
 
