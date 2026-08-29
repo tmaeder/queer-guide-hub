@@ -13,6 +13,33 @@ interface CategoryRow {
 }
 
 /**
+ * Taxonomy v3 roots (migration 20261006140000). During the swap's
+ * coexistence window `tag_categories` holds two trees; only v3 roots and
+ * their children are valid filing targets. Delete with PR E of the program.
+ */
+const V3_ROOT_SLUGS = new Set([
+  'identity',
+  'sex-kink',
+  'relationships-family',
+  'health',
+  'safety-consent',
+  'culture-community',
+  'history-rights',
+  'places-scene',
+]);
+
+function scopeToV3<T extends { id: string; slug: string; level: number; parent_id: string | null }>(
+  cats: T[],
+): T[] {
+  const rootIds = new Set(
+    cats.filter(c => c.level === 0 && V3_ROOT_SLUGS.has(c.slug)).map(c => c.id),
+  );
+  return cats.filter(
+    c => (c.level === 0 && rootIds.has(c.id)) || (c.parent_id !== null && rootIds.has(c.parent_id)),
+  );
+}
+
+/**
  * Build the AI prompt's category list dynamically from the DB rows.
  * Groups subcategories under their parent for clarity.
  */
@@ -73,7 +100,7 @@ Deno.serve(async (req) => {
     console.log(`Starting tag categorization (recategorize=${recategorize}, batch_size=${batchSize})...`);
 
     // Load categories dynamically from the DB
-    const { data: categories, error: categoriesError } = await supabase
+    const { data: allCategories, error: categoriesError } = await supabase
       .from('tag_categories')
       .select('id, slug, name, level, parent_id, description')
       .order('sort_order');
@@ -81,6 +108,12 @@ Deno.serve(async (req) => {
     if (categoriesError) {
       throw new Error(`Failed to fetch categories: ${categoriesError.message}`);
     }
+
+    // Taxonomy v3 coexistence scope (2026-08-29 program): until PR E deletes
+    // the old tree, tag_categories holds TWO trees — unscoped, the model
+    // would file tags into either at random. Only v3 roots and their
+    // children are valid filing targets. Remove with PR E.
+    const categories = scopeToV3(allCategories ?? []);
 
     if (!categories || categories.length === 0) {
       throw new Error('No tag categories found in the database');

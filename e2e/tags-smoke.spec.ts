@@ -50,7 +50,7 @@ test.describe('@smoke /tags happy path', () => {
   });
 
   test('category route renders directly', async ({ page }) => {
-    await page.goto('/tags/c/identity-expression');
+    await page.goto('/tags/c/identity');
     await expect(page.getByTestId('tag-not-found')).toHaveCount(0);
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 15_000 });
   });
@@ -59,8 +59,8 @@ test.describe('@smoke /tags happy path', () => {
     await page.goto('/tags');
     const rail = page.getByRole('navigation', { name: /topic lines/i }).first();
     await expect(rail).toBeVisible({ timeout: 15_000 });
-    // 10 parents + "All terms".
-    await expect(rail.locator('a[href*="/tags"]')).toHaveCount(11);
+    // 8 lines (taxonomy v3) + "All terms".
+    await expect(rail.locator('a[href*="/tags"]')).toHaveCount(9);
   });
 
   test('unknown slug is a dead end, never the index', async ({ page }) => {
