@@ -961,17 +961,24 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
   // so without it this would publish all ~8,700 wikipedia/wikidata backfill rows
   // as legal citations. Same trap as the draft-personalities leak.
   const tagId = stringField(row, 'id');
-  const legalRows = tagId
+  //
+  // `source_type` is selected because since 20261013110300 this table publishes
+  // TWO kinds of citation. Clinical guidance is not law, so it gets its own
+  // heading and its own JSON-LD node type below — rendering the UCSF trans care
+  // guidelines under "Source of law" would tell a crawler they are a legal
+  // instrument.
+  const publishedRows = tagId
     ? await fetchRows(
         env,
         'tag_sources',
-        'official_title,source_url,jurisdiction,adopted_year,instrument_status',
+        'source_type,official_title,source_url,jurisdiction,adopted_year,instrument_status',
         `tag_id=eq.${encodeURIComponent(tagId)}&is_public=eq.true`,
         10,
       )
     : [];
-  const citations = legalRows
+  const allCitations = publishedRows
     .map((r) => ({
+      type: stringField(r, 'source_type'),
       title: stringField(r, 'official_title'),
       url: stringField(r, 'source_url'),
       juris: stringField(r, 'jurisdiction'),
@@ -981,6 +988,8 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
     .filter((c): c is typeof c & { title: string; url: string } =>
       Boolean(c.title && c.url),
     );
+  const citations = allCitations.filter((c) => c.type !== 'clinical_guideline');
+  const clinicalCitations = allCitations.filter((c) => c.type === 'clinical_guideline');
 
   const name = stringField(row, 'name') ?? slug;
   // TWO FIELDS, NOT ONE — they had been the same variable, with
@@ -1042,6 +1051,18 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
               .join('')}</ul></section>`
           : ''
       }
+      ${
+        clinicalCitations.length
+          ? `<section><h2>Clinical guidance</h2><ul>${clinicalCitations
+              .map(
+                (c) =>
+                  `<li><a href="${escape(c.url)}" rel="noopener">${escape(c.title)}</a>${
+                    c.year ? ` (${c.year} edition)` : ''
+                  }</li>`,
+              )
+              .join('')}</ul></section>`
+          : ''
+      }
       ${stringField(row, 'wikipedia_url') ? `<p><a href="${escape(stringField(row, 'wikipedia_url')!)}" rel="noopener">Read more on Wikipedia</a></p>` : ''}
     </article>
     <nav aria-label="Site sections">
@@ -1062,21 +1083,27 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
     // URL must not disagree.
     description: summary || undefined,
     url: `${SITE_ORIGIN}${pathname}`,
-    sameAs: [stringField(row, 'wikipedia_url'), ...citations.map((c) => c.url)].filter(Boolean)
+    sameAs: [stringField(row, 'wikipedia_url'), ...allCitations.map((c) => c.url)].filter(Boolean)
       .length
-      ? [stringField(row, 'wikipedia_url'), ...citations.map((c) => c.url)].filter(Boolean)
+      ? [stringField(row, 'wikipedia_url'), ...allCitations.map((c) => c.url)].filter(Boolean)
       : undefined,
     identifier: stringField(row, 'wikidata_id'),
-    // No `legislationDate`: schema.org types it as a Date and only a year is
-    // held, so emitting one would assert a precision we do not have. Kept
-    // deliberately identical to src/lib/tags/tagJsonLd.ts.
-    citation: citations.length
-      ? citations.map((c) => ({
-          '@type': 'Legislation',
-          name: c.title,
-          url: c.url,
-          legislationJurisdiction: c.juris || undefined,
-        }))
+    // No `legislationDate` / `datePublished`: schema.org types both as a Date and
+    // only a year is held, so emitting one would assert a precision we do not
+    // have. Kept deliberately identical to src/lib/tags/tagJsonLd.ts — including
+    // the split by kind, since clinical guidance emitted as `Legislation` would
+    // tell a crawler the UCSF guidelines are law.
+    citation: allCitations.length
+      ? allCitations.map((c) =>
+          c.type === 'clinical_guideline'
+            ? { '@type': 'CreativeWork', name: c.title, url: c.url }
+            : {
+                '@type': 'Legislation',
+                name: c.title,
+                url: c.url,
+                legislationJurisdiction: c.juris || undefined,
+              },
+        )
       : undefined,
   };
 
