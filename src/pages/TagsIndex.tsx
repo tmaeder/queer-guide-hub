@@ -44,6 +44,7 @@ import { RouteBullet } from '@/components/transit/RouteBullet';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { getCategoryShortName, parentOrder } from '@/components/resources/categoryMeta';
 import { CATEGORY_LINE_ORDER, lineForCategory } from '@/lib/tags/categoryIdentity';
+import { redirectedCategorySlug } from '@/lib/tags/categorySlugRedirects';
 import {
   applyTagsParams,
   hasActiveFilters,
@@ -102,7 +103,17 @@ export default function TagsIndex() {
 
   const { state, changed, redirectTo } = parseTagsParams(searchParams, resolveCategorySlug);
 
+  // A retired v2 category slug reaching the SPA (an in-app link, a bookmark
+  // restored by the router, a ?cat= resolution) never touches Cloudflare, so
+  // the 301s in public/_redirects cannot help it. Same map, client side.
+  const retiredSlugTarget = redirectedCategorySlug(categorySlug);
+
   useEffect(() => {
+    if (retiredSlugTarget) {
+      const qs = searchParams.toString();
+      navigate(`/tags/c/${retiredSlugTarget}${qs ? `?${qs}` : ''}`, { replace: true });
+      return;
+    }
     if (redirectTo) {
       navigate(redirectTo, { replace: true });
       return;
@@ -110,7 +121,7 @@ export default function TagsIndex() {
     if (changed) setSearchParams(applyTagsParams(searchParams, state), { replace: true });
     // `state` is derived from `searchParams`; including it would loop.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [redirectTo, changed, searchParams]);
+  }, [retiredSlugTarget, redirectTo, changed, searchParams]);
 
   // `state` is re-derived from the URL on every render, so it is a fresh object
   // each time and cannot be a dependency without making `patch` unstable (and
