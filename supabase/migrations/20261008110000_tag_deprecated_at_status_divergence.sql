@@ -59,7 +59,7 @@ begin;
 
 -- The audit stamped 51 human_reviewed rows; log_unified_tag_change() raises if a
 -- `system:%` actor touches one, and 'system:trigger' is the default.
-set local app.actor = 'migration:20261007100000';
+set local app.actor = 'migration:20261008110000';
 
 -- ---------------------------------------------------------------------------
 -- 1. Revive: the tag is linked, or is a glossary entry with its own content.
@@ -105,7 +105,7 @@ update public.unified_tags t
 update public.unified_tags
    set deprecated_at      = coalesce(deprecated_at, now()),
        deprecation_reason = coalesce(deprecation_reason,
-         'migration 20261007100000: status was deprecated with no deprecated_at, so the page 404''d while the row stayed in search')
+         'migration 20261008110000: status was deprecated with no deprecated_at, so the page 404''d while the row stayed in search')
  where status = 'deprecated'
    and deprecated_at is null;
 
