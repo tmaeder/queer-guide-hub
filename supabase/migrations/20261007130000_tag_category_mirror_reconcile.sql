@@ -252,7 +252,7 @@ select cron.schedule('tag_category_resync', '32 4 * * *',
 -- ── 5. verify ───────────────────────────────────────────────────────────────
 
 do $verify$
-declare v_n int; v_cat text;
+declare v_n int; v_unfiled_after int; v_cat text;
 begin
   -- The row this started from, and the rename class it turned out to share with.
   select category into v_cat from public.unified_tags where slug = 'doxy-pep';
@@ -279,14 +279,31 @@ begin
     raise exception '% tag(s) still have a NULL mirror with a resolvable category', v_n;
   end if;
 
-  -- ...and nothing whose assignments are gone was erased. 11 such rows exist,
-  -- all status='merged'; asserted as "> 0" rather than "= 11" so a concurrent
-  -- merge does not fail this, while a regression to the erasing predicate does.
+  -- ...and this function erases nothing whose assignments are gone.
+  --
+  -- This was a population check ("11 such rows exist, all status='merged'";
+  -- fail if none remain). That premise died before the migration could apply:
+  -- a CONCURRENT session shipped 20261006180000, a reconciler with the
+  -- OPPOSITE policy — it recomputes the mirror from the junction and so nulls
+  -- one whose assignments are gone — and it applied first. Prod now holds
+  -- ZERO such rows, so the assertion could never pass again and it blocked
+  -- the whole migration queue behind it (13 files, several sessions).
+  --
+  -- A count of survivors was the wrong instrument anyway: it measures the
+  -- state this migration INHERITED, not what this function does. The
+  -- behavioural test is that running it does not SHRINK that population,
+  -- which is true from any starting state — including zero — and still fails
+  -- loudly if the erasing predicate ever comes back with rows present.
   select count(*) into v_n from public.unified_tags u
    where u.category is not null
      and not exists (select 1 from public.tag_category_assignments a where a.tag_id = u.id);
-  if v_n = 0 then
-    raise exception 'every unfiled mirror was erased — the fill-only guard is not holding';
+  perform public.run_tag_category_resync(500);
+  select count(*) into v_unfiled_after from public.unified_tags u
+   where u.category is not null
+     and not exists (select 1 from public.tag_category_assignments a where a.tag_id = u.id);
+  if v_unfiled_after < v_n then
+    raise exception 'the resync erased % unfiled mirror(s) — the fill-only guard is not holding',
+      v_n - v_unfiled_after;
   end if;
 
   -- The schedule, which is the whole point — an engine with no cron is what
