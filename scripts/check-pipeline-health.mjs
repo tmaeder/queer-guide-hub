@@ -174,6 +174,37 @@ if (!hygieneRes.ok) {
   console.log(`✓ City dup signals: near_pairs=${nearPairs}, qid=${qidPct}%, aliases=${city.alias_rows}, queue=${qPending}`)
 }
 
+// 5a. Wrong-entity Wikidata links on the glossary (2026-08-29). tag-enrichment-sweep
+//     resolved a tag's QID by fetching the Wikipedia summary of its RAW NAME and
+//     adopting whatever the redirect served — `golden-shower` → Cassia fistula,
+//     `passing` → Q4 death, which then published ICPC-2 A96 through the weekly
+//     tag_medical_codes_sync. 1,535 identifiers were cleared. The sweep's work-list is
+//     `wikidata_id is null`, i.e. exactly those rows, so it revisits every one of them
+//     and the cohort regrows the moment the guard in _shared/tag-wiki-guard.ts stops
+//     holding. NO BASELINE ALLOWANCE: the RPC only reports a tag that re-acquired the
+//     SAME id it was cleared of, which the guard makes unreachable, so one row means
+//     the guard is gone — not that a human relinked something.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/tag_wikidata_repair_regressions`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    console.warn(`⚠ tag_wikidata_repair_regressions → HTTP ${res.status} (RPC missing?)`)
+  } else {
+    const rows = await res.json()
+    if (Array.isArray(rows) && rows.length > 0) {
+      console.error(`✗ ${rows.length} glossary tag(s) re-acquired the wrong Wikidata id they were cleared of:`)
+      for (const r of rows.slice(0, 10)) console.error(`    /tags/${r.slug} → ${r.wikidata_id}`)
+      console.error('  tag-enrichment-sweep is adopting name-resolved identities again.')
+      console.error('  Check mayAdoptWikiIdentity in supabase/functions/_shared/tag-wiki-guard.ts is still called.')
+      process.exit(1)
+    }
+    console.log('✓ No glossary tag has re-acquired a cleared wrong-entity Wikidata id')
+  }
+}
+
 // 5b. Automation run-tracking gaps (2026-09). Until this landed, 142 of 144
 //     enabled cron automations had never recorded a run, so consecutive_failures
 //     never moved and auto-pause could not fire. These two checks keep it that
