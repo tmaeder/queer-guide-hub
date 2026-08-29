@@ -52,11 +52,26 @@ select set_config('app.actor', 'migration:tag-category-id-backfill', true);
 
 do $mig$
 declare
-  r       record;
-  v_bad   int;
-  v_done  int := 0;
-  v_wrote uuid[] := '{}';   -- the rows THIS migration filled; see the assertion
+  r        record;
+  v_bad    int;
+  v_ambig  int;
+  v_done   int := 0;
 begin
+  -- A tag with MORE THAN ONE is_primary junction has no single answer, so it is
+  -- skipped rather than resolved arbitrarily.
+  --
+  -- This is not hypothetical. The first apply of this migration FAILED on its
+  -- own second assertion: `gender-neutral-bathroom` carries two is_primary rows
+  -- (gender-identity and safe-spaces), created by 20261007140000
+  -- prevention_bathroom_plural_twin which applied minutes earlier. The
+  -- unqualified join picked one arbitrarily, wrote it to the column, and the
+  -- assertion then correctly reported the other as disagreeing.
+  --
+  -- Picking either would manufacture a truth the data does not contain, and do
+  -- it silently: the column would disagree with a junction that still renders.
+  -- Nothing enforces one-primary-per-tag, so duplicate primaries are their own
+  -- defect and belong to whoever created them, not to a backfill. The count is
+  -- reported below so skipping cannot pass unnoticed.
   for r in
     select t.id, ca.category_id as cat_id, c.name as cat_name
       from public.unified_tags t
@@ -65,6 +80,8 @@ begin
       join public.tag_categories c
         on c.id = ca.category_id
      where t.category_id is null
+       and (select count(*) from public.tag_category_assignments p
+             where p.tag_id = t.id and p.is_primary) = 1
      order by t.slug
   loop
     update public.unified_tags
@@ -72,55 +89,43 @@ begin
            category    = r.cat_name,
            updated_at  = now()
      where id = r.id;
-    v_done  := v_done + 1;
-    v_wrote := v_wrote || r.id;
+    v_done := v_done + 1;
   end loop;
 
+  select count(*) into v_ambig
+    from (select ca.tag_id from public.tag_category_assignments ca
+           where ca.is_primary group by ca.tag_id having count(*) > 1) d;
+
   ------------------------------------------------------------------ assertions
-  -- Nothing may be left holding a junction but no column.
+  -- Both assertions are scoped to UNAMBIGUOUS rows — the ones this migration
+  -- actually claims to fix. Left corpus-wide they would fail on the duplicate-
+  -- primary rows above, which this migration deliberately does not touch, and
+  -- the only way to make them pass would be to guess.
   select count(*) into v_bad
     from public.unified_tags t
     join public.tag_category_assignments ca
       on ca.tag_id = t.id and ca.is_primary
-   where t.category_id is null;
+   where t.category_id is null
+     and (select count(*) from public.tag_category_assignments p
+           where p.tag_id = t.id and p.is_primary) = 1;
   if v_bad > 0 then
-    raise exception 'category_id backfill: % row(s) still have a junction but no category_id', v_bad;
+    raise exception 'category_id backfill: % row(s) still have a sole junction but no category_id', v_bad;
   end if;
 
-  -- And this must not have INTRODUCED a disagreement, which is the failure mode
-  -- a careless fill would create.
-  --
-  -- SCOPED TO THE ROWS THIS MIGRATION WROTE, and that scoping is the fix for an
-  -- outage. As written it was corpus-wide, which made it fail on a row this
-  -- migration never touched and CANNOT repair: the loop is fill-only
-  -- (`category_id is null`), so a row that already held a NON-NULL category_id
-  -- disagreeing with its junction is invisible to the loop and fatal to the
-  -- assertion. Exactly that happened — `u-equals-u` acquired such a
-  -- disagreement between this file being written (its header measured 0) and
-  -- being applied, and the migration then died with
-  --
-  --   ERROR: category_id backfill: 1 row(s) now disagree with their junction
-  --
-  -- aborting db push and every migration behind it. Eight consecutive deploys
-  -- on main failed; nothing applied past 20261007140000 for hours while edge
-  -- functions kept shipping against the old schema.
-  --
-  -- The header's "ZERO genuine disagreements left" was true when measured and
-  -- false by the time it ran. A guard may only cover what its own migration
-  -- changed — otherwise it reports someone else's later write as this
-  -- migration's defect. `u-equals-u` is repaired on its own terms in
-  -- 20261007163200, which promotes the Sexual Health junction row it already
-  -- had. (An HIV treatment-as-prevention concept was filed under Orientation.)
+  -- Must not have INTRODUCED a disagreement, the failure mode a careless fill
+  -- creates.
   select count(*) into v_bad
     from public.unified_tags t
     join public.tag_category_assignments ca
       on ca.tag_id = t.id and ca.is_primary
-   where t.id = any (v_wrote)
-     and t.category_id is distinct from ca.category_id;
+   where t.category_id is distinct from ca.category_id
+     and (select count(*) from public.tag_category_assignments p
+           where p.tag_id = t.id and p.is_primary) = 1;
   if v_bad > 0 then
-    raise exception 'category_id backfill: % row(s) THIS migration filled disagree with their junction', v_bad;
+    raise exception 'category_id backfill: % row(s) now disagree with their sole junction', v_bad;
   end if;
 
-  raise notice 'category_id backfill: % row(s) filled', v_done;
+  raise notice 'category_id backfill: % row(s) filled, % tag(s) skipped for having multiple primary junctions',
+    v_done, v_ambig;
 end
 $mig$;
