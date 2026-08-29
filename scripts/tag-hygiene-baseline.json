@@ -30,8 +30,8 @@
     "unreviewed_typed_alias"
   ],
   "_notes": {
-    "alias_equals_name": "Zero-invariant since 20261011100000 deleted the 47 rows. An alias identical to its own tag's name says nothing; the sitelink importer minted them alongside real aliases.",
-    "refusal_prose_active": "Zero-invariant since 20261011100000 nulled the 175 'No information available' stamps and 38 'There is no information available...' LLM refusal essays. Same class as placeholder_description_active but on short_description/long_description, which that counter never reads.",
+    "alias_equals_name": "Zero-invariant since 20261011110000 deleted the 47 rows. An alias identical to its own tag's name says nothing; the sitelink importer minted them alongside real aliases.",
+    "refusal_prose_active": "Zero-invariant since 20261011110000 nulled the 175 'No information available' stamps and 38 'There is no information available...' LLM refusal essays. Same class as placeholder_description_active but on short_description/long_description, which that counter never reads.",
     "unreviewed_typed_alias": "Review queue depth, advisory by nature. ~65 after the 2026-08-29 alias truth pass approved everything mechanically safe; what remains is deliberately unapproved (ordinary-word street names like Speed/Acid/Ice are true synonyms but catastrophic auto-tagging rules) or awaiting a human. Growth means a producer is minting typed aliases as 'auto' again.",
     "relations_pending_review": "Grows BY DESIGN while tag_relation_verify works through the >=0.85 embedding pairs (~1,700) - each named verdict lands here as review_status='pending' and displays nowhere. Baseline is the 120 legacy 'auto' co-occurrence rows the display gate hid on the same day. Drains only through admin approval.",
     "prose_unreviewed": "Drain gauge for tag-enrichment-sweep mode='prose' (~300/day over the 2,903 prose-bearing tags). New tags refill it, so it is a sawtooth like uncategorized_active; a flat high number means the cron stopped.",
