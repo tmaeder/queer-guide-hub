@@ -159,8 +159,17 @@ export async function pgHybridSearch(env: Env, args: PgSearchArgs, timeoutMs = R
 		p_price_max: args.priceMax ?? null,
 		p_sort: args.sort && args.sort !== "relevance" ? args.sort : null,
 	};
+	// p_query_vec matters: without it search_facets counted only the keyword leg
+	// while search_hybrid's `total` counts keyword UNION vnn, so the facet block
+	// described a strictly smaller set than the result count above it (measured on
+	// prod: q="fentanyl test strips" -> totalHits 45, facets summed to 26). The RPC
+	// applies the same top-200 vnn UNION; the extra HNSW probe measured +1-2 ms.
+	// `pFilters` is deliberately the SAME object as search_hybrid's so include_gated
+	// stays in lockstep — search_facets honoured no gating at all until
+	// 20260829041548 and handed anon a per-category breakdown of gated venues.
 	const facetArgs = {
 		p_query: args.query,
+		p_query_vec: vecLiteral(args.queryVec),
 		p_content_types: pContentTypes,
 		p_filters: pFilters,
 		p_lat: args.lat ?? null,
