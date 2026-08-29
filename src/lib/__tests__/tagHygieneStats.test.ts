@@ -36,9 +36,22 @@ const files = readdirSync(MIGRATIONS)
   .filter((f) => f.endsWith('.sql'))
   .sort();
 
+/**
+ * Every migration, read ONCE.
+ *
+ * This file used to `readFileSync` inside each `.some()` predicate, which meant
+ * up to four full passes over the directory — and the `dropped` check can never
+ * short-circuit, because the string it looks for is absent by design. At 1,322
+ * migrations on an iCloud-synced checkout that measured 73 s cold and 25 s warm,
+ * against this file's 15 s timeout: the gate fails on repo SIZE, not on the
+ * invariant it guards, and it gets worse with every migration anyone adds.
+ * Reading once is O(files) instead of O(files x assertions).
+ */
+const sources = files.map((f) => readFileSync(join(MIGRATIONS, f), 'utf8'));
+
 function latestDefinitionOf(fn: string): string {
-  for (const f of [...files].reverse()) {
-    const sql = readFileSync(join(MIGRATIONS, f), 'utf8');
+  for (let i = files.length - 1; i >= 0; i -= 1) {
+    const sql = sources[i];
     // `create [or replace] function`, not merely `function`: a GRANT, REVOKE,
     // COMMENT ON, DROP or ALTER naming the function also contains
     // "function public.<fn>(" and would otherwise win the reverse scan.
@@ -78,16 +91,12 @@ describe('tag_hygiene_stats() stays under the PostgREST statement timeout', () =
 
   it('keeps the functional indexes the split arms depend on', () => {
     for (const idx of ['idx_unified_tags_lower_name', 'idx_unified_tags_lower_slug']) {
-      const created = files.some((f) =>
-        new RegExp(`create\\s+index[^;]*${idx}`, 'i').test(
-          readFileSync(join(MIGRATIONS, f), 'utf8'),
-        ),
+      const created = sources.some((sql) =>
+        new RegExp(`create\\s+index[^;]*${idx}`, 'i').test(sql),
       );
       expect(created, `${idx} is never created`).toBe(true);
 
-      const dropped = files.some((f) =>
-        new RegExp(`drop\\s+index[^;]*${idx}`, 'i').test(readFileSync(join(MIGRATIONS, f), 'utf8')),
-      );
+      const dropped = sources.some((sql) => new RegExp(`drop\\s+index[^;]*${idx}`, 'i').test(sql));
       expect(dropped, `${idx} is dropped; the OR-free rewrite then seq-scans again`).toBe(false);
     }
   });
