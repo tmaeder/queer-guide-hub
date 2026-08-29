@@ -33,7 +33,7 @@
 // truth + voice pass. Walks tags that HAVE prose (the complement of the fill
 // work list) on the `prose_reviewed_at` cursor; retracts wrong-subject prose
 // (>=0.9) + clears the wiki identity, rewrites right-subject prose into the
-// house voice (auto-apply non-sensitive >=0.8, else ai_suggestions). See
+// house voice. REVIEW-ONLY since 2026-08-29 — it applies nothing. See
 // prosePass() below and `_shared/tag-style.ts` for the voice.
 //
 // The IMAGE dimension is retired (2026-08-28): glossary photography is gone —
@@ -381,9 +381,8 @@ async function prosePass(
   batchLimit: number,
   stats: {
     prose_examined: number
-    prose_retracted: number
-    prose_rewritten: number
-    prose_queued: number
+    prose_flagged: number
+    prose_queued_rewrite: number
     prose_uncertain: number
   },
 ): Promise<void> {
@@ -444,34 +443,35 @@ async function prosePass(
     }
 
     const confidence = typeof out.confidence === 'number' ? out.confidence : 0
-    const sensitive = tag.is_sensitive === true || tag.is_adult === true
 
     if (out.verdict === 'wrong_subject') {
       if (confidence < 0.9) {
         stats.prose_uncertain++
         continue
       }
-      if (sensitive) {
-        // Sensitive/adult never auto-retracts; the RPC below would refuse it
-        // anyway. Left for the review queue era of this pass.
-        stats.prose_uncertain++
-        continue
-      }
-      // tag_prose_apply declares app.actor='llm:tag-prose-pass' — a direct
-      // PostgREST update reads as 'system:trigger' and log_unified_tag_change
-      // RAISEs on the 79% of prose-bearing tags that are human_reviewed.
-      const { error: e } = await supabase.rpc('tag_prose_apply', {
-        p_tag_id: tag.id,
-        p_retract: true,
-      })
-      if (!e) {
-        stats.prose_retracted++
-        console.log(
-          `prosePass: retracted "${tag.name}" (${tag.category ?? 'uncategorized'}): ${out.reason ?? 'wrong subject'}`,
-        )
-      } else {
-        console.error(`prosePass retract "${tag.name}":`, e.message)
-      }
+      // NEVER retracts, and deliberately does NOT queue either.
+      //
+      // This branch used to null the prose and the wiki identity at
+      // confidence >= 0.9. Its FIRST live batch (2026-08-29, 18 tags) was
+      // WRONG 13 times out of 16: it destroyed correct definitions of
+      // soft-limits, safe-sane-and-consensual-ssc, outing, deadnaming,
+      // anxiety, genital-warts, lgbtq-health, loneliness, heteronormativity,
+      // pillow-princess, educator, genealogy and charite. Only `maler` and
+      // `tanzer` — literal surname disambiguation lists — were genuinely
+      // wrong-subject. The model answers "wrong_subject" with high confidence
+      // for prose that is merely SHORT ("Passive sexual partner", "Teaching
+      // role"), so the confidence gate protected nothing.
+      //
+      // At ~19% precision this is not worth a review queue either: five of
+      // every six rows would be noise, which is how a queue teaches its
+      // reviewers to rubber-stamp. So the verdict is COUNTED AND LOGGED and
+      // the tag is not touched in any way. Re-earning the right to act means
+      // showing a better precision number on a fresh sample, not tuning the
+      // threshold that already failed.
+      stats.prose_flagged++
+      console.log(
+        `prosePass: wrong-subject verdict (NOT acted on) "${tag.name}" (${tag.category ?? 'uncategorized'}): ${out.reason ?? 'wrong subject'}`,
+      )
       continue
     }
 
@@ -484,15 +484,15 @@ async function prosePass(
       continue
     }
 
-    if (!sensitive && confidence >= 0.8) {
-      const { error: e } = await supabase.rpc('tag_prose_apply', {
-        p_tag_id: tag.id,
-        p_description: desc,
-        p_short_description: short || null,
-      })
-      if (!e) stats.prose_rewritten++
-      else console.error(`prosePass rewrite "${tag.name}":`, e.message)
-    } else {
+    // Rewrites are QUEUED, never applied — `sensitive` and `confidence` no
+    // longer gate a direct write. The auto-apply branch was measured on the
+    // same first batch: of two rewrites it produced, one was a downgrade into
+    // exactly the register TAG_STYLE_SYSTEM bans — `ghosting` went from
+    // "Ending contact with someone by simply stopping — no reply, no
+    // explanation, no block" to "Ghosting refers to the practice of suddenly
+    // and without explanation ceasing all communication". A judge that cannot
+    // be trusted to retract cannot be trusted to overwrite either.
+    {
       let queued = false
       if (await queueDescription(tag as unknown as TagRow, desc, llmSource(), 'gpt-4o-mini', confidence)) {
         queued = true
@@ -522,7 +522,7 @@ async function prosePass(
           if (!e) queued = true
         }
       }
-      if (queued) stats.prose_queued++
+      if (queued) stats.prose_queued_rewrite++
     }
   }
 }
@@ -723,9 +723,8 @@ Deno.serve(async (req) => {
   if (mode === 'prose') {
     const proseStats = {
       prose_examined: 0,
-      prose_retracted: 0,
-      prose_rewritten: 0,
-      prose_queued: 0,
+      prose_flagged: 0,
+      prose_queued_rewrite: 0,
       prose_uncertain: 0,
     }
     await prosePass(batchLimit, proseStats)
