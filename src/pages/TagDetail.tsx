@@ -90,6 +90,12 @@ const ENTITY_KIND_LABELS: Record<string, string> = {
   venue_feature: 'Venue feature',
   practice: 'Practice',
   aesthetic: 'Aesthetic',
+  // Kind axis of the 2026-08-29 recategorization program (20261006090000)
+  descriptor: 'Descriptor',
+  place: 'Place',
+  attribute: 'Attribute',
+  audience: 'Audience',
+  person: 'Person',
 };
 
 /**

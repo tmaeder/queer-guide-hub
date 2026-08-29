@@ -30,6 +30,22 @@ export type TagSort = (typeof TAG_SORTS)[number];
 export const TAG_USAGE_FILTERS = ['all', 'used', 'unused'] as const;
 export type TagUsageFilter = (typeof TAG_USAGE_FILTERS)[number];
 
+/** Kind axis (2026-08-29 recategorization program). `concept` is the
+ *  dictionary; `descriptor` is what content is tagged with; `place` is
+ *  geography. kind=person is never shown on the public index at all, so it
+ *  is not a filter value. */
+export const TAG_KIND_FILTERS = ['all', 'concept', 'descriptor', 'place'] as const;
+export type TagKindFilter = (typeof TAG_KIND_FILTERS)[number];
+
+/** entity_kind values each filter admits. Legacy kinds map into the axis
+ *  (practice/aesthetic are concepts; venue_feature/audience/attribute are
+ *  descriptors); a NULL entity_kind reads as concept, the default. */
+export const KIND_FILTER_MATCHES: Record<Exclude<TagKindFilter, 'all'>, ReadonlySet<string>> = {
+  concept: new Set(['concept', 'practice', 'aesthetic']),
+  descriptor: new Set(['descriptor', 'venue_feature', 'audience', 'attribute']),
+  place: new Set(['place']),
+};
+
 /** `#` collects every term whose first character is not A–Z (digits, symbols,
  *  and any non-Latin script — the glossary has entries in several). */
 export const LETTER_OTHER = '#';
@@ -42,6 +58,7 @@ export interface TagsIndexState {
   dir: 'asc' | 'desc';
   letter: string | null;
   usage: TagUsageFilter;
+  kind: TagKindFilter;
   /** Opt in to 18+ terms. Absent means safe mode's verdict stands. */
   adult: boolean;
 }
@@ -53,6 +70,7 @@ export const DEFAULT_TAGS_STATE: TagsIndexState = {
   dir: 'desc',
   letter: null,
   usage: 'all',
+  kind: 'all',
   adult: false,
 };
 
@@ -91,6 +109,7 @@ export function parseTagsParams(
     dir: searchParams.get('dir') === 'asc' ? 'asc' : 'desc',
     letter: normalizeLetter(searchParams.get('letter')),
     usage: oneOf(TAG_USAGE_FILTERS, searchParams.get('usage'), DEFAULT_TAGS_STATE.usage),
+    kind: oneOf(TAG_KIND_FILTERS, searchParams.get('kind'), DEFAULT_TAGS_STATE.kind),
     adult: searchParams.get('adult') === '1',
   };
 
@@ -139,7 +158,7 @@ export function parseTagsParams(
   return { state, changed };
 }
 
-const OWNED_KEYS = ['q', 'view', 'sort', 'dir', 'letter', 'usage', 'adult'] as const;
+const OWNED_KEYS = ['q', 'view', 'sort', 'dir', 'letter', 'usage', 'kind', 'adult'] as const;
 
 export function serializeTagsParams(state: TagsIndexState): URLSearchParams {
   const p = new URLSearchParams();
@@ -149,6 +168,7 @@ export function serializeTagsParams(state: TagsIndexState): URLSearchParams {
   if (state.dir === 'asc') p.set('dir', 'asc');
   if (state.letter) p.set('letter', state.letter);
   if (state.usage !== DEFAULT_TAGS_STATE.usage) p.set('usage', state.usage);
+  if (state.kind !== DEFAULT_TAGS_STATE.kind) p.set('kind', state.kind);
   if (state.adult) p.set('adult', '1');
   return p;
 }
@@ -186,6 +206,7 @@ export function hasActiveFilters(state: TagsIndexState): boolean {
     !!state.q.trim() ||
     state.letter !== null ||
     state.usage !== DEFAULT_TAGS_STATE.usage ||
+    state.kind !== DEFAULT_TAGS_STATE.kind ||
     state.sort !== DEFAULT_TAGS_STATE.sort ||
     state.dir !== DEFAULT_TAGS_STATE.dir
   );

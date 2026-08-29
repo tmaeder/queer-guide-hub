@@ -9,9 +9,61 @@
  */
 type CategoryInfo = { short: string };
 
-// Taxonomy v2 — 10 parents × ~5 children. Matches slugs seeded in migration
-// 20260411160000_resources_taxonomy_v2.sql.
+// Taxonomy v3 — 8 lines × ~5 stops. Matches migration
+// 20261006140000_tag_taxonomy_v3_tree.sql. The v2 names further down stay
+// until PR E of the recategorization program deletes the old tree — a
+// leftover tag can still carry one during the coexistence window.
 const categoryMeta: Record<string, CategoryInfo> = {
+  // v3 lines
+  Identity: { short: 'Identity' },
+  'Sex & Kink': { short: 'Sex & Kink' },
+  'Relationships & Family': { short: 'Relationships' },
+  Health: { short: 'Health' },
+  'Safety & Consent': { short: 'Safety' },
+  'Culture & Community': { short: 'Culture' },
+  'History & Rights': { short: 'History' },
+  'Places & Scene': { short: 'Places' },
+
+  // v3 stops (renamed or new; unchanged names — Sexual Health, Mental
+  // Health, Practices & Play, Consent & Negotiation, Movements & Milestones,
+  // Intersex & Bodies, Relationship Structures, Symbols & Flags — are
+  // already listed in the v2 block below)
+  Orientation: { short: 'Orientation' },
+  Gender: { short: 'Gender' },
+  'Umbrella Terms & Labels': { short: 'Umbrella terms' },
+  'Expression & Style': { short: 'Expression' },
+  'Dynamics & Roles': { short: 'Dynamics' },
+  Fetishes: { short: 'Fetishes' },
+  Gear: { short: 'Gear' },
+  'Kink Community & Scenes': { short: 'Kink scene' },
+  'Dating & Connection': { short: 'Dating' },
+  'Marriage & Partnership': { short: 'Marriage' },
+  'Family & Parenting': { short: 'Family' },
+  'Trans Health & Gender-Affirming Care': { short: 'Trans health' },
+  'Body & Reproductive Health': { short: 'Body' },
+  'Substances & Recovery': { short: 'Substances' },
+  'Safer Sex Practices': { short: 'Safer sex' },
+  'Violence & Hate': { short: 'Violence' },
+  'Digital & Travel Safety': { short: 'Safety' },
+  'Slang & Language': { short: 'Slang' },
+  'Drag & Performance': { short: 'Drag' },
+  'Subcultures & Scenes': { short: 'Scenes' },
+  'Media & Entertainment': { short: 'Media' },
+  'Arts & Literature': { short: 'Arts' },
+  'Sports & Recreation': { short: 'Sports' },
+  'People & Icons': { short: 'People' },
+  'Laws & Legal Rights': { short: 'Legal' },
+  'Politics & Activism': { short: 'Activism' },
+  'Work, School & Institutions': { short: 'Institutions' },
+  'Religion & Belief': { short: 'Religion' },
+  'Venue Types': { short: 'Venues' },
+  'Venue Features & Policies': { short: 'Features' },
+  'Vibe & Crowd': { short: 'Vibe' },
+  Audiences: { short: 'Audiences' },
+  'Events & Parties': { short: 'Events' },
+  Stays: { short: 'Stays' },
+  Destinations: { short: 'Destinations' },
+  'Community Life & Support': { short: 'Community life' },
   // Parents
   'Identity & Expression': { short: 'Identity' },
   'Sexuality & Kink': { short: 'Sex & Kink' },
@@ -90,18 +142,19 @@ const categoryMeta: Record<string, CategoryInfo> = {
   'Professions & Allies': { short: 'Professions' },
 };
 
-// Stable display order for parents — used by Overview and the filter bar.
+// Stable display order for the lines — used by Overview and the filter bar.
+// Taxonomy v3 (20261006140000): 8 lines. The rail/graph render ONLY these
+// names, which is what keeps the old tree invisible during the swap's
+// coexistence window.
 export const parentOrder: string[] = [
-  'Identity & Expression',
-  'Sexuality & Kink',
-  'Relationships & Connection',
-  'Health & Wellness',
-  'Safety & Practices',
-  'Community & Culture',
-  'History & Heritage',
-  'Rights & Activism',
-  'Places & Travel',
-  'Support & News',
+  'Identity',
+  'Sex & Kink',
+  'Relationships & Family',
+  'Health',
+  'Safety & Consent',
+  'Culture & Community',
+  'History & Rights',
+  'Places & Scene',
 ];
 
 /**
