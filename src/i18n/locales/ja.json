@@ -4464,6 +4464,9 @@
         "slang": "スラング"
       },
       "sourceOfLaw": "法的根拠",
+      "clinicalGuidance": "臨床ガイダンス",
+      "guidanceEdition": "版",
+      "notMedicalAdvice": "ここでの定義は公開された臨床ガイダンスに基づいています。医学的助言ではありません。臨床的な詳細はリンク先を参照し、ご自身の治療については医療者にご相談ください。",
       "lawJurisdiction": "管轄",
       "lawInternational": "国際",
       "lawAdopted": "制定",

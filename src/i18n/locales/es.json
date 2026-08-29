@@ -4466,6 +4466,9 @@
         "slang": "Jerga"
       },
       "sourceOfLaw": "Fuente del derecho",
+      "clinicalGuidance": "Guía clínica",
+      "guidanceEdition": "Edición",
+      "notMedicalAdvice": "Las definiciones proceden de guías clínicas publicadas. No son consejo médico. Sigue el enlace para ver el detalle clínico y habla con personal sanitario sobre tu propio caso.",
       "lawJurisdiction": "Jurisdicción",
       "lawInternational": "Internacional",
       "lawAdopted": "Adoptada",

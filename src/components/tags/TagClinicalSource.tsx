@@ -60,7 +60,7 @@ export function TagClinicalSource({ sources }: { sources: TagLegalSourceRow[] })
       <p className="mt-4 border-t border-border-hairline pt-4 text-13 opacity-75">
         {t(
           'tags.detail.notMedicalAdvice',
-          'Definitions here are drawn from published clinical guidance. They are not medical advice — follow the link for clinical detail, and talk to a clinician about your own care.',
+          'Definitions here are drawn from published clinical guidance. They are not medical advice. Follow the link for clinical detail, and talk to a clinician about your own care.',
         )}
       </p>
     </SidebarCard>
