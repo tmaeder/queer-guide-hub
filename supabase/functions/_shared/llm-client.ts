@@ -15,8 +15,9 @@
  */
 
 import { gatewayBaseUrl, gatewayHeaders } from './ai-gateway.ts'
-import { mapToCfModel } from './cf-model-map.ts'
+import { CF_MODEL_DEFAULT, mapToCfModel } from './cf-model-map.ts'
 import { recordLlmUsage } from './llm-usage-log.ts'
+import { tryNvidia } from './llm-router.ts'
 
 export interface LlmMessage {
   role: 'system' | 'user' | 'assistant'
@@ -41,6 +42,14 @@ export interface LlmCompletionOptions {
   callerFn?: string
   /** Optional grouping key for llm_call_log (pipeline run, entity id). */
   contextKey?: string | null
+  /**
+   * How long this call may wait for an NVIDIA rate-limit slot before falling
+   * back to Cloudflare. Omit to use the router's policy (0 for interactive
+   * callers, NVIDIA_MAX_WAIT_MS otherwise).
+   */
+  waitMs?: number
+  /** Wall-clock deadline (epoch ms) past which the router never sleeps. */
+  deadlineAt?: number
 }
 
 export interface LlmCompletionResult {
@@ -101,6 +110,42 @@ export async function llmChatCompletion(
   if (Deno.env.get('AI_DISABLED') === '1') {
     throw new Error('AI_DISABLED: LLM inference halted via kill-switch')
   }
+  // NVIDIA first — and deliberately BEFORE readConfig(), which throws
+  // LlmNotConfiguredError when Cloudflare credentials are absent. Doing it the
+  // other way round would make an NVIDIA-only deployment impossible: the client
+  // would throw on the way to a provider that was configured and working.
+  //
+  // The model name is resolved here too, without readConfig(), for the same
+  // reason. CF_AI_MODEL is honoured so an operator who pinned the fleet to a
+  // bigger Cloudflare model still gets the matching NVIDIA tier — the mapping
+  // is by tier, and cf-model-map's strong ids are what carry that signal.
+  const intendedModel =
+    options.model ?? Deno.env.get('CF_AI_MODEL') ?? CF_MODEL_DEFAULT
+  const nv = await tryNvidia(
+    {
+      messages: options.messages,
+      model: intendedModel,
+      temperature: options.temperature ?? 0.3,
+      max_tokens: options.max_tokens ?? 2000,
+    },
+    {
+      callerFn: options.callerFn ?? 'llmChatCompletion',
+      waitMs: options.waitMs,
+      deadlineAt: options.deadlineAt,
+    },
+  )
+  if (nv.served) {
+    recordLlmUsage({
+      fn: options.callerFn ?? 'llmChatCompletion',
+      model: nv.model,
+      tokensIn: nv.usage?.prompt_tokens,
+      tokensOut: nv.usage?.completion_tokens,
+      contextKey: options.contextKey ?? null,
+      provider: 'nvidia',
+    })
+    return { content: nv.content, usage: nv.usage, model: nv.model }
+  }
+
   const { baseUrl, apiKey, defaultModel, gatewayed } = readConfig()
   const {
     messages,

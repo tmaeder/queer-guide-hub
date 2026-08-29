@@ -32,6 +32,17 @@ export interface LlmUsageRecord {
   /** Optional grouping key (pipeline run, entity id, caller slug). */
   contextKey?: string | null
   userId?: string | null
+  /**
+   * Which backend served the call: 'cloudflare' | 'nvidia' | 'openai'.
+   *
+   * NVIDIA is not one of AI Gateway's supported providers, so for that provider
+   * this column is the ONLY record anywhere that the call happened — the
+   * Cloudflare dashboard cannot see it and neither can the gateway. It is also
+   * what makes rule 3 below survivable: an NVIDIA row has a NULL cost because
+   * llm-cost.ts prices only `@cf/` models, and without a provider it would be
+   * indistinguishable from a Cloudflare call whose model we failed to price.
+   */
+  provider?: string | null
 }
 
 /** Set false in tests to make the write synchronous and assertable. */
@@ -73,6 +84,7 @@ async function insert(rec: LlmUsageRecord): Promise<void> {
       cost_usd: cost,
       context_key: rec.contextKey ?? null,
       user_id: rec.userId ?? null,
+      provider: rec.provider ?? null,
     }),
   })
 
