@@ -369,7 +369,13 @@ export default function TagsIndex() {
     );
   }
 
-  const stopCount = categoriesTree.reduce((n, c) => n + (c.children?.length ?? 0), 0);
+  // Count only the lines the page actually renders (parentOrder), not every
+  // root in tag_categories — during the taxonomy-swap coexistence window the
+  // table holds two trees and an unfiltered count inflates the hero stat.
+  const stopCount = categoriesTree.reduce(
+    (n, c) => n + (parentOrder.includes(c.name) ? (c.children?.length ?? 0) : 0),
+    0,
+  );
   const filtered = hasActiveFilters(state);
 
   return (
