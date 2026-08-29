@@ -52,9 +52,10 @@ select set_config('app.actor', 'migration:tag-category-id-backfill', true);
 
 do $mig$
 declare
-  r      record;
-  v_bad  int;
-  v_done int := 0;
+  r       record;
+  v_bad   int;
+  v_done  int := 0;
+  v_wrote uuid[] := '{}';   -- the rows THIS migration filled; see the assertion
 begin
   for r in
     select t.id, ca.category_id as cat_id, c.name as cat_name
@@ -71,7 +72,8 @@ begin
            category    = r.cat_name,
            updated_at  = now()
      where id = r.id;
-    v_done := v_done + 1;
+    v_done  := v_done + 1;
+    v_wrote := v_wrote || r.id;
   end loop;
 
   ------------------------------------------------------------------ assertions
@@ -87,13 +89,36 @@ begin
 
   -- And this must not have INTRODUCED a disagreement, which is the failure mode
   -- a careless fill would create.
+  --
+  -- SCOPED TO THE ROWS THIS MIGRATION WROTE, and that scoping is the fix for an
+  -- outage. As written it was corpus-wide, which made it fail on a row this
+  -- migration never touched and CANNOT repair: the loop is fill-only
+  -- (`category_id is null`), so a row that already held a NON-NULL category_id
+  -- disagreeing with its junction is invisible to the loop and fatal to the
+  -- assertion. Exactly that happened — `u-equals-u` acquired such a
+  -- disagreement between this file being written (its header measured 0) and
+  -- being applied, and the migration then died with
+  --
+  --   ERROR: category_id backfill: 1 row(s) now disagree with their junction
+  --
+  -- aborting db push and every migration behind it. Eight consecutive deploys
+  -- on main failed; nothing applied past 20261007140000 for hours while edge
+  -- functions kept shipping against the old schema.
+  --
+  -- The header's "ZERO genuine disagreements left" was true when measured and
+  -- false by the time it ran. A guard may only cover what its own migration
+  -- changed — otherwise it reports someone else's later write as this
+  -- migration's defect. `u-equals-u` is repaired on its own terms in
+  -- 20261007163200, which promotes the Sexual Health junction row it already
+  -- had. (An HIV treatment-as-prevention concept was filed under Orientation.)
   select count(*) into v_bad
     from public.unified_tags t
     join public.tag_category_assignments ca
       on ca.tag_id = t.id and ca.is_primary
-   where t.category_id is distinct from ca.category_id;
+   where t.id = any (v_wrote)
+     and t.category_id is distinct from ca.category_id;
   if v_bad > 0 then
-    raise exception 'category_id backfill: % row(s) now disagree with their junction', v_bad;
+    raise exception 'category_id backfill: % row(s) THIS migration filled disagree with their junction', v_bad;
   end if;
 
   raise notice 'category_id backfill: % row(s) filled', v_done;

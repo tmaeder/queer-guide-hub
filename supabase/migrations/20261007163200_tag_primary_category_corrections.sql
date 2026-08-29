@@ -137,6 +137,74 @@ begin
   raise notice 'primary category corrections: % moved, % skipped', v_moved, v_skipped;
 end $mig$;
 
+-- ---------------------------------------------------------------------------
+-- `u-equals-u` — the seventh, and the one that needs the OTHER mechanism.
+--
+-- U=U (undetectable = untransmittable) is an HIV treatment-as-prevention fact
+-- and was filed under Orientation. It is not in the loop above because writing
+-- category_id cannot move it: the column ALREADY reads Sexual Health while the
+-- primary junction reads Orientation, so the trigger's
+-- `is distinct from` guard makes that write a no-op and nothing propagates.
+--
+-- This row is why db push was down. `20261007160000` asserts corpus-wide that
+-- no row's category_id disagrees with its junction, but its loop is fill-only
+-- and cannot reach a row whose column is already non-null — so it failed on
+-- this row, aborting the push and every migration behind it, eight deploys
+-- running. That assertion is now scoped to the rows it writes; this is the
+-- repair of the underlying data.
+--
+-- MEASURED, because the obvious fix made it worse. Writing the junction AND
+-- unified_tags in one transaction took corpus-wide disagreements from 1 to 5:
+-- the AFTER trigger re-derives the junction from category_id, so a manual
+-- junction write plus a column write fight each other. Promoting the EXISTING
+-- Sexual Health assignment and leaving unified_tags to a separate statement is
+-- what actually converges — verified in a rolled-back transaction on prod.
+-- The tag already had a Sexual Health assignment; it simply was not primary,
+-- which is also why an INSERT here raises a unique violation.
+-- ---------------------------------------------------------------------------
+do $ueu$
+declare
+  v_tag uuid;
+  v_cat uuid;
+begin
+  select id into v_tag from public.unified_tags where slug = 'u-equals-u';
+  select id into v_cat from public.tag_categories where slug = 'sexual-health';
+  if v_tag is null or v_cat is null then
+    raise notice 'u-equals-u repair skipped: tag or category missing';
+    return;
+  end if;
+
+  -- UNCONDITIONAL, and an earlier draft of this block was wrong to guard it.
+  --
+  -- The draft skipped when a primary already existed on sexual-health. On prod
+  -- `u-equals-u` has TWO is_primary rows — Orientation AND Sexual Health — so
+  -- that guard sees the correct one, declares victory and leaves the wrong one
+  -- primary as well. It was caught only because the verification query then
+  -- raised 21000 "more than one row returned by a subquery": a duplicate
+  -- primary is invisible to any check that reads the primary with a scalar
+  -- subquery, which is most of them.
+  --
+  -- Assigning the flag from a predicate in ONE statement is idempotent and
+  -- converges from any starting shape — none primary, one primary on the wrong
+  -- row, or two — so no guard is needed and none can be wrong.
+  update public.tag_category_assignments
+     set is_primary = (category_id = v_cat)
+   where tag_id = v_tag
+     and is_primary is distinct from (category_id = v_cat);
+  if found then
+    raise notice 'u-equals-u primary junction collapsed onto sexual-health';
+  end if;
+
+  -- The denormalised text does NOT follow a junction write (the triggers run
+  -- unified_tags -> junction only), and it is what the search facet reads, so
+  -- it is set explicitly rather than left saying "Orientation".
+  update public.unified_tags u
+     set category   = c.name,
+         updated_at = now()
+    from public.tag_categories c
+   where u.id = v_tag and c.id = v_cat and u.category is distinct from c.name;
+end $ueu$;
+
 -- Asserts ONLY the six rows this migration writes.
 do $verify$
 declare
@@ -193,6 +261,30 @@ begin
     and t.category is distinct from c.name;
   if v_bad is not null then
     raise exception 'primary category corrections: denorm text did not follow: %', v_bad;
+  end if;
+
+  -- u-equals-u ends with exactly ONE primary, on Sexual Health, and its text
+  -- agrees. Counted rather than read through a scalar subquery, because the
+  -- defect being fixed here — two is_primary rows — is precisely what a scalar
+  -- read cannot see (it raises 21000 or silently picks one).
+  select count(*) into v_n
+  from public.tag_category_assignments a
+  join public.unified_tags t on t.id = a.tag_id
+  where t.slug = 'u-equals-u' and a.is_primary;
+  if v_n <> 1 then
+    raise exception 'u-equals-u has % primary junction row(s), expected 1', v_n;
+  end if;
+
+  select string_agg(x, ', ') into v_bad from (
+    select t.slug || ' junction=' || c.name || ' text=' || coalesce(t.category, 'NULL') as x
+      from public.unified_tags t
+      join public.tag_category_assignments a on a.tag_id = t.id and a.is_primary
+      join public.tag_categories c on c.id = a.category_id
+     where t.slug = 'u-equals-u'
+       and (c.slug <> 'sexual-health' or t.category is distinct from c.name)
+  ) d;
+  if v_bad is not null then
+    raise exception 'u-equals-u not settled on Sexual Health: %', v_bad;
   end if;
 
   -- No tag gained is_adult. Raising it would deindex the page via
