@@ -63,6 +63,20 @@
 -- The removed text is not lost. `unified_tags_audit` records before_data /
 -- after_data for every row touched, and the actor set below names this migration
 -- as the reason, so tag_change_log holds each retracted body.
+--
+-- LICENCE, restated because this migration belongs to the Kinktionary program
+-- and src/lib/__tests__/kinktionaryLicence.test.ts requires every migration in
+-- it to carry the rationale. The Kinktionary is licensed NON-COMMERCIAL only
+-- and queer.guide is commercial, so NOT ONE WORD OF THEIR PROSE IS COPIED OR
+-- ADAPTED by this program: only their term list and section headings were ever
+-- used, purely as a signal for which of OUR rows to publish. This migration
+-- writes no prose at all — it only removes bodies that were already there — so
+-- it cannot introduce their text even by accident.
+--
+-- The separate and real question of PRE-EXISTING rows whose stored prose
+-- overlaps theirs is measured by
+-- scripts/data-quality/measure-kinktionary-prose-overlap.mjs and is handled
+-- apart from this retraction.
 
 set local statement_timeout = '600s';
 

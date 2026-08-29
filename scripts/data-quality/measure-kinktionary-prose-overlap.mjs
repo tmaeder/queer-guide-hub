@@ -83,14 +83,28 @@ async function main() {
   const bySlug = new Map();
   for (const t of signal.terms) if (!bySlug.has(slugify(t.term))) bySlug.set(slugify(t.term), t);
 
-  const res = await fetch(
-    `https://xqeacpakadqfxjxjcewc.supabase.co/rest/v1/unified_tags` +
-      `?select=slug,description,long_description,seo_indexable&status=eq.active` +
-      `&human_reviewed=is.true&order=slug.asc&limit=5000`,
-    { headers: H },
-  );
-  if (!res.ok) throw new Error(`tags: HTTP ${res.status}`);
-  const tags = (await res.json()).filter((t) => bySlug.has(t.slug));
+  // PAGINATE. `limit=5000` DOES NOT WORK: PostgREST clamps to its server-side
+  // max-rows (1000 here) and returns the first page WITHOUT any error, so the
+  // request looks like it succeeded. The first run of this script did exactly
+  // that — it examined 619 tags spanning only `8-panel-sti-test` to `hentai`,
+  // i.e. roughly A-H, and reported "181 overlapping" as if that were the whole
+  // corpus. A truncated read reads exactly like a complete one; only the
+  // alphabetical range of the output gave it away.
+  const all = [];
+  for (let offset = 0; ; offset += 1000) {
+    const res = await fetch(
+      `https://xqeacpakadqfxjxjcewc.supabase.co/rest/v1/unified_tags` +
+        `?select=slug,description,long_description,seo_indexable&status=eq.active` +
+        `&human_reviewed=is.true&order=slug.asc&limit=1000&offset=${offset}`,
+      { headers: H },
+    );
+    if (!res.ok) throw new Error(`tags: HTTP ${res.status}`);
+    const page = await res.json();
+    all.push(...page);
+    if (page.length < 1000) break;
+  }
+  const tags = all.filter((t) => bySlug.has(t.slug));
+  process.stderr.write(`${all.length} active reviewed tags, ${tags.length} with a Kinktionary counterpart\n`);
 
   const ctx = await chromium.launchPersistentContext(PROFILE, {
     channel: 'chrome',
