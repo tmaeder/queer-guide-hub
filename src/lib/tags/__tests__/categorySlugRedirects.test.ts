@@ -70,3 +70,63 @@ describe('category slug redirects', () => {
     expect(redirectedCategorySlug('sexual-health')).toBeNull(); // survived in place
   });
 });
+
+/**
+ * The legacy `?cat=` / `?category=` params carry a v2 display NAME, not a slug,
+ * because that is what /tags emitted when those links were minted. v2 names left
+ * `tag_categories` with the retirement (20261006150000), so the live-tree lookup
+ * in `resolveCategorySlug` can no longer resolve them and the param would be
+ * held forever — the reader lands on an unfiltered glossary.
+ *
+ * This pins the slugify rule that bridges name → map key. It is asserted here
+ * rather than only in e2e because the e2e for it runs against prod.
+ */
+describe('legacy ?cat= name resolution', () => {
+  const slugify = (v: string) =>
+    v
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+
+  it('slugifies every retired v2 display name onto a real map key', () => {
+    // The ampersand has to collapse INTO the separator run rather than survive
+    // as a token, or "Health & Wellness" yields "health--wellness".
+    const names: Record<string, string> = {
+      'Identity & Expression': 'identity-expression',
+      'Sexuality & Kink': 'sexuality-kink',
+      'Relationships & Connection': 'relationships-connection',
+      'Health & Wellness': 'health-wellness',
+      'Safety & Practices': 'safety-practices',
+      'Community & Culture': 'community-culture',
+      'History & Heritage': 'history-heritage',
+      'Rights & Activism': 'rights-activism',
+      'Places & Travel': 'places-travel',
+      'Support & News': 'support-news',
+      'Body Types & Archetypes': 'body-types-archetypes',
+      'Care & Access': 'care-access',
+      'Current Affairs': 'current-affairs',
+      'Professions & Allies': 'professions-allies',
+      'Sexual Roles': 'sexual-roles',
+    };
+    for (const [name, slug] of Object.entries(names)) {
+      expect(slugify(name), name).toBe(slug);
+      expect(redirectedCategorySlug(slug), `${name} must resolve to a v3 line`).toBeTruthy();
+    }
+  });
+
+  it('covers every retired slug the map knows, with no name left unresolvable', () => {
+    // Guards the inverse: a slug added to the map later with a name shape the
+    // slugify rule cannot produce would silently keep dead-ending.
+    for (const from of Object.keys(CATEGORY_SLUG_REDIRECTS)) {
+      expect(slugify(from), `${from} is not slugify-stable`).toBe(from);
+    }
+  });
+
+  it('resolves a live v3 line to itself rather than through the map', () => {
+    // A surviving line must never enter the redirect path — that would be a
+    // self-redirect the first test already forbids, reached by a different door.
+    for (const line of Object.values(CATEGORY_LINES)) {
+      expect(redirectedCategorySlug(line.slug), `${line.slug} is live, not retired`).toBeNull();
+    }
+  });
+});

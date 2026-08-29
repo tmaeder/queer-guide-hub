@@ -96,7 +96,23 @@ export default function TagsIndex() {
         );
         if (child) return child.slug;
       }
-      return null;
+      // Retired v2 category. The tree stopped carrying these when 20261006150000
+      // deleted them, so the live loop above can no longer resolve a legacy
+      // `?cat=`/`?category=` link and `parseTagsParams` would hold the param
+      // forever — the reader lands on an unfiltered glossary instead of the
+      // category they asked for. categorySlugRedirects' own header says it
+      // serves these params; this is the call that makes that true.
+      //
+      // Both spellings have to be tried: the map is keyed by SLUG, while
+      // `?cat=` carries the display NAME ("Health & Wellness"), which is what
+      // the page emitted when these links were minted. The slugify rule is the
+      // one the v2 slugs were derived under, so "Body Types & Archetypes"
+      // collapses the ampersand into the separator run and lands on
+      // `body-types-archetypes`.
+      return (
+        redirectedCategorySlug(lower) ??
+        redirectedCategorySlug(lower.replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''))
+      );
     },
     [categoriesTree],
   );

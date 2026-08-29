@@ -40,19 +40,32 @@ test.describe('@p1-1 /tags URL state', () => {
   });
 
   test('a category path preselects its line', async ({ page }) => {
-    await page.goto('/tags/c/health-wellness');
+    await page.goto('/tags/c/health');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 15_000 });
     // aria-current marks the active station on the taxonomy rail.
-    await expect(
-      page.locator('a[aria-current="page"][href*="health-wellness"]').first(),
-    ).toBeVisible();
+    await expect(page.locator('a[aria-current="page"][href*="health"]').first()).toBeVisible();
+  });
+
+  // Taxonomy v2 was retired by 20261006150000, so `health-wellness` is no
+  // longer a category — it is a redirect. Asserting the LANDING rather than the
+  // requested slug is what makes this a test of the redirect chain instead of a
+  // test of a slug that no longer exists.
+  test('a retired v2 category path redirects and preselects the v3 line', async ({ page }) => {
+    await page.goto('/tags/c/health-wellness');
+    await expect(page).toHaveURL(/\/tags\/c\/health(\?|$)/, { timeout: 15_000 });
+    await expect(page.locator('a[aria-current="page"][href*="health"]').first()).toBeVisible();
   });
 
   test('legacy ?cat= redirects into the category path', async ({ page }) => {
     // Three spellings of this filter used to coexist. The query forms are now
     // legacy inputs that resolve to the canonical route.
+    //
+    // The value is a v2 display NAME, which is what the page emitted when these
+    // links were minted, and v2 names left `tag_categories` with the retirement
+    // — so this only resolves because `resolveCategorySlug` falls back to the
+    // v2→v3 map on the slugified name. It is the regression guard for that.
     await page.goto('/tags?cat=Health%20%26%20Wellness');
-    await expect(page).toHaveURL(/\/tags\/c\/health-wellness/, { timeout: 15_000 });
+    await expect(page).toHaveURL(/\/tags\/c\/health(\?|$)/, { timeout: 15_000 });
   });
 
   test('legacy ?profession= goes to the personalities facet', async ({ page }) => {
