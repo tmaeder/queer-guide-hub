@@ -129,7 +129,7 @@ An aggregate over a one-to-many join answers a different question than the one b
 its answer is confidently shaped. Same class as the two other measurement errors in this file.
 
 **The six with a genuinely wrong primary — all fixed in
-`20261007100200_tag_primary_category_corrections.sql`:**
+`20261007140200_tag_primary_category_corrections.sql`:**
 
 | Tag | Was | Now | Reason |
 |---|---|---|---|
@@ -194,11 +194,11 @@ Deprecated but core to this domain, and candidates for revival with a reason eac
 | `scripts/data-quality/drgay-topic-index.json` | Committed signal: 362 labels / 80 pages. |
 | `scripts/data-quality/match-drgay-to-tags.mjs` | Matcher + subtree census → `out/drgay-disposition.json`. Refuses the anon key. |
 | `src/lib/__tests__/drgayLicence.test.ts` | Makes storing their prose fail the build. |
-| `supabase/migrations/20261007100000_wrong_entity_wikidata_repair.sql` | Defect class 1. Validated in a rolled-back transaction on prod. |
-| `supabase/migrations/20261007100100_tag_denorm_category_resync.sql` | Defect class 3, plus two new hygiene counters. Validated in a rolled-back transaction on prod. |
-| `supabase/migrations/20261007100200_tag_primary_category_corrections.sql` | Defect class 4 — the six with a genuinely wrong primary. |
-| `supabase/migrations/20261007100300_drgay_absent_concepts.sql` | The six absent concepts, the U=U twin merges, and the aliases `u-equals-u` never had. |
-| `supabase/migrations/20261007100400_drgay_placeholder_prose_and_deindex.sql` | Defect class 2 — prose for seven, deindex for the rest. |
+| `supabase/migrations/20261007140000_wrong_entity_wikidata_repair.sql` | Defect class 1. Validated in a rolled-back transaction on prod. |
+| `supabase/migrations/20261007140100_tag_denorm_category_resync.sql` | Defect class 3, plus two new hygiene counters. Validated in a rolled-back transaction on prod. |
+| `supabase/migrations/20261007140200_tag_primary_category_corrections.sql` | Defect class 4 — the six with a genuinely wrong primary. |
+| `supabase/migrations/20261007140300_drgay_absent_concepts.sql` | The six absent concepts, the U=U twin merges, and the aliases `u-equals-u` never had. |
+| `supabase/migrations/20261007140400_drgay_placeholder_prose_and_deindex.sql` | Defect class 2 — prose for seven, deindex for the rest. |
 | `src/lib/tagHygieneMetrics.ts`, `scripts/tag-hygiene-baseline.json` | The panel + baseline halves of those counters. |
 
 **Both migration versions were renumbered from `20261005*`.** `main` applied up to `20261006140100`

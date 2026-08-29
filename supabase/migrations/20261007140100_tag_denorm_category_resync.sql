@@ -9,7 +9,7 @@
 -- original version could never have run. `20261006110000` on main cites this
 -- migration by its OLD number in three comments; those references are stale by
 -- name only, the delegation they describe is unchanged and is honoured here.
--- Same rename applied to its sibling 20261007100000.
+-- Same rename applied to its sibling 20261007140000.
 --
 -- WHAT WAS MEASURED, ON PROD, BEFORE WRITING THIS
 --
@@ -126,7 +126,7 @@ begin
     select * from unified_tags where status = 'active' and merged_into_id is null
   ),
   -- A short description shared by many tags is a bulk-import stamp, not a
-  -- definition. See the header of 20261007100100.
+  -- definition. See the header of 20261007140100.
   stamps as (
     select btrim(description) as d
       from unified_tags
@@ -148,7 +148,7 @@ begin
       select count(*) from unified_tags u where u.category_id is not null
         and not exists (select 1 from tag_categories c where c.id = u.category_id)),
     -- The junction is the source of truth; this counts rows where it says one
-    -- thing and the denormalised column says nothing. Zero after 20261007100100.
+    -- thing and the denormalised column says nothing. Zero after 20261007140100.
     'denorm_category_missing', (
       select count(*) from unified_tags u
        where u.category_id is null

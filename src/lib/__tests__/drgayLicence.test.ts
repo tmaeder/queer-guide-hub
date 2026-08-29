@@ -117,7 +117,7 @@ describe('drgay.ch artifact carries vocabulary signal only', () => {
 /**
  * These guard migrations DERIVED from the drgay signal — the ones that create or
  * rewrite tag content because the coverage probe found a gap. None exist yet:
- * the repairs shipped so far (20261007100000 wrong-entity wikidata, 20261007100100
+ * the repairs shipped so far (20261007140000 wrong-entity wikidata, 20261007140100
  * denorm resync) were FOUND while probing but are driven by prod measurements and
  * carry none of drgay's vocabulary, so naming them `drgay` would attach a licence
  * header to files the licence has nothing to do with.

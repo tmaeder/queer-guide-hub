@@ -224,7 +224,7 @@ It is a self-description first. Applying it to someone who has not used it of th
 
     -- category_id, not the junction: the triggers derive the junction and the
     -- denormalised text from this column, never the other way round. See
-    -- 20261007100200 for the measurement.
+    -- 20261007140200 for the measurement.
     update public.unified_tags
        set category_id = v_cat_id, updated_at = now()
      where id = v_tag_id and category_id is distinct from v_cat_id;
