@@ -36,12 +36,28 @@
 -- (1,706), `sauna` (1,370), `kink` (1,361), `clothing-optional` (1,690) -- none
 -- of them returnable by site search for the last three months.
 --
--- WHY THIS DOES NOT JUST WIDEN THE INDEXER. 64 of the 297 ARE still genuinely
--- orphaned and bare: German occupation fragments from the old slugifier
--- (`schauspieler`, `politiker`, `regisseur`, `grohandelskaufmann`), import
--- residue (`admiralduncan-mordopfer-hassverbrechen`), a bare date
--- (`december-29-1973`). Indexing those would add exactly the dead-end results
--- the audit existed to remove. They get the deprecation the audit intended.
+-- WHY THIS DOES NOT JUST WIDEN THE INDEXER. Exactly ONE of the 297 is dead
+-- (`lavenderscare-suizid`) and it gets the deprecation the audit intended.
+--
+-- That number was 64 before the free-text check in step 0 existed, and the
+-- 63-row difference is this migration's own lesson repeating one level down. A
+-- first pass classified by the junction table alone -- the same source the
+-- 2026-06-05 audit trusted -- and condemned `schriftsteller`, `aktivist`,
+-- `schauspieler` and `politiker` as bare orphans. They are carried by 642, 475,
+-- 452 and 416 personality records. They hold no junction rows only because
+-- `run_tag_assignment_reconcile` reads `venues`, `news_articles` and
+-- `community_groups` and NEVER `personalities` or `events`. **A coverage gap in
+-- the instrument is indistinguishable from absence in the thing measured.**
+--
+-- `usage_count` cannot be used as the second opinion either: the same reconciler
+-- recomputes it from the same junction table, so all 64 read `usage_count = 0`
+-- while hundreds of personality records carried them. Two "independent" signals
+-- that share an upstream are one signal.
+--
+-- FOLLOW-UP, deliberately not done here: `run_tag_assignment_reconcile` should
+-- probably cover `personalities` and `events` too. That would create thousands
+-- of junction rows and a matching reindex wave, so it is its own change with its
+-- own batching decision -- not a rider on a repair migration.
 --
 -- The split falls on a line already drawn in the data: of the 297, ZERO
 -- seo_indexable rows are bare orphans and ZERO bare orphans are seo_indexable.
@@ -62,7 +78,43 @@ begin;
 set local app.actor = 'migration:20261008110000';
 
 -- ---------------------------------------------------------------------------
--- 1. Revive: the tag is linked, or is a glossary entry with its own content.
+-- 0. Every tag string any entity actually carries, from the free-text `tags[]`
+--    arrays THEMSELVES rather than from the junction table.
+--
+--    THIS IS THE LOAD-BEARING STEP, and leaving it out reproduces the very
+--    mistake this migration exists to correct. `run_tag_assignment_reconcile`
+--    materializes `unified_tag_assignments` from `venues`, `news_articles` and
+--    `community_groups` -- it does NOT read `personalities` or `events`. So a
+--    tag carried only by those two tables has zero junction rows and looks
+--    exactly like an orphan, which is the same coverage-gap-mistaken-for-
+--    orphanhood that made the 2026-06-05 audit wrong in the first place.
+--
+--    Measured: 54 of the 64 rows a junction-only test called "bare orphans" are
+--    live German profession vocabulary on personality records --
+--    `schriftsteller` on 642 people, `strafverfolgung` on 491, `aktivist` on
+--    475, `schauspieler` on 452, `politiker` on 416. Delisting those would have
+--    pointed a tag chip on 642 personality pages at a 404.
+--
+--    Built once as a set rather than as a correlated EXISTS per tag, so each of
+--    the four tables is scanned once instead of ~300 times.
+-- ---------------------------------------------------------------------------
+create temp table _referenced_tag_keys on commit drop as
+  select distinct lower(trim(tag)) as k
+  from (
+    select unnest(tags) as tag from public.venues          where tags is not null
+    union all
+    select unnest(tags)           from public.events        where tags is not null
+    union all
+    select unnest(tags)           from public.personalities where tags is not null
+    union all
+    select unnest(tags)           from public.news_articles where tags is not null
+  ) s
+  where tag is not null and trim(tag) <> '';
+create index on _referenced_tag_keys (k);
+
+-- ---------------------------------------------------------------------------
+-- 1. Revive: the tag is linked, is referenced by an entity's own free text, or
+--    is a glossary entry with content of its own.
 --    Clearing deprecated_at is what puts it back into search_documents --
 --    trg_search_documents_tag lists both deprecated_at and status in its
 --    UPDATE OF scope, so the reindex enqueues without an explicit call.
@@ -77,6 +129,7 @@ with revive as (
       or exists (select 1 from public.tag_relations r where r.source_tag_id = t.id or r.target_tag_id = t.id)
       or exists (select 1 from public.search_synonyms s where s.tag_id = t.id)
       or exists (select 1 from public.tag_aliases al where al.canonical_tag_id = t.id)
+      or exists (select 1 from _referenced_tag_keys k where k.k in (t.slug, lower(t.name)))
       or coalesce(length(t.long_description), 0) >= 200
       or t.wikidata_id is not null
       or exists (select 1 from public.tag_medical_codes mc where mc.tag_id = t.id)
@@ -89,13 +142,36 @@ update public.unified_tags t
  where t.id = r.id;
 
 -- ---------------------------------------------------------------------------
--- 2. Delist: still orphaned by the audit's own criterion and carrying no
---    content of its own. deprecated_at already says so; status now agrees.
+-- 2. Delist: whatever step 1 did not revive. Nothing links it, no entity's free
+--    text mentions it, and it has no content of its own. deprecated_at already
+--    says so; status now agrees, and the page stops resolving.
+--
+--    Measured at ONE row, `lavenderscare-suizid` -- a hashtag fragment from the
+--    German import, `usage_count = 0` and already `seo_indexable = false`, so it
+--    is reachable from neither search nor a sitemap.
+--
+--    The count is asserted below rather than trusted. If a future re-run would
+--    delist a large set, that is the signal that the reference check has gone
+--    blind again (a renamed column, a new entity table nobody added here) and it
+--    must fail rather than quietly 404 live vocabulary.
 -- ---------------------------------------------------------------------------
-update public.unified_tags t
-   set status = 'deprecated'
- where t.status = 'active'
-   and t.deprecated_at is not null;
+-- The UPDATE lives inside the block because GET DIAGNOSTICS only reports the
+-- row count of a statement in its OWN PL/pgSQL block -- a separate `do $$` after
+-- a bare UPDATE reads zero and the guard would pass vacuously.
+do $$
+declare v_delisted int;
+begin
+  update public.unified_tags t
+     set status = 'deprecated'
+   where t.status = 'active'
+     and t.deprecated_at is not null;
+  get diagnostics v_delisted = row_count;
+
+  raise notice 'tag divergence repair: delisted % row(s)', v_delisted;
+  if v_delisted > 25 then
+    raise exception 'refusing to delist % tags: expected ~1. The free-text reference check in step 0 has probably gone blind -- verify it before re-running.', v_delisted;
+  end if;
+end $$;
 
 -- ---------------------------------------------------------------------------
 -- 3. The mirror image: deprecated with no timestamp, so the page 404s while the
