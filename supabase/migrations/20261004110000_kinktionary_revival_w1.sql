@@ -276,6 +276,45 @@ begin
       and status <> 'active';
   end loop;
 
+  -- Reconcile the junction to unified_tags.category_id.
+  --
+  -- The header is right that trg_sync_tag_category_after owns the junction — but
+  -- it fires only `if new.category_id is distinct from old.category_id`, and this
+  -- migration deliberately never writes category_id (STATUS ONLY). So for a row
+  -- that ALREADY carries the right category_id the trigger cannot fire, and a
+  -- junction row that disagreed with it stays disagreeing forever. The assertion
+  -- below then refuses the whole wave.
+  --
+  -- Measured on prod: 3 of the 153 rows here — medical-play, needle-play,
+  -- power-exchange — carry category_id "Health & Wellness" while their single
+  -- junction row is marked primary against "Sexual Health". They are not MISSING
+  -- a junction row, they have a CONTRADICTING one, which is why "the trigger will
+  -- handle it" was never going to be true. 397 rows corpus-wide are in this state;
+  -- this repairs only the 153 in this wave, because those are the ones about to go
+  -- live carrying the contradiction.
+  --
+  -- This is not a taxonomy decision. unified_tags.category_id is the declared
+  -- source of truth (tag_hygiene_stats().uncategorized_active counts it, and the
+  -- trigger writes the junction FROM it, never the reverse), so this applies the
+  -- system's own direction of authority. The two statements below are exactly what
+  -- the trigger body does, minus the change-detection it cannot satisfy here.
+  update public.tag_category_assignments a
+     set is_primary = false
+   where a.is_primary
+     and exists (
+       select 1 from _rev k
+         join public.unified_tags t on t.slug = k.slug
+        where t.id = a.tag_id
+          and t.category_id is not null
+          and a.category_id <> t.category_id);
+
+  insert into public.tag_category_assignments (tag_id, category_id, is_primary)
+  select t.id, t.category_id, true
+    from _rev k
+    join public.unified_tags t on t.slug = k.slug
+   where t.category_id is not null
+  on conflict (tag_id, category_id) do update set is_primary = true;
+
   ------------------------------------------------------------------ assertions
   select count(*) into v_bad from _rev k
     join public.unified_tags t on t.slug = k.slug
