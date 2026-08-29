@@ -359,18 +359,32 @@ select id, category_id, true from inserted
 on conflict (tag_id, category_id) do nothing;
 
 -- Revived rows may equally have had no junction row, or one pointing at a stale parent.
+--
+-- DEMOTE BEFORE INSERT, not after. Both statements were here already but in the
+-- opposite order, and that aborted the whole migration on prod:
+--
+--   ERROR: duplicate key value violates unique constraint
+--          "tag_category_assignments_one_primary_per_tag" (SQLSTATE 23505)
+--
+-- `tag_category_assignments_one_primary_per_tag` is a PARTIAL unique index over
+-- (tag_id) WHERE is_primary, so it is checked when the INSERT's statement ends —
+-- long before a later statement could clean up. And `on conflict (tag_id,
+-- category_id)` cannot absorb it: the conflicting row has a DIFFERENT
+-- category_id, so it is not the arbiter's conflict at all. A revived tag whose
+-- old primary points at a stale parent therefore hits the index every time.
+-- Demoting first makes the insert's promotion the only primary in flight.
+update tag_category_assignments a set is_primary = false
+from unified_tags t
+where a.tag_id = t.id
+  and t.slug in ('cathinones','k-hole','drug-induced-psychosis','chillout-room')
+  and a.category_id <> t.category_id and a.is_primary;
+
 insert into tag_category_assignments (tag_id, category_id, is_primary)
 select t.id, t.category_id, true
 from unified_tags t
 where t.slug in ('cathinones','k-hole','drug-induced-psychosis','chillout-room')
   and t.status = 'active' and t.category_id is not null
 on conflict (tag_id, category_id) do update set is_primary = true;
-
-update tag_category_assignments a set is_primary = false
-from unified_tags t
-where a.tag_id = t.id
-  and t.slug in ('cathinones','k-hole','drug-induced-psychosis','chillout-room')
-  and a.category_id <> t.category_id and a.is_primary;
 
 -- Aliases for the new rows, from the sources' own vocabulary.
 insert into tag_aliases (canonical_tag_id, alias_name, alias_slug, alias_type, review_status)
