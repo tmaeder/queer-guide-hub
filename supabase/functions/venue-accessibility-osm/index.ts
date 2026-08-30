@@ -172,9 +172,18 @@ Deno.serve(async (req: Request) => {
         const endpoint = healthy[endpointIdx++ % healthy.length]
         const r = await withCircuitBreaker(supabase, 'osm.overpass', async () => {
           const out = await askOverpass(endpoint, query)
-          // Only a transport/4xx error counts against the circuit. A busy mirror
-          // and a query timeout are both "ask again later", not "this API is
-          // broken" — filing them would trip the breaker on any burst.
+          // The breaker here guards TRANSPORT health, and only a transport error
+          // or a 4xx counts against it. A busy mirror (429/5xx) and a query
+          // timeout are both "ask again later", not "this API is broken" —
+          // filing them would trip the circuit on any burst, which is the same
+          // misclassification that made a pg_net `timed_out` nearly auto-pause
+          // the core dispatcher.
+          //
+          // The consequence, stated rather than hidden: because those verdicts
+          // do not throw, withCircuitBreaker records a SUCCESS for them. So a
+          // mirror that 504s forever will not open the circuit. What bounds that
+          // case is not the breaker but the per-venue `unknown` attempt counter
+          // in stamp_venue_osm_accessibility, which gives up after 3 tries.
           if (out.verdict === 'error') throw new Error(`overpass ${endpoint} HTTP ${out.status}`)
           return out
         })
@@ -237,6 +246,13 @@ Deno.serve(async (req: Request) => {
       { source: 'osm', value: osmSlugs },
       { source: 'existing', value: existing },
     ])!
+    // The write gate is the CONFLICT, not decision.action. A venue starts with
+    // an empty column, so a first read is always single-source and always scores
+    // below the 0.85 auto-commit threshold — gating on confidence would mean
+    // nothing was ever written. OSM tags are a mapper's structured observation,
+    // the same category as the Google Places booleans amenity-truth-backfill
+    // auto-applies; it is LLM-INFERRED accessibility that stays review-gated,
+    // and that path is not this one.
     const winner = (decision.winner as string[]) ?? []
     const conflict = resolveContradictions([...osmSlugs, ...existing])
     const hasConflict = conflict.conflicts.length > 0
