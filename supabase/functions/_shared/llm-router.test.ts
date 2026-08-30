@@ -436,6 +436,7 @@ Deno.test('a missing rate RPC routes to the fallback instead of ignoring the lim
     const rec: { chat: unknown } = { chat: null }
     globalThis.fetch = ((url: string | URL | Request) => {
       const u = String(url)
+      const parsed = new URL(url instanceof Request ? url.url : String(url))
       if (u.includes('llm_rate_acquire')) {
         return Promise.resolve(new Response('{"message":"not found"}', { status: 404 }))
       }
@@ -444,7 +445,7 @@ Deno.test('a missing rate RPC routes to the fallback instead of ignoring the lim
           new Response('true', { status: 200, headers: { 'content-type': 'application/json' } }),
         )
       }
-      if (u.includes('integrate.api.nvidia.com')) {
+      if (parsed.hostname === 'integrate.api.nvidia.com') {
         rec.chat = true
         return Promise.resolve(ok())
       }
