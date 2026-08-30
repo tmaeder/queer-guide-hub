@@ -477,11 +477,11 @@ declare
 begin
   begin
     v_id := public.commit_testfinder_org(jsonb_build_object(
-      'external_id', '__migration_probe_20261023110000__',
+      'external_id', '__migration_probe_20261029094500__',
       'name', 'Migration probe clinic',
       'country_code', 'CH',
       'tags', jsonb_build_array('hiv-testing', 'doxy-pep'),
-      'source', jsonb_build_object('external_id', '__migration_probe_20261023110000__')));
+      'source', jsonb_build_object('external_id', '__migration_probe_20261029094500__')));
 
     select o.tags,
            o.enrichment_status ? 'testfinder',
