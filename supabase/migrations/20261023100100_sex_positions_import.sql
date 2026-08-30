@@ -250,6 +250,29 @@ where not exists (select 1 from tag_aliases x where x.alias_slug = a.sl)
   -- tag_hygiene_stats().alias_equals_name is a zero-invariant
   and lower(a.nm) <> lower(t.name);
 
+-- ── 3b. the two re-filed tags that arrived carrying a placeholder ──────────
+-- `double-penetration` and `triple-penetration` were re-filed into this stop by
+-- 20261023100000 still holding the string "Sexual activity tag" — one of the
+-- four bulk-import stamps that `placeholder_description_active` tracks (63 rows
+-- carry this one). The verify block below refuses a description under 40 chars,
+-- and on the first deploy attempt it correctly RAISED on exactly these two and
+-- rolled the whole migration back. Fixing them here rather than weakening the
+-- assertion: they are in the stop now, so they meet the stop's bar.
+--
+-- Guarded on the placeholder text so this cannot clobber real prose written by
+-- someone else in the meantime. Both rows are human_reviewed, so the
+-- `app.actor` set at the top of this file is what keeps log_unified_tag_change()
+-- from RAISING.
+update unified_tags
+   set description = case slug
+         when 'double-penetration' then
+           'Two people penetrating the same partner at the same time. A three-person position in which the middle partner receives both.'
+         when 'triple-penetration' then
+           'Three people penetrating the same partner at the same time. A four-person position, and the widest of the group set.'
+       end
+ where slug in ('double-penetration', 'triple-penetration')
+   and coalesce(btrim(description), '') = 'Sexual activity tag';
+
 -- ── 4. ontology edges ──────────────────────────────────────────────────────
 -- ONLY 'broader' and 'related' are legal: tag_relations carries two
 -- overlapping relation_type CHECKs and their intersection is those two.
