@@ -763,7 +763,7 @@ onset/duration or adulteration table anywhere.
 
 **Step 1 — SHIPPED 2026-08-30.** `source-tripsit` + `sync_tripsit_interactions` + cron
 `source_tripsit` (`40 4 * * 2`) + breaker `tripsit` + a staleness sentinel in
-`check-pipeline-health.mjs`. Migration `20261108100000`.
+`check-pipeline-health.mjs`. Migration `20261111100000`.
 
 Four things in it are the reusable part, and three were found by executing the migration against a
 throwaway Postgres 17 rather than by reading it:
