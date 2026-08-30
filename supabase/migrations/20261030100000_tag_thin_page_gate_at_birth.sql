@@ -154,7 +154,7 @@ begin
   set local statement_timeout = '120s';
   perform set_config('app.actor', 'job:tag_thin_page_reindex', true);
 
-  -- Deindex: public, indexable, and nothing to read. Since 20261025120000 the
+  -- Deindex: public, indexable, and nothing to read. Since 20261030100000 the
   -- BEFORE trigger has already caught these at write time, so this arm is a
   -- backstop that should normally find zero rows.
   with cand as (
@@ -176,7 +176,7 @@ begin
     select id from unified_tags
      where status = 'active' and merged_into_id is null
        and not seo_indexable
-       -- Only reverse OUR decision, and mean it. Until 20261025120000 this
+       -- Only reverse OUR decision, and mean it. Until 20261030100000 this
        -- said `not is_sensitive and not is_adult`, which covers the sensitivity
        -- gate and nothing else — so on 2026-08-30 this arm republished 82 pages
        -- that a migration had deindexed for carrying verbatim-copied prose, and

@@ -11,7 +11,7 @@ import { join } from 'node:path';
  *    so 137 thin pages were live for ~23 hours every week, and because
  *    `indexable_without_description` is a HARD gate in check-tag-hygiene.mjs
  *    that reads PROD, every open pull request in the repo failed for those 23
- *    hours. 20261025120000 moved the rule to a BEFORE trigger so there is no
+ *    hours. 20261030100000 moved the rule to a BEFORE trigger so there is no
  *    window at all.
  *
  * 2. The sweep's re-index arm must reverse only its OWN deindex. It used to
