@@ -18,10 +18,11 @@
 
 import { useState, useCallback } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { CheckCheck, Archive, EyeOff, Languages, ChevronDown, X} from 'lucide-react';
+import { CheckCheck, Archive, ArchiveRestore, EyeOff, Languages, ChevronDown, X} from 'lucide-react';
 import { upsertCMSContentMetadata, insertContentActions } from '@/hooks/useCMSContentMetadata';
 import { useBulkColumnEdit } from '@/hooks/useBulkColumnEdit';
 import type { ContentBulkEditField, ContentLifecycleConfig } from '@/types/cms';
+import type { ArchivedView } from './ContentListPanel/filterOps';
 import { untypedRpc } from '@/integrations/supabase/untyped';
 import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from '@/i18n/languages';
 import type { SupportedLocale } from '@/i18n/languages';
@@ -56,6 +57,8 @@ interface BulkActionsBarProps {
    * registry block, which keep the legacy sidecar-only Archive.
    */
   lifecycle?: ContentLifecycleConfig;
+  /** Which slice the list is showing, so Archive/Restore match what is on screen. */
+  archivedView?: ArchivedView;
 }
 
 export function BulkActionsBar({
@@ -64,6 +67,7 @@ export function BulkActionsBar({
   onComplete,
   bulkEditFields,
   lifecycle,
+  archivedView = 'live',
 }: BulkActionsBarProps) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -109,36 +113,50 @@ export function BulkActionsBar({
    * "3 failed" tells an operator nothing actionable, and these RPCs refuse with
    * specific messages worth surfacing.
    */
-  const bulkArchive = useCallback(async () => {
-    if (!lifecycle?.archive) return;
-    setBusy(true);
-    setError(null);
-    let ok = 0;
-    let firstError: string | null = null;
+  const bulkLifecycle = useCallback(
+    async (rpc: 'archive_entity' | 'restore_entity', gerund: string) => {
+      if (!lifecycle?.archive) return;
+      setBusy(true);
+      setError(null);
+      let ok = 0;
+      let firstError: string | null = null;
 
-    for (const [i, sel] of selections.entries()) {
-      setProgress(`Archiving ${i + 1} of ${selections.length}…`);
-      const { error: e } = await untypedRpc('archive_entity', {
-        p_type: lifecycle.type,
-        p_id: sel.id,
-        p_reason: 'bulk archive',
-      });
-      if (e) firstError ??= e.message;
-      else ok++;
-    }
+      for (const [i, sel] of selections.entries()) {
+        setProgress(`${gerund} ${i + 1} of ${selections.length}…`);
+        // restore_entity takes no reason — the audit row records the actor and
+        // the archive row it undoes, which is the whole story for a restore.
+        const args =
+          rpc === 'archive_entity'
+            ? { p_type: lifecycle.type, p_id: sel.id, p_reason: 'bulk archive' }
+            : { p_type: lifecycle.type, p_id: sel.id };
+        const { error: e } = await untypedRpc(rpc, args);
+        if (e) firstError ??= e.message;
+        else ok++;
+      }
 
-    setBusy(false);
-    setProgress(null);
-    if (ok < selections.length) {
-      setError(`${selections.length - ok} of ${selections.length} failed. ${firstError ?? ''}`);
-      // Still refresh: the ones that succeeded really are archived, and leaving
-      // the list stale would misreport them as live.
-      onComplete?.();
-    } else {
-      onComplete?.();
-      onClear();
-    }
-  }, [lifecycle, selections, onClear, onComplete]);
+      setBusy(false);
+      setProgress(null);
+      if (ok < selections.length) {
+        setError(`${selections.length - ok} of ${selections.length} failed. ${firstError ?? ''}`);
+        // Still refresh: the ones that succeeded really did change, and leaving
+        // the list stale would misreport them.
+        onComplete?.();
+      } else {
+        onComplete?.();
+        onClear();
+      }
+    },
+    [lifecycle, selections, onClear, onComplete],
+  );
+
+  const bulkArchive = useCallback(
+    () => bulkLifecycle('archive_entity', 'Archiving'),
+    [bulkLifecycle],
+  );
+  const bulkRestore = useCallback(
+    () => bulkLifecycle('restore_entity', 'Restoring'),
+    [bulkLifecycle],
+  );
 
   /**
    * Writes one column across every selected row.
@@ -272,8 +290,14 @@ export function BulkActionsBar({
       </Button>
       {/* Hidden when the type declares a lifecycle with no archivable state
           (countries). Shown for a type with no lifecycle block at all, where
-          the legacy sidecar write is still all there is. */}
-      {(!lifecycle || lifecycle.archive) && (
+          the legacy sidecar write is still all there is.
+
+          Archive and Restore are keyed to which slice is on screen. Offering
+          Restore over the live list would let an operator fire N RPCs that
+          match no rows and write N audit entries saying nothing happened —
+          the restore branches all guard on `where <archived>`, so the calls
+          are harmless but the audit noise is not. */}
+      {(!lifecycle || lifecycle.archive) && archivedView !== 'archived' && (
         <Button
           size="sm"
           variant="outline"
@@ -283,6 +307,18 @@ export function BulkActionsBar({
         >
           <Archive size={14} className="mr-1" />
           Archive
+        </Button>
+      )}
+      {lifecycle?.archive && archivedView !== 'live' && (
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={busy}
+          onClick={() => void bulkRestore()}
+          className="border-border text-foreground hover:bg-muted normal-case font-semibold"
+        >
+          <ArchiveRestore size={14} className="mr-1" />
+          Restore
         </Button>
       )}
       <DropdownMenu>

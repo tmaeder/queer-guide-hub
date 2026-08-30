@@ -13,11 +13,35 @@ import { prefilterEvents, eventbritePrefilterFields } from '../_shared/event-pre
 const EB_BASE = 'https://www.eventbriteapi.com/v3/events/search/'
 const LGBTQ_QUERIES = ['lgbtq', 'gay pride', 'queer', 'drag show', 'pride festival']
 
+// ── RETIRED 2026-08-30 ───────────────────────────────────────────────────────
+// EB_BASE does not exist. Probed with no credential and with a bogus bearer —
+// both return, byte-identically:
+//   HTTP 404 {"status_code":404,"error":"NOT_FOUND",
+//             "error_description":"The path you requested does not exist."}
+// The 404 precedes auth, so no key can fix it: Eventbrite removed public event
+// search from the v3 API and the remaining surface only serves events the token
+// owns. There is no successor endpoint. `api_circuit_breakers.eventbrite` has
+// success_count = 0 / last_success_at NULL since 2026-03-30 — never once green.
+//
+// This flag makes the function a cheap no-op skip for BOTH callers: the cron
+// (retired in 20261107100000) and the `events-ingestion-bulletproof` DAG node,
+// which is left in place rather than surgically cut out of a live pipeline's
+// topology. `pipeline-executor` records a skip as *skipped*, not *failed*.
+//
+// To revive: set RETIRED=false and repoint EB_BASE at a real endpoint. Do not
+// flip it without changing the URL — you will only restart the 404 loop.
+const RETIRED = true
+const RETIRED_REASON = 'endpoint_retired_404_no_successor'
+
 const eventbriteAdapter: SourceAdapter = {
   name: 'eventbrite',
   entityType: 'event',
 
   async fetch(config: AdapterConfig): Promise<RawItem[]> {
+    // Retired: return before the breaker is ever consulted, so a scheduled or
+    // DAG invocation costs one no-op instead of another recorded failure.
+    if (RETIRED) return []
+
     const token = config.apiKey || Deno.env.get('EVENTBRITE_OAUTH_TOKEN')
     if (!token) throw new MissingCredentialsError('EVENTBRITE_OAUTH_TOKEN')
 
@@ -103,6 +127,9 @@ Deno.serve(withErrorReporting('source-eventbrite', async (req) => {
   const _auth = await requireInternalOrAdmin(req, getServiceClient()); if (_auth instanceof Response) return _auth
   const supabase = getServiceClient()
   try {
+    if (RETIRED) {
+      return jsonResponse(skippedResponse(RETIRED_REASON, ['EVENTBRITE_OAUTH_TOKEN']), 200, req)
+    }
     const body = await req.json().catch(() => ({}))
     const config: AdapterConfig = {
       batchSize: body.limit || body.batch_size || 50,

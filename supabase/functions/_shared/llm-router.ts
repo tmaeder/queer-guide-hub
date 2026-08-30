@@ -257,24 +257,47 @@ export async function tryNvidia(
   opts: NvidiaOptions,
 ): Promise<NvidiaOutcome> {
   const apiKey = Deno.env.get('NVIDIA_API_KEY')
+  // `not_configured` is the only SILENT skip: with no key that is the steady
+  // state for the whole fleet and logging it would be pure noise. Every other
+  // skip means the provider IS configured and still did not serve, which is
+  // precisely what an operator needs to see.
+  //
+  // This function computed a exact `reason` and then discarded it. Diagnosing a
+  // live "why is everything still on Cloudflare?" cost a dozen round-trips of
+  // inferring the answer from side-effects — whether the rate bucket's
+  // last_refill had moved, whether the breaker counter had changed — when the
+  // answer was sitting in a variable nobody printed. A fallback that cannot say
+  // why it fell back is not observable, and this one is deliberately invisible
+  // to AI Gateway as well, so there is no second place to look.
   if (!apiKey) return { served: false, reason: 'not_configured' }
-  if (Deno.env.get('NVIDIA_DISABLED') === '1') return { served: false, reason: 'disabled' }
-  if (excludedCallers().has(opts.callerFn)) return { served: false, reason: 'caller_excluded' }
+
+  // `reason` stays a stable machine-readable token — callers and tests match on
+  // it — so human detail goes in the log line only, never in the value.
+  const skip = (reason: string, detail = ''): NvidiaSkipped => {
+    console.warn(
+      `[llm-router] nvidia skipped for ${opts.callerFn}: ${reason}${detail ? ` ${detail}` : ''}`,
+    )
+    return { served: false, reason }
+  }
+
+  if (Deno.env.get('NVIDIA_DISABLED') === '1') return skip('disabled')
+  if (excludedCallers().has(opts.callerFn)) return skip('caller_excluded')
 
   // Vision / embedding models resolve to null — NVIDIA must not serve those.
   const model = mapToNvidiaModel(req.model)
-  if (!model) return { served: false, reason: 'model_unsupported' }
+  if (!model) return skip('model_unsupported', `(${req.model})`)
 
-  if (!(await breakerAllows(NVIDIA_BREAKER))) {
-    return { served: false, reason: 'circuit_open' }
-  }
+  if (!(await breakerAllows(NVIDIA_BREAKER))) return skip('circuit_open')
 
   const slot = await acquireSlot(NVIDIA_RATE_KEY, {
     waitMs: resolveWaitMs(opts),
     deadlineAt: opts.deadlineAt ?? invocationDeadlineAt ?? undefined,
   })
   if (!slot.granted) {
-    return { served: false, reason: slot.degraded ? 'rate_rpc_unavailable' : 'no_slot' }
+    return skip(
+      slot.degraded ? 'rate_rpc_unavailable' : 'no_slot',
+      `(waited ${slot.waitedMs}ms)`,
+    )
   }
 
   // `response_format` is deliberately NOT sent, even though NVIDIA supports
