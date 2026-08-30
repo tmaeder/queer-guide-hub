@@ -226,7 +226,6 @@
       "title": "Lignes d'écoute, 24 h/24",
       "body": "Écoute trans, soutien de crise LGBT+ et numéros d'urgence locaux, classés par pays et toujours à un clic depuis n'importe quelle page."
     },
-    "osmAttribution": "Diagrammes de transport dérivés des © contributeurs OpenStreetMap (ODbL)",
     "reportSomething": "Signaler quelque chose",
     "hotlines": "Lignes d’écoute",
     "antiDiscrimination": {
@@ -2302,10 +2301,7 @@
       "pride": {
         "title": "Pride cette saison",
         "window": "4 prochains mois",
-        "empty": "Aucun événement Pride à venir.",
-        "safety": "Indice d’égalité",
-        "equalityTooltip": "Le score d'égalité reflète les protections juridiques LGBTQ+ de ce pays. Plus c'est élevé, plus c'est sûr.",
-        "equalityAria": "Score d'égalité {{score}} : touchez pour explication"
+        "empty": "Aucun événement Pride à venir."
       },
       "inspiration": {
         "villages": "Queer Villages",

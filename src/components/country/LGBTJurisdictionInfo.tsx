@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Check, Fingerprint, Scale, Shield, Skull } from 'lucide-react';
-import EqualityScoreBadge from './EqualityScoreBadge';
 import { parseSsuDetails, deathPenaltyRisk } from '@/utils/equalityScore';
 import {
   RIGHT_SECTION_LABEL,
@@ -46,12 +45,7 @@ const SectionLabel = ({ children }: { children: React.ReactNode }) => (
 );
 
 /** Rows whose shape is bespoke and rendered inline rather than via RightRow. */
-const CUSTOM_SLUGS = new Set([
-  'criminalisation',
-  'marriage',
-  'civil-union',
-  'gender-recognition',
-]);
+const CUSTOM_SLUGS = new Set(['criminalisation', 'marriage', 'civil-union', 'gender-recognition']);
 
 function topicLabel(t: ReturnType<typeof useTranslation>['t'], topic: RightTopic): string {
   return t(`country.rights.${topic.labelKey}`, topic.labelDefault);
@@ -289,16 +283,15 @@ export default function LGBTJurisdictionInfo({
             <Shield size={20} aria-hidden="true" />
             {t('country.rights.title', 'LGBTI rights overview')}
           </CardTitle>
-          <EqualityScoreBadge score={country.equality_score as number | null} size="sm" />
         </div>
         <SourceLine updatedAt={country.lgbti_data_last_updated} showLink={false} />
       </CardHeader>
       <CardContent>
         {/*
-          Leads the card. The equality score in the header is one number for
-          three very different situations — 82 countries have LGB and trans
-          verdicts that disagree — so the split goes first and the score stays
-          as a secondary, cited figure.
+          Leads the card. It is also the only verdict here now: the composite
+          equality score used to sit in the header, and one number could not
+          state three very different situations — 82 countries have LGB and
+          trans verdicts that disagree.
         */}
         <LensVerdictSummary country={country} className="mb-2" />
 
