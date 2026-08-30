@@ -464,4 +464,64 @@ if (!hygieneRes.ok) {
   }
 }
 
+// 8. LLM provider chain (2026-08). NVIDIA sits in front of Cloudflare Workers
+//    AI for every edge-function chat call, and it is NOT behind AI Gateway
+//    (unsupported provider) — so llm_call_log.provider is the only place the
+//    path is visible at all. Two failure modes are invisible without this:
+//
+//    (a) NVIDIA silently serving NOTHING. The rate limiter denies when its RPC
+//        is unreachable, which is the safe direction but means a function
+//        deployed ahead of its migration falls back 100% of the time and just
+//        looks like a normal Cloudflare bill.
+//    (b) The circuit stuck open long after the cause cleared.
+//
+//    WARN-ONLY, ALL OF IT. NVIDIA being unavailable is the fallback working
+//    correctly, not an outage — nothing is broken, we are just paying
+//    Cloudflare. Failing CI on it would train people to ignore this check.
+{
+  const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString()
+  const res = await fetch(
+    `${BASE}/rest/v1/llm_call_log?select=provider&called_at=gte.${since}`,
+    { headers },
+  )
+  if (!res.ok) {
+    console.warn(`⚠ llm_call_log probe → HTTP ${res.status} (provider column missing?)`)
+  } else {
+    const rows = await res.json()
+    const by = {}
+    for (const r of rows) by[r.provider ?? 'unattributed'] = (by[r.provider ?? 'unattributed'] ?? 0) + 1
+    const total = rows.length
+    const nvidia = by.nvidia ?? 0
+
+    const cb = await fetch(
+      `${BASE}/rest/v1/api_circuit_breakers?select=state,open_until,failure_count,last_error&api_name=eq.llm.nvidia`,
+      { headers },
+    )
+    const breaker = cb.ok ? (await cb.json())[0] : null
+
+    if (breaker?.state === 'open') {
+      // last_error carries the provider's own response body — the only source
+      // for what exhaustion actually looks like on this API, which the router's
+      // deliberately-wide 4xx arm is waiting on before it can be narrowed.
+      console.warn(
+        `⚠ llm.nvidia circuit OPEN until ${breaker.open_until} after ${breaker.failure_count} failure(s): ` +
+          `${String(breaker.last_error ?? '').slice(0, 200)}`,
+      )
+    } else if (total > 0 && nvidia === 0) {
+      console.warn(
+        `⚠ ${total} LLM calls in 24h and NOT ONE went to NVIDIA (${JSON.stringify(by)}) — ` +
+          'check NVIDIA_API_KEY is set and that migration 20261014100000 (llm_rate_acquire) has applied; ' +
+          'a missing rate RPC makes the router fall back silently, every time',
+      )
+    } else if (total === 0) {
+      console.log('✓ LLM provider chain: no calls in 24h (nothing to report)')
+    } else {
+      console.log(
+        `✓ LLM provider chain: ${((nvidia / total) * 100).toFixed(0)}% of ${total} calls on NVIDIA ` +
+          `(${JSON.stringify(by)})`,
+      )
+    }
+  }
+}
+
 console.log('✓ Pipeline health check passed')

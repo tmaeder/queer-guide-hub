@@ -97,6 +97,7 @@ async function loadSnapshot(supabase: any, tripId: string) {
 
 async function callClaude(snapshot: ReturnType<typeof buildPrompt>['snapshot'], prompt: string): Promise<LlmResult> {
   const body = await anthropicMessages({
+    callerFn: 'packing-suggestions-llm',
     model: 'claude-haiku-4-5-20251001',
     max_tokens: 1500,
     system: prompt,

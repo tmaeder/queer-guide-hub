@@ -31,6 +31,18 @@ function stubFetch(): { modelSent: () => string } {
 Deno.env.set('CF_ACCOUNT_ID', 'test-acct')
 Deno.env.set('CF_AI_API_TOKEN', 'test-token')
 
+// Pin the provider chain to Cloudflare for this file.
+//
+// Without this the assertions below hold only because NVIDIA_API_KEY happens to
+// be unset in CI: the router would serve the request first, the stub would
+// answer it with the same OpenAI-shaped body, and "the model that reached
+// Cloudflare" would silently become "the model that reached NVIDIA" — the
+// assertions would still pass while proving nothing about the CF path. A test
+// that is correct only because a feature is switched off is not a test of the
+// path it claims. The NVIDIA half is asserted separately in
+// nvidia-model-reaches-provider.test.ts.
+Deno.env.set('NVIDIA_DISABLED', '1')
+
 Deno.test('a claude-haiku name never reaches Cloudflare verbatim', async () => {
   const f = stubFetch()
   await llmAnthropicStyle({

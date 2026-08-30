@@ -236,6 +236,9 @@ verify_jwt = false
 verify_jwt = false
 
 # Source data fetchers
+[functions.source-aids-ch]
+verify_jwt = false
+
 [functions.source-airbnb]
 verify_jwt = false
 

@@ -416,7 +416,10 @@ async function newsDetail(env: Env, slug: string, pathname: string): Promise<Det
     env,
     'news_articles',
     'title,slug,excerpt,author,image_url,published_at,url,publisher_name,updated_at,seo_indexable',
-    `slug=eq.${encodeURIComponent(slug)}&duplicate_of_id=is.null`,
+    // archived_at — fetchRows reads with the service role, so the RLS policy
+    // that hides archived articles from every other reader does not apply here
+    // and the filter has to be repeated.
+    `slug=eq.${encodeURIComponent(slug)}&duplicate_of_id=is.null&archived_at=is.null`,
     1,
   );
   const row = rows[0] ?? null;
@@ -801,8 +804,9 @@ async function hotelDetail(env: Env, slug: string, pathname: string): Promise<De
   const rows = await fetchRows(
     env,
     'hotels',
-    'name,slug,description,address,city,country,latitude,longitude,images,hotel_type,star_rating,price_range,amenities,booking_url,phone,website,queer_safety_notes,lgbtq_friendly,updated_at',
-    `slug=eq.${encodeURIComponent(slug)}&duplicate_of_id=is.null`,
+    'name,slug,description,address,city,country,latitude,longitude,images,hotel_type,star_rating,price_range,amenities,booking_url,phone,website,queer_safety_notes,lgbtq_friendly,updated_at,seo_indexable',
+    // archived_at — service-role read, RLS does not apply. See newsDetail.
+    `slug=eq.${encodeURIComponent(slug)}&duplicate_of_id=is.null&archived_at=is.null`,
     1,
   );
   const row = rows[0] ?? null;
@@ -876,7 +880,13 @@ async function hotelDetail(env: Env, slug: string, pathname: string): Promise<De
     sameAs: stringField(row, 'website') ? [stringField(row, 'website')] : undefined,
   };
 
-  return { meta, body, jsonLd: renderLd(prune(lodgingLd)) };
+  // `hotels.seo_indexable` has existed all along and this renderer read neither
+  // the column nor returned the flag, so every hotel page was served indexable
+  // no matter what the database said. Seventh instance of this class, after
+  // personality, village, tag, city, event and country — which is why
+  // detailIndexableGate.test.ts asserts the pairing for every builder rather
+  // than for the one just fixed.
+  return { meta, body, jsonLd: renderLd(prune(lodgingLd)), indexable: row.seo_indexable !== false };
 }
 
 // Queer villages — /villages/:slug

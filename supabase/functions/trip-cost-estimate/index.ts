@@ -151,6 +151,7 @@ Rules:
 - Be realistic, not luxurious and not rock-bottom.`;
 
   const body = await anthropicMessages({
+    callerFn: 'trip-cost-estimate',
     model: 'claude-haiku-4-5-20251001',
     max_tokens: 900,
     messages: [{ role: 'user', content: prompt }],

@@ -1,10 +1,7 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { computeRightsProfile } from '../../../supabase/functions/_shared/rights/verdict.ts';
-import type {
-  RightsLens,
-  Verdict,
-} from '../../../supabase/functions/_shared/rights/types.ts';
+import type { RightsLens, Verdict } from '../../../supabase/functions/_shared/rights/types.ts';
 
 /**
  * Per-lens rights verdict for one country.
@@ -69,10 +66,7 @@ export function LensVerdictSummary({
   if (profile.general.verdict === 'unknown' && profile.lgb.verdict === 'unknown') {
     return (
       <p className={`text-13 text-muted-foreground ${className}`}>
-        {t(
-          'rights.lens.noData',
-          'We hold no recorded legal status for this country or territory.',
-        )}
+        {t('rights.lens.noData', 'We hold no recorded legal status for this country or territory.')}
       </p>
     );
   }
@@ -88,8 +82,9 @@ export function LensVerdictSummary({
         monochrome refactor, and /city/:slug carries a hard budget of 6 painted
         lines (e2e/design-system.spec.ts) which counts a border, a divide-y and
         a thin filled div alike. Three `border-b` rows here took it to 8 — the
-        same mistake CompareRightsSideBySide had. Separation is the tonal step
-        plus spacing.
+        same mistake `CompareRightsSideBySide` had, which is no longer a
+        comparison to check against: it was deleted with the composite equality
+        figure. Separation is the tonal step plus spacing.
       */}
       <ul className="list-none p-0 m-0 rounded-container bg-surface-container">
         {LENS_ORDER.map((lens) => {

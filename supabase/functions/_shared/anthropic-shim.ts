@@ -20,6 +20,15 @@ export interface AnthropicMessagesInput {
   messages: Array<{ role: 'user' | 'assistant'; content: string }>
   temperature?: number
   timeoutMs?: number
+  /**
+   * Edge function name, for llm_call_log attribution AND for the provider
+   * router's pacing decision. Optional only so this stays source-compatible;
+   * every caller should pass it — without it the spend lands under the
+   * anonymous `'llmChatCompletion'` fallback, which is how the entire trip
+   * surface was unattributable until 2026-08-29.
+   */
+  callerFn?: string
+  contextKey?: string | null
 }
 
 export interface AnthropicMessagesOutput {
@@ -67,6 +76,8 @@ export async function anthropicMessages(
     temperature: input.temperature,
     timeoutMs: input.timeoutMs,
     model: input.model,
+    callerFn: input.callerFn,
+    contextKey: input.contextKey,
   })
 
   return {
