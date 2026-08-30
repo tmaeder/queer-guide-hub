@@ -19,8 +19,14 @@ import { fetchTrendingCities } from '@/hooks/usePersonalizedCities';
  * The venue categories that actually mean "going out".
  *
  * `venues.category` is 59% the literal string 'other' (13,853 of 23,484), so an
- * unfiltered venue query is not a nightlife query. These seven categories are
- * the 7,015 rows that are.
+ * unfiltered venue query is not a nightlife query. These six categories are
+ * the rows that are.
+ *
+ * `cruising` is deliberately NOT here. A cruising ground is not a going-out
+ * destination to be listed beside cafés and restaurants, and since
+ * 20261103100000 every cruising venue is `safety_gated`, so an anonymous
+ * visitor's query would drop them anyway — leaving the rail's counts and its
+ * contents disagreeing depending on who was looking.
  */
 export const NIGHTLIFE_CATEGORIES = [
   'bar',
@@ -28,7 +34,6 @@ export const NIGHTLIFE_CATEGORIES = [
   'cafe',
   'restaurant',
   'sauna',
-  'cruising',
   'event-venue',
 ] as const;
 
