@@ -68,7 +68,13 @@ function stub(
       return Promise.resolve(new Response(null, { status: 204 }))
     }
 
-    if (u.includes('integrate.api.nvidia.com')) {
+    let host = ''
+    try {
+      host = new URL(u).hostname
+    } catch {
+      host = ''
+    }
+    if (host === 'integrate.api.nvidia.com') {
       rec.chat = body
       return Promise.resolve(chatResponse())
     }
