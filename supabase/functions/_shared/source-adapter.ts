@@ -30,6 +30,29 @@ export class MissingCredentialsError extends Error {
 }
 
 /**
+ * Thrown when a credential EXISTS but the upstream API rejects it (401/403).
+ *
+ * Same class of event as a missing key, not an API outage — and it must be
+ * raised from OUTSIDE `withCircuitBreaker`. Throwing on a 401 inside the breaker
+ * makes `recordFailure` run before the error can propagate, so the handler's
+ * skipped branch can never take it back: `source-foursquare` did exactly that
+ * and accumulated 350 breaker failures with `success_count = 0` while every run
+ * still reported HTTP 200 success. A rejected key is a configuration problem for
+ * an operator to fix; the API itself answered fine.
+ */
+export class InvalidCredentialsError extends Error {
+  readonly missing: string[]
+  readonly status: number
+  constructor(keyName: string | string[], status: number) {
+    const arr = Array.isArray(keyName) ? keyName : [keyName]
+    super(`Invalid credentials (HTTP ${status}): ${arr.join(', ')}`)
+    this.name = 'InvalidCredentialsError'
+    this.missing = arr
+    this.status = status
+  }
+}
+
+/**
  * Build a 200-OK response body that signals a source was skipped because
  * credentials were missing. Pipeline-executor treats this as a non-fatal
  * skipped node, not a failure.

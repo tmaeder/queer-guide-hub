@@ -1,7 +1,7 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { withCircuitBreaker } from '../_shared/circuit-breaker.ts'
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
-import { writeToStaging, MissingCredentialsError, skippedResponse } from '../_shared/source-adapter.ts'
+import { writeToStaging, MissingCredentialsError, InvalidCredentialsError, skippedResponse } from '../_shared/source-adapter.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
@@ -45,10 +45,13 @@ const foursquareAdapter: SourceAdapter = {
                 : mode === 'venues' ? SEARCH_TERMS
                 : [...SEARCH_TERMS, ...HOTEL_TERMS]
     const allItems: RawItem[] = []
+    let attempts = 0
+    let failures = 0
 
     for (const city of cities) {
       for (const term of terms) {
         try {
+          attempts++
           const isHotelTerm = HOTEL_TERMS.includes(term)
           const items = await withCircuitBreaker(supabase, 'foursquare', async () => {
             const params = new URLSearchParams({
@@ -62,11 +65,27 @@ const foursquareAdapter: SourceAdapter = {
             const res = await fetch(`${FSQ_BASE}?${params}`, {
               headers: { 'Authorization': apiKey, 'Accept': 'application/json' },
             })
-            if (res.status === 401) throw new Error('Invalid Foursquare API key (401)')
+            // A rejected credential is NOT an API failure and must not be thrown
+            // from inside the breaker. `withCircuitBreaker` calls recordFailure
+            // before the error can propagate, so the old `throw` on 401 burned a
+            // breaker failure that the handler's skippedResponse('invalid_
+            // credentials') branch could never take back — 350 recorded
+            // failures, success_count 0, and the automation layer none the wiser.
+            // The repo contract already says a MISSING credential returns 200
+            // skipped so an unset key does not look like an outage; an INVALID
+            // one is the same class. The round-trip itself succeeded, so the
+            // breaker is told the truth: Foursquare answered.
+            if (res.status === 401 || res.status === 403) {
+              return { authFailed: res.status }
+            }
             if (!res.ok) throw new Error(`Foursquare API ${res.status}`)
             const json = await res.json()
             return json.results || []
           })
+
+          if (!Array.isArray(items) && items?.authFailed) {
+            throw new InvalidCredentialsError('FOURSQUARE_API_KEY', items.authFailed)
+          }
 
           for (const place of items) {
             allItems.push({
@@ -78,12 +97,28 @@ const foursquareAdapter: SourceAdapter = {
           // Rate limit between search terms
           await new Promise(r => setTimeout(r, 200))
         } catch (e) {
+          if (e instanceof InvalidCredentialsError) throw e // key issue, stop entirely
+          failures++
           console.error(`Foursquare error for "${term}" in ${city}:`, (e as Error).message)
-          if ((e as Error).message.includes('401')) throw e // API key issue, stop entirely
         }
       }
       // Rate limit between cities
       await new Promise(r => setTimeout(r, 500))
+    }
+
+    // A per-item catch that only logs, plus a handler that returns
+    // {success:true, items:0} at HTTP 200, is how a source can fail every single
+    // upstream call for months while `admin_automation_runs` records 'success'
+    // and `consecutive_failures` stays 0 — which makes auto_pause_threshold
+    // structurally unreachable. (Measured on the eventbrite twin: breaker at 500
+    // failures, the 12:30 cron run logged 'success' at 12:32.) `source-awin` is
+    // the control: its breaker call is not inside a per-item catch, so it
+    // surfaces a 500 and auto-paused correctly at 33.
+    //
+    // Total failure only. A partial failure still returns its rows — losing 19
+    // good cities because the 20th 500s would be worse than the bug.
+    if (attempts > 0 && failures === attempts && allItems.length === 0) {
+      throw new Error(`Foursquare: all ${attempts} requests failed, 0 items fetched`)
     }
 
     // Deduplicate by fsq_id within the batch
@@ -223,8 +258,11 @@ Deno.serve(withErrorReporting('source-foursquare', async (req) => {
     if (error instanceof MissingCredentialsError) {
       return jsonResponse(skippedResponse('missing_credentials', error.missing), 200, req)
     }
-    if ((error as Error).message?.includes('401')) {
-      return jsonResponse(skippedResponse('invalid_credentials', ['FOURSQUARE_API_KEY']), 200, req)
+    if (error instanceof InvalidCredentialsError) {
+      // Typed, not a message substring: the old `.includes('401')` also matched
+      // any upstream body or message that happened to contain "401", and it ran
+      // only after the breaker had already recorded the failure.
+      return jsonResponse(skippedResponse('invalid_credentials', error.missing), 200, req)
     }
     console.error('source-foursquare error:', error)
     return errorResponse((error as Error).message, 500, req)
