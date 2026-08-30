@@ -2,6 +2,14 @@
 // (public.amenities.icon_name). Explicit imports keep the bundle tree-shakeable
 // rather than pulling all of lucide-react. Add a row here when a new icon_name
 // is introduced in the vocabulary seed.
+//
+// An unlisted name does not fail — it silently renders the generic Tag glyph,
+// which on a clinic's service list turns "PrEP" and "Abortion care" into
+// indistinguishable grey chips. `Hand` sat missing that way from
+// 20260916160000 until 20261023110000, so the one term whose job is telling a
+// Deaf visitor they can be understood (`sign-language-interpreted`) rendered as
+// the generic chip. That migration now asserts every health-scoped icon_name
+// appears in this list.
 import {
   AirVent,
   Accessibility,
@@ -30,6 +38,7 @@ import {
   Flame,
   Flower2,
   Footprints,
+  Hand,
   HandHeart,
   Heart,
   HeartPulse,
@@ -94,6 +103,7 @@ const ICONS: Record<string, LucideIcon> = {
   Flame,
   Flower2,
   Footprints,
+  Hand,
   HandHeart,
   Heart,
   HeartPulse,

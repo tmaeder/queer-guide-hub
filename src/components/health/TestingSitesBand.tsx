@@ -64,10 +64,51 @@ const CHIP_ORDER = [
   'testing-counselling',
 ];
 
+/**
+ * The directories this band can draw from.
+ *
+ * `list_testing_sites` selects on roles + service tags, NOT on provenance, so
+ * every health directory we import lands here automatically. That is the point
+ * — and it is also why nothing below may hardcode one source. Until 2026-08-30
+ * this file read `enrichment_status.testfinder` and credited testfinder.info
+ * unconditionally; the moment a second directory (the Swiss national registry,
+ * ~150 Swiss centres against testfinder's 9) started publishing, that would
+ * have attributed a Swiss federal registry entry to a Danish university.
+ *
+ * `enrichmentKey` is separate from the provenance name because the testfinder
+ * corpus was written before the importer was generic and its detail object is
+ * filed under 'testfinder', not 'european-test-finder'. Renaming 530 live rows
+ * to tidy that up is a migration with no user-visible benefit.
+ */
+const DIRECTORIES: Record<string, { enrichmentKey: string; href: string; credit: string }> = {
+  'european-test-finder': {
+    enrichmentKey: 'testfinder',
+    href: 'https://testfinder.info/',
+    credit:
+      'the European Test Finder, a public-health directory run by EuroTEST/CHIP at Rigshospitalet, University of Copenhagen',
+  },
+  'aids-ch': {
+    enrichmentKey: 'aids-ch',
+    href: 'https://aids.ch/en/addresses/',
+    credit:
+      'the Swiss AIDS Federation’s directory of counselling, testing and treatment centres (repertoire-sante-sexuelle.ch)',
+  },
+};
+
+const FALLBACK_DIRECTORY = 'european-test-finder';
+
+function sourceName(site: TestingSite): string {
+  const provenance = (site as unknown as { field_provenance?: { source?: { name?: string } } })
+    .field_provenance;
+  const name = provenance?.source?.name;
+  return name && DIRECTORIES[name] ? name : FALLBACK_DIRECTORY;
+}
+
 function detail(site: TestingSite, key: string): string | null {
-  const tf = (site.enrichment_status as { testfinder?: Record<string, unknown> } | null)
-    ?.testfinder;
-  const value = tf?.[key];
+  const bucket = (site.enrichment_status as Record<string, unknown> | null)?.[
+    DIRECTORIES[sourceName(site)].enrichmentKey
+  ] as Record<string, unknown> | undefined;
+  const value = bucket?.[key];
   return typeof value === 'string' && value.trim() ? value.trim() : null;
 }
 
@@ -83,6 +124,11 @@ function sourceStamp(site: TestingSite): string | null {
 function SiteCard({ site }: { site: TestingSite }) {
   const { t } = useTranslation();
   const hours = detail(site, 'opening_hours');
+  // Some directories publish hours as a link rather than as text. Linking out
+  // is strictly better than the free text — it is the provider's own page and
+  // cannot go stale in our copy — but it is only offered when there is no text,
+  // so nothing that renders today loses its hours.
+  const hoursUrl = detail(site, 'opening_hours_url');
   const stamp = sourceStamp(site);
   const chips = CHIP_ORDER.filter((slug) => site.tags?.includes(slug));
 
@@ -121,12 +167,19 @@ function SiteCard({ site }: { site: TestingSite }) {
           </div>
         )}
 
-        {hours && (
+        {hours ? (
           <p className="flex items-start gap-1.5 text-13 text-muted-foreground">
             <Clock size={13} className="mt-0.5 shrink-0" aria-hidden />
             <span className="min-w-0">{hours}</span>
           </p>
-        )}
+        ) : hoursUrl ? (
+          <p className="flex items-start gap-1.5 text-13 text-muted-foreground">
+            <Clock size={13} className="mt-0.5 shrink-0" aria-hidden />
+            <a href={hoursUrl} target="_blank" rel="noopener noreferrer" className="min-w-0">
+              {t('testing.opening_hours_link', 'Opening hours on the provider’s site')}
+            </a>
+          </p>
+        ) : null}
 
         <div className="flex flex-wrap items-center gap-4 text-13">
           {site.phone && (
@@ -188,6 +241,13 @@ export function TestingSitesBand({
     enabled: Boolean(countryCode || cityId || (lat != null && lng != null)),
   });
 
+  // Credit the directories actually on screen, in a stable order, and fall back
+  // to the default one when the list is empty — the note always renders (see
+  // below), so it always needs something to name.
+  const present = new Set(sites.map(sourceName));
+  const credited = Object.keys(DIRECTORIES).filter((name) => present.has(name));
+  if (credited.length === 0) credited.push(FALLBACK_DIRECTORY);
+
   // Deliberately NOT `return null` when empty. This band replaced a plain
   // outbound link to testfinder.info; rendering nothing on an empty result
   // would silently remove the only answer the page previously had. Empty
@@ -219,18 +279,27 @@ export function TestingSitesBand({
 
       <div className="mt-6">
         <CoverageNote>
+          {t('testing.coverage_lead', 'Testing locations come from')}{' '}
+          {credited.map((name, i) => (
+            <span key={name}>
+              {i > 0 && (i === credited.length - 1 ? ' and ' : ', ')}
+              {DIRECTORIES[name].credit} (
+              <a
+                href={DIRECTORIES[name].href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline underline-offset-4"
+              >
+                {new URL(DIRECTORIES[name].href).hostname.replace(/^www\./, '')}
+              </a>
+              )
+            </span>
+          ))}
+          .{' '}
           {t(
-            'testing.coverage',
-            'Testing locations come from the European Test Finder, a public-health directory run by EuroTEST/CHIP at Rigshospitalet, University of Copenhagen. It does not cover everywhere, and we cannot vouch for a provider’s current hours or services — contact them before visiting.',
-          )}{' '}
-          <a
-            href="https://testfinder.info/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline underline-offset-4"
-          >
-            testfinder.info
-          </a>
+            'testing.coverage_caveat',
+            'These directories do not cover everywhere, and we cannot vouch for a provider’s current hours or services — contact them before visiting.',
+          )}
         </CoverageNote>
       </div>
 
