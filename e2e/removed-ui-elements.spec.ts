@@ -95,11 +95,13 @@ test.describe('removed: the 0-100 equality number on the geo singles', () => {
     // The deleted ring carried this label on every size it rendered at.
     await expect(page.locator('[aria-label^="Equality score"]')).toHaveCount(0);
 
-    // Deliberately NOT asserting `/100` is absent page-wide here.
-    // `CompareRightsSideBySide` — the peer table further down — legitimately
-    // still prints `100/100`; its whole premise is the score, so it was left
-    // in place as a product decision. Asserting its absence would encode an
-    // expectation this change never made.
+    // Page-wide, and only since `CompareRightsSideBySide` was removed. That
+    // peer table printed `100/100` for each neighbour, so this assertion could
+    // not be made when the first version of this suite shipped. Its only column
+    // besides the country name WAS the score, and dropping just the number
+    // would have left four country names ordered by a quantity the page no
+    // longer shows — a ranking with no stated basis — so the section went.
+    await expect(page.getByText('/100')).toHaveCount(0);
   });
 
   test('an event single carries no equality ring', async ({ page }) => {
@@ -114,7 +116,7 @@ test.describe('removed: the 0-100 equality number on the geo singles', () => {
   });
 });
 
-test.describe('removed: the OpenStreetMap credit in the footer', () => {
+test.describe('moved: the OpenStreetMap credit', () => {
   test('the footer renders its copyright and no ODbL line', async ({ page }) => {
     await open(page, '/');
     const footer = page.locator('footer');
@@ -124,5 +126,21 @@ test.describe('removed: the OpenStreetMap credit in the footer', () => {
     await expect(footer.getByText(/Queer Guide/).first()).toBeVisible();
     await expect(footer.getByText(/OpenStreetMap/i)).toHaveCount(0);
     await expect(footer.getByText(/ODbL/i)).toHaveCount(0);
+  });
+
+  // The credit did not just disappear. The city-card network diagrams are a
+  // derived work of OSM route relations and ODbL asks for attribution, so it
+  // moved to the /about colophon. This is the half of the change that a
+  // pure-absence suite would never notice going missing.
+  test('/about carries the ODbL attribution', async ({ page }) => {
+    await open(page, '/about');
+    const colophon = page.locator('#sources');
+    await expect(colophon).toBeVisible({ timeout: BOOT });
+    await expect(colophon.getByRole('link', { name: 'OpenStreetMap' })).toHaveAttribute(
+      'href',
+      'https://www.openstreetmap.org/copyright',
+    );
+    await expect(colophon).toContainText('ODbL');
+    await expect(colophon).toContainText(/transit diagrams/i);
   });
 });
