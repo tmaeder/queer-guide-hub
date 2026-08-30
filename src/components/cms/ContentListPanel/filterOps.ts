@@ -30,6 +30,8 @@ export interface QueryBuilderLike<T = unknown> {
   contains(col: string, v: readonly unknown[]): T;
   overlaps(col: string, v: readonly unknown[]): T;
   order(col: string, opts: { ascending: boolean }): T;
+  /** Needed for NULL-safe negation — see applyArchivedView. */
+  or(filters: string): T;
 }
 
 /** PostgREST treats `%` and `_` as wildcards; a user typing them means them literally. */
@@ -163,3 +165,45 @@ export const OPERATOR_LABELS: Record<FilterOperator, string> = {
   after: 'after',
   on: 'on',
 };
+
+// ── Archived view ──────────────────────────────────────────────────
+
+/** Which slice of the list to show. Defaults to `live` everywhere. */
+export type ArchivedView = 'live' | 'archived' | 'all';
+
+/**
+ * Restrict the list to live or archived rows.
+ *
+ * Two predicates, because the schema has two shapes and collapsing them was
+ * never an option: `equals` covers the status-enum conventions
+ * (`review_status='archived'`, `shell_status='ghost'`, `status='cancelled'`),
+ * `present` covers the `archived_at` timestamp hotels/news/groups carry.
+ *
+ * The `live` arm of `equals` is NULL-SAFE on purpose. `status <> 'archived'`
+ * evaluates to NULL for a NULL status, so PostgREST drops those rows — and the
+ * columns involved are nullable on several of these tables, so a bare `.neq()`
+ * would silently hide every row that has never had a status set. That is the
+ * same defect this codebase already fixed once in `usePageFetchers`
+ * (`status.is.null,status.neq.cancelled`), and it fails in the most
+ * expensive direction: the list looks empty rather than wrong.
+ */
+export function applyArchivedView<T extends QueryBuilderLike<T>>(
+  query: T,
+  archive: { column: string; value?: string; predicate?: 'equals' | 'present' } | undefined,
+  view: ArchivedView,
+): T {
+  if (!archive || view === 'all') return query;
+
+  if (archive.predicate === 'present') {
+    return view === 'archived' ? query.not(archive.column, 'is', null) : query.is(archive.column, null);
+  }
+
+  // An `equals` archive with no value cannot be expressed; leave the list alone
+  // rather than inventing a predicate. lifecycleCapability.test.ts already
+  // rejects that shape in the registry, so this is belt-and-braces.
+  if (!archive.value) return query;
+
+  return view === 'archived'
+    ? query.eq(archive.column, archive.value)
+    : query.or(`${archive.column}.is.null,${archive.column}.neq.${archive.value}`);
+}

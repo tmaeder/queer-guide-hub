@@ -15,7 +15,7 @@ import { readRightValue, topicScalarValue } from '@/lib/rights/rightsValue';
 import { StatusGlyph } from '@/components/rights/StatusGlyph';
 import { ProtectionCells, ProtectionCellsHeader } from '@/components/rights/ProtectionCells';
 import { RightRow } from '@/components/rights/RightRow';
-import { SourceLine } from '@/components/rights/SourceLine';
+import { SourceLine, type RightsProvenance } from '@/components/rights/SourceLine';
 import { LensVerdictSummary } from '@/components/rights/LensVerdictSummary';
 
 interface LGBTJurisdictionInfoProps {
@@ -61,6 +61,13 @@ export default function LGBTJurisdictionInfo({
   if (!country) return null;
 
   const crim = country.lgbti_criminalization as Record<string, unknown> | null;
+
+  // Not every country's profile is ILGA's. 11 of 250 are outside its corpus —
+  // 5 inherit a parent state's law, 6 carry a recorded decision — and citing
+  // ILGA for those overstates who is making the claim. See SourceLine.
+  const rightsProvenance = ((country.enrichment_status as Record<string, unknown> | null)
+    ?.lgbti_rights ?? null) as RightsProvenance;
+
   const ssu = parseSsuDetails(country.lgbti_same_sex_unions as string | null);
   const gender = country.lgbti_gender_recognition as Record<string, unknown> | null;
 
@@ -284,7 +291,11 @@ export default function LGBTJurisdictionInfo({
             {t('country.rights.title', 'LGBTI rights overview')}
           </CardTitle>
         </div>
-        <SourceLine updatedAt={country.lgbti_data_last_updated} showLink={false} />
+        <SourceLine
+          updatedAt={country.lgbti_data_last_updated}
+          showLink={false}
+          provenance={rightsProvenance}
+        />
       </CardHeader>
       <CardContent>
         {/*
@@ -298,7 +309,9 @@ export default function LGBTJurisdictionInfo({
         {RIGHT_SECTION_ORDER.map(renderSection)}
 
         <div className="pt-2">
-          <SourceLine className="text-xs2" />
+          {/* Footer citation takes the same provenance: a country ILGA does not
+              cover must not carry an ILGA link at either end of the card. */}
+          <SourceLine className="text-xs2" provenance={rightsProvenance} />
         </div>
       </CardContent>
     </Card>

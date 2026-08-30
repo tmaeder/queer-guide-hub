@@ -64,7 +64,9 @@ const probeLadder = (() => {
 
 describe('city_resolve_or_create', () => {
   it('parses the probe ladder out of the migration', () => {
-    expect(probeLadder.length, 'probe ladder markers moved — update this test').toBeGreaterThan(200);
+    expect(probeLadder.length, 'probe ladder markers moved — update this test').toBeGreaterThan(
+      200,
+    );
   });
 
   it('probes the TOTAL unique keys without filtering duplicate_of_id', () => {
@@ -105,7 +107,10 @@ describe('city_resolve_or_create', () => {
     expect(body).toContain("'insufficient_evidence'");
     // All four disjuncts, so dropping one is a visible failure rather than a
     // quietly widened door.
-    const evidence = body.slice(body.indexOf('v_has_evidence :='), body.indexOf("'insufficient_evidence'"));
+    const evidence = body.slice(
+      body.indexOf('v_has_evidence :='),
+      body.indexOf("'insufficient_evidence'"),
+    );
     expect(evidence).toContain('p_lat IS NOT NULL');
     expect(evidence).toContain('p_wikidata_qid');
     expect(evidence).toContain('p_source_entity_id');
@@ -130,6 +135,59 @@ describe('city_resolve_or_create', () => {
   });
 
   it('is not callable by anon', () => {
-    expect(sql).toMatch(/REVOKE\s+ALL\s+ON\s+FUNCTION\s+public\.city_resolve_or_create[\s\S]*?FROM\s+PUBLIC,\s*anon/i);
+    expect(sql).toMatch(
+      /REVOKE\s+ALL\s+ON\s+FUNCTION\s+public\.city_resolve_or_create[\s\S]*?FROM\s+PUBLIC,\s*anon/i,
+    );
+  });
+
+  /**
+   * The postal-code arm, added for the aids-ch health registry.
+   *
+   * A postal code is NOT one-to-one with a city anywhere: 636 rows of the Swiss
+   * postal directory put one code in several municipalities, a US ZIP crosses
+   * city lines, a UK postcode is finer than a town. The arm is only safe while
+   * it demands a single claimant and treats a disagreement with the name as a
+   * reason to stop. Loosening either turns it into the name-only resolution that
+   * 20260802090844 exists to prevent, one column over.
+   */
+  describe('postal-code arm', () => {
+    const arm = (() => {
+      const start = probeLadder.indexOf('-- (g) Postal code');
+      return start >= 0 ? probeLadder.slice(start) : '';
+    })();
+
+    it('parses out of the migration', () => {
+      expect(arm.length, 'postal arm marker moved — update this test').toBeGreaterThan(200);
+    });
+
+    it('requires exactly one claimant and never picks a favourite', () => {
+      // v_postal_n = 1 is the whole guard. `> 0`, or taking the first row of
+      // several, would resolve a shared code to whichever city sorts first.
+      expect(arm).toMatch(/v_postal_n\s*=\s*1/);
+      expect(arm).not.toMatch(/v_postal_n\s*>\s*0/);
+    });
+
+    it('counts DISTINCT survivors, so a merged twin is not a second city', () => {
+      expect(arm).toContain('count(DISTINCT coalesce(c.duplicate_of_id, c.id))');
+    });
+
+    it('contradicts a name hit rather than deferring to it', () => {
+      // When a name arm already matched and the postal code points elsewhere,
+      // one of the two signals is wrong and the answer is neither of them.
+      expect(arm).toContain("'refused', 'postal_conflict'");
+      expect(arm).toContain('name_and_postal_disagree');
+    });
+
+    it('stays opt-in, so callers that pass no code are unaffected', () => {
+      expect(sql).toMatch(/p_postal_code\s+text\s+DEFAULT\s+NULL/i);
+      expect(arm).toMatch(/IF\s+v_postal\s+IS\s+NOT\s+NULL\s+THEN/i);
+    });
+
+    it('runs last, after every name-based arm', () => {
+      // Placed before the alias arm it would pre-empt a better identity signal.
+      expect(probeLadder.indexOf('-- (f) Alias')).toBeLessThan(
+        probeLadder.indexOf('-- (g) Postal code'),
+      );
+    });
   });
 });

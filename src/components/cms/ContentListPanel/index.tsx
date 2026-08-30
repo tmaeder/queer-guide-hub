@@ -15,6 +15,7 @@ import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip
 
 import { tintOf } from './types';
 import { ContentListTable } from './ContentListTable';
+import { ArchivedViewToggle } from './ArchivedViewToggle';
 import { ContentListGallery } from './ContentListGallery';
 import { ContentListBoard } from './ContentListBoard';
 import { ContentListTimeline } from './ContentListTimeline';
@@ -282,6 +283,14 @@ function ContentListPanelBody(props: ContentListPanelProps) {
         )}
 
         {c.contentTypeId && config && (
+          <ArchivedViewToggle
+            lifecycle={config.lifecycle}
+            value={c.archivedView}
+            onChange={c.setArchivedView}
+          />
+        )}
+
+        {c.contentTypeId && config && (
           <div className="ml-auto">
             <ViewSettings
               config={config}
@@ -387,6 +396,7 @@ function ContentListPanelBody(props: ContentListPanelProps) {
           <BulkActionsBar
             bulkEditFields={c.config.bulkEditFields}
             lifecycle={c.config.lifecycle}
+            archivedView={c.archivedView}
             selections={Array.from(c.selected).map((id) => ({
               contentType: c.config!.id,
               tableName: c.config!.tableName,

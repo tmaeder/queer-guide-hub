@@ -170,9 +170,22 @@ test.describe('honest coverage', () => {
     // rendering `{countries.length} of {countries.length}` — the same number
     // twice. A tautology cannot fail, so the test was green whatever the data
     // did, and it certified the exact defect it was written to prevent.
-    // 239 of 250 rows carry a legal status; the other 11 are uninhabited
-    // territories with no ILGA entry, and this number moves if that changes.
-    await expect(page.locator('main')).toContainText(/239 of 250/);
+    // Was 239 of 250 until 2026-08-30. The 11 territories ILGA does not cover
+    // used to read as simply absent; `20260830131211_country_rights_disposition`
+    // in this PR gives them an explicit disposition, so 6 of them now carry a
+    // recorded status and the honest number is 245. The remaining 5 are listed
+    // as "not scored" rather than defaulted or folded in with measured countries.
+    //
+    // Verified against prod, not read off the failing page:
+    //   count(*)                                             = 250
+    //   count(*) where lgbti_criminalization->>'legal' not null = 245
+    //   count(*) where it is null                            =   5
+    //
+    // The previous comment already said this number moves when coverage changes.
+    // It moved, so it is updated in the same PR that moved it — a stale
+    // expectation turns a real coverage change into a red build someone is
+    // tempted to skip.
+    await expect(page.locator('main')).toContainText(/245 of 250/);
   });
 
   test('/rights reaches every country, not just the first twelve per tier', async ({ page }) => {
