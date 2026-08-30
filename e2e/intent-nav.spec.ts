@@ -200,6 +200,33 @@ test.describe('honest coverage', () => {
       /Showing events (tonight|this weekend|in the next \d+ days|soonest anywhere)|No upcoming events/,
     );
   });
+
+  // Written BEFORE the feature, deliberately, and left failing-by-default.
+  //
+  // Transit coverage is the next surface that will have to state its own reach:
+  // 307 cities carry network geometry (`cityNetworkGeometry.ts`) while a
+  // timetable can only ever cover the subset with a usable GTFS feed, so the
+  // city page will publish a fraction. The design is
+  // `docs/plans/2026-08-30-transit-mobility-phase-4-design.md` §7.
+  //
+  // It exists now because the /rights test above asserted `/250 of 250/` for
+  // months, produced by rendering `{countries.length} of {countries.length}` —
+  // the same number twice. A tautology cannot fail, so it certified the exact
+  // defect it was written to prevent. The two capture groups here are the
+  // point: they must be able to DIFFER, and a build that makes them equal by
+  // construction has repeated the mistake rather than passed the test.
+  //
+  // Un-fixme this when Phase 4a lands. If Phase 4a is never built, delete it —
+  // do not weaken it into something the current page happens to satisfy.
+  test.fixme('a city timetable band states its coverage rather than implying completeness', async ({
+    page,
+  }) => {
+    await page.goto('/travel');
+    const text = await page.locator('main').innerText();
+    const m = text.match(/Timetables for (\d+) of (\d+) cities/);
+    expect(m, 'the transit band must state its own coverage').not.toBeNull();
+    expect(Number(m![1])).toBeLessThan(Number(m![2]));
+  });
 });
 
 test.describe('crisis-adjacent surfaces stay calm', () => {
