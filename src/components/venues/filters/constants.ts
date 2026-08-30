@@ -7,6 +7,18 @@ import { VENUE_CATEGORIES, VENUE_CATEGORY_OPTIONS } from '@/lib/venueCategories'
 // and cruising — four categories with real rows behind them (outdoor alone has 1,203).
 export const categories = VENUE_CATEGORIES;
 
+/**
+ * Categories every row of which is `safety_gated`, so an anonymous visitor's
+ * query can only ever come back empty (migration 20261110100000).
+ *
+ * Offering the chip anyway is a dead end — the filter reads as broken rather
+ * than gated — and naming cruising on a signed-out page advertises it to exactly
+ * the audience the gate exists to keep it from. `GatedContentNotice` is not the
+ * pattern here: it counts gated rows per city/country via
+ * `gated_count_for_location` and cannot express a category.
+ */
+export const AUTH_ONLY_CATEGORIES: readonly string[] = ['cruising'];
+
 export const categoryLabels: Record<string, string> = Object.fromEntries(
   VENUE_CATEGORY_OPTIONS.map((o) => [o.value, o.label]),
 );
