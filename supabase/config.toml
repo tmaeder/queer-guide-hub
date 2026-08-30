@@ -290,6 +290,9 @@ verify_jwt = false
 [functions.source-tomtom]
 verify_jwt = false
 
+[functions.source-tripsit]
+verify_jwt = false
+
 # Admin feedback P3/P5/P6 edge functions
 [functions.github-webhook]
 verify_jwt = false
