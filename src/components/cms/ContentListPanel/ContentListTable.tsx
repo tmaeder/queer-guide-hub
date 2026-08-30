@@ -262,6 +262,7 @@ function renderColumnValue(
 // ── Main table component ────────────────────────────────────────────
 
 import { RowLifecycleActions } from './RowLifecycleActions';
+import { isArchived } from '@/hooks/useEntityLifecycle';
 
 export interface ContentListTableProps {
   contentTypeId?: string;
@@ -408,6 +409,12 @@ export function ContentListTable({
                 const isHidden =
                   (rawVisibility !== undefined && rawVisibility !== 'public') ||
                   (item.raw as Record<string, unknown> | undefined)?.is_public === false;
+                // Archived is a DIFFERENT state from hidden and must read as
+                // one: `visibility` is an editorial choice, archived means the
+                // row is off the site entirely. Until this badge existed the
+                // only signal was the row action flipping Archive→Restore,
+                // which is invisible unless you go looking for it.
+                const archived = isArchived(item.raw ?? {}, config?.lifecycle);
 
                 return (
                   <TableRow
@@ -438,6 +445,15 @@ export function ContentListTable({
                         {isHidden && (
                           <span className="ml-2 inline-block rounded-badge bg-muted px-1.5 align-middle text-2xs uppercase tracking-wide text-muted-foreground">
                             {rawVisibility && rawVisibility !== 'public' ? rawVisibility : 'hidden'}
+                          </span>
+                        )}
+                        {archived && (
+                          // The registry's own label ('Archived', 'Ghost',
+                          // 'Cancelled', 'Inactive'), because the per-type word
+                          // is the honest one — a ghost city is not a place at
+                          // all, which "Archived" would flatten away.
+                          <span className="ml-2 inline-block rounded-badge border border-border-hairline bg-background px-1.5 align-middle text-2xs uppercase tracking-wide text-foreground">
+                            {config?.lifecycle?.archive?.label ?? 'Archived'}
                           </span>
                         )}
                       </p>
