@@ -213,8 +213,20 @@ export interface ContentLifecycleConfig {
    */
   archive?: {
     column: string;
-    /** Value written when archived. */
-    value: string;
+    /**
+     * Value written when archived, for the `equals` predicate. Omit when
+     * `predicate` is `'present'`.
+     */
+    value?: string;
+    /**
+     * How to read `column`. `'equals'` (the default) compares against `value`
+     * and covers the status-enum conventions already in the schema —
+     * `review_status='archived'`, `shell_status='ghost'`, `status='cancelled'`.
+     * `'present'` means "archived iff this column is non-null", for the
+     * `archived_at` timestamp hotels/news/groups carry, where the useful fact
+     * is WHEN rather than a sentinel string.
+     */
+    predicate?: 'equals' | 'present';
     /** Human label for the filter and badge, e.g. "Archived", "Ghost". */
     label?: string;
   };

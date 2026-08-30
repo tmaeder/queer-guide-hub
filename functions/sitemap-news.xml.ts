@@ -10,7 +10,10 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
     env,
     'news_articles',
     'slug,updated_at',
-    'slug=not.is.null&seo_indexable=eq.true&duplicate_of_id=is.null&content=not.is.null',
+    // archived_at is redundant TODAY — archive_entity('news') also sets
+    // seo_indexable=false — but stating it keeps this sitemap correct on its
+    // own terms rather than depending on that coupling holding forever.
+    'slug=not.is.null&seo_indexable=eq.true&duplicate_of_id=is.null&content=not.is.null&archived_at=is.null',
   );
   const entries: SitemapEntry[] = rows
     .filter((r) => typeof r.slug === 'string' && (r.slug as string).length > 0)
