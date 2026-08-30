@@ -135,9 +135,28 @@ begin
       'facet resync: % row(s) neither queued nor already correct in search_documents', v_n;
   end if;
 
-  -- The column and the page still agree with the junction — the resync must not
-  -- have moved anything.
-  select string_agg(u.slug || '=' || coalesce(c.name, 'NULL'), ', ') into v_bad
+  -- The column still agrees with the junction. That — and only that — is what
+  -- this migration writes: it re-states `category` from the primary junction so
+  -- the column-scoped search trigger fires. It does not choose a destination.
+  --
+  -- AN EARLIER VERSION ALSO REQUIRED c.slug = 'practices-play', AND THAT KILLED
+  -- THE DEPLOY. Between the practice re-file and this migration reaching prod, a
+  -- concurrent session added a `Positions` stop and moved `69` and `doggy-style`
+  -- into it — more accurate than Practices & Play, since those two are positions
+  -- rather than acts. This migration did its own job correctly (20 rows
+  -- re-stated, notice in the log) and then failed its own assertion on someone
+  -- else's better filing:
+  --
+  --   ERROR: facet resync: a row left Practices & Play:
+  --          69=Positions, doggy-style=Positions
+  --
+  -- db push aborted, so nothing applied. Same class as 20261007160000 earlier in
+  -- this programme: an assertion wider than the repair reports another session's
+  -- later write as this migration's defect. A guard may only cover what its own
+  -- migration changed — here, column-vs-junction agreement, whatever category
+  -- the junction names.
+  select string_agg(u.slug || ' text=' || coalesce(u.category, 'NULL') ||
+                    ' junction=' || coalesce(c.name, 'NULL'), ', ') into v_bad
   from public.unified_tags u
   join public.tag_category_assignments a on a.tag_id = u.id and a.is_primary
   join public.tag_categories c on c.id = a.category_id
@@ -147,9 +166,9 @@ begin
           'masturbating','mutual-masturbation','threesome','orgy','group-sex',
           '69','doggy-style','making-out','sexting'])
     and u.status = 'active' and u.merged_into_id is null
-    and (c.slug <> 'practices-play' or u.category is distinct from c.name);
+    and u.category is distinct from c.name;
   if v_bad is not null then
-    raise exception 'facet resync: a row left Practices & Play: %', v_bad;
+    raise exception 'facet resync: column disagrees with its junction: %', v_bad;
   end if;
 
   -- No redirect points at a merged tag any more. Deliberately NOT asserting
