@@ -75,6 +75,19 @@ trusting the prose — a stale figure here is worse than no figure.
 
 ### 1.4 Harm Reduction — `public.substance_interactions` (476) + tag surfaces
 
+> **Open defect, found 2026-08-30 and deliberately not fixed here: `/tags/interactions` credits all
+> 476 cells to TripSit, and 55 of them are not TripSit's.** `substance_interaction_matrix()` returns
+> `'source', 'tripsit'` and `'source_url', 'https://combo.tripsit.me/'` as **literals**, so the
+> full-grid page renders "Interaction data researched and published by TripSit" over a grid that also
+> contains 48 eve&rave Substanzhandbuch rows and 7 FDA-label rows. That both denies two sources their
+> credit and attributes 55 safety claims to an organisation that did not make them — against the
+> schema migration's own stated rule, *"attribution is a column, not a footnote"*. The **per-tag**
+> band is correct: `SubstanceInteractions.tsx` reads `source` per row and builds the credit list from
+> what is actually on screen, which is why `/tags/methamphetamine` correctly reads "eve&rave
+> Substanzhandbuch". The fix is to have the RPC return the distinct `(source, source_url)` pairs
+> present and render the list; it needs a migration plus a frontend change, so it is its own review
+> surface rather than a rider on the sync work.
+
 | Target field | Primary source | Corroborating | Status | Validation | Enrichment |
 |---|---|---|---|---|---|
 | Pairwise interactions | TripSit (421) | eve&rave Substanzhandbuch (48), FDA labels (7) | `built` — `source_tripsit` (`40 4 * * 2`) → `sync_tripsit_interactions`, breaker `tripsit`. Was loaded once with no cron until 2026-08-30 | `status` CHECK 7 values; canonical order `tag_a_id < tag_b_id`; feed-shrink floors refuse a truncated fetch | `substance_interaction_matrix()` RPC |
