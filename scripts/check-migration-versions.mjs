@@ -17,17 +17,33 @@
  * away. A within-PR collision (two newly-added files sharing a version, or a new
  * file colliding with an existing one) is a hard error.
  *
- * ONE pre-existing duplicate is NOT grandfathered: the kind where the version is
- * already in remote history. `db push` matches by version and SKIPS an applied
- * one, so exactly one file of the group ran and the other N-1 are skipped
- * PERMANENTLY and SILENTLY — no error, no annotation, and nothing downstream
- * ever reports that their SQL did not execute. Measured 2026-08-29 on
- * 20261011100000: `sweep_skips_namespaced_tags` applied and
- * `tag_glossary_phase1_hygiene` never did, and this check was green about it
- * because the pair was old. A duplicate where NEITHER file is applied is loud
- * (db push aborts on schema_migrations_pkey), so only the applied case needs
- * escalating. It is reported per-version, not per-file: history stores the name
- * too, but which file won is not what makes it fatal — that N-1 lost is.
+ * NO duplicate version is grandfathered any more. Both kinds are hard errors:
+ *
+ *   - ALREADY IN REMOTE HISTORY. `db push` matches by version and SKIPS an
+ *     applied one, so exactly one file of the group ran and the other N-1 are
+ *     skipped PERMANENTLY and SILENTLY — no error, no annotation, and nothing
+ *     downstream ever reports that their SQL did not execute. Measured
+ *     2026-08-29 on 20261011100000: `sweep_skips_namespaced_tags` applied and
+ *     `tag_glossary_phase1_hygiene` never did, and this check was green about it
+ *     because the pair was old. Reported per-version, not per-file: history
+ *     stores the name too, but which file won is not what makes it fatal — that
+ *     N-1 lost is.
+ *   - NEITHER FILE APPLIED. This was a warning until 2026-08-29, on the
+ *     reasoning that it is "loud" because db push aborts on
+ *     schema_migrations_pkey. It is loud, and that is not the same as harmless:
+ *     the abort takes down the WHOLE push, so every unrelated pending migration
+ *     in the repo is stranded while edge functions still deploy and prod runs
+ *     new code against the old schema. Measured the same day on 20261012100000
+ *     (`sweep_skips_attribute_kind` + `news_vocab_dump_residue`), which stranded
+ *     five migrations from an unrelated PR until a file was renamed by hand.
+ *
+ * The residual hole this does NOT close: a duplicate can exist in NEITHER PR
+ * alone and appear only once both land, because `pull_request` CI runs against a
+ * merge commit computed before the other PR merged. On main the run that would
+ * catch it can also be cancelled by `cancel-in-progress` on the next push. So
+ * treat a green check as "no duplicate as of this base", not "no duplicate after
+ * merge" — and if `db push` ever fails on schema_migrations_pkey, look for a
+ * version shared by two files before anything else.
  *
  * Base ref: $MIGRATION_BASE_REF (default `origin/main`). If it can't be
  * resolved (e.g. a shallow checkout without the base), every file is treated as
@@ -133,8 +149,26 @@ for (const [version, group] of byVersion) {
         `duplicate into drift and make db push skip every migration in the repo.`,
     )
   } else if (remote) {
-    warnings.push(
-      `${line}  (pre-existing, none applied — db push aborts loudly on it; clean up in a dedicated pass)`,
+    // NOT a warning, and the reasoning that made it one was measured wrong on
+    // 2026-08-29. It said: a duplicate where neither file is applied is "loud"
+    // (db push aborts on schema_migrations_pkey) so only the applied case needs
+    // escalating. Loud is correct. Harmless-because-loud is not — `db push`
+    // aborts the ENTIRE push, not just the offending file:
+    //
+    //   Applying migration 20261012100000_sweep_skips_attribute_kind.sql...
+    //   ERROR: duplicate key value violates unique constraint
+    //          "schema_migrations_pkey" (SQLSTATE 23505)
+    //
+    // Five unrelated migrations from another PR were stranded by that, edge
+    // functions deployed anyway, and prod ran new code against the old schema
+    // until someone renamed a file by hand. An unapplied duplicate is not legacy
+    // debt to clean up in a dedicated pass; it is an outage for every session in
+    // the repo, so it fails here.
+    errors.push(
+      `${line}\n    → NEITHER file is applied yet, so \`supabase db push\` will abort on ` +
+        `schema_migrations_pkey the next time it runs — and it aborts the WHOLE push, stranding ` +
+        `every other pending migration in the repo while edge functions still deploy.\n` +
+        `    → Rename all but one to a version above the current max.`,
     )
   } else {
     unverified.push(
