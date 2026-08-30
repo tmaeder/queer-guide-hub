@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedRpc } from '@/integrations/supabase/untyped';
 import { useToast } from '@/hooks/use-toast';
 
 export interface UnifiedTag {
@@ -152,9 +153,24 @@ export const useUnifiedTags = () => {
 
   const deleteTag = async (id: string) => {
     try {
-      const { error } = await supabase.from('unified_tags').delete().eq('id', id);
+      // NOT `.from('unified_tags').delete()`. A raw delete cascades away the
+      // tag's legal citations (tag_sources), its clinical codes, its ontology
+      // edges and the curated health content hanging off it; leaves
+      // tag_slug_redirects pointing at nothing (ON DELETE SET NULL); and leaves
+      // `tags text[]` on 20+ content tables still naming a tag whose page is
+      // now a 404 — those arrays carry no foreign key, so nothing notices.
+      // admin_delete_tag refuses when any of that holds and names what is in
+      // the way; merge_tag_concept is the action that preserves it.
+      const { error } = await untypedRpc('admin_delete_tag', {
+        p_tag_id: id,
+        p_reason: null,
+      });
 
-      if (error) throw error;
+      // Rethrow as a real Error. untypedRpc yields a plain `{ message }`, and
+      // every caller here narrows with `err instanceof Error` — so throwing the
+      // bare object silently discards the refusal breakdown that is the entire
+      // reason this RPC exists, leaving the admin with "Failed to delete tag".
+      if (error) throw new Error(error.message);
 
       setTags((prev) => prev.filter((tag) => tag.id !== id));
       toast({
