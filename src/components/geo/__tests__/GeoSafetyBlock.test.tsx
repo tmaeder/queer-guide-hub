@@ -61,8 +61,9 @@ describe('GeoSafetyVerdict', () => {
       hasDeathPenaltyDestination: false,
     };
     renderWithProviders(<GeoSafetyVerdict countryId="de" equalityScore={83} />);
-    expect(screen.getByText('83/100')).toBeInTheDocument();
     expect(screen.getByText(/equality/i)).toBeInTheDocument();
+    // The tier is the verdict; the raw 0-100 composite is no longer rendered.
+    expect(screen.queryByText('83/100')).not.toBeInTheDocument();
   });
 
   it('renders a plain block, not a dead link, when the page has no rights section', () => {

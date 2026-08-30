@@ -18,7 +18,6 @@ import { Editable } from '@/components/admin/inline/Editable';
 import { formatPhoneDisplay } from '@/lib/formatPhone';
 import { VenueEvents } from '@/components/venues/VenueEvents';
 import { VenueCheckInButton } from '@/components/venues/VenueCheckInButton';
-import { VenueRecentCheckins } from '@/components/venues/VenueRecentCheckins';
 import { VenueSafetySignalDisplay } from '@/components/venues/VenueSafetySignalDisplay';
 import { FeaturedInGuides } from '@/components/guides/FeaturedInGuides';
 import { AmenityDisplay } from '@/components/venues/AmenityDisplay';
@@ -242,13 +241,11 @@ export function VenueActions({
   venue,
   onAddToTrip,
   onShare,
-  onCheckInSuccess,
   t,
 }: {
   venue: VenueWithRelations;
   onAddToTrip: () => void;
   onShare: () => void;
-  onCheckInSuccess: () => void;
   t: TFunction;
 }) {
   const isClosed = Boolean(venue.closed_at);
@@ -267,7 +264,6 @@ export function VenueActions({
           venueName={venue.name}
           venueLatitude={venue.latitude}
           venueLongitude={venue.longitude}
-          onCheckInSuccess={onCheckInSuccess}
         />
       )}
       {venue.website && venue.url_status !== 'broken' && (
@@ -605,7 +601,6 @@ export function VenueReviews({
 
 interface VenueSidebarProps {
   venue: VenueWithRelations;
-  checkinRefresh: number;
   onContentUpdated?: () => void;
   /** Other venues + events around this one, rendered as secondary map markers. */
   nearbyPoints?: EntityMapMarker[];
@@ -809,12 +804,10 @@ export function VenueLocationContact({
  * `hasUsableHours(venue.hours)` guard, so every venue with hours rendered them
  * twice — once as a section and once as a rail card.
  */
-export function VenueSidebar({ venue, checkinRefresh }: VenueSidebarProps) {
+export function VenueSidebar({ venue }: VenueSidebarProps) {
   return (
     <div className="flex flex-col gap-6">
       <DestinationSafetyCard countryIds={[venue.country_id]} />
-
-      <VenueRecentCheckins venueId={venue.id} refreshTrigger={checkinRefresh} />
 
       <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <Sparkles size={13} aria-hidden="true" />
