@@ -189,15 +189,22 @@ declare
   v_ok  boolean;
 begin
   foreach v_tbl in array array['news_articles', 'community_groups'] loop
+    -- CASE, not `tgattr::text = '' OR exists(...)`. SQL does not guarantee OR
+    -- short-circuits, and for an UNSCOPED trigger `tgattr::text` is '', so
+    -- string_to_array('', ' ') yields {''} and ''::smallint raises 22P02. The
+    -- OR form passed when tested, which is exactly the kind of accident a
+    -- planner change takes away — inside a migration that gates the whole
+    -- deploy queue.
     select bool_or(
-             -- unscoped UPDATE (no column list) or a list naming archived_at
-             t.tgattr::text = '' or
-             exists (
-               select 1 from unnest(string_to_array(t.tgattr::text, ' ')) a
-               join pg_attribute att
-                 on att.attrelid = t.tgrelid and att.attnum = a::smallint
-               where att.attname = 'archived_at'
-             ))
+             case
+               when t.tgattr::text = '' then true   -- unscoped: fires on every column
+               else exists (
+                 select 1 from unnest(string_to_array(t.tgattr::text, ' ')) a
+                 join pg_attribute att
+                   on att.attrelid = t.tgrelid and att.attnum = a::smallint
+                 where att.attname = 'archived_at'
+               )
+             end)
       into v_ok
       from pg_trigger t
       join pg_class c on c.oid = t.tgrelid

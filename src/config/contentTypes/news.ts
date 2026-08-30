@@ -200,7 +200,7 @@ export const newsArticleContentType: ContentTypeConfig = {
       mergePath: 'entities',
     },
   },
-  // `archived_at` added in 20261028100000 — see hotel.ts.
+  // `archived_at` added in 20261029100000 — see hotel.ts.
   lifecycle: {
     type: 'news',
     archive: { column: 'archived_at', predicate: 'present', label: 'Archived' },

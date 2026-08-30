@@ -199,7 +199,7 @@ export interface ContentRowAction {
  *
  * Omit `archive` entirely for a type that must not offer one. Exactly ONE does:
  * `countries`. Hotels, news_articles and community_groups were also omitted
- * until 20261028100000 gave them an `archived_at` — they simply had no column,
+ * until 20261029100000 gave them an `archived_at` — they simply had no column,
  * only `seo_indexable`, which governs crawlers rather than the site, so an
  * Archive button would have deindexed without hiding.
  *

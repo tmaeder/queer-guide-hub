@@ -16,7 +16,7 @@ import { getContentTypeIds, getContentType } from '../index';
  *     claims to hide and does not).
  *
  * hotels, news_articles and community_groups were in group 2 until
- * 20261028100000 gave them an `archived_at`. Countries stay there permanently
+ * 20261029100000 gave them an `archived_at`. Countries stay there permanently
  * and for a different reason — not "no column available" but "not a leaf": 246
  * of 250 have dependent cities/venues/events, every child page embeds the
  * parent, and location_is_high_risk() resolves the safety gate through the same
@@ -27,7 +27,7 @@ import { getContentTypeIds, getContentType } from '../index';
  */
 
 /**
- * The LATEST migration defining the dispatchers wins — 20261028100200 replaces
+ * The LATEST migration defining the dispatchers wins — 20261029100200 replaces
  * the branches 20261019100000 shipped. Resolved by name suffix and sorted,
  * never by a hardcoded filename, because this repo renumbers migrations
  * routinely to clear version collisions.

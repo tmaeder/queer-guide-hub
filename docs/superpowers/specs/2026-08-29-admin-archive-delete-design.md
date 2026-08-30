@@ -205,7 +205,7 @@ The open decision was "a shared `archived_at` on those four, or reuse
 `seo_indexable`". Measured, and the answer splits.
 
 **hotels, news_articles, community_groups get `archived_at`** (migration
-`20261028100000`). These are leaves. The three archive conventions already in
+`20261029100000`). These are leaves. The three archive conventions already in
 the schema each mean something specific, so collapsing them would be lossy — but
 these three tables have no convention at all, so a column is purely additive,
 and a timestamp records *when*, which a status enum cannot.
