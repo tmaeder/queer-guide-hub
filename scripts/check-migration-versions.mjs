@@ -54,7 +54,7 @@
 
 import { readdirSync } from 'node:fs'
 import { execSync } from 'node:child_process'
-import { fetchRemoteVersions } from './lib/remote-migrations.mjs'
+import { fetchRemoteMigrations, findAppliedNameMismatches } from './lib/remote-migrations.mjs'
 
 const MIGRATIONS_DIR = 'supabase/migrations'
 const VERSION_RE = /^(\d{14})_.+\.sql$/
@@ -92,16 +92,29 @@ const isNew = (file) => base === null || !base.has(file)
 // different snapshots while sibling sessions are landing migrations.
 // `null` means "could not look", never "nothing is applied": each caller stays
 // strict rather than reporting clean.
-let remote = null
+// Fetched as version -> NAME. The name is what makes check 4 possible; checks 2
+// and 3 only need the key set, which `remote` exposes via .has().
+let remoteMap = null
 try {
-  remote = await fetchRemoteVersions()
+  remoteMap = await fetchRemoteMigrations()
 } catch (e) {
   // Reachability failure is NOT "nothing is applied". Say so and stay strict.
   console.log(`⚠ could not read remote migration history (${e.message.split('\n')[0]});`)
   console.log('  no version is treated as already-applied, so a legitimate recovery may fail here.')
 }
+const remote = remoteMap
 
 const files = readdirSync(MIGRATIONS_DIR).filter((f) => f.endsWith('.sql'))
+
+/**
+ * `--duplicates-only` runs check 2 and nothing else.
+ *
+ * For the post-merge run on main (.github/workflows/migration-guard-main.yml).
+ * Duplicates are unambiguously broken whenever you look at them; ordering is a
+ * pre-merge question that produces false positives once a file is on main — see
+ * the comment above check 3.
+ */
+const DUPLICATES_ONLY = process.argv.includes('--duplicates-only')
 
 const errors = []
 const warnings = []
@@ -178,7 +191,25 @@ for (const [version, group] of byVersion) {
   }
 }
 
-// 3) Out-of-order versions. A migration whose version sorts BELOW the newest
+// 3) Out-of-order versions. Skipped entirely under --duplicates-only.
+//
+//    THIS CHECK IS A PRE-MERGE QUESTION AND ONLY MAKES SENSE ON A PR. It asks
+//    "would db push refuse this file", which stops being answerable once the file
+//    is on main: `db push` applies a batch in version order, so a migration that
+//    merges after a higher-versioned one has landed is applied perfectly happily
+//    as long as both sort above APPLIED history. Measured 2026-08-30 —
+//    20261026100000 merged after 20261027100000 was already on main, the
+//    post-merge guard flagged it, and db push had in fact applied both without
+//    complaint. That is a false positive, and on a repo with ~70 concurrent
+//    worktrees it is the COMMON case, not a rare one. A guard that cries wolf on
+//    the ordinary path gets muted, which is worse than not having it.
+//
+//    Check 2 (duplicates) has no such problem: two files sharing a version is
+//    unambiguously broken whether it is seen before or after the merge, and it is
+//    the condition that actually took `db push` down. So the post-merge workflow
+//    runs duplicates only.
+//
+//    A migration whose version sorts BELOW the newest
 //    one remote history already holds makes `db push` abort with "local
 //    migration files to be inserted before the last migration on remote" — and
 //    it aborts on the FIRST such file, taking every later migration in the same
@@ -193,7 +224,7 @@ for (const [version, group] of byVersion) {
 //
 //    Compare against the highest PRE-EXISTING version: remote history and the
 //    base ref agree once CI has pushed main, and this stays pure-local.
-if (base !== null) {
+if (base !== null && !DUPLICATES_ONLY) {
   const baseVersions = files
     .filter((f) => !isNew(f))
     .map((f) => f.match(VERSION_RE)?.[1])
@@ -241,6 +272,43 @@ if (base !== null) {
       else unverified.push(msg + `\n    → Remote history unreadable; set SUPABASE_ACCESS_TOKEN to verify.`)
     }
   }
+}
+
+// 4) A repo file whose version is applied under a DIFFERENT migration's name.
+//
+//    This is the silent one. `db push` matches by version alone, so when two
+//    files claim one version the first to apply wins and the rest are skipped
+//    PERMANENTLY — green deploy, a history row that looks entirely normal, and
+//    nothing anywhere saying that SQL never executed. Check 2 cannot see it
+//    while the colliding file is still on another branch, which is exactly when
+//    it happens: measured twice on 2026-08-29, 20261012100000 recorded as
+//    `sweep_skips_attribute_kind` (so `news_vocab_dump_residue` never ran) and
+//    20261019100000 as `entity_lifecycle_dispatchers` (so
+//    `kinktionary_overlap_deindex_complete` never ran). Both were found only by
+//    reading `name` out of schema_migrations by hand, after the fact.
+//
+//    Comparing NAMES catches it with no duplicate present at all.
+//
+//    A redundant `<14 digits>_` prefix on the remote name is normalised away —
+//    that is the documented MCP-recovery shape (version stamped by the call,
+//    name carrying the intended version), and 17 such rows are correct
+//    recoveries, not defects.
+//
+//    Six PRE-EXISTING genuine mismatches remain on main (e.g. 20260619180000 is
+//    applied as `extract_worker_circuit_breakers` while the repo file is
+//    `search_documents_tags_facet_all_types`). They are warned about, not
+//    failed: the SQL already never ran and failing every unrelated PR would not
+//    change that. A NEW one is an error, because it is still recoverable by
+//    renaming before merge.
+for (const hit of findAppliedNameMismatches(files, remoteMap, isNew)) {
+  const line =
+    `version ${hit.version} is applied to prod as "${hit.remoteName}", but this repo's file at ` +
+    `that version is "${hit.file}".\n` +
+    `    → \`db push\` matches by version, so THIS FILE'S SQL HAS NEVER RUN and never will. ` +
+    `The deploy stays green and history looks normal.\n` +
+    `    → Rename it to a version above the current max, then re-run the deploy.`
+  if (hit.isNew) errors.push(line)
+  else warnings.push(`${line}\n    (pre-existing — clean up in a dedicated pass)`)
 }
 
 if (applied.length > 0) {

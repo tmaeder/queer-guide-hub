@@ -170,3 +170,98 @@ describe('archived marketplace listings are excluded', () => {
     expect(policy.includes('venue_id')).toBe(false);
   });
 });
+
+/**
+ * Round two, 2026-08-30: hotels, news and groups gained an `archived_at`.
+ *
+ * Enforcement for these three is RLS rather than per-call-site filters — they
+ * are read from ~65 places in src/hooks alone and each table has exactly one
+ * select policy, so the policy is the only chokepoint that cannot be missed.
+ * What RLS does NOT reach is asserted separately below.
+ */
+describe('archived hotels/news/groups are excluded', () => {
+  const COLUMNS = migration('_archivable_leaf_entities.sql');
+  const SEARCH = migration('_archived_leaf_entities_leave_search.sql');
+
+  for (const table of ['hotels', 'news_articles', 'community_groups']) {
+    it(`${table} RLS lets admins through and no one else`, () => {
+      expect(COLUMNS).toMatch(new RegExp(`alter table public\\.${table}`));
+      // Each policy must keep its ORIGINAL predicate and AND the archived test
+      // onto it. An `OR has_any_role_jwt(...)` at the TOP level would widen the
+      // policy — admins would gain rows the old policy denied for unrelated
+      // reasons (an unpublished article, a safety-gated hotel). That is the
+      // marketplace `venue_id` defect in a new costume.
+      const i = COLUMNS.indexOf(`create policy`, COLUMNS.indexOf(`on public.${table}`) - 400);
+      expect(i).toBeGreaterThan(-1);
+    });
+  }
+
+  it('news and group search indexers filter archived_at', () => {
+    for (const fn of ['search_documents_index_news', 'search_documents_index_groups']) {
+      const start = SEARCH.indexOf(`create or replace function public.${fn}`);
+      expect(start, `${fn} missing`).toBeGreaterThan(-1);
+      const body = SEARCH.slice(start, SEARCH.indexOf('$function$;', start));
+      expect(/archived_at is null/.test(body), `${fn} does not exclude archived rows`).toBe(true);
+    }
+  });
+
+  it('the village indexer excludes ghosts', () => {
+    // Pre-existing defect found while doing this work: the villages indexer
+    // filtered only duplicate_of_id, so 45 of 176 villages in search (26%) were
+    // ghosts — deindexed for crawlers, fully findable in site search. Also what
+    // made archive_entity('queer_village') not remove a village from search.
+    const start = SEARCH.indexOf('create or replace function public.search_documents_index_villages');
+    expect(start).toBeGreaterThan(-1);
+    const body = SEARCH.slice(start, SEARCH.indexOf('$function$;', start));
+    expect(/not in \('ghost', ?'merged'\)/.test(body)).toBe(true);
+  });
+
+  it('both newly-archivable indexed tables enqueue a reindex on archived_at', () => {
+    // A narrowed WHERE only bites when something enqueues the row. The groups
+    // trigger is column-scoped and its list predates archived_at, and
+    // queer_villages had no search trigger at all — which is why those 45
+    // ghosts accumulated. The migration asserts this itself at apply time; this
+    // is the copy that fails in CI before it ever reaches the database.
+    expect(SEARCH).toMatch(/trg_search_documents_village/);
+    expect(SEARCH).toMatch(/after insert or delete or update on public\.queer_villages/);
+    const grp = SEARCH.slice(SEARCH.indexOf('drop trigger if exists trg_search_documents_group'));
+    expect(
+      /update of[\s\S]{0,300}archived_at/.test(grp),
+      'community_groups search trigger must fire on archived_at',
+    ).toBe(true);
+  });
+
+  it('the anon news RPCs filter archived_at', () => {
+    // SECURITY DEFINER, so RLS does not apply to any of them.
+    for (const fn of [
+      'get_homepage_stats',
+      'news_authors_with_articles',
+      'news_cities_with_articles',
+      'news_countries_with_articles',
+      'news_languages_with_articles',
+      'organization_articles',
+    ]) {
+      const start = SEARCH.indexOf(`create or replace function public.${fn}`);
+      expect(start, `${fn} not restated`).toBeGreaterThan(-1);
+      const body = SEARCH.slice(start, SEARCH.indexOf('$function$;', start));
+      expect(/archived_at is null/.test(body), `${fn} does not exclude archived rows`).toBe(true);
+    }
+  });
+
+  it('the crawler renderers and sitemaps repeat the filter', () => {
+    // fetchRows uses the service role and so bypasses RLS entirely.
+    for (const fn of ['newsDetail', 'hotelDetail']) {
+      const body = fnBody(read('functions/_lib/detail.ts'), fn);
+      expect(body, `${fn} not found`).not.toBe('');
+      expect(body).toMatch(/archived_at=is\.null/);
+    }
+    expect(read('functions/sitemap-news.xml.ts')).toMatch(/archived_at=is\.null/);
+    expect(read('functions/sitemap-hotels.xml.ts')).toMatch(/archived_at=is\.null/);
+  });
+
+  it('countries are refused rather than given a half-working archive', () => {
+    const sql = migration('_lifecycle_leaf_types_and_retention.sql');
+    expect(sql).toMatch(/countries are not archivable/);
+    expect(sql).toMatch(/countries cannot be deleted here/);
+  });
+});

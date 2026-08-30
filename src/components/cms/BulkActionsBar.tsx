@@ -3,6 +3,17 @@
  * Operates on a list of `(content_type, id)` selections and writes through
  * `cms_content_metadata`. Translate enqueues `content_actions` entries; the
  * `workflow-dispatcher` edge function fans out to `cms-ai`.
+ *
+ * ARCHIVE IS THE EXCEPTION and does not go through that sidecar alone.
+ * `cms_content_metadata.workflow_state` is a table no public query reads and
+ * the list itself does not join, so bulk-archiving fifty venues used to change
+ * nothing at all — they stayed public, stayed in search, and stayed "Published"
+ * in this very list. When the type declares `lifecycle.archive`, Archive calls
+ * `archive_entity` per row, which holds the real per-type semantics.
+ *
+ * When the type declares a `lifecycle` with NO `archive`, the button is hidden
+ * rather than left writing the sidecar: countries have no archivable state, and
+ * a button that appears to work is worse than one that is absent.
  */
 
 import { useState, useCallback } from 'react';
@@ -10,7 +21,8 @@ import { TrackLoader } from '@/components/transit/TrackLoader';
 import { CheckCheck, Archive, EyeOff, Languages, ChevronDown, X} from 'lucide-react';
 import { upsertCMSContentMetadata, insertContentActions } from '@/hooks/useCMSContentMetadata';
 import { useBulkColumnEdit } from '@/hooks/useBulkColumnEdit';
-import type { ContentBulkEditField } from '@/types/cms';
+import type { ContentBulkEditField, ContentLifecycleConfig } from '@/types/cms';
+import { untypedRpc } from '@/integrations/supabase/untyped';
 import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from '@/i18n/languages';
 import type { SupportedLocale } from '@/i18n/languages';
 import type { WorkflowState } from '@/types/cms';
@@ -39,6 +51,11 @@ interface BulkActionsBarProps {
    * entity table itself.
    */
   bulkEditFields?: ContentBulkEditField[];
+  /**
+   * The selected type's lifecycle capability. Absent for types that predate the
+   * registry block, which keep the legacy sidecar-only Archive.
+   */
+  lifecycle?: ContentLifecycleConfig;
 }
 
 export function BulkActionsBar({
@@ -46,6 +63,7 @@ export function BulkActionsBar({
   onClear,
   onComplete,
   bulkEditFields,
+  lifecycle,
 }: BulkActionsBarProps) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -76,6 +94,51 @@ export function BulkActionsBar({
     },
     [selections, onClear, onComplete],
   );
+
+  /**
+   * Bulk archive through `archive_entity`, one call per row.
+   *
+   * Deliberately NOT a single `.in()` update like applyBulkEdit below: the
+   * per-type semantics differ (a city becomes a ghost, an event is cancelled, a
+   * hotel gets an archived_at) and several branches record a prior-state
+   * snapshot their restore counterpart reads back. A bulk column write would
+   * set the column and skip the snapshot, producing rows that archive but
+   * cannot be restored.
+   *
+   * Failures are reported with a count AND the first reason. An aggregate
+   * "3 failed" tells an operator nothing actionable, and these RPCs refuse with
+   * specific messages worth surfacing.
+   */
+  const bulkArchive = useCallback(async () => {
+    if (!lifecycle?.archive) return;
+    setBusy(true);
+    setError(null);
+    let ok = 0;
+    let firstError: string | null = null;
+
+    for (const [i, sel] of selections.entries()) {
+      setProgress(`Archiving ${i + 1} of ${selections.length}…`);
+      const { error: e } = await untypedRpc('archive_entity', {
+        p_type: lifecycle.type,
+        p_id: sel.id,
+        p_reason: 'bulk archive',
+      });
+      if (e) firstError ??= e.message;
+      else ok++;
+    }
+
+    setBusy(false);
+    setProgress(null);
+    if (ok < selections.length) {
+      setError(`${selections.length - ok} of ${selections.length} failed. ${firstError ?? ''}`);
+      // Still refresh: the ones that succeeded really are archived, and leaving
+      // the list stale would misreport them as live.
+      onComplete?.();
+    } else {
+      onComplete?.();
+      onClear();
+    }
+  }, [lifecycle, selections, onClear, onComplete]);
 
   /**
    * Writes one column across every selected row.
@@ -207,16 +270,21 @@ export function BulkActionsBar({
         <EyeOff size={14} className="mr-1" />
         Unpublish
       </Button>
-      <Button
-        size="sm"
-        variant="outline"
-        disabled={busy}
-        onClick={() => updateState('archived')}
-        className="border-border text-foreground hover:bg-muted normal-case font-semibold"
-      >
-        <Archive size={14} className="mr-1" />
-        Archive
-      </Button>
+      {/* Hidden when the type declares a lifecycle with no archivable state
+          (countries). Shown for a type with no lifecycle block at all, where
+          the legacy sidecar write is still all there is. */}
+      {(!lifecycle || lifecycle.archive) && (
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={busy}
+          onClick={() => (lifecycle?.archive ? void bulkArchive() : void updateState('archived'))}
+          className="border-border text-foreground hover:bg-muted normal-case font-semibold"
+        >
+          <Archive size={14} className="mr-1" />
+          Archive
+        </Button>
+      )}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button

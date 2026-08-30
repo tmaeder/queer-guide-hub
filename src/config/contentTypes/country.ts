@@ -152,5 +152,23 @@ export const countryContentType: ContentTypeConfig = {
       mergePath: 'entities',
     },
   },
+  /**
+   * Countries are neither archivable nor deletable, and this block exists to
+   * say so deliberately rather than leaving it to an omission.
+   *
+   * `countries` is not a leaf. Measured on prod 2026-08-30: 5,757 cities,
+   * 30,887 venues and 48,741 events carry a country_id, and every child page
+   * embeds the parent for its name, flag and legal status. Hiding the row does
+   * not hide a country — it blanks that embed across tens of thousands of pages,
+   * while `location_is_high_risk()` still resolves the safety gate through the
+   * same row, so an archived country would silently un-gate content in a
+   * criminalizing jurisdiction. 246 of 250 countries have dependent content, so
+   * even a guarded button would refuse almost always.
+   *
+   * The levers that DO exist for a thin country page are `seo_indexable`
+   * (drop it from the index) and `shell_status` ('real' | 'territory').
+   * archive_entity and delete_entity both refuse 'country' with that reasoning.
+   */
+  lifecycle: { type: 'country', deletable: false },
   publicPath: (row) => (row.slug ? `/country/${row.slug}` : null),
 };

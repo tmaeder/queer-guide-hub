@@ -192,3 +192,88 @@ available through `delete_entity` under the usage guard above.
 - No RLS change on venues/events/cities (rationale above).
 - No retention cron in the first cut; the 30-day cap is enforced in the Trash query,
   and a purge job is a follow-up.
+
+---
+
+# Phase E — the deferred items, 2026-08-30
+
+Everything above shipped. This closes the four things it left open.
+
+## The four non-archivable types: three yes, one no
+
+The open decision was "a shared `archived_at` on those four, or reuse
+`seo_indexable`". Measured, and the answer splits.
+
+**hotels, news_articles, community_groups get `archived_at`** (migration
+`20261029100000`). These are leaves. The three archive conventions already in
+the schema each mean something specific, so collapsing them would be lossy — but
+these three tables have no convention at all, so a column is purely additive,
+and a timestamp records *when*, which a status enum cannot.
+
+**Countries do not, and this is permanent.** Not "no column available" — the
+reason is topological. `countries` is a parent: 5,757 cities, 30,887 venues and
+48,741 events carry a `country_id`, every child page embeds the parent for its
+name and legal status, and `location_is_high_risk()` resolves the safety gate
+through the same row — so an archived country would silently un-gate content in
+a criminalizing jurisdiction. 246 of 250 have dependent content, so even a
+guarded button would refuse 98% of the time. `archive_entity` and
+`delete_entity` both refuse `'country'` and say why, and the count is computed
+per row so the message is true for the row in front of the admin.
+
+**Enforcement is RLS, not per-call-site filters.** These three tables are read
+from ~65 places in `src/hooks` alone; filtering each is a losing game where one
+miss means the archived row is still on the site. Each table had exactly one
+SELECT policy, so the policy is a real chokepoint. What RLS does not reach is
+patched by hand: the search indexers and six anon `SECURITY DEFINER` news RPCs,
+and the Pages Functions, which read with the service role.
+
+**Restore replays the prior `seo_indexable`.** 22,019 of 45,221 news articles
+are already `seo_indexable=false` from the quality gate, so a restore that set
+it `true` would have re-indexed half the news corpus. The pre-archive value goes
+into the audit row and comes back out.
+
+## Two defects found while doing it
+
+**The villages search indexer never filtered `shell_status`** — 45 of the 176
+villages in `search_documents` (26%) were ghosts: deindexed for crawlers,
+`seo_indexable=false`, and fully findable in on-site search. Character-for-
+character the cities defect fixed in `20261016110000`, one entity later. It also
+meant `archive_entity('queer_village')` — which writes exactly that
+`shell_status='ghost'` — never removed a village from search.
+
+**Two tables could not enqueue a reindex at all.** A narrowed WHERE only bites
+when something enqueues the row for `search_reindex_drain`. `queer_villages` had
+no search trigger whatsoever (which is *why* those ghosts accumulated —
+`run_village_trust_recompute` ghosts villages nightly and nothing told search),
+and the `community_groups` trigger is column-scoped with a list predating
+`archived_at`. The village trigger is deliberately unscoped: its indexer reads
+fifteen columns, and a scoped list is precisely the trap the groups trigger
+sprang. The migration asserts the coupling at apply time, and it was
+mutation-tested — it raises on the unfixed schema.
+
+**`hotelDetail` ignored `seo_indexable`** — seventh instance of that class. The
+column is non-false on all 325 hotels, so the gate was dead code that looked
+alive.
+
+## Trash, retention, bulk
+
+- **`/admin/trash`** — cross-type, grouped, with a per-row countdown to snapshot
+  expiry. Reads `admin_lifecycle_audit` directly; it already carries an
+  admin/moderator RLS read policy, so an RPC wrapper would be a second gate to
+  maintain and nothing else. The copy states what restore does *not* bring back.
+- **Retention** — `prune_admin_lifecycle_snapshots(30)`, nightly. It nulls the
+  **snapshot**, never the audit row: who deleted what and why is permanent, the
+  recovery payload is what has a shelf life. Registered in `admin_automations`
+  before the cron, per the registry-of-record contract.
+- **Bulk archive** — routed through `archive_entity` per row rather than one
+  `.in()` update, because several branches record a prior-state snapshot their
+  restore reads back; a bulk column write would set the column and skip the
+  snapshot, producing rows that archive but cannot be restored. Failures report
+  a count *and* the first reason. The button is hidden for a type that declares
+  a lifecycle with no archivable state.
+
+## Still open
+
+- The per-type Trash **tab** from Phase A was never built; `/admin/trash` covers
+  the need and the row action covers the rest.
+- Bulk **restore** is not wired — only bulk archive. Restore stays per-row.
