@@ -137,6 +137,19 @@ begin
 
   -- The column and the page still agree with the junction — the resync must not
   -- have moved anything.
+  --
+  -- This used to ALSO require every row to sit in `practices-play`, and that
+  -- clause is removed. It asserted a fact another session deliberately
+  -- changed: the sex-positions import (20261023100100) moved `69` and
+  -- `doggy-style` into the new Positions stop, so this migration failed on
+  -- apply and, sorting below the remote max after later merges, took the whole
+  -- db push queue down with it — the deploy was red and nothing behind it
+  -- applied.
+  --
+  -- Where a row LIVES is not this migration's business; that it MIRRORS its
+  -- junction is. Asserting the stop pinned a filing decision that belongs to
+  -- whichever migration owns it, and would break again on the next legitimate
+  -- re-file.
   select string_agg(u.slug || '=' || coalesce(c.name, 'NULL'), ', ') into v_bad
   from public.unified_tags u
   join public.tag_category_assignments a on a.tag_id = u.id and a.is_primary
@@ -147,9 +160,9 @@ begin
           'masturbating','mutual-masturbation','threesome','orgy','group-sex',
           '69','doggy-style','making-out','sexting'])
     and u.status = 'active' and u.merged_into_id is null
-    and (c.slug <> 'practices-play' or u.category is distinct from c.name);
+    and u.category is distinct from c.name;
   if v_bad is not null then
-    raise exception 'facet resync: a row left Practices & Play: %', v_bad;
+    raise exception 'facet resync: column disagrees with the junction: %', v_bad;
   end if;
 
   -- No redirect points at a merged tag any more. Deliberately NOT asserting
