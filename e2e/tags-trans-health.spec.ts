@@ -159,6 +159,64 @@ test.describe('@smoke trans health vocabulary is published and sourced', () => {
     );
   });
 
+  test('stealthing is its own page, reachable, and not confused with stealth', async ({
+    request,
+  }) => {
+    // The two senses share a root and nothing else: `stealth` is a trans person
+    // living without disclosing, `stealthing` is non-consensual condom removal.
+    // Each page must exist, say its own thing, and point away from the other —
+    // sending someone who searched for the assault to a page about trans privacy,
+    // or the reverse, is a harm in both directions.
+    const res = await request.get('/tags/stealthing', { headers: { 'User-Agent': BOT_UA } });
+    expect(res.status(), '/tags/stealthing should resolve').toBe(200);
+    const article = articleOf(await res.text());
+    expect(article, '/tags/stealthing rendered no <article>').not.toBe('');
+    expect(article, 'stealthing lost the consent principle').toMatch(
+      /consent to protected sex is not consent to unprotected sex/i,
+    );
+    expect(article, 'stealthing lost the PEP time limit').toMatch(/72 hours/i);
+    expect(article, 'stealthing must point away from the trans sense').toMatch(/trans/i);
+
+    // Filed as safety, not kink. Reading "Fetishes" here would mean the age gate
+    // is back on a page about assault.
+    expect(article, 'stealthing must not be filed as an adult category').not.toMatch(
+      /Category:\s*(Fetishes|Gear|Dynamics & Roles|Practices & Play|Kink)/i,
+    );
+  });
+
+  test('stealthing renders for a signed-out reader with no age gate', async ({ page }) => {
+    await page.goto('/tags/stealthing');
+    const about = page.locator('#about');
+    await expect(about, '/tags/stealthing did not render its About band').toBeVisible({
+      timeout: 25_000,
+    });
+    await expect(
+      page.getByRole('heading', { name: /adults only|18\+/i }),
+      '/tags/stealthing is behind an age gate',
+    ).toHaveCount(0);
+  });
+
+  test('nonbinary resolves to the one canonical page rather than a second one', async ({
+    request,
+  }) => {
+    // `nonbinary` and `non-binary` were both live on Q48270 — two pages for one
+    // identity. After the merge there is one page, and the loser's URL still has
+    // to resolve, because ~131 entities referenced it.
+    const canonical = await request.get('/tags/non-binary', { headers: { 'User-Agent': BOT_UA } });
+    expect(canonical.status(), '/tags/non-binary should resolve').toBe(200);
+    const article = articleOf(await canonical.text());
+    expect(article, 'non-binary rendered no <article>').not.toBe('');
+    expect(article).toMatch(/binary/i);
+
+    // The merged spelling must not 404 — a redirect or a 200 are both fine, a
+    // dead link for 131 tagged entities is not.
+    const merged = await request.get('/tags/nonbinary', { headers: { 'User-Agent': BOT_UA } });
+    expect(
+      merged.status(),
+      '/tags/nonbinary 404s — the merge dropped the alias that keeps it resolving',
+    ).toBe(200);
+  });
+
   test('the clinical citation is published, and as guidance rather than as law', async ({
     request,
   }) => {
