@@ -372,8 +372,17 @@ export async function tryNvidia(
       // Not a breaker failure — see the FailureKind note. Our bucket is meant to
       // make this unreachable, so reaching it means llm_provider_rate.rpm_cap is
       // set too high for what the account actually allows.
+      // THE BODY IS THE WHOLE POINT and it used to be discarded. NVIDIA does not
+      // document the status it returns when free credits run out, so a provider
+      // signalling exhaustion as 429 is indistinguishable from one saying "slow
+      // down" — except in the body. Because this arm deliberately does NOT record
+      // a breaker failure, `api_circuit_breakers.last_error` never receives it
+      // either, so without this line there is no surface anywhere carrying the
+      // reason. Measured 2026-08-29: the fallback served every call through a
+      // silent branch and nothing in the system could say why.
       console.warn(
-        `[llm-router] nvidia 429 for ${opts.callerFn} — lower llm_provider_rate.rpm_cap`,
+        `[llm-router] nvidia 429 for ${opts.callerFn} ` +
+          `(retry-after=${response.headers.get('retry-after') ?? 'none'}): ${errText}`,
       )
       return { served: false, reason: 'rate_limited' }
     }
