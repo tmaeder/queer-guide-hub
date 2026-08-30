@@ -49,4 +49,6 @@ export const communityGroupsContentType: ContentTypeConfig = {
       mergePath: 'entities',
     },
   },
+  // No `archive` — community_groups carries no status column.
+  lifecycle: { type: 'group' },
 };

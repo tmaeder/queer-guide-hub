@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedRpc } from '@/integrations/supabase/untyped';
 import { normalizeTagName } from '@/utils/tagNormalization';
 
 export interface TagCategoryInfo {
@@ -360,9 +361,28 @@ export const useCentralizedTags = () => {
 
   const deleteTag = async (id: string): Promise<void> => {
     try {
-      const { error } = await supabase.from('unified_tags').delete().eq('id', id);
+      // NOT `.from('unified_tags').delete()`. A raw delete cascades away the
+      // tag's legal citations (tag_sources), its clinical codes, its ontology
+      // edges and the curated health content hanging off it; leaves
+      // tag_slug_redirects pointing at nothing (ON DELETE SET NULL); and leaves
+      // `tags text[]` on 20+ content tables still naming a tag whose page is
+      // now a 404 — those arrays carry no foreign key, so nothing notices.
+      // admin_delete_tag refuses when any of that holds and names what is in
+      // the way; merge_tag_concept is the action that preserves it.
+      //
+      // This is the hook /admin/tags actually calls. useUnifiedTags has a
+      // near-identical deleteTag and is routed the same way, so neither is a
+      // way back to the raw delete.
+      const { error } = await untypedRpc('admin_delete_tag', {
+        p_tag_id: id,
+        p_reason: null,
+      });
 
-      if (error) throw error;
+      // Rethrow as a real Error. untypedRpc yields a plain `{ message }`, and
+      // every caller here narrows with `err instanceof Error` — so throwing the
+      // bare object silently discards the refusal breakdown that is the entire
+      // reason this RPC exists, leaving the admin with "Failed to delete tag".
+      if (error) throw new Error(error.message);
       refreshTags();
     } catch (err) {
       console.error('Error deleting tag:', err);

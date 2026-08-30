@@ -163,5 +163,6 @@ export const personalityContentType: ContentTypeConfig = {
       mergePath: 'entities',
     },
   },
+  lifecycle: { type: 'personality', archive: { column: 'review_status', value: 'archived', label: 'Archived' } },
   publicPath: (row) => (row.slug ? `/personalities/${row.slug}` : null),
 };

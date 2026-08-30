@@ -74,20 +74,24 @@ const NEW_OR_REVIVED: Case[] = [
   },
   {
     slug: 'cathinones',
-    present: /mephedrone|3-MMC|stimulant/i,
+    present: /rolling series of near-identical powders/i,
     why: 'the class term both sources use; mephedrone, 3-MMC and 4-CMC hang off it',
   },
   {
     slug: 'k-hole',
-    present: /dissociat|detach|ketamine/i,
-    why: 'the ketamine counterpart to the G-hole',
+    present: /cannot consent to anything/i,
+    why: 'the ketamine counterpart to the G-hole; a clinical definition leaves out the consent half',
   },
   {
     slug: 'drug-induced-psychosis',
-    present: /paranoi|hallucinat|sleep/i,
-    why: 'two pages of the First Aid sheet are about this',
+    present: /lower the stimulation|missed sleep|insects under the skin/i,
+    why: 'two pages of the First Aid sheet are about this, and the crawler body was a generic stub',
   },
-  { slug: 'chillout-room', present: /quiet|no sex|break/i, why: 'a named harm-reduction measure' },
+  {
+    slug: 'chillout-room',
+    present: /nothing is expected of anyone/i,
+    why: 'a named harm-reduction measure, not a general amenity',
+  },
 ];
 
 test.describe('chemsex glossary — crawler surface', () => {
@@ -135,11 +139,15 @@ test.describe('chemsex glossary — crawler surface', () => {
     // before, so the status alone proves nothing: the body has to be the chemsex page.
     const res = await request.get('/tags/party-and-play', { headers: { 'User-Agent': BOT_UA } });
     expect(res.status(), '/tags/party-and-play should still resolve').toBe(200);
-    const html = await res.text();
-    expect(html, 'merged slug landed on a not-found body').not.toMatch(
-      /not found|doesn.t exist|404/i,
+    // Measured on prod: a real 301 to /tags/chemsex, which `request.get` follows.
+    expect(res.url(), 'the merged slug did not redirect to the canonical tag').toMatch(
+      /\/tags\/chemsex$/,
     );
-    expect(articleOf(html), 'the merged slug does not serve the chemsex entry').toMatch(
+    // Asserted over the <article>, never the raw HTML: a bare /404|not found/ scan of a
+    // whole SPA document hits asset names and inline boot-guard script, which is exactly
+    // how the first version of this test failed against a perfectly healthy page.
+    const article = articleOf(await res.text());
+    expect(article, 'the merged slug does not serve the chemsex entry').toMatch(
       /chemsex|sex with drugs|sex on drugs/i,
     );
   });
@@ -158,24 +166,36 @@ test.describe('chemsex glossary — crawler surface', () => {
 });
 
 test.describe('chemsex glossary — reader surface', () => {
-  test('/tags/chemsex no longer calls GHB a stimulant', async ({ page }) => {
-    // This one MUST be the browser, not the crawler: the error was in `description`,
-    // which the SPA renders first and the crawler never reaches on a tag that has a
-    // long body. The old text read "typically stimulants like methamphetamine,
-    // mephedrone or GHB". GHB is a CNS depressant, and the distinction is the whole
-    // basis of chemsex first aid — too much G stops someone breathing, too much meth
-    // is a heart and temperature emergency, and the two need opposite responses.
-    await page.goto('/tags/chemsex');
-    const about = page.locator('#about');
-    await expect(about).toBeVisible({ timeout: 20_000 });
+  test('the chemsex summary no longer calls GHB a stimulant', async ({ request }) => {
+    // The error lived in `description`. The crawler's <article> never reaches that column
+    // on a tag with a long body — but its <meta name="description"> does: detail.ts builds
+    // the summary as `description ?? short_description ?? long_description`, mirroring the
+    // SPA's useMeta precedence exactly. So this asserts the reader-facing column on a
+    // surface that is always reachable.
+    //
+    // It is NOT a browser test, and that is deliberate rather than convenient: /tags/chemsex
+    // is is_sensitive, so the SPA wraps it and #about does not exist for an anonymous
+    // visitor. A browser assertion here fails for gating reasons that have nothing to do
+    // with the prose — which is exactly how the first version of this test failed.
+    const res = await request.get('/tags/chemsex', { headers: { 'User-Agent': BOT_UA } });
+    expect(res.status()).toBe(200);
+    const meta = (await res.text()).match(/<meta name="description" content="([^"]*)"/i)?.[1];
+    expect(meta, '/tags/chemsex emitted no meta description').toBeTruthy();
 
-    await expect(about, 'the chemsex entry lost its definition').toContainText(/drugs|chems/i);
-    await expect(
-      about,
-      'GHB is still grouped with the stimulants on the reader-facing surface',
-    ).not.toContainText(/stimulants like methamphetamine, mephedrone or GHB/i);
-    await expect(about, 'the stimulant/depressant split is not stated').toContainText(
-      /depressant/i,
+    // GHB is a CNS depressant. The distinction is the whole basis of chemsex first aid:
+    // too much G stops someone breathing, too much meth is a heart and temperature
+    // emergency, and the two need opposite responses.
+    expect(meta, 'GHB is still grouped with the stimulants').not.toMatch(
+      /stimulants like methamphetamine, mephedrone or GHB/i,
     );
+    expect(meta, 'the stimulant/depressant split is not stated').toMatch(/depressant/i);
+  });
+
+  test('a non-gated entry from this pass renders in a real browser', async ({ page }) => {
+    // One browser case so the suite is not purely HTTP. `priapism` is filed Sexual Health
+    // and is not sensitive, so it renders for an anonymous visitor with no gate in the way.
+    await page.goto('/tags/priapism');
+    await expect(page.locator('h1')).toContainText(/priapism/i, { timeout: 20_000 });
+    await expect(page.locator('body')).toContainText(/erection/i);
   });
 });

@@ -37,7 +37,6 @@ import { useNearbyMapPoints } from '@/hooks/useNearbyMapPoints';
 import { MarkVisitedButton } from '@/components/marks/MarkVisitedButton';
 import { AmenityDisplay } from '@/components/venues/AmenityDisplay';
 import { DestinationSafetyCard } from '@/components/safety/DestinationSafetyCard';
-import EqualityScoreBadge from '@/components/country/EqualityScoreBadge';
 import { PeopleHereRail } from '@/components/people/PeopleHereRail';
 import type { Database } from '@/integrations/supabase/types';
 import { supabase } from '@/integrations/supabase/client';
@@ -409,7 +408,7 @@ export function EventMasthead({
         <LiveStateLine event={event} />
       </div>
 
-      {(event.parent?.id || event.festivals?.id || event.countries?.equality_score != null) && (
+      {(event.parent?.id || event.festivals?.id) && (
         <div className="flex flex-wrap items-center gap-4">
           {/* The umbrella this event belongs to. Linked, unlike the festival
               line below it: the parent is a real event with its own page that
@@ -432,9 +431,6 @@ export function EventMasthead({
               <Music size={13} aria-hidden="true" />
               Part of <span className="font-semibold text-foreground">{event.festivals.name}</span>
             </span>
-          )}
-          {event.countries?.equality_score != null && (
-            <EqualityScoreBadge score={event.countries.equality_score} size="sm" />
           )}
         </div>
       )}

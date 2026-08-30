@@ -1,5 +1,8 @@
 -- Three `covers` aliases are ordinary words, and approved means auto-tagging.
 --
+-- APPLIED VIA MCP AND COMMITTED AT THE STAMPED VERSION, per the CLAUDE.md
+-- early-apply convention.
+--
 -- WHAT HAPPENED
 --
 -- The alias truth pass introduced alias_type='covers' for a narrower term
@@ -24,15 +27,18 @@
 -- DOI is the sharpest: any article carrying a citation would be tagged as a
 -- substituted amphetamine psychedelic.
 --
--- CAUGHT BEFORE IT FIRED. All three currently have zero entity assignments, so
--- this is prevention rather than cleanup — the reconciler had not yet met a
--- matching document. That is luck, not design, and it is why the rule is worth
--- restating rather than patching after the fact.
+-- CAUGHT BEFORE IT FIRED. All three had zero entity assignments when this was
+-- written, so this is prevention rather than cleanup — the reconciler had not
+-- yet met a matching document. That is luck, not design, and it is why the rule
+-- is worth restating rather than patching after the fact.
 --
 -- 20261003110200 demoted 'slam' and 'bumping' for exactly this reason and
--- asserted the invariant; the alias was recreated later by a different pass,
--- which is the recurring shape here — an assertion inside one migration cannot
--- bind a migration written afterwards.
+-- asserted the invariant; the alias was recreated later by a different pass.
+-- That is the recurring shape: an assertion inside one migration cannot bind a
+-- migration written afterwards. A durable fix is either a CHECK/trigger that
+-- refuses an approved alias on an ordinary-word denylist, or decoupling display
+-- from tagging so approval stops being overloaded — the follow-up CLAUDE.md
+-- already names. This migration does neither; it restores the invariant.
 --
 -- DEMOTED, NOT DELETED. These are real vocabulary. 'auto' keeps them recorded,
 -- keeps them in TagAliasesDisplay, and keeps them eligible for search synonyms;
