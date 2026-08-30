@@ -85,13 +85,21 @@ test.describe('removed: the 0-100 equality number on the geo singles', () => {
     await open(page, '/country/germany');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: BOOT });
 
-    // `SafetyVerdict` — the banner at the top of the country page.
-    const banner = page.locator('div', { hasText: /^Equality$/ }).first();
-    await expect(banner).toBeVisible();
-    await expect(page.getByText('Very high').first()).toBeVisible();
+    // `SafetyVerdict` — the banner at the top of the country page. Its eyebrow
+    // and tier are two sibling <p>s, so match the text rather than a container:
+    // an ancestor-shaped locator here either resolves to the link's immediate
+    // parent or to the page root, and neither is the banner.
+    await expect(page.getByText('Equality', { exact: true }).first()).toBeVisible();
+    await expect(page.getByText('Very high', { exact: true }).first()).toBeVisible();
 
     // The deleted ring carried this label on every size it rendered at.
     await expect(page.locator('[aria-label^="Equality score"]')).toHaveCount(0);
+
+    // Deliberately NOT asserting `/100` is absent page-wide here.
+    // `CompareRightsSideBySide` — the peer table further down — legitimately
+    // still prints `100/100`; its whole premise is the score, so it was left
+    // in place as a product decision. Asserting its absence would encode an
+    // expectation this change never made.
   });
 
   test('an event single carries no equality ring', async ({ page }) => {
