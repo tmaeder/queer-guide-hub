@@ -23,11 +23,15 @@ import { useAdminTrash, trashRowTitle, daysLeft, type TrashRow } from '@/hooks/u
  * after the window. The countdown is shown per row for that reason.
  */
 
-/** `lifecycle.type` ('news') → the registry label ('News articles'). */
+/**
+ * `lifecycle.type` ('news') → the registry's plural label ('News articles').
+ * `ContentTypeConfig.label` is `{ singular, plural }`, and these are group
+ * headings over a list, so plural is the right half.
+ */
 const TYPE_LABELS: Record<string, string> = Object.fromEntries(
   getContentTypeIds().flatMap((id) => {
     const c = getContentType(id);
-    return c?.lifecycle?.type ? [[c.lifecycle.type, c.label ?? id]] : [];
+    return c?.lifecycle?.type ? [[c.lifecycle.type, c.label?.plural ?? id]] : [];
   }),
 );
 
@@ -42,7 +46,7 @@ function TrashItem({
 }) {
   const left = daysLeft(row);
   return (
-    <li className="flex items-start justify-between gap-4 border-b border-border py-3 last:border-b-0">
+    <li className="flex items-start justify-between gap-4 border-b border-border py-2 last:border-b-0">
       <div className="min-w-0">
         <p className="m-0 truncate text-13 font-bold">{trashRowTitle(row)}</p>
         <p className="m-0 text-2xs text-muted-foreground">
