@@ -1,0 +1,86 @@
+name: Migration guard (main)
+
+# The same `check-migration-versions.mjs` that ci.yml runs, but on main pushes
+# only and WITHOUT concurrency cancellation.
+#
+# WHY THIS EXISTS AS ITS OWN WORKFLOW. ci.yml carries the guard already, and on
+# paper it runs on `push: branches: [main]`. In practice it almost never
+# finishes there: `concurrency: {group: ci-${{ github.ref }}, cancel-in-progress:
+# true}` means every merge cancels the previous main run. Measured 2026-08-30
+# over 24h — **60 main ci runs, 45 cancelled, 9 successful.** The guard therefore
+# does not report on roughly three merges out of four.
+#
+# That is how a repo-wide outage stayed invisible on 2026-08-29: two PRs each
+# added a file at version 20261012100000, neither collided on its own branch (the
+# duplicate only exists once both land), `supabase db push` aborted on
+# schema_migrations_pkey, five unrelated migrations were stranded, edge functions
+# deployed anyway so prod ran new code against the old schema — and the main ci
+# run that would have said so was cancelled by the next merge.
+#
+# WHY NOT JUST TURN CANCELLATION OFF IN ci.yml. A full ci run takes ~15 minutes
+# and main is pushed roughly every 24 minutes on average, so it would usually be
+# fine — but a burst of merges would queue 15-minute runs behind each other and
+# delay every other signal. The guard itself takes **2.2 seconds** locally, so
+# giving it its own workflow costs nothing and cannot back up. ci.yml keeps its
+# cancellation, which is right for the expensive jobs.
+#
+# NO `concurrency:` BLOCK AT ALL, deliberately. Every push gets its own run and
+# none is ever cancelled — that is the entire point. A per-ref group with
+# cancel-in-progress false would serialise instead, which reintroduces the delay
+# for no benefit on a 2-second job.
+#
+# This does NOT close the underlying race — a duplicate still only becomes real
+# once both PRs are on main, and `pull_request` CI runs against a merge commit
+# computed before the other PR merged. Closing that needs branch protection
+# ("require branches to be up to date") or a merge queue, which is a repo-settings
+# decision and would force constant rebasing across the ~70 active worktrees. What
+# this buys is that the window between "broken" and "someone is told" goes from
+# "maybe never" to "about a minute".
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  migration-versions-main:
+    name: Migration versions (post-merge)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22.20.0"
+
+      # On a main push there is no base ref to diff against, so every file is
+      # treated as pre-existing. That is correct here: this run is not asking
+      # "did this change introduce a duplicate", it is asking "is main broken
+      # right now". Both duplicate kinds are hard errors either way since
+      # 20261022100000 — an unapplied pair aborts `db push` outright, an applied
+      # one silently skips the losing file forever.
+      - name: Resolve migration base ref
+        run: echo "MIGRATION_BASE_REF=HEAD~1" >> "$GITHUB_ENV"
+
+      # The token is what lets the script tell the two duplicate kinds apart and
+      # check ordering against applied history. Without it the script reports
+      # `unverified` and exits non-zero-but-not-1, which is surfaced as a warning
+      # below rather than a failure — it must not go green on "could not check".
+      - name: Check migration versions
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: xqeacpakadqfxjxjcewc
+        run: |
+          rc=0
+          node scripts/check-migration-versions.mjs || rc=$?
+          if [ "$rc" -eq 1 ]; then
+            echo "::error title=main has a duplicate or out-of-order migration version::\`supabase db push\` will abort or silently skip. Every pending migration in the repo is affected, not just the offending one. Rename the unapplied file to a version above the current max."
+            exit 1
+          fi
+          if [ "$rc" -ne 0 ]; then
+            echo "::warning::Could not verify against remote history (exit $rc)."
+          fi
