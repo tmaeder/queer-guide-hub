@@ -20,12 +20,12 @@ set local statement_timeout = '600s';
 do $$
 declare v_n int; v_left int;
 begin
-  perform set_config('app.actor', 'migration:20261023110000_supersede_facet_category_suggestion', true);
+  perform set_config('app.actor', 'migration:20261023120000_supersede_facet_category_suggestion', true);
 
   update ai_suggestions s
      set status = 'superseded',
          review_notes = coalesce(s.review_notes || ' | ', '')
-           || 'superseded 20261023110000: target is a marketplace facet (is_marketplace_facet), which belongs to no glossary category'
+           || 'superseded 20261023120000: target is a marketplace facet (is_marketplace_facet), which belongs to no glossary category'
     from unified_tags t
    where t.id = s.entity_id
      and s.entity_type = 'unified_tags'
