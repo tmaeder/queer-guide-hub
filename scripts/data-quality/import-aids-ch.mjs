@@ -360,9 +360,16 @@ async function phaseReport() {
       (select count(*) from public.organizations where ${lit(SOURCE)} = any(tags) and status='active') as active,
       (select count(*) from public.organizations where ${lit(SOURCE)} = any(tags) and latitude is not null) as with_geo,
       (select count(*) from public.organizations where ${lit(SOURCE)} = any(tags) and city_id is not null) as with_city,
+      -- Count rows with NO city, not rows carrying a note. Since the importer
+      -- was routed through \`city_resolve_or_create\`, the note also records HOW a
+      -- row resolved when it took a non-default arm ("resolved by alias",
+      -- "resolved by postal_code"), so presence-of-note stopped meaning failure:
+      -- it read 23 blocked when 23 had resolved and none had failed.
+      (select count(*) from public.organizations
+        where ${lit(SOURCE)} = any(tags) and city_id is null) as city_unresolved,
       (select count(*) from public.organizations
         where ${lit(SOURCE)} = any(tags)
-          and enrichment_status->${lit(SOURCE)}->>'city_link_note' is not null) as city_blocked,
+          and enrichment_status->${lit(SOURCE)}->>'city_link_note' like 'resolved by %') as city_via_extra_arm,
       (select count(*) from public.search_documents sd
         join public.organizations o on o.id = sd.entity_id
        where sd.entity_type='organization' and ${lit(SOURCE)} = any(o.tags)) as in_search;`);
