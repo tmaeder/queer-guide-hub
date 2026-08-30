@@ -13,6 +13,11 @@ Deno.test('isSenseCategory answers for both the slug and the display-name mirror
   assertEquals(isSenseCategory('Fetishes'), true)
   assertEquals(isSenseCategory('bdsm-power-exchange'), true)
   assertEquals(isSenseCategory('Dynamics & Roles'), true)
+  // Positions is the sharpest sense category in the tree — its members are
+  // named Arch, Crab, Lotus, Superman, Warrior, Butterfly, Screw and Jockey,
+  // every one of which has a dominant generic English sense.
+  assertEquals(isSenseCategory('sex-positions'), true)
+  assertEquals(isSenseCategory('Positions'), true)
   // Generic-sense categories stay out: a Beer-Garden really is a beer garden.
   assertEquals(isSenseCategory('venues-nightlife'), false)
   assertEquals(isSenseCategory('Venue Types'), false)

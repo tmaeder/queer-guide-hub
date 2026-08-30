@@ -179,5 +179,9 @@ export const hotelContentType: ContentTypeConfig = {
       clusterFinder: 'find_hotel_duplicate_clusters',
     },
   },
+  // No `archive`: hotels has no status/visibility/review_status column, only
+  // seo_indexable, which governs crawlers rather than the site. An Archive
+  // button here would deindex without hiding.
+  lifecycle: { type: 'hotel' },
   publicPath: (row) => (row.slug ? `/hotels/${row.slug}` : null),
 };

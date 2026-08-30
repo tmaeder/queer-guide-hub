@@ -79,9 +79,12 @@ import { useTagMedicalCodes, countMedicalCodes } from '@/hooks/useTagMedicalCode
 import { useStiProfile, useTagMythFacts } from '@/hooks/useStiProfile';
 
 /** `entity_kind` is a classification, not a state — which is exactly what
- *  DetailMasthead's bordered ink status chip is for. */
+ *  DetailMasthead's bordered ink status chip is for.
+ *
+ *  `concept` is deliberately absent: it is the default kind (`TagsIndex`
+ *  falls back to it for every unclassified row), so a "CONCEPT" chip sat on
+ *  most of the glossary saying nothing. An unmapped kind renders no chip. */
 const ENTITY_KIND_LABELS: Record<string, string> = {
-  concept: 'Concept',
   venue_feature: 'Venue feature',
   practice: 'Practice',
   aesthetic: 'Aesthetic',

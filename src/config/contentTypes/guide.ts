@@ -136,5 +136,6 @@ export const guideContentType: ContentTypeConfig = {
   admin: {
     includeInAllContent: false,
   },
+  lifecycle: { type: 'guide', archive: { column: 'status', value: 'archived', label: 'Archived' } },
   publicPath: (row) => (row.slug ? `/guides/${row.slug}` : null),
 };

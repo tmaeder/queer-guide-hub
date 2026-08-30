@@ -36,6 +36,7 @@ const categoryMeta: Record<string, CategoryInfo> = {
   Fetishes: { short: 'Fetishes' },
   Gear: { short: 'Gear' },
   'Kink Community & Scenes': { short: 'Kink scene' },
+  Positions: { short: 'Positions' },
   'Dating & Connection': { short: 'Dating' },
   'Marriage & Partnership': { short: 'Marriage' },
   'Family & Parenting': { short: 'Family' },
@@ -182,6 +183,14 @@ export const ADULT_CATEGORY_NAMES: ReadonlySet<string> = new Set([
   'Fetishes',
   'Gear',
   'Kink Community & Scenes',
+  // Positions (stop under Sex & Kink, added with the sex-positions import).
+  // The SQL twin needs no edit for this one — unified_tags_recompute_is_adult()
+  // carries an `or tcp.name = 'Sex & Kink'` PARENT arm, so a new stop under
+  // that line is adult in the database the moment it is created. This set has
+  // no parent arm, so it does NOT inherit and must be listed explicitly.
+  // Removing this line silently un-gates ~160 tags in the UI while the
+  // database still reports them adult — the two halves would disagree.
+  'Positions',
 ]);
 
 export function isAdultCategoryName(name: string | null | undefined): boolean {

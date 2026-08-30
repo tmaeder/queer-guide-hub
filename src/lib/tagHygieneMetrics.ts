@@ -44,12 +44,6 @@ export const HYGIENE_METRICS: HygieneMetric[] = [
     hint: 'Glossary photography retired 2026-08-28 (tags render drawn TagPlates). Non-zero means a writer is reintroducing photos.',
   },
   { key: 'indexable_without_description', label: 'Indexable, no prose', zero: true },
-  {
-    key: 'denorm_category_missing',
-    label: 'Category not denormalized',
-    zero: true,
-    hint: 'The junction says a category, unified_tags.category_id says nothing. 435 rows on 2026-08-29, incl. doxy-pep and naloxone — this is the state a newly shipped tag lands in.',
-  },
   { key: 'merged_but_not_status_merged', label: 'Merged but still active', zero: true },
   {
     key: 'placeholder_description_active',
@@ -86,6 +80,12 @@ export const HYGIENE_METRICS: HygieneMetric[] = [
   },
 
   // Advisory: CI warns, never fails. This panel is their only human surface.
+  {
+    key: 'denorm_category_missing',
+    label: 'Category not denormalized',
+    advisory: true,
+    hint: 'A queue depth, not an invariant. Approving a category writes the junction and leaves the denorm to the nightly tag_category_resync — read the trend, not the value.',
+  },
   {
     key: 'unreviewed_typed_alias',
     label: 'Typed aliases awaiting review',

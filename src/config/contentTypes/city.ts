@@ -186,5 +186,6 @@ export const cityContentType: ContentTypeConfig = {
       mergePath: 'city',
     },
   },
+  lifecycle: { type: 'city', archive: { column: 'shell_status', value: 'ghost', label: 'Not a place' } },
   publicPath: (row) => (row.slug ? `/city/${row.slug}` : null),
 };

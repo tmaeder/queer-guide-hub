@@ -157,9 +157,18 @@ describe('TagDetail — SEO', () => {
 
 describe('TagDetail — page', () => {
   it('renders the term in the masthead, with its entity_kind as the status chip', async () => {
+    tagRow = { ...BASE, entity_kind: 'practice' };
     renderPage();
     expect(await screen.findByRole('heading', { level: 1, name: 'Bear' })).toBeInTheDocument();
-    expect(screen.getByText('Concept')).toBeInTheDocument();
+    expect(screen.getByText('Practice')).toBeInTheDocument();
+  });
+
+  // `concept` is the default kind for an unclassified row, so a chip reading
+  // "CONCEPT" carried no information on most of the glossary.
+  it('omits the status chip for the default `concept` kind', async () => {
+    renderPage();
+    await screen.findByRole('heading', { level: 1, name: 'Bear' });
+    expect(screen.queryByText('Concept')).not.toBeInTheDocument();
   });
 
   it('omits the status chip for an unknown entity_kind rather than printing the raw enum', async () => {

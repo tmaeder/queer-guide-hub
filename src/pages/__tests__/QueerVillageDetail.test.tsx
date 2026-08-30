@@ -114,6 +114,8 @@ describe('QueerVillageDetail', () => {
     // GeoSafetyVerdict. Before this rebuild a village in a criminalising
     // country rendered exactly like one in Berlin.
     expect(screen.getByText('Safety')).toBeInTheDocument();
-    expect(screen.getByText('85/100')).toBeInTheDocument();
+    // The tier, not the raw composite — the 0-100 number was retired.
+    expect(screen.getByText(/equality/i)).toBeInTheDocument();
+    expect(screen.queryByText('85/100')).not.toBeInTheDocument();
   });
 });
