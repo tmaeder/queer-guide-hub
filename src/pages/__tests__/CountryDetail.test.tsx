@@ -50,7 +50,6 @@ vi.mock('@/components/discovery/SimilarItems', () => ({ SimilarItems: () => null
 vi.mock('@/components/discovery/PersonalitiesForEntity', () => ({
   PersonalitiesForEntity: () => null,
 }));
-vi.mock('@/components/discovery/NearbyTriptych', () => ({ NearbyTriptych: () => null }));
 vi.mock('@/components/marketplace/MarketplaceForCountry', () => ({
   MarketplaceForCountry: () => null,
 }));

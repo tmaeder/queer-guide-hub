@@ -220,6 +220,66 @@ export default function About() {
     },
   ];
 
+  /**
+   * The colophon. OpenStreetMap is FIRST and is not optional: the city-card
+   * network diagrams are a derived work of its route relations, and ODbL asks
+   * for the credit. The rest are named because a reader deserves to know whose
+   * data they are reading, and because every one of them is live — each is
+   * written up in CLAUDE.md as a source an ingest path actually pulls from.
+   *
+   * `licence` states what the upstream project publishes under, not a claim
+   * about this site's own licence.
+   */
+  const sources = [
+    {
+      key: 'osm',
+      name: 'OpenStreetMap',
+      href: 'https://www.openstreetmap.org/copyright',
+      used: t(
+        'about.sources.osm',
+        'Transit diagrams on the city cards are derived from OSM route relations. It also backs the maps, geocoding and part of the venue data.',
+      ),
+      licence: '© OpenStreetMap contributors · ODbL',
+    },
+    {
+      key: 'ilga',
+      name: 'ILGA World Database',
+      href: 'https://database.ilga.org/',
+      used: t(
+        'about.sources.ilga',
+        'Every legal status on the rights pages — criminalisation, recognition, protections — comes from ILGA, and is cited on the page it appears.',
+      ),
+      licence: 'ILGA World',
+    },
+    {
+      key: 'wikidata',
+      name: 'Wikidata & Wikipedia',
+      href: 'https://www.wikidata.org/',
+      used: t(
+        'about.sources.wikidata',
+        'City and country facts, glossary hierarchies and a lot of the biographical detail on the people pages.',
+      ),
+      licence: 'CC0 · CC BY-SA',
+    },
+    {
+      key: 'worldbank',
+      name: 'World Bank Open Data',
+      href: 'https://data.worldbank.org/',
+      used: t('about.sources.worldbank', 'Country statistics: GDP, life expectancy, literacy.'),
+      licence: 'CC BY 4.0',
+    },
+    {
+      key: 'factbook',
+      name: 'CIA World Factbook',
+      href: 'https://www.cia.gov/the-world-factbook/',
+      used: t(
+        'about.sources.factbook',
+        'Practical country facts — calling codes, driving side, languages, national days.',
+      ),
+      licence: t('about.sources.publicDomain', 'Public domain'),
+    },
+  ];
+
   const getInvolved: {
     key: string;
     icon: TransitIconName;
@@ -476,6 +536,40 @@ export default function About() {
               <h3 className="mt-4 text-title font-bold leading-tight">{member.name}</h3>
               <p className="mt-2 text-13 leading-relaxed text-muted-foreground">
                 {member.description}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </PageContainer>
+
+      {/* Data & sources — the colophon.
+          This is where the ODbL attribution for the city-card transit diagrams
+          lives now. It was a line in the footer until 2026-08-30; the credit
+          still has to exist somewhere a reader can find it, because those
+          diagrams are a derived work of OpenStreetMap route relations and the
+          licence asks for it. A colophon is the conventional home, and it lets
+          the other sources this site is built on be named too instead of only
+          the one that is legally obliged. */}
+      <PageContainer as="section" flush className="pb-16 md:pb-24" id="sources">
+        <SectionHead
+          kicker={t('about.sources.kicker', 'Where the data comes from')}
+          title={t('about.sources.title', 'Data & sources')}
+          lede={t(
+            'about.sources.lede',
+            'Open data does a lot of the work here. These are the projects the guide is built on.',
+          )}
+        />
+        <ul className="m-0 mt-8 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
+          {sources.map((source) => (
+            <li key={source.key} className="flex h-full flex-col gap-2 p-6">
+              <h3 className="text-title font-bold leading-tight">
+                <a href={source.href} target="_blank" rel="noopener noreferrer">
+                  {source.name}
+                </a>
+              </h3>
+              <p className="text-13 leading-relaxed text-muted-foreground">{source.used}</p>
+              <p className="mt-auto pt-2 text-2xs uppercase tracking-label text-muted-foreground">
+                {source.licence}
               </p>
             </li>
           ))}
