@@ -12,6 +12,7 @@ import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5
 import { gatewayBaseUrl, gatewayHeaders } from './ai-gateway.ts'
 import { mapToCfModel } from './cf-model-map.ts'
 import { recordLlmUsage } from './llm-usage-log.ts'
+import { tryNvidia } from './llm-router.ts'
 
 // ---------------------------------------------------------------------------
 // AES-GCM encryption helpers (same pattern as manage-api-keys)
@@ -211,6 +212,14 @@ export interface ChatCompletionOptions {
   callerFn?: string
   /** Optional grouping key for llm_call_log (pipeline run, entity id). */
   contextKey?: string | null
+  /**
+   * How long this call may wait for an NVIDIA rate-limit slot before falling
+   * back to Cloudflare. Omit to use the router's policy (0 for interactive
+   * callers, NVIDIA_MAX_WAIT_MS otherwise).
+   */
+  waitMs?: number
+  /** Wall-clock deadline (epoch ms) past which the router never sleeps. */
+  deadlineAt?: number
 }
 
 export interface ChatCompletionResult {
@@ -277,6 +286,35 @@ export async function chatCompletion(
     max_tokens = 2000,
     response_format,
   } = options
+
+  // NVIDIA first. Returns { served: false } — never throws — when it is not
+  // configured, disabled, excluded for this caller, circuit-open, out of rate
+  // slots, or handed a model it must not serve; everything below then runs
+  // exactly as it did before this provider existed. With NVIDIA_API_KEY unset
+  // that check is the only added work, and the outgoing request is unchanged.
+  //
+  // USE_OPENAI=1 means "force the legacy OpenAI path", so it skips NVIDIA too.
+  if (Deno.env.get('USE_OPENAI') !== '1') {
+    const nv = await tryNvidia(
+      { messages, model, temperature, max_tokens },
+      {
+        callerFn: options.callerFn ?? 'chatCompletion',
+        waitMs: options.waitMs,
+        deadlineAt: options.deadlineAt,
+      },
+    )
+    if (nv.served) {
+      recordLlmUsage({
+        fn: options.callerFn ?? 'chatCompletion',
+        model: nv.model,
+        tokensIn: nv.usage?.prompt_tokens,
+        tokensOut: nv.usage?.completion_tokens,
+        contextKey: options.contextKey ?? null,
+        provider: 'nvidia',
+      })
+      return { content: nv.content, usage: nv.usage, model: nv.model }
+    }
+  }
 
   const cf = Deno.env.get('USE_OPENAI') === '1' ? null : cfWorkersAiConfig()
   const effectiveModel = cf ? mapToCfModel(model) : model
@@ -350,6 +388,7 @@ export async function chatCompletion(
           tokensIn: data.result?.usage?.prompt_tokens,
           tokensOut: data.result?.usage?.completion_tokens,
           contextKey: options.contextKey ?? null,
+          provider: 'cloudflare',
         })
         return {
           content: cfContent,
@@ -369,6 +408,7 @@ export async function chatCompletion(
         tokensIn: data.usage?.prompt_tokens,
         tokensOut: data.usage?.completion_tokens,
         contextKey: options.contextKey ?? null,
+        provider: 'openai',
       })
       return {
         content: oaContent,
@@ -409,8 +449,13 @@ export async function chatCompletion(
  * Non-throwing — returns false if no credentials.
  */
 export async function isOpenAIAvailable(supabase: SupabaseClient): Promise<boolean> {
-  // CF Workers AI is treated as a valid backend for `chatCompletion()`.
-  if (cfWorkersAiConfig() && Deno.env.get('USE_OPENAI') !== '1') return true
+  // CF Workers AI is treated as a valid backend for `chatCompletion()`, and so
+  // is NVIDIA — a caller that gates on this must not skip its work just because
+  // Cloudflare happens to be unconfigured while NVIDIA is.
+  if (Deno.env.get('USE_OPENAI') !== '1') {
+    if (cfWorkersAiConfig()) return true
+    if (Deno.env.get('NVIDIA_API_KEY') && Deno.env.get('NVIDIA_DISABLED') !== '1') return true
+  }
   try {
     await getOpenAIAccessToken(supabase)
     return true

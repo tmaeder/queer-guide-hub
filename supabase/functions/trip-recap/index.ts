@@ -139,6 +139,7 @@ Top places: ${highlights.top_places.join(', ')}
 Write 2–4 sentences in a warm, second-person voice ("your trip…"). No intro ("Here's your recap"), no hashtags, no emoji. Sound like a thoughtful friend summarizing their journey.`;
 
   const body = await anthropicMessages({
+    callerFn: 'trip-recap',
     model: 'claude-haiku-4-5-20251001',
     max_tokens: 300,
     messages: [{ role: 'user', content: prompt }],

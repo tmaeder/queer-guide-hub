@@ -25,6 +25,7 @@ const FORMAT_RE = /^[A-Za-z][A-Za-z0-9]{7,14}$/;
 
 async function callLLM(): Promise<string[]> {
   const resp = await anthropicMessages({
+    callerFn: 'generate-usernames',
     model: 'claude-haiku-4-5-20251001',
     max_tokens: 300,
     temperature: 0.8,

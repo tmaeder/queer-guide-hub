@@ -222,6 +222,7 @@ Deno.serve(async (req) => {
     if (!dryRun) {
       try {
         const resp = await anthropicMessages({
+          callerFn: 'translate-i18n-batch',
           model: 'claude-sonnet-4-6',
           max_tokens: 4000,
           system: SYSTEM_PROMPT,
