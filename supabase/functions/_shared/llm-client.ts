@@ -253,6 +253,21 @@ export async function llmAnthropicStyle(input: {
   temperature?: number
   model?: string
   timeoutMs?: number
+  /**
+   * Edge function name. Forwarded, and it has to be: this helper dropped it
+   * until 2026-08-29, so all eleven shim callers — every trip flow,
+   * generate-usernames, translate-i18n-batch — logged their spend under the
+   * anonymous fallback `'llmChatCompletion'`. That is the exact state
+   * llm-caller-attribution.test.ts exists to prevent, and the guard could not
+   * see it because its regex looks for `llmChatCompletion(` / `chatCompletion(`
+   * and these files call `anthropicMessages(`.
+   *
+   * It is also load-bearing for pacing: the router decides whether a caller may
+   * wait for a rate slot by name, and an unnamed caller is indistinguishable
+   * from a batch job.
+   */
+  callerFn?: string
+  contextKey?: string | null
 }): Promise<LlmCompletionResult> {
   const messages: LlmMessage[] = []
   if (input.system) messages.push({ role: 'system', content: input.system })
@@ -264,5 +279,7 @@ export async function llmAnthropicStyle(input: {
     temperature: input.temperature,
     max_tokens: input.max_tokens,
     timeoutMs: input.timeoutMs,
+    callerFn: input.callerFn,
+    contextKey: input.contextKey,
   })
 }

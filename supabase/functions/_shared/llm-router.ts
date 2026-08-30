@@ -58,33 +58,55 @@ export interface NvidiaOptions {
 }
 
 /**
- * Callers that answer a human who is waiting, and must therefore NEVER pace.
+ * Callers allowed to WAIT for a rate-limit slot. Everything else — including
+ * anything unrecognised — falls back instantly instead of pacing.
  *
  * Pacing exists to fit batch work under a 32 RPM bucket. Applied to a request a
- * user is sitting in front of, the same mechanism is just a queue in front of
- * the user: the trip concierge would sleep up to NVIDIA_MAX_WAIT_MS before
- * answering, to save a fraction of a cent. These take a free slot if one exists
- * and go to Cloudflare otherwise.
+ * human is sitting in front of, the same mechanism is just a queue in front of
+ * the user: the trip concierge would sleep before answering, to save a fraction
+ * of a cent. Mutation-testing this list away made one `trip-concierge` call take
+ * 61 seconds.
  *
- * Keyed on `callerFn`, which every call site already passes — that is what
- * llm-caller-attribution.test.ts enforces, and it is why this can be a lookup
- * rather than a new parameter threaded through forty functions.
+ * IT IS AN ALLOWLIST, NOT A DENYLIST, AND THAT INVERSION IS THE WHOLE POINT.
+ * The first version listed the interactive callers instead, and was wrong in a
+ * way its own test could not see: the eleven trip/user-facing functions reach
+ * this file through `anthropicMessages` → `llmAnthropicStyle`, which did not
+ * forward `callerFn` at all, so every one of them arrived as the fallback string
+ * `'llmChatCompletion'` and matched no entry in the interactive list. They would
+ * all have paced. The test passed because it called `tryNvidia` with
+ * `callerFn: 'trip-concierge'` directly — a name no production code ever
+ * passed. Testing the lookup proved the lookup, not the path; the same failure
+ * shim-model-reaches-cf.test.ts was written about.
+ *
+ * `callerFn` is threaded through the shim now, but the allowlist stays inverted
+ * regardless: an unknown or unattributed caller must fail toward "answer the
+ * user immediately and pay Cloudflare", never toward "make a person wait".
+ * Getting an entry wrong here costs money in one direction and user experience
+ * in the other, and those are not equal.
  */
-const INTERACTIVE_CALLERS = new Set([
-  'ai-plan-trip',
-  'analyze-flyer',
-  'cms-ai',
-  'feedback-autotriage',
-  'feedback-story-titler',
-  'generate-usernames',
-  'intimate-moderation',
-  'packing-suggestions-llm',
-  'trip-concierge',
-  'trip-cost-estimate',
-  'trip-inbox-chat',
-  'trip-inbox-slot',
-  'trip-recap',
-  'trip-safety-narrative',
+const BATCH_CALLERS = new Set([
+  'backfill-llm-enrich',
+  'bulk-create-ai-tags',
+  'bulk-create-personalities',
+  'categorize-tags',
+  'fetch-personality-data',
+  'marketplace-categorize',
+  'marketplace-relevance-rescore',
+  'marketplace-translate',
+  'news-quality-backfill',
+  'personality-extract-from-bio',
+  'pipeline-ai-suggest',
+  'pipeline-enrich-country-editorial',
+  'pipeline-enrich-news',
+  'pipeline-enrich-places',
+  'pipeline-quality-enhance',
+  'pipeline-safety-relevance',
+  'shared:ai-enrichment',
+  'shared:existence-probe',
+  'shared:personhood-classifier',
+  'tag-enrichment-sweep',
+  'translate-i18n-batch',
+  'venue-contact-enrich',
 ])
 
 /**
@@ -114,11 +136,11 @@ export function setInvocationDeadline(deadlineAt: number): () => void {
 /**
  * How long this caller may wait for a rate-limit slot.
  *
- * Explicit `waitMs` wins; then the interactive rule; then NVIDIA_MAX_WAIT_MS.
+ * Explicit `waitMs` wins; then the batch allowlist; otherwise zero.
  */
 function resolveWaitMs(opts: NvidiaOptions): number {
   if (typeof opts.waitMs === 'number') return Math.max(0, opts.waitMs)
-  if (INTERACTIVE_CALLERS.has(opts.callerFn)) return 0
+  if (!BATCH_CALLERS.has(opts.callerFn)) return 0
   const raw = Number(Deno.env.get('NVIDIA_MAX_WAIT_MS'))
   return Number.isFinite(raw) && raw >= 0 ? raw : 2000
 }

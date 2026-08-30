@@ -125,6 +125,74 @@ Deno.test('a claude-sonnet name maps to the NVIDIA strong tier', async () => {
   })
 })
 
+/**
+ * `callerFn` must survive the shim, and this is a PATH test because the isolated
+ * kind already failed here once.
+ *
+ * `anthropicMessages` dropped `callerFn` entirely, so all eleven shim callers
+ * logged their spend as the anonymous `'llmChatCompletion'` — and, worse, the
+ * router's pacing decision keys on that same name, so every trip flow was
+ * classified as batch work and would have slept before answering a user. A unit
+ * test of the router's allowlist could not see it; only following the real
+ * anthropicMessages -> llmAnthropicStyle -> llmChatCompletion path can.
+ *
+ * llm-caller-attribution.test.ts cannot cover this either: its regex looks for
+ * `chatCompletion(` / `llmChatCompletion(`, and these files call
+ * `anthropicMessages(`.
+ */
+Deno.test('callerFn survives the shim and reaches llm_call_log', async () => {
+  await withNvidiaEnv(async () => {
+    const { setLlmUsageFireAndForget } = await import('../_shared/llm-usage-log.ts')
+    const prev = setLlmUsageFireAndForget(false)
+    let logged: Record<string, unknown> | null = null
+
+    globalThis.fetch = ((url: string | URL | Request, init?: RequestInit) => {
+      const u = String(url)
+      if (u.includes('/rest/v1/llm_call_log')) {
+        logged = JSON.parse(String(init?.body ?? '{}'))
+        return Promise.resolve(new Response(null, { status: 201 }))
+      }
+      if (u.includes('llm_rate_acquire')) {
+        return Promise.resolve(
+          new Response(JSON.stringify({ granted: true, retry_after_ms: 0 }), {
+            status: 200,
+            headers: { 'content-type': 'application/json' },
+          }),
+        )
+      }
+      if (u.includes('circuit_breaker_check')) {
+        return Promise.resolve(
+          new Response('true', { status: 200, headers: { 'content-type': 'application/json' } }),
+        )
+      }
+      if (u.includes('/rest/v1/')) return Promise.resolve(new Response(null, { status: 204 }))
+      return Promise.resolve(
+        new Response(
+          JSON.stringify({ choices: [{ message: { content: 'ok' } }], usage: {} }),
+          { status: 200, headers: { 'content-type': 'application/json' } },
+        ),
+      )
+    }) as typeof fetch
+
+    await anthropicMessages({
+      callerFn: 'trip-concierge',
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 100,
+      messages: [{ role: 'user', content: 'hi' }],
+    })
+    await new Promise((r) => setTimeout(r, 0))
+    setLlmUsageFireAndForget(prev)
+
+    assertEquals(logged !== null, true, 'a usage row must be written')
+    assertEquals(
+      logged!.function,
+      'trip-concierge',
+      'callerFn was dropped somewhere on the shim path',
+    )
+    assertEquals(logged!.provider, 'nvidia')
+  })
+})
+
 Deno.test('no @cf id is ever sent to NVIDIA', async () => {
   await withNvidiaEnv(async (f) => {
     for (const model of [

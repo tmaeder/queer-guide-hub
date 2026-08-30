@@ -319,6 +319,7 @@ Deno.serve(async (req) => {
     let parseStatus: 'parsed' | 'failed' = 'parsed'
     try {
       const llm = await anthropicMessages({
+        callerFn: 'trip-inbox-slot',
         model: 'claude-haiku-4-5',
         max_tokens: 600,
         temperature: 0,

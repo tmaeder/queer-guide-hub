@@ -34,7 +34,10 @@ interface Recorded {
  * Stub every outbound fetch: the rate-limit / breaker RPCs and the NVIDIA call.
  * `chatResponse` decides what the provider "returns".
  */
-function stub(chatResponse: () => Response, opts: { slot?: boolean; breakerOpen?: boolean } = {}) {
+function stub(
+  chatResponse: () => Response,
+  opts: { slot?: boolean; breakerOpen?: boolean; retryAfterMs?: number } = {},
+) {
   const rec: Recorded = { chat: null, rpc: [] }
   globalThis.fetch = ((url: string | URL | Request, init?: RequestInit) => {
     const u = String(url)
@@ -46,7 +49,10 @@ function stub(chatResponse: () => Response, opts: { slot?: boolean; breakerOpen?
       if (fn === 'llm_rate_acquire') {
         return Promise.resolve(
           new Response(
-            JSON.stringify({ granted: opts.slot !== false, retry_after_ms: 60_000 }),
+            JSON.stringify({
+              granted: opts.slot !== false,
+              retry_after_ms: opts.retryAfterMs ?? 60_000,
+            }),
             { status: 200, headers: { 'content-type': 'application/json' } },
           ),
         )
@@ -350,6 +356,50 @@ Deno.test('an interactive caller never waits for a slot', async () => {
       assertEquals(elapsed < 1000, true, `fell back in ${elapsed}ms; must not pace`)
     },
   )
+})
+
+/**
+ * The allowlist is inverted so that an UNRECOGNISED caller cannot pace, and this
+ * is the test that would have caught the original bug.
+ *
+ * The first version of this file listed interactive callers instead and asserted
+ * the carve-out using `callerFn: 'trip-concierge'` — a string no production code
+ * passed, because `anthropicMessages` dropped `callerFn` and every trip function
+ * arrived as `'llmChatCompletion'`. The assertion above passed while all eleven
+ * user-facing functions would have paced. So pin the fallback name itself.
+ */
+Deno.test('an unattributed caller falls back instantly rather than pacing', async () => {
+  await withEnv({ ...CONFIGURED, NVIDIA_MAX_WAIT_MS: '60000' }, async () => {
+    stub(ok, { slot: false })
+    for (const callerFn of ['llmChatCompletion', 'chatCompletion', 'some-new-function']) {
+      const started = Date.now()
+      const out = await tryNvidia(REQ, { callerFn })
+      const elapsed = Date.now() - started
+      assertEquals(out.served === false && out.reason, 'no_slot')
+      assertEquals(elapsed < 1000, true, `${callerFn} paced for ${elapsed}ms`)
+    }
+  })
+})
+
+/**
+ * A known batch caller still paces — the allowlist has to actually do its job.
+ *
+ * `retryAfterMs` must be SMALLER than the wait budget for this to exercise
+ * pacing at all: the limiter refuses to start a sleep it cannot finish inside
+ * the budget, so a bucket reporting a 60s wait against a 900ms budget correctly
+ * returns immediately. An earlier version of this test used the 60s default and
+ * failed for that reason — the code was right and the stub was not.
+ */
+Deno.test('a known batch caller does wait for a slot', async () => {
+  await withEnv({ ...CONFIGURED, NVIDIA_MAX_WAIT_MS: '900' }, async () => {
+    stub(ok, { slot: false, retryAfterMs: 200 })
+    const started = Date.now()
+    const out = await tryNvidia(REQ, { callerFn: 'pipeline-enrich-news' })
+    const elapsed = Date.now() - started
+    assertEquals(out.served === false && out.reason, 'no_slot')
+    assertEquals(elapsed >= 400, true, `batch caller gave up after only ${elapsed}ms`)
+    assertEquals(elapsed < 3000, true, `batch caller overran its budget: ${elapsed}ms`)
+  })
 })
 
 /**
