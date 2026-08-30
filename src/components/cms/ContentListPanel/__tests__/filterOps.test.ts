@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { applyFilter, applyFilters, applySorts, type QueryBuilderLike } from '../filterOps';
+import {
+  applyFilter,
+  applyFilters,
+  applySorts,
+  applyArchivedView,
+  type QueryBuilderLike,
+} from '../filterOps';
 import type { Filter } from '../viewSpec';
 
 /**
@@ -34,6 +40,7 @@ function stub(): { q: Stub; calls: Call[] } {
     in: rec('in'),
     contains: rec('contains'),
     overlaps: rec('overlaps'),
+    or: rec('or'),
     // Flattened so assertions read ['order', col, ascending].
     order: (c: string, o: { ascending: boolean }) => {
       calls.push(['order', c, o.ascending]);
@@ -195,5 +202,59 @@ describe('applySorts', () => {
       ['order', 'name', true],
       ['order', 'updated_at', false],
     ]);
+  });
+});
+
+describe('applyArchivedView', () => {
+  const PRESENT = { column: 'archived_at', predicate: 'present' as const, label: 'Archived' };
+  const EQUALS = { column: 'review_status', value: 'archived', label: 'Archived' };
+
+  it('present: live is a NULL check, archived is its inverse', () => {
+    const a = stub();
+    applyArchivedView(a.q, PRESENT, 'live');
+    expect(a.calls).toEqual([['is', 'archived_at', null]]);
+
+    const b = stub();
+    applyArchivedView(b.q, PRESENT, 'archived');
+    expect(b.calls).toEqual([['not', 'archived_at', 'is', null]]);
+  });
+
+  it('equals: archived is a plain eq', () => {
+    const { q, calls } = stub();
+    applyArchivedView(q, EQUALS, 'archived');
+    expect(calls).toEqual([['eq', 'review_status', 'archived']]);
+  });
+
+  it('equals: LIVE is NULL-safe, never a bare neq', () => {
+    // `review_status <> 'archived'` is NULL for a NULL status, so PostgREST
+    // drops those rows. A bare .neq() would hide every row whose status has
+    // never been set — the list reads as empty rather than as wrong, which is
+    // the expensive direction. Same defect usePageFetchers already fixed.
+    const { q, calls } = stub();
+    applyArchivedView(q, EQUALS, 'live');
+    expect(calls).toEqual([['or', 'review_status.is.null,review_status.neq.archived']]);
+    expect(calls.some(([m]) => m === 'neq')).toBe(false);
+  });
+
+  it('all applies nothing, so the archived slice is reachable', () => {
+    const { q, calls } = stub();
+    applyArchivedView(q, EQUALS, 'all');
+    expect(calls).toEqual([]);
+  });
+
+  it('a type with no archive block is untouched in every view', () => {
+    // Countries. A predicate here would filter on a column that does not exist
+    // and PostgREST would 400 the whole list.
+    for (const view of ['live', 'archived', 'all'] as const) {
+      const { q, calls } = stub();
+      applyArchivedView(q, undefined, view);
+      expect(calls, `view=${view}`).toEqual([]);
+    }
+  });
+
+  it('an equals block with no value is left alone rather than guessed at', () => {
+    const { q, calls } = stub();
+    applyArchivedView(q, { column: 'status' }, 'live');
+    expect(calls).toEqual([]);
   });
 });
