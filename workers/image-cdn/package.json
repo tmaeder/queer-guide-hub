@@ -6,12 +6,12 @@
     "deploy": "wrangler deploy"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.20260820.1",
+    "@cloudflare/workers-types": "^5.20260827.1",
     "typescript": "^7.0.2",
-    "wrangler": "^4.124.0"
+    "wrangler": "^4.127.0"
   },
   "dependencies": {
-    "jose": "^6.2.9"
+    "jose": "^6.2.10"
   },
   "overrides": {
     "esbuild": "0.28.1",

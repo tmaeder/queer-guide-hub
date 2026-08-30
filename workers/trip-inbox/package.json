@@ -12,10 +12,10 @@
     "postal-mime": "^3.0.0"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.20260820.1",
+    "@cloudflare/workers-types": "^5.20260827.1",
     "typescript": "~7.0.2",
     "vitest": "^4.1.11",
-    "wrangler": "^4.124.0"
+    "wrangler": "^4.127.0"
   },
   "overrides": {
     "esbuild": "0.28.1",
