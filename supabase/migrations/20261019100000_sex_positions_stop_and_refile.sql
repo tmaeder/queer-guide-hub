@@ -61,15 +61,26 @@ where c.slug = 'sex-positions'
 
 -- The AFTER trigger DEMOTES the old primary but never deletes it, and
 -- unified_tags_recompute_is_adult() reads EVERY assignment row, so a stale
--- Fetishes row would keep these double-filed. Remove it.
--- (is_adult stays true either way here — the destination is also an adult
--- stop — so unlike the trans-gear repair there is no seo_indexable to restore.)
+-- row would keep these double-filed. Remove every junction that is not the
+-- new stop.
+--
+-- DELIBERATELY NOT SCOPED TO 'fetishes-interests'. It was, and that was wrong:
+-- between writing this migration and shipping it, a concurrent session re-filed
+-- `69` and `doggy-style` from Fetishes to Practices & Play and left the old
+-- Fetishes row behind, so both tags now carry TWO junctions. A delete naming
+-- one category would have cleared Fetishes, left Practices & Play standing, and
+-- then failed this migration's own "no junction outside the stop" check. Any
+-- category but the destination is stale by definition, so say that instead of
+-- enumerating the ones that happen to be stale today.
+--
+-- (is_adult stays true either way here — the destination is also an adult stop
+-- — so unlike the trans-gear repair there is no seo_indexable to restore.)
 delete from tag_category_assignments a
-using unified_tags t, tag_categories c
+using unified_tags t
 where a.tag_id = t.id
-  and a.category_id = c.id
-  and c.slug = 'fetishes-interests'
-  and t.slug in ('69', 'doggy-style', 'double-penetration', 'triple-penetration');
+  and t.slug in ('69', 'doggy-style', 'double-penetration', 'triple-penetration')
+  and a.category_id is distinct from
+      (select c.id from tag_categories c where c.slug = 'sex-positions');
 
 -- ── 3. verify ───────────────────────────────────────────────────────────────
 do $$

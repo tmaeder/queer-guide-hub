@@ -53,7 +53,7 @@ declare
 begin
   select id, name into v_cat, v_name from tag_categories where slug = 'sex-positions';
   if v_cat is null then
-    raise exception 'Positions stop is missing — 20261016100000 must run first';
+    raise exception 'Positions stop is missing — 20261019100000 must run first';
   end if;
 
   -- ── 1. the tags ───────────────────────────────────────────────────────────
@@ -321,15 +321,33 @@ begin
     raise exception 'expected at least 140 tags in Positions, found %', v_total;
   end if;
 
-  -- the gate: every position tag must be adult AND non-indexable.
-  -- This is the assertion that would have caught the INSERT-does-not-file
-  -- defect described in the header.
+  -- THE GATE. Two assertions, because the two columns have different rules.
+  --
+  -- is_adult applies to EVERY row in the stop, and it is the one that would
+  -- have caught the INSERT-does-not-file defect in the header: no junction
+  -- row means unified_tags_recompute_is_adult() never runs and this stays
+  -- false.
+  select count(*) into v_bad
+  from unified_tags t join tag_categories c on c.id = t.category_id
+  where c.slug = 'sex-positions' and t.is_adult is not true;
+  if v_bad > 0 then
+    raise exception '% position tags are not is_adult — junction row missing?', v_bad;
+  end if;
+
+  -- seo_indexable is only forced false by enforce_tag_seo_sensitivity_gate()
+  -- when the row is NOT human_reviewed. A human-reviewed adult tag staying
+  -- indexable is the doxy-pep precedent, not a defect, and two of the four
+  -- re-filed tags (`69`, `doggy-style`) are exactly that shape — asserting
+  -- `seo_indexable = false` across the whole stop would fail on them and be
+  -- wrong to "fix". Every row this migration INSERTS is human_reviewed=false,
+  -- so the gate governs all of them and they must all come out deindexed.
   select count(*) into v_bad
   from unified_tags t join tag_categories c on c.id = t.category_id
   where c.slug = 'sex-positions'
-    and (t.is_adult is not true or t.seo_indexable is not false);
+    and t.human_reviewed is not true
+    and t.seo_indexable is not false;
   if v_bad > 0 then
-    raise exception '% position tags are not gated (is_adult/seo_indexable)', v_bad;
+    raise exception '% un-reviewed position tags are still indexable', v_bad;
   end if;
 
   -- text mirror must agree with category_id, or the page and the search

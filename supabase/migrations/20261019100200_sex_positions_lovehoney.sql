@@ -28,7 +28,7 @@ declare
 begin
   select id, name into v_cat, v_name from tag_categories where slug = 'sex-positions';
   if v_cat is null then
-    raise exception 'Positions stop is missing — 20261016100000 must run first';
+    raise exception 'Positions stop is missing — 20261019100000 must run first';
   end if;
 
   insert into unified_tags (name, slug, description, category_id, category,
