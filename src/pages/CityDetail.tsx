@@ -567,9 +567,6 @@ export default function CityDetail() {
               cityId={city.id}
               latitude={city.latitude != null ? Number(city.latitude) : null}
               longitude={city.longitude != null ? Number(city.longitude) : null}
-              countryId={city.countries?.id ?? null}
-              countryName={city.countries?.name ?? null}
-              equalityScore={city.countries?.equality_score ?? null}
             />
             <SimilarCities
               cityId={city.id}

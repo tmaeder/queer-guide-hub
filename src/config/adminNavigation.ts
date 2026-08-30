@@ -66,6 +66,7 @@ import {
   ShieldCheck,
   Waypoints,
   Network,
+  Trash2,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { AdminRole } from '@/config/adminRoles';
@@ -151,6 +152,15 @@ export const adminNavSections: AdminNavSection[] = [
         label: 'Duplicates & merge',
         icon: CopyCheck,
         route: '/admin/duplicates',
+      },
+      {
+        // Cross-type, so it cannot live under any one content type. The whole
+        // point is recovering something when you no longer remember which type
+        // it was.
+        id: 'trash',
+        label: 'Trash',
+        icon: Trash2,
+        route: '/admin/trash',
       },
       {
         id: 'feedback',

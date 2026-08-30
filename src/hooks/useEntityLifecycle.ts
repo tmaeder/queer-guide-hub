@@ -23,8 +23,14 @@ export function isArchived(
   row: Record<string, unknown>,
   lifecycle: ContentLifecycleConfig | undefined,
 ): boolean {
-  if (!lifecycle?.archive) return false;
-  return row[lifecycle.archive.column] === lifecycle.archive.value;
+  const archive = lifecycle?.archive;
+  if (!archive) return false;
+  const cell = row[archive.column];
+  // 'present' is for `archived_at`, where the column is a timestamp and any
+  // non-null value means archived. Comparing it to a sentinel string would
+  // report every archived hotel as live.
+  if (archive.predicate === 'present') return cell !== null && cell !== undefined;
+  return cell === archive.value;
 }
 
 export function useEntityLifecycle(lifecycle: ContentLifecycleConfig | undefined) {

@@ -33,6 +33,13 @@ import { describe, expect, it } from 'vitest';
  * than from whoever remembered to add a line: every table with a
  * `seo_indexable` column that has a renderer here must appear.
  *
+ * SEVEN, as of 2026-08-30: hotelDetail, found while giving hotels an archived
+ * state. `hotels.seo_indexable` is NOT NULL DEFAULT true and was non-false on
+ * all 325 rows, so nothing had ever exercised it — the gate was dead code that
+ * looked alive. That is the pattern worth noticing: this list caught six
+ * renderers only because someone thought to add each of them, and hotelDetail
+ * sat outside it for as long as the file has existed.
+ *
  * The failure is invisible in review — the function looks complete, the page
  * renders, and nothing errors. Only a live crawl or this test catches it.
  *
@@ -58,6 +65,7 @@ const GATED = [
   { fn: 'eventDetail', table: 'events' },
   { fn: 'countryDetail', table: 'countries' },
   { fn: 'newsDetail', table: 'news_articles' },
+  { fn: 'hotelDetail', table: 'hotels' },
 ] as const;
 
 /** Slice the source of one `async function <name>(` up to the next one. */

@@ -242,6 +242,44 @@ export async function applySuggestion(
       if (!s.entity_id || !v?.category_id) {
         throw new Error('category suggestion needs entity_id and proposed_value.category_id')
       }
+      // DEMOTE the existing primary before promoting the new one. Upserting
+      // is_primary=true on its own gives a tag that already has a primary a
+      // SECOND one, and which of the two a reader sees then depends on which
+      // query ordering they hit — the page takes the primary, the mirror
+      // reconciler resolves by (is_primary, level, created_at). This was the
+      // same hole categorize-tags and tag-enrichment-sweep carried; the
+      // partial unique index from 20261008130000 now rejects the write
+      // outright, so without this every approval for a tag that is already
+      // filed fails instead of silently corrupting. Measured when the index
+      // landed: 201 of the 441 pending category suggestions would have hit it.
+      // A marketplace facet belongs to no glossary category, so a suggestion
+      // to file one is never applied. The predicate is asked of the DATABASE
+      // (public.is_marketplace_facet, 20261018130000) rather than re-spelled
+      // here: three copies of that rule had already drifted apart once, and a
+      // fourth in TypeScript would be the same mistake with a compile step.
+      const { data: tagRow } = await client
+        .from('unified_tags')
+        .select('slug, entity_kind')
+        .eq('id', s.entity_id)
+        .maybeSingle()
+      if (tagRow) {
+        const { data: isFacet } = await client.rpc('is_marketplace_facet', {
+          p_slug: tagRow.slug,
+          p_entity_kind: tagRow.entity_kind,
+        })
+        if (isFacet) {
+          throw new Error(
+            `refusing to file marketplace facet "${tagRow.slug}" into a glossary category`,
+          )
+        }
+      }
+      // UPDATE, not DELETE — the previous filing survives as a cross-listing.
+      await client
+        .from('tag_category_assignments')
+        .update({ is_primary: false })
+        .eq('tag_id', s.entity_id)
+        .eq('is_primary', true)
+        .neq('category_id', v.category_id)
       const { error } = await client
         .from('tag_category_assignments')
         .upsert(

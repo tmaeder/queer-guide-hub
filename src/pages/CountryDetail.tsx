@@ -35,7 +35,6 @@ import { TransSafetyBand } from '@/components/rights/TransSafetyBand';
 import { TripCoveringBanner } from '@/components/trips/TripCoveringBanner';
 import { PlanTripFromHereButton } from '@/components/trips/PlanTripFromHereButton';
 import { PersonalitiesForEntity } from '@/components/discovery/PersonalitiesForEntity';
-import { NearbyTriptych } from '@/components/discovery/NearbyTriptych';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
 import { hasAnyCriminalizationSignal } from '@/utils/equalityScore';
 import { MarketplaceForCountry } from '@/components/marketplace/MarketplaceForCountry';
@@ -466,11 +465,11 @@ export default function CountryDetail() {
               inside its own body, which the section filter cannot see, so a
               station would point at an empty heading. */}
           <PersonalitiesForEntity countryId={country.id} cityName={country.name} />
-          <NearbyTriptych
-            countryId={country.id}
-            countryName={country.name}
-            equalityScore={country.equality_score ?? null}
-          />
+          {/* `NearbyTriptych` is not here any more. Its only country-anchored
+              panel was the equality-score peer table, removed with the rest of
+              the composite figure; the band this page passed props for would
+              now render empty. It stays on /city/:slug, which has the
+              city-anchored "Next leg from here". */}
           <MarketplaceForCountry countryId={country.id} countryName={country.name} />
           <SimilarItems
             entity={{ type: 'country', id: country.id }}
