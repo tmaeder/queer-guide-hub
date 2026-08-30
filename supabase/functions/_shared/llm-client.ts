@@ -212,6 +212,15 @@ export async function llmChatCompletion(
           tokensIn: data.usage?.prompt_tokens,
           tokensOut: data.usage?.completion_tokens,
           contextKey: options.contextKey ?? null,
+          // Was omitted when the provider column landed, so every fallback
+          // through THIS client logged provider NULL while the NVIDIA branch
+          // above and both branches in openai-client.ts set theirs. Found on
+          // prod: translate-i18n-batch rows carried a `@cf/` model and a null
+          // provider, which is self-contradictory. A null here is worse than
+          // cosmetic — it is indistinguishable from "written before the column
+          // existed", so the provider split that this column exists to report
+          // silently under-counts Cloudflare.
+          provider: 'cloudflare',
         })
 
         return {
