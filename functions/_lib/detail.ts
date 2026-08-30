@@ -306,8 +306,13 @@ async function eventDetail(env: Env, slug: string, pathname: string): Promise<De
   const rows = await fetchRows(
     env,
     'events',
-    'title,slug,description,address,city,state,country,postal_code,start_date,end_date,latitude,longitude,images,ticket_url,organizer_name,venue_name,price_min,price_max,is_free,event_type,timezone,updated_at,safety_gated',
-    `slug=eq.${encodeURIComponent(slug)}&duplicate_of_id=is.null`,
+    'title,slug,description,address,city,state,country,postal_code,start_date,end_date,latitude,longitude,images,ticket_url,organizer_name,venue_name,price_min,price_max,is_free,event_type,timezone,updated_at,safety_gated,status,seo_indexable',
+    // status=neq.cancelled is the archive gate — the existence engine writes
+    // 'cancelled' to archive an event, and sitemap-events.xml.ts already
+    // excludes it, but this renderer did not, so an archived event kept a fully
+    // indexable crawler page. 'completed' is deliberately NOT excluded: this
+    // corpus is ~99% past events and they legitimately keep their pages.
+    `slug=eq.${encodeURIComponent(slug)}&duplicate_of_id=is.null&status=neq.cancelled`,
     1,
   );
   const row = rows[0] ?? null;
@@ -397,7 +402,10 @@ async function eventDetail(env: Env, slug: string, pathname: string): Promise<De
         : undefined,
   };
 
-  return { meta, body, jsonLd: renderLd(prune(eventLd)) };
+  // seo_indexable was in neither the select nor this return, so an event page
+  // was indexable whatever the column said. The stale comment further down this
+  // file claiming eventDetail "already" honoured it was simply wrong.
+  return { meta, body, jsonLd: renderLd(prune(eventLd)), indexable: row.seo_indexable !== false };
 }
 
 // News articles
@@ -561,10 +569,15 @@ async function personalityDetail(
   };
 
   // Honour the row's own indexability gate, the way newsDetail (`indexable:
-  // row.seo_indexable !== false`) and eventDetail already do. Omitting it made
-  // `detail.indexable !== false` in _middleware trivially true, so a personality
-  // page was ALWAYS indexable — `seo_indexable=false`, which the thin-content
-  // trigger sets, had no effect on this route at all.
+  // row.seo_indexable !== false`) does. Omitting it made `detail.indexable !==
+  // false` in _middleware trivially true, so a personality page was ALWAYS
+  // indexable — `seo_indexable=false`, which the thin-content trigger sets, had
+  // no effect on this route at all.
+  //
+  // This comment also named eventDetail as already doing it. That was false
+  // when written and stayed false until 2026-08-29 — eventDetail had
+  // seo_indexable in neither its select nor its return. Both it and cityDetail
+  // carry the gate now.
   return {
     meta,
     body,
@@ -576,14 +589,26 @@ async function personalityDetail(
 // City — programmatic SEO surface for /city/:slug
 
 async function cityDetail(env: Env, slug: string, pathname: string): Promise<DetailResult | null> {
+  // shell_status + seo_indexable were absent from this select entirely, so the
+  // crawler response was unconditionally indexable regardless of what either
+  // column said — the same hole villageDetail and personalityDetail had. This
+  // ran with the service role, so RLS could never have covered it.
   const cityRow = await fetchOne(
     env,
     'cities',
     'slug',
     slug,
-    'id,name,slug,description,image_url,latitude,longitude,country_id,is_capital,is_major_city,population,lgbt_friendly_rating,updated_at',
+    'id,name,slug,description,image_url,latitude,longitude,country_id,is_capital,is_major_city,population,lgbt_friendly_rating,shell_status,seo_indexable,updated_at',
   );
   if (!cityRow) return null;
+
+  // 'ghost' is the archived disposition archive_city_as_nonplace writes for a
+  // row that is not a place at all — a Bundesland, a continent, a country in
+  // German. Returning null makes the middleware serve a hard 404, which matches
+  // what the SPA now does, rather than publishing "LGBTQ+ guide to Hessen" with
+  // a mere noindex. 'merged' is left to resolveSlugRedirect, which turns it
+  // into a 301 — a redirect is better than a 404 when a canonical row exists.
+  if (stringField(cityRow, 'shell_status') === 'ghost') return null;
 
   const name = stringField(cityRow, 'name') ?? slug;
   const description = stringField(cityRow, 'description') ?? '';
@@ -698,7 +723,7 @@ async function cityDetail(env: Env, slug: string, pathname: string): Promise<Det
 
   const jsonLd = renderLd(prune(placeLd)) + (itemList ? '\n' + renderLd(prune(itemList)) : '');
 
-  return { meta, body, jsonLd };
+  return { meta, body, jsonLd, indexable: cityRow.seo_indexable !== false };
 }
 
 // Country — /country/:slug
@@ -712,7 +737,7 @@ async function countryDetail(
   const rows = await fetchRows(
     env,
     'countries',
-    'id,name,slug,code,description,editorial_hook,editorial_long,image_url,capital,latitude,longitude,equality_score,lgbti_same_sex_unions,population,updated_at',
+    'id,name,slug,code,description,editorial_hook,editorial_long,image_url,capital,latitude,longitude,equality_score,lgbti_same_sex_unions,population,seo_indexable,updated_at',
     `slug=eq.${encodeURIComponent(slug)}&duplicate_of_id=is.null`,
     1,
   );
@@ -763,7 +788,10 @@ async function countryDetail(
     url: `${SITE_ORIGIN}${pathname}`,
   };
 
-  return { meta, body, jsonLd: renderLd(prune(countryLd)) };
+  // `countries` carries seo_indexable and this renderer ignored it — the same
+  // omission as personalityDetail, villageDetail, tagDetail, eventDetail and
+  // cityDetail. Found 2026-08-29 while fixing the last two.
+  return { meta, body, jsonLd: renderLd(prune(countryLd)), indexable: row.seo_indexable !== false };
 }
 
 // Hotels — /hotels/:slug
@@ -961,17 +989,24 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
   // so without it this would publish all ~8,700 wikipedia/wikidata backfill rows
   // as legal citations. Same trap as the draft-personalities leak.
   const tagId = stringField(row, 'id');
-  const legalRows = tagId
+  //
+  // `source_type` is selected because since 20261013110300 this table publishes
+  // TWO kinds of citation. Clinical guidance is not law, so it gets its own
+  // heading and its own JSON-LD node type below — rendering the UCSF trans care
+  // guidelines under "Source of law" would tell a crawler they are a legal
+  // instrument.
+  const publishedRows = tagId
     ? await fetchRows(
         env,
         'tag_sources',
-        'official_title,source_url,jurisdiction,adopted_year,instrument_status',
+        'source_type,official_title,source_url,jurisdiction,adopted_year,instrument_status',
         `tag_id=eq.${encodeURIComponent(tagId)}&is_public=eq.true`,
         10,
       )
     : [];
-  const citations = legalRows
+  const allCitations = publishedRows
     .map((r) => ({
+      type: stringField(r, 'source_type'),
       title: stringField(r, 'official_title'),
       url: stringField(r, 'source_url'),
       juris: stringField(r, 'jurisdiction'),
@@ -981,6 +1016,8 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
     .filter((c): c is typeof c & { title: string; url: string } =>
       Boolean(c.title && c.url),
     );
+  const citations = allCitations.filter((c) => c.type !== 'clinical_guideline');
+  const clinicalCitations = allCitations.filter((c) => c.type === 'clinical_guideline');
 
   const name = stringField(row, 'name') ?? slug;
   // TWO FIELDS, NOT ONE — they had been the same variable, with
@@ -1042,6 +1079,18 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
               .join('')}</ul></section>`
           : ''
       }
+      ${
+        clinicalCitations.length
+          ? `<section><h2>Clinical guidance</h2><ul>${clinicalCitations
+              .map(
+                (c) =>
+                  `<li><a href="${escape(c.url)}" rel="noopener">${escape(c.title)}</a>${
+                    c.year ? ` (${c.year} edition)` : ''
+                  }</li>`,
+              )
+              .join('')}</ul></section>`
+          : ''
+      }
       ${stringField(row, 'wikipedia_url') ? `<p><a href="${escape(stringField(row, 'wikipedia_url')!)}" rel="noopener">Read more on Wikipedia</a></p>` : ''}
     </article>
     <nav aria-label="Site sections">
@@ -1062,21 +1111,27 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
     // URL must not disagree.
     description: summary || undefined,
     url: `${SITE_ORIGIN}${pathname}`,
-    sameAs: [stringField(row, 'wikipedia_url'), ...citations.map((c) => c.url)].filter(Boolean)
+    sameAs: [stringField(row, 'wikipedia_url'), ...allCitations.map((c) => c.url)].filter(Boolean)
       .length
-      ? [stringField(row, 'wikipedia_url'), ...citations.map((c) => c.url)].filter(Boolean)
+      ? [stringField(row, 'wikipedia_url'), ...allCitations.map((c) => c.url)].filter(Boolean)
       : undefined,
     identifier: stringField(row, 'wikidata_id'),
-    // No `legislationDate`: schema.org types it as a Date and only a year is
-    // held, so emitting one would assert a precision we do not have. Kept
-    // deliberately identical to src/lib/tags/tagJsonLd.ts.
-    citation: citations.length
-      ? citations.map((c) => ({
-          '@type': 'Legislation',
-          name: c.title,
-          url: c.url,
-          legislationJurisdiction: c.juris || undefined,
-        }))
+    // No `legislationDate` / `datePublished`: schema.org types both as a Date and
+    // only a year is held, so emitting one would assert a precision we do not
+    // have. Kept deliberately identical to src/lib/tags/tagJsonLd.ts — including
+    // the split by kind, since clinical guidance emitted as `Legislation` would
+    // tell a crawler the UCSF guidelines are law.
+    citation: allCitations.length
+      ? allCitations.map((c) =>
+          c.type === 'clinical_guideline'
+            ? { '@type': 'CreativeWork', name: c.title, url: c.url }
+            : {
+                '@type': 'Legislation',
+                name: c.title,
+                url: c.url,
+                legislationJurisdiction: c.juris || undefined,
+              },
+        )
       : undefined,
   };
 

@@ -226,7 +226,6 @@
       "title": "Krisentelefone, rund um die Uhr",
       "body": "Trans-Beratung, LGBT+-Krisenhilfe und örtliche Notrufnummern, nach Ländern sortiert und von jeder Seite aus mit einem Klick erreichbar."
     },
-    "osmAttribution": "Nahverkehrsdiagramme abgeleitet von © OpenStreetMap-Mitwirkenden (ODbL)",
     "reportSomething": "Etwas melden",
     "hotlines": "Notrufnummern",
     "antiDiscrimination": {
@@ -2298,10 +2297,7 @@
       "pride": {
         "title": "Pride diese Saison",
         "window": "Nächste 4 Monate",
-        "empty": "Keine bevorstehenden Pride-Events.",
-        "safety": "Gleichstellungsindex",
-        "equalityTooltip": "Der Gleichberechtigungs-Score zeigt den LGBTQ+-Rechtsschutz in diesem Land. Höher ist sicherer.",
-        "equalityAria": "Gleichberechtigungs-Score {{score}}: tippen für Erklärung"
+        "empty": "Keine bevorstehenden Pride-Events."
       },
       "inspiration": {
         "villages": "Queer Villages",
@@ -4466,6 +4462,9 @@
         "slang": "Slang"
       },
       "sourceOfLaw": "Rechtsgrundlage",
+      "clinicalGuidance": "Klinische Leitlinien",
+      "guidanceEdition": "Ausgabe",
+      "notMedicalAdvice": "Die Definitionen hier stammen aus veröffentlichten klinischen Leitlinien. Sie sind keine medizinische Beratung. Folge dem Link für klinische Details und sprich mit einer Ärztin oder einem Arzt über deine eigene Behandlung.",
       "lawJurisdiction": "Geltungsbereich",
       "lawInternational": "International",
       "lawAdopted": "Verabschiedet",

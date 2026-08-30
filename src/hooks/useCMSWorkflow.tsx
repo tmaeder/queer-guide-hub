@@ -5,6 +5,8 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedRpc } from '@/integrations/supabase/untyped';
+import { getContentType } from '@/config/contentTypes';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import type { WorkflowState, CMSContentMetadata, WorkflowTransition } from '@/types/cms';
@@ -120,6 +122,31 @@ export function useCMSWorkflow(currentState?: WorkflowState): UseCMSWorkflowRetu
         });
 
       if (metaError) throw metaError;
+
+      // The sidecar records the workflow decision. It does NOT hide anything:
+      // no public query reads cms_content_metadata, and only cms_pages has a
+      // real workflow_state column — so before this, "Archive" on a venue
+      // changed nothing at all. The entity's own archive state lives in a
+      // different column per type (review_status / shell_status / status), and
+      // archive_entity holds those semantics plus the prior-state snapshot its
+      // restore counterpart reads.
+      //
+      // Best-effort by design: a type with no archived state (hotels, news,
+      // countries, groups have no column that can express one) raises
+      // unsupported_type, and that must not fail the workflow transition the
+      // admin actually asked for. The sidecar stays the record either way.
+      const lifecycle = getContentType(sourceTable)?.lifecycle;
+      if (lifecycle?.archive && (toState === 'archived' || currentState === 'archived')) {
+        const fn = toState === 'archived' ? 'archive_entity' : 'restore_entity';
+        const args =
+          fn === 'archive_entity'
+            ? { p_type: lifecycle.type, p_id: sourceId, p_reason: comment?.trim() || null }
+            : { p_type: lifecycle.type, p_id: sourceId };
+        const { error: lifecycleError } = await untypedRpc(fn, args);
+        if (lifecycleError) {
+          console.error(`${fn} failed for ${sourceTable}/${sourceId}`, lifecycleError);
+        }
+      }
 
       // Write review comment if provided
       if (comment?.trim()) {

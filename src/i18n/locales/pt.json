@@ -226,7 +226,6 @@
       "title": "Linhas de crise, 24 horas",
       "body": "Linha de apoio trans, apoio em crise LGBT+ e números de emergência locais, organizados por país e sempre a um clique de qualquer página."
     },
-    "osmAttribution": "Diagramas de transporte derivados de © colaboradores do OpenStreetMap (ODbL)",
     "reportSomething": "Denunciar algo",
     "hotlines": "Linhas de apoio",
     "antiDiscrimination": {
@@ -2298,10 +2297,7 @@
       "pride": {
         "title": "Pride nesta temporada",
         "window": "Próximos 4 meses",
-        "empty": "Sem eventos Pride próximos.",
-        "safety": "Índice de igualdade",
-        "equalityTooltip": "A pontuação de igualdade reflete as proteções legais LGBTQ+ deste país. Quanto maior, mais seguro.",
-        "equalityAria": "Pontuação de igualdade {{score}}: toque para explicação"
+        "empty": "Sem eventos Pride próximos."
       },
       "inspiration": {
         "villages": "Queer Villages",
@@ -4466,6 +4462,9 @@
         "slang": "Calão"
       },
       "sourceOfLaw": "Fonte do direito",
+      "clinicalGuidance": "Orientação clínica",
+      "guidanceEdition": "Edição",
+      "notMedicalAdvice": "As definições vêm de orientações clínicas publicadas. Não são aconselhamento médico. Siga a ligação para o detalhe clínico e fale com profissionais de saúde sobre o seu caso.",
       "lawJurisdiction": "Jurisdição",
       "lawInternational": "Internacional",
       "lawAdopted": "Adotada",

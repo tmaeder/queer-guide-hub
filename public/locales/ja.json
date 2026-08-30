@@ -226,7 +226,6 @@
       "title": "24時間対応の相談窓口",
       "body": "トランスジェンダー向け相談窓口、LGBT+の危機支援、各地の緊急連絡先を国別に掲載。どのページからもワンクリックで開けます。"
     },
-    "osmAttribution": "交通図は © OpenStreetMap 貢献者のデータに基づいています (ODbL)",
     "reportSomething": "報告する",
     "hotlines": "相談窓口",
     "antiDiscrimination": {
@@ -2296,10 +2295,7 @@
       "pride": {
         "title": "今シーズンのプライド",
         "window": "今後4ヶ月",
-        "empty": "今後のプライドイベントはありません。",
-        "safety": "平等スコア",
-        "equalityTooltip": "平等スコアはこの国のLGBTQ+の法的保護を示します。高いほど安全です。",
-        "equalityAria": "平等スコア{{score}}: タップで説明"
+        "empty": "今後のプライドイベントはありません。"
       },
       "inspiration": {
         "villages": "クィア・ヴィレッジ",
@@ -4464,6 +4460,9 @@
         "slang": "スラング"
       },
       "sourceOfLaw": "法的根拠",
+      "clinicalGuidance": "臨床ガイダンス",
+      "guidanceEdition": "版",
+      "notMedicalAdvice": "ここでの定義は公開された臨床ガイダンスに基づいています。医学的助言ではありません。臨床的な詳細はリンク先を参照し、ご自身の治療については医療者にご相談ください。",
       "lawJurisdiction": "管轄",
       "lawInternational": "国際",
       "lawAdopted": "制定",

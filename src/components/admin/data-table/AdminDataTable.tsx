@@ -59,6 +59,7 @@ export function AdminDataTable<TData extends { id: string }>({
     rowClassName,
     onBulkEditSuccess,
     _onBulkDeleteSuccess,
+    allowBulkDelete = true,
   } = config;
 
   // Build default column visibility from meta
@@ -275,6 +276,7 @@ export function AdminDataTable<TData extends { id: string }>({
           onClearSelection={clearSelection}
           onSuccess={handleRefetch}
           bulkEditFields={bulkEditFields}
+          allowDelete={allowBulkDelete}
           extraActions={
             backfillJobs && backfillJobs.length > 0 ? (
               <DataTableBackfillActions

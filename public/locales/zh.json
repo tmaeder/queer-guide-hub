@@ -226,7 +226,6 @@
       "title": "24 小时危机热线",
       "body": "跨性别支持热线、LGBT+ 危机援助与当地紧急电话，按国家分类，任何页面均可一键直达。"
     },
-    "osmAttribution": "交通示意图源自 © OpenStreetMap 贡献者数据（ODbL）",
     "reportSomething": "举报",
     "hotlines": "求助热线",
     "antiDiscrimination": {
@@ -2296,10 +2295,7 @@
       "pride": {
         "title": "本季骄傲活动",
         "window": "未来 4 个月",
-        "empty": "没有即将到来的骄傲活动。",
-        "safety": "平等指数",
-        "equalityTooltip": "平等分数反映该国的LGBTQ+法律保护。越高越安全。",
-        "equalityAria": "平等分数 {{score}}：点按以查看说明"
+        "empty": "没有即将到来的骄傲活动。"
       },
       "inspiration": {
         "villages": "酷儿村",
@@ -4464,6 +4460,9 @@
         "slang": "俚语"
       },
       "sourceOfLaw": "法律依据",
+      "clinicalGuidance": "临床指南",
+      "guidanceEdition": "版本",
+      "notMedicalAdvice": "此处的定义来自已发布的临床指南，不构成医疗建议。请点击链接查看临床细节，并就您自身的治疗咨询医务人员。",
       "lawJurisdiction": "适用范围",
       "lawInternational": "国际",
       "lawAdopted": "通过年份",

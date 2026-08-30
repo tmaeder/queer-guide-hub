@@ -200,5 +200,7 @@ export const newsArticleContentType: ContentTypeConfig = {
       mergePath: 'entities',
     },
   },
+  // No `archive` — see hotel.ts. news_articles carries only seo_indexable.
+  lifecycle: { type: 'news' },
   publicPath: (row) => (row.slug ? `/news/${row.slug}` : null),
 };

@@ -41,12 +41,16 @@ describe('SafetyVerdict', () => {
     state.report = makeReport({});
   });
 
-  it('renders "Welcoming" for a low-risk country and shows score /100', () => {
+  // The raw 0-100 composite was retired from the reader-facing pages: it read
+  // as a precise measurement when it is a roll-up of legal flags. The tier is
+  // what ships, and the number must not come back.
+  it('renders "Welcoming" for a low-risk country and states the tier, not the number', () => {
     state.report = makeReport({ overallRisk: 'low' });
-    const { getByText } = render(<SafetyVerdict countryId="c1" equalityScore={88} />);
+    const { getByText, queryByText } = render(<SafetyVerdict countryId="c1" equalityScore={88} />);
     expect(getByText('Welcoming')).toBeTruthy();
-    expect(getByText('88')).toBeTruthy();
-    expect(getByText('/100')).toBeTruthy();
+    expect(getByText(/very high/i)).toBeTruthy();
+    expect(queryByText('88')).toBeNull();
+    expect(queryByText('/100')).toBeNull();
   });
 
   it('renders "Use caution" + criminalized flag for a criminalizing country', () => {
@@ -120,15 +124,15 @@ describe('SafetyVerdict', () => {
     expect(queryByText('Welcoming')).toBeNull();
   });
 
-  it('still shows the equality score while pending — it comes from props, not the fetch', () => {
+  it('still states the equality tier while pending — it comes from props, not the fetch', () => {
     state.report = makeReport({ status: 'loading' });
     const { getByText } = render(<SafetyVerdict countryId="c1" equalityScore={5} />);
-    expect(getByText('5')).toBeTruthy();
+    expect(getByText(/very low/i)).toBeTruthy();
   });
 
-  it('shows an em dash for an unknown equality score', () => {
+  it('says "No data" rather than guessing a tier for an unknown equality score', () => {
     state.report = makeReport({ overallRisk: 'low' });
     const { getByText } = render(<SafetyVerdict countryId="c1" equalityScore={null} />);
-    expect(getByText('—')).toBeTruthy();
+    expect(getByText(/no data/i)).toBeTruthy();
   });
 });

@@ -14,6 +14,25 @@ describe('categoryMeta', () => {
   it('ADULT_CATEGORY_NAMES is non-empty', () => {
     expect(ADULT_CATEGORY_NAMES.size).toBeGreaterThan(0);
   });
+  // Every stop under the Sex & Kink line must be listed here BY NAME.
+  // The SQL twin unified_tags_recompute_is_adult() carries a parent arm
+  // (`or tcp.name = 'Sex & Kink'`) and so picks up a new stop for free.
+  // This Set has no parent arm and does NOT inherit, so a stop added to the
+  // tree without a line in categoryMeta is adult in the database and
+  // un-gated in the UI. That asymmetry is exactly how the two halves drift.
+  it.each([
+    'Practices & Play',
+    'Dynamics & Roles',
+    'Fetishes',
+    'Gear',
+    'Kink Community & Scenes',
+    'Positions',
+  ])('gates the Sex & Kink stop %s', (stop) => {
+    expect(ADULT_CATEGORY_NAMES.has(stop)).toBe(true);
+    expect(isAdultCategoryName(stop)).toBe(true);
+    expect(isAdultTag({ is_adult: false, category: stop })).toBe(true);
+  });
+
   it('isAdultCategoryName false for empty', () => {
     expect(isAdultCategoryName(null)).toBe(false);
     expect(isAdultCategoryName('')).toBe(false);

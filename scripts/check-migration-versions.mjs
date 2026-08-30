@@ -17,6 +17,34 @@
  * away. A within-PR collision (two newly-added files sharing a version, or a new
  * file colliding with an existing one) is a hard error.
  *
+ * NO duplicate version is grandfathered any more. Both kinds are hard errors:
+ *
+ *   - ALREADY IN REMOTE HISTORY. `db push` matches by version and SKIPS an
+ *     applied one, so exactly one file of the group ran and the other N-1 are
+ *     skipped PERMANENTLY and SILENTLY — no error, no annotation, and nothing
+ *     downstream ever reports that their SQL did not execute. Measured
+ *     2026-08-29 on 20261011100000: `sweep_skips_namespaced_tags` applied and
+ *     `tag_glossary_phase1_hygiene` never did, and this check was green about it
+ *     because the pair was old. Reported per-version, not per-file: history
+ *     stores the name too, but which file won is not what makes it fatal — that
+ *     N-1 lost is.
+ *   - NEITHER FILE APPLIED. This was a warning until 2026-08-29, on the
+ *     reasoning that it is "loud" because db push aborts on
+ *     schema_migrations_pkey. It is loud, and that is not the same as harmless:
+ *     the abort takes down the WHOLE push, so every unrelated pending migration
+ *     in the repo is stranded while edge functions still deploy and prod runs
+ *     new code against the old schema. Measured the same day on 20261012100000
+ *     (`sweep_skips_attribute_kind` + `news_vocab_dump_residue`), which stranded
+ *     five migrations from an unrelated PR until a file was renamed by hand.
+ *
+ * The residual hole this does NOT close: a duplicate can exist in NEITHER PR
+ * alone and appear only once both land, because `pull_request` CI runs against a
+ * merge commit computed before the other PR merged. On main the run that would
+ * catch it can also be cancelled by `cancel-in-progress` on the next push. So
+ * treat a green check as "no duplicate as of this base", not "no duplicate after
+ * merge" — and if `db push` ever fails on schema_migrations_pkey, look for a
+ * version shared by two files before anything else.
+ *
  * Base ref: $MIGRATION_BASE_REF (default `origin/main`). If it can't be
  * resolved (e.g. a shallow checkout without the base), every file is treated as
  * "new" so within-tree duplicates still fail — fail-closed, never silently green.
@@ -58,13 +86,28 @@ function baseFiles() {
 const base = baseFiles()
 const isNew = (file) => base === null || !base.has(file)
 
+// Remote history, fetched ONCE and shared by checks 2 and 3. They ask opposite
+// questions of the same set — check 2 "is this duplicate half-applied", check 3
+// "is this low version already applied" — and two fetches could answer from two
+// different snapshots while sibling sessions are landing migrations.
+// `null` means "could not look", never "nothing is applied": each caller stays
+// strict rather than reporting clean.
+let remote = null
+try {
+  remote = await fetchRemoteVersions()
+} catch (e) {
+  // Reachability failure is NOT "nothing is applied". Say so and stay strict.
+  console.log(`⚠ could not read remote migration history (${e.message.split('\n')[0]});`)
+  console.log('  no version is treated as already-applied, so a legitimate recovery may fail here.')
+}
+
 const files = readdirSync(MIGRATIONS_DIR).filter((f) => f.endsWith('.sql'))
 
 const errors = []
 const warnings = []
 /** Versions below max that are already in remote history — reported, never fatal. */
 const applied = []
-/** Ordering violations we could NOT check against remote history (no token / API down). */
+/** Violations we could NOT check against remote history (no token / API down). */
 const unverified = []
 
 // 1) Filename format — only enforced on newly added files (don't retroactively
@@ -94,8 +137,44 @@ for (const [version, group] of byVersion) {
       `${line}\n    → ${newOnes.length} of these are new on this branch (${newOnes.join(', ')}). ` +
         `Give each migration a unique 14-digit version.`,
     )
+  } else if (remote?.has(version)) {
+    errors.push(
+      `${line}\n    → ${version} is ALREADY IN REMOTE HISTORY, so ONE of these files ran and the ` +
+        `other ${group.length - 1} ${group.length === 2 ? 'is' : 'are'} skipped permanently and ` +
+        `silently — \`db push\` matches by version and treats the whole version as applied. That ` +
+        `SQL has never executed and nothing will ever say so.\n` +
+        `    → Establish which file is the applied one (\`select version, name from ` +
+        `supabase_migrations.schema_migrations where version = '${version}'\`), then RENAME the ` +
+        `others to a version above the current max — never the applied one, which would turn this ` +
+        `duplicate into drift and make db push skip every migration in the repo.`,
+    )
+  } else if (remote) {
+    // NOT a warning, and the reasoning that made it one was measured wrong on
+    // 2026-08-29. It said: a duplicate where neither file is applied is "loud"
+    // (db push aborts on schema_migrations_pkey) so only the applied case needs
+    // escalating. Loud is correct. Harmless-because-loud is not — `db push`
+    // aborts the ENTIRE push, not just the offending file:
+    //
+    //   Applying migration 20261012100000_sweep_skips_attribute_kind.sql...
+    //   ERROR: duplicate key value violates unique constraint
+    //          "schema_migrations_pkey" (SQLSTATE 23505)
+    //
+    // Five unrelated migrations from another PR were stranded by that, edge
+    // functions deployed anyway, and prod ran new code against the old schema
+    // until someone renamed a file by hand. An unapplied duplicate is not legacy
+    // debt to clean up in a dedicated pass; it is an outage for every session in
+    // the repo, so it fails here.
+    errors.push(
+      `${line}\n    → NEITHER file is applied yet, so \`supabase db push\` will abort on ` +
+        `schema_migrations_pkey the next time it runs — and it aborts the WHOLE push, stranding ` +
+        `every other pending migration in the repo while edge functions still deploy.\n` +
+        `    → Rename all but one to a version above the current max.`,
+    )
   } else {
-    warnings.push(`${line}  (pre-existing — grandfathered; clean up in a dedicated pass)`)
+    unverified.push(
+      `${line}\n    → Could not read remote history, so it is unknown whether one of these is ` +
+        `already applied. If it is, the others are being skipped silently.`,
+    )
   }
 }
 
@@ -132,15 +211,6 @@ if (base !== null) {
     // drift check then demands the file and this check refuses it — the two
     // gates deadlock and NOTHING can merge, which is exactly what happened on
     // 2026-08-10 with 20260810075202_drop_unused_indexes.
-    let remote = null
-    try {
-      remote = await fetchRemoteVersions()
-    } catch (e) {
-      // Reachability failure is NOT "nothing is applied". Say so and stay strict.
-      console.log(`⚠ could not read remote migration history (${e.message.split('\n')[0]});`)
-      console.log('  no version is treated as already-applied, so a legitimate recovery may fail here.')
-    }
-
     for (const f of files) {
       const v = f.match(VERSION_RE)?.[1]
       if (!v || !isNew(f)) continue
@@ -184,7 +254,7 @@ if (warnings.length > 0) {
 }
 
 if (unverified.length > 0) {
-  console.error(`\n⚠ ${unverified.length} ordering violation(s) that could NOT be verified:`)
+  console.error(`\n⚠ ${unverified.length} problem(s) that could NOT be verified against remote history:`)
   for (const u of unverified) console.error(`  - ${u}`)
 }
 

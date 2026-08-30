@@ -186,6 +186,42 @@ export interface ContentRowAction {
   onSelect: (row: Record<string, unknown>) => void;
 }
 
+/**
+ * Declares how a content type can be archived, restored and deleted.
+ *
+ * Archive semantics are PER ENTITY on purpose. This schema has three
+ * conventions and each means something the others do not — a
+ * `presumed_closed` venue is a live business we believe has shut, a `ghost`
+ * city is not a place at all, and `review_status='archived'` is an editorial
+ * judgement. The `archive_entity` / `restore_entity` dispatchers hold that
+ * per-type SQL; this block tells the ADMIN LIST which column to read so it can
+ * show the right badge and filter, without duplicating the semantics.
+ *
+ * Omit `archive` entirely for a type that cannot express an archived state.
+ * Four do: hotels, news_articles, countries and community_groups have no
+ * status/visibility/review_status column, only `seo_indexable` — which governs
+ * crawlers, not the site. Offering "Archive" there would deindex without
+ * hiding, which is precisely the defect the archived-rows work removed.
+ */
+export interface ContentLifecycleConfig {
+  /** `p_type` for archive_entity / restore_entity / delete_entity. */
+  type: string;
+  /**
+   * The column and value that mean "archived" for this type, so the list can
+   * render state and filter without knowing the per-type rules. Omit to
+   * declare the type deletable but not archivable.
+   */
+  archive?: {
+    column: string;
+    /** Value written when archived. */
+    value: string;
+    /** Human label for the filter and badge, e.g. "Archived", "Ghost". */
+    label?: string;
+  };
+  /** Hard delete available from the list. Defaults to true when this block exists. */
+  deletable?: boolean;
+}
+
 export interface ContentTypeConfig {
   /** Unique ID matching the source table (e.g., 'venues', 'events') */
   id: string;
@@ -282,6 +318,11 @@ export interface ContentTypeConfig {
    * toolbar variants until something needs them.
    */
   rowActions?: ContentRowAction[];
+  /**
+   * Archive / restore / delete capability. Omit entirely for a type the admin
+   * must not remove from this screen. See `ContentLifecycleConfig`.
+   */
+  lifecycle?: ContentLifecycleConfig;
   /**
    * Columns editable across selected rows. Rendered in the bulk bar beside the
    * workflow actions. Omit for types where mass-editing a column is not safe.
