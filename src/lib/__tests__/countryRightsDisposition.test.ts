@@ -33,7 +33,17 @@ function migrationContaining(needle: RegExp): string {
   throw new Error(`no migration matches ${needle}`);
 }
 
-const disposition = migrationContaining(/parent_map\s*\(\s*child\s*,\s*parent\s*\)/i);
+/**
+ * Anchored on the sentinel's name, which only the disposition migration defines.
+ *
+ * This was `/parent_map\s*\(child, parent\)/` and that was wrong: the later
+ * `country_rights_provenance_parent_name` migration reuses the same `parent_map` CTE, so
+ * the reverse-chronological scan started returning THAT file and every sentinel assertion
+ * failed. Green locally, red in CI — because the tests were run before that migration
+ * existed. A "find the latest definition" helper needs a needle unique to the definition
+ * it is looking for, not merely present in it.
+ */
+const disposition = migrationContaining(/country_rights_unaccounted/);
 
 /** The five inhabited territories governed by a parent state's law. */
 const INHERITED: ReadonlyArray<readonly [string, string]> = [
