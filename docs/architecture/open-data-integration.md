@@ -54,7 +54,7 @@ trusting the prose — a stale figure here is worse than no figure.
 | `target_groups[]`, `age_restriction` | Source text | closed vocabularies | `built` — `event_tags_backfill` | exact-match filters + live facet | `normalize_event_target_groups` (table-driven) |
 | **Lineup / performers / artists** | — | — | **`missing` — no column, no junction table** | — | **See §1.8** |
 | Ticketing feeds | Ticketmaster | — | `built` — `ev_fill_ticketmaster` (`35 */6`), LGBTQ+ keyword prefilter default-ON | breaker `ticketmaster` closed | — |
-| Eventbrite | Eventbrite | — | **`missing` in practice** — `ev_fill_eventbrite` is enabled but breaker `eventbrite` is **open at 498 failures** | — | — |
+| Eventbrite | Eventbrite | — | **`retired` 2026-08-30** (`20261107100000`) — `/v3/events/search/` 404s with *and without* credentials; no successor endpoint. Cron unscheduled, registry row disabled, DAG node neutered at the function level | breaker `eventbrite` never once succeeded (`success_count = 0`) | Was enabled at **500** breaker failures while every run logged `success` — see §3.6 |
 
 ### 1.3 Healthcare & Clinics — `public.organizations` `roles=['support']` (2,987)
 
@@ -91,7 +91,7 @@ trusting the prose — a stale figure here is worse than no figure.
 |---|---|---|---|---|---|
 | All 18 `RIGHT_TOPICS` columns | **ILGA live GraphQL** `database.ilga.org/graphql`, 17 parallel queries | — | `built` — `wf_import_ilga_data` (`0 2 * * *`), **239/250 updated at 02:00 today** | national-level only (`!subjurisdiction`), matched on `a2_code` | `equality_score` recomputed each run |
 | Stale remainder | — | — | `partial` — **11 countries** skipped every run, still stamped `2026-04-21` | — | — |
-| Second legal opinion | **Equaldex** `equaldex-api` → `countries` | — | **`partial`, and effectively dead.** Row is `is_enabled = true` but **has not run since 2026-04-16**. `20260330600000` disabled it with the reason *"no public API exists (returns 403/404)"* — yet prod reads enabled, so something re-enabled it. All 18 topics rest on **one** source with no working corroborator | — | — |
+| Second legal opinion | **Equaldex** `equaldex-api` → `countries` | — | **`missing`.** Reconciled to `is_enabled = false` on 2026-08-30 (`20261107100100`): re-probed, `/api/regions` still 404s and `/api` serves HTML, so the 2026-03-30 reason holds. 1 run ever, 0 items, never succeeded. **All 18 topics still rest on one source with no working corroborator** | — | The re-enable came from the admin bulk toggle, not a migration — see §3.6 note |
 | Equaldex timeline | `equaldex-timeline` → **`news_articles`** | — | `built` — ran today 03:45, 0 failures | — | Different arm, different purpose: this is a news feed, **not** a rights corroborator. Do not mistake its green status for legal corroboration |
 | `rights_verdicts` | Derived from the 18 | — | `built` — `_shared/rights/verdict.ts`, 4 lenses | CHECK 6 verdict values | — |
 | Trans-specific | TGEU TMM | Williams Institute | `partial` — `tgeu_tmm_import` (`20 3 * * 1`) fills `trans_violence_documented`; `trans_rights_index` has no live feed | `MonitorState` distinguishes `none_recorded` from `unmatched` | — |
@@ -385,10 +385,25 @@ run-tracking wrapper itself; a pre-wrapped command in a migration is re-wrapped 
 
 New `source-*` functions need `verify_jwt = false` in `config.toml` or the cron gets a 401.
 
-> **Known drift:** `commit_hotel_staging_batch` exists in the live database and is referenced by
-> grant/revoke migrations, but there is **no `CREATE FUNCTION` for it anywhere in
-> `supabase/migrations/` or the baseline**. Hotels also have no `target_table` of their own — they
-> stage as `target_table='venues'` and are discriminated by entity type.
+> **Drift, resolved 2026-08-30 (`20261107100200`).** `commit_hotel_staging_batch` existed in the
+> live database with no `CREATE FUNCTION` anywhere in `supabase/migrations/` or the baseline. It was
+> created by raw Management-API SQL, which records no history: searching
+> `schema_migrations.statements` for the name returns **only the two revoke migrations**, so the
+> documented "recover the bytes from `statements`" route did not exist for it. Recovered from the
+> live `pg_get_functiondef` instead and **proven byte-exact** by declaring it into a scratch schema
+> on prod and comparing md5 (`2cbfe3e2…` both sides) — a scratch schema rather than BEGIN/ROLLBACK
+> so a rollback that silently failed could not overwrite a live function with an unverified
+> transcription. `git log -S` dates its creation to the 71 hours between two `types.ts`
+> regenerations, 2026-06-07 15:33 → 2026-06-10 14:07 UTC, straddling the 34-duplicate-version
+> history repair of PR #1553.
+>
+> **It has never committed a row and cannot.** Its loop selects
+> `ingestion_staging WHERE target_table = 'hotels'`; hotels have no `target_table` of their own —
+> they stage as `target_table='venues'` discriminated by entity type, and the live distinct values
+> are news_articles / marketplace_listings / venues / events / personalities / cities / countries.
+> Nothing calls it either: `_shared/content-registry.ts:96` files hotels as
+> `commit: { kind: 'via', type: 'venue' }`. The migration is record-keeping only. **Do not wire it
+> up on the strength of its name** — adopting it would be a design decision, not a bug fix.
 
 ### 3.4 Rate limiting and caching — know what does *not* exist
 
@@ -457,8 +472,45 @@ actually ran at **02:00 today** and updated 239/250 countries — this document'
 it as a four-month outage during planning. **Judge freshness on the entity column the source
 writes** (`countries.lgbti_data_last_updated`), never on the breaker row.
 
-Two breakers are currently **open** and their sources are effectively dead: `eventbrite` (498
-failures) and `foursquare` (350), plus `awin` (33).
+**A swallowed per-item error makes auto-pause structurally unreachable** (triaged 2026-08-30).
+`source-eventbrite:54` and `source-foursquare:80` wrapped each breaker call in a `try/catch` that
+only `console.error`s, then returned `{success:true, items:0}` at HTTP 200. `recordFailure` has
+already run inside the breaker by then, so the two layers disagree by construction — measured on
+prod from one 12:30 cron firing:
+
+| layer | reading |
+|---|---|
+| `api_circuit_breakers.eventbrite` | 500 failures, `state=open`, `last_failure_at` 12:30:04 |
+| `admin_automation_runs` | `status='success'`, `consecutive_failures=0`, 12:32:00 |
+
+The run row even stores the response verbatim. A 200 **resets** `consecutive_failures`, so
+`auto_pause_threshold=3` could never fire and `ev_fill_eventbrite` stayed enabled through 500
+consecutive failures. **`source-awin` is the control that proves the mechanism:** identical adapter
+shape, but its breaker call is *not* inside a per-item catch (`source-awin:57`), the throw reaches
+the handler, it returns 500 — and it auto-paused at 33. Same difference, opposite outcome.
+
+Corollary: **`items_failed: 0` in a `source-*` response is a hardcoded literal, not a measurement.**
+
+Dispositions:
+
+- **`eventbrite` — RETIRED** (`20261107100000`). `eventbriteapi.com/v3/events/search/` returns
+  `404 NOT_FOUND` with *and without* credentials — the 404 precedes auth, so no key can fix it;
+  Eventbrite removed public event search from v3 and there is no successor. `success_count` was 0
+  from the day the breaker row was created. The cron is unscheduled and the registry row disabled;
+  the `events-ingestion-bulletproof` DAG node is left in place and neutered at the function level
+  (`RETIRED` flag → `skippedResponse`), because editing `nodes`/`edges` to excise one source risks a
+  live pipeline's topology for nothing.
+- **`foursquare` — NOT dead, and it was never a code fault or a missing key.** The legacy host
+  answers `401 {"message":"Invalid request token."}` identically with a key and without one, so the
+  350 failures are indistinguishable from a rejected credential; `places-api.foursquare.com` is
+  alive and needs a new service key plus an `X-Places-Api-Version` header. It has **no cron** — the
+  callers are the `venue-ingestion-unified` (03:00) and `hotel-ingestion-pipeline` (04:00) DAG
+  nodes. The breaker burn is fixed (a 401/403 is now `InvalidCredentialsError`, raised *outside* the
+  breaker → skipped 200, the same contract a missing key already had). Reviving the source itself is
+  a scoped port plus a paid key, and remains a product decision.
+- **`awin` — behaving correctly.** Its cron auto-paused; the `marketplace-ingestion` DAG (04:00)
+  still calls it, which is why the breaker kept ticking after the pause. Pausing a fill cron does
+  not stop a DAG node.
 
 ### 3.7 Sentinel blind spots
 
@@ -585,8 +637,9 @@ days.
 1. Diagnose the 11. They are almost certainly dependent territories that fail the `a2_code` join —
    the same class that hid 36 missing capitals.
 2. **Do not scope this as "wire Equaldex."** That was already tried and the blocker is external:
-   `https://www.equaldex.com/api` returns 403/404, there is no public API, and the row was disabled
-   for that reason in `20260330600000` before something re-enabled it. Resolve the fork explicitly:
+   re-probed 2026-08-30, `/api/regions` returns 404 and `/api` serves an HTML docs page — there is
+   no public API. The row was disabled for that reason in `20260330600000`, re-enabled outside the
+   migration path, and is disabled again in `20261107100100`. Resolve the fork explicitly:
    (a) licence a real Equaldex feed, (b) scrape region pages — fragile, and the dead row is evidence
    of how that goes, or (c) pick a different corroborator. Until one is chosen, **the honest state
    is that the platform's highest-stakes data has a single source**, and the document should keep
@@ -595,11 +648,31 @@ days.
    overwrite**.
 4. Extend the `safety_notes` country-key check to detect fact drift, not just relink staleness. The
    current key catches a city moving country; it cannot catch a country changing its law.
-5. Reconcile the `scrape_sources` drift itself — a migration set `is_enabled = false` and prod reads
-   `true`. Same class as the `detect_stale_venues` threshold that a migration "fixed" and prod
-   ignored: **verify a config change live afterwards, never assume it applied.**
+5. ~~Reconcile the `scrape_sources` drift~~ — **done 2026-08-30**, and the diagnosis was not the
+   expected one. `20260330600000` **is** in `schema_migrations`, and its `statements` array is
+   empty — which looks like proof it never ran and is not: 115 of 1420 applied migrations have empty
+   statements, a bookkeeping artefact. The migration's own contents are the control group and they
+   split cleanly: **its `scrape_config` UPDATEs are in effect** (`equaldex-timeline` carries
+   `.timeline_item` with the underscore, `wnbr-events` `wiki_list`, last stamped 2026-03-30 16:32)
+   while **all six of its `is_enabled = false` UPDATEs are not**. So it ran, and the disables were
+   undone together between 2026-03-30 16:32 and 2026-04-16 05:02. No applied migration contains the
+   string `equaldex-api` besides the seed and `20260330600000` themselves, so the revert was not a
+   migration — the only mechanism in the repo that can do it is the admin **bulk** toggle at
+   `SourcesTab.tsx:114` (`update({is_enabled}).in('id', ids)`).
 
-**Exit:** 250/250 fresh; a named decision on the corroborator; the drift reconciled.
+   **Only `equaldex-api` was re-disabled, deliberately.** Re-applying a five-month-old decision
+   wholesale would have destroyed working ingest: `eventfrog-lgbtiq` (72 runs, 72 items, last
+   success 2026-08-29 — repointed at a real JSON feed by `20260822101923`, so its original
+   "JS-rendered SPA" reason is obsolete) and `gaycities-events` (13 runs, 8 items, last success
+   2026-08-23) are alive. `gaycities-places`, `travelgay-pride` and `mister-bnb` are inert and left
+   as they are. **A stale disable is as wrong as a stale enable** — the remaining five are recorded
+   here rather than actioned.
+
+   Still open: **a UI bulk toggle can silently revert a migration's intent and leaves no audit
+   trail.** `scrape_sources` has no history table, so the only reason this was reconstructable is
+   that the migration disabled six rows at once and the config half survived to act as a control.
+
+**Exit:** 250/250 fresh; a named decision on the corroborator; ~~the drift reconciled~~ **done**.
 **Sentinel:** stale-country count in `check-trust-safety-gates.mjs`.
 
 ### Phase 3 — Harm reduction depth
