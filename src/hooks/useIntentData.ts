@@ -24,7 +24,7 @@ import { fetchTrendingCities } from '@/hooks/usePersonalizedCities';
  *
  * `cruising` is deliberately NOT here. A cruising ground is not a going-out
  * destination to be listed beside cafés and restaurants, and since
- * 20261103100000 every cruising venue is `safety_gated`, so an anonymous
+ * 20261110100000 every cruising venue is `safety_gated`, so an anonymous
  * visitor's query would drop them anyway — leaving the rail's counts and its
  * contents disagreeing depending on who was looking.
  */

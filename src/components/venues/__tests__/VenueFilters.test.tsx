@@ -14,7 +14,7 @@ vi.mock('@/hooks/useTargetGroups', () => ({
   useTargetGroups: () => ({ data: [], isLoading: false }),
 }));
 // CategoryChips reads auth to hide the safety-gated `cruising` chip from
-// signed-out visitors (migration 20261103100000), and useAuth throws outside an
+// signed-out visitors (migration 20261110100000), and useAuth throws outside an
 // AuthProvider. Signed-out is the correct default for a bare render.
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: null }) }));
 

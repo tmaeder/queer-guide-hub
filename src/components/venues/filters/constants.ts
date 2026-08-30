@@ -9,7 +9,7 @@ export const categories = VENUE_CATEGORIES;
 
 /**
  * Categories every row of which is `safety_gated`, so an anonymous visitor's
- * query can only ever come back empty (migration 20261103100000).
+ * query can only ever come back empty (migration 20261110100000).
  *
  * Offering the chip anyway is a dead end — the filter reads as broken rather
  * than gated — and naming cruising on a signed-out page advertises it to exactly

@@ -6,7 +6,7 @@ import { NIGHTLIFE_CATEGORIES } from '@/hooks/useIntentData';
 /**
  * Cruising venues must never be visible to an anonymous session.
  *
- * `safety_gated` was purely GEOGRAPHIC from 20260623160000 until 20261103100000:
+ * `safety_gated` was purely GEOGRAPHIC from 20260623160000 until 20261110100000:
  * it asked `location_is_high_risk(country_id, city_id)` and nothing else, and
  * `venues` has no is_adult / content_rating column. So every cruising spot in a
  * non-criminalizing country was public — measured on prod 2026-08-30, 112 of 113
@@ -73,7 +73,7 @@ describe('cruising category safety gate', () => {
     // Without `category` in the list, `UPDATE venues SET category='cruising'`
     // never fires it and the row silently escapes the gate.
     const sql = readFileSync(
-      join(MIGRATIONS, '20261103100000_cruising_category_safety_gate.sql'),
+      join(MIGRATIONS, '20261110100000_cruising_category_safety_gate.sql'),
       'utf8',
     );
     const trigger = sql.slice(sql.indexOf('create trigger trg_venues_safety_gated'));

@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
 
 /**
- * Since 20261103100000 every `cruising` venue is `safety_gated`, so RLS returns
+ * Since 20261110100000 every `cruising` venue is `safety_gated`, so RLS returns
  * nothing for an anonymous session. A chip that can only ever produce an empty
  * list reads as a broken filter, and naming cruising on a signed-out page
  * advertises it to precisely the audience the gate exists to keep it from.
