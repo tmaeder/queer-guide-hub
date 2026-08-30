@@ -66,7 +66,7 @@ begin
       get diagnostics v_n = row_count;
       v_result := jsonb_build_object('archived', v_n > 0);
 
-    -- New in 20261024100000. These three carry `archived_at`, and RLS is what
+    -- New in 20261028100000. These three carry `archived_at`, and RLS is what
     -- makes it bite across ~65 read call sites.
     --
     -- The pre-archive `seo_indexable` is recorded because restore MUST replay
@@ -96,7 +96,7 @@ begin
       v_result := jsonb_build_object('archived', v_n > 0);
 
     -- Countries are refused with a reason, not a shrug. See
-    -- 20261024100000's header: `countries` is a parent, and hiding the row
+    -- 20261028100000's header: `countries` is a parent, and hiding the row
     -- blanks the `countries(name,code)` embed on every child page while
     -- location_is_high_risk() still resolves the safety gate through it.
     when 'country' then

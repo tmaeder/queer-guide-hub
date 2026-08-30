@@ -260,6 +260,16 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
       'is the fired-count, and the link-to-queue takes the toggle slot. E would demand a chart ' +
       'this page has no data for.',
   },
+  {
+    path: 'trash',
+    archetype: 'F',
+    title: 'Trash',
+    adopted: true,
+    caveat:
+      'F rather than A: every row ends in a decision (restore, or let the snapshot expire) and ' +
+      'there is nothing to filter or bulk-edit. It has no thread pane, because the "thread" for ' +
+      'a deleted row is the snapshot itself and showing raw jsonb would not help anyone decide.',
+  },
 ];
 
 const BY_PATH = new Map(ADMIN_ARCHETYPES.map((e) => [e.path, e]));

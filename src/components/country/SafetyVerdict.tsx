@@ -74,12 +74,14 @@ export function SafetyVerdict({
       ? 'high'
       : risk;
 
-  const verdictWord = t(`country.verdict.${VERDICT_KEY[effectiveRisk]}`, VERDICT_DEFAULT[effectiveRisk]);
-  const scoreInfo = getScoreLabel(equalityScore);
-  const tierLabel = t(
-    `trips.safety.scoreLabel.${SCORE_LABEL_KEY[scoreInfo.label] ?? 'noData'}`,
-    { defaultValue: scoreInfo.label },
+  const verdictWord = t(
+    `country.verdict.${VERDICT_KEY[effectiveRisk]}`,
+    VERDICT_DEFAULT[effectiveRisk],
   );
+  const scoreInfo = getScoreLabel(equalityScore);
+  const tierLabel = t(`trips.safety.scoreLabel.${SCORE_LABEL_KEY[scoreInfo.label] ?? 'noData'}`, {
+    defaultValue: scoreInfo.label,
+  });
 
   return (
     <div
@@ -87,16 +89,17 @@ export function SafetyVerdict({
         'flex flex-col gap-4 rounded-container border p-6 sm:flex-row sm:items-center sm:justify-between' +
         (settled ? '' : ' bg-surface-container border-border')
       }
-      style={
-        settled ? { backgroundColor: visual.bg, borderColor: visual.border } : undefined
-      }
+      style={settled ? { backgroundColor: visual.bg, borderColor: visual.border } : undefined}
     >
       <div className="flex items-start gap-4">
         <div
           className="flex h-12 w-12 shrink-0 items-center justify-center rounded-element"
           style={
             settled
-              ? { color: visual.fg, backgroundColor: 'color-mix(in srgb, currentColor 12%, transparent)' }
+              ? {
+                  color: visual.fg,
+                  backgroundColor: 'color-mix(in srgb, currentColor 12%, transparent)',
+                }
               : undefined
           }
         >
@@ -117,36 +120,41 @@ export function SafetyVerdict({
             className="text-title font-bold leading-tight"
             style={settled ? { color: visual.fg } : undefined}
           >
-            {settled
-              ? verdictWord
-              : t('country.verdict.checking', 'Checking legal status…')}
+            {settled ? verdictWord : t('country.verdict.checking', 'Checking legal status…')}
           </p>
-          {settled && (report.hasDeathPenaltyRiskDestination || report.hasCriminalizedDestination) && (
-            <p className="mt-1 flex items-center gap-1.5 text-13 font-semibold" style={{ color: visual.fg }}>
-              {report.hasDeathPenaltyDestination ? (
-                <>
-                  <Skull className="h-4 w-4 shrink-0" aria-hidden="true" />
-                  {t('trips.safety.flags.deathPenalty', 'Death penalty in effect for same-sex relations')}
-                </>
-              ) : report.hasDeathPenaltyRiskDestination ? (
-                /* Recorded as possible with no legal certainty. Stated as
+          {settled &&
+            (report.hasDeathPenaltyRiskDestination || report.hasCriminalizedDestination) && (
+              <p
+                className="mt-1 flex items-center gap-1.5 text-13 font-semibold"
+                style={{ color: visual.fg }}
+              >
+                {report.hasDeathPenaltyDestination ? (
+                  <>
+                    <Skull className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    {t(
+                      'trips.safety.flags.deathPenalty',
+                      'Death penalty in effect for same-sex relations',
+                    )}
+                  </>
+                ) : report.hasDeathPenaltyRiskDestination ? (
+                  /* Recorded as possible with no legal certainty. Stated as
                    uncertainty rather than as an established penalty — but with
                    the Skull, because the decision it informs is the same one. */
-                <>
-                  <Skull className="h-4 w-4 shrink-0" aria-hidden="true" />
-                  {t(
-                    'trips.safety.flags.deathPenaltyPossible',
-                    'Death penalty possible for same-sex relations — no legal certainty',
-                  )}
-                </>
-              ) : (
-                <>
-                  <ShieldAlert className="h-4 w-4 shrink-0" aria-hidden="true" />
-                  {t('trips.safety.flags.criminalized', 'Same-sex relations are criminalized')}
-                </>
-              )}
-            </p>
-          )}
+                  <>
+                    <Skull className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    {t(
+                      'trips.safety.flags.deathPenaltyPossible',
+                      'Death penalty possible for same-sex relations — no legal certainty',
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <ShieldAlert className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    {t('trips.safety.flags.criminalized', 'Same-sex relations are criminalized')}
+                  </>
+                )}
+              </p>
+            )}
         </div>
       </div>
 
@@ -158,14 +166,13 @@ export function SafetyVerdict({
           >
             {t('country.verdict.equality', 'Equality')}
           </p>
+          {/* The composite 0-100 figure was retired from the reader-facing
+              pages: it read as a precise measurement of a country's safety
+              when it is a roll-up of legal flags. The tier is the verdict. */}
           <p
-            className="text-headline font-bold leading-none"
+            className="text-title font-bold leading-none"
             style={settled ? { color: visual.fg } : undefined}
           >
-            {equalityScore != null ? equalityScore : '—'}
-            <span className="text-13 font-semibold">/100</span>
-          </p>
-          <p className="text-2xs" style={settled ? { color: visual.fg } : undefined}>
             {tierLabel}
           </p>
         </div>

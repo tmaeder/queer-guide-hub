@@ -218,18 +218,38 @@ Deno.test('applySuggestion: unsupported types return false for non-tag entities'
 // ── tag enrichment suggestions (entity_type='unified_tags') ──────────────────
 // Extended stub: also records .update(patch).eq(col,val) calls.
 
-function makeTagClient(opts: { error?: { message: string } } = {}) {
+function makeTagClient(
+  opts: { error?: { message: string }; isFacet?: boolean; tagRow?: Record<string, unknown> | null } = {},
+) {
   const calls: { table: string; op: string; values: Record<string, unknown>; options?: Record<string, unknown> }[] = []
   const error = opts.error ?? null
+  // The category branch demotes with a THREE-filter chain
+  // (.eq.eq.neq) and reads the tag before writing, so the mock has to be
+  // chainable and thenable rather than resolving on the first .eq().
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const chain = (record: () => void, result: any): any => {
+    const self: any = {
+      eq: () => self,
+      neq: () => self,
+      maybeSingle: () => {
+        record()
+        return Promise.resolve(result)
+      },
+      then: (res: (v: unknown) => unknown) => {
+        record()
+        return Promise.resolve(result).then(res)
+      },
+    }
+    return self
+  }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const builder = (table: string): any => ({
+    select() {
+      const row = opts.tagRow === undefined ? { slug: 'drag', entity_kind: 'concept' } : opts.tagRow
+      return chain(() => calls.push({ table, op: 'select', values: {} }), { data: row, error: null })
+    },
     update(values: Record<string, unknown>) {
-      return {
-        eq(_col: string, _val: unknown) {
-          calls.push({ table, op: 'update', values })
-          return Promise.resolve({ data: null, error })
-        },
-      }
+      return chain(() => calls.push({ table, op: 'update', values }), { data: null, error })
     },
     upsert(values: Record<string, unknown>, options?: Record<string, unknown>) {
       calls.push({ table, op: 'upsert', values, options })
@@ -237,7 +257,14 @@ function makeTagClient(opts: { error?: { message: string } } = {}) {
     },
   })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const client: any = { from: builder, _calls: calls }
+  const client: any = {
+    from: builder,
+    rpc: (fn: string) => {
+      calls.push({ table: `rpc:${fn}`, op: 'rpc', values: {} })
+      return Promise.resolve({ data: opts.isFacet ?? false, error: null })
+    },
+    _calls: calls,
+  }
   return client
 }
 
@@ -314,7 +341,11 @@ Deno.test('applySuggestion: image_replacement — throws without image_url', asy
   )
 })
 
-Deno.test('applySuggestion: category — upserts primary assignment', async () => {
+Deno.test('applySuggestion: category — DEMOTES the old primary before promoting', async () => {
+  // The demote is the whole point: without it a tag that is already filed ends
+  // up with two primaries, which the partial unique index from 20261008130000
+  // now rejects outright. Order matters — promote-then-demote would trip the
+  // same index.
   const client = makeTagClient()
   const ok = await applySuggestion(client, {
     suggestion_type: 'category',
@@ -324,10 +355,33 @@ Deno.test('applySuggestion: category — upserts primary assignment', async () =
     proposed_value: { category_id: 'cat-1' },
   })
   assertEquals(ok, true)
-  assertEquals(client._calls[0].table, 'tag_category_assignments')
-  assertEquals(client._calls[0].op, 'upsert')
-  assertEquals(client._calls[0].values, { tag_id: 'tag-1', category_id: 'cat-1', is_primary: true })
-  assertEquals(client._calls[0].options, { onConflict: 'tag_id,category_id' })
+  const writes = client._calls.filter((c: { table: string }) => c.table === 'tag_category_assignments')
+  assertEquals(writes[0].op, 'update')
+  assertEquals(writes[0].values, { is_primary: false })
+  assertEquals(writes[1].op, 'upsert')
+  assertEquals(writes[1].values, { tag_id: 'tag-1', category_id: 'cat-1', is_primary: true })
+  assertEquals(writes[1].options, { onConflict: 'tag_id,category_id' })
+})
+
+Deno.test('applySuggestion: category — refuses to file a marketplace facet', async () => {
+  // Asked of the database via is_marketplace_facet(), not re-spelled here.
+  const client = makeTagClient({ isFacet: true, tagRow: { slug: 'spandex', entity_kind: 'attribute' } })
+  await assertRejects(
+    () =>
+      applySuggestion(client, {
+        suggestion_type: 'category',
+        entity_type: 'unified_tags',
+        entity_id: 'tag-1',
+        locale: null,
+        proposed_value: { category_id: 'cat-1' },
+      }),
+    Error,
+    'refusing to file marketplace facet',
+  )
+  assertEquals(
+    client._calls.filter((c: { table: string }) => c.table === 'tag_category_assignments').length,
+    0,
+  )
 })
 
 Deno.test('applySuggestion: category — propagates DB error', async () => {

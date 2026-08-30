@@ -197,11 +197,18 @@ export interface ContentRowAction {
  * per-type SQL; this block tells the ADMIN LIST which column to read so it can
  * show the right badge and filter, without duplicating the semantics.
  *
- * Omit `archive` entirely for a type that cannot express an archived state.
- * Four do: hotels, news_articles, countries and community_groups have no
- * status/visibility/review_status column, only `seo_indexable` — which governs
- * crawlers, not the site. Offering "Archive" there would deindex without
- * hiding, which is precisely the defect the archived-rows work removed.
+ * Omit `archive` entirely for a type that must not offer one. Exactly ONE does:
+ * `countries`. Hotels, news_articles and community_groups were also omitted
+ * until 20261028100000 gave them an `archived_at` — they simply had no column,
+ * only `seo_indexable`, which governs crawlers rather than the site, so an
+ * Archive button would have deindexed without hiding.
+ *
+ * Countries are different and permanent: the blocker is not a missing column
+ * but that `countries` is a PARENT. 246 of 250 have dependent
+ * cities/venues/events, every child page embeds the parent for its name and
+ * legal status, and `location_is_high_risk()` resolves the safety gate through
+ * the same row — so archiving one would silently un-gate content in a
+ * criminalizing jurisdiction. See the block comment in `country.ts`.
  */
 export interface ContentLifecycleConfig {
   /** `p_type` for archive_entity / restore_entity / delete_entity. */

@@ -173,6 +173,8 @@ describe('CityDetail', () => {
     };
     renderPage();
     expect(screen.getByText('Safety')).toBeInTheDocument();
-    expect(screen.getByText('83/100')).toBeInTheDocument();
+    // The tier, not the raw composite — the 0-100 number was retired.
+    expect(screen.getByText(/equality/i)).toBeInTheDocument();
+    expect(screen.queryByText('83/100')).not.toBeInTheDocument();
   });
 });
