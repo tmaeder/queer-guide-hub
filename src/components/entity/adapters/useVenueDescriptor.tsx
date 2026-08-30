@@ -49,7 +49,6 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
   const navigate = useLocalizedNavigate();
   const { t } = useTranslation();
   const { toast } = useToast();
-  const [checkinRefresh, setCheckinRefresh] = useState(0);
   const [addToTripOpen, setAddToTripOpen] = useState(false);
   const { events } = useEvents();
 
@@ -192,7 +191,6 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
           render: () => (
             <VenueLocationContact
               venue={venue}
-              checkinRefresh={checkinRefresh}
               onContentUpdated={refetch}
               nearbyPoints={nearbyPoints}
             />
@@ -281,15 +279,14 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
             venue={venue}
             onAddToTrip={() => setAddToTripOpen(true)}
             onShare={handleShare}
-            onCheckInSuccess={() => setCheckinRefresh((p) => p + 1)}
             t={t}
           />
         ),
-        // The rail keeps what is genuinely rail-shaped — safety card, recent
-        // check-ins, the correction footnote — now that location/contact/map
-        // has moved to the body as a section. Keeping the two-column frame
-        // matters: it is what stops the page becoming one long column.
-        rail: <VenueSidebar venue={venue} checkinRefresh={checkinRefresh} />,
+        // The rail keeps what is genuinely rail-shaped — safety card, the
+        // correction footnote — now that location/contact/map has moved to the
+        // body as a section. Keeping the two-column frame matters: it is what
+        // stops the page becoming one long column.
+        rail: <VenueSidebar venue={venue} />,
       },
       sidebar: null,
       related: {
@@ -350,7 +347,6 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
     reviews,
     averageRating,
     nearbyPoints,
-    checkinRefresh,
     addToTripOpen,
     // Unlike the warmed-only hooks above, this one is READ (the `signals`
     // section's `when`), so it has to be a dependency — otherwise the section

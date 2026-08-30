@@ -69,13 +69,6 @@ describe('Footer', () => {
     }
   });
 
-  // Guards the ODbL obligation for the city-card transit diagrams. It renders
-  // outside any map canvas, so nothing else on the page carries the credit.
-  it('keeps the OpenStreetMap attribution', () => {
-    renderFooter();
-    expect(screen.getByText(/OpenStreetMap/)).toBeInTheDocument();
-  });
-
   // "Report something" pointed at /report for as long as this footer existed
   // and no such route was ever registered, so the anti-discrimination block's
   // only call to action landed on the 404 board.

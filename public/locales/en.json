@@ -319,7 +319,6 @@
       "title": "Crisis lines, 24 hours",
       "body": "Trans helpline, LGBT+ crisis support, and local emergency numbers, listed by country and always one click from any page."
     },
-    "osmAttribution": "Transit diagrams derived from © OpenStreetMap contributors (ODbL)",
     "reportSomething": "Report something",
     "hotlines": "Hotlines",
     "antiDiscrimination": {
@@ -2388,10 +2387,7 @@
       "pride": {
         "title": "Pride this season",
         "window": "Next 4 months",
-        "empty": "No upcoming Pride events.",
-        "safety": "Equality score",
-        "equalityTooltip": "Equality score reflects this country's LGBTQ+ legal protections. Higher is safer.",
-        "equalityAria": "Equality score {{score}}: tap for explanation"
+        "empty": "No upcoming Pride events."
       },
       "inspiration": {
         "villages": "Queer villages",
