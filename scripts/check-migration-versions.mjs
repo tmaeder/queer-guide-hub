@@ -106,6 +106,16 @@ const remote = remoteMap
 
 const files = readdirSync(MIGRATIONS_DIR).filter((f) => f.endsWith('.sql'))
 
+/**
+ * `--duplicates-only` runs check 2 and nothing else.
+ *
+ * For the post-merge run on main (.github/workflows/migration-guard-main.yml).
+ * Duplicates are unambiguously broken whenever you look at them; ordering is a
+ * pre-merge question that produces false positives once a file is on main — see
+ * the comment above check 3.
+ */
+const DUPLICATES_ONLY = process.argv.includes('--duplicates-only')
+
 const errors = []
 const warnings = []
 /** Versions below max that are already in remote history — reported, never fatal. */
@@ -181,7 +191,25 @@ for (const [version, group] of byVersion) {
   }
 }
 
-// 3) Out-of-order versions. A migration whose version sorts BELOW the newest
+// 3) Out-of-order versions. Skipped entirely under --duplicates-only.
+//
+//    THIS CHECK IS A PRE-MERGE QUESTION AND ONLY MAKES SENSE ON A PR. It asks
+//    "would db push refuse this file", which stops being answerable once the file
+//    is on main: `db push` applies a batch in version order, so a migration that
+//    merges after a higher-versioned one has landed is applied perfectly happily
+//    as long as both sort above APPLIED history. Measured 2026-08-30 —
+//    20261026100000 merged after 20261027100000 was already on main, the
+//    post-merge guard flagged it, and db push had in fact applied both without
+//    complaint. That is a false positive, and on a repo with ~70 concurrent
+//    worktrees it is the COMMON case, not a rare one. A guard that cries wolf on
+//    the ordinary path gets muted, which is worse than not having it.
+//
+//    Check 2 (duplicates) has no such problem: two files sharing a version is
+//    unambiguously broken whether it is seen before or after the merge, and it is
+//    the condition that actually took `db push` down. So the post-merge workflow
+//    runs duplicates only.
+//
+//    A migration whose version sorts BELOW the newest
 //    one remote history already holds makes `db push` abort with "local
 //    migration files to be inserted before the last migration on remote" — and
 //    it aborts on the FIRST such file, taking every later migration in the same
@@ -196,7 +224,7 @@ for (const [version, group] of byVersion) {
 //
 //    Compare against the highest PRE-EXISTING version: remote history and the
 //    base ref agree once CI has pushed main, and this stays pure-local.
-if (base !== null) {
+if (base !== null && !DUPLICATES_ONLY) {
   const baseVersions = files
     .filter((f) => !isNew(f))
     .map((f) => f.match(VERSION_RE)?.[1])

@@ -57,12 +57,10 @@ jobs:
         with:
           node-version: "22.20.0"
 
-      # On a main push there is no base ref to diff against, so every file is
-      # treated as pre-existing. That is correct here: this run is not asking
-      # "did this change introduce a duplicate", it is asking "is main broken
-      # right now". Both duplicate kinds are hard errors either way since
-      # 20261022100000 — an unapplied pair aborts `db push` outright, an applied
-      # one silently skips the losing file forever.
+      # This run asks "is main broken right now", not "did this change introduce
+      # a problem". Both duplicate kinds are hard errors since 20261022100000 —
+      # an unapplied pair aborts `db push` outright, an applied one silently
+      # skips the losing file forever.
       - name: Resolve migration base ref
         run: echo "MIGRATION_BASE_REF=HEAD~1" >> "$GITHUB_ENV"
 
@@ -70,15 +68,27 @@ jobs:
       # check ordering against applied history. Without it the script reports
       # `unverified` and exits non-zero-but-not-1, which is surfaced as a warning
       # below rather than a failure — it must not go green on "could not check".
+      #
+      # `--duplicates-only` IS LOAD-BEARING, and this workflow's first live run is
+      # why. Without it the ordering check (check 3) also runs, and that check is a
+      # PRE-MERGE question: it asks whether `db push` would refuse a file, which
+      # stops being answerable once the file is on main, because db push applies a
+      # batch in version order and is happy as long as everything sorts above
+      # APPLIED history. Measured 2026-08-30 — 20261026100000 merged after
+      # 20261027100000 had landed, this guard failed on it, and db push had already
+      # applied BOTH without complaint. On a repo with ~70 concurrent worktrees
+      # that ordering is the ordinary case, so the guard would fail on most merges
+      # and be muted within a week. Duplicates have no such ambiguity and are the
+      # condition that actually took db push down, so that is all this checks.
       - name: Check migration versions
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_PROJECT_REF: xqeacpakadqfxjxjcewc
         run: |
           rc=0
-          node scripts/check-migration-versions.mjs || rc=$?
+          node scripts/check-migration-versions.mjs --duplicates-only || rc=$?
           if [ "$rc" -eq 1 ]; then
-            echo "::error title=main has a duplicate or out-of-order migration version::\`supabase db push\` will abort or silently skip. Every pending migration in the repo is affected, not just the offending one. Rename the unapplied file to a version above the current max."
+            echo "::error title=main has a duplicate migration version::Two files share one 14-digit version. \`supabase db push\` either aborts on schema_migrations_pkey (if neither is applied) or silently skips the losing file forever (if one is). Either way every pending migration in the repo is affected. Establish which file is applied, then rename the OTHER above the current max."
             exit 1
           fi
           if [ "$rc" -ne 0 ]; then
