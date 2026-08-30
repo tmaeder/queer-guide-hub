@@ -273,6 +273,31 @@ update unified_tags
  where slug in ('double-penetration', 'triple-penetration')
    and coalesce(btrim(description), '') = 'Sexual activity tag';
 
+-- ── 3c. `69` points at the NUMBER sixty-nine ───────────────────────────────
+-- Found by this migration's own wikidata assertion, which failed the first
+-- deploy with "4 position tags carry a wikidata_id". Three of those four are
+-- legitimate and were verified against the live Wikidata API:
+--   doggy-style        Q300648    "doggy style"        P31 = Q8394 (sex position)
+--   double-penetration Q1243210   "double penetration" P31 = Q8394
+--   triple-penetration Q132071673 "triple penetration" P31 = Q8394
+-- The fourth is not:
+--   69                 Q713048    "69"                 P31 = natural number
+-- — the arithmetic integer, whose sitelink is the /wiki/69 disambiguation
+-- page. Same namesake class as Cassia fistula on `golden-shower` and Q4
+-- (death) on `passing`, and it matters for the same reason: the weekly
+-- tag_medical_codes_sync and tag_wikidata_hierarchy jobs rebuild FROM this
+-- identifier, so a wrong one regenerates wrong data indefinitely.
+--
+-- Cleared, not re-resolved. Prefer NULL to a guess: a null identifier
+-- regenerates nothing, a plausible-but-wrong one regenerates forever. The
+-- wikipedia_url goes with it because it is the number's page. The tag's own
+-- prose is correct and is deliberately left alone — only the identity is wrong.
+update unified_tags
+   set wikidata_id = null,
+       wikipedia_url = null
+ where slug = '69'
+   and wikidata_id = 'Q713048';
+
 -- ── 4. ontology edges ──────────────────────────────────────────────────────
 -- ONLY 'broader' and 'related' are legal: tag_relations carries two
 -- overlapping relation_type CHECKs and their intersection is those two.
@@ -411,12 +436,24 @@ begin
     raise exception '% position tags have a missing or placeholder description', v_bad;
   end if;
 
-  -- no wikidata identifiers (header note 4)
+  -- No wikidata identifiers, EXCEPT the three re-filed tags whose QIDs were
+  -- checked by hand against the live API and are genuinely P31 = Q8394
+  -- (sex position). Header note 4 is about the 138 rows this migration
+  -- INSERTS — those are the namesake bait (Arch, Crab, Lotus, Superman) and
+  -- they must all be null. A pre-existing, verified-correct identifier on a
+  -- re-filed tag is not the thing that rule is protecting against, and
+  -- stripping it would throw away good data.
+  --
+  -- The allowlist is spelled as three literal slugs rather than "any tag that
+  -- already had one", so a NEW wrong identifier arriving on any of these
+  -- pages still fails this block instead of being waved through.
   select count(*) into v_bad
   from unified_tags t join tag_categories c on c.id = t.category_id
-  where c.slug = 'sex-positions' and t.wikidata_id is not null;
+  where c.slug = 'sex-positions'
+    and t.wikidata_id is not null
+    and t.slug not in ('doggy-style', 'double-penetration', 'triple-penetration');
   if v_bad > 0 then
-    raise exception '% position tags carry a wikidata_id', v_bad;
+    raise exception '% position tags carry an unvetted wikidata_id', v_bad;
   end if;
 
   raise notice 'Positions stop verified: % tags, all gated and filed', v_total;
