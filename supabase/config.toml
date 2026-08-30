@@ -523,3 +523,10 @@ verify_jwt = false
 # Cron target (pg_cron x-internal-secret) — self-gates via requireInternalOrAdmin.
 [functions.affiliate-conversions-sync]
 verify_jwt = false
+
+# Cron target — self-gates on X-Webhook-Secret (AMENITY_QUALITY_WEBHOOK_SECRET)
+# or requireInternalOrAdmin. A new source-*/enrichment function without this line
+# gets a 401 from pg_cron, which then reads as an outage and burns the
+# auto-pause counter.
+[functions.venue-accessibility-osm]
+verify_jwt = false

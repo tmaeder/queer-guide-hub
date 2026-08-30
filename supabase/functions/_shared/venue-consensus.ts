@@ -6,6 +6,11 @@
 // Agreement raises confidence (noisy-OR of source trust); conflict lowers it.
 
 import { extractDomain, normalizeEmail, normalizeName, normalizePhone } from './venue-pipeline-utils.ts'
+import {
+  ACCESSIBILITY_CONTRADICTIONS,
+  resolveContradictions,
+  type ContradictionPairs,
+} from './accessibility-vocab.ts'
 
 // Source trust weights. Higher = more authoritative. `existing` is the venue's
 // current DB value — trusted enough to resist churn but beatable by consensus.
@@ -35,6 +40,10 @@ export interface FieldSpec {
   kind: FieldKind
   // numeric agreement tolerance (number kind) — values within are "the same"
   tolerance?: number
+  // array kind only: mutually exclusive member pairs, written [positive, negative];
+  // the SECOND element survives when both are present. Without this an array field
+  // can never register a conflict — see the array branch of decideField.
+  contradictions?: ContradictionPairs
 }
 
 // Canonical venue consensus fields and where they live in normalized_data.
@@ -54,7 +63,10 @@ export const VENUE_FIELDS: FieldSpec[] = [
   { field: 'tags', path: 'tags', kind: 'array' },
   { field: 'images', path: 'images', kind: 'array' },
   { field: 'amenities', path: 'amenities', kind: 'array' },
-  { field: 'accessibility_attributes', path: 'accessibility_attributes', kind: 'array' },
+  // The only array field that can conflict. `not-wheelchair-accessible` and
+  // `wheelchair-accessible` are both first-class vocabulary, so a plain union
+  // would publish them together — see accessibility-vocab.ts.
+  { field: 'accessibility_attributes', path: 'accessibility_attributes', kind: 'array', contradictions: ACCESSIBILITY_CONTRADICTIONS },
   { field: 'lgbti_relevance_score', path: 'lgbti_relevance_score', kind: 'number', tolerance: 0.15 },
 ]
 
@@ -139,7 +151,13 @@ export function decideField(
   const candidates = rawCandidates.filter((c) => !isEmpty(c.value))
   if (candidates.length === 0) return null
 
-  // Arrays: union of all values; every contributing source agrees.
+  // Arrays: union of all values. Every contributing source agrees UNLESS the
+  // spec declares mutually exclusive members and both halves of a pair turn up.
+  //
+  // Without the contradiction arm this branch reported `conflicting: []`
+  // unconditionally, which is why `HIGH_RISK_FIELDS` could never gate an array
+  // and why a venue could carry `wheelchair-accessible` and
+  // `not-wheelchair-accessible` at once, at high confidence, auto-committed.
   if (spec.kind === 'array') {
     const seen = new Set<string>()
     const union: unknown[] = []
@@ -152,16 +170,43 @@ export function decideField(
         }
       }
     }
-    const agreeing = candidates.map((c) => c.source)
-    const confidence = noisyOr(agreeing.map(sourceWeight))
+
+    // Resolve exclusive members, then attribute the loss. A source is
+    // conflicting iff a value it supplied was dropped — which correctly catches
+    // a source that contradicts ITSELF, not only cross-source disagreement.
+    let winner: unknown[] = union
+    let dropped: string[] = []
+    if (spec.contradictions?.length) {
+      const r = resolveContradictions(union.map((v) => String(v ?? '')), spec.contradictions)
+      dropped = r.dropped
+      if (dropped.length > 0) {
+        const survives = new Set(r.resolved)
+        winner = union.filter((v) => survives.has(String(v ?? '').trim().toLowerCase()))
+      }
+    }
+    const droppedSet = new Set(dropped)
+    const conflicting = droppedSet.size === 0
+      ? []
+      : candidates
+        .filter((c) => toArray(c.value).some((v) => droppedSet.has(String(v ?? '').trim().toLowerCase())))
+        .map((c) => c.source)
+    const agreeing = candidates.map((c) => c.source).filter((s) => !conflicting.includes(s))
+
+    let confidence = noisyOr(agreeing.map(sourceWeight))
+    if (conflicting.length > 0) confidence = Math.round(confidence * 0.7 * 100) / 100
+
     return {
       field: spec.field,
-      winner: union,
-      winningSource: agreeing.sort((a, b) => sourceWeight(b) - sourceWeight(a))[0],
+      winner,
+      winningSource: [...agreeing].sort((a, b) => sourceWeight(b) - sourceWeight(a))[0]
+        ?? [...conflicting].sort((a, b) => sourceWeight(b) - sourceWeight(a))[0],
       confidence,
       agreeing,
-      conflicting: [],
-      action: confidence >= autoThreshold ? 'auto_commit' : 'triage',
+      conflicting,
+      // A dropped access claim always goes to a human, whatever the confidence:
+      // two sources that disagree about a door is precisely the case a person
+      // has to settle.
+      action: confidence >= autoThreshold && conflicting.length === 0 ? 'auto_commit' : 'triage',
     }
   }
 

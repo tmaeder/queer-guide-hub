@@ -126,6 +126,37 @@ if (!hygieneRes.ok) {
     console.error('  Find the writer that set review_status without an UPDATE the promotion trigger can see.')
     process.exit(1)
   }
+  // Accessibility contradictions (2026-08-30). An entity asserting both halves
+  // of a pair — "wheelchair accessible" AND "not wheelchair accessible" — is
+  // publishing a claim that strands a disabled person at a door either way.
+  //
+  // ZERO TOLERANCE, NO BASELINE, deliberately its own key rather than folded
+  // into a broader quality count. Same reasoning as stranded_human_approved
+  // directly above: 14 rows hid under a 3,500-row warn floor for 40 days, and
+  // this corpus is smaller still, so any threshold at all would hide it.
+  //
+  // trg_venues_accessibility_resolve / trg_events_accessibility_resolve make
+  // this state unreachable through INSERT and UPDATE, so a non-zero count is
+  // never "some drift" — it is a writer that got around the trigger.
+  //
+  // The ABSENT key is reported separately from a zero count. Defaulting a
+  // missing key to {} would make an undeployed sentinel indistinguishable from
+  // a clean corpus — "no rows found" and "nobody looked" must never read the
+  // same, which is the whole lesson of this file.
+  const contradictions = hygiene.accessibility_contradictions
+  if (contradictions === undefined) {
+    console.warn('⚠ pipeline_hygiene_stats has no accessibility_contradictions key —')
+    console.warn('  20261106100000 is not applied, so this check measured NOTHING (it did not pass).')
+  }
+  const contradictionTotal = Object.values(contradictions ?? {}).reduce((a, b) => a + Number(b), 0)
+  if (contradictionTotal > 0) {
+    console.error(`✗ ${contradictionTotal} entity/entities assert both halves of an accessibility pair (${JSON.stringify(contradictions)})`)
+    console.error('  e.g. wheelchair-accessible AND not-wheelchair-accessible on one row.')
+    console.error('  The BEFORE triggers make this unreachable, so a writer bypassed them —')
+    console.error('  check for a COPY, a disabled trigger, or a new table with the column and no guard.')
+    console.error('  Resolve with: UPDATE <t> SET accessibility_attributes = accessibility_attributes WHERE ...')
+    process.exit(1)
+  }
   // City duplication (2026-08-25). Every unique key on `cities` keys on the
   // string, so exact-name duplicates are already impossible — measured 0 groups
   // over 5,552 live rows — and the class that survives is "same place, different
@@ -172,6 +203,9 @@ if (!hygieneRes.ok) {
   }
   console.log(`✓ Cron hygiene clean (${hygiene.cron_total} active jobs); staging pending_review=${pending}, stale_pending=${staleTotal}`)
   console.log(`✓ City dup signals: near_pairs=${nearPairs}, qid=${qidPct}%, aliases=${city.alias_rows}, queue=${qPending}`)
+  if (contradictions !== undefined) {
+    console.log('✓ Accessibility contradictions: 0 (zero-tolerance, no baseline)')
+  }
 }
 
 // 5a. Wrong-entity Wikidata links on the glossary (2026-08-29). tag-enrichment-sweep
