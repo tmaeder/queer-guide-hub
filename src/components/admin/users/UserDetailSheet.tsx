@@ -22,6 +22,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { UserModerationActions } from './UserModerationActions';
+import { UserDangerZone } from './UserDangerZone';
 import { X, MapPin, Calendar, Clock, User as UserIcon, Shield, Trash2 } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 
@@ -42,6 +43,10 @@ interface UserRow {
   pronouns: string | null;
   created_at: string;
   last_seen_at: string | null;
+  /** Confirmation handle for the danger zone; username first, email fallback,
+   *  matching what admin-delete-user checks server-side. */
+  username?: string | null;
+  email?: string | null;
 }
 
 interface UserDetailSheetProps {
@@ -146,6 +151,14 @@ export function UserDetailSheet({ user, open, onOpenChange, onUserUpdated }: Use
     queryClient.invalidateQueries({ queryKey: ['admin-table', 'profiles'] });
     queryClient.invalidateQueries({ queryKey: ['admin-user-stats'] });
     onUserUpdated();
+  };
+
+  // A deleted account has no sheet to return to, so close it as well as
+  // refreshing — otherwise the panel keeps rendering a row that no longer
+  // exists and every action on it 404s.
+  const handleDestroyed = () => {
+    handleModerationChanged();
+    onOpenChange(false);
   };
 
   if (!user) return null;
@@ -350,6 +363,15 @@ export function UserDetailSheet({ user, open, onOpenChange, onUserUpdated }: Use
                   displayName={displayName}
                   onStatusChanged={handleModerationChanged}
                 />
+
+                {isAdmin && (
+                  <UserDangerZone
+                    userId={user.user_id}
+                    confirmationHandle={user.username ?? user.email ?? null}
+                    displayName={displayName}
+                    onDone={handleDestroyed}
+                  />
+                )}
               </div>
             </TabsContent>
           </Tabs>

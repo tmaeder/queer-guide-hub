@@ -101,6 +101,19 @@ export interface AdminTableConfig<TData extends RowData> {
   onBulkEditSuccess?: () => void;
   /** Callback after bulk delete mutation succeeds */
   onBulkDeleteSuccess?: () => void;
+  /**
+   * Show Delete in the bulk bar. Defaults to `true` — the historical behaviour
+   * for every table using this shell.
+   *
+   * Set `false` where a raw `DELETE FROM <table> WHERE id IN (...)` is the
+   * WRONG operation, not merely a dangerous one. `/admin/users` is the case
+   * this exists for: `profiles` has NO-ACTION FK blockers that must be cleared
+   * first, storage objects with no FK at all, and an `auth.users` row a table
+   * delete never touches — which is exactly why `delete_my_account` runs thirty
+   * statements in a fixed order. The bulk bar knew none of that and offered the
+   * button anyway.
+   */
+  allowBulkDelete?: boolean;
 }
 
 // ── Table State ─────────────────────────────────────────────────

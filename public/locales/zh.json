@@ -4460,6 +4460,9 @@
         "slang": "俚语"
       },
       "sourceOfLaw": "法律依据",
+      "clinicalGuidance": "临床指南",
+      "guidanceEdition": "版本",
+      "notMedicalAdvice": "此处的定义来自已发布的临床指南，不构成医疗建议。请点击链接查看临床细节，并就您自身的治疗咨询医务人员。",
       "lawJurisdiction": "适用范围",
       "lawInternational": "国际",
       "lawAdopted": "通过年份",

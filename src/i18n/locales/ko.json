@@ -4460,6 +4460,9 @@
         "slang": "속어"
       },
       "sourceOfLaw": "법적 근거",
+      "clinicalGuidance": "임상 지침",
+      "guidanceEdition": "판",
+      "notMedicalAdvice": "여기의 정의는 공개된 임상 지침에서 가져온 것입니다. 의학적 조언이 아닙니다. 임상 세부 사항은 링크를 참조하고, 본인의 치료에 대해서는 의료진과 상담하세요.",
       "lawJurisdiction": "관할",
       "lawInternational": "국제",
       "lawAdopted": "제정",

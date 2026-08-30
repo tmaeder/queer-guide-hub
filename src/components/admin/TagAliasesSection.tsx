@@ -20,6 +20,13 @@ const ALIAS_TYPES = [
   { value: 'synonym', label: 'Synonym' },
   { value: 'abbreviation', label: 'Abbreviation' },
   { value: 'spelling_variant', label: 'Spelling variant' },
+  { value: 'plural', label: 'Plural' },
+  { value: 'brand_name', label: 'Brand name' },
+  { value: 'historical', label: 'Historical name' },
+  { value: 'multilingual', label: 'Translation' },
+  // Not a synonym: a narrower term routed to this tag (group member,
+  // product form, preparation, sub-topic). Displays as "Also covers".
+  { value: 'covers', label: 'Covers (narrower term)' },
 ];
 
 interface TagAliasesSectionProps {
@@ -74,11 +81,22 @@ export function TagAliasesSection({ tagId }: TagAliasesSectionProps) {
                 >
                   {alias.alias_name}
                   <span className="ml-0.5" style={{ opacity: 0.6, fontSize: '0.65rem' }}>
-                    {alias.alias_type === 'abbreviation'
-                      ? 'abbr'
-                      : alias.alias_type === 'spelling_variant'
-                        ? 'var'
-                        : ''}
+                    {[
+                      alias.alias_type === 'abbreviation'
+                        ? 'abbr'
+                        : alias.alias_type === 'spelling_variant'
+                          ? 'var'
+                          : alias.alias_type === 'covers'
+                            ? 'covers'
+                            : alias.alias_type === 'multilingual'
+                              ? 'i18n'
+                              : '',
+                      // Unreviewed rows neither display publicly nor drive
+                      // auto-tagging — the admin needs to see which is which.
+                      alias.review_status !== 'approved' ? alias.review_status : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')}
                   </span>
                   <button
                     type="button"

@@ -4462,6 +4462,9 @@
         "slang": "Gergo"
       },
       "sourceOfLaw": "Fonte del diritto",
+      "clinicalGuidance": "Linee guida cliniche",
+      "guidanceEdition": "Edizione",
+      "notMedicalAdvice": "Le definizioni derivano da linee guida cliniche pubblicate. Non sono consigli medici. Segui il link per i dettagli clinici e parla con personale sanitario del tuo caso.",
       "lawJurisdiction": "Giurisdizione",
       "lawInternational": "Internazionale",
       "lawAdopted": "Adottata",

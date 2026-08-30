@@ -129,13 +129,25 @@ export default function AdminTags() {
   };
 
   const handleDelete = async (tag: TagRow) => {
-    if (confirm(`Delete tag "${tag.name}"?`)) {
-      try {
-        await deleteTag(tag.id);
-        toast.success('Success: Tag deleted');
-      } catch {
-        toast.error('Error: Failed to delete tag');
-      }
+    if (
+      !confirm(
+        `Delete tag "${tag.name}"?\n\nThis only succeeds if the tag is unused. If anything still references it you'll get a breakdown of what — merge it instead.`,
+      )
+    ) {
+      return;
+    }
+    try {
+      await deleteTag(tag.id);
+      toast.success('Success: Tag deleted');
+    } catch (err) {
+      // Surface the RPC's own message. admin_delete_tag refuses with a
+      // per-source breakdown ("tag_sources: 3 citation(s) would be destroyed",
+      // "venues: 41 row(s) still list this tag by name"), and that breakdown is
+      // the entire point — swallowing it into "Failed to delete tag" leaves the
+      // admin with no idea why, or that merging is the action they want.
+      toast.error(err instanceof Error ? err.message : 'Failed to delete tag', {
+        duration: 12_000,
+      });
     }
   };
 
@@ -257,6 +269,14 @@ export default function AdminTags() {
       defaultSort: { column: 'name', direction: 'asc' },
       defaultPageSize: 50,
       enableSelection: true,
+      // The bulk bar issues a raw `DELETE FROM unified_tags WHERE id IN (...)`,
+      // which is the same defect the per-row action just stopped doing — it
+      // cascades citations, clinical codes and ontology edges away and orphans
+      // the denormalised `tags text[]` on 20+ content tables. There is no bulk
+      // equivalent of admin_delete_tag's per-tag refusal, and there should not
+      // be: the alternative to deleting a used tag is merging it, which is
+      // inherently one-at-a-time. Selection stays on for bulk edit and export.
+      allowBulkDelete: false,
       enableSearch: true,
       searchColumns: ['name', 'description', 'slug'],
       entityFilters: [
