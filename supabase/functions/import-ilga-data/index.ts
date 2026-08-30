@@ -324,7 +324,7 @@ async function applyTerritoryInheritance(
   const parentCodes = [...new Set(Object.values(TERRITORY_PARENTS))];
   const { data, error } = await supabase
     .from('countries')
-    .select(`code, ${INHERITED_COLUMNS.join(', ')}`)
+    .select(`code, name, ${INHERITED_COLUMNS.join(', ')}`)
     .in('code', parentCodes);
 
   if (error) return { inherited: 0, errors: [`inheritance parent fetch: ${error.message}`] };
@@ -363,6 +363,10 @@ async function applyTerritoryInheritance(
       lgbti_rights: {
         state: 'inherited',
         parent: parentCode,
+        // The NAME, not just the code: `SourceLine` renders "national law of Finland",
+        // and resolving FI -> Finland in the UI would mean a lookup table that drifts
+        // from this map. The row carries what the surface needs.
+        parent_name: parent.name as string,
         source: `ilga:${parentCode}`,
         reason: 'no distinct legal regime; parent-state law governs. ILGA does not list this jurisdiction separately.',
         at: new Date().toISOString(),
