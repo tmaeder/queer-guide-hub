@@ -75,6 +75,37 @@ begin
   raise notice 'facet resync: % row(s) re-stated', v_n;
 end $mig$;
 
+-- ---------------------------------------------------------------------------
+-- A redirect left pointing at a tag that has since been merged.
+--
+-- `party-and-play` was merged into `chemsex` by a concurrent session. The merge
+-- created `party-and-play -> chemsex` correctly, but did NOT repoint the
+-- PRE-EXISTING `party-play -> party-and-play` row, so that chain now ends on a
+-- merged tag. The resolver does not follow a redirect whose target is merged:
+-- measured on prod, /tags/party-play returns **404** while /tags/party-and-play
+-- 301s to /tags/chemsex. A URL that worked yesterday is dead, and a correct
+-- destination exists.
+--
+-- Scoped by PREDICATE, not by slug: any redirect whose target is merged and
+-- whose canonical is active gets repointed at the canonical. Exactly ONE row
+-- matches today, but written this way it also covers the next merge that
+-- forgets a redirect, which is how this one happened.
+--
+-- The other 57 rows in `redirect_to_non_canonical` are NOT touched. They point
+-- at DEPRECATED tags with no `merged_into_id`, so there is no canonical to
+-- follow — a different, pre-existing class, and the one the baseline of 58
+-- describes. Fixing them means deciding a destination per row, which is not
+-- this migration's business.
+-- ---------------------------------------------------------------------------
+update public.tag_slug_redirects r
+   set tag_id = t.merged_into_id
+  from public.unified_tags t, public.unified_tags c
+ where t.id = r.tag_id
+   and t.merged_into_id is not null
+   and c.id = t.merged_into_id
+   and c.status = 'active'
+   and c.merged_into_id is null;
+
 -- Asserts the FACET, not the column. The column was already right — believing
 -- it was the whole story is what produced the defect.
 do $verify$
@@ -119,5 +150,17 @@ begin
     and (c.slug <> 'practices-play' or u.category is distinct from c.name);
   if v_bad is not null then
     raise exception 'facet resync: a row left Practices & Play: %', v_bad;
+  end if;
+
+  -- No redirect points at a merged tag any more. Deliberately NOT asserting
+  -- zero on the whole `redirect_to_non_canonical` class: 57 rows point at
+  -- deprecated tags with no canonical to follow, they are the baseline, and an
+  -- assertion wider than the repair is what took db push down earlier today.
+  select count(*) into v_n
+  from public.tag_slug_redirects r
+  join public.unified_tags t on t.id = r.tag_id
+  where t.merged_into_id is not null;
+  if v_n > 0 then
+    raise exception 'facet resync: % redirect(s) still target a merged tag', v_n;
   end if;
 end $verify$;
