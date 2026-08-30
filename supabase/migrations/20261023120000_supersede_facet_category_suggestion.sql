@@ -12,13 +12,25 @@
 -- to fail.
 --
 -- 'superseded', not 'rejected': rejected means a human judged the proposal
--- wrong. Nobody judged this one — the rule changed underneath it, which is
+-- wrong. Nobody judged these — the rule changed underneath them, which is
 -- what superseded is for.
+--
+-- SECOND CLASS, same reason: 72 pending suggestions propose a category_id
+-- that no longer exists. All 72 predate the v3 cutover and name a stop
+-- 20261006150000 deleted — my own migration invalidated them. They are
+-- unapprovable by construction, not merely stale:
+-- tag_category_assignments.category_id carries a FK to tag_categories, so an
+-- admin clicking approve gets a foreign-key violation, and 16% of the queue
+-- is a landmine.
+--
+-- This is the same shape as the queue's other defect (#3212): a review queue
+-- accumulating rows that CANNOT be actioned, in a queue nobody had worked
+-- since 2026-06-07, so nothing ever surfaced it.
 
 set local statement_timeout = '600s';
 
 do $$
-declare v_n int; v_left int;
+declare v_n int; v_stale int; v_left int;
 begin
   perform set_config('app.actor', 'migration:20261023120000_supersede_facet_category_suggestion', true);
 
@@ -44,5 +56,29 @@ begin
     raise exception 'facet suggestions: % still pending', v_left;
   end if;
 
-  raise notice 'facet suggestions: superseded %', v_n;
+  -- Suggestions naming a category the v3 cutover deleted.
+  update ai_suggestions s
+     set status = 'superseded',
+         review_notes = coalesce(s.review_notes || ' | ', '')
+           || 'superseded 20261023120000: proposed category no longer exists (deleted by the v3 cutover, 20261006150000)'
+   where s.entity_type = 'unified_tags'
+     and s.suggestion_type = 'category'
+     and s.status = 'pending'
+     and not exists (
+       select 1 from tag_categories c
+        where c.id = (s.proposed_value->>'category_id')::uuid);
+  get diagnostics v_stale = row_count;
+
+  select count(*) into v_left
+    from ai_suggestions s
+   where s.entity_type = 'unified_tags' and s.suggestion_type = 'category'
+     and s.status = 'pending'
+     and not exists (
+       select 1 from tag_categories c
+        where c.id = (s.proposed_value->>'category_id')::uuid);
+  if v_left > 0 then
+    raise exception 'stale-category suggestions: % still pending', v_left;
+  end if;
+
+  raise notice 'superseded: % facet, % dangling-category', v_n, v_stale;
 end $$;
