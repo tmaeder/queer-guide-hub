@@ -489,10 +489,27 @@ Notes specific to this phase:
 
 ## §7 — Coverage honesty
 
-The platform has a working pattern and an e2e contract for this. `/rights` asserts `239 of 250`, and
-the test carries its own history: it _"asserted /250 of 250/ until 2026-08-07, which the page
+The platform has a working pattern and an e2e contract for this. `/rights` pins a coverage figure,
+and the test carries its own history: it _"asserted /250 of 250/ until 2026-08-07, which the page
 produced by rendering `{countries.length} of {countries.length}` — the same number twice. A tautology
 cannot fail."_
+
+**And the pinned number earned its keep while this document was being written.** The nightly run
+passed `/239 of 250/` at 03:19 UTC on 2026-08-30; a browser check against prod at 13:40 UTC the same
+day read **245 of 250** and no `239` anywhere on the page — six territories gained a recorded
+criminalisation status in between. The assertion was hours from going red and is re-pinned to 245 in
+the same commit as this document. **That is the pattern working, not failing**: a number that cannot
+move cannot report that the world did. A `\d+ of \d+` regex would have stayed green through the
+change and told nobody.
+
+Two consequences worth carrying into Phase 4a. First, **the transit band's coverage figure must be
+pinned the same way** — §7's e2e guard asserts the two numbers can DIFFER, not that they match a
+pattern. Second, **`docs/architecture/open-data-integration.md` §1.5 and §5 Phase 2 cite `239/250`
+and "11 countries" from a different query** — `lgbti_data_last_updated > now() - interval '2 days'`,
+which is _freshness_, where the page's figure is _presence_. They are not the same quantity and the
+page moving does not establish that the freshness figure moved. **Re-run the appendix SQL before
+quoting either.** Not corrected here, because inventing the number would be worse than leaving a
+dated one.
 
 ### The rule
 

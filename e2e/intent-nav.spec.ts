@@ -170,9 +170,26 @@ test.describe('honest coverage', () => {
     // rendering `{countries.length} of {countries.length}` — the same number
     // twice. A tautology cannot fail, so the test was green whatever the data
     // did, and it certified the exact defect it was written to prevent.
-    // 239 of 250 rows carry a legal status; the other 11 are uninhabited
-    // territories with no ILGA entry, and this number moves if that changes.
-    await expect(page.locator('main')).toContainText(/239 of 250/);
+    // The number is pinned so that it MOVES with the data — that is the whole
+    // difference between this assertion and the tautology it replaced.
+    //
+    // And it has moved. 239 until 2026-08-30, when six more territories gained
+    // a recorded status: the nightly run passed /239 of 250/ at 03:19 UTC and
+    // prod read 245 by 13:40 UTC the same day, so this was hours from going red
+    // on the next nightly. Verified in a browser against prod, twice, on a
+    // clean load.
+    //
+    // A stale document cannot explain it and that is worth stating, because
+    // this repo has a documented apex-staleness class: the line is computed
+    // client-side from a live fetch, and the sub-counts beside it read
+    // "67 of 245" / "179 of 244" rather than the /239 denominators — the number
+    // is derived from data that arrived at render time, not baked into cached
+    // HTML.
+    //
+    // 245 of 250 carry a recorded criminalisation status; the remaining 5 are
+    // territories with no ILGA entry. Re-pin when it moves again — never widen
+    // it to \d+ of \d+, which would restore the tautology.
+    await expect(page.locator('main')).toContainText(/245 of 250/);
   });
 
   test('/rights reaches every country, not just the first twelve per tier', async ({ page }) => {
