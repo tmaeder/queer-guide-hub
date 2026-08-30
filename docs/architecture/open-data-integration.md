@@ -91,7 +91,7 @@ trusting the prose — a stale figure here is worse than no figure.
 |---|---|---|---|---|---|
 | All 18 `RIGHT_TOPICS` columns | **ILGA live GraphQL** `database.ilga.org/graphql`, 17 parallel queries | — | `built` — `wf_import_ilga_data` (`0 2 * * *`), **239/250 updated at 02:00 today** | national-level only (`!subjurisdiction`), matched on `a2_code` | `equality_score` recomputed each run |
 | Stale remainder | — | — | `partial` — **11 countries** skipped every run, still stamped `2026-04-21` | — | — |
-| Second legal opinion | **Equaldex** `equaldex-api` → `countries` | — | **`missing`.** Reconciled to `is_enabled = false` on 2026-08-30 (`20261107100100`): re-probed, `/api/regions` still 404s and `/api` serves HTML, so the 2026-03-30 reason holds. 1 run ever, 0 items, never succeeded. **All 18 topics still rest on one source with no working corroborator** | — | The re-enable came from the admin bulk toggle, not a migration — see §3.6 note |
+| Second legal opinion | **Equaldex** `equaldex-api` → `countries` | — | **`retired` — licence-incompatible, not a technical failure** (`20260830132743`). `is_enabled = false` on prod since 2026-08-30 13:27. The API exists and wants a key; the blocker is that Equaldex's terms are non-commercial-only and forbid storing data beyond **30 days**, which cannot back a durable `countries` table. Scraping the region pages violates the same terms. **All 18 topics still rest on one source with no working corroborator** | — | Options (a) licence and (b) scrape are both **closed**; only (c) a different corroborator remains |
 | Equaldex timeline | `equaldex-timeline` → **`news_articles`** | — | `built` — ran today 03:45, 0 failures | — | Different arm, different purpose: this is a news feed, **not** a rights corroborator. Do not mistake its green status for legal corroboration |
 | `rights_verdicts` | Derived from the 18 | — | `built` — `_shared/rights/verdict.ts`, 4 lenses | CHECK 6 verdict values | — |
 | Trans-specific | TGEU TMM | Williams Institute | `partial` — `tgeu_tmm_import` (`20 3 * * 1`) fills `trans_violence_documented`; `trans_rights_index` has no live feed | `MonitorState` distinguishes `none_recorded` from `unmatched` | — |
@@ -636,10 +636,16 @@ days.
 
 1. Diagnose the 11. They are almost certainly dependent territories that fail the `a2_code` join —
    the same class that hid 36 missing capitals.
-2. **Do not scope this as "wire Equaldex."** That was already tried and the blocker is external:
-   re-probed 2026-08-30, `/api/regions` returns 404 and `/api` serves an HTML docs page — there is
-   no public API. The row was disabled for that reason in `20260330600000`, re-enabled outside the
-   migration path, and is disabled again in `20261107100100`. Resolve the fork explicitly:
+2. **Do not scope this as "wire Equaldex." The blocker is the licence, and it cannot be engineered
+   around** (`20260830132743`, 2026-08-30). `20260330600000`'s stated reason — "no public API
+   exists (returns 403/404)" — is **false and was actively harmful**: `/api/region?regionid=us`
+   returns **401**, i.e. the API exists and wants a key, so anyone re-reading that reason would
+   reasonably go looking for the moved endpoint. The real blocker is that Equaldex's terms are
+   non-commercial-only and forbid storing the data beyond **30 days**, which is structurally
+   incompatible with `countries` being the durable store behind `location_is_high_risk()`,
+   `safety_gated` and RLS. Scraping the region pages breaks the same terms plus an
+   anti-replication clause, so option (b) is **closed**, not merely fragile. Resolve the fork
+   explicitly:
    (a) licence a real Equaldex feed, (b) scrape region pages — fragile, and the dead row is evidence
    of how that goes, or (c) pick a different corroborator. Until one is chosen, **the honest state
    is that the platform's highest-stakes data has a single source**, and the document should keep
@@ -648,29 +654,42 @@ days.
    overwrite**.
 4. Extend the `safety_notes` country-key check to detect fact drift, not just relink staleness. The
    current key catches a city moving country; it cannot catch a country changing its law.
-5. ~~Reconcile the `scrape_sources` drift~~ — **done 2026-08-30**, and the diagnosis was not the
-   expected one. `20260330600000` **is** in `schema_migrations`, and its `statements` array is
-   empty — which looks like proof it never ran and is not: 115 of 1420 applied migrations have empty
-   statements, a bookkeeping artefact. The migration's own contents are the control group and they
-   split cleanly: **its `scrape_config` UPDATEs are in effect** (`equaldex-timeline` carries
-   `.timeline_item` with the underscore, `wnbr-events` `wiki_list`, last stamped 2026-03-30 16:32)
-   while **all six of its `is_enabled = false` UPDATEs are not**. So it ran, and the disables were
-   undone together between 2026-03-30 16:32 and 2026-04-16 05:02. No applied migration contains the
-   string `equaldex-api` besides the seed and `20260330600000` themselves, so the revert was not a
-   migration — the only mechanism in the repo that can do it is the admin **bulk** toggle at
-   `SourcesTab.tsx:114` (`update({is_enabled}).in('id', ids)`).
+5. ~~Reconcile the `scrape_sources` drift~~ — **done 2026-08-30** (`20260830132743`). Two
+   corrections to the mechanism, because the retirement migration records the opposite of both and
+   its version will be the first thing a future reader finds:
 
-   **Only `equaldex-api` was re-disabled, deliberately.** Re-applying a five-month-old decision
-   wholesale would have destroyed working ingest: `eventfrog-lgbtiq` (72 runs, 72 items, last
-   success 2026-08-29 — repointed at a real JSON feed by `20260822101923`, so its original
-   "JS-rendered SPA" reason is obsolete) and `gaycities-events` (13 runs, 8 items, last success
-   2026-08-23) are alive. `gaycities-places`, `travelgay-pride` and `mister-bnb` are inert and left
-   as they are. **A stale disable is as wrong as a stale enable** — the remaining five are recorded
-   here rather than actioned.
+   **(a) `20260330600000` DID take effect. Its own contents are the control group.** The migration
+   is in `schema_migrations` with an **empty `statements` array**, which looks like proof it never
+   ran and is not — 115 of 1424 applied migrations are empty, a bookkeeping artefact of the older
+   push/repair paths. Split its effects and they diverge cleanly: its `scrape_config` UPDATEs **are**
+   live (`equaldex-timeline` carries `.timeline_item` with the underscore where the seed had a
+   hyphen; `wnbr-events` `wiki_list`; `wikipedia-gay-villages` `wiki_country_tables`, last stamped
+   2026-03-30 16:32) while **all six of its `is_enabled = false` UPDATEs are not**. It ran, and the
+   disables were reverted afterwards — between 2026-03-30 16:32 and 2026-04-16 05:02.
 
-   Still open: **a UI bulk toggle can silently revert a migration's intent and leaves no audit
-   trail.** `scrape_sources` has no history table, so the only reason this was reconstructable is
-   that the migration disabled six rows at once and the config half survived to act as a control.
+   **(b) A code path in this repo DOES write `scrape_sources.is_enabled`** — the admin toggle at
+   `SourcesTab.tsx:103`, and its **bulk** sibling at `:114`
+   (`update({ is_enabled }).in('id', ids)`). `scrape-web-sources` genuinely does not (its three
+   write-backs set only `last_run_at`/`last_error`/`consecutive_failures`/totals), which is what
+   makes the admin UI the only candidate: no applied migration contains the string `equaldex-api`
+   besides the seed and `20260330600000`, and six rows flipping together is the shape of one
+   multi-select.
+
+   **This is the durable gap, and it is not closed:** a UI bulk toggle can silently revert a
+   migration's deliberate decision, and `scrape_sources` has **no history table**, so nothing
+   records who did it or when. The only reason this was reconstructable at all is that the
+   migration disabled six rows at once and its config half survived as a control.
+
+   **The other five stay as they are, deliberately.** Re-applying a five-month-old decision
+   wholesale would destroy working ingest: `eventfrog-lgbtiq` (72 runs, 72 items, last success
+   2026-08-29 — repointed at a real JSON feed by `20260822101923`, so its "JS-rendered SPA" reason
+   is obsolete) and `gaycities-events` (13 runs, 8 items, last success 2026-08-23) are alive.
+   `gaycities-places`, `travelgay-pride` and `mister-bnb` are inert. **A stale disable is as wrong
+   as a stale enable.**
+
+   Also recorded there and worth repeating: **`is_enabled = false` is not a kill switch.**
+   `scrape-web-sources` drops the `.eq('is_enabled', true)` filter entirely when invoked with an
+   explicit `sourceSlug`/`sourceId`, so a disabled source can still be run on demand.
 
 **Exit:** 250/250 fresh; a named decision on the corroborator; ~~the drift reconciled~~ **done**.
 **Sentinel:** stale-country count in `check-trust-safety-gates.mjs`.
