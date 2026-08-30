@@ -4,6 +4,17 @@ Design for Phase 2 of `docs/architecture/open-data-integration.md` §5.
 Measured against prod 2026-08-30. Supersedes the Phase 2 entry premises in that document,
 three of which this work falsified.
 
+> **Status: SHIPPED and verified on prod, 2026-08-30.** Migrations `20260830131211`,
+> `20260830132243`, `20260830132442`, `20260830132743`, `20261103100000`; territory
+> inheritance in `import-ilga-data` (deploys via CI on merge — the first inheritance was
+> applied by the migration, so live state is already correct).
+>
+> Two things in this document were written before they were measured and turned out to be
+> wrong; both are corrected in place rather than deleted, because the elimination is worth
+> more than the guess. (1) The `anon` grant was **not** the re-enable mechanism — see §C.
+> (2) Treating an unstamped note as a drifted one was a defect in §D's own first design,
+> caught by measuring before the cron ran and fixed in `20260830132442`.
+
 ## What the measurement changed
 
 The roadmap entry rested on three claims. Two are wrong and one is incomplete.
@@ -169,18 +180,25 @@ Re-disable `equaldex-api` with the **corrected** reason recorded in the row itse
 reader does not re-enable it on the stale "403/404" premise. The new migration's header states what
 was measured: 200 on `/api`, 401 on the region endpoint, licence-incompatible.
 
-**The unexplained re-enable has a candidate mechanism, and it is worse than the drift.** The
-baseline carries:
+**My first hypothesis for the re-enable was `anon` writes. It was verified with service role and
+is FALSE — recorded here because the elimination is the useful part.** The baseline does carry
+`GRANT INSERT, REFERENCES, DELETE, TRIGGER, TRUNCATE, MAINTAIN, UPDATE … TO anon` on
+`scrape_sources`, but RLS is enabled and all four policies are `TO authenticated` +
+`has_role_jwt('admin')`, so anon writes are denied. anon did not do it.
 
-```sql
-GRANT INSERT, REFERENCES, DELETE, TRIGGER, TRUNCATE, MAINTAIN, UPDATE
-  ON TABLE "public"."scrape_sources" TO "anon";
-```
+Nor did the scraper: all three `scrape-web-sources` write-backs (≈ lines 1288/1386/1426) set only
+`last_run_at` / `last_error` / `consecutive_failures` / totals. **No code path in this repo writes
+`scrape_sources.is_enabled` at all.** So the honest statement — the one the migration records — is
+that the row's flag has not been written by any repo code path since creation and the earlier
+migration's UPDATE did not take effect. No mechanism is invented to fill the gap.
 
-anon has no `SELECT` (an anon read returns `42501`), but appears to hold write and `TRUNCATE`.
-Whether it is exploitable depends on RLS enablement, which cannot be read with the anon key. **This
-must be verified with service role**, and if live it is a `REVOKE`, not a footnote — it is the
-`anon_write_grants_rls_off` class already recorded in project memory.
+**What the investigation did surface is larger and unrelated: `anon` holds `TRUNCATE` on 464
+tables** — `venues`, `events`, `countries`, `trips`, `messages`, `user_roles` among them — and
+**RLS does not gate `TRUNCATE`**; Postgres checks the privilege alone. It is not currently
+reachable (PostgREST exposes no TRUNCATE verb, and of 543 anon-executable routines the only one
+mentioning `truncate` is a read-only grant-audit function), so this is latent rather than live. It
+is tracked as its own task: revoking across 464 tables is a security change that deserves its own
+review, not a ride-along in a data-quality PR.
 
 Per this codebase's own rule, a migration that "fixes" config is not evidence the config changed:
 verify live afterwards with the SQL in §Verification, never assume.

@@ -89,9 +89,10 @@ trusting the prose — a stale figure here is worse than no figure.
 
 | Target field | Primary source | Corroborating | Status | Validation | Enrichment |
 |---|---|---|---|---|---|
-| All 18 `RIGHT_TOPICS` columns | **ILGA live GraphQL** `database.ilga.org/graphql`, 17 parallel queries | — | `built` — `wf_import_ilga_data` (`0 2 * * *`), **239/250 updated at 02:00 today** | national-level only (`!subjurisdiction`), matched on `a2_code` | `equality_score` recomputed each run |
-| Stale remainder | — | — | `partial` — **11 countries** skipped every run, still stamped `2026-04-21` | — | — |
-| Second legal opinion | **Equaldex** `equaldex-api` → `countries` | — | **`partial`, and effectively dead.** Row is `is_enabled = true` but **has not run since 2026-04-16**. `20260330600000` disabled it with the reason *"no public API exists (returns 403/404)"* — yet prod reads enabled, so something re-enabled it. All 18 topics rest on **one** source with no working corroborator | — | — |
+| All 18 `RIGHT_TOPICS` columns | **ILGA live GraphQL** `database.ilga.org/graphql`, 17 parallel queries | — | `built` — `wf_import_ilga_data` (`0 2 * * *`), **239/250 updated nightly** | national-level only (`!subjurisdiction`), matched on `a2_code` | `equality_score` recomputed each run |
+| The other 11 | inherited from parent state (5) / recorded decision (6) | — | `built` (2026-08-30) — **not a join failure.** ILGA returns 239 national jurisdictions, **239 distinct `a2_code`s, zero nulls** — a 100% hit rate. The 11 are outside ILGA's corpus because they have **no distinct legal system**; ILGA *does* carry dependent territories that have one (Cook Islands, Niue, Tokelau, Jersey, Anguilla all update nightly), so "dependent territory" is not the discriminator | `enrichment_status.lgbti_rights.state` on every one of the 11 | `import-ilga-data` re-derives the 5 inherited each run |
+| Second legal opinion | ~~Equaldex~~ → **decided: US State Dept, gate fields only** | — | `missing` — **Equaldex is closed on licence, not on HTTP.** `/api` returns **200** and the region endpoint **401** (key required); `20260330600000`'s stated reason *"no public API exists (returns 403/404)"* is measured false. The blocker is the terms: non-commercial only, *"may not… display it in a paid app or website"*, and **no storage beyond 30 days** — structurally incompatible with `countries` backing `location_is_high_risk()`. Row retired `licence_incompatible` in `20260830132743` | — | — |
+| **Single-source risk** | — | — | **`missing` — this is the honest state.** All 18 topics still rest on ILGA alone. The corroborator is *decided* (US State Dept Country Reports: public domain, independent embassy reporting, scoped to `lgbti_criminalization.legal` + `death_penalty`, ~66 jurisdictions) but **deliberately not built** — an empty registered table is the `equaldex-api` anti-pattern it exists to avoid | on landing: writes its own table, flags to `entity_review_queue`, **never** writes `countries` | — |
 | Equaldex timeline | `equaldex-timeline` → **`news_articles`** | — | `built` — ran today 03:45, 0 failures | — | Different arm, different purpose: this is a news feed, **not** a rights corroborator. Do not mistake its green status for legal corroboration |
 | `rights_verdicts` | Derived from the 18 | — | `built` — `_shared/rights/verdict.ts`, 4 lenses | CHECK 6 verdict values | — |
 | Trans-specific | TGEU TMM | Williams Institute | `partial` — `tgeu_tmm_import` (`20 3 * * 1`) fills `trans_violence_documented`; `trans_rights_index` has no live feed | `MonitorState` distinguishes `none_recorded` from `unmatched` | — |
@@ -577,7 +578,44 @@ measurement, and the sentinel — because §3.7 shows three of them land in blin
 baseline** — the `stranded_human_approved` pattern, where 14 rows hid under a 3,500-row floor for 40
 days.
 
-### Phase 2 — Legal corroboration
+### Phase 2 — Legal corroboration — **DONE 2026-08-30**, and three of its premises were wrong
+
+Shipped: `20260830131211` (disposition + sentinel), `20260830132243` / `20260830132442` /
+`20261103100000` (fact drift), `20260830132743` (Equaldex retirement), plus territory
+inheritance in `import-ilga-data`. Design: `docs/superpowers/specs/2026-08-30-legal-corroboration-phase-2-design.md`.
+
+**What the measurement changed — keep these, they are the reusable part:**
+
+1. **Not an `a2_code` join failure.** ILGA returns 239 national jurisdictions, 239 distinct
+   codes, zero nulls — 100% hit rate. The 11 are simply outside its corpus. The
+   discriminator is **having a distinct legal system**, not being a dependent territory.
+2. **Not stale — empty, and always were.** `lgbti_criminalization = '{}'`, `equality_score`
+   NULL on all 11. The `2026-04-21` stamp was seed data, never a successful run.
+3. **The live defect was a fail-open**, not the empty columns. `(…->>'legal') = 'false'`
+   against `'{}'` is `NULL` → not high risk, so Western Sahara would have published venues
+   **ungated**. Now `legal:false, disputed:true` — gate verified firing on prod.
+4. **Equaldex is closed on LICENCE, not HTTP** — see §1.5. The old migration's reason was
+   measured false, which is what kept inviting a re-enable.
+5. **`is_enabled=false` is not a kill switch.** `scrape-web-sources` drops the
+   `.eq('is_enabled', true)` filter when invoked with an explicit `sourceSlug`/`sourceId`.
+
+**Exit, as met:** **250/250 accounted for, 0 silent skips** — deliberately *not* "250/250
+fresh". Six countries keep their old timestamp because nothing checked them and there is
+nothing to check; stamping them fresh would record an observation that never happened.
+244 are stamped nightly (239 ILGA + 5 inherited), 6 carry a recorded decision.
+
+**Sentinel:** `country_rights_unaccounted` in `trust_safety_gate_status()` — critical,
+zero-tolerance, no baseline. Keys on *a recorded disposition*, with a 30-day threshold so a
+one-night ILGA outage cannot trip it while a permanently skipped country must.
+
+**Still open, deliberately:** the corroborator is decided but unbuilt (§1.5); the
+`rights_verdict_general` engine is incoherent (10 countries at `equality_score = 100` split
+across four verdicts — Norway, Sweden, France, Germany, UK and Canada all publish as
+`hostile`), tracked separately; and `anon` holds `TRUNCATE` on 464 tables, which RLS does
+not gate, also tracked separately.
+
+<details>
+<summary>Original Phase 2 plan, for the record</summary>
 
 **Entry:** ILGA healthy (239/250 nightly); **11 countries** persistently skipped, stamped
 `2026-04-21`; the Equaldex rights arm registered, enabled, and **dead since 2026-04-16**.
@@ -601,6 +639,8 @@ days.
 
 **Exit:** 250/250 fresh; a named decision on the corroborator; the drift reconciled.
 **Sentinel:** stale-country count in `check-trust-safety-gates.mjs`.
+
+</details>
 
 ### Phase 3 — Harm reduction depth
 
