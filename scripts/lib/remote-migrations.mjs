@@ -31,6 +31,89 @@ export function resolveToken() {
 }
 
 /**
+ * Strip a redundant `<14 digits>_` prefix from a migration NAME.
+ *
+ * MCP `apply_migration` stamps the version from its own call time, so the
+ * established recovery is to commit the file at the stamped version while the
+ * NAME still carries the version the author intended — e.g. version
+ * 20260620074438 recorded as `20260620100000_messages_phase0_foundations`
+ * against the file `20260620074438_messages_phase0_foundations.sql`. That is the
+ * same migration, correctly recovered, and comparing raw names would report 17
+ * such rows as defects.
+ */
+export function normalizeMigrationName(name) {
+  return String(name ?? '').replace(/^\d{14}_/, '')
+}
+
+/**
+ * Files whose version is applied to prod under a DIFFERENT migration's name.
+ *
+ * Pure so it can be tested without a Management API token — the script that
+ * uses it cannot run this branch at all without one, which would leave CI as
+ * the first place the logic ever executed.
+ *
+ * @param files      migration basenames, e.g. `20261012100000_foo.sql`
+ * @param remoteMap  version -> name, from fetchRemoteMigrations()
+ * @param isNew      (file) => boolean, true when the file is new on this branch
+ * @returns [{ file, version, remoteName, isNew }]
+ */
+export function findAppliedNameMismatches(files, remoteMap, isNew = () => true) {
+  if (!remoteMap) return []
+
+  // Group by version so an ordinary in-repo duplicate is left to the caller's
+  // duplicate check, which has better advice for it.
+  const namesByVersion = new Map()
+  for (const f of files) {
+    const m = f.match(/^(\d{14})_(.+)\.sql$/)
+    if (!m) continue
+    if (!namesByVersion.has(m[1])) namesByVersion.set(m[1], [])
+    namesByVersion.get(m[1]).push(normalizeMigrationName(m[2]))
+  }
+
+  const out = []
+  for (const f of files) {
+    const m = f.match(/^(\d{14})_(.+)\.sql$/)
+    if (!m) continue
+    const [, version, rawName] = m
+    const remoteName = remoteMap.get(version)
+    if (remoteName === undefined) continue
+
+    const wanted = normalizeMigrationName(remoteName)
+    if (normalizeMigrationName(rawName) === wanted) continue
+    // Some other file in the repo IS the applied one -> plain duplicate.
+    if ((namesByVersion.get(version) || []).includes(wanted)) continue
+
+    out.push({ file: f, version, remoteName, isNew: isNew(f) })
+  }
+  return out
+}
+
+/**
+ * version -> name for remote history, or null when no token is available.
+ *
+ * The NAME is what makes a silent version collision detectable. `db push`
+ * matches by version alone, so when two files claim one version the first to
+ * apply wins and the rest are skipped permanently, with a GREEN deploy and a
+ * history row that looks perfectly normal — until you read whose name is on it.
+ * Twice on 2026-08-29: 20261012100000 recorded as `sweep_skips_attribute_kind`
+ * (so `news_vocab_dump_residue` never ran) and 20261019100000 as
+ * `entity_lifecycle_dispatchers` (so `kinktionary_overlap_deindex_complete`
+ * never ran). Neither had a duplicate IN THE REPO at check time — the colliding
+ * file was still on someone else's branch — so no repo-only check could see it.
+ */
+export async function fetchRemoteMigrations(token = resolveToken()) {
+  if (!token) return null
+  const rows = await queryHistory(token, 'select version, name from supabase_migrations.schema_migrations order by version')
+  const map = new Map()
+  for (const r of rows) {
+    const v = String(r.version ?? r.VERSION ?? '').trim()
+    if (!/^\d{14}$/.test(v) || BASELINE.has(v)) continue
+    map.set(v, String(r.name ?? r.NAME ?? '').trim())
+  }
+  return map
+}
+
+/**
  * 14-digit versions present in remote history, or null when no token is
  * available. Throws on a transport/API error — an unreachable API is NOT the
  * same as an empty history, and collapsing the two would make every caller
@@ -38,15 +121,23 @@ export function resolveToken() {
  */
 export async function fetchRemoteVersions(token = resolveToken()) {
   if (!token) return null
+  const rows = await queryHistory(token, 'select version from supabase_migrations.schema_migrations order by version')
+  return new Set(
+    rows
+      .map((r) => String(r.version ?? r.VERSION ?? '').trim())
+      .filter((v) => /^\d{14}$/.test(v))
+      .filter((v) => !BASELINE.has(v)),
+  )
+}
 
+/** Shared transport so the two fetchers cannot disagree about response shape. */
+async function queryHistory(token, query) {
   const res = await fetch(
     `https://api.supabase.com/v1/projects/${PROJECT_REF}/database/query`,
     {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        query: 'select version from supabase_migrations.schema_migrations order by version',
-      }),
+      body: JSON.stringify({ query }),
     },
   )
   if (!res.ok) {
@@ -72,10 +163,5 @@ export async function fetchRemoteVersions(token = resolveToken()) {
     throw new Error(`Unrecognized Management API response shape: ${JSON.stringify(body).slice(0, 200)}`)
   }
 
-  return new Set(
-    rows
-      .map((r) => String(r.version ?? r.VERSION ?? '').trim())
-      .filter((v) => /^\d{14}$/.test(v))
-      .filter((v) => !BASELINE.has(v)),
-  )
+  return rows
 }
