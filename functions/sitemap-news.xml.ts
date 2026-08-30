@@ -10,9 +10,13 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
     env,
     'news_articles',
     'slug,updated_at',
-    // archived_at is redundant TODAY — archive_entity('news') also sets
-    // seo_indexable=false — but stating it keeps this sitemap correct on its
-    // own terms rather than depending on that coupling holding forever.
+    // archived_at is NOT redundant with seo_indexable, though it looks it:
+    // archive_entity('news') sets seo_indexable=false, but the nightly
+    // `run_news_safe_publish_sweep` selects on quality_status='review' alone
+    // and sets seo_indexable=true — so it will happily re-flag an ARCHIVED
+    // article and hand it straight back to this sitemap. RLS and newsDetail
+    // still hide the row, so this filter is what stops us advertising a URL
+    // that answers 404. Do not "simplify" it away.
     'slug=not.is.null&seo_indexable=eq.true&duplicate_of_id=is.null&content=not.is.null&archived_at=is.null',
   );
   const entries: SitemapEntry[] = rows

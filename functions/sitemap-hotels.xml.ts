@@ -11,9 +11,11 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
     env,
     'hotels',
     'slug,updated_at',
-    // archived_at is redundant TODAY — archive_entity('hotel') also sets
-    // seo_indexable=false — but stating it keeps this sitemap correct on its
-    // own terms rather than depending on that coupling holding forever.
+    // archived_at is stated independently of seo_indexable on purpose. No job
+    // currently rewrites hotels.seo_indexable, but the news sitemap next door
+    // has exactly that problem (run_news_safe_publish_sweep re-flags archived
+    // rows), so relying on the archive→deindex coupling is a habit worth not
+    // forming.
     'slug=not.is.null&seo_indexable=eq.true&safety_gated=eq.false&duplicate_of_id=is.null&archived_at=is.null',
   );
   const entries: SitemapEntry[] = rows
