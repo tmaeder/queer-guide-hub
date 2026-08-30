@@ -227,12 +227,19 @@ BEGIN
   -- a wrong one is not.
   v_postal := nullif(btrim(p_postal_code), '');
   IF v_postal IS NOT NULL THEN
+    -- Resolved THROUGH duplicate_of_id like every other arm, and counted over
+    -- DISTINCT survivors. Filtering merged rows out instead would go blind to a
+    -- code carried by a row that has since been merged away; counting raw rows
+    -- instead would let a survivor and its own twin look like two cities and
+    -- block a resolution that is not actually ambiguous.
+    --
     -- (array_agg(...))[1], never min(uuid): there is no min() for uuid, and the
     -- same mistake already cost 20260724260500 a migration.
-    SELECT count(*), (array_agg(c.id ORDER BY c.id))[1] INTO v_postal_n, v_postal_hit
+    SELECT count(DISTINCT coalesce(c.duplicate_of_id, c.id)),
+           (array_agg(DISTINCT coalesce(c.duplicate_of_id, c.id)))[1]
+      INTO v_postal_n, v_postal_hit
       FROM public.cities c
      WHERE c.country_id = v_country_id
-       AND c.duplicate_of_id IS NULL
        AND c.postal_codes @> ARRAY[v_postal];
 
     IF v_hit IS NOT NULL AND v_postal_n = 1 AND v_postal_hit IS DISTINCT FROM v_hit THEN
