@@ -14,7 +14,8 @@ appendix — re-run them rather than trusting the prose.
 ## §0 — Recommendation, up front
 
 **Do not build Phase 4 as scoped. Build a bounded slice of it — "does the last train still run" as a
-city fact — and only after Phases 1–3 land.**
+city fact — and only after Phases 1 and 3 land.** (Phase 2 shipped on 2026-08-30 as #3242, while
+this was being written; see §11.)
 
 Three findings drive that:
 
@@ -494,22 +495,36 @@ and the test carries its own history: it _"asserted /250 of 250/ until 2026-08-0
 produced by rendering `{countries.length} of {countries.length}` — the same number twice. A tautology
 cannot fail."_
 
-**And the pinned number earned its keep while this document was being written.** The nightly run
-passed `/239 of 250/` at 03:19 UTC on 2026-08-30; a browser check against prod at 13:40 UTC the same
-day read **245 of 250** and no `239` anywhere on the page — six territories gained a recorded
-criminalisation status in between. The assertion was hours from going red and is re-pinned to 245 in
-the same commit as this document. **That is the pattern working, not failing**: a number that cannot
-move cannot report that the world did. A `\d+ of \d+` regex would have stayed green through the
-change and told nobody.
+**And the pinned number moved while this document was being written, which is worth recording
+because I got the reason wrong first.** A prod check at 13:40 UTC on 2026-08-30 read **245 of 250**
+where the nightly had passed `/239 of 250/` at 03:19 UTC. I concluded the assertion was about to go
+red on live data and re-pinned it myself. It was not: **PR #3242 (Phase 2 — legal corroboration)
+landed at 18:02 CEST and had already re-pinned it to 245, in the same PR that moved it.** My change
+was redundant, conflicted on merge, and carried a fabricated cause — I inferred "six territories
+gained a status" from the number alone, when the actual mechanism is that PR's own
+`20260830131211_country_rights_disposition`, which gives the 11 territories ILGA does not cover an
+explicit disposition so that 6 of them resolve and 5 are listed as _not scored_. Main's version won
+the conflict and mine is gone.
 
-Two consequences worth carrying into Phase 4a. First, **the transit band's coverage figure must be
-pinned the same way** — §7's e2e guard asserts the two numbers can DIFFER, not that they match a
-pattern. Second, **`docs/architecture/open-data-integration.md` §1.5 and §5 Phase 2 cite `239/250`
-and "11 countries" from a different query** — `lgbti_data_last_updated > now() - interval '2 days'`,
-which is _freshness_, where the page's figure is _presence_. They are not the same quantity and the
-page moving does not establish that the freshness figure moved. **Re-run the appendix SQL before
-quoting either.** Not corrected here, because inventing the number would be worse than leaving a
-dated one.
+Three things survive that correction, and they matter more than the number:
+
+- **The pattern works.** A pinned figure reported a real coverage change within hours. A
+  `\d+ of \d+` regex would have stayed green through it and told nobody. Phase 4a's transit band
+  must be pinned the same way — §7's guard asserts the two numbers can DIFFER, not that they match a
+  shape.
+- **A number changing is not evidence of what changed it.** Reading 245 off a page establishes the
+  page renders 245; it establishes nothing about why, and the plausible story I attached to it was
+  wrong. This is the same discipline the rest of this document applies to Overpass and to the
+  Mobility Database catalog — an answer is not a cause — and it is easier to hold about a third
+  party's data than about your own.
+- **Concurrent sessions are the normal case in this repo, so `git fetch` before believing a
+  measurement is stale.** Two sessions independently measured the same drift the same afternoon.
+  Mine would have shipped a wrong explanation into a test comment that outlives it.
+
+`docs/architecture/open-data-integration.md` §1.5 and §5 Phase 2 cite `239/250` and "11 countries"
+from a **different query** — `lgbti_data_last_updated > now() - interval '2 days'`, which is
+_freshness_, where the page's figure is _presence_. #3242 updated that document too; re-read it there
+rather than trusting either figure quoted here.
 
 ### The rule
 
@@ -651,23 +666,29 @@ lands.
 
 ## §11 — Recommendation against the other open phases
 
-| Phase                          | Entry state                                                                                                                               | Stake                                                  | Days                                     | Recommended order                          |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ | ---------------------------------------- | ------------------------------------------ |
-| **1 — Accessibility**          | 6/26,867 venues (0.02%); UI live against an empty column; array-union defect will publish contradictory claims the moment anything writes | **Safety.** A wrong access claim strands someone       | 10–15                                    | **1st**                                    |
-| **3 — Harm reduction refresh** | 476 pairs, loaded once, `fetched_at` 2026-08-15, **no cron**                                                                              | **Safety.** Drug-interaction data going stale silently | ~3 for the refresh cron                  | **2nd** — cheapest safety win on the board |
-| **2 — Legal corroboration**    | ILGA healthy but **single-sourced**; 11 countries stale since 2026-04-21; Equaldex arm dead and re-enabled by something unknown           | **Safety.** Highest-stakes data on the platform        | 5–20, mostly blocked on an external fork | **3rd**                                    |
-| **4a — Transit**               | Genuinely absent; 307 cities already render a network diagram with no time axis                                                           | Convenience, with a real safety edge at 2am            | 8–12                                     | **4th**                                    |
-| **4b / routing / realtime**    | —                                                                                                                                         | —                                                      | 40+                                      | **Not scheduled / never**                  |
+| Phase                          | Entry state                                                                                                                               | Stake                                                  | Days                    | Recommended order                          |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ | ----------------------- | ------------------------------------------ |
+| **1 — Accessibility**          | 6/26,867 venues (0.02%); UI live against an empty column; array-union defect will publish contradictory claims the moment anything writes | **Safety.** A wrong access claim strands someone       | 10–15                   | **1st**                                    |
+| **3 — Harm reduction refresh** | 476 pairs, loaded once, `fetched_at` 2026-08-15, **no cron**                                                                              | **Safety.** Drug-interaction data going stale silently | ~3 for the refresh cron | **2nd** — cheapest safety win on the board |
+| **2 — Legal corroboration**    | **SHIPPED 2026-08-30, PR #3242** — all 250 countries accounted for, fact-drift detection added, Equaldex retired on licence grounds       | **Safety.** Highest-stakes data on the platform        | done                    | **done**                                   |
+| **4a — Transit**               | Genuinely absent; 307 cities already render a network diagram with no time axis                                                           | Convenience, with a real safety edge at 2am            | 8–12                    | **4th**                                    |
+| **4b / routing / realtime**    | —                                                                                                                                         | —                                                      | 40+                     | **Not scheduled / never**                  |
 
 **Phase 4 is correctly last, and the reason is sharper than "it is the largest build."** It is last
-because the three phases above it are all _safety_ surfaces already publishing to users — an
-accessibility badge matching against an empty column, an interaction table that stopped refreshing,
-and a legal corpus with one source — while Phase 4 is a surface that does not exist yet and whose
-absence misleads nobody.
+because the phases above it are all _safety_ surfaces already publishing to users — an accessibility
+badge matching against an empty column, an interaction table that stopped refreshing, a legal corpus
+that had one source — while Phase 4 is a surface that does not exist yet and whose absence misleads
+nobody.
 
-The one thing worth doing early, if anything: **spend half a day writing §7's coverage contract into
-`e2e/intent-nav.spec.ts` as a pending test.** It costs nothing and it means that whenever 4a is
-built, it cannot ship the `{n} of {n}` tautology that `/rights` shipped for months.
+**Phase 2 shipped the same day this was written** (#3242, `docs/superpowers/specs/2026-08-30-legal-corroboration-phase-2-design.md`),
+which changes the ordering but not the argument: the queue ahead of transit is now **Phase 1, then
+Phase 3**, and both are still safety surfaces that already mislead. Phase 3 in particular is ~3 days
+for a cron and a breaker on drug-interaction data that has not refreshed since 2026-08-15 — it
+should go first on cost alone.
+
+The one thing worth doing early is already done: §7's coverage contract is now in
+`e2e/intent-nav.spec.ts` as a `test.fixme`. It cost nothing and it means that whenever 4a is built,
+it cannot ship the `{n} of {n}` tautology that `/rights` shipped for months.
 
 ---
 
