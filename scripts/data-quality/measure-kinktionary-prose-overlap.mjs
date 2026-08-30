@@ -106,6 +106,33 @@ async function main() {
   const tags = all.filter((t) => bySlug.has(t.slug));
   process.stderr.write(`${all.length} active reviewed tags, ${tags.length} with a Kinktionary counterpart\n`);
 
+  // RESUME. FetLife starts answering 403 partway through a long sweep, and the
+  // first full run measured 1,058 of 1,487 before that happened — the remaining
+  // 429 were recorded `unreachable`, which is NOT the same as "no overlap" and
+  // must not be read as one. Re-running the whole sweep to reach them would
+  // re-fetch 1,058 pages we already have answers for and would very likely hit
+  // the block again before the tail.
+  //
+  // So a prior result file is merged: any slug already carrying a NUMERIC
+  // longestRun is kept and skipped, and only `unreachable` / missing slugs are
+  // fetched. `--fresh` ignores the prior file entirely.
+  const fresh = process.argv.includes('--fresh');
+  const priorBySlug = new Map();
+  if (!fresh) {
+    try {
+      const prior = JSON.parse(await readFile(OUT, 'utf8'));
+      for (const r of prior.rows || []) {
+        if (typeof r.longestRun === 'number') priorBySlug.set(r.slug, r);
+      }
+    } catch {
+      /* no prior file is fine — measure everything */
+    }
+  }
+  const todo = tags.filter((t) => !priorBySlug.has(t.slug));
+  process.stderr.write(
+    `${priorBySlug.size} already measured, ${todo.length} to fetch${fresh ? ' (--fresh)' : ''}\n`,
+  );
+
   const ctx = await chromium.launchPersistentContext(PROFILE, {
     channel: 'chrome',
     headless: false,
@@ -114,9 +141,9 @@ async function main() {
   });
   const page = ctx.pages()[0] || (await ctx.newPage());
 
-  const rows = [];
+  const rows = [...priorBySlug.values()];
   let i = 0;
-  for (const t of tags) {
+  for (const t of todo) {
     if (i >= limit) break;
     i += 1;
     const entry = bySlug.get(t.slug);
@@ -143,7 +170,7 @@ async function main() {
         seo_indexable: t.seo_indexable,
       });
     }
-    if (i % 25 === 0) process.stderr.write(`${i}/${Math.min(tags.length, limit)}\n`);
+    if (i % 25 === 0) process.stderr.write(`${i}/${Math.min(todo.length, limit)}\n`);
     await new Promise((s) => setTimeout(s, 2200));
   }
   await ctx.close();
