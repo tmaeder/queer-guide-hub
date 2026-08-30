@@ -41,4 +41,5 @@ export const organizationContentType: ContentTypeConfig = {
       mergePath: 'entities',
     },
   },
+  lifecycle: { type: 'organization', archive: { column: 'status', value: 'archived', label: 'Archived' } },
 };

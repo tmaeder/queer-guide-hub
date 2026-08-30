@@ -261,6 +261,8 @@ function renderColumnValue(
 
 // ── Main table component ────────────────────────────────────────────
 
+import { RowLifecycleActions } from './RowLifecycleActions';
+
 export interface ContentListTableProps {
   contentTypeId?: string;
   config: ContentTypeConfig | null;
@@ -540,6 +542,16 @@ export function ContentListTable({
                               </Tooltip>
                             );
                           })}
+
+                        {config?.lifecycle && (
+                          <RowLifecycleActions
+                            lifecycle={config.lifecycle}
+                            row={item.raw ?? {}}
+                            id={item.id}
+                            title={item.title || item.id}
+                            onDone={() => onRefresh?.()}
+                          />
+                        )}
 
                         <Tooltip>
                           <TooltipTrigger asChild>
