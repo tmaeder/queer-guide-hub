@@ -519,11 +519,29 @@ Dispositions:
 
 - `venue_field_provenance` / `venue_consensus_audit` — a consensus triage backlog is invisible
 - `geo_places` / `geo_landmark_profiles`
-- `api_circuit_breakers` state in general — only the single `llm.nvidia` row, warn-only. **A breaker
-  stuck open on `wikipedia.api` would go unnoticed.**
+- ~~`api_circuit_breakers` state in general~~ — **closed 2026-08-30.** `check-pipeline-health.mjs`
+  now reads **every** open breaker, not just `llm.nvidia`. See below.
 - `llm_budget` exhaustion
 
 Three of the four roadmap phases land inside these blind spots. Each phase must ship its sentinel.
+
+**The breaker sentinel, and why it keys on what it does.** The rule is
+`state='open' AND success_count = 0 AND last_failure_at within 24h` — *"this source has never once
+worked and something is still calling it."* Undocumented → **hard fail**; listed in the script's
+`DISPOSITIONED` map with a reason → warn. That map is the whole point: it separates *"we decided to
+live with this"* from *"nobody looked,"* the same contract the auto-paused-automation carve-out uses.
+
+**`success_count`, not `failure_count`.** A high failure count on a source that also succeeds is a
+flaky upstream and will recover; zero successes ever is a dead endpoint, a rejected key or a wrong
+URL, and it never recovers on its own. Validated against the live rows plus mutations: today's three
+open breakers all carry dispositions and exit clean, a newly-appearing dead source exits 1, and an
+open-but-previously-successful breaker does not fire.
+
+> **Do not re-key this on `last_success_at`.** That column is written only by an explicit
+> `recordSuccess()`, so a source that runs perfectly but never calls it stays frozen forever —
+> `ilga_graphql` reads **2026-04-21** while ILGA imports nightly and refreshed 239/250 countries this
+> morning. That column is why a previous session diagnosed a four-month outage that was not
+> happening. It is not a freshness signal and this check must never treat it as one.
 
 ---
 

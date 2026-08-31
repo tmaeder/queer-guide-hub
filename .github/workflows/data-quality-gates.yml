@@ -53,6 +53,15 @@ jobs:
         if: ${{ !cancelled() && env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
         run: node scripts/check-anon-function-grants.mjs
 
+      # The same stock ALTER DEFAULT PRIVILEGES also granted anon TRUNCATE on 464 public
+      # objects — and RLS does NOT gate TRUNCATE, so no row policy was ever in that path.
+      # Revoked in 20260830202340, but the supabase_admin default ACL still grants it and
+      # is unalterable from the postgres role, so a supabase_admin-created table would
+      # inherit it again. That residual is why this is a recurring check, not a one-off.
+      - name: anon/authenticated hold no TRUNCATE on public tables
+        if: ${{ !cancelled() && env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
+        run: node scripts/check-api-role-table-grants.mjs
+
       # Tag data-quality ratchet. Phase 0 of the tag DQ program fixed the corpus
       # while the image gaps GREW underneath it (image-without-license 1,167 ->
       # 1,215 in a day, image-without-alt likewise) because nothing was watching.
