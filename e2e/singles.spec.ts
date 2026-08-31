@@ -180,17 +180,45 @@ test.describe('safety layer', () => {
   // keep passing if the gate were deleted.
   test.use({ storageState: { cookies: [], origins: [] } });
 
-  test('a village in a criminalising country is gated for anonymous visitors', async ({ page }) => {
+  test('a village states gated content as a count, never as a list', async ({ page }) => {
     // Villages carried no safety layer at all before the rebuild: a district
     // in a criminalising country rendered exactly like one in Berlin. The
     // gated notice is anonymous-only and count-only.
     await open(page, '/villages/chueca');
-    // Spain is not criminalising, so the notice must NOT appear here — the
-    // point of this assertion is that the component is wired in and gating on
-    // the country, not that it always shows.
-    await expect(page.getByText(/only shown to signed-in members/i)).toHaveCount(0);
-    // …but the verdict tile is always present.
+    // …and the verdict tile is always present.
     await expect(page.getByText('Safety', { exact: true })).toBeVisible();
+
+    // This asserted the notice was ABSENT here until 2026-08-31, on the premise
+    // that "Spain is not criminalising, so the notice must NOT appear". That
+    // premise died with #3241, which made venue gating geographic OR
+    // `category = 'cruising'` — so Chueca, which has cruising venues, now
+    // correctly shows the notice. Prod is right and the assertion was stale:
+    // it failed 13 consecutive polls across 3 retries, expected 0 received 1,
+    // and was reproduced by hand against prod. It was not flaky, and it is the
+    // same "third reader" shape as the release gate #3256 had to repair — #3241
+    // updated the trigger and the country recompute, and neither this spec nor
+    // that gate was on its list.
+    //
+    // Inverting it to `toHaveCount(1)` would just re-pin the same brittleness to
+    // today's data: one re-categorised venue and it breaks again, and it would
+    // NOT be testing the safety property. What actually matters is what the
+    // notice may say. `gated_count_for_location` is a count-only RPC precisely
+    // so an anonymous visitor cannot enumerate gated venues in a district — the
+    // count is the whole point, and a leak here would out the places it exists
+    // to protect. So: if the notice renders, it carries a number and no venue
+    // name; if it does not render, there is nothing to leak.
+    // The branch below can go vacuous if the notice stops rendering, so the
+    // `Safety` assertion above is load-bearing as its positive control: it
+    // proves the safety layer mounted, which makes an absent notice a real
+    // absence rather than a page that never rendered. Without it this degrades
+    // into the blank-page pass that `toHaveCount(0)` was always vulnerable to.
+    const notice = page.getByText(/only shown to signed-in members/i);
+    if ((await notice.count()) > 0) {
+      await expect(notice.first()).toHaveText(/\d+/);
+      // A count-only notice never names a place. `<a>` inside it would mean the
+      // gate is describing exactly what it is hiding.
+      await expect(notice.locator('a')).toHaveCount(0);
+    }
   });
 
   test('no track colour appears on the safety verdict', async ({ page }) => {
