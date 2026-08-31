@@ -226,7 +226,6 @@
       "title": "24시간 위기 상담 전화",
       "body": "트랜스젠더 상담 전화, LGBT+ 위기 지원, 지역 긴급 전화번호를 국가별로 정리했습니다. 어느 페이지에서나 한 번의 클릭으로 열 수 있습니다."
     },
-    "osmAttribution": "교통 다이어그램은 © OpenStreetMap 기여자 데이터를 기반으로 합니다 (ODbL)",
     "reportSomething": "신고하기",
     "hotlines": "상담 전화",
     "antiDiscrimination": {
@@ -451,7 +450,25 @@
       "moved": "장소 이동됨",
       "removed": "장소 삭제됨",
       "dayUpdated": "하루 정보 업데이트됨",
-      "dragHandleAria": "드래그하여 순서 변경"
+      "dragHandleAria": "드래그하여 순서 변경",
+      "a11yCoverage": "[KO] {{withData}} of {{total}} places here publish accessibility information. Nothing is ruled out for staying silent.",
+      "applied": "[KO] Added {{count}} stops",
+      "apply": "[KO] Add {{count}} stops to the trip",
+      "applyFailed": "[KO] Could not add the plan",
+      "budgetCoverage": "[KO] {{withData}} of {{total}} places here list a price. Budget nudges the order; it does not filter.",
+      "event": "[KO] Event",
+      "exhausted": "[KO] Nothing left. The matches here are already on other days.",
+      "loadFailed": "[KO] Could not load places for these cities. Try again in a moment.",
+      "matchesNeeds": "[KO] Matches your needs",
+      "needDates": "[KO] Set the trip dates and a destination city, and the days can be built from them.",
+      "noCandidate": "[KO] Nothing listed here for this time of day.",
+      "paceLabel": "[KO] How full a day",
+      "reroll": "[KO] Try another",
+      "summary": "[KO] {{filled}} of {{requested}} slots filled",
+      "timeUnknown": "[KO] time of day not known",
+      "tooFew": "[KO] Only {{count}} places here match that. Not enough to build days from. Try another vibe, or add stops by hand.",
+      "vibeAny": "[KO] A bit of everything",
+      "vibeLabel": "[KO] What you are after"
     },
     "map": {
       "emptyNoPlaces": "지도에서 보려면 장소를 추가하세요",
@@ -651,7 +668,8 @@
       "reservations": "예약",
       "packing": "짐싸기",
       "collaborate": "협업",
-      "journal": "일기"
+      "journal": "일기",
+      "buildDays": "[KO] Build the days"
     },
     "today": {
       "offlineBanner": "오프라인 상태 — 마지막으로 저장된 일정을 표시합니다.",
@@ -2296,10 +2314,7 @@
       "pride": {
         "title": "이번 시즌의 프라이드",
         "window": "향후 4개월",
-        "empty": "예정된 프라이드 이벤트가 없습니다.",
-        "safety": "평등 점수",
-        "equalityTooltip": "평등 점수는 이 나라의 LGBTQ+ 법적 보호를 반영합니다. 높을수록 안전합니다.",
-        "equalityAria": "평등 점수 {{score}}: 탭하여 설명"
+        "empty": "예정된 프라이드 이벤트가 없습니다."
       },
       "inspiration": {
         "villages": "퀴어 빌리지",
@@ -2864,6 +2879,8 @@
       "about": {
         "status": "[KO] Status",
         "capital": "[KO] Capital city",
+        "regionalCapital": "[KO] Regional capital",
+        "capitalOfRegion": "[KO] Capital of",
         "majorCity": "[KO] Major city",
         "region": "[KO] Region",
         "timezone": "[KO] Timezone",
@@ -2895,6 +2912,7 @@
       }
     },
     "capital": "[KO] Capital",
+    "regionalCapital": "[KO] Regional capital",
     "continentClear": "[KO] Clear",
     "continentsTitle": "[KO] Continents",
     "counting": "[KO] Counting…",
@@ -4461,6 +4479,9 @@
         "slang": "속어"
       },
       "sourceOfLaw": "법적 근거",
+      "clinicalGuidance": "임상 지침",
+      "guidanceEdition": "판",
+      "notMedicalAdvice": "여기의 정의는 공개된 임상 지침에서 가져온 것입니다. 의학적 조언이 아닙니다. 임상 세부 사항은 링크를 참조하고, 본인의 치료에 대해서는 의료진과 상담하세요.",
       "lawJurisdiction": "관할",
       "lawInternational": "국제",
       "lawAdopted": "제정",

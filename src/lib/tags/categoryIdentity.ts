@@ -1,9 +1,9 @@
 /**
- * Transit identity for the ten taxonomy parents.
+ * Transit identity for the taxonomy lines (v3: eight).
  *
  * **Monochrome on purpose — the lines carry icons, not track colours.**
  *
- * Cycling ten parents through four tracks was considered and rejected. Three
+ * Cycling the parents through four tracks was considered and rejected. Three
  * parents would share pink with nothing to tell them apart: `policyLines.ts`
  * gets away with duplicate hues only because each of its lines also carries a
  * distinct letter (`T`/`P`/`C`/`©`), and a taxonomy parent has no such
@@ -32,30 +32,24 @@ export interface CategoryLine {
   icon: TransitIconName;
 }
 
-/** Name → line. Slugs match migration 20260411160001_resources_taxonomy_v2.sql. */
+/** Name → line. Slugs match migration 20261006140000_tag_taxonomy_v3_tree.sql. */
 export const CATEGORY_LINES: Record<string, CategoryLine> = {
-  'Identity & Expression': {
-    name: 'Identity & Expression',
-    slug: 'identity-expression',
-    icon: 'profile',
-  },
-  'Sexuality & Kink': { name: 'Sexuality & Kink', slug: 'sexuality-kink', icon: 'consent' },
-  'Relationships & Connection': {
-    name: 'Relationships & Connection',
-    slug: 'relationships-connection',
+  Identity: { name: 'Identity', slug: 'identity', icon: 'profile' },
+  'Sex & Kink': { name: 'Sex & Kink', slug: 'sex-kink', icon: 'consent' },
+  'Relationships & Family': {
+    name: 'Relationships & Family',
+    slug: 'relationships-family',
     icon: 'community',
   },
-  'Health & Wellness': { name: 'Health & Wellness', slug: 'health-wellness', icon: 'health' },
-  'Safety & Practices': { name: 'Safety & Practices', slug: 'safety-practices', icon: 'alerts' },
-  'Community & Culture': {
-    name: 'Community & Culture',
-    slug: 'community-culture',
+  Health: { name: 'Health', slug: 'health', icon: 'health' },
+  'Safety & Consent': { name: 'Safety & Consent', slug: 'safety-consent', icon: 'alerts' },
+  'Culture & Community': {
+    name: 'Culture & Community',
+    slug: 'culture-community',
     icon: 'meetups',
   },
-  'History & Heritage': { name: 'History & Heritage', slug: 'history-heritage', icon: 'library' },
-  'Rights & Activism': { name: 'Rights & Activism', slug: 'rights-activism', icon: 'march' },
-  'Places & Travel': { name: 'Places & Travel', slug: 'places-travel', icon: 'compass' },
-  'Support & News': { name: 'Support & News', slug: 'support-news', icon: 'helpline' },
+  'History & Rights': { name: 'History & Rights', slug: 'history-rights', icon: 'march' },
+  'Places & Scene': { name: 'Places & Scene', slug: 'places-scene', icon: 'compass' },
 };
 
 /** Ordered lines, following the canonical `parentOrder`. */

@@ -286,6 +286,7 @@ Draft schema (only when proposing places):
   ];
 
   const body = await anthropicMessages({
+    callerFn: 'trip-concierge',
     model: 'claude-haiku-4-5-20251001',
     max_tokens: 2048,
     system,

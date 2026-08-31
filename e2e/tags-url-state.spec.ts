@@ -4,12 +4,14 @@ import { test, expect } from '@playwright/test';
 // live in query params; the CATEGORY lives in the path.
 //
 // Param names are deliberately unchanged from the page this replaces (`sort`,
-// `dir`, `view`, `usage`, `hasImage`) so existing shared links keep working.
+// `dir`, `view`, `usage`) so existing shared links keep working. `hasImage`
+// (the "Illustrated" filter) retired with glossary photography — TagPlate,
+// 2026-08-28 — and is now a legacy key that gets stripped like `cat=`.
 
 test.describe('@p1-1 /tags URL state', () => {
   test('hydrates state from URL on direct visit', async ({ page }) => {
-    await page.goto('/tags?sort=alphabetical&dir=asc&view=list&hasImage=1');
-    await expect(page).toHaveURL(/\/tags\?.*sort=alphabetical.*dir=asc.*view=list.*hasImage=1/);
+    await page.goto('/tags?sort=alphabetical&dir=asc&view=list');
+    await expect(page).toHaveURL(/\/tags\?.*sort=alphabetical.*dir=asc.*view=list/);
   });
 
   test('typing in search updates the URL', async ({ page }) => {
@@ -38,25 +40,55 @@ test.describe('@p1-1 /tags URL state', () => {
   });
 
   test('a category path preselects its line', async ({ page }) => {
-    await page.goto('/tags/c/health-wellness');
+    await page.goto('/tags/c/health');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 15_000 });
     // aria-current marks the active station on the taxonomy rail.
-    await expect(
-      page.locator('a[aria-current="page"][href*="health-wellness"]').first(),
-    ).toBeVisible();
+    await expect(page.locator('a[aria-current="page"][href*="health"]').first()).toBeVisible();
+  });
+
+  // Taxonomy v2 was retired by 20261006150000, so `health-wellness` is no
+  // longer a category — it is a redirect. Asserting the LANDING rather than the
+  // requested slug is what makes this a test of the redirect chain instead of a
+  // test of a slug that no longer exists.
+  test('a retired v2 category path redirects and preselects the v3 line', async ({ page }) => {
+    await page.goto('/tags/c/health-wellness');
+    await expect(page).toHaveURL(/\/tags\/c\/health(\?|$)/, { timeout: 15_000 });
+    await expect(page.locator('a[aria-current="page"][href*="health"]').first()).toBeVisible();
   });
 
   test('legacy ?cat= redirects into the category path', async ({ page }) => {
     // Three spellings of this filter used to coexist. The query forms are now
     // legacy inputs that resolve to the canonical route.
+    //
+    // The value is a v2 display NAME, which is what the page emitted when these
+    // links were minted, and v2 names left `tag_categories` with the retirement
+    // — so this only resolves because `resolveCategorySlug` falls back to the
+    // v2→v3 map on the slugified name. It is the regression guard for that.
     await page.goto('/tags?cat=Health%20%26%20Wellness');
-    await expect(page).toHaveURL(/\/tags\/c\/health-wellness/, { timeout: 15_000 });
+    await expect(page).toHaveURL(/\/tags\/c\/health(\?|$)/, { timeout: 15_000 });
   });
 
   test('legacy ?profession= goes to the personalities facet', async ({ page }) => {
     // It used to force a tag-NAME search for the profession string, which
     // searches the wrong noun entirely.
+    //
+    // The value must be one the facet allowlist actually contains. /personalities
+    // re-validates `profession` against the loaded facets and strips anything
+    // that matches nothing, so asserting a value outside the vocabulary makes
+    // this a RACE: it passes only if the assertion samples the URL before the
+    // facets resolve. `Author` was such a value — measured on prod, the
+    // vocabulary carries zero of it and 61 public `Writer` — so this test
+    // passed or failed on facet latency rather than on the redirect it names.
+    await page.goto('/tags?profession=Writer');
+    await expect(page).toHaveURL(/\/personalities\?.*profession=Writer/, { timeout: 15_000 });
+  });
+
+  test('a profession outside the vocabulary is stripped, not carried', async ({ page }) => {
+    // The other half of the same behaviour, asserted deliberately instead of
+    // being depended on by accident: the redirect still fires, and the landing
+    // page refuses to show a filter chip for a facet that matches nothing.
     await page.goto('/tags?profession=Author');
-    await expect(page).toHaveURL(/\/personalities\?.*profession=Author/, { timeout: 15_000 });
+    await expect(page).toHaveURL(/\/personalities(\?|$)/, { timeout: 15_000 });
+    await expect(page).not.toHaveURL(/profession=Author/);
   });
 });

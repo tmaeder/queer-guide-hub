@@ -6,7 +6,7 @@
 
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { applyFilters, applySorts } from './filterOps';
+import { applyFilters, applySorts, applyArchivedView, type ArchivedView } from './filterOps';
 import { normalizeSpec, type Filter, type SortSpec, type ViewSpec } from './viewSpec';
 import { useParams } from 'react-router';
 import { useContext } from 'react';
@@ -95,6 +95,13 @@ export function useContentListController({
   const [dateField, setDateField] = useState<string | null>(persisted?.dateField ?? null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [dynamicOptions, setDynamicOptions] = useState<Record<string, SelectOption[]>>({});
+  /**
+   * Which slice of the list to show. Deliberately NOT persisted alongside the
+   * view spec: "I am looking at archived rows" is a momentary task, and a
+   * sticky archived-only list that survives a reload is indistinguishable from
+   * a list that has lost its contents.
+   */
+  const [archivedView, setArchivedView] = useState<ArchivedView>('live');
 
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
@@ -191,7 +198,7 @@ export function useContentListController({
       setLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- helpers below, deps control re-fetching
-  }, [contentTypeId, config, page, rowsPerPage, debouncedSearch, sorts, filters]);
+  }, [contentTypeId, config, page, rowsPerPage, debouncedSearch, sorts, filters, archivedView]);
 
   async function loadSingleType(ct: ContentTypeConfig) {
     const from = page * rowsPerPage;
@@ -218,6 +225,9 @@ export function useContentListController({
     // version had five type branches and silently skipped everything else, so
     // filtering on an autocomplete/url/textarea did nothing at all.
     query = applyFilters(query as never, filters) as typeof query;
+    // After the user's own filters, so an explicit filter on the archive column
+    // still composes rather than being overwritten.
+    query = applyArchivedView(query as never, ct.lifecycle?.archive, archivedView) as typeof query;
 
     const { data, error, count } = await query;
     if (error) throw error;
@@ -287,7 +297,10 @@ export function useContentListController({
     // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     setPage(0);
     setSelected(new Set());
-  }, [debouncedSearch, filters]);
+    // archivedView belongs here too: switching to the archived slice while on
+    // page 3 of the live list lands on a page that does not exist, which renders
+    // as an empty table rather than as "there are no archived rows".
+  }, [debouncedSearch, filters, archivedView]);
 
   // There is deliberately NO "restore on content-type change" effect.
   //
@@ -421,6 +434,8 @@ export function useContentListController({
     setDateField,
     selected,
     setSelected,
+    archivedView,
+    setArchivedView,
     dynamicOptions,
     allListColumns,
     extraColumns,

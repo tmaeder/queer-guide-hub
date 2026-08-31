@@ -220,7 +220,10 @@ export default function People() {
                   })}
                   name={g.name}
                   description={g.description}
-                  href={`/community/groups/${g.id}`}
+                  // `/community/groups` is the LIST; the detail route is
+                  // `/groups/:groupId` (routes.tsx). This pointed at
+                  // `/community/groups/:id`, which matches nothing and 404'd.
+                  href={`/groups/${g.id}`}
                 />
               </li>
             ))}

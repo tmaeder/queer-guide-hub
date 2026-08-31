@@ -44,15 +44,17 @@ import { RouteBullet } from '@/components/transit/RouteBullet';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { getCategoryShortName, parentOrder } from '@/components/resources/categoryMeta';
 import { CATEGORY_LINE_ORDER, lineForCategory } from '@/lib/tags/categoryIdentity';
+import { redirectedCategorySlug } from '@/lib/tags/categorySlugRedirects';
 import {
   applyTagsParams,
   hasActiveFilters,
-  isRealTagImage,
   letterFor,
   parseTagsParams,
   serializeTagsParams,
   DEFAULT_TAGS_STATE,
+  KIND_FILTER_MATCHES,
   MIN_SERVER_QUERY,
+  type TagKindFilter,
   type TagSort,
   type TagUsageFilter,
   type TagView,
@@ -72,7 +74,6 @@ interface TagIndexEntry {
   letter: string;
   parentName: string | null;
   categoryNames: (string | null | undefined)[];
-  hasImage: boolean;
 }
 
 export default function TagsIndex() {
@@ -95,14 +96,40 @@ export default function TagsIndex() {
         );
         if (child) return child.slug;
       }
-      return null;
+      // Retired v2 category. The tree stopped carrying these when 20261006150000
+      // deleted them, so the live loop above can no longer resolve a legacy
+      // `?cat=`/`?category=` link and `parseTagsParams` would hold the param
+      // forever — the reader lands on an unfiltered glossary instead of the
+      // category they asked for. categorySlugRedirects' own header says it
+      // serves these params; this is the call that makes that true.
+      //
+      // Both spellings have to be tried: the map is keyed by SLUG, while
+      // `?cat=` carries the display NAME ("Health & Wellness"), which is what
+      // the page emitted when these links were minted. The slugify rule is the
+      // one the v2 slugs were derived under, so "Body Types & Archetypes"
+      // collapses the ampersand into the separator run and lands on
+      // `body-types-archetypes`.
+      return (
+        redirectedCategorySlug(lower) ??
+        redirectedCategorySlug(lower.replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''))
+      );
     },
     [categoriesTree],
   );
 
   const { state, changed, redirectTo } = parseTagsParams(searchParams, resolveCategorySlug);
 
+  // A retired v2 category slug reaching the SPA (an in-app link, a bookmark
+  // restored by the router, a ?cat= resolution) never touches Cloudflare, so
+  // the 301s in public/_redirects cannot help it. Same map, client side.
+  const retiredSlugTarget = redirectedCategorySlug(categorySlug);
+
   useEffect(() => {
+    if (retiredSlugTarget) {
+      const qs = searchParams.toString();
+      navigate(`/tags/c/${retiredSlugTarget}${qs ? `?${qs}` : ''}`, { replace: true });
+      return;
+    }
     if (redirectTo) {
       navigate(redirectTo, { replace: true });
       return;
@@ -110,7 +137,7 @@ export default function TagsIndex() {
     if (changed) setSearchParams(applyTagsParams(searchParams, state), { replace: true });
     // `state` is derived from `searchParams`; including it would loop.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [redirectTo, changed, searchParams]);
+  }, [retiredSlugTarget, redirectTo, changed, searchParams]);
 
   // `state` is re-derived from the URL on every render, so it is a fresh object
   // each time and cannot be a dependency without making `patch` unstable (and
@@ -150,7 +177,6 @@ export default function TagsIndex() {
         letter: letterFor(tag.name),
         parentName: primary?.parent_name ?? primary?.name ?? null,
         categoryNames,
-        hasImage: isRealTagImage(tag.image_url),
       };
     });
     return { entries: list, byId: new Map(list.map((e) => [e.tag.id, e])) };
@@ -196,10 +222,34 @@ export default function TagsIndex() {
   const base = useMemo(
     () =>
       entries.filter((e) => {
+        const entityKind = (e.tag as { entity_kind?: string | null }).entity_kind ?? 'concept';
+        // Proper names are not glossary content — never on the public index.
+        if (entityKind === 'person') return false;
+        if (state.kind !== 'all' && !KIND_FILTER_MATCHES[state.kind].has(entityKind)) {
+          return false;
+        }
         if (hideAdult && safeMode.shouldHide(e.categoryNames)) return false;
-        return inScope(e);
+        if (!inScope(e)) return false;
+        // Default curation: the unscoped index shows every dictionary term
+        // (unused kink vocabulary included — it ranks last under the usage
+        // sort) but hides UNUSED descriptors/labels — an unused descriptor is
+        // pure noise, not a definition. Any explicit filter or search widens
+        // back to everything, and category pages always show their whole stop.
+        if (
+          !scope &&
+          state.usage === 'all' &&
+          state.kind === 'all' &&
+          !state.q.trim() &&
+          entityKind !== 'concept' &&
+          entityKind !== 'practice' &&
+          entityKind !== 'aesthetic' &&
+          (usageCounts[e.tag.name] || 0) === 0
+        ) {
+          return false;
+        }
+        return true;
       }),
-    [entries, hideAdult, safeMode, inScope],
+    [entries, hideAdult, safeMode, inScope, scope, state.kind, state.usage, state.q, usageCounts],
   );
 
   /** Letter counts reflect every filter EXCEPT the letter itself — otherwise
@@ -210,11 +260,10 @@ export default function TagsIndex() {
       if (state.q.trim() && !e.haystack.includes(state.q.trim().toLowerCase())) continue;
       if (state.usage === 'used' && (usageCounts[e.tag.name] || 0) === 0) continue;
       if (state.usage === 'unused' && (usageCounts[e.tag.name] || 0) > 0) continue;
-      if (state.hasImage && !e.hasImage) continue;
       counts[e.letter] = (counts[e.letter] ?? 0) + 1;
     }
     return counts;
-  }, [base, state.q, state.usage, state.hasImage, usageCounts]);
+  }, [base, state.q, state.usage, usageCounts]);
 
   const narrow = useCallback(
     (list: TagIndexEntry[]) =>
@@ -222,10 +271,9 @@ export default function TagsIndex() {
         if (state.letter && e.letter !== state.letter) return false;
         if (state.usage === 'used' && (usageCounts[e.tag.name] || 0) === 0) return false;
         if (state.usage === 'unused' && (usageCounts[e.tag.name] || 0) > 0) return false;
-        if (state.hasImage && !e.hasImage) return false;
         return true;
       }),
-    [state.letter, state.usage, state.hasImage, usageCounts],
+    [state.letter, state.usage, usageCounts],
   );
 
   const sortEntries = useCallback(
@@ -374,8 +422,13 @@ export default function TagsIndex() {
     );
   }
 
-  const illustrated = entries.filter((e) => e.hasImage).length;
-  const stopCount = categoriesTree.reduce((n, c) => n + (c.children?.length ?? 0), 0);
+  // Count only the lines the page actually renders (parentOrder), not every
+  // root in tag_categories — during the taxonomy-swap coexistence window the
+  // table holds two trees and an unfiltered count inflates the hero stat.
+  const stopCount = categoriesTree.reduce(
+    (n, c) => n + (parentOrder.includes(c.name) ? (c.children?.length ?? 0) : 0),
+    0,
+  );
   const filtered = hasActiveFilters(state);
 
   return (
@@ -409,12 +462,11 @@ export default function TagsIndex() {
             <Eyebrow as="p" className="text-background/70">
               {t('tags.stats.kicker', 'The corpus')}
             </Eyebrow>
-            <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-4">
+            <dl className="mt-6 grid grid-cols-3 gap-x-6 gap-y-8">
               {[
                 { value: entries.length, label: t('tags.stats.terms', 'Terms') },
                 { value: parentOrder.length, label: t('tags.stats.lines', 'Lines') },
                 { value: stopCount, label: t('tags.stats.stops', 'Stops') },
-                { value: illustrated, label: t('tags.stats.illustrated', 'Illustrated') },
               ].map((s) => (
                 <div key={s.label}>
                   <dd className="font-display text-display leading-none tabular-nums md:text-hero">
@@ -462,8 +514,8 @@ export default function TagsIndex() {
               onDir={() => patch({ dir: state.dir === 'asc' ? 'desc' : 'asc' })}
               usage={state.usage}
               onUsage={(usage: TagUsageFilter) => patch({ usage })}
-              hasImage={state.hasImage}
-              onHasImage={(hasImage) => patch({ hasImage })}
+              kind={state.kind}
+              onKind={(kind: TagKindFilter) => patch({ kind })}
             />
 
             {state.view !== 'graph' && (

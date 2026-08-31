@@ -390,8 +390,7 @@ const EXTRA_SANCTIONED: Record<string, string[]> = {
   '/city/berlin': [...RISK_PALETTE, ...EQUALITY_PALETTE],
   '/country/germany': [...RISK_PALETTE, ...EQUALITY_PALETTE],
   '/villages/chueca': [...RISK_PALETTE, ...EQUALITY_PALETTE],
-  // Venue and event both render `SafetyAlertBanner` from their country, and
-  // the event masthead carries an `EqualityScoreBadge`.
+  // Venue and event both render `SafetyAlertBanner` from their country.
   '/venues/scum-and-villainy-cantina': [...RISK_PALETTE, ...EQUALITY_PALETTE],
   '/events/capital-pride-ottawa-2026': [...RISK_PALETTE, ...EQUALITY_PALETTE],
 };

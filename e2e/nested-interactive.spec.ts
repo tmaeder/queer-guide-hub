@@ -43,6 +43,18 @@ const CARD_LINK =
 // `Badge`s beside a sibling overlay link, exactly what this file guards.
 // Verified 0 violations across its 26 plates on prod before adding, so this
 // pins the pattern rather than reporting a known bug.
+// `/search` was in NEITHER list, and that gap is part of why its rows stayed
+// `<div role="button">` from the day the page shipped until 2026-08-29 — a
+// sweep that only visits routes whose cards already link cannot report a route
+// whose cards link NOWHERE. It could not have been added before the fix
+// either: CARD_LINK matched nothing on /search, so the wait would have timed
+// out at 120s and failed on an empty page rather than on a violation. It is
+// listed now BECAUSE the rows are anchors, so it pins that.
+//
+// The query is load-bearing: this waits on a venue/event link, so it needs a
+// term that reliably returns them. Unlike the other routes here, /search
+// depends on the search-proxy worker — if that is down or quota'd the page
+// renders with zero results and this fails on the wait, not on a violation.
 const CARD_ROUTES = [
   '/city/berlin',
   '/cities',
@@ -51,6 +63,7 @@ const CARD_ROUTES = [
   '/news',
   '/places',
   '/marketplace/brands',
+  '/search?q=berlin',
 ];
 
 // Routes covering the converted `<Button asChild>` sites. These render static

@@ -5,10 +5,34 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedRpc } from '@/integrations/supabase/untyped';
+import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { getContentType } from '@/config/contentTypeRegistry';
 import { validateAgainstRegistry } from '@/lib/cms/zodFromFields';
 import type { EditorState, CMSContentMetadata, FieldGroup } from '@/types/cms';
+
+/**
+ * Turn a resolver refusal code into something an editor can act on.
+ *
+ * The codes come from `city_resolve_or_create`. They are deliberately narrow —
+ * each one names a specific missing piece of evidence — so the message can tell
+ * the admin what to supply rather than just reporting a failure.
+ */
+function refusalMessage(reason?: string): string {
+  switch (reason) {
+    case 'ambiguous':
+      return 'A city already exists within 2 km of these coordinates. Open that record instead, or move the coordinates if this is genuinely a different place.';
+    case 'insufficient_evidence':
+      return 'Add coordinates or a Wikidata ID before saving. Without a location this record cannot be told apart from an existing city later.';
+    case 'country_contradiction':
+      return 'The country in the name does not match the selected country. Fix one of them.';
+    case 'no_country':
+      return 'Select a country first.';
+    default:
+      return `Could not create this city${reason ? ` (${reason})` : ''}.`;
+  }
+}
 
 interface UseCMSEditorOptions {
   contentType: string;
@@ -250,15 +274,64 @@ export function useCMSEditor({
         if (user) {
           saveData.created_by = user.id;
         }
-        const { data: inserted, error } = await supabase
-          .from(config.tableName as 'venues')
-          .insert(saveData)
-          .select('*')
-          .single();
 
-        if (error) throw error;
-        savedId = (inserted as { id: string }).id;
-        serverRow = inserted as unknown as Record<string, unknown>;
+        if (config.createRpc) {
+          // Creation is owned by an RPC, because a plain insert here can only
+          // be stopped by a unique index — and for `cities` every unique index
+          // keys on the string, so a second spelling of a city we already have
+          // passes all of them. The RPC probes aliases and the Wikidata QID
+          // too, and answers 'refused' when it cannot tell two candidates
+          // apart. A refusal is a save error the editor must show: silently
+          // continuing would be the guess the RPC exists to avoid.
+          const { data: rpcData, error: rpcError } = await untypedRpc(
+            config.createRpc.fn,
+            config.createRpc.args(saveData),
+          );
+          if (rpcError) throw rpcError;
+
+          const row = (Array.isArray(rpcData) ? rpcData[0] : rpcData) as
+            | { city_id?: string; id?: string; action?: string; reason?: string }
+            | null;
+          const resolvedId = row?.city_id ?? row?.id ?? null;
+
+          if (!row || row.action === 'refused' || !resolvedId) {
+            setState((prev) => ({
+              ...prev,
+              isSaving: false,
+              errors: { _conflict: refusalMessage(row?.reason) },
+            }));
+            return false;
+          }
+
+          savedId = resolvedId;
+          const { data: fetched } = await supabase
+            .from(config.tableName as 'venues')
+            .select('*')
+            .eq(config.primaryKey, resolvedId)
+            .maybeSingle();
+          serverRow = (fetched ?? null) as unknown as Record<string, unknown> | null;
+
+          // 'matched' means the resolver found an existing row rather than
+          // creating one. The editor is now editing that row, and saying so is
+          // the point — the alternative is an admin believing they created a
+          // city and later finding their edits on a different one.
+          if (row.action === 'matched' || row.action === 'raced') {
+            toast({
+              title: 'Opened the existing record',
+              description: 'A city with this identity already exists — your edits apply to it.',
+            });
+          }
+        } else {
+          const { data: inserted, error } = await supabase
+            .from(config.tableName as 'venues')
+            .insert(saveData)
+            .select('*')
+            .single();
+
+          if (error) throw error;
+          savedId = (inserted as { id: string }).id;
+          serverRow = inserted as unknown as Record<string, unknown>;
+        }
       }
 
       // Detect silently-dropped fields (e.g. sanitize_website_field nulls

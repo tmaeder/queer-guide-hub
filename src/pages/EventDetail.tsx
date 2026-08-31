@@ -47,6 +47,8 @@ import {
 } from './EventDetail.parts';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { SinglePage, StickyRailGroup } from '@/components/transit/SinglePage';
+import { EventProgramme } from '@/components/events/EventProgramme';
+import { useEventProgramme } from '@/hooks/useEventProgramme';
 import { PhotoInset } from '@/components/transit/PhotoInset';
 import { ProvenanceLine } from '@/components/transit/ProvenanceLine';
 import { SingleSectionList, SingleRouteRail } from '@/components/transit/SingleSections';
@@ -272,6 +274,17 @@ export default function EventDetail() {
   // tickets in another.
   const isPast = event ? isEventPast(event) : false;
 
+  // The programme is loaded for BOTH shapes: on an umbrella it is the parade /
+  // festival / week list, on a child it is the siblings, because
+  // `event_programme` resolves either id to the same root. Only the section's
+  // heading differs.
+  const { data: programme } = useEventProgramme(event?.id, !!event);
+  const programmeChildren = programme?.children ?? [];
+  const isProgrammeChild = !!event?.parent_event_id;
+  const siblings = isProgrammeChild
+    ? programmeChildren.filter((c) => c.id !== event?.id)
+    : programmeChildren;
+
   // Spec module order for `event`: 01 fact strip, 03 occurrences, 04 access,
   // 08 nested entity, 15 stat line.
   //
@@ -291,6 +304,16 @@ export default function EventDetail() {
           id: 'about',
           title: t('events.detail.section.about', 'About this event'),
           content: <EventAbout event={event} onContentUpdated={refetch} />,
+        },
+        {
+          // Renders only when the umbrella actually has children (or the child
+          // has siblings) — `singleSections` drops a section with null content,
+          // which is the house rule "a module with no data does not render".
+          id: 'programme',
+          title: isProgrammeChild
+            ? t('events.detail.section.programmeSiblings', 'Rest of the programme')
+            : t('events.detail.section.programme', 'Programme'),
+          content: siblings.length > 0 ? <EventProgramme entries={siblings} /> : null,
         },
         {
           id: 'where',

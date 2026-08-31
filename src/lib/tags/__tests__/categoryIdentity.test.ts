@@ -38,9 +38,9 @@ describe('categoryIdentity', () => {
   });
 
   it('resolves by name and by slug, and misses safely', () => {
-    expect(lineForCategory('Health & Wellness')?.slug).toBe('health-wellness');
-    expect(lineForCategory('health-wellness')?.name).toBe('Health & Wellness');
-    expect(lineForCategory('Gender Identity')).toBeUndefined(); // a child, not a line
+    expect(lineForCategory('Health')?.slug).toBe('health');
+    expect(lineForCategory('health')?.name).toBe('Health');
+    expect(lineForCategory('Gender')).toBeUndefined(); // a stop, not a line
     expect(lineForCategory(null)).toBeUndefined();
     expect(lineForCategory('')).toBeUndefined();
   });

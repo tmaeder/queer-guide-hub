@@ -241,6 +241,7 @@ Deno.serve(async (req) => {
   let text: string
   try {
     const llm = await anthropicMessages({
+      callerFn: 'trip-inbox-chat',
       model: 'claude-haiku-4-5',
       max_tokens: 1024,
       temperature: 0,

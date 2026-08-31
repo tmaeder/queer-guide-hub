@@ -16,9 +16,9 @@ export interface TagHygieneStats {
   };
   uncategorized_active: number;
   dangling_category_id: number;
-  image_without_license: number;
-  commons_image_without_license: number;
-  image_alt_column_empty: number;
+  /** Glossary photography retired 2026-08-28 — any active tag carrying an
+   *  image_url means a writer regrew the corpus the retirement cleared. */
+  active_tags_with_image_url: number;
   assignment_to_non_active_tag: number;
   nonclean_entity_type: number;
   duplicate_active_name: number;
@@ -26,8 +26,33 @@ export interface TagHygieneStats {
   merged_but_not_status_merged: number;
   sensitive_without_description: number;
   indexable_without_description: number;
+  /** The junction names a category, `unified_tags.category_id` names none. The
+   *  junction is the source of truth and the column is derived from it, so
+   *  non-zero means a writer inserted an assignment without letting the denorm
+   *  follow — which is how doxy-pep and naloxone shipped. */
+  denorm_category_missing: number;
+  /** A bulk-import stamp ("Sexual activity tag", "Toys tag") published as a
+   *  definition. Deliberately NOT covered by `indexable_without_description`,
+   *  which only sees an empty column — a stamp is not empty, so it passed every
+   *  check while /tags/anal-sex served four words as its lead paragraph. */
+  placeholder_description_active: number;
   event_tag_strings_unresolved: number;
   events_with_tags_unlinked: number;
+  /** An alias identical to its own tag's name asserts nothing. */
+  alias_equals_name: number;
+  /** U+FFFD in an alias is transport corruption, never a spelling. */
+  alias_mojibake: number;
+  /** "No information available" stamps / LLM refusal essays published as prose. */
+  refusal_prose_active: number;
+  /** Typed (non-multilingual) aliases still review_status='auto' — displayed
+   *  nowhere, trusted by nothing, awaiting human review. */
+  unreviewed_typed_alias: number;
+  /** tag_relations awaiting review: LLM-proposed 'pending' + legacy 'auto'
+   *  related rows the display gate hides. A queue depth, not an invariant. */
+  relations_pending_review: number;
+  /** Active prose-bearing tags the mode='prose' truth+voice pass has not
+   *  visited yet. Drains ~300/day; new tags refill it. */
+  prose_unreviewed: number;
 }
 
 /**

@@ -285,5 +285,6 @@ export const venueContentType: ContentTypeConfig = {
       autoMergeRpc: 'run_venue_fuzzy_automerge',
     },
   },
+  lifecycle: { type: 'venue', archive: { column: 'review_status', value: 'archived', label: 'Archived' } },
   publicPath: (row) => (row.slug ? `/venues/${row.slug}` : null),
 };

@@ -1,0 +1,4885 @@
+{
+  "generated_from": "scripts/data-quality/classify-nonplace-cities.mjs",
+  "shell_count": 1408,
+  "counts": {
+    "nonplace": 57,
+    "ambiguous_place_name": 91,
+    "exonym_dupe": 68,
+    "keep": 1183,
+    "rejected_by_review": 9
+  },
+  "arms": {
+    "macro_region": 1,
+    "country": 23,
+    "subdivision": 13,
+    "suffix": 18,
+    "subdivision_other_country": 2,
+    "historic_polity": 1
+  },
+  "review_file": "scripts/data-quality/out/nonplace-city-review.json",
+  "stale_review_ids": [],
+  "approved_ids": [
+    "2cc6134e-374d-459b-8463-0d834c788ec4",
+    "4a14f906-4641-4023-8fdd-a740905ee03c",
+    "303acc30-610a-443b-ac14-5b3eec5ba1a2",
+    "50f004f9-73dd-43f9-b1fa-9babaa466052",
+    "7d7af474-ccb7-407d-b2e1-44698163557e",
+    "d3305fbf-a563-4872-9f23-bc3f31a49d86",
+    "afd1c886-0aed-4593-b060-16f7fd13db7b",
+    "499c8bd5-9bba-4999-ac2e-81456188baf0",
+    "9f82e1ad-2aff-4205-9426-bc9c05c91d74",
+    "3afcdb4d-5b72-4189-977d-6b7e2539e6a2",
+    "5ecdc3f5-1e17-4c61-b0cb-0a0fb7e191e7",
+    "dce67684-3d79-487d-b9fe-f31310dd532e",
+    "b875fed4-4ba8-4023-9fb3-e7a79d330327",
+    "81b69958-f59b-4373-8fb4-3383fe3c092b",
+    "daca6207-8090-42a8-89da-b7d7ae78f750",
+    "a8ba41cf-7a64-4368-8d97-b37e4f6edb84",
+    "105a11d4-48a7-4fdc-acd8-849f8fcbdc2d",
+    "60badbc2-38bb-4886-bfa6-f16774bdc87e",
+    "b9910f98-3c9c-4ed0-b54e-a96a6d608c05",
+    "e2c490d2-1e2f-490e-98da-b069dee5ced4",
+    "40fe5000-b0ec-4066-8034-1d62deca3f7c",
+    "8b5577bd-1407-41f6-9c5b-71322c345155",
+    "181c8cf5-4843-4e0e-a904-98fd08ca5546",
+    "cf9265fb-3458-4881-9718-3e9213fba835",
+    "ddf48cd5-ec49-4cf3-8125-796f3a9f14a2",
+    "d74f7d9a-be12-4bfa-bd71-9832633df8cc",
+    "5ae0aea6-72c1-4507-aa03-5dfa3d05e175",
+    "a1f918eb-4467-4018-b2a7-2833d431a15b",
+    "b201d8b3-fdf4-4d75-99f6-eebc8dc378b9",
+    "d82a49d8-db5d-456c-9123-3b019534c6fd",
+    "ae2ed47a-078b-4c0a-b216-834eff8e732f",
+    "093b426d-0a16-4b70-b11a-4ffbc8550702",
+    "a4602bf9-0c72-48a5-b7c4-640c4b4b8755",
+    "16e934e9-821a-4b85-86d5-b5a9555c844e",
+    "3453b22f-be13-40ba-b7b5-26a42b6bf04a",
+    "3b9a6697-ded9-41e5-a99b-a3ebf1431c03",
+    "d7d1f26d-92c6-4660-afd2-a08b038c6a6b",
+    "5ad38a03-e805-46b8-9c04-da4e814f4644",
+    "398d363c-d14c-4b9b-bcf7-8c711d83a959",
+    "7f6fc3f7-c687-43bd-924f-59f21b3c0b2d",
+    "c5ff96d8-09aa-4892-a3e5-0eee0265e336",
+    "6da11bce-fbe8-4035-8c86-9a31596030d0",
+    "0a90c7f6-3795-4331-802c-6e692ad084eb",
+    "dff8a252-acdd-4f0f-9e89-5b6579d6ed0a",
+    "24463e0d-5445-4f94-9305-88b4fa9c3031",
+    "5fea898f-b705-411c-869a-3561a8e5312e",
+    "30f1e908-2f94-45f0-aac2-56850552a9f9",
+    "92a0a6ff-0bef-4359-8f87-21c6af547dc9",
+    "087b27ba-a74d-44cd-837f-86e0d02eb1f4",
+    "e47fc955-4395-4da8-8658-0d3c795da52b",
+    "c83d8742-ad07-4931-aaf9-297450ebffc0",
+    "b394d250-ae9b-4662-b614-9a6d1abf125c",
+    "b77688c1-b423-48e8-8e29-a67eae5f63aa",
+    "e7ab8d65-d056-4ca3-8bbf-846394422ad7",
+    "9a3c0d8a-3d21-4dac-81c6-b1ba4b0bac1b",
+    "ebf5c081-dfc4-43ae-ae05-d7309ab223ae",
+    "e59141fb-c5b8-4944-a882-ca1e9a932c31"
+  ],
+  "buckets": {
+    "nonplace": [
+      {
+        "id": "2cc6134e-374d-459b-8463-0d834c788ec4",
+        "name": "Americas",
+        "country": "US",
+        "population": 1035298985,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "macro_region"
+        ],
+        "detail": {}
+      },
+      {
+        "id": "4a14f906-4641-4023-8fdd-a740905ee03c",
+        "name": "Russland",
+        "country": "RU",
+        "population": 101438000,
+        "birth_refs": 2,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "country"
+        ],
+        "detail": {
+          "country": "RU"
+        }
+      },
+      {
+        "id": "303acc30-610a-443b-ac14-5b3eec5ba1a2",
+        "name": "Sumatra",
+        "country": "ID",
+        "population": 50365538,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Sumatera",
+            "type": "geographical unit",
+            "iso": "ID-SM",
+            "qid": "Q3492"
+          }
+        }
+      },
+      {
+        "id": "50f004f9-73dd-43f9-b1fa-9babaa466052",
+        "name": "Frankreich",
+        "country": "FR",
+        "population": 40681000,
+        "birth_refs": 1,
+        "death_refs": 1,
+        "bucket": "nonplace",
+        "arms": [
+          "country"
+        ],
+        "detail": {
+          "country": "FR"
+        }
+      },
+      {
+        "id": "7d7af474-ccb7-407d-b2e1-44698163557e",
+        "name": "Rio Grande do Sul",
+        "country": "BR",
+        "population": 11322895,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Rio Grande do Sul",
+            "type": "state",
+            "iso": "BR-RS",
+            "qid": "Q40030"
+          }
+        }
+      },
+      {
+        "id": "d3305fbf-a563-4872-9f23-bc3f31a49d86",
+        "name": "England",
+        "country": "GB",
+        "population": 8331434,
+        "birth_refs": 8,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "England",
+            "type": "country",
+            "iso": "GB-ENG",
+            "qid": "Q21"
+          }
+        }
+      },
+      {
+        "id": "afd1c886-0aed-4593-b060-16f7fd13db7b",
+        "name": "Irak",
+        "country": "IQ",
+        "population": 7289759,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "country"
+        ],
+        "detail": {
+          "country": "IQ"
+        }
+      },
+      {
+        "id": "499c8bd5-9bba-4999-ac2e-81456188baf0",
+        "name": "Irland",
+        "country": "IE",
+        "population": 7185600,
+        "birth_refs": 2,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "country"
+        ],
+        "detail": {
+          "country": "IE"
+        }
+      },
+      {
+        "id": "9f82e1ad-2aff-4205-9426-bc9c05c91d74",
+        "name": "Hessen",
+        "country": "DE",
+        "population": 6045425,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Hessen",
+            "type": "land",
+            "iso": "DE-HE",
+            "qid": "Q1199"
+          }
+        }
+      },
+      {
+        "id": "3afcdb4d-5b72-4189-977d-6b7e2539e6a2",
+        "name": "Amazonas",
+        "country": "BR",
+        "population": 4001667,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Amazonas",
+            "type": "state",
+            "iso": "BR-AM",
+            "qid": "Q40040"
+          }
+        }
+      },
+      {
+        "id": "5ecdc3f5-1e17-4c61-b0cb-0a0fb7e191e7",
+        "name": "Mississippi",
+        "country": "US",
+        "population": 2967297,
+        "birth_refs": 2,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Mississippi",
+            "type": "state",
+            "iso": "US-MS",
+            "qid": "Q1494"
+          }
+        }
+      },
+      {
+        "id": "dce67684-3d79-487d-b9fe-f31310dd532e",
+        "name": "Brussels metropolitan area",
+        "country": "GB",
+        "population": 2639000,
+        "birth_refs": 0,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "suffix"
+        ],
+        "detail": {}
+      },
+      {
+        "id": "b875fed4-4ba8-4023-9fb3-e7a79d330327",
+        "name": "Yucatán",
+        "country": "MX",
+        "population": 2320898,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Yucatán",
+            "type": "state",
+            "iso": "MX-YUC",
+            "qid": "Q60176"
+          }
+        }
+      },
+      {
+        "id": "81b69958-f59b-4373-8fb4-3383fe3c092b",
+        "name": "Niigata Prefecture",
+        "country": "JP",
+        "population": 2192319,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "suffix"
+        ],
+        "detail": {}
+      },
+      {
+        "id": "daca6207-8090-42a8-89da-b7d7ae78f750",
+        "name": "Havana Province",
+        "country": "CU",
+        "population": 2137847,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "suffix"
+        ],
+        "detail": {}
+      },
+      {
+        "id": "a8ba41cf-7a64-4368-8d97-b37e4f6edb84",
+        "name": "Libanon",
+        "country": "LB",
+        "population": 1804927,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "country"
+        ],
+        "detail": {
+          "country": "LB"
+        }
+      },
+      {
+        "id": "105a11d4-48a7-4fdc-acd8-849f8fcbdc2d",
+        "name": "Manitoba",
+        "country": "CA",
+        "population": 1289792,
+        "birth_refs": 2,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Manitoba",
+            "type": "province",
+            "iso": "CA-MB",
+            "qid": "Q1948"
+          }
+        }
+      },
+      {
+        "id": "60badbc2-38bb-4886-bfa6-f16774bdc87e",
+        "name": "Saskatchewan",
+        "country": "AU",
+        "population": 1132640,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "subdivision_other_country"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Saskatchewan",
+            "type": "province",
+            "iso": "CA-SK",
+            "qid": "Q1989",
+            "country": "CA"
+          }
+        }
+      },
+      {
+        "id": "b9910f98-3c9c-4ed0-b54e-a96a6d608c05",
+        "name": "Electorate of Saxony",
+        "country": "DE",
+        "population": 1100000,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "historic_polity"
+        ],
+        "detail": {}
+      },
+      {
+        "id": "e2c490d2-1e2f-490e-98da-b069dee5ced4",
+        "name": "Lanarkshire",
+        "country": "GB",
+        "population": 1003726,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "suffix"
+        ],
+        "detail": {}
+      },
+      {
+        "id": "40fe5000-b0ec-4066-8034-1d62deca3f7c",
+        "name": "Ventura County",
+        "country": "US",
+        "population": 823318,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "suffix"
+        ],
+        "detail": {}
+      },
+      {
+        "id": "8b5577bd-1407-41f6-9c5b-71322c345155",
+        "name": "Stanislaus County",
+        "country": "US",
+        "population": 514453,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "suffix"
+        ],
+        "detail": {}
+      },
+      {
+        "id": "181c8cf5-4843-4e0e-a904-98fd08ca5546",
+        "name": "Changyang Tujia Autonomous County",
+        "country": "CN",
+        "population": 490000,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "suffix"
+        ],
+        "detail": {}
+      },
+      {
+        "id": "cf9265fb-3458-4881-9718-3e9213fba835",
+        "name": "Sonoma County",
+        "country": "US",
+        "population": 483878,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "suffix"
+        ],
+        "detail": {}
+      },
+      {
+        "id": "ddf48cd5-ec49-4cf3-8125-796f3a9f14a2",
+        "name": "Prince William County",
+        "country": "US",
+        "population": 402002,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "suffix"
+        ],
+        "detail": {}
+      },
+      {
+        "id": "d74f7d9a-be12-4bfa-bd71-9832633df8cc",
+        "name": "Tolland County",
+        "country": "US",
+        "population": 152691,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "suffix"
+        ],
+        "detail": {}
+      },
+      {
+        "id": "5ae0aea6-72c1-4507-aa03-5dfa3d05e175",
+        "name": "Comanche County",
+        "country": "US",
+        "population": 124098,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "suffix"
+        ],
+        "detail": {}
+      },
+      {
+        "id": "a1f918eb-4467-4018-b2a7-2833d431a15b",
+        "name": "Brecknockshire",
+        "country": "GB",
+        "population": 68088,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "suffix"
+        ],
+        "detail": {}
+      },
+      {
+        "id": "b201d8b3-fdf4-4d75-99f6-eebc8dc378b9",
+        "name": "Tobago",
+        "country": "TT",
+        "population": 60874,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Tobago",
+            "type": "ward",
+            "iso": "TT-TOB",
+            "qid": "Q128323"
+          }
+        }
+      },
+      {
+        "id": "d82a49d8-db5d-456c-9123-3b019534c6fd",
+        "name": "Wythe County",
+        "country": "US",
+        "population": 29235,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "suffix"
+        ],
+        "detail": {}
+      },
+      {
+        "id": "ae2ed47a-078b-4c0a-b216-834eff8e732f",
+        "name": "Page County",
+        "country": "US",
+        "population": 24042,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "suffix"
+        ],
+        "detail": {}
+      },
+      {
+        "id": "093b426d-0a16-4b70-b11a-4ffbc8550702",
+        "name": "South Dakota",
+        "country": "US",
+        "population": 11776,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "South Dakota",
+            "type": "state",
+            "iso": "US-SD",
+            "qid": "Q1211"
+          }
+        }
+      },
+      {
+        "id": "a4602bf9-0c72-48a5-b7c4-640c4b4b8755",
+        "name": "Lake County",
+        "country": "US",
+        "population": 7895,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "suffix"
+        ],
+        "detail": {}
+      },
+      {
+        "id": "16e934e9-821a-4b85-86d5-b5a9555c844e",
+        "name": "San Isidro Canton",
+        "country": "CR",
+        "population": 2744,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "suffix"
+        ],
+        "detail": {}
+      },
+      {
+        "id": "3453b22f-be13-40ba-b7b5-26a42b6bf04a",
+        "name": "*Deutschland",
+        "country": "DE",
+        "population": null,
+        "birth_refs": 3,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "country"
+        ],
+        "detail": {
+          "country": "DE"
+        }
+      },
+      {
+        "id": "3b9a6697-ded9-41e5-a99b-a3ebf1431c03",
+        "name": "Algerien",
+        "country": "DZ",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "country"
+        ],
+        "detail": {
+          "country": "DZ"
+        }
+      },
+      {
+        "id": "d7d1f26d-92c6-4660-afd2-a08b038c6a6b",
+        "name": "Amerikanisch-Samoa",
+        "country": "AS",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "subdivision_other_country",
+          "country"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "American Samoa",
+            "type": "outlying area",
+            "iso": "US-AS",
+            "qid": "Q16641",
+            "country": "US"
+          },
+          "country": "AS"
+        }
+      },
+      {
+        "id": "5ad38a03-e805-46b8-9c04-da4e814f4644",
+        "name": "Australien",
+        "country": "AU",
+        "population": null,
+        "birth_refs": 2,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "country"
+        ],
+        "detail": {
+          "country": "AU"
+        }
+      },
+      {
+        "id": "398d363c-d14c-4b9b-bcf7-8c711d83a959",
+        "name": "Baskenland",
+        "country": "ES",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Basque Country",
+            "type": "autonomous community",
+            "iso": "ES-PV",
+            "qid": "Q3995"
+          }
+        }
+      },
+      {
+        "id": "7f6fc3f7-c687-43bd-924f-59f21b3c0b2d",
+        "name": "Indien",
+        "country": "IN",
+        "population": null,
+        "birth_refs": 5,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "country"
+        ],
+        "detail": {
+          "country": "IN"
+        }
+      },
+      {
+        "id": "c5ff96d8-09aa-4892-a3e5-0eee0265e336",
+        "name": "Indonesien",
+        "country": "ID",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "country"
+        ],
+        "detail": {
+          "country": "ID"
+        }
+      },
+      {
+        "id": "6da11bce-fbe8-4035-8c86-9a31596030d0",
+        "name": "Jamaika",
+        "country": "JM",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "country"
+        ],
+        "detail": {
+          "country": "JM"
+        }
+      },
+      {
+        "id": "0a90c7f6-3795-4331-802c-6e692ad084eb",
+        "name": "Kamerun",
+        "country": "CM",
+        "population": null,
+        "birth_refs": 2,
+        "death_refs": 1,
+        "bucket": "nonplace",
+        "arms": [
+          "country"
+        ],
+        "detail": {
+          "country": "CM"
+        }
+      },
+      {
+        "id": "dff8a252-acdd-4f0f-9e89-5b6579d6ed0a",
+        "name": "Kanada",
+        "country": "CA",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "country"
+        ],
+        "detail": {
+          "country": "CA"
+        }
+      },
+      {
+        "id": "24463e0d-5445-4f94-9305-88b4fa9c3031",
+        "name": "Kenia",
+        "country": "KE",
+        "population": null,
+        "birth_refs": 4,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "country"
+        ],
+        "detail": {
+          "country": "KE"
+        }
+      },
+      {
+        "id": "5fea898f-b705-411c-869a-3561a8e5312e",
+        "name": "Neuseeland",
+        "country": "NZ",
+        "population": null,
+        "birth_refs": 2,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "country"
+        ],
+        "detail": {
+          "country": "NZ"
+        }
+      },
+      {
+        "id": "30f1e908-2f94-45f0-aac2-56850552a9f9",
+        "name": "Nybro church parish",
+        "country": "SE",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "suffix"
+        ],
+        "detail": {}
+      },
+      {
+        "id": "92a0a6ff-0bef-4359-8f87-21c6af547dc9",
+        "name": "Palästina",
+        "country": "PS",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "country"
+        ],
+        "detail": {
+          "country": "PS"
+        }
+      },
+      {
+        "id": "087b27ba-a74d-44cd-837f-86e0d02eb1f4",
+        "name": "Philippinen",
+        "country": "PH",
+        "population": null,
+        "birth_refs": 3,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "country"
+        ],
+        "detail": {
+          "country": "PH"
+        }
+      },
+      {
+        "id": "e47fc955-4395-4da8-8658-0d3c795da52b",
+        "name": "Sambia",
+        "country": "ZM",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "country"
+        ],
+        "detail": {
+          "country": "ZM"
+        }
+      },
+      {
+        "id": "c83d8742-ad07-4931-aaf9-297450ebffc0",
+        "name": "Schottland",
+        "country": "GB",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Scotland",
+            "type": "country",
+            "iso": "GB-SCT",
+            "qid": "Q22"
+          }
+        }
+      },
+      {
+        "id": "b394d250-ae9b-4662-b614-9a6d1abf125c",
+        "name": "Shefford County",
+        "country": "CA",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "suffix"
+        ],
+        "detail": {}
+      },
+      {
+        "id": "b77688c1-b423-48e8-8e29-a67eae5f63aa",
+        "name": "Simbabwe",
+        "country": "ZW",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "country"
+        ],
+        "detail": {
+          "country": "ZW"
+        }
+      },
+      {
+        "id": "e7ab8d65-d056-4ca3-8bbf-846394422ad7",
+        "name": "Südafrika",
+        "country": "ZA",
+        "population": null,
+        "birth_refs": 5,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "country"
+        ],
+        "detail": {
+          "country": "ZA"
+        }
+      },
+      {
+        "id": "9a3c0d8a-3d21-4dac-81c6-b1ba4b0bac1b",
+        "name": "Südkorea",
+        "country": "KR",
+        "population": null,
+        "birth_refs": 3,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "country"
+        ],
+        "detail": {
+          "country": "KR"
+        }
+      },
+      {
+        "id": "ebf5c081-dfc4-43ae-ae05-d7309ab223ae",
+        "name": "Trinidad und Tobago",
+        "country": "TT",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "country"
+        ],
+        "detail": {
+          "country": "TT"
+        }
+      },
+      {
+        "id": "e59141fb-c5b8-4944-a882-ca1e9a932c31",
+        "name": "Westbengalen",
+        "country": "IN",
+        "population": null,
+        "birth_refs": 2,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "West Bengal",
+            "type": "state",
+            "iso": "IN-WB",
+            "qid": "Q1356"
+          }
+        }
+      }
+    ],
+    "ambiguous_place_name": [
+      {
+        "id": "a01cdf4f-1b49-462b-be34-360f0e18cc64",
+        "name": "Khartum",
+        "country": "SD",
+        "population": 6527500,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Khartoum",
+            "type": "state",
+            "iso": "SD-KH",
+            "qid": "Q310385"
+          }
+        },
+        "demoted": [
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "106eaf17-2a2f-489b-a369-69c4fbbff53f",
+        "name": "Chiba",
+        "country": "JP",
+        "population": 6279002,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Chiba",
+            "type": "prefecture",
+            "iso": "JP-12",
+            "qid": "Q80011"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "2537b3f8-2e1d-4175-b1e8-39caaafcd2eb",
+        "name": "Sinaloa",
+        "country": "MX",
+        "population": 2767761,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Sinaloa",
+            "type": "state",
+            "iso": "MX-SIN",
+            "qid": "Q80252"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "106b0d42-e6f1-48ac-9f8f-9d53dab9d175",
+        "name": "Damaskus",
+        "country": "SY",
+        "population": 1754000,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Damascus",
+            "type": "province",
+            "iso": "SY-DI",
+            "qid": "Q2007044"
+          }
+        },
+        "demoted": [
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "c9473f90-9fa6-4aac-a65a-75032d5ad773",
+        "name": "Nowosibirsk",
+        "country": "RU",
+        "population": 1397191,
+        "birth_refs": 2,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Novosibirsk",
+            "type": "administrative region",
+            "iso": "RU-NVS",
+            "qid": "Q5851"
+          }
+        },
+        "demoted": [
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "8f980b06-f66b-412e-8d0e-8cbcd161fd8d",
+        "name": "Nagasaki",
+        "country": "JP",
+        "population": 1307309,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Nagasaki",
+            "type": "prefecture",
+            "iso": "JP-42",
+            "qid": "Q169376"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "2e8913be-7731-46fd-a03d-66eae57bbe20",
+        "name": "Aguascalientes",
+        "country": "MX",
+        "population": 1184996,
+        "birth_refs": 3,
+        "death_refs": 1,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Aguascalientes",
+            "type": "state",
+            "iso": "MX-AGU",
+            "qid": "Q79952"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "43680ec7-9c3b-4075-ad94-458b83e95a14",
+        "name": "Hertfordshire",
+        "country": "GB",
+        "population": 1184365,
+        "birth_refs": 1,
+        "death_refs": 1,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision",
+          "suffix"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Hertfordshire",
+            "type": "two-tier county",
+            "iso": "GB-HRT",
+            "qid": "Q3410"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "0f53be96-354e-4650-9885-97c4f7b694ef",
+        "name": "Nottinghamshire",
+        "country": "GB",
+        "population": 1154195,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision",
+          "suffix"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Nottinghamshire",
+            "type": "two-tier county",
+            "iso": "GB-NTT",
+            "qid": "Q21272736"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "b54dabe0-14fa-4876-837a-f435be16349d",
+        "name": "Leicestershire",
+        "country": "GB",
+        "population": 1043800,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision",
+          "suffix"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Leicestershire",
+            "type": "two-tier county",
+            "iso": "GB-LEC",
+            "qid": "Q21272890"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists"
+        ]
+      },
+      {
+        "id": "11a80424-ad19-4347-a733-927cc80b9e76",
+        "name": "Saratov",
+        "country": "RU",
+        "population": 843460,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Saratov",
+            "type": "administrative region",
+            "iso": "RU-SAR",
+            "qid": "Q5334"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "dc9e22c5-cbcd-4e10-823d-7683acffd018",
+        "name": "Malacca",
+        "country": "MY",
+        "population": 788706,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Malacca",
+            "type": "state",
+            "iso": "MY-04",
+            "qid": "Q185221"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "5ae7557f-72b1-4d33-a9ab-8c0c78a08bd5",
+        "name": "Suffolk",
+        "country": "GB",
+        "population": 741900,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Suffolk",
+            "type": "two-tier county",
+            "iso": "GB-SFK",
+            "qid": "Q23111"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "cd5f669f-9e25-454e-aa85-6b2fb33773b9",
+        "name": "Kemerowo",
+        "country": "RU",
+        "population": 529934,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Kemerovo",
+            "type": "administrative region",
+            "iso": "RU-KEM",
+            "qid": "Q6076"
+          }
+        },
+        "demoted": [
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "deac144c-9a60-45a1-ad5b-ac77462a0898",
+        "name": "Jeju",
+        "country": "KR",
+        "population": 435413,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Jeju",
+            "type": "special self-governing province",
+            "iso": "KR-49",
+            "qid": "Q41164"
+          }
+        },
+        "demoted": [
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "1a45c3b6-b509-4069-b307-7e4793269232",
+        "name": "Meknes",
+        "country": "MA",
+        "population": 393791,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Meknès",
+            "type": "prefecture",
+            "iso": "MA-MEK",
+            "qid": "Q3408890"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists"
+        ]
+      },
+      {
+        "id": "d8d1f511-eb6a-4542-8837-efb2781d96d6",
+        "name": "Las Palmas",
+        "country": "ES",
+        "population": 379766,
+        "birth_refs": 3,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Las Palmas",
+            "type": "province",
+            "iso": "ES-GC",
+            "qid": "Q5813"
+          }
+        },
+        "demoted": [
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "f68d1eec-862e-469a-bc1b-60026f1298e2",
+        "name": "Medway",
+        "country": "GB",
+        "population": 276500,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Medway",
+            "type": "unitary authority",
+            "iso": "GB-MDW",
+            "qid": "Q797782"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "5805e939-8bcf-41f4-9c65-f89b71ede427",
+        "name": "Intibucá",
+        "country": "HN",
+        "population": 232553,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Intibucá",
+            "type": "department",
+            "iso": "HN-IN",
+            "qid": "Q262125"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "2ff1ae98-e5ec-483d-a7cd-9cba2b606009",
+        "name": "Changhua",
+        "country": "TW",
+        "population": 226518,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Changhua",
+            "type": "county",
+            "iso": "TW-CHA",
+            "qid": "Q133865"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "4b62f622-0500-439c-9662-fa808dbffc44",
+        "name": "Babylon",
+        "country": "US",
+        "population": 213603,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision_other_country"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Babylon",
+            "type": "governorate",
+            "iso": "IQ-BB",
+            "qid": "Q59202",
+            "country": "IQ"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists"
+        ]
+      },
+      {
+        "id": "cfbd3da9-f0bc-4fca-a59f-fe4997cb8193",
+        "name": "Taranto",
+        "country": "IT",
+        "population": 201100,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Taranto",
+            "type": "province",
+            "iso": "IT-TA",
+            "qid": "Q16283"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "754a585b-c2ac-452b-97ee-cdfb42e57194",
+        "name": "Bayamón",
+        "country": "PR",
+        "population": 189159,
+        "birth_refs": 3,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Bayamon",
+            "type": "region",
+            "iso": "PR-BY",
+            "qid": "Q16089204"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "330d30f3-51d0-4e10-90f9-1e8214eeca66",
+        "name": "Ponce",
+        "country": "PR",
+        "population": 166327,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Ponce",
+            "type": "region",
+            "iso": "PR-PO",
+            "qid": "Q864024"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "2ce1aaec-b552-4569-a786-95cbe53e1faf",
+        "name": "Middlesbrough",
+        "country": "GB",
+        "population": 138400,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Middlesbrough",
+            "type": "unitary authority",
+            "iso": "GB-MDB",
+            "qid": "Q171866"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "ea51c095-6764-4085-bffc-2359b493909f",
+        "name": "Nakhon Ratchasima",
+        "country": "TH",
+        "population": 134440,
+        "birth_refs": 4,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Nakhon Ratchasima",
+            "type": "province",
+            "iso": "TH-30",
+            "qid": "Q271737"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "eb2b2179-2a02-42ee-8956-ae76500504ec",
+        "name": "Tarragona",
+        "country": "ES",
+        "population": 133545,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Tarragona",
+            "type": "province",
+            "iso": "ES-T",
+            "qid": "Q15088"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "4d49605e-1e11-41a1-b018-8d047bc6f58f",
+        "name": "Udon Thani",
+        "country": "TH",
+        "population": 133429,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Udon Thani",
+            "type": "province",
+            "iso": "TH-41",
+            "qid": "Q380752"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "16993240-ee98-44d9-aa53-5663806a4670",
+        "name": "Cádiz",
+        "country": "ES",
+        "population": 122990,
+        "birth_refs": 2,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Cádiz",
+            "type": "province",
+            "iso": "ES-CA",
+            "qid": "Q15682"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "706af621-a68d-4c79-8c9d-3eb12089efaf",
+        "name": "Khon Kaen",
+        "country": "TH",
+        "population": 115928,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Khon Kaen",
+            "type": "province",
+            "iso": "TH-40",
+            "qid": "Q327533"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "5477bec5-850c-449f-a5df-925c9d4f2dd5",
+        "name": "Trincomalee",
+        "country": "LK",
+        "population": 115443,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Trincomalee",
+            "type": "district",
+            "iso": "LK-53",
+            "qid": "Q1493318"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists"
+        ]
+      },
+      {
+        "id": "925fd954-407f-4410-80bb-f282d44add0b",
+        "name": "Pembrokeshire",
+        "country": "GB",
+        "population": 114138,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision",
+          "suffix"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Pembrokeshire",
+            "type": "unitary authority",
+            "iso": "GB-PEM",
+            "qid": "Q213361"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "feaa251e-fd66-4b1e-92df-26119428b6fb",
+        "name": "Rochdale",
+        "country": "GB",
+        "population": 110194,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Rochdale",
+            "type": "metropolitan district",
+            "iso": "GB-RCH",
+            "qid": "Q1892596"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "b6cd00c3-8edf-4c22-ac62-13549937e145",
+        "name": "Rotherham",
+        "country": "GB",
+        "population": 109691,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Rotherham",
+            "type": "metropolitan district",
+            "iso": "GB-ROT",
+            "qid": "Q1878732"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "740cb9ec-85c7-4b57-9d6b-0407d55291b4",
+        "name": "Nakhon Si Thammarat",
+        "country": "TH",
+        "population": 106322,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Nakhon Si Thammarat",
+            "type": "province",
+            "iso": "TH-80",
+            "qid": "Q244691"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "97e48054-f86a-445b-8116-269402e3e6d7",
+        "name": "Piacenza",
+        "country": "IT",
+        "population": 102181,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Piacenza",
+            "type": "province",
+            "iso": "IT-PC",
+            "qid": "Q16243"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "01268112-16ef-41dd-8548-73bd4717d12c",
+        "name": "Oldham",
+        "country": "GB",
+        "population": 96555,
+        "birth_refs": 2,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Oldham",
+            "type": "metropolitan district",
+            "iso": "GB-OLD",
+            "qid": "Q1278608"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "2dca6a8a-6326-47e3-b358-3493db24ddcb",
+        "name": "San Fernando",
+        "country": "ES",
+        "population": 96361,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision_other_country"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "San Fernando",
+            "type": "region",
+            "iso": "TT-SFO",
+            "qid": "Q1023712",
+            "country": "TT"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "e2ed829f-e4b8-468b-ac88-47558109cbf4",
+        "name": "Hartlepool",
+        "country": "GB",
+        "population": 88855,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Hartlepool",
+            "type": "unitary authority",
+            "iso": "GB-HPL",
+            "qid": "Q2594690"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "43efa314-20ff-4715-be5b-242348263615",
+        "name": "Nakhon Sawan",
+        "country": "TH",
+        "population": 86439,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Nakhon Sawan",
+            "type": "province",
+            "iso": "TH-60",
+            "qid": "Q239844"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "ca89cf6f-d161-4d25-b558-8831b803894c",
+        "name": "Fort-de-France",
+        "country": "MQ",
+        "population": 84174,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Fort-de-France",
+            "type": "district",
+            "iso": "MQ-01",
+            "qid": "Q701213"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "7fc93d21-cd80-45ce-a6f6-e584f25ca00e",
+        "name": "Stockton-on-Tees",
+        "country": "GB",
+        "population": 82729,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Stockton-on-Tees",
+            "type": "unitary authority",
+            "iso": "GB-STT",
+            "qid": "Q894094"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "5e8c14af-07f8-4743-86e4-f83fc16d265a",
+        "name": "Mayagüez",
+        "country": "PR",
+        "population": 79510,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Mayagüez",
+            "type": "region",
+            "iso": "PR-MG",
+            "qid": "Q632727"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "1608b7e1-5512-4300-9160-ce0e501b8c13",
+        "name": "Nakhon Pathom",
+        "country": "TH",
+        "population": 78780,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Nakhon Pathom",
+            "type": "province",
+            "iso": "TH-73",
+            "qid": "Q334841"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "36e3e666-fc73-4654-9d0c-6c235e95a5a4",
+        "name": "Zlín",
+        "country": "CZ",
+        "population": 75278,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Zlín",
+            "type": "district",
+            "iso": "CZ-724",
+            "qid": "Q262111"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "3f7b65cb-a04a-4bed-bf26-7af9d8c6e4fa",
+        "name": "Saint John",
+        "country": "CA",
+        "population": 70063,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision_other_country"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Saint John",
+            "type": "parish",
+            "iso": "AG-04",
+            "qid": "Q548816",
+            "country": "AG"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "059eff6a-f4d5-4ded-9e06-058b70024b56",
+        "name": "Matara",
+        "country": "LK",
+        "population": 68244,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Matara",
+            "type": "district",
+            "iso": "LK-32",
+            "qid": "Q1281285"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists"
+        ]
+      },
+      {
+        "id": "3858e73a-1f7a-4cce-8ce4-415c3df0e0f6",
+        "name": "Tatabánya",
+        "country": "HU",
+        "population": 67406,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Tatabánya",
+            "type": "city with county rights",
+            "iso": "HU-TB",
+            "qid": "Q187821"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists"
+        ]
+      },
+      {
+        "id": "e9f21da5-d0f3-453f-beee-a2d61025ab59",
+        "name": "Rayong",
+        "country": "TH",
+        "population": 61902,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Rayong",
+            "type": "province",
+            "iso": "TH-21",
+            "qid": "Q335221"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "621b7fc6-a3f1-40ea-816d-6d380a0fad1f",
+        "name": "Békéscsaba",
+        "country": "HU",
+        "population": 61046,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Békéscsaba",
+            "type": "city with county rights",
+            "iso": "HU-BC",
+            "qid": "Q178878"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists"
+        ]
+      },
+      {
+        "id": "6aec898a-0834-449c-bafd-51dae300ef42",
+        "name": "New Brunswick",
+        "country": "US",
+        "population": 55181,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision_other_country"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "New Brunswick",
+            "type": "province",
+            "iso": "CA-NB",
+            "qid": "Q1965",
+            "country": "CA"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists"
+        ]
+      },
+      {
+        "id": "f1c03d18-286a-4621-b72f-6899a3305d7f",
+        "name": "Juana Díaz",
+        "country": "PR",
+        "population": 48060,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Juana Díaz",
+            "type": "municipality",
+            "iso": "PR-075",
+            "qid": "Q2361577"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "c8532252-f96f-4bcc-940a-5ddf387b47be",
+        "name": "Barnet",
+        "country": "GB",
+        "population": 47359,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Barnet",
+            "type": "london borough",
+            "iso": "GB-BNE",
+            "qid": "Q151048"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "0aa5ed48-4e21-4bab-b31c-1f12f0ccd065",
+        "name": "Jablonec nad Nisou",
+        "country": "CZ",
+        "population": 45453,
+        "birth_refs": 2,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Jablonec nad Nisou",
+            "type": "district",
+            "iso": "CZ-512",
+            "qid": "Q837639"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists"
+        ]
+      },
+      {
+        "id": "7715cdcc-be3b-4f46-b8e3-7d35a5e23293",
+        "name": "Strumica",
+        "country": "MK",
+        "population": 45087,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Strumica",
+            "type": "municipality",
+            "iso": "MK-410",
+            "qid": "Q2308287"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "5d95d2bb-529f-4136-8a66-2e8ceff34cb4",
+        "name": "Mladá Boleslav",
+        "country": "CZ",
+        "population": 44272,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Mladá Boleslav",
+            "type": "district",
+            "iso": "CZ-207",
+            "qid": "Q852468"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists"
+        ]
+      },
+      {
+        "id": "98eb45c1-cd50-4c04-9d76-fdcd7aae4ecd",
+        "name": "Parry Sound District",
+        "country": "CA",
+        "population": 42824,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "suffix"
+        ],
+        "detail": {},
+        "demoted": [
+          "city_of_that_name_exists"
+        ]
+      },
+      {
+        "id": "81d25b10-e0cc-4882-bb6e-1e4f0fa55872",
+        "name": "Manatí",
+        "country": "PR",
+        "population": 40700,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Manatí",
+            "type": "municipality",
+            "iso": "PR-091",
+            "qid": "Q674599"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "b5e6d344-80b8-445c-ace1-5556a57878f0",
+        "name": "Pärnu",
+        "country": "EE",
+        "population": 39728,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Pärnu",
+            "type": "county",
+            "iso": "EE-68",
+            "qid": "Q185036"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "611fcbed-69d0-4322-9bd7-2efa68986ba9",
+        "name": "Ratchaburi",
+        "country": "TH",
+        "population": 36339,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Ratchaburi",
+            "type": "province",
+            "iso": "TH-70",
+            "qid": "Q335492"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "dc901069-90a6-439d-85d4-ef14e974b297",
+        "name": "Yabucoa",
+        "country": "PR",
+        "population": 35082,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Yabucoa",
+            "type": "municipality",
+            "iso": "PR-151",
+            "qid": "Q2361097"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "1ffc8d65-2d88-40b9-981d-5c6612833d68",
+        "name": "Pekin",
+        "country": "US",
+        "population": 34094,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision_other_country"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Beijing",
+            "type": "municipality",
+            "iso": "CN-BJ",
+            "qid": "Q956",
+            "country": "CN"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "3555513f-ea61-4163-8e5a-caecf99d27d2",
+        "name": "Arima",
+        "country": "TT",
+        "population": 33807,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Arima",
+            "type": "borough",
+            "iso": "TT-ARI",
+            "qid": "Q661405"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "b6bb3a3f-92b8-4ee9-b0e2-fc131e784981",
+        "name": "Trutnov",
+        "country": "CZ",
+        "population": 30808,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Trutnov",
+            "type": "district",
+            "iso": "CZ-525",
+            "qid": "Q517734"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists"
+        ]
+      },
+      {
+        "id": "cdefe8d4-3197-4d69-94de-147901a163ab",
+        "name": "Belen",
+        "country": "US",
+        "population": 30577,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision_other_country"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Bethlehem",
+            "type": "governorate",
+            "iso": "PS-BTH",
+            "qid": "Q247037",
+            "country": "PS"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "bcf8caad-aec9-4a46-87e1-835b8004f2b9",
+        "name": "Utuado",
+        "country": "PR",
+        "population": 30288,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Utuado",
+            "type": "municipality",
+            "iso": "PR-141",
+            "qid": "Q617096"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "3b578222-17ad-485c-a844-ffb1e61e1df3",
+        "name": "Chonburi",
+        "country": "TH",
+        "population": 29961,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Chon Buri",
+            "type": "province",
+            "iso": "TH-20",
+            "qid": "Q207068"
+          }
+        },
+        "demoted": [
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "0d308e5e-4525-4d06-802d-51dc5c192aad",
+        "name": "Nan",
+        "country": "TH",
+        "population": 20595,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Nan",
+            "type": "province",
+            "iso": "TH-55",
+            "qid": "Q244698"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "a363a0ab-9e22-42d1-9d7f-06c5d58aff73",
+        "name": "Cantagalo",
+        "country": "BR",
+        "population": 20168,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision_other_country"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Cantagalo",
+            "type": "district",
+            "iso": "ST-02",
+            "qid": "Q652819",
+            "country": "ST"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists"
+        ]
+      },
+      {
+        "id": "3739e2f9-8e65-456f-b080-f5dcecd08432",
+        "name": "Phrae",
+        "country": "TH",
+        "population": 16668,
+        "birth_refs": 3,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Phrae",
+            "type": "province",
+            "iso": "TH-54",
+            "qid": "Q244652"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "0ea34f9a-ddb6-49db-8a0a-c6ccfaab0295",
+        "name": "Rokycany",
+        "country": "CZ",
+        "population": 14002,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Rokycany",
+            "type": "district",
+            "iso": "CZ-326",
+            "qid": "Q643400"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists"
+        ]
+      },
+      {
+        "id": "fda2a3c2-2909-495e-8918-eff845439b35",
+        "name": "Sliema",
+        "country": "MT",
+        "population": 13914,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Sliema",
+            "type": "local council",
+            "iso": "MT-56",
+            "qid": "Q39526"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "d87ce87e-b813-44db-a81f-dedec113fc82",
+        "name": "Murska Sobota",
+        "country": "SI",
+        "population": 11679,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Murska Sobota",
+            "type": "urban municipality",
+            "iso": "SI-080",
+            "qid": "Q9273677"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "76cea6fe-9805-44a1-a329-b1291ab08eed",
+        "name": "Kalifornien",
+        "country": "US",
+        "population": 6376,
+        "birth_refs": 3,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "California",
+            "type": "state",
+            "iso": "US-CA",
+            "qid": "Q99"
+          }
+        },
+        "demoted": [
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "5f9e6ab2-bbce-4ddb-bd6e-3f492852ebb7",
+        "name": "Maricao",
+        "country": "PR",
+        "population": 5903,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Maricao",
+            "type": "municipality",
+            "iso": "PR-093",
+            "qid": "Q2624359"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "e70f0122-bbf9-4577-8ada-59b092556180",
+        "name": "Samtse",
+        "country": "BT",
+        "population": 4981,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Samtse ",
+            "type": "district",
+            "iso": "BT-14",
+            "qid": "Q728917"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "f8926eef-aa5f-4e5a-a3c0-7ae4307b3ea2",
+        "name": "Grindavík",
+        "country": "IS",
+        "population": 2134,
+        "birth_refs": 1,
+        "death_refs": 1,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Grindavík",
+            "type": "municipality",
+            "iso": "IS-GRN",
+            "qid": "Q212876"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "4000085d-7db2-49db-aa9b-25feb26007c3",
+        "name": "Bala",
+        "country": "GB",
+        "population": 1999,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision_other_country"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Balé",
+            "type": "province",
+            "iso": "BF-BAL",
+            "qid": "Q805913",
+            "country": "BF"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists"
+        ]
+      },
+      {
+        "id": "3fb118cf-1e68-488b-9706-c1808e7895b9",
+        "name": "Arezzo",
+        "country": "IT",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Arezzo",
+            "type": "province",
+            "iso": "IT-AR",
+            "qid": "Q16115"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "d052600a-8975-43f2-a86d-fb00db76f5e2",
+        "name": "Astrachan",
+        "country": "RU",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Astrakhan",
+            "type": "administrative region",
+            "iso": "RU-AST",
+            "qid": "Q3941"
+          }
+        },
+        "demoted": [
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "6a155cf8-1a3d-457f-a33b-63f308c5f66f",
+        "name": "Camden",
+        "country": "US",
+        "population": null,
+        "birth_refs": 2,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision_other_country"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Camden",
+            "type": "london borough",
+            "iso": "GB-CMD",
+            "qid": "Q202088",
+            "country": "GB"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "dfd3883d-11d4-4339-b768-4e86d4cce40f",
+        "name": "Commerce",
+        "country": "US",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision_other_country"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Comerío",
+            "type": "municipality",
+            "iso": "PR-045",
+            "qid": "Q2222328",
+            "country": "PR"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "d6954e42-15ca-4d5b-a241-526ebfdff0af",
+        "name": "Essex",
+        "country": "CA",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision_other_country"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Essex",
+            "type": "two-tier county",
+            "iso": "GB-ESS",
+            "qid": "Q21272241",
+            "country": "GB"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "2f1d0b03-23c9-4130-b653-2bad462b6105",
+        "name": "Francistown",
+        "country": "BW",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Francistown",
+            "type": "city",
+            "iso": "BW-FR",
+            "qid": "Q165422"
+          }
+        },
+        "demoted": [
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "6d39229d-e7a1-4c89-b271-27e75b0cdfcd",
+        "name": "Frosinone",
+        "country": "IT",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Frosinone",
+            "type": "province",
+            "iso": "IT-FR",
+            "qid": "Q16181"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "634a3b82-1ede-492d-9b57-dbe9edf5f4c2",
+        "name": "Gisborne",
+        "country": "NZ",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Gisborne",
+            "type": "region",
+            "iso": "NZ-GIS",
+            "qid": "Q140246"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "539fc812-9948-4788-b1dc-64af1bb30fca",
+        "name": "Holguín",
+        "country": "CU",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Holguín",
+            "type": "province",
+            "iso": "CU-11",
+            "qid": "Q115302"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "42c3ec96-d96e-471b-9992-87c50db13dbf",
+        "name": "Lugo",
+        "country": "ES",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Lugo",
+            "type": "province",
+            "iso": "ES-LU",
+            "qid": "Q11125"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "39ec25e9-daea-42cb-bb88-626ad03c06f0",
+        "name": "Pamplemousses",
+        "country": "MU",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Pamplemousses",
+            "type": "district",
+            "iso": "MU-PA",
+            "qid": "Q934126"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "aefa0047-8695-4b8f-ae0c-ef2264974635",
+        "name": "Sutton",
+        "country": "GB",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Sutton",
+            "type": "london borough",
+            "iso": "GB-STN",
+            "qid": "Q320378"
+          }
+        },
+        "demoted": [
+          "city_of_that_name_exists",
+          "subdivision_named_after_its_own_city"
+        ]
+      },
+      {
+        "id": "2ae90592-7039-478f-921d-d5ab8b44e300",
+        "name": "Taipeh",
+        "country": "TW",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "ambiguous_place_name",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Taipei",
+            "type": "special municipality",
+            "iso": "TW-TPE",
+            "qid": "Q1867"
+          }
+        },
+        "demoted": [
+          "subdivision_named_after_its_own_city"
+        ]
+      }
+    ],
+    "exonym_dupe": [
+      {
+        "id": "e4aad542-deca-4301-89c6-102d963f6e4c",
+        "name": "Hong Kong",
+        "country": "CN",
+        "population": 3129648,
+        "birth_refs": 2,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "c701d52b-08e9-43b4-94a6-69f109ec875b",
+            "name": "Hong Kong",
+            "slug": "hong-kong-hk-2hvf2",
+            "country_code": "HK",
+            "content": 83,
+            "same_country": false
+          }
+        ]
+      },
+      {
+        "id": "607888cc-471d-416c-94f0-9d8383f6a86e",
+        "name": "Brasília, Distrito Federal",
+        "country": "BR",
+        "population": 2789761,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "a86fea9a-a803-4d85-8476-fbff87031732",
+            "name": "Brasília",
+            "slug": "bras-lia",
+            "country_code": "BR",
+            "content": 41,
+            "same_country": true
+          }
+        ]
+      },
+      {
+        "id": "5b24d64b-c89f-4390-a826-62b14b7ddad8",
+        "name": "Salvador, Bahia",
+        "country": "BR",
+        "population": 2443107,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "f33869d4-c9a7-49a6-99ba-4302c792dde0",
+            "name": "Salvador",
+            "slug": "salvador",
+            "country_code": "BR",
+            "content": 34,
+            "same_country": true
+          }
+        ]
+      },
+      {
+        "id": "b3295cf8-677e-4323-ad3d-89b6e87bbbff",
+        "name": "Vienna, Austria",
+        "country": "DE",
+        "population": 1973403,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "18463095-3eef-4e81-b367-1ce244a39c19",
+            "name": "Vienna",
+            "slug": "vienna",
+            "country_code": "AT",
+            "content": 256,
+            "same_country": false
+          }
+        ]
+      },
+      {
+        "id": "c302c9b2-2e04-405c-90fe-2215914cb102",
+        "name": "Alicante, Valencian Community",
+        "country": "ES",
+        "population": 1881762,
+        "birth_refs": 3,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "e1418a71-9dd6-49fe-99b1-234df6a62304",
+            "name": "Alicante",
+            "slug": "alicante-es-3mzpw",
+            "country_code": "ES",
+            "content": 25,
+            "same_country": true
+          }
+        ]
+      },
+      {
+        "id": "98013123-f0f0-4360-a7cd-e406865a6137",
+        "name": "Brussels, Belgium",
+        "country": "FR",
+        "population": 1154635,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "0a2afd47-93f2-424c-b616-63d2567900cf",
+            "name": "Brussels",
+            "slug": "brussels",
+            "country_code": "BE",
+            "content": 268,
+            "same_country": false
+          }
+        ]
+      },
+      {
+        "id": "383b12ea-8847-4aab-9aef-eb0ee5622d77",
+        "name": "Cologne, Germany",
+        "country": "GB",
+        "population": 1027679,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "c7198e4f-01d5-4b07-adb0-df41041c2f41",
+            "name": "Cologne",
+            "slug": "cologne",
+            "country_code": "DE",
+            "content": 386,
+            "same_country": false
+          }
+        ]
+      },
+      {
+        "id": "d1e42b26-9efe-4c5a-ac1c-68472e318502",
+        "name": "Scarborough",
+        "country": "CA",
+        "population": 632098,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "e765b2e6-7304-4c55-9a3e-3f69b8faea51",
+            "name": "Scarborough",
+            "slug": "scarborough",
+            "country_code": "GB",
+            "content": 3,
+            "same_country": false
+          }
+        ]
+      },
+      {
+        "id": "c7944658-6b7e-412f-a934-72e76e254051",
+        "name": "Vancouver, British Colombia",
+        "country": "CA",
+        "population": 603502,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "e5d823da-60c6-49c8-8465-a55804783cb0",
+            "name": "Vancouver",
+            "slug": "vancouver",
+            "country_code": "CA",
+            "content": 544,
+            "same_country": true
+          }
+        ]
+      },
+      {
+        "id": "b013ebd9-0e92-483c-af01-5316573a8277",
+        "name": "Dublin, Republic of Ireland",
+        "country": "GB",
+        "population": 527612,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "11eb1638-dc2a-4089-a3ee-4997b97c4633",
+            "name": "Dublin",
+            "slug": "dublin",
+            "country_code": "IE",
+            "content": 282,
+            "same_country": false
+          }
+        ]
+      },
+      {
+        "id": "32620926-01c0-4b93-8ede-d1eb323ccdff",
+        "name": "Antwerp, Belgium",
+        "country": "NL",
+        "population": 510610,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "30d15c18-5b9e-498a-8b76-08cb78b4647f",
+            "name": "Antwerp",
+            "slug": "antwerp",
+            "country_code": "BE",
+            "content": 140,
+            "same_country": false
+          }
+        ]
+      },
+      {
+        "id": "0da05c6f-3205-4808-b254-9151f8001e4e",
+        "name": "Buenos Aires, Argentina",
+        "country": "CL",
+        "population": 466300,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "43a4c403-3b16-4356-856a-9f9c0d3eaced",
+            "name": "Buenos Aires",
+            "slug": "buenos-aires",
+            "country_code": "AR",
+            "content": 346,
+            "same_country": false
+          }
+        ]
+      },
+      {
+        "id": "0f4801ec-f04d-477f-bbe4-982f3edcdd20",
+        "name": "Raleigh, North Carolina",
+        "country": "US",
+        "population": 439896,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "8be109b7-403b-43aa-ad42-4ec4594f3bdf",
+            "name": "Raleigh",
+            "slug": "raleigh-us-nygbl",
+            "country_code": "US",
+            "content": 174,
+            "same_country": true
+          }
+        ]
+      },
+      {
+        "id": "81b4769c-72e5-4268-8b4d-0298c82ca91c",
+        "name": "Tirana, Albania",
+        "country": "IT",
+        "population": 418495,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "47f4fb2f-b48b-42e0-852b-436ca4fa7121",
+            "name": "Tirana",
+            "slug": "tirana",
+            "country_code": "AL",
+            "content": 3,
+            "same_country": false
+          }
+        ]
+      },
+      {
+        "id": "47843f6d-4015-475a-b66f-e749f716dbe4",
+        "name": "San Juan, Puerto Rico",
+        "country": "US",
+        "population": 395326,
+        "birth_refs": 3,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "3c29ed4f-c179-4eff-a4c4-a4de099271c3",
+            "name": "San Juan",
+            "slug": "san-juan-1",
+            "country_code": "PR",
+            "content": 121,
+            "same_country": false
+          },
+          {
+            "id": "0b433770-2b6a-46b4-ac8d-6f5cc79376ce",
+            "name": "San Juan",
+            "slug": "san-juan",
+            "country_code": "AR",
+            "content": 9,
+            "same_country": false
+          }
+        ]
+      },
+      {
+        "id": "c1df9ab3-beef-4461-80a9-eb13b82bde9d",
+        "name": "Córdoba",
+        "country": "ES",
+        "population": 328704,
+        "birth_refs": 2,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "5e606555-e9d5-4092-a798-ce05b9c215cd",
+            "name": "Córdoba",
+            "slug": "cordoba",
+            "country_code": "AR",
+            "content": 19,
+            "same_country": false
+          }
+        ]
+      },
+      {
+        "id": "502bb6a2-b8ce-4998-a86d-57b893a4d1bc",
+        "name": "Luxemburg",
+        "country": "LU",
+        "population": 313970,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "city_state"
+        ],
+        "dupes": [
+          {
+            "id": "ddff553c-e901-44f9-925f-d9b56107f990",
+            "name": "Luxembourg",
+            "slug": "luxembourg",
+            "country_code": "LU",
+            "content": 15,
+            "same_country": true
+          }
+        ]
+      },
+      {
+        "id": "20e2c3f9-e3bc-4225-a009-97eb92062b95",
+        "name": "Basel, Switzerland",
+        "country": "DE",
+        "population": 173619,
+        "birth_refs": 2,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "a0c1349b-da8a-43c4-9a64-39b6f0193fbf",
+            "name": "Basel",
+            "slug": "basel",
+            "country_code": "CH",
+            "content": 836,
+            "same_country": false
+          }
+        ]
+      },
+      {
+        "id": "d27691fc-d3df-4144-9554-b90523c1ff4a",
+        "name": "Geneva, Switzerland",
+        "country": "FR",
+        "population": 157322,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "4a0387c6-8b78-495a-9b75-723b2718935c",
+            "name": "Geneva",
+            "slug": "geneva",
+            "country_code": "CH",
+            "content": 44,
+            "same_country": false
+          },
+          {
+            "id": "990ee844-269a-4260-aaa5-42f2afbb1ed9",
+            "name": "Geneva",
+            "slug": "geneva-1",
+            "country_code": "US",
+            "content": 11,
+            "same_country": false
+          }
+        ]
+      },
+      {
+        "id": "7226f194-1558-4f74-a4a8-8ebd66e84510",
+        "name": "Saint-Denis, Île-de-France",
+        "country": "FR",
+        "population": 146321,
+        "birth_refs": 2,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "3b969d3f-3971-49af-95f8-ed6bd7d03a1f",
+            "name": "Saint-Denis",
+            "slug": "saint-denis-1",
+            "country_code": "RE",
+            "content": 0,
+            "same_country": false
+          }
+        ]
+      },
+      {
+        "id": "e7f1f1a7-d8f6-4573-8859-31bceb9acdba",
+        "name": "Manchester",
+        "country": "US",
+        "population": 109565,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "7c3264e7-875d-4aef-abd1-88dc5d2c5ca7",
+            "name": "Manchester",
+            "slug": "manchester",
+            "country_code": "GB",
+            "content": 464,
+            "same_country": false
+          }
+        ]
+      },
+      {
+        "id": "063cf006-8ed7-42b4-a90c-12f1dc1b1440",
+        "name": "Schwerin",
+        "country": "DE",
+        "population": 91583,
+        "birth_refs": 3,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "55011607-5d03-4d75-b22a-879e5566b546",
+            "name": "Schwerin, Brandenburg",
+            "slug": "schwerin-brandenburg",
+            "country_code": "DE",
+            "content": 2,
+            "same_country": true
+          }
+        ]
+      },
+      {
+        "id": "12e93c50-44b0-44e8-b5c8-b898e1317194",
+        "name": "Halifax",
+        "country": "GB",
+        "population": 88134,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "7d5056bf-1c95-4c42-b2ca-7d4538c7d64c",
+            "name": "Halifax",
+            "slug": "halifax",
+            "country_code": "CA",
+            "content": 55,
+            "same_country": false
+          }
+        ]
+      },
+      {
+        "id": "9d4d7b54-1d01-4e08-8d45-c42f783d560c",
+        "name": "Fort Smith",
+        "country": "US",
+        "population": 86209,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "8a10001e-00e2-4408-b8f4-f1a38df6a7ca",
+            "name": "Fort Smith",
+            "slug": "fort-smith",
+            "country_code": "CA",
+            "content": 3,
+            "same_country": false
+          }
+        ]
+      },
+      {
+        "id": "d845bc90-4928-4508-8880-4de85832459e",
+        "name": "Stratford, Essex",
+        "country": "GB",
+        "population": 51387,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "d9f05949-dbf5-4fcc-985d-28804cd90c15",
+            "name": "Stratford",
+            "slug": "stratford",
+            "country_code": "US",
+            "content": 7,
+            "same_country": false
+          }
+        ]
+      },
+      {
+        "id": "09d50749-5316-4c86-bc37-bc3d6357deda",
+        "name": "Santiago",
+        "country": "BR",
+        "population": 50635,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "0c89e7d9-47f7-4170-ad18-5749c06bbc16",
+            "name": "Santiago",
+            "slug": "santiago",
+            "country_code": "CL",
+            "content": 248,
+            "same_country": false
+          }
+        ]
+      },
+      {
+        "id": "46ecef0a-0711-4c86-a9f5-88fce9a21265",
+        "name": "Cebu City, Cebu",
+        "country": "PH",
+        "population": 45994,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "94dd195d-26f5-4ebd-9287-36435833b17a",
+            "name": "Cebu City",
+            "slug": "cebu-city",
+            "country_code": "PH",
+            "content": 6,
+            "same_country": true
+          }
+        ]
+      },
+      {
+        "id": "f1d5b889-168d-4a1d-9c84-03c160b1808e",
+        "name": "Winchester",
+        "country": "GB",
+        "population": 35200,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "04c514e4-4130-45f7-b545-b39935a4137e",
+            "name": "Winchester",
+            "slug": "winchester-us-e5i2r",
+            "country_code": "US",
+            "content": 4,
+            "same_country": false
+          }
+        ]
+      },
+      {
+        "id": "d83ba97d-9582-4750-b46f-ad942d602e71",
+        "name": "Chichester",
+        "country": "GB",
+        "population": 30925,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "0b42cf6b-08ec-409a-8163-bbb5fe9980a5",
+            "name": "Chichester",
+            "slug": "chichester",
+            "country_code": "US",
+            "content": 3,
+            "same_country": false
+          }
+        ]
+      },
+      {
+        "id": "402ce18b-6267-4c98-a81a-89be4ecb9400",
+        "name": "Wakefield",
+        "country": "US",
+        "population": 24932,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "d5fb09e4-e376-4a01-a530-b8df66b55619",
+            "name": "Wakefield",
+            "slug": "wakefield-gb-56uc6",
+            "country_code": "GB",
+            "content": 7,
+            "same_country": false
+          }
+        ]
+      },
+      {
+        "id": "f3facb28-1000-4460-8707-db04185d3352",
+        "name": "Lyss",
+        "country": "IT",
+        "population": 14887,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "b7f866a1-f223-48d6-ba42-74aff797e9a1",
+            "name": "Lyss",
+            "slug": "lyss",
+            "country_code": "CH",
+            "content": 20,
+            "same_country": false
+          }
+        ]
+      },
+      {
+        "id": "fa2ed267-9b42-40a0-957d-3627a847451e",
+        "name": "Toledo, Cebu",
+        "country": "PH",
+        "population": 12929,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "737bf31d-f3ae-4c69-988e-145d9a3be6b9",
+            "name": "Toledo",
+            "slug": "toledo",
+            "country_code": "BR",
+            "content": 9,
+            "same_country": false
+          },
+          {
+            "id": "b1d4529a-30d9-43c5-9fef-64b51c8501be",
+            "name": "Toledo",
+            "slug": "toledo-es-8ln42",
+            "country_code": "ES",
+            "content": 3,
+            "same_country": false
+          }
+        ]
+      },
+      {
+        "id": "3ca02231-a662-4dd4-857a-2a713b7f8d95",
+        "name": "Hudson, Wisconsin",
+        "country": "US",
+        "population": 12719,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "78bbd52b-22c1-47ac-87e9-e705acb99b8f",
+            "name": "Hudson",
+            "slug": "hudson",
+            "country_code": "US",
+            "content": 4,
+            "same_country": true
+          }
+        ]
+      },
+      {
+        "id": "d29a70fb-8fd3-47f8-8571-03b92a1d123c",
+        "name": "Leeds",
+        "country": "US",
+        "population": 11885,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "393a0579-eeb8-4bb1-819f-97540e1dcc35",
+            "name": "Leeds",
+            "slug": "leeds-gb-zt2i5",
+            "country_code": "GB",
+            "content": 47,
+            "same_country": false
+          }
+        ]
+      },
+      {
+        "id": "b3c1d58e-3229-42c2-a20d-59593861ed49",
+        "name": "Santa Maria, Ilocos Sur",
+        "country": "PH",
+        "population": 10082,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "2bb77255-fe70-47dd-9097-6775e0904488",
+            "name": "Santa Maria",
+            "slug": "santa-maria",
+            "country_code": "BR",
+            "content": 0,
+            "same_country": false
+          }
+        ]
+      },
+      {
+        "id": "122f8e8a-4fc0-4cc2-af24-3fbfc9d63354",
+        "name": "Paris",
+        "country": "US",
+        "population": 9763,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "b46a28a1-5c7a-41ac-a2cc-5b03448f6f69",
+            "name": "Paris",
+            "slug": "paris",
+            "country_code": "FR",
+            "content": 1056,
+            "same_country": false
+          }
+        ]
+      },
+      {
+        "id": "22ea6835-2b4d-40b0-9787-6e64f291565d",
+        "name": "Davao City, Davao del Sur",
+        "country": "PH",
+        "population": 8560,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "dcca765e-f0e0-400b-b7e0-f1a7b2b8ee2e",
+            "name": "Davao City",
+            "slug": "davao-city",
+            "country_code": "PH",
+            "content": 8,
+            "same_country": true
+          }
+        ]
+      },
+      {
+        "id": "0e7d0952-b4b7-42bb-a426-3d35fc02e66b",
+        "name": "Rosario, Cavite",
+        "country": "PH",
+        "population": 6601,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "f4ee4236-d90b-4a7b-8d20-67838013ba9b",
+            "name": "Rosario",
+            "slug": "rosario",
+            "country_code": "AR",
+            "content": 36,
+            "same_country": false
+          }
+        ]
+      },
+      {
+        "id": "481843db-70ff-40e8-81e8-5977705c9f20",
+        "name": "Kingston",
+        "country": "US",
+        "population": 6315,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "c7673220-9e4f-4052-a239-6794f0425d7f",
+            "name": "Kingston",
+            "slug": "kingston",
+            "country_code": "JM",
+            "content": 30,
+            "same_country": false
+          },
+          {
+            "id": "5b0bda3d-a4b9-43b0-8445-40398ab64f51",
+            "name": "Kingston",
+            "slug": "kingston-1",
+            "country_code": "NF",
+            "content": 0,
+            "same_country": false
+          }
+        ]
+      },
+      {
+        "id": "4baf1aef-e652-4c11-bdda-91129cf77a89",
+        "name": "Toledo",
+        "country": "US",
+        "population": 1222,
+        "birth_refs": 3,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "737bf31d-f3ae-4c69-988e-145d9a3be6b9",
+            "name": "Toledo",
+            "slug": "toledo",
+            "country_code": "BR",
+            "content": 9,
+            "same_country": false
+          },
+          {
+            "id": "b1d4529a-30d9-43c5-9fef-64b51c8501be",
+            "name": "Toledo",
+            "slug": "toledo-es-8ln42",
+            "country_code": "ES",
+            "content": 3,
+            "same_country": false
+          }
+        ]
+      },
+      {
+        "id": "39c5da51-9f98-4de7-84ca-66a85c5f3c53",
+        "name": "Berlin, Germany",
+        "country": "SE",
+        "population": 1200,
+        "birth_refs": 3,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "5761c6c4-3ed6-4429-832b-025e508db544",
+            "name": "Berlin",
+            "slug": "berlin",
+            "country_code": "DE",
+            "content": 4861,
+            "same_country": false
+          },
+          {
+            "id": "0cea47af-e467-4ed0-b809-74632078cd28",
+            "name": "Berlin",
+            "slug": "berlin-1",
+            "country_code": "US",
+            "content": 46,
+            "same_country": false
+          }
+        ]
+      },
+      {
+        "id": "61499292-3d7f-4bf8-ad9f-39fc0a247dce",
+        "name": "Clifton",
+        "country": "GB",
+        "population": 740,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "82bf0f95-e18c-42d1-a56f-7b028fdaa63d",
+            "name": "Clifton",
+            "slug": "clifton",
+            "country_code": "US",
+            "content": 1,
+            "same_country": false
+          }
+        ]
+      },
+      {
+        "id": "6929e7e6-3afe-4400-9a9a-bdae0878829c",
+        "name": "Antwerp, Flanders",
+        "country": "BE",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "30d15c18-5b9e-498a-8b76-08cb78b4647f",
+            "name": "Antwerp",
+            "slug": "antwerp",
+            "country_code": "BE",
+            "content": 140,
+            "same_country": true
+          }
+        ]
+      },
+      {
+        "id": "677b154a-e86f-4952-93ae-8e639c154929",
+        "name": "Avignon, Provence-Alpes-Côte d'Azur",
+        "country": "FR",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "6a99564b-8c4a-4be8-844e-b9b4bc3182d4",
+            "name": "Avignon",
+            "slug": "avignon",
+            "country_code": "FR",
+            "content": 9,
+            "same_country": true
+          }
+        ]
+      },
+      {
+        "id": "891d710c-76cf-487e-a81d-5670af64ec2b",
+        "name": "Bordeaux, Nouvelle-Aquitaine",
+        "country": "FR",
+        "population": null,
+        "birth_refs": 3,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "c118881b-5586-40ae-9fe0-89cbc44cacd3",
+            "name": "Bordeaux",
+            "slug": "bordeaux-france",
+            "country_code": "FR",
+            "content": 23,
+            "same_country": true
+          }
+        ]
+      },
+      {
+        "id": "a34e6f26-3fc2-4ca0-b57a-8d1f71b1447b",
+        "name": "Cannes, Provence-Alpes-Côte d'Azur",
+        "country": "FR",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "34f84cab-a9ad-4473-a35c-c574c0f8b675",
+            "name": "Cannes",
+            "slug": "cannes-fr-l6853",
+            "country_code": "FR",
+            "content": 76,
+            "same_country": true
+          }
+        ]
+      },
+      {
+        "id": "ffa4f99a-ea84-4e0c-8f52-9a021ed65022",
+        "name": "East London",
+        "country": "GB",
+        "population": null,
+        "birth_refs": 4,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "36415f48-4c56-4f16-a5a1-4f211920309c",
+            "name": "East London",
+            "slug": "east-london-za-1gtc7",
+            "country_code": "ZA",
+            "content": 13,
+            "same_country": false
+          }
+        ]
+      },
+      {
+        "id": "96417829-b47d-4ce3-b1a0-8f905082f973",
+        "name": "Enschede, Overijssel",
+        "country": "NL",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "1cfadebb-c795-463b-8dca-e32121334c10",
+            "name": "Enschede",
+            "slug": "enschede-nl-s09rq",
+            "country_code": "NL",
+            "content": 3,
+            "same_country": true
+          }
+        ]
+      },
+      {
+        "id": "2d944324-1c97-4414-80dc-563c172de087",
+        "name": "Ghent, Flanders",
+        "country": "BE",
+        "population": null,
+        "birth_refs": 3,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "2a3dfdb2-060f-493a-aac2-86c07922c626",
+            "name": "Ghent",
+            "slug": "ghent",
+            "country_code": "BE",
+            "content": 6,
+            "same_country": true
+          }
+        ]
+      },
+      {
+        "id": "b6b1761f-eccb-4dee-bf7a-e822b0bc6340",
+        "name": "Helsingborg, Skåne County",
+        "country": "SE",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "927da942-a59c-4c24-bfdd-ff3ceec45ad3",
+            "name": "Helsingborg",
+            "slug": "helsingborg",
+            "country_code": "SE",
+            "content": 2,
+            "same_country": true
+          }
+        ]
+      },
+      {
+        "id": "8cef2b03-e79c-4ec5-b7cc-8218870378d3",
+        "name": "Hilversum, Noord-Holland",
+        "country": "NL",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "76257d3d-8f71-44f3-a891-f7acf957525f",
+            "name": "Hilversum",
+            "slug": "hilversum",
+            "country_code": "NL",
+            "content": 1,
+            "same_country": true
+          }
+        ]
+      },
+      {
+        "id": "315770fb-406e-461c-81aa-a89bc0b92811",
+        "name": "Liège, Wallonia",
+        "country": "BE",
+        "population": null,
+        "birth_refs": 3,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "c804022e-2bf6-4315-925b-4f3655bd798b",
+            "name": "Liège",
+            "slug": "liege",
+            "country_code": "BE",
+            "content": 8,
+            "same_country": true
+          }
+        ]
+      },
+      {
+        "id": "343803e4-c9d4-4bda-9270-1305a93d4ad8",
+        "name": "Lille, Hauts-de-France",
+        "country": "FR",
+        "population": null,
+        "birth_refs": 3,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "4e0d885a-845d-4ecf-8cd7-f08be4e6c582",
+            "name": "Lille",
+            "slug": "lille-france",
+            "country_code": "FR",
+            "content": 38,
+            "same_country": true
+          }
+        ]
+      },
+      {
+        "id": "8585e0ce-e2a3-470b-a40c-a978df948b1b",
+        "name": "Lyon, Auvergne-Rhône-Alpes",
+        "country": "FR",
+        "population": null,
+        "birth_refs": 3,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "0218d34e-8b6b-47d6-9f7e-9871065d8c19",
+            "name": "Lyon",
+            "slug": "lyon",
+            "country_code": "FR",
+            "content": 66,
+            "same_country": true
+          }
+        ]
+      },
+      {
+        "id": "0d2c343b-d684-45b5-9029-497b6073690c",
+        "name": "Madrid, Community of Madrid",
+        "country": "ES",
+        "population": null,
+        "birth_refs": 6,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "772d642b-33be-4e98-b59a-451cf3a73890",
+            "name": "Madrid",
+            "slug": "madrid",
+            "country_code": "ES",
+            "content": 612,
+            "same_country": true
+          }
+        ]
+      },
+      {
+        "id": "fcdd6edf-95cf-4d83-93ac-56560fb0ff92",
+        "name": "Málaga, Andalusia",
+        "country": "ES",
+        "population": null,
+        "birth_refs": 2,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "c0e331db-a938-4cc3-b9cb-9230869ddacb",
+            "name": "Málaga",
+            "slug": "malaga-es-ytdzz",
+            "country_code": "ES",
+            "content": 17,
+            "same_country": true
+          }
+        ]
+      },
+      {
+        "id": "b75c0950-b6fe-46b7-9688-b9175b0095df",
+        "name": "Marseille, Provence-Alpes-Côte d'Azur",
+        "country": "FR",
+        "population": null,
+        "birth_refs": 2,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "2b2f1c9b-91c7-45ad-a7a3-cb06bcf4e63e",
+            "name": "Marseille",
+            "slug": "marseille",
+            "country_code": "FR",
+            "content": 85,
+            "same_country": true
+          }
+        ]
+      },
+      {
+        "id": "4d4ab18a-84b7-45b4-bd63-8639a7ec9a6a",
+        "name": "Mons, Wallonia",
+        "country": "BE",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "b11263cc-bb20-45cd-9b47-9f8cf72f3e42",
+            "name": "Mons",
+            "slug": "mons",
+            "country_code": "BE",
+            "content": 7,
+            "same_country": true
+          }
+        ]
+      },
+      {
+        "id": "874f93aa-b6aa-4a37-86d0-6efa98c8119f",
+        "name": "Mouscron, Wallonia",
+        "country": "BE",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "f7f5d8c7-591b-45bb-910e-659ad0d6aac4",
+            "name": "Mouscron",
+            "slug": "mouscron",
+            "country_code": "BE",
+            "content": 0,
+            "same_country": true
+          }
+        ]
+      },
+      {
+        "id": "2263496f-f3a8-499b-83a0-49b1e5096101",
+        "name": "Nice, Provence-Alpes-Côte d'Azur",
+        "country": "FR",
+        "population": null,
+        "birth_refs": 2,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "08685e84-d1a7-46c3-bf4e-6aa8b009de4a",
+            "name": "Nice",
+            "slug": "nice",
+            "country_code": "FR",
+            "content": 89,
+            "same_country": true
+          }
+        ]
+      },
+      {
+        "id": "260b7351-e17c-43fc-89b3-7533b852dfdf",
+        "name": "Padua, Veneto",
+        "country": "IT",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "3ba8842a-06e4-457e-b591-56da17229d06",
+            "name": "Padua",
+            "slug": "padua-it-2l9xy",
+            "country_code": "IT",
+            "content": 9,
+            "same_country": true
+          }
+        ]
+      },
+      {
+        "id": "e9144bff-64db-4599-9b64-048be75febca",
+        "name": "Perpignan, Occitanie",
+        "country": "FR",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "9215355d-3860-49b6-81a1-88a9142e7a4a",
+            "name": "Perpignan",
+            "slug": "perpignan",
+            "country_code": "FR",
+            "content": 7,
+            "same_country": true
+          }
+        ]
+      },
+      {
+        "id": "daf9a686-0513-4a25-a097-b9fdf8ca0089",
+        "name": "Posadas",
+        "country": "ES",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "db78d52c-7cba-4077-a552-ca3a16ca35ad",
+            "name": "Posadas",
+            "slug": "posadas",
+            "country_code": "AR",
+            "content": 2,
+            "same_country": false
+          }
+        ]
+      },
+      {
+        "id": "ff5f135f-f3aa-474c-af05-3ffdc258ba48",
+        "name": "Salinas, Canelones",
+        "country": "UY",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "0023f5cd-9ba7-4a2e-a06c-64f01a55d439",
+            "name": "Salinas",
+            "slug": "salinas-us-fre8j",
+            "country_code": "US",
+            "content": 2,
+            "same_country": false
+          }
+        ]
+      },
+      {
+        "id": "45d88d94-8fe6-4fce-a753-14d7e7e1bf99",
+        "name": "São José do Rio Preto, São Paulo",
+        "country": "BR",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "c38e3c5a-70f9-4bac-b225-f05e3c9de222",
+            "name": "São José do Rio Preto",
+            "slug": "s-o-jose-do-rio-preto",
+            "country_code": "BR",
+            "content": 0,
+            "same_country": true
+          }
+        ]
+      },
+      {
+        "id": "aa1cb039-1514-49a8-8481-a116dbb0ceb7",
+        "name": "St Austell, England",
+        "country": "GB",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "a0722f22-6e54-47e9-a876-1fbce7efec3c",
+            "name": "St Austell",
+            "slug": "st-austell-gb-lgf8d",
+            "country_code": "GB",
+            "content": 2,
+            "same_country": true
+          }
+        ]
+      },
+      {
+        "id": "81b86b50-c60b-4691-83f6-3094957d799b",
+        "name": "Torremolinos, Andalusia",
+        "country": "ES",
+        "population": null,
+        "birth_refs": 2,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "1a768093-d477-447e-8499-4cda3087850a",
+            "name": "Torremolinos",
+            "slug": "torremolinos",
+            "country_code": "ES",
+            "content": 108,
+            "same_country": true
+          }
+        ]
+      },
+      {
+        "id": "58a08a2a-cabc-43c7-8296-74450c766216",
+        "name": "Valencia, Valencian Community",
+        "country": "ES",
+        "population": null,
+        "birth_refs": 5,
+        "death_refs": 0,
+        "bucket": "exonym_dupe",
+        "arms": [
+          "canonical_match"
+        ],
+        "dupes": [
+          {
+            "id": "ca628485-f5a4-419d-a0e7-af730483e078",
+            "name": "Valencia",
+            "slug": "valencia",
+            "country_code": "ES",
+            "content": 118,
+            "same_country": true
+          }
+        ]
+      }
+    ],
+    "keep": "1183 rows omitted; re-run with --full",
+    "rejected_by_review": [
+      {
+        "id": "bc7f4432-e92c-4c9e-b4a8-acf2c047a5ce",
+        "name": "Bursa",
+        "country": "TR",
+        "population": 2901396,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Bursa",
+            "type": "province",
+            "iso": "TR-16",
+            "qid": "Q43690"
+          }
+        },
+        "review_reason": "Bursa/TR — a city of ~3M. Turkish provinces carry their capital's name and dr5hn's TR city list names districts, not the central one, so the gazetteer could not demote it."
+      },
+      {
+        "id": "3cc771c6-6cbd-4ca6-aae7-724481ce9f19",
+        "name": "Tucumán",
+        "country": "AR",
+        "population": 1448188,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Tucumán",
+            "type": "province",
+            "iso": "AR-T",
+            "qid": "Q44829"
+          }
+        },
+        "review_reason": "Tucumán/AR — the province, but 'Tucumán' is everyday shorthand for its capital San Miguel de Tucumán. Attested both ways."
+      },
+      {
+        "id": "27d0d85c-6629-47be-a33d-0dc42a466757",
+        "name": "Thurrock",
+        "country": "GB",
+        "population": 165200,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Thurrock",
+            "type": "unitary authority",
+            "iso": "GB-THR",
+            "qid": "Q1549155"
+          }
+        },
+        "review_reason": "Thurrock/GB — unitary authority with no town of that name, but used as a place name in everyday speech. Low value, permanent risk."
+      },
+      {
+        "id": "68134047-d29a-4b25-93e3-7c2ea3f7e57f",
+        "name": "Lewisham",
+        "country": "GB",
+        "population": 60573,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Lewisham",
+            "type": "london borough",
+            "iso": "GB-LEW",
+            "qid": "Q215030"
+          }
+        },
+        "review_reason": "Lewisham/GB — London borough. An inhabited locality people give as a birthplace; belongs in the district discussion, not here."
+      },
+      {
+        "id": "f81fbccc-a02e-4b4e-a31f-6c642744e433",
+        "name": "Saint Thomas",
+        "country": "VI",
+        "population": 51634,
+        "birth_refs": 2,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Saint Thomas",
+            "type": "district",
+            "iso": "VI-ST",
+            "qid": "Q463937"
+          }
+        },
+        "review_reason": "Saint Thomas/VI — the USVI district, but 'Saint Thomas' also names real cities elsewhere (St. Thomas, Ontario). Ambiguous."
+      },
+      {
+        "id": "6a0c1d30-773d-4f0e-873a-4d5a8592d8b1",
+        "name": "Kohtla-Järve",
+        "country": "RU",
+        "population": 37201,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "subdivision_other_country"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Kohtla-Järve",
+            "type": "urban municipality",
+            "iso": "EE-321",
+            "qid": "Q193761",
+            "country": "EE"
+          }
+        },
+        "review_reason": "Kohtla-Järve — a real Estonian city filed under country_id=RU. That is the wrong-country repair, not a non-place."
+      },
+      {
+        "id": "dec80d92-6ef2-4ec1-9cd5-916e5d15e582",
+        "name": "Wandsworth",
+        "country": "GB",
+        "population": 18072,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Wandsworth",
+            "type": "london borough",
+            "iso": "GB-WND",
+            "qid": "Q210563"
+          }
+        },
+        "review_reason": "Wandsworth/GB — London borough, same as Lewisham."
+      },
+      {
+        "id": "c71ccc0f-9444-4c42-ae98-5d344633cd1d",
+        "name": "Malatya",
+        "country": "TR",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Malatya",
+            "type": "province",
+            "iso": "TR-44",
+            "qid": "Q131384"
+          }
+        },
+        "review_reason": "Malatya/TR — same shape as Bursa: real city, province named after it."
+      },
+      {
+        "id": "2e817285-75fb-4c9e-9f32-0a50ca168bce",
+        "name": "Yalova",
+        "country": "TR",
+        "population": null,
+        "birth_refs": 1,
+        "death_refs": 0,
+        "bucket": "nonplace",
+        "arms": [
+          "subdivision"
+        ],
+        "detail": {
+          "subdivision": {
+            "name": "Yalova",
+            "type": "province",
+            "iso": "TR-77",
+            "qid": "Q483083"
+          }
+        },
+        "review_reason": "Yalova/TR — same shape as Bursa."
+      }
+    ]
+  }
+}

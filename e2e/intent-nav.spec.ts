@@ -170,9 +170,22 @@ test.describe('honest coverage', () => {
     // rendering `{countries.length} of {countries.length}` — the same number
     // twice. A tautology cannot fail, so the test was green whatever the data
     // did, and it certified the exact defect it was written to prevent.
-    // 239 of 250 rows carry a legal status; the other 11 are uninhabited
-    // territories with no ILGA entry, and this number moves if that changes.
-    await expect(page.locator('main')).toContainText(/239 of 250/);
+    // Was 239 of 250 until 2026-08-30. The 11 territories ILGA does not cover
+    // used to read as simply absent; `20260830131211_country_rights_disposition`
+    // in this PR gives them an explicit disposition, so 6 of them now carry a
+    // recorded status and the honest number is 245. The remaining 5 are listed
+    // as "not scored" rather than defaulted or folded in with measured countries.
+    //
+    // Verified against prod, not read off the failing page:
+    //   count(*)                                             = 250
+    //   count(*) where lgbti_criminalization->>'legal' not null = 245
+    //   count(*) where it is null                            =   5
+    //
+    // The previous comment already said this number moves when coverage changes.
+    // It moved, so it is updated in the same PR that moved it — a stale
+    // expectation turns a real coverage change into a red build someone is
+    // tempted to skip.
+    await expect(page.locator('main')).toContainText(/245 of 250/);
   });
 
   test('/rights reaches every country, not just the first twelve per tier', async ({ page }) => {
@@ -199,6 +212,33 @@ test.describe('honest coverage', () => {
     await expect(page.locator('main')).toContainText(
       /Showing events (tonight|this weekend|in the next \d+ days|soonest anywhere)|No upcoming events/,
     );
+  });
+
+  // Written BEFORE the feature, deliberately, and left failing-by-default.
+  //
+  // Transit coverage is the next surface that will have to state its own reach:
+  // 307 cities carry network geometry (`cityNetworkGeometry.ts`) while a
+  // timetable can only ever cover the subset with a usable GTFS feed, so the
+  // city page will publish a fraction. The design is
+  // `docs/plans/2026-08-30-transit-mobility-phase-4-design.md` §7.
+  //
+  // It exists now because the /rights test above asserted `/250 of 250/` for
+  // months, produced by rendering `{countries.length} of {countries.length}` —
+  // the same number twice. A tautology cannot fail, so it certified the exact
+  // defect it was written to prevent. The two capture groups here are the
+  // point: they must be able to DIFFER, and a build that makes them equal by
+  // construction has repeated the mistake rather than passed the test.
+  //
+  // Un-fixme this when Phase 4a lands. If Phase 4a is never built, delete it —
+  // do not weaken it into something the current page happens to satisfy.
+  test.fixme('a city timetable band states its coverage rather than implying completeness', async ({
+    page,
+  }) => {
+    await page.goto('/travel');
+    const text = await page.locator('main').innerText();
+    const m = text.match(/Timetables for (\d+) of (\d+) cities/);
+    expect(m, 'the transit band must state its own coverage').not.toBeNull();
+    expect(Number(m![1])).toBeLessThan(Number(m![2]));
   });
 });
 

@@ -14,6 +14,7 @@ import { useEvents } from '@/hooks/useEvents';
 import { useOptimizedCountry, useOptimizedCity } from '@/hooks/usePlaces';
 import { useQueerVillages } from '@/hooks/useQueerVillages';
 import { useNearestAirport } from '@/hooks/useNearestAirport';
+import { readCityAirports, resolveCityAirports } from './city-detail/cityAirports';
 import { useAuth } from '@/hooks/useAuth';
 import { useTrackEvent } from '@/hooks/useTrackEvent';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
@@ -115,16 +116,24 @@ export default function CityDetail() {
     };
   }, [isPlaceholderCity]);
 
-  const hasAirport = !!(
-    city?.major_airport_code ||
-    (city?.airport_codes && city.airport_codes.length > 0)
-  );
-  const { nearestAirport } = useNearestAirport({
+  // "Does this city have an airport?" is answered by `local_airport_codes`,
+  // not by `airport_codes` — the latter is the union of local and merely-nearby,
+  // so gating on it published Gatwick as Brighton's own airport. See
+  // `cityAirports.ts` and migration 20260929100300.
+  const { localIata, dbNearestIata } = readCityAirports(city);
+  const { nearestAirport: hookNearestAirport } = useNearestAirport({
     latitude: city?.latitude ?? null,
     longitude: city?.longitude ?? null,
-    hasAirport,
+    // The hook reads the ungated `airports` table, so it is only consulted for
+    // cities the linker resolved neither a local nor a nearby airport for.
+    hasAirport: localIata != null || dbNearestIata != null,
   });
-  const effectiveIata = city?.major_airport_code || nearestAirport?.iata_code || null;
+  const {
+    hasAirport,
+    displayIata,
+    bookingIata: effectiveIata,
+    nearestAirport,
+  } = resolveCityAirports(city, hookNearestAirport, city?.major_airport_code);
 
   const { venues, loading: venuesLoading, fetchVenues } = useVenues(false);
   const { events, fetchEvents } = useEvents(false);
@@ -450,7 +459,10 @@ export default function CityDetail() {
                   : 'contents'
               }
             >
-              <CityAtAGlance city={city} hasAirport={hasAirport} effectiveIata={effectiveIata} />
+              {/* The strip states what the city HAS, so it takes the display
+                  code (own airport, else the nearby one, marked "~"). The
+                  booking code stays on the travel tab. */}
+              <CityAtAGlance city={city} hasAirport={hasAirport} effectiveIata={displayIata} />
               <GeoPhotoInset
                 src={imageUrl}
                 alt={city.name}
@@ -555,9 +567,6 @@ export default function CityDetail() {
               cityId={city.id}
               latitude={city.latitude != null ? Number(city.latitude) : null}
               longitude={city.longitude != null ? Number(city.longitude) : null}
-              countryId={city.countries?.id ?? null}
-              countryName={city.countries?.name ?? null}
-              equalityScore={city.countries?.equality_score ?? null}
             />
             <SimilarCities
               cityId={city.id}

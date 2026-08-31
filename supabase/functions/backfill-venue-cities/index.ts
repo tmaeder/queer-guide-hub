@@ -73,107 +73,81 @@ function nominatimHeaders(): Record<string, string> {
   return h
 }
 
-// Shared: match a city name against our cities table, auto-create if missing
+// Shared: turn a geocoded city name into a city_id.
+//
+// This function used to own its own probe ladder — name+country ilike, then
+// city_aliases, then a plain insert with a re-fetch on failure. It was the best
+// of the five insert paths and still the wrong place for the logic: it is also
+// the ONLY live creator (1,139 rows carrying data_source='nominatim-geocode',
+// 572 of them in the last 90 days), and 128 of the 249 sub-2 km duplicate pairs
+// on production involve a row it minted. Every probe it had keyed on the string,
+// so an exonym or a qualified variant read as a brand-new city.
+//
+// It now delegates to `city_resolve_or_create`, which probes the QID, both TOTAL
+// unique keys, name_normalized and city_aliases, resolves through
+// duplicate_of_id, and refuses on ambiguity instead of picking. The 23505
+// re-fetch that used to live here is inside the RPC, under the same advisory
+// lock as the insert, so a race resolves rather than returning null.
+//
+// Coordinates are passed through and matter twice: they clear the RPC's
+// evidence bar for a create, and they are what a later duplicate sweep would
+// need to reunite the row if this one ever is a duplicate after all.
 async function matchCity(
   supabase: ReturnType<typeof getServiceClient>,
   cityName: string,
   countryCode: string | null,
   coords?: { lat: number; lon: number } | null,
 ): Promise<{ id: string; country_id: string } | null> {
-  // Strip parenthetical suffix: "Berlin (DE)" → "Berlin"
-  const cleanName = cityName.includes('(') ? cityName.split('(')[0].trim() : cityName
+  const { data, error } = await supabase.rpc('city_resolve_or_create', {
+    p_name: cityName,
+    p_country_code: countryCode,
+    p_lat: coords?.lat ?? null,
+    p_lng: coords?.lon ?? null,
+    p_source_slug: 'nominatim-geocode',
+    p_actor: 'venue-geocode',
+  })
 
-  // Try name + country first. NB: cities has no `country_code` column — scope by
-  // country_id (resolved from the ISO-2 code) and exclude placeholder ("tmp-")
-  // stubs so we never link to a hidden bucket city.
-  if (countryCode) {
-    const scopedCountryId = await resolveCountryId(supabase, countryCode)
-    if (scopedCountryId) {
-      const { data } = await supabase
-        .from('cities')
-        .select('id, country_id')
-        .or(`name.ilike.${cleanName},name.ilike.${cityName}`)
-        .eq('country_id', scopedCountryId)
-        .is('duplicate_of_id', null)
-        .not('slug', 'like', 'tmp-%')
-        .order('population', { ascending: false, nullsFirst: false })
-        .limit(1)
-        .single()
-      if (data) return data
-    }
-  }
-  // There is deliberately NO cross-country fallback here.
-  //
-  // This used to be "name only, largest by population", which is not a
-  // fallback but an active preference for the bigger same-name city: it is
-  // how Portland ME became Portland OR and Charleston SC became Charleston IL.
-  // `cities` holds at most one row per (name, country), so a name-only hit
-  // proves nothing — an unrepresentable twin looks exactly like a genuinely
-  // unambiguous name. Refusing is the safe direction: a NULL city_id is
-  // recoverable, a wrong one is not. `commit_city_staging_item` takes the same
-  // position and raises `city_unresolved_country` rather than guessing.
-
-  // Curated aliases, still scoped to the country when we know it.
-  let aliasQuery = supabase
-    .from('city_aliases')
-    .select('city_id, cities!inner(id, country_id)')
-    .or(`alias.ilike.${cleanName},alias.ilike.${cityName}`)
-  if (countryCode) {
-    const aliasCountryId = await resolveCountryId(supabase, countryCode)
-    if (aliasCountryId) aliasQuery = aliasQuery.eq('cities.country_id', aliasCountryId)
-  }
-  const { data: aliasMatch } = await aliasQuery.limit(1).single()
-  if (aliasMatch?.cities) {
-    const c = aliasMatch.cities as unknown as { id: string; country_id: string }
-    return { id: c.id, country_id: c.country_id }
+  if (error) {
+    console.error(`matchCity: resolver failed for "${cityName}" (${countryCode}): ${error.message}`)
+    return null
   }
 
-  // City not found — auto-create if we have a country
-  if (!countryCode) return null
-  const countryId = await resolveCountryId(supabase, countryCode)
-  if (!countryId) return null
+  const row = (Array.isArray(data) ? data[0] : data) as
+    | { city_id: string | null; action: string; match_type: string | null; reason: string | null }
+    | undefined
+  if (!row) return null
 
-  const insert: Record<string, unknown> = {
-    name: cleanName,
-    country_id: countryId,
-    data_source: 'nominatim-geocode',
-  }
-  if (coords?.lat && coords?.lon) {
-    insert.latitude = coords.lat
-    insert.longitude = coords.lon
-  }
-
-  // Plain insert, not upsert. `onConflict: 'country_id,name_normalized'` names
-  // uk_cities_country_name_active, which is a PARTIAL index
-  // (WHERE duplicate_of_id IS NULL); PostgREST cannot emit the predicate, so
-  // arbiter inference was never guaranteed and the re-fetch below was already
-  // the load-bearing path. Making that explicit removes the illusion of an
-  // upsert. The re-fetch also covers the case where
-  // trg_cities_aa_split_name rewrote the name onto an existing row.
-  const { data: created, error: createErr } = await supabase
-    .from('cities')
-    .insert(insert)
-    .select('id, country_id')
-    .maybeSingle()
-
-  if (createErr || !created) {
-    const { data: retry } = await supabase
-      .from('cities')
-      .select('id, country_id')
-      .or(`name.ilike.${cleanName},name.ilike.${cityName}`)
-      .eq('country_id', countryId)
-      .is('duplicate_of_id', null)
-      .limit(1)
-      .maybeSingle()
-    if (retry) return retry
-    if (createErr) {
-      console.error(`matchCity: insert failed for "${cleanName}" (${countryCode}): ${createErr.message}`)
+  if (row.action === 'refused' || !row.city_id) {
+    // A refusal is a decision, not a failure, and it has to be recorded
+    // somewhere a human can see it — otherwise "we declined to guess" is
+    // indistinguishable from "the geocoder returned nothing", which is how a
+    // silent gap grows. `no_country` is the one exception: it fires on every
+    // venue whose address has no country at all, it is not about this city, and
+    // queueing it would drown the queue in rows nobody can action.
+    if (row.reason && row.reason !== 'no_country') {
+      const { error: qErr } = await supabase.rpc('city_resolve_enqueue', {
+        p_name: cityName,
+        p_lat: coords?.lat ?? null,
+        p_lng: coords?.lon ?? null,
+        p_reason: row.reason,
+        p_requester: 'venue-geocode',
+      })
+      if (qErr) console.warn(`matchCity: enqueue failed for "${cityName}": ${qErr.message}`)
     }
     return null
   }
 
-  console.log(`Auto-created city: ${cityName} (${countryCode})`)
-  return created
+  const { data: city } = await supabase
+    .from('cities')
+    .select('id, country_id')
+    .eq('id', row.city_id)
+    .maybeSingle()
+  if (!city) return null
+
+  if (row.action === 'created') {
+    console.log(`Auto-created city: ${cityName} (${countryCode})`)
+  }
+  return city as { id: string; country_id: string }
 }
 
 async function resolveCountryId(

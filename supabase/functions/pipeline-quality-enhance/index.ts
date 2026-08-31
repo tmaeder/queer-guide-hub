@@ -31,7 +31,18 @@ async function loadCandidatePools(supabase: ReturnType<typeof getServiceClient>)
     supabase.from('organizations').select('name').limit(300).then(
       (r) => r.error ? { data: [] as Array<{ name: string }>, error: null } : r,
     ),
-    supabase.from('unified_tags').select('slug').limit(200),
+    // The order is load-bearing, not cosmetic. An unordered `.limit(200)` is served
+    // from unified_tags_slug_key (verified on prod: Index Only Scan), so the model was
+    // handed the first 200 slugs ALPHABETICALLY -- a slice of the 'ab*'/'ac*' region
+    // that has nothing to do with any article. QUALITY_SYSTEM_PROMPT tells it to
+    // "prefer existing tags listed in user message", so it duly preferred them, and
+    // 368 articles ended up carrying abroromantic/ace-of-spades/abduction-play. Rank
+    // by usage so the pool is the vocabulary readers actually see, exactly as the
+    // cities pool above ranks by population. Status/merge filters match the canonical
+    // lookup in run_tag_assignment_reconcile, which turns this text into graph edges:
+    // 5,392 of 9,591 tags are deprecated and must never be offered.
+    supabase.from('unified_tags').select('slug').eq('status', 'active').is('merged_into_id', null)
+      .order('usage_count', { ascending: false, nullsFirst: false }).limit(200),
   ])
   return {
     countries: (countries.data ?? []).map((r: { name: string }) => r.name).filter(Boolean),

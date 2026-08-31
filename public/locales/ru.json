@@ -226,7 +226,6 @@
       "title": "Кризисные линии, круглосуточно",
       "body": "Транс-линия поддержки, кризисная помощь ЛГБТ+ и местные экстренные номера — по странам и всегда в одном клике с любой страницы."
     },
-    "osmAttribution": "Транспортные схемы созданы на основе данных © участников OpenStreetMap (ODbL)",
     "reportSomething": "Сообщить о проблеме",
     "hotlines": "Телефоны доверия",
     "antiDiscrimination": {
@@ -467,7 +466,25 @@
       "moved": "Место перенесено",
       "removed": "Место удалено",
       "dayUpdated": "День обновлён",
-      "dragHandleAria": "Перетащите для перестановки"
+      "dragHandleAria": "Перетащите для перестановки",
+      "a11yCoverage": "[RU] {{withData}} of {{total}} places here publish accessibility information. Nothing is ruled out for staying silent.",
+      "applied": "[RU] Added {{count}} stops",
+      "apply": "[RU] Add {{count}} stops to the trip",
+      "applyFailed": "[RU] Could not add the plan",
+      "budgetCoverage": "[RU] {{withData}} of {{total}} places here list a price. Budget nudges the order; it does not filter.",
+      "event": "[RU] Event",
+      "exhausted": "[RU] Nothing left. The matches here are already on other days.",
+      "loadFailed": "[RU] Could not load places for these cities. Try again in a moment.",
+      "matchesNeeds": "[RU] Matches your needs",
+      "needDates": "[RU] Set the trip dates and a destination city, and the days can be built from them.",
+      "noCandidate": "[RU] Nothing listed here for this time of day.",
+      "paceLabel": "[RU] How full a day",
+      "reroll": "[RU] Try another",
+      "summary": "[RU] {{filled}} of {{requested}} slots filled",
+      "timeUnknown": "[RU] time of day not known",
+      "tooFew": "[RU] Only {{count}} places here match that. Not enough to build days from. Try another vibe, or add stops by hand.",
+      "vibeAny": "[RU] A bit of everything",
+      "vibeLabel": "[RU] What you are after"
     },
     "map": {
       "emptyNoPlaces": "Добавьте места, чтобы увидеть их на карте",
@@ -679,7 +696,8 @@
       "reservations": "Бронирования",
       "packing": "Сборы",
       "collaborate": "Совместная работа",
-      "journal": "Дневник"
+      "journal": "Дневник",
+      "buildDays": "[RU] Build the days"
     },
     "today": {
       "offlineBanner": "Вы не в сети — показан последний сохранённый маршрут.",
@@ -2332,10 +2350,7 @@
       "pride": {
         "title": "Прайды этого сезона",
         "window": "Следующие 4 месяца",
-        "empty": "Нет предстоящих прайд-событий.",
-        "safety": "Индекс равенства",
-        "equalityTooltip": "Оценка равенства отражает правовую защиту ЛГБТК+ в этой стране. Чем выше, тем безопаснее.",
-        "equalityAria": "Оценка равенства {{score}}: нажмите для объяснения"
+        "empty": "Нет предстоящих прайд-событий."
       },
       "inspiration": {
         "villages": "Квир-вилладжи",
@@ -2900,6 +2915,8 @@
       "about": {
         "status": "[RU] Status",
         "capital": "[RU] Capital city",
+        "regionalCapital": "[RU] Regional capital",
+        "capitalOfRegion": "[RU] Capital of",
         "majorCity": "[RU] Major city",
         "region": "[RU] Region",
         "timezone": "[RU] Timezone",
@@ -2931,6 +2948,7 @@
       }
     },
     "capital": "[RU] Capital",
+    "regionalCapital": "[RU] Regional capital",
     "continentClear": "[RU] Clear",
     "continentsTitle": "[RU] Continents",
     "counting": "[RU] Counting…",
@@ -4497,6 +4515,9 @@
         "slang": "Сленг"
       },
       "sourceOfLaw": "Источник права",
+      "clinicalGuidance": "Клинические рекомендации",
+      "guidanceEdition": "Издание",
+      "notMedicalAdvice": "Определения взяты из опубликованных клинических рекомендаций. Это не медицинская консультация. Перейдите по ссылке за клиническими подробностями и обсудите своё лечение с врачом.",
       "lawJurisdiction": "Юрисдикция",
       "lawInternational": "Международный",
       "lawAdopted": "Принят",

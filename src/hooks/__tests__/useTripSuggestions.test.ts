@@ -36,13 +36,13 @@ vi.mock('@/integrations/supabase/client', () => ({
 
 import {
   fetchTripSuggestionCities,
-  fetchTripSuggestionVenues,
   fetchTripMapVenues,
   fetchTripMapEvents,
-  fetchTripSuggestionEvents,
 } from '../useTripSuggestions';
 
-function withResults(...r: MockResult[]) { state.results.push(...r); }
+function withResults(...r: MockResult[]) {
+  state.results.push(...r);
+}
 
 beforeEach(() => {
   state.results.length = 0;
@@ -60,7 +60,7 @@ describe('fetchTripSuggestionCities', () => {
     const r = await fetchTripSuggestionCities(['c1', 'c2']);
     expect(r[0].id).toBe('c1');
 
-    const inCall = state.calls[0].chain.find(s => s.method === 'in');
+    const inCall = state.calls[0].chain.find((s) => s.method === 'in');
     expect(inCall?.args).toEqual(['id', ['c1', 'c2']]);
   });
 
@@ -70,34 +70,18 @@ describe('fetchTripSuggestionCities', () => {
   });
 });
 
-describe('fetchTripSuggestionVenues', () => {
-  it('queries venues with duplicate filter + foursquare order + limit 30', async () => {
-    withResults({ data: [{ id: 'v1' }], error: null });
-    await fetchTripSuggestionVenues(['c1']);
-
-    const call = state.calls[0];
-    expect(call.table).toBe('venues');
-    expect(call.chain.find(s => s.method === 'is')?.args).toEqual(['duplicate_of_id', null]);
-    expect(call.chain.find(s => s.method === 'limit')?.args).toEqual([30]);
-    const order = call.chain.find(s => s.method === 'order');
-    expect(order?.args[0]).toBe('foursquare_rating');
-  });
-
-  it('returns [] for empty input', async () => {
-    expect(await fetchTripSuggestionVenues([])).toEqual([]);
-    expect(state.calls).toHaveLength(0);
-  });
-});
-
 describe('fetchTripMapVenues', () => {
   it('adds latitude/longitude not-null filters and limit 50', async () => {
     withResults({ data: [{ id: 'v1' }], error: null });
     await fetchTripMapVenues(['c1']);
 
     const call = state.calls[0];
-    const notNulls = call.chain.filter(s => s.method === 'not');
-    expect(notNulls.map(n => (n.args as [string, string, unknown])[0])).toEqual(['latitude', 'longitude']);
-    expect(call.chain.find(s => s.method === 'limit')?.args).toEqual([50]);
+    const notNulls = call.chain.filter((s) => s.method === 'not');
+    expect(notNulls.map((n) => (n.args as [string, string, unknown])[0])).toEqual([
+      'latitude',
+      'longitude',
+    ]);
+    expect(call.chain.find((s) => s.method === 'limit')?.args).toEqual([50]);
   });
 });
 
@@ -107,8 +91,8 @@ describe('fetchTripMapEvents', () => {
     await fetchTripMapEvents(['c1'], '2026-06-01', '2026-06-30');
 
     const call = state.calls[0];
-    const gte = call.chain.find(s => s.method === 'gte');
-    const lte = call.chain.find(s => s.method === 'lte');
+    const gte = call.chain.find((s) => s.method === 'gte');
+    const lte = call.chain.find((s) => s.method === 'lte');
     expect(gte?.args).toEqual(['start_date', '2026-06-01']);
     expect(lte?.args).toEqual(['start_date', '2026-06-30']);
   });
@@ -118,24 +102,11 @@ describe('fetchTripMapEvents', () => {
     await fetchTripMapEvents(['c1'], undefined, undefined);
 
     const call = state.calls[0];
-    expect(call.chain.some(s => s.method === 'gte')).toBe(false);
-    expect(call.chain.some(s => s.method === 'lte')).toBe(false);
+    expect(call.chain.some((s) => s.method === 'gte')).toBe(false);
+    expect(call.chain.some((s) => s.method === 'lte')).toBe(false);
   });
 
   it('returns [] for empty city list', async () => {
     expect(await fetchTripMapEvents([], undefined, undefined)).toEqual([]);
-  });
-});
-
-describe('fetchTripSuggestionEvents', () => {
-  it('applies city + duplicate filter, date range, order asc + limit 20', async () => {
-    withResults({ data: [{ id: 'e1' }], error: null });
-    await fetchTripSuggestionEvents(['c1'], '2026-06-01', '2026-06-30');
-
-    const call = state.calls[0];
-    expect(call.table).toBe('events');
-    expect(call.chain.find(s => s.method === 'in')?.args).toEqual(['city_id', ['c1']]);
-    expect(call.chain.find(s => s.method === 'is')?.args).toEqual(['duplicate_of_id', null]);
-    expect(call.chain.find(s => s.method === 'limit')?.args).toEqual([20]);
   });
 });

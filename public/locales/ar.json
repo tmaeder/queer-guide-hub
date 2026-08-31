@@ -226,7 +226,6 @@
       "title": "خطوط الأزمات، على مدار ٢٤ ساعة",
       "body": "خط دعم للأشخاص العابرين، ودعم الأزمات لمجتمع الميم، وأرقام الطوارئ المحلية، مرتّبة حسب البلد وعلى بُعد نقرة واحدة من أي صفحة."
     },
-    "osmAttribution": "مخططات النقل مشتقة من © مساهمي OpenStreetMap (ODbL)",
     "reportSomething": "الإبلاغ عن شيء",
     "hotlines": "خطوط المساعدة",
     "antiDiscrimination": {
@@ -451,7 +450,25 @@
       "moved": "تم نقل المكان",
       "removed": "تمت إزالة المكان",
       "dayUpdated": "تم تحديث اليوم",
-      "dragHandleAria": "اسحب لإعادة الترتيب"
+      "dragHandleAria": "اسحب لإعادة الترتيب",
+      "a11yCoverage": "[AR] {{withData}} of {{total}} places here publish accessibility information. Nothing is ruled out for staying silent.",
+      "applied": "[AR] Added {{count}} stops",
+      "apply": "[AR] Add {{count}} stops to the trip",
+      "applyFailed": "[AR] Could not add the plan",
+      "budgetCoverage": "[AR] {{withData}} of {{total}} places here list a price. Budget nudges the order; it does not filter.",
+      "event": "[AR] Event",
+      "exhausted": "[AR] Nothing left. The matches here are already on other days.",
+      "loadFailed": "[AR] Could not load places for these cities. Try again in a moment.",
+      "matchesNeeds": "[AR] Matches your needs",
+      "needDates": "[AR] Set the trip dates and a destination city, and the days can be built from them.",
+      "noCandidate": "[AR] Nothing listed here for this time of day.",
+      "paceLabel": "[AR] How full a day",
+      "reroll": "[AR] Try another",
+      "summary": "[AR] {{filled}} of {{requested}} slots filled",
+      "timeUnknown": "[AR] time of day not known",
+      "tooFew": "[AR] Only {{count}} places here match that. Not enough to build days from. Try another vibe, or add stops by hand.",
+      "vibeAny": "[AR] A bit of everything",
+      "vibeLabel": "[AR] What you are after"
     },
     "map": {
       "emptyNoPlaces": "أضف أماكن لعرضها على الخريطة",
@@ -651,7 +668,8 @@
       "reservations": "الحجوزات",
       "packing": "التعبئة",
       "collaborate": "التعاون",
-      "journal": "اليوميات"
+      "journal": "اليوميات",
+      "buildDays": "[AR] Build the days"
     },
     "today": {
       "offlineBanner": "أنت غير متصل — نعرض آخر خط سير محفوظ.",
@@ -2306,10 +2324,7 @@
       "pride": {
         "title": "فعاليات الفخر هذا الموسم",
         "window": "الأشهر الأربعة القادمة",
-        "empty": "لا توجد فعاليات فخر قادمة.",
-        "safety": "مؤشر المساواة",
-        "equalityTooltip": "تعكس درجة المساواة الحماية القانونية لمجتمع الميم في هذا البلد. كلما زادت زادت السلامة.",
-        "equalityAria": "درجة المساواة {{score}}: انقر للشرح"
+        "empty": "لا توجد فعاليات فخر قادمة."
       },
       "inspiration": {
         "villages": "قرى الكوير",
@@ -2874,6 +2889,8 @@
       "about": {
         "status": "[AR] Status",
         "capital": "[AR] Capital city",
+        "regionalCapital": "[AR] Regional capital",
+        "capitalOfRegion": "[AR] Capital of",
         "majorCity": "[AR] Major city",
         "region": "[AR] Region",
         "timezone": "[AR] Timezone",
@@ -2905,6 +2922,7 @@
       }
     },
     "capital": "[AR] Capital",
+    "regionalCapital": "[AR] Regional capital",
     "continentClear": "[AR] Clear",
     "continentsTitle": "[AR] Continents",
     "counting": "[AR] Counting…",
@@ -4471,6 +4489,9 @@
         "slang": "عامية"
       },
       "sourceOfLaw": "المصدر القانوني",
+      "clinicalGuidance": "إرشادات سريرية",
+      "guidanceEdition": "الإصدار",
+      "notMedicalAdvice": "التعريفات هنا مستمدة من إرشادات سريرية منشورة. وهي ليست نصيحة طبية. اتبع الرابط للاطلاع على التفاصيل السريرية، وتحدث إلى طبيب بشأن رعايتك الخاصة.",
       "lawJurisdiction": "نطاق الاختصاص",
       "lawInternational": "دولي",
       "lawAdopted": "سنة الإقرار",

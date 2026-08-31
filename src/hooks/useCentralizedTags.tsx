@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedRpc } from '@/integrations/supabase/untyped';
 import { normalizeTagName } from '@/utils/tagNormalization';
 
 export interface TagCategoryInfo {
@@ -318,7 +319,6 @@ export const useCentralizedTags = () => {
     slug: string;
     category?: string | null;
     description?: string | null;
-    image_url?: string | null;
   }): Promise<CentralizedTag | null> => {
     try {
       const normalizedName = normalizeTagName(tagData.name);
@@ -361,9 +361,28 @@ export const useCentralizedTags = () => {
 
   const deleteTag = async (id: string): Promise<void> => {
     try {
-      const { error } = await supabase.from('unified_tags').delete().eq('id', id);
+      // NOT `.from('unified_tags').delete()`. A raw delete cascades away the
+      // tag's legal citations (tag_sources), its clinical codes, its ontology
+      // edges and the curated health content hanging off it; leaves
+      // tag_slug_redirects pointing at nothing (ON DELETE SET NULL); and leaves
+      // `tags text[]` on 20+ content tables still naming a tag whose page is
+      // now a 404 — those arrays carry no foreign key, so nothing notices.
+      // admin_delete_tag refuses when any of that holds and names what is in
+      // the way; merge_tag_concept is the action that preserves it.
+      //
+      // This is the hook /admin/tags actually calls. useUnifiedTags has a
+      // near-identical deleteTag and is routed the same way, so neither is a
+      // way back to the raw delete.
+      const { error } = await untypedRpc('admin_delete_tag', {
+        p_tag_id: id,
+        p_reason: null,
+      });
 
-      if (error) throw error;
+      // Rethrow as a real Error. untypedRpc yields a plain `{ message }`, and
+      // every caller here narrows with `err instanceof Error` — so throwing the
+      // bare object silently discards the refusal breakdown that is the entire
+      // reason this RPC exists, leaving the admin with "Failed to delete tag".
+      if (error) throw new Error(error.message);
       refreshTags();
     } catch (err) {
       console.error('Error deleting tag:', err);
@@ -413,19 +432,46 @@ export function useTagUsageCounts() {
   return useQuery({
     queryKey: ['tag-usage-counts'],
     queryFn: async (): Promise<Record<string, number>> => {
-      const { data, error } = await supabase
-        .from('tag_usage_summary' as 'venues')
-        .select(
-          'name, usage_count, venue_count, event_count, group_count, news_count, post_count, marketplace_count, content_count',
-        );
+      // Same PostgREST max-rows cap as fetchAllActiveTags above: the view has
+      // ~9.6k rows, so an unpaged select returned only the first 1000 and
+      // ~8.6k tags rendered "0 uses" — which also silently broke sort=usage
+      // and the used/unused filter. Rows where every bucket is 0 are
+      // equivalent to absent (consumers default missing keys to 0), so filter
+      // to rows with any usage and page through the rest.
+      const ANY_USAGE = ['usage_count', ...ENTITY_COUNT_COLUMNS]
+        .map((col) => `${col}.gt.0`)
+        .join(',');
+      const PAGE = 1000;
+      const data: Array<Record<string, number | string>> = [];
+      let fetchError: unknown = null;
+      for (let from = 0; ; from += PAGE) {
+        const { data: page, error } = await supabase
+          .from('tag_usage_summary' as 'venues')
+          .select(
+            'id, name, usage_count, venue_count, event_count, group_count, news_count, post_count, marketplace_count, content_count',
+          )
+          .or(ANY_USAGE)
+          .order('id', { ascending: true })
+          .range(from, from + PAGE - 1);
+        if (error) {
+          fetchError = error;
+          break;
+        }
+        data.push(...((page ?? []) as unknown as Array<Record<string, number | string>>));
+        if (!page || page.length < PAGE) break;
+      }
 
-      if (error) {
-        console.error('Error fetching tag usage counts:', error);
-        // Fallback: use usage_count from unified_tags
+      if (fetchError && data.length === 0) {
+        console.error('Error fetching tag usage counts:', fetchError);
+        // Fallback: top tags by the denormalized counter (capped at max-rows,
+        // so order by usage to keep the rows that matter).
         const { data: tags } = await supabase
           .from('unified_tags')
           .select('name, usage_count')
-          .eq('status', 'active');
+          .eq('status', 'active')
+          .gt('usage_count', 0)
+          .order('usage_count', { ascending: false })
+          .limit(1000);
 
         const map: Record<string, number> = {};
         for (const row of tags || []) {
@@ -435,7 +481,7 @@ export function useTagUsageCounts() {
       }
 
       const map: Record<string, number> = {};
-      for (const row of (data || []) as unknown as Array<Record<string, number | string>>) {
+      for (const row of data) {
         // Every *_count in the view is a disjoint entity_type bucket of
         // unified_tag_assignments (verified against pg_get_viewdef) — there is
         // no roll-up column, so summing all seven is the true cross-content

@@ -72,6 +72,7 @@ Rules:
     let json: { content: Array<{ type: string; text: string }> }
     try {
       json = await anthropicMessages({
+        callerFn: 'pipeline-ai-suggest',
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 2048,
         messages: [{ role: 'user', content: prompt }],

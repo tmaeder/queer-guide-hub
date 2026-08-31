@@ -33,21 +33,22 @@ export function countryLabel(code: string): string {
   return COUNTRY_NAMES[code] ?? code;
 }
 
-/** Map hotline topic slugs to resource category URL params. */
+/** Map hotline topic slugs to resource category URL params.
+ *  Names match taxonomy v3 (migration 20261006140000). */
 export const TOPIC_TO_RESOURCE: Record<string, string> = {
   crisis: 'Mental Health',
   suicide: 'Mental Health',
-  lgbtq: 'Identity & Expression',
-  trans: 'Gender Identity',
-  youth: 'Support Services & NGOs',
-  health: 'Health & Wellness',
+  lgbtq: 'Identity',
+  trans: 'Gender',
+  youth: 'Community Life & Support',
+  health: 'Health',
   hiv: 'Sexual Health',
-  violence: 'Safety & Practices',
-  discrimination: 'Rights & Activism',
-  legal: 'Legal Rights',
-  relationships: 'Relationships & Connection',
-  'coming-out': 'Questioning & Labels',
-  women: 'Identity & Expression',
+  violence: 'Violence & Hate',
+  discrimination: 'History & Rights',
+  legal: 'Laws & Legal Rights',
+  relationships: 'Relationships & Family',
+  'coming-out': 'Umbrella Terms & Labels',
+  women: 'Identity',
 };
 
 export function matchProfileLocation(location: string | null | undefined): string | null {

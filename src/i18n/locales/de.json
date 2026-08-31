@@ -226,7 +226,6 @@
       "title": "Krisentelefone, rund um die Uhr",
       "body": "Trans-Beratung, LGBT+-Krisenhilfe und örtliche Notrufnummern, nach Ländern sortiert und von jeder Seite aus mit einem Klick erreichbar."
     },
-    "osmAttribution": "Nahverkehrsdiagramme abgeleitet von © OpenStreetMap-Mitwirkenden (ODbL)",
     "reportSomething": "Etwas melden",
     "hotlines": "Notrufnummern",
     "antiDiscrimination": {
@@ -451,7 +450,25 @@
       "moved": "Ort verschoben",
       "removed": "Ort entfernt",
       "dayUpdated": "Tag aktualisiert",
-      "dragHandleAria": "Zum Sortieren ziehen"
+      "dragHandleAria": "Zum Sortieren ziehen",
+      "a11yCoverage": "[DE] {{withData}} of {{total}} places here publish accessibility information. Nothing is ruled out for staying silent.",
+      "applied": "[DE] Added {{count}} stops",
+      "apply": "[DE] Add {{count}} stops to the trip",
+      "applyFailed": "[DE] Could not add the plan",
+      "budgetCoverage": "[DE] {{withData}} of {{total}} places here list a price. Budget nudges the order; it does not filter.",
+      "event": "[DE] Event",
+      "exhausted": "[DE] Nothing left. The matches here are already on other days.",
+      "loadFailed": "[DE] Could not load places for these cities. Try again in a moment.",
+      "matchesNeeds": "[DE] Matches your needs",
+      "needDates": "[DE] Set the trip dates and a destination city, and the days can be built from them.",
+      "noCandidate": "[DE] Nothing listed here for this time of day.",
+      "paceLabel": "[DE] How full a day",
+      "reroll": "[DE] Try another",
+      "summary": "[DE] {{filled}} of {{requested}} slots filled",
+      "timeUnknown": "[DE] time of day not known",
+      "tooFew": "[DE] Only {{count}} places here match that. Not enough to build days from. Try another vibe, or add stops by hand.",
+      "vibeAny": "[DE] A bit of everything",
+      "vibeLabel": "[DE] What you are after"
     },
     "map": {
       "emptyNoPlaces": "Füge Orte hinzu, um sie auf der Karte zu sehen",
@@ -651,7 +668,8 @@
       "reservations": "Reservierungen",
       "packing": "Packliste",
       "collaborate": "Zusammenarbeit",
-      "journal": "Tagebuch"
+      "journal": "Tagebuch",
+      "buildDays": "[DE] Build the days"
     },
     "today": {
       "offlineBanner": "Offline — zeigt deinen zuletzt gespeicherten Reiseplan.",
@@ -2298,10 +2316,7 @@
       "pride": {
         "title": "Pride diese Saison",
         "window": "Nächste 4 Monate",
-        "empty": "Keine bevorstehenden Pride-Events.",
-        "safety": "Gleichstellungsindex",
-        "equalityTooltip": "Der Gleichberechtigungs-Score zeigt den LGBTQ+-Rechtsschutz in diesem Land. Höher ist sicherer.",
-        "equalityAria": "Gleichberechtigungs-Score {{score}}: tippen für Erklärung"
+        "empty": "Keine bevorstehenden Pride-Events."
       },
       "inspiration": {
         "villages": "Queer Villages",
@@ -2867,6 +2882,8 @@
       "about": {
         "status": "[DE] Status",
         "capital": "[DE] Capital city",
+        "regionalCapital": "Landeshauptstadt",
+        "capitalOfRegion": "Hauptstadt von",
         "majorCity": "[DE] Major city",
         "region": "[DE] Region",
         "timezone": "[DE] Timezone",
@@ -2899,6 +2916,7 @@
       }
     },
     "capital": "[DE] Capital",
+    "regionalCapital": "Landeshauptstadt",
     "continentClear": "[DE] Clear",
     "continentsTitle": "[DE] Continents",
     "counting": "[DE] Counting…",
@@ -4465,6 +4483,9 @@
         "slang": "Slang"
       },
       "sourceOfLaw": "Rechtsgrundlage",
+      "clinicalGuidance": "Klinische Leitlinien",
+      "guidanceEdition": "Ausgabe",
+      "notMedicalAdvice": "Die Definitionen hier stammen aus veröffentlichten klinischen Leitlinien. Sie sind keine medizinische Beratung. Folge dem Link für klinische Details und sprich mit einer Ärztin oder einem Arzt über deine eigene Behandlung.",
       "lawJurisdiction": "Geltungsbereich",
       "lawInternational": "International",
       "lawAdopted": "Verabschiedet",

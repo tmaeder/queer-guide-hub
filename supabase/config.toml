@@ -116,7 +116,15 @@ verify_jwt = false
 [functions.get-weather-forecast]
 verify_jwt = false
 
-[functions.store-tag-images]
+[functions.categorize-tags]
+# Gateway-level JWT is the wrong gate here: the function's own
+# requireAdmin() already accepts an admin JWT, a service-role bearer OR
+# x-internal-secret, and the operator driver
+# (scripts/data-quality/refile-tag-remainder.mjs) invokes it from Postgres
+# via pg_net so the secret never leaves the database. With verify_jwt on,
+# that call is rejected as UNAUTHORIZED_NO_AUTH_HEADER before requireAdmin
+# ever runs — measured 2026-08-29. Same posture as tag-enrichment-sweep
+# below, which files tags through the identical code path.
 verify_jwt = false
 
 [functions.tag-enrichment-sweep]
@@ -228,6 +236,9 @@ verify_jwt = false
 verify_jwt = false
 
 # Source data fetchers
+[functions.source-aids-ch]
+verify_jwt = false
+
 [functions.source-airbnb]
 verify_jwt = false
 

@@ -1,50 +1,23 @@
 // airport-service-refresh — rebuilds public.airport_service, the gate that says
 // which IATA codes belong to an airport with real scheduled passenger service.
 //
-// Why the gate exists: cities.airport_codes had exactly one writer, the `sparql`
-// phase of city-factual-backfill, which takes every Wikidata P931 ("place served
-// by transport hub") result carrying an IATA code. P931 says nothing about
-// passenger traffic, so 250 of the 934 distinct codes in the corpus (27%,
-// measured 2026-08-25) were rail stations (Boston ZTO, Halifax XDG), heliports
-// (Algeciras AEI), closed airports (Berlin SXF, Nicosia NIC), general-aviation or
-// military fields (Houston EFD/IWS/CXO, Moenchengladbach MGL) or simply the
-// wrong city (Houston HVN = Tweed New Haven, CT). `major_airport_code` feeds the
-// Aviasales flight search, so those were broken booking links.
-//
 // Source: OurAirports airports.csv — free, key-less, ~12 MB. The gate is
 // scheduled_service='yes' AND type IN (large_airport, medium_airport,
-// small_airport): rail stations are absent from the file entirely, heliports and
-// seaplane bases have their own types, closed fields are type='closed' and GA
-// strips are scheduled_service='no'. small_airport is kept on purpose — Martha's
-// Vineyard (MVY) has genuine scheduled service.
+// small_airport). Ranking is wikibase:sitelinks first, P3872 passengers second;
+// neither may ever be read as proof an airport is open.
 //
-// Traps this function is built around:
-//   - Absence from the file is NOT evidence of closure. MLH and EAP are alternate
-//     codes for Basel EuroAirport, which the file carries only as BSL; they live
-//     in its `keywords` column and are recorded in alt_codes so
-//     airport_service_unknown_codes() can tell a human "not missing, it is Basel"
-//     instead of presenting them as junk. Nothing is auto-judged.
-//   - Ranking is `wikibase:sitelinks` first, passengers second. Volume alone
-//     picks the wrong airport for a metro that has both a domestic city airport
-//     and an international gateway, because P3872 carries whatever year each
-//     airport last reported -- Wikidata's best figure for Incheon is 17.9M
-//     against Gimpo's 24.5M, which would make GMP Seoul's primary. Sitelinks get
-//     Seoul, Buenos Aires and Tehran right where volume does not.
-//   - Neither number may ever be read as proof an airport is OPEN. P3872 is
-//     historical: closed SXF still reports 12.8M and the rail station XDS 800k.
-//     Only the OurAirports gate decides that.
-//   - A WDQS outage must not wipe the ranking. Both columns are simply left out
-//     of the payload when the query fails, so the ON CONFLICT UPDATE does not
-//     touch them and the previous figures survive.
-//   - Stale rows are removed by refreshed_at, not by an IN list: a 4,000-code
-//     NOT IN filter does not fit in a PostgREST URL.
-//
-// Auth: X-Webhook-Secret (cron) or admin/service-role, same as the other city
-// data-quality functions.
-// Body: { dry_run?: boolean }
+// Every failure exit returns a 5xx, deliberately. This function is a tracked
+// automation (`admin_automations.airport_service_refresh`, wrapped in pg_cron
+// with the run-begin shim), and `admin_automation_reap_runs()` classifies a
+// response as an error on `status_code >= 400 OR error_msg IS NOT NULL` --
+// a success then RESETS `consecutive_failures`. Returning 200 with an
+// `{error: ...}` body, as this did until 2026-08-28, meant a month where
+// OurAirports was down or the upsert failed was recorded as a healthy run and
+// auto-pause could never fire. A 200 here must mean the gate was rebuilt.
 
 import { getCorsHeaders, getServiceClient, requireInternalOrAdmin, jsonResponse } from '../_shared/supabase-client.ts'
 import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
+import { safeErrCode } from '../_shared/safe-error.ts'
 
 const CSV_URL = 'https://davidmegginson.github.io/ourairports-data/airports.csv'
 const WDQS = 'https://query.wikidata.org/sparql'
@@ -113,7 +86,6 @@ function buildGate(csv: string): { rows: GateRow[]; byType: Record<string, numbe
     if (r[ix.scheduled_service] !== 'yes' || !KEPT_TYPES.has(type)) continue
     const lat = Number(r[ix.latitude_deg]), lon = Number(r[ix.longitude_deg])
     const cc = (r[ix.iso_country] ?? '').trim().toUpperCase()
-    // The file carries a few junk rows ("(Duplicate)YEG") with no usable geometry.
     if (!Number.isFinite(lat) || !Number.isFinite(lon) || !/^[A-Z]{2}$/.test(cc)) { skipped++; continue }
     byType[type] = (byType[type] ?? 0) + 1
     rows.push({
@@ -133,7 +105,6 @@ function buildGate(csv: string): { rows: GateRow[]; byType: Record<string, numbe
     }
   }
 
-  // A keyword that is itself a gate code is another airport, not an alias.
   const primary = new Set(rows.map(a => a.iata_code))
   const alts = new Map<string, string[]>()
   for (const [alt, canonical] of aliasOf) {
@@ -145,7 +116,6 @@ function buildGate(csv: string): { rows: GateRow[]; byType: Record<string, numbe
   return { rows, byType, skipped }
 }
 
-/** Wikidata P3872, latest reported year per IATA code. Ranking only. */
 /**
  * One WDQS pass for both ranking signals, keyed on IATA (P238). Two separate
  * queries would be simpler but WDQS rate-limits hard (observed: 1 request per
@@ -194,13 +164,15 @@ Deno.serve(async (req: Request) => {
   try {
     gate = buildGate(await fetchText(CSV_URL, CSV_TIMEOUT))
   } catch (e) {
-    return jsonResponse({ error: 'ourairports_unavailable', detail: String(e).slice(0, 120) }, 200, req)
+    // Allowlist, not redaction: `String(e)` here carries the fetch/parse failure
+    // verbatim, which is CWE-209 (CodeQL js/stack-trace-exposure alert 73). No
+    // caller parses `detail` -- the sole caller is the fire-and-forget pg_cron
+    // post -- so the real text goes to the server log and the body carries a
+    // code we chose.
+    return jsonResponse({ error: 'ourairports_unavailable', detail: safeErrCode(e, [], 'airport-service-refresh/fetch') }, 503, req)
   }
   if (gate.rows.length < 1000) {
-    // A short answer means a truncated or changed upstream file, not a world in
-    // which scheduled air travel stopped. Writing it would empty the gate and the
-    // linker would then read every existing code as junk.
-    return jsonResponse({ error: 'gate_implausibly_small', rows: gate.rows.length }, 200, req)
+    return jsonResponse({ error: 'gate_implausibly_small', rows: gate.rows.length }, 500, req)
   }
 
   const rank = await loadRanking()
@@ -223,17 +195,17 @@ Deno.serve(async (req: Request) => {
       .from('airport_service')
       .upsert(payload.slice(i, i + CHUNK).map(a => ({ ...a, source: 'ourairports', refreshed_at: new Date().toISOString() })),
         { onConflict: 'iata_code' })
-    if (error) return jsonResponse({ error: 'upsert_failed', detail: error.message, written }, 200, req)
+    // CodeQL flagged only the fetch path above, but a PostgREST message is the
+    // worse leak of the two: it names columns, relations and constraints. Same
+    // treatment; the whole error object still reaches the server log.
+    if (error) return jsonResponse({ error: 'upsert_failed', detail: safeErrCode(error, [], 'airport-service-refresh/upsert'), written }, 500, req)
     written += Math.min(CHUNK, payload.length - i)
   }
 
-  // Rows that fell out of the gate (airport closed, scheduled service withdrawn)
-  // must leave, or the linker keeps honouring them forever. Keyed on
-  // refreshed_at, because a 4,000-code NOT IN filter does not fit in a URL.
   const { data: removed, error: delErr } = await supabase
     .from('airport_service').delete().eq('source', 'ourairports').lt('refreshed_at', startedAt)
     .select('iata_code')
-  if (delErr) return jsonResponse({ error: 'prune_failed', detail: delErr.message, written }, 200, req)
+  if (delErr) return jsonResponse({ error: 'prune_failed', detail: safeErrCode(delErr, [], 'airport-service-refresh/prune'), written }, 500, req)
 
   return jsonResponse({
     written, removed: removed?.length ?? 0, by_type: gate.byType, skipped: gate.skipped,

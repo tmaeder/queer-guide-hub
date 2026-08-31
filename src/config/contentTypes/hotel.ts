@@ -179,5 +179,13 @@ export const hotelContentType: ContentTypeConfig = {
       clusterFinder: 'find_hotel_duplicate_clusters',
     },
   },
+  // `archived_at` added in 20261029100000. Before that this type had no column
+  // that could express archived — only seo_indexable, which governs crawlers
+  // rather than the site, so an Archive button would have deindexed without
+  // hiding. RLS is what makes the column bite across ~65 read call sites.
+  lifecycle: {
+    type: 'hotel',
+    archive: { column: 'archived_at', predicate: 'present', label: 'Archived' },
+  },
   publicPath: (row) => (row.slug ? `/hotels/${row.slug}` : null),
 };

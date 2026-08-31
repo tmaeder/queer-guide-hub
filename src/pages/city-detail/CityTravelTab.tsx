@@ -59,10 +59,16 @@ export function CityTravelTab({
       label: t('cities.detail.travel.nearestAirport', 'Nearest airport'),
       value: nearestKm != null ? `${nearestCodes[0]} · ${nearestKm} km` : nearestCodes[0],
     });
-  else if (!hasAirport && nearestAirport)
+  else if (!hasAirport && nearestAirport?.iata_code)
     airportFacts.push({
       label: t('cities.detail.travel.nearestAirport', 'Nearest airport'),
-      value: `${nearestAirport.iata_code} · ${nearestAirport.distanceKm} km`,
+      // The distance can be absent when the code came from the client-side
+      // fallback rather than `cities.nearest_airport_km`; show the code alone
+      // rather than "LGW · null km".
+      value:
+        nearestAirport.distanceKm != null
+          ? `${nearestAirport.iata_code} · ${nearestAirport.distanceKm} km`
+          : nearestAirport.iata_code,
     });
   if (nearestCodes.length > 1)
     airportFacts.push({

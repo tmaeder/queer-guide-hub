@@ -38,26 +38,21 @@ import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { fetchTagWithCategories, type TagLegalSourceRow } from '@/hooks/usePageFetchers';
 import { TagLegalSource } from '@/components/tags/TagLegalSource';
+import { TagClinicalSource } from '@/components/tags/TagClinicalSource';
 import { buildTagJsonLd } from '@/lib/tags/tagJsonLd';
 import type { CentralizedTag } from '@/hooks/useCentralizedTags';
 import { useTagUsageBreakdown, totalUses } from '@/hooks/useTagUsageBreakdown';
-import {
-  useSimilarTags,
-  useTagReferenceLinks,
-  useSubstanceInteractions,
-} from '@/hooks/useTagRelationships';
+import { useTagReferenceLinks, useSubstanceInteractions } from '@/hooks/useTagRelationships';
 import { useActiveStation } from '@/hooks/useActiveStation';
 import { useMeta } from '@/hooks/useMeta';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { useSafeMode } from '@/providers/SafeModeProvider';
 import { useAgeAffirmation } from '@/hooks/useAgeAffirmation';
 import { extractSections } from '@/lib/htmlSections';
-import { rankSimilarTags } from '@/components/tags/rankSimilarTags';
 import { getCategoryShortName } from '@/components/resources/categoryMeta';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { SinglePage, SingleSection } from '@/components/transit/SinglePage';
 import { RouteStrip, type RouteStation } from '@/components/transit/RouteStrip';
-import { RouteBullet } from '@/components/transit/RouteBullet';
 import { FactGrid, type Fact } from '@/components/transit/FactGrid';
 import { StatLine } from '@/components/transit/StatLine';
 import { ProvenanceLine } from '@/components/transit/ProvenanceLine';
@@ -84,12 +79,21 @@ import { useTagMedicalCodes, countMedicalCodes } from '@/hooks/useTagMedicalCode
 import { useStiProfile, useTagMythFacts } from '@/hooks/useStiProfile';
 
 /** `entity_kind` is a classification, not a state — which is exactly what
- *  DetailMasthead's bordered ink status chip is for. */
+ *  DetailMasthead's bordered ink status chip is for.
+ *
+ *  `concept` is deliberately absent: it is the default kind (`TagsIndex`
+ *  falls back to it for every unclassified row), so a "CONCEPT" chip sat on
+ *  most of the glossary saying nothing. An unmapped kind renders no chip. */
 const ENTITY_KIND_LABELS: Record<string, string> = {
-  concept: 'Concept',
   venue_feature: 'Venue feature',
   practice: 'Practice',
   aesthetic: 'Aesthetic',
+  // Kind axis of the 2026-08-29 recategorization program (20261006090000)
+  descriptor: 'Descriptor',
+  place: 'Place',
+  attribute: 'Attribute',
+  audience: 'Audience',
+  person: 'Person',
 };
 
 /**
@@ -176,9 +180,22 @@ export default function TagDetail() {
   // Curated legal citations, for law tags only. `fetchTagWithCategories` attaches
   // them; the `CentralizedTag` cast above does not know about them, hence the
   // local widening — same shape as the `human_reviewed` read further down.
-  const legalSources = useMemo(
+  // One fetch, two cards. `fetchTagWithCategories` returns every published row for
+  // the tag; splitting here rather than issuing a second query keeps the page at
+  // one round trip. The split is by source_type because "Source of law" and
+  // "Clinical guidance" are different claims about different kinds of authority —
+  // a clinical citation rendered under a legal heading misleads about both.
+  const publishedSources = useMemo(
     () => (tag as { legal_sources?: TagLegalSourceRow[] } | null)?.legal_sources ?? [],
     [tag],
+  );
+  const legalSources = useMemo(
+    () => publishedSources.filter((s) => s.source_type !== 'clinical_guideline'),
+    [publishedSources],
+  );
+  const clinicalSources = useMemo(
+    () => publishedSources.filter((s) => s.source_type === 'clinical_guideline'),
+    [publishedSources],
   );
 
   const primary = tag?.categories?.find((c) => c.is_primary) ?? tag?.categories?.[0];
@@ -187,7 +204,6 @@ export default function TagDetail() {
   const childName = primary?.level === 1 ? primary.name : undefined;
 
   const { data: usage } = useTagUsageBreakdown(tag?.id);
-  const { data: similar } = useSimilarTags(tag?.id ?? null, 15);
   // Fetched here as well as inside the band so the route strip and the rail can
   // both react to whether this term is coded at all. React Query dedupes the
   // request; the band owns the rendering.
@@ -215,11 +231,6 @@ export default function TagDetail() {
   // to Wikipedia.
   const { data: referenceLinks } = useTagReferenceLinks(tag?.id ?? null);
   const references = referenceLinks ?? [];
-
-  const relatedByEmbedding = useMemo(
-    () => rankSimilarTags(similar ?? [], primary?.name, safeMode.enabled).slice(0, 10),
-    [similar, primary?.name, safeMode.enabled],
-  );
 
   // Parses the document with the DOM, so it must not run in the render body.
   const wiki = useMemo(() => {
@@ -350,15 +361,16 @@ export default function TagDetail() {
         name: tag.name,
         slug: tag.slug,
         description,
-        image_url: tag.image_url,
         wikipedia_url: tag.wikipedia_url,
       },
-      legalSources,
+      // All published rows, not just the legal half — buildTagJsonLd picks the
+      // node type per row, and passing only `legalSources` would drop the citation
+      // from every health tag.
+      publishedSources,
     );
     return {
       title: tag.name,
       description,
-      ogImage: tag.image_url || undefined,
       ogType: 'article' as const,
       canonicalPath: `/tags/${tag.slug}`,
       jsonLd,
@@ -367,13 +379,13 @@ export default function TagDetail() {
       // a five-line comment about re-asserting noIndex from the parent.
       noIndex: tag.seo_indexable === false || isAdult,
     };
-    // `legalSources` MUST stay in this list. It arrives with the same fetch as
+    // `publishedSources` MUST stay in this list. It arrives with the same fetch as
     // `tag`, but omitting it is the useMeta-freezing bug: the memo would keep the
     // first-computed jsonLd and publish a DefinedTerm with no `citation`.
     // `isLoading`/`isError` are load-bearing for the same reason: they gate the
     // two branches above, so leaving them out would pin the title to "Loading"
     // for the whole visit — exactly the bug this replaced.
-  }, [tag, legalSources, isAdult, isLoading, isError, t]);
+  }, [tag, publishedSources, isAdult, isLoading, isError, t]);
   useMeta(meta);
 
   if (isLoading) {
@@ -448,28 +460,6 @@ export default function TagDetail() {
           orientation="horizontal"
           label={t('tags.detail.sections', 'Sections')}
         />
-      )}
-
-      {tag.image_url && (
-        <figure className="m-0 bg-muted rounded-element">
-          <img
-            src={tag.image_url}
-            alt={(tag as { image_alt?: string | null }).image_alt ?? ''}
-            loading="lazy"
-            className="block aspect-[16/9] w-full object-cover"
-            onError={(e) => {
-              (e.currentTarget.closest('figure') as HTMLElement | null)?.style.setProperty(
-                'display',
-                'none',
-              );
-            }}
-          />
-          {tag.image_attribution && (
-            <figcaption className="border-t border-border-hairline px-4 py-2 text-2xs text-muted-foreground">
-              {tag.image_attribution}
-            </figcaption>
-          )}
-        </figure>
       )}
 
       {facts.length > 0 && <FactGrid facts={facts} />}
@@ -562,6 +552,7 @@ export default function TagDetail() {
           diagnostic-codes pointer below — a term is either clinical or legal,
           so in practice only one of the two ever renders. */}
       <TagLegalSource sources={legalSources} tagSlug={tag.slug} />
+      <TagClinicalSource sources={clinicalSources} />
 
       {/* The flag an identity HAS (lesbian → lesbian flag). The tag that IS a
           flag gets the full band in the body instead — never both. */}
@@ -660,26 +651,11 @@ export default function TagDetail() {
         {t('tags.detail.searchTagged', 'Search everything tagged {{name}}', { name: tag.name })}
       </LocalizedLink>
 
-      {relatedByEmbedding.length > 0 && (
-        <>
-          <p className="mt-8 text-2xs font-bold uppercase tracking-label text-background/70">
-            {t('tags.detail.moreOnThisLine', 'More on this line')}
-          </p>
-          <ul className="mt-2 flex list-none flex-wrap gap-2 p-0">
-            {relatedByEmbedding.map((r) => (
-              <li key={r.tag_id}>
-                <LocalizedLink
-                  to={`/tags/${encodeURIComponent(r.slug || r.name)}`}
-                  className="border inline-flex items-center gap-2 border-background px-2 py-1 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
-                >
-                  <RouteBullet type="tag" size={20} />
-                  {r.name}
-                </LocalizedLink>
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
+      {/* The embedding-similarity pool ("More on this line") is gone from this
+          page: at its 0.70 floor it published pairs like Tickler↔God as if
+          they were related terms. Related terms are the curated, typed
+          `tag_relations` rendered by TagInterchange; the pool stays as an
+          internal candidate signal for that ontology, never a display. */}
     </section>
   );
 

@@ -68,16 +68,28 @@ Deno.serve(async (req) => {
             longitude,
           )
 
-          if (newCity) {
+          if (newCity.ok) {
             return jsonResponse({
               success: true,
               city_id: newCity.id,
               city_name: newCity.name,
               country_id: r.resolved_country_id,
               country_name: r.resolved_country_name,
-              created: true,
+              created: newCity.created,
             }, 200, req)
           }
+          // A refusal is reported, not swallowed. Falling through to the
+          // country-only branches would answer `city_id: null, success: true`
+          // and leave the caller unable to tell "we declined to guess between
+          // two candidates" from "no such country".
+          return jsonResponse({
+            success: false,
+            error: `City not resolved: ${newCity.reason}`,
+            reason: newCity.reason,
+            candidates: newCity.candidates ?? null,
+            country_id: r.resolved_country_id,
+            country_name: r.resolved_country_name,
+          }, 200, req)
         }
       }
     }
@@ -109,12 +121,13 @@ Deno.serve(async (req) => {
           )
 
           return jsonResponse({
-            success: true,
-            city_id: newCity?.id || null,
-            city_name: newCity?.name || city_name.trim(),
+            success: newCity.ok,
+            city_id: newCity.ok ? newCity.id : null,
+            city_name: newCity.ok ? newCity.name : city_name.trim(),
             country_id: byCode[0].id,
             country_name: byCode[0].name,
-            created: !!newCity,
+            created: newCity.ok && newCity.created,
+            ...(newCity.ok ? {} : { reason: newCity.reason, candidates: newCity.candidates ?? null }),
           }, 200, req)
         }
 
@@ -159,18 +172,45 @@ Deno.serve(async (req) => {
     )
 
     return jsonResponse({
-      success: true,
-      city_id: newCity?.id || null,
-      city_name: newCity?.name || city_name.trim(),
+      success: newCity.ok,
+      city_id: newCity.ok ? newCity.id : null,
+      city_name: newCity.ok ? newCity.name : city_name.trim(),
       country_id: country.id,
       country_name: country.name,
-      created: !!newCity,
+      created: newCity.ok && newCity.created,
+      ...(newCity.ok ? {} : { reason: newCity.reason, candidates: newCity.candidates ?? null }),
     }, 200, req)
   } catch (err: unknown) {
     console.error('resolve-or-create-city error:', err)
     return errorResponse('Internal server error', 500, req)
   }
 })
+
+/**
+ * Resolve a city name to a city_id, creating one only when nothing matches and
+ * there is evidence to justify it.
+ *
+ * THE NAME IS NOW A LIE IN ONE DIRECTION, DELIBERATELY: this can return a
+ * refusal. Both callers below used to reach the raw insert with no probe of any
+ * kind — the fast path at the top of the handler probes via
+ * `resolve_city_and_country`, but the two country fallbacks (country-by-code,
+ * and country-resolved-by-name) skipped straight to creation. That is how a
+ * name the database already holds under a different spelling becomes a second
+ * row.
+ *
+ * GEOCODING MOVED AHEAD OF THE DECISION. It used to happen inside the insert
+ * path, i.e. after the resolve had already been given up on. Coordinates are
+ * evidence: they let the resolver see that a city 40 m away already exists, and
+ * they clear its bar for creating a genuinely new one. Fetching them first is
+ * what makes the probe worth running.
+ *
+ * The country-checked Photon lookup below is unchanged and is the reason this
+ * wrapper still exists at all: a country-constrained query like
+ * "Lucerne, Germany" returns Berlin, and accepting it would mislocate the city.
+ */
+type CityResolution =
+  | { ok: true; id: string; name: string; created: boolean }
+  | { ok: false; reason: string; candidates?: unknown }
 
 async function createCity(
   supabase: SupabaseClient,
@@ -179,102 +219,86 @@ async function createCity(
   countryName: string,
   latitude?: number,
   longitude?: number,
-): Promise<{ id: string; name: string } | null> {
-  try {
-    // Geocode if no coordinates provided
-    let lat = latitude
-    let lng = longitude
-    let regionName: string | null = null
+): Promise<CityResolution> {
+  let lat = latitude
+  let lng = longitude
+  let regionName: string | null = null
 
-    if (lat == null || lng == null) {
-      // Resolve the expected ISO-2 country code so we can reject a geocode hit
-      // that landed in the wrong country. A country-constrained query like
-      // "Lucerne, Germany" otherwise returns Berlin and mislocates the city.
-      let expectedCode: string | null = null
-      try {
-        const { data: co } = await supabase.from('countries').select('code').eq('id', countryId).single()
-        expectedCode = co?.code ? String(co.code).toUpperCase() : null
-      } catch { /* fall through — validate against name only */ }
+  if (lat == null || lng == null) {
+    // Resolve the expected ISO-2 country code so we can reject a geocode hit
+    // that landed in the wrong country.
+    let expectedCode: string | null = null
+    try {
+      const { data: co } = await supabase.from('countries').select('code').eq('id', countryId).single()
+      expectedCode = co?.code ? String(co.code).toUpperCase() : null
+    } catch { /* fall through — validate against name only */ }
 
-      try {
-        const geocodeUrl = `https://photon.komoot.io/api?q=${encodeURIComponent(`${cityName}, ${countryName}`)}&limit=5&lang=en`
-        const geoRes = await fetch(geocodeUrl)
-        if (geoRes.ok) {
-          const geoData = await geoRes.json()
-          const features = Array.isArray(geoData.features) ? geoData.features : []
-          // Accept only a result whose country matches the expected one.
-          const match = features.find((f: { properties?: { countrycode?: string } }) => {
-            const cc = (f?.properties?.countrycode || '').toUpperCase()
-            return !expectedCode || cc === expectedCode
-          })
-          if (match) {
-            const coords = match.geometry?.coordinates
-            if (Array.isArray(coords) && coords.length === 2) {
-              lng = coords[0]
-              lat = coords[1]
-            }
-            regionName = match.properties?.state || null
+    try {
+      const geocodeUrl = `https://photon.komoot.io/api?q=${encodeURIComponent(`${cityName}, ${countryName}`)}&limit=5&lang=en`
+      const geoRes = await fetch(geocodeUrl)
+      if (geoRes.ok) {
+        const geoData = await geoRes.json()
+        const features = Array.isArray(geoData.features) ? geoData.features : []
+        // Accept only a result whose country matches the expected one.
+        const match = features.find((f: { properties?: { countrycode?: string } }) => {
+          const cc = (f?.properties?.countrycode || '').toUpperCase()
+          return !expectedCode || cc === expectedCode
+        })
+        if (match) {
+          const coords = match.geometry?.coordinates
+          if (Array.isArray(coords) && coords.length === 2) {
+            lng = coords[0]
+            lat = coords[1]
           }
-          // No same-country match → leave coords null rather than snap to a
-          // wrong-country capital.
+          regionName = match.properties?.state || null
         }
-      } catch (geoErr) {
-        console.warn('Geocoding failed for new city, inserting without coordinates:', geoErr)
+        // No same-country match → leave coords null rather than snap to a
+        // wrong-country capital. The resolver will then refuse to create for
+        // lack of evidence, which is the correct outcome: a city we cannot
+        // place is a city we could never de-duplicate later.
       }
+    } catch (geoErr) {
+      console.warn('Geocoding failed for new city, resolving without coordinates:', geoErr)
     }
-
-    // Insert with ON CONFLICT handling (race condition safe)
-    const insertData: Record<string, unknown> = {
-      name: cityName,
-      country_id: countryId,
-    }
-    if (lat != null) insertData.latitude = lat
-    if (lng != null) insertData.longitude = lng
-    if (typeof regionName === 'string') insertData.region_name = regionName
-
-    const { data: inserted, error: insertErr } = await supabase
-      .from('cities')
-      .insert(insertData)
-      .select('id, name')
-      .single()
-
-    if (insertErr) {
-      // If duplicate, try to find existing
-      if (insertErr.code === '23505') {
-        const { data: existing } = await supabase
-          .from('cities')
-          .select('id, name, duplicate_of_id')
-          .eq('country_id', countryId)
-          .ilike('name', cityName)
-          .limit(1)
-          .single()
-
-        if (!existing) return null
-
-        // The row we collided with may since have been merged away. Follow it
-        // to the canonical city instead of handing back a duplicate — callers
-        // stamp this id onto content, and a merged city_id resurfaces the very
-        // rows a merge was meant to consolidate.
-        if (existing.duplicate_of_id) {
-          const { data: canonical } = await supabase
-            .from('cities')
-            .select('id, name')
-            .eq('id', existing.duplicate_of_id)
-            .is('duplicate_of_id', null)
-            .maybeSingle()
-          if (canonical) return canonical
-        }
-
-        return { id: existing.id, name: existing.name }
-      }
-      console.error('Error inserting city:', insertErr)
-      return null
-    }
-
-    console.log(`Created new city: ${cityName} (${countryName}) with id ${inserted.id}`)
-    return inserted
-  } catch (err) {
-    console.error('createCity error:', err)
-    return null
   }
+
+  const { data, error } = await supabase.rpc('city_resolve_or_create', {
+    p_name: cityName,
+    p_country_id: countryId,
+    p_region_hint: regionName,
+    p_lat: lat ?? null,
+    p_lng: lng ?? null,
+    p_source_slug: 'admin-resolver',
+    // An admin is on the other end of this endpoint (requireAdmin gates the
+    // handler), so a deliberate create with no coordinates is allowed here —
+    // unlike the automated geocode drain, where it is exactly the shape that
+    // produced unreconcilable duplicates.
+    p_actor: 'admin',
+  })
+
+  if (error) {
+    console.error('city_resolve_or_create failed:', error.message)
+    return { ok: false, reason: 'resolver_error' }
+  }
+
+  const row = (Array.isArray(data) ? data[0] : data) as
+    | { city_id: string | null; action: string; reason: string | null; candidates: unknown }
+    | undefined
+  if (!row) return { ok: false, reason: 'resolver_empty' }
+
+  if (row.action === 'refused' || !row.city_id) {
+    return { ok: false, reason: row.reason ?? 'refused', candidates: row.candidates }
+  }
+
+  const { data: city } = await supabase
+    .from('cities')
+    .select('id, name')
+    .eq('id', row.city_id)
+    .maybeSingle()
+  if (!city) return { ok: false, reason: 'resolved_city_missing' }
+
+  if (row.action === 'created') {
+    console.log(`Created new city: ${city.name} (${countryName}) with id ${city.id}`)
+  }
+  return { ok: true, id: city.id, name: city.name, created: row.action === 'created' }
 }

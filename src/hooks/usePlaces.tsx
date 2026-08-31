@@ -59,7 +59,11 @@ const STALE_TIME = 15 * 60 * 1000; // 15 minutes
 
 export function useOptimizedCountries(filters?: PlacesFilters) {
   const fetchCountries = async (): Promise<Country[]> => {
-    let query = supabase.from('countries').select('*').is('duplicate_of_id', null).order('name', { ascending: true });
+    let query = supabase
+      .from('countries')
+      .select('*')
+      .is('duplicate_of_id', null)
+      .order('name', { ascending: true });
 
     if (filters?.search) {
       query = query.or(`name.ilike.%${filters.search}%,capital.ilike.%${filters.search}%`);
@@ -117,7 +121,19 @@ export function useOptimizedCities(filters?: PlacesFilters & { countryId?: strin
     // surface on the explore map, listings, or search (see find_nearest_city migration).
     // nullsFirst:false is load-bearing — Postgres puts NULLs first on DESC, which
     // floated population-less ingest stubs above Berlin/Munich on country pages.
-    let query = supabase.from('cities').select('*').is('duplicate_of_id', null).not('slug', 'like', 'tmp-%').order('population', { ascending: false, nullsFirst: false });
+    //
+    // shell_status is the archive gate: 'ghost' is the disposition
+    // archive_city_as_nonplace writes, 'merged' rides duplicate_of_id. This is
+    // what cities_directory() and sitemap-places.xml.ts already filter on, but
+    // this hook — which is what CountryDetail renders — did not, so archived
+    // cities kept appearing on country pages.
+    let query = supabase
+      .from('cities')
+      .select('*')
+      .is('duplicate_of_id', null)
+      .not('slug', 'like', 'tmp-%')
+      .not('shell_status', 'in', '("ghost","merged")')
+      .order('population', { ascending: false, nullsFirst: false });
 
     if (filters?.countryId) {
       query = query.eq('country_id', filters.countryId);
@@ -223,22 +239,26 @@ export function useOptimizedCity(citySlug: string) {
     // Try slug first, fall back to ID for backwards compatibility
     const { data, error } = await supabase
       .from('cities')
-      .select('*, countries(id, name, slug, code, currency, equality_score, flag_emoji, lgbti_criminalization)')
+      .select(
+        '*, countries(id, name, slug, code, currency, equality_score, flag_emoji, lgbti_criminalization)',
+      )
       .eq('slug', citySlug)
       .maybeSingle();
 
     if (error) throw error;
-    if (data) return followMerged(data as CityWithCountryEmbed);
+    if (data) return rejectGhost(await followMerged(data as CityWithCountryEmbed));
 
     // Fallback: try as ID (UUID or numeric)
     const { data: byId, error: idError } = await supabase
       .from('cities')
-      .select('*, countries(id, name, slug, code, currency, equality_score, flag_emoji, lgbti_criminalization)')
+      .select(
+        '*, countries(id, name, slug, code, currency, equality_score, flag_emoji, lgbti_criminalization)',
+      )
       .eq('id', citySlug)
       .maybeSingle();
 
     if (idError) throw idError;
-    return followMerged(byId as CityWithCountryEmbed | null);
+    return rejectGhost(await followMerged(byId as CityWithCountryEmbed | null));
   };
 
   // Merged duplicates (duplicate_of_id set) keep their old slug; resolve it to
@@ -250,12 +270,27 @@ export function useOptimizedCity(citySlug: string) {
     if (!city || !canonicalId) return city;
     const { data: canonical, error } = await supabase
       .from('cities')
-      .select('*, countries(id, name, slug, code, currency, equality_score, flag_emoji, lgbti_criminalization)')
+      .select(
+        '*, countries(id, name, slug, code, currency, equality_score, flag_emoji, lgbti_criminalization)',
+      )
       .eq('id', canonicalId)
       .maybeSingle();
     if (error) throw error;
     return (canonical as CityWithCountryEmbed | null) ?? city;
   };
+
+  /**
+   * A `ghost` city is archived — `archive_city_as_nonplace` writes it for a row
+   * that is not a place at all (a Bundesland, a country in German, a continent).
+   * Its detail page must 404 rather than publish a "LGBTQ+ guide to Hessen".
+   *
+   * This gates the RESOLVED row, not the query, because a `merged` row still has
+   * to be fetchable for `followMerged` to redirect through it. Applying the
+   * filter in the select would break every merge redirect. Gating the result
+   * also correctly 404s a merged row whose canonical target is itself a ghost.
+   */
+  const rejectGhost = (city: CityWithCountryEmbed | null): CityWithCountryEmbed | null =>
+    city && (city as { shell_status?: string | null }).shell_status === 'ghost' ? null : city;
 
   const {
     data: city,
@@ -295,8 +330,18 @@ export async function fetchCitiesByCountry(countryId: string): Promise<CityWithC
 
 export async function searchLocations(query: string) {
   const [countriesResult, citiesResult] = await Promise.all([
-    supabase.from('countries').select('*, regions (*)').is('duplicate_of_id', null).ilike('name', `%${query}%`),
-    supabase.from('cities').select('*, countries (*)').is('duplicate_of_id', null).not('slug', 'like', 'tmp-%').ilike('name', `%${query}%`).limit(20),
+    supabase
+      .from('countries')
+      .select('*, regions (*)')
+      .is('duplicate_of_id', null)
+      .ilike('name', `%${query}%`),
+    supabase
+      .from('cities')
+      .select('*, countries (*)')
+      .is('duplicate_of_id', null)
+      .not('slug', 'like', 'tmp-%')
+      .ilike('name', `%${query}%`)
+      .limit(20),
   ]);
   return {
     countries: countriesResult.data || [],

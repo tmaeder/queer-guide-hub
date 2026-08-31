@@ -226,7 +226,6 @@
       "title": "Líneas de crisis, 24 horas",
       "body": "Línea de atención trans, apoyo en crisis LGBT+ y números de emergencia locales, ordenados por país y siempre a un clic desde cualquier página."
     },
-    "osmAttribution": "Diagramas de transporte derivados de © colaboradores de OpenStreetMap (ODbL)",
     "reportSomething": "Reportar algo",
     "hotlines": "Líneas de ayuda",
     "antiDiscrimination": {
@@ -451,7 +450,25 @@
       "moved": "Lugar movido",
       "removed": "Lugar eliminado",
       "dayUpdated": "Día actualizado",
-      "dragHandleAria": "Arrastra para reordenar"
+      "dragHandleAria": "Arrastra para reordenar",
+      "a11yCoverage": "[ES] {{withData}} of {{total}} places here publish accessibility information. Nothing is ruled out for staying silent.",
+      "applied": "[ES] Added {{count}} stops",
+      "apply": "[ES] Add {{count}} stops to the trip",
+      "applyFailed": "[ES] Could not add the plan",
+      "budgetCoverage": "[ES] {{withData}} of {{total}} places here list a price. Budget nudges the order; it does not filter.",
+      "event": "[ES] Event",
+      "exhausted": "[ES] Nothing left. The matches here are already on other days.",
+      "loadFailed": "[ES] Could not load places for these cities. Try again in a moment.",
+      "matchesNeeds": "[ES] Matches your needs",
+      "needDates": "[ES] Set the trip dates and a destination city, and the days can be built from them.",
+      "noCandidate": "[ES] Nothing listed here for this time of day.",
+      "paceLabel": "[ES] How full a day",
+      "reroll": "[ES] Try another",
+      "summary": "[ES] {{filled}} of {{requested}} slots filled",
+      "timeUnknown": "[ES] time of day not known",
+      "tooFew": "[ES] Only {{count}} places here match that. Not enough to build days from. Try another vibe, or add stops by hand.",
+      "vibeAny": "[ES] A bit of everything",
+      "vibeLabel": "[ES] What you are after"
     },
     "map": {
       "emptyNoPlaces": "Añade lugares para verlos en el mapa",
@@ -651,7 +668,8 @@
       "reservations": "Reservas",
       "packing": "Equipaje",
       "collaborate": "Colaborar",
-      "journal": "Diario"
+      "journal": "Diario",
+      "buildDays": "[ES] Build the days"
     },
     "today": {
       "offlineBanner": "Sin conexión — mostrando tu itinerario guardado.",
@@ -2298,10 +2316,7 @@
       "pride": {
         "title": "Pride esta temporada",
         "window": "Próximos 4 meses",
-        "empty": "No hay eventos Pride próximos.",
-        "safety": "Índice de igualdad",
-        "equalityTooltip": "La puntuación de igualdad refleja las protecciones legales LGBTQ+ de este país. Más alta es más segura.",
-        "equalityAria": "Puntuación de igualdad {{score}}: toca para explicación"
+        "empty": "No hay eventos Pride próximos."
       },
       "inspiration": {
         "villages": "Queer Villages",
@@ -2866,6 +2881,8 @@
       "about": {
         "status": "[ES] Status",
         "capital": "[ES] Capital city",
+        "regionalCapital": "[ES] Regional capital",
+        "capitalOfRegion": "[ES] Capital of",
         "majorCity": "[ES] Major city",
         "region": "[ES] Region",
         "timezone": "[ES] Timezone",
@@ -2897,6 +2914,7 @@
       }
     },
     "capital": "[ES] Capital",
+    "regionalCapital": "[ES] Regional capital",
     "continentClear": "[ES] Clear",
     "continentsTitle": "[ES] Continents",
     "counting": "[ES] Counting…",
@@ -4463,6 +4481,9 @@
         "slang": "Jerga"
       },
       "sourceOfLaw": "Fuente del derecho",
+      "clinicalGuidance": "Guía clínica",
+      "guidanceEdition": "Edición",
+      "notMedicalAdvice": "Las definiciones proceden de guías clínicas publicadas. No son consejo médico. Sigue el enlace para ver el detalle clínico y habla con personal sanitario sobre tu propio caso.",
       "lawJurisdiction": "Jurisdicción",
       "lawInternational": "Internacional",
       "lawAdopted": "Adoptada",

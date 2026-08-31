@@ -112,8 +112,40 @@ export function detailHref({ type, slug, id, title, isCountry }: EntityRef): str
  * content — instead of a fabricated `/type/<uuid>` link.
  */
 export function hrefForEntity(ref: EntityRef): string {
-  return (
-    detailHref(ref) ??
-    `/search?q=${encodeURIComponent(ref.title || ref.slug || '')}`
-  );
+  return detailHref(ref) ?? `/search?q=${encodeURIComponent(ref.title || ref.slug || '')}`;
+}
+
+/**
+ * A search hit's field shape, structurally. Deliberately NOT `SearchResult`
+ * from `@/hooks/useSearch` — this module is imported by that hook's consumers
+ * and a lib→hooks import would close a cycle.
+ */
+export interface SearchHitRef {
+  type: string;
+  objectID: string;
+  slug?: string | null;
+  title?: string | null;
+  metadata?: Record<string, unknown> | null;
+}
+
+/**
+ * Resolve a search hit to its destination. This mapping used to live inline in
+ * `SearchResults.navigateToResult`, which was the ONLY thing that knew how to
+ * turn a hit into a URL — so the result rows could only ever be click handlers,
+ * never anchors. Extracted so the row itself can render a real `<a href>`.
+ *
+ * `title` is resolved by the caller (a hit may carry `name` instead of
+ * `title`), because for tags the title IS the routing key.
+ */
+export function hrefForSearchResult(hit: SearchHitRef, title?: string): string {
+  return hrefForEntity({
+    type: hit.type,
+    // Never send the objectID as a slug — id-keyed types (group/user) resolve
+    // via `id`; slug-keyed types fall back to a fresh search when no canonical
+    // slug exists rather than a /type/<uuid> dead link.
+    slug: hit.slug || (hit.metadata?.slug as string | undefined),
+    id: hit.objectID,
+    title: title ?? hit.title,
+    isCountry: Boolean(hit.metadata?.isCountry),
+  });
 }

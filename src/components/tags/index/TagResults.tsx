@@ -153,13 +153,14 @@ export function TagResults({
       rowClassName={GRID_CLASS}
       estimateRowHeight={268}
       itemKey={(tag) => tag.id}
-      renderItem={(tag) => (
+      renderItem={(tag, i) => (
         <TagIndexCard
           tag={tag}
           uses={usageCounts[tag.name] || 0}
           line={lineFor(tag)}
           categoryLabel={categoryLabelFor(tag)}
           aliasMatch={aliasIds?.has(tag.id)}
+          index={i}
         />
       )}
     />

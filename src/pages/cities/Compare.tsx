@@ -9,6 +9,7 @@ import {
   type GeoSelection,
 } from '@/components/trips/create/CityCountryAutocomplete';
 import { useCityCompareData, type CityComparison } from '@/hooks/useCityCompareData';
+import { cityAirportCell } from '@/pages/city-detail/cityAirports';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { CityNetwork } from '@/components/home/subway/CityNetwork';
 import { hasCityNetwork } from '@/components/home/subway/cityNetworkGeometry';
@@ -21,8 +22,14 @@ import { hasCityNetwork } from '@/components/home/subway/cityNetworkGeometry';
  *
  * The comparison table is intentionally lean — equality score, currency,
  * population, language, timezone, airport. No equality-rights matrix yet
- * (that needs per-right columns on `countries` which don't exist; see
- * CompareRightsSideBySide for the country-level approximation).
+ * (that needs per-right columns on `countries` which don't exist).
+ *
+ * This is now the ONLY surface that prints the composite 0-100 figure to a
+ * reader. It survived the 2026-08-30 removal because a comparison tool is a
+ * place where a number is the point and the reader has asked for it, unlike a
+ * destination page where it sat next to a legal verdict and read as a
+ * measurement of safety. The country-level peer table that did the latter
+ * (`CompareRightsSideBySide`) was deleted.
  */
 export default function CitiesCompare() {
   const { t } = useTranslation();
@@ -176,8 +183,8 @@ function ComparisonTable({
     },
     {
       label: t('cities.compare.row.airport', 'Airport'),
-      aValue: a.major_airport_code || '—',
-      bValue: b.major_airport_code || '—',
+      aValue: cityAirportCell(a, a.major_airport_code),
+      bValue: cityAirportCell(b, b.major_airport_code),
     },
   ];
 

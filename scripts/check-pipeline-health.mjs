@@ -126,7 +126,83 @@ if (!hygieneRes.ok) {
     console.error('  Find the writer that set review_status without an UPDATE the promotion trigger can see.')
     process.exit(1)
   }
+  // City duplication (2026-08-25). Every unique key on `cities` keys on the
+  // string, so exact-name duplicates are already impossible — measured 0 groups
+  // over 5,552 live rows — and the class that survives is "same place, different
+  // string": Kapstadt beside Cape Town, Teheran beside Tehran. Nothing counted
+  // it before this block, so a writer that starts minting exonyms again was
+  // invisible.
+  //
+  // Baselines are the live values at introduction. near_pairs FAILS on growth
+  // rather than on an absolute number, because the standing 196 are existing
+  // work for the coordinate sweep arm and clearing them is a separate,
+  // human-reviewed job — what must never happen is the number going UP.
+  const city = hygiene.city_dup_signals ?? {}
+  const CITY_NEAR_PAIR_BASELINE = 196
+  const nearPairs = Number(city.near_pairs ?? 0)
+  if (nearPairs > CITY_NEAR_PAIR_BASELINE) {
+    console.error(`✗ City near-duplicate pairs rose to ${nearPairs} (baseline ${CITY_NEAR_PAIR_BASELINE})`)
+    console.error('  A path is creating cities without going through city_resolve_or_create.')
+    console.error('  Check the five writers: backfill-venue-cities, resolve-or-create-city,')
+    console.error('  venue-import-helpers, commit_city_staging_item, useCMSEditor.')
+    process.exit(1)
+  }
+  // The queue is the sink for every refusal. A refusal nobody drains is a
+  // silent loss, which is the exact failure refusing exists to prevent — so
+  // this is about the drain being ALIVE, not about the depth. Phrased as
+  // depth AND age together: a real import burst is legitimately deep for a
+  // few minutes; a dead drain is deep and old.
+  const qPending = Number(city.resolve_queue_pending ?? 0)
+  const qOldestH = Number(city.resolve_queue_oldest_pending_hours ?? 0)
+  if (qPending > 50 && qOldestH > 48) {
+    console.error(`✗ city_resolve_queue: ${qPending} pending, oldest ${qOldestH}h — the drain is dead`)
+    console.error('  Expected job: city_resolve_drain (*/15). Check admin_automations.enabled and cron.job.')
+    process.exit(1)
+  }
+  // Warnings only: these are the machinery that makes prevention structural,
+  // and they improve over nights, not over one CI run. A stall is worth saying
+  // out loud — city-factual-backfill once filled nothing for 36 days without
+  // anything going red.
+  const qidPct = Number(city.qid_coverage_pct ?? 0)
+  if (qidPct < 51) {
+    console.warn(`⚠ City Wikidata coverage fell to ${qidPct}% (was 51% at baseline) — city_qid_gap_link may be stalled`)
+  }
+  if (Number(city.alias_rows ?? 0) <= 386 && Number(city.cities_without_aliases ?? 0) > 0) {
+    console.warn(`⚠ city_aliases still at ${city.alias_rows} rows with ${city.cities_without_aliases} cities uncovered — city_alias_harvest has not run`)
+  }
   console.log(`✓ Cron hygiene clean (${hygiene.cron_total} active jobs); staging pending_review=${pending}, stale_pending=${staleTotal}`)
+  console.log(`✓ City dup signals: near_pairs=${nearPairs}, qid=${qidPct}%, aliases=${city.alias_rows}, queue=${qPending}`)
+}
+
+// 5a. Wrong-entity Wikidata links on the glossary (2026-08-29). tag-enrichment-sweep
+//     resolved a tag's QID by fetching the Wikipedia summary of its RAW NAME and
+//     adopting whatever the redirect served — `golden-shower` → Cassia fistula,
+//     `passing` → Q4 death, which then published ICPC-2 A96 through the weekly
+//     tag_medical_codes_sync. 1,535 identifiers were cleared. The sweep's work-list is
+//     `wikidata_id is null`, i.e. exactly those rows, so it revisits every one of them
+//     and the cohort regrows the moment the guard in _shared/tag-wiki-guard.ts stops
+//     holding. NO BASELINE ALLOWANCE: the RPC only reports a tag that re-acquired the
+//     SAME id it was cleared of, which the guard makes unreachable, so one row means
+//     the guard is gone — not that a human relinked something.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/tag_wikidata_repair_regressions`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    console.warn(`⚠ tag_wikidata_repair_regressions → HTTP ${res.status} (RPC missing?)`)
+  } else {
+    const rows = await res.json()
+    if (Array.isArray(rows) && rows.length > 0) {
+      console.error(`✗ ${rows.length} glossary tag(s) re-acquired the wrong Wikidata id they were cleared of:`)
+      for (const r of rows.slice(0, 10)) console.error(`    /tags/${r.slug} → ${r.wikidata_id}`)
+      console.error('  tag-enrichment-sweep is adopting name-resolved identities again.')
+      console.error('  Check mayAdoptWikiIdentity in supabase/functions/_shared/tag-wiki-guard.ts is still called.')
+      process.exit(1)
+    }
+    console.log('✓ No glossary tag has re-acquired a cleared wrong-entity Wikidata id')
+  }
 }
 
 // 5b. Automation run-tracking gaps (2026-09). Until this landed, 142 of 144
@@ -251,6 +327,82 @@ if (!hygieneRes.ok) {
   }
 }
 
+// 6b. Auto-paused-then-recovered automations, for EVERY slug (2026-08-25).
+//
+//    Check 6 above has described this exact mechanism in prose since 2026-08-22
+//    — "a later success resets consecutive_failures/last_run_status but never
+//    re-enables the row" — while testing it for ONE automation out of ~240.
+//    Four days later the same mechanism took `workflow_dispatcher_1min` out and
+//    nothing noticed for 40 hours: it is the sole stepper for every DAG, so all
+//    seven ingestion pipelines stopped mid-run, news/events/venue ingest went to
+//    ~0 rows/day, and push notifications died with it. It was the THIRD
+//    occurrence (search_reindex_drain 2026-08-22, admin_automation_reap
+//    2026-08-16). A sentinel that names the failure mode but scopes itself to a
+//    single slug is how a known bug keeps landing.
+//
+//    THE PAUSE ERASES ITS OWN EVIDENCE, which is what makes this hard to see by
+//    hand: auto-pause sets enabled=false, then any later success resets
+//    consecutive_failures to 0 and last_run_status to 'success' WITHOUT
+//    re-enabling. The row then reads exactly like a deliberate human retirement.
+//    The only durable record is `summary.auto_paused` on the historical run row,
+//    so that — not the automation row — is what this reads.
+//
+//    FAIL vs WARN is the whole design. "Disabled" alone cannot fail the build:
+//    plenty of rows are legitimately retired or genuinely broken
+//    (marketplace_variant_backfill sits at 288 real consecutive failures and
+//    SHOULD stay paused). The false-disable has a distinct shape — it was
+//    auto-paused, and then it went back to succeeding, and it is still off:
+//
+//        auto_paused in history  AND  consecutive_failures = 0
+//                                AND  last_run_status = 'success'
+//                                AND  enabled = false
+//
+//    Verified against production 2026-08-25: this rule flags exactly the
+//    false-disables (it caught marketplace_taxonomy_backfill, an 8th victim of
+//    the same sweep that the by-hand restore had missed — 21,613 listings still
+//    unclassified, so demonstrably not a retirement) and leaves all ten
+//    genuinely-paused/retired rows on the warn path.
+{
+  const since = new Date(Date.now() - 14 * 864e5).toISOString()
+  const disabled = await get('admin_automations?enabled=is.false&select=id,slug,consecutive_failures,last_run_status')
+  if (disabled.length) {
+    const ids = disabled.map((a) => a.id).join(',')
+    const pausedRuns = await get(
+      `admin_automation_runs?automation_id=in.(${ids})&summary->>auto_paused=eq.true&started_at=gte.${since}&select=automation_id`,
+    )
+    const pausedIds = new Set(pausedRuns.map((r) => r.automation_id))
+    const suspects = disabled.filter((a) => pausedIds.has(a.id))
+    // Recovered but still switched off — the row's own columns say "healthy".
+    const falseDisabled = suspects.filter(
+      (a) => Number(a.consecutive_failures) === 0 && a.last_run_status === 'success',
+    )
+    const stillFailing = suspects.filter((a) => !falseDisabled.includes(a))
+
+    if (stillFailing.length) {
+      console.warn(
+        `⚠ ${stillFailing.length} automation(s) auto-paused and still failing (expected to stay off): ` +
+          stillFailing.map((a) => `${a.slug}(${a.consecutive_failures})`).join(', '),
+      )
+    }
+    if (falseDisabled.length) {
+      console.error(
+        `✗ ${falseDisabled.length} automation(s) auto-paused, then RECOVERED, and never re-enabled: ` +
+          falseDisabled.map((a) => a.slug).join(', '),
+      )
+      console.error('  Their last recorded run SUCCEEDED — the pause was a transient blip, not a decision.')
+      console.error('  They are off and, if pg_cron has already been reconciled, unscheduled as well.')
+      console.error('  Restore: UPDATE admin_automations SET enabled=true, consecutive_failures=0 WHERE slug IN (…);')
+      console.error("  then SELECT sync_automations_to_cron(true) — and CHECK its `recreated` list actually names them:")
+      console.error("  an action of type 'rpc' carries no action.command, so the reconciler CANNOT reschedule it and")
+      console.error('  the cron must be recreated from the migration that first scheduled it.')
+      process.exit(1)
+    }
+    if (!falseDisabled.length) {
+      console.log(`✓ No auto-paused-then-recovered automations (${disabled.length} disabled row(s) checked)`)
+    }
+  }
+}
+
 // 7. Embedding drain (2026-08). `workers/ingest` is the ONLY writer of the
 //    1024-dim vectors in content_embeddings, which feed search_embeddings — the
 //    vector arm of search_hybrid. Nothing checked it, and it had been starving
@@ -309,6 +461,166 @@ if (!hygieneRes.ok) {
     } else {
       console.log(`✓ embedding drain healthy (depth=${depth}, last write ${lastMin.toFixed(0)}min ago)`)
     }
+  }
+}
+
+// 8. LLM provider chain (2026-08). NVIDIA sits in front of Cloudflare Workers
+//    AI for every edge-function chat call, and it is NOT behind AI Gateway
+//    (unsupported provider) — so llm_call_log.provider is the only place the
+//    path is visible at all. Two failure modes are invisible without this:
+//
+//    (a) NVIDIA silently serving NOTHING. The rate limiter denies when its RPC
+//        is unreachable, which is the safe direction but means a function
+//        deployed ahead of its migration falls back 100% of the time and just
+//        looks like a normal Cloudflare bill.
+//    (b) The circuit stuck open long after the cause cleared.
+//
+//    WARN-ONLY, ALL OF IT. NVIDIA being unavailable is the fallback working
+//    correctly, not an outage — nothing is broken, we are just paying
+//    Cloudflare. Failing CI on it would train people to ignore this check.
+{
+  const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString()
+  const res = await fetch(
+    `${BASE}/rest/v1/llm_call_log?select=provider&called_at=gte.${since}`,
+    { headers },
+  )
+  if (!res.ok) {
+    console.warn(`⚠ llm_call_log probe → HTTP ${res.status} (provider column missing?)`)
+  } else {
+    const rows = await res.json()
+    const by = {}
+    for (const r of rows) by[r.provider ?? 'unattributed'] = (by[r.provider ?? 'unattributed'] ?? 0) + 1
+    const total = rows.length
+    const nvidia = by.nvidia ?? 0
+
+    const cb = await fetch(
+      `${BASE}/rest/v1/api_circuit_breakers?select=state,open_until,failure_count,last_error&api_name=eq.llm.nvidia`,
+      { headers },
+    )
+    const breaker = cb.ok ? (await cb.json())[0] : null
+
+    if (breaker?.state === 'open') {
+      // last_error carries the provider's own response body — the only source
+      // for what exhaustion actually looks like on this API, which the router's
+      // deliberately-wide 4xx arm is waiting on before it can be narrowed.
+      console.warn(
+        `⚠ llm.nvidia circuit OPEN until ${breaker.open_until} after ${breaker.failure_count} failure(s): ` +
+          `${String(breaker.last_error ?? '').slice(0, 200)}`,
+      )
+    } else if (total > 0 && nvidia === 0) {
+      console.warn(
+        `⚠ ${total} LLM calls in 24h and NOT ONE went to NVIDIA (${JSON.stringify(by)}) — ` +
+          'check NVIDIA_API_KEY is set and that migration 20261014100000 (llm_rate_acquire) has applied; ' +
+          'a missing rate RPC makes the router fall back silently, every time',
+      )
+    } else if (total === 0) {
+      console.log('✓ LLM provider chain: no calls in 24h (nothing to report)')
+    } else {
+      console.log(
+        `✓ LLM provider chain: ${((nvidia / total) * 100).toFixed(0)}% of ${total} calls on NVIDIA ` +
+          `(${JSON.stringify(by)})`,
+      )
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// N. Circuit breakers — EVERY row, not just llm.nvidia
+//
+// This is the blind spot §3.7 of docs/architecture/open-data-integration.md
+// names, and 2026-08-30 is what it costs: `eventbrite` reached **500 recorded
+// failures with success_count 0** — never once green since the row was created
+// on 2026-03-30 — while `admin_automations.ev_fill_eventbrite` reported
+// `last_run_status='success'` every 6 hours and stayed `enabled`. The two
+// layers disagree by construction whenever a source swallows its per-item
+// errors and still returns HTTP 200: `recordFailure` has already run inside
+// `withCircuitBreaker`, but a 200 RESETS `consecutive_failures`, so auto-pause
+// is structurally unreachable and nothing anywhere goes red. The breaker row is
+// the ONLY layer that told the truth, and nothing was reading it.
+//
+// The signal is `success_count === 0` — "this source has never once worked" —
+// NOT the failure count. A high count on a source that also succeeds is a flaky
+// upstream; zero successes ever is a dead endpoint, a rejected key, or a wrong
+// URL, and it will not fix itself.
+//
+// DO NOT rewrite this to key on `last_success_at`. That column is only written
+// by an explicit `recordSuccess()`, so a source that runs fine but never calls
+// it stays frozen forever: `ilga_graphql` reads **2026-04-21** while ILGA
+// actually imports nightly and updated 239/250 countries this morning. Judging
+// freshness by that column is how a previous session concluded a four-month
+// outage that was not happening.
+{
+  const res = await fetch(
+    `${BASE}/rest/v1/api_circuit_breakers` +
+      `?select=api_name,state,failure_count,success_count,last_failure_at&state=eq.open`,
+    { headers },
+  )
+  if (!res.ok) {
+    console.warn(`⚠ api_circuit_breakers probe → HTTP ${res.status}`)
+  } else {
+    const open = await res.json()
+
+    // Known and deliberately not-fixed. A reason is mandatory: this map is the
+    // difference between "we decided to live with it" and "nobody looked". Same
+    // contract as the auto-paused-and-still-failing carve-out for automations —
+    // a documented dead source warns; an UNDOCUMENTED one fails.
+    const DISPOSITIONED = {
+      eventbrite:
+        'RETIRED 2026-08-30 (20261107100000). eventbriteapi.com/v3/events/search/ returns 404 ' +
+        'with AND without credentials — the 404 precedes auth, so no key fixes it and there is no ' +
+        'successor endpoint. Cron unscheduled, registry row disabled, and the events DAG node is a ' +
+        'no-op skip via the RETIRED flag. Nothing calls it now, so this row should fall out of the ' +
+        '24h window on its own; if it does NOT, something is still invoking source-eventbrite.',
+      foursquare:
+        'Legacy api.foursquare.com is sunset; a port to places-api.foursquare.com plus a paid ' +
+        'service key is a product decision, not a repair. No cron — the callers are the ' +
+        'venue-ingestion-unified (03:00) and hotel-ingestion-pipeline (04:00) DAG nodes. Since ' +
+        '2026-08-30 a rejected credential is an InvalidCredentialsError raised OUTSIDE the breaker ' +
+        'and records a SUCCESS, so this row should self-clear on the next venue DAG run.',
+      awin:
+        'UNFIXED, tracked. AWIN_FEED_URL is set (an unset one would return a skipped 200 before ' +
+        'the breaker is touched) but the feed does not answer 2xx. mp_fill_awin auto-paused on ' +
+        '2026-08-19 — correctly, because source-awin does NOT swallow its breaker error — yet the ' +
+        'marketplace-ingestion DAG (04:00) still calls it, which is why the count keeps moving ' +
+        'after the pause. Pausing a fill cron does not stop a DAG node.',
+    }
+
+    const dayAgo = Date.now() - 86400_000
+    const neverWorked = open.filter(
+      (b) => (b.success_count ?? 0) === 0 && b.last_failure_at && Date.parse(b.last_failure_at) >= dayAgo,
+    )
+    const undocumented = neverWorked.filter((b) => !DISPOSITIONED[b.api_name])
+
+    for (const b of open) {
+      const tag = DISPOSITIONED[b.api_name] ? 'known' : 'UNDOCUMENTED'
+      console.log(
+        `  · breaker OPEN [${tag}] ${b.api_name}: ${b.failure_count} failures, ` +
+          `${b.success_count ?? 0} successes, last failure ${b.last_failure_at ?? 'never'}`,
+      )
+    }
+    for (const b of neverWorked.filter((x) => DISPOSITIONED[x.api_name])) {
+      console.warn(`⚠ ${b.api_name} has never succeeded and is still being called — ${DISPOSITIONED[b.api_name]}`)
+    }
+
+    if (undocumented.length > 0) {
+      for (const b of undocumented) {
+        console.error(
+          `✗ ${b.api_name}: circuit OPEN, ${b.failure_count} failures, NEVER succeeded ` +
+            `(success_count 0), and still failing as of ${b.last_failure_at}.`,
+        )
+      }
+      console.error(
+        '✗ A source that has never once succeeded is being called on a schedule and NOTHING else ' +
+          'reports it — the calling automation may well read last_run_status=success, because a ' +
+          'source that swallows per-item errors still returns HTTP 200. Find the caller ' +
+          "(cron AND `select name from pipeline_definitions where nodes::text ilike '%source-<x>%'` " +
+          '— a paused cron does not stop a DAG node), then either repair it or retire it and add a ' +
+          'reason to DISPOSITIONED above.',
+      )
+      process.exit(1)
+    }
+    if (open.length === 0) console.log('✓ No circuit breakers open')
+    else console.log(`✓ ${open.length} breaker(s) open, all with a recorded disposition`)
   }
 }
 

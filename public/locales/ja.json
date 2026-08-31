@@ -226,7 +226,6 @@
       "title": "24時間対応の相談窓口",
       "body": "トランスジェンダー向け相談窓口、LGBT+の危機支援、各地の緊急連絡先を国別に掲載。どのページからもワンクリックで開けます。"
     },
-    "osmAttribution": "交通図は © OpenStreetMap 貢献者のデータに基づいています (ODbL)",
     "reportSomething": "報告する",
     "hotlines": "相談窓口",
     "antiDiscrimination": {
@@ -451,7 +450,25 @@
       "moved": "スポットを移動しました",
       "removed": "スポットを削除しました",
       "dayUpdated": "この日を更新しました",
-      "dragHandleAria": "ドラッグして並び替え"
+      "dragHandleAria": "ドラッグして並び替え",
+      "a11yCoverage": "[JA] {{withData}} of {{total}} places here publish accessibility information. Nothing is ruled out for staying silent.",
+      "applied": "[JA] Added {{count}} stops",
+      "apply": "[JA] Add {{count}} stops to the trip",
+      "applyFailed": "[JA] Could not add the plan",
+      "budgetCoverage": "[JA] {{withData}} of {{total}} places here list a price. Budget nudges the order; it does not filter.",
+      "event": "[JA] Event",
+      "exhausted": "[JA] Nothing left. The matches here are already on other days.",
+      "loadFailed": "[JA] Could not load places for these cities. Try again in a moment.",
+      "matchesNeeds": "[JA] Matches your needs",
+      "needDates": "[JA] Set the trip dates and a destination city, and the days can be built from them.",
+      "noCandidate": "[JA] Nothing listed here for this time of day.",
+      "paceLabel": "[JA] How full a day",
+      "reroll": "[JA] Try another",
+      "summary": "[JA] {{filled}} of {{requested}} slots filled",
+      "timeUnknown": "[JA] time of day not known",
+      "tooFew": "[JA] Only {{count}} places here match that. Not enough to build days from. Try another vibe, or add stops by hand.",
+      "vibeAny": "[JA] A bit of everything",
+      "vibeLabel": "[JA] What you are after"
     },
     "map": {
       "emptyNoPlaces": "地図に表示するにはスポットを追加してください",
@@ -651,7 +668,8 @@
       "reservations": "予約",
       "packing": "荷造り",
       "collaborate": "コラボ",
-      "journal": "日記"
+      "journal": "日記",
+      "buildDays": "[JA] Build the days"
     },
     "today": {
       "offlineBanner": "オフラインです — 最後に保存した旅程を表示しています。",
@@ -2296,10 +2314,7 @@
       "pride": {
         "title": "今シーズンのプライド",
         "window": "今後4ヶ月",
-        "empty": "今後のプライドイベントはありません。",
-        "safety": "平等スコア",
-        "equalityTooltip": "平等スコアはこの国のLGBTQ+の法的保護を示します。高いほど安全です。",
-        "equalityAria": "平等スコア{{score}}: タップで説明"
+        "empty": "今後のプライドイベントはありません。"
       },
       "inspiration": {
         "villages": "クィア・ヴィレッジ",
@@ -2864,6 +2879,8 @@
       "about": {
         "status": "[JA] Status",
         "capital": "[JA] Capital city",
+        "regionalCapital": "[JA] Regional capital",
+        "capitalOfRegion": "[JA] Capital of",
         "majorCity": "[JA] Major city",
         "region": "[JA] Region",
         "timezone": "[JA] Timezone",
@@ -2895,6 +2912,7 @@
       }
     },
     "capital": "[JA] Capital",
+    "regionalCapital": "[JA] Regional capital",
     "continentClear": "[JA] Clear",
     "continentsTitle": "[JA] Continents",
     "counting": "[JA] Counting…",
@@ -4461,6 +4479,9 @@
         "slang": "スラング"
       },
       "sourceOfLaw": "法的根拠",
+      "clinicalGuidance": "臨床ガイダンス",
+      "guidanceEdition": "版",
+      "notMedicalAdvice": "ここでの定義は公開された臨床ガイダンスに基づいています。医学的助言ではありません。臨床的な詳細はリンク先を参照し、ご自身の治療については医療者にご相談ください。",
       "lawJurisdiction": "管轄",
       "lawInternational": "国際",
       "lawAdopted": "制定",

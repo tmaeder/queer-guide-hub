@@ -15,8 +15,9 @@
  */
 
 import { gatewayBaseUrl, gatewayHeaders } from './ai-gateway.ts'
-import { mapToCfModel } from './cf-model-map.ts'
+import { CF_MODEL_DEFAULT, mapToCfModel } from './cf-model-map.ts'
 import { recordLlmUsage } from './llm-usage-log.ts'
+import { tryNvidia } from './llm-router.ts'
 
 export interface LlmMessage {
   role: 'system' | 'user' | 'assistant'
@@ -41,6 +42,14 @@ export interface LlmCompletionOptions {
   callerFn?: string
   /** Optional grouping key for llm_call_log (pipeline run, entity id). */
   contextKey?: string | null
+  /**
+   * How long this call may wait for an NVIDIA rate-limit slot before falling
+   * back to Cloudflare. Omit to use the router's policy (0 for interactive
+   * callers, NVIDIA_MAX_WAIT_MS otherwise).
+   */
+  waitMs?: number
+  /** Wall-clock deadline (epoch ms) past which the router never sleeps. */
+  deadlineAt?: number
 }
 
 export interface LlmCompletionResult {
@@ -101,6 +110,42 @@ export async function llmChatCompletion(
   if (Deno.env.get('AI_DISABLED') === '1') {
     throw new Error('AI_DISABLED: LLM inference halted via kill-switch')
   }
+  // NVIDIA first — and deliberately BEFORE readConfig(), which throws
+  // LlmNotConfiguredError when Cloudflare credentials are absent. Doing it the
+  // other way round would make an NVIDIA-only deployment impossible: the client
+  // would throw on the way to a provider that was configured and working.
+  //
+  // The model name is resolved here too, without readConfig(), for the same
+  // reason. CF_AI_MODEL is honoured so an operator who pinned the fleet to a
+  // bigger Cloudflare model still gets the matching NVIDIA tier — the mapping
+  // is by tier, and cf-model-map's strong ids are what carry that signal.
+  const intendedModel =
+    options.model ?? Deno.env.get('CF_AI_MODEL') ?? CF_MODEL_DEFAULT
+  const nv = await tryNvidia(
+    {
+      messages: options.messages,
+      model: intendedModel,
+      temperature: options.temperature ?? 0.3,
+      max_tokens: options.max_tokens ?? 2000,
+    },
+    {
+      callerFn: options.callerFn ?? 'llmChatCompletion',
+      waitMs: options.waitMs,
+      deadlineAt: options.deadlineAt,
+    },
+  )
+  if (nv.served) {
+    recordLlmUsage({
+      fn: options.callerFn ?? 'llmChatCompletion',
+      model: nv.model,
+      tokensIn: nv.usage?.prompt_tokens,
+      tokensOut: nv.usage?.completion_tokens,
+      contextKey: options.contextKey ?? null,
+      provider: 'nvidia',
+    })
+    return { content: nv.content, usage: nv.usage, model: nv.model }
+  }
+
   const { baseUrl, apiKey, defaultModel, gatewayed } = readConfig()
   const {
     messages,
@@ -167,6 +212,15 @@ export async function llmChatCompletion(
           tokensIn: data.usage?.prompt_tokens,
           tokensOut: data.usage?.completion_tokens,
           contextKey: options.contextKey ?? null,
+          // Was omitted when the provider column landed, so every fallback
+          // through THIS client logged provider NULL while the NVIDIA branch
+          // above and both branches in openai-client.ts set theirs. Found on
+          // prod: translate-i18n-batch rows carried a `@cf/` model and a null
+          // provider, which is self-contradictory. A null here is worse than
+          // cosmetic — it is indistinguishable from "written before the column
+          // existed", so the provider split that this column exists to report
+          // silently under-counts Cloudflare.
+          provider: 'cloudflare',
         })
 
         return {
@@ -208,6 +262,21 @@ export async function llmAnthropicStyle(input: {
   temperature?: number
   model?: string
   timeoutMs?: number
+  /**
+   * Edge function name. Forwarded, and it has to be: this helper dropped it
+   * until 2026-08-29, so all eleven shim callers — every trip flow,
+   * generate-usernames, translate-i18n-batch — logged their spend under the
+   * anonymous fallback `'llmChatCompletion'`. That is the exact state
+   * llm-caller-attribution.test.ts exists to prevent, and the guard could not
+   * see it because its regex looks for `llmChatCompletion(` / `chatCompletion(`
+   * and these files call `anthropicMessages(`.
+   *
+   * It is also load-bearing for pacing: the router decides whether a caller may
+   * wait for a rate slot by name, and an unnamed caller is indistinguishable
+   * from a batch job.
+   */
+  callerFn?: string
+  contextKey?: string | null
 }): Promise<LlmCompletionResult> {
   const messages: LlmMessage[] = []
   if (input.system) messages.push({ role: 'system', content: input.system })
@@ -219,5 +288,7 @@ export async function llmAnthropicStyle(input: {
     temperature: input.temperature,
     max_tokens: input.max_tokens,
     timeoutMs: input.timeoutMs,
+    callerFn: input.callerFn,
+    contextKey: input.contextKey,
   })
 }

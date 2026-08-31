@@ -9,7 +9,9 @@
 //     English Wikipedia extract/image/coords via the cached sitelink title.
 //
 //   'sparql' — batched reverse lookups a claim read cannot answer: airports
-//     serving the city (P931 + P238) and universities located in it. WDQS is
+//     serving the city (P931 + P238), universities located in it, and the
+//     capital role (P1376, classified into national vs first-level-regional).
+//     WDQS is
 //     slow and flaky (measured HTTP 500 at 60s on transitive queries, and a 502
 //     under load), so it has its own circuit breaker and never runs inside the
 //     per-city loop.
@@ -25,9 +27,11 @@ import { safeErrCode } from '../_shared/safe-error.ts'
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
 import { cityNameCandidates } from '../_shared/city-name-normalize.ts'
 import {
-  airportQuery, applyLabels, parseCityFacts, pickAirports, pickUniversities,
-  resolveLabels, sparqlUrl, universityQuery,
-  type AirportPick, type Claims, type CityWdFacts, type Json, type SparqlBinding,
+  airportQuery, applyLabels, capitalQuery, parseCityFacts, parseCityNames, pickAirports,
+  pickCapitals, pickUniversities, resolveLabels, sparqlUrl, universityQuery,
+  CITY_NAME_LANGS, CITY_NAME_SITES,
+  type AirportPick, type CapitalPick, type Claims, type CityNameAlias, type CityWdFacts,
+  type Json, type SparqlBinding, type WdAliases, type WdLabels, type WdSitelinks,
 } from '../_shared/wikidata-city.ts'
 
 const DEFAULT_BATCH_LIMIT = 40
@@ -127,14 +131,70 @@ async function searchQid(query: string, country?: string | null): Promise<string
   return fallback
 }
 
-async function fetchEntity(qid: string): Promise<{ claims: Claims; enwikiTitle?: string } | null> {
+/**
+ * One request, and since 2026-08-25 it also carries the NAMES.
+ *
+ * `props` gained `labels|aliases` and `sitefilter` widened from enwiki to the
+ * harvest languages. That is a query-string change with no extra round trip and
+ * no new rate-limit exposure -- the response was already being fetched for
+ * claims and the enwiki title. It is what fills `city_aliases`, and
+ * `city_aliases` is what lets `city_resolve_or_create` know that Kapstadt is
+ * Cape Town before a second row gets created.
+ */
+async function fetchEntity(qid: string): Promise<
+  { claims: Claims; enwikiTitle?: string; names: CityNameAlias[] } | null
+> {
   const d = await fetchJson(
     `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${encodeURIComponent(qid)}` +
-    `&props=claims|sitelinks&sitefilter=enwiki&format=json`,
+    `&props=claims|sitelinks|labels|aliases` +
+    `&languages=${CITY_NAME_LANGS.join('|')}` +
+    `&sitefilter=${['enwiki', ...CITY_NAME_SITES].join('|')}&format=json`,
   )
-  const ent = (d?.entities as Record<string, { claims?: Claims; sitelinks?: { enwiki?: { title?: string } } }> | undefined)?.[qid]
+  const ent = (d?.entities as Record<string, {
+    claims?: Claims
+    labels?: WdLabels
+    aliases?: WdAliases
+    sitelinks?: WdSitelinks
+  }> | undefined)?.[qid]
   if (!ent) return null
-  return { claims: ent.claims ?? {}, enwikiTitle: ent.sitelinks?.enwiki?.title }
+  return {
+    claims: ent.claims ?? {},
+    enwikiTitle: ent.sitelinks?.enwiki?.title,
+    names: parseCityNames(ent.claims ?? {}, ent.labels, ent.aliases, ent.sitelinks),
+  }
+}
+
+/**
+ * Write harvested names to city_aliases.
+ *
+ * Fill-only: `ignoreDuplicates` leans on the pre-existing unique index
+ * (city_id, alias_key) so a re-visit is a no-op rather than a rewrite, and a
+ * curated or merge-minted alias is never overwritten by a Wikidata label.
+ *
+ * A failure here is logged and swallowed on purpose. The aliases are an
+ * optimisation for a LATER write's resolution; losing a batch of them costs a
+ * repeat harvest, whereas letting the error propagate would abandon the facts
+ * this run already fetched for the city itself.
+ */
+async function writeCityAliases(
+  supabase: Db,
+  cityId: string,
+  cityName: string,
+  names: CityNameAlias[],
+): Promise<number> {
+  const own = cityName.trim().toLowerCase()
+  const rows = names
+    .filter(n => n.alias.toLowerCase() !== own)
+    .map(n => ({ city_id: cityId, alias: n.alias, locale: n.locale }))
+  if (rows.length === 0) return 0
+  const { error } = await supabase
+    .from('city_aliases')
+    .upsert(rows, { onConflict: 'city_id,alias_key', ignoreDuplicates: true })
+  if (error) {
+    console.warn(`[city-factual-backfill] alias write failed for ${cityId}: ${error.message}`)
+    return 0
+  }
+  return rows.length
 }
 
 // ------------------------------------------------------------------ state
@@ -152,6 +212,13 @@ function addCandidate(prov: Prov, field: string, source: string, value: unknown)
 interface FieldState {
   state: 'pending' | 'resolved' | 'data_unavailable'
   source?: string; attempts?: number; at: string; qid?: string
+  /**
+   * Findings that belong to the probe rather than to a column. `capital_scope`
+   * uses it to record that Wikidata called this city a NATIONAL capital: that is
+   * worth keeping visible, but it must never reach `is_capital`, whose source of
+   * truth is `countries.capital` and whose single writer stays the repair path.
+   */
+  detail?: Record<string, unknown>
 }
 type Status = Record<string, FieldState>
 
@@ -236,6 +303,7 @@ interface CityRow {
   local_language: string | null; mayor: string | null; climate_type: string | null
   airport_codes: string[] | null; major_airport_code: string | null
   transportation_info: Record<string, unknown> | null
+  is_regional_capital: boolean | null; capital_of_region: string | null
   field_provenance: Prov | null; enrichment_status: Status | null
   wikidata_qid: string | null; wikipedia_title: string | null
   country_id: string | null; countries: { name?: string } | null
@@ -246,6 +314,7 @@ const CITY_COLUMNS =
   'population, area_km2, elevation_m, founded_year, official_website, postal_codes, area_codes, ' +
   'sister_cities, economy_sectors, universities, local_language, mayor, climate_type, ' +
   'airport_codes, major_airport_code, transportation_info, ' +
+  'is_regional_capital, capital_of_region, ' +
   'field_provenance, enrichment_status, wikidata_qid, wikipedia_title, country_id, countries(name)'
 
 /**
@@ -321,7 +390,7 @@ async function runLinkPhase(
   }
 
   const labelCache = new Map<string, string>()
-  let processed = 0, updated = 0, skipped = 0, failed = 0
+  let processed = 0, updated = 0, skipped = 0, failed = 0, aliasesWritten = 0
   const results: Array<Record<string, unknown>> = []
 
   for (const c of rows) {
@@ -380,6 +449,14 @@ async function runLinkPhase(
           markResolved(state, 'wikidata_link', 'wikidata', qid)
           if (c.wikidata_qid !== qid) update.wikidata_qid = qid
           if (enwikiTitle && c.wikipedia_title !== enwikiTitle) update.wikipedia_title = enwikiTitle
+          // Names ride in the same response. Written immediately rather than
+          // batched with `update`: they go to a different table, they are
+          // fill-only, and they must survive a later failure in this city's own
+          // column write -- an alias is useful to the NEXT city that gets
+          // created, not to this row.
+          if (!dryRun && ent.names.length > 0) {
+            aliasesWritten += await writeCityAliases(supabase, c.id, c.name, ent.names)
+          }
         }
       }
 
@@ -587,7 +664,7 @@ async function runLinkPhase(
     }
   }
 
-  return jsonResponse({ phase: 'link', processed, updated, skipped, failed, dry_run: dryRun, results }, 200, req)
+  return jsonResponse({ phase: 'link', processed, updated, skipped, failed, aliases_written: aliasesWritten, dry_run: dryRun, results }, 200, req)
 }
 
 // ------------------------------------------------------------------ phase: sparql
@@ -633,6 +710,7 @@ async function runSparqlPhase(
 
   const airports = new Map<string, AirportPick>()
   const universities = new Map<string, string[]>()
+  const capitals = new Map<string, CapitalPick>()
   const qids = [...byQid.keys()]
 
   try {
@@ -640,6 +718,7 @@ async function runSparqlPhase(
       const chunk = qids.slice(i, i + SPARQL_CHUNK)
       for (const [q, v] of pickAirports(await runSparql(supabase, airportQuery(chunk)))) airports.set(q, v)
       for (const [q, v] of pickUniversities(await runSparql(supabase, universityQuery(chunk)))) universities.set(q, v)
+      for (const [q, v] of pickCapitals(await runSparql(supabase, capitalQuery(chunk)))) capitals.set(q, v)
     }
   } catch (e) {
     if (e instanceof CircuitOpenError) {
@@ -706,6 +785,50 @@ async function runSparqlPhase(
       markResolved(state, 'universities', 'wikidata.sparql', qid)
     } else {
       bumpMiss(state, 'universities', 'wikidata.sparql')
+    }
+
+    // Capital scope. Unlike every other field here this one is NOT fill-if-empty,
+    // because `is_regional_capital` is NOT NULL DEFAULT false and an unprobed row
+    // is therefore indistinguishable from a probed negative. The state key
+    // `capital_scope` carries that distinction instead, and it is what decides
+    // whether this is a first write or a correction.
+    //
+    // Every city in this batch was asked (both catch branches above return, so
+    // the loop is only reached when all chunks succeeded), so a city absent from
+    // `capitals` is a NEGATIVE finding — Wikidata holds no live P1376 for it —
+    // not an unanswered one. `bumpMiss` would be wrong here: it would eventually
+    // stamp data_unavailable on a city we have a perfectly good answer for.
+    const cap = capitals.get(qid)
+    const wantRegional = cap?.regional ?? false
+    const wantRegionOf = cap?.regionOf ?? null
+    // Read the guard BEFORE addCandidate: addCandidate rewrites prov[field] with
+    // the fresh value, so a guard read afterwards compares the NEW value against
+    // the OLD column and concludes a human curated it. That is the trap that let
+    // Buenos Aires keep a wrong mayor through two relink passes.
+    const capIsOurs = state.capital_scope?.state !== 'resolved'
+      || ourWikidataValue(prov, 'is_regional_capital', c.is_regional_capital ?? false)
+    addCandidate(prov, 'is_regional_capital', 'wikidata.sparql', wantRegional)
+    if (wantRegionOf) addCandidate(prov, 'capital_of_region', 'wikidata.sparql', wantRegionOf)
+    if (capIsOurs) {
+      if ((c.is_regional_capital ?? false) !== wantRegional) update.is_regional_capital = wantRegional
+      if ((c.capital_of_region ?? null) !== wantRegionOf) update.capital_of_region = wantRegionOf
+    }
+    // Written as one assignment rather than markResolved + a follow-up mutation,
+    // so `detail` does not depend on how the Status index type narrows.
+    //
+    // `national` is RECORDED, never applied: `is_capital` is derived from
+    // `countries.capital` and keeps exactly one writer. A Wikidata disagreement
+    // is something to look at, not something to act on automatically.
+    state.capital_scope = {
+      state: 'resolved',
+      source: 'wikidata.sparql',
+      at: new Date().toISOString(),
+      qid,
+      detail: {
+        national: cap?.national ?? false,
+        regional: wantRegional,
+        units: cap?.units ?? [],
+      },
     }
 
     const filled = Object.keys(update)

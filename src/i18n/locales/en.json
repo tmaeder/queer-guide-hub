@@ -319,7 +319,6 @@
       "title": "Crisis lines, 24 hours",
       "body": "Trans helpline, LGBT+ crisis support, and local emergency numbers, listed by country and always one click from any page."
     },
-    "osmAttribution": "Transit diagrams derived from © OpenStreetMap contributors (ODbL)",
     "reportSomething": "Report something",
     "hotlines": "Hotlines",
     "antiDiscrimination": {
@@ -1008,7 +1007,25 @@
       "moved": "Place moved",
       "removed": "Place removed",
       "dayUpdated": "Day updated",
-      "dragHandleAria": "Drag to reorder"
+      "dragHandleAria": "Drag to reorder",
+      "a11yCoverage": "{{withData}} of {{total}} places here publish accessibility information. Nothing is ruled out for staying silent.",
+      "applied": "Added {{count}} stops",
+      "apply": "Add {{count}} stops to the trip",
+      "applyFailed": "Could not add the plan",
+      "budgetCoverage": "{{withData}} of {{total}} places here list a price. Budget nudges the order; it does not filter.",
+      "event": "Event",
+      "exhausted": "Nothing left. The matches here are already on other days.",
+      "loadFailed": "Could not load places for these cities. Try again in a moment.",
+      "matchesNeeds": "Matches your needs",
+      "needDates": "Set the trip dates and a destination city, and the days can be built from them.",
+      "noCandidate": "Nothing listed here for this time of day.",
+      "paceLabel": "How full a day",
+      "reroll": "Try another",
+      "summary": "{{filled}} of {{requested}} slots filled",
+      "timeUnknown": "time of day not known",
+      "tooFew": "Only {{count}} places here match that. Not enough to build days from. Try another vibe, or add stops by hand.",
+      "vibeAny": "A bit of everything",
+      "vibeLabel": "What you are after"
     },
     "map": {
       "emptyNoPlaces": "Add places to see them on the map",
@@ -1208,7 +1225,8 @@
       "reservations": "Reservations",
       "packing": "Packing",
       "collaborate": "Collaborate",
-      "journal": "Journal"
+      "journal": "Journal",
+      "buildDays": "Build the days"
     },
     "today": {
       "offlineBanner": "You're offline. Showing your last-saved itinerary.",
@@ -2388,10 +2406,7 @@
       "pride": {
         "title": "Pride this season",
         "window": "Next 4 months",
-        "empty": "No upcoming Pride events.",
-        "safety": "Equality score",
-        "equalityTooltip": "Equality score reflects this country's LGBTQ+ legal protections. Higher is safer.",
-        "equalityAria": "Equality score {{score}}: tap for explanation"
+        "empty": "No upcoming Pride events."
       },
       "inspiration": {
         "villages": "Queer villages",
@@ -2857,6 +2872,7 @@
   },
   "cities": {
     "capital": "Capital",
+    "regionalCapital": "Regional capital",
     "continentClear": "Clear",
     "continentCount_one": "{{count}} city",
     "continentCount_other": "{{count}} cities",
@@ -2915,6 +2931,8 @@
       "about": {
         "status": "Status",
         "capital": "Capital city",
+        "regionalCapital": "Regional capital",
+        "capitalOfRegion": "Capital of",
         "majorCity": "Major city",
         "region": "Region",
         "timezone": "Timezone",
@@ -4398,6 +4416,9 @@
       "elsewhere": "Elsewhere",
       "readThere": "Read",
       "sourceOfLaw": "Source of law",
+      "clinicalGuidance": "Clinical guidance",
+      "guidanceEdition": "Edition",
+      "notMedicalAdvice": "Definitions here are drawn from published clinical guidance. They are not medical advice. Follow the link for clinical detail, and talk to a clinician about your own care.",
       "lawJurisdiction": "Jurisdiction",
       "lawInternational": "International",
       "lawAdopted": "Adopted",

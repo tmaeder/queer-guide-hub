@@ -718,15 +718,18 @@ export interface TicketcornerEvent {
 export function parseTicketcornerSubEvents(sub: unknown[]): TicketcornerEvent[] {
   const out: TicketcornerEvent[] = []
   for (const raw of sub) {
-    const e = raw as Record<string, any>
+    // `unknown`, not `any`: this is third-party JSON-LD, so every read below is
+    // already guarded by a `typeof` check. `any` silently disabled those guards
+    // at the type level on exactly the input we trust least.
+    const e = raw as Record<string, unknown>
     const start = typeof e?.startDate === 'string' ? e.startDate : null
     const title = typeof e?.name === 'string' ? e.name.trim() : ''
     if (!start || !title) continue
 
-    const offers: Record<string, any>[] = Array.isArray(e.offers)
-      ? e.offers
+    const offers: Record<string, unknown>[] = Array.isArray(e.offers)
+      ? (e.offers as Record<string, unknown>[])
       : e.offers
-        ? [e.offers]
+        ? [e.offers as Record<string, unknown>]
         : []
     // Several price categories per date; the listing advertises "ab CHF x".
     const prices = offers
@@ -737,8 +740,8 @@ export function parseTicketcornerSubEvents(sub: unknown[]): TicketcornerEvent[] 
     const id = url ? firstMatch(/-(\d+)\/?$/, url) : null
     if (!id) continue
 
-    const loc = (e.location ?? {}) as Record<string, any>
-    const adr = (loc.address ?? {}) as Record<string, any>
+    const loc = (e.location ?? {}) as Record<string, unknown>
+    const adr = (loc.address ?? {}) as Record<string, unknown>
 
     out.push({
       eventId: id,
