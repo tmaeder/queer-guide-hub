@@ -453,7 +453,25 @@
       "moved": "Lieu déplacé",
       "removed": "Lieu supprimé",
       "dayUpdated": "Jour mis à jour",
-      "dragHandleAria": "Glisser pour réordonner"
+      "dragHandleAria": "Glisser pour réordonner",
+      "a11yCoverage": "[FR] {{withData}} of {{total}} places here publish accessibility information. Nothing is ruled out for staying silent.",
+      "applied": "[FR] Added {{count}} stops",
+      "apply": "[FR] Add {{count}} stops to the trip",
+      "applyFailed": "[FR] Could not add the plan",
+      "budgetCoverage": "[FR] {{withData}} of {{total}} places here list a price. Budget nudges the order; it does not filter.",
+      "event": "[FR] Event",
+      "exhausted": "[FR] Nothing left. The matches here are already on other days.",
+      "loadFailed": "[FR] Could not load places for these cities. Try again in a moment.",
+      "matchesNeeds": "[FR] Matches your needs",
+      "needDates": "[FR] Set the trip dates and a destination city, and the days can be built from them.",
+      "noCandidate": "[FR] Nothing listed here for this time of day.",
+      "paceLabel": "[FR] How full a day",
+      "reroll": "[FR] Try another",
+      "summary": "[FR] {{filled}} of {{requested}} slots filled",
+      "timeUnknown": "[FR] time of day not known",
+      "tooFew": "[FR] Only {{count}} places here match that. Not enough to build days from. Try another vibe, or add stops by hand.",
+      "vibeAny": "[FR] A bit of everything",
+      "vibeLabel": "[FR] What you are after"
     },
     "map": {
       "emptyNoPlaces": "Ajoutez des lieux pour les voir sur la carte",
@@ -654,7 +672,8 @@
       "reservations": "Réservations",
       "packing": "Bagages",
       "collaborate": "Collaborer",
-      "journal": "Journal"
+      "journal": "Journal",
+      "buildDays": "[FR] Build the days"
     },
     "today": {
       "offlineBanner": "Hors ligne — itinéraire enregistré affiché.",

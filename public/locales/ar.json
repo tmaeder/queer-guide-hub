@@ -450,7 +450,25 @@
       "moved": "تم نقل المكان",
       "removed": "تمت إزالة المكان",
       "dayUpdated": "تم تحديث اليوم",
-      "dragHandleAria": "اسحب لإعادة الترتيب"
+      "dragHandleAria": "اسحب لإعادة الترتيب",
+      "a11yCoverage": "[AR] {{withData}} of {{total}} places here publish accessibility information. Nothing is ruled out for staying silent.",
+      "applied": "[AR] Added {{count}} stops",
+      "apply": "[AR] Add {{count}} stops to the trip",
+      "applyFailed": "[AR] Could not add the plan",
+      "budgetCoverage": "[AR] {{withData}} of {{total}} places here list a price. Budget nudges the order; it does not filter.",
+      "event": "[AR] Event",
+      "exhausted": "[AR] Nothing left. The matches here are already on other days.",
+      "loadFailed": "[AR] Could not load places for these cities. Try again in a moment.",
+      "matchesNeeds": "[AR] Matches your needs",
+      "needDates": "[AR] Set the trip dates and a destination city, and the days can be built from them.",
+      "noCandidate": "[AR] Nothing listed here for this time of day.",
+      "paceLabel": "[AR] How full a day",
+      "reroll": "[AR] Try another",
+      "summary": "[AR] {{filled}} of {{requested}} slots filled",
+      "timeUnknown": "[AR] time of day not known",
+      "tooFew": "[AR] Only {{count}} places here match that. Not enough to build days from. Try another vibe, or add stops by hand.",
+      "vibeAny": "[AR] A bit of everything",
+      "vibeLabel": "[AR] What you are after"
     },
     "map": {
       "emptyNoPlaces": "أضف أماكن لعرضها على الخريطة",
@@ -650,7 +668,8 @@
       "reservations": "الحجوزات",
       "packing": "التعبئة",
       "collaborate": "التعاون",
-      "journal": "اليوميات"
+      "journal": "اليوميات",
+      "buildDays": "[AR] Build the days"
     },
     "today": {
       "offlineBanner": "أنت غير متصل — نعرض آخر خط سير محفوظ.",

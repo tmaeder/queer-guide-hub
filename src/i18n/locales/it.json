@@ -450,7 +450,25 @@
       "moved": "Luogo spostato",
       "removed": "Luogo rimosso",
       "dayUpdated": "Giorno aggiornato",
-      "dragHandleAria": "Trascina per riordinare"
+      "dragHandleAria": "Trascina per riordinare",
+      "a11yCoverage": "[IT] {{withData}} of {{total}} places here publish accessibility information. Nothing is ruled out for staying silent.",
+      "applied": "[IT] Added {{count}} stops",
+      "apply": "[IT] Add {{count}} stops to the trip",
+      "applyFailed": "[IT] Could not add the plan",
+      "budgetCoverage": "[IT] {{withData}} of {{total}} places here list a price. Budget nudges the order; it does not filter.",
+      "event": "[IT] Event",
+      "exhausted": "[IT] Nothing left. The matches here are already on other days.",
+      "loadFailed": "[IT] Could not load places for these cities. Try again in a moment.",
+      "matchesNeeds": "[IT] Matches your needs",
+      "needDates": "[IT] Set the trip dates and a destination city, and the days can be built from them.",
+      "noCandidate": "[IT] Nothing listed here for this time of day.",
+      "paceLabel": "[IT] How full a day",
+      "reroll": "[IT] Try another",
+      "summary": "[IT] {{filled}} of {{requested}} slots filled",
+      "timeUnknown": "[IT] time of day not known",
+      "tooFew": "[IT] Only {{count}} places here match that. Not enough to build days from. Try another vibe, or add stops by hand.",
+      "vibeAny": "[IT] A bit of everything",
+      "vibeLabel": "[IT] What you are after"
     },
     "map": {
       "emptyNoPlaces": "Aggiungi luoghi per vederli sulla mappa",
@@ -650,7 +668,8 @@
       "reservations": "Prenotazioni",
       "packing": "Valigia",
       "collaborate": "Collabora",
-      "journal": "Diario"
+      "journal": "Diario",
+      "buildDays": "[IT] Build the days"
     },
     "today": {
       "offlineBanner": "Offline — mostro l’ultimo itinerario salvato.",

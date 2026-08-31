@@ -261,7 +261,7 @@ export function ItineraryGenerator({ trip, canEdit }: Props) {
             <p className="text-sm">
               {t(
                 'trips.itinerary.tooFew',
-                'Only {{count}} places here match that. Not enough to build days from — try another vibe, or add stops by hand.',
+                'Only {{count}} places here match that. Not enough to build days from. Try another vibe, or add stops by hand.',
                 { count: result.eligibleCount },
               )}
             </p>
@@ -355,7 +355,7 @@ export function ItineraryGenerator({ trip, canEdit }: Props) {
                               {slot.outcome === 'exhausted'
                                 ? t(
                                     'trips.itinerary.exhausted',
-                                    'Nothing left — the matches here are already on other days.',
+                                    'Nothing left. The matches here are already on other days.',
                                   )
                                 : t(
                                     'trips.itinerary.noCandidate',
