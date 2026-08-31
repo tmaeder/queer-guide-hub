@@ -6,7 +6,7 @@ import {
   type DayRow,
   type RouteStop,
 } from '../itineraryPlan';
-import type { Candidate, ItineraryResult, ItinerarySlot } from '../generateItinerary';
+import type { Candidate, DayPart, ItineraryResult, ItinerarySlot } from '../generateItinerary';
 
 function dayRows(...dates: string[]): DayRow[] {
   return dates.map((date, i) => ({ id: `d${i}`, date }));
@@ -148,6 +148,61 @@ function plan(days: ItineraryResult['days']): ItineraryResult {
     seed: 1,
   };
 }
+
+/**
+ * `SLOT_TIME` is not free to change.
+ *
+ * `detect_trip_gaps(p_trip_id)` — the "smart trip completion" RPC from the same
+ * 2026-05 foundation as this feature — re-derives a day part from
+ * `trip_places.start_time` with its own thresholds, and it is the only other
+ * place in the system that maps a clock time back to a slot:
+ *
+ *     < 11:00 morning · < 17:00 afternoon · < 21:00 evening · else night
+ *
+ * It has no caller in `src/` today, which is exactly why this needs a test
+ * rather than a comment: nothing would notice the disagreement until somebody
+ * wires it up, and then every stop this generator wrote would be counted in the
+ * wrong slot — a plan reporting an open evening it had already filled.
+ *
+ * Verified against the live function body on 2026-08-31; all four agree today.
+ * Pinned here so they still agree after the next edit.
+ */
+describe('SLOT_TIME agrees with detect_trip_gaps', () => {
+  /** The RPC's thresholds, transcribed from its body. */
+  function gapBucket(time: string): DayPart {
+    const [h, m] = time.split(':').map(Number);
+    const mins = h * 60 + m;
+    if (mins < 11 * 60) return 'morning';
+    if (mins < 17 * 60) return 'afternoon';
+    if (mins < 21 * 60) return 'evening';
+    return 'night';
+  }
+
+  it('round-trips every slot through the RPC thresholds', () => {
+    for (const slot of ['morning', 'afternoon', 'evening', 'night'] as DayPart[]) {
+      expect(gapBucket(SLOT_TIME[slot])).toBe(slot);
+    }
+  });
+
+  it('leaves headroom, so a small edit does not silently cross a boundary', () => {
+    // Each nominal time sits at least 30 min inside its band. A slot pushed to
+    // the edge (10:59 morning, 16:59 afternoon) would still pass the test above
+    // while being one minute from mis-slotting every stop it writes.
+    const EDGES: Record<DayPart, [number, number]> = {
+      morning: [0, 11 * 60],
+      afternoon: [11 * 60, 17 * 60],
+      evening: [17 * 60, 21 * 60],
+      night: [21 * 60, 24 * 60],
+    };
+    for (const slot of Object.keys(EDGES) as DayPart[]) {
+      const [h, m] = SLOT_TIME[slot].split(':').map(Number);
+      const mins = h * 60 + m;
+      const [lo, hi] = EDGES[slot];
+      expect(mins - lo).toBeGreaterThanOrEqual(30);
+      expect(hi - mins).toBeGreaterThanOrEqual(30);
+    }
+  });
+});
 
 describe('itineraryToPlaceRows', () => {
   const dayIds = new Map([['2026-09-01', 'day-1']]);

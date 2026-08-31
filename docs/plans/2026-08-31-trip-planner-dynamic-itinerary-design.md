@@ -251,6 +251,33 @@ minutes and ranking flight above walking across town.
 
 ---
 
+## §6b — One cross-component contract, pinned
+
+`SLOT_TIME` (the nominal start time each generated stop is written with) is **not free to change**.
+`detect_trip_gaps(p_trip_id)` — the "smart trip completion" RPC from the same 2026-05 foundation —
+re-derives a day part from `trip_places.start_time` with its own thresholds, and it is the only
+other place in the system that maps a clock time back to a slot:
+
+```
+< 11:00 morning · < 17:00 afternoon · < 21:00 evening · else night
+```
+
+Verified against the live function body: all four of our times land in their own band, with at
+least 30 minutes of headroom on each side. **It has no caller in `src/` today, which is exactly why
+this needed a test rather than a comment** — nothing would notice a disagreement until somebody
+wires it up, and then every stop this generator wrote would be counted in the wrong slot, so the
+feature would report an open evening it had already filled. Pinned by
+`itineraryPlan.test.ts` → *"SLOT_TIME agrees with detect_trip_gaps"*, including a headroom
+assertion, because a value moved to 10:59 still round-trips correctly while sitting one minute from
+mis-slotting everything.
+
+**A regex is not a reader check.** Searching the catalog for `day_part` returns `detect_trip_gaps`,
+which looks alarming and is not: the match is its own `RETURNS TABLE` column name. It never reads
+`venues.day_part`. §7's claim that the stored column has no reader was confirmed by reading the
+function body, not by the grep that appeared to contradict it.
+
+---
+
 ## §7 — Filed, deliberately not in this change
 
 1. **Repair `venues.day_part`.** Batched runner + `admin_automations` row, recomputing from
