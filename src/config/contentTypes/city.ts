@@ -49,6 +49,12 @@ export const cityFields: FieldConfig[] = [
   { name: 'postal_codes', label: 'Postal Codes', type: 'tags', group: 'details' },
   { name: 'area_codes', label: 'Area Codes', type: 'tags', group: 'details' },
   { name: 'airport_codes', label: 'Airport Codes', type: 'tags', group: 'details' },
+  // Derived by run_city_airport_link: the same set as airport_codes, split by
+  // whether the airport sits IN the city. Read-only — editing them here would be
+  // overwritten by the nightly sweep.
+  { name: 'local_airport_codes', label: 'Airports in this city', type: 'tags', group: 'details', readOnly: true },
+  { name: 'nearest_airport_codes', label: 'Nearest airports', type: 'tags', group: 'details', readOnly: true },
+  { name: 'nearest_airport_km', label: 'Nearest airport (km)', type: 'number', group: 'details', readOnly: true },
   { name: 'sister_cities', label: 'Sister Cities', type: 'tags', group: 'details' },
   { name: 'notable_landmarks', label: 'Notable Landmarks', type: 'tags', group: 'details' },
   { name: 'economy_sectors', label: 'Economy Sectors', type: 'tags', group: 'details' },

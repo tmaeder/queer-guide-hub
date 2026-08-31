@@ -2878,7 +2878,8 @@
         "language": "Language",
         "currency": "Currency",
         "bestTime": "Best time",
-        "airport": "Airport"
+        "airport": "Airport",
+        "nearestAirport": "Nearest airport"
       },
       "eyebrow": "City",
       "sections": "Sections",
@@ -2929,6 +2930,7 @@
       "travel": {
         "majorAirport": "Major airport",
         "nearestAirport": "Nearest airport",
+        "otherNearby": "Other airports nearby",
         "allCodes": "All airport codes",
         "lines": "Lines",
         "networkCaption": "Rapid-transit lines, drawn from OpenStreetMap. Schematic, not to scale.",

@@ -601,6 +601,22 @@ async function runSparql(supabase: Db, query: string): Promise<SparqlBinding[]> 
   return (d?.results as { bindings?: SparqlBinding[] } | undefined)?.bindings ?? []
 }
 
+/**
+ * Drop every code that public.airport_service does not vouch for. Returns
+ * undefined when nothing survives, so the caller records a miss rather than a
+ * resolution -- a city whose only P931 result is a railway station has not been
+ * answered, and must stay eligible for a later pass.
+ */
+function gateAirports(ap: AirportPick | undefined, gate: Map<string, string>): AirportPick | undefined {
+  if (!ap) return undefined
+  const airport_codes = ap.airport_codes.filter(c => gate.has(c))
+  if (!airport_codes.length) return undefined
+  const major_airport_code = ap.major_airport_code && gate.has(ap.major_airport_code)
+    ? ap.major_airport_code
+    : undefined
+  return { airport_codes, major_airport_code, labels: airport_codes.map(c => gate.get(c) ?? '') }
+}
+
 async function runSparqlPhase(
   supabase: Db, req: Request, rows: CityRow[], dryRun: boolean, cap: number,
 ): Promise<Response> {
@@ -632,6 +648,23 @@ async function runSparqlPhase(
     return jsonResponse({ phase: 'sparql', error: errCode(e) }, 200, req)
   }
 
+  // P931 ("place served by transport hub") says nothing about passenger traffic,
+  // so on its own it wrote rail stations (Boston ZTO), heliports (Algeciras AEI),
+  // closed airports (Berlin SXF) and GA fields (Houston EFD) into
+  // cities.airport_codes -- 27% of the corpus, measured 2026-08-25. Every code
+  // is checked against public.airport_service (OurAirports, scheduled passenger
+  // service only) before it is written. The table also supplies the airport name,
+  // which is more reliable than the Wikidata label and is positionally safe.
+  const gate = new Map<string, string>()
+  const seenCodes = [...new Set([...airports.values()].flatMap(a => a.airport_codes))]
+  if (seenCodes.length) {
+    const { data: gateRows, error: gateErr } = await supabase
+      .from('airport_service').select('iata_code, name').in('iata_code', seenCodes)
+    // Fail CLOSED: an unreadable gate must not be treated as "everything passes".
+    if (gateErr) return jsonResponse({ phase: 'sparql', error: 'airport_gate_unavailable', processed: 0 }, 200, req)
+    for (const g of (gateRows ?? []) as Array<{ iata_code: string; name: string }>) gate.set(g.iata_code, g.name)
+  }
+
   let updated = 0, skipped = 0
   const results: Array<Record<string, unknown>> = []
 
@@ -641,7 +674,7 @@ async function runSparqlPhase(
     const state: Status = { ...(c.enrichment_status ?? {}) }
     const update: Record<string, unknown> = {}
 
-    const ap = airports.get(qid)
+    const ap = gateAirports(airports.get(qid), gate)
     if (ap?.airport_codes.length) {
       addCandidate(prov, 'airport_codes', 'wikidata.sparql', ap.airport_codes)
       if (isEmptyArr(c.airport_codes)) update.airport_codes = ap.airport_codes
@@ -654,8 +687,9 @@ async function runSparqlPhase(
       // invention. CityTravelTab renders every key of this object as a visible
       // label/value row, so provenance lives in field_provenance, not in here.
       if (!c.transportation_info || Object.keys(c.transportation_info).length === 0) {
+        const majorName = ap.major_airport_code ? gate.get(ap.major_airport_code) : undefined
         const line = ap.major_airport_code
-          ? `${ap.major_airport_code}${ap.labels[0] ? ` — ${ap.labels[0]}` : ''}`
+          ? `${ap.major_airport_code}${majorName ? ` — ${majorName}` : ''}`
           : ap.airport_codes.join(', ')
         update.transportation_info = { airports: line }
         addCandidate(prov, 'transportation_info', 'wikidata.sparql', update.transportation_info)
