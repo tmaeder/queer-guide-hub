@@ -154,7 +154,7 @@ export function ItineraryGenerator({ trip, canEdit }: Props) {
     [days],
   );
 
-  const { data: pool, isLoading } = useItineraryPool(cityIds, window.from, window.to);
+  const { data: pool, isLoading, error } = useItineraryPool(cityIds, window.from, window.to);
 
   /** Places already on the trip are never re-suggested. */
   const excludeIds = useMemo(
@@ -306,6 +306,21 @@ export function ItineraryGenerator({ trip, canEdit }: Props) {
           <Skeleton className="h-20 w-full rounded-container" />
           <Skeleton className="h-20 w-full rounded-container" />
         </div>
+      )}
+
+      {/* A failed pool is said, not swallowed. Without this the panel renders
+          the pickers over nothing and reads as a feature that does not work. */}
+      {error && (
+        <Card>
+          <CardContent>
+            <p className="text-sm">
+              {t(
+                'trips.itinerary.loadFailed',
+                'Could not load places for these cities. Try again in a moment.',
+              )}
+            </p>
+          </CardContent>
+        </Card>
       )}
 
       {result && result.outcome === 'too_few_candidates' && (
