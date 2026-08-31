@@ -450,7 +450,25 @@
       "moved": "地点已移动",
       "removed": "地点已移除",
       "dayUpdated": "当日已更新",
-      "dragHandleAria": "拖动以重新排序"
+      "dragHandleAria": "拖动以重新排序",
+      "a11yCoverage": "[ZH] {{withData}} of {{total}} places here publish accessibility information. Nothing is ruled out for staying silent.",
+      "applied": "[ZH] Added {{count}} stops",
+      "apply": "[ZH] Add {{count}} stops to the trip",
+      "applyFailed": "[ZH] Could not add the plan",
+      "budgetCoverage": "[ZH] {{withData}} of {{total}} places here list a price. Budget nudges the order; it does not filter.",
+      "event": "[ZH] Event",
+      "exhausted": "[ZH] Nothing left. The matches here are already on other days.",
+      "loadFailed": "[ZH] Could not load places for these cities. Try again in a moment.",
+      "matchesNeeds": "[ZH] Matches your needs",
+      "needDates": "[ZH] Set the trip dates and a destination city, and the days can be built from them.",
+      "noCandidate": "[ZH] Nothing listed here for this time of day.",
+      "paceLabel": "[ZH] How full a day",
+      "reroll": "[ZH] Try another",
+      "summary": "[ZH] {{filled}} of {{requested}} slots filled",
+      "timeUnknown": "[ZH] time of day not known",
+      "tooFew": "[ZH] Only {{count}} places here match that. Not enough to build days from. Try another vibe, or add stops by hand.",
+      "vibeAny": "[ZH] A bit of everything",
+      "vibeLabel": "[ZH] What you are after"
     },
     "map": {
       "emptyNoPlaces": "添加地点以在地图上查看",
@@ -650,7 +668,8 @@
       "reservations": "预订",
       "packing": "行李",
       "collaborate": "协作",
-      "journal": "日记"
+      "journal": "日记",
+      "buildDays": "[ZH] Build the days"
     },
     "today": {
       "offlineBanner": "您处于离线状态 — 显示上次保存的行程。",

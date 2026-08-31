@@ -76,8 +76,7 @@ export function TripTemplates() {
                   sort_order: idx,
                   icon: null,
                   arrive_mode: null,
-                }),
-                ),
+                })),
               });
             } catch (err) {
               console.warn('[TripTemplates] trip_places seed failed', err);
@@ -133,36 +132,64 @@ export function TripTemplates() {
                   onClick={() => handleUseTemplate(template)}
                   style={{ overflow: 'hidden' }}
                 >
+                  {/* Photo + a black readability scrim, or paper. The chromatic
+                      gradient this used to fall back to went with SEASONAL_POOL:
+                      a card is paper and a photo, and white type needs a scrim
+                      to sit on, not a colour. */}
                   <div
-                    className="relative flex flex-col justify-between"
+                    className={
+                      template.coverImageUrl
+                        ? 'relative flex flex-col justify-between p-6'
+                        : 'relative flex flex-col justify-between p-6 bg-muted'
+                    }
                     style={{
                       backgroundImage: template.coverImageUrl
-                        ? `linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.55)), url("${template.coverImageUrl}"), ${template.gradient}`
-                        : template.gradient,
+                        ? `linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.55)), url("${template.coverImageUrl}")`
+                        : undefined,
                       backgroundSize: 'cover',
                       backgroundPosition: 'center',
-                      paddingLeft: 24,
-                      paddingRight: 24,
-                      paddingTop: 24,
-                      paddingBottom: 20,
                       minHeight: 140,
                     }}
                   >
+                    {/* White type belongs on the scrim, never on paper. When
+                        there is no photo the card is a muted surface and the
+                        type is ink — the previous unconditional `text-white`
+                        was invisible the moment a cover failed to resolve. */}
                     <div>
                       <p
-                        className="font-bold text-white mb-1"
+                        className={
+                          template.coverImageUrl
+                            ? 'font-bold text-white mb-1'
+                            : 'font-bold text-foreground mb-1'
+                        }
                         style={{
                           lineHeight: 1.3,
-                          textShadow: template.coverImageUrl
-                            ? '0 1px 2px rgba(0,0,0,0.5)'
-                            : 'none',
+                          textShadow: template.coverImageUrl ? '0 1px 2px rgba(0,0,0,0.5)' : 'none',
                         }}
                       >
                         {template.title}
                       </p>
-                      <p className="text-sm text-white/85">
+                      <p
+                        className={
+                          template.coverImageUrl
+                            ? 'text-sm text-white/85'
+                            : 'text-sm text-muted-foreground'
+                        }
+                      >
                         {template.cities}
                       </p>
+                      {/* Measured, or absent. Never a claim we cannot check. */}
+                      {template.reason && (
+                        <p
+                          className={
+                            template.coverImageUrl
+                              ? 'text-xs text-white/75 mt-1'
+                              : 'text-xs text-muted-foreground mt-1'
+                          }
+                        >
+                          {template.reason}
+                        </p>
+                      )}
                     </div>
                     <div className="mt-4">
                       <Badge variant="secondary">

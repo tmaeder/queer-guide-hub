@@ -3,6 +3,9 @@ import {
   buildLegs,
   suggestMode,
   legDurationMin,
+  MODE_ORDER,
+  legDirectionsUrl,
+  type TransportMode,
   totalWalkingKm,
   formatLegDistance,
   formatLegDuration,
@@ -140,9 +143,85 @@ describe('googleMapsDayUrl', () => {
 
 describe('formatting', () => {
   it('formats sub-km as meters', () => expect(formatLegDistance(0.42)).toBe('~420 m'));
-  it('formats km with one decimal under 10', () => expect(formatLegDistance(1.234)).toBe('~1.2 km'));
+  it('formats km with one decimal under 10', () =>
+    expect(formatLegDistance(1.234)).toBe('~1.2 km'));
   it('rounds km above 10', () => expect(formatLegDistance(23.4)).toBe('~23 km'));
   it('formats minutes', () => expect(formatLegDuration(45)).toBe('~45 min'));
   it('formats hours', () => expect(formatLegDuration(120)).toBe('~2 h'));
   it('formats mixed', () => expect(formatLegDuration(80)).toBe('~1 h 20 min'));
+});
+
+/**
+ * The transport vocabulary lives in THREE places that cannot import each other:
+ * `TransportMode` here, the `arrive_mode` union on `TripPlace` (hooks must not
+ * import components), and the DB CHECK `trip_places_arrive_mode_check`. These
+ * pin the first two together and name the third, so adding a mode to one and
+ * forgetting the others fails here rather than at INSERT time.
+ */
+describe('transport mode vocabulary', () => {
+  const ALL_MODES: TransportMode[] = [
+    'walk',
+    'cycle',
+    'transit',
+    'drive',
+    'rideshare',
+    'rail',
+    'ferry',
+    'flight',
+  ];
+
+  it('the click-through cycle covers every mode exactly once', () => {
+    expect([...MODE_ORDER].sort()).toEqual([...ALL_MODES].sort());
+  });
+
+  it('every mode produces a finite, positive duration', () => {
+    for (const mode of ALL_MODES) {
+      const min = legDurationMin(50, mode);
+      expect(Number.isFinite(min)).toBe(true);
+      expect(min).toBeGreaterThan(0);
+    }
+  });
+
+  it('a short flight costs its fixed overhead, not its cruise time', () => {
+    // The bug a pure km/h flight model produces: 30 km at 800 km/h is about
+    // two minutes, so flying would read as the quickest way across town. Most
+    // of a short flight is airport, not air — the fixed overhead is the whole
+    // reason this mode is special-cased, so it must dominate at short range.
+    expect(legDurationMin(30, 'flight')).toBeGreaterThan(legDurationMin(30, 'drive'));
+    expect(legDurationMin(30, 'flight')).toBeGreaterThanOrEqual(180);
+    // And it must still grow with distance, or it is a constant, not a model.
+    expect(legDurationMin(3000, 'flight')).toBeGreaterThan(legDurationMin(300, 'flight'));
+  });
+
+  it('suggests a mode that can actually cover the distance', () => {
+    expect(suggestMode(1.5)).toBe('walk');
+    expect(suggestMode(8)).toBe('transit');
+    expect(suggestMode(50)).toBe('drive');
+    expect(suggestMode(400)).toBe('rail');
+    expect(suggestMode(3000)).toBe('flight');
+  });
+});
+
+describe('legDirectionsUrl', () => {
+  const A = { latitude: 52.5, longitude: 13.4 };
+  const B = { latitude: 52.52, longitude: 13.42 };
+
+  it('carries the travel mode Google Maps actually has', () => {
+    const url = legDirectionsUrl(A, B, 'cycle');
+    expect(url).toContain('travelmode=bicycling');
+    expect(url).toContain('origin=52.5%2C13.4');
+  });
+
+  it('returns null rather than opening a car route for a flight', () => {
+    // Mapping rail/ferry/flight/rideshare onto `driving` would hand the
+    // traveller a 3,000 km drive. No link is the honest answer.
+    for (const mode of ['rail', 'ferry', 'flight', 'rideshare'] as TransportMode[]) {
+      expect(legDirectionsUrl(A, B, mode)).toBeNull();
+    }
+  });
+
+  it('returns null when either end has no coordinates', () => {
+    expect(legDirectionsUrl({ latitude: null, longitude: null }, B, 'walk')).toBeNull();
+    expect(legDirectionsUrl(A, { latitude: null, longitude: null }, 'walk')).toBeNull();
+  });
 });

@@ -91,8 +91,17 @@ export interface TripPlace {
   reservation_id: string | null;
   /** Lucide icon slug for `category='note'` rows (see noteIcons.ts). */
   icon?: string | null;
-  /** User override for the heuristic route-leg transport mode. */
-  arrive_mode?: 'walk' | 'transit' | 'drive' | null;
+  /**
+   * User override for the heuristic route-leg transport mode.
+   *
+   * Kept as the literal union rather than importing `TransportMode` from
+   * `components/trips/tripLegs`: hooks must not depend on components. The two
+   * are pinned together by `tripLegs.test.ts`, which fails if a mode exists in
+   * one and not the other — and the DB CHECK
+   * (`trip_places_arrive_mode_check`) is the third copy that has to agree.
+   */
+  arrive_mode?:
+    'walk' | 'cycle' | 'transit' | 'drive' | 'rideshare' | 'rail' | 'ferry' | 'flight' | null;
   // Joined relations
   venues?: {
     id: string;

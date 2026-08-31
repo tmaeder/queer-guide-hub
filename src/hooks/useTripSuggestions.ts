@@ -1,3 +1,17 @@
+/**
+ * Trip suggestion + map data fetchers.
+ *
+ * The naive suggestion path — `fetchTripSuggestionVenues` /
+ * `fetchTripSuggestionEvents`, `order by foursquare_rating limit 30` — was
+ * removed on 2026-08-31. `TripSuggestions.tsx` has read the recommendation
+ * engine (`fetchRecommendations`) since it was rewritten, and its own header
+ * said so; the two functions had no caller left in `src/` except their own
+ * tests, which is what a dead path looks like when nothing deletes it.
+ *
+ * What remains has live callers: the city lookup (`TripSuggestions`,
+ * `useSavedItemsByCity`) and the two map fetchers (`TripMap`).
+ */
+
 import { supabase } from '@/integrations/supabase/client';
 
 export interface TripSuggestionCity {
@@ -7,34 +21,7 @@ export interface TripSuggestionCity {
   countries?: { equality_score: number | null; name: string } | null;
 }
 
-export interface TripSuggestionVenue {
-  id: string;
-  name: string;
-  category: string | null;
-  address: string | null;
-  foursquare_rating: number | null;
-  featured: boolean | null;
-  latitude: number | null;
-  longitude: number | null;
-  city_id: string | null;
-  country_id: string | null;
-}
-
-export interface TripSuggestionEvent {
-  id: string;
-  title: string;
-  event_type: string | null;
-  start_date: string | null;
-  end_date: string | null;
-  latitude: number | null;
-  longitude: number | null;
-  city_id: string | null;
-  country_id: string | null;
-}
-
-export async function fetchTripSuggestionCities(
-  cityIds: string[],
-): Promise<TripSuggestionCity[]> {
+export async function fetchTripSuggestionCities(cityIds: string[]): Promise<TripSuggestionCity[]> {
   if (cityIds.length === 0) return [];
   const { data, error } = await supabase
     .from('cities')
@@ -42,24 +29,6 @@ export async function fetchTripSuggestionCities(
     .in('id', cityIds);
   if (error) throw error;
   return (data || []) as TripSuggestionCity[];
-}
-
-export async function fetchTripSuggestionVenues(
-  cityIds: string[],
-): Promise<TripSuggestionVenue[]> {
-  if (cityIds.length === 0) return [];
-  const { data, error } = await supabase
-    .from('venues')
-    .select(
-      'id, name, category, address, foursquare_rating, is_featured, latitude, longitude, city_id, country_id',
-    )
-    .in('city_id', cityIds)
-    .neq('review_status', 'archived')
-    .is('duplicate_of_id', null)
-    .order('foursquare_rating', { ascending: false, nullsFirst: false })
-    .limit(30);
-  if (error) throw error;
-  return (data || []) as TripSuggestionVenue[];
 }
 
 export async function fetchTripMapVenues<T = unknown>(cityIds: string[]): Promise<T[]> {
@@ -96,24 +65,4 @@ export async function fetchTripMapEvents<T = unknown>(
   const { data, error } = await query.order('start_date', { ascending: true }).limit(50);
   if (error) throw error;
   return (data || []) as T[];
-}
-
-export async function fetchTripSuggestionEvents(
-  cityIds: string[],
-  startDate: string | undefined,
-  endDate: string | undefined,
-): Promise<TripSuggestionEvent[]> {
-  if (cityIds.length === 0) return [];
-  let query = supabase
-    .from('events')
-    .select(
-      'id, title, event_type, start_date, end_date, latitude, longitude, city_id, country_id',
-    )
-    .in('city_id', cityIds)
-    .is('duplicate_of_id', null);
-  if (startDate) query = query.gte('start_date', startDate);
-  if (endDate) query = query.lte('start_date', endDate);
-  const { data, error } = await query.order('start_date', { ascending: true }).limit(20);
-  if (error) throw error;
-  return (data || []) as TripSuggestionEvent[];
 }
