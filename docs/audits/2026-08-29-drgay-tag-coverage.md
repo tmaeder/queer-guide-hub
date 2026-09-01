@@ -269,7 +269,7 @@ every migration. It now reads each file once.
   is blood-borne and would be the second non-sexual route beside `syringe-sharing`. QG already has
   tags for `scat`, `piss-play` and `bdsm`, so the concepts exist; only the risk rows do not.
 
-  **Two of the five shipped** in `20261111120000_sti_practices_mutual_masturbation_scat.sql`:
+  **Two of the five shipped** in `20261118120000_sti_practices_mutual_masturbation_scat.sql`:
   `mutual-masturbation` (→ `oral_touching`) and `scat` (→ `anorectal`), 7 cells total.
 
   **Every level is copied from an anchor, not graded fresh.** The matrix is sparse by design (83 of
