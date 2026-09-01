@@ -75,15 +75,28 @@ trusting the prose — a stale figure here is worse than no figure.
 
 ### 1.4 Harm Reduction — `public.substance_interactions` (476) + tag surfaces
 
+> **Open defect, found 2026-08-30 and deliberately not fixed here: `/tags/interactions` credits all
+> 476 cells to TripSit, and 55 of them are not TripSit's.** `substance_interaction_matrix()` returns
+> `'source', 'tripsit'` and `'source_url', 'https://combo.tripsit.me/'` as **literals**, so the
+> full-grid page renders "Interaction data researched and published by TripSit" over a grid that also
+> contains 48 eve&rave Substanzhandbuch rows and 7 FDA-label rows. That both denies two sources their
+> credit and attributes 55 safety claims to an organisation that did not make them — against the
+> schema migration's own stated rule, *"attribution is a column, not a footnote"*. The **per-tag**
+> band is correct: `SubstanceInteractions.tsx` reads `source` per row and builds the credit list from
+> what is actually on screen, which is why `/tags/methamphetamine` correctly reads "eve&rave
+> Substanzhandbuch". The fix is to have the RPC return the distinct `(source, source_url)` pairs
+> present and render the list; it needs a migration plus a frontend change, so it is its own review
+> surface rather than a rider on the sync work.
+
 | Target field | Primary source | Corroborating | Status | Validation | Enrichment |
 |---|---|---|---|---|---|
-| Pairwise interactions | TripSit (421) | eve&rave Substanzhandbuch (48), FDA labels (7) | **`built` but never refreshes** — loaded once, `fetched_at` 2026-08-15, **no cron** | `status` CHECK 7 values; canonical order `tag_a_id < tag_b_id` | `substance_interaction_matrix()` RPC |
+| Pairwise interactions | TripSit (421) | eve&rave Substanzhandbuch (48), FDA labels (7) | `built` — `source_tripsit` (`40 4 * * 2`) → `sync_tripsit_interactions`, breaker `tripsit`. Was loaded once with no cron until 2026-08-30 | `status` CHECK 7 values; canonical order `tag_a_id < tag_b_id`; feed-shrink floors refuse a truncated fetch | `substance_interaction_matrix()` RPC |
 | Myth / fact rows | Editorial | — | `built` — `tag_myth_facts`, `get_tag_myth_facts()` | `kind IN ('myth','fact')` | — |
 | STI transmission + testing windows | Editorial / clinical | — | `built` — `sti_profiles`, `sti_transmission_risks`, `sti_testing_windows`, `sti_protection_methods` | `pathogen IN ('virus','bacteria')` | — |
 | Clinical codes | Wikidata registered properties | — | `built` — `tag_medical_codes_sync` (`30 5 * * 1`), 11 systems | `code_pattern` rejects malformed | — |
-| **Dosage, onset/duration, half-life, redose** | — | — | **`missing` — no table anywhere** | — | prose only on `/tags/:slug` |
-| **Adulteration / drug-checking results** | DrugsData, EUDA, UNODC EWA | — | **`missing`** | — | `drug-checking` exists as a *service* amenity, not as data |
-| Regional purity / market trends | EUDA, RADARS | — | `missing` | — | — |
+| **Dosage, onset/duration, half-life, redose** | **none exists** — see §5 Phase 3 | — | **`missing`, and NOT buildable from open data** | — | prose only on `/tags/:slug` |
+| **Adulteration / drug-checking results** | **EUDA TEDI** (CC BY 4.0, 7,120 rows) — *not* DrugsData or UNODC, both measured unavailable | — | **`missing` — costed proposal in §5 Phase 3, awaiting a decision** | — | `drug-checking` exists as a *service* amenity, not as data |
+| Regional purity / market trends | **EUDA TEDI** (mean + decile bands, MDMA mg-per-tablet) | RADARS | `missing` — same proposal; the EUDA *Statistical Bulletin* price/purity tables are **HTML-only, 0 CSVs**, so TEDI is the machine-readable path | — | — |
 
 ### 1.5 Legal & Travel Advisory — `public.countries` (250)
 
@@ -522,6 +535,7 @@ Dispositions:
 - ~~`api_circuit_breakers` state in general~~ — **closed 2026-08-30.** `check-pipeline-health.mjs`
   now reads **every** open breaker, not just `llm.nvidia`. See below.
 - `llm_budget` exhaustion
+- ~~`substance_interactions` freshness~~ — closed 2026-08-30, `check-pipeline-health.mjs` §9.
 
 Three of the four roadmap phases land inside these blind spots. Each phase must ship its sentinel.
 
@@ -542,6 +556,10 @@ open-but-previously-successful breaker does not fire.
 > `ilga_graphql` reads **2026-04-21** while ILGA imports nightly and refreshed 239/250 countries this
 > morning. That column is why a previous session diagnosed a four-month outage that was not
 > happening. It is not a freshness signal and this check must never treat it as one.
+
+Phase 3 registered a `tripsit` breaker under this rule, so it is covered by the check above from
+the day it shipped. Registration is the load-bearing half: `checkCircuit` returns *allowed* when
+the row is ABSENT, so an unregistered breaker can never trip and would never appear here.
 
 ---
 
@@ -771,15 +789,110 @@ applied migrations are empty), and **`is_enabled = false` is not a kill switch**
 **Entry:** 476 interaction pairs, loaded once, `fetched_at` 2026-08-15, **no cron**. No dosage,
 onset/duration or adulteration table anywhere.
 
-1. Recurring TripSit sync with a breaker, preserving the multi-source `source` column — do not let a
-   refresh clobber the eve&rave and FDA rows.
-2. Decide whether dosage/adulteration are **structured** (new tables, new ingestion, new
-   correctness burden on safety-critical data) or stay prose. This is a product decision with real
-   liability, not a schema chore. Recommend structuring **interactions and adulteration only**;
-   dosage guidance is where a wrong number does the most harm.
+**Step 1 — SHIPPED 2026-08-30.** `source-tripsit` + `sync_tripsit_interactions` + cron
+`source_tripsit` (`40 4 * * 2`) + breaker `tripsit` + a staleness sentinel in
+`check-pipeline-health.mjs`. Migration `20261119100000`.
 
-**Exit:** interactions refresh on a schedule and a dated provenance stamp per row.
-**Sentinel:** staleness check on `max(fetched_at)`.
+Four things in it are the reusable part, and three were found by executing the migration against a
+throwaway Postgres 17 rather than by reading it:
+
+- **Multi-source scoping is not a `WHERE` clause, it is the unique key.**
+  `substance_interactions_pair_uniq` spans every source, so the dangerous operation is not a careless
+  `DELETE` but an ordinary upsert: the day TripSit publishes a pair eve&rave already holds,
+  `ON CONFLICT DO UPDATE` replaces that row's rating *and its attribution*. The sync skips such a
+  pair and returns it under `foreign_source_conflicts`.
+- **"Retracted" must mean retracted.** The first draft deleted any stored pair missing from the
+  resolved feed. Measured: renaming ONE upstream substance key makes ~28 of its pairs unresolvable,
+  which clears a 10%-shrink floor and then deletes 28 safety ratings. Deletion is now gated on the
+  upstream `source_pair` too — a pair the feed still NAMES is protected even when we cannot resolve
+  it, and lands in `unresolved_pairs` for a human. The shrink floors likewise count pairs the feed
+  *asserts*, not the subset that resolved.
+- **A vocabulary invariant enforced only in TypeScript is not enforced.** An unrecognised severity
+  label passed straight to the table aborts the whole transaction on the `status` CHECK, so one new
+  upstream tier would stop the sync — provenance stamp on the other 420 rows included — instead of
+  leaving one row alone. The RPC now declines an out-of-vocabulary status itself and reports it.
+- **Resolve upstream keys through an explicit map; a slug-equality fallback is not the safe default.**
+  It looks safe because `unified_tags.slug` is unique, so there is no ambiguity to misresolve. The
+  real collision is identity: upstream `amphetamines` and `mushrooms` both match slugs that EXIST
+  and are dead (`merged`, `deprecated`). Every read RPC filters `status = 'active'`, so rows filed
+  against them would satisfy every constraint and render nowhere.
+
+**Step 2 — costed proposal, awaiting a decision. Nothing below is built.**
+
+The standing recommendation was "structure interactions and adulteration, not dosage", on the
+grounds that a wrong dose does the most harm. Sources were then measured on **2026-08-30**, and the
+recommendation survives — but the *reason* for the dosage half changed, and the change matters:
+
+> **Dosage is not a policy call. There is no source to structure.** PubChem is the only candidate of
+> the four that touches pharmacokinetics, and its heading vocabulary was probed directly:
+> `Dosage`, `Dose`, `Onset`, `Duration of Action` and `Routes of Administration` **all return 404** —
+> those sections do not exist. What does exist is `Biological Half-Life` (~5,000 annotations,
+> licence-clean under NLM web policies), and it is free-text prose from the **HSDB, a corpus NLM
+> retired in 2019**: unitless, species-mixed (rat and human in one field), and for MDMA the stored
+> string is `"6–10 (though duration of effects is typically actually 3–5 hours)"` — half-life and
+> duration conflated inside one sentence. EUDA, DrugsData and UNODC carry no dosage, onset, duration
+> or half-life at all. Structuring this would mean *generating* numbers by extraction from frozen
+> prose and publishing them as harm-reduction guidance. **Do not.**
+
+**Adulteration is a real build, and the source is EUDA TEDI.** Verified live: four static CSVs plus a
+zip (`tedi25-table-{1..4}_en.csv`, all `200 text/csv`), catalogue date **16.07.2026**,
+**CC BY 4.0** — the legal notice states EUDA content "may be reproduced, adapted and/or distributed"
+with attribution. Table 4 is 7,120 rows of *sold-as* versus *found-in-it*
+(`"Austria","Graz",2024,"January-June","Amphetamine","Caffeine",85,119,71.43`); table 2 carries mean
+purity plus decile bands and an adulteration rate; table 3 bins MDMA tablets by mg. Coverage:
+**10 countries, 90 cities, 2018–2025, 6 sold-as categories, 368 distinct substances identified.**
+
+The two richer individual-sample corpora are **closed, and neither is a scraping problem**:
+
+- **DrugsData / Erowid (20,195 samples)** forbids this use in writing — *"you agree not to publish
+  its images, data, results, or analysis of its results without written permission… including
+  importing it into public or shared databases, software, or systems"* — and `robots.txt` disallows
+  `ClaudeBot`, `GPTBot` and `CCBot` under an explicit Article 4 DSM-Directive reservation. Sample
+  submissions are also closed, so the corpus is frozen. The only route is a permission request to
+  Erowid Center, which is plausibly grantable and costs an email.
+- **UNODC EWA** is registration-gated (*"can be accessed by registered users only"*), publishes no
+  export on any public page, and its terms-of-use URL returns a 197-byte empty shell to
+  unauthenticated clients — **no open licence is asserted anywhere**.
+- **WEDINOS (Wales)** serves results from an undocumented WordPress AJAX handler, exposes no CSV and
+  no `wp-json` route for samples, states no licence, and currently redirects to a backlog notice.
+
+**Cost, against this PR as the unit.** Step 1 — a recurring sync of a table that already existed —
+was 1 migration, 1 edge function, 1 shared module, 12 tests, 1 sentinel, ~1,200 lines. Adulteration
+is a **new entity**, so it is larger, and the cost is not where it looks:
+
+| Piece | Size | Notes |
+|---|---|---|
+| Table + RLS + read RPCs | ~1 migration | city × semester × sold_as × substance aggregate; the grain is fixed by the source |
+| `source-euda-tedi` + cron | ~1 edge fn | semesterly data; an annual cron is enough. **The fetch is the integration risk**: `www.euda.europa.eu` returns **403 to curl and to WebFetch** even with full browser headers, and loads normally in a browser — a 403 here is not "gone" |
+| **Entity resolution** | **the whole job** | **368 substance strings → `unified_tags`, 90 city names → `cities`** |
+| Public surface | ~1 band on the city page | — |
+
+**The resolution pass is the entire risk and it is a known, expensive class here.** Rule §2.4 —
+*never resolve an entity by name alone when the reference table cannot represent the ambiguity* —
+applies twice over, and there is no `source_pair`-style recovery map to lean on the way step 1 had.
+90 city names hit the same-name collision that attached 116 events to the wrong Portland; 368
+substance names hit the namesake class that put Cassia fistula on `golden-shower`. Both must **block
+rather than guess**, and both need a human read of the residue, as the 38-row brand-logo pass did.
+Budget the resolution at more than the ingestion.
+
+**Two things should be decided before, not during:**
+
+1. **Coverage is European and the platform is global.** 10 countries out of 250. Every other
+   destination shows nothing, so this needs the honest-absence treatment the accessibility surface
+   already uses — never an empty state that reads as "clean".
+2. **The grain is an aggregate, and the sentence it licenses is narrow.** TEDI publishes "of 119
+   samples sold as amphetamine in Graz in H1 2024, 85 contained caffeine", not per-sample results.
+   That is a real, dated, attributable, *city-scoped* claim — and the unit of the data being a city
+   is exactly the unit of this product, which is what makes it fit. It is not a statement about any
+   specific substance a reader is holding, and the copy must not let it become one.
+
+**Exit:** interactions refresh on a schedule and a dated provenance stamp per row. **Step 1 met.**
+**Sentinel:** staleness on `max(fetched_at)` per source, in `check-pipeline-health.mjs` §9. The
+expected-fresh set is **derived** from `ingestion_sources.target_table`, not listed — a hardcoded
+`['tripsit']` would repeat the mistake check 6b exists to fix. A source with no registered path
+(eve&rave, FDA) can only warn; it has nothing to be late for. The gate **arms itself**: it fails on
+staleness only once `max(fetched_at)` proves the path has written at least once, and falls back to
+failing if that has not happened within 14 days of registration.
 
 ### Phase 4 — Transit & mobility
 

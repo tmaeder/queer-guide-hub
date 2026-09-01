@@ -106,6 +106,7 @@ jobs:
             e2e/nested-interactive.spec.ts \
             e2e/intent-nav.spec.ts \
             e2e/glossary-integration.spec.ts \
+            e2e/tags-substance-interactions.spec.ts \
             e2e/singles.spec.ts \
             e2e/legal-pages.spec.ts \
             e2e/map-shell.spec.ts \
@@ -129,6 +130,14 @@ jobs:
           # a dead layout branch with no safety gating because NOTHING
           # exercised it. A spec written to close that gap, parked behind a
           # hardcoded list it is not on, closes nothing.
+          # tags-substance-interactions.spec.ts is on this list for the reason
+          # stated for singles.spec.ts above. `substance_interactions` is written
+          # by migrations and, since `source_tripsit`, by a weekly cron — and a
+          # migration lands in a PR. The nightly `npm run test:e2e` discovers it
+          # either way, but reporting a wiped interaction chart the morning after
+          # the change that wiped it is not a gate. It guards the multi-source
+          # invariant: /tags/methamphetamine's 10 combinations are ALL eve&rave,
+          # so if a TripSit refresh ever takes those rows over, the page empties.
           # map-shell.spec.ts ran in NO workflow at all until 2026-08-19 —
           # neither this list nor the nightly — so it had never gated anything
           # in its life. It asserts the lens controls by accessible NAME, and
