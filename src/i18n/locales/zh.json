@@ -2843,7 +2843,8 @@
         "language": "语言",
         "currency": "货币",
         "bestTime": "最佳时间",
-        "airport": "机场"
+        "airport": "机场",
+        "nearestAirport": "[ZH] Nearest airport"
       },
       "eyebrow": "[ZH] City",
       "sections": "[ZH] Sections",
@@ -2901,7 +2902,8 @@
         "networkCaption": "[ZH] Rapid-transit lines, drawn from OpenStreetMap. Schematic, not to scale.",
         "gettingAround": "[ZH] Getting around",
         "noDealsTitle": "[ZH] We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
-        "noDealsBody": "[ZH] If you need to travel to {{city}}, read the safety and rights section first and use the trip planner — it includes a safety briefing for high-risk destinations."
+        "noDealsBody": "[ZH] If you need to travel to {{city}}, read the safety and rights section first and use the trip planner — it includes a safety briefing for high-risk destinations.",
+        "otherNearby": "[ZH] Other airports nearby"
       },
       "endOfLine": {
         "eyebrow": "[ZH] End of line",

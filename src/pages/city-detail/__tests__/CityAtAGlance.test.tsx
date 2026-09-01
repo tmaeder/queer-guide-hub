@@ -11,11 +11,11 @@ const city = {
   local_language: 'German',
   timezone: 'CET',
   countries: { id: 'co-de', currency: 'EUR', equality_score: 80 },
-} as never;
+};
 
 describe('CityAtAGlance', () => {
   it('renders the headline facts once', () => {
-    render(<CityAtAGlance city={city} hasAirport effectiveIata="BER" />);
+    render(<CityAtAGlance city={city as never} hasAirport effectiveIata="BER" />);
     expect(screen.getByText('German')).toBeInTheDocument();
     expect(screen.getByText('EUR')).toBeInTheDocument();
     expect(screen.getByText('BER')).toBeInTheDocument();
@@ -23,11 +23,11 @@ describe('CityAtAGlance', () => {
   });
 
   it('marks a merely NEARBY airport with a tilde', () => {
-    render(<CityAtAGlance city={city} hasAirport={false} effectiveIata="BER" />);
+    render(<CityAtAGlance city={city as never} hasAirport={false} effectiveIata="BER" />);
     expect(screen.getByText('~BER')).toBeInTheDocument();
   });
 
-  it('labels a nearby airport with its distance, not as the city\'s own', () => {
+  it("labels a nearby airport with its distance, not as the city's own", () => {
     // Essen: no airport of its own, DUS 25 km away. Reading "AIRPORT DUS" told
     // the reader something false; the partition columns are what tell them apart.
     const essen = {
@@ -55,7 +55,7 @@ describe('CityAtAGlance', () => {
   });
 
   it('carries no safety verdict — that moved to GeoSafetyVerdict, once, for all three geo types', () => {
-    render(<CityAtAGlance city={city} hasAirport effectiveIata="BER" />);
+    render(<CityAtAGlance city={city as never} hasAirport effectiveIata="BER" />);
     expect(screen.queryByText('80/100')).not.toBeInTheDocument();
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
   });
