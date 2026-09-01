@@ -1487,6 +1487,7 @@ export type Database = {
           last_verified_at: string | null
           latitude: number | null
           lgbt_friendly_rating: number | null
+          local_airport_codes: string[] | null
           local_customs: string | null
           local_language: string | null
           longitude: number | null
@@ -1497,6 +1498,8 @@ export type Database = {
           name_en: string | null
           name_i18n: Json
           name_normalized: string | null
+          nearest_airport_codes: string[] | null
+          nearest_airport_km: number | null
           needs_attention: boolean
           notable_landmarks: string[] | null
           official_website: string | null
@@ -1555,6 +1558,7 @@ export type Database = {
           last_verified_at?: string | null
           latitude?: number | null
           lgbt_friendly_rating?: number | null
+          local_airport_codes?: string[] | null
           local_customs?: string | null
           local_language?: string | null
           longitude?: number | null
@@ -1565,6 +1569,8 @@ export type Database = {
           name_en?: string | null
           name_i18n?: Json
           name_normalized?: string | null
+          nearest_airport_codes?: string[] | null
+          nearest_airport_km?: number | null
           needs_attention?: boolean
           notable_landmarks?: string[] | null
           official_website?: string | null
@@ -1623,6 +1629,7 @@ export type Database = {
           last_verified_at?: string | null
           latitude?: number | null
           lgbt_friendly_rating?: number | null
+          local_airport_codes?: string[] | null
           local_customs?: string | null
           local_language?: string | null
           longitude?: number | null
@@ -1633,6 +1640,8 @@ export type Database = {
           name_en?: string | null
           name_i18n?: Json
           name_normalized?: string | null
+          nearest_airport_codes?: string[] | null
+          nearest_airport_km?: number | null
           needs_attention?: boolean
           notable_landmarks?: string[] | null
           official_website?: string | null
