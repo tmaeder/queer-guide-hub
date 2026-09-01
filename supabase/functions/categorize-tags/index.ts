@@ -59,10 +59,16 @@ Deno.serve(async (req) => {
 
     // Parse optional body params
     let recategorize = false;
+    let onlyMisfiled = false;
     let batchSize = 20;
     try {
       const body = await req.json();
       recategorize = body?.recategorize === true;
+      // only_misfiled: re-file ONLY tags whose primary category is not under
+      // a v3 root (the post-deterministic remainder of the 2026-08-29
+      // program) — unlike `recategorize`, it never overwrites a correct v3
+      // filing with a fresh LLM opinion.
+      onlyMisfiled = body?.only_misfiled === true;
       if (body?.batch_size && typeof body.batch_size === 'number') {
         batchSize = Math.min(Math.max(5, body.batch_size), 50);
       }
@@ -70,9 +76,11 @@ Deno.serve(async (req) => {
       // No body or invalid JSON — use defaults
     }
 
-    console.log(`Starting tag categorization (recategorize=${recategorize}, batch_size=${batchSize})...`);
+    console.log(`Starting tag categorization (recategorize=${recategorize}, only_misfiled=${onlyMisfiled}, batch_size=${batchSize})...`);
 
-    // Load categories dynamically from the DB
+    // Load categories dynamically from the DB. The v2→v3 coexistence scope
+    // that used to filter this list is gone with the old tree
+    // (20261006150000): tag_categories holds exactly one taxonomy again.
     const { data: categories, error: categoriesError } = await supabase
       .from('tag_categories')
       .select('id, slug, name, level, parent_id, description')
@@ -100,7 +108,7 @@ Deno.serve(async (req) => {
       .select('id, name, category_id')
       .eq('status', 'active');
 
-    if (!recategorize) {
+    if (!recategorize && !onlyMisfiled) {
       // Only uncategorized tags (no category_id AND no assignments)
       tagsQuery = tagsQuery.is('category_id', null);
     }
@@ -111,9 +119,17 @@ Deno.serve(async (req) => {
       throw new Error(`Failed to fetch tags: ${fetchError.message}`);
     }
 
-    // When not recategorizing, also filter out tags that already have assignments
     let tagsToProcess = tags || [];
-    if (!recategorize && tagsToProcess.length > 0) {
+
+    if (onlyMisfiled) {
+      // Keep only tags whose current category is OUTSIDE the v3 scope —
+      // the valid v3 category ids are exactly `categories` (already scoped).
+      const v3Ids = new Set(categories.map(c => c.id));
+      tagsToProcess = tagsToProcess.filter(t => t.category_id && !v3Ids.has(t.category_id));
+    }
+
+    // When not recategorizing, also filter out tags that already have assignments
+    if (!recategorize && !onlyMisfiled && tagsToProcess.length > 0) {
       const tagIds = tagsToProcess.map(t => t.id);
       const { data: existingAssignments } = await supabase
         .from('tag_category_assignments')
@@ -215,15 +231,21 @@ Return ONLY valid JSON — tag names as keys, category slugs as values:
             continue;
           }
 
-          // 2. Upsert into tag_category_assignments with is_primary = true
-          if (recategorize) {
-            // Remove existing primary assignment before re-assigning
-            await supabase
-              .from('tag_category_assignments')
-              .delete()
-              .eq('tag_id', tag.id)
-              .eq('is_primary', true);
-          }
+          // 2. Upsert into tag_category_assignments with is_primary = true.
+          //
+          // DEMOTE FIRST, ALWAYS. This was gated on `recategorize`, so every
+          // other path upserted a second primary onto a tag that already had
+          // one — the tag then has two, and which one a reader sees depends on
+          // which query ordering they hit. Demoting rather than DELETEing
+          // keeps the old filing as a cross-listing instead of discarding it,
+          // and the partial unique index added in 20261008130000 now makes the
+          // two-primary state impossible to write at all.
+          await supabase
+            .from('tag_category_assignments')
+            .update({ is_primary: false })
+            .eq('tag_id', tag.id)
+            .eq('is_primary', true)
+            .neq('category_id', categoryId);
 
           const { error: assignError } = await supabase
             .from('tag_category_assignments')

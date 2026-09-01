@@ -16,8 +16,10 @@ import {
   HelpCircle,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { formatDistance } from '@/lib/formatDistance';
 import { formatNewsTag } from '@/lib/newsTags';
+import { hrefForSearchResult } from '@/lib/searchRoutes';
 import { resolveType } from '@/lib/searchTaxonomy';
 import type { SearchResult } from '@/hooks/useSearch';
 import { BoostReasonBadge } from './BoostReasonBadge';
@@ -52,7 +54,13 @@ export interface SearchResultCardProps {
   result: SearchResult;
   view: 'list' | 'grid';
   query: string;
-  onSelect: (result: SearchResult) => void;
+  /**
+   * Fired when the card's link is activated. ANALYTICS ONLY — the card
+   * navigates itself via a real anchor, so a handler that also calls
+   * `navigate()` would push a duplicate history entry and cost the reader two
+   * back presses.
+   */
+  onActivate?: (result: SearchResult) => void;
   /** Refine the current search by a tag (chip click). Omit to hide tag chips. */
   onTagClick?: (tag: string) => void;
   /** Tags already applied to the search — rendered as active, click is a no-op. */
@@ -64,15 +72,30 @@ const MAX_CARD_TAGS = 3;
 /**
  * One search result — bold monochrome, list + grid variants sharing the
  * popover's visual language (semibold name, muted subtitle, bordered
- * thumbnail, full-bleed hover). The whole card is the click target; the
- * redundant "View" button is gone. Memoized: only re-renders when its own
+ * thumbnail, full-bleed hover). Memoized: only re-renders when its own
  * result/view/query change.
+ *
+ * The whole card is the click target, and it is a real `<a href>` — an
+ * absolutely-positioned `LocalizedLink` rendered as the LAST child of the
+ * card, a SIBLING of its content rather than a wrapper. Until 2026-08-29 this
+ * was a `<div role="button">` with an onClick, which meant no result on
+ * /search could be middle-clicked, cmd-clicked or opened in a new tab, screen
+ * readers announced "button" instead of "link", and a crawler found no path
+ * out of /search at all (measured on prod: 20 rows, 0 anchors among them).
+ *
+ * It must stay a sibling: every row carries 2-3 real `<button>`s (feedback
+ * thumbs, add-to-trip), so wrapping the card in the anchor would nest them
+ * inside it — axe `nested-interactive`, serious, WCAG 4.1.2. Those buttons and
+ * the tag chips therefore need `relative z-10` to sit ABOVE the overlay, and
+ * the overlay needs `no-underline` (the unlayered `li a:not(.no-underline)`
+ * rule in index.css would otherwise force `position: relative` and collapse
+ * it) plus an `aria-label` (it has no text of its own).
  */
 function SearchResultCardImpl({
   result,
   view,
   query,
-  onSelect,
+  onActivate,
   onTagClick,
   activeTags,
 }: SearchResultCardProps) {
@@ -85,6 +108,7 @@ function SearchResultCardImpl({
   const title = result.title || (result as unknown as { name?: string }).name || '';
   if (!title) return null;
 
+  const href = hrefForSearchResult(result, title);
   const distance = formatDistance(result._distance_m);
   const dateLabel = result.date ? new Date(result.date).toLocaleDateString() : null;
   const featured = Boolean(result.metadata?.featured);
@@ -128,12 +152,24 @@ function SearchResultCardImpl({
     </span>
   ) : null;
 
-  // Clickable tag chips — refine the current search by the tag. Subordinate to
-  // the card's own click target (stopPropagation), capped so cards stay calm.
+  // The card-wide click target. Overlay SIBLING, never a wrapper — see the
+  // component doc above.
+  const overlayLink = (
+    <LocalizedLink
+      to={href}
+      aria-label={title}
+      onClick={() => onActivate?.(result)}
+      className="absolute inset-0 rounded-element no-underline"
+    />
+  );
+
+  // Clickable tag chips — refine the current search by the tag rather than
+  // navigating, so they sit above the overlay (`relative z-10`) and are capped
+  // so cards stay calm.
   const tagSet = new Set((activeTags ?? []).map((v) => v.toLowerCase()));
   const tagChips =
     onTagClick && Array.isArray(result.tags) && result.tags.length > 0 ? (
-      <div className="flex flex-wrap gap-1">
+      <div className="relative z-10 flex flex-wrap gap-1">
         {result.tags.slice(0, MAX_CARD_TAGS).map((tag) => {
           const active = tagSet.has(tag.toLowerCase());
           return (
@@ -157,15 +193,7 @@ function SearchResultCardImpl({
 
   if (view === 'grid') {
     return (
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={() => onSelect(result)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') onSelect(result);
-        }}
-        className="group flex cursor-pointer flex-col overflow-hidden rounded-element transition-colors hover:bg-accent"
-      >
+      <div className="group relative flex cursor-pointer flex-col overflow-hidden rounded-element transition-colors hover:bg-accent">
         <div className="relative aspect-[16/9] overflow-hidden bg-muted">
           {showNetwork ? (
             <div className="flex h-full w-full items-center justify-center bg-background p-2">
@@ -194,7 +222,7 @@ function SearchResultCardImpl({
           {tagChips && <div className="pt-1">{tagChips}</div>}
           <div className="mt-auto flex items-center justify-between pt-2">
             {price ? <span className="text-sm font-semibold">{price}</span> : <span />}
-            <div className="flex items-center gap-2">
+            <div className="relative z-10 flex items-center gap-2">
               {ratingEl}
               {tripEntity && <QuietAddToTripButton variant="inline" entity={tripEntity} />}
               <SearchFeedbackButtons
@@ -205,21 +233,14 @@ function SearchResultCardImpl({
           </div>
           <BoostReasonBadge reason={result._boostReason} />
         </div>
+        {overlayLink}
       </div>
     );
   }
 
   // list
   return (
-    <div
-      role="button"
-      tabIndex={0}
-      onClick={() => onSelect(result)}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter') onSelect(result);
-      }}
-      className="group flex cursor-pointer items-center gap-4 rounded-element p-4 transition-colors hover:bg-accent"
-    >
+    <div className="group relative flex cursor-pointer items-center gap-4 rounded-element p-4 transition-colors hover:bg-accent">
       <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-element bg-muted">
         {showNetwork ? (
           <CityNetwork slug={result.slug} variant="thumb" className="p-1.5" />
@@ -269,7 +290,7 @@ function SearchResultCardImpl({
 
       <div className="flex shrink-0 flex-col items-end gap-2">
         {price && <span className="text-base font-semibold">{price}</span>}
-        <div className="flex items-center gap-2">
+        <div className="relative z-10 flex items-center gap-2">
           {tripEntity && <QuietAddToTripButton variant="inline" entity={tripEntity} />}
           <SearchFeedbackButtons
             entity={{ type: result.type, id: result.objectID }}
@@ -277,6 +298,7 @@ function SearchResultCardImpl({
           />
         </div>
       </div>
+      {overlayLink}
     </div>
   );
 }

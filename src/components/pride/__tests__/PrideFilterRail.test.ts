@@ -18,6 +18,7 @@ const mk = (overrides: Partial<PrideCalendarEvent> = {}): PrideCalendarEvent => 
   is_featured: false,
   verification_status: 'unverified',
   description: null,
+  pride_subtypes: null,
   ...overrides,
 });
 

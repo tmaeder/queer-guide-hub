@@ -1,0 +1,895 @@
+{
+  "generated_by": "scripts/data-quality/resolve-aids-ch-cities.mjs",
+  "method": "Three independent signals per registry string: (1) the string matches a label or alias of a current Swiss municipality in de/fr/it/rm/en; (2) the clinic own coordinates sit near that municipality point; (3) the Swiss postal directory assigns the clinic postal code to that same municipality. Rows where signals 1 and 2 disagree, or where 1 is absent, are decided by 3 and marked link_mechanism=postal with a written reason.",
+  "totals": {
+    "registry_strings": 58,
+    "organizations": 94,
+    "create_city": 45,
+    "link_existing": 11,
+    "by_mechanism": {
+      "alias-existing": 5,
+      "alias": 8,
+      "name": 41,
+      "postal": 4
+    }
+  },
+  "rows": [
+    {
+      "registry_string": "Genève",
+      "orgs": 13,
+      "postal_codes_seen": [
+        "1201",
+        "1202",
+        "1203",
+        "1205",
+        "1206",
+        "1207"
+      ],
+      "decision": "link_existing_city",
+      "city_name": "Geneva",
+      "wikidata_qid": "Q71",
+      "link_mechanism": "alias-existing",
+      "signal_1_name_match": "Genf (Q71)",
+      "signal_2_distance_m": 1162,
+      "signal_3_postal_directory": "Genève (BFS 6621)",
+      "why": null
+    },
+    {
+      "registry_string": "Fribourg",
+      "orgs": 6,
+      "postal_codes_seen": [
+        "1700",
+        "1708"
+      ],
+      "decision": "link_existing_city",
+      "city_name": "Fribourg - Freiburg",
+      "wikidata_qid": "Q36378",
+      "link_mechanism": "alias",
+      "signal_1_name_match": "Freiburg im Üechtland (Q36378)",
+      "signal_2_distance_m": 552,
+      "signal_3_postal_directory": "Fribourg (BFS 2196)",
+      "why": null
+    },
+    {
+      "registry_string": "Lugano",
+      "orgs": 4,
+      "postal_codes_seen": [
+        "6900"
+      ],
+      "decision": "create_city",
+      "city_name": "Lugano",
+      "wikidata_qid": "Q7024",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Lugano (Q7024)",
+      "signal_2_distance_m": 1261,
+      "signal_3_postal_directory": "Lugano (BFS 5192)",
+      "why": null
+    },
+    {
+      "registry_string": "Renens",
+      "orgs": 4,
+      "postal_codes_seen": [
+        "1020"
+      ],
+      "decision": "create_city",
+      "city_name": "Renens",
+      "wikidata_qid": "Q69745",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Renens (Q69745)",
+      "signal_2_distance_m": 606,
+      "signal_3_postal_directory": "Renens (VD) (BFS 5591)",
+      "why": null
+    },
+    {
+      "registry_string": "Liestal",
+      "orgs": 3,
+      "postal_codes_seen": [
+        "4410"
+      ],
+      "decision": "create_city",
+      "city_name": "Liestal",
+      "wikidata_qid": "Q68972",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Liestal (Q68972)",
+      "signal_2_distance_m": 66,
+      "signal_3_postal_directory": "Liestal (BFS 2829)",
+      "why": null
+    },
+    {
+      "registry_string": "Morges",
+      "orgs": 3,
+      "postal_codes_seen": [
+        "1110"
+      ],
+      "decision": "create_city",
+      "city_name": "Morges",
+      "wikidata_qid": "Q69401",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Morges (Q69401)",
+      "signal_2_distance_m": 1495,
+      "signal_3_postal_directory": "Morges (BFS 5642)",
+      "why": null
+    },
+    {
+      "registry_string": "Aigle",
+      "orgs": 2,
+      "postal_codes_seen": [
+        "1860"
+      ],
+      "decision": "create_city",
+      "city_name": "Aigle",
+      "wikidata_qid": "Q43195",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Aigle (Q43195)",
+      "signal_2_distance_m": 253,
+      "signal_3_postal_directory": "Aigle (BFS 5401)",
+      "why": null
+    },
+    {
+      "registry_string": "Delémont",
+      "orgs": 2,
+      "postal_codes_seen": [
+        "2800"
+      ],
+      "decision": "create_city",
+      "city_name": "Delémont",
+      "wikidata_qid": "Q63896",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Delsberg (Q63896)",
+      "signal_2_distance_m": 752,
+      "signal_3_postal_directory": "Delémont (BFS 6711)",
+      "why": null
+    },
+    {
+      "registry_string": "Goldau",
+      "orgs": 2,
+      "postal_codes_seen": [
+        "6410"
+      ],
+      "decision": "link_existing_city",
+      "city_name": "Arth",
+      "wikidata_qid": "Q69742",
+      "link_mechanism": "alias-existing",
+      "signal_1_name_match": "Arth (Q69742)",
+      "signal_2_distance_m": 2522,
+      "signal_3_postal_directory": "Arth (BFS 1362)",
+      "why": null
+    },
+    {
+      "registry_string": "Mendrisio",
+      "orgs": 2,
+      "postal_codes_seen": [
+        "6850"
+      ],
+      "decision": "create_city",
+      "city_name": "Mendrisio",
+      "wikidata_qid": "Q69041",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Mendrisio (Q69041)",
+      "signal_2_distance_m": 83,
+      "signal_3_postal_directory": "Mendrisio (BFS 5254)",
+      "why": null
+    },
+    {
+      "registry_string": "Nyon",
+      "orgs": 2,
+      "postal_codes_seen": [
+        "1260"
+      ],
+      "decision": "create_city",
+      "city_name": "Nyon",
+      "wikidata_qid": "Q64027",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Nyon (Q64027)",
+      "signal_2_distance_m": 676,
+      "signal_3_postal_directory": "Nyon (BFS 5724)",
+      "why": null
+    },
+    {
+      "registry_string": "Onex",
+      "orgs": 2,
+      "postal_codes_seen": [
+        "1213"
+      ],
+      "decision": "create_city",
+      "city_name": "Onex",
+      "wikidata_qid": "Q68240",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Onex (Q68240)",
+      "signal_2_distance_m": 805,
+      "signal_3_postal_directory": "Onex (BFS 6631)",
+      "why": null
+    },
+    {
+      "registry_string": "Payerne",
+      "orgs": 2,
+      "postal_codes_seen": [
+        "1530"
+      ],
+      "decision": "create_city",
+      "city_name": "Payerne",
+      "wikidata_qid": "Q69525",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Payerne (Q69525)",
+      "signal_2_distance_m": 469,
+      "signal_3_postal_directory": "Payerne (BFS 5822)",
+      "why": null
+    },
+    {
+      "registry_string": "St.Gallen",
+      "orgs": 2,
+      "postal_codes_seen": [
+        "9000",
+        "9016"
+      ],
+      "decision": "link_existing_city",
+      "city_name": "St. Gallen",
+      "wikidata_qid": "Q25607",
+      "link_mechanism": "alias-existing",
+      "signal_1_name_match": "St. Gallen (Q25607)",
+      "signal_2_distance_m": 3621,
+      "signal_3_postal_directory": "St. Gallen (BFS 3203)",
+      "why": null
+    },
+    {
+      "registry_string": "Vevey",
+      "orgs": 2,
+      "postal_codes_seen": [
+        "1800"
+      ],
+      "decision": "create_city",
+      "city_name": "Vevey",
+      "wikidata_qid": "Q68160",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Vevey (Q68160)",
+      "signal_2_distance_m": 822,
+      "signal_3_postal_directory": "Vevey (BFS 5890)",
+      "why": null
+    },
+    {
+      "registry_string": "Arlesheim",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "4144"
+      ],
+      "decision": "create_city",
+      "city_name": "Arlesheim",
+      "wikidata_qid": "Q581647",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Arlesheim (Q581647)",
+      "signal_2_distance_m": 381,
+      "signal_3_postal_directory": "Arlesheim (BFS 2763)",
+      "why": null
+    },
+    {
+      "registry_string": "Bellinzona",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "6500"
+      ],
+      "decision": "create_city",
+      "city_name": "Bellinzona",
+      "wikidata_qid": "Q64044",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Bellinzona (Q64044)",
+      "signal_2_distance_m": 1290,
+      "signal_3_postal_directory": "Bellinzona (BFS 5002)",
+      "why": null
+    },
+    {
+      "registry_string": "Binningen",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "4102"
+      ],
+      "decision": "create_city",
+      "city_name": "Binningen",
+      "wikidata_qid": "Q69621",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Binningen (Q69621)",
+      "signal_2_distance_m": 927,
+      "signal_3_postal_directory": "Binningen (BFS 2765)",
+      "why": null
+    },
+    {
+      "registry_string": "Breitenbach",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "4226"
+      ],
+      "decision": "create_city",
+      "city_name": "Breitenbach",
+      "wikidata_qid": "Q66672",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Breitenbach (Q66672)",
+      "signal_2_distance_m": 112,
+      "signal_3_postal_directory": "Breitenbach (BFS 2613)",
+      "why": null
+    },
+    {
+      "registry_string": "Brig",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "3900"
+      ],
+      "decision": "link_existing_city",
+      "city_name": "Brig-Glis",
+      "wikidata_qid": "Q15583",
+      "link_mechanism": "alias-existing",
+      "signal_1_name_match": null,
+      "signal_2_distance_m": 31,
+      "signal_3_postal_directory": "Brig-Glis (BFS 6002)",
+      "why": null
+    },
+    {
+      "registry_string": "Bruderholz",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "4101"
+      ],
+      "decision": "create_city",
+      "city_name": "Binningen",
+      "wikidata_qid": "Q69621",
+      "link_mechanism": "postal",
+      "signal_1_name_match": null,
+      "signal_2_distance_m": 1250,
+      "signal_3_postal_directory": "Binningen (BFS 2765)",
+      "why": "the Bruderholz plateau spans Basel, Binningen and Bottmingen, so the NAME cannot pick a municipality. The postal directory assigns 4101 Bruderholz to Binningen (BFS 2765) and places that code at 47.528/7.5812, about 30 m from the clinic. Bottmingen is a different municipality (BFS 2767, postal 4103)"
+    },
+    {
+      "registry_string": "Burgdorf",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "3400"
+      ],
+      "decision": "create_city",
+      "city_name": "Burgdorf",
+      "wikidata_qid": "Q68311",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Burgdorf (Q68311)",
+      "signal_2_distance_m": 1037,
+      "signal_3_postal_directory": "Burgdorf (BFS 404)",
+      "why": null
+    },
+    {
+      "registry_string": "Carouge",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "1227"
+      ],
+      "decision": "create_city",
+      "city_name": "Carouge",
+      "wikidata_qid": "Q69364",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Carouge (Q69364)",
+      "signal_2_distance_m": 964,
+      "signal_3_postal_directory": "Carouge (GE) (BFS 6608)",
+      "why": null
+    },
+    {
+      "registry_string": "Chêne-Bougeries",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "1224"
+      ],
+      "decision": "create_city",
+      "city_name": "Chêne-Bougeries",
+      "wikidata_qid": "Q69530",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Chêne-Bougeries (Q69530)",
+      "signal_2_distance_m": 2209,
+      "signal_3_postal_directory": "Chêne-Bougeries (BFS 6612)",
+      "why": null
+    },
+    {
+      "registry_string": "Corcelles",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "2035"
+      ],
+      "decision": "link_existing_city",
+      "city_name": "Neuchâtel",
+      "wikidata_qid": "Q69345",
+      "link_mechanism": "postal",
+      "signal_1_name_match": "Q67862 -- not the chosen municipality",
+      "signal_2_distance_m": 4263,
+      "signal_3_postal_directory": "Neuchâtel (BFS 6458)",
+      "why": "four Swiss municipalities carry the bare name Corcelles, and the nearest name match is Corcelles BE, 55 km away. Postal 2035 is Corcelles-Cormondreche, merged into Neuchatel in 2021 (BFS 6458). Proximity alone picks Milvignes, whose centroid is nearer but which is a different municipality"
+    },
+    {
+      "registry_string": "Cottens",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "1741"
+      ],
+      "decision": "create_city",
+      "city_name": "Cottens",
+      "wikidata_qid": "Q67714",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Cottens (Q67714)",
+      "signal_2_distance_m": 344,
+      "signal_3_postal_directory": "Cottens (FR) (BFS 2186)",
+      "why": null
+    },
+    {
+      "registry_string": "Düdingen",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "3186"
+      ],
+      "decision": "create_city",
+      "city_name": "Düdingen",
+      "wikidata_qid": "Q70108",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Düdingen (Q70108)",
+      "signal_2_distance_m": 567,
+      "signal_3_postal_directory": "Düdingen (BFS 2293)",
+      "why": null
+    },
+    {
+      "registry_string": "Gland",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "1196"
+      ],
+      "decision": "create_city",
+      "city_name": "Gland",
+      "wikidata_qid": "Q69300",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Gland (Q69300)",
+      "signal_2_distance_m": 2043,
+      "signal_3_postal_directory": "Gland (BFS 5721)",
+      "why": null
+    },
+    {
+      "registry_string": "Grand-Lancy",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "1212"
+      ],
+      "decision": "create_city",
+      "city_name": "Lancy",
+      "wikidata_qid": "Q64065",
+      "link_mechanism": "alias",
+      "signal_1_name_match": "Lancy (Q64065)",
+      "signal_2_distance_m": 961,
+      "signal_3_postal_directory": "Lancy (BFS 6628)",
+      "why": "locality of Lancy; unique in Switzerland"
+    },
+    {
+      "registry_string": "Grenchen",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "2540"
+      ],
+      "decision": "create_city",
+      "city_name": "Grenchen",
+      "wikidata_qid": "Q68248",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Grenchen (Q68248)",
+      "signal_2_distance_m": 203,
+      "signal_3_postal_directory": "Grenchen (BFS 2546)",
+      "why": null
+    },
+    {
+      "registry_string": "Hindelbank",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "3324"
+      ],
+      "decision": "create_city",
+      "city_name": "Hindelbank",
+      "wikidata_qid": "Q67564",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Hindelbank (Q67564)",
+      "signal_2_distance_m": 149,
+      "signal_3_postal_directory": "Hindelbank (BFS 409)",
+      "why": null
+    },
+    {
+      "registry_string": "Hochdorf",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "6280"
+      ],
+      "decision": "create_city",
+      "city_name": "Hochdorf",
+      "wikidata_qid": "Q7102",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Hochdorf (Q7102)",
+      "signal_2_distance_m": 462,
+      "signal_3_postal_directory": "Hochdorf (BFS 1031)",
+      "why": null
+    },
+    {
+      "registry_string": "Horgen",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "8810"
+      ],
+      "decision": "create_city",
+      "city_name": "Horgen",
+      "wikidata_qid": "Q68286",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Horgen (Q68286)",
+      "signal_2_distance_m": 663,
+      "signal_3_postal_directory": "Horgen (BFS 295)",
+      "why": null
+    },
+    {
+      "registry_string": "Jona",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "8645"
+      ],
+      "decision": "create_city",
+      "city_name": "Rapperswil-Jona",
+      "wikidata_qid": "Q69729",
+      "link_mechanism": "alias",
+      "signal_1_name_match": "Rapperswil-Jona (Q69729)",
+      "signal_2_distance_m": 106,
+      "signal_3_postal_directory": "Rapperswil-Jona (BFS 3340)",
+      "why": "former municipality, merged into Rapperswil-Jona in 2007"
+    },
+    {
+      "registry_string": "La Chaux-de-Fonds",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "2300"
+      ],
+      "decision": "create_city",
+      "city_name": "La Chaux-de-Fonds",
+      "wikidata_qid": "Q68124",
+      "link_mechanism": "name",
+      "signal_1_name_match": "La Chaux-de-Fonds (Q68124)",
+      "signal_2_distance_m": 464,
+      "signal_3_postal_directory": "La Chaux-de-Fonds (BFS 6421)",
+      "why": null
+    },
+    {
+      "registry_string": "La Tour-de-Trême",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "1635"
+      ],
+      "decision": "link_existing_city",
+      "city_name": "Bulle",
+      "wikidata_qid": null,
+      "link_mechanism": "alias",
+      "signal_1_name_match": null,
+      "signal_2_distance_m": null,
+      "signal_3_postal_directory": "Bulle (BFS 2125)",
+      "why": "former municipality, merged into Bulle in 2006; one place, no Swiss namesake"
+    },
+    {
+      "registry_string": "Langenthal",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "4900"
+      ],
+      "decision": "create_city",
+      "city_name": "Langenthal",
+      "wikidata_qid": "Q69726",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Langenthal (Q69726)",
+      "signal_2_distance_m": 389,
+      "signal_3_postal_directory": "Langenthal (BFS 329)",
+      "why": null
+    },
+    {
+      "registry_string": "Le Locle",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "2400"
+      ],
+      "decision": "create_city",
+      "city_name": "Le Locle",
+      "wikidata_qid": "Q64093",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Le Locle (Q64093)",
+      "signal_2_distance_m": 347,
+      "signal_3_postal_directory": "Le Locle (BFS 6436)",
+      "why": null
+    },
+    {
+      "registry_string": "Luzern 16",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "6000"
+      ],
+      "decision": "link_existing_city",
+      "city_name": "Luzern",
+      "wikidata_qid": "Q4191",
+      "link_mechanism": "postal",
+      "signal_1_name_match": null,
+      "signal_2_distance_m": 982,
+      "signal_3_postal_directory": "Luzern (BFS 1061)",
+      "why": "a PO-box district, not a place name; an alias would enshrine one of roughly thirty such strings"
+    },
+    {
+      "registry_string": "Männedorf",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "8708"
+      ],
+      "decision": "create_city",
+      "city_name": "Männedorf",
+      "wikidata_qid": "Q64627",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Männedorf (Q64627)",
+      "signal_2_distance_m": 601,
+      "signal_3_postal_directory": "Männedorf (BFS 155)",
+      "why": null
+    },
+    {
+      "registry_string": "Monthey",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "1870"
+      ],
+      "decision": "create_city",
+      "city_name": "Monthey",
+      "wikidata_qid": "Q64051",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Monthey (Q64051)",
+      "signal_2_distance_m": 154,
+      "signal_3_postal_directory": "Monthey (BFS 6153)",
+      "why": null
+    },
+    {
+      "registry_string": "Münsterlingen",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "8596"
+      ],
+      "decision": "create_city",
+      "city_name": "Münsterlingen",
+      "wikidata_qid": "Q69233",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Münsterlingen (Q69233)",
+      "signal_2_distance_m": 199,
+      "signal_3_postal_directory": "Münsterlingen (BFS 4691)",
+      "why": null
+    },
+    {
+      "registry_string": "Muri bei Bern",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "3074"
+      ],
+      "decision": "create_city",
+      "city_name": "Muri bei Bern",
+      "wikidata_qid": "Q69765",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Muri bei Bern (Q69765)",
+      "signal_2_distance_m": 241,
+      "signal_3_postal_directory": "Muri bei Bern (BFS 356)",
+      "why": null
+    },
+    {
+      "registry_string": "Peseux",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "2034"
+      ],
+      "decision": "link_existing_city",
+      "city_name": "Neuchâtel",
+      "wikidata_qid": "Q69345",
+      "link_mechanism": "alias",
+      "signal_1_name_match": null,
+      "signal_2_distance_m": 3162,
+      "signal_3_postal_directory": "Neuchâtel (BFS 6458)",
+      "why": "former municipality, merged into Neuchatel in 2021; one place, no Swiss namesake"
+    },
+    {
+      "registry_string": "Porrentruy",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "2900"
+      ],
+      "decision": "create_city",
+      "city_name": "Porrentruy",
+      "wikidata_qid": "Q68256",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Pruntrut (Q68256)",
+      "signal_2_distance_m": 485,
+      "signal_3_postal_directory": "Porrentruy (BFS 6800)",
+      "why": null
+    },
+    {
+      "registry_string": "Rennaz",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "1847"
+      ],
+      "decision": "create_city",
+      "city_name": "Rennaz",
+      "wikidata_qid": "Q70214",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Rennaz (Q70214)",
+      "signal_2_distance_m": 1537,
+      "signal_3_postal_directory": "Rennaz (BFS 5412)",
+      "why": null
+    },
+    {
+      "registry_string": "Riehen",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "4125"
+      ],
+      "decision": "create_city",
+      "city_name": "Riehen",
+      "wikidata_qid": "Q5262",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Riehen (Q5262)",
+      "signal_2_distance_m": 1678,
+      "signal_3_postal_directory": "Riehen (BFS 2703)",
+      "why": null
+    },
+    {
+      "registry_string": "Sargans",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "7320"
+      ],
+      "decision": "create_city",
+      "city_name": "Sargans",
+      "wikidata_qid": "Q64571",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Sargans (Q64571)",
+      "signal_2_distance_m": 337,
+      "signal_3_postal_directory": "Sargans (BFS 3296)",
+      "why": null
+    },
+    {
+      "registry_string": "Schlieren",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "8952"
+      ],
+      "decision": "create_city",
+      "city_name": "Schlieren",
+      "wikidata_qid": "Q69148",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Schlieren (Q69148)",
+      "signal_2_distance_m": 1593,
+      "signal_3_postal_directory": "Schlieren (BFS 247)",
+      "why": null
+    },
+    {
+      "registry_string": "Sierre",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "3960"
+      ],
+      "decision": "create_city",
+      "city_name": "Sierre",
+      "wikidata_qid": "Q68297",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Siders (Q68297)",
+      "signal_2_distance_m": 167,
+      "signal_3_postal_directory": "Sierre (BFS 6248)",
+      "why": null
+    },
+    {
+      "registry_string": "St-Imier",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "2610"
+      ],
+      "decision": "create_city",
+      "city_name": "Saint-Imier",
+      "wikidata_qid": "Q66390",
+      "link_mechanism": "alias",
+      "signal_1_name_match": "Saint-Imier (Q66390)",
+      "signal_2_distance_m": 1278,
+      "signal_3_postal_directory": "Saint-Imier (BFS 443)",
+      "why": "abbreviated form of the official Saint-Imier"
+    },
+    {
+      "registry_string": "Stadt Zürich",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "8002"
+      ],
+      "decision": "link_existing_city",
+      "city_name": "Zürich",
+      "wikidata_qid": "Q72",
+      "link_mechanism": "alias-existing",
+      "signal_1_name_match": "Zürich (Q72)",
+      "signal_2_distance_m": 874,
+      "signal_3_postal_directory": "Zürich (BFS 261)",
+      "why": null
+    },
+    {
+      "registry_string": "Tavannes",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "2710"
+      ],
+      "decision": "create_city",
+      "city_name": "Tavannes",
+      "wikidata_qid": "Q67203",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Tavannes (Q67203)",
+      "signal_2_distance_m": 189,
+      "signal_3_postal_directory": "Tavannes (BFS 713)",
+      "why": null
+    },
+    {
+      "registry_string": "Wetzikon",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "8620"
+      ],
+      "decision": "create_city",
+      "city_name": "Wetzikon",
+      "wikidata_qid": "Q68305",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Wetzikon (Q68305)",
+      "signal_2_distance_m": 630,
+      "signal_3_postal_directory": "Wetzikon (ZH) (BFS 121)",
+      "why": null
+    },
+    {
+      "registry_string": "Yverdon",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "1400"
+      ],
+      "decision": "create_city",
+      "city_name": "Yverdon-les-Bains",
+      "wikidata_qid": "Q63946",
+      "link_mechanism": "alias",
+      "signal_1_name_match": "Yverdon-les-Bains (Q63946)",
+      "signal_2_distance_m": 112,
+      "signal_3_postal_directory": "Yverdon-les-Bains (BFS 5938)",
+      "why": "the everyday short form of the same municipality"
+    },
+    {
+      "registry_string": "Yverdon-les-Bains",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "1400"
+      ],
+      "decision": "create_city",
+      "city_name": "Yverdon-les-Bains",
+      "wikidata_qid": "Q63946",
+      "link_mechanism": "name",
+      "signal_1_name_match": "Yverdon-les-Bains (Q63946)",
+      "signal_2_distance_m": 112,
+      "signal_3_postal_directory": "Yverdon-les-Bains (BFS 5938)",
+      "why": null
+    },
+    {
+      "registry_string": "Zell",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "6144"
+      ],
+      "decision": "create_city",
+      "city_name": "Zell LU",
+      "wikidata_qid": "Q14628",
+      "link_mechanism": "postal",
+      "signal_1_name_match": "Zell (Q14628)",
+      "signal_2_distance_m": 361,
+      "signal_3_postal_directory": "Zell (LU) (BFS 1150)",
+      "why": "Zell LU and Zell ZH both exist and `cities` cannot hold both under the bare name, so the row takes the canton-qualified form Swiss usage already uses and the bare string resolves by postal 6144"
+    },
+    {
+      "registry_string": "Zollikerberg",
+      "orgs": 1,
+      "postal_codes_seen": [
+        "8125"
+      ],
+      "decision": "link_existing_city",
+      "city_name": "Zollikon",
+      "wikidata_qid": null,
+      "link_mechanism": "alias",
+      "signal_1_name_match": null,
+      "signal_2_distance_m": null,
+      "signal_3_postal_directory": "Zollikon (BFS 161)",
+      "why": "locality of Zollikon; the name belongs to no other Swiss place"
+    }
+  ]
+}

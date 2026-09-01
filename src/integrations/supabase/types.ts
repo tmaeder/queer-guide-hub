@@ -6090,6 +6090,7 @@ export type Database = {
           organizer_contact: string | null
           organizer_id: string | null
           organizer_name: string | null
+          parent_event_id: string | null
           postal_code: string | null
           price_max: number | null
           price_min: number | null
@@ -6170,6 +6171,7 @@ export type Database = {
           organizer_contact?: string | null
           organizer_id?: string | null
           organizer_name?: string | null
+          parent_event_id?: string | null
           postal_code?: string | null
           price_max?: number | null
           price_min?: number | null
@@ -6250,6 +6252,7 @@ export type Database = {
           organizer_contact?: string | null
           organizer_id?: string | null
           organizer_name?: string | null
+          parent_event_id?: string | null
           postal_code?: string | null
           price_max?: number | null
           price_min?: number | null
@@ -6358,6 +6361,13 @@ export type Database = {
             columns: ["organizer_id"]
             isOneToOne: false
             referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_parent_event_id_fkey"
+            columns: ["parent_event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
             referencedColumns: ["id"]
           },
           {
@@ -31239,6 +31249,20 @@ export type Database = {
       event_previous_editions: {
         Args: { p_city?: string; p_limit?: number; p_title: string }
         Returns: Json
+      }
+      event_programme: { Args: { p_event_id: string }; Returns: Json }
+      event_programme_candidates: {
+        Args: { p_event_id: string; p_limit?: number }
+        Returns: {
+          data_source: string
+          end_date: string
+          event_type: string
+          id: string
+          slug: string
+          start_date: string
+          title: string
+          venue_name: string
+        }[]
       }
       events:
         | {

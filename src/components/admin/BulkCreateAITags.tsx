@@ -20,7 +20,6 @@ interface BulkCreateResult {
   tag?: Record<string, unknown>;
   category?: string;
   description?: string;
-  image_url?: string;
   wikipedia_url?: string;
   error?: string;
 }
@@ -158,15 +157,6 @@ const BulkCreateAITags = ({ onComplete }: BulkCreateAITagsProps) => {
                           <span className="text-xs text-muted-foreground mt-1 block">
                             Category: {result.category}
                           </span>
-                        )}
-                        {result.image_url && (
-                          <div className="mt-1">
-                            <img
-                              src={result.image_url}
-                              alt={result.term}
-                              className="w-16 h-12 object-cover rounded-element mt-1"
-                            />
-                          </div>
                         )}
                         {result.description && (
                           <span className="text-xs text-muted-foreground mt-1 overflow-hidden line-clamp-2 block">

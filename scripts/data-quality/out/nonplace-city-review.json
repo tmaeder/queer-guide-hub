@@ -1,0 +1,15 @@
+{
+  "_doc": "Hand review of the `nonplace` bucket emitted by classify-nonplace-cities.mjs. Every id listed under `rejected` was in that bucket and was taken OUT of the delete list by a human, with the reason recorded. Anything in the bucket and not listed here is approved for deletion. Rule applied throughout: when the name is attested both as a container and as a settlement, do not delete — a kept row is recoverable, a deleted one is not.",
+  "reviewed_at": "2026-08-25",
+  "rejected": {
+    "3cc771c6-6cbd-4ca6-aae7-724481ce9f19": "Tucumán/AR — the province, but 'Tucumán' is everyday shorthand for its capital San Miguel de Tucumán. Attested both ways.",
+    "bc7f4432-e92c-4c9e-b4a8-acf2c047a5ce": "Bursa/TR — a city of ~3M. Turkish provinces carry their capital's name and dr5hn's TR city list names districts, not the central one, so the gazetteer could not demote it.",
+    "c71ccc0f-9444-4c42-ae98-5d344633cd1d": "Malatya/TR — same shape as Bursa: real city, province named after it.",
+    "2e817285-75fb-4c9e-9f32-0a50ca168bce": "Yalova/TR — same shape as Bursa.",
+    "6a0c1d30-773d-4f0e-873a-4d5a8592d8b1": "Kohtla-Järve — a real Estonian city filed under country_id=RU. That is the wrong-country repair, not a non-place.",
+    "68134047-d29a-4b25-93e3-7c2ea3f7e57f": "Lewisham/GB — London borough. An inhabited locality people give as a birthplace; belongs in the district discussion, not here.",
+    "dec80d92-6ef2-4ec1-9cd5-916e5d15e582": "Wandsworth/GB — London borough, same as Lewisham.",
+    "27d0d85c-6629-47be-a33d-0dc42a466757": "Thurrock/GB — unitary authority with no town of that name, but used as a place name in everyday speech. Low value, permanent risk.",
+    "f81fbccc-a02e-4b4e-a31f-6c642744e433": "Saint Thomas/VI — the USVI district, but 'Saint Thomas' also names real cities elsewhere (St. Thomas, Ontario). Ambiguous."
+  }
+}

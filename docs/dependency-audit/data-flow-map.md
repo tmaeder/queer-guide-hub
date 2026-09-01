@@ -6,10 +6,36 @@ _Per-vendor: data categories, direction, frequency, necessity, minimization. Aud
 
 | Vendor | Data sent | Direction | Frequency | Necessary? | Minimization |
 |---|---|---|---|---|---|
+| **NVIDIA NIM (free tier)** | **everything the two edge-function LLM clients send** — catalog text AND **user trip prompts, chat turns, moderation text** | outbound US | per call, first choice | cost | see the box below — this is the widest AI egress on the platform |
 | OpenAI gpt-4o-mini | venue/event/news text, scraped page content (public catalog); no user PII | outbound US | per-ingest item | yes (enrichment) | route via AI Gateway; cache; later EU model. Content is public → low PII, but **leaves EU**. |
 | Workers AI | query text, content text, **user trip prompts**, submission text | outbound CF-global | per-request | yes | **trip prompts/submissions are user-identifiable** → route sensitive ones to EU vLLM (hybrid decision). Public-content tasks acceptable on CF global. |
 | Anthropic (if `USE_ANTHROPIC=1`) | trip prompts | outbound US | per-request | optional | default routes to Workers AI; keep off unless needed. |
 | Gemma vLLM (CH) | cms-ai content, sensitive flows | outbound→CH | per-request | yes | already EU; **relocation target after Infomaniak teardown**. |
+
+### NVIDIA free tier — a deliberate exception to the rule in the Workers AI row
+
+The Workers AI row above states this file's own rule: **trip prompts and submissions are
+user-identifiable and should be routed to a trusted endpoint.** Routing *all* edge-function LLM
+calls to NVIDIA breaks that rule, knowingly, as a cost decision taken 2026-08-29. It is written
+down here rather than left implicit, because a residency doc that describes the previous topology
+is worse than no doc at all.
+
+What now leaves the EU that did not before: `trip-concierge`, `trip-inbox-chat`, `trip-inbox-slot`,
+`ai-plan-trip`, `trip-recap`, `trip-safety-narrative`, `trip-cost-estimate`,
+`packing-suggestions-llm`, `generate-usernames`, `feedback-autotriage`, `cms-ai` and
+**`intimate-moderation`** — the last being user-authored intimate content on an LGBTQ+ platform,
+sent to a **free tier whose terms permit training use and carry no SLA or DPA**.
+
+**Reversal is a secret change, not a deploy.** Any of:
+
+```
+NVIDIA_EXCLUDE_CALLERS=intimate-moderation,trip-concierge,trip-inbox-chat,ai-plan-trip
+NVIDIA_DISABLED=1          # whole provider off, key left in place
+                           # or unset NVIDIA_API_KEY — the router goes inert
+```
+
+Out of scope and still Cloudflare-only: embeddings (`bge-m3`, a fixed 1024-dim space the entire
+search index is built on), vision, and everything on the Workers `env.AI.run` binding.
 
 ## User-PII egress
 
@@ -38,7 +64,9 @@ no client-side keys leak (`.env.example` confirms no AI/source keys in `VITE_*`)
 ## Residency summary
 
 - **Stays EU/CH:** all data of record (Supabase Zürich), search/geocode/AI-fallback (Infomaniak CH), analytics.
-- **Leaves EU:** AI content (OpenAI US, Workers AI global), emails (Resend US), payments (Stripe US),
+- **Leaves EU:** AI content (**NVIDIA US — now first choice for every edge-function LLM call,
+  including user trip prompts and moderation text**, see the box above; OpenAI US, Workers AI global),
+  emails (Resend US), payments (Stripe US),
   errors (Sentry US), geocode text (Mapbox US), feedback (GitHub US).
 - **Post-plan target:** sensitive inference → EU endpoint; embeddings/vectors → Vectorize (CF global, public
   content); all model traffic behind AI Gateway with short retention + PII redaction.

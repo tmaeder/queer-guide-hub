@@ -20,6 +20,7 @@ import {
   ShieldCheck,
   CircleCheck,
   Sparkles,
+  Flag,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EntitySocialLinks } from '@/components/entity/EntitySocialLinks';
@@ -36,7 +37,6 @@ import { useNearbyMapPoints } from '@/hooks/useNearbyMapPoints';
 import { MarkVisitedButton } from '@/components/marks/MarkVisitedButton';
 import { AmenityDisplay } from '@/components/venues/AmenityDisplay';
 import { DestinationSafetyCard } from '@/components/safety/DestinationSafetyCard';
-import EqualityScoreBadge from '@/components/country/EqualityScoreBadge';
 import { PeopleHereRail } from '@/components/people/PeopleHereRail';
 import type { Database } from '@/integrations/supabase/types';
 import { supabase } from '@/integrations/supabase/client';
@@ -87,6 +87,14 @@ export type EventWithRelations = Database['public']['Tables']['events']['Row'] &
     lgbti_criminalization: Record<string, unknown> | null;
   } | null;
   festivals?: { id: string; name: string } | null;
+  /** The umbrella this event belongs to, when it is a programme child. */
+  parent?: {
+    id: string;
+    slug: string;
+    title: string;
+    start_date: string;
+    end_date: string | null;
+  } | null;
   organizer?: {
     id: string;
     slug?: string;
@@ -101,12 +109,34 @@ export type EventWithRelations = Database['public']['Tables']['events']['Row'] &
   user_attendance?: string | null;
 };
 
+/**
+ * The parent is embedded through the FK COLUMN (`parent:parent_event_id(...)`),
+ * not the constraint name, and that is load-bearing for a SELF-referential FK.
+ *
+ * PostgREST registers `events_parent_event_id_fkey` as ONE-TO-MANY only --
+ * `events(id)` to `events(parent_event_id)`, i.e. the CHILDREN -- so the hint
+ * forms are wrong here in different ways. All three measured against prod:
+ *
+ *   parent:events!events_parent_event_id_fkey(...)  -> HTTP 400 PGRST200
+ *   parent:events!parent_event_id(...)              -> 200 but `[]`, the children
+ *   parent:parent_event_id(...)                     -> 200 and `null`, the parent
+ *
+ * The first form shipped in this PR and 400'd the WHOLE event query, so no
+ * event loaded and every `/events/:slug` page rendered no `<h1>` at all -- it
+ * is not a degraded embed, it takes the page down. `null` vs `[]` is the tell
+ * for which direction PostgREST resolved, and it is the only tell while zero
+ * rows carry a `parent_event_id`.
+ *
+ * NOTE: comments must stay OUTSIDE the template literal below -- its contents
+ * are sent to PostgREST verbatim as the `select` parameter.
+ */
 export const EVENT_SELECT_FIELDS = `
   *,
   venues!venue_id(id, slug, name, address, city, state, country, phone, website, email, latitude, longitude),
   cities(id, slug, name, country_id, countries:country_id(id, slug, name, equality_score, lgbti_criminalization)),
   countries(id, slug, name, equality_score, lgbti_criminalization),
   festivals:festival_id(id, name),
+  parent:parent_event_id(id, slug, title, start_date, end_date),
   organizer:venues!organizer_id(id, slug, name, website, email, instagram, phone, organizer_handles)
 `;
 
@@ -378,16 +408,29 @@ export function EventMasthead({
         <LiveStateLine event={event} />
       </div>
 
-      {(event.festivals?.id || event.countries?.equality_score != null) && (
+      {(event.parent?.id || event.festivals?.id) && (
         <div className="flex flex-wrap items-center gap-4">
+          {/* The umbrella this event belongs to. Linked, unlike the festival
+              line below it: the parent is a real event with its own page that
+              carries the full programme, which is the whole point of the
+              backlink. */}
+          {event.parent?.id && (
+            <span className="inline-flex items-center gap-1.5 text-13 text-muted-foreground">
+              <Flag size={13} aria-hidden="true" />
+              Part of{' '}
+              <LocalizedLink
+                to={`/events/${event.parent.slug || event.parent.id}`}
+                className="font-semibold text-foreground"
+              >
+                {event.parent.title}
+              </LocalizedLink>
+            </span>
+          )}
           {event.festivals?.id && (
             <span className="inline-flex items-center gap-1.5 text-13 text-muted-foreground">
               <Music size={13} aria-hidden="true" />
               Part of <span className="font-semibold text-foreground">{event.festivals.name}</span>
             </span>
-          )}
-          {event.countries?.equality_score != null && (
-            <EqualityScoreBadge score={event.countries.equality_score} size="sm" />
           )}
         </div>
       )}

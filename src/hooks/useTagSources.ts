@@ -20,6 +20,23 @@ export const LEGAL_SOURCE_TYPES = [
 ] as const;
 export type LegalSourceType = (typeof LEGAL_SOURCE_TYPES)[number];
 
+/**
+ * Clinical practice guidance a tag's definition is derived from — a named, dated,
+ * published document (the UCSF trans care guidelines, the WPATH Standards of Care).
+ *
+ * Kept apart from LEGAL_SOURCE_TYPES rather than folded into them, because the two
+ * publish under different rules and render as different cards. A legal citation
+ * needs a jurisdiction; a guideline needs an edition year, because guidance goes
+ * stale and how old it is is the reader's first question. Both halves are enforced
+ * by `tag_sources_public_requires_citation` — see
+ * `supabase/migrations/20261013110300_tag_sources_clinical_guideline.sql`.
+ */
+export const CLINICAL_SOURCE_TYPES = ['clinical_guideline'] as const;
+export type ClinicalSourceType = (typeof CLINICAL_SOURCE_TYPES)[number];
+
+/** Everything a human may publish, as against backfill provenance. */
+export const CITABLE_SOURCE_TYPES = [...LEGAL_SOURCE_TYPES, ...CLINICAL_SOURCE_TYPES] as const;
+
 export const INSTRUMENT_STATUSES = [
   'in_force',
   'repealed',

@@ -116,11 +116,6 @@ export function GeoSafetyVerdict({
         <Icon size={14} aria-hidden="true" />
         {label}
       </span>
-      {equalityScore != null && (
-        <span className="ml-2 font-mono text-13 tabular-nums text-muted-foreground">
-          {equalityScore}/100
-        </span>
-      )}
     </>
   );
 

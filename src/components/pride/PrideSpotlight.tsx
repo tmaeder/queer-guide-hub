@@ -7,6 +7,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
 import { rangesOverlap } from '@/components/trips/tripOverlap';
 import { useActiveTrip } from '@/hooks/useActiveTrip';
+import { useEventProgramme } from '@/hooks/useEventProgramme';
+import { ProgrammeSummary } from '@/components/pride/ProgrammeSummary';
+import { EventProgramme } from '@/components/events/EventProgramme';
 import type { PrideCalendarEvent } from '@/hooks/usePrideCalendar';
 
 interface PrideSpotlightProps {
@@ -39,6 +42,8 @@ export function PrideSpotlight({ event, onDismiss, onOpenMap }: PrideSpotlightPr
   const { user } = useAuth();
   const { activeTrip } = useActiveTrip();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const { data: programme } = useEventProgramme(event.id);
+  const programmeChildren = programme?.children ?? [];
 
   const inTripWindow =
     !!activeTrip &&
@@ -127,8 +132,19 @@ export function PrideSpotlight({ event, onDismiss, onOpenMap }: PrideSpotlightPr
           </span>
         </div>
 
+        <ProgrammeSummary entries={programmeChildren} className="block text-13 text-foreground/70" />
+
         {event.description && (
           <p className="text-body-lg text-foreground/80 max-w-prose">{event.description}</p>
+        )}
+
+        {programmeChildren.length > 0 && (
+          <div className="border-t border-border-hairline pt-6">
+            <h3 className="mb-4 text-2xs uppercase tracking-wider text-muted-foreground">
+              {t('events.detail.section.programme', 'Programme')}
+            </h3>
+            <EventProgramme entries={programmeChildren} />
+          </div>
         )}
 
         <div className="flex flex-wrap gap-2 pt-2">

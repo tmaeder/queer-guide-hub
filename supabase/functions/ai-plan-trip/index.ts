@@ -163,6 +163,7 @@ ${candidates.map((c) => `${c.id} | ${c.kind} | ${c.name} | ${c.city ?? '?'} | ${
 Return JSON: { "days": [ { "date": "YYYY-MM-DD", "places": [ { "venue_id": "...", "notes": "..." } | { "event_id": "...", "notes": "..." } | { "custom_name": "...", "notes": "..." } ] } ] }`;
 
   const body = await anthropicMessages({
+    callerFn: 'ai-plan-trip',
     model: 'claude-haiku-4-5-20251001',
     max_tokens: 4096,
     system: systemPrompt,

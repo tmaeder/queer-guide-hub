@@ -25,6 +25,13 @@ interface DataTableBulkActionsProps {
   onSuccess: () => void;
   bulkEditFields?: BulkEditFieldConfig[];
   extraActions?: React.ReactNode;
+  /**
+   * Render the Delete button. Default true, preserving the historical
+   * behaviour. See `AdminTableConfig.allowBulkDelete` for why /admin/users
+   * turns it off: a raw `DELETE FROM profiles` is the wrong operation, not a
+   * risky version of the right one.
+   */
+  allowDelete?: boolean;
 }
 
 export function DataTableBulkActions({
@@ -35,6 +42,7 @@ export function DataTableBulkActions({
   onSuccess,
   bulkEditFields,
   extraActions,
+  allowDelete = true,
 }: DataTableBulkActionsProps) {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -135,15 +143,17 @@ export function DataTableBulkActions({
 
         {extraActions}
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setDeleteOpen(true)}
-          style={{ color: 'hsl(var(--destructive))', borderColor: 'hsl(var(--destructive))' }}
-        >
-          <Trash2 size={14} className="mr-1" />
-          Delete
-        </Button>
+        {allowDelete && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setDeleteOpen(true)}
+            style={{ color: 'hsl(var(--destructive))', borderColor: 'hsl(var(--destructive))' }}
+          >
+            <Trash2 size={14} className="mr-1" />
+            Delete
+          </Button>
+        )}
       </div>
 
       {/* Delete Confirmation */}

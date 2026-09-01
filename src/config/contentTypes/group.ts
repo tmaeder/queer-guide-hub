@@ -49,4 +49,9 @@ export const communityGroupsContentType: ContentTypeConfig = {
       mergePath: 'entities',
     },
   },
+  // `archived_at` added in 20261029100000 — see hotel.ts.
+  lifecycle: {
+    type: 'group',
+    archive: { column: 'archived_at', predicate: 'present', label: 'Archived' },
+  },
 };

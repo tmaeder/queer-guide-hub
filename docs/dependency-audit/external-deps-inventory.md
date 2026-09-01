@@ -6,11 +6,23 @@ _Every external vendor with call sites, data direction, and purpose. Audit date 
 
 | Vendor | Where (call site) | Direction | Purpose | Gatewayed | Key |
 |---|---|---|---|---|---|
+| **NVIDIA NIM** | `_shared/llm-router.ts` — sits under BOTH `chatCompletion()` and `llmChatCompletion()`, so it is the first choice for every edge-function text-chat call (~40 functions) | outbound (US) | all edge-function chat completion; falls back to Workers AI on 429 / exhaustion / auth failure / open circuit / no rate slot | **No** — AI Gateway does not support NVIDIA (24 providers, no universal passthrough), so `llm_call_log.provider` is the only record | `NVIDIA_API_KEY` (unset ⇒ router inert) |
 | OpenAI | `_shared/openai-client.ts`; `pipeline-enrich-{news,events,venue,city,country,village}`, `pipeline-quality-enhance`, `event-agentic-enrich`, `pipeline-safety-relevance`, `news-quality-backfill` | outbound | content enrichment, relevance/quality, agentic page extraction | **No** | `OPENAI_API_KEY` + OAuth (`chatgpt_oauth_tokens`) |
 | Cloudflare Workers AI | Workers: assistant, submit, ingest, search-proxy, trip-inbox; edge fns: `story-narrate`, `translate-*`, `cms-ai`, `generate-usernames`, `pipeline-image-vision`, `bulk-create-*` | outbound | chat/RAG, query rewrite, embeddings (bge-m3), translation, vision, rerank | Workers: **yes**; edge fns: **no** | `CF_AI_API_TOKEN`, `CF_ACCOUNT_ID` |
 | Anthropic (shim) | `_shared/anthropic-shim.ts`; `trip-concierge`, `packing-suggestions-llm`, `trip-recap`, `trip-safety-narrative`, guide-drafts | outbound | trip/safety/guide generation; default routed to Workers AI unless `USE_ANTHROPIC=1` | via shim | `ANTHROPIC_API_KEY` (opt) |
-| Self-hosted Gemma vLLM | `_shared/llm-client.ts`; `cms-ai` | outbound (CH) | EU-residency CMS ops fallback | No | `QG_LLM_BASE_URL`, `QG_LLM_API_KEY` |
+| ~~Self-hosted Gemma vLLM~~ | — | — | **RETIRED** with the Infomaniak VPS. Nothing reads `QG_LLM_BASE_URL` / `QG_LLM_API_KEY`; `llm-client.ts`'s own header records Workers AI as the sole CF-side backend. Row kept so the removal is legible rather than looking like an omission. | — | — |
 | Wolfram | `_shared/wolfram-client.ts` | — | present, **not active** | — | `WOLFRAM_APPID` |
+
+**Env vars for the provider chain** (all optional; the chain is inert without the first):
+
+| Var | Effect |
+|---|---|
+| `NVIDIA_API_KEY` | Unset ⇒ router does nothing and requests are byte-identical to Cloudflare-only. |
+| `NVIDIA_DISABLED=1` | Instant off without unsetting the key. |
+| `NVIDIA_EXCLUDE_CALLERS` | Comma list of `callerFn` values that must never route to NVIDIA — the residency escape hatch. |
+| `NVIDIA_MODEL` / `NVIDIA_MODEL_STRONG` | Tier overrides; defaults in `_shared/nvidia-model-map.ts`. |
+| `NVIDIA_MAX_WAIT_MS` | How long a batch caller may wait for a rate slot (default 2000). Interactive callers always wait 0. |
+| `AI_DISABLED=1` | Unchanged global hard stop, above the whole chain. |
 
 ## Vendors that receive user PII
 

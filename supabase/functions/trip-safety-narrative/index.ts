@@ -174,6 +174,7 @@ ${articleLine}
 Focus on: what the current situation means for an LGBTQ+ traveler (practical, not alarmist), any recent shifts they should know about, and one concrete cautionary note if the data warrants it. If the data is benign, say so plainly — do not invent concerns.`;
 
   const body = await anthropicMessages({
+    callerFn: 'trip-safety-narrative',
     model: 'claude-haiku-4-5-20251001',
     max_tokens: 400,
     messages: [{ role: 'user', content: prompt }],

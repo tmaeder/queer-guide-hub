@@ -273,6 +273,114 @@ function mapGenderRecognition(entry: unknown): Record<string, unknown> {
 }
 
 
+// ── Territory inheritance ─────────────────────────────────────────
+//
+// ILGA covers 239 national jurisdictions and matches ALL of them on `a2_code` — measured
+// 2026-08-30: 239 entries, 239 distinct codes, zero nulls. The 11 countries reported as
+// `skipped` every run are not a join failure; they are outside ILGA's corpus because they
+// have no distinct legal system to document. ILGA *does* carry dependent territories that
+// DO have one (Cook Islands, Niue, Tokelau, Jersey, Anguilla all update nightly), so
+// "dependent territory" is not the discriminator.
+//
+// Five of the 11 are inhabited territories governed by a parent state's law. Inheriting
+// that law is the correct reading of ILGA's silence. It is stamped `inherited`, never
+// `ilga`, so a copy can never be mistaken for a measurement.
+//
+// WHY THIS RUNS EVERY NIGHT RATHER THAN ONCE IN A MIGRATION: a one-shot copy is a derived
+// field that outlives its input — the exact class that left 86 published safety notes
+// describing a different country's laws. Re-deriving here means Åland self-heals the day
+// Finland's law changes, with no second detector to build and keep alive.
+//
+// The remaining 6 are handled by decision, not by code, and are deliberately NOT touched
+// here: AQ/BV/HM/TF/UM carry `not_applicable` (no permanent civilian population), and EH
+// carries a hand-set criminalisation fail-safe for a disputed territory. Overwriting
+// those from a parent would be inventing facts. See 20260830131211.
+const TERRITORY_PARENTS: Record<string, string> = {
+  AX: 'FI', // Åland Islands — autonomous, Finnish law on these topics
+  CC: 'AU', // Cocos (Keeling) Islands — Australian law
+  CX: 'AU', // Christmas Island — Australian law
+  NF: 'AU', // Norfolk Island — Australian law since 2016
+  SJ: 'NO', // Svalbard and Jan Mayen — Norwegian law
+};
+
+/** Columns copied from parent to territory. Mirrors the row built in the main loop. */
+const INHERITED_COLUMNS = [
+  'lgbti_criminalization', 'lgbti_expression_restrictions', 'lgbti_association_restrictions',
+  'lgbti_constitutional_protection', 'lgbti_goods_services_protection', 'lgbti_health_protection',
+  'lgbti_education_protection', 'lgbti_bullying_protection', 'lgbti_employment_protection',
+  'lgbti_housing_protection', 'lgbti_hate_crime_law', 'lgbti_incitement_prohibition',
+  'lgbti_conversion_therapy_regulation', 'lgbti_same_sex_unions', 'lgbti_adoption_rights',
+  'lgbti_intersex_protection', 'lgbti_gender_recognition',
+  'equality_score', 'rights_verdicts', 'rights_verdict_general',
+] as const;
+
+async function applyTerritoryInheritance(
+  supabase: ReturnType<typeof getServiceClient>,
+  dryRun: boolean,
+): Promise<{ inherited: number; errors: string[] }> {
+  const errors: string[] = [];
+  let inherited = 0;
+
+  const parentCodes = [...new Set(Object.values(TERRITORY_PARENTS))];
+  const { data, error } = await supabase
+    .from('countries')
+    .select(`code, name, ${INHERITED_COLUMNS.join(', ')}`)
+    .in('code', parentCodes);
+
+  if (error) return { inherited: 0, errors: [`inheritance parent fetch: ${error.message}`] };
+
+  // The select list is built at runtime, so supabase-js cannot infer a row type from it
+  // and widens to ParserError. Cast once here rather than sprinkling casts downstream.
+  const parents = (data ?? []) as unknown as Record<string, unknown>[];
+  const byCode = new Map(parents.map((p) => [p.code as string, p]));
+
+  for (const [child, parentCode] of Object.entries(TERRITORY_PARENTS)) {
+    const parent = byCode.get(parentCode);
+    // A missing parent means ILGA did not cover the PARENT this run. Skip rather than
+    // write nulls: absence of evidence must not overwrite a good previous inheritance.
+    if (!parent) {
+      errors.push(`${child}: parent ${parentCode} not found — inheritance skipped`);
+      continue;
+    }
+
+    const row: Record<string, unknown> = {};
+    for (const col of INHERITED_COLUMNS) row[col] = parent[col];
+    row.lgbti_data_last_updated = new Date().toISOString();
+
+    if (dryRun) {
+      console.log(`[DRY RUN] Would inherit ${child} <- ${parentCode}`);
+      inherited++;
+      continue;
+    }
+
+    // enrichment_status is MERGED, never replaced: it holds unrelated per-field state
+    // (World Bank stats, CIA Factbook) that a blind overwrite would silently destroy.
+    const { data: existing } = await supabase
+      .from('countries').select('enrichment_status').eq('code', child).maybeSingle();
+
+    row.enrichment_status = {
+      ...((existing?.enrichment_status as Record<string, unknown>) ?? {}),
+      lgbti_rights: {
+        state: 'inherited',
+        parent: parentCode,
+        // The NAME, not just the code: `SourceLine` renders "national law of Finland",
+        // and resolving FI -> Finland in the UI would mean a lookup table that drifts
+        // from this map. The row carries what the surface needs.
+        parent_name: parent.name as string,
+        source: `ilga:${parentCode}`,
+        reason: 'no distinct legal regime; parent-state law governs. ILGA does not list this jurisdiction separately.',
+        at: new Date().toISOString(),
+      },
+    };
+
+    const { error: upErr } = await supabase.from('countries').update(row).eq('code', child);
+    if (upErr) errors.push(`${child}: ${upErr.message}`);
+    else inherited++;
+  }
+
+  return { inherited, errors };
+}
+
 // ── Main handler ──────────────────────────────────────────────────
 
 Deno.serve(async (req) => {
@@ -429,12 +537,27 @@ Deno.serve(async (req) => {
       }
     }
 
+    // 4. Territory inheritance — runs AFTER the main loop so the parents it copies from
+    // are this run's freshly-written values, not yesterday's. Skipped when the caller
+    // filtered to a single country, unless that country is itself a territory.
+    let inheritance = { inherited: 0, errors: [] as string[] };
+    if (!countryCode || TERRITORY_PARENTS[countryCode.toUpperCase()]) {
+      inheritance = await applyTerritoryInheritance(supabase, dryRun);
+      console.log(`Territory inheritance: ${inheritance.inherited} applied, ${inheritance.errors.length} errors`);
+      errors.push(...inheritance.errors);
+    }
+
     const response = {
       success: true,
       dry_run: dryRun,
       total_countries: countriesToProcess.length,
       updated,
       skipped,
+      // `skipped` is ILGA's coverage boundary, not a defect — see the TERRITORY_PARENTS
+      // header. These two keys make that legible in the run log instead of leaving a bare
+      // `skipped: 11` to be rediscovered every few months.
+      inherited: inheritance.inherited,
+      skipped_by_decision: skipped - inheritance.inherited,
       errors_count: errors.length,
       errors: errors.slice(0, 20),
       unmatched: unmatched.slice(0, 20),

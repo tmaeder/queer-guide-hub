@@ -226,7 +226,6 @@
       "title": "24 小时危机热线",
       "body": "跨性别支持热线、LGBT+ 危机援助与当地紧急电话，按国家分类，任何页面均可一键直达。"
     },
-    "osmAttribution": "交通示意图源自 © OpenStreetMap 贡献者数据（ODbL）",
     "reportSomething": "举报",
     "hotlines": "求助热线",
     "antiDiscrimination": {
@@ -451,7 +450,25 @@
       "moved": "地点已移动",
       "removed": "地点已移除",
       "dayUpdated": "当日已更新",
-      "dragHandleAria": "拖动以重新排序"
+      "dragHandleAria": "拖动以重新排序",
+      "a11yCoverage": "[ZH] {{withData}} of {{total}} places here publish accessibility information. Nothing is ruled out for staying silent.",
+      "applied": "[ZH] Added {{count}} stops",
+      "apply": "[ZH] Add {{count}} stops to the trip",
+      "applyFailed": "[ZH] Could not add the plan",
+      "budgetCoverage": "[ZH] {{withData}} of {{total}} places here list a price. Budget nudges the order; it does not filter.",
+      "event": "[ZH] Event",
+      "exhausted": "[ZH] Nothing left. The matches here are already on other days.",
+      "loadFailed": "[ZH] Could not load places for these cities. Try again in a moment.",
+      "matchesNeeds": "[ZH] Matches your needs",
+      "needDates": "[ZH] Set the trip dates and a destination city, and the days can be built from them.",
+      "noCandidate": "[ZH] Nothing listed here for this time of day.",
+      "paceLabel": "[ZH] How full a day",
+      "reroll": "[ZH] Try another",
+      "summary": "[ZH] {{filled}} of {{requested}} slots filled",
+      "timeUnknown": "[ZH] time of day not known",
+      "tooFew": "[ZH] Only {{count}} places here match that. Not enough to build days from. Try another vibe, or add stops by hand.",
+      "vibeAny": "[ZH] A bit of everything",
+      "vibeLabel": "[ZH] What you are after"
     },
     "map": {
       "emptyNoPlaces": "添加地点以在地图上查看",
@@ -651,7 +668,8 @@
       "reservations": "预订",
       "packing": "行李",
       "collaborate": "协作",
-      "journal": "日记"
+      "journal": "日记",
+      "buildDays": "[ZH] Build the days"
     },
     "today": {
       "offlineBanner": "您处于离线状态 — 显示上次保存的行程。",
@@ -2296,10 +2314,7 @@
       "pride": {
         "title": "本季骄傲活动",
         "window": "未来 4 个月",
-        "empty": "没有即将到来的骄傲活动。",
-        "safety": "平等指数",
-        "equalityTooltip": "平等分数反映该国的LGBTQ+法律保护。越高越安全。",
-        "equalityAria": "平等分数 {{score}}：点按以查看说明"
+        "empty": "没有即将到来的骄傲活动。"
       },
       "inspiration": {
         "villages": "酷儿村",
@@ -4464,6 +4479,9 @@
         "slang": "俚语"
       },
       "sourceOfLaw": "法律依据",
+      "clinicalGuidance": "临床指南",
+      "guidanceEdition": "版本",
+      "notMedicalAdvice": "此处的定义来自已发布的临床指南，不构成医疗建议。请点击链接查看临床细节，并就您自身的治疗咨询医务人员。",
       "lawJurisdiction": "适用范围",
       "lawInternational": "国际",
       "lawAdopted": "通过年份",

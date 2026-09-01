@@ -7,6 +7,7 @@ import {
 } from './supabase-client.ts'
 import { createBatchCircuitChecker, type BatchCircuitChecker } from './circuit-breaker.ts'
 import { consumeLlmBudget } from './llm-budget.ts'
+import { setInvocationDeadline } from './llm-router.ts'
 
 // Shared batch driver for the pipeline-enrich-* staging functions.
 //
@@ -257,9 +258,21 @@ export function serveEnrichment(config: EnrichmentDriverConfig) {
       // Bounded-concurrency pool with an optional wall-clock budget checked
       // between waves. Items past the deadline stay 'pending' for the next run.
       const deadline = config.wallClockMs ? Date.now() + config.wallClockMs : null
-      for (let i = 0; i < items.length; i += concurrency) {
-        if (deadline && Date.now() > deadline) break
-        await Promise.all(items.slice(i, i + concurrency).map(processItem))
+
+      // Publish that deadline to the LLM router so its NVIDIA rate-limit pacing
+      // can never sleep past it. Without this the between-waves check above is
+      // not enough: it bounds when a wave STARTS, while pacing adds latency
+      // inside a wave that is already running. A batch paced at 32 RPM is
+      // minutes long, and this driver's own header records that a slow
+      // sequential loop already 504'd an entire batch away once.
+      const releaseDeadline = deadline ? setInvocationDeadline(deadline) : null
+      try {
+        for (let i = 0; i < items.length; i += concurrency) {
+          if (deadline && Date.now() > deadline) break
+          await Promise.all(items.slice(i, i + concurrency).map(processItem))
+        }
+      } finally {
+        releaseDeadline?.()
       }
       await breaker?.flush()
 

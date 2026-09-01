@@ -186,6 +186,61 @@ export interface ContentRowAction {
   onSelect: (row: Record<string, unknown>) => void;
 }
 
+/**
+ * Declares how a content type can be archived, restored and deleted.
+ *
+ * Archive semantics are PER ENTITY on purpose. This schema has three
+ * conventions and each means something the others do not — a
+ * `presumed_closed` venue is a live business we believe has shut, a `ghost`
+ * city is not a place at all, and `review_status='archived'` is an editorial
+ * judgement. The `archive_entity` / `restore_entity` dispatchers hold that
+ * per-type SQL; this block tells the ADMIN LIST which column to read so it can
+ * show the right badge and filter, without duplicating the semantics.
+ *
+ * Omit `archive` entirely for a type that must not offer one. Exactly ONE does:
+ * `countries`. Hotels, news_articles and community_groups were also omitted
+ * until 20261029100000 gave them an `archived_at` — they simply had no column,
+ * only `seo_indexable`, which governs crawlers rather than the site, so an
+ * Archive button would have deindexed without hiding.
+ *
+ * Countries are different and permanent: the blocker is not a missing column
+ * but that `countries` is a PARENT. 246 of 250 have dependent
+ * cities/venues/events, every child page embeds the parent for its name and
+ * legal status, and `location_is_high_risk()` resolves the safety gate through
+ * the same row — so archiving one would silently un-gate content in a
+ * criminalizing jurisdiction. See the block comment in `country.ts`.
+ */
+export interface ContentLifecycleConfig {
+  /** `p_type` for archive_entity / restore_entity / delete_entity. */
+  type: string;
+  /**
+   * The column and value that mean "archived" for this type, so the list can
+   * render state and filter without knowing the per-type rules. Omit to
+   * declare the type deletable but not archivable.
+   */
+  archive?: {
+    column: string;
+    /**
+     * Value written when archived, for the `equals` predicate. Omit when
+     * `predicate` is `'present'`.
+     */
+    value?: string;
+    /**
+     * How to read `column`. `'equals'` (the default) compares against `value`
+     * and covers the status-enum conventions already in the schema —
+     * `review_status='archived'`, `shell_status='ghost'`, `status='cancelled'`.
+     * `'present'` means "archived iff this column is non-null", for the
+     * `archived_at` timestamp hotels/news/groups carry, where the useful fact
+     * is WHEN rather than a sentinel string.
+     */
+    predicate?: 'equals' | 'present';
+    /** Human label for the filter and badge, e.g. "Archived", "Ghost". */
+    label?: string;
+  };
+  /** Hard delete available from the list. Defaults to true when this block exists. */
+  deletable?: boolean;
+}
+
 export interface ContentTypeConfig {
   /** Unique ID matching the source table (e.g., 'venues', 'events') */
   id: string;
@@ -282,6 +337,11 @@ export interface ContentTypeConfig {
    * toolbar variants until something needs them.
    */
   rowActions?: ContentRowAction[];
+  /**
+   * Archive / restore / delete capability. Omit entirely for a type the admin
+   * must not remove from this screen. See `ContentLifecycleConfig`.
+   */
+  lifecycle?: ContentLifecycleConfig;
   /**
    * Columns editable across selected rows. Rendered in the bulk bar beside the
    * workflow actions. Omit for types where mass-editing a column is not safe.

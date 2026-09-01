@@ -294,7 +294,38 @@ describe('createTag / updateTag / deleteTag', () => {
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     withResults({ data: null, error: { message: 'fk constraint' } });
-    await expect(result.current.deleteTag('t1')).rejects.toEqual({ message: 'fk constraint' });
+    // A real Error, not the bare `{ message }` PostgREST hands back. Every
+    // caller narrows with `err instanceof Error`, so rethrowing the raw object
+    // discards the message — which for admin_delete_tag is the refusal
+    // breakdown naming what still references the tag, i.e. the whole point.
+    await expect(result.current.deleteTag('t1')).rejects.toThrow('fk constraint');
+  });
+
+  it('deleteTag goes through admin_delete_tag, never a raw table delete', async () => {
+    // The guard that matters. A raw `DELETE FROM unified_tags` cascades the
+    // tag's citations, clinical codes and ontology edges away, SET-NULLs its
+    // slug redirects, and leaves `tags text[]` on 20+ content tables naming a
+    // tag whose page is now a 404 — those arrays have no FK, so nothing
+    // notices. admin_delete_tag refuses when any of that holds.
+    //
+    // The sibling assertion above only proves an error propagates; it passes
+    // whichever call is made, so on its own it would not catch a revert.
+    seedFetchAllResults();
+    const { result } = renderHook(() => useCentralizedTags(), { wrapper });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    state.calls.length = 0;
+    withResults({ data: { deleted: true }, error: null });
+    await result.current.deleteTag('t1');
+
+    const rpcCall = state.calls.find((c) => c.rpc === 'admin_delete_tag');
+    expect(rpcCall, 'deleteTag must call the admin_delete_tag RPC').toBeTruthy();
+    expect(rpcCall?.chain[0]?.args[1]).toMatchObject({ p_tag_id: 't1' });
+
+    const rawDelete = state.calls.find(
+      (c) => c.table === 'unified_tags' && c.chain.some((s) => s.method === 'delete'),
+    );
+    expect(rawDelete, 'deleteTag must not issue a raw delete on unified_tags').toBeFalsy();
   });
 });
 

@@ -11,6 +11,32 @@
 /resources  /tags  301
 /resources/*  /tags/:splat  301
 
+# Taxonomy v2 -> v3 category slugs (2026-08-29 recategorization program,
+# migrations 20261006140000 / 20261006150000). ONLY the slugs that changed are
+# listed: the surviving stops kept their rows AND their URLs, so
+# /tags/c/sexual-health, /tags/c/symbols-flags and ~30 others need no rule.
+# These are static rules rather than a DB redirect table because the set is
+# small, fixed and known at ship time — village_slug_redirects/
+# tag_slug_redirects only serve *detail* routes, and /tags/c/ is not one
+# (see functions/_lib/detail.ts SLUG_REDIRECT_KINDS). src/lib/tags/
+# categorySlugRedirects.ts carries the same map for in-app navigation and
+# ?cat= legacy params, and a unit test keeps the two in step.
+/tags/c/identity-expression  /tags/c/identity  301
+/tags/c/sexuality-kink  /tags/c/sex-kink  301
+/tags/c/relationships-connection  /tags/c/relationships-family  301
+/tags/c/health-wellness  /tags/c/health  301
+/tags/c/safety-practices  /tags/c/safety-consent  301
+/tags/c/community-culture  /tags/c/culture-community  301
+/tags/c/history-heritage  /tags/c/history-rights  301
+/tags/c/rights-activism  /tags/c/history-rights  301
+/tags/c/places-travel  /tags/c/places-scene  301
+/tags/c/support-news  /tags/c/places-scene  301
+/tags/c/sexual-roles  /tags/c/bdsm-power-exchange  301
+/tags/c/body-types-archetypes  /tags/c/kink-community  301
+/tags/c/care-access  /tags/c/physical-reproductive  301
+/tags/c/current-affairs  /tags/c/political-activism  301
+/tags/c/professions-allies  /tags/c/support-services  301
+
 # /news/:slug is a first-class SPA detail page again (the P1.2 410 Gone
 # handler at functions/news/[slug].ts was removed). The SPA renders it and
 # functions/_middleware.ts injects crawler head/meta.

@@ -38,6 +38,8 @@ interface UserRow {
   pronouns: string | null;
   created_at: string;
   last_seen_at: string | null;
+  /** Confirmation handle for the danger zone on the detail sheet. */
+  username?: string | null;
   _roles?: string[];
 }
 
@@ -232,11 +234,19 @@ export default function AdminUsers() {
     () => ({
       tableName: 'profiles',
       select:
-        'id,user_id,email,display_name,first_name,last_name,avatar_url,location,user_mode,is_online,moderation_status,profile_completion_percentage,pronouns,created_at,last_seen_at',
+        'id,user_id,email,username,display_name,first_name,last_name,avatar_url,location,user_mode,is_online,moderation_status,profile_completion_percentage,pronouns,created_at,last_seen_at',
       columns,
       defaultSort: { column: 'created_at', direction: 'desc' as const },
       defaultPageSize: 25,
       enableSelection: true,
+      // Account deletion is never a bulk operation, and the bulk bar's raw
+      // `DELETE FROM profiles WHERE id IN (...)` was the wrong door regardless
+      // of how many rows: it walks into the NO-ACTION FK blockers that
+      // delete_my_account clears first, leaves the user's storage objects
+      // behind, and never touches auth.users. Deletion now lives on the single
+      // user's detail sheet, behind admin_delete_user + the edge function that
+      // finishes the job. Selection stays on for bulk EDIT and CSV export.
+      allowBulkDelete: false,
       enableSearch: true,
       searchColumns: ['display_name', 'first_name', 'last_name', 'email'],
       entityFilters: [
