@@ -11,6 +11,23 @@ name: Migration drift monitor
 # Detection only. Remediation is manual (recover the orphan SQL from
 # schema_migrations.statements into a file at its exact version and commit it —
 # see CLAUDE.md), because a blind `db pull` is the wrong fix here.
+#
+# WHY THIS NOW OPENS AN ISSUE ------------------------------------------------
+# On 2026-09-01 this monitor worked exactly as designed and nobody found out.
+# `20260929100400_city_local_airport_wins` was applied to prod from an unmerged
+# branch; the 18:31Z run passed, the 01:11Z run FAILED and named it. The failure
+# sat in the Actions tab. At 02:10Z the deploy for a merged PR hit the same
+# drift and `db push` skipped the whole run, so the migration in that PR never
+# reached prod — an hour after this job had already said so.
+#
+# Detection was never the missing piece. Reaching a human was. No scheduled
+# workflow in this repo had any notification path, so a red X on a cron job was
+# indistinguishable from nobody having looked.
+#
+# The issue is REUSED, not reopened per run: a 6-hourly job that filed a fresh
+# issue every time would produce four a day and teach the reader to ignore them.
+# One open issue is the signal; it is closed automatically when drift clears, so
+# an open issue always means drift exists right now.
 
 on:
   schedule:
@@ -23,6 +40,7 @@ concurrency:
 
 permissions:
   contents: read
+  issues: write # to raise/close the drift alert — see the header
 
 jobs:
   drift:
@@ -46,6 +64,136 @@ jobs:
         with:
           node-version: 22
 
+      # Deliberately does NOT fail the job here. The failure is re-raised in the
+      # last step, after the alert has been filed — otherwise the notification
+      # step never runs, which is the whole defect this is fixing.
+      # THREE states, not two. check-migration-drift.mjs exits 0 clean, 1 real
+      # drift, 2 cannot-check-at-all, 3 degraded (compared against the git
+      # merge-base because remote was unreachable). Collapsing that to a
+      # boolean gets BOTH edges wrong: a degraded run would file a drift alert
+      # that is not drift, and it would equally let an unverified run pass for
+      # an all-clear. Only 1 raises and only 0 clears; 2 and 3 leave whatever
+      # the issue currently says untouched, because neither knows.
       - name: Check for remote-only migration versions
+        id: check
         if: env.SUPABASE_ACCESS_TOKEN != ''
-        run: node scripts/check-migration-drift.mjs
+        run: |
+          set +e
+          node scripts/check-migration-drift.mjs > drift.log 2>&1
+          code=$?
+          set -e
+          case "$code" in
+            0) verdict=clean ;;
+            1) verdict=drift ;;
+            *) verdict=unknown ;;
+          esac
+          echo "code=$code"       >> "$GITHUB_OUTPUT"
+          echo "verdict=$verdict" >> "$GITHUB_OUTPUT"
+          cat drift.log
+          # Capped: the body goes in an issue, and a runaway log must not turn a
+          # 1-line alert into an unreadable wall.
+          {
+            echo 'log<<DRIFT_LOG_EOF'
+            tail -c 4000 drift.log
+            echo ''
+            echo 'DRIFT_LOG_EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      # The allow-list is load-bearing, not a formality. This runs ONLY for a
+      # verdict the monitor actually reached — 'drift' or 'clean'. An unset
+      # output (the step crashed) or 'unknown' (exit 2/3: remote unreachable,
+      # so it compared against the git merge-base instead) must touch nothing:
+      # a condition that merely tested `!= 'drift'` would read that silence as
+      # an all-clear and CLOSE the open issue. A monitor that files an
+      # all-clear because it fell over is worse than one that says nothing.
+      - name: Raise or clear the drift alert
+        if: ${{ env.SUPABASE_ACCESS_TOKEN != '' && contains(fromJSON('["drift","clean"]'), steps.check.outputs.verdict) }}
+        uses: actions/github-script@v7
+        env:
+          VERDICT: ${{ steps.check.outputs.verdict }}
+          DRIFT_LOG: ${{ steps.check.outputs.log }}
+        with:
+          script: |
+            const MARKER = '<!-- migration-drift-monitor -->'
+            const TITLE = 'Migration drift: remote-only versions are blocking `db push`'
+            // Guaranteed to be exactly 'drift' or 'clean' by the step condition.
+            const drifted = process.env.VERDICT === 'drift'
+            const log = process.env.DRIFT_LOG || '(no output captured)'
+            const runUrl =
+              `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}` +
+              `/actions/runs/${context.runId}`
+
+            // Find OUR issue by marker, not by title: a title can be edited by a
+            // human triaging it, and losing track would file a duplicate.
+            const open = await github.paginate(github.rest.issues.listForRepo, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              per_page: 100,
+            })
+            const existing = open.find(
+              (i) => !i.pull_request && (i.body || '').includes(MARKER),
+            )
+
+            if (drifted) {
+              const body = [
+                MARKER,
+                '`supabase db push` **skips its entire run** when the remote holds a migration',
+                'version with no committed file, so merged migrations silently stop reaching prod.',
+                'The deploy job reports its own step as successful; only its drift guard notices.',
+                '',
+                '### What to do',
+                'Recover the orphan SQL into a file at its **exact** version and commit it —',
+                'never a blind `db pull`. See CLAUDE.md → Migrations. `schema_migrations.created_by`',
+                'tells you how it got there: an address means hand/MCP-applied, `null` means CI.',
+                '',
+                '### Monitor output',
+                '```',
+                log.trim(),
+                '```',
+                '',
+                `[Run log](${runUrl})`,
+              ].join('\n')
+
+              if (existing) {
+                core.notice(`Drift persists; issue #${existing.number} already open.`)
+              } else {
+                const created = await github.rest.issues.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title: TITLE,
+                  body,
+                  assignees: [context.repo.owner],
+                })
+                core.notice(`Opened #${created.data.number} for migration drift.`)
+              }
+            } else if (existing) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                body: `Drift cleared — the monitor found no remote-only versions. [Run log](${runUrl})`,
+              })
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                state: 'closed',
+              })
+              core.notice(`Closed #${existing.number}; drift cleared.`)
+            }
+
+      # Restores the red X. The job must still fail so the run history stays an
+      # honest record, and so anything watching workflow conclusions keeps working.
+      # Any non-zero exit still fails the job, exactly as before this alerting
+      # was added: the run history stays an honest record, and 2/3 (could not
+      # check) must not read as a pass just because they raise no issue.
+      - name: Re-raise the check's exit code
+        if: ${{ steps.check.outputs.code != '' && steps.check.outputs.code != '0' }}
+        run: |
+          if [ "${{ steps.check.outputs.verdict }}" = "drift" ]; then
+            echo "::error title=Migration drift::Remote holds a version with no committed file — \`db push\` will skip. See the open issue."
+          else
+            echo "::error title=Migration drift check inconclusive::check-migration-drift.mjs exited ${{ steps.check.outputs.code }}; drift was neither confirmed nor ruled out."
+          fi
+          exit 1
