@@ -1,20 +1,50 @@
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserTravelPreferences } from '@/hooks/useUserTravelPreferences';
+import { useLineStationPool } from '@/hooks/useLineStationPool';
+import { stationMeetsVibe, vibeCount } from '@/lib/lines/vibes';
+import { seasonWindows } from '@/lib/lines/seasons';
+import { VIBE_IDS, type Station, type VibeId } from '@/lib/lines/generateLine';
 import { qk } from '@/lib/queryKeys';
 
 /**
- * Dynamic trip templates surfaced on /trips.
+ * Trip templates surfaced on /travel and /trips/discover.
  *
- * Source signals (merged in priority order):
- *   1. `event`     — upcoming featured LGBTQ+ events in the next 90 days.
- *                    Cover photo and cities come directly from the event row.
- *   2. `seasonal`  — curated city pool biased by current month
- *                    (pride season, shoulder season, winter sun).
- *                    Cover photo is hydrated from `cities.image_url`.
+ * Three tiers, merged in priority order:
+ *   1. `preference` — cities in the user's home country.
+ *   2. `event`      — upcoming featured LGBTQ+ events in the next 90 days.
+ *   3. `seasonal`   — DERIVED, one per vibe, from the same station pool the
+ *                     /trips/discover line generator uses.
  *
- * User-preference templates are a planned extension but require a
- * `profiles.saved_cities` / bookmark surface that doesn't exist yet.
+ * WHAT TIER 3 REPLACED, AND WHY
+ *
+ * Until 2026-08-31 the seasonal tier was `SEASONAL_POOL`: eleven hardcoded
+ * cities, addressed by hardcoded slug, each with a hardcoded month list and a
+ * hardcoded CSS gradient. It had three problems and only the first was visible.
+ *
+ *   a. It rotted silently. Five of its slugs resolved to nothing — `mykonos`,
+ *      `sao-paulo`, `phuket`, `las-palmas-de-gran-canaria`, `new-york-city` —
+ *      and the file had grown a comment about dropping them rather than a way
+ *      of not having them. A curated list of foreign keys is a list of things
+ *      that will one day not exist.
+ *   b. It was unfalsifiable. "Bangkok in the dry season" made a claim about a
+ *      city this platform had no measured basis for, and nothing checked it.
+ *   c. It could not be personalised, because there were no parameters — a
+ *      template was a title, not a description of what the traveller wanted.
+ *
+ * The replacement is a parameter triple: (vibe, station, season window). Every
+ * part is measured. The station comes from `line_station_pool`, which already
+ * gates on image + prose + safety notes + coordinates + ten live venues, so a
+ * template cannot point at a city that has nothing in it — and because that
+ * function is SECURITY INVOKER, an anonymous reader is never offered a city
+ * whose scene the safety layer has decided not to show them. The vibe count is
+ * the real venue count. The days come from the season window.
+ *
+ * `gradient` is gone with the list. Every station carries an image by
+ * definition of the pool, so the chromatic fallback had nothing left to fall
+ * back from, and the monochrome rule says a card is paper and a photo, not a
+ * colour wash.
  */
 
 export type TripTemplateSource = 'preference' | 'event' | 'seasonal';
@@ -41,153 +71,86 @@ export interface TripTemplate {
   days: number;
   currency: string;
   coverImageUrl: string | null;
-  /** CSS gradient fallback when photo is missing or fails to load. */
-  gradient: string;
   source: TripTemplateSource;
+  /**
+   * The parameters this template was derived from, carried through to the trip
+   * so the itinerary generator starts from the same picks the reader made.
+   * Null on the tiers that are not vibe-driven.
+   */
+  vibe: VibeId | null;
+  /** A measured line about why this is here. Never a claim we cannot check. */
+  reason: string | null;
 }
 
-interface SeasonalSeed {
-  key: string;
-  title: string;
-  citySlugs: string[];
-  cityDisplayNames: string[];
-  days: number;
-  currency: string;
-  gradient: string;
-  /** 1-indexed months this template is relevant for (inclusive). */
-  months: number[];
+/**
+ * The seasonal tier, derived.
+ *
+ * One template per vibe, each anchored on the strongest station for that vibe.
+ * "Strongest" is the real venue count from the pool, and a station that does
+ * not clear the vibe's floor is not offered at all — below the floor a city has
+ * a bar, not a scene, and sending somebody across a border for one venue is the
+ * exact failure the floors exist to prevent.
+ *
+ * A station is preferred when it has an event inside the current season window,
+ * because that is a reason the reader can check. It is not REQUIRED to: the
+ * event corpus is a pride-season corpus (see `seasons.ts` — eight of the next
+ * sixteen months carry almost nothing), so requiring an event would empty this
+ * tier for half the year and make it look like the platform had shut down.
+ * When there is no event the template says what it does have — the venue count
+ * — rather than implying something is on.
+ */
+function deriveSeasonalTemplates(pool: Station[], now: Date): TripTemplate[] {
+  if (pool.length === 0) return [];
+  const window = seasonWindows(now)[0];
+  const inWindow = new Set(window.months);
+  const used = new Set<string>();
+  const out: TripTemplate[] = [];
+
+  for (const vibe of VIBE_IDS) {
+    const eligible = pool
+      .filter((s) => stationMeetsVibe(s, vibe) && !used.has(s.id) && !!s.countryId)
+      .sort((a, b) => {
+        // An event in the window is the strongest reason to surface a city, so
+        // it outranks raw count — but only as a sort key, never as a filter.
+        const aHas = a.eventMonths.some((m) => inWindow.has(m)) ? 1 : 0;
+        const bHas = b.eventMonths.some((m) => inWindow.has(m)) ? 1 : 0;
+        if (aHas !== bHas) return bHas - aHas;
+        return vibeCount(b, vibe) - vibeCount(a, vibe);
+      });
+
+    const station = eligible[0];
+    if (!station) continue;
+    used.add(station.id);
+
+    const hasEvent = station.eventMonths.some((m) => inWindow.has(m));
+    out.push({
+      id: `seasonal:${vibe}:${station.id}`,
+      title: `${VIBE_TITLE[vibe]} in ${station.name}`,
+      cities: station.name,
+      cityIds: [station.id],
+      primaryCityId: station.id,
+      primaryCountryId: station.countryId,
+      days: 4,
+      currency: station.currency ?? 'USD',
+      coverImageUrl: station.imageUrl,
+      source: 'seasonal',
+      vibe,
+      reason:
+        hasEvent && station.nextEventTitle
+          ? station.nextEventTitle
+          : `${vibeCount(station, vibe)} places listed`,
+    });
+  }
+  return out;
 }
 
-// ── Seasonal pool ─────────────────────────────────────────────────────
-// Kept small + curated. The month buckets overlap so there's always
-// something to show; the list is filtered to the current month at runtime.
-
-const SEASONAL_POOL: SeasonalSeed[] = [
-  // Pride season (Apr–Aug)
-  {
-    key: 'berlin-pride',
-    title: 'Pride Week Berlin',
-    citySlugs: ['berlin'],
-    cityDisplayNames: ['Berlin'],
-    days: 7,
-    currency: 'EUR',
-    gradient: 'linear-gradient(135deg, #7C3AED 0%, #DB2777 100%)',
-    months: [6, 7, 8],
-  },
-  {
-    key: 'amsterdam-cologne',
-    title: 'Amsterdam & Cologne Pride Circuit',
-    citySlugs: ['amsterdam', 'cologne'],
-    cityDisplayNames: ['Amsterdam', 'Cologne'],
-    days: 5,
-    currency: 'EUR',
-    gradient: 'linear-gradient(135deg, #F59E0B 0%, #EF4444 100%)',
-    months: [7, 8],
-  },
-  {
-    key: 'nyc-pride',
-    title: 'NYC Pride & Beyond',
-    citySlugs: ['new-york'],
-    cityDisplayNames: ['New York City'],
-    days: 5,
-    currency: 'USD',
-    gradient: 'linear-gradient(135deg, #EC4899 0%, #8B5CF6 100%)',
-    months: [6, 7],
-  },
-  {
-    key: 'madrid-orgullo',
-    title: 'Madrid Orgullo',
-    citySlugs: ['madrid'],
-    cityDisplayNames: ['Madrid'],
-    days: 5,
-    currency: 'EUR',
-    gradient: 'linear-gradient(135deg, #F43F5E 0%, #8B5CF6 100%)',
-    months: [6, 7],
-  },
-  // Shoulder (Sep–Nov)
-  {
-    key: 'sitges-bears',
-    title: 'Sitges Bears Week',
-    citySlugs: ['sitges'],
-    cityDisplayNames: ['Sitges'],
-    days: 6,
-    currency: 'EUR',
-    gradient: 'linear-gradient(135deg, #A16207 0%, #B45309 100%)',
-    months: [9],
-  },
-  {
-    key: 'palm-springs-pride',
-    title: 'Palm Springs Pride',
-    citySlugs: ['palm-springs'],
-    cityDisplayNames: ['Palm Springs'],
-    days: 4,
-    currency: 'USD',
-    gradient: 'linear-gradient(135deg, #F97316 0%, #DB2777 100%)',
-    months: [10, 11],
-  },
-  {
-    key: 'ptown',
-    title: 'Provincetown Weekend',
-    citySlugs: ['provincetown'],
-    cityDisplayNames: ['Provincetown'],
-    days: 4,
-    currency: 'USD',
-    gradient: 'linear-gradient(135deg, #0EA5E9 0%, #8B5CF6 100%)',
-    months: [8, 9, 10],
-  },
-  // Winter sun (Dec–Mar)
-  {
-    key: 'bangkok',
-    title: 'Bangkok in the dry season',
-    citySlugs: ['bangkok'],
-    cityDisplayNames: ['Bangkok'],
-    days: 10,
-    currency: 'THB',
-    gradient: 'linear-gradient(135deg, #10B981 0%, #6366F1 100%)',
-    months: [1, 2, 3, 11, 12],
-  },
-  {
-    key: 'rio-carnival',
-    title: 'Rio Carnival',
-    citySlugs: ['rio-de-janeiro'],
-    cityDisplayNames: ['Rio de Janeiro'],
-    days: 7,
-    currency: 'BRL',
-    gradient: 'linear-gradient(135deg, #F59E0B 0%, #EC4899 100%)',
-    months: [2, 3],
-  },
-  {
-    key: 'gran-canaria-winter',
-    title: 'Gran Canaria Winter Pride',
-    citySlugs: ['maspalomas'],
-    cityDisplayNames: ['Maspalomas'],
-    days: 5,
-    currency: 'EUR',
-    gradient: 'linear-gradient(135deg, #F97316 0%, #3B82F6 100%)',
-    months: [11, 12, 1, 2, 3],
-  },
-  // Always-on fallback — Barcelona — so a new user in March still sees photos
-  {
-    key: 'barcelona',
-    title: 'Barcelona Beach & Nightlife',
-    citySlugs: ['barcelona'],
-    cityDisplayNames: ['Barcelona'],
-    days: 4,
-    currency: 'EUR',
-    gradient: 'linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%)',
-    months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-  },
-];
-
-const EVENT_GRADIENT = 'linear-gradient(135deg, #DB2777 0%, #7C3AED 100%)';
-const PREFERENCE_GRADIENT = 'linear-gradient(135deg, #0EA5E9 0%, #22C55E 100%)';
-
-function pickSeasonal(now: Date): SeasonalSeed[] {
-  const m = now.getMonth() + 1;
-  const onSeason = SEASONAL_POOL.filter((s) => s.months.includes(m));
-  // Always include Barcelona-style fallback if we'd otherwise have nothing.
-  return onSeason.length >= 3 ? onSeason : SEASONAL_POOL;
-}
+const VIBE_TITLE: Record<VibeId, string> = {
+  nightlife: 'Nightlife',
+  sauna: 'Saunas',
+  slow: 'Slow days',
+  community: 'Community',
+  outdoors: 'Outdoors',
+};
 
 function diffDays(start: string, end: string | null): number {
   if (!end) return 3;
@@ -202,25 +165,20 @@ export function useTripTemplates() {
   const homeCountryId = prefs?.home_country_id ?? null;
   const homeCityId = prefs?.home_city_id ?? null;
 
-  return useQuery({
+  // The pool is already fetched and cached for an hour by /trips/discover, and
+  // its query key carries the signed-in flag for the SECURITY INVOKER reason
+  // documented there. Reusing the hook means this surface shares that cache
+  // rather than opening a second, differently-gated copy of the same 346 rows.
+  const { data: pool } = useLineStationPool();
+
+  const remote = useQuery({
     queryKey: qk.trip.templates(new Date().getMonth(), homeCountryId, homeCityId),
     staleTime: 60 * 60 * 1000,
     queryFn: async (): Promise<TripTemplate[]> => {
       const now = new Date();
       const horizon = new Date(now.getTime() + 90 * 86_400_000);
 
-      const seasonalSeeds = pickSeasonal(now);
-      const allSlugs = Array.from(new Set(seasonalSeeds.flatMap((s) => s.citySlugs)));
-
-      // Fetch seasonal city photos + event-driven templates + preference
-      // cities (when a home country is set) in parallel.
-      const [cityRes, eventRes, prefRes] = await Promise.all([
-        allSlugs.length
-          ? supabase
-              .from('cities')
-              .select('id, name, slug, image_url, country_id')
-              .in('slug', allSlugs)
-          : Promise.resolve({ data: [], error: null }),
+      const [eventRes, prefRes] = await Promise.all([
         supabase
           .from('events')
           .select(
@@ -235,7 +193,9 @@ export function useTripTemplates() {
         homeCountryId
           ? supabase
               .from('cities')
-              .select('id, name, image_url, country_id, lgbt_friendly_rating, countries:country_id(currency)')
+              .select(
+                'id, name, image_url, country_id, lgbt_friendly_rating, countries:country_id(currency)',
+              )
               .eq('country_id', homeCountryId)
               .eq('is_major_city', true)
               .order('lgbt_friendly_rating', { ascending: false, nullsFirst: false })
@@ -243,27 +203,10 @@ export function useTripTemplates() {
           : Promise.resolve({ data: [], error: null }),
       ]);
 
-      if (cityRes.error) throw cityRes.error;
       // Event lookup is best-effort — if it fails we still surface seasonal
       // templates. Log but don't block.
       if (eventRes.error) {
         console.warn('[useTripTemplates] event fetch failed', eventRes.error);
-      }
-
-      type ResolvedCity = {
-        id: string;
-        name: string;
-        image_url: string | null;
-        country_id: string | null;
-      };
-      const citiesBySlug = new Map<string, ResolvedCity>();
-      for (const c of cityRes.data ?? []) {
-        citiesBySlug.set(c.slug, {
-          id: c.id,
-          name: c.name,
-          image_url: c.image_url,
-          country_id: c.country_id,
-        });
       }
 
       const eventTemplates: TripTemplate[] = [];
@@ -296,40 +239,11 @@ export function useTripTemplates() {
           days: diffDays(raw.start_date, raw.end_date),
           currency: city.countries?.currency ?? 'USD',
           coverImageUrl: cover,
-          gradient: EVENT_GRADIENT,
           source: 'event',
+          vibe: null,
+          reason: raw.start_date.slice(0, 10),
         });
       }
-
-      const seasonalTemplates: TripTemplate[] = seasonalSeeds
-        .map((seed): TripTemplate | null => {
-          const resolved = seed.citySlugs
-            .map((slug) => citiesBySlug.get(slug))
-            .filter((c): c is ResolvedCity => !!c);
-          const head = resolved.find((c) => c.country_id);
-          // A seed whose slugs resolve to nothing (or to a city with no
-          // country) produced a template with an empty cityIds array and a
-          // create button that could not populate the NOT NULL columns. Five
-          // slugs in this pool were dead — mykonos, sao-paulo, phuket,
-          // las-palmas-de-gran-canaria, new-york-city — so this was not
-          // hypothetical. Drop it rather than render a broken affordance.
-          if (!head?.country_id) return null;
-          const cover = resolved.find((c) => c.image_url)?.image_url ?? null;
-          return {
-            id: `seasonal:${seed.key}`,
-            title: seed.title,
-            cities: seed.cityDisplayNames.join(', '),
-            cityIds: resolved.map((c) => c.id),
-            primaryCityId: head.id,
-            primaryCountryId: head.country_id,
-            days: seed.days,
-            currency: seed.currency,
-            coverImageUrl: cover,
-            gradient: seed.gradient,
-            source: 'seasonal' as const,
-          };
-        })
-        .filter((tpl) => tpl !== null);
 
       // Preference tier: 1–2 cities in the user's home country (excluding
       // home city). Best-effort — failures don't block other tiers.
@@ -357,22 +271,40 @@ export function useTripTemplates() {
           days: 3,
           currency: c.countries?.currency ?? 'USD',
           coverImageUrl: c.image_url,
-          gradient: PREFERENCE_GRADIENT,
           source: 'preference',
+          vibe: null,
+          reason: null,
         }));
 
-      // Dedupe across tiers by cityIds — preference wins, then event, then seasonal.
-      const preferenceCityIds = new Set(preferenceTemplates.flatMap((t) => t.cityIds));
-      const eventFiltered = eventTemplates.filter((t) =>
-        t.cityIds.every((id) => !preferenceCityIds.has(id)),
-      );
-      const eventCityIds = new Set(eventFiltered.flatMap((t) => t.cityIds));
-      const seasonalFiltered = seasonalTemplates.filter((t) =>
-        t.cityIds.every((id) => !preferenceCityIds.has(id) && !eventCityIds.has(id)),
-      );
-
-      // Preference first (personalized), then events (timeliest), then seasonal.
-      return [...preferenceTemplates, ...eventFiltered, ...seasonalFiltered].slice(0, 6);
+      // Only the two remote tiers here. The seasonal tier is derived from the
+      // station pool, which is a different query with a different cache key —
+      // merging happens in the hook body so this one can resolve without
+      // waiting on it, and so a pool failure degrades the tier rather than the
+      // whole surface.
+      return [...preferenceTemplates, ...eventTemplates];
     },
   });
+
+  return useMemo(() => {
+    const remoteTemplates = remote.data ?? [];
+    const seasonal = deriveSeasonalTemplates(pool ?? [], new Date());
+
+    // Dedupe across tiers by city — preference wins, then event, then seasonal.
+    // A reader offered the same city twice reads the second card as a bug.
+    const claimed = new Set<string>();
+    const merged: TripTemplate[] = [];
+    for (const tpl of [...remoteTemplates, ...seasonal]) {
+      if (tpl.cityIds.some((id) => claimed.has(id))) continue;
+      for (const id of tpl.cityIds) claimed.add(id);
+      merged.push(tpl);
+    }
+
+    return {
+      ...remote,
+      data: merged.slice(0, 6),
+      // The surface is usable as soon as either source arrives; it is only
+      // genuinely loading while BOTH are empty.
+      isLoading: remote.isLoading && seasonal.length === 0,
+    };
+  }, [remote, pool]);
 }

@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { VIBE_IDS, type PaceId, type Station, type VibeId } from '@/lib/lines/generateLine';
 import { availability, isOfferable, seasonWindows, type SeasonId } from '@/lib/lines/seasons';
 import { PickerLine, type PickerOption } from './PickerLine';
+// Shared with the trip templates: one definition of what a vibe counts.
+import { VIBE_MIN, vibeCount } from '@/lib/lines/vibes';
 
 /**
  * Three lines: what you want, when, and how fast.
@@ -32,22 +34,6 @@ interface RoutePickerProps {
 
 const PACE_IDS: PaceId[] = ['slow', 'steady', 'sprint'];
 
-const VIBE_FIELD: Record<VibeId, keyof Station> = {
-  nightlife: 'nightlifeCount',
-  sauna: 'saunaCount',
-  slow: 'cafeCount',
-  community: 'communityCount',
-  outdoors: 'outdoorCount',
-};
-
-const VIBE_MIN: Record<VibeId, number> = {
-  nightlife: 5,
-  sauna: 2,
-  slow: 3,
-  community: 1,
-  outdoors: 2,
-};
-
 export function RoutePicker({
   pool,
   vibe,
@@ -65,9 +51,7 @@ export function RoutePicker({
   const vibeOptions: PickerOption[] = useMemo(
     () =>
       VIBE_IDS.map((id) => {
-        const count = pool.filter(
-          (s) => (s[VIBE_FIELD[id]] as number) >= VIBE_MIN[id],
-        ).length;
+        const count = pool.filter((s) => vibeCount(s, id) >= VIBE_MIN[id]).length;
         return {
           id,
           label: t(`trips.discover.picker.vibe.${id}`, VIBE_FALLBACK[id]),

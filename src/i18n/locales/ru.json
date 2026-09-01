@@ -466,7 +466,25 @@
       "moved": "Место перенесено",
       "removed": "Место удалено",
       "dayUpdated": "День обновлён",
-      "dragHandleAria": "Перетащите для перестановки"
+      "dragHandleAria": "Перетащите для перестановки",
+      "a11yCoverage": "[RU] {{withData}} of {{total}} places here publish accessibility information. Nothing is ruled out for staying silent.",
+      "applied": "[RU] Added {{count}} stops",
+      "apply": "[RU] Add {{count}} stops to the trip",
+      "applyFailed": "[RU] Could not add the plan",
+      "budgetCoverage": "[RU] {{withData}} of {{total}} places here list a price. Budget nudges the order; it does not filter.",
+      "event": "[RU] Event",
+      "exhausted": "[RU] Nothing left. The matches here are already on other days.",
+      "loadFailed": "[RU] Could not load places for these cities. Try again in a moment.",
+      "matchesNeeds": "[RU] Matches your needs",
+      "needDates": "[RU] Set the trip dates and a destination city, and the days can be built from them.",
+      "noCandidate": "[RU] Nothing listed here for this time of day.",
+      "paceLabel": "[RU] How full a day",
+      "reroll": "[RU] Try another",
+      "summary": "[RU] {{filled}} of {{requested}} slots filled",
+      "timeUnknown": "[RU] time of day not known",
+      "tooFew": "[RU] Only {{count}} places here match that. Not enough to build days from. Try another vibe, or add stops by hand.",
+      "vibeAny": "[RU] A bit of everything",
+      "vibeLabel": "[RU] What you are after"
     },
     "map": {
       "emptyNoPlaces": "Добавьте места, чтобы увидеть их на карте",
@@ -678,7 +696,8 @@
       "reservations": "Бронирования",
       "packing": "Сборы",
       "collaborate": "Совместная работа",
-      "journal": "Дневник"
+      "journal": "Дневник",
+      "buildDays": "[RU] Build the days"
     },
     "today": {
       "offlineBanner": "Вы не в сети — показан последний сохранённый маршрут.",
