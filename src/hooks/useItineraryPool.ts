@@ -101,14 +101,20 @@ export function useItineraryPool(cityIds: string[], from: string | null, to: str
     enabled: ids.length > 0,
     staleTime: 60 * 60 * 1000,
     queryFn: async (): Promise<Candidate[]> => {
-      const { data, error } = await supabase.rpc(
-        // The cast disappears when `types.ts` is regenerated after this
-        // change's migration is applied. It covers the RPC NAME only — the row
-        // shape is checked against `PoolRow` on the line below.
-        'itinerary_candidate_pool' as never,
-        { p_city_ids: ids, p_from: from, p_to: to } as never,
-      );
+      // `null` and an omitted argument are the same thing to this RPC — its SQL
+      // defaults are literally `NULL::date` — and omitting is what the generated
+      // optional-argument type expects, so normalise rather than widen the type.
+      const { data, error } = await supabase.rpc('itinerary_candidate_pool', {
+        p_city_ids: ids,
+        p_from: from ?? undefined,
+        p_to: to ?? undefined,
+      });
       if (error) throw error;
+      // `PoolRow` deliberately overrides the generated row type, which is LOOSER
+      // in two ways that matter here: the generator types a `TABLE(...)` return
+      // with every column non-null (most of these are nullable), and it can only
+      // see `kind` as `string` where the RPC emits exactly 'venue' | 'event'.
+      // Narrowing here is what lets `toCandidate` switch on `kind` exhaustively.
       return ((data ?? []) as unknown as PoolRow[]).map(toCandidate);
     },
   });

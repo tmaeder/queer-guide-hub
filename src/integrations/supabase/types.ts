@@ -33094,6 +33094,39 @@ export type Database = {
         Args: { p_at?: string; p_venue_id: string }
         Returns: boolean
       }
+      itinerary_candidate_pool: {
+        Args: {
+          p_city_ids: string[]
+          p_from?: string
+          p_per_bucket?: number
+          p_to?: string
+        }
+        Returns: {
+          accessibility_attributes: string[]
+          amenities: string[]
+          category: string
+          city_id: string
+          country_id: string
+          day_part: string[]
+          day_part_known: boolean
+          ends_at: string
+          id: string
+          image_url: string
+          is_free: boolean
+          kind: string
+          latitude: number
+          longitude: number
+          name: string
+          price_level: number
+          quality_score: number
+          rating: number
+          slug: string
+          starts_at: string
+          subtype: string
+          tags: string[]
+          venue_id: string
+        }[]
+      }
       jwt_claim: { Args: { claim: string }; Returns: string }
       kink_access_rank: {
         Args: { p_owner: string; p_viewer: string }
