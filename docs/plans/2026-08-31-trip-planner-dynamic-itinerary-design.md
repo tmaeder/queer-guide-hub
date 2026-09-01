@@ -280,9 +280,24 @@ function body, not by the grep that appeared to contradict it.
 
 ## §7 — Filed, deliberately not in this change
 
-1. **Repair `venues.day_part`.** Batched runner + `admin_automations` row, recomputing from
-   `category`, so the column stops contradicting itself. No reader once §3.2 lands, and a 15,833-row
-   write does not belong in a feature PR.
+1. ~~**Repair `venues.day_part`.**~~ **DONE, and the filing above was WRONG** — the column is
+   *dropped*, not repaired (migration `20261117120000`). Measuring it before writing the repair is
+   what changed the answer. It holds only **five distinct values across 34,148 rows**, 27,817 of them
+   `morning,afternoon`: not per-venue knowledge but a stamp, applied by `20260526000000`'s six
+   category-keyed UPDATEs plus a catch-all that swept every remaining row into the majority value.
+   The promised refiner ("pipeline-enrich-venue will refine") never ran. **77.5% now disagree** with
+   `venue_category_day_part(category)`, and the disagreements are impossible rather than merely
+   stale — 3,420 bars, 660 clubs and 1,291 saunas stamped `morning,afternoon`. The cause is measured,
+   not assumed: **84.5%** of those bars and **77.9%** of those clubs carry an `enrichment_status`
+   `category_backfill` marker (saunas 48.8%, weaker), so the stamp was derived from a category that
+   `run_venue_category_reclassify` later moved underneath it.
+   **Repairing it would have rebuilt the same bomb** — storing `venue_category_day_part(category)` in
+   a column is a cached copy of a function that already answers on demand, correct on the night the
+   cron runs and drifting again at the next reclassification, forever, for no reader. Nothing reads
+   the column: one function mentions `day_part` (`itinerary_candidate_pool`, which derives it), no
+   view, no index, no constraint, and `20260810075202` had already dropped `idx_venues_day_part_gin`
+   as "a column nothing filters by". Pre-drop rows are preserved in `venue_day_part_drop_audit`.
+   (The "15,833-row write" figure above was also wrong; the real count carrying a value is 34,148.)
 2. **`venues.vibe_tags` is empty (0 of 25,178)** and `city_climate_monthly` is empty (0 rows). Both
    were created for this feature and never filled. The generator scores on `category` + `tags`
    (14,695 venues tagged) instead, and neither empty column is read — an empty array must not be
