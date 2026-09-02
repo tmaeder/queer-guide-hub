@@ -31,6 +31,7 @@ import { osmAccessibility } from '../_shared/osm-accessibility.ts'
 import {
   CONTROL_QUERY,
   OVERPASS_ENDPOINTS,
+  RETRYABLE_PROBE_VERDICTS,
   buildAroundQuery,
   classifyOverpassResponse,
   isPlanetControlResult,
@@ -82,30 +83,49 @@ async function askOverpass(endpoint: string, query: string) {
  * Nothing in a regional extract's response identifies it as one, so this is the
  * only place the distinction can be made.
  */
-async function probeEndpoints(): Promise<{ healthy: string[]; probe: Record<string, string> }> {
+async function probeEndpoints(): Promise<{ healthy: string[]; probe: Record<string, string>; allBusy: boolean }> {
   const healthy: string[] = []
   const probe: Record<string, string> = {}
   for (const endpoint of OVERPASS_ENDPOINTS) {
-    try {
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': UA },
-        body: `data=${encodeURIComponent(CONTROL_QUERY)}`,
-        signal: AbortSignal.timeout(PER_CALL_MS),
-      })
-      const body = await res.json().catch(() => null)
-      if (isPlanetControlResult(res.status, body)) {
-        healthy.push(endpoint)
-        probe[endpoint] = 'planet'
-      } else {
-        probe[endpoint] = classifyOverpassResponse(res.status, body)
+    // TWO attempts. Measured 2026-09-02: overpass-api.de answered 504 and then
+    // 200 to the identical control query seconds later, and both mirrors 504'd
+    // in the same window. A single-shot probe against an endpoint that flaps
+    // like that condemns a healthy mirror for the whole run — and the first
+    // live stall of this job was exactly that (one fire wrote nothing).
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': UA },
+          body: `data=${encodeURIComponent(CONTROL_QUERY)}`,
+          signal: AbortSignal.timeout(PER_CALL_MS),
+        })
+        const body = await res.json().catch(() => null)
+        if (isPlanetControlResult(res.status, body)) {
+          healthy.push(endpoint)
+          probe[endpoint] = 'planet'
+          break
+        }
+        const verdict = classifyOverpassResponse(res.status, body)
+        probe[endpoint] = verdict
+        // `regional` is a property of the endpoint, not of this moment — a
+        // retry cannot change it, so condemn immediately.
+        if (!RETRYABLE_PROBE_VERDICTS.has(verdict)) break
+      } catch (e) {
+        probe[endpoint] = `unreachable: ${e instanceof Error ? e.message : e}`
       }
-    } catch (e) {
-      probe[endpoint] = `unreachable: ${e instanceof Error ? e.message : e}`
+      await sleep(POLITENESS_MS)
     }
     await sleep(POLITENESS_MS)
   }
-  return { healthy, probe }
+  // Distinguish "every mirror is momentarily overloaded" from "every mirror is
+  // wrong". The first is upstream weather and must not be reported as our
+  // failure; the second is a real misconfiguration.
+  const verdicts = Object.values(probe)
+  const allBusy = healthy.length === 0 &&
+    verdicts.length > 0 &&
+    verdicts.every((v) => v === 'busy' || v === 'timeout' || v.startsWith('unreachable'))
+  return { healthy, probe, allBusy }
 }
 
 Deno.serve(async (req: Request) => {
@@ -142,13 +162,47 @@ Deno.serve(async (req: Request) => {
   }
 
   // --- endpoint health -------------------------------------------------------
-  const { healthy, probe } = await probeEndpoints()
+  const { healthy, probe, allBusy } = await probeEndpoints()
   if (healthy.length === 0) {
     // Every mirror failed the control query. Write NOTHING and stamp NOTHING —
     // an outage is absence of evidence, and recording it as evidence of absence
     // would permanently write off every venue in this batch.
-    await recordRun(supabase, runStarted, { processed: 0, endpoints_unhealthy: true, probe, status: 'error' })
-    return jsonResponse({ processed: 0, endpoints_unhealthy: true, probe }, 200, req)
+    //
+    // A BUSY UPSTREAM IS NOT OUR FAILURE, and filing it as one is how this job
+    // takes itself down. `recordRun(status:'error')` feeds consecutive_failures,
+    // auto_pause_threshold is 3, and auto-pause sets enabled=false while its
+    // own success branch later resets the counter — so a falsely-paused row
+    // ends up reading exactly like a deliberate retirement.
+    //
+    // This is the same rule the per-venue path already applies (a 429 or a
+    // query timeout is "ask again later", not "this API is broken"); it was
+    // simply missing one level up. Observed live 2026-09-02: both mirrors 504'd
+    // in one window, the 17:00 fire wrote nothing and recorded an error, and
+    // only the 17:20 success reset the counter before it reached 3.
+    // ...but "never our failure" would make a PERMANENT Overpass outage read
+    // green forever while writing nothing, which is the green-but-idle class
+    // this repo keeps getting bitten by. So transient busyness is a success and
+    // a SUSTAINED run of it escalates: if the last 5 runs were all upstream-busy
+    // too, this one is an error. At */20 that is ~2h of continuous outage before
+    // the job goes red, and ~3h before auto-pause — long past transient.
+    let escalate = false
+    if (allBusy) {
+      const { data: recent } = await supabase
+        .from('admin_automation_runs')
+        .select('summary')
+        .eq('automation_slug', AUTOMATION_SLUG)
+        .order('started_at', { ascending: false })
+        .limit(5)
+      escalate = (recent?.length ?? 0) >= 5 &&
+        recent!.every((r) => (r.summary as Record<string, unknown> | null)?.upstream_busy === true)
+    }
+    const status = allBusy && !escalate ? 'success' : 'error'
+    await recordRun(supabase, runStarted, {
+      processed: 0, endpoints_unhealthy: true, upstream_busy: allBusy, escalated: escalate, probe, status,
+    })
+    return jsonResponse({
+      processed: 0, endpoints_unhealthy: true, upstream_busy: allBusy, escalated: escalate, probe,
+    }, 200, req)
   }
 
   const vocab = await loadAmenityVocabulary(supabase, true)
