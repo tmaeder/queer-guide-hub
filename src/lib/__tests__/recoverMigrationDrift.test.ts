@@ -2,7 +2,19 @@ import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 
 // @ts-expect-error — .mjs script lib, no types
-import { STATEMENT_SEPARATOR, buildRecoveredSql } from '../../../scripts/lib/remote-migrations.mjs';
+import {
+  STATEMENT_SEPARATOR,
+  buildRecoveredSql,
+  planRecovery,
+} from '../../../scripts/lib/remote-migrations.mjs';
+
+const md5 = (s: string) => createHash('md5').update(s, 'utf8').digest('hex');
+
+/** A body as fetchMigrationBodies returns it, with a correct server digest. */
+function body(statements: string[], name = 'some_migration') {
+  const joined = statements.join(STATEMENT_SEPARATOR);
+  return { name, statements, joined, digest: md5(joined) };
+}
 
 /**
  * Guards the reconstruction half of scripts/recover-migration-drift.mjs.
@@ -84,5 +96,95 @@ describe('buildRecoveredSql', () => {
     expect(sql).toContain('20260829120625');
     expect(sql).toContain('recover-migration-drift');
     expect(sql).toMatch(/never re-run/i);
+  });
+});
+
+/**
+ * planRecovery decides whether a file is written at all, which makes it the half
+ * where "never invent content" is actually enforced. It is pure so these rules
+ * can be exercised without a Management API token — otherwise the first time
+ * they ran would be in CI, on real drift, with someone already blocked.
+ */
+describe('planRecovery', () => {
+  it('writes the file at the APPLIED version, not a new one', () => {
+    const bodies = new Map([['20260829120625', body(['select 1'], 'u_equals_u_single_primary_category')]]);
+    const { recovered, skipped } = planRecovery(['20260829120625'], bodies, { md5 });
+
+    expect(skipped).toEqual([]);
+    // db push matches on version: a file at any other version leaves the orphan
+    // orphaned and adds a second problem.
+    expect(recovered[0].file).toBe(
+      'supabase/migrations/20260829120625_u_equals_u_single_primary_category.sql',
+    );
+  });
+
+  /**
+   * The rule that matters most. A corrupted file passes every downstream check
+   * forever and misrepresents what ran; a missing one keeps failing until fixed.
+   */
+  it('refuses to write when the digest disagrees', () => {
+    const corrupted = { ...body(['select 1']), digest: 'deadbeefdeadbeefdeadbeefdeadbeef' };
+    const { recovered, skipped } = planRecovery(['20260101000000'], new Map([['20260101000000', corrupted]]), { md5 });
+
+    expect(recovered).toEqual([]);
+    expect(skipped[0].why).toMatch(/digest mismatch/i);
+  });
+
+  /** Empty statements is not proof of a no-op — it is an unknown, so escalate. */
+  it('skips an empty statements array instead of writing an empty migration', () => {
+    const empty = { name: 'x', statements: [], joined: '', digest: md5('') };
+    const { recovered, skipped } = planRecovery(['20260101000000'], new Map([['20260101000000', empty]]), { md5 });
+
+    expect(recovered).toEqual([]);
+    expect(skipped[0].why).toMatch(/empty/i);
+  });
+
+  /** A version the fetch did not return must not silently vanish from the report. */
+  it('skips — and reports — a version with no body', () => {
+    const { recovered, skipped } = planRecovery(['20260101000000'], new Map(), { md5 });
+    expect(recovered).toEqual([]);
+    expect(skipped).toHaveLength(1);
+  });
+
+  /**
+   * `statements` does not record comment headers, so a reconstruction loses the
+   * reasoning. When the author's file exists on a branch it wins — and is taken
+   * WITHOUT a digest check, because the real file legitimately differs from the
+   * parsed statements (measured once at 6,300 bytes on disk vs 5,670 recorded).
+   */
+  it('prefers the authoring commit over a reconstruction', () => {
+    const bodies = new Map([['20260101000000', body(['select 1'])]]);
+    const { recovered } = planRecovery(['20260101000000'], bodies, {
+      md5,
+      findOnBranch: () => ({
+        path: 'supabase/migrations/20260101000000_real_name.sql',
+        sha: 'abc1234567',
+        content: '-- the original file, with its reasoning\nselect 1;\n',
+      }),
+    });
+
+    expect(recovered[0].content).toContain('with its reasoning');
+    expect(recovered[0].source).toMatch(/^commit abc123456/);
+    expect(recovered[0].file).toBe('supabase/migrations/20260101000000_real_name.sql');
+  });
+
+  /** Every orphan is planned in one pass — the whole point over hand-recovery. */
+  it('plans all orphans at once, mixing outcomes', () => {
+    const bodies = new Map([
+      ['20260101000000', body(['select 1'])],
+      ['20260101000001', { ...body(['select 2']), digest: 'nope' }],
+      ['20260101000002', body(['select 3'])],
+    ]);
+    const { recovered, skipped } = planRecovery(
+      ['20260101000000', '20260101000001', '20260101000002'],
+      bodies,
+      { md5 },
+    );
+
+    expect(recovered.map((r: { version: string }) => r.version)).toEqual([
+      '20260101000000',
+      '20260101000002',
+    ]);
+    expect(skipped.map((s: { version: string }) => s.version)).toEqual(['20260101000001']);
   });
 });
