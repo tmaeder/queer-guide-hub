@@ -56,7 +56,11 @@ export function CityAutocompleteField({
     const fetchCities = async () => {
       setLoading(true);
       try {
-        const filters: Array<{ col: string; val: unknown }> = [];
+        // A merged-away city keeps its row as a redirect target, but it must
+        // never be assignable — picking it would attach content to a tombstone.
+        const filters: Array<{ col: string; val: unknown; op?: 'eq' | 'is' }> = [
+          { col: 'duplicate_of_id', val: null, op: 'is' },
+        ];
         if (currentCountryId) filters.push({ col: 'country_id', val: currentCountryId });
         const data = await listFromWhere<Record<string, unknown>>(
           'cities',
