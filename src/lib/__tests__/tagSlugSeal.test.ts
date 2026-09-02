@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { functionBody, latestMatching } from './helpers/migrations';
+
+/** The one-shot repair lives only in this file — see the note in its describe. */
+const MIGRATION = '20261128100000_tag_slug_seal.sql';
 
 /**
  * source-tags-extract slugifies with `name.toLowerCase().replace(/[^a-z0-9]+/g,'-')`,
@@ -83,29 +88,69 @@ describe('the repair ships with the seal', () => {
    * buhne the arbiter stops finding the stale row and inserts a twin carrying
    * zero usages. The gap between two migrations is one Sunday cron, so the
    * repair has to be in the same file as the seal.
+   *
+   * Pinned to the FILENAME, not to functionBody(...). The repair is a one-shot
+   * that lives only here, while the function is long-lived — keying these to the
+   * newest definition of the function would fail all of them the day a later
+   * migration legitimately redefines it.
    */
-  const sql = functionBody('unified_tags_normalize_slug');
+  const sql = readFileSync(join(process.cwd(), 'supabase/migrations', MIGRATION), 'utf8');
+
+  /**
+   * Comments stripped FIRST. Prose must never be able to satisfy a guard: the
+   * previous version of the scope test counted matches file-wide, and one of the
+   * seven hits was inside a comment while two more were the seal and the
+   * namespace guard — neither paired with an arm. Three of the four arms could
+   * therefore lose the term, INCLUDING the rename arm that would rewrite
+   * mat-silicone, and this file stayed green.
+   */
+  const stripped = sql.replace(/^\s*--.*$/gm, '');
 
   it('repairs the stale rows in the same migration', () => {
-    expect(sql).toMatch(/merge_tag_concept/i);
-    expect(sql).toMatch(/update public\.unified_tags u set slug/i);
+    expect(stripped).toMatch(/merge_tag_concept/i);
+    expect(stripped).toMatch(/update public\.unified_tags u set slug/i);
   });
 
   it('scopes every repair arm to non-ASCII names', () => {
-    // Without this term the predicate `slug <> normalize_tag_slug(name)` matches
-    // 115 active rows, 106 of them namespaced prefixes.
-    const arms = sql.match(/slug is distinct from public\.normalize_tag_slug\(/gi) ?? [];
+    // Proximity, per arm — not a file-wide count.
+    const arms = [...stripped.matchAll(/slug is distinct from public\.normalize_tag_slug\(/gi)];
     expect(arms.length).toBeGreaterThan(0);
-    const nonAscii = sql.match(/name ~ '\[\^\\x00-\\x7F\]'/g) ?? [];
-    expect(nonAscii.length).toBeGreaterThanOrEqual(arms.length);
+    for (const m of arms) {
+      const window = stripped.slice(Math.max(0, m.index! - 400), m.index! + 400);
+      expect(window, `unscoped arm at offset ${m.index}`).toMatch(/name ~ '\[\^\\x00-\\x7F\]'/);
+    }
+  });
+
+  it('drives every arm from one materialised candidate set', () => {
+    // The cap must bound the SET the arms consume. When each arm restated the
+    // predicate, dropping the scope from the rename arm alone left the cap
+    // reading 11, passing, and the rename touching 115 rows.
+    expect(stripped).toMatch(/create temp table _slug_repair_candidates/i);
+    expect((stripped.match(/_slug_repair_candidates/gi) ?? []).length).toBeGreaterThanOrEqual(4);
   });
 
   it('caps the blast radius so a widened predicate aborts instead of renaming', () => {
-    expect(sql).toMatch(/refusing to run/i);
+    expect(stripped).toMatch(/refusing to run/i);
+    expect(stripped).toMatch(/refusing to rename a facet/i);
   });
 
   it('leaves merged rows alone, since their slug is the redirect trail', () => {
-    expect(sql).toMatch(/status <> 'merged'/i);
+    expect(stripped).toMatch(/status <> 'merged'/i);
+  });
+
+  it('refuses to orphan an entity tags[] array', () => {
+    // The rename arm does not rewrite tags[]. Its safety was measured once, on
+    // 2026-09-02; source-tags-extract runs `0 5 * * 0` and can write between
+    // that measurement and the apply, so the check is re-taken at apply time.
+    expect(stripped).toMatch(/would be orphaned/i);
+    expect(stripped).toMatch(/c\.old_slug = any\(e\.tags\)/i);
+  });
+
+  it('names the row when a merged holder blocks both arms', () => {
+    // Such a row falls through the merge arm (o.status <> 'merged') and the
+    // rename arm (NOT EXISTS sees the holder), and would otherwise die three
+    // blocks later at an assertion reporting a count rather than a cause.
+    expect(stripped).toMatch(/held by a merged row/i);
   });
 
   it('clears the self-aliases a twin-named merge mints', () => {
@@ -113,14 +158,32 @@ describe('the repair ships with the seal', () => {
     // Every collision pair here is twin-named, so that is an alias identical to
     // its own tag's name — the shape tag_hygiene_stats().alias_equals_name
     // keeps at zero, a hard baseline that check-tag-hygiene.mjs reads from PROD.
-    expect(sql).toMatch(/delete from public\.tag_aliases/i);
-    expect(sql).toMatch(/lower\(a\.alias_name\) = lower\(t\.name\)/i);
+    expect(stripped).toMatch(/delete from public\.tag_aliases/i);
+    expect(stripped).toMatch(/lower\(a\.alias_name\) = lower\(t\.name\)/i);
   });
 
   it('demotes the loser primary before merging', () => {
     // merge_tag_concept repoints a differently-filed category assignment without
     // demoting it, and tag_category_assignments_one_primary_per_tag then raises
     // 23505. Measured on prod: this silently swallowed 2 of the 4 merges.
-    expect(sql).toMatch(/set is_primary = false/i);
+    expect(stripped).toMatch(/set is_primary = false/i);
+  });
+
+  it('raises the real error instead of swallowing a failed merge', () => {
+    expect(stripped).toMatch(/v_failed := v_failed \+ 1/i);
+    expect(stripped).toMatch(/merge\(s\) failed/i);
+  });
+
+  it.each([
+    ['alias_equals_name', /alias_equals_name is a zero-invariant/i],
+    ['assignment_to_non_active_tag', /assignment_to_non_active_tag is a zero-invariant/i],
+  ])('asserts the %s zero-invariant it could break', (_k, re) => {
+    expect(stripped).toMatch(re);
+  });
+
+  it('derives redirect_to_non_canonical rather than asserting it', () => {
+    // A baselined oscillator, not an invariant — so it is printed, and the
+    // number in scripts/tag-hygiene-baseline.json comes from an apply.
+    expect(stripped).toMatch(/redirect_to_non_canonical is now/i);
   });
 });
