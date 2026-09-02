@@ -84,8 +84,14 @@ begin
   -- Every listed slug must exist and still be deprecated. A slug that has since
   -- been revived, merged or renamed by another session must not be silently
   -- skipped — this fails instead, so the list is re-derived rather than guessed.
-  select count(*) into v_bad from _revive r
-   where not exists (select 1 from public.unified_tags t where t.slug = r.slug);
+  -- Aliased `rv`, NOT `r`. `r` is the declared record variable, and a table
+  -- alias of the same name is shadowed by it: PL/pgSQL resolves `r.slug` to the
+  -- variable, which is unassigned before the loop runs, and the migration dies
+  -- with `record "r" is not assigned yet` (SQLSTATE 55000). That is exactly how
+  -- this failed on its first apply — the rolled-back rehearsal used `rv`
+  -- throughout, so it validated a different statement than the file shipped.
+  select count(*) into v_bad from _revive rv
+   where not exists (select 1 from public.unified_tags t where t.slug = rv.slug);
   if v_bad > 0 then
     raise exception 'glossary revival: % listed slug(s) do not exist', v_bad;
   end if;
