@@ -146,7 +146,7 @@ if (!hygieneRes.ok) {
   const contradictions = hygiene.accessibility_contradictions
   if (contradictions === undefined) {
     console.warn('⚠ pipeline_hygiene_stats has no accessibility_contradictions key —')
-    console.warn('  20261111100000 is not applied, so this check measured NOTHING (it did not pass).')
+    console.warn('  20261201100000 is not applied, so this check measured NOTHING (it did not pass).')
   }
   const contradictionTotal = Object.values(contradictions ?? {}).reduce((a, b) => a + Number(b), 0)
   if (contradictionTotal > 0) {

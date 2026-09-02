@@ -1,7 +1,7 @@
 // Accessibility vocabulary — contradicting pairs and how to resolve them.
 // Pure. No I/O. Imported by venue-consensus.ts, venue-accessibility-osm and
 // amenity-truth-backfill, and mirrored into SQL by migration
-// 20261111100000_accessibility_contradiction_guard.sql.
+// 20261201100000_accessibility_contradiction_guard.sql.
 //
 // WHY THIS MODULE EXISTS
 // ----------------------
