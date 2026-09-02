@@ -21,7 +21,7 @@
 -- at this work (scripts/data-quality/englishify-tags.mjs) keyed its RENAMES map
 -- on slug, and its `munchen: 'Munich'` entry could never fire because the broken
 -- slug pipeline had produced `m-nchen`. The preceding migration
--- 20261205100000_tag_slug_seal repairs those slugs, so a slug literal written
+-- 20261208100000_tag_slug_seal repairs those slugs, so a slug literal written
 -- today may be stale by the time this applies; a name is stable across both.
 
 do $$
@@ -108,7 +108,7 @@ begin
       -- Work/School, Gesundheit Health vs Health Sexual Health, Bühne Drag &
       -- Performance vs Stage Events & Parties, Feministisch, München,
       -- Schriftsteller), so this is the common case here, not the edge case.
-      -- Same rule as 20261016100000:415 and 20261205100000:234.
+      -- Same rule as 20261016100000:415 and 20261208100000:234.
       update public.tag_category_assignments a
          set is_primary = false
        where a.tag_id = v_dup

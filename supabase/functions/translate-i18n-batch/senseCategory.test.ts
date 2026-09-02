@@ -1,6 +1,6 @@
 // The translator must never machine-translate the NAME of a sense-category tag.
 //
-// Measured on prod before 20261205100200 deleted them: Stud -> es "Estudio" (a
+// Measured on prod before 20261208100200 deleted them: Stud -> es "Estudio" (a
 // studio), Ussy -> es "Vagina", Trade -> es "Trueque" (barter), Cruising -> fr
 // "Croisière" (a boat cruise), Missing Stair -> es "Escalera que falta". Machine
 // translation takes queer slang literally and destroys the term.

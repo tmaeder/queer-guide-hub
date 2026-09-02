@@ -16,8 +16,8 @@
 --
 -- ALL FOUR ARE ZERO AFTER THE MIGRATIONS IN THIS BRANCH, so they ship as hard
 -- zero-invariants with baseline 0 rather than as ratcheted counters:
---   slug_diacritic_lossy  11 -> 0  (repaired by 20261205100000)
---   name_contains_hashtag  8 -> 0  (deprecated by 20261205100100)
+--   slug_diacritic_lossy  11 -> 0  (repaired by 20261208100000)
+--   name_contains_hashtag  8 -> 0  (deprecated by 20261208100100)
 --   non_latin_name         0       (already enforced by trg_tag_language_guard)
 --   name_mojibake          0       (see the merged-row note below)
 --
