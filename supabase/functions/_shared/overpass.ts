@@ -34,6 +34,18 @@ export const CONTROL_QUERY_MIN_ELEMENTS = 5
 
 export type OverpassVerdict = 'ok' | 'timeout' | 'regional' | 'busy' | 'error'
 
+/**
+ * Probe verdicts worth a second ask.
+ *
+ * `busy` and `timeout` describe THIS MOMENT — overpass-api.de was measured
+ * answering 504 then 200 to the identical control query seconds apart, and both
+ * mirrors 504'd in the same window. `regional` describes the ENDPOINT (a
+ * Switzerland-only extract stays Switzerland-only), so retrying it just spends
+ * another request to learn the same thing. `error` is a 4xx: our query is
+ * wrong, and it will be wrong next time too.
+ */
+export const RETRYABLE_PROBE_VERDICTS: ReadonlySet<OverpassVerdict> = new Set(['busy', 'timeout'])
+
 interface OverpassBody {
   elements?: unknown[]
   remark?: string
