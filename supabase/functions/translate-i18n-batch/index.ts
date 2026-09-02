@@ -169,7 +169,7 @@ Deno.serve(async (req) => {
     // prod: the translator takes queer slang literally and destroys the term —
     // Stud -> es "Estudio" (a studio), Ussy -> es "Vagina", Trade -> es
     // "Trueque" (barter), Cruising -> fr "Croisière" (a boat cruise), Missing
-    // Stair -> es "Escalera que falta". 20261203100200 deleted the 1,735 rows
+    // Stair -> es "Escalera que falta". 20261205100200 deleted the 1,735 rows
     // this had already produced; without this gate the next run refills them.
     //
     // Scoped to `name` only. DESCRIPTIONS still translate: prose survives
