@@ -128,7 +128,9 @@ begin
       'select count(*) from %I e join _slug_repair_candidates c on c.old_slug = any(e.tags)', v_tbl)
       into v_hits;
     if v_hits > 0 then
-      raise exception '% rows in %I carry a slug this migration renames -- tags[] would be orphaned',
+      -- RAISE takes only %; %I is a format() conversion and would render the
+      -- table name as "venuesI". An abort message is worst when mangled.
+      raise exception '% rows in % carry a slug this migration renames -- tags[] would be orphaned',
         v_hits, v_tbl;
     end if;
   end loop;
@@ -272,6 +274,16 @@ begin
   -- conflict is between two rows inside this one UPDATE. The join to
   -- unified_tags re-reads status, so a row the merge arm just retired is not
   -- renamed on top of its own redirect trail.
+  --
+  -- One rename silently repoints a curated redirect and it is worth naming:
+  -- `m-nchen` already had `m-nchen -> munich`, aimed at the separate English
+  -- `munich` tag. Renaming the row to `munchen` rewrites that to
+  -- `m-nchen -> munchen`, i.e. at the München tag itself. That is arguably the
+  -- more correct target, but it IS a change of destination, not just of key.
+  -- It also leaves `munchen` as a live active slug that a redirect row also
+  -- names -- harmless, because resolve_tag_slug() tries the direct active hit
+  -- first and only falls back to the redirect on a miss (10 such shadowed
+  -- old_slugs already exist on prod; this makes 11).
   with cand as (
     select distinct on (c.want) c.id, c.want
       from _slug_repair_candidates c
