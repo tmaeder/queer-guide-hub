@@ -268,7 +268,7 @@ BEGIN
           jsonb_build_object(
             'pairs', public.accessibility_conflict_pairs(v.accessibility_attributes),
             'kept', to_jsonb(public.resolve_accessibility_conflicts(v.accessibility_attributes)),
-            'at', now(), 'repair', '20261106100000'), true)
+            'at', now(), 'repair', '20261111100000'), true)
     WHERE public.accessibility_conflict_pairs(v.accessibility_attributes) <> '[]'::jsonb
     RETURNING 1
   ) SELECT count(*) INTO v_v FROM fixed;
@@ -282,7 +282,7 @@ BEGIN
           jsonb_build_object(
             'pairs', public.accessibility_conflict_pairs(e.accessibility_attributes),
             'kept', to_jsonb(public.resolve_accessibility_conflicts(e.accessibility_attributes)),
-            'at', now(), 'repair', '20261106100000'), true)
+            'at', now(), 'repair', '20261111100000'), true)
     WHERE public.accessibility_conflict_pairs(e.accessibility_attributes) <> '[]'::jsonb
     RETURNING 1
   ) SELECT count(*) INTO v_e FROM fixed;
