@@ -35,6 +35,18 @@ function latestDefinitionOf(fn: string): string {
   throw new Error(`no migration defines ${fn}`);
 }
 
+/** The migration that most recently CREATEs a given trigger. */
+function latestTriggerMigration(trigger: string): string {
+  const files = readdirSync(MIGRATIONS)
+    .filter((f) => f.endsWith('.sql'))
+    .sort();
+  for (const f of [...files].reverse()) {
+    const sql = readFileSync(join(MIGRATIONS, f), 'utf8');
+    if (new RegExp(`create\\s+trigger\\s+${trigger}\\b`, 'i').test(sql)) return sql;
+  }
+  throw new Error(`no migration creates ${trigger}`);
+}
+
 /** Body of `fn` from the migration that most recently defines it. */
 function bodyOf(fn: string): string {
   const sql = latestDefinitionOf(fn);
@@ -54,10 +66,13 @@ describe('cruising category safety gate', () => {
     expect(body).toMatch(/'cruising'/);
   });
 
-  it('guards against NULL category — `false or NULL` would violate the NOT NULL', () => {
-    // venues.category is nullable and venues.safety_gated is NOT NULL, so a bare
-    // `or p_category = 'cruising'` yields NULL for every uncategorised venue and
-    // the trigger raises on insert.
+  it('guards against a NULL category — `false or NULL` is NULL, not false', () => {
+    // Measured on prod: venues.category is itself NOT NULL, so this is defensive
+    // rather than load-bearing FOR THAT TABLE. It still matters, because
+    // venue_is_safety_gated is a plain public function that any caller can pass a
+    // NULL to, and safety_gated is NOT NULL — an unguarded `or p_category =
+    // 'cruising'` returns NULL and the write fails. The earlier claim in this file
+    // that the column was nullable was wrong; the probe corrected it.
     expect(bodyOf('venue_is_safety_gated')).toMatch(/coalesce\s*\(\s*p_category\s*=\s*'cruising'/i);
   });
 
@@ -68,18 +83,25 @@ describe('cruising category safety gate', () => {
     expect(bodyOf('set_entity_safety_gated')).not.toMatch(/category/i);
   });
 
-  it('scopes the venues trigger to `category`', () => {
+  it('scopes the venues trigger to every column that can change the answer', () => {
     // A column-scoped trigger fires on the columns named in the UPDATE statement.
-    // Without `category` in the list, `UPDATE venues SET category='cruising'`
-    // never fires it and the row silently escapes the gate.
-    const sql = readFileSync(
-      join(MIGRATIONS, '20261110100000_cruising_category_safety_gate.sql'),
-      'utf8',
-    );
+    //
+    // `category` is the obvious one: without it, `UPDATE venues SET
+    // category='cruising'` never fires the trigger and the row escapes the gate.
+    //
+    // country/city/state are the non-obvious ones, and a rolled-back prod probe
+    // is what found them. `derive_entity_geo_address()` is a THIRD writer of
+    // safety_gated — it recomputes the flag itself (geographically only) because
+    // a BEFORE trigger's writes do not re-fire a column-scoped trigger. So
+    // `UPDATE venues SET country='DE'` on a cruising venue silently UN-GATED it.
+    // BEFORE triggers fire in name order and trg_venues_geo_derive <
+    // trg_venues_safety_gated, so matching derive's scope lets ours correct it.
+    const sql = latestTriggerMigration('trg_venues_safety_gated');
     const trigger = sql.slice(sql.indexOf('create trigger trg_venues_safety_gated'));
-    expect(trigger.slice(0, 200)).toMatch(
-      /before\s+insert\s+or\s+update\s+of\s+country_id,\s*city_id,\s*category/i,
-    );
+    const scope = trigger.slice(0, 300);
+    for (const col of ['country_id', 'city_id', 'category', 'country', 'city', 'state']) {
+      expect(scope).toMatch(new RegExp(`\\b${col}\\b`));
+    }
   });
 
   it('keeps the gate through the country recompute', () => {
