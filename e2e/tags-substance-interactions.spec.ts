@@ -71,11 +71,69 @@ test.describe('@smoke substance interactions', () => {
       { timeout: 1000 },
     );
 
-    // Attribution is a column on every row, not a footnote — the data is
-    // TripSit's work and the credit is a condition of reproducing it.
-    const credit = page.locator('a', { hasText: /^TripSit$/ });
-    await expect(credit.first()).toBeVisible();
-    await expect(credit.first()).toHaveAttribute('href', /tripsit/i);
+    // Attribution is a column on every row, not a footnote.
+    const credit = page.getByTestId('interaction-credit');
+    await expect(credit).toBeVisible(RENDER);
+    await expect(credit.locator('a', { hasText: /^TripSit$/ })).toHaveAttribute(
+      'href',
+      /tripsit/i,
+    );
+  });
+
+  // THE ATTRIBUTION GUARD FOR THE FULL GRID.
+  //
+  // This page credited ALL 476 cells to TripSit — `substance_interaction_matrix()`
+  // returned `'source','tripsit'` as a LITERAL, so the footer read "Interaction
+  // data researched and published by TripSit" over a grid that also holds 48
+  // eve&rave Substanzhandbuch ratings and 7 FDA-label ones. 55 safety claims
+  // attributed to an organisation that never made them.
+  //
+  // THE EXPECTED LIST IS DERIVED FROM THE PAGE'S OWN RPC RESPONSE, never from a
+  // list written here. A hardcoded ['TripSit','eve&rave…','FDA label'] would go
+  // green on the day a fourth source lands and is silently omitted from the
+  // credit — which is precisely the defect, one source later. Reading the
+  // response also means the assertion needs no API key and no DB access.
+  test('the grid credits every source in it, exactly once each', async ({ page }) => {
+    const rpc = page.waitForResponse(
+      (r) => r.url().includes('substance_interaction_matrix') && r.status() === 200,
+      { timeout: 20_000 },
+    );
+    await page.goto('/tags/interactions');
+    const matrix = await (await rpc).json();
+
+    // Guards every assertion below from passing on an empty envelope: without
+    // this, a shape change that drops `sources` would make "0 links == 0
+    // sources" trivially true.
+    expect(Array.isArray(matrix.sources), 'the RPC must return a sources array').toBe(true);
+    expect(matrix.sources.length, 'the grid must credit at least one source').toBeGreaterThan(0);
+    expect(matrix.cells.length, 'and it must actually hold cells').toBeGreaterThanOrEqual(460);
+
+    // `tripsit` is the one key the importers store lowercase; everything else is
+    // stored display-ready. Mirrors `sourceLabel` in src/lib/substanceRisk.ts.
+    const expected = matrix.sources
+      .map((s: { source: string }) => (s.source === 'tripsit' ? 'TripSit' : s.source))
+      .sort();
+
+    const credit = page.getByTestId('interaction-credit');
+    await expect(credit).toBeVisible(RENDER);
+
+    // Every source present is NAMED — the half that was broken.
+    for (const name of expected) {
+      await expect(credit).toContainText(name);
+    }
+
+    // ...and the count matches, which is the half that catches the OTHER
+    // failure mode: the per-tag band once deduped by URL and printed "FDA
+    // label, FDA label, FDA label, FDA label", because the 7 FDA rows cite four
+    // different DailyMed documents. Names in, names out, one each.
+    const links = credit.locator('a');
+    await expect(links).toHaveCount(expected.length);
+    expect((await links.allInnerTexts()).map((s) => s.trim()).sort()).toEqual(expected);
+
+    // A credit with no destination is not a credit.
+    for (let i = 0; i < expected.length; i++) {
+      await expect(links.nth(i)).toHaveAttribute('href', /^https?:\/\//);
+    }
   });
 
   // THE MULTI-SOURCE GUARD, and the sharpest assertion in this file.

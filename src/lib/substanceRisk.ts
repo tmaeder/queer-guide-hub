@@ -151,3 +151,43 @@ export function isInteractionStatus(v: string): v is InteractionStatus {
 export function interactionVisual(status: string): InteractionVisual {
   return isInteractionStatus(status) ? VISUALS[status] : VISUALS.unknown;
 }
+
+/**
+ * Display names for the `substance_interactions.source` keys.
+ *
+ * Only the keys an importer stores lowercase need translating — every other
+ * source is stored display-ready ("eve&rave Substanzhandbuch", "FDA label") and
+ * falls through unchanged. A source missing from this map is NOT an error: the
+ * fallback is the stored string, never a guess and never a hardcoded default.
+ */
+const SOURCE_LABELS: Record<string, string> = {
+  tripsit: 'TripSit',
+};
+
+export function sourceLabel(source: string | null | undefined): string {
+  return SOURCE_LABELS[source ?? ''] ?? source ?? '';
+}
+
+/**
+ * Collapse per-row provenance into a credit list.
+ *
+ * KEYED BY DISPLAY NAME, NOT BY URL. Deduping on the URL printed "Interaction
+ * data by FDA label, FDA label, FDA label, FDA label" on /tags/poppers: the
+ * seven PDE5 combinations cite four different DailyMed documents, because
+ * sildenafil/Viagra, tadalafil/Cialis and vardenafil/Levitra each share a label
+ * while avanafil has its own. A credit line names WHO the data came from, so
+ * one entry per source is the whole point; the first URL for that name is the
+ * one it links to. Input order is preserved, so a caller that hands rows over
+ * worst-first or weight-first gets that ordering back.
+ */
+export function creditSources(
+  rows: ReadonlyArray<{ source?: string | null; source_url?: string | null }>,
+): Array<{ name: string; url: string }> {
+  const seen = new Map<string, string>();
+  for (const r of rows) {
+    if (!r.source_url) continue;
+    const name = sourceLabel(r.source);
+    if (name && !seen.has(name)) seen.set(name, r.source_url);
+  }
+  return [...seen].map(([name, url]) => ({ name, url }));
+}
