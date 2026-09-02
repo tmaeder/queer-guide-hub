@@ -26,7 +26,13 @@ type Json = Record<string, unknown>
 // Fields whose unresolved conflict must NOT auto-commit — route to human triage.
 // Low-risk fields (tags/images are unioned; description/hours pick best source)
 // flow through automatically per the lean auto-commit-high-confidence policy.
-const HIGH_RISK_FIELDS = new Set(['name', 'latitude', 'longitude', 'category'])
+//
+// accessibility_attributes joined this set on 2026-08-30 together with the
+// contradiction arm in venue-consensus.ts, and neither half works alone: until
+// then `kind:'array'` reported `conflicting: []` unconditionally, so listing the
+// field here would have gated nothing. A disagreement about whether a door is
+// step-free is settled by a person, never by a confidence score.
+const HIGH_RISK_FIELDS = new Set(['name', 'latitude', 'longitude', 'category', 'accessibility_attributes'])
 
 function setPath(obj: Json, path: string, value: unknown): void {
   const keys = path.split('.')

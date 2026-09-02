@@ -225,7 +225,25 @@ async function breakerAllows(apiName: string): Promise<boolean> {
 }
 
 async function breakerFailure(apiName: string, error: string): Promise<void> {
-  await callRpc('circuit_breaker_record_failure', { p_api_name: apiName, p_error: error })
+  // The parameter is `p_error_msg`. It was `p_error` here, and PostgREST
+  // resolves overloads BY ARGUMENT NAME, so every one of these calls 404'd with
+  // PGRST202 and the breaker never recorded a single failure — it could not
+  // trip, which made the whole 401/403/exhaustion classification inert.
+  //
+  // It was invisible because callRpc never throws and this function ignored its
+  // result. So the symptom was an absence: `failure_count` stayed 0, and that
+  // reads exactly like "nothing has gone wrong". It actively misled the live
+  // diagnosis — "a slot was consumed and the breaker did not move, therefore it
+  // must have been a 429" is only sound if the breaker COULD have moved.
+  const res = await callRpc('circuit_breaker_record_failure', {
+    p_api_name: apiName,
+    p_error_msg: error,
+  })
+  if (!res.ok) {
+    // Bookkeeping must never break inference, so this still does not throw —
+    // but silence is what let a dead breaker look healthy for three days.
+    console.warn(`[llm-router] breaker failure NOT recorded for ${apiName}: ${res.error}`)
+  }
 }
 
 async function breakerSuccess(apiName: string): Promise<void> {
@@ -372,8 +390,17 @@ export async function tryNvidia(
       // Not a breaker failure — see the FailureKind note. Our bucket is meant to
       // make this unreachable, so reaching it means llm_provider_rate.rpm_cap is
       // set too high for what the account actually allows.
+      // THE BODY IS THE WHOLE POINT and it used to be discarded. NVIDIA does not
+      // document the status it returns when free credits run out, so a provider
+      // signalling exhaustion as 429 is indistinguishable from one saying "slow
+      // down" — except in the body. Because this arm deliberately does NOT record
+      // a breaker failure, `api_circuit_breakers.last_error` never receives it
+      // either, so without this line there is no surface anywhere carrying the
+      // reason. Measured 2026-08-29: the fallback served every call through a
+      // silent branch and nothing in the system could say why.
       console.warn(
-        `[llm-router] nvidia 429 for ${opts.callerFn} — lower llm_provider_rate.rpm_cap`,
+        `[llm-router] nvidia 429 for ${opts.callerFn} ` +
+          `(retry-after=${response.headers.get('retry-after') ?? 'none'}): ${errText}`,
       )
       return { served: false, reason: 'rate_limited' }
     }

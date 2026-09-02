@@ -1007,7 +1007,25 @@
       "moved": "Place moved",
       "removed": "Place removed",
       "dayUpdated": "Day updated",
-      "dragHandleAria": "Drag to reorder"
+      "dragHandleAria": "Drag to reorder",
+      "a11yCoverage": "{{withData}} of {{total}} places here publish accessibility information. Nothing is ruled out for staying silent.",
+      "applied": "Added {{count}} stops",
+      "apply": "Add {{count}} stops to the trip",
+      "applyFailed": "Could not add the plan",
+      "budgetCoverage": "{{withData}} of {{total}} places here list a price. Budget nudges the order; it does not filter.",
+      "event": "Event",
+      "exhausted": "Nothing left. The matches here are already on other days.",
+      "loadFailed": "Could not load places for these cities. Try again in a moment.",
+      "matchesNeeds": "Matches your needs",
+      "needDates": "Set the trip dates and a destination city, and the days can be built from them.",
+      "noCandidate": "Nothing listed here for this time of day.",
+      "paceLabel": "How full a day",
+      "reroll": "Try another",
+      "summary": "{{filled}} of {{requested}} slots filled",
+      "timeUnknown": "time of day not known",
+      "tooFew": "Only {{count}} places here match that. Not enough to build days from. Try another vibe, or add stops by hand.",
+      "vibeAny": "A bit of everything",
+      "vibeLabel": "What you are after"
     },
     "map": {
       "emptyNoPlaces": "Add places to see them on the map",
@@ -1207,7 +1225,8 @@
       "reservations": "Reservations",
       "packing": "Packing",
       "collaborate": "Collaborate",
-      "journal": "Journal"
+      "journal": "Journal",
+      "buildDays": "Build the days"
     },
     "today": {
       "offlineBanner": "You're offline. Showing your last-saved itinerary.",
@@ -2875,7 +2894,8 @@
         "language": "Language",
         "currency": "Currency",
         "bestTime": "Best time",
-        "airport": "Airport"
+        "airport": "Airport",
+        "nearestAirport": "Nearest airport"
       },
       "eyebrow": "City",
       "sections": "Sections",
@@ -2928,6 +2948,7 @@
       "travel": {
         "majorAirport": "Major airport",
         "nearestAirport": "Nearest airport",
+        "otherNearby": "Other airports nearby",
         "allCodes": "All airport codes",
         "lines": "Lines",
         "networkCaption": "Rapid-transit lines, drawn from OpenStreetMap. Schematic, not to scale.",

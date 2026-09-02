@@ -269,10 +269,24 @@ every migration. It now reads each file once.
   is blood-borne and would be the second non-sexual route beside `syringe-sharing`. QG already has
   tags for `scat`, `piss-play` and `bdsm`, so the concepts exist; only the risk rows do not.
 
-  **Deliberately not written in this wave.** Filling those five costs roughly 25-35 new cells, and
-  every cell is a risk level a reader may act on. They also have to be calibrated *against the
-  existing matrix* rather than in isolation — `rimming = high` for hepatitis A is what sets the bar
-  `scat` must be judged on — so this is a sourcing-and-calibration pass against WHO/CDC/EACS with
-  its own review, not a tail-end addition to a vocabulary audit. Same reasoning as `sauna` above:
-  where the change is safety-facing and the session cannot review itself, the measurement is the
-  deliverable and the writing is a separate decision.
+  **Two of the five shipped** in `20261118120000_sti_practices_mutual_masturbation_scat.sql`:
+  `mutual-masturbation` (→ `oral_touching`) and `scat` (→ `anorectal`), 7 cells total.
+
+  **Every level is copied from an anchor, not graded fresh.** The matrix is sparse by design (83 of
+  121 cells) and a missing cell is how it says "no meaningful risk by this route" — `hiv` is absent
+  from `kissing`, `sexual-caress` and `rimming` for exactly that reason. So a cell was written only
+  where an existing cell in the *same transmission mode* fixes the level: mutual masturbation is
+  skin-to-skin genital contact, so it takes `sexual-caress`'s levels; scat is faecal-oral, so it
+  takes `rimming`'s. **HIV is omitted from both** — hands are not an inoculation site and faeces is
+  not a vehicle — which follows the table rather than departing from it, and the migration asserts
+  that no HIV cell exists for either, so a later sweep has to argue with a named expectation.
+
+  **The other three stay out for a structural reason, not squeamishness.**
+  `sti_practices.practice_group` is effectively a closed set: `StiProfile.tsx` renders
+  `groupLabels[r.group]` from a hardcoded four-key map and `useStiProfile.ts` types the field as
+  `'anorectal' | 'oral_touching' | 'chems' | 'vaginal'`. A new group renders `undefined` to a reader
+  and lies in the type — a three-layer change on a health surface. BDSM and body modification have
+  no honest home in those four, and their risk is entirely conditional on whether blood or a skin
+  breach is involved, which one level cannot express. Piss play would fit `oral_touching`, but urine
+  is not an established vehicle for anything in this table, so every cell would be an omission and
+  the row would assert nothing.

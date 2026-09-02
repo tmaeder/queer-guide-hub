@@ -175,6 +175,37 @@ if (!hygieneRes.ok) {
     console.error('  Find the writer that set review_status without an UPDATE the promotion trigger can see.')
     process.exit(1)
   }
+  // Accessibility contradictions (2026-08-30). An entity asserting both halves
+  // of a pair — "wheelchair accessible" AND "not wheelchair accessible" — is
+  // publishing a claim that strands a disabled person at a door either way.
+  //
+  // ZERO TOLERANCE, NO BASELINE, deliberately its own key rather than folded
+  // into a broader quality count. Same reasoning as stranded_human_approved
+  // directly above: 14 rows hid under a 3,500-row warn floor for 40 days, and
+  // this corpus is smaller still, so any threshold at all would hide it.
+  //
+  // trg_venues_accessibility_resolve / trg_events_accessibility_resolve make
+  // this state unreachable through INSERT and UPDATE, so a non-zero count is
+  // never "some drift" — it is a writer that got around the trigger.
+  //
+  // The ABSENT key is reported separately from a zero count. Defaulting a
+  // missing key to {} would make an undeployed sentinel indistinguishable from
+  // a clean corpus — "no rows found" and "nobody looked" must never read the
+  // same, which is the whole lesson of this file.
+  const contradictions = hygiene.accessibility_contradictions
+  if (contradictions === undefined) {
+    console.warn('⚠ pipeline_hygiene_stats has no accessibility_contradictions key —')
+    console.warn('  20261201100000 is not applied, so this check measured NOTHING (it did not pass).')
+  }
+  const contradictionTotal = Object.values(contradictions ?? {}).reduce((a, b) => a + Number(b), 0)
+  if (contradictionTotal > 0) {
+    console.error(`✗ ${contradictionTotal} entity/entities assert both halves of an accessibility pair (${JSON.stringify(contradictions)})`)
+    console.error('  e.g. wheelchair-accessible AND not-wheelchair-accessible on one row.')
+    console.error('  The BEFORE triggers make this unreachable, so a writer bypassed them —')
+    console.error('  check for a COPY, a disabled trigger, or a new table with the column and no guard.')
+    console.error('  Resolve with: UPDATE <t> SET accessibility_attributes = accessibility_attributes WHERE ...')
+    process.exit(1)
+  }
   // City duplication (2026-08-25). Every unique key on `cities` keys on the
   // string, so exact-name duplicates are already impossible — measured 0 groups
   // over 5,552 live rows — and the class that survives is "same place, different
@@ -221,6 +252,9 @@ if (!hygieneRes.ok) {
   }
   console.log(`✓ Cron hygiene clean (${hygiene.cron_total} active jobs); staging pending_review=${pending}, stale_pending=${staleTotal}`)
   console.log(`✓ City dup signals: near_pairs=${nearPairs}, qid=${qidPct}%, aliases=${city.alias_rows}, queue=${qPending}`)
+  if (contradictions !== undefined) {
+    console.log('✓ Accessibility contradictions: 0 (zero-tolerance, no baseline)')
+  }
 }
 
 // 5a. Wrong-entity Wikidata links on the glossary (2026-08-29). tag-enrichment-sweep
@@ -573,8 +607,128 @@ if (!hygieneRes.ok) {
   }
 }
 
+// 9. Harm-reduction source freshness (2026-08-30). `substance_interactions`
+//    backs /tags/interactions, which answers "can I combine these two?" — and
+//    it had NO watcher of any kind. Nothing checked it because nothing wrote to
+//    it: the 421 TripSit rows were loaded once by 20260909172500 and sat at
+//    `fetched_at = 2026-08-15` with no cron, no registry row, and no sentinel.
+//    A rating nobody re-checks is a claim we are making on our own authority
+//    while printing someone else's name under it.
+//
+//    THE EXPECTED-FRESH SET IS DERIVED, NOT LISTED. `ingestion_sources` rows
+//    whose `target_table` is this table ARE the automated paths, and their
+//    `slug` is the value written into `substance_interactions.source`. Writing
+//    `['tripsit']` here would repeat the mistake check 6b was added to fix — a
+//    sentinel hardcoded to one slug while its own comment described the general
+//    mechanism — and would leave a future eve&rave or FDA sync permanently
+//    unwatched. A source with no registered path is a hand-curated import and
+//    can only warn; it has nothing to be late for.
+//
+//    THE GATE ARMS ITSELF. Between this shipping and the first cron firing the
+//    data is genuinely stale, so an unconditional fail would ship red and train
+//    people to ignore it. `max(fetched_at) > automation registered_at` means
+//    the path has demonstrably written at least once; until then it warns —
+//    but only for two weeks, after which "registered and has never written a
+//    row" is itself the failure.
+{
+  const STALE_FAIL_DAYS = 14 // two missed runs of a weekly schedule
+  const days = (iso) => (Date.now() - new Date(iso).getTime()) / 864e5
+
+  const sources = await get(
+    'ingestion_sources?target_table=eq.substance_interactions&is_enabled=is.true&select=slug,name,schedule',
+  )
+  // An explicit limit with a guard, because PostgREST's default page is 1000 and
+  // a silently truncated read would compute `max(fetched_at)` over a SUBSET —
+  // which reads as staleness that is not there, or hides staleness that is. 476
+  // rows today; the guard is what makes growing past the page size loud.
+  const ROW_CAP = 5000
+  const rows = await get(`substance_interactions?select=source,fetched_at&limit=${ROW_CAP}`)
+
+  if (rows.length === 0) {
+    console.error('✗ substance_interactions is EMPTY — /tags/interactions renders nothing')
+    process.exit(1)
+  }
+  if (rows.length >= ROW_CAP) {
+    console.error(`✗ substance_interactions read hit the ${ROW_CAP}-row cap — per-source max(fetched_at) is computed over a truncated set and cannot be trusted`)
+    process.exit(1)
+  }
+
+  const newest = new Map()
+  const counts = new Map()
+  for (const r of rows) {
+    counts.set(r.source, (counts.get(r.source) ?? 0) + 1)
+    if (!newest.has(r.source) || r.fetched_at > newest.get(r.source)) newest.set(r.source, r.fetched_at)
+  }
+
+  // Registration time of each automated path, so "has it ever written?" is
+  // answerable without depending on run tracking.
+  const autoSlugs = sources.map((s) => s.slug)
+  const registered = new Map()
+  if (autoSlugs.length) {
+    const regs = await get(
+      `admin_automations?slug=in.(${autoSlugs.map((s) => `source_${s}`).join(',')})&select=slug,created_at,enabled`,
+    )
+    for (const a of regs) registered.set(a.slug.replace(/^source_/, ''), a)
+  }
+
+  const failures = []
+  for (const src of sources) {
+    const reg = registered.get(src.slug)
+    if (!reg) {
+      failures.push(`${src.slug}: ingestion_sources says it is automated but there is no source_${src.slug} automation — nothing schedules it`)
+      continue
+    }
+    if (!reg.enabled) {
+      failures.push(`${src.slug}: source_${src.slug} is DISABLED — check admin_automation_runs.summary for auto_paused before assuming a human did it`)
+      continue
+    }
+    const last = newest.get(src.slug)
+    if (!last) {
+      failures.push(`${src.slug}: registered as a source but owns 0 rows in substance_interactions`)
+      continue
+    }
+    const armed = new Date(last) > new Date(reg.created_at)
+    const age = days(last)
+    if (!armed) {
+      if (days(reg.created_at) > STALE_FAIL_DAYS) {
+        failures.push(
+          `${src.slug}: registered ${days(reg.created_at).toFixed(0)}d ago and has never refreshed a row ` +
+            `(newest fetched_at ${last}) — the cron is not firing`,
+        )
+      } else {
+        console.warn(`⚠ ${src.slug} interactions: registered, first run pending (newest fetched_at ${last})`)
+      }
+      continue
+    }
+    if (age > STALE_FAIL_DAYS) {
+      failures.push(`${src.slug}: newest fetched_at is ${age.toFixed(0)}d old (schedule ${src.schedule}, limit ${STALE_FAIL_DAYS}d)`)
+    } else {
+      console.log(`✓ ${src.slug} interactions fresh (${counts.get(src.slug)} rows, ${age.toFixed(1)}d old)`)
+    }
+  }
+
+  // Sources in the data with no registered path. Not a failure — they are
+  // one-off curated imports — but the age is worth saying out loud, because
+  // "loaded once in August and forgotten" is the exact state this whole check
+  // exists because of.
+  const manual = [...newest.keys()].filter((s) => !sources.some((x) => x.slug === s))
+  if (manual.length) {
+    console.warn(
+      `⚠ interaction sources with no automated refresh path: ` +
+        manual.map((s) => `${s} (${counts.get(s)} rows, ${days(newest.get(s)).toFixed(0)}d old)`).join(', '),
+    )
+  }
+
+  if (failures.length) {
+    console.error(`✗ substance_interactions staleness:`)
+    for (const f of failures) console.error(`    ${f}`)
+    console.error('  /tags/interactions is serving ratings nobody has re-checked. Check the source_* cron and its breaker.')
+    process.exit(1)
+  }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
-// N. Circuit breakers — EVERY row, not just llm.nvidia
+// 10. Circuit breakers — EVERY row, not just llm.nvidia
 //
 // This is the blind spot §3.7 of docs/architecture/open-data-integration.md
 // names, and 2026-08-30 is what it costs: `eventbrite` reached **500 recorded

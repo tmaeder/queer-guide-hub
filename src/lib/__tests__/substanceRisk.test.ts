@@ -4,6 +4,8 @@ import {
   INTERACTION_ORDER,
   interactionVisual,
   isInteractionStatus,
+  sourceLabel,
+  creditSources,
   type InteractionStatus,
 } from '@/lib/substanceRisk';
 
@@ -76,5 +78,54 @@ describe('substance interaction palette', () => {
     expect(isInteractionStatus('Low Risk & No Synergy')).toBe(false);
     expect(interactionVisual('Low Risk & No Synergy').label).toBe('Unknown');
     expect(interactionVisual('').label).toBe('Unknown');
+  });
+});
+
+describe('interaction credit sources', () => {
+  it('translates only the lowercase importer key and passes everything else through', () => {
+    // `tripsit` is stored lowercase; every other source is stored display-ready.
+    // A source missing from the map must render as itself, never as a default —
+    // a hardcoded fallback is how all 476 grid cells came to read "TripSit".
+    expect(sourceLabel('tripsit')).toBe('TripSit');
+    expect(sourceLabel('eve&rave Substanzhandbuch')).toBe('eve&rave Substanzhandbuch');
+    expect(sourceLabel('FDA label')).toBe('FDA label');
+    expect(sourceLabel(null)).toBe('');
+  });
+
+  it('dedupes by source NAME, not by URL', () => {
+    // Shipped broken once: the seven poppers/PDE5 rows cite four different
+    // DailyMed documents — sildenafil/Viagra, tadalafil/Cialis and
+    // vardenafil/Levitra share a label, avanafil has its own — so a URL-keyed
+    // dedup printed "FDA label, FDA label, FDA label, FDA label".
+    const rows = [
+      { source: 'FDA label', source_url: 'https://dailymed.nlm.nih.gov/a' },
+      { source: 'FDA label', source_url: 'https://dailymed.nlm.nih.gov/b' },
+      { source: 'FDA label', source_url: 'https://dailymed.nlm.nih.gov/c' },
+      { source: 'FDA label', source_url: 'https://dailymed.nlm.nih.gov/d' },
+    ];
+    expect(creditSources(rows)).toEqual([
+      { name: 'FDA label', url: 'https://dailymed.nlm.nih.gov/a' },
+    ]);
+  });
+
+  it('names every distinct source, in input order', () => {
+    // The defect this whole change exists for: 421 tripsit + 48 eve&rave + 7 FDA
+    // rows were credited to TripSit alone.
+    const rows = [
+      { source: 'tripsit', source_url: 'https://combo.tripsit.me/' },
+      { source: 'eve&rave Substanzhandbuch', source_url: 'https://www.eve-rave.ch/x' },
+      { source: 'tripsit', source_url: 'https://combo.tripsit.me/' },
+      { source: 'FDA label', source_url: 'https://dailymed.nlm.nih.gov/a' },
+    ];
+    expect(creditSources(rows).map((s) => s.name)).toEqual([
+      'TripSit',
+      'eve&rave Substanzhandbuch',
+      'FDA label',
+    ]);
+  });
+
+  it('drops a source it cannot link, rather than emitting a dead credit', () => {
+    expect(creditSources([{ source: 'Some Journal', source_url: null }])).toEqual([]);
+    expect(creditSources([{ source: undefined, source_url: undefined }])).toEqual([]);
   });
 });

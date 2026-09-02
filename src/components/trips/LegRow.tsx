@@ -1,7 +1,17 @@
-import { Footprints, TramFront, Car } from 'lucide-react';
+import {
+  Footprints,
+  TramFront,
+  Car,
+  Bike,
+  TrainFront,
+  Ship,
+  Plane,
+  CarTaxiFront,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useTripMutations } from '@/hooks/useTrips';
 import {
+  MODE_ORDER,
   formatLegDistance,
   formatLegDuration,
   type TransportMode,
@@ -10,11 +20,14 @@ import {
 
 const MODE_ICONS: Record<TransportMode, typeof Footprints> = {
   walk: Footprints,
+  cycle: Bike,
   transit: TramFront,
   drive: Car,
+  rideshare: CarTaxiFront,
+  rail: TrainFront,
+  ferry: Ship,
+  flight: Plane,
 };
-
-const MODE_CYCLE: TransportMode[] = ['walk', 'transit', 'drive'];
 
 interface Props {
   leg: TripLeg;
@@ -24,8 +37,8 @@ interface Props {
 
 /**
  * Compact between-cards row showing the estimated hop to the next place.
- * Clicking the mode cycles walk → transit → drive and persists the override
- * on the destination place (`arrive_mode`).
+ * Clicking the mode steps through `MODE_ORDER` and persists the override on
+ * the destination place (`arrive_mode`).
  */
 export function LegRow({ leg, readOnly = false }: Props) {
   const { t } = useTranslation();
@@ -33,7 +46,7 @@ export function LegRow({ leg, readOnly = false }: Props) {
   const Icon = MODE_ICONS[leg.mode];
 
   const cycleMode = () => {
-    const next = MODE_CYCLE[(MODE_CYCLE.indexOf(leg.mode) + 1) % MODE_CYCLE.length];
+    const next = MODE_ORDER[(MODE_ORDER.indexOf(leg.mode) + 1) % MODE_ORDER.length];
     updatePlace.mutate({ id: leg.toId, arrive_mode: next });
   };
 

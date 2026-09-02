@@ -274,7 +274,11 @@ Deno.test('402 is treated as exhaustion and preserves the body as evidence', asy
     const out = await tryNvidia(REQ, { callerFn: 'x' })
     assertEquals(out.served === false && out.reason, 'exhausted')
     const fail = rec.rpc.find((r) => r.fn === 'circuit_breaker_record_failure')
-    assertEquals(String(fail?.body.p_error).includes('out of credits'), true)
+    // `p_error_msg`, not `p_error` — PostgREST resolves overloads by argument
+    // name, and the wrong key 404s silently. This assertion passed for three
+    // days against a key the DB does not declare, because the test stubs fetch
+    // and never asks Postgres whether the call would resolve.
+    assertEquals(String(fail?.body.p_error_msg).includes('out of credits'), true)
   })
 })
 

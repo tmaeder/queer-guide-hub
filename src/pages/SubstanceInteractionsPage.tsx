@@ -7,7 +7,7 @@ import { PageContainer } from '@/components/layout/PageContainer';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useMeta } from '@/hooks/useMeta';
-import { interactionVisual, INTERACTION_ORDER } from '@/lib/substanceRisk';
+import { interactionVisual, creditSources, INTERACTION_ORDER } from '@/lib/substanceRisk';
 
 /**
  * /tags/interactions — the whole grid, plus a two-substance checker.
@@ -40,11 +40,22 @@ interface MatrixCell {
   severity: number;
   note: string | null;
 }
+interface MatrixSource {
+  source: string;
+  source_url: string;
+}
 interface Matrix {
   axis: MatrixAxis[];
   cells: MatrixCell[];
-  source: string;
-  source_url: string;
+  /**
+   * The distinct sources actually present among `cells`, most-cited first.
+   * See the credit footer below for why the scalars underneath cannot be used.
+   */
+  sources?: MatrixSource[];
+  /** @deprecated Kept for one release; superseded by `sources`. */
+  source?: string;
+  /** @deprecated Kept for one release; superseded by `sources`. */
+  source_url?: string;
 }
 
 function useInteractionMatrix() {
@@ -98,7 +109,9 @@ export default function SubstanceInteractionsPage() {
   useMeta({
     title: 'Drug interaction chart',
     description:
-      'Which substances are dangerous to combine. A harm-reduction reference covering 421 combinations, with data from TripSit.',
+      // Deliberately names no source: this string is a literal, the chart is
+      // multi-source, and naming them here is the defect the footer just fixed.
+      'Which substances are dangerous to combine. A harm-reduction reference covering hundreds of combinations, each credited to the source that published it.',
     canonicalPath: '/tags/interactions',
   });
 
@@ -108,6 +121,20 @@ export default function SubstanceInteractionsPage() {
     for (const c of data?.cells ?? []) m.set(pairKey(c.a, c.b), c);
     return m;
   }, [data]);
+
+  // Falls back to the deprecated scalar pair so the credit still resolves in the
+  // window where a new bundle is served against the pre-migration RPC. The
+  // fallback reads the response rather than hardcoding TripSit — if the RPC is
+  // old, its own literal is the most honest thing available.
+  const credits = useMemo(
+    () =>
+      creditSources(
+        data?.sources?.length
+          ? data.sources
+          : [{ source: data?.source, source_url: data?.source_url }],
+      ),
+    [data],
+  );
 
   const selected = a && b && a !== b ? byPair.get(pairKey(a, b)) : undefined;
   const selectedNames =
@@ -307,18 +334,37 @@ export default function SubstanceInteractionsPage() {
         </div>
       </section>
 
-      <p className="mt-8 text-13 leading-relaxed text-muted-foreground">
-        {t('interactions.credit', 'Interaction data researched and published by')}{' '}
-        <a
-          href={data?.source_url ?? 'https://combo.tripsit.me/'}
-          target="_blank"
-          rel="noopener noreferrer"
+      {/* THE CREDIT NAMES EVERY SOURCE IN THE GRID, NOT THE BIGGEST ONE.
+          This read "published by TripSit" over all 476 cells while 48 of them
+          are eve&rave Substanzhandbuch and 7 are FDA labels — the RPC returned
+          its `source`/`source_url` keys as LITERALS, so the footer could only
+          ever name one source. That denied two sources their credit and
+          attributed 55 safety claims to an organisation that never made them.
+          `sources` now comes from the rows themselves; see migration
+          20261202100000. */}
+      {credits.length > 0 && (
+        <p
+          data-testid="interaction-credit"
+          className="mt-8 text-13 leading-relaxed text-muted-foreground"
         >
-          TripSit
-        </a>
-        .{' '}
-        {t('interactions.creditTail', 'Reproduced with attribution as a harm-reduction reference.')}
-      </p>
+          {t('interactions.credit', 'Interaction data researched and published by')}{' '}
+          {credits.map((s, i) => (
+            <span key={s.name}>
+              {/* Comma-joined, matching the per-tag band — no "and" key, because
+                  conjunction placement is not translatable by concatenation. */}
+              {i > 0 && ', '}
+              <a href={s.url} target="_blank" rel="noopener noreferrer">
+                {s.name}
+              </a>
+            </span>
+          ))}
+          .{' '}
+          {t(
+            'interactions.creditTail',
+            'Reproduced with attribution as a harm-reduction reference.',
+          )}
+        </p>
+      )}
     </PageContainer>
   );
 }
