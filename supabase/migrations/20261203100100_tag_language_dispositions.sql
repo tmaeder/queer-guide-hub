@@ -55,10 +55,22 @@ begin
   -- Every loser is 0-2 usage; every canonical is live and well-used (Gay 4,914,
   -- Lesbian 2,960, Writer 992, Education 691). merge_tag_concept keeps the
   -- loser's slug on the loser as its redirect trail, so /tags/schwul resolves to
-  -- Gay rather than 404ing, and it adds the loser's NAME as an alias on the
-  -- canonical -- which here is a feature, not the alias_equals_name hazard: the
-  -- names differ ("Schwul" on "Gay"), so it makes the German term findable
-  -- instead of creating a self-alias.
+  -- Gay rather than 404ing. It also adds the loser's NAME as an alias on the
+  -- canonical, which at least avoids the alias_equals_name hazard here because
+  -- the names differ ("Schwul" on "Gay") rather than being a self-alias.
+  --
+  -- DO NOT read more into that alias than it delivers. An earlier draft of this
+  -- comment claimed it "makes the German term findable"; that is FALSE for event
+  -- auto-linking and was corrected after checking the deployed function rather
+  -- than the migration text. `run_event_tag_link` (cron event_tag_link, */10)
+  -- builds its lookup from `unified_tags` alone -- slug and name, active and
+  -- unmerged -- and contains no reference to `tag_aliases` whatsoever (verified
+  -- against pg_get_functiondef on prod: 0 occurrences). So an alias row changes
+  -- nothing about which events link to which tag.
+  --
+  -- The redirect is the real deliverable of these merges. The alias is inert for
+  -- event linking and its value elsewhere (site search, the synonyms rail) is
+  -- not something this migration establishes.
   ---------------------------------------------------------------------------
   for r in
     select * from (values
