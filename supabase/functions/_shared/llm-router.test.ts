@@ -69,7 +69,7 @@ function stub(
       return Promise.resolve(new Response(null, { status: 204 }))
     }
 
-    let host = ''
+    let host: string
     try {
       host = new URL(u).hostname
     } catch {
