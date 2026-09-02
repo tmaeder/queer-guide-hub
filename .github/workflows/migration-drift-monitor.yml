@@ -108,7 +108,7 @@ jobs:
       # all-clear because it fell over is worse than one that says nothing.
       - name: Raise or clear the drift alert
         if: ${{ env.SUPABASE_ACCESS_TOKEN != '' && contains(fromJSON('["drift","clean"]'), steps.check.outputs.verdict) }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           VERDICT: ${{ steps.check.outputs.verdict }}
           DRIFT_LOG: ${{ steps.check.outputs.log }}
