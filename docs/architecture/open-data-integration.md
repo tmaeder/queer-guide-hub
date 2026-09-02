@@ -75,18 +75,32 @@ trusting the prose — a stale figure here is worse than no figure.
 
 ### 1.4 Harm Reduction — `public.substance_interactions` (476) + tag surfaces
 
-> **Open defect, found 2026-08-30 and deliberately not fixed here: `/tags/interactions` credits all
-> 476 cells to TripSit, and 55 of them are not TripSit's.** `substance_interaction_matrix()` returns
+> **FIXED 2026-09-02 (`20261202100000`). Found 2026-08-30: `/tags/interactions` credited all 476
+> cells to TripSit, and 55 of them are not TripSit's.** `substance_interaction_matrix()` returned
 > `'source', 'tripsit'` and `'source_url', 'https://combo.tripsit.me/'` as **literals**, so the
-> full-grid page renders "Interaction data researched and published by TripSit" over a grid that also
-> contains 48 eve&rave Substanzhandbuch rows and 7 FDA-label rows. That both denies two sources their
-> credit and attributes 55 safety claims to an organisation that did not make them — against the
-> schema migration's own stated rule, *"attribution is a column, not a footnote"*. The **per-tag**
-> band is correct: `SubstanceInteractions.tsx` reads `source` per row and builds the credit list from
-> what is actually on screen, which is why `/tags/methamphetamine` correctly reads "eve&rave
-> Substanzhandbuch". The fix is to have the RPC return the distinct `(source, source_url)` pairs
-> present and render the list; it needs a migration plus a frontend change, so it is its own review
-> surface rather than a rider on the sync work.
+> full-grid page rendered "Interaction data researched and published by TripSit" over a grid that
+> also contains 48 eve&rave Substanzhandbuch rows and 7 FDA-label rows. That both denied two sources
+> their credit and attributed 55 safety claims to an organisation that did not make them — against
+> the schema migration's own stated rule, *"attribution is a column, not a footnote"*. The **per-tag**
+> band was already correct (`SubstanceInteractions.tsx` reads `source` per row, which is why
+> `/tags/methamphetamine` reads "eve&rave Substanzhandbuch"), and the fix generalises it: the RPC now
+> returns a **`sources` array of the distinct `(source, source_url)` pairs present among the cells it
+> is returning**, and the footer renders that list. The scalar `source`/`source_url` keys stay for
+> one release so a bundle cached before the migration landed still resolves a link; nothing reads
+> them.
+>
+> Three things about the fix are load-bearing and should survive a refactor. **(1) The credit is
+> computed over the CELLS, not the table** — they share one CTE, so a source whose only rows sit
+> behind a deprecated tag cannot be credited for a grid that does not show them, and the credit
+> cannot drift from the grid. **(2) Dedup is by source NAME, never by URL.** The 7 FDA rows cite four
+> different DailyMed documents (sildenafil/Viagra, tadalafil/Cialis and vardenafil/Levitra share a
+> label; avanafil has its own), so a URL-keyed dedup emits "FDA label, FDA label, FDA label, FDA
+> label" — a defect the per-tag band already shipped once. The rule now lives in one place,
+> `creditSources()` in `src/lib/substanceRisk.ts`, used by both surfaces. **(3) The e2e assertion
+> derives its expectation from the page's own RPC response** (`e2e/tags-substance-interactions.spec.ts`)
+> rather than from a list of source names written in the spec — a hardcoded list would go green on
+> the day a fourth source lands and is silently left out of the credit, which is this defect again,
+> one source later.
 
 | Target field | Primary source | Corroborating | Status | Validation | Enrichment |
 |---|---|---|---|---|---|

@@ -3,7 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { useSubstanceInteractions } from '@/hooks/useTagRelationships';
-import { interactionVisual, INTERACTION_ORDER, type InteractionStatus } from '@/lib/substanceRisk';
+import {
+  interactionVisual,
+  creditSources,
+  INTERACTION_ORDER,
+  type InteractionStatus,
+} from '@/lib/substanceRisk';
 
 /**
  * What this substance must not be combined with.
@@ -22,11 +27,6 @@ import { interactionVisual, INTERACTION_ORDER, type InteractionStatus } from '@/
  * (these tints are ~1.1:1 against paper and clear 1.4.11 only against ink) and
  * the icon+label are what carry the meaning for a colour-blind reader.
  */
-
-/** Display names for source keys stored lowercase by the importers. */
-const SOURCE_LABEL: Record<string, string> = {
-  tripsit: 'TripSit',
-};
 
 interface Props {
   tagId: string;
@@ -54,7 +54,7 @@ export function SubstanceInteractions({ tagId, tagName }: Props) {
   }, [rows]);
 
   // Every distinct source in what is actually on screen, in the order the rows
-  // arrive (worst-first), deduped by URL.
+  // arrive (worst-first).
   //
   // THIS USED TO BE `rows[0]` UNDER A HARDCODED "TripSit" LABEL, which was true
   // only while TripSit was the sole importer. It is not any more: the poppers
@@ -64,22 +64,11 @@ export function SubstanceInteractions({ tagId, tagName }: Props) {
   // TripSit would be a false claim about provenance on a safety surface — and
   // since the rows sort worst-first, `rows[0]` on /tags/poppers would have been
   // exactly one of those.
-  // KEYED BY DISPLAY NAME, NOT BY URL. Deduping on the URL printed
-  // "Interaction data by FDA label, FDA label, FDA label, FDA label" on
-  // /tags/poppers: the seven PDE5 combinations cite four different DailyMed
-  // documents, because sildenafil/Viagra, tadalafil/Cialis and
-  // vardenafil/Levitra each share a label while avanafil has its own. A credit
-  // line names WHO the data came from, so one entry per source is the whole
-  // point; the first URL for that name is the one it links to.
-  const sources = useMemo(() => {
-    const seen = new Map<string, string>();
-    for (const r of rows) {
-      if (!r.source_url) continue;
-      const name = SOURCE_LABEL[r.source ?? ''] ?? r.source ?? '';
-      if (!seen.has(name)) seen.set(name, r.source_url);
-    }
-    return [...seen].map(([name, url]) => ({ name, url }));
-  }, [rows]);
+  //
+  // The name-keyed dedup that makes this correct now lives in `creditSources`,
+  // shared with the full grid — which had the same defect one layer up, crediting
+  // all 476 cells to TripSit because the matrix RPC returned a literal.
+  const sources = useMemo(() => creditSources(rows), [rows]);
 
   // Render nothing rather than an empty shell: most glossary terms are not
   // substances and have no row in this table at all.
