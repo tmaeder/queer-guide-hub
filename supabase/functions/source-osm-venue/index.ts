@@ -3,6 +3,7 @@ import { writeToStaging } from '../_shared/source-adapter.ts'
 import type { RawItem, NormalizedItem } from '../_shared/source-adapter.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { normalizeVenueCategory, normalizeIso2Country } from '../_shared/venue-category.ts'
+import { osmAccessibility } from '../_shared/osm-accessibility.ts'
 
 // Source: OpenStreetMap (Overpass API) — LGBTQ+ venues
 // Queries OSM for nodes/ways tagged lgbtq=yes or similar identifiers
@@ -103,7 +104,13 @@ function osmToNormalized(el: Record<string, unknown>, city: string): NormalizedI
   if (tags.gay === 'yes') osmTags.push('gay')
   if (tags.lesbian === 'yes') osmTags.push('lesbian')
   if (tags.outdoor_seating === 'yes') osmTags.push('outdoor-seating')
-  if (tags.wheelchair === 'yes') osmTags.push('wheelchair-accessible')
+
+  // Accessibility leaves through its own channel, NOT through `tags`. The old
+  // line here pushed 'wheelchair-accessible' into osmTags on `wheelchair === 'yes'`
+  // alone: it read one of OSM's four values, and normalize_venue_tags() (the
+  // controlled QUEER vocabulary) then default-rejected the slug at commit, so
+  // the claim never reached a venue at all. Hence 0 venues carrying it.
+  const accessibility = osmAccessibility(tags)
 
   const website = tags.website ?? tags['contact:website'] ?? tags.url ?? ''
   const phone   = tags.phone ?? tags['contact:phone'] ?? ''
@@ -129,6 +136,7 @@ function osmToNormalized(el: Record<string, unknown>, city: string): NormalizedI
     urls:     website ? [website] : [],
     contacts: { phone, website },
     tags:     osmTags,
+    accessibility_attributes: accessibility,
     metadata: {
       osm_id:      el.id,
       osm_type:    el.type,

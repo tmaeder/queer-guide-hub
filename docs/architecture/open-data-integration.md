@@ -133,7 +133,14 @@ non-toilet venues carry coordinates**. The cause is structural and fully traced:
 | OSM adapter | `source-osm-venue/index.ts:106` | Reads `tags.wheelchair === 'yes'` → pushes into `osmTags` → `venues.tags`. Only `'yes'`; `limited`/`no` dropped. `toilets:unisex` never read. |
 | Normalize | `pipeline-normalize/` | Never emits `accessibility_attributes`. |
 | Consensus | `_shared/venue-consensus.ts:57` | **Expects** it at path `accessibility_attributes`, `kind:'array'`. Reads a path nothing populates. |
+| **Commit** | `commit_venue_staging_item` | **The fifth layer, not listed when this document was written.** Writes name, geo, contacts, category, tags, images, hours and relevance — and nothing else. So even with all four layers above fixed, a staged accessibility claim still terminated here. |
 | Only real writer | `amenity-truth-backfill/index.ts:37` | Maps Google Places `accessibilityOptions.*` correctly, but that mode is deferred. Its LLM mode is **always review-gated by design** — correct, keep it. |
+
+**Phase 1 shipped 2026-08-30** and closed all five layers: `NormalizedItem.accessibility_attributes`,
+`_shared/osm-accessibility.ts` (all four `wheelchair` values plus `toilets:unisex`), the commit arm
+(default-reject + conflict resolution, union on update), the contradicting-pair guard in §3.5, and
+`venue-accessibility-osm` — coordinate-keyed enrichment over the geocoded corpus. Numbers below are
+the entry state.
 
 Net: **0 venues carry even the `wheelchair-accessible` tag.** The consensus receiving end is built
 and idle. `AmenityDisplay`'s "✓ matches your needs" badge — matching
@@ -460,12 +467,22 @@ wikidata 0.75 │ osm 0.7 │ existing 0.6 │ website 0.6 │ llm 0.5   (unknow
 conflict, triage and closure, so a unanimous field never produces a row. **Use the provenance
 distinct-venue count as the coverage metric; the audit row count is not one.**
 
-> **Array fields can never conflict, and for accessibility that is a defect.** `kind:'array'` fields
-> **union** their contributors and every source counts as agreeing. So OSM `wheelchair=no` and
-> Google `wheelchairAccessibleEntrance=true` would **both survive on the same venue**, and because
-> arrays never conflict it would auto-commit at high confidence rather than gate to review. This is
-> latent only because the column is empty. **Anything that starts writing accessibility makes it
-> reachable** — model the negatives as contradicting pairs first. See §5 phase 1.
+> **Array fields could never conflict, and for accessibility that was a defect — FIXED 2026-08-30.**
+> `kind:'array'` fields **union** their contributors and every source counted as agreeing, so OSM
+> `wheelchair=no` and Google `wheelchairAccessibleEntrance=true` would **both survive on the same
+> venue** and auto-commit at high confidence rather than gate to review. `FieldSpec` now takes
+> `contradictions` (`_shared/accessibility-vocab.ts`, mirrored in `public.amenities.contradicts` and
+> drift-tested against the migration); a dropped claim marks its source conflicting, takes the ×0.7
+> penalty and **never auto-commits whatever the confidence**, and `accessibility_attributes` joined
+> `HIGH_RISK_FIELDS`. Neither half works alone — listing the field in `HIGH_RISK_FIELDS` before the
+> comparator could report a conflict would have gated nothing.
+>
+> **It was not purely latent.** Measured on prod the day it was fixed: 0 venues but **1 event** was
+> already publishing `accessible-restroom` *and* `no-accessible-restroom` — a Dalston Superstore
+> workshop whose own `accessibility_notes` read "the toilet is not wheelchair accessible".
+> `event-agentic-enrich` had extracted both `level-access-toilet` and
+> `no-wheelchair-access-to-toilet` from one page and `normalize_event_accessibility` preserved both,
+> exactly as designed; nothing then asked whether they could both be true.
 
 ### 3.6 Circuit breakers — two places, and one alone is silent
 
@@ -656,15 +673,37 @@ measurement, and the sentinel — because §3.7 shows three of them land in blin
 4. Second ready path: **740 venues already carry a real Google `platform_ids.google`**, so
    `amenity-truth-backfill`'s `places` mode costs only the Details fetch, not place-id resolution.
 
-> **Blocking design constraint.** Resolve the array-union defect in §3.5 **before** any accessibility
-> write lands. Today a venue could publish `wheelchair-accessible` and `not-wheelchair-accessible`
-> simultaneously, at high confidence, without ever gating to review. Model negatives as
-> contradicting pairs in the comparator. This is not a follow-up; it is a precondition.
+> **Blocking design constraint — DONE, and it shipped first.** The array-union defect in §3.5 is
+> resolved in `_shared/accessibility-vocab.ts` + `venue-consensus.ts` + a BEFORE trigger on
+> `venues`/`events`, ahead of any accessibility write.
+>
+> **Resolution policy: keep the NEGATIVE.** A traveller wrongly told a door is step-free arrives and
+> cannot get in; one wrongly told it is not merely goes elsewhere. The two errors are not
+> symmetric. The conflict is never swallowed — the dropped pair is stamped on
+> `enrichment_status.accessibility_conflict`, `needs_attention` is raised, and the enrichment path
+> opens a `venue_review_queue` row.
+>
+> **The guard is at the TABLE, not in the writer.** `venues.accessibility_attributes` has at least
+> four writers and `events` has its own; patching one leaves the rest, which is how a human
+> "approve" in the triage inbox did nothing for 40 days. The trigger is deliberately *unscoped*
+> rather than `UPDATE OF accessibility_attributes` — a column-scoped trigger fires on the columns
+> named in the statement, not on what another BEFORE trigger wrote.
 
-**Exit:** accessibility coverage on geocoded venues, plus zero venues holding a contradicting pair.
-**Sentinel:** a contradicting-pair count in `pipeline_hygiene_stats()`, **zero-tolerance, no
+**Status 2026-08-30: shipped.** Entry measured on prod (anon role, so gated venues are excluded):
+21,190 geocoded live venues, **6 with any accessibility value (0.03%)**, 279 of 48,742 events, and
+**1 contradicting pair** — on an event, not a venue, so the defect was already live rather than
+merely reachable.
+
+**Exit:** accessibility coverage on geocoded venues, plus zero entities holding a contradicting pair.
+**Sentinel:** `pipeline_hygiene_stats().accessibility_contradictions`, **zero-tolerance, no
 baseline** — the `stranded_human_approved` pattern, where 14 rows hid under a 3,500-row floor for 40
-days.
+days. `check-pipeline-health.mjs` reports an ABSENT key separately from a zero count, so an
+undeployed sentinel cannot read as a clean corpus.
+
+**Deferred deliberately:** the Google `places` mode (item 4). `GOOGLE_PLACES_API_KEY` could not be
+confirmed provisioned, and `amenity-truth-backfill` no-ops silently without it — a cron scheduled
+now would run, report success and write nothing, which is the green-but-idle class this repo has
+been bitten by repeatedly. The path is wired; only the schedule is withheld.
 
 ### Phase 2 — Legal corroboration — **DONE 2026-08-30**, and three of its premises were wrong
 

@@ -97,6 +97,26 @@ export interface NormalizedItem {
   tags?: string[]
   urls?: string[]
   images?: string[]
+  /**
+   * Controlled accessibility slugs from `public.amenities` WHERE kind='accessibility'.
+   *
+   * Added 2026-08-30. Until then this interface had no accessibility field at
+   * all, so a source could not EXPRESS "wheelchair accessible" — which is why
+   * `venues.accessibility_attributes` sat populated on 6 of 26,867 venues while
+   * `_shared/venue-consensus.ts` had been reading this exact path for months.
+   * The gap was in the contract, not in the data.
+   *
+   * NEGATIVE ASSERTIONS ARE FIRST-CLASS. `not-wheelchair-accessible`,
+   * `not-step-free` and `no-accessible-restroom` are real values and must never
+   * be collapsed into absence — "we checked and it is not accessible" is more
+   * useful to a disabled traveller than silence. A source that knows a door is
+   * inaccessible is REQUIRED to say so here rather than omit the field.
+   *
+   * Contradicting pairs are resolved downstream (accessibility-vocab.ts) and
+   * gate to human review; an adapter may emit both halves if its upstream really
+   * says both. Do not resolve them in the adapter — that hides the disagreement.
+   */
+  accessibility_attributes?: string[]
   contacts?: {
     email?: string
     phone?: string
