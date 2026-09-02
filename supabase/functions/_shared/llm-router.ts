@@ -357,6 +357,10 @@ export async function tryNvidia(
       // A timed-out call almost never succeeds on retry — surface it and let
       // Cloudflare serve rather than stacking another 45s.
       if (aborted || attempt === 1) {
+        console.warn(
+          `[llm-router] nvidia ${aborted ? 'timeout' : 'network_error'} for ` +
+            `${opts.callerFn} model=${model}: ${msg}`,
+        )
         await breakerFailure(NVIDIA_BREAKER, `network: ${msg}`)
         return { served: false, reason: aborted ? 'timeout' : 'network_error' }
       }
@@ -371,6 +375,10 @@ export async function tryNvidia(
         // An empty 200 is a failure, and one the breaker should see: it is how
         // a degraded model presents, and it is indistinguishable from success
         // to anything that only checks the status.
+        console.warn(
+          `[llm-router] nvidia empty_content for ${opts.callerFn} model=${model} ` +
+            `(tokens_out=${data?.usage?.completion_tokens ?? '?'})`,
+        )
         await breakerFailure(NVIDIA_BREAKER, 'empty content on 200')
         return { served: false, reason: 'empty_content' }
       }
@@ -410,6 +418,26 @@ export async function tryNvidia(
       continue
     }
 
+    // LOG IT, do not only record it. `breakerFailure` writes to
+    // `circuit_breaker_record_failure`, and on this project
+    // `api_circuit_breakers` HAS NO `last_error` COLUMN — so the p_error_msg
+    // argument is accepted and then dropped on the floor. Recording a failure
+    // therefore preserves the COUNT and destroys the REASON.
+    //
+    // Measured 2026-09-02: `openai/gpt-oss-120b` failed a live
+    // city-agentic-enrich call. The breaker counted it, Cloudflare served
+    // correctly at confidence 0.8 — and no surface anywhere could say whether
+    // the cause was a 404, a timeout, a content-filter refusal or a bad
+    // request. The model could not be judged, so the whole "which model works"
+    // question stalled on a missing string.
+    //
+    // Same lesson as the skip-reason and the 429 body, one layer deeper: this
+    // provider is deliberately outside AI Gateway, so if the router does not
+    // print it, it does not exist.
+    console.warn(
+      `[llm-router] nvidia ${kind} for ${opts.callerFn} model=${model} ` +
+        `status=${response.status}: ${errText}`,
+    )
     await breakerFailure(NVIDIA_BREAKER, `${response.status}: ${errText}`)
     return { served: false, reason: kind }
   }
