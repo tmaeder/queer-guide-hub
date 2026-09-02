@@ -664,6 +664,13 @@ BEGIN
   ---------------------------------------------------------------------------
   -- B. Rename where the concept is real and no English tag exists yet.
   ---------------------------------------------------------------------------
+  -- NOTE: Task 1 merged the active `Preisträger` (corrupt slug preistr-ger)
+  -- into its deprecated twin `preistrager`, because merge direction is forced —
+  -- merge_tag_concept leaves the loser's slug on the loser as its redirect
+  -- trail, so the corrupt row must be the one that dies. There is therefore no
+  -- active `Preisträger` left and this UPDATE now no-ops, which is fine and
+  -- expected. Both rows were 0-usage and prose-free. If the concept is wanted
+  -- back it is restore_deprecated_tag('preistrager'), a deliberate act.
   UPDATE public.unified_tags SET name = 'Award Winner'
    WHERE name = 'Preisträger' AND status = 'active';
   GET DIAGNOSTICS v_renamed = ROW_COUNT;
@@ -909,9 +916,15 @@ Expected: FAIL on all four keys.
 Restate the existing body and add these four keys to the returned jsonb:
 
 ```sql
+    -- MUST exclude status='merged'. A merged row's slug IS its redirect trail:
+    -- it keeps its own slug and resolves through merged_into_id, so "repairing"
+    -- caf -> cafe would break the historical /tags/caf URL. Task 1 correctly
+    -- leaves 10 merged rows lossy, so a sentinel counting all statuses would
+    -- report 10 and red CI on day one. Established during Task 1 execution.
     'slug_diacritic_lossy', (
       SELECT count(*) FROM public.unified_tags
-       WHERE name ~ '[^\x00-\x7F]'
+       WHERE status <> 'merged'
+         AND name ~ '[^\x00-\x7F]'
          AND slug IS DISTINCT FROM public.normalize_tag_slug(name)
     ),
     'name_mojibake', (
