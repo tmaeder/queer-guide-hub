@@ -450,7 +450,25 @@
       "moved": "장소 이동됨",
       "removed": "장소 삭제됨",
       "dayUpdated": "하루 정보 업데이트됨",
-      "dragHandleAria": "드래그하여 순서 변경"
+      "dragHandleAria": "드래그하여 순서 변경",
+      "a11yCoverage": "[KO] {{withData}} of {{total}} places here publish accessibility information. Nothing is ruled out for staying silent.",
+      "applied": "[KO] Added {{count}} stops",
+      "apply": "[KO] Add {{count}} stops to the trip",
+      "applyFailed": "[KO] Could not add the plan",
+      "budgetCoverage": "[KO] {{withData}} of {{total}} places here list a price. Budget nudges the order; it does not filter.",
+      "event": "[KO] Event",
+      "exhausted": "[KO] Nothing left. The matches here are already on other days.",
+      "loadFailed": "[KO] Could not load places for these cities. Try again in a moment.",
+      "matchesNeeds": "[KO] Matches your needs",
+      "needDates": "[KO] Set the trip dates and a destination city, and the days can be built from them.",
+      "noCandidate": "[KO] Nothing listed here for this time of day.",
+      "paceLabel": "[KO] How full a day",
+      "reroll": "[KO] Try another",
+      "summary": "[KO] {{filled}} of {{requested}} slots filled",
+      "timeUnknown": "[KO] time of day not known",
+      "tooFew": "[KO] Only {{count}} places here match that. Not enough to build days from. Try another vibe, or add stops by hand.",
+      "vibeAny": "[KO] A bit of everything",
+      "vibeLabel": "[KO] What you are after"
     },
     "map": {
       "emptyNoPlaces": "지도에서 보려면 장소를 추가하세요",
@@ -650,7 +668,8 @@
       "reservations": "예약",
       "packing": "짐싸기",
       "collaborate": "협업",
-      "journal": "일기"
+      "journal": "일기",
+      "buildDays": "[KO] Build the days"
     },
     "today": {
       "offlineBanner": "오프라인 상태 — 마지막으로 저장된 일정을 표시합니다.",

@@ -20,6 +20,7 @@ import {
   Check,
   Lightbulb,
   NotebookPen,
+  CalendarRange,
 } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { useTranslation } from 'react-i18next';
@@ -85,6 +86,11 @@ const JournalTab = lazy(() =>
 const CollaborationTab = lazy(() =>
   import('@/components/trips/CollaborationTab').then((m) => ({
     default: m.CollaborationTab,
+  })),
+);
+const ItineraryGenerator = lazy(() =>
+  import('@/components/trips/ItineraryGenerator').then((m) => ({
+    default: m.ItineraryGenerator,
   })),
 );
 const AiPlanTab = lazy(() =>
@@ -392,6 +398,22 @@ export default function TripPlannerPage() {
           {t('trips.timeline.more', 'More tools')}
         </h2>
         <Accordion type="multiple" className="w-full">
+          {/* Deterministic planner FIRST, the conversational one below it.
+              This one is free, reproducible and shows its gaps; the concierge
+              is the escape hatch for a request no picker can express. */}
+          <AccordionItem value="build-days">
+            <AccordionTrigger>
+              <span className="inline-flex items-center gap-2">
+                <CalendarRange size={16} /> {t('trips.tabs.buildDays', 'Build the days')}
+              </span>
+            </AccordionTrigger>
+            <AccordionContent>
+              <Suspense fallback={<SuspenseLoader />}>
+                <ItineraryGenerator trip={trip} canEdit={canEdit} />
+              </Suspense>
+            </AccordionContent>
+          </AccordionItem>
+
           <AccordionItem value="suggestions">
             <AccordionTrigger>
               <span className="inline-flex items-center gap-2">

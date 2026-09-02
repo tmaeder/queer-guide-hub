@@ -524,4 +524,224 @@ if (!hygieneRes.ok) {
   }
 }
 
+// 9. Harm-reduction source freshness (2026-08-30). `substance_interactions`
+//    backs /tags/interactions, which answers "can I combine these two?" — and
+//    it had NO watcher of any kind. Nothing checked it because nothing wrote to
+//    it: the 421 TripSit rows were loaded once by 20260909172500 and sat at
+//    `fetched_at = 2026-08-15` with no cron, no registry row, and no sentinel.
+//    A rating nobody re-checks is a claim we are making on our own authority
+//    while printing someone else's name under it.
+//
+//    THE EXPECTED-FRESH SET IS DERIVED, NOT LISTED. `ingestion_sources` rows
+//    whose `target_table` is this table ARE the automated paths, and their
+//    `slug` is the value written into `substance_interactions.source`. Writing
+//    `['tripsit']` here would repeat the mistake check 6b was added to fix — a
+//    sentinel hardcoded to one slug while its own comment described the general
+//    mechanism — and would leave a future eve&rave or FDA sync permanently
+//    unwatched. A source with no registered path is a hand-curated import and
+//    can only warn; it has nothing to be late for.
+//
+//    THE GATE ARMS ITSELF. Between this shipping and the first cron firing the
+//    data is genuinely stale, so an unconditional fail would ship red and train
+//    people to ignore it. `max(fetched_at) > automation registered_at` means
+//    the path has demonstrably written at least once; until then it warns —
+//    but only for two weeks, after which "registered and has never written a
+//    row" is itself the failure.
+{
+  const STALE_FAIL_DAYS = 14 // two missed runs of a weekly schedule
+  const days = (iso) => (Date.now() - new Date(iso).getTime()) / 864e5
+
+  const sources = await get(
+    'ingestion_sources?target_table=eq.substance_interactions&is_enabled=is.true&select=slug,name,schedule',
+  )
+  // An explicit limit with a guard, because PostgREST's default page is 1000 and
+  // a silently truncated read would compute `max(fetched_at)` over a SUBSET —
+  // which reads as staleness that is not there, or hides staleness that is. 476
+  // rows today; the guard is what makes growing past the page size loud.
+  const ROW_CAP = 5000
+  const rows = await get(`substance_interactions?select=source,fetched_at&limit=${ROW_CAP}`)
+
+  if (rows.length === 0) {
+    console.error('✗ substance_interactions is EMPTY — /tags/interactions renders nothing')
+    process.exit(1)
+  }
+  if (rows.length >= ROW_CAP) {
+    console.error(`✗ substance_interactions read hit the ${ROW_CAP}-row cap — per-source max(fetched_at) is computed over a truncated set and cannot be trusted`)
+    process.exit(1)
+  }
+
+  const newest = new Map()
+  const counts = new Map()
+  for (const r of rows) {
+    counts.set(r.source, (counts.get(r.source) ?? 0) + 1)
+    if (!newest.has(r.source) || r.fetched_at > newest.get(r.source)) newest.set(r.source, r.fetched_at)
+  }
+
+  // Registration time of each automated path, so "has it ever written?" is
+  // answerable without depending on run tracking.
+  const autoSlugs = sources.map((s) => s.slug)
+  const registered = new Map()
+  if (autoSlugs.length) {
+    const regs = await get(
+      `admin_automations?slug=in.(${autoSlugs.map((s) => `source_${s}`).join(',')})&select=slug,created_at,enabled`,
+    )
+    for (const a of regs) registered.set(a.slug.replace(/^source_/, ''), a)
+  }
+
+  const failures = []
+  for (const src of sources) {
+    const reg = registered.get(src.slug)
+    if (!reg) {
+      failures.push(`${src.slug}: ingestion_sources says it is automated but there is no source_${src.slug} automation — nothing schedules it`)
+      continue
+    }
+    if (!reg.enabled) {
+      failures.push(`${src.slug}: source_${src.slug} is DISABLED — check admin_automation_runs.summary for auto_paused before assuming a human did it`)
+      continue
+    }
+    const last = newest.get(src.slug)
+    if (!last) {
+      failures.push(`${src.slug}: registered as a source but owns 0 rows in substance_interactions`)
+      continue
+    }
+    const armed = new Date(last) > new Date(reg.created_at)
+    const age = days(last)
+    if (!armed) {
+      if (days(reg.created_at) > STALE_FAIL_DAYS) {
+        failures.push(
+          `${src.slug}: registered ${days(reg.created_at).toFixed(0)}d ago and has never refreshed a row ` +
+            `(newest fetched_at ${last}) — the cron is not firing`,
+        )
+      } else {
+        console.warn(`⚠ ${src.slug} interactions: registered, first run pending (newest fetched_at ${last})`)
+      }
+      continue
+    }
+    if (age > STALE_FAIL_DAYS) {
+      failures.push(`${src.slug}: newest fetched_at is ${age.toFixed(0)}d old (schedule ${src.schedule}, limit ${STALE_FAIL_DAYS}d)`)
+    } else {
+      console.log(`✓ ${src.slug} interactions fresh (${counts.get(src.slug)} rows, ${age.toFixed(1)}d old)`)
+    }
+  }
+
+  // Sources in the data with no registered path. Not a failure — they are
+  // one-off curated imports — but the age is worth saying out loud, because
+  // "loaded once in August and forgotten" is the exact state this whole check
+  // exists because of.
+  const manual = [...newest.keys()].filter((s) => !sources.some((x) => x.slug === s))
+  if (manual.length) {
+    console.warn(
+      `⚠ interaction sources with no automated refresh path: ` +
+        manual.map((s) => `${s} (${counts.get(s)} rows, ${days(newest.get(s)).toFixed(0)}d old)`).join(', '),
+    )
+  }
+
+  if (failures.length) {
+    console.error(`✗ substance_interactions staleness:`)
+    for (const f of failures) console.error(`    ${f}`)
+    console.error('  /tags/interactions is serving ratings nobody has re-checked. Check the source_* cron and its breaker.')
+    process.exit(1)
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 10. Circuit breakers — EVERY row, not just llm.nvidia
+//
+// This is the blind spot §3.7 of docs/architecture/open-data-integration.md
+// names, and 2026-08-30 is what it costs: `eventbrite` reached **500 recorded
+// failures with success_count 0** — never once green since the row was created
+// on 2026-03-30 — while `admin_automations.ev_fill_eventbrite` reported
+// `last_run_status='success'` every 6 hours and stayed `enabled`. The two
+// layers disagree by construction whenever a source swallows its per-item
+// errors and still returns HTTP 200: `recordFailure` has already run inside
+// `withCircuitBreaker`, but a 200 RESETS `consecutive_failures`, so auto-pause
+// is structurally unreachable and nothing anywhere goes red. The breaker row is
+// the ONLY layer that told the truth, and nothing was reading it.
+//
+// The signal is `success_count === 0` — "this source has never once worked" —
+// NOT the failure count. A high count on a source that also succeeds is a flaky
+// upstream; zero successes ever is a dead endpoint, a rejected key, or a wrong
+// URL, and it will not fix itself.
+//
+// DO NOT rewrite this to key on `last_success_at`. That column is only written
+// by an explicit `recordSuccess()`, so a source that runs fine but never calls
+// it stays frozen forever: `ilga_graphql` reads **2026-04-21** while ILGA
+// actually imports nightly and updated 239/250 countries this morning. Judging
+// freshness by that column is how a previous session concluded a four-month
+// outage that was not happening.
+{
+  const res = await fetch(
+    `${BASE}/rest/v1/api_circuit_breakers` +
+      `?select=api_name,state,failure_count,success_count,last_failure_at&state=eq.open`,
+    { headers },
+  )
+  if (!res.ok) {
+    console.warn(`⚠ api_circuit_breakers probe → HTTP ${res.status}`)
+  } else {
+    const open = await res.json()
+
+    // Known and deliberately not-fixed. A reason is mandatory: this map is the
+    // difference between "we decided to live with it" and "nobody looked". Same
+    // contract as the auto-paused-and-still-failing carve-out for automations —
+    // a documented dead source warns; an UNDOCUMENTED one fails.
+    const DISPOSITIONED = {
+      eventbrite:
+        'RETIRED 2026-08-30 (20261107100000). eventbriteapi.com/v3/events/search/ returns 404 ' +
+        'with AND without credentials — the 404 precedes auth, so no key fixes it and there is no ' +
+        'successor endpoint. Cron unscheduled, registry row disabled, and the events DAG node is a ' +
+        'no-op skip via the RETIRED flag. Nothing calls it now, so this row should fall out of the ' +
+        '24h window on its own; if it does NOT, something is still invoking source-eventbrite.',
+      foursquare:
+        'Legacy api.foursquare.com is sunset; a port to places-api.foursquare.com plus a paid ' +
+        'service key is a product decision, not a repair. No cron — the callers are the ' +
+        'venue-ingestion-unified (03:00) and hotel-ingestion-pipeline (04:00) DAG nodes. Since ' +
+        '2026-08-30 a rejected credential is an InvalidCredentialsError raised OUTSIDE the breaker ' +
+        'and records a SUCCESS, so this row should self-clear on the next venue DAG run.',
+      awin:
+        'UNFIXED, tracked. AWIN_FEED_URL is set (an unset one would return a skipped 200 before ' +
+        'the breaker is touched) but the feed does not answer 2xx. mp_fill_awin auto-paused on ' +
+        '2026-08-19 — correctly, because source-awin does NOT swallow its breaker error — yet the ' +
+        'marketplace-ingestion DAG (04:00) still calls it, which is why the count keeps moving ' +
+        'after the pause. Pausing a fill cron does not stop a DAG node.',
+    }
+
+    const dayAgo = Date.now() - 86400_000
+    const neverWorked = open.filter(
+      (b) => (b.success_count ?? 0) === 0 && b.last_failure_at && Date.parse(b.last_failure_at) >= dayAgo,
+    )
+    const undocumented = neverWorked.filter((b) => !DISPOSITIONED[b.api_name])
+
+    for (const b of open) {
+      const tag = DISPOSITIONED[b.api_name] ? 'known' : 'UNDOCUMENTED'
+      console.log(
+        `  · breaker OPEN [${tag}] ${b.api_name}: ${b.failure_count} failures, ` +
+          `${b.success_count ?? 0} successes, last failure ${b.last_failure_at ?? 'never'}`,
+      )
+    }
+    for (const b of neverWorked.filter((x) => DISPOSITIONED[x.api_name])) {
+      console.warn(`⚠ ${b.api_name} has never succeeded and is still being called — ${DISPOSITIONED[b.api_name]}`)
+    }
+
+    if (undocumented.length > 0) {
+      for (const b of undocumented) {
+        console.error(
+          `✗ ${b.api_name}: circuit OPEN, ${b.failure_count} failures, NEVER succeeded ` +
+            `(success_count 0), and still failing as of ${b.last_failure_at}.`,
+        )
+      }
+      console.error(
+        '✗ A source that has never once succeeded is being called on a schedule and NOTHING else ' +
+          'reports it — the calling automation may well read last_run_status=success, because a ' +
+          'source that swallows per-item errors still returns HTTP 200. Find the caller ' +
+          "(cron AND `select name from pipeline_definitions where nodes::text ilike '%source-<x>%'` " +
+          '— a paused cron does not stop a DAG node), then either repair it or retire it and add a ' +
+          'reason to DISPOSITIONED above.',
+      )
+      process.exit(1)
+    }
+    if (open.length === 0) console.log('✓ No circuit breakers open')
+    else console.log(`✓ ${open.length} breaker(s) open, all with a recorded disposition`)
+  }
+}
+
 console.log('✓ Pipeline health check passed')

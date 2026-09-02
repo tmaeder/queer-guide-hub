@@ -450,7 +450,25 @@
       "moved": "スポットを移動しました",
       "removed": "スポットを削除しました",
       "dayUpdated": "この日を更新しました",
-      "dragHandleAria": "ドラッグして並び替え"
+      "dragHandleAria": "ドラッグして並び替え",
+      "a11yCoverage": "[JA] {{withData}} of {{total}} places here publish accessibility information. Nothing is ruled out for staying silent.",
+      "applied": "[JA] Added {{count}} stops",
+      "apply": "[JA] Add {{count}} stops to the trip",
+      "applyFailed": "[JA] Could not add the plan",
+      "budgetCoverage": "[JA] {{withData}} of {{total}} places here list a price. Budget nudges the order; it does not filter.",
+      "event": "[JA] Event",
+      "exhausted": "[JA] Nothing left. The matches here are already on other days.",
+      "loadFailed": "[JA] Could not load places for these cities. Try again in a moment.",
+      "matchesNeeds": "[JA] Matches your needs",
+      "needDates": "[JA] Set the trip dates and a destination city, and the days can be built from them.",
+      "noCandidate": "[JA] Nothing listed here for this time of day.",
+      "paceLabel": "[JA] How full a day",
+      "reroll": "[JA] Try another",
+      "summary": "[JA] {{filled}} of {{requested}} slots filled",
+      "timeUnknown": "[JA] time of day not known",
+      "tooFew": "[JA] Only {{count}} places here match that. Not enough to build days from. Try another vibe, or add stops by hand.",
+      "vibeAny": "[JA] A bit of everything",
+      "vibeLabel": "[JA] What you are after"
     },
     "map": {
       "emptyNoPlaces": "地図に表示するにはスポットを追加してください",
@@ -650,7 +668,8 @@
       "reservations": "予約",
       "packing": "荷造り",
       "collaborate": "コラボ",
-      "journal": "日記"
+      "journal": "日記",
+      "buildDays": "[JA] Build the days"
     },
     "today": {
       "offlineBanner": "オフラインです — 最後に保存した旅程を表示しています。",
