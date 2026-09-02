@@ -428,7 +428,7 @@ export default function About() {
       title: t('about.sources.groups.news.title', 'News'),
       note: t(
         'about.sources.groups.news.note',
-        'Headlines reach us through these APIs and through 300+ RSS feeds from queer outlets. Every article credits the outlet that wrote it and links to the original — we never republish a full story.',
+        'Headlines reach us through these APIs and through 300+ RSS feeds from queer outlets. Every article names the outlet that wrote it and links to the original.',
       ),
       items: [
         { name: 'NewsData.io', href: 'https://newsdata.io/' },
