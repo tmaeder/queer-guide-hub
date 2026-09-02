@@ -341,7 +341,7 @@ export default function SubstanceInteractionsPage() {
           ever name one source. That denied two sources their credit and
           attributed 55 safety claims to an organisation that never made them.
           `sources` now comes from the rows themselves; see migration
-          20261126100000. */}
+          20261202100000. */}
       {credits.length > 0 && (
         <p
           data-testid="interaction-credit"

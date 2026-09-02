@@ -75,7 +75,7 @@ trusting the prose — a stale figure here is worse than no figure.
 
 ### 1.4 Harm Reduction — `public.substance_interactions` (476) + tag surfaces
 
-> **FIXED 2026-09-02 (`20261126100000`). Found 2026-08-30: `/tags/interactions` credited all 476
+> **FIXED 2026-09-02 (`20261202100000`). Found 2026-08-30: `/tags/interactions` credited all 476
 > cells to TripSit, and 55 of them are not TripSit's.** `substance_interaction_matrix()` returned
 > `'source', 'tripsit'` and `'source_url', 'https://combo.tripsit.me/'` as **literals**, so the
 > full-grid page rendered "Interaction data researched and published by TripSit" over a grid that
