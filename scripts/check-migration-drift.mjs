@@ -55,6 +55,32 @@ const PROJECT_REF = process.env.SUPABASE_PROJECT_REF || 'xqeacpakadqfxjxjcewc'
 // The all-zeros row is the CLI's schema baseline; it never has a repo file.
 const BASELINE = new Set(['00000000000000'])
 
+// version -> the `name` remote history recorded for it. Populated ONLY on the
+// token path; the git fallback knows versions and nothing else, so the name
+// check below is skipped when degraded rather than guessing.
+const remoteNames = new Map()
+
+// A migration applied via MCP is stamped with the call time, and the repair-shim
+// convention puts the INTENDED version in the name (`20260618100000_foo` in a
+// file called `foo.sql`). Stripping a leading 14-digit prefix from both sides is
+// what separates that benign shape from a real mismatch: measured on this repo it
+// takes the disagreements from 23 to 6, with no allowlist doing the work.
+const stripShimPrefix = (s) => s.replace(/^\d{14}_/, '')
+
+// The 6 that survive normalization, recorded 2026-09-02. This list may only
+// SHRINK: if a version here stops mismatching, the check fails and tells you to
+// delete the entry, so it cannot rot into an allowlist nobody re-reads.
+// Three look like genuinely different migrations and are worth a human look —
+// the repo file at that version may never have run.
+const KNOWN_NAME_MISMATCHES = new Set([
+  '20260418101929', // file is the `remote_applied` recovery placeholder
+  '20260420180000', // remote scraper_migrations_deny_policy vs file pipeline_p4_… — investigate
+  '20260530130000', // remote personality_tag_cron vs file news_feedback_events_spine — investigate
+  '20260601072108', // …_admincheck_fix vs … — same work, renamed
+  '20260619180000', // remote extract_worker_circuit_breakers vs file search_documents_… — investigate
+  '20260704102951', // …_and_facets vs …_functions — same work, renamed
+])
+
 /** Token from the environment, else from an uncommitted .env file. */
 function resolveToken() {
   if (process.env.SUPABASE_ACCESS_TOKEN) return process.env.SUPABASE_ACCESS_TOKEN
@@ -80,7 +106,7 @@ async function remoteVersions() {
       },
       body: JSON.stringify({
         query:
-          'select version from supabase_migrations.schema_migrations order by version',
+          'select version, name from supabase_migrations.schema_migrations order by version',
       }),
     },
   )
@@ -104,7 +130,24 @@ async function remoteVersions() {
   if (!rows) {
     throw new Error(`Unexpected query response shape: ${JSON.stringify(body).slice(0, 200)}`)
   }
+  for (const r of rows) {
+    const v = String(r.version)
+    if (v && !BASELINE.has(v)) remoteNames.set(v, String(r.name ?? ''))
+  }
   return new Set(rows.map((r) => String(r.version)).filter((v) => v && !BASELINE.has(v)))
+}
+
+/** version -> the name part of each committed file at that version. */
+function repoFileNames() {
+  const out = new Map()
+  for (const f of readdirSync(MIGRATIONS_DIR)) {
+    const m = f.match(VERSION_RE)
+    if (!m) continue
+    const name = f.replace(/^\d{14}_/, '').replace(/\.sql$/, '')
+    if (!out.has(m[1])) out.set(m[1], [])
+    out.get(m[1]).push(name)
+  }
+  return out
 }
 
 /** 14-digit versions of the migration files committed in the repo. */
@@ -187,6 +230,51 @@ if (missing.length > 0) {
   }
   for (const v of missing) console.error(`    - ${v}`)
   process.exit(1)
+}
+
+// SECOND FAILURE MODE, and the one the version check structurally cannot see:
+// the version IS applied and a repo file DOES exist at it, but remote recorded a
+// DIFFERENT name — meaning some other file claimed that version and the one in
+// the tree never ran. That is the state a merge-time version collision leaves
+// behind (PRs #3275/#3276, 2026-09-02): `select count(*) ... where version=…`
+// returns 1 and reads exactly like success. Comparing `name` is the only way to
+// tell your migration ran from someone else's having run instead.
+//
+// Only meaningful on the token path: the git fallback has no names.
+if (!degraded && remoteNames.size > 0) {
+  const repoNames = repoFileNames()
+  const mismatched = []
+  const staleBaseline = []
+  for (const [version, remoteName] of remoteNames) {
+    const files = repoNames.get(version)
+    if (!remoteName || !files || files.length !== 1) continue // empty name predates name recording
+    const agrees = stripShimPrefix(remoteName) === stripShimPrefix(files[0])
+    if (!agrees && !KNOWN_NAME_MISMATCHES.has(version)) {
+      mismatched.push(`${version}  remote='${remoteName}'  file='${files[0]}'`)
+    } else if (agrees && KNOWN_NAME_MISMATCHES.has(version)) {
+      staleBaseline.push(version)
+    }
+  }
+
+  if (mismatched.length > 0) {
+    console.error(`\n✗ APPLIED UNDER ANOTHER NAME: ${mismatched.length} version(s).`)
+    console.error('  The version is in schema_migrations, so every count-by-version check')
+    console.error('  reads as applied — but remote recorded a different file. The file in')
+    console.error('  the tree at that version NEVER RAN. Usually a merge-time version')
+    console.error('  collision: two PRs chose one version, the loser was skipped.')
+    console.error('  Fix: rename the file that never ran to a version above the current max')
+    console.error('  (safe precisely because it never applied), then let it deploy.\n')
+    for (const line of mismatched) console.error(`    - ${line}`)
+    process.exit(1)
+  }
+
+  if (staleBaseline.length > 0) {
+    console.error(`\n✗ KNOWN_NAME_MISMATCHES is stale: ${staleBaseline.length} entr(ies) now agree.`)
+    console.error('  Delete them from scripts/check-migration-drift.mjs so the list cannot')
+    console.error('  rot into an allowlist nobody re-reads.\n')
+    for (const v of staleBaseline) console.error(`    - ${v}`)
+    process.exit(1)
+  }
 }
 
 if (degraded) {
