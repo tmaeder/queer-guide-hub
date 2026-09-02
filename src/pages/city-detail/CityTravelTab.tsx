@@ -42,7 +42,24 @@ export function CityTravelTab({
   // there is genuinely more than one. Repeating "Major airport: BER" one
   // section below "Airport: BER" was noise, not information.
   const airportFacts: Fact[] = [];
-  if (!hasAirport && nearestAirport?.iata_code)
+  // `nearest_airport_codes` holds the airports that serve this city from
+  // OUTSIDE it (Essen: DUS, DTM, NRN — it has none of its own), partitioned off
+  // `airport_codes` by run_city_airport_link. It is more trustworthy than the
+  // `useNearestAirport` fallback below, which scans the unfiltered `airports`
+  // table and will happily return a bush strip, so it wins when present.
+  // PostgREST serialises `numeric` as a string; "25.2" is not a number.
+  const nearestCodes: string[] = Array.isArray(city.nearest_airport_codes)
+    ? city.nearest_airport_codes
+    : [];
+  const parsedKm = Number(city.nearest_airport_km);
+  const nearestKm = Number.isFinite(parsedKm) ? Math.round(parsedKm) : null;
+
+  if (nearestCodes.length)
+    airportFacts.push({
+      label: t('cities.detail.travel.nearestAirport', 'Nearest airport'),
+      value: nearestKm != null ? `${nearestCodes[0]} · ${nearestKm} km` : nearestCodes[0],
+    });
+  else if (!hasAirport && nearestAirport?.iata_code)
     airportFacts.push({
       label: t('cities.detail.travel.nearestAirport', 'Nearest airport'),
       // The distance can be absent when the code came from the client-side
@@ -52,6 +69,11 @@ export function CityTravelTab({
         nearestAirport.distanceKm != null
           ? `${nearestAirport.iata_code} · ${nearestAirport.distanceKm} km`
           : nearestAirport.iata_code,
+    });
+  if (nearestCodes.length > 1)
+    airportFacts.push({
+      label: t('cities.detail.travel.otherNearby', 'Other airports nearby'),
+      value: nearestCodes.slice(1).join(', '),
     });
   if (city.airport_codes && city.airport_codes.length > 1)
     airportFacts.push({
