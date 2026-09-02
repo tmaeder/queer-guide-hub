@@ -19,7 +19,9 @@ Read these before Task 1. Each one is a mistake that was already made and measur
 1. **Never use `slug <> normalize_tag_slug(name)` as a repair predicate.** It matches 115 active rows of which only 8 are defects. The other 106 are deliberate namespace prefixes (`mat-silicone` = 4,643 uses, `news-education`, `occ-pride`, `genre-horror`, `color-black`, `vibe-bold`). The correct predicate always includes `name ~ '[^\x00-\x7F]'`.
 2. **Never use `tag_hygiene_stats().duplicate_active_name` as a merge work-list.** 13 of its 14 rows are a marketplace facet colliding with a glossary term.
 3. **Never widen `tag_language_guard` with word lists.** The "looks German" heuristic measures ~5% precision — it flags `Party`, `Film`, `Pride`, `Transgender`.
-4. **Migration versions must sort above `20261127100000`.** This worktree is at `20261119100000`, prod at `20261126100000`, sibling worktrees hold `20261126100000` (twice) and `20261127100000`. Use the `20261128*` range. A duplicate version is a *silent skip*, not an error.
+4. **Migration versions must sort above `20261127100000`.** This worktree is at `20261119100000`; **prod max is `20261127100000`** — corrected during Task 1, the sibling worktree's migration landed mid-execution, so re-read `max(version)` rather than trusting this line. Use the `20261128*` range. A duplicate version is a *silent skip*, not an error.
+
+7. **A seal without its repair in the SAME migration creates duplicate tags.** `source-tags-extract:85` upserts `{onConflict:'slug', ignoreDuplicates:true}`, and Postgres evaluates that arbiter **after** BEFORE-INSERT triggers. Before the seal, `Bühne` → caller slug `b-hne` → collides with the existing row → DO NOTHING. After the seal, the trigger rewrites it to `buhne`, which collides with nothing → a new 0-usage row is inserted while the orphaned `b-hne` keeps every usage (entity `tags[]` stores the slug string). Any future seal in this family ships with its backfill attached.
 5. **`app.actor` must not match `system:%`.** `log_unified_tag_change()` RAISEs when a system actor modifies a `human_reviewed` row and aborts the whole statement. Use `admin:tag-language-normalisation`.
 6. **Batch discipline.** `trg_search_documents_tag` fires per row. Keep any single `UPDATE unified_tags` under ~300 rows. Every repair here is far below that.
 
@@ -175,7 +177,29 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 
 ---
 
-### Task 2: Repair the 21 lossy slugs
+### Task 2: ~~Repair the 21 lossy slugs~~ — FOLDED INTO TASK 1
+
+**Do not implement this as a separate migration.** Code review of Task 1 established
+that the seal and the repair must land in one migration; see ground rule 7. Shipping
+the seal alone converts a harmless `ON CONFLICT DO NOTHING` into silent twin-tag
+creation for exactly the rows it documents, and the window between two migrations is
+when the Sunday cron would make them.
+
+The repair also cannot be a plain `UPDATE`. Collisions are real: `Attila Hörbiger`
+exists as active `attila-horbiger` **and** merged `attila-h-rbiger`, and `Müllerian`
+has three rows (`mullerian`, `müllerian`, `mllerian`). Repairing the second into the
+first is a unique violation. `20260802110451_tag_slug_diacritic_backfill.sql` is the
+working template — it has the merge-on-collision arm via `merge_tag_concept`, a
+`DISTINCT ON` arm for intra-batch collisions, a `status <> 'merged'` skip, and a
+terminal assertion.
+
+Note `Ü30` → slug `30` → `u30` carries 13 real usages, so it must be repaired rather
+than skipped.
+
+The original standalone content is kept below for reference only.
+
+<details>
+<summary>Superseded standalone repair (do not apply)</summary>
 
 **Files:**
 - Create: `supabase/migrations/20261128100100_tag_slug_repair.sql`
@@ -267,6 +291,8 @@ it matches more than 60 rows, because the unqualified drift predicate matches
 
 Co-Authored-By: Claude <noreply@anthropic.com>"
 ```
+
+</details>
 
 ---
 
@@ -938,17 +964,34 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 Stops the *next* German-language source repeating this. Lower priority than Tasks 1–7 and safe to ship separately.
 
 **Files:**
-- Modify: `supabase/functions/_shared/ai-enrichment.ts:236-247` and `:278-288`
+- Modify: `supabase/functions/_shared/ai-enrichment.ts:81` (`BASE_CONTEXT`)
 - Modify: `supabase/functions/source-milchjugend/index.ts:145`
 
-- [ ] **Step 1: Add an output-language instruction to both enrichment prompts**
+- [ ] **Step 1: Add one output-language rule to `BASE_CONTEXT`**
 
-The venue prompt (`:236-247`) and event prompt (`:278-288`) feed the model a scraped page and ask for `suggested_tags`, with no language constraint — so a German venue page reliably yields German tags. Add to both:
+**Verified 2026-09-02, and it corrects this plan's first draft.** That draft named
+"the venue prompt and the event prompt". There are in fact **five** enrichment paths
+emitting `suggested_tags` — `VENUE_KEYS:152`, `EVENT_KEYS:153`, `PERSONALITY_KEYS:154`,
+`NEWS_KEYS:155`, `SCRAPED_KEYS:156` — plus `MARKETPLACE_TAG_SYSTEM_PROMPT:817`.
+Patching two would have left a German personality page and a German news article
+still minting German tags.
+
+All ten system prompts interpolate `${BASE_CONTEXT}` (`:81`), so **one edit covers
+every path**. It is also correct platform-wide, not just for tags: every base column
+here is the English slot and `*_i18n` carries translations.
+
+Append to `BASE_CONTEXT`, after the existing `<user_data>` paragraph:
 
 ```
-All suggested_tags MUST be in English. If the source page is in another
-language, translate the concept; never emit the source-language term.
+Always respond in English, whatever language the source material is in. Base
+columns on this platform are the English record; translations live in separate
+_i18n columns. When source text is in another language, translate the concept —
+never echo the source-language term as a name, tag or label.
 ```
+
+Note the interaction with the existing injection guard: this instruction sits in the
+system prompt, and `ud()` wraps source text in `<user_data>`, so a scraped German
+page cannot override it by containing "antworte auf Deutsch".
 
 - [ ] **Step 2: Stop the raw German section headings**
 
