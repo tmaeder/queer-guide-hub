@@ -10,8 +10,52 @@ import {
   type EqualityScoreBreakdown,
 } from '@/utils/equalityScore';
 import { qk } from '@/lib/queryKeys';
-import { computeRightsProfile } from '../../supabase/functions/_shared/rights/verdict.ts';
+import { computeRightsProfile, worstOf } from '../../supabase/functions/_shared/rights/verdict.ts';
 import { VERDICT_ORDER, type Verdict } from '../../supabase/functions/_shared/rights/types.ts';
+
+/**
+ * The verdict the traffic light is allowed to use: `worstOf(lgb, trans)`.
+ *
+ * NOT `profile.general`. That is `worstOf` over all three lenses, and
+ * verdict.ts says of it: "`general.verdict` is for SORTING AND FILTERING ONLY.
+ * Never render it as a single adjective." It was reaching users anyway —
+ * `hostile` → `overallRisk: 'moderate'` → SafetyVerdict renders "Mixed" — so
+ * `/country/norway` published the word "Mixed" beside its own "Very High"
+ * equality tier.
+ *
+ * Measured on prod 2026-08-30 across all 250 rows: the intersex lens is
+ * `hostile` for 219 of them, which makes `general` hostile for 156 and leaves
+ * only 3 countries `protected`. 48 countries whose LGB lens is `protected` were
+ * published hostile — Norway, Sweden, Germany, France, the United Kingdom,
+ * Canada, Ireland, New Zealand, Uruguay, Brazil among them.
+ *
+ * Those intersex readings are correct, not a data bug: 228 countries genuinely
+ * record no protection from non-consensual medical intervention, and the nine
+ * that do are exactly Malta, Portugal, Greece, Iceland, Germany, Spain, Chile,
+ * Colombia and Kenya. But a signal that is hostile for 88% of the world cannot
+ * discriminate between destinations, and a four-rung traffic light that paints
+ * 62% of the planet amber trains people to ignore amber — including on Uganda.
+ *
+ * Note this makes the cross-border warning FIRE MORE, not less (3762 → 6886
+ * ordered pairs on one snapshot), and that is the point rather than a cost:
+ * under `general` almost everyone was tied at `hostile`, so a real drop was
+ * invisible. Every warning now rests on a >=2-rank drop of the LGB or trans
+ * lens by construction, where before it could rest on the intersex constant
+ * alone — which is what made Copenhagen → Oslo warn.
+ *
+ * This narrows what the traffic light CLAIMS; it hides nothing. The intersex
+ * verdict is still rendered in full by `LensVerdictSummary` on the country
+ * page, which is the surface built to say it honestly and per-lens. Restoring
+ * intersex here means first giving the tier a rung between "no statute
+ * recorded" and "state persecution" — the two it currently conflates.
+ *
+ * INV-1 is unaffected: criminalisation dominates every lens, so a criminalising
+ * country still returns `criminalized`/`criminalized-severe` from this call.
+ */
+export function travelVerdictOf(country: Record<string, unknown>): Verdict {
+  const profile = computeRightsProfile(country);
+  return worstOf([profile.lgb, profile.trans]).verdict;
+}
 
 export interface CountrySafety {
   id: string;
@@ -26,16 +70,28 @@ export interface CountrySafety {
   /**
    * Categorical verdict, worst across the LGB/trans/intersex lenses.
    *
-   * Computed client-side from this row, NOT read from
-   * `countries.rights_verdict_general` — that column exists but is not yet
-   * populated (the nightly ILGA cron writes it), so reading it today would
-   * make every destination `unknown`.
+   * Computed client-side from this row rather than read from
+   * `countries.rights_verdict_general`. The column IS populated now (the
+   * nightly ILGA cron writes it, and prod agreed with this computation on all
+   * 250 rows when checked on 2026-08-30) — but the row is already fetched for
+   * the other fields, so recomputing costs nothing and cannot go stale against
+   * the legal columns beside it.
    *
    * Prefer this over `equality_score` for any comparison or ranking. It has a
    * real `unknown` that stays outside the order, where the score forced
    * callers to invent a number for "we don't know".
+   *
+   * NOT the field to drive a risk tier or a warning from — see `travelVerdict`
+   * below and the note on `travelVerdictOf`.
    */
   verdict: Verdict;
+  /**
+   * `worstOf(lgb, trans)` — what the traffic light and the cross-border
+   * warnings rank on. See `travelVerdictOf` for why `verdict` cannot be used
+   * here: the intersex lens is `hostile` for 219 of 250 countries, so it is a
+   * near-constant that cannot discriminate between destinations.
+   */
+  travelVerdict: Verdict;
   lgbti_criminalization: unknown;
   lgbti_employment_protection: unknown;
   lgbti_same_sex_unions: unknown;
@@ -112,10 +168,15 @@ export interface TripSafetyReport {
  */
 export function worstCountryOf(countries: readonly CountrySafety[]): CountrySafety | undefined {
   if (countries.length === 0) return undefined;
-  const measured = countries.filter((c) => c.verdict !== 'unknown');
+  // `travelVerdict`, to stay consistent with the tier that decides whether this
+  // country gets named at all: TripSafetyBriefing shows the callout when
+  // `overallRisk !== 'low'`. Ranking on `verdict` would leave 156 of 250
+  // countries tied on `hostile`, where the tiebreak — equality_score — decides
+  // a sentence that names a specific country to a traveller.
+  const measured = countries.filter((c) => c.travelVerdict !== 'unknown');
   const pool = measured.length > 0 ? measured : countries;
   return [...pool].sort((a, b) => {
-    const byVerdict = VERDICT_ORDER[a.verdict] - VERDICT_ORDER[b.verdict];
+    const byVerdict = VERDICT_ORDER[a.travelVerdict] - VERDICT_ORDER[b.travelVerdict];
     if (byVerdict !== 0) return byVerdict;
     return (
       (a.equality_score ?? Number.POSITIVE_INFINITY) -
@@ -190,6 +251,7 @@ export function useTripSafety(countryIds: string[]) {
       deathPenalty: hasDeathPenalty(c.lgbti_criminalization as Record<string, unknown> | null),
       deathPenaltyRisk: deathPenaltyRisk(c.lgbti_criminalization as Record<string, unknown> | null),
       verdict: computeRightsProfile(c as Record<string, unknown>).general.verdict,
+      travelVerdict: travelVerdictOf(c as Record<string, unknown>),
       lgbti_criminalization: c.lgbti_criminalization,
       lgbti_employment_protection: c.lgbti_employment_protection,
       lgbti_same_sex_unions: c.lgbti_same_sex_unions,
@@ -216,8 +278,14 @@ export function useTripSafety(countryIds: string[]) {
       // drop against an unscored neighbour, or hiding a real one behind it.
       // An unknown destination now produces no comparison at all, because we
       // genuinely cannot make one.
-      if (from.verdict === 'unknown' || to.verdict === 'unknown') continue;
-      const rankDrop = VERDICT_ORDER[from.verdict] - VERDICT_ORDER[to.verdict];
+      // Ranked on `travelVerdict`, not `verdict`. On `verdict` the intersex
+      // lens put Denmark at `protected` and Norway at `hostile`, a two-rank
+      // drop, so the trip Copenhagen → Oslo warned "significant change in
+      // LGBTQ+ rights". Spain → France, Denmark → Sweden and Spain → Germany
+      // all did the same; none of them now do, and all four countries' real
+      // intersex gap is still stated per-lens on the country page.
+      if (from.travelVerdict === 'unknown' || to.travelVerdict === 'unknown') continue;
+      const rankDrop = VERDICT_ORDER[from.travelVerdict] - VERDICT_ORDER[to.travelVerdict];
       // Two steps, e.g. protected -> hostile or partial -> criminalized. The
       // old 30-point threshold was roughly the same distance on a scale where
       // the bands are 20 points wide.
@@ -237,8 +305,12 @@ export function useTripSafety(countryIds: string[]) {
     // of the four fabricated defaults: a trip made entirely of unscored
     // destinations computed 50, never cleared the `< 40` test, and so reported
     // overall risk `low`. Unmeasured read as safe.
-    const hasUnknownDestination = safetySummaries.some((c) => c.verdict === 'unknown');
-    const hasHostileDestination = safetySummaries.some((c) => c.verdict === 'hostile');
+    // Both on `travelVerdict`. On `verdict` the intersex lens made 156 of 250
+    // countries `hostile`, so `overallRisk` was `moderate` — the amber tier,
+    // rendered by SafetyVerdict as the word "Mixed" — for Norway, Sweden,
+    // Germany, France, the United Kingdom and Canada.
+    const hasUnknownDestination = safetySummaries.some((c) => c.travelVerdict === 'unknown');
+    const hasHostileDestination = safetySummaries.some((c) => c.travelVerdict === 'hostile');
 
     // `possible` escalates to critical alongside `confirmed`. ILGA records
     // "no legal certainty" for Afghanistan, Pakistan, Qatar, Somalia and the
