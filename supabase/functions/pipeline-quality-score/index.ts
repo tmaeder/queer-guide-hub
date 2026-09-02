@@ -3,6 +3,7 @@ import { scoreMarketplaceQuality } from '../_shared/marketplace-pipeline-utils.t
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { gateImages } from '../_shared/image-gate.ts'
 import { resolveStagingContentType, type ContentType } from '../_shared/content-registry.ts'
+import { QUALITY_SCORE_ROW_FILTER, mayAdvanceEnrichmentStatus } from '../_shared/quality-score-gating.ts'
 
 /** Content types that carry a photo `images[]` array worth gating before commit
  *  (was the IMAGE_GATED_TYPES + IMAGE_GATED_TABLES string sets). */
@@ -28,14 +29,12 @@ Deno.serve(withErrorReporting('pipeline-quality-score', async (req) => {
 
     let query = supabase
       .from('ingestion_staging')
-      .select('id, normalized_data, enriched_data, entity_type, target_table')
-      // 'pending' rows as always, PLUS 'enriched' rows once quality-enhance has
-      // stamped its verdict (enriched_data.quality_status). Enrich nodes set
-      // enrichment_status='enriched' BEFORE this node runs, so without the
-      // second arm news rows were never scored (computeNewsScore was dead code)
-      // and the review-gate zeroed their quality weight. The quality_status
-      // guard keeps us from flipping rows to 'completed' before the LLM pass.
-      .or('enrichment_status.eq.pending,and(enrichment_status.eq.enriched,enriched_data->>quality_status.not.is.null)')
+      .select('id, normalized_data, enriched_data, entity_type, target_table, enrichment_status')
+      // Two arms; the arm a row arrives on decides whether the write below may
+      // advance enrichment_status. Filter + gate live together in
+      // _shared/quality-score-gating.ts so they cannot drift apart — that
+      // agreement is the whole correctness property here.
+      .or(QUALITY_SCORE_ROW_FILTER)
       .in('dedup_status', ['unique', 'pending'])
       .in('ai_validation_status', ['approved', 'pending'])
       .order('created_at', { ascending: true })
@@ -82,10 +81,13 @@ Deno.serve(withErrorReporting('pipeline-quality-score', async (req) => {
 
       if (!dryRun) {
         const belowMin = score < minScore
+        // Only the 'enriched' arm may advance enrichment_status. A row still at
+        // 'pending' must stay claimable by pipeline-enrich-*; see the selector.
+        const enrichmentDone = mayAdvanceEnrichmentStatus(item.enrichment_status)
         await supabase
           .from('ingestion_staging')
           .update({
-            enrichment_status: 'completed',
+            ...(enrichmentDone ? { enrichment_status: 'completed' } : {}),
             enriched_data: {
               ...(item.enriched_data as Record<string, unknown> || {}),
               quality_score: score,
