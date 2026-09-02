@@ -127,6 +127,30 @@ describe('cruising category safety gate', () => {
     expect(body).toMatch(/update public\.queer_villages/);
   });
 
+  it('registers venue.category for review, un-batchable and risk-gated', () => {
+    // approve_entity_review() is registry-driven and RAISES 'unsupported review
+    // field' for an unregistered field, so queuing category rows without this
+    // would create items a human can approve that then error.
+    //
+    // Both flags are safety rules, not preferences:
+    //   batchable=false  -> "cruising/sauna are never bulk-accepted" (CLAUDE.md),
+    //                       enforced in the schema so no batch-approve can sweep them
+    //   risk_gate        -> approving a cruising categorisation in a criminalizing
+    //                       country needs explicit confirmation (outing safety)
+    const files = readdirSync(MIGRATIONS)
+      .filter((f) => f.endsWith('.sql'))
+      .sort();
+    const reg = [...files]
+      .reverse()
+      .map((f) => readFileSync(join(MIGRATIONS, f), 'utf8'))
+      .find((s) => /insert into public\.review_field_registry/i.test(s) && /'category'/.test(s));
+    expect(reg, 'no migration registers venue.category').toBeTruthy();
+    const row = reg!.slice(reg!.search(/insert into public\.review_field_registry/i));
+    expect(row).toMatch(/'venue',\s*'category'/);
+    expect(row).toMatch(/\bfalse\b/); // batchable
+    expect(row).toMatch(/criminalizing_destination/);
+  });
+
   it('keeps cruising out of the going-out rails', () => {
     // Every cruising venue is now safety_gated, so an anonymous visitor's query
     // drops them regardless — leaving the rail's counts and contents disagreeing
