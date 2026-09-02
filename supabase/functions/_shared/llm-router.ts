@@ -225,7 +225,25 @@ async function breakerAllows(apiName: string): Promise<boolean> {
 }
 
 async function breakerFailure(apiName: string, error: string): Promise<void> {
-  await callRpc('circuit_breaker_record_failure', { p_api_name: apiName, p_error: error })
+  // The parameter is `p_error_msg`. It was `p_error` here, and PostgREST
+  // resolves overloads BY ARGUMENT NAME, so every one of these calls 404'd with
+  // PGRST202 and the breaker never recorded a single failure — it could not
+  // trip, which made the whole 401/403/exhaustion classification inert.
+  //
+  // It was invisible because callRpc never throws and this function ignored its
+  // result. So the symptom was an absence: `failure_count` stayed 0, and that
+  // reads exactly like "nothing has gone wrong". It actively misled the live
+  // diagnosis — "a slot was consumed and the breaker did not move, therefore it
+  // must have been a 429" is only sound if the breaker COULD have moved.
+  const res = await callRpc('circuit_breaker_record_failure', {
+    p_api_name: apiName,
+    p_error_msg: error,
+  })
+  if (!res.ok) {
+    // Bookkeeping must never break inference, so this still does not throw —
+    // but silence is what let a dead breaker look healthy for three days.
+    console.warn(`[llm-router] breaker failure NOT recorded for ${apiName}: ${res.error}`)
+  }
 }
 
 async function breakerSuccess(apiName: string): Promise<void> {
