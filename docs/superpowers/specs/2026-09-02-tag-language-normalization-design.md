@@ -209,6 +209,9 @@ rewrite — the same rule the disabled judge violated).
 
 ## Plan of work
 
+0. **Move `source-tags-extract` to the review queue** (see "Resolved" below). This
+   comes first: once it proposes instead of inserting, the German cohort stops
+   growing while the rest of the repair proceeds.
 1. **Seal the slug at both ends.** Fix `source-tags-extract:39` to transliterate
    before the character class, matching `normalize_tag_slug`/`tag_deaccent`. Then,
    defence in depth, make `unified_tags_normalize_slug()` prefer the name-derived
@@ -228,15 +231,42 @@ rewrite — the same rule the disabled judge violated).
    enrichment prompts; stop the German scrapers passing raw section headings into
    `tags[]`.
 
-## Open decision
+## Resolved: source-tags-extract proposes, it does not create
 
-`source-tags-extract` currently auto-activates any free-text string it finds. The
-minimal fix above stops it producing *broken slugs* and stops German *arriving* from
-the known feeders, but it does not stop the next German-language source from doing
-the same thing. The stronger fix is for it to propose into a review queue instead of
-inserting `active` rows directly — matching what `tag-enrichment-sweep` already does
-with `ai_suggestions`. That changes the behaviour of a live weekly pipeline and is
-called out here rather than decided unilaterally.
+**Decided 2026-09-02.** `source-tags-extract` stops writing `unified_tags` and
+instead files each newly-seen string into `ai_suggestions` for human review. This is
+the real seal — the minimal slug fix alone would only stop the *known* German
+feeders, leaving the next foreign-language source free to mint vocabulary again.
+
+It needs **no schema migration**: `suggestion_type` already permits `'tag'` and
+`source` already permits `'rule'` (this path is deterministic extraction, not a
+model). The row shape is `suggestion_type='tag'`, `source='rule'`,
+`entity_type='tag'`, `entity_id=NULL` (the tag does not exist yet — the column is
+nullable), `proposed_value = {name, slug, seen_in:[tables]}`, `status='pending'`.
+
+**Re-proposal guard is load-bearing.** This is a weekly cron over the same corpus,
+so without a guard it re-files every string every Sunday. Skip a slug that already
+exists in `unified_tags` **in any status**, or that already has an `ai_suggestions`
+row in `pending` / `approved` / `rejected`. A `rejected` row must act as a
+**tombstone** — the same pattern `tag_relations` uses so the verifier cannot
+re-propose what a human already refused.
+
+Two things to check during implementation, both discovered while reading the file:
+
+- `src/components/admin/search-intelligence/SuggestionsTab.tsx` is the only reader.
+  It may assume `entity_id` is non-null, since every existing suggestion type edits
+  an existing row. A new-tag proposal has no entity, so the queue UI likely needs a
+  branch.
+- The function selects `.limit(5000)` per table with **no `ORDER BY`** (`:30`). It
+  has therefore never scanned the whole corpus, and which 5,000 rows it sees is
+  arbitrary. That is a pre-existing silent cap, not something this work introduced —
+  but the extraction should be made complete-or-honest rather than quietly partial.
+
+The file also carries the scar of a prior incident worth preserving: it once
+upserted `status:'active'`, resurrecting 297 deprecated tags into a state where the
+page rendered but search refused to index, leaving `lgbtiq`, `sauna` and `kink`
+unreachable for three months. Whatever replaces the write path must not reintroduce
+a way for a scraped string to change an existing row.
 
 ## Verification
 
