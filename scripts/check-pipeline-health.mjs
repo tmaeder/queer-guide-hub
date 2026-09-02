@@ -112,7 +112,7 @@ if (!hygieneRes.ok) {
   // (news_commit_staging_batch), so advancing it strands news and nothing else.
   // Applying the same test to every entity type reported 406 venue/marketplace
   // rows legitimately queued for HUMAN review as "unreachable". See the header
-  // of 20261203100100 for the full measurement.
+  // of 20261206100100 for the full measurement.
   //
   // recent_24h is a ZERO-INVARIANT and is checked before the stale thresholds
   // because it is the actionable half: it counts only rows stranded in the last
@@ -126,7 +126,7 @@ if (!hygieneRes.ok) {
     body: '{}',
   })
   if (!unreachRes.ok) {
-    console.warn(`⚠ staging_unreachable_stats → HTTP ${unreachRes.status} (RPC missing? migration 20261203100100)`)
+    console.warn(`⚠ staging_unreachable_stats → HTTP ${unreachRes.status} (RPC missing? migration 20261206100100)`)
   } else {
     unreachable = await unreachRes.json()
     const recent = Number(unreachable.recent_24h ?? 0)
