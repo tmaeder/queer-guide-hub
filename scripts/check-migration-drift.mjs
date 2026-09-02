@@ -74,7 +74,6 @@ const stripShimPrefix = (s) => s.replace(/^\d{14}_/, '')
 // the repo file at that version may never have run.
 const KNOWN_NAME_MISMATCHES = new Set([
   '20260418101929', // file is the `remote_applied` recovery placeholder
-  '20260420180000', // remote scraper_migrations_deny_policy vs file pipeline_p4_… — investigate
   '20260530130000', // remote personality_tag_cron vs file news_feedback_events_spine — investigate
   '20260601072108', // …_admincheck_fix vs … — same work, renamed
   '20260619180000', // remote extract_worker_circuit_breakers vs file search_documents_… — investigate
