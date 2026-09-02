@@ -1,7 +1,7 @@
 -- ============================================================================
 -- Drain the news staging rows pipeline-quality-score stranded.
 -- ----------------------------------------------------------------------------
--- Companion to 20261203100100 (the sentinel) and to the pipeline-quality-score
+-- Companion to 20261206100100 (the sentinel) and to the pipeline-quality-score
 -- fix in _shared/quality-score-gating.ts. That node stamped
 -- enrichment_status='completed' on rows it picked up on the 'pending' arm —
 -- rows it had scored but NOT enriched. For news that is a one-way door:
@@ -24,7 +24,7 @@
 -- ORDER MATTERS. This must apply AFTER the quality-score fix is deployed, or
 -- the old code re-strands the same rows on its next sweep. Two things make that
 -- safe rather than merely hoped-for: the migration sorts above the fix's own
--- (20261203100000/100100), and the operation is IDEMPOTENT and re-runnable — if
+-- (20261206100000/100100), and the operation is IDEMPOTENT and re-runnable — if
 -- rows are re-stranded, `SELECT public.drain_unreachable_news_staging();` picks
 -- them up again. A re-stranding is also loud rather than silent: the drain
 -- bumps updated_at, so any row that comes back lands in the sentinel's
@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS public.news_staging_drain_audit (
 );
 
 COMMENT ON TABLE public.news_staging_drain_audit IS
-  'One row per news staging row whose enrichment_status was reset completed->pending by drain_unreachable_news_staging (20261203100200). PRIMARY KEY on staging_id makes the drain idempotent per row and is the only record of the previous value.';
+  'One row per news staging row whose enrichment_status was reset completed->pending by drain_unreachable_news_staging (20261206100200). PRIMARY KEY on staging_id makes the drain idempotent per row and is the only record of the previous value.';
 
 ALTER TABLE public.news_staging_drain_audit ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON TABLE public.news_staging_drain_audit FROM PUBLIC, anon, authenticated;
@@ -144,7 +144,7 @@ END;
 $function$;
 
 COMMENT ON FUNCTION public.drain_unreachable_news_staging(integer) IS
-  'Resets enrichment_status completed->pending on news staging rows scored by pipeline-quality-score but never enriched, returning them to the enrich -> quality-enhance -> commit chain. Idempotent and re-runnable. Previous values in news_staging_drain_audit. See 20261203100200.';
+  'Resets enrichment_status completed->pending on news staging rows scored by pipeline-quality-score but never enriched, returning them to the enrich -> quality-enhance -> commit chain. Idempotent and re-runnable. Previous values in news_staging_drain_audit. See 20261206100200.';
 
 REVOKE ALL ON FUNCTION public.drain_unreachable_news_staging(integer) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.drain_unreachable_news_staging(integer) TO service_role;
