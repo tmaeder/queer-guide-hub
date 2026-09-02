@@ -1,0 +1,2210 @@
+{
+  "_summary": {
+    "missing_terms": 298,
+    "externally_attested_UPPER_BOUND": 84,
+    "sense_suspect": 29,
+    "plausible_after_flagging_NEEDS_READING": 55,
+    "kinktionary_only": 214,
+    "unreachable_not_judged": 0,
+    "by_section": {
+      "genders": {
+        "total": 5,
+        "attested": 3
+      },
+      "sexual-orientations": {
+        "total": 15,
+        "attested": 1
+      },
+      "romantic-orientations": {
+        "total": 3,
+        "attested": 1
+      },
+      "relationships": {
+        "total": 17,
+        "attested": 7
+      },
+      "roles": {
+        "total": 154,
+        "attested": 40
+      },
+      "gay-culture": {
+        "total": 2,
+        "attested": 0
+      },
+      "kink-activities": {
+        "total": 20,
+        "attested": 3
+      },
+      "sexual-activities": {
+        "total": 8,
+        "attested": 4
+      },
+      "philia-fetish": {
+        "total": 35,
+        "attested": 8
+      },
+      "sex-slang": {
+        "total": 11,
+        "attested": 3
+      },
+      "pop-culture": {
+        "total": 6,
+        "attested": 4
+      },
+      "pornography": {
+        "total": 1,
+        "attested": 0
+      },
+      "events": {
+        "total": 4,
+        "attested": 3
+      },
+      "holidays": {
+        "total": 2,
+        "attested": 1
+      },
+      "sexual-health": {
+        "total": 4,
+        "attested": 2
+      },
+      "mental-health": {
+        "total": 2,
+        "attested": 1
+      },
+      "scene-safety": {
+        "total": 6,
+        "attested": 2
+      },
+      "glossary": {
+        "total": 3,
+        "attested": 1
+      }
+    }
+  },
+  "rows": [
+    {
+      "term": "Demimasc",
+      "slug": "demimasc",
+      "section": "genders",
+      "attested": true,
+      "qid": "Q121368243",
+      "label": "demimasc",
+      "description": "gender identity where a person identifies partially as a man/boy or as otherwise being partly masculine in nature",
+      "senseSuspect": false
+    },
+    {
+      "term": "Pivotgender",
+      "slug": "pivotgender",
+      "section": "genders",
+      "attested": false
+    },
+    {
+      "term": "Omnigender",
+      "slug": "omnigender",
+      "section": "genders",
+      "attested": false
+    },
+    {
+      "term": "Maverick",
+      "slug": "maverick",
+      "section": "genders",
+      "attested": true,
+      "qid": "Q14946377",
+      "label": "Maverick",
+      "description": "family name",
+      "senseSuspect": true
+    },
+    {
+      "term": "Hijra",
+      "slug": "hijra",
+      "section": "genders",
+      "attested": true,
+      "qid": "Q6846236",
+      "label": "Hijra",
+      "description": "the emigration of Muslims to the Islamic territory (Dār al-Islām)",
+      "senseSuspect": false
+    },
+    {
+      "term": "Almondsexual",
+      "slug": "almondsexual",
+      "section": "sexual-orientations",
+      "attested": false
+    },
+    {
+      "term": "Animesexual",
+      "slug": "animesexual",
+      "section": "sexual-orientations",
+      "attested": false
+    },
+    {
+      "term": "Cratosexual",
+      "slug": "cratosexual",
+      "section": "sexual-orientations",
+      "attested": false
+    },
+    {
+      "term": "Demiflexible",
+      "slug": "demiflexible",
+      "section": "sexual-orientations",
+      "attested": false
+    },
+    {
+      "term": "Faggot",
+      "slug": "faggot",
+      "section": "sexual-orientations",
+      "attested": true,
+      "qid": "Q50995392",
+      "label": "Faggot",
+      "description": "family name",
+      "senseSuspect": true
+    },
+    {
+      "term": "Homocurious",
+      "slug": "homocurious",
+      "section": "sexual-orientations",
+      "attested": false
+    },
+    {
+      "term": "Kinksexual",
+      "slug": "kinksexual",
+      "section": "sexual-orientations",
+      "attested": false
+    },
+    {
+      "term": "Mutosexual",
+      "slug": "mutosexual",
+      "section": "sexual-orientations",
+      "attested": false
+    },
+    {
+      "term": "Myrsexual",
+      "slug": "myrsexual",
+      "section": "sexual-orientations",
+      "attested": false
+    },
+    {
+      "term": "Pancurious",
+      "slug": "pancurious",
+      "section": "sexual-orientations",
+      "attested": false
+    },
+    {
+      "term": "Quoisexual",
+      "slug": "quoisexual",
+      "section": "sexual-orientations",
+      "attested": false
+    },
+    {
+      "term": "Sadosexual",
+      "slug": "sadosexual",
+      "section": "sexual-orientations",
+      "attested": false
+    },
+    {
+      "term": "Scrosexuality",
+      "slug": "scrosexuality",
+      "section": "sexual-orientations",
+      "attested": false
+    },
+    {
+      "term": "Transbian",
+      "slug": "transbian",
+      "section": "sexual-orientations",
+      "attested": false
+    },
+    {
+      "term": "Vegansexual",
+      "slug": "vegansexual",
+      "section": "sexual-orientations",
+      "attested": false
+    },
+    {
+      "term": "Aplatonic",
+      "slug": "aplatonic",
+      "section": "romantic-orientations",
+      "attested": false
+    },
+    {
+      "term": "Platoniromantic",
+      "slug": "platoniromantic",
+      "section": "romantic-orientations",
+      "attested": false
+    },
+    {
+      "term": "Quoiromantic",
+      "slug": "quoiromantic",
+      "section": "romantic-orientations",
+      "attested": true,
+      "qid": "Q96195586",
+      "label": "quoiromantic",
+      "description": "someone who's questioning their romantic orientation while not wanting to apply another label to themselves",
+      "senseSuspect": false
+    },
+    {
+      "term": "Best Friend",
+      "slug": "best-friend",
+      "section": "relationships",
+      "attested": true,
+      "qid": "Q61254394",
+      "label": "Best Friend",
+      "description": "vocal track by The Beat/The English Beat",
+      "senseSuspect": false
+    },
+    {
+      "term": "Boywife",
+      "slug": "boywife",
+      "section": "relationships",
+      "attested": false
+    },
+    {
+      "term": "Clan",
+      "slug": "clan",
+      "section": "relationships",
+      "attested": true,
+      "qid": "Q211503",
+      "label": "clan",
+      "description": "group of people united by actual or perceived kinship and descent",
+      "senseSuspect": false
+    },
+    {
+      "term": "Consensual Non-Monogamy",
+      "slug": "consensual-non-monogamy",
+      "section": "relationships",
+      "attested": true,
+      "qid": "Q110515686",
+      "label": "consensual non-monogamy",
+      "description": "multiple sexual relationships with mutual consent outside a single marriage",
+      "senseSuspect": false
+    },
+    {
+      "term": "DDLG Kink/Dynamic",
+      "slug": "ddlg-kink-dynamic",
+      "section": "relationships",
+      "attested": false
+    },
+    {
+      "term": "Homance",
+      "slug": "homance",
+      "section": "relationships",
+      "attested": false
+    },
+    {
+      "term": "In Service To",
+      "slug": "in-service-to",
+      "section": "relationships",
+      "attested": false
+    },
+    {
+      "term": "Nesting Metamours",
+      "slug": "nesting-metamours",
+      "section": "relationships",
+      "attested": false
+    },
+    {
+      "term": "Ommer",
+      "slug": "ommer",
+      "section": "relationships",
+      "attested": true,
+      "qid": "Q61857816",
+      "label": "Ommer",
+      "description": "family name",
+      "senseSuspect": true
+    },
+    {
+      "term": "Polycule",
+      "slug": "polycule",
+      "section": "relationships",
+      "attested": true,
+      "qid": "Q56826311",
+      "label": "polycule",
+      "description": "group of people connected by overlapping romantic, sexual, and platonic relationships",
+      "senseSuspect": false
+    },
+    {
+      "term": "Primal Mate",
+      "slug": "primal-mate",
+      "section": "relationships",
+      "attested": false
+    },
+    {
+      "term": "Sister Slut",
+      "slug": "sister-slut",
+      "section": "relationships",
+      "attested": false
+    },
+    {
+      "term": "Switchuationship",
+      "slug": "switchuationship",
+      "section": "relationships",
+      "attested": false
+    },
+    {
+      "term": "Squish",
+      "slug": "squish",
+      "section": "relationships",
+      "attested": true,
+      "qid": "Q122236025",
+      "label": "Squish",
+      "description": "2022 video game",
+      "senseSuspect": true
+    },
+    {
+      "term": "Step-Sister",
+      "slug": "step-sister",
+      "section": "relationships",
+      "attested": false
+    },
+    {
+      "term": "Stray",
+      "slug": "stray",
+      "section": "relationships",
+      "attested": true,
+      "qid": "Q96247255",
+      "label": "Stray",
+      "description": "2022 adventure video game developed by BlueTwelve Studio",
+      "senseSuspect": true
+    },
+    {
+      "term": "Latex Family",
+      "slug": "latex-family",
+      "section": "relationships",
+      "attested": false
+    },
+    {
+      "term": "Affini",
+      "slug": "affini",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q99905691",
+      "label": "Affini",
+      "description": "family name",
+      "senseSuspect": true
+    },
+    {
+      "term": "Aftercare Specialist",
+      "slug": "aftercare-specialist",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Alpha Brat",
+      "slug": "alpha-brat",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Anaconda",
+      "slug": "anaconda",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q19416051",
+      "label": "Anaconda",
+      "description": "short story by Horacio Quiroga",
+      "senseSuspect": true
+    },
+    {
+      "term": "Antagonizer",
+      "slug": "antagonizer",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Anthropologist",
+      "slug": "anthropologist",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q4773904",
+      "label": "anthropologist",
+      "description": "scientist engaged in the practice of anthropology, who study aspects of humans within past and present societies",
+      "senseSuspect": false
+    },
+    {
+      "term": "Alpha Woman",
+      "slug": "alpha-woman",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Anal Whore",
+      "slug": "anal-whore",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Auralist",
+      "slug": "auralist",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Bite Risk",
+      "slug": "bite-risk",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Bratty Little",
+      "slug": "bratty-little",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Bratty Switch",
+      "slug": "bratty-switch",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Bunnygirl",
+      "slug": "bunnygirl",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Chaos Creature",
+      "slug": "chaos-creature",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Chaos Cutie",
+      "slug": "chaos-cutie",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Charge Master / Charge Mistress",
+      "slug": "charge-master-charge-mistress",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Chaos Princess",
+      "slug": "chaos-princess",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Cigarette Top",
+      "slug": "cigarette-top",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Clown Handler",
+      "slug": "clown-handler",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Cock Enthusiast",
+      "slug": "cock-enthusiast",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Conditional Sub",
+      "slug": "conditional-sub",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Connection Whore",
+      "slug": "connection-whore",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Courtesan",
+      "slug": "courtesan",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q376924",
+      "label": "courtesan",
+      "description": "prostitute or mistress",
+      "senseSuspect": false
+    },
+    {
+      "term": "Cuddlee",
+      "slug": "cuddlee",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Cuddler",
+      "slug": "cuddler",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Cuddle Switch",
+      "slug": "cuddle-switch",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Cunnilinguist",
+      "slug": "cunnilinguist",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Daddy Chaser",
+      "slug": "daddy-chaser",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Denied Slave",
+      "slug": "denied-slave",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Dirty Girl",
+      "slug": "dirty-girl",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q5281010",
+      "label": "Dirty Girl",
+      "description": "2010 film directed by Abe Sylvia",
+      "senseSuspect": true
+    },
+    {
+      "term": "Divine",
+      "slug": "divine",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q357786",
+      "label": "Divine",
+      "description": "American actor, singer and drag queen (1945–1988)",
+      "senseSuspect": false
+    },
+    {
+      "term": "Dogboy",
+      "slug": "dogboy",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q133530295",
+      "label": "Dogboy",
+      "description": "2005 novel by Victor Kelleher",
+      "senseSuspect": true
+    },
+    {
+      "term": "Doggirl",
+      "slug": "doggirl",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Elder Brat",
+      "slug": "elder-brat",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Electro Slut",
+      "slug": "electro-slut",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Emotional Support Sub",
+      "slug": "emotional-support-sub",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Escape Artist",
+      "slug": "escape-artist",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q16992723",
+      "label": "Escape Artist",
+      "description": "album by Garland Jeffreys",
+      "senseSuspect": true
+    },
+    {
+      "term": "Fairy Gay Mother",
+      "slug": "fairy-gay-mother",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Femboydom",
+      "slug": "femboydom",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "FemDom",
+      "slug": "femdom",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Feral Princess / Feral Prince",
+      "slug": "feral-princess-feral-prince",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Firefly",
+      "slug": "firefly",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q2724192",
+      "label": "Firefly",
+      "description": "album by band Uriah Heep",
+      "senseSuspect": true
+    },
+    {
+      "term": "Fire Masochist",
+      "slug": "fire-masochist",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Fire Sadist",
+      "slug": "fire-sadist",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "First Girl",
+      "slug": "first-girl",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q86816911",
+      "label": "First girl",
+      "description": "theatrical character in the play \"Wedding Song\"",
+      "senseSuspect": true
+    },
+    {
+      "term": "Fisting Daddy / Fisting Mommy",
+      "slug": "fisting-daddy-fisting-mommy",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Fisting Prince / Fisting Princess",
+      "slug": "fisting-prince-fisting-princess",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Fisting Switch",
+      "slug": "fisting-switch",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Floret/Flort",
+      "slug": "floret-flort",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Fluffer",
+      "slug": "fluffer",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q1430623",
+      "label": "fluffer",
+      "description": "person who keeps a pornographic actor's penis erect on-set",
+      "senseSuspect": false
+    },
+    {
+      "term": "Food Mommy",
+      "slug": "food-mommy",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Fuckslut",
+      "slug": "fuckslut",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Gag Slut",
+      "slug": "gag-slut",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Gangbang Slut",
+      "slug": "gangbang-slut",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Gear Fetishist",
+      "slug": "gear-fetishist",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Gentle Dom(me)",
+      "slug": "gentle-dom-me",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Gentle FemDom",
+      "slug": "gentle-femdom",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Giggle Bottom",
+      "slug": "giggle-bottom",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Giggle Masochist",
+      "slug": "giggle-masochist",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Grappler",
+      "slug": "grappler",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q16303386",
+      "label": "grappler",
+      "description": "type of wrestler",
+      "senseSuspect": false
+    },
+    {
+      "term": "Grizzly Bear",
+      "slug": "grizzly-bear",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q568617",
+      "label": "Grizzly Bear",
+      "description": "American rock band",
+      "senseSuspect": true
+    },
+    {
+      "term": "Guardian",
+      "slug": "guardian",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q5614024",
+      "label": "Guardian",
+      "description": "1994 3D shoot 'em up video game",
+      "senseSuspect": true
+    },
+    {
+      "term": "Helper",
+      "slug": "helper",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q129993",
+      "label": "Helper",
+      "description": "city in Carbon County, Utah, United States",
+      "senseSuspect": false
+    },
+    {
+      "term": "Hippie",
+      "slug": "hippie",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q99548554",
+      "label": "Hippie",
+      "description": "family name",
+      "senseSuspect": true
+    },
+    {
+      "term": "Honey Pot",
+      "slug": "honey-pot",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q114545656",
+      "label": "Honey Pot",
+      "description": "episode of Gunsmoke (S10 E34)",
+      "senseSuspect": false
+    },
+    {
+      "term": "Hubull",
+      "slug": "hubull",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Kink Slut",
+      "slug": "kink-slut",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Latex Mistress",
+      "slug": "latex-mistress",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Latex Toy",
+      "slug": "latex-toy",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Leather Mistress",
+      "slug": "leather-mistress",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Lover Boy",
+      "slug": "lover-boy",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q6692346",
+      "label": "Lover Boy",
+      "description": "album by Ariel Pink",
+      "senseSuspect": true
+    },
+    {
+      "term": "Matriarch",
+      "slug": "matriarch",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q19954594",
+      "label": "Matriarch",
+      "description": "album by Veil of Maya",
+      "senseSuspect": true
+    },
+    {
+      "term": "Meatbag",
+      "slug": "meatbag",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Merman",
+      "slug": "merman",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q4995044",
+      "label": "merman",
+      "description": "male merfolk",
+      "senseSuspect": false
+    },
+    {
+      "term": "Minx",
+      "slug": "minx",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q37255101",
+      "label": "Minx",
+      "description": "family name",
+      "senseSuspect": true
+    },
+    {
+      "term": "Monsterfucker",
+      "slug": "monsterfucker",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Mouse",
+      "slug": "mouse",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q17018229",
+      "label": "Mouse",
+      "description": "given name",
+      "senseSuspect": true
+    },
+    {
+      "term": "Muscle Bear",
+      "slug": "muscle-bear",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Muscle Chaser",
+      "slug": "muscle-chaser",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Muscle Slut",
+      "slug": "muscle-slut",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Muva",
+      "slug": "muva",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q108751593",
+      "label": "Muva",
+      "description": null,
+      "senseSuspect": false
+    },
+    {
+      "term": "Mxstress",
+      "slug": "mxstress",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Oral Slave",
+      "slug": "oral-slave",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Otter Chaser",
+      "slug": "otter-chaser",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Pantyboy",
+      "slug": "pantyboy",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Papa Bear",
+      "slug": "papa-bear",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q52285931",
+      "label": "Papa Bear",
+      "description": "episode of Last Man Standing (S6 E1)",
+      "senseSuspect": false
+    },
+    {
+      "term": "Pegging Princess",
+      "slug": "pegging-princess",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Pegging Slut",
+      "slug": "pegging-slut",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Pet Trainer",
+      "slug": "pet-trainer",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Pleasure Sadomasochist",
+      "slug": "pleasure-sadomasochist",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Porcelain Doll",
+      "slug": "porcelain-doll",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Power Top",
+      "slug": "power-top",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Praise Princess",
+      "slug": "praise-princess",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Pretzel",
+      "slug": "pretzel",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q37210695",
+      "label": "Pretzel",
+      "description": "family name",
+      "senseSuspect": true
+    },
+    {
+      "term": "Priestex",
+      "slug": "priestex",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Primal Pet",
+      "slug": "primal-pet",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Princess Domme",
+      "slug": "princess-domme",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Princette",
+      "slug": "princette",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Punching Bag",
+      "slug": "punching-bag",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q966668",
+      "label": "punching bag",
+      "description": "bag designed to be repeatedly punched",
+      "senseSuspect": false
+    },
+    {
+      "term": "Puppeteer",
+      "slug": "puppeteer",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q3891642",
+      "label": "Puppeteer",
+      "description": "2013 video game",
+      "senseSuspect": true
+    },
+    {
+      "term": "Pussy Worshipper",
+      "slug": "pussy-worshipper",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Ritual Object",
+      "slug": "ritual-object",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q95975088",
+      "label": "ritual object",
+      "description": "objects used for ritual activity, often as part of a ceremony",
+      "senseSuspect": false
+    },
+    {
+      "term": "Sadist Bait",
+      "slug": "sadist-bait",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Sadistic Dom(me)",
+      "slug": "sadistic-dom-me",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Scent Freak",
+      "slug": "scent-freak",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Selective Nympho",
+      "slug": "selective-nympho",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Service Dom(me)",
+      "slug": "service-dom-me",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Sex Witch",
+      "slug": "sex-witch",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Shock Daddy / Shock Mommy",
+      "slug": "shock-daddy-shock-mommy",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Side Piece",
+      "slug": "side-piece",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Silver Fox Chaser",
+      "slug": "silver-fox-chaser",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Sissifier",
+      "slug": "sissifier",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Soft Bottom",
+      "slug": "soft-bottom",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Soft Boy",
+      "slug": "soft-boy",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Soft Goddess",
+      "slug": "soft-goddess",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Soft Masochist",
+      "slug": "soft-masochist",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Spit Slut",
+      "slug": "spit-slut",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Struggle Slut",
+      "slug": "struggle-slut",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Submissive Sadist",
+      "slug": "submissive-sadist",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Submissive Top",
+      "slug": "submissive-top",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Subslut",
+      "slug": "subslut",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Suffer Slut",
+      "slug": "suffer-slut",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Switch Daddy",
+      "slug": "switch-daddy",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Teddy Bear",
+      "slug": "teddy-bear",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q213477",
+      "label": "teddy bear",
+      "description": "soft toy in the form of a bear",
+      "senseSuspect": false
+    },
+    {
+      "term": "ThemDom",
+      "slug": "themdom",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Thot",
+      "slug": "thot",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Total Bottom",
+      "slug": "total-bottom",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Total Top",
+      "slug": "total-top",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Trinket Goblin",
+      "slug": "trinket-goblin",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Twink Chaser",
+      "slug": "twink-chaser",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Unruly Submissive",
+      "slug": "unruly-submissive",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Vers Bottom",
+      "slug": "vers-bottom",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Vers Top",
+      "slug": "vers-top",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Volt Bunny",
+      "slug": "volt-bunny",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Volt Vixen",
+      "slug": "volt-vixen",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Voyeur",
+      "slug": "voyeur",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q1989435",
+      "label": "Voyeur",
+      "description": "1993 video game",
+      "senseSuspect": true
+    },
+    {
+      "term": "Whip Catcher",
+      "slug": "whip-catcher",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Wood Nymph",
+      "slug": "wood-nymph",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q79002705",
+      "label": "Wood Nymph",
+      "description": "painting by Ralph Albert Blakelock",
+      "senseSuspect": false
+    },
+    {
+      "term": "Coach",
+      "slug": "coach",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q41583",
+      "label": "coach",
+      "description": "person involved in directing, instructing and training sportspeople",
+      "senseSuspect": false
+    },
+    {
+      "term": "Encourager",
+      "slug": "encourager",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q140399331",
+      "label": "encourager",
+      "description": "prototypical agent (PAG) for predicate \"enthuse.01\": impelled action",
+      "senseSuspect": false
+    },
+    {
+      "term": "Hyena",
+      "slug": "hyena",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q90054347",
+      "label": "Hyena",
+      "description": "statue in Dolní Břežany, Czech Republic",
+      "senseSuspect": false
+    },
+    {
+      "term": "Ladybug",
+      "slug": "ladybug",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q117223757",
+      "label": "Ladybug",
+      "description": "Norwegian artist",
+      "senseSuspect": false
+    },
+    {
+      "term": "Robot",
+      "slug": "robot",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q11012",
+      "label": "robot",
+      "description": "machine capable of carrying out a complex series of actions automatically",
+      "senseSuspect": false
+    },
+    {
+      "term": "Goose",
+      "slug": "goose",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q21143220",
+      "label": "Goose",
+      "description": "male given name",
+      "senseSuspect": true
+    },
+    {
+      "term": "Feral Sadist",
+      "slug": "feral-sadist",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Feral Masochist",
+      "slug": "feral-masochist",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Patriarch",
+      "slug": "patriarch",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q171692",
+      "label": "patriarch",
+      "description": "highest-ranking bishop in Christianity",
+      "senseSuspect": false
+    },
+    {
+      "term": "Fellatio Slave",
+      "slug": "fellatio-slave",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Chaos Puppy",
+      "slug": "chaos-puppy",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Cub Chaser",
+      "slug": "cub-chaser",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Domestic Service Sub",
+      "slug": "domestic-service-sub",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Sinner",
+      "slug": "sinner",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q90916659",
+      "label": "Sinner",
+      "description": "vocal track by Judas Priest; 1977 studio recording",
+      "senseSuspect": false
+    },
+    {
+      "term": "Pest",
+      "slug": "pest",
+      "section": "roles",
+      "attested": true,
+      "qid": "Q210205",
+      "label": "Pest",
+      "description": "eastern part of Budapest, Hungary, former independent city (–1873)",
+      "senseSuspect": false
+    },
+    {
+      "term": "Slut Trainer",
+      "slug": "slut-trainer",
+      "section": "roles",
+      "attested": false
+    },
+    {
+      "term": "Muir Cap",
+      "slug": "muir-cap",
+      "section": "gay-culture",
+      "attested": false
+    },
+    {
+      "term": "Sir/boy",
+      "slug": "sir-boy",
+      "section": "gay-culture",
+      "attested": false
+    },
+    {
+      "term": "Anal Pounding",
+      "slug": "anal-pounding",
+      "section": "kink-activities",
+      "attested": false
+    },
+    {
+      "term": "ASMR",
+      "slug": "asmr",
+      "section": "kink-activities",
+      "attested": true,
+      "qid": "Q108680155",
+      "label": "ASMR",
+      "description": "audio content genre",
+      "senseSuspect": false
+    },
+    {
+      "term": "Ballooning",
+      "slug": "ballooning",
+      "section": "kink-activities",
+      "attested": true,
+      "qid": "Q805325",
+      "label": "ballooning",
+      "description": "activity of flying gas and hot air balloons",
+      "senseSuspect": false
+    },
+    {
+      "term": "Blumpkin",
+      "slug": "blumpkin",
+      "section": "kink-activities",
+      "attested": false
+    },
+    {
+      "term": "Call and Response",
+      "slug": "call-and-response",
+      "section": "kink-activities",
+      "attested": true,
+      "qid": "Q1027114",
+      "label": "call and response",
+      "description": "succession of two distinct phrases usually played by different musicians (in music)",
+      "senseSuspect": false
+    },
+    {
+      "term": "Chastity Key Holding",
+      "slug": "chastity-key-holding",
+      "section": "kink-activities",
+      "attested": false
+    },
+    {
+      "term": "Cowification",
+      "slug": "cowification",
+      "section": "kink-activities",
+      "attested": false
+    },
+    {
+      "term": "Cumsicle",
+      "slug": "cumsicle",
+      "section": "kink-activities",
+      "attested": false
+    },
+    {
+      "term": "Dumbification",
+      "slug": "dumbification",
+      "section": "kink-activities",
+      "attested": false
+    },
+    {
+      "term": "Forced Gagging",
+      "slug": "forced-gagging",
+      "section": "kink-activities",
+      "attested": false
+    },
+    {
+      "term": "Forcemasc",
+      "slug": "forcemasc",
+      "section": "kink-activities",
+      "attested": false
+    },
+    {
+      "term": "Funishment",
+      "slug": "funishment",
+      "section": "kink-activities",
+      "attested": false
+    },
+    {
+      "term": "Group Worship",
+      "slug": "group-worship",
+      "section": "kink-activities",
+      "attested": false
+    },
+    {
+      "term": "Inspection Play",
+      "slug": "inspection-play",
+      "section": "kink-activities",
+      "attested": false
+    },
+    {
+      "term": "Nipple Play Wrestling",
+      "slug": "nipple-play-wrestling",
+      "section": "kink-activities",
+      "attested": false
+    },
+    {
+      "term": "Non-Sexual Kink",
+      "slug": "non-sexual-kink",
+      "section": "kink-activities",
+      "attested": false
+    },
+    {
+      "term": "Over-the-Knee (OTK) Spanking",
+      "slug": "over-the-knee-otk-spanking",
+      "section": "kink-activities",
+      "attested": false
+    },
+    {
+      "term": "Power Neutral",
+      "slug": "power-neutral",
+      "section": "kink-activities",
+      "attested": false
+    },
+    {
+      "term": "Soft Kink",
+      "slug": "soft-kink",
+      "section": "kink-activities",
+      "attested": false
+    },
+    {
+      "term": "Whipcasso",
+      "slug": "whipcasso",
+      "section": "kink-activities",
+      "attested": false
+    },
+    {
+      "term": "Dry Humping",
+      "slug": "dry-humping",
+      "section": "sexual-activities",
+      "attested": true,
+      "qid": "Q105502715",
+      "label": "dry humping",
+      "description": "rubbing the genitals against something or someone through clothing",
+      "senseSuspect": false
+    },
+    {
+      "term": "Ear Licking",
+      "slug": "ear-licking",
+      "section": "sexual-activities",
+      "attested": false
+    },
+    {
+      "term": "Footjob",
+      "slug": "footjob",
+      "section": "sexual-activities",
+      "attested": true,
+      "qid": "Q1150876",
+      "label": "footjob",
+      "description": "stimulation of the penis with the feet",
+      "senseSuspect": false
+    },
+    {
+      "term": "Fotboth",
+      "slug": "fotboth",
+      "section": "sexual-activities",
+      "attested": false
+    },
+    {
+      "term": "Frottage",
+      "slug": "frottage",
+      "section": "sexual-activities",
+      "attested": true,
+      "qid": "Q139901089",
+      "label": "Frottage",
+      "description": null,
+      "senseSuspect": false
+    },
+    {
+      "term": "Outstroking",
+      "slug": "outstroking",
+      "section": "sexual-activities",
+      "attested": false
+    },
+    {
+      "term": "Rusty Trombone",
+      "slug": "rusty-trombone",
+      "section": "sexual-activities",
+      "attested": true,
+      "qid": "Q2607227",
+      "label": "rusty trombone",
+      "description": "sex act",
+      "senseSuspect": false
+    },
+    {
+      "term": "69 Position",
+      "slug": "69-position",
+      "section": "sexual-activities",
+      "attested": false
+    },
+    {
+      "term": "Abasiophilia",
+      "slug": "abasiophilia",
+      "section": "philia-fetish",
+      "attested": true,
+      "qid": "Q520720",
+      "label": "abasiophilia",
+      "description": "attraction to people with impaired mobility",
+      "senseSuspect": false
+    },
+    {
+      "term": "Agonophilia",
+      "slug": "agonophilia",
+      "section": "philia-fetish",
+      "attested": false
+    },
+    {
+      "term": "Agoraphilia",
+      "slug": "agoraphilia",
+      "section": "philia-fetish",
+      "attested": true,
+      "qid": "Q3328200",
+      "label": "agoraphilia",
+      "description": "uncontrollable urge to have sex in public or open places",
+      "senseSuspect": false
+    },
+    {
+      "term": "Amychophilia",
+      "slug": "amychophilia",
+      "section": "philia-fetish",
+      "attested": false
+    },
+    {
+      "term": "Armpit Fetish",
+      "slug": "armpit-fetish",
+      "section": "philia-fetish",
+      "attested": false
+    },
+    {
+      "term": "Balloon Fetish",
+      "slug": "balloon-fetish",
+      "section": "philia-fetish",
+      "attested": true,
+      "qid": "Q3058278",
+      "label": "balloon fetish",
+      "description": "fetish revolving balloons",
+      "senseSuspect": false
+    },
+    {
+      "term": "Belly Button Fetish",
+      "slug": "belly-button-fetish",
+      "section": "philia-fetish",
+      "attested": false
+    },
+    {
+      "term": "Bimbofication",
+      "slug": "bimbofication",
+      "section": "philia-fetish",
+      "attested": true,
+      "qid": "Q138845880",
+      "label": "bimbofication",
+      "description": "transforming oneself to have stereotypical characteristics of a \"bimbo\"",
+      "senseSuspect": false
+    },
+    {
+      "term": "Cast Fetish",
+      "slug": "cast-fetish",
+      "section": "philia-fetish",
+      "attested": false
+    },
+    {
+      "term": "Cratolagnia",
+      "slug": "cratolagnia",
+      "section": "philia-fetish",
+      "attested": false
+    },
+    {
+      "term": "Cum Fetish",
+      "slug": "cum-fetish",
+      "section": "philia-fetish",
+      "attested": false
+    },
+    {
+      "term": "Cumflation",
+      "slug": "cumflation",
+      "section": "philia-fetish",
+      "attested": false
+    },
+    {
+      "term": "Dormaphilia",
+      "slug": "dormaphilia",
+      "section": "philia-fetish",
+      "attested": false
+    },
+    {
+      "term": "Ear Fetish",
+      "slug": "ear-fetish",
+      "section": "philia-fetish",
+      "attested": false
+    },
+    {
+      "term": "Emetophilia",
+      "slug": "emetophilia",
+      "section": "philia-fetish",
+      "attested": true,
+      "qid": "Q1294093",
+      "label": "emetophilia",
+      "description": "sexual arousal from vomiting, or watching others vomit",
+      "senseSuspect": false
+    },
+    {
+      "term": "Forcefem",
+      "slug": "forcefem",
+      "section": "philia-fetish",
+      "attested": false
+    },
+    {
+      "term": "Glasses Fetish",
+      "slug": "glasses-fetish",
+      "section": "philia-fetish",
+      "attested": false
+    },
+    {
+      "term": "Glass Licking Fetish",
+      "slug": "glass-licking-fetish",
+      "section": "philia-fetish",
+      "attested": false
+    },
+    {
+      "term": "Grossdom",
+      "slug": "grossdom",
+      "section": "philia-fetish",
+      "attested": false
+    },
+    {
+      "term": "Ludophilia",
+      "slug": "ludophilia",
+      "section": "philia-fetish",
+      "attested": false
+    },
+    {
+      "term": "Martymachlia",
+      "slug": "martymachlia",
+      "section": "philia-fetish",
+      "attested": false
+    },
+    {
+      "term": "Melolagnia",
+      "slug": "melolagnia",
+      "section": "philia-fetish",
+      "attested": false
+    },
+    {
+      "term": "Narratophilia",
+      "slug": "narratophilia",
+      "section": "philia-fetish",
+      "attested": true,
+      "qid": "Q3064737",
+      "label": "narratophilia",
+      "description": "sexual fetish",
+      "senseSuspect": false
+    },
+    {
+      "term": "Neck Fetish",
+      "slug": "neck-fetish",
+      "section": "philia-fetish",
+      "attested": false
+    },
+    {
+      "term": "Nylon Fetish",
+      "slug": "nylon-fetish",
+      "section": "philia-fetish",
+      "attested": false
+    },
+    {
+      "term": "Onychophilia",
+      "slug": "onychophilia",
+      "section": "philia-fetish",
+      "attested": false
+    },
+    {
+      "term": "Ownership Kink",
+      "slug": "ownership-kink",
+      "section": "philia-fetish",
+      "attested": false
+    },
+    {
+      "term": "Pubephilia",
+      "slug": "pubephilia",
+      "section": "philia-fetish",
+      "attested": false
+    },
+    {
+      "term": "Robot Fetish",
+      "slug": "robot-fetish",
+      "section": "philia-fetish",
+      "attested": false
+    },
+    {
+      "term": "Scopophilia",
+      "slug": "scopophilia",
+      "section": "philia-fetish",
+      "attested": true,
+      "qid": "Q623146",
+      "label": "scopophilia",
+      "description": "voyeuristic paraphilia",
+      "senseSuspect": false
+    },
+    {
+      "term": "Smoking Fetish",
+      "slug": "smoking-fetish",
+      "section": "philia-fetish",
+      "attested": false
+    },
+    {
+      "term": "Sports Kink",
+      "slug": "sports-kink",
+      "section": "philia-fetish",
+      "attested": false
+    },
+    {
+      "term": "Stockings Fetish",
+      "slug": "stockings-fetish",
+      "section": "philia-fetish",
+      "attested": false
+    },
+    {
+      "term": "Transformation Fetish",
+      "slug": "transformation-fetish",
+      "section": "philia-fetish",
+      "attested": false
+    },
+    {
+      "term": "Wetlook",
+      "slug": "wetlook",
+      "section": "philia-fetish",
+      "attested": true,
+      "qid": "Q1890008",
+      "label": "Wetlook",
+      "description": "Paraphilic behaviour where sexual enjoyment is derived from wearing or seeing people wearing wet clothes",
+      "senseSuspect": false
+    },
+    {
+      "term": "Bagpiping",
+      "slug": "bagpiping",
+      "section": "sex-slang",
+      "attested": true,
+      "qid": "Q137806339",
+      "label": "bagpiping",
+      "description": "act of rubbing a penis under an armpit",
+      "senseSuspect": false
+    },
+    {
+      "term": "Body Count",
+      "slug": "body-count",
+      "section": "sex-slang",
+      "attested": true,
+      "qid": "Q2908426",
+      "label": "Body Count",
+      "description": "1994 video game",
+      "senseSuspect": true
+    },
+    {
+      "term": "Bushmaxxing",
+      "slug": "bushmaxxing",
+      "section": "sex-slang",
+      "attested": false
+    },
+    {
+      "term": "Cumjob",
+      "slug": "cumjob",
+      "section": "sex-slang",
+      "attested": false
+    },
+    {
+      "term": "Dickdash",
+      "slug": "dickdash",
+      "section": "sex-slang",
+      "attested": false
+    },
+    {
+      "term": "Grool",
+      "slug": "grool",
+      "section": "sex-slang",
+      "attested": false
+    },
+    {
+      "term": "Hat Trick",
+      "slug": "hat-trick",
+      "section": "sex-slang",
+      "attested": true,
+      "qid": "Q5680830",
+      "label": "Hat Trick",
+      "description": "1984 video game",
+      "senseSuspect": true
+    },
+    {
+      "term": "Helicockter",
+      "slug": "helicockter",
+      "section": "sex-slang",
+      "attested": false
+    },
+    {
+      "term": "Hotdogging",
+      "slug": "hotdogging",
+      "section": "sex-slang",
+      "attested": false
+    },
+    {
+      "term": "Jilling Off",
+      "slug": "jilling-off",
+      "section": "sex-slang",
+      "attested": false
+    },
+    {
+      "term": "Sexercise",
+      "slug": "sexercise",
+      "section": "sex-slang",
+      "attested": false
+    },
+    {
+      "term": "Dark Romance",
+      "slug": "dark-romance",
+      "section": "pop-culture",
+      "attested": true,
+      "qid": "Q115216305",
+      "label": "dark romance",
+      "description": "literary genre",
+      "senseSuspect": false
+    },
+    {
+      "term": "Fifty Shades of Grey",
+      "slug": "fifty-shades-of-grey",
+      "section": "pop-culture",
+      "attested": true,
+      "qid": "Q557867",
+      "label": "Fifty Shades of Grey",
+      "description": "2011 erotic romance novel by E.L. James",
+      "senseSuspect": true
+    },
+    {
+      "term": "Story of O",
+      "slug": "story-of-o",
+      "section": "pop-culture",
+      "attested": true,
+      "qid": "Q1501981",
+      "label": "Story of O",
+      "description": "French erotic novel, influential for BDSM",
+      "senseSuspect": true
+    },
+    {
+      "term": "Trans New World Order (TNWO)",
+      "slug": "trans-new-world-order-tnwo",
+      "section": "pop-culture",
+      "attested": false
+    },
+    {
+      "term": "The Omegaverse",
+      "slug": "the-omegaverse",
+      "section": "pop-culture",
+      "attested": false
+    },
+    {
+      "term": "Wireplay",
+      "slug": "wireplay",
+      "section": "pop-culture",
+      "attested": true,
+      "qid": "Q96415353",
+      "label": "Wireplay",
+      "description": "defunct online multiplayer gaming network",
+      "senseSuspect": false
+    },
+    {
+      "term": "MMD R18",
+      "slug": "mmd-r18",
+      "section": "pornography",
+      "attested": false
+    },
+    {
+      "term": "Cuddle Party",
+      "slug": "cuddle-party",
+      "section": "events",
+      "attested": true,
+      "qid": "Q117136399",
+      "label": "Cuddle Party",
+      "description": "2004 organisation started by Reid Mihalko and Marcia Baczynski",
+      "senseSuspect": false
+    },
+    {
+      "term": "Key Party",
+      "slug": "key-party",
+      "section": "events",
+      "attested": true,
+      "qid": "Q50383496",
+      "label": "Key Party",
+      "description": "episode of Will & Grace (S7 E5)",
+      "senseSuspect": false
+    },
+    {
+      "term": "Nudist Gathering",
+      "slug": "nudist-gathering",
+      "section": "events",
+      "attested": false
+    },
+    {
+      "term": "Mosh",
+      "slug": "mosh",
+      "section": "events",
+      "attested": true,
+      "qid": "Q15992114",
+      "label": "Mosh",
+      "description": "tool used to connect from a client computer to a server over the Internet, to run a remote terminal",
+      "senseSuspect": false
+    },
+    {
+      "term": "420 Day",
+      "slug": "420-day",
+      "section": "holidays",
+      "attested": false
+    },
+    {
+      "term": "International Fetish Day",
+      "slug": "international-fetish-day",
+      "section": "holidays",
+      "attested": true,
+      "qid": "Q12286390",
+      "label": "International Fetish Day",
+      "description": "international day supporting the fetish and BDSM community",
+      "senseSuspect": false
+    },
+    {
+      "term": "Anorgasmia",
+      "slug": "anorgasmia",
+      "section": "sexual-health",
+      "attested": true,
+      "qid": "Q1772397",
+      "label": "anorgasmia",
+      "description": "type of sexual dysfunction in which a person cannot achieve orgasm despite adequate stimulation",
+      "senseSuspect": false
+    },
+    {
+      "term": "Hot Tub Folliculitis",
+      "slug": "hot-tub-folliculitis",
+      "section": "sexual-health",
+      "attested": true,
+      "qid": "Q14870002",
+      "label": "Hot tub folliculitis",
+      "description": "medical condition",
+      "senseSuspect": false
+    },
+    {
+      "term": "Porn-Induced Erectile Dysfunction (PIED)",
+      "slug": "porn-induced-erectile-dysfunction-pied",
+      "section": "sexual-health",
+      "attested": false
+    },
+    {
+      "term": "Testicular Health & Care",
+      "slug": "testicular-health-and-care",
+      "section": "sexual-health",
+      "attested": false
+    },
+    {
+      "term": "Small Penis Positivity",
+      "slug": "small-penis-positivity",
+      "section": "mental-health",
+      "attested": false
+    },
+    {
+      "term": "Venereophobia",
+      "slug": "venereophobia",
+      "section": "mental-health",
+      "attested": true,
+      "qid": "Q40182002",
+      "label": "Venereophobia",
+      "description": "scientific article published on June 1984",
+      "senseSuspect": false
+    },
+    {
+      "term": "Boundary",
+      "slug": "boundary",
+      "section": "scene-safety",
+      "attested": true,
+      "qid": "Q1307347",
+      "label": "boundary",
+      "description": "obstacle marking a delimitation of land",
+      "senseSuspect": false
+    },
+    {
+      "term": "Cover",
+      "slug": "cover",
+      "section": "scene-safety",
+      "attested": true,
+      "qid": "Q19902158",
+      "label": "Cover",
+      "description": "family name",
+      "senseSuspect": true
+    },
+    {
+      "term": "Doxxing",
+      "slug": "doxxing",
+      "section": "scene-safety",
+      "attested": false
+    },
+    {
+      "term": "Littlespace",
+      "slug": "littlespace",
+      "section": "scene-safety",
+      "attested": false
+    },
+    {
+      "term": "Middlespace",
+      "slug": "middlespace",
+      "section": "scene-safety",
+      "attested": false
+    },
+    {
+      "term": "Awareness Team",
+      "slug": "awareness-team",
+      "section": "scene-safety",
+      "attested": false
+    },
+    {
+      "term": "Flow State",
+      "slug": "flow-state",
+      "section": "glossary",
+      "attested": true,
+      "qid": "Q55611811",
+      "label": "Flow State",
+      "description": "album by Tash Sultana",
+      "senseSuspect": true
+    },
+    {
+      "term": "Metasexuality",
+      "slug": "metasexuality",
+      "section": "glossary",
+      "attested": false
+    },
+    {
+      "term": "New Relationship Energy (NRE)",
+      "slug": "new-relationship-energy-nre",
+      "section": "glossary",
+      "attested": false
+    }
+  ]
+}
