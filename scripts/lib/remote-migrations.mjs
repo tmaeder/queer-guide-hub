@@ -130,6 +130,110 @@ export async function fetchRemoteVersions(token = resolveToken()) {
   )
 }
 
+/**
+ * The recorded SQL for specific versions, for recovering a drifted migration.
+ *
+ * `statements` is a text[] of PARSED statements, and two properties of that
+ * storage decide how a file must be rebuilt from it. Both are measured, not
+ * assumed — getting either wrong yields a file that looks recovered and is not:
+ *
+ *   1. TRAILING SEMICOLONS ARE STRIPPED. Measured on 20261007163200: statement 1
+ *      ends `set local statement_timeout = '120s'` and the last ends
+ *      `end $verify$`, both without `;`. Joining on newlines alone produces
+ *      invalid SQL that would fail on a fresh rebuild — the one occasion an
+ *      already-applied migration is ever executed again. STATEMENT_SEPARATOR
+ *      puts the semicolons back.
+ *
+ *   2. A MIGRATION IS OFTEN MULTI-STATEMENT. The same file is 4 statements. A
+ *      recovery that reads `statements[1]` silently truncates to the first one.
+ *      That is survivable only by luck: all five orphans recovered by hand on
+ *      2026-08-29 happened to be single-statement, so `statements[1]` was the
+ *      whole file. This function always joins the array.
+ *
+ * `digest` is computed SERVER-SIDE over the same join this file performs, so the
+ * caller can prove the text survived JSON transport unaltered rather than
+ * trusting that it did.
+ *
+ * @param versions iterable of 14-digit version strings
+ * @returns Map<version, {name, statements, joined, digest}>, or null with no token
+ */
+export const STATEMENT_SEPARATOR = ';\n\n'
+
+export async function fetchMigrationBodies(versions, token = resolveToken()) {
+  if (!token) return null
+  const list = [...versions].filter((v) => /^\d{14}$/.test(v))
+  if (list.length === 0) return new Map()
+
+  // Literal-quoted rather than parameterised: the Management API takes a SQL
+  // string, and every element is already proven to match /^\d{14}$/ above, so
+  // there is nothing here that could carry a quote.
+  const inList = list.map((v) => `'${v}'`).join(',')
+  const sep = `';' || chr(10) || chr(10)`
+  const rows = await queryHistory(
+    token,
+    `select version, name, statements,
+            md5(array_to_string(statements, ${sep})) as digest
+       from supabase_migrations.schema_migrations
+      where version in (${inList})`,
+  )
+
+  const out = new Map()
+  for (const r of rows) {
+    const v = String(r.version ?? r.VERSION ?? '').trim()
+    if (!/^\d{14}$/.test(v)) continue
+    // A text[] arrives as a JS array over JSON, but tolerate a raw string so a
+    // driver/API change degrades to "one statement" instead of throwing.
+    const raw = r.statements ?? r.STATEMENTS
+    const statements = Array.isArray(raw) ? raw.map(String) : raw == null ? [] : [String(raw)]
+    out.set(v, {
+      name: String(r.name ?? r.NAME ?? '').trim(),
+      statements,
+      joined: statements.join(STATEMENT_SEPARATOR),
+      digest: String(r.digest ?? r.DIGEST ?? '').trim(),
+    })
+  }
+  return out
+}
+
+/**
+ * Rebuild a migration file from its recorded statements.
+ *
+ * Pure, and exported for that reason: the script that calls it cannot run
+ * without a Management API token, so without this seam CI would be the first
+ * place the reconstruction logic ever executed — on real drift, at the moment
+ * someone is already blocked.
+ *
+ * Returns null when there is nothing to rebuild. An empty `statements` array is
+ * NOT evidence the migration was a no-op; it is what a row written by an
+ * out-of-band path looks like, and emitting an empty file would assert
+ * "this did nothing" on no evidence.
+ */
+export function buildRecoveredSql(version, statements, { header = true } = {}) {
+  const list = (statements ?? []).map((s) => String(s)).filter((s) => s.trim() !== '')
+  if (list.length === 0) return null
+
+  const joined = list.join(STATEMENT_SEPARATOR)
+  if (!header) return `${joined};\n`
+
+  return `${[
+    '-- RECOVERED FROM PROD BY scripts/recover-migration-drift.mjs.',
+    '--',
+    `-- Applied to prod as version ${version} with no repo file — the signature of`,
+    '-- MCP `apply_migration`, which stamps a version and commits nothing. An applied',
+    '-- version with no file fails migration-versions on every PR in the repo and',
+    '-- makes `db push` refuse to run.',
+    '--',
+    '-- Reconstructed from `schema_migrations.statements`, which holds the PARSED',
+    '-- statements: trailing semicolons are stripped (re-added here) and any original',
+    '-- comment header is NOT recorded, so the reasoning that accompanied this',
+    '-- migration is lost. Verified by md5 against a server-computed digest.',
+    '--',
+    '-- Never re-run: `db push` matches on version and skips an applied one. The file',
+    '-- exists so history is complete and a rebuild from zero works.',
+    '',
+  ].join('\n')}${joined};\n`
+}
+
 /** Shared transport so the two fetchers cannot disagree about response shape. */
 async function queryHistory(token, query) {
   const res = await fetch(

@@ -101,12 +101,68 @@ if (!hygieneRes.ok) {
   const stale = hygiene.stale_pending_by_entity ?? {}
   const staleTotal = Object.values(stale).reduce((a, b) => a + Number(b), 0)
   const staleWorst = Object.entries(stale).sort((a, b) => Number(b[1]) - Number(a[1]))[0]
+
+  // Unreachable NEWS rows (2026-09-02). stale_pending_by_entity counts rows but
+  // cannot say whether they are queued or DEAD, and that ambiguity is why this
+  // hid: for months the number read as "the drain is behind" while the rows
+  // could never move again. staging_unreachable_stats() applies the consumers'
+  // own selectors, so it answers the question the count cannot.
+  //
+  // News-only on purpose: enrichment_status is read by exactly one commit RPC
+  // (news_commit_staging_batch), so advancing it strands news and nothing else.
+  // Applying the same test to every entity type reported 406 venue/marketplace
+  // rows legitimately queued for HUMAN review as "unreachable". See the header
+  // of 20261206100100 for the full measurement.
+  //
+  // recent_24h is a ZERO-INVARIANT and is checked before the stale thresholds
+  // because it is the actionable half: it counts only rows stranded in the last
+  // day, so it does not decay as the backlog ages and cannot be satisfied by
+  // waiting. A historical backlog is a cleanup decision; a non-zero recent_24h
+  // means a writer is stranding rows right now.
+  let unreachable = null
+  const unreachRes = await fetch(`${BASE}/rest/v1/rpc/staging_unreachable_stats`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!unreachRes.ok) {
+    console.warn(`⚠ staging_unreachable_stats → HTTP ${unreachRes.status} (RPC missing? migration 20261206100100)`)
+  } else {
+    unreachable = await unreachRes.json()
+    const recent = Number(unreachable.recent_24h ?? 0)
+    const total = Number(unreachable.total ?? 0)
+    if (recent > 0) {
+      console.error(
+        `✗ Staging stranding ACTIVE: ${recent} news row(s) became unreachable in the last 24h. ` +
+        `A news row is unreachable when disposition=pending and enrichment_status='completed' ` +
+        `with a quality_score but no quality_status — scored by pipeline-quality-score, never ` +
+        `seen by pipeline-quality-enhance, the only caller of news_commit_staging_batch for an ` +
+        `orphan row. Historical total ${total}. ` +
+        `Prime suspect: a stage advancing enrichment_status on a row it did not enrich ` +
+        `(see supabase/functions/_shared/quality-score-gating.ts).`,
+      )
+      process.exit(1)
+    }
+    if (total > 0) {
+      console.warn(
+        `⚠ ${total} unreachable news staging row(s) remain from before the fix ` +
+        `(oldest ${unreachable.oldest_created_at}) — ` +
+        `cleanup decision, not a live regression (recent_24h=0).`,
+      )
+    } else {
+      console.log('✓ No unreachable news staging rows')
+    }
+  }
+
+  // Context for the count-based thresholds below: how much of the stale number
+  // is dead rather than merely slow. Without it the two are indistinguishable.
+  const deadNote = unreachable ? ` — ${unreachable.total} of these are UNREACHABLE news rows` : ''
   if ((staleWorst && Number(staleWorst[1]) > 5000) || staleTotal > 10000) {
-    console.error(`✗ Staging starvation: ${staleTotal} rows pending >48h (${JSON.stringify(stale)}) — a drain/fill path is dead`)
+    console.error(`✗ Staging starvation: ${staleTotal} rows pending >48h (${JSON.stringify(stale)})${deadNote} — a drain/fill path is dead`)
     process.exit(1)
   }
   if (staleTotal > 3500) {
-    console.warn(`⚠ Staging stale-pending rising: ${staleTotal} rows >48h (${JSON.stringify(stale)})`)
+    console.warn(`⚠ Staging stale-pending rising: ${staleTotal} rows >48h (${JSON.stringify(stale)})${deadNote}`)
   }
   // Human decisions the pipeline threw away (2026-08-22). A row that is
   // disposition=pending AND review_status=approved AND ai_validation_status
@@ -527,19 +583,37 @@ if (!hygieneRes.ok) {
     const total = rows.length
     const nvidia = by.nvidia ?? 0
 
+    // `last_error` is NOT selected, because this table does not have that
+    // column — and asking for it made the whole probe useless. PostgREST
+    // answers an unknown select column with 400 42703, so `cb.ok` was always
+    // false, `breaker` was always null, and failure mode (b) — the one named
+    // four lines up — could never be reported. Worse, the block then fell
+    // through to the ✓ branch and declared the chain healthy. Verified
+    // 2026-09-02: `select=code,name` → 200, `select=code,name,last_error` → 400.
+    //
+    // The reason a breaker tripped lives in the edge-function logs, as
+    // `[llm-router] nvidia <kind> ... status=<n>: <body>` — the router prints
+    // it precisely because there is nowhere on this row to store it.
     const cb = await fetch(
-      `${BASE}/rest/v1/api_circuit_breakers?select=state,open_until,failure_count,last_error&api_name=eq.llm.nvidia`,
+      `${BASE}/rest/v1/api_circuit_breakers?select=state,open_until,failure_count&api_name=eq.llm.nvidia`,
       { headers },
     )
+    // A failed probe must SAY so. Silently treating it as "no breaker row" is
+    // how the bug above survived: the check reported success while measuring
+    // nothing at all.
+    if (!cb.ok) {
+      console.warn(
+        `⚠ llm.nvidia breaker probe → HTTP ${cb.status} — circuit state NOT checked ` +
+          `(a column in the select probably does not exist)`,
+      )
+    }
     const breaker = cb.ok ? (await cb.json())[0] : null
 
     if (breaker?.state === 'open') {
-      // last_error carries the provider's own response body — the only source
-      // for what exhaustion actually looks like on this API, which the router's
-      // deliberately-wide 4xx arm is waiting on before it can be narrowed.
       console.warn(
-        `⚠ llm.nvidia circuit OPEN until ${breaker.open_until} after ${breaker.failure_count} failure(s): ` +
-          `${String(breaker.last_error ?? '').slice(0, 200)}`,
+        `⚠ llm.nvidia circuit OPEN until ${breaker.open_until} after ` +
+          `${breaker.failure_count} failure(s) — reason is in the edge-function logs: ` +
+          `grep '[llm-router] nvidia'`,
       )
     } else if (total > 0 && nvidia === 0) {
       console.warn(
@@ -601,6 +675,30 @@ if (!hygieneRes.ok) {
   }
   if (rows.length >= ROW_CAP) {
     console.error(`✗ substance_interactions read hit the ${ROW_CAP}-row cap — per-source max(fetched_at) is computed over a truncated set and cannot be trusted`)
+    process.exit(1)
+  }
+
+  // POSITIVE CONTROL: this gate must be watching something.
+  //
+  // The source query filters `is_enabled=is.true`, and PostgREST answers a
+  // no-match with an empty SET, not an error — so flipping that one flag makes
+  // the loop below iterate zero times and the whole staleness gate pass while
+  // checking nothing. The rows keep serving either way (476 today). The only
+  // trace would be tripsit quietly joining the "no automated refresh path"
+  // warn beside the hand-curated sources, which reads as normal.
+  //
+  // Note the flag is NOT the one the loop already handles: that branch reads
+  // `admin_automations.enabled`, a different column in a different table. A
+  // source disabled in `ingestion_sources` never reaches it.
+  //
+  // Failing is deliberate. Retiring the last automated refresher for
+  // drug-interaction data should require saying so in code, not a silent flag
+  // flip — same reasoning as "retiring a cron means retiring the registry row".
+  if (sources.length === 0) {
+    console.error(
+      `✗ substance_interactions has ${rows.length} rows but NO enabled row in ingestion_sources — ` +
+        `the staleness gate is disarmed and would have passed without checking anything`,
+    )
     process.exit(1)
   }
 

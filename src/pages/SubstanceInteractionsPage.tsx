@@ -7,7 +7,12 @@ import { PageContainer } from '@/components/layout/PageContainer';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useMeta } from '@/hooks/useMeta';
-import { interactionVisual, creditSources, INTERACTION_ORDER } from '@/lib/substanceRisk';
+import {
+  interactionVisual,
+  creditSources,
+  sourceLabel,
+  INTERACTION_ORDER,
+} from '@/lib/substanceRisk';
 
 /**
  * /tags/interactions — the whole grid, plus a two-substance checker.
@@ -39,23 +44,28 @@ interface MatrixCell {
   status: string;
   severity: number;
   note: string | null;
+  /** Which body rated THIS pair. Not every cell comes from the same source. */
+  source: string;
+  source_url: string;
 }
 interface MatrixSource {
   source: string;
   source_url: string;
+  /** How many cells this source contributed, so 421 and 7 are distinguishable. */
+  cells: number;
 }
 interface Matrix {
   axis: MatrixAxis[];
   cells: MatrixCell[];
   /**
    * The distinct sources actually present among `cells`, most-cited first.
-   * See the credit footer below for why the scalars underneath cannot be used.
+   *
+   * There is deliberately NO top-level `source` scalar. The RPC used to return
+   * one and it was a literal 'tripsit' over a grid where 55 of 476 rows are
+   * eve&rave or FDA labels; `20261207100000` removed it precisely so no caller
+   * can state a single provenance for a multi-source grid.
    */
   sources?: MatrixSource[];
-  /** @deprecated Kept for one release; superseded by `sources`. */
-  source?: string;
-  /** @deprecated Kept for one release; superseded by `sources`. */
-  source_url?: string;
 }
 
 function useInteractionMatrix() {
@@ -122,19 +132,12 @@ export default function SubstanceInteractionsPage() {
     return m;
   }, [data]);
 
-  // Falls back to the deprecated scalar pair so the credit still resolves in the
-  // window where a new bundle is served against the pre-migration RPC. The
-  // fallback reads the response rather than hardcoding TripSit — if the RPC is
-  // old, its own literal is the most honest thing available.
-  const credits = useMemo(
-    () =>
-      creditSources(
-        data?.sources?.length
-          ? data.sources
-          : [{ source: data?.source, source_url: data?.source_url }],
-      ),
-    [data],
-  );
+  // No scalar fallback. It used to read the deprecated top-level `source`,
+  // which `20261207100000` deleted because it always answered 'tripsit' — so
+  // falling back to it would reinstate the exact misattribution this footer
+  // exists to correct. If `sources` is absent the credit renders nothing, which
+  // is the honest failure: silence rather than a wrong name.
+  const credits = useMemo(() => creditSources(data?.sources ?? []), [data]);
 
   const selected = a && b && a !== b ? byPair.get(pairKey(a, b)) : undefined;
   const selectedNames =
@@ -220,6 +223,7 @@ export default function SubstanceInteractionsPage() {
               const Icon = v.Icon;
               return (
                 <div
+                  data-testid="pair-verdict"
                   className="bg-muted rounded-element p-4"
                   style={{ backgroundColor: `hsl(${v.tint})`, color: `hsl(${v.ink})` }}
                 >
@@ -231,6 +235,24 @@ export default function SubstanceInteractionsPage() {
                   </div>
                   <p className="mt-2 text-13 leading-relaxed">{v.meaning}</p>
                   {selected.note && <p className="mt-2 text-13 leading-relaxed">{selected.note}</p>}
+                  {/* WHOSE VERDICT THIS IS. The footer names every source in the
+                      grid, but this box answers ONE pair — and a reader acting
+                      on "MDMA + MAOIs: Dangerous" is entitled to know which body
+                      said so, the same way the per-tag band has always shown it.
+                      Three sources disagree in scope and method; "researched by"
+                      is not a footnote when the answer is this specific. */}
+                  {selected.source && (
+                    <p className="mt-2 text-2xs uppercase tracking-label opacity-80">
+                      {t('interactions.perPairCredit', 'Source')}:{' '}
+                      {selected.source_url ? (
+                        <a href={selected.source_url} target="_blank" rel="noopener noreferrer">
+                          {sourceLabel(selected.source)}
+                        </a>
+                      ) : (
+                        sourceLabel(selected.source)
+                      )}
+                    </p>
+                  )}
                 </div>
               );
             })()}
@@ -340,8 +362,14 @@ export default function SubstanceInteractionsPage() {
           its `source`/`source_url` keys as LITERALS, so the footer could only
           ever name one source. That denied two sources their credit and
           attributed 55 safety claims to an organisation that never made them.
-          `sources` now comes from the rows themselves; see migration
-          20261202100000. */}
+          `sources` comes from the rows themselves (20261202100000).
+
+          20261207100000 finished it: the deprecated scalars are DELETED from
+          the payload, because they still answered 'tripsit' and any consumer
+          reading them got the original false claim even after this footer was
+          correct — and each cell now carries its own source, so the grid can
+          say which body rated a given pair rather than only which bodies
+          contributed somewhere. */}
       {credits.length > 0 && (
         <p
           data-testid="interaction-credit"

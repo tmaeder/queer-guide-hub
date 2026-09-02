@@ -945,7 +945,17 @@ expected-fresh set is **derived** from `ingestion_sources.target_table`, not lis
 `['tripsit']` would repeat the mistake check 6b exists to fix. A source with no registered path
 (eve&rave, FDA) can only warn; it has nothing to be late for. The gate **arms itself**: it fails on
 staleness only once `max(fetched_at)` proves the path has written at least once, and falls back to
-failing if that has not happened within 14 days of registration.
+failing if that has not happened within 14 days of registration. **It also carries a positive
+control** (added 2026-09-02): because the watched set is derived from `ingestion_sources`, PostgREST
+answers a no-match with an empty SET rather than an error — so flipping that one `is_enabled` flag
+would make the loop iterate zero times and the gate pass having checked nothing, while 476 rows kept
+serving and tripsit quietly joined the "no automated refresh path" warn beside the hand-curated
+sources. That flag is **not** the one the loop already handles: that branch reads
+`admin_automations.enabled`, a different column in a different table, which a source disabled in
+`ingestion_sources` never reaches. Zero watched sources is now a hard fail, on the same reasoning as
+*retiring a cron means retiring the registry row* — dropping the last automated refresher for
+drug-interaction data should require saying so in code, not a silent flag flip. Mutation-tested
+across all three states: fresh exits 0, 30-days-stale exits 1, disarmed exits 1.
 
 ### Phase 4 — Transit & mobility
 
