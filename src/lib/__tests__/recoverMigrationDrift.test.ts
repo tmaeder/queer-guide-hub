@@ -1,12 +1,13 @@
 import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 
-// @ts-expect-error — .mjs script lib, no types
-import {
-  STATEMENT_SEPARATOR,
-  buildRecoveredSql,
-  planRecovery,
-} from '../../../scripts/lib/remote-migrations.mjs';
+// Kept on ONE line on purpose: `@ts-expect-error` suppresses the next LINE, and
+// TS7016 for an untyped .mjs is reported at the module specifier, not at
+// `import {`. Wrapping this import made the directive cover a line that no
+// longer errored (TS2578 unused) while the real error moved out from under it —
+// two CI failures from a purely cosmetic reformat.
+// @ts-expect-error — .mjs script lib, no type declarations
+import { STATEMENT_SEPARATOR, buildRecoveredSql, planRecovery } from '../../../scripts/lib/remote-migrations.mjs';
 
 const md5 = (s: string) => createHash('md5').update(s, 'utf8').digest('hex');
 
