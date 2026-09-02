@@ -102,11 +102,17 @@ if (!hygieneRes.ok) {
   const staleTotal = Object.values(stale).reduce((a, b) => a + Number(b), 0)
   const staleWorst = Object.entries(stale).sort((a, b) => Number(b[1]) - Number(a[1]))[0]
 
-  // Unreachable rows (2026-09-02). stale_pending_by_entity counts rows but
+  // Unreachable NEWS rows (2026-09-02). stale_pending_by_entity counts rows but
   // cannot say whether they are queued or DEAD, and that ambiguity is why this
   // hid: for months the number read as "the drain is behind" while the rows
   // could never move again. staging_unreachable_stats() applies the consumers'
   // own selectors, so it answers the question the count cannot.
+  //
+  // News-only on purpose: enrichment_status is read by exactly one commit RPC
+  // (news_commit_staging_batch), so advancing it strands news and nothing else.
+  // Applying the same test to every entity type reported 406 venue/marketplace
+  // rows legitimately queued for HUMAN review as "unreachable". See the header
+  // of 20261203100100 for the full measurement.
   //
   // recent_24h is a ZERO-INVARIANT and is checked before the stale thresholds
   // because it is the actionable half: it counts only rows stranded in the last
@@ -120,17 +126,18 @@ if (!hygieneRes.ok) {
     body: '{}',
   })
   if (!unreachRes.ok) {
-    console.warn(`⚠ staging_unreachable_stats → HTTP ${unreachRes.status} (RPC missing? migration 20261120100100)`)
+    console.warn(`⚠ staging_unreachable_stats → HTTP ${unreachRes.status} (RPC missing? migration 20261203100100)`)
   } else {
     unreachable = await unreachRes.json()
     const recent = Number(unreachable.recent_24h ?? 0)
     const total = Number(unreachable.total ?? 0)
     if (recent > 0) {
       console.error(
-        `✗ Staging stranding ACTIVE: ${recent} row(s) became unreachable in the last 24h ` +
-        `(${JSON.stringify(unreachable.recent_by_entity ?? {})}). A row is unreachable when ` +
-        `disposition=pending and enrichment_status is outside (pending, enriched) — no stage ` +
-        `function selects it, ever. Historical total ${total}. ` +
+        `✗ Staging stranding ACTIVE: ${recent} news row(s) became unreachable in the last 24h. ` +
+        `A news row is unreachable when disposition=pending and enrichment_status='completed' ` +
+        `with a quality_score but no quality_status — scored by pipeline-quality-score, never ` +
+        `seen by pipeline-quality-enhance, the only caller of news_commit_staging_batch for an ` +
+        `orphan row. Historical total ${total}. ` +
         `Prime suspect: a stage advancing enrichment_status on a row it did not enrich ` +
         `(see supabase/functions/_shared/quality-score-gating.ts).`,
       )
@@ -138,18 +145,18 @@ if (!hygieneRes.ok) {
     }
     if (total > 0) {
       console.warn(
-        `⚠ ${total} unreachable staging row(s) remain from before the fix ` +
-        `(${JSON.stringify(unreachable.by_entity ?? {})}, oldest ${unreachable.oldest_created_at}) — ` +
+        `⚠ ${total} unreachable news staging row(s) remain from before the fix ` +
+        `(oldest ${unreachable.oldest_created_at}) — ` +
         `cleanup decision, not a live regression (recent_24h=0).`,
       )
     } else {
-      console.log('✓ No unreachable staging rows')
+      console.log('✓ No unreachable news staging rows')
     }
   }
 
   // Context for the count-based thresholds below: how much of the stale number
   // is dead rather than merely slow. Without it the two are indistinguishable.
-  const deadNote = unreachable ? ` — ${unreachable.total} of these are UNREACHABLE ${JSON.stringify(unreachable.by_entity ?? {})}` : ''
+  const deadNote = unreachable ? ` — ${unreachable.total} of these are UNREACHABLE news rows` : ''
   if ((staleWorst && Number(staleWorst[1]) > 5000) || staleTotal > 10000) {
     console.error(`✗ Staging starvation: ${staleTotal} rows pending >48h (${JSON.stringify(stale)})${deadNote} — a drain/fill path is dead`)
     process.exit(1)
