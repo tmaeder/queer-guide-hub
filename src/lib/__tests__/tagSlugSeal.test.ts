@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { functionBody, latestMatching } from './helpers/migrations';
 
 /** The one-shot repair lives only in this file — see the note in its describe. */
-const MIGRATION = '20261128100000_tag_slug_seal.sql';
+const MIGRATION = '20261203100000_tag_slug_seal.sql';
 
 /**
  * source-tags-extract slugifies with `name.toLowerCase().replace(/[^a-z0-9]+/g,'-')`,
