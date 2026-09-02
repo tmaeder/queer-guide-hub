@@ -660,6 +660,30 @@ if (!hygieneRes.ok) {
     process.exit(1)
   }
 
+  // POSITIVE CONTROL: this gate must be watching something.
+  //
+  // The source query filters `is_enabled=is.true`, and PostgREST answers a
+  // no-match with an empty SET, not an error — so flipping that one flag makes
+  // the loop below iterate zero times and the whole staleness gate pass while
+  // checking nothing. The rows keep serving either way (476 today). The only
+  // trace would be tripsit quietly joining the "no automated refresh path"
+  // warn beside the hand-curated sources, which reads as normal.
+  //
+  // Note the flag is NOT the one the loop already handles: that branch reads
+  // `admin_automations.enabled`, a different column in a different table. A
+  // source disabled in `ingestion_sources` never reaches it.
+  //
+  // Failing is deliberate. Retiring the last automated refresher for
+  // drug-interaction data should require saying so in code, not a silent flag
+  // flip — same reasoning as "retiring a cron means retiring the registry row".
+  if (sources.length === 0) {
+    console.error(
+      `✗ substance_interactions has ${rows.length} rows but NO enabled row in ingestion_sources — ` +
+        `the staleness gate is disarmed and would have passed without checking anything`,
+    )
+    process.exit(1)
+  }
+
   const newest = new Map()
   const counts = new Map()
   for (const r of rows) {
