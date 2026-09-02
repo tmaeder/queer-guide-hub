@@ -87,6 +87,16 @@ async function probeEndpoints(): Promise<{ healthy: string[]; probe: Record<stri
   const healthy: string[] = []
   const probe: Record<string, string> = {}
   for (const endpoint of OVERPASS_ENDPOINTS) {
+    // STOP AT THE FIRST HEALTHY MIRROR. One planet endpoint is all a run needs,
+    // and probing the rest is not free: measured 2026-09-02, overpass-api.de
+    // answered in 1.1s while kumi.systems hung to the full timeout. Probing
+    // every endpoint × 2 attempts × PER_CALL_MS spends up to ~120s of a 240s
+    // wall clock before the first venue is even looked at — a self-inflicted
+    // starvation that looks exactly like the upstream being down.
+    if (healthy.length > 0) {
+      probe[endpoint] = 'unprobed (a healthy mirror was already found)'
+      continue
+    }
     // TWO attempts. Measured 2026-09-02: overpass-api.de answered 504 and then
     // 200 to the identical control query seconds later, and both mirrors 504'd
     // in the same window. A single-shot probe against an endpoint that flaps
