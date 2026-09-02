@@ -450,7 +450,25 @@
       "moved": "Ort verschoben",
       "removed": "Ort entfernt",
       "dayUpdated": "Tag aktualisiert",
-      "dragHandleAria": "Zum Sortieren ziehen"
+      "dragHandleAria": "Zum Sortieren ziehen",
+      "a11yCoverage": "[DE] {{withData}} of {{total}} places here publish accessibility information. Nothing is ruled out for staying silent.",
+      "applied": "[DE] Added {{count}} stops",
+      "apply": "[DE] Add {{count}} stops to the trip",
+      "applyFailed": "[DE] Could not add the plan",
+      "budgetCoverage": "[DE] {{withData}} of {{total}} places here list a price. Budget nudges the order; it does not filter.",
+      "event": "[DE] Event",
+      "exhausted": "[DE] Nothing left. The matches here are already on other days.",
+      "loadFailed": "[DE] Could not load places for these cities. Try again in a moment.",
+      "matchesNeeds": "[DE] Matches your needs",
+      "needDates": "[DE] Set the trip dates and a destination city, and the days can be built from them.",
+      "noCandidate": "[DE] Nothing listed here for this time of day.",
+      "paceLabel": "[DE] How full a day",
+      "reroll": "[DE] Try another",
+      "summary": "[DE] {{filled}} of {{requested}} slots filled",
+      "timeUnknown": "[DE] time of day not known",
+      "tooFew": "[DE] Only {{count}} places here match that. Not enough to build days from. Try another vibe, or add stops by hand.",
+      "vibeAny": "[DE] A bit of everything",
+      "vibeLabel": "[DE] What you are after"
     },
     "map": {
       "emptyNoPlaces": "Füge Orte hinzu, um sie auf der Karte zu sehen",
@@ -650,7 +668,8 @@
       "reservations": "Reservierungen",
       "packing": "Packliste",
       "collaborate": "Zusammenarbeit",
-      "journal": "Tagebuch"
+      "journal": "Tagebuch",
+      "buildDays": "[DE] Build the days"
     },
     "today": {
       "offlineBanner": "Offline — zeigt deinen zuletzt gespeicherten Reiseplan.",
@@ -2826,7 +2845,8 @@
         "language": "Sprache",
         "currency": "Währung",
         "bestTime": "Beste Reisezeit",
-        "airport": "Flughafen"
+        "airport": "Flughafen",
+        "nearestAirport": "Nächster Flughafen"
       },
       "eyebrow": "[DE] City",
       "sections": "[DE] Sections",
@@ -2879,6 +2899,7 @@
       "travel": {
         "majorAirport": "[DE] Major airport",
         "nearestAirport": "[DE] Nearest airport",
+        "otherNearby": "Weitere Flughäfen in der Nähe",
         "allCodes": "[DE] All airport codes",
         "lines": "[DE] Lines",
         "networkCaption": "[DE] Rapid-transit lines, drawn from OpenStreetMap. Schematic, not to scale.",
