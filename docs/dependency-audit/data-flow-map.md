@@ -34,6 +34,20 @@ NVIDIA_DISABLED=1          # whole provider off, key left in place
                            # or unset NVIDIA_API_KEY — the router goes inert
 ```
 
+**Live setting, verified 2026-09-02: `NVIDIA_EXCLUDE_CALLERS` is UNSET** — full scope, exactly as
+this section describes. It had been set to all 13 callers named above, which silently narrowed the
+decision recorded here down to batch pipelines only; cleared deliberately after review.
+
+**A secret's value cannot be read back, and that is how the drift hid.** `supabase secrets list`
+prints only a name and a **plain `sha256(value)`** digest, so a variable that contradicts this
+document looks identical to one that agrees with it. Two ways to check, cheapest first: hash a
+candidate and compare (validate the method against a variable whose value you just set — but
+brute force is hopeless past a few names; 7.5M candidates failed to find these 13), or deploy a
+throwaway token-gated function that returns the one variable and delete it immediately.
+**Do not infer the setting from traffic** — the excluded callers are the interactive ones, which
+can go days without firing, so "no NVIDIA calls from `trip-concierge`" is equally consistent with
+"excluded" and with "nobody planned a trip this week".
+
 Out of scope and still Cloudflare-only: embeddings (`bge-m3`, a fixed 1024-dim space the entire
 search index is built on), vision, and everything on the Workers `env.AI.run` binding.
 
