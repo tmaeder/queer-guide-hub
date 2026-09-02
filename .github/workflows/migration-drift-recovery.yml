@@ -1,0 +1,120 @@
+name: Migration Drift Recovery
+
+# Recovers migrations that are APPLIED to prod but have no repo file, and opens
+# a PR with them.
+#
+# WHY THIS IS AUTOMATED
+#
+# MCP `apply_migration` stamps a version and commits nothing, so the follow-up
+# commit is a separate step that is easy to skip. Skipping it is not a private
+# mistake: `migration-versions` fails on any applied version with no repo file
+# and runs on EVERY pr, so one uncommitted migration reds a TypeScript-only
+# change that never touched SQL, while `db push` on main refuses to run at all.
+# On 2026-08-29 that happened five times in one day, each halting the repo's CI
+# until a human noticed a red check and hand-recovered it.
+#
+# WHY IT OPENS A PR AND NEVER PUSHES TO MAIN
+#
+# Recovering SQL out of prod and into permanent history is a content change, and
+# a migration that arrived via MCP skipped review once already — committing it
+# unreviewed would skip it twice. The PR is also where a human sees what the
+# migration actually did, since `statements` does not record the original
+# comment header and that reasoning is gone.
+#
+# The detector (`check-migration-drift.mjs`, every 6h) stays as it is. This is
+# the remediation half; detection continuing to fail loudly is the backstop for
+# anything recovery skips.
+
+on:
+  schedule:
+    # Offset from the 6-hourly drift monitor so a recovery PR exists before the
+    # next detection run reports the same drift again.
+    - cron: '30 */6 * * *'
+  workflow_dispatch:
+
+concurrency:
+  # Never two recovery PRs for the same drift. A second run would rebuild the
+  # identical files and open a duplicate.
+  group: migration-drift-recovery
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history: the recovery prefers the author's own file when the
+          # migration exists on some branch (real comments, real reasoning) over
+          # a reconstruction from parsed statements. A shallow clone would hide
+          # every such branch and silently downgrade to the lossy path.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Recover drifted migrations
+        id: recover
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          set -o pipefail
+          # The script exits 2 with no token, 1 when something was found, 0 when
+          # clean. Capture the code rather than letting a pipe swallow it.
+          rc=0
+          node scripts/recover-migration-drift.mjs --write 2>&1 | tee /tmp/recover.log || rc=$?
+          echo "rc=$rc" >> "$GITHUB_OUTPUT"
+
+          if [ "$rc" = "2" ]; then
+            echo "::error::Could not read remote migration history — SUPABASE_ACCESS_TOKEN missing or the API is unreachable."
+            echo "::error::This is NOT a clean result. Failing rather than reporting no drift."
+            exit 2
+          fi
+
+          if git diff --quiet -- supabase/migrations; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No drift to recover."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open recovery PR
+        if: steps.recover.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          n=$(git diff --name-only -- supabase/migrations | wc -l | tr -d ' ')
+          branch="auto/migration-drift-recovery-$(date -u +%Y%m%d%H%M%S)"
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add supabase/migrations
+
+          # Prose lives in files rather than inline heredocs: an unindented
+          # heredoc inside a `run: |` block terminates the YAML block scalar,
+          # which is a parse error the workflow only reveals when it runs.
+          {
+            echo "fix(migrations): recover $n migration(s) applied to prod with no repo file"
+            echo
+            cat .github/migration-drift-recovery/commit-body.txt
+          } > /tmp/commit-msg.txt
+
+          git commit -F /tmp/commit-msg.txt
+          git push -u origin "$branch"
+
+          gh pr create \
+            --title "fix(migrations): recover $n migration(s) applied to prod with no repo file" \
+            --body-file .github/migration-drift-recovery/pr-body.md
+
+      - name: Report versions that could not be recovered
+        if: always() && steps.recover.outputs.rc == '1'
+        run: |
+          echo "::warning::Some versions could not be recovered automatically — see the log."
+          grep -E "SKIPPED|could NOT be recovered" /tmp/recover.log || true

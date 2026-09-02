@@ -1,0 +1,18 @@
+Opened automatically by .github/workflows/migration-drift-recovery.yml.
+
+Every file here is APPLIED to prod already. `db push` matches on version and
+skips an applied migration, so nothing in this commit is re-run. The files exist
+so migration-versions stops failing on every PR in the repo, `db push` stops
+refusing to run, and a rebuild from zero produces the same schema.
+
+Content comes from one of two sources, in order of preference: the authoring
+commit when the migration exists on some branch (keeps the real file and its
+comments), otherwise a reconstruction from schema_migrations.statements verified
+by md5 against a server-computed digest.
+
+statements holds the PARSED statements, so trailing semicolons are stripped
+(re-added on rebuild) and the original comment header is NOT recorded. For
+reconstructed files the reasoning that accompanied the migration is gone.
+
+Review what each migration DID: arriving via MCP apply_migration means it was
+applied without review once already.
