@@ -20,7 +20,7 @@
 -- commercial, so NOT ONE WORD OF THEIR PROSE IS COPIED OR ADAPTED. Only their
 -- TERM LIST was used, as a signal for which entries are absent. Every
 -- definition below is original text. For the terms marked
--- `editorial:inferred-from-name`, the Kinktionary is the only place the term is
+-- `editorial` with source_id `inferred-from-name`, the Kinktionary is the only place the term is
 -- attested at all — so rather than reproduce their definition, the row records
 -- that its meaning is a reasoned guess and waits for a human who knows the
 -- vocabulary.
@@ -38,6 +38,7 @@ declare
   v_bad    int;
   v_made   int := 0;
   v_src    int := 0;
+  v_revive int := 0;
 begin
   create temp table _new (
     slug text primary key, name text, cat text, kind text,
@@ -460,15 +461,63 @@ begin
     raise exception 'new terms: % row(s) name a category that does not exist', v_bad;
   end if;
 
-  -- Refuse to create anything that already exists under any status. A term that
-  -- is merely deprecated needs REVIVING, not a duplicate concept alongside it.
+  -- Refuse to create anything that already exists — a term that is merely
+  -- deprecated needs REVIVING, not a duplicate concept alongside it.
+  --
+  -- 2026-09-03: `pretzel` already existed as status='deprecated',
+  -- merged_into_id NULL, from the 2026-06-05 orphan sweep — same class as
+  -- `femdom`/`voyeur` in the sourced half. Not merge residue, not a duplicate:
+  -- exactly the revive this comment prescribes, so it is now performed rather
+  -- than refused. The guard stays hard for active or merged rows, whose slug is
+  -- a live redirect trail and needs human judgement about direction.
   select count(*) into v_bad from _new n
-   where exists (select 1 from public.unified_tags t where t.slug = n.slug);
+    join public.unified_tags t on t.slug = n.slug
+   where t.status <> 'deprecated' or t.merged_into_id is not null;
   if v_bad > 0 then
-    raise exception 'new terms: % slug(s) already exist — revive them instead of creating duplicates', v_bad;
+    raise exception 'new terms: % slug(s) already exist as active or merged rows — resolve by hand, not by insert', v_bad;
   end if;
 
   for r in select * from _new order by slug loop
+    -- Revive the deprecated orphan instead of inserting beside it, restoring the
+    -- same safety posture a new row gets below: not indexable, not human-reviewed,
+    -- verification_status 'unverified' (these rows carry 'auto', and the
+    -- publishability assertion below tests for exactly that).
+    if exists (select 1 from public.unified_tags t where t.slug = r.slug) then
+      update public.unified_tags t
+         set name                = r.name,
+             description         = r.descr,
+             long_description    = r.longd,
+             category_id         = c.id,
+             category            = c.name,
+             entity_kind         = r.kind::tag_entity_kind,
+             is_adult            = r.adult,
+             is_sensitive        = r.sensitive,
+             status              = 'active',
+             deprecated_at       = null,
+             deprecation_reason  = null,
+             seo_indexable       = false,
+             human_reviewed      = false,
+             verification_status = 'unverified'
+        from public.tag_categories c
+       where t.slug = r.slug and c.slug = r.cat;
+      v_revive := v_revive + 1;
+
+      insert into public.tag_sources (tag_id, source_type, source_id, claim_summary, is_public)
+      select t.id, 'editorial',
+             case when r.sourced then 'general-knowledge' else 'inferred-from-name' end,
+             case when r.sourced
+                  then 'Definition written from independently documented meaning. Not derived from the Kinktionary, whose licence is non-commercial.'
+                  else 'Term is attested only in the FetLife Kinktionary. This definition is INFERRED from the term name and its section, and is a reasoned guess pending review by someone who knows the vocabulary.'
+             end,
+             false
+        from public.unified_tags t
+       where t.slug = r.slug
+         and not exists (select 1 from public.tag_sources s
+                          where s.tag_id = t.id and s.source_type = 'editorial');
+      v_src := v_src + 1;
+      continue;
+    end if;
+
     insert into public.unified_tags (
       name, slug, description, long_description,
       category_id, category, entity_kind,
@@ -482,10 +531,15 @@ begin
       from public.tag_categories c where c.slug = r.cat;
     v_made := v_made + 1;
 
-    insert into public.tag_sources (tag_id, source_type, claim_summary, is_public)
+    insert into public.tag_sources (tag_id, source_type, source_id, claim_summary, is_public)
     select t.id,
-           case when r.sourced then 'editorial:general-knowledge'
-                else 'editorial:inferred-from-name' end,
+           -- Same defect as the sourced half at 20261211100000: source_type is
+           -- CHECK-constrained to a fixed vocabulary and the prefixed value is not
+           -- in it, so every provenance insert here violated
+           -- tag_sources_source_type_check. Sub-kind moves to source_id.
+           'editorial',
+           case when r.sourced then 'general-knowledge'
+                else 'inferred-from-name' end,
            case when r.sourced
                 then 'Definition written from independently documented meaning. Not derived from the Kinktionary, whose licence is non-commercial.'
                 else 'Term is attested only in the FetLife Kinktionary. This definition is INFERRED from the term name and its section, and is a reasoned guess pending review by someone who knows the vocabulary.'
@@ -514,7 +568,7 @@ begin
   select count(*) into v_bad from _new n
     join public.unified_tags t on t.slug = n.slug
    where not exists (select 1 from public.tag_sources s
-                      where s.tag_id = t.id and s.source_type like 'editorial:%');
+                      where s.tag_id = t.id and s.source_type = 'editorial');
   if v_bad > 0 then
     raise exception 'new terms: % row(s) have no provenance record', v_bad;
   end if;
@@ -527,6 +581,6 @@ begin
     raise exception 'new terms: % indexable row(s) corpus-wide have no description', v_bad;
   end if;
 
-  raise notice 'new terms: % created, % provenance row(s)', v_made, v_src;
+  raise notice 'new terms: % created, % revived, % provenance row(s)', v_made, v_revive, v_src;
 end
 $mig$;

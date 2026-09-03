@@ -131,10 +131,29 @@ describe('kinktionary new terms — nothing is published on creation', () => {
       expect(body).toContain('must be created unreviewed and unindexed');
     });
 
-    it(`${file} refuses to duplicate a slug that already exists`, () => {
-      // A deprecated row needs REVIVING; a second row for one concept is how a
-      // glossary ends up with two pages disagreeing about a term.
-      expect(sql(file)).toContain('revive them instead of creating duplicates');
+    it(`${file} revives a deprecated twin and refuses an active or merged one`, () => {
+      const body = sql(file);
+      // A second row for one concept is how a glossary ends up with two pages
+      // disagreeing about a term. The original guard refused ALL collisions,
+      // including deprecated orphans — which on 2026-09-03 aborted `db push` on
+      // `femdom`/`voyeur` (sourced) and `pretzel` (inferred) and blocked every
+      // later migration. Those are 2026-06-05 orphan-sweep casualties,
+      // merged_into_id NULL: exactly the revive the guard's own comment
+      // prescribed. So the migration now performs it.
+      expect(body).toContain("status = 'active'");
+      expect(body).toContain('deprecation_reason  = null');
+
+      // Still hard for anything NOT a plain deprecated orphan. A merged row's
+      // slug is a live redirect trail; an active row is a real duplicate.
+      expect(body).toMatch(/t\.status <> 'deprecated' or t\.merged_into_id is not null/);
+      expect(body).toContain('resolve by hand, not by insert');
+
+      // A revive must land in the same posture a fresh row does. These rows
+      // carry verification_status 'auto', and the publishability assertion
+      // tests for <> 'unverified', so leaving it would trip the migration's
+      // own safety check.
+      expect(body).toContain("verification_status = 'unverified'");
+      expect(body).toContain('seo_indexable       = false');
     });
 
     it(`${file} records provenance privately`, () => {
@@ -182,8 +201,21 @@ describe('kinktionary new terms — migrations match the definitions file', () =
   });
 
   it('the inferred tranche is filed as inferred, not as documented', () => {
-    expect(sql(INFERRED_SQL)).toContain('editorial:inferred-from-name');
-    expect(sql(SOURCED_SQL)).toContain('editorial:general-knowledge');
+    // `tag_sources.source_type` is CHECK-constrained to a fixed vocabulary and
+    // never accepted the prefixed `editorial:*` values these migrations wrote —
+    // every provenance insert violated tag_sources_source_type_check, so neither
+    // could ever have applied for ANY row. The slug guard simply failed first
+    // and masked it. The distinction now lives in `source_id`, which is free text.
+    expect(sql(INFERRED_SQL)).toContain("'inferred-from-name'");
+    expect(sql(SOURCED_SQL)).toContain("'general-knowledge'");
+    for (const f of [INFERRED_SQL, SOURCED_SQL]) {
+      const code = sql(f)
+        .split('\n')
+        .filter((l) => !l.trim().startsWith('--'))
+        .join('\n');
+      expect(code, 'source_type must be a value the CHECK allows').not.toContain('editorial:');
+      expect(code).toContain("'editorial',");
+    }
   });
 });
 
