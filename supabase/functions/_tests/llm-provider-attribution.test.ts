@@ -52,7 +52,9 @@ Deno.test('every recordLlmUsage call site sets provider', async () => {
       const call = src.slice(start, end + 1)
       if (!/\bprovider:/.test(call)) {
         const line = src.slice(0, start).split('\n').length
-        offenders.push(`${rel.replace('../', '')}:${line}`)
+        // Strip every leading `../`, not just the first: a CLIENTS entry one
+        // directory deeper would otherwise report a half-relative path.
+        offenders.push(`${rel.replace(/^(?:\.\.\/)+/, '')}:${line}`)
       }
       i = end + 1
     }
