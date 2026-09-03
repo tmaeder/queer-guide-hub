@@ -239,23 +239,58 @@ describe('source-tags-extract', () => {
   );
 
   /**
-   * The payload object only — from `const rows =` to the end of the upsert call.
-   * Scoped rather than whole-file because the prose above it necessarily names
-   * the defect it exists to prevent, and a comment must not fail the test.
+   * Code only — comments stripped first. The prose in that file necessarily
+   * NAMES the defect it exists to prevent ("upserted status:'active'", "must
+   * never overwrite a curated name"), so a whole-file scan could be satisfied,
+   * or failed, by a comment rather than by the behaviour.
    */
-  const payload = fn.slice(fn.indexOf('const rows ='), fn.indexOf("count: 'exact'"));
+  const code = fn.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
 
-  it('never writes status, so it cannot resurrect a deprecated tag', () => {
-    // The exact line that caused this: an explicit status in the upsert payload
-    // becomes ON CONFLICT DO UPDATE SET status = active, on every existing row.
-    expect(payload).not.toMatch(/\bstatus\b\s*:/);
-    // The slice must be real, or the assertion above passes vacuously.
-    expect(payload).toMatch(/slug:\s*t\.slug/);
+  /**
+   * This guard was two assertions about the shape of an upsert payload
+   * (`status:` absent, `ignoreDuplicates: true` present), sliced from
+   * `const rows =` to `count: 'exact'`. Both became unreachable when the node
+   * stopped writing `unified_tags` altogether and began filing `ai_suggestions`
+   * proposals for human review: the slice anchor no longer exists, indexOf
+   * returned -1, and the assertions ran against an empty string and failed.
+   *
+   * The INTENT is unchanged and is now satisfied more strongly — rather than
+   * writing carefully, the node does not write vocabulary at all — so the guard
+   * asserts that. Keeping the shape-assertions would have pinned an
+   * implementation that is gone.
+   */
+  it('performs no write to unified_tags at all', () => {
+    // The incident: this node upserted status:'active', which became ON CONFLICT
+    // DO UPDATE SET status = active on every existing row and resurrected 297
+    // deprecated tags into a state where the page rendered but search refused to
+    // index them — lgbtiq, sauna and kink were unreachable for three months.
+    // A node that cannot write the table cannot repeat it.
+    expect(code).not.toMatch(
+      /\.from\(\s*['"]unified_tags['"]\s*\)[\s\S]{0,80}?\.(insert|upsert|update|delete)\b/,
+    );
   });
 
-  it('is insert-only, so it cannot overwrite any curated column', () => {
-    // ignoreDuplicates -> ON CONFLICT DO NOTHING. Without it the node would
-    // still overwrite `name` from a scraped free-text array.
-    expect(payload).toMatch(/ignoreDuplicates:\s*true/);
+  it('still READS unified_tags, so the no-write assertion is not vacuous', () => {
+    // Were the reference to disappear entirely, the assertion above would pass
+    // for the wrong reason. This read is load-bearing: it is the guard that
+    // stops a slug already in the vocabulary being re-proposed every week.
+    expect(code).toMatch(/\.from\(\s*['"]unified_tags['"]\s*\)[\s\S]{0,80}?\.select\b/);
+  });
+
+  it('files proposals for review instead of creating vocabulary', () => {
+    // The INSERT is in index.ts; the row it inserts is built by buildProposalRow
+    // in extract.ts, where the pure logic was moved so it could be unit-tested.
+    // Asserting both halves against index.ts alone would fail for the wrong
+    // reason — which is exactly what the first draft of this test did.
+    expect(code).toMatch(/\.from\(\s*['"]ai_suggestions['"]\s*\)[\s\S]{0,80}?\.insert\b/);
+
+    const builder = readFileSync(
+      join(ROOT, 'supabase', 'functions', 'source-tags-extract', 'extract.ts'),
+      'utf8',
+    )
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/^\s*\/\/.*$/gm, '');
+    expect(builder).toMatch(/suggestion_type:\s*['"]tag['"]/);
+    expect(builder).toMatch(/status:\s*['"]pending['"]/);
   });
 });
