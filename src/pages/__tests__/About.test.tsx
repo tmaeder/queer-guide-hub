@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 
@@ -33,7 +33,17 @@ vi.mock('@/hooks/useConsolidatedStats', () => ({
 }));
 vi.mock('@/hooks/use-mobile', () => ({ useIsMobile: () => false }));
 
+// The colophon is members-only, so About now calls `useAuth`, which throws
+// outside an AuthProvider. Mocked rather than wrapped in a real provider: the
+// provider talks to Supabase on mount, and every assertion below is about what
+// a given auth state renders, not about how that state is obtained.
+let mockUser: { id: string } | null = null;
+vi.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({ user: mockUser, loading: false }),
+}));
+
 import About from '../About';
+import { REQUIRED_ATTRIBUTION } from '@/lib/attribution';
 
 const renderAbout = () =>
   render(
@@ -43,6 +53,13 @@ const renderAbout = () =>
   );
 
 describe('About', () => {
+  beforeEach(() => {
+    // Signed in by DEFAULT, so the pre-existing colophon assertions keep
+    // measuring the colophon. A signed-out default would turn every one of
+    // them into a vacuous pass against a section that no longer renders.
+    mockUser = { id: 'member' };
+  });
+
   it('renders without crashing', () => {
     const { container } = renderAbout();
     expect(container).toBeTruthy();
@@ -55,23 +72,34 @@ describe('About', () => {
   });
 
   // The colophon is the only place several of these are credited at all, and
-  // for four of them the credit is a licence condition rather than a courtesy:
-  // ODbL (OpenStreetMap, and the two country datasets) and CC BY 4.0
-  // (GeoNames) both require attribution. Deleting a row to tidy the section is
-  // therefore a licence breach, not a design decision — this is what stops it.
+  // for six of them the credit is a licence condition rather than a courtesy.
+  // Deleting a row to tidy the section is therefore a licence breach, not a
+  // design decision — this is what stops it.
+  //
+  // Driven off REQUIRED_ATTRIBUTION rather than a list retyped here, because
+  // that constant is what the footer renders for signed-out readers. Two hand-
+  // maintained lists would be free to disagree about who is owed a credit, and
+  // the version this replaced already had: it named four sources and omitted
+  // World Bank and Wikidata, both CC BY variants that do compel attribution.
   it('credits every source whose licence requires attribution', () => {
     const { container } = renderAbout();
     const section = container.querySelector('#sources');
     expect(section).toBeTruthy();
     const text = section?.textContent ?? '';
-    for (const name of [
-      'OpenStreetMap',
-      'GeoNames',
-      'Countries States Cities Database',
-      'mledoze/countries',
-    ]) {
-      expect(text).toContain(name);
+    expect(REQUIRED_ATTRIBUTION.length).toBeGreaterThan(0);
+    for (const source of REQUIRED_ATTRIBUTION) {
+      expect(text).toContain(source.name);
     }
+  });
+
+  // The gate itself. `#sources` absent is only evidence of the gate if the
+  // page around it rendered, hence the positive control — otherwise a crash in
+  // About would pass this test.
+  it('hides the colophon from signed-out readers', () => {
+    mockUser = null;
+    const { container } = renderAbout();
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
+    expect(container.querySelector('#sources')).toBeNull();
   });
 
   // A property, not a list: whatever the colophon names, it must actually
