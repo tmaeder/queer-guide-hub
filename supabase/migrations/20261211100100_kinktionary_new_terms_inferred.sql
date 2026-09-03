@@ -460,12 +460,16 @@ begin
     raise exception 'new terms: % row(s) name a category that does not exist', v_bad;
   end if;
 
-  -- Refuse to create anything that already exists under any status. A term that
-  -- is merely deprecated needs REVIVING, not a duplicate concept alongside it.
+  -- Same revive-instead-of-abort rule as 20261211100000; see that file's header
+  -- comment for the full reasoning. This migration collides on exactly one slug:
+  -- `pretzel`, deprecated 2026-06-05 by the same orphan sweep, merged into
+  -- nothing. Fixing only the sourced migration would have moved the db push
+  -- failure one file along rather than clearing it.
   select count(*) into v_bad from _new n
-   where exists (select 1 from public.unified_tags t where t.slug = n.slug);
+    join public.unified_tags t on t.slug = n.slug
+   where t.status <> 'deprecated';
   if v_bad > 0 then
-    raise exception 'new terms: % slug(s) already exist — revive them instead of creating duplicates', v_bad;
+    raise exception 'new terms: % slug(s) already exist and are not deprecated — resolve by hand', v_bad;
   end if;
 
   for r in select * from _new order by slug loop
@@ -479,7 +483,26 @@ begin
            c.id, c.name, r.kind::tag_entity_kind,
            r.adult, r.sensitive,
            'active', false, false, 'unverified'
-      from public.tag_categories c where c.slug = r.cat;
+      from public.tag_categories c where c.slug = r.cat
+    -- status, deprecated_at and deprecation_reason cleared TOGETHER — the
+    -- difference between a revive and the resurrection that left 297 tags
+    -- rendering but unindexable. Unrepresentable since 20261007100000, so an
+    -- error here would be loud rather than silent.
+    on conflict (slug) do update set
+      name                = excluded.name,
+      description         = excluded.description,
+      long_description    = excluded.long_description,
+      category_id         = excluded.category_id,
+      category            = excluded.category,
+      entity_kind         = excluded.entity_kind,
+      is_adult            = excluded.is_adult,
+      is_sensitive        = excluded.is_sensitive,
+      status              = 'active',
+      deprecated_at       = null,
+      deprecation_reason  = null,
+      seo_indexable       = false,
+      human_reviewed      = false,
+      verification_status = 'unverified';
     v_made := v_made + 1;
 
     insert into public.tag_sources (tag_id, source_type, claim_summary, is_public)
