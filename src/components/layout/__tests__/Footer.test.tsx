@@ -63,16 +63,18 @@ describe('Footer', () => {
       // The licence has to be named next to the credit. A bare link satisfies
       // nobody: "OpenStreetMap" without "ODbL" does not say what the terms are.
       expect(link.parentElement?.textContent).toContain(source.licence);
-      // Underlined, explicitly. Shipped once without this and prod measured
-      // `text-decoration: none` with the link the exact colour of the text
-      // beside it — unreadable as a link, which for an attribution row means
-      // the credit stops pointing at what it credits. jsdom applies no
-      // stylesheet, so the class is the only thing assertable here; the real
-      // rendering was verified against prod.
-      // classList, NOT a regex on className: /\bunderline\b/ also matches
-      // inside `underline-offset-4`, so the obvious spelling of this assertion
-      // passes with the underline deleted. Mutation-tested both ways.
-      expect(link.classList.contains('underline')).toBe(true);
+      // The link must stay underlined, and the way to assert that is the
+      // ABSENCE of `no-underline` — not the presence of `underline`.
+      //
+      // index.css draws inline underlines with a `::after` bar under
+      // `span a:not(.no-underline)` and sets `text-decoration: none` on the
+      // anchor itself. So a Tailwind `underline` class is inert here (the
+      // unlayered rule wins) and asserting it would pin a no-op, while
+      // `no-underline` is the one token that actually switches the underline
+      // off. jsdom loads no stylesheet, so this class-level check is the only
+      // thing assertable in a unit test; the rendered ::after was verified on
+      // prod.
+      expect(link.classList.contains('no-underline')).toBe(false);
     }
   });
 

@@ -322,19 +322,31 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
           <span className="flex flex-wrap items-center gap-x-4 gap-y-1 text-2xs text-background/70">
             {REQUIRED_ATTRIBUTION.map((source) => (
               <span key={source.href}>
-                {/* `underline` is explicit and load-bearing. index.css carries a
-                    `span a` inline-link rule, but it does NOT win here — the
-                    rendered footer measured `text-decoration: none`, and since
-                    the anchor inherits the row's colour the link was pixel-
-                    identical to the licence text beside it. That is WCAG 1.4.1
-                    (colour as the only cue, and here not even colour), and for
-                    an attribution row it also means the credit no longer
-                    visibly points at the source it is crediting. */}
+                {/* NO `no-underline` here, and that absence is the whole
+                    mechanism — do not "tidy" it by adding one, and do not add
+                    an `underline` utility either.
+
+                    index.css underlines inline links with a `::after` bar and
+                    explicitly sets `text-decoration: none` on them, so reading
+                    `textDecorationLine` says "none" on a link that is in fact
+                    underlined, and a Tailwind `underline` class is inert
+                    against that unlayered rule. The selector is
+                    `span a:not(.no-underline)`, which this anchor matches by
+                    sitting in a span and staying bare — verified on prod:
+                    ::after 1px, full width, scaleX(1).
+
+                    The footer's own nav links DO carry `no-underline`, because
+                    they are standalone links. These are inline credits inside
+                    a line of text, which is exactly the case the rule is for.
+
+                    Full-strength colour against the row's /70 is a hierarchy
+                    choice, not the accessibility mechanism: it makes the
+                    credited name read ahead of its licence token. */}
                 <a
                   href={source.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-background underline underline-offset-4 hover:text-background"
+                  className="text-background hover:text-background"
                 >
                   {source.name}
                 </a>{' '}
