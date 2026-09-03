@@ -71,6 +71,8 @@ import { TagFlagBand } from '@/components/tags/TagFlagBand';
 import { TagFlagRailCard } from '@/components/tags/TagFlagRailCard';
 import { TagHankyCodeBand } from '@/components/tags/TagHankyCodeBand';
 import { flagByTagSlug, HANKY_CODE_TAG_SLUG } from '@/lib/flags';
+import { TagInfographics } from '@/components/tags/TagInfographics';
+import { figuresForSlug } from '@/components/tags/infographics/registry';
 import { TagLinkedContent } from '@/components/tags/TagLinkedContent';
 import { StiProfile } from '@/components/tags/StiProfile';
 import { TagMythFacts } from '@/components/tags/TagMythFacts';
@@ -244,6 +246,11 @@ export default function TagDetail() {
    *  on most terms — only a minority carry a `long_description` with headings —
    *  which is why the component this replaces bailed out below three headings
    *  and showed an empty sidebar the rest of the time. */
+  /** Read from the EAGER registry, never from the lazy renderer. The station
+   *  has to exist on first render — a strip that grows a stop once a chunk
+   *  resolves points at nothing in the meantime. */
+  const figures = useMemo(() => figuresForSlug(tag?.slug), [tag?.slug]);
+
   const stations = useMemo<RouteStation[]>(() => {
     if (!tag) return [];
     const s: RouteStation[] = [];
@@ -276,6 +283,20 @@ export default function TagDetail() {
     if (mythFactCount > 0) {
       s.push({ id: 'myths', title: t('tags.myths.eyebrow', 'Check the facts') });
     }
+    // Above the taxonomy for the same reason as `combinations`: a reader who
+    // can see the thing diagrammed does not need the ontology first.
+    if (figures.length > 0) {
+      s.push({ id: 'figure', title: t('tags.detail.figure', 'Diagram') });
+      if (figures.length > 1) {
+        s.push(
+          ...figures.map((f) => ({
+            id: `figure-${f.id}`,
+            title: t(f.titleKey, f.titleFallback),
+            depth: 2 as const,
+          })),
+        );
+      }
+    }
     s.push({ id: 'taxonomy', title: t('tags.detail.inTaxonomy', 'In the taxonomy') });
     if (usage?.venue_count) s.push({ id: 'venues', title: t('tags.detail.venues', 'Venues') });
     if (usage?.event_count) s.push({ id: 'events', title: t('tags.detail.events', 'Events') });
@@ -288,7 +309,8 @@ export default function TagDetail() {
     // medicalCodeCount belongs here: the codes RPC resolves AFTER the first
     // render, so omitting it would pin the strip to the pre-fetch value of 0
     // and the stop would never appear. interactionCount, hasStiProfile and
-    // mythFactCount are the same shape.
+    // mythFactCount are the same shape. `figures` is synchronous (eager
+    // registry) but is still read here, so it stays a dep.
   }, [
     tag,
     wiki,
@@ -298,6 +320,7 @@ export default function TagDetail() {
     hasStiProfile,
     mythFactCount,
     diagrams,
+    figures,
     t,
   ]);
 
@@ -512,6 +535,12 @@ export default function TagDetail() {
           <TagMythFacts tagId={tag.id} tagName={tag.name} />
         </div>
       )}
+
+      {/* The picture, then its place in the taxonomy. A figure elaborates the
+          definition; it never replaces it, so it always follows #about — and it
+          sits directly above <TagInterchange>, which IS the taxonomy section,
+          matching the `figure` → `taxonomy` order in `stations` above. */}
+      <TagInfographics slug={tag.slug} pageAlreadyGated={isAdult} />
 
       <TagInterchange tagId={tag.id} tagName={tag.name} />
 

@@ -2406,7 +2406,10 @@
       "pride": {
         "title": "Pride this season",
         "window": "Next 4 months",
-        "empty": "No upcoming Pride events."
+        "empty": "No upcoming Pride events.",
+        "safety": "Equality score",
+        "equalityTooltip": "Equality score reflects this country's LGBTQ+ legal protections. Higher is safer.",
+        "equalityAria": "Equality score {{score}}: tap for explanation"
       },
       "inspiration": {
         "villages": "Queer villages",
@@ -3006,7 +3009,12 @@
     "venueCount_other": "{{count}} places",
     "viewList": "List",
     "villageCount_one": "{{count}} district",
-    "villageCount_other": "{{count}} districts"
+    "villageCount_other": "{{count}} districts",
+    "eyebrow": "Destinations",
+    "subtitle": "LGBTQ+ friendly cities around the world.",
+    "openDirectory": "Open the directory",
+    "viewToggleAriaLabel": "Toggle list and map",
+    "viewMap": "Map"
   },
   "pride": {
     "eyebrow": "Pride Calendar",
@@ -4464,7 +4472,8 @@
       "spansAllRights": "This covers a whole field of law, not one statute. We track 18 separate rights, country by country.",
       "seeAllRights": "See all 18 rights by country",
       "seeAllInSearch": "See all in search",
-      "shopAll": "Shop all"
+      "shopAll": "Shop all",
+      "figure": "Diagram"
     },
     "flagWall": {
       "eyebrow": "Symbols",
@@ -4477,6 +4486,115 @@
     "fromGlossary": {
       "title": "From the glossary",
       "all": "All terms"
+    },
+    "figures": {
+      "eyebrow": "Diagram",
+      "bandEyebrow": "Drawn",
+      "bandTitle": "The diagram",
+      "bandTitlePlural": "Diagrams",
+      "loading": "Drawing the diagram",
+      "readAsTable": "Read as a table",
+      "hideTable": "Hide the table",
+      "readMore": "Read the entry",
+      "sources": "Drawn from",
+      "checkedOn": "Claims last checked against these sources on {{date}}.",
+      "sensitiveBody": "This diagram covers a subject some readers find difficult. It is a definition, not advice.",
+      "adultBody": "This diagram is for adults.",
+      "adultReveal": "18+ · Show diagram",
+      "table": {
+        "line": "Line",
+        "stops": "Stops",
+        "runsTo": "Runs to",
+        "stop": "Stop",
+        "kind": "Kind",
+        "detail": "Detail",
+        "leadsTo": "Leads to"
+      },
+      "fourLines": {
+        "title": "Four lines",
+        "caption": "Gender identity, gender expression, sex assigned at birth and attraction are four separate lines. Pick a stop on each. Nothing is stored or sent.",
+        "summary": "A transit map with four lines, meeting at a single interchange: gender identity drawn as two independent services on one corridor, gender expression, sex assigned at birth as a terminus that runs on to nothing, and attraction.",
+        "readout": "Where you are on each line",
+        "tableCaption": "Every line on the map and the stops it carries",
+        "corridor": {
+          "identity": "Gender identity: two independent services"
+        },
+        "axis": {
+          "identityWoman": "How much woman",
+          "identityMan": "How much man",
+          "expression": "Gender expression",
+          "assigned": "Sex assigned at birth",
+          "attraction": "Attraction"
+        },
+        "help": {
+          "identityWoman": "Who you know yourself to be. This runs independently of the line below it. You can be a lot of both, a little of both, or neither.",
+          "identityMan": "The second rail on the same corridor. Answering this one does not subtract from the one above.",
+          "expression": "How you present: clothes, voice, hair, the way you carry yourself. Stops, not a scale: nothing here is halfway between two others.",
+          "assigned": "What someone wrote down when you were born. It is a starting point on the record, which is why this line stops instead of running on to the others.",
+          "attraction": "Who you are drawn to. Who you are and who you are drawn to are separate lines. That is the whole point of the map."
+        },
+        "amount": {
+          "notAtAll": "Not at all",
+          "aLittle": "A little",
+          "aLot": "A lot",
+          "entirely": "Entirely",
+          "ratherNot": "Rather not say"
+        },
+        "expression": {
+          "feminine": "Feminine",
+          "androgynous": "Androgynous",
+          "masculine": "Masculine",
+          "changes": "It changes"
+        },
+        "assigned": {
+          "female": "Female",
+          "male": "Male",
+          "intersex": "Intersex variation"
+        },
+        "attraction": {
+          "women": "Women",
+          "men": "Men",
+          "moreThanOne": "More than one gender",
+          "regardless": "Regardless of gender",
+          "noOne": "No one, or rarely"
+        }
+      },
+      "consentFlow": {
+        "title": "The line that stops",
+        "caption": "Consent as a route with signals, one speed restriction and no final destination. It loops back to the check-in and stays there. Not a legal test: the law differs by country.",
+        "summary": "A branching line. Asking without an answer, and anything that is not a clear yes, end at buffer stops. Capacity is a hatched speed-restriction section rather than a yes/no signal. The line does not terminate in approval. It loops back to a check-in signal that can be answered again at any time.",
+        "tableCaption": "Every stop on the line, and where it leads",
+        "groupLabel": "Stops on the line",
+        "hint": "Select any stop to light up the route that reaches it.",
+        "node": {
+          "start": "You want to do something with someone",
+          "asked": "Have you asked?",
+          "notAsked": "Guessing is not consent",
+          "clearYes": "Was the answer a clear yes?",
+          "notAYes": "No, maybe, or nothing",
+          "capacity": "Speed restriction: can everyone actually decide?",
+          "checkin": "Still yes, right now?",
+          "stopNow": "Stop",
+          "go": "Clear to proceed, for now"
+        },
+        "note": {
+          "asked": "Out loud, or in a way you have both already agreed reads as asking.",
+          "notAsked": "Not objecting is not agreeing. The line does not start here.",
+          "clearYes": "Theirs, not one you talked them into.",
+          "notAYes": "Anything that is not a yes is a no. This is the end of the line.",
+          "capacity": "Drink, drugs, exhaustion, being half asleep. Not a switch. If you cannot tell, you do not have an answer yet.",
+          "checkin": "The signal you come back to. Agreeing earlier is not agreeing now.",
+          "stopNow": "Anyone can stop anything at any point, for no reason. Then look after each other.",
+          "go": "And back to the check-in, which is why this line is a loop."
+        },
+        "edge": {
+          "no": "No",
+          "yes": "Yes",
+          "notAYes": "Not a yes",
+          "noOrUnsure": "No, or unsure",
+          "again": "And again, any time"
+        }
+      }
     }
   },
   "village": {

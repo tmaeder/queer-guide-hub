@@ -54,6 +54,7 @@ export interface TagResultsProps {
    *  `p_category_filter` is typed `uuid`, so a name raises 22P02 and the graph
    *  shows its error state. */
   graphCategory?: string | null;
+  /** Pass-through to `TagRelationshipGraph.categories`; must keep its shape. */
   graphCategories?: { id: string; name: string }[];
 }
 
