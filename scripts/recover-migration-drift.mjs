@@ -50,10 +50,9 @@ import { existsSync, readdirSync, writeFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
 import {
   BASELINE,
-  buildRecoveredSql,
   fetchMigrationBodies,
   fetchRemoteVersions,
-  normalizeMigrationName,
+  planRecovery,
   resolveToken,
 } from './lib/remote-migrations.mjs'
 
@@ -130,57 +129,12 @@ if (orphans.length === 0) {
 console.log(`Found ${orphans.length} applied version(s) with no repo file:\n`)
 
 const bodies = await fetchMigrationBodies(orphans, token)
-const recovered = []
-const skipped = []
 
-for (const version of orphans) {
-  const body = bodies?.get(version)
-  if (!body) {
-    skipped.push({ version, why: 'no row returned for this version' })
-    continue
-  }
-
-  const name = normalizeMigrationName(body.name) || 'recovered_migration'
-  const file = `${MIGRATIONS_DIR}/${version}_${name}.sql`
-
-  // Prefer the author's own file when it exists on a branch — see findOnAnyBranch.
-  const onBranch = findOnAnyBranch(version)
-  if (onBranch) {
-    recovered.push({ version, file: onBranch.path, source: `commit ${onBranch.sha.slice(0, 9)}`, content: onBranch.content, verified: 'content from the authoring commit' })
-    continue
-  }
-
-  if (body.statements.length === 0) {
-    // An empty `statements` array is NOT proof the migration did nothing — it is
-    // what a row recorded by an out-of-band path looks like. Reconstructing an
-    // empty file would assert "this migration was a no-op" on no evidence.
-    skipped.push({ version, why: 'statements is empty — nothing recorded to recover; needs a human' })
-    continue
-  }
-
-  // Prove the text survived JSON transport. The server computed this digest
-  // over the same join, so a mismatch means corruption, not a content
-  // disagreement — and a corrupted migration must never be written.
-  const local = md5(body.joined)
-  if (body.digest && local !== body.digest) {
-    skipped.push({ version, why: `digest mismatch (server ${body.digest}, local ${local}) — refusing to write` })
-    continue
-  }
-
-  const content = buildRecoveredSql(version, body.statements)
-  if (content === null) {
-    skipped.push({ version, why: 'statements held nothing usable' })
-    continue
-  }
-
-  recovered.push({
-    version,
-    file,
-    source: `schema_migrations.statements (${body.statements.length} statement(s))`,
-    content,
-    verified: body.digest ? `md5 ${local}` : 'no server digest returned',
-  })
-}
+// All decision-making lives in planRecovery (pure, unit-tested). This file only
+// does IO: fetch above, write below. Keeping the "should this be written at all"
+// logic out of the CLI is what lets the never-invent-content rules be exercised
+// without a Management API token.
+const { recovered, skipped } = planRecovery(orphans, bodies, { findOnBranch: findOnAnyBranch, md5 })
 
 for (const r of recovered) {
   console.log(`  ${r.version}  ->  ${r.file}`)
