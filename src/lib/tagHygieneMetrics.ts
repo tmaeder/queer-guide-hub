@@ -105,10 +105,16 @@ export const HYGIENE_METRICS: HygieneMetric[] = [
     hint: 'The mode=prose pass drains ~300/day (subject check + house-voice rewrite). Read the trend.',
   },
   {
+    key: 'event_tag_pairs_unlinked',
+    label: 'Event tag links missing',
+    zero: true,
+    hint: 'THE gauge for run_event_tag_link: resolvable (event, tag) pairs with no assignment row, ignoring events under an hour old so normal cron lag does not register. A true zero-invariant — anything above 0 means the linker is not draining.',
+  },
+  {
     key: 'events_with_tags_unlinked',
     label: 'Events not linked to tags',
     advisory: true,
-    hint: 'Drain gauge for run_event_tag_link. Must fall to 0 and stay there; a flat number means the job stopped.',
+    hint: 'Coverage only. Its floor is NOT 0: ~3,856 events carry only tag strings the ambiguity guard blocks by design, so it never empties and a non-zero reading means nothing on its own. Read "Event tag links missing" instead.',
   },
   {
     key: 'uncategorized_active',
@@ -127,5 +133,32 @@ export const HYGIENE_METRICS: HygieneMetric[] = [
     label: 'Event tag strings unresolved',
     advisory: true,
     hint: 'Free-text event tags that match no tag name or slug. Phase 4 scope marker, German-heavy.',
+  },
+  {
+    key: 'slug_diacritic_lossy',
+    label: 'Slugs that lost a diacritic',
+    zero: true,
+    hint: 'A slug the canonical slugifier would not produce, on a non-ASCII name — "Bühne" stored as b-hne. Excludes merged rows, whose slug IS their redirect trail. Deliberately NOT the unqualified drift predicate, which matches 115 rows of which 106 are intentional mat-/news-/occ- namespace prefixes.',
+  },
+  {
+    key: 'name_mojibake',
+    label: 'Names containing U+FFFD',
+    // NOT `zero`, and its baseline is 1, not 0. One merged row (M�Llerian)
+    // carries a replacement character in its NAME; its "corrected" slug would
+    // still be garbage, and it is merged, so nothing renders it. Painting a
+    // permanently-red figure on the panel trains admins to ignore red.
+    hint: 'A replacement character in a tag name, i.e. an encoding failure upstream. One known merged row is accepted; a SECOND is a new defect.',
+  },
+  {
+    key: 'name_contains_hashtag',
+    label: 'Active names containing #',
+    zero: true,
+    hint: 'A scraped hashtag concatenation promoted into vocabulary, e.g. "Pulse #Mordopfer #Hassverbrechen". Zero-invariant: authored tags do not carry hashtags.',
+  },
+  {
+    key: 'non_latin_name',
+    label: 'Non-Latin script names',
+    zero: true,
+    hint: 'Asserts trg_tag_language_guard still holds — it rejects Cyrillic/CJK/Arabic/Greek/Hebrew/Thai/Devanagari outright. Non-zero means the trigger was dropped or bypassed. Deliberately NOT widened to Latin-script language detection: that heuristic measures ~5% precision here, flagging Party, Film, Pride and Transgender.',
   },
 ];
