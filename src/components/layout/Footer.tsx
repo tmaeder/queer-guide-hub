@@ -315,14 +315,26 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
 
               Only the credits ODbL / CC BY / CC BY-SA actually compel are
               here; see src/lib/attribution.ts for what is left out and why. */}
-          <span className="flex flex-wrap items-center gap-x-4 gap-y-1 text-2xs text-background/50">
+          {/* /70, not the /50 the copyright line beside it uses. Measured on
+              the rendered plate: /50 is 3.5:1 and /70 is 6.9:1. AA wants 4.5:1
+              at this size, and a licence notice is the last thing on the page
+              that should be styled as unreadable fine print. */}
+          <span className="flex flex-wrap items-center gap-x-4 gap-y-1 text-2xs text-background/70">
             {REQUIRED_ATTRIBUTION.map((source) => (
               <span key={source.href}>
+                {/* `underline` is explicit and load-bearing. index.css carries a
+                    `span a` inline-link rule, but it does NOT win here — the
+                    rendered footer measured `text-decoration: none`, and since
+                    the anchor inherits the row's colour the link was pixel-
+                    identical to the licence text beside it. That is WCAG 1.4.1
+                    (colour as the only cue, and here not even colour), and for
+                    an attribution row it also means the credit no longer
+                    visibly points at the source it is crediting. */}
                 <a
                   href={source.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-background/50 underline-offset-4 hover:text-background"
+                  className="text-background underline underline-offset-4 hover:text-background"
                 >
                   {source.name}
                 </a>{' '}
