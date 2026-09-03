@@ -336,11 +336,18 @@ async function categorizePass(
       // columns named in the STATEMENT, not on what a BEFORE trigger mutated.
       // Naming category_id alone filed the tag and left the search facet blank —
       // which is what the old line 327 did on every pass.
-      const { error } = await supabase
-        .from('unified_tags')
-        .update({ category_id: categoryId, category: cat.name })
-        .eq('id', tag.id)
-      if (!error) stats.cat_applied++
+      // Through tag_enrichment_apply, not PostgREST: PostgREST cannot set a
+      // session GUC, so a direct .update() lands in tag_change_log under the
+      // undeclared fallback actor 'system:trigger' (see 20261218100000). The
+      // RPC's 'category' branch names the same two columns for the reason
+      // above.
+      const { data: applied, error } = await supabase.rpc('tag_enrichment_apply', {
+        p_tag_id: tag.id,
+        p_kind: 'category',
+        p_category_id: categoryId,
+        p_category: cat.name,
+      })
+      if (!error && applied) stats.cat_applied++
     }
   }
 }
@@ -447,10 +454,11 @@ async function prosePass(
 
     // Stamp the cursor FIRST, whatever happened — an unparseable answer or a
     // dead breaker must not pin this tag at the head of the queue forever.
-    await supabase
-      .from('unified_tags')
-      .update({ prose_reviewed_at: new Date().toISOString() })
-      .eq('id', tag.id)
+    // 'prose_cursor' is the one kind tag_enrichment_apply runs on
+    // human_reviewed rows too — prose_reviewed_at is a derived column the
+    // audit guard exempts, and refusing it here would pin those rows at the
+    // head of the queue, which is exactly what this comment warns about.
+    await supabase.rpc('tag_enrichment_apply', { p_tag_id: tag.id, p_kind: 'prose_cursor' })
     if (!out || (out.verdict !== 'wrong_subject' && out.verdict !== 'ok')) {
       stats.prose_uncertain++
       continue
@@ -823,15 +831,13 @@ Deno.serve(async (req) => {
       }
 
       if (wiki && needsLinks) {
-        const { error: e } = await supabase
-          .from('unified_tags')
-          .update({
-            wikidata_id: wiki.wikidata_id,
-            wikipedia_url: wiki.wikipedia_url,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', tag.id)
-        if (!e) {
+        const { data: linked, error: e } = await supabase.rpc('tag_enrichment_apply', {
+          p_tag_id: tag.id,
+          p_kind: 'links',
+          p_wikidata_id: wiki.wikidata_id,
+          p_wikipedia_url: wiki.wikipedia_url,
+        })
+        if (!e && linked) {
           stats.links_applied++
           didSomething = true
         }
@@ -846,11 +852,16 @@ Deno.serve(async (req) => {
               didSomething = true
             }
           } else {
-            const { error: e } = await supabase
-              .from('unified_tags')
-              .update({ description: wiki.extract, updated_at: new Date().toISOString() })
-              .eq('id', tag.id)
-            if (!e) {
+            // This is the write that produced the 2026-08-30 08:00Z batch —
+            // nine Wikipedia extracts, eight of them the wrong sense, all
+            // logged as 'system:trigger' and therefore misattributed twice
+            // before the cron was identified.
+            const { data: wrote, error: e } = await supabase.rpc('tag_enrichment_apply', {
+              p_tag_id: tag.id,
+              p_kind: 'description',
+              p_description: wiki.extract,
+            })
+            if (!e && wrote) {
               stats.desc_applied++
               didSomething = true
             }
