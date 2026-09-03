@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import type { TablesInsert } from '@/integrations/supabase/types';
 
 export type SiResponse<T> = { success: true; data: T } | { success: false; error: string };
 
@@ -39,6 +40,59 @@ export async function callSearchIntelligence<T = unknown>(
     return { success: false, error: 'empty response' };
   }
   return data;
+}
+
+// ── New-tag proposals (source-tags-extract) ─────────────────────────────────
+
+export interface CreatedTag {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+/**
+ * Mint the glossary tag a `source-tags-extract` proposal asks for.
+ *
+ * This does NOT go through `applySuggestion` in the edge function: that
+ * function's `tag` branch attaches an EXISTING tag to an entity and demands
+ * `entity_type`, `entity_id` and `proposed_value.tag_id`. A new-tag proposal
+ * carries none of the three (the tag does not exist yet), so approving one
+ * server-side throws and leaves the row parked at `approved` with an
+ * "auto-apply failed" note. The write therefore happens here, under the
+ * admin's own JWT — `unified_tags_staff_insert` (20260904100000) admits
+ * admin/moderator/editor.
+ *
+ * ONLY `name` is sent, and both omissions are load-bearing:
+ *
+ *  - `slug` is NOT NULL with no column default, so the generated Insert type
+ *    demands it — but `unified_tags_normalize_slug()` derives it in a BEFORE
+ *    INSERT trigger, and since 20261128100000 a name-derived slug WINS for a
+ *    non-ASCII name. A caller-supplied slug beats that seal ("Bühne" → the
+ *    lossy `b-hne` instead of `buhne`), which is the exact fault the seal
+ *    closed. The row is cast rather than completed.
+ *  - `status` defaults to 'active'. Writing it explicitly is what once let an
+ *    upsert resurrect 297 deprecated tags into a state the page rendered but
+ *    search refused to index.
+ *
+ * `app.actor` is deliberately not attempted: it is a transaction-local GUC and
+ * PostgREST gives each request its own transaction, so a browser client cannot
+ * set it. It is also not needed here — `log_unified_tag_change()` RAISEs only
+ * on `TG_OP='UPDATE'` of a `human_reviewed` row; on INSERT it only records the
+ * actor, and a brand-new row is never human_reviewed. The insert lands in
+ * `tag_change_log` as `system:trigger`, exactly as every other admin tag write
+ * in this app already does (`useCentralizedTags.createTag`).
+ */
+export async function createTagFromProposal(name: string): Promise<SiResponse<CreatedTag>> {
+  const trimmed = name.trim();
+  if (!trimmed) return { success: false, error: 'proposal has no name' };
+  const { data, error } = await supabase
+    .from('unified_tags')
+    .insert({ name: trimmed } as unknown as TablesInsert<'unified_tags'>)
+    .select('id, name, slug')
+    .single();
+  if (error) return { success: false, error: error.message };
+  if (!data) return { success: false, error: 'insert returned no row' };
+  return { success: true, data: data as CreatedTag };
 }
 
 // ── Type definitions matching the edge function payloads ────────────────────
@@ -127,4 +181,3 @@ export interface AuditEntry {
   metadata: Record<string, unknown>;
   created_at: string;
 }
-

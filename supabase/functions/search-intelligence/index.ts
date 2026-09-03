@@ -567,6 +567,13 @@ async function updateSuggestion(ctx: RouteContext): Promise<Response> {
     update.reviewer_id = ctx.actorId === 'service-role' ? null : ctx.actorId
     update.approved_at = new Date().toISOString()
   }
+  // A caller that applied the suggestion itself (the new-tag proposal flow
+  // inserts the tag client-side, then PATCHes status='applied') gets the same
+  // stamp the auto-apply branch below writes. The two are mutually exclusive —
+  // that branch only runs for status='approved' — so this cannot clobber it,
+  // and the frontend cannot repair a null applied_at (ai_suggestions is
+  // admin-READ-only under RLS).
+  if (body.status === 'applied') update.applied_at = new Date().toISOString()
   if (body.status === 'rejected') {
     update.reviewer_id = ctx.actorId === 'service-role' ? null : ctx.actorId
     update.rejected_at = new Date().toISOString()
