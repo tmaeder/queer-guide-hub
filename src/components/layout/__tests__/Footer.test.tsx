@@ -63,6 +63,16 @@ describe('Footer', () => {
       // The licence has to be named next to the credit. A bare link satisfies
       // nobody: "OpenStreetMap" without "ODbL" does not say what the terms are.
       expect(link.parentElement?.textContent).toContain(source.licence);
+      // Underlined, explicitly. Shipped once without this and prod measured
+      // `text-decoration: none` with the link the exact colour of the text
+      // beside it — unreadable as a link, which for an attribution row means
+      // the credit stops pointing at what it credits. jsdom applies no
+      // stylesheet, so the class is the only thing assertable here; the real
+      // rendering was verified against prod.
+      // classList, NOT a regex on className: /\bunderline\b/ also matches
+      // inside `underline-offset-4`, so the obvious spelling of this assertion
+      // passes with the underline deleted. Mutation-tested both ways.
+      expect(link.classList.contains('underline')).toBe(true);
     }
   });
 
