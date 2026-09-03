@@ -21,7 +21,7 @@
 -- at this work (scripts/data-quality/englishify-tags.mjs) keyed its RENAMES map
 -- on slug, and its `munchen: 'Munich'` entry could never fire because the broken
 -- slug pipeline had produced `m-nchen`. The preceding migration
--- 20261208100000_tag_slug_seal repairs those slugs, so a slug literal written
+-- 20261211100000_tag_slug_seal repairs those slugs, so a slug literal written
 -- today may be stale by the time this applies; a name is stable across both.
 
 do $$
@@ -108,7 +108,7 @@ begin
       -- Work/School, Gesundheit Health vs Health Sexual Health, Bühne Drag &
       -- Performance vs Stage Events & Parties, Feministisch, München,
       -- Schriftsteller), so this is the common case here, not the edge case.
-      -- Same rule as 20261016100000:415 and 20261208100000:234.
+      -- Same rule as 20261016100000:415 and 20261211100000:234.
       update public.tag_category_assignments a
          set is_primary = false
        where a.tag_id = v_dup
@@ -141,7 +141,7 @@ begin
   end if;
 
   ---------------------------------------------------------------------------
-  -- PART 1b -- REPAIR usage_count, which merge_tag_concept corrupts.
+  -- PART 1b -- REPAIR usage_count, which merge_tag_concept corrupted until 20261210100000.
   --
   -- merge_tag_concept:94 calls recount_unified_tag_usage_for(), which recomputes
   -- usage_count by counting slug strings in exactly three arrays --
@@ -158,15 +158,28 @@ begin
   --     non-binary      454 ->  341
   --
   -- So merging twelve 0-usage German tags would silently re-baseline the usage
-  -- figures of the largest tags in the glossary. That is a latent defect in the
-  -- shared merge core -- it fires on every caller, including the nightly dedup
-  -- sweep -- and fixing it there is separate work with a much wider blast
-  -- radius, because it changes what usage_count MEANS for every consumer.
+  -- figures of the largest tags in the glossary. That was a latent defect in the
+  -- shared merge core, firing for every caller including the nightly dedup
+  -- sweep.
   --
-  -- Here we only undo the damage this migration caused, from the definition the
-  -- column actually carries: the assignment count. After the merge the loser's
-  -- assignments have been repointed at the canonical, so this is also the
-  -- correct post-merge total rather than a restore of the old one.
+  -- FIXED UPSTREAM WHILE THIS BRANCH WAS IN REVIEW. 20261210100000
+  -- (tag_usage_recount_counts_assignments, PR #3311) rewrote
+  -- recount_unified_tag_usage_for to count unified_tag_assignments and to stop
+  -- counting tags[] arrays -- verified live on prod: counts_assignments true,
+  -- still_counts_tag_arrays false. On any database carrying that migration,
+  -- merge_tag_concept now produces the correct number by itself and the UPDATE
+  -- below is a no-op.
+  --
+  -- It is KEPT rather than deleted, for two reasons. It writes exactly what the
+  -- corrected recount writes -- the assignment count -- so it cannot disagree
+  -- with it; and this migration must also be correct when replayed against a
+  -- database that does not yet have 20261210100000, which is every environment
+  -- rebuilt from scratch, since that fix sorts AFTER this file and would apply
+  -- later in the same replay.
+  --
+  -- After the merge the loser's assignments have been repointed at the
+  -- canonical, so this is the correct post-merge total, not a restore of the
+  -- pre-merge one.
   ---------------------------------------------------------------------------
   update public.unified_tags t
      set usage_count = (select count(*) from public.unified_tag_assignments a where a.tag_id = t.id),
