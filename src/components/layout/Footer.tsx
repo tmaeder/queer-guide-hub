@@ -9,6 +9,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Wordmark } from '@/components/brand/Wordmark';
 import { TrackSwatch } from '@/components/transit/TrackSwatch';
 import { PAGE_GUTTER } from '@/components/layout/PageContainer';
+import { REQUIRED_ATTRIBUTION } from '@/lib/attribution';
 import { FooterTracks } from './FooterTracks';
 
 /**
@@ -73,6 +74,12 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
   const localePath = pathname.replace(/^\/(?:[a-z]{2}\/)?/, '/');
 
   if (variant === 'compact') {
+    // No data-attribution row here, deliberately. The obligation attaches to
+    // pages that publish the derived work, and the compact variant is scoped
+    // to /auth, /claim-username, /onboarding, /hub and /settings — forms and
+    // account screens, none of which render the OSM-derived city diagrams or
+    // the country data. If that list ever grows to cover a content surface,
+    // this branch needs the row from the full footer below.
     return (
       <footer className="mt-auto">
         <div className={cn('mx-auto w-full max-w-page py-8', PAGE_GUTTER)}>
@@ -292,6 +299,37 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
               the header wordmark became a graphic — dropping it left the page
               with no machine-readable owner. */}
           <span className="text-2xs text-background/50">&copy; {currentYear} Queer Guide</span>
+
+          {/* Data attribution. This row came OUT of the footer on 2026-08-30
+              and moved to the /about colophon, which was the right home for it
+              while /about was public. The colophon is now members-only, so the
+              obligated subset comes back here.
+
+              UNCONDITIONAL on purpose — not "render this when signed out".
+              Making it the exact complement of the /about gate sounds tidier
+              and is the bug: the two conditions are evaluated in different
+              components against an auth state that resolves asynchronously, so
+              any window where both read false is a page publishing OSM-derived
+              artwork with no credit anywhere. One always-public home costs a
+              wrapped line for signed-in readers and cannot have that gap.
+
+              Only the credits ODbL / CC BY / CC BY-SA actually compel are
+              here; see src/lib/attribution.ts for what is left out and why. */}
+          <span className="flex flex-wrap items-center gap-x-4 gap-y-1 text-2xs text-background/50">
+            {REQUIRED_ATTRIBUTION.map((source) => (
+              <span key={source.href}>
+                <a
+                  href={source.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-background/50 underline-offset-4 hover:text-background"
+                >
+                  {source.name}
+                </a>{' '}
+                {source.licence}
+              </span>
+            ))}
+          </span>
         </div>
       </div>
     </footer>
