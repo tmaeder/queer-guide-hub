@@ -108,14 +108,13 @@ export const HYGIENE_METRICS: HygieneMetric[] = [
     key: 'event_tag_pairs_unlinked',
     label: 'Event tag links missing',
     zero: true,
-    hint: 'THE gauge for run_event_tag_link: resolvable (event, tag) pairs with no assignment row, ignoring events under an hour old so normal cron lag does not register. A true zero-invariant.',
+    hint: 'THE gauge for run_event_tag_link: resolvable (event, tag) pairs with no assignment row, ignoring events under an hour old so normal cron lag does not register. A true zero-invariant — anything above 0 means the linker is not draining.',
   },
-
   {
     key: 'events_with_tags_unlinked',
     label: 'Events not linked to tags',
     advisory: true,
-    hint: 'Drain gauge for run_event_tag_link. Must fall to 0 and stay there; a flat number means the job stopped.',
+    hint: 'Coverage only. Its floor is NOT 0: ~3,856 events carry only tag strings the ambiguity guard blocks by design, so it never empties and a non-zero reading means nothing on its own. Read "Event tag links missing" instead.',
   },
   {
     key: 'uncategorized_active',
