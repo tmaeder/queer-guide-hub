@@ -20,6 +20,7 @@ vi.mock('react-i18next', () => ({
 }));
 import { Footer } from '../Footer';
 import { INTENT_NAV } from '@/config/navigation';
+import { REQUIRED_ATTRIBUTION } from '@/lib/attribution';
 
 function renderFooter() {
   return render(
@@ -41,6 +42,37 @@ describe('Footer', () => {
   it('should render copyright', () => {
     renderFooter();
     expect(screen.getByText(/Queer Guide/)).toBeInTheDocument();
+  });
+
+  // This row is a licence obligation, not a design element. The /about
+  // colophon that used to carry it is members-only now, so for a signed-out
+  // reader the footer is the ONLY place these credits appear — and the reader
+  // of an OSM-derived diagram is exactly the person ODbL asks to be told.
+  //
+  // Asserted as a property over REQUIRED_ATTRIBUTION, not a retyped list, so a
+  // source added to that constant is covered without anyone remembering this
+  // file exists.
+  it('credits every source whose licence requires attribution', () => {
+    const { container } = renderFooter();
+    expect(REQUIRED_ATTRIBUTION.length).toBeGreaterThan(0);
+    for (const source of REQUIRED_ATTRIBUTION) {
+      const link = within(container).getByRole('link', { name: source.name });
+      expect(link).toHaveAttribute('href', source.href);
+      expect(link).toHaveAttribute('target', '_blank');
+      expect(link.getAttribute('rel')).toContain('noopener');
+      // The licence has to be named next to the credit. A bare link satisfies
+      // nobody: "OpenStreetMap" without "ODbL" does not say what the terms are.
+      expect(link.parentElement?.textContent).toContain(source.licence);
+    }
+  });
+
+  // The credit must not become the complement of the /about gate. It renders
+  // for everyone, so there is no auth state in which the obligation lapses —
+  // including the window while auth is still resolving. The footer takes no
+  // user prop and this test is what keeps it that way.
+  it('renders the attribution with no auth state of any kind', () => {
+    const { container } = renderFooter();
+    expect(within(container).getByRole('link', { name: 'OpenStreetMap' })).toBeInTheDocument();
   });
 
   // The columns exist so the footer teaches the same six jobs the topbar does.
