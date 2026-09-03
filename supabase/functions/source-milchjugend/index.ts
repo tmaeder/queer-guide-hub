@@ -142,7 +142,15 @@ const eventAdapter: SourceAdapter = {
       images: e.image ? [e.image] : [],
       // Commit does not read `tags`; they are carried so the post-commit
       // backfill can read them back out of event_sources.payload.
-      tags: ['lgbtq', ...e.categories, ...e.tags].filter(Boolean).slice(0, 20),
+      //
+      // `e.categories` is deliberately NOT spread in. They are the site's own
+      // German taxonomy slugs (bühne, beratung, bildung, vernetzung,
+      // gesundheit), and source-tags-extract promoted them out of tags[] into
+      // the glossary as German vocabulary. Nothing is lost by dropping them
+      // here: their one piece of real signal is already extracted into
+      // `event_type` by pickEventType(), and the raw slugs still travel to
+      // event_sources.payload under metadata.categories below.
+      tags: ['lgbtq', ...e.tags].filter(Boolean).slice(0, 20),
       urls: [e.url],
       metadata: {
         source: 'milchjugend',

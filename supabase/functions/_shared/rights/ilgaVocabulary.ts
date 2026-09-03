@@ -142,9 +142,19 @@ export function readAffirmation(raw: unknown): AffirmationReading {
 /**
  * Behaviour-identical to routing these through `polarityOf`, which is the
  * point: this replaces the last private copy without moving any verdict.
- * `yes_qualified` resolves to `negative` — a binary trans person in Nepal
- * cannot self-declare — but it now gets there by decision rather than by
- * falling through the branch that also handles typos.
+ *
+ * `indeterminate` is `absent`, matching INV-6 in verdict.ts. That is not the
+ * generic "unrecognised strings stay negative" default — `Varies` is how ILGA
+ * codes a federation whose sub-jurisdictions disagree and `Unclear` is its own
+ * admission of doubt, and absence of a national answer is not evidence of
+ * hostility. Getting this wrong is measurable: 11 countries carry `Varies` or
+ * `Unclear` on `self_id`, and counting each as a recorded negative depresses
+ * their trans ratio for a fact nobody recorded.
+ *
+ * `yes_qualified` DOES resolve to `negative` — a binary trans person in Nepal
+ * cannot self-declare, which is a finding rather than a gap — but it now gets
+ * there by decision rather than by falling through the branch that also
+ * handles typos.
  */
 export function affirmationPolarity(raw: unknown): Polarity {
   switch (readAffirmation(raw)) {
@@ -152,6 +162,7 @@ export function affirmationPolarity(raw: unknown): Polarity {
       return 'positive';
     case 'inapplicable':
     case 'unrecorded':
+    case 'indeterminate':
       return 'absent';
     default:
       return 'negative';

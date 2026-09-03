@@ -2845,7 +2845,8 @@
         "language": "Idioma",
         "currency": "Moneda",
         "bestTime": "Mejor época",
-        "airport": "Aeropuerto"
+        "airport": "Aeropuerto",
+        "nearestAirport": "[ES] Nearest airport"
       },
       "eyebrow": "[ES] City",
       "sections": "[ES] Sections",
@@ -2903,7 +2904,8 @@
         "networkCaption": "[ES] Rapid-transit lines, drawn from OpenStreetMap. Schematic, not to scale.",
         "gettingAround": "[ES] Getting around",
         "noDealsTitle": "[ES] We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
-        "noDealsBody": "[ES] If you need to travel to {{city}}, read the safety and rights section first and use the trip planner — it includes a safety briefing for high-risk destinations."
+        "noDealsBody": "[ES] If you need to travel to {{city}}, read the safety and rights section first and use the trip planner — it includes a safety briefing for high-risk destinations.",
+        "otherNearby": "[ES] Other airports nearby"
       },
       "endOfLine": {
         "eyebrow": "[ES] End of line",

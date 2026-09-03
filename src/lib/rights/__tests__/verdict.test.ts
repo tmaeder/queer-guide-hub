@@ -338,3 +338,158 @@ describe('regressions found by running against real data', () => {
     expect(p.general.headline).toBe('Criminalised, death penalty for LGBTQ+ people');
   });
 });
+
+/**
+ * INV-6 — "Varies" is sub-national variation, not a recorded absence.
+ *
+ * Measured on prod 2026-08-30: the entire live vocabulary of the nine
+ * protection blobs is Yes / No / Varies / Unclear / N/A / null. `Varies` is how
+ * ILGA records a federation whose states disagree, and it was scored as a
+ * negative — arithmetically identical to a recorded "No", because the balance
+ * is `positives / measured`.
+ *
+ * The cost was concentrated on exactly one country. 14 of the 19 negatives in
+ * the United States' trans lens were the string "Varies", which is why the US
+ * (Bostock, marriage, joint adoption) computed a trans balance of 0.14 against
+ * Russia's 0.05 — near enough to publish the same word for both.
+ *
+ * `absent` rather than a fourth polarity: the type already has a state meaning
+ * "recorded, but not a national claim we can make", and it is the same
+ * reasoning that leaves `visa_requirements` permanently `data_unavailable`.
+ * Coverage is affected deliberately — a country whose required inputs are
+ * mostly `Varies` genuinely has no national answer, and INV-2 should say so.
+ */
+/**
+ * INV-7 — bodily autonomy is the keystone intersex right, not 1 vote of 11.
+ *
+ * The intersex lens reads ten things: nine `sc` anti-discrimination grounds and
+ * `lgbti_intersex_protection`, which is ILGA's record of protection from
+ * non-consensual medical intervention. Unweighted, that last one carries the
+ * same weight as `bullying.sc`, and measured on prod 2026-08-30 the result
+ * inverts on the two countries where it matters most:
+ *
+ *   Denmark   has NOT banned non-consensual intersex surgery, 7 of 9 `sc`
+ *             grounds recorded Yes  ->  intersex lens read `protected`
+ *   Germany   BANNED it in 2021, 1 of 9 `sc` grounds  ->  read `hostile`
+ *
+ * So the country that permits the surgery read "broad protections" and the one
+ * that outlawed it read "few or no protections". Only 9 countries hold this
+ * right at all (Malta, Portugal, Greece, Iceland, Germany, Spain, Chile,
+ * Colombia, Kenya), so it can never win on volume against nine grounds almost
+ * nobody records.
+ *
+ * Modelled on INV-5 rather than by inventing weights: a cap and a floor, each
+ * stated as a claim we refuse to make.
+ *   - permitting it CAPS the lens at `partial` — no accumulation of
+ *     anti-discrimination law makes a jurisdiction that still allows
+ *     non-consensual surgery "broadly protective" of intersex people
+ *   - recording it FLOORS the lens at `partial` — a state that legislated the
+ *     keystone right is not "few or no protections"
+ *
+ * Both act only on a MEASURED value, so a country ILGA has not assessed is
+ * untouched, and both sit after the INV-1/INV-2 early returns so
+ * criminalisation and thin data still win.
+ */
+describe('INV-7 — the intersex bodily-autonomy right outranks the sc grounds', () => {
+  const scAll = (v: string) => ({ so: 'Yes', gi: 'Yes', ge: 'Yes', sc: v });
+
+  /** Denmark's shape: broad sc cover, no ban on non-consensual surgery. */
+  const denmark = () =>
+    goodRow({
+      lgbti_intersex_protection: 'No',
+      lgbti_constitutional_protection: scAll('Yes'),
+      lgbti_employment_protection: scAll('Yes'),
+      lgbti_housing_protection: scAll('Yes'),
+      lgbti_education_protection: scAll('Yes'),
+      lgbti_health_protection: scAll('Yes'),
+      lgbti_goods_services_protection: scAll('Yes'),
+      lgbti_bullying_protection: scAll('Yes'),
+      lgbti_hate_crime_law: scAll('Yes'),
+      lgbti_incitement_prohibition: scAll('Yes'),
+    });
+
+  /** Germany's shape: the 2021 ban, almost no sc anti-discrimination grounds. */
+  const germany = () =>
+    goodRow({
+      lgbti_intersex_protection: 'Yes',
+      lgbti_constitutional_protection: scAll('No'),
+      lgbti_employment_protection: scAll('No'),
+      lgbti_housing_protection: scAll('No'),
+      lgbti_education_protection: scAll('No'),
+      lgbti_health_protection: scAll('No'),
+      lgbti_goods_services_protection: scAll('No'),
+      lgbti_bullying_protection: scAll('No'),
+      lgbti_hate_crime_law: scAll('Yes'),
+      lgbti_incitement_prohibition: scAll('No'),
+    });
+
+  it('never reads "broad protections" where the surgery is still permitted', () => {
+    expect(computeLens(denmark(), 'intersex').verdict).toBe('partial');
+  });
+
+  it('never reads "few or no protections" where the keystone right exists', () => {
+    expect(computeLens(germany(), 'intersex').verdict).toBe('partial');
+  });
+
+  it('leaves a country holding neither where the balance puts it', () => {
+    // Norway: no ban, and no sc grounds either. `hostile` is the true reading
+    // and the floor must not rescue it.
+    const norway = goodRow({
+      lgbti_intersex_protection: 'No',
+      lgbti_constitutional_protection: scAll('No'),
+      lgbti_employment_protection: scAll('No'),
+      lgbti_housing_protection: scAll('No'),
+      lgbti_education_protection: scAll('No'),
+      lgbti_health_protection: scAll('No'),
+      lgbti_goods_services_protection: scAll('No'),
+      lgbti_bullying_protection: scAll('No'),
+      lgbti_hate_crime_law: scAll('No'),
+      lgbti_incitement_prohibition: scAll('No'),
+    });
+    expect(computeLens(norway, 'intersex').verdict).toBe('hostile');
+  });
+
+  it('does not act on an unmeasured value', () => {
+    // INV-3: "No data" is not a finding, so neither rule may fire on it.
+    const l = computeLens({ ...goodRow(), lgbti_intersex_protection: 'No data' }, 'intersex');
+    expect(l.evidence.find((e) => e.key === 'intersex.protection')?.polarity).toBe('absent');
+    expect(l.verdict).toBe('protected');
+  });
+
+  it('never lifts a criminalising country — INV-1 still wins', () => {
+    const row = { ...germany(), lgbti_criminalization: { legal: false, death_penalty: 'No' } };
+    expect(computeLens(row, 'intersex').verdict).toBe('criminalized');
+  });
+});
+
+describe('INV-6 — indeterminate values never count as a recorded negative', () => {
+  it('does not read sub-national variation as an absence of protection', () => {
+    const l = computeLens({ ...goodRow(), lgbti_housing_protection: protectAll('Varies') }, 'lgb');
+    expect(l.evidence.find((e) => e.key === 'housing.so')?.polarity).toBe('absent');
+  });
+
+  it('treats "Unclear" the same way', () => {
+    const l = computeLens({ ...goodRow(), lgbti_housing_protection: protectAll('Unclear') }, 'lgb');
+    expect(l.evidence.find((e) => e.key === 'housing.so')?.polarity).toBe('absent');
+  });
+
+  it('still counts a recorded No as a negative', () => {
+    // The guard against over-correcting: only indeterminacy is excused.
+    const l = computeLens({ ...goodRow(), lgbti_housing_protection: protectAll('No') }, 'lgb');
+    expect(l.evidence.find((e) => e.key === 'housing.so')?.polarity).toBe('negative');
+  });
+
+  it('does not let indeterminate values drag a protective country down', () => {
+    // Six of nine grounds unresolvable nationally, three recorded Yes. The old
+    // default made this `hostile`; nothing here is a recorded absence.
+    const row = goodRow({
+      lgbti_constitutional_protection: protectAll('Varies'),
+      lgbti_housing_protection: protectAll('Varies'),
+      lgbti_education_protection: protectAll('Varies'),
+      lgbti_health_protection: protectAll('Varies'),
+      lgbti_goods_services_protection: protectAll('Varies'),
+      lgbti_bullying_protection: protectAll('Varies'),
+    });
+    expect(computeLens(row, 'lgb').verdict).toBe('protected');
+  });
+});

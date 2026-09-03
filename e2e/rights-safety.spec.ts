@@ -9,7 +9,10 @@ import { test, expect } from '@playwright/test';
  * every country is reachable rather than the first twelve per tier.
  *
  * Each one corresponds to a defect that shipped to production:
- *   - "239 of 250"      the note rendered {n} of {n} and could never fail
+ *   - "<n> of 250"      the note rendered {n} of {n} and could never fail.
+ *                       Asserted as a PROPERTY (n < 250, n >= a floor), not as
+ *                       a literal: it was pinned at 239 and went red when ILGA
+ *                       coverage reached 245, i.e. because the data improved.
  *   - Germany reachable  the world list was .slice(0, 12) with no expander;
  *                       now a table whose search + Show-all must reach everything
  *   - 7 vs 5 death      "No legal certainty" was read as "No" on 5 countries
@@ -23,10 +26,45 @@ const dismiss = async (page) => {
   if (await btn.isVisible().catch(() => false)) await btn.click().catch(() => {});
 };
 
+/**
+ * Every "<n> of 250" / "<n> / 250" the surface states, as numbers.
+ *
+ * NOT a hardcoded count, deliberately. The defect these two tests exist to
+ * catch is named in the header above — the note rendered {n} of {n}, a
+ * tautology that could never fail — so the property is numerator < denominator,
+ * not equality with whatever ILGA coverage happened to be the day the test was
+ * written. Pinned at 239, they went red on 2026-09-02 because coverage had
+ * REACHED 245: a green test turning red because the data got better, which
+ * teaches the next reader to edit the number and move on rather than ask what
+ * the assertion is for.
+ *
+ * The floor is what keeps it a real assertion once the literal is gone — it
+ * fails on a collapse to "3 of 250" just as loudly as on the tautology.
+ */
+const COVERAGE_FLOOR = 200;
+
+function coverageFractions(text: string): number[] {
+  return [...text.matchAll(/(\d{1,3})\s*(?:of|\/)\s*250/g)].map((m) => Number(m[1]));
+}
+
+// The 30s wait below is the whole default test budget, so reading the text
+// afterwards has nothing left and times out on `locator('main')` rather than on
+// anything to do with coverage. /rights mounts its cards only after the
+// all-countries fetch, so the wait genuinely needs that long — the budget is
+// what has to move.
 test('/rights states real coverage, not a tautology', async ({ page }) => {
+  test.setTimeout(60_000);
   await page.goto('/rights');
   await dismiss(page);
-  await expect(page.locator('main')).toContainText(/239 of 250/, { timeout: 30_000 });
+  const main = page.locator('main');
+  await expect(main).toContainText(/\d{1,3} of 250/, { timeout: 30_000 });
+
+  const stated = coverageFractions(await main.innerText());
+  expect(stated.length, 'the coverage note must state a fraction').toBeGreaterThan(0);
+  for (const n of stated) {
+    expect(n, `"${n} of 250" is a tautology, not coverage`).toBeLessThan(250);
+    expect(n, `coverage collapsed to ${n}/250`).toBeGreaterThanOrEqual(COVERAGE_FLOOR);
+  }
 });
 
 test('/rights reaches every country, not the first thirty', async ({ page }) => {
@@ -180,12 +218,24 @@ test('the best available outcome renders as positive, not partial', async ({ pag
 test('/rights/sources exists, states its coverage and refuses to oversell the score', async ({
   page,
 }) => {
+  // Same budget reasoning as the coverage test above: a 30s wait plus the
+  // reads that follow does not fit the default 30s test timeout.
+  test.setTimeout(60_000);
   await page.goto('/rights/sources');
   await dismiss(page);
   const main = page.locator('main');
   await expect(main).toContainText(/Where this data comes from/, { timeout: 30_000 });
   await expect(main).toContainText(/ILGA World Database/);
-  await expect(main).toContainText(/239 \/ 250/);
+  // Same rule as the coverage test above, and this page states TWO fractions
+  // (scored vs. criminalisation-recorded), so every one of them is checked
+  // rather than just the first.
+  await expect(main).toContainText(/\d{1,3} \/ 250/);
+  const stated = coverageFractions(await main.innerText());
+  expect(stated.length, 'the sources page must state its coverage').toBeGreaterThan(0);
+  for (const n of stated) {
+    expect(n, `"${n} / 250" overstates coverage as total`).toBeLessThan(250);
+    expect(n, `coverage collapsed to ${n}/250`).toBeGreaterThanOrEqual(COVERAGE_FLOOR);
+  }
   // The three honesty claims. If any is edited away, the page stops earning
   // the citation that /rights points at.
   await expect(main).toContainText(/lands mid-scale rather than reading as unknown/);

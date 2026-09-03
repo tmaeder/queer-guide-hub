@@ -11,6 +11,7 @@
  */
 import { assertEquals } from 'https://deno.land/std@0.224.0/assert/mod.ts'
 import { tryNvidia } from './llm-router.ts'
+import { NVIDIA_MODEL_DEFAULT } from './nvidia-model-map.ts'
 
 const ENV_KEYS = [
   'NVIDIA_API_KEY',
@@ -68,7 +69,7 @@ function stub(
       return Promise.resolve(new Response(null, { status: 204 }))
     }
 
-    let host = ''
+    let host: string
     try {
       host = new URL(u).hostname
     } catch {
@@ -210,7 +211,9 @@ Deno.test('a served call returns content and sends a mapped NVIDIA model id', as
     const out = await tryNvidia(REQ, { callerFn: 'pipeline-enrich-news' })
     assertEquals(out.served, true)
     assertEquals(out.served === true && out.content, 'hello')
-    assertEquals(rec.chat?.model, 'nvidia/nemotron-nano-3-30b-a3b')
+    // The PROPERTY — "the request carries whatever the map resolved" — not the
+    // id of the day, so retuning a tier does not rot this assertion.
+    assertEquals(rec.chat?.model, NVIDIA_MODEL_DEFAULT)
     assertEquals(
       rec.rpc.some((r) => r.fn === 'circuit_breaker_record_success'),
       true,
@@ -228,6 +231,63 @@ Deno.test('response_format is never sent, matching the Cloudflare path', async (
     const rec = stub(ok)
     await tryNvidia(REQ, { callerFn: 'x' })
     assertEquals('response_format' in (rec.chat ?? {}), false)
+  })
+})
+
+/**
+ * Every model this account can reach is a reasoning model. Without this flag
+ * they narrate instead of answering: measured 2026-09-02 on the real
+ * city-agentic-enrich prompt, nemotron-3.5-lightning spent all 900 tokens on
+ * "Here's a thinking process:" and returned no JSON, and the live run reported
+ * `enriched: 0, skipped: 5` while the breaker recorded three SUCCESSES.
+ *
+ * Dropping this line costs money and produces nothing, and nothing else in the
+ * system would say so — hence a guard rather than a comment.
+ */
+Deno.test('thinking is disabled on every NVIDIA request', async () => {
+  await withEnv(CONFIGURED, async () => {
+    const rec = stub(ok)
+    await tryNvidia(REQ, { callerFn: 'x' })
+    assertEquals(rec.chat?.chat_template_kwargs, { thinking: false })
+  })
+})
+
+/**
+ * A completion that stopped because it ran out of room is truncated, so it
+ * cannot be complete JSON — but it is a 200 with a non-empty body, which is
+ * indistinguishable from success to everything except the token count.
+ *
+ * This is the shape the thinking fault actually presented as in production:
+ * three live calls returning exactly 900 output tokens against max_tokens=900,
+ * all recorded as successes, while the run enriched nothing. Serving it wastes
+ * the caller's parse and hides the provider's state.
+ */
+Deno.test('a completion pinned at max_tokens is a failure, not a success', async () => {
+  const truncated = () =>
+    new Response(
+      JSON.stringify({
+        choices: [{ message: { content: '{"description": "Ghent is a city in' } }],
+        usage: { prompt_tokens: 10, completion_tokens: REQ.max_tokens, total_tokens: 110 },
+      }),
+      { status: 200, headers: { 'content-type': 'application/json' } },
+    )
+
+  await withEnv(CONFIGURED, async () => {
+    const rec = stub(truncated)
+    const out = await tryNvidia(REQ, { callerFn: 'x' })
+    assertEquals(out.served, false)
+    assertEquals(out.served === false && out.reason, 'truncated')
+    assertEquals(
+      rec.rpc.some((r) => r.fn === 'circuit_breaker_record_success'),
+      false,
+      'a truncated answer must never be recorded as a provider success',
+    )
+    assertEquals(
+      rec.rpc.some((r) => r.fn === 'circuit_breaker_record_failure'),
+      false,
+      'truncation is a caller/model cap mismatch, not provider ill-health — ' +
+        'counting it took NVIDIA down for every caller while it served 141 of 145 calls',
+    )
   })
 })
 
@@ -274,7 +334,11 @@ Deno.test('402 is treated as exhaustion and preserves the body as evidence', asy
     const out = await tryNvidia(REQ, { callerFn: 'x' })
     assertEquals(out.served === false && out.reason, 'exhausted')
     const fail = rec.rpc.find((r) => r.fn === 'circuit_breaker_record_failure')
-    assertEquals(String(fail?.body.p_error).includes('out of credits'), true)
+    // `p_error_msg`, not `p_error` — PostgREST resolves overloads by argument
+    // name, and the wrong key 404s silently. This assertion passed for three
+    // days against a key the DB does not declare, because the test stubs fetch
+    // and never asks Postgres whether the call would resolve.
+    assertEquals(String(fail?.body.p_error_msg).includes('out of credits'), true)
   })
 })
 

@@ -215,9 +215,26 @@ describe('readAffirmation', () => {
     expect(affirmationPolarity('N/A')).toBe('absent');
     expect(affirmationPolarity('No data')).toBe('absent');
     expect(affirmationPolarity('')).toBe('absent');
-    // Measured but indeterminate stays negative on an ordinary Yes/No field.
-    expect(affirmationPolarity('Unclear')).toBe('negative');
-    expect(affirmationPolarity('Varies')).toBe('negative');
+  });
+
+  /**
+   * INV-6, which landed on main while this branch was open and which the merge
+   * would otherwise have silently reverted for `lgr.self_id`.
+   *
+   * `Varies` is how ILGA codes a federation whose sub-jurisdictions disagree
+   * and `Unclear` is its own admission of doubt; absence of a national answer
+   * is not evidence of hostility. `self_id` reaches the engine through `ev()`
+   * → `polarityOf`, so main made these absent — and this reader has to agree
+   * or the 11 countries carrying those values get a recorded negative for a
+   * fact nobody recorded.
+   *
+   * Note `gender_marker` is NOT the same case: main kept its inline ternary,
+   * where `Varies` is still negative, so `markerPolarity` deliberately differs
+   * from this. The asymmetry is real, not an oversight.
+   */
+  it('treats an indeterminate self_id as absent, per INV-6', () => {
+    expect(affirmationPolarity('Unclear')).toBe('absent');
+    expect(affirmationPolarity('Varies')).toBe('absent');
   });
 });
 

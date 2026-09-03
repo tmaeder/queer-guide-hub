@@ -56,14 +56,30 @@ const JUSTICE_COLUMNS = [
 /** ILGA records these as text; anything not listed is treated as absent. */
 const YES = /^yes$/i;
 const NO = /^no$/i;
+/**
+ * Recorded, but not a national claim. `Varies` is how ILGA codes a federation
+ * whose sub-jurisdictions disagree; `Unclear` is its own admission of doubt.
+ */
+const INDETERMINATE = /^(varies|unclear)$/i;
 
 function polarityOf(raw: unknown): Polarity {
   const v = raw == null ? '' : String(raw).trim();
   if (!v || /^(no data|unknown|n\/a)$/i.test(v)) return 'absent';
   if (YES.test(v)) return 'positive';
   if (NO.test(v)) return 'negative';
-  // 'Varies', 'Unclear' and similar are measured but indeterminate. Counted
-  // as present for coverage, never as a protection.
+  // INV-6. The balance is `positives / measured`, so counting an indeterminate
+  // value as present-but-not-positive is arithmetically the same as counting it
+  // as a recorded "No" — and this importer only ever writes the six values
+  // Yes/No/Varies/Unclear/N/A/null, so that default landed squarely on
+  // federations. 14 of the 19 negatives in the United States' trans lens were
+  // the string "Varies", which is how a country with Bostock, marriage and
+  // joint adoption came to share a verdict word with Russia, whose values are
+  // all hard "No". Absence of a national answer is not evidence of hostility.
+  if (INDETERMINATE.test(v)) return 'absent';
+  // Anything genuinely unrecognised stays negative rather than silently
+  // becoming a protection — the failure mode that made "Explicit Legal
+  // Barriers" read as a right on 60 countries. A new ILGA spelling should be
+  // added above, not absorbed here.
   return 'negative';
 }
 
@@ -365,6 +381,30 @@ export function computeLens(
     const surgery = evidence.find((e) => e.key === 'lgr.requires_surgery');
     if (surgery?.polarity === 'negative' && VERDICT_ORDER[verdict] > VERDICT_ORDER.hostile) {
       verdict = 'hostile';
+    }
+  }
+
+  // INV-7: `lgbti_intersex_protection` is protection from non-consensual
+  // medical intervention — the keystone intersex right. Unweighted it is 1 vote
+  // of 11, tied with `bullying.sc`, and only 9 countries hold it, so it can
+  // never outvote nine `sc` grounds. Measured on prod 2026-08-30 that inverted
+  // the two cases that matter: Denmark, which has NOT banned the surgery but
+  // records 7 of 9 `sc` grounds, read `protected`; Germany, which banned it in
+  // 2021, read `hostile`.
+  //
+  // A cap and a floor rather than a weight, mirroring INV-5 above — each is a
+  // claim we refuse to make rather than a number to tune. Only a MEASURED value
+  // acts, so an unassessed country is untouched (INV-3), and both sit after the
+  // INV-1/INV-2 early returns so criminalisation and thin data still dominate.
+  if (lens === 'intersex') {
+    const bodily = evidence.find((e) => e.key === 'intersex.protection');
+    // Still permitted: no amount of anti-discrimination law makes that "broad".
+    if (bodily?.polarity === 'negative' && VERDICT_ORDER[verdict] > VERDICT_ORDER.partial) {
+      verdict = 'partial';
+    }
+    // Legislated: that is not "few or no protections".
+    if (bodily?.polarity === 'positive' && VERDICT_ORDER[verdict] < VERDICT_ORDER.partial) {
+      verdict = 'partial';
     }
   }
 
