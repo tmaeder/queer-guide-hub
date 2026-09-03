@@ -4087,7 +4087,9 @@
       "no": "[AR] No",
       "varies": "[AR] Varies",
       "unclear": "[AR] Unclear",
-      "notApplicable": "[AR] Not applicable"
+      "notApplicable": "[AR] Not applicable",
+      "required": "[AR] Required",
+      "notRequired": "[AR] Not required"
     },
     "attr": {
       "so": {

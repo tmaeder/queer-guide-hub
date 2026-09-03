@@ -4113,7 +4113,9 @@
       "no": "[RU] No",
       "varies": "[RU] Varies",
       "unclear": "[RU] Unclear",
-      "notApplicable": "[RU] Not applicable"
+      "notApplicable": "[RU] Not applicable",
+      "required": "[RU] Required",
+      "notRequired": "[RU] Not required"
     },
     "attr": {
       "so": {

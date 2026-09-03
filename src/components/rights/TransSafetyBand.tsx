@@ -1,7 +1,15 @@
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { TgeuSourceLine } from '@/components/rights/SourceLine';
-import { readTransViolence, TGEU_TMM_URL, TMM_REPORTING_CAVEAT } from '@/lib/rights/transSafety';
+import {
+  isAffirmed,
+  readAffirmation,
+  readRequirement,
+  readTransViolence,
+  requiresIt,
+  TGEU_TMM_URL,
+  TMM_REPORTING_CAVEAT,
+} from '@/lib/rights/transSafety';
 
 /**
  * The trans-specific facts for one country, under Rights & safety.
@@ -21,12 +29,6 @@ import { readTransViolence, TGEU_TMM_URL, TMM_REPORTING_CAVEAT } from '@/lib/rig
  * because the countries with the highest counts are mostly the legally
  * progressive ones and colouring them as danger inverts the truth.
  */
-
-const YES = /^yes$/i;
-
-function isYes(v: unknown): boolean {
-  return typeof v === 'string' && YES.test(v.trim());
-}
 
 function Row({ label, value, note }: { label: string; value: string; note?: string }) {
   return (
@@ -57,6 +59,31 @@ export function TransSafetyBand({ country }: { country: Record<string, unknown> 
   const yes = t('rights.trans.yes', 'Yes');
   const no = t('rights.trans.no', 'No');
 
+  /**
+   * ILGA answers these two with Required / Not required / N/A / Unclear /
+   * Varies — never Yes / No. Rendering a bare yes/no here printed "Surgery
+   * required first: No" on Japan, Iran, Turkey and Romania until 2026-09-01:
+   * an affirmative false negative on the exact fact this band exists to state.
+   *
+   * "N/A" is not a "No" either. It means the country has no marker-change
+   * procedure for a condition to attach to, which is worse news than "not
+   * required", not better — so it gets its own words.
+   */
+  const requirementLabel = (raw: unknown): string | null => {
+    switch (readRequirement(raw)) {
+      case 'required':
+        return yes;
+      case 'not_required':
+        return no;
+      case 'inapplicable':
+        return t('rights.trans.row.noProcedure', 'No procedure exists');
+      case 'indeterminate':
+        return t('rights.trans.row.unclear', 'Unclear');
+      default:
+        return null;
+    }
+  };
+
   return (
     <section
       id="trans"
@@ -81,16 +108,25 @@ export function TransSafetyBand({ country }: { country: Record<string, unknown> 
           {lgr.self_id != null ? (
             <Row
               label={t('rights.trans.row.selfId', 'By self-determination')}
-              value={isYes(lgr.self_id) ? yes : no}
+              value={
+                // Nepal records "Yes (for NB marker only)". That is not general
+                // self-determination, but rendering it as a flat "No" erases a
+                // provision that does exist — so the source value is shown.
+                readAffirmation(lgr.self_id) === 'yes_qualified'
+                  ? String(lgr.self_id)
+                  : isAffirmed(lgr.self_id)
+                    ? yes
+                    : no
+              }
               note={t('rights.trans.row.selfIdNote', 'No medical or judicial gatekeeper.')}
             />
           ) : null}
-          {lgr.requires_surgery != null ? (
+          {requirementLabel(lgr.requires_surgery) ? (
             <Row
               label={t('rights.trans.row.surgery', 'Surgery required first')}
-              value={isYes(lgr.requires_surgery) ? yes : no}
+              value={requirementLabel(lgr.requires_surgery) as string}
               note={
-                isYes(lgr.requires_surgery)
+                requiresIt(lgr.requires_surgery)
                   ? t(
                       'rights.trans.row.surgeryNote',
                       'A sterilisation requirement. This caps the rights verdict for trans people regardless of other protections.',
@@ -99,10 +135,10 @@ export function TransSafetyBand({ country }: { country: Record<string, unknown> 
               }
             />
           ) : null}
-          {lgr.requires_diagnosis != null ? (
+          {requirementLabel(lgr.requires_diagnosis) ? (
             <Row
               label={t('rights.trans.row.diagnosis', 'Psychiatric diagnosis required')}
-              value={isYes(lgr.requires_diagnosis) ? yes : no}
+              value={requirementLabel(lgr.requires_diagnosis) as string}
             />
           ) : null}
         </ul>

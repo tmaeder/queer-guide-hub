@@ -4079,7 +4079,9 @@
       "no": "[PT] No",
       "varies": "[PT] Varies",
       "unclear": "[PT] Unclear",
-      "notApplicable": "[PT] Not applicable"
+      "notApplicable": "[PT] Not applicable",
+      "required": "[PT] Required",
+      "notRequired": "[PT] Not required"
     },
     "attr": {
       "so": {

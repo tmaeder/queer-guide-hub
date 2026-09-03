@@ -80,6 +80,11 @@ const VOCAB: Record<string, VocabEntry> = {
   'not possible': { kind: 'no', key: 'notPossible' },
   'not possible (exceptions documented)': { kind: 'no', key: 'notPossibleWithExceptions' },
   'yes (for nb marker only)': { kind: 'partial', key: 'yesNonBinaryMarkerOnly' },
+  // The recognition PRECONDITIONS. `kind` here is display polarity — good or
+  // bad for the reader — not presence, so a demanded sterilisation is `no`.
+  // Missing until 2026-09-01, so both fell to the unmapped `partial` default.
+  required: { kind: 'no', key: 'required' },
+  'not required': { kind: 'yes', key: 'notRequired' },
 
   // -- Generic ----------------------------------------------------------------
   yes: { kind: 'yes', key: 'yes' },
@@ -130,15 +135,21 @@ export function readRightValue(
 /** Vocabulary coverage, for the drift test. */
 export const KNOWN_RIGHT_VALUES: readonly string[] = Object.keys(VOCAB);
 
-
 /**
  * The scalar a topic's column actually carries.
  *
  * Lifted verbatim out of LGBTJurisdictionInfo so the country card and the
- * /rights index read ONE implementation. Two columns are objects whose
+ * /rights index read ONE implementation. THREE columns are objects whose
  * headline string lives on a named key; the rest are already scalars. Getting
  * this wrong does not throw — it yields `none` and silently undercounts a
  * legal protection, which on this page is the expensive kind of wrong.
+ *
+ * `gender-recognition` was the third and was missing until 2026-09-01, so this
+ * returned the raw jsonb object, `isReadableScalar` rejected it, and
+ * `classifyCountryRight` answered `none` for ALL 250 countries — the /rights
+ * choropleth painted the topic as "no data" worldwide. `gender_marker` is the
+ * headline key: it is the one this column's `RightTopic` is about, and the one
+ * `REQUIRED.trans` already treats as the topic's coverage signal.
  */
 export function topicScalarValue(
   country: Record<string, unknown>,
@@ -147,5 +158,11 @@ export function topicScalarValue(
   const raw = country[topic.column];
   if (topic.slug === 'expression') return (raw as Record<string, unknown> | null)?.summary;
   if (topic.slug === 'association') return (raw as Record<string, unknown> | null)?.status;
+  // Unwrap only when it IS the blob. The column is jsonb in production, but
+  // callers and tests also hand this function the bare scalar, and a blind
+  // dereference turns that into `undefined` — trading one silent `none` for
+  // another. Object → the headline key; anything else → itself.
+  if (topic.slug === 'gender-recognition')
+    return raw && typeof raw === 'object' ? (raw as Record<string, unknown>).gender_marker : raw;
   return raw;
 }

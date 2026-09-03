@@ -8,6 +8,11 @@ import type {
   Verdict,
 } from './types.ts';
 import { VERDICT_ORDER } from './types.ts';
+import {
+  affirmationPolarity,
+  markerPolarity,
+  requirementPolarity,
+} from './ilgaVocabulary.ts';
 
 /**
  * Categorical rights verdicts, per identity lens, from the ILGA columns.
@@ -22,6 +27,15 @@ import { VERDICT_ORDER } from './types.ts';
  *   INV-3  `absent` never contributes as `positive`.
  *   INV-4  worstOf over any set containing unknown returns at most `partial`.
  *   INV-5  a sterilisation requirement caps the trans verdict at `hostile`.
+ *
+ * INV-5 was dead code from the day it was written until 2026-09-01. It tests
+ * for polarity `negative` on `lgr.requires_surgery`, but the polarity was
+ * derived with `/^yes$/i` while ILGA writes "Required" — so it matched nothing,
+ * on any country, ever. The vocabulary now has one reader
+ * (./ilgaVocabulary.ts); with it INV-5 fires on the four countries whose other
+ * protections had been lifting them above `hostile`: Montenegro (equality 99),
+ * Bosnia and Herzegovina (92), Mongolia (89) and India (77). The other eleven
+ * `Required` countries were already at or below `hostile` for other reasons.
  */
 
 const PROTECTION_COLUMNS = [
@@ -219,16 +233,25 @@ function lensEvidence(row: CountryLegalRow, lens: Exclude<RightsLens, 'general'>
     out.push({
       key: 'lgr.gender_marker',
       column: 'lgbti_gender_recognition',
-      polarity: /^possible$/i.test(marker)
-        ? 'positive'
-        : marker && !/^no data$/i.test(marker)
-          ? 'negative'
-          : 'absent',
+      // Behaviour-identical to the ternary this replaces. `lgr.gender_marker`
+      // is in REQUIRED.trans, so its absent-ness feeds coverageOf and INV-2 —
+      // do not retune it while removing a duplicate.
+      polarity: markerPolarity(marker),
       value: marker || null,
     });
-    out.push(ev('lgr.self_id', 'lgbti_gender_recognition', lgr.self_id, lgr.self_id_since));
+    const selfId = String(lgr.self_id ?? '');
+    out.push({
+      key: 'lgr.self_id',
+      column: 'lgbti_gender_recognition',
+      polarity: affirmationPolarity(selfId),
+      value: selfId || null,
+      since: (lgr.self_id_since as string) ?? null,
+    });
     // Inverted: requiring surgery or a diagnosis is a harm, not a protection.
-    // The scalar scored both at zero.
+    // The scalar scored both at zero. See ilgaVocabulary.ts for why "N/A",
+    // "Unclear" and "Varies" resolve to `absent` here and not to `negative`
+    // as polarityOf would have them — on a harm column, `negative` is an
+    // accusation, and it would falsely cap ten countries including Australia.
     for (const [key, raw] of [
       ['lgr.requires_surgery', lgr.requires_surgery],
       ['lgr.requires_diagnosis', lgr.requires_diagnosis],
@@ -237,7 +260,7 @@ function lensEvidence(row: CountryLegalRow, lens: Exclude<RightsLens, 'general'>
       out.push({
         key,
         column: 'lgbti_gender_recognition',
-        polarity: YES.test(v) ? 'negative' : NO.test(v) ? 'positive' : 'absent',
+        polarity: requirementPolarity(v),
         value: v || null,
       });
     }

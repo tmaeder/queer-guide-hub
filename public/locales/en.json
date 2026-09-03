@@ -4040,6 +4040,8 @@
       "notPossible": "Not possible",
       "notPossibleWithExceptions": "Not possible (exceptions documented)",
       "yesNonBinaryMarkerOnly": "Yes (non-binary marker only)",
+      "required": "Required",
+      "notRequired": "Not required",
       "yes": "Yes",
       "no": "No",
       "varies": "Varies",
