@@ -56,11 +56,6 @@ export const HYGIENE_METRICS: HygieneMetric[] = [
     hint: 'Facet slugs (color-black, genre-history) may share a display name with a glossary tag by design.',
   },
   {
-    key: 'redirect_to_non_canonical',
-    label: 'Redirects to non-canonical',
-    hint: 'Inert, not live 301-into-404s — the edge lookup filters redirect targets on status=active.',
-  },
-  {
     key: 'alias_equals_name',
     label: 'Alias equals tag name',
     zero: true,
@@ -80,6 +75,12 @@ export const HYGIENE_METRICS: HygieneMetric[] = [
   },
 
   // Advisory: CI warns, never fails. This panel is their only human surface.
+  {
+    key: 'redirect_to_non_canonical',
+    label: 'Redirects to non-canonical',
+    advisory: true,
+    hint: 'Inert, not live 301-into-404s — the edge lookup filters redirect targets on status=active. Advisory since 2026-09-03: reviving a deprecated tag re-mints redirects, so this oscillates with ordinary merge/rename work and its level is not an invariant. Read the trend.',
+  },
   {
     key: 'denorm_category_missing',
     label: 'Category not denormalized',
