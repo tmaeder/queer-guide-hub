@@ -45,6 +45,7 @@ import {
   loadNewsDetail,
   extractDek,
   isFreshArticle,
+  newsArticleNoIndex,
   IntegrityNotice,
   PersonalizationRibbon,
   StoryClusterPanel,
@@ -105,6 +106,10 @@ export default function NewsDetail() {
     ogImage: article?.image_url || undefined,
     ogType: 'article',
     canonicalPath: slug ? `/news/${slug}` : undefined,
+    // Re-assert the edge's robots decision; useMeta strips any robots tag when
+    // this is falsy, which was silently un-gating seo_indexable=false rows on
+    // the JS render pass. See newsArticleNoIndex for the polarity rule.
+    noIndex: article ? newsArticleNoIndex(article.seo_indexable) : undefined,
     jsonLd: article
       ? {
           '@context': 'https://schema.org',

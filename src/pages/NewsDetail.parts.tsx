@@ -114,6 +114,24 @@ export function isFreshArticle(publishedAt: string | null | undefined): boolean 
   return Date.now() - new Date(publishedAt).getTime() < FRESH_WINDOW_MS;
 }
 
+/**
+ * Should this article carry `noindex`?
+ *
+ * The edge already decides this — `functions/_middleware.ts` injects
+ * `<meta name="robots" content="noindex,nofollow">` when the row's
+ * `seo_indexable` is false. But `useMeta` REMOVES any robots tag whenever its
+ * `noIndex` option is falsy, and NewsDetail passed no `noIndex` at all — so on
+ * the JS render pass React silently deleted the edge's directive and
+ * re-exposed gated articles to crawlers.
+ *
+ * The polarity is load-bearing and must match the edge's `indexable !== false`
+ * (`functions/_lib/detail.ts`): NULL/undefined means INDEXABLE. A truthy test
+ * here would instead noindex every row whose flag was never set.
+ */
+export function newsArticleNoIndex(seoIndexable: boolean | null | undefined): boolean {
+  return seoIndexable === false;
+}
+
 // Known-noise / advertorial integrity flags we surface honestly to readers.
 // Labels are resolved via i18n at render (see IntegrityNotice).
 const INTEGRITY_FLAGS: Record<string, { key: string; fallback: string; icon: typeof Megaphone }> = {
