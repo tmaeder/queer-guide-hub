@@ -2,7 +2,7 @@
 -- Deindex the news articles that were published without a quality verdict.
 -- ----------------------------------------------------------------------------
 -- Cleanup half of the defect whose producer is fixed in the verdict gate
--- (20261212114700). news_commit_staging_batch gated on
+-- (20261216114700). news_commit_staging_batch gated on
 --   quality_status NOT IN ('rejected','review')
 -- which tests "the verdict is not bad", NOT "a verdict exists". Because
 -- news_articles.seo_indexable is NOT NULL DEFAULT true and the commit INSERT
@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS public.news_unjudged_deindex_audit (
 );
 
 COMMENT ON TABLE public.news_unjudged_deindex_audit IS
-  'One row per news article deindexed by 20261212114900 for having been committed with no quality verdict. PRIMARY KEY on article_id makes the sweep idempotent per row and is the only record of the previous seo_indexable/quality_status pair.';
+  'One row per news article deindexed by 20261216114900 for having been committed with no quality verdict. PRIMARY KEY on article_id makes the sweep idempotent per row and is the only record of the previous seo_indexable/quality_status pair.';
 
 ALTER TABLE public.news_unjudged_deindex_audit ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON TABLE public.news_unjudged_deindex_audit FROM PUBLIC, anon, authenticated;
