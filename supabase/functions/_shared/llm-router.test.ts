@@ -69,7 +69,7 @@ function stub(
       return Promise.resolve(new Response(null, { status: 204 }))
     }
 
-    let host = ''
+    let host: string
     try {
       host = new URL(u).hostname
     } catch {
@@ -284,8 +284,9 @@ Deno.test('a completion pinned at max_tokens is a failure, not a success', async
     )
     assertEquals(
       rec.rpc.some((r) => r.fn === 'circuit_breaker_record_failure'),
-      true,
-      'the breaker has to see it, or a degraded model looks healthy forever',
+      false,
+      'truncation is a caller/model cap mismatch, not provider ill-health — ' +
+        'counting it took NVIDIA down for every caller while it served 141 of 145 calls',
     )
   })
 })

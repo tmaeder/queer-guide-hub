@@ -27,15 +27,21 @@ function sqlMetricKeys(): string[] {
     .filter((f) => f.endsWith('.sql'))
     .sort();
 
-  const defining = files.filter((f) =>
-    readFileSync(join(MIGRATIONS, f), 'utf8').includes(
-      'create or replace function public.tag_hygiene_stats',
-    ),
-  );
+  // CASE-INSENSITIVE, deliberately. This matched the lowercase literal until
+  // 2026-09-03, when a migration spelled it `CREATE OR REPLACE FUNCTION`. That
+  // file became invisible here, the scan silently fell back to the PREVIOUS
+  // definition, and the mismatch was reported as "the baseline has extra
+  // counters" — blaming the baseline for keys the newest migration had in fact
+  // added. A scan that can read the wrong file must not fail quietly elsewhere.
+  const DEFINES = /create\s+or\s+replace\s+function\s+public\.tag_hygiene_stats/i;
+
+  const defining = files.filter((f) => DEFINES.test(readFileSync(join(MIGRATIONS, f), 'utf8')));
   expect(defining.length, 'no migration defines tag_hygiene_stats').toBeGreaterThan(0);
 
   const sql = readFileSync(join(MIGRATIONS, defining[defining.length - 1]), 'utf8');
-  const body = sql.slice(sql.lastIndexOf('create or replace function public.tag_hygiene_stats'));
+  const at = sql.search(new RegExp(DEFINES.source, 'gi'));
+  expect(at, 'the defining migration matched the filter but not the body scan').toBeGreaterThan(-1);
+  const body = sql.slice(at);
 
   // Top-level keys of the jsonb_build_object sit at four spaces; the members of
   // the nested `totals` object are indented further and are deliberately missed.

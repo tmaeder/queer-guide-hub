@@ -415,13 +415,22 @@ export async function tryNvidia(
       // fallback is right there and this is the only signal that separates "the
       // model answered" from "the model ran out of room", which no status code
       // and no non-empty body will ever tell us.
+      //
+      // It is NOT a breaker failure, for the same reason a 429 is not: it says
+      // "this caller's token cap does not fit this model", not "the provider is
+      // broken". Counting it took NVIDIA down for EVERY caller — measured on
+      // prod 2026-09-02, the provider served 141 of 145 calls and the other 4
+      // (analyze-flyer at its 3000 cap, translate-i18n-batch at 4000, the two
+      // largest-output callers on the platform) opened the circuit for the full
+      // 900s reset. A per-caller model mismatch must not disable a provider
+      // that is working for everyone else; the caller falls back on its own and
+      // the warn line above is what makes the mismatch visible.
       const outTokens = data?.usage?.completion_tokens
       if (typeof outTokens === 'number' && outTokens >= req.max_tokens) {
         console.warn(
           `[llm-router] nvidia truncated for ${opts.callerFn} model=${model}: ` +
             `hit the ${req.max_tokens}-token ceiling, so the body cannot be complete JSON`,
         )
-        await breakerFailure(NVIDIA_BREAKER, `truncated at max_tokens=${req.max_tokens}`)
         return { served: false, reason: 'truncated' }
       }
 
