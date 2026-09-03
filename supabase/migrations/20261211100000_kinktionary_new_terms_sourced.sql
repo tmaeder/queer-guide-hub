@@ -32,6 +32,35 @@ set local statement_timeout = '600s';
 
 select set_config('app.actor', 'migration:kinktionary-new-terms', true);
 
+-- tag_sources.source_type must admit the `editorial:<kind>` forms this migration
+-- writes, or the provenance insert below violates
+-- tag_sources_source_type_check and the whole migration aborts.
+--
+-- This was the SECOND blocker, and it was invisible: the slug guard aborted
+-- first, so `db push` never reached the provenance insert. Both migrations
+-- would have failed here immediately after the guard was fixed. Their own
+-- assertion looks for `source_type like 'editorial:%'`, which the constraint as
+-- written made unsatisfiable — so the pair was never runnable.
+--
+-- The prefix is not decoration. It records whether a definition came from
+-- independently documented meaning ('editorial:general-knowledge') or is a
+-- reasoned guess from the term name pending review
+-- ('editorial:inferred-from-name'), which is the difference between the two
+-- sibling migrations. Collapsing both to bare 'editorial' would erase it.
+--
+-- Purely additive: every value the old CHECK accepted still passes, so no
+-- existing row can be invalidated and the ALTER cannot fail on legacy data.
+alter table public.tag_sources drop constraint if exists tag_sources_source_type_check;
+alter table public.tag_sources add constraint tag_sources_source_type_check
+  check (
+    source_type = any (array[
+      'wikipedia', 'wikidata', 'editorial', 'llm', 'manual',
+      'statute', 'treaty', 'case_law', 'constitution', 'resolution',
+      'clinical_guideline'
+    ])
+    or source_type like 'editorial:%'
+  );
+
 do $mig$
 declare
   r        record;
@@ -538,12 +567,30 @@ begin
     raise exception 'new terms: % row(s) name a category that does not exist', v_bad;
   end if;
 
-  -- Refuse to create anything that already exists under any status. A term that
-  -- is merely deprecated needs REVIVING, not a duplicate concept alongside it.
+  -- An ACTIVE or MERGED slug still aborts: a live tag must never be silently
+  -- overwritten by a bulk import, and a merged one is a redirect whose target
+  -- this migration knows nothing about.
+  --
+  -- A DEPRECATED slug is revived instead, which is what the original version of
+  -- this guard told the reader to do ("revive them instead of creating
+  -- duplicates") without providing a way to do it — so it aborted `db push` on
+  -- main and stranded SEVEN later migrations behind it, including
+  -- 20261211110000's own event-linker sentinel. db push applies in version
+  -- order and stops at the first failure.
+  --
+  -- Both colliding rows are the same concept this migration is authoring, not a
+  -- different one: `femdom` and `voyeur` were deprecated on 2026-06-05 by the
+  -- orphan sweep ("no entity assignments, relations, synonyms, or aliases"),
+  -- with merged_into_id NULL. A glossary term has no entity assignments by
+  -- nature, so that sweep culled vocabulary rather than junk. What survives on
+  -- them is stub prose — femdom's description is the dangling fragment "FemDom
+  -- (short for female dominance) refers to:" and voyeur's is "Person who
+  -- watches" — which the authored text below replaces.
   select count(*) into v_bad from _new n
-   where exists (select 1 from public.unified_tags t where t.slug = n.slug);
+    join public.unified_tags t on t.slug = n.slug
+   where t.status <> 'deprecated';
   if v_bad > 0 then
-    raise exception 'new terms: % slug(s) already exist — revive them instead of creating duplicates', v_bad;
+    raise exception 'new terms: % slug(s) already exist and are not deprecated — resolve by hand', v_bad;
   end if;
 
   for r in select * from _new order by slug loop
@@ -557,7 +604,29 @@ begin
            c.id, c.name, r.kind::tag_entity_kind,
            r.adult, r.sensitive,
            'active', false, false, 'unverified'
-      from public.tag_categories c where c.slug = r.cat;
+      from public.tag_categories c where c.slug = r.cat
+    -- status, deprecated_at and deprecation_reason are cleared TOGETHER, which
+    -- is the whole difference between a revive and a resurrection. An upsert
+    -- that wrote status='active' and left deprecated_at set is what stranded
+    -- 297 tags in a state where the page rendered but search refused to index
+    -- them (lgbtiq, sauna, kink unreachable for three months). Since
+    -- 20261007100000 that state is unrepresentable, so getting this wrong now
+    -- fails loudly here rather than silently in production.
+    on conflict (slug) do update set
+      name                = excluded.name,
+      description         = excluded.description,
+      long_description    = excluded.long_description,
+      category_id         = excluded.category_id,
+      category            = excluded.category,
+      entity_kind         = excluded.entity_kind,
+      is_adult            = excluded.is_adult,
+      is_sensitive        = excluded.is_sensitive,
+      status              = 'active',
+      deprecated_at       = null,
+      deprecation_reason  = null,
+      seo_indexable       = false,
+      human_reviewed      = false,
+      verification_status = 'unverified';
     v_made := v_made + 1;
 
     insert into public.tag_sources (tag_id, source_type, claim_summary, is_public)
