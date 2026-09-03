@@ -35,6 +35,7 @@ import { anthropicMessages } from '../_shared/anthropic-shim.ts'
 import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
 import { applySuggestion, insertSuggestion } from '../_shared/ai-suggestions.ts'
 import { decodeHtmlEntities } from '../_shared/news-quality/sanitize.ts'
+import { isSenseCategory } from '../_shared/tag-style.ts'
 
 interface BatchInput {
   table: string
@@ -163,9 +164,27 @@ Deno.serve(async (req) => {
 
     // Optional quality gate (unified_tags only): translate good content first.
     const qualityGated = body.table === 'unified_tags' && typeof body.min_quality === 'number'
-    const selectCols = qualityGated
-      ? `${cfg.id_field}, ${field}, ${i18nCol}, quality_score`
-      : `${cfg.id_field}, ${field}, ${i18nCol}`
+
+    // NEVER machine-translate the NAME of a sense-category tag. Measured on
+    // prod: the translator takes queer slang literally and destroys the term —
+    // Stud -> es "Estudio" (a studio), Ussy -> es "Vagina", Trade -> es
+    // "Trueque" (barter), Cruising -> fr "Croisière" (a boat cruise), Missing
+    // Stair -> es "Escalera que falta". 20261211120200 deleted the 1,735 rows
+    // this had already produced; without this gate the next run refills them.
+    //
+    // Scoped to `name` only. DESCRIPTIONS still translate: prose survives
+    // translation, and description_i18n has real readers. It is the bare term
+    // that has no reliable target in another language.
+    const senseGated = body.table === 'unified_tags' && field === 'name'
+    const selectCols = [
+      cfg.id_field,
+      field,
+      i18nCol,
+      qualityGated ? 'quality_score' : null,
+      senseGated ? 'category' : null,
+    ]
+      .filter(Boolean)
+      .join(', ')
 
     // Fetch rows missing this locale. When quality-gated, prefer the best tags.
     let query = supabase.from(body.table).select(selectCols)
@@ -180,6 +199,7 @@ Deno.serve(async (req) => {
       const source = r[field]
       if (!source || typeof source !== 'string' || source.trim() === '') return false
       if (qualityGated && Number(r['quality_score'] ?? 0) < (body.min_quality as number)) return false
+      if (senseGated && isSenseCategory(r['category'] as string | null)) return false
       const i18n = (r[i18nCol] as Record<string, unknown> | null) ?? {}
       return !i18n[body.locale]
     })
