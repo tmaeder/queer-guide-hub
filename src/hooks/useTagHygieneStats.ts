@@ -61,6 +61,30 @@ export interface TagHygieneStats {
   /** Active prose-bearing tags the mode='prose' truth+voice pass has not
    *  visited yet. Drains ~300/day; new tags refill it. */
   prose_unreviewed: number;
+  /** A slug the canonical slugifier would not produce, on a NON-ASCII name —
+   *  "Bühne" stored as `b-hne`, because a producer slugified without
+   *  transliterating and its own slug beat the trigger. Excludes
+   *  status='merged', whose slug IS its redirect trail and must not be
+   *  "repaired". Deliberately narrower than `slug <> normalize_tag_slug(name)`,
+   *  which matches 115 rows of which 106 are intentional mat-/news-/occ-
+   *  namespace prefixes on ASCII names. */
+  slug_diacritic_lossy: number;
+  /** U+FFFD in a tag NAME — transport corruption, never a spelling. Distinct
+   *  from `alias_mojibake`, which watches the alias table. Accepted level is 1,
+   *  not 0: one merged row carries it, nothing renders a merged row, and its
+   *  "corrected" slug would still be garbage. A SECOND is the regression. */
+  name_mojibake: number;
+  /** A scraped hashtag concatenation promoted into vocabulary, e.g.
+   *  "Pulse #Mordopfer #Hassverbrechen" as a tag NAME. Authored tags do not
+   *  carry hashtags. */
+  name_contains_hashtag: number;
+  /** Asserts trg_tag_language_guard still holds — it rejects Cyrillic/CJK/
+   *  Arabic/Greek/Hebrew/Thai/Devanagari outright, which is deterministic and
+   *  cannot false-positive. Non-zero means the trigger was dropped or bypassed.
+   *  Deliberately NOT widened to Latin-script language detection: that
+   *  heuristic measures ~5% precision on this corpus, flagging Party, Film,
+   *  Pride and Transgender, which are English words German borrowed. */
+  non_latin_name: number;
 }
 
 /**

@@ -103,6 +103,107 @@ describe('tag_hygiene_stats() stays under the PostgREST statement timeout', () =
 });
 
 /**
+ * The 2026-09-02 language sentinels.
+ *
+ * These guard a repair that has already been made, so the thing worth asserting
+ * is not that the keys exist but that their PREDICATES keep their two scoping
+ * terms. Both were established by measurement and both are load-bearing:
+ *
+ *   name ~ '[^\x00-\x7F]'   without it the lossy-slug predicate matches 115
+ *                           active rows of which 8 are defects; the other 106
+ *                           are deliberate namespace prefixes on ASCII names
+ *                           (mat-silicone = 4,643 uses), and "repairing" them
+ *                           renames them and breaks thousands of links.
+ *
+ *   status <> 'merged'      a merged row keeps its slug as its redirect trail
+ *                           and resolves via merged_into_id, so repairing
+ *                           caf -> cafe breaks the historical /tags/caf URL.
+ *                           Ten rows are legitimately lossy for that reason; a
+ *                           sentinel counting them reports 10 and reds CI on
+ *                           day one.
+ *
+ * A previous version of the sibling guard in tagSlugSeal.test.ts counted these
+ * terms across the whole FILE and was satisfied by an occurrence inside a
+ * comment, which let the scope be deleted from three of four arms while staying
+ * green. So: strip comments first, then read the counter's own body.
+ */
+describe('tag_hygiene_stats language sentinels', () => {
+  /** The named counter's body, up to the next counter key, comments removed. */
+  function counterBody(key: string): string {
+    const stripped = sql.replace(/^\s*--.*$/gm, '');
+    const start = stripped.indexOf(`'${key}'`);
+    expect(start, `${key} is not defined`).toBeGreaterThan(-1);
+    const next = stripped.slice(start + key.length + 2).search(/\n\s+'[a-z_]+',\s*\(/);
+    return next === -1 ? stripped.slice(start) : stripped.slice(start, start + key.length + 2 + next);
+  }
+
+  it('defines all four sentinels', () => {
+    for (const k of [
+      'slug_diacritic_lossy',
+      'name_mojibake',
+      'name_contains_hashtag',
+      'non_latin_name',
+    ]) {
+      expect(sql).toContain(`'${k}'`);
+    }
+  });
+
+  it('scopes slug_diacritic_lossy to non-ASCII names', () => {
+    // Dropping this term turns the sentinel into the unqualified drift
+    // predicate, which reports 106 deliberate namespace prefixes as defects.
+    expect(counterBody('slug_diacritic_lossy')).toMatch(/\[\^\\x00-\\x7F\]/);
+  });
+
+  it('excludes merged rows from both slug and mojibake sentinels', () => {
+    // A merged row's slug and name are frozen redirect keys, not live content.
+    for (const k of ['slug_diacritic_lossy', 'name_mojibake']) {
+      expect(counterBody(k), `${k} must exclude merged rows`).toMatch(/status\s*<>\s*'merged'/);
+    }
+  });
+
+  it('keeps every pre-existing counter', () => {
+    // A CREATE OR REPLACE that silently drops a key breaks TagHygienePanel and
+    // makes check-tag-hygiene.mjs stop guarding whatever it dropped.
+    for (const k of [
+      'uncategorized_active', 'dangling_category_id', 'denorm_category_missing',
+      'placeholder_description_active', 'active_tags_with_image_url',
+      'assignment_to_non_active_tag', 'nonclean_entity_type', 'duplicate_active_name',
+      'redirect_to_non_canonical', 'merged_but_not_status_merged',
+      'sensitive_without_description', 'indexable_without_description',
+      'event_tag_strings_unresolved', 'events_with_tags_unlinked', 'alias_equals_name',
+      'alias_mojibake', 'refusal_prose_active', 'unreviewed_typed_alias',
+      'relations_pending_review', 'prose_unreviewed',
+    ]) {
+      expect(sql, `${k} was dropped from tag_hygiene_stats`).toContain(`'${k}'`);
+    }
+  });
+
+  it('has a baseline entry for every sentinel', () => {
+    // check-tag-hygiene.mjs iterates the keys of the LIVE prod response, so a
+    // new key is invisible until the migration applies — and then hard-fails as
+    // `missing` if the baseline has no entry. The entries must ship together.
+    const baseline = JSON.parse(
+      readFileSync(join(process.cwd(), 'scripts', 'tag-hygiene-baseline.json'), 'utf8'),
+    );
+    // Three are true zero-invariants. name_mojibake is NOT: prod carries one
+    // merged row (M-FFFD-Llerian) whose NAME holds a U+FFFD, and nothing in
+    // this branch repairs it — its "corrected" slug would still be garbage, and
+    // it is merged, so nothing renders it. Baselining it at 0 would hard-fail
+    // the gate the moment the sentinel migration applied. The accepted level is
+    // the measured one; a SECOND mojibake row is the regression worth catching.
+    const expected: Record<string, number> = {
+      slug_diacritic_lossy: 0,
+      name_mojibake: 1,
+      name_contains_hashtag: 0,
+      non_latin_name: 0,
+    };
+    for (const [k, v] of Object.entries(expected)) {
+      expect(baseline[k], `${k} has no baseline entry`).toBe(v);
+    }
+  });
+});
+
+/**
  * `event_tag_pairs_unlinked` is the sentinel for `run_event_tag_link`, and the
  * only one of the two events counters that can reach 0 — `events_with_tags_unlinked`
  * is floored at the ~3,856 events whose tags the ambiguity guard blocks by design,
