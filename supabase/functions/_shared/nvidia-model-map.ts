@@ -21,14 +21,28 @@ import { CF_MODEL_STRONG } from './cf-model-map.ts'
 
 /**
  * Cheap/fast tier — the counterpart of `@cf/meta/llama-3.1-8b-instruct-fast`.
- * A 30B MoE with ~3B active parameters (the `a3b` suffix), which is the right
- * cost/latency class to stand in for an 8B dense model.
+ * A 30B MoE with ~3B active parameters (the `a3b` suffix).
+ *
+ * Was `nvidia/nemotron-nano-3-30b-a3b`, which 404s. It IS in the catalogue but
+ * has no free endpoint on this account, and the catalogue does not say so —
+ * only the 39 models badged "Free Endpoint" in the build.nvidia.com UI are
+ * callable. Presence in `/v1/models` proves the id resolves, nothing more; the
+ * 404 body names an internal function UUID and never the model.
+ *
+ * Measured against the real 1.8k-token city-agentic-enrich prompt, 2026-09-02:
+ * 169 output tokens in 3s, valid JSON — WITH the thinking flag that
+ * llm-router.ts sends. Without it, the identical call spends all 900 tokens on
+ * a reasoning preamble and returns no JSON at all.
  */
-export const NVIDIA_MODEL_DEFAULT = 'nvidia/nemotron-nano-3-30b-a3b'
+export const NVIDIA_MODEL_DEFAULT = 'nvidia/nemotron-3.5-lightning-30b-a3b'
 
 /**
  * Strong tier — the counterpart of `@cf/meta/llama-3.3-70b-instruct-fp8-fast`.
- * ~12B active parameters, one rung above nano.
+ * ~12B active parameters, one rung above lightning.
+ *
+ * Same measurement: 183 output tokens in 3s, valid JSON. The `openai/gpt-oss-*`
+ * models answer correctly too, but take 15-35s against the 45s per-call ceiling
+ * in llm-router.ts — rejected on latency, not on output quality.
  */
 export const NVIDIA_MODEL_STRONG = 'nvidia/nemotron-3-super-120b-a12b'
 

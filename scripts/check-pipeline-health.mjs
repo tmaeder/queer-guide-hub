@@ -112,7 +112,7 @@ if (!hygieneRes.ok) {
   // (news_commit_staging_batch), so advancing it strands news and nothing else.
   // Applying the same test to every entity type reported 406 venue/marketplace
   // rows legitimately queued for HUMAN review as "unreachable". See the header
-  // of 20261203100100 for the full measurement.
+  // of 20261206100100 for the full measurement.
   //
   // recent_24h is a ZERO-INVARIANT and is checked before the stale thresholds
   // because it is the actionable half: it counts only rows stranded in the last
@@ -126,7 +126,7 @@ if (!hygieneRes.ok) {
     body: '{}',
   })
   if (!unreachRes.ok) {
-    console.warn(`⚠ staging_unreachable_stats → HTTP ${unreachRes.status} (RPC missing? migration 20261203100100)`)
+    console.warn(`⚠ staging_unreachable_stats → HTTP ${unreachRes.status} (RPC missing? migration 20261206100100)`)
   } else {
     unreachable = await unreachRes.json()
     const recent = Number(unreachable.recent_24h ?? 0)
@@ -583,19 +583,37 @@ if (!hygieneRes.ok) {
     const total = rows.length
     const nvidia = by.nvidia ?? 0
 
+    // `last_error` is NOT selected, because this table does not have that
+    // column — and asking for it made the whole probe useless. PostgREST
+    // answers an unknown select column with 400 42703, so `cb.ok` was always
+    // false, `breaker` was always null, and failure mode (b) — the one named
+    // four lines up — could never be reported. Worse, the block then fell
+    // through to the ✓ branch and declared the chain healthy. Verified
+    // 2026-09-02: `select=code,name` → 200, `select=code,name,last_error` → 400.
+    //
+    // The reason a breaker tripped lives in the edge-function logs, as
+    // `[llm-router] nvidia <kind> ... status=<n>: <body>` — the router prints
+    // it precisely because there is nowhere on this row to store it.
     const cb = await fetch(
-      `${BASE}/rest/v1/api_circuit_breakers?select=state,open_until,failure_count,last_error&api_name=eq.llm.nvidia`,
+      `${BASE}/rest/v1/api_circuit_breakers?select=state,open_until,failure_count&api_name=eq.llm.nvidia`,
       { headers },
     )
+    // A failed probe must SAY so. Silently treating it as "no breaker row" is
+    // how the bug above survived: the check reported success while measuring
+    // nothing at all.
+    if (!cb.ok) {
+      console.warn(
+        `⚠ llm.nvidia breaker probe → HTTP ${cb.status} — circuit state NOT checked ` +
+          `(a column in the select probably does not exist)`,
+      )
+    }
     const breaker = cb.ok ? (await cb.json())[0] : null
 
     if (breaker?.state === 'open') {
-      // last_error carries the provider's own response body — the only source
-      // for what exhaustion actually looks like on this API, which the router's
-      // deliberately-wide 4xx arm is waiting on before it can be narrowed.
       console.warn(
-        `⚠ llm.nvidia circuit OPEN until ${breaker.open_until} after ${breaker.failure_count} failure(s): ` +
-          `${String(breaker.last_error ?? '').slice(0, 200)}`,
+        `⚠ llm.nvidia circuit OPEN until ${breaker.open_until} after ` +
+          `${breaker.failure_count} failure(s) — reason is in the edge-function logs: ` +
+          `grep '[llm-router] nvidia'`,
       )
     } else if (total > 0 && nvidia === 0) {
       console.warn(

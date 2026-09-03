@@ -234,6 +234,82 @@ export function buildRecoveredSql(version, statements, { header = true } = {}) {
   ].join('\n')}${joined};\n`
 }
 
+/**
+ * Decide, for each orphaned version, what to write — or why not to.
+ *
+ * Pure and IO-free: takes the fetched bodies and a branch lookup, returns a
+ * plan. The caller does the writing. Extracted for the same reason as
+ * buildRecoveredSql, and more urgently: this is the half that decides whether a
+ * file gets created at all, so "never invents content" is enforced here. Left
+ * inside the CLI it would first execute in CI, on real drift, and the failure
+ * mode of getting it wrong is a plausible-looking migration that misrepresents
+ * what ran — which passes every downstream check forever.
+ *
+ * @param orphans   version strings, applied but with no repo file
+ * @param bodies    Map<version, {name, statements, joined, digest}> or null
+ * @param opts.findOnBranch  (version) => {path, sha, content} | null
+ * @param opts.md5           (string) => hex digest
+ * @returns {{recovered: Array, skipped: Array}}
+ */
+export function planRecovery(orphans, bodies, { findOnBranch = () => null, md5 } = {}) {
+  const recovered = []
+  const skipped = []
+
+  for (const version of orphans) {
+    // The author's own file, when it exists, beats a reconstruction: statements
+    // does not record comment headers, and this codebase keeps the reasoning
+    // for a migration there. Checked BEFORE the body so a stranded branch is
+    // never silently downgraded to the lossy path.
+    const onBranch = findOnBranch(version)
+    if (onBranch?.content) {
+      recovered.push({
+        version,
+        file: onBranch.path,
+        source: `commit ${String(onBranch.sha).slice(0, 9)}`,
+        content: onBranch.content,
+        verified: 'content from the authoring commit',
+      })
+      continue
+    }
+
+    const body = bodies?.get(version)
+    if (!body) {
+      skipped.push({ version, why: 'no row returned for this version' })
+      continue
+    }
+
+    // A digest mismatch means the text did not survive transport. Writing it
+    // anyway would produce a file that looks recovered and is not.
+    if (body.digest && md5 && md5(body.joined) !== body.digest) {
+      skipped.push({
+        version,
+        why: `digest mismatch (server ${body.digest}, local ${md5(body.joined)}) — refusing to write`,
+      })
+      continue
+    }
+
+    const content = buildRecoveredSql(version, body.statements)
+    if (content === null) {
+      // Not "the migration did nothing" — that is unknowable from here.
+      skipped.push({ version, why: 'statements is empty — nothing recorded to recover; needs a human' })
+      continue
+    }
+
+    // The file MUST sit at the applied version — `db push` matches on version,
+    // so a different one leaves the orphan orphaned and adds a second problem.
+    const slug = normalizeMigrationName(body.name) || 'recovered_migration'
+    recovered.push({
+      version,
+      file: `supabase/migrations/${version}_${slug}.sql`,
+      source: `schema_migrations.statements (${body.statements.length} statement(s))`,
+      content,
+      verified: body.digest && md5 ? `md5 ${md5(body.joined)}` : 'no server digest returned',
+    })
+  }
+
+  return { recovered, skipped }
+}
+
 /** Shared transport so the two fetchers cannot disagree about response shape. */
 async function queryHistory(token, query) {
   const res = await fetch(

@@ -318,17 +318,36 @@ export async function tryNvidia(
     )
   }
 
-  // `response_format` is deliberately NOT sent, even though NVIDIA supports
-  // json_object properly where Cloudflare hangs on it. Every prompt in
-  // ai-enrichment.ts already demands bare JSON and every parser is defensive
-  // three-stage, so sending it here would make the two providers produce
-  // subtly different output for the same call — a divergence that only shows up
-  // as parse failures on one path.
+  // `response_format` is deliberately NOT sent, even though NVIDIA is
+  // documented to support json_object where Cloudflare hangs on it. That was
+  // originally a consistency argument; it is now a measurement — on 2026-09-02
+  // `openai/gpt-oss-20b` TIMED OUT with `response_format: {type:'json_object'}`
+  // on a prompt it answered in 256 tokens without it. Same failure Cloudflare
+  // has. Do not "fix" the JSON path by turning this on.
+  //
+  // `chat_template_kwargs.thinking = false` IS sent, and it is load-bearing.
+  // Every model this account can actually reach is a reasoning model, and left
+  // to itself it spends the whole token budget narrating ("Here's a thinking
+  // process: 1. **Analyze User Request**...") and never emits the JSON. Every
+  // prompt in ai-enrichment.ts demands bare JSON with no response_format, so
+  // parseAIResponse finds nothing and the stage records "no result".
+  //
+  // Measured, same prompt, `nvidia/nemotron-3.5-lightning-30b-a3b`:
+  //   without the flag -> 900 tokens (the max_tokens ceiling), 29s, no JSON
+  //   with the flag    -> 169 tokens, 3s, valid JSON
+  // It is sent for EVERY model, not just the ones known to reason. The two
+  // failure directions are not symmetric: omitting it on a reasoning model is
+  // an HTTP 200 that costs full price, returns prose, and is recorded as a
+  // SUCCESS — invisible. A model that rejects the field returns 4xx, which the
+  // classifier below trips the breaker on and logs, and Cloudflare serves the
+  // call. Prefer the loud failure. `openai/gpt-oss-{20b,120b}` were measured
+  // accepting it as a no-op, so the field is not nemotron-only in practice.
   const body = {
     model,
     messages: req.messages,
     temperature: req.temperature,
     max_tokens: req.max_tokens,
+    chat_template_kwargs: { thinking: false },
   }
 
   // One retry, for transient upstream failures only. More than that and a
@@ -357,6 +376,10 @@ export async function tryNvidia(
       // A timed-out call almost never succeeds on retry — surface it and let
       // Cloudflare serve rather than stacking another 45s.
       if (aborted || attempt === 1) {
+        console.warn(
+          `[llm-router] nvidia ${aborted ? 'timeout' : 'network_error'} for ` +
+            `${opts.callerFn} model=${model}: ${msg}`,
+        )
         await breakerFailure(NVIDIA_BREAKER, `network: ${msg}`)
         return { served: false, reason: aborted ? 'timeout' : 'network_error' }
       }
@@ -371,9 +394,37 @@ export async function tryNvidia(
         // An empty 200 is a failure, and one the breaker should see: it is how
         // a degraded model presents, and it is indistinguishable from success
         // to anything that only checks the status.
+        console.warn(
+          `[llm-router] nvidia empty_content for ${opts.callerFn} model=${model} ` +
+            `(tokens_out=${data?.usage?.completion_tokens ?? '?'})`,
+        )
         await breakerFailure(NVIDIA_BREAKER, 'empty content on 200')
         return { served: false, reason: 'empty_content' }
       }
+
+      // A completion that stopped because it hit max_tokens is TRUNCATED, and a
+      // truncated JSON object cannot parse. Serving it means the caller does the
+      // work, pays for the tokens, fails to parse, and records nothing — while
+      // the breaker counts a success and every dashboard says the provider is
+      // healthy. That is precisely how the thinking-preamble fault above stayed
+      // invisible for days: three live calls returned exactly 900 tokens each,
+      // the ceiling, and the run reported `enriched: 0, skipped: 5`.
+      //
+      // Not free: a caller that legitimately wants a ceiling-length answer now
+      // falls back instead of using a truncated one. Taken deliberately — the
+      // fallback is right there and this is the only signal that separates "the
+      // model answered" from "the model ran out of room", which no status code
+      // and no non-empty body will ever tell us.
+      const outTokens = data?.usage?.completion_tokens
+      if (typeof outTokens === 'number' && outTokens >= req.max_tokens) {
+        console.warn(
+          `[llm-router] nvidia truncated for ${opts.callerFn} model=${model}: ` +
+            `hit the ${req.max_tokens}-token ceiling, so the body cannot be complete JSON`,
+        )
+        await breakerFailure(NVIDIA_BREAKER, `truncated at max_tokens=${req.max_tokens}`)
+        return { served: false, reason: 'truncated' }
+      }
+
       await breakerSuccess(NVIDIA_BREAKER)
       return {
         served: true,
@@ -410,6 +461,26 @@ export async function tryNvidia(
       continue
     }
 
+    // LOG IT, do not only record it. `breakerFailure` writes to
+    // `circuit_breaker_record_failure`, and on this project
+    // `api_circuit_breakers` HAS NO `last_error` COLUMN — so the p_error_msg
+    // argument is accepted and then dropped on the floor. Recording a failure
+    // therefore preserves the COUNT and destroys the REASON.
+    //
+    // Measured 2026-09-02: `openai/gpt-oss-120b` failed a live
+    // city-agentic-enrich call. The breaker counted it, Cloudflare served
+    // correctly at confidence 0.8 — and no surface anywhere could say whether
+    // the cause was a 404, a timeout, a content-filter refusal or a bad
+    // request. The model could not be judged, so the whole "which model works"
+    // question stalled on a missing string.
+    //
+    // Same lesson as the skip-reason and the 429 body, one layer deeper: this
+    // provider is deliberately outside AI Gateway, so if the router does not
+    // print it, it does not exist.
+    console.warn(
+      `[llm-router] nvidia ${kind} for ${opts.callerFn} model=${model} ` +
+        `status=${response.status}: ${errText}`,
+    )
     await breakerFailure(NVIDIA_BREAKER, `${response.status}: ${errText}`)
     return { served: false, reason: kind }
   }
