@@ -52,12 +52,21 @@
 -- reverting the sentinel. That file's baseline JSON edit conflicts in git too,
 -- which is the loud half of the same collision.
 
-CREATE OR REPLACE FUNCTION public.tag_hygiene_stats()
- RETURNS jsonb
- LANGUAGE plpgsql
- STABLE SECURITY DEFINER
- SET search_path TO 'public'
-AS $function$
+-- Header in this repo's lower-case style ON PURPOSE, not taste:
+-- src/lib/__tests__/tagHygienePanelMetrics.test.ts finds the newest definition with a
+-- CASE-SENSITIVE `.includes('create or replace function public.tag_hygiene_stats')`.
+-- pg_get_functiondef() emits it upper-case, so a body pasted straight from prod is
+-- invisible to that guard — it silently reads the PREVIOUS migration and reports the
+-- new counter as missing. The sibling guard in tagHygieneStats.test.ts uses a
+-- case-INSENSITIVE regex, so the two disagree and running only that file passes.
+-- Caught by CI on the first push of this PR.
+create or replace function public.tag_hygiene_stats()
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path to 'public'
+as $function$
 declare v jsonb;
 begin
   perform assert_admin_or_internal();
