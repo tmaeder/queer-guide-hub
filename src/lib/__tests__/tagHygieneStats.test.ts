@@ -101,3 +101,72 @@ describe('tag_hygiene_stats() stays under the PostgREST statement timeout', () =
     }
   });
 });
+
+/**
+ * `event_tag_pairs_unlinked` is the sentinel for `run_event_tag_link`, and the
+ * only one of the two events counters that can reach 0 — `events_with_tags_unlinked`
+ * is floored at the ~3,856 events whose tags the ambiguity guard blocks by design,
+ * so it reads "non-zero" both when the linker is healthy and when it is wedged.
+ * It read exactly that through 1,106 consecutive wedged runs.
+ *
+ * Two ways it could silently disappear, which is why this is a test and not a
+ * comment:
+ *
+ *  1. Adding any key to `tag_hygiene_stats()` means restating the WHOLE function.
+ *     Two branches that each do so do not conflict in git — the second to merge
+ *     overwrites the first's body wholesale. `claude/tag-language-normalization-27e39c`
+ *     (PR #3301) restates this function right now.
+ *  2. `scripts/check-tag-hygiene.mjs` derives its metric list FROM the function's
+ *     own output, so a key that vanishes is simply not checked. There is no
+ *     "expected metric missing" failure — the gate goes green with one fewer
+ *     invariant, and the stale baseline entry is ignored.
+ *
+ * Together those make a dropped sentinel invisible at every layer. This test is
+ * the layer that notices.
+ */
+describe('tag_hygiene_stats() keeps the event-linker sentinel', () => {
+  // Must match the KEY-DEFINITION form `'name', (`, not a bare mention. The
+  // migration's own header prose and its post-apply verification block both
+  // contain the quoted string, so a substring check passes even when the counter
+  // itself has been deleted — verified by mutation while writing this.
+  const KEY_DEF = /'event_tag_pairs_unlinked'\s*,\s*\(/;
+
+  it('still defines event_tag_pairs_unlinked as a counter', () => {
+    expect(
+      KEY_DEF.test(sql),
+      'the run_event_tag_link sentinel was dropped from tag_hygiene_stats() — most likely by a ' +
+        'concurrent branch restating the function; re-add the counter rather than re-baselining',
+    ).toBe(true);
+  });
+
+  it('resolves ambiguity with a GROUP BY, never a correlated NOT EXISTS', () => {
+    const start = sql.search(KEY_DEF);
+    expect(start, 'no counter body to check').toBeGreaterThan(-1);
+    const end = sql.indexOf("'alias_equals_name'", start);
+    const counterSql = sql.slice(start, end > -1 ? end : undefined);
+
+    // Measured 2026-09-03 on prod: the correlated form took 51.1 s against this
+    // function's 8 s PostgREST ceiling; the GROUP BY form takes 708 ms for the
+    // identical answer. Same class of regression as the OR above, and equally
+    // invisible — the counter stays correct, just ruinously slow.
+    expect(counterSql).toMatch(/group\s+by\s+key\s+having\s+count\s*\(\s*distinct\s+tag_id\s*\)/i);
+    expect(counterSql).not.toMatch(/from\s+resolved\s+r2/i);
+
+    // The grace period is what stops normal ingest lag from reding unrelated PRs:
+    // the cron runs every 10 minutes, so recent events are legitimately unlinked.
+    expect(counterSql).toMatch(/created_at\s*<\s*now\(\)\s*-\s*interval\s*'1 hour'/i);
+  });
+
+  it('baselines the sentinel at 0 and does NOT mark it advisory', () => {
+    const baseline = JSON.parse(
+      readFileSync(join(process.cwd(), 'scripts', 'tag-hygiene-baseline.json'), 'utf8'),
+    );
+    expect(baseline.event_tag_pairs_unlinked, 'sentinel has no baseline entry').toBe(0);
+    // Advisory metrics only ever "drift" — they cannot fail the gate, which is
+    // precisely the weakness that made events_with_tags_unlinked useless.
+    expect(
+      baseline._advisory ?? [],
+      'the sentinel must be able to FAIL the gate, not merely drift',
+    ).not.toContain('event_tag_pairs_unlinked');
+  });
+});
