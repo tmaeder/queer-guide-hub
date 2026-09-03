@@ -185,13 +185,20 @@ describe('tag_hygiene_stats language sentinels', () => {
     const baseline = JSON.parse(
       readFileSync(join(process.cwd(), 'scripts', 'tag-hygiene-baseline.json'), 'utf8'),
     );
-    for (const k of [
-      'slug_diacritic_lossy',
-      'name_mojibake',
-      'name_contains_hashtag',
-      'non_latin_name',
-    ]) {
-      expect(baseline[k], `${k} has no baseline entry`).toBe(0);
+    // Three are true zero-invariants. name_mojibake is NOT: prod carries one
+    // merged row (M-FFFD-Llerian) whose NAME holds a U+FFFD, and nothing in
+    // this branch repairs it — its "corrected" slug would still be garbage, and
+    // it is merged, so nothing renders it. Baselining it at 0 would hard-fail
+    // the gate the moment the sentinel migration applied. The accepted level is
+    // the measured one; a SECOND mojibake row is the regression worth catching.
+    const expected: Record<string, number> = {
+      slug_diacritic_lossy: 0,
+      name_mojibake: 1,
+      name_contains_hashtag: 0,
+      non_latin_name: 0,
+    };
+    for (const [k, v] of Object.entries(expected)) {
+      expect(baseline[k], `${k} has no baseline entry`).toBe(v);
     }
   });
 });

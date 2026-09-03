@@ -28,7 +28,7 @@
 -- in the SAME commit, and this migration must not land before the two repairs
 -- above or the first post-merge CI run reds on 11 and 8.
 
-CREATE OR REPLACE FUNCTION public.tag_hygiene_stats()
+create or replace function public.tag_hygiene_stats()
  RETURNS jsonb
  LANGUAGE plpgsql
  STABLE SECURITY DEFINER

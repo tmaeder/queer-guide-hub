@@ -54,7 +54,7 @@
     "non_latin_name": "Zero-invariant, and already 0 before this shipped. Asserts trg_tag_language_guard still holds — it rejects Cyrillic/CJK/Arabic/Greek/Hebrew/Thai/Devanagari outright, which is deterministic and cannot false-positive. Non-zero means the trigger was dropped or a writer bypassed it. Deliberately NOT widened to Latin-script language detection: the obvious heuristic measures ~5% precision on this corpus, flagging Party, Film, Pride and Transgender, which are English words German borrowed."
   },
   "slug_diacritic_lossy": 0,
-  "name_mojibake": 0,
+  "name_mojibake": 1,
   "name_contains_hashtag": 0,
   "non_latin_name": 0
 }

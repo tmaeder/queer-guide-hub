@@ -128,4 +128,31 @@ export const HYGIENE_METRICS: HygieneMetric[] = [
     advisory: true,
     hint: 'Free-text event tags that match no tag name or slug. Phase 4 scope marker, German-heavy.',
   },
+  {
+    key: 'slug_diacritic_lossy',
+    label: 'Slugs that lost a diacritic',
+    zero: true,
+    hint: 'A slug the canonical slugifier would not produce, on a non-ASCII name — "Bühne" stored as b-hne. Excludes merged rows, whose slug IS their redirect trail. Deliberately NOT the unqualified drift predicate, which matches 115 rows of which 106 are intentional mat-/news-/occ- namespace prefixes.',
+  },
+  {
+    key: 'name_mojibake',
+    label: 'Names containing U+FFFD',
+    // NOT `zero`, and its baseline is 1, not 0. One merged row (M�Llerian)
+    // carries a replacement character in its NAME; its "corrected" slug would
+    // still be garbage, and it is merged, so nothing renders it. Painting a
+    // permanently-red figure on the panel trains admins to ignore red.
+    hint: 'A replacement character in a tag name, i.e. an encoding failure upstream. One known merged row is accepted; a SECOND is a new defect.',
+  },
+  {
+    key: 'name_contains_hashtag',
+    label: 'Active names containing #',
+    zero: true,
+    hint: 'A scraped hashtag concatenation promoted into vocabulary, e.g. "Pulse #Mordopfer #Hassverbrechen". Zero-invariant: authored tags do not carry hashtags.',
+  },
+  {
+    key: 'non_latin_name',
+    label: 'Non-Latin script names',
+    zero: true,
+    hint: 'Asserts trg_tag_language_guard still holds — it rejects Cyrillic/CJK/Arabic/Greek/Hebrew/Thai/Devanagari outright. Non-zero means the trigger was dropped or bypassed. Deliberately NOT widened to Latin-script language detection: that heuristic measures ~5% precision here, flagging Party, Film, Pride and Transgender.',
+  },
 ];
