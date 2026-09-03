@@ -237,13 +237,46 @@ begin
     raise exception 'revive footjob: an alias still shadows the revived slug';
   end if;
 
-  -- The held-back row is still held back. An assertion rather than a comment,
-  -- because "we decided not to" is exactly the kind of claim that decays.
-  if not exists (
-    select 1 from public.unified_tags
-     where slug = 'anorgasmia' and status = 'deprecated' and deprecated_at is not null
-  ) then
-    raise exception 'revive footjob: anorgasmia was revived — it is a merge candidate, not a revival';
+  -- The held-back row must not have become a DUPLICATE. Stated as the corpus
+  -- invariant — no two active tags share one Wikidata item — rather than as
+  -- "anorgasmia is still deprecated", which is what an earlier draft asserted
+  -- and which was wrong twice over.
+  --
+  -- (1) It coupled this migration to a decision taken elsewhere. The
+  --     anorgasmia → orgasmic-dysfunction merge is live follow-up work, and its
+  --     DIRECTION is deliberately open: `anorgasmia` is filed correctly under
+  --     Sexual Health while `orgasmic-dysfunction` publishes a clinical
+  --     dysfunction under Fetishes, which is the vaginismus /
+  --     sexual-pain-penetration-disorder shape where the merge went AGAINST the
+  --     alias direction. So `anorgasmia` ending up ACTIVE and canonical is a
+  --     legitimate outcome — and a status assertion would have aborted `db
+  --     push` for the whole repo when it arrived.
+  -- (2) It asserted a FUTURE state from a migration that runs exactly once.
+  --     After this applies it never re-checks anything, so it could only ever
+  --     fire on an ordering accident, never on the decay it was written for.
+  --
+  -- What is worth asserting is the defect itself, which no merge direction can
+  -- produce and only a mistaken revival can: two live rows for one concept.
+  -- Scoped to Q1772397, the item this migration deliberately did NOT revive.
+  --
+  -- It is scoped that tightly because the first draft asked the same question
+  -- of all four slugs and FAILED on the clean corpus — surfacing a real
+  -- pre-existing duplicate that has nothing to do with this change:
+  -- `foot-worship` (Fetishes) and `foot-fetish` (Practices & Play) are BOTH
+  -- active and BOTH carry Q463859. That pair needs a merge and a direction
+  -- decision of its own; it is not this migration's to make, and an assertion
+  -- that fires on state this migration neither created nor fixes would block
+  -- `db push` for the whole repo, permanently. An assertion has to be
+  -- satisfiable by the change that carries it.
+  select count(*) into v_bad
+    from public.unified_tags a
+    join public.unified_tags b
+      on b.wikidata_id = a.wikidata_id and b.id <> a.id
+   where a.status = 'active' and b.status = 'active'
+     and a.wikidata_id = 'Q1772397';
+  if v_bad > 0 then
+    raise exception
+      'revive footjob: % active row(s) share Q1772397 — anorgasmia was duplicated rather than merged', v_bad;
   end if;
 
   -- Corpus-wide CI zero-invariant, restated on the shape rather than on this
