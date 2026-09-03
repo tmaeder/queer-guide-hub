@@ -28,7 +28,7 @@
 -- and 1,635 carry no verdict at all.
 --
 -- ONLY THE VETTED 541 ARE TARGETED, and the ordering of the two migrations in
--- this pair is what makes that safe. 20261212114700 adds the verdict gate to the
+-- this pair is what makes that safe. 20261216114700 adds the verdict gate to the
 -- RPC, so an unjudged row can no longer commit. Without it this drain would
 -- publish 465 unjudged rows as collateral — they share job_ids with the vetted
 -- ones, and the RPC commits per JOB, not per row, so the drain cannot exclude
@@ -106,7 +106,7 @@ END;
 $function$;
 
 COMMENT ON FUNCTION public.run_news_commit_backlog_drain(integer, integer) IS
-  'Oldest-first commit drain for the news staging tail that pipeline-commit''s newest-first job window deliberately abandons. Only ever offers jobs containing a non-empty quality verdict; the verdict gate in news_commit_staging_batch (20261212114700) is the actual enforcement and this must not run without it. See 20261212114800.';
+  'Oldest-first commit drain for the news staging tail that pipeline-commit''s newest-first job window deliberately abandons. Only ever offers jobs containing a non-empty quality verdict; the verdict gate in news_commit_staging_batch (20261216114700) is the actual enforcement and this must not run without it. See 20261216114800.';
 
 REVOKE ALL ON FUNCTION public.run_news_commit_backlog_drain(integer, integer) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.run_news_commit_backlog_drain(integer, integer) TO service_role;
