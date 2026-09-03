@@ -32,12 +32,28 @@
  * the stricter flag is set, because the cost of over-flagging is a filter and
  * the cost of under-flagging is exposure.
  *
- * TWO TERMS ARE DELIBERATELY ABSENT: `footjob` and `anorgasmia` already exist in
- * `unified_tags` as DEPRECATED rows. Creating them here would produce a second
- * row for the same concept, which is why the migration asserts against it and
- * why they were removed rather than force-created. They need reviving (and in
- * footjob's case its placeholder description "Sexual activity tag" replacing),
- * which is a different decision with a different audit trail.
+ * FIVE TERMS ARE DELIBERATELY ABSENT. Each already exists in `unified_tags` as a
+ * DEPRECATED row, so creating it here would produce a second row for the same
+ * concept — which is how a glossary ends up with two pages disagreeing about a
+ * term. They need REVIVING, a different decision with a different audit trail:
+ *
+ *   footjob      description is the placeholder "Sexual activity tag"
+ *   anorgasmia   deprecated; clinical term
+ *   femdom       description is a truncated stub — "FemDom (short for female
+ *                dominance) refers to:" — the `refers to:` shape this corpus has
+ *                had to retract before
+ *   pretzel      description is EMPTY
+ *   voyeur       description is "Person who watches" — thin, but not wrong
+ *
+ * HOW THEY WERE FOUND matters more than the list. An anon PostgREST query
+ * reports ZERO collisions for all five: RLS on `unified_tags` hides non-active
+ * rows, so a collision check run with the anon key is structurally blind to
+ * exactly the rows that can collide. It cannot fail, which is worse than
+ * failing. The first two surfaced only when the migration's own assertion
+ * aborted the apply; the other three when it aborted a second time, on prod,
+ * after the PR had already merged. A privileged read is the only check that
+ * means anything here, and the assertion inside the migration is the backstop
+ * that made both misses recoverable instead of shipping duplicate concepts.
  */
 
 /** @typedef {{slug:string,name:string,cat:string,kind?:string,adult?:boolean,sensitive?:boolean,sourced:boolean,desc:string,long:string}} Term */
@@ -886,11 +902,6 @@ export const TERMS = [
     long: 'Femboydom reads as a dominant role held by a femboy: feminine presentation, masculine identity, and authority exercised without the presentation being read as submission. The label exists because the assumption that femininity implies submission is common enough to need contradicting explicitly. Inferred from the composed term.',
   },
   {
-    slug: 'femdom', name: 'Femdom', cat: 'bdsm-power-exchange', adult: true, sourced: true,
-    desc: 'Female domination: a woman or feminine person in the dominant role.',
-    long: 'Femdom is the standard shorthand for female dominance, covering both the practice and the identity. It names the direction of the power rather than a style, so it spans everything from strict protocol to sadism to sensual control. It carries its own long-standing commercial and community history, including professional domination, and overlaps with but is not the same as matriarchy or female-led relationships.',
-  },
-  {
     slug: 'feral-princess-feral-prince', name: 'Feral Princess / Feral Prince', cat: 'bdsm-power-exchange', sourced: false,
     desc: 'A role combining royal entitlement with primal, uncivilised behaviour.',
     long: 'Feral princess and feral prince read as roles that pair the pampered, indulged framing of royalty with primal play\'s wildness: adored and untamed at once, expecting to be served without behaving well about it. Inferred from the term.',
@@ -1128,11 +1139,6 @@ export const TERMS = [
     long: 'Praise princess reads as a submissive role driven by approval: doing well in order to be told so, with praise carrying the weight that punishment carries in other dynamics. Praise kink is widely recognised in its own right, and this is its role-shaped form. Inferred from the term.',
   },
   {
-    slug: 'pretzel', name: 'Pretzel', cat: 'bdsm-power-exchange', adult: true, sourced: false,
-    desc: 'A flexible bottom who enjoys being folded into demanding positions.',
-    long: 'Pretzel reads as a self-label for a bottom whose flexibility is the offering: comfortable being bent, folded and tied into positions most people could not hold. Predicament bondage and demanding rope positions both draw on it. Joint strain and circulation are the limits to watch. Inferred from the term.',
-  },
-  {
     slug: 'priestex', name: 'Priestex', cat: 'bdsm-power-exchange', sourced: true,
     desc: 'A gender-neutral form of priest or priestess.',
     long: 'Priestex applies the gender-neutral -ex ending, as in latinx, to priest and priestess, giving nonbinary people a term for a religious or ritual role. In kink it appears where ritual and devotional framing is used, and the coinage exists for the same reason mxstress does: the standard vocabulary offers only a gendered pair.',
@@ -1298,11 +1304,6 @@ export const TERMS = [
     slug: 'volt-vixen', name: 'Volt Vixen', cat: 'bdsm-power-exchange', adult: true, sourced: false,
     desc: 'A feminine variant of the electrical-play bottom or top role.',
     long: 'Volt vixen reads as a feminine-framed electrical-play identity, paired with volt bunny in the same vocabulary and usually with more of a knowing, predatory register. The safety rules for electrical play apply in either role. Inferred from the term.',
-  },
-  {
-    slug: 'voyeur', name: 'Voyeur', cat: 'fetishes-interests', adult: true, sourced: true,
-    desc: 'Someone who is aroused by watching others being sexual.',
-    long: 'A voyeur is aroused by watching rather than participating. In kink and at play parties this is a consensual arrangement: the people being watched know and have agreed, which is the entire difference between voyeurism as a practice and voyeurism as an offence. Watching people who have not consented is a crime in most jurisdictions and is not what the community means by the word.',
   },
   {
     slug: 'whip-catcher', name: 'Whip Catcher', cat: 'bdsm-power-exchange', adult: true, sensitive: true, sourced: false,

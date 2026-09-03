@@ -1,4 +1,4 @@
--- Create 135 glossary terms that exist in the Kinktionary index and in no
+-- Create 134 glossary terms that exist in the Kinktionary index and in no
 -- row of `unified_tags` under any status.
 --
 -- GENERATED from scripts/data-quality/kinktionary-new-term-definitions.mjs by
@@ -6,7 +6,7 @@
 -- there and regenerate; do not hand-edit the VALUES below, or the two will
 -- disagree about what was published.
 --
--- 0 written from independently documented meaning, 135 inferred from the term's name.
+-- 0 written from independently documented meaning, 134 inferred from the term's name.
 --
 -- NOTHING HERE IS PUBLISHED. Every row is created with seo_indexable=false,
 -- human_reviewed=false and verification_status='unverified': usable for
@@ -283,9 +283,6 @@ begin
     ('praise-princess', 'Praise Princess', 'bdsm-power-exchange', 'concept', false, false, false,
      'A submissive whose motivation is praise rather than correction.',
      'Praise princess reads as a submissive role driven by approval: doing well in order to be told so, with praise carrying the weight that punishment carries in other dynamics. Praise kink is widely recognised in its own right, and this is its role-shaped form. Inferred from the term.'),
-    ('pretzel', 'Pretzel', 'bdsm-power-exchange', 'concept', true, false, false,
-     'A flexible bottom who enjoys being folded into demanding positions.',
-     'Pretzel reads as a self-label for a bottom whose flexibility is the offering: comfortable being bent, folded and tied into positions most people could not hold. Predicament bondage and demanding rope positions both draw on it. Joint strain and circulation are the limits to watch. Inferred from the term.'),
     ('primal-pet', 'Primal Pet', 'bdsm-power-exchange', 'concept', true, false, false,
      'A pet-play identity played wild and instinctive rather than trained.',
      'Primal pet reads as the meeting point of pet play and primal play: an animal headspace that is feral rather than obedient, closer to a wild creature than to a trained companion. Inferred from the composed term.'),

@@ -1,4 +1,4 @@
--- Create 161 glossary terms that exist in the Kinktionary index and in no
+-- Create 159 glossary terms that exist in the Kinktionary index and in no
 -- row of `unified_tags` under any status.
 --
 -- GENERATED from scripts/data-quality/kinktionary-new-term-definitions.mjs by
@@ -6,7 +6,7 @@
 -- there and regenerate; do not hand-edit the VALUES below, or the two will
 -- disagree about what was published.
 --
--- 161 written from independently documented meaning, 0 inferred from the term's name.
+-- 159 written from independently documented meaning, 0 inferred from the term's name.
 --
 -- NOTHING HERE IS PUBLISHED. Every row is created with seo_indexable=false,
 -- human_reviewed=false and verification_status='unverified': usable for
@@ -397,9 +397,6 @@ begin
     ('fairy-gay-mother', 'Fairy Gay Mother', 'kink-community', 'concept', false, false, true,
      'An older queer person who guides someone newly out through queer life.',
      'A fairy gay mother is the queer version of the fairy godmother: the older or more experienced person who takes someone newly out in hand and shows them how any of it works, from the bars to the vocabulary to the relationships. The role is a real fixture of queer community life, filling the gap left where families of origin do not, and the joke in the name does not make the mentorship less serious.'),
-    ('femdom', 'Femdom', 'bdsm-power-exchange', 'concept', true, false, true,
-     'Female domination: a woman or feminine person in the dominant role.',
-     'Femdom is the standard shorthand for female dominance, covering both the practice and the identity. It names the direction of the power rather than a style, so it spans everything from strict protocol to sadism to sensual control. It carries its own long-standing commercial and community history, including professional domination, and overlaps with but is not the same as matriarchy or female-led relationships.'),
     ('fluffer', 'Fluffer', 'bdsm-power-exchange', 'concept', true, false, true,
      'Someone whose job on a porn set is keeping a performer aroused between takes.',
      'A fluffer is a crew role from pornography production: the person who keeps a performer erect and ready during the long gaps between shots. The job is less common than its reputation suggests, having largely been displaced by erectile medication and by performers managing it themselves. The word has since been borrowed into kink for the same function in a group scene, and more loosely for anyone who warms someone up for someone else.'),
@@ -469,9 +466,6 @@ begin
     ('themdom', 'Themdom', 'bdsm-power-exchange', 'concept', true, false, true,
      'Domination by a nonbinary person, on the model of femdom and maledom.',
      'Themdom names domination by someone who uses they/them pronouns, built on femdom and maledom by substituting the pronoun. It exists because the established pair encodes a binary that leaves nonbinary dominants unnamed, the same gap that produced mxstress. The word describes who holds the power, not the style in which it is held.'),
-    ('voyeur', 'Voyeur', 'fetishes-interests', 'concept', true, false, true,
-     'Someone who is aroused by watching others being sexual.',
-     'A voyeur is aroused by watching rather than participating. In kink and at play parties this is a consensual arrangement: the people being watched know and have agreed, which is the entire difference between voyeurism as a practice and voyeurism as an offence. Watching people who have not consented is a crime in most jurisdictions and is not what the community means by the word.'),
     ('robot', 'Robot', 'bdsm-power-exchange', 'concept', true, false, true,
      'An objectification role in which someone is a programmed machine.',
      'Robot play recasts a person as a machine: obeying commands literally, moving mechanically, and being switched on, reprogrammed or shut down. It draws on the same appeal as hypnosis and mind-control play — the surrender of will rather than of body — and overlaps with the doll and android aesthetics in gear-heavy scenes. The person is a person throughout, which is what aftercare exists to re-establish.'),

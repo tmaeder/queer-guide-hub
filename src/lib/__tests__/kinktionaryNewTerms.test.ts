@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards the 296 glossary terms created from the Kinktionary term list.
+ * Guards the 293 glossary terms created from the Kinktionary term list.
  *
  * Two properties are load-bearing and neither is visible in a row count.
  *
@@ -184,6 +184,38 @@ describe('kinktionary new terms — migrations match the definitions file', () =
   it('the inferred tranche is filed as inferred, not as documented', () => {
     expect(sql(INFERRED_SQL)).toContain('editorial:inferred-from-name');
     expect(sql(SOURCED_SQL)).toContain('editorial:general-knowledge');
+  });
+});
+
+/**
+ * Five Kinktionary terms exist in `unified_tags` as DEPRECATED rows. They need
+ * REVIVING, not creating, and the Kinktionary list will keep offering them on
+ * every future pass — so the exclusion is pinned here rather than left to
+ * whoever regenerates the file next.
+ *
+ * This list is frozen on purpose and is NOT the real guard. The real guard is
+ * the assertion inside each migration, which reads live `unified_tags` and
+ * aborts. It had to fire twice, because the collision check that preceded it
+ * used the anon key and RLS hides non-active rows: a check that cannot see the
+ * rows it is looking for reports a clean result forever.
+ */
+const ALREADY_EXIST_AS_DEPRECATED = ['footjob', 'anorgasmia', 'femdom', 'pretzel', 'voyeur'];
+
+describe('kinktionary new terms — revival candidates are not re-created', () => {
+  it('names no slug that already exists as a deprecated row', async () => {
+    const terms = await loadTerms();
+    const slugs = new Set(terms.map((t) => t.slug));
+    expect(ALREADY_EXIST_AS_DEPRECATED.filter((s) => slugs.has(s))).toEqual([]);
+  });
+
+  it('and neither migration does either', () => {
+    for (const file of [SOURCED_SQL, INFERRED_SQL]) {
+      const inSql = new Set(rowsOf(file).map((r) => r[0] as string));
+      expect(
+        ALREADY_EXIST_AS_DEPRECATED.filter((s) => inSql.has(s)),
+        `${file} recreates a deprecated concept`,
+      ).toEqual([]);
+    }
   });
 });
 
