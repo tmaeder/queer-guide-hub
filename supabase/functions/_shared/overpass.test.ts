@@ -2,6 +2,7 @@ import { assertEquals } from 'https://deno.land/std@0.168.0/testing/asserts.ts'
 import {
   CONTROL_QUERY_MIN_ELEMENTS,
   OVERPASS_ENDPOINTS,
+  RETRYABLE_PROBE_VERDICTS,
   classifyOverpassResponse,
   isPlanetControlResult,
   pickMatchingElement,
@@ -40,6 +41,21 @@ Deno.test('busy and regional are different verdicts and must not be merged', () 
 
 Deno.test('a non-empty 200 with no remark is the only "ok"', () => {
   assertEquals(classifyOverpassResponse(200, { elements: [{ id: 1, tags: {} }] }), 'ok')
+})
+
+Deno.test('busy is RETRYABLE and regional is TERMINAL — the probe must not conflate them', () => {
+  // Measured on prod 2026-09-02: overpass-api.de answered 504 and then 200 to
+  // the identical control query seconds apart, and both mirrors 504'd in the
+  // same window. So a mirror that answers `busy` deserves a second ask, while
+  // `regional` is a property of the endpoint that no retry can change.
+  //
+  // Conflating them cost the job its first live stall: a single-shot probe
+  // condemned both healthy mirrors, the run wrote nothing, and it filed itself
+  // as an error against the auto-pause counter.
+  assertEquals(RETRYABLE_PROBE_VERDICTS.has('busy'), true)
+  assertEquals(RETRYABLE_PROBE_VERDICTS.has('timeout'), true)
+  assertEquals(RETRYABLE_PROBE_VERDICTS.has('regional'), false, 'a regional extract is never worth re-asking')
+  assertEquals(RETRYABLE_PROBE_VERDICTS.has('error'), false)
 })
 
 // --- trap 2: probe every endpoint with a planet control query ----------------

@@ -218,6 +218,18 @@ Deno.test('applySuggestion: unsupported types return false for non-tag entities'
 // ── tag enrichment suggestions (entity_type='unified_tags') ──────────────────
 // Extended stub: also records .update(patch).eq(col,val) calls.
 
+/**
+ * A PostgREST filter chain that is both chainable and thenable. Self-referential
+ * on purpose — `.eq()` returns the same object — which is why it needs a named
+ * type rather than being inferred.
+ */
+type Chainable = {
+  eq: () => Chainable
+  neq: () => Chainable
+  maybeSingle: () => Promise<unknown>
+  then: (res: (v: unknown) => unknown) => Promise<unknown>
+}
+
 function makeTagClient(
   opts: { error?: { message: string }; isFacet?: boolean; tagRow?: Record<string, unknown> | null } = {},
 ) {
@@ -226,9 +238,8 @@ function makeTagClient(
   // The category branch demotes with a THREE-filter chain
   // (.eq.eq.neq) and reads the tag before writing, so the mock has to be
   // chainable and thenable rather than resolving on the first .eq().
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const chain = (record: () => void, result: any): any => {
-    const self: any = {
+  const chain = (record: () => void, result: unknown): Chainable => {
+    const self: Chainable = {
       eq: () => self,
       neq: () => self,
       maybeSingle: () => {
