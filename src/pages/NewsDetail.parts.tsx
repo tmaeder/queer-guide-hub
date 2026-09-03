@@ -80,6 +80,9 @@ export interface NewsArticleFull {
   media_type?: string | null;
   audio_url?: string | null;
   duration_seconds?: number | null;
+  // Per-row crawler gate, populated by select('*'). NULL means indexable, so
+  // this must stay nullable — see newsArticleNoIndex for the polarity rule.
+  seo_indexable?: boolean | null;
   // Trust-loop signals (truth loop, 2026-06-07) — optional, populated by select('*').
   corroboration_count?: number | null;
   integrity_flags?: string[] | null;
