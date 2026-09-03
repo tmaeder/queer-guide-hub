@@ -37,6 +37,14 @@ export interface TagHygieneStats {
    *  check while /tags/anal-sex served four words as its lead paragraph. */
   placeholder_description_active: number;
   event_tag_strings_unresolved: number;
+  /** Resolvable (event, tag) pairs with no assignment row — THE gauge for
+   *  run_event_tag_link, and a true zero-invariant. Events older than an hour
+   *  only, so a normal 10-minute cron lag does not register. */
+  event_tag_pairs_unlinked: number;
+  /** Coverage only, and its floor is NOT 0: ~3,856 events carry only strings the
+   *  ambiguity guard blocks by design, so it can never empty. It claimed
+   *  "non-zero means the job stopped" while the linker sat wedged for 1,106
+   *  consecutive runs reading exactly that. Read event_tag_pairs_unlinked. */
   events_with_tags_unlinked: number;
   /** An alias identical to its own tag's name asserts nothing. */
   alias_equals_name: number;
