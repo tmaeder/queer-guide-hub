@@ -16,8 +16,8 @@
 --
 -- ALL FOUR ARE ZERO AFTER THE MIGRATIONS IN THIS BRANCH, so they ship as hard
 -- zero-invariants with baseline 0 rather than as ratcheted counters:
---   slug_diacritic_lossy  11 -> 0  (repaired by 20261211100000)
---   name_contains_hashtag  8 -> 0  (deprecated by 20261211100100)
+--   slug_diacritic_lossy  11 -> 0  (repaired by 20261211120000)
+--   name_contains_hashtag  8 -> 0  (deprecated by 20261211120100)
 --   non_latin_name         0       (already enforced by trg_tag_language_guard)
 --   name_mojibake          0       (see the merged-row note below)
 --
@@ -121,6 +121,48 @@ begin
          and not exists (
            select 1 from unified_tag_assignments a
             where a.entity_id = e.id and a.entity_type = 'event')),
+    -- Carried forward from 20261211110000 (PR #3323), NOT authored here.
+    --
+    -- `create or replace` overwrites the whole body, so two branches that each
+    -- restate this function do not conflict in git — the one that APPLIES last
+    -- silently wins the entire key set. This migration sorts above 20261211110000
+    -- and therefore applies after it, so omitting this counter would delete it.
+    -- src/lib/__tests__/tagHygieneStats.test.ts asserts it survives in the latest
+    -- definition, so that deletion fails CI rather than passing quietly.
+    --
+    -- What it is: THE sentinel for run_event_tag_link, and a true zero-invariant.
+    -- `events_with_tags_unlinked` above cannot reach 0 — ~3,856 events carry only
+    -- strings the ambiguity guard blocks by design — so it read "non-zero" for
+    -- 1,106 consecutive runs while the linker was wedged. Pairs fix that: an
+    -- unlinkable event contributes none.
+    --
+    -- Shape is load-bearing for the 8s PostgREST ceiling: resolving ambiguity with
+    -- a correlated `not exists` over the resolved set measured 51.1 SECONDS; the
+    -- `group by key having count(distinct tag_id) = 1` form below is 708 ms for the
+    -- identical answer. The 1-hour grace period keeps a normal 10-minute cron lag
+    -- from reding unrelated PRs.
+    'event_tag_pairs_unlinked', (
+      with vocab as (
+        select lower(u.name) as key, u.id as tag_id from unified_tags u
+         where u.status = 'active' and u.merged_into_id is null and btrim(u.name) <> ''
+        union
+        select lower(u.slug), u.id from unified_tags u
+         where u.status = 'active' and u.merged_into_id is null and btrim(u.slug) <> ''
+      ), unambiguous as (
+        select key, (array_agg(tag_id))[1] as tag_id
+          from vocab group by key having count(distinct tag_id) = 1
+      ), pairs as (
+        select distinct e.id as entity_id, v.tag_id
+          from events e
+          cross join lateral unnest(e.tags) as t
+          join unambiguous v on v.key = lower(btrim(t))
+         where e.created_at < now() - interval '1 hour'
+      )
+      select count(*) from pairs p
+       where not exists (
+         select 1 from unified_tag_assignments a
+          where a.entity_id = p.entity_id and a.tag_id = p.tag_id
+            and a.entity_type = 'event')),
     -- ── 2026-08-29 glossary content-quality keys ─────────────────────────
     'alias_equals_name', (
       select count(*) from tag_aliases a

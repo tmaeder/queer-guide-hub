@@ -105,6 +105,13 @@ export const HYGIENE_METRICS: HygieneMetric[] = [
     hint: 'The mode=prose pass drains ~300/day (subject check + house-voice rewrite). Read the trend.',
   },
   {
+    key: 'event_tag_pairs_unlinked',
+    label: 'Event tag links missing',
+    zero: true,
+    hint: 'THE gauge for run_event_tag_link: resolvable (event, tag) pairs with no assignment row, ignoring events under an hour old so normal cron lag does not register. A true zero-invariant.',
+  },
+
+  {
     key: 'events_with_tags_unlinked',
     label: 'Events not linked to tags',
     advisory: true,

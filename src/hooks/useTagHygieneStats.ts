@@ -37,6 +37,11 @@ export interface TagHygieneStats {
    *  check while /tags/anal-sex served four words as its lead paragraph. */
   placeholder_description_active: number;
   event_tag_strings_unresolved: number;
+  /** Resolvable (event, tag) pairs with no assignment row — THE gauge for
+   *  run_event_tag_link, and a true zero-invariant. Carried from PR #3323. */
+  event_tag_pairs_unlinked: number;
+  /** Coverage only; its floor is NOT 0 (~3,856 events are unlinkable by
+   *  design), so a non-zero reading means nothing on its own. */
   events_with_tags_unlinked: number;
   /** An alias identical to its own tag's name asserts nothing. */
   alias_equals_name: number;
