@@ -2,7 +2,6 @@ import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { TgeuSourceLine } from '@/components/rights/SourceLine';
 import {
-  isAffirmed,
   readAffirmation,
   readRequirement,
   readTransViolence,
@@ -84,6 +83,62 @@ export function TransSafetyBand({ country }: { country: Record<string, unknown> 
     }
   };
 
+  /**
+   * The same defect as `requirementLabel`, one row up and left standing when
+   * that one was fixed: `self_id` was rendered `isAffirmed(...) ? yes : no`,
+   * so every reading that is not a bare "Yes" printed "No".
+   *
+   * ILGA answers this one with No / No data / Yes / Varies / Unclear / N/A /
+   * "Yes (for NB marker only)". Measured on prod, 2026-09-03, over the 244
+   * countries carrying a non-empty `lgbti_gender_recognition`:
+   *
+   *   No 138 · No data 70 · Yes 22 · Varies 7 · Unclear 4 · N/A 2 · Yes(NB) 1
+   *
+   * So 83 of 244 — every `No data`, `Varies`, `Unclear` and `N/A` — printed
+   * "By self-determination: No" for a fact nobody recorded. On a trans-rights
+   * page that asymmetry is the whole point: telling a reader a country refuses
+   * self-determination when the truth is "unrecorded" is an affirmative false
+   * negative, and it is worse than saying nothing.
+   *
+   * `N/A` gets "No procedure exists" for the same reason it does above, and
+   * the claim was re-measured rather than inherited: both `N/A` rows (Hungary,
+   * Qatar) carry `gender_marker = "Not Possible"` and
+   * `established_procedure = "No"` — 2 of 2. There is no procedure for
+   * self-declaration to be part of.
+   *
+   * `unrecorded` returns null and the row hides, matching `requirementLabel`
+   * and this band's "presence of a recorded value is the only signal" contract.
+   * That is a deliberate behaviour change: the row used to render for the 70
+   * `No data` countries, because `lgr.self_id != null` is true of the STRING
+   * "No data".
+   */
+  const affirmationLabel = (raw: unknown): string | null => {
+    switch (readAffirmation(raw)) {
+      case 'yes':
+        return yes;
+      // Nepal, and only Nepal. Not general self-determination, but rendering it
+      // as a flat "No" erases a provision that does exist — so the source value
+      // is shown verbatim.
+      case 'yes_qualified':
+        return String(raw);
+      case 'no':
+        return no;
+      case 'inapplicable':
+        return t('rights.trans.row.noProcedure', 'No procedure exists');
+      // Both `Varies` and `Unclear` land here, following `readAffirmation`.
+      // They are not the same thing — `Varies` is how ILGA codes a federation
+      // whose sub-jurisdictions disagree (Australia, Canada, Mexico, US), which
+      // carries more information than doubt does — but separating them means a
+      // new `AffirmationReading` state, which moves `affirmationPolarity` and
+      // therefore trans verdicts. That is a vocabulary decision, not a
+      // rendering one, and it does not belong in this fix.
+      case 'indeterminate':
+        return t('rights.trans.row.unclear', 'Unclear');
+      default:
+        return null;
+    }
+  };
+
   return (
     <section
       id="trans"
@@ -105,19 +160,10 @@ export function TransSafetyBand({ country }: { country: Record<string, unknown> 
           {marker ? (
             <Row label={t('rights.trans.row.marker', 'Gender marker change')} value={marker} />
           ) : null}
-          {lgr.self_id != null ? (
+          {affirmationLabel(lgr.self_id) ? (
             <Row
               label={t('rights.trans.row.selfId', 'By self-determination')}
-              value={
-                // Nepal records "Yes (for NB marker only)". That is not general
-                // self-determination, but rendering it as a flat "No" erases a
-                // provision that does exist — so the source value is shown.
-                readAffirmation(lgr.self_id) === 'yes_qualified'
-                  ? String(lgr.self_id)
-                  : isAffirmed(lgr.self_id)
-                    ? yes
-                    : no
-              }
+              value={affirmationLabel(lgr.self_id) as string}
               note={t('rights.trans.row.selfIdNote', 'No medical or judicial gatekeeper.')}
             />
           ) : null}
