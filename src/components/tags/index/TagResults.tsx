@@ -51,7 +51,10 @@ export interface TagResultsProps {
   aliasIds?: Set<string>;
   /** Graph view only — narrows the graph to one parent category. */
   graphCategory?: string | null;
-  graphCategories?: string[];
+  /** `tag_categories.id` + display name. The graph filters by id, so a bare
+   *  name list cannot drive it — this is a pass-through to
+   *  `TagRelationshipGraph.categories` and must keep its shape. */
+  graphCategories?: { id: string; name: string }[];
 }
 
 export function TagResults({

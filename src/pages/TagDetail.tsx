@@ -64,6 +64,8 @@ import { TagAliasesDisplay } from '@/components/tags/TagAliasesDisplay';
 import { TagSafetyCallout } from '@/components/tags/TagSafetyCallout';
 import { TagWikiContent } from '@/components/tags/TagWikiContent';
 import { TagInterchange } from '@/components/tags/TagInterchange';
+import { TagInfographics } from '@/components/tags/TagInfographics';
+import { figuresForSlug } from '@/components/tags/infographics/registry';
 import { TagLinkedContent } from '@/components/tags/TagLinkedContent';
 
 /** `entity_kind` is a classification, not a state — which is exactly what
@@ -148,12 +150,29 @@ export default function TagDetail() {
    *  on most terms — only a minority carry a `long_description` with headings —
    *  which is why the component this replaces bailed out below three headings
    *  and showed an empty sidebar the rest of the time. */
+  /** Read from the EAGER registry, never from the lazy renderer. The station
+   *  has to exist on first render — a strip that grows a stop once a chunk
+   *  resolves points at nothing in the meantime. */
+  const figures = useMemo(() => figuresForSlug(tag?.slug), [tag?.slug]);
+
   const stations = useMemo<RouteStation[]>(() => {
     if (!tag) return [];
     const s: RouteStation[] = [];
     if (tag.description || tag.long_description) {
       s.push({ id: 'about', title: t('tags.detail.about', 'About') });
       s.push(...(wiki?.sections ?? []).map((x) => ({ ...x, depth: 2 as const })));
+    }
+    if (figures.length > 0) {
+      s.push({ id: 'figure', title: t('tags.detail.figure', 'Diagram') });
+      if (figures.length > 1) {
+        s.push(
+          ...figures.map((f) => ({
+            id: `figure-${f.id}`,
+            title: t(f.titleKey, f.titleFallback),
+            depth: 2 as const,
+          })),
+        );
+      }
     }
     s.push({ id: 'taxonomy', title: t('tags.detail.inTaxonomy', 'In the taxonomy') });
     if (usage?.venue_count) s.push({ id: 'venues', title: t('tags.detail.venues', 'Venues') });
@@ -164,7 +183,7 @@ export default function TagDetail() {
       s.push({ id: 'communities', title: t('tags.detail.communities', 'Communities') });
     }
     return s;
-  }, [tag, wiki, usage, t]);
+  }, [tag, wiki, usage, figures, t]);
 
   const { activeId, goToStation } = useActiveStation(stations);
 
@@ -355,6 +374,10 @@ export default function TagDetail() {
           ) : null}
         </section>
       )}
+
+      {/* The picture, then its place in the taxonomy. A figure elaborates the
+          definition; it never replaces it, so it always follows #about. */}
+      <TagInfographics slug={tag.slug} pageAlreadyGated={isAdult} />
 
       <TagInterchange tagId={tag.id} tagName={tag.name} />
 
