@@ -52,7 +52,12 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs'
 const MIGRATIONS_DIR = 'supabase/migrations'
 const VERSION_RE = /^(\d{14})_.+\.sql$/
 const PROJECT_REF = process.env.SUPABASE_PROJECT_REF || 'xqeacpakadqfxjxjcewc'
-// The all-zeros row is the CLI's schema baseline; it never has a repo file.
+// The all-zeros row is the CLI's schema baseline. It is filtered out of BOTH
+// sides: the remote row and `00000000000000_baseline.sql`, which this repo does
+// commit. Dropping it from only the remote set made the summary line under-report
+// remote by exactly 1 forever ("1462 remote versions ... among 1463 repo files"
+// with nothing actually pending) — an off-by-one that reads like a stranded
+// migration and costs a real investigation to dismiss.
 const BASELINE = new Set(['00000000000000'])
 
 // version -> the `name` remote history recorded for it. Populated ONLY on the
@@ -149,12 +154,12 @@ function repoFileNames() {
   return out
 }
 
-/** 14-digit versions of the migration files committed in the repo. */
+/** 14-digit versions of the migration files committed in the repo, sans baseline. */
 function repoVersions() {
   const out = new Set()
   for (const f of readdirSync(MIGRATIONS_DIR)) {
     const m = f.match(VERSION_RE)
-    if (m) out.add(m[1])
+    if (m && !BASELINE.has(m[1])) out.add(m[1])
   }
   return out
 }
@@ -183,7 +188,10 @@ function mergeBaseVersions() {
   const versions = new Set()
   for (const line of out.split('\n')) {
     const m = line.split('/').pop()?.match(VERSION_RE)
-    if (m) versions.add(m[1])
+    // Must drop the baseline here too: this set is compared against `repo`,
+    // which no longer contains it, so keeping it would report the baseline as
+    // an applied-but-missing version and fail the degraded check outright.
+    if (m && !BASELINE.has(m[1])) versions.add(m[1])
   }
   return versions.size > 0 ? versions : null
 }
