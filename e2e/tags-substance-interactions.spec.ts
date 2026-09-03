@@ -94,18 +94,22 @@ test.describe('@smoke substance interactions', () => {
   // credit — which is precisely the defect, one source later. Reading the
   // response also means the assertion needs no API key and no DB access.
   //
-  // IT ASSERTS THE PROPERTY, NOT THE SHAPE. The rule is "the credit names
-  // exactly the sources the response exposes, one each", which holds against
-  // BOTH envelopes: the new `sources` array, and the deprecated scalar pair a
-  // cached bundle can still meet in the window before the migration applies.
-  // An earlier draft opened with `expect(Array.isArray(matrix.sources))`, which
-  // pinned the implementation instead — and since `Critical paths` builds this
-  // branch but calls the LIVE RPC, that assertion could not pass until the
-  // migration it gates on had already merged. A required check that only goes
-  // green after the merge it blocks is a deadlock, not a guard. Reading
-  // provenance the same way the page does removes it: the test tracks whatever
-  // the data actually offers, and tightens by itself from one source to three
-  // the moment `20261202100000` lands.
+  // THE RULE IS "the credit names exactly the sources the response exposes, one
+  // each" — a property of the page against its own data, not a fixed list.
+  //
+  // Its shape is a record of a deadlock worth not repeating. The first draft
+  // opened with `expect(Array.isArray(matrix.sources))`, but `Critical paths`
+  // is a REQUIRED check that builds this branch against the LIVE backend, so
+  // that assertion could not pass until the migration adding `sources` had
+  // already merged — a check that only goes green after the merge it blocks.
+  // It was rewritten to read whatever provenance the response offered, which
+  // held against both envelopes and let the migration land.
+  //
+  // That accommodation is now retired: `20261207100000` deleted the scalars, so
+  // requiring `sources` is simply true, and the assertion is back to its
+  // strongest form with no deadlock left to dodge. **A compatibility branch is
+  // temporary by construction — delete it when the thing it tolerated is gone**,
+  // or it silently becomes the fallback for a state that should fail loudly.
   test('the grid credits every source in it, exactly once each', async ({ page }) => {
     const rpc = page.waitForResponse(
       (r) => r.url().includes('substance_interaction_matrix') && r.status() === 200,
@@ -114,18 +118,33 @@ test.describe('@smoke substance interactions', () => {
     await page.goto('/tags/interactions');
     const matrix = await (await rpc).json();
 
+    // `sources` is REQUIRED, and asserting that is now correct rather than a
+    // deadlock. This read the array `?? [{source: matrix.source, …}]` while the
+    // RPC still returned those top-level scalars — necessary at the time, since
+    // `Critical paths` builds this branch against the LIVE backend and the
+    // migration adding `sources` had not merged yet. `20261207100000` then
+    // DELETED both scalars, so the fallback became unreachable and this spec was
+    // their last reader in the repo.
+    //
+    // Reinstating it would be worse than dead code: `matrix.source` was a
+    // literal 'tripsit' over a grid where 55 of 476 cells are eve&rave or FDA,
+    // so a fallback would reconstruct exactly the single-source provenance that
+    // migration removed — and it would do it silently, at the moment `sources`
+    // went missing, which is precisely when the test should fail instead.
+    expect(
+      Array.isArray(matrix.sources),
+      'substance_interaction_matrix must return a sources array (20261207100000)',
+    ).toBe(true);
+
     // `tripsit` is the one key the importers store lowercase; everything else is
     // stored display-ready. Mirrors `sourceLabel` in src/lib/substanceRisk.ts.
     const label = (s: string) => (s === 'tripsit' ? 'TripSit' : s);
-    const provenance: Array<{ source?: string; source_url?: string }> = Array.isArray(
-      matrix.sources,
-    )
-      ? matrix.sources
-      : [{ source: matrix.source, source_url: matrix.source_url }];
 
     const expected = [
       ...new Set(
-        provenance.filter((s) => s.source && s.source_url).map((s) => label(s.source as string)),
+        (matrix.sources as Array<{ source?: string; source_url?: string }>)
+          .filter((s) => s.source && s.source_url)
+          .map((s) => label(s.source as string)),
       ),
     ].sort();
 
