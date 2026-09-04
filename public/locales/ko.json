@@ -4081,7 +4081,9 @@
       "no": "[KO] No",
       "varies": "[KO] Varies",
       "unclear": "[KO] Unclear",
-      "notApplicable": "[KO] Not applicable"
+      "notApplicable": "[KO] Not applicable",
+      "required": "[KO] Required",
+      "notRequired": "[KO] Not required"
     },
     "attr": {
       "so": {
