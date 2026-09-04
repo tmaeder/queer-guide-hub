@@ -44,6 +44,12 @@ export const HYGIENE_METRICS: HygieneMetric[] = [
     hint: 'Glossary photography retired 2026-08-28 (tags render drawn TagPlates). Non-zero means a writer is reintroducing photos.',
   },
   { key: 'indexable_without_description', label: 'Indexable, no prose', zero: true },
+  {
+    key: 'indexable_marketplace_facet',
+    label: 'Indexable marketplace facet',
+    zero: true,
+    hint: 'color-*/size-*/genre-* are namespaced vocabulary, not definitions. Non-zero means facet pages are being offered to crawlers.',
+  },
   { key: 'merged_but_not_status_merged', label: 'Merged but still active', zero: true },
   {
     key: 'placeholder_description_active',

@@ -10,8 +10,12 @@
   "event_tag_pairs_unlinked": 0,
   "event_tag_strings_unresolved": 363,
   "events_with_tags_unlinked": 35131,
+  "indexable_marketplace_facet": 0,
   "indexable_without_description": 0,
   "merged_but_not_status_merged": 0,
+  "name_contains_hashtag": 0,
+  "name_mojibake": 1,
+  "non_latin_name": 0,
   "nonclean_entity_type": 0,
   "placeholder_description_active": 137,
   "prose_unreviewed": 2903,
@@ -19,6 +23,7 @@
   "refusal_prose_active": 0,
   "relations_pending_review": 120,
   "sensitive_without_description": 19,
+  "slug_diacritic_lossy": 0,
   "uncategorized_active": 7,
   "unreviewed_typed_alias": 70,
   "_advisory": [
@@ -53,10 +58,7 @@
     "slug_diacritic_lossy": "Zero-invariant. A slug that lost a diacritic to a hyphen (Bühne -> b-hne) because a producer hand-slugged without transliterating and its slug beat both DB triggers. 11 -> 0 by 20261211120000, which also sealed unified_tags_normalize_slug so a caller slug can no longer win for a non-ASCII name. The predicate REQUIRES name ~ non-ASCII: without it, it matches 115 active rows of which only 8 are defects, the other 106 being deliberate namespace prefixes on ASCII names (mat-silicone = 4,643 uses). It also excludes status=merged, because a merged row keeps its slug as its redirect trail and repairing caf -> cafe would break the historical /tags/caf URL; ten rows are legitimately lossy for that reason.",
     "name_mojibake": "Zero-invariant. U+FFFD in a tag NAME, mirroring the existing alias_mojibake idiom. Excludes status=merged: exactly one row carries this, M?Llerian, and it is merged — a frozen redirect key, not rendered prose. Scoped rather than baselined at 1 so this stays a true zero-invariant; the excluded row is named in 20261211120300 rather than silently dropped.",
     "name_contains_hashtag": "Zero-invariant. A scraped hashtag concatenation published as vocabulary — \"Pulse #Mordopfer #Hassverbrechen\" was a tag NAME, and seo_indexable. 8 -> 0 by 20261211120100. The producer that minted them (source-tags-extract) no longer writes unified_tags at all; it files ai_suggestions proposals for review.",
-    "non_latin_name": "Zero-invariant, and already 0 before this shipped. Asserts trg_tag_language_guard still holds — it rejects Cyrillic/CJK/Arabic/Greek/Hebrew/Thai/Devanagari outright, which is deterministic and cannot false-positive. Non-zero means the trigger was dropped or a writer bypassed it. Deliberately NOT widened to Latin-script language detection: the obvious heuristic measures ~5% precision on this corpus, flagging Party, Film, Pride and Transgender, which are English words German borrowed."
-  },
-  "slug_diacritic_lossy": 0,
-  "name_mojibake": 1,
-  "name_contains_hashtag": 0,
-  "non_latin_name": 0
+    "non_latin_name": "Zero-invariant, and already 0 before this shipped. Asserts trg_tag_language_guard still holds — it rejects Cyrillic/CJK/Arabic/Greek/Hebrew/Thai/Devanagari outright, which is deterministic and cannot false-positive. Non-zero means the trigger was dropped or a writer bypassed it. Deliberately NOT widened to Latin-script language detection: the obvious heuristic measures ~5% precision on this corpus, flagging Party, Film, Pride and Transgender, which are English words German borrowed.",
+    "indexable_marketplace_facet": "Zero-invariant. A marketplace facet (color-*/size-*/genre-*) is namespaced vocabulary, not a glossary definition, so it must never be seo_indexable. Added to the LIVE tag_hygiene_stats() by raw SQL with no migration; recorded properly in 20261227094000. Baselined at 0 because it READS 0 — not a backlog, and non-zero means a writer started indexing facet pages."
+  }
 }
