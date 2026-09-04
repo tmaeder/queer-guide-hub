@@ -45,10 +45,27 @@ const STEP = 'venue-accessibility-osm'
 const AUTOMATION_SLUG = 'venue_accessibility_osm'
 const UA = 'QueerGuideBot/1.0 (https://queer.guide; contact@queer.guide)'
 const DEFAULT_RADIUS_M = 60
-const PER_CALL_MS = 60_000
-// The edge wall is 546s. Stop well inside it so the run always gets to write its
-// summary — a run that dies mid-batch leaves no record of what it probed.
-const WALL_CLOCK_MS = 240_000
+// A single hung mirror must never be able to consume the whole budget. Measured
+// 2026-09-02: a healthy overpass-api.de answers in 1.1s, so 25s is already an
+// order of magnitude of headroom, and two of them still fit inside WALL_CLOCK_MS
+// with room to write the summary. At the old 60s, two hung calls alone blew the
+// budget before any venue was written.
+const PER_CALL_MS = 25_000
+// THE BINDING LIMIT IS THE GATEWAY, NOT THE EDGE WALL. This said "the edge wall
+// is 546s" and budgeted 240s against it; prod disagrees. Measured 2026-09-04,
+// four fires in one morning:
+//   04:00 / 03:40  504 {"code":"IDLE_TIMEOUT","message":"Request idle timeout limit (150s) reached"}
+//   04:20 / 04:40  200, processed 25, applied 2 / 0
+// The function itself completed and wrote in every case — the 504 is the gateway
+// giving up at 150s while the work was still in flight, so it arrives with
+// `timed_out:false` and `status_code:504` and is recorded as `error`. That feeds
+// consecutive_failures against auto_pause_threshold=3, which is precisely how
+// this job auto-paused itself with nothing wrong with it.
+//
+// 546s is the CPU/wall ceiling for a function that has already begun streaming a
+// response. It is not how long a caller will wait for the first byte. Budget
+// against the smaller number.
+const WALL_CLOCK_MS = 120_000
 // OSM asks for one request per second from bulk consumers. This is a policy
 // obligation, not a tuning knob: do not parallelise around it.
 const POLITENESS_MS = 1_100
@@ -83,14 +100,25 @@ async function askOverpass(endpoint: string, query: string) {
  * Nothing in a regional extract's response identifies it as one, so this is the
  * only place the distinction can be made.
  */
-async function probeEndpoints(): Promise<{ healthy: string[]; probe: Record<string, string>; allBusy: boolean }> {
+async function probeEndpoints(
+  deadline: number,
+): Promise<{ healthy: string[]; probe: Record<string, string>; allBusy: boolean }> {
   const healthy: string[] = []
   const probe: Record<string, string> = {}
   for (const endpoint of OVERPASS_ENDPOINTS) {
+    // The probe shares one budget with the work. Without this the probe alone
+    // could spend the entire wall clock and the run would return having looked
+    // at zero venues — which reads as "upstream is down" rather than "we never
+    // asked", the exact confusion this file's endpoint-ordering comment below
+    // was written to prevent.
+    if (Date.now() > deadline) {
+      probe[endpoint] = 'unprobed (wall clock exhausted during probe)'
+      continue
+    }
     // STOP AT THE FIRST HEALTHY MIRROR. One planet endpoint is all a run needs,
     // and probing the rest is not free: measured 2026-09-02, overpass-api.de
     // answered in 1.1s while kumi.systems hung to the full timeout. Probing
-    // every endpoint × 2 attempts × PER_CALL_MS spends up to ~120s of a 240s
+    // every endpoint × 2 attempts × PER_CALL_MS spends up to ~100s of a 120s
     // wall clock before the first venue is even looked at — a self-inflicted
     // starvation that looks exactly like the upstream being down.
     if (healthy.length > 0) {
@@ -172,7 +200,7 @@ Deno.serve(async (req: Request) => {
   }
 
   // --- endpoint health -------------------------------------------------------
-  const { healthy, probe, allBusy } = await probeEndpoints()
+  const { healthy, probe, allBusy } = await probeEndpoints(deadline)
   if (healthy.length === 0) {
     // Every mirror failed the control query. Write NOTHING and stamp NOTHING —
     // an outage is absence of evidence, and recording it as evidence of absence
