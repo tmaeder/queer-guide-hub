@@ -21,6 +21,58 @@ export type RightsFeatureCollection = GeoJSON.FeatureCollection<
   GeoJSON.GeoJsonProperties
 >;
 
+/** What `WorldChoropleth` consumes: features carrying some class key. */
+export type ClassifiedFeatureCollection = RightsFeatureCollection;
+
+/**
+ * Join boundary polygons to a country lookup by `ISO_A2` ⇄ `code` and stamp
+ * each feature with a class under `classProperty`.
+ *
+ * The generic core of `classifyBoundaries`, extracted when /rights/trans added
+ * a second choropleth over the same polygons with a different vocabulary. A
+ * boundary feature with no matching country row takes `emptyClass` — never
+ * silently dropped, never guessed into a measured class.
+ */
+export function classifyBoundariesBy<T extends { code?: string | null }>(
+  boundaries: GeoJSON.FeatureCollection,
+  countries: readonly T[],
+  classProperty: string,
+  classOf: (country: T) => string,
+  emptyClass: string,
+): ClassifiedFeatureCollection {
+  const byCode = new Map<string, T>();
+  for (const c of countries) {
+    if (c.code) byCode.set(c.code.toUpperCase(), c);
+  }
+  return {
+    ...boundaries,
+    features: boundaries.features.map((feature) => {
+      const iso = String(feature.properties?.ISO_A2 ?? '').toUpperCase();
+      const country = byCode.get(iso);
+      return {
+        ...feature,
+        properties: {
+          ...feature.properties,
+          [classProperty]: country ? classOf(country) : emptyClass,
+        },
+      };
+    }),
+  };
+}
+
+/** Tally any class property across already-joined features. */
+export function tallyFeatureClasses(
+  features: readonly GeoJSON.Feature[],
+  classProperty: string,
+): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const f of features) {
+    const cls = f.properties?.[classProperty] as string | undefined;
+    if (cls) counts[cls] = (counts[cls] ?? 0) + 1;
+  }
+  return counts;
+}
+
 export const EMPTY_CLASS_COUNTS: Record<MapClass, number> = {
   protected: 0,
   partial: 0,
@@ -47,24 +99,13 @@ export function classifyBoundaries(
   topic: RightTopic,
   lens: RightsLens,
 ): RightsFeatureCollection {
-  const byCode = new Map<string, RightsCountry>();
-  for (const c of countries) {
-    if (c.code) byCode.set(c.code.toUpperCase(), c);
-  }
-  return {
-    ...boundaries,
-    features: boundaries.features.map((feature) => {
-      const iso = String(feature.properties?.ISO_A2 ?? '').toUpperCase();
-      const country = byCode.get(iso);
-      const rightsClass: MapClass = country
-        ? mapClassFor(country as unknown as Record<string, unknown>, topic, lens)
-        : 'nodata';
-      return {
-        ...feature,
-        properties: { ...feature.properties, rightsClass },
-      };
-    }),
-  };
+  return classifyBoundariesBy(
+    boundaries,
+    countries,
+    'rightsClass',
+    (country) => mapClassFor(country as unknown as Record<string, unknown>, topic, lens),
+    'nodata' satisfies MapClass,
+  );
 }
 
 /** Tally `rightsClass` across already-joined features — what the fill layer
