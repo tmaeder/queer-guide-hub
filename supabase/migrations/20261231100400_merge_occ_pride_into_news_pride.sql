@@ -85,7 +85,7 @@ begin
   perform public.merge_tag_concept(
     p_canonical_id := v_canonical,
     p_duplicate_id := v_duplicate,
-    p_actor        := 'migration:20261226100000_merge_occ_pride',
+    p_actor        := 'migration:20261231100400_merge_occ_pride',
     p_source       := 'pride key collision blocked 7,398 event tag uses; duplicates confirmed at 56.6%/58.3% pride-titled'
   );
 
