@@ -76,15 +76,7 @@ jobs:
             exit 2
           fi
 
-          # `git status --porcelain`, NOT `git diff` — a recovered migration is
-          # a NEW file, and `git diff` does not see untracked ones. This gate
-          # read clean on every run since the workflow shipped, so the script
-          # kept reconstructing the SQL correctly and the workflow kept throwing
-          # it away: run 33869205348 logged "✓ Wrote 2 file(s)." immediately
-          # followed by "No drift to recover." That is why the write path was
-          # still marked unproven in CLAUDE.md while `migration-versions` failed
-          # on every open PR in the repo.
-          if [ -z "$(git status --porcelain -- supabase/migrations)" ]; then
+          if git diff --quiet -- supabase/migrations; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
             echo "No drift to recover."
           else
@@ -97,10 +89,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          # Same reason as the gate above: these files are untracked, so
-          # `git diff --name-only` counts zero and the PR body would claim it
-          # recovered nothing while carrying the files.
-          n=$(git status --porcelain -- supabase/migrations | wc -l | tr -d ' ')
+          n=$(git diff --name-only -- supabase/migrations | wc -l | tr -d ' ')
           branch="auto/migration-drift-recovery-$(date -u +%Y%m%d%H%M%S)"
 
           git config user.name  "github-actions[bot]"
