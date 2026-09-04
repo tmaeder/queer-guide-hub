@@ -55,11 +55,24 @@ test.describe('the figure band', () => {
     expect(await radios.count()).toBeGreaterThan(10);
   });
 
-  test('does not render on a term no figure teaches', async ({ page }) => {
-    // The positive control for every "it renders" assertion above: without
-    // this, a band that always rendered would pass all of them.
-    await page.goto('/tags/leather');
+  test('does not render on a term a figure only MENTIONS', async ({ page }) => {
+    // The control for every "it renders" assertion above: without it, a band
+    // that always rendered would pass all of them.
+    //
+    // `cisgender` rather than an unrelated term, for two reasons. It is named
+    // by the Four Lines figure with `role: 'mentioned'`, so this asserts the
+    // distinction the reverse index exists for — a term in a legend has not
+    // been taught and does not earn a 400px interactive — instead of the much
+    // weaker "a random term has no diagram".
+    //
+    // And it is NOT `is_adult`. An adult term sits behind the age gate, so the
+    // page itself would be absent and `#figure` would be 0 because nothing
+    // rendered at all. That passes for the wrong reason, and against prod
+    // (safe mode defaults on, anonymous) it would pass every single time.
+    await page.goto('/tags/cisgender');
     await expect(page.locator('h1')).toBeVisible({ timeout: 20000 });
+    // The page really is here — so a zero below means "no band", not "no page".
+    await expect(page.locator('#about')).toBeVisible();
     await expect(page.locator('#figure')).toHaveCount(0);
   });
 });
