@@ -8,6 +8,10 @@ name: Data Quality Gates
 on:
   pull_request:
     branches: [main]
+  # Merge queue: a required check that never reports on the merge_group event
+  # leaves the queued PR pending forever. Same failure this repo already hit
+  # twice with `paths:` filters on required checks.
+  merge_group:
   schedule:
     - cron: '17 5 * * *'
   workflow_dispatch:
@@ -78,7 +82,7 @@ jobs:
       # outage block every unrelated PR in the repo. Daily is the right resolution
       # for documents that change on the order of years.
       - name: Published legal citations still resolve
-        if: ${{ !cancelled() && github.event_name != 'pull_request' && env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
+        if: ${{ !cancelled() && github.event_name != 'pull_request' && github.event_name != 'merge_group' && env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
         run: node scripts/check-legal-citation-links.mjs
 
       - name: Skip (missing secrets)
