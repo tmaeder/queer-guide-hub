@@ -62,18 +62,22 @@ function gatedDetailResult(): DetailResult {
 }
 
 /**
- * Distinguish a genuinely-missing slug from a safety-gated row the PostgREST key
- * can't see. On prod the Pages function reads with the anon key, so RLS hides a
- * gated venue/event → fetchOne returns null and the middleware would hard-404
+ * Distinguish a genuinely-missing slug from a gated row the PostgREST key can't
+ * see. On prod the Pages function reads with the anon key, so RLS hides a gated
+ * venue/event → fetchOne returns null and the middleware would hard-404
  * (wrong: the place exists, the user just needs to sign in). The anon-callable
  * boolean RPC `gated_entity_exists` reports existence without leaking any row
  * data, so we can return a non-null gated placeholder instead — which lets the
  * middleware serve the SPA shell (humans get the GatedDetailFallback sign-in
  * gate) while bots still receive noindex + no real content.
+ *
+ * `tag` is gated for a different reason than the places above — sensitive prose
+ * no human has reviewed, not a criminalising jurisdiction — but the question
+ * this asks is the same one: does a row exist here that anon RLS hides?
  */
 async function isGatedEntity(
   env: Env,
-  entityType: 'venue' | 'event' | 'milestone' | 'guide',
+  entityType: 'venue' | 'event' | 'milestone' | 'guide' | 'tag',
   slug: string,
 ): Promise<boolean> {
   if (!env.SUPABASE_URL) return false;
@@ -970,6 +974,34 @@ async function villageDetail(
 
 // Tags — /tags/:slug
 
+/**
+ * Mirror of the SQL `public.tag_is_anon_gated(is_sensitive, verification_status)`
+ * (20261218100000), which is also what `unified_tags_public_gated_read` is
+ * written through. Keep the three in step: this is the only copy RLS cannot
+ * enforce for us.
+ *
+ * It is needed because `fetchRows` PREFERS the service-role key, which bypasses
+ * RLS entirely. On prod the Pages function has only the anon key, so a gated tag
+ * already comes back as `null` and the `isGatedEntity` branch handles it — but
+ * that is an accident of which secret is bound, not a guarantee. With a
+ * service-role key configured (previews, local) the row arrives in full and this
+ * is the only thing standing between an unreviewed explicit definition and the
+ * crawler-visible `<article>` body. `seo_indexable=false` alone is not enough:
+ * it suppresses indexing, not the prose we hand over.
+ *
+ * NULL `verification_status` means UNVERIFIED, not "not gated" — the SQL policy
+ * denies on it (`= any(...)` yields NULL, not false), so the default here must
+ * deny too.
+ */
+export function tagIsAnonGated(row: {
+  is_sensitive?: unknown;
+  verification_status?: unknown;
+}): boolean {
+  if (row.is_sensitive !== true) return false;
+  const status = typeof row.verification_status === 'string' ? row.verification_status : '';
+  return status !== 'reviewed' && status !== 'locked';
+}
+
 async function tagDetail(env: Env, slug: string, pathname: string): Promise<DetailResult | null> {
   // status=eq.active mirrors fetchTagWithCategories in src/hooks/usePageFetchers.ts,
   // and is the same trick as venueDetail's duplicate_of_id=is.null above: a merged
@@ -982,12 +1014,23 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
   const rows = await fetchRows(
     env,
     'unified_tags',
-    'id,name,slug,description,short_description,long_description,category,wikipedia_url,wikidata_id,seo_indexable,updated_at',
+    'id,name,slug,description,short_description,long_description,category,wikipedia_url,wikidata_id,seo_indexable,is_sensitive,verification_status,updated_at',
     `slug=eq.${encodeURIComponent(slug)}&status=eq.active`,
     1,
   );
   const row = rows[0] ?? null;
-  if (!row) return null;
+  // Same two lines as milestoneDetail/guideDetail, for the tag gate rather than
+  // the safety gate. A null here is ambiguous under the anon key — the row may
+  // exist and be hidden — so ask the boolean RPC before conceding a 404. That
+  // matters more than it looks: `!detail` on a detail path makes the middleware
+  // emit a REAL 404, so without this the SPA never mounts and the sign-in gate
+  // added in src/pages/TagDetail.tsx could never be reached on a hard load.
+  // Measured on prod 2026-09-03: /tags/footjob answered 404 to a browser UA.
+  //
+  // A merged or deprecated tag is excluded by `status='active'` on both sides,
+  // so it still falls through to resolveSlugRedirect's 301.
+  if (!row) return (await isGatedEntity(env, 'tag', slug)) ? gatedDetailResult() : null;
+  if (tagIsAnonGated(row)) return gatedDetailResult();
 
   // Curated legal citations for law tags. The SPA renders these into its own
   // DefinedTerm, but a crawler that does not run JS only ever sees THIS one, so

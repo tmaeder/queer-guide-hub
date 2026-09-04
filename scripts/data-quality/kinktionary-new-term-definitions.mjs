@@ -22,15 +22,31 @@
  *
  * NOTHING HERE IS PUBLISHED ON CREATION. Rows are written with
  * seo_indexable=false, human_reviewed=false and verification_status='unverified'
- * so they are usable for tagging, browsing and site search while remaining
- * invisible to crawlers until a human approves them. That is deliberate: a
- * machine-written definition of an identity or role term is a draft, and this
- * program spent its life retracting prose that was published as though it were
- * not.
+ * so they remain invisible to crawlers until a human approves them. That is
+ * deliberate: a machine-written definition of an identity or role term is a
+ * draft, and this program spent its life retracting prose that was published as
+ * though it were not.
+ *
+ * WHAT "UNPUBLISHED" ACTUALLY COSTS DEPENDS ON `sensitive`, AND THIS HEADER
+ * OVERSTATED IT UNTIL 2026-09-04. It said the rows stay "usable for tagging,
+ * browsing and site search". True of the non-sensitive ones. FALSE of the
+ * sensitive ones: `unified_tags_public_gated_read` admits anon only when the row
+ * is non-sensitive OR `verification_status` is 'reviewed'/'locked', so a
+ * sensitive+unverified row is not anon-readable AT ALL — not browsable, not in
+ * anon site search, not on its own /tags/:slug page. Measured on prod
+ * 2026-09-03: 101 of the ~297 rows this program created are in that state, and
+ * every one HARD 404'd for a signed-out visitor while rendering normally for a
+ * signed-in one. The 404 was fixed in 20261218100000 (the page now offers a
+ * sign-in gate, which is the honest answer); the invisibility is unchanged and
+ * intended. `verification_status` is therefore the lever that publishes a
+ * sensitive term to anon at all, and `seo_indexable`/`human_reviewed` alone do
+ * not do it.
  *
  * `adult` and `sensitive` follow the existing corpus conventions; when in doubt
  * the stricter flag is set, because the cost of over-flagging is a filter and
- * the cost of under-flagging is exposure.
+ * the cost of under-flagging is exposure — and, per the paragraph above, a
+ * larger cost than that phrasing implied: `sensitive` also withholds the term
+ * from every signed-out reader until an editor reviews it.
  *
  * TWO TERMS ARE ABSENT FROM THIS FILE, and neither is a settled exclusion:
  * `footjob` and `anorgasmia` already exist in `unified_tags` as DEPRECATED

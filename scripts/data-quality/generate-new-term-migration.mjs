@@ -13,8 +13,12 @@
  *   human_reviewed      = false   -> truthful; no human has read this prose
  *   verification_status = 'unverified'
  *
- * The rows are usable for tagging, browsing and site search immediately, and
- * become publishable by an editor flipping seo_indexable + human_reviewed.
+ * A NON-SENSITIVE row is usable for tagging, browsing and site search
+ * immediately, and becomes publishable by an editor flipping seo_indexable +
+ * human_reviewed. A SENSITIVE one is not: `unified_tags_public_gated_read` hides
+ * it from anon entirely until `verification_status` reaches 'reviewed' or
+ * 'locked'. This header claimed the first sentence for all rows until
+ * 2026-09-04; see the long note in kinktionary-new-term-definitions.mjs.
  * `deprecate_unused_tags` skips human_reviewed rows only, so an unreviewed term
  * that never gets used will eventually be swept — which is the correct outcome
  * for a draft nobody adopted.
@@ -75,12 +79,23 @@ const sql = `-- Create ${rows.length} glossary terms that exist in the Kinktiona
 -- ${nSourced} written from independently documented meaning, ${nInferred} inferred from the term's name.
 --
 -- NOTHING HERE IS PUBLISHED. Every row is created with seo_indexable=false,
--- human_reviewed=false and verification_status='unverified': usable for
--- tagging, browsing and site search, invisible to crawlers until a human
--- approves it. A machine-written definition of an identity or role term is a
--- draft, and this program spent its life retracting prose that reached
--- production as though it were not — 44 chimera pages, then five wrong-sense
--- revivals created while cleaning them up.
+-- human_reviewed=false and verification_status='unverified': invisible to
+-- crawlers until a human approves it. A machine-written definition of an
+-- identity or role term is a draft, and this program spent its life retracting
+-- prose that reached production as though it were not — 44 chimera pages, then
+-- five wrong-sense revivals created while cleaning them up.
+--
+-- "UNPUBLISHED" IS STRICTER FOR THE SENSITIVE ROWS THAN THIS HEADER SAID until
+-- 2026-09-04, when it claimed every row stayed "usable for tagging, browsing and
+-- site search". That holds for the NON-sensitive rows only.
+-- \`unified_tags_public_gated_read\` admits anon only when a row is non-sensitive
+-- OR its verification_status is 'reviewed'/'locked' — so a sensitive+unverified
+-- row is not anon-readable at all: absent from anon site search and browsing,
+-- and its /tags/:slug page answered signed-out visitors with a hard 404
+-- (measured on prod 2026-09-03, 101 active rows across the Kinktionary
+-- migrations). 20261218100000 replaced that 404 with a sign-in gate; the
+-- invisibility itself is intended and unchanged. \`verification_status\`, NOT
+-- seo_indexable, is the lever that shows a sensitive term to a signed-out reader.
 --
 -- LICENCE. The Kinktionary is licensed NON-COMMERCIAL and queer.guide is
 -- commercial, so NOT ONE WORD OF THEIR PROSE IS COPIED OR ADAPTED. Only their
