@@ -3410,6 +3410,8 @@
     "bodyFallback": "The full story lives on the original source.",
     "originallyPublishedBy": "Originally published by {{source}}.",
     "viewOriginal": "View the original report",
+    "continueAtSource": "Continue reading this article at {{source}}",
+    "continueAtSourceGeneric": "Continue reading at the source",
     "integritySatire": "Flagged as satire. Not a literal report.",
     "integrityAdvertorial": "Sponsored / advertorial content.",
     "integritySentimentConflict": "Sources disagree on tone. Read with care.",
