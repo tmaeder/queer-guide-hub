@@ -26,9 +26,9 @@ export interface TagHygieneStats {
   merged_but_not_status_merged: number;
   sensitive_without_description: number;
   indexable_without_description: number;
-  /** A marketplace facet (color-*/size-*/genre-*) that is publicly indexable.
-   *  Namespaced vocabulary, not a definition — it must never reach a crawler
-   *  as a glossary page. */
+  /** A marketplace facet (`color-`, `size-`, `genre-` slugs) that is publicly
+   *  indexable. Namespaced vocabulary, not a definition — it must never reach
+   *  a crawler as a glossary page. */
   indexable_marketplace_facet: number;
   /** The junction names a category, `unified_tags.category_id` names none. The
    *  junction is the source of truth and the column is derived from it, so
