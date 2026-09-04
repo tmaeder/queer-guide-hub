@@ -47,16 +47,35 @@ async function isAuthed(page: Page): Promise<boolean> {
     .catch(() => false);
 }
 
-/** Switch the list to a slice and wait for the refetch to settle. */
+/** Identity of the rows currently rendered, so a refetch can be detected. */
+async function rowKey(page: Page): Promise<string> {
+  return rows(page).evaluateAll((els) =>
+    els.map((e) => e.getAttribute('aria-label') ?? '').join('|'),
+  );
+}
+
+/**
+ * Switch the list to a slice and wait for the rows to ACTUALLY change.
+ *
+ * Waiting for "some rows exist" is the trap: the outgoing slice's rows are
+ * still on screen and satisfy that immediately, so the assertions run against
+ * the previous view. That is exactly how the first version of this spec failed
+ * — it read the live rows, found no badges, and reported the feature broken.
+ *
+ * The two slices are disjoint by construction (a row is archived or it is not),
+ * so the rendered row set is guaranteed to differ once the refetch lands.
+ * Selecting the option already showing is a no-op and must not wait for a
+ * change that will never come.
+ */
 async function selectView(page: Page, option: string) {
-  await page.getByLabel(TOGGLE).click();
-  await page.getByRole('option', { name: option }).click();
-  // The controller resets to page 1 and refetches; rows are replaced wholesale.
-  await expect
-    .poll(async () => page.getByRole('checkbox', { name: /^Select / }).count(), {
-      timeout: 20_000,
-    })
-    .toBeGreaterThan(0);
+  const trigger = page.getByLabel(TOGGLE);
+  if ((await trigger.textContent())?.trim() === option) return;
+
+  const before = await rowKey(page);
+  await trigger.click();
+  await page.getByRole('option', { name: option, exact: true }).click();
+  await expect.poll(() => rowKey(page), { timeout: 30_000 }).not.toBe(before);
+  await expect(rows(page).first()).toBeVisible();
 }
 
 test.describe('archived state in the content list', () => {
