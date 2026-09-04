@@ -23,7 +23,7 @@
 -- row is not anon-readable at all: absent from anon site search and browsing,
 -- and its /tags/:slug page answered signed-out visitors with a hard 404
 -- (measured on prod 2026-09-03, 101 active rows across the Kinktionary
--- migrations). 20261218100000 replaced that 404 with a sign-in gate; the
+-- migrations). 20261220113000 replaced that 404 with a sign-in gate; the
 -- invisibility itself is intended and unchanged. `verification_status`, NOT
 -- seo_indexable, is the lever that shows a sensitive term to a signed-out reader.
 --

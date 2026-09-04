@@ -36,7 +36,7 @@
  * anon site search, not on its own /tags/:slug page. Measured on prod
  * 2026-09-03: 101 of the ~297 rows this program created are in that state, and
  * every one HARD 404'd for a signed-out visitor while rendering normally for a
- * signed-in one. The 404 was fixed in 20261218100000 (the page now offers a
+ * signed-in one. The 404 was fixed in 20261220113000 (the page now offers a
  * sign-in gate, which is the honest answer); the invisibility is unchanged and
  * intended. `verification_status` is therefore the lever that publishes a
  * sensitive term to anon at all, and `seo_indexable`/`human_reviewed` alone do

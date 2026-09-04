@@ -61,7 +61,7 @@
 -- 'reviewed'/'locked', so `footjob` is not anon-browsable, not in anon site
 -- search, and — measured on prod 2026-09-03 — its /tags/footjob page answered a
 -- signed-out visitor with a hard 404 while rendering in full for a signed-in
--- one. It is one of 101 active tags in that state. 20261218100000 replaced the
+-- one. It is one of 101 active tags in that state. 20261220113000 replaced the
 -- 404 with a sign-in gate, which is the honest answer; the invisibility is
 -- intended and unchanged, and `verification_status` is the lever that ends it.
 --

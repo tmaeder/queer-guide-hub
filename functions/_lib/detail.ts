@@ -976,7 +976,7 @@ async function villageDetail(
 
 /**
  * Mirror of the SQL `public.tag_is_anon_gated(is_sensitive, verification_status)`
- * (20261218100000), which is also what `unified_tags_public_gated_read` is
+ * (20261220113000), which is also what `unified_tags_public_gated_read` is
  * written through. Keep the three in step: this is the only copy RLS cannot
  * enforce for us.
  *
