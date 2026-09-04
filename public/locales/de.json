@@ -3440,6 +3440,8 @@
     "bodyFallback": "Die ganze Geschichte gibt es bei der Originalquelle.",
     "originallyPublishedBy": "Ursprünglich veröffentlicht von {{source}}.",
     "viewOriginal": "Originalbericht ansehen",
+    "continueAtSource": "Diesen Artikel bei {{source}} weiterlesen",
+    "continueAtSourceGeneric": "An der Quelle weiterlesen",
     "integritySatire": "Als Satire markiert – kein wörtlicher Bericht.",
     "integrityAdvertorial": "Gesponserter / werblicher Inhalt.",
     "integritySentimentConflict": "Quellen sind sich im Ton uneinig – mit Vorsicht lesen.",
@@ -4081,7 +4083,9 @@
       "no": "[DE] No",
       "varies": "[DE] Varies",
       "unclear": "[DE] Unclear",
-      "notApplicable": "[DE] Not applicable"
+      "notApplicable": "[DE] Not applicable",
+      "required": "[DE] Required",
+      "notRequired": "[DE] Not required"
     },
     "attr": {
       "so": {

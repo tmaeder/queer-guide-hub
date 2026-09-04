@@ -168,6 +168,60 @@ export function cleanContent(raw: string): string {
 }
 
 /**
+ * Maximum characters of a third-party article body we render on our own page.
+ *
+ * We store the full body because the ingest pipeline needs it (the dedup
+ * identity arm compares `news_articles.content` byte-for-byte, and the
+ * quality/entity-link stages read the prose), but we must not REPUBLISH it.
+ * Measured on prod 2026-09-02: stored content matched the live article at a
+ * median length ratio of 1.02, and 8 of 11 fetchable samples contained both
+ * the source article's first AND last paragraph verbatim — i.e. complete
+ * copies, not excerpts. Rendering that in full is republication.
+ */
+export const ARTICLE_BODY_MAX_CHARS = 1200;
+
+/**
+ * Bound an article body to a readable excerpt, cutting on a natural boundary.
+ *
+ * Prefers a paragraph break, then a sentence end, then a word break — never
+ * mid-word. Returns `truncated` so the caller shows the "read the rest at the
+ * source" affordance only when there is actually more to read.
+ *
+ * Display-only. Never feed the result into anything that writes to the
+ * database: the admin inline editor must keep receiving the full text, or
+ * saving would overwrite the stored body with this excerpt.
+ */
+export function boundArticleBody(
+  raw: string,
+  max: number = ARTICLE_BODY_MAX_CHARS,
+): { text: string; truncated: boolean } {
+  if (!raw) return { text: '', truncated: false };
+  if (raw.length <= max) return { text: raw, truncated: false };
+
+  const window = raw.slice(0, max);
+
+  // Prefer the last paragraph break, if it keeps at least half the budget.
+  const para = window.lastIndexOf('\n\n');
+  if (para >= max * 0.5) return { text: window.slice(0, para).trimEnd(), truncated: true };
+
+  // Then the last sentence end.
+  const sentence = Math.max(
+    window.lastIndexOf('. '),
+    window.lastIndexOf('! '),
+    window.lastIndexOf('? '),
+    window.lastIndexOf('.\n'),
+  );
+  if (sentence >= max * 0.5) {
+    return { text: window.slice(0, sentence + 1).trimEnd(), truncated: true };
+  }
+
+  // Fall back to the last word break so we never cut mid-word.
+  const space = window.lastIndexOf(' ');
+  const cut = space > 0 ? space : max;
+  return { text: window.slice(0, cut).trimEnd() + '…', truncated: true };
+}
+
+/**
  * Remove common trailing junk from RSS/CMS content:
  * - "The post X appeared first on Y."
  * - "Continue reading X →"

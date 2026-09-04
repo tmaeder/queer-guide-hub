@@ -12,6 +12,7 @@ import {
   type RightTopic,
 } from '@/lib/rights/rightsCatalog';
 import { readRightValue, topicScalarValue } from '@/lib/rights/rightsValue';
+import { isAffirmed, requiresIt } from '@/lib/rights/transSafety';
 import { StatusGlyph } from '@/components/rights/StatusGlyph';
 import { ProtectionCells, ProtectionCellsHeader } from '@/components/rights/ProtectionCells';
 import { RightRow } from '@/components/rights/RightRow';
@@ -221,18 +222,23 @@ export default function LGBTJurisdictionInfo({
                           })()}
                         </Badge>
                       ) : null}
-                      {gender.self_id === 'Yes' && (
+                      {isAffirmed(gender.self_id) && (
                         <Badge variant="secondary" className="gap-1 text-2xs">
                           <Check size={11} aria-hidden="true" />
                           {t('country.rights.selfId', 'Self-ID')}
                         </Badge>
                       )}
-                      {gender.requires_surgery === 'Yes' && (
+                      {/*
+                        `requiresIt`, not `=== 'Yes'`. ILGA writes "Required",
+                        so these two badges rendered on no country at all until
+                        2026-09-01 — including the 15 that demand sterilisation.
+                      */}
+                      {requiresIt(gender.requires_surgery) && (
                         <Badge variant="destructive" className="text-2xs">
                           {t('country.rights.requiresSurgery', 'Requires surgery')}
                         </Badge>
                       )}
-                      {gender.requires_diagnosis === 'Yes' && (
+                      {requiresIt(gender.requires_diagnosis) && (
                         <Badge variant="outline" className="text-2xs">
                           {t('country.rights.requiresDiagnosis', 'Requires diagnosis')}
                         </Badge>
