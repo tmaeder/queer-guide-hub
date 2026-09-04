@@ -452,7 +452,15 @@ export function ContentListTable({
                           // 'Cancelled', 'Inactive'), because the per-type word
                           // is the honest one — a ghost city is not a place at
                           // all, which "Archived" would flatten away.
-                          <span className="ml-2 inline-block rounded-badge border border-border-hairline bg-background px-1.5 align-middle text-2xs uppercase tracking-wide text-foreground">
+                          <span
+                            // Stable hook for e2e. Counting by TEXT would be
+                            // ambiguous here: the view toggle itself renders
+                            // "Archived only", and a status column can render
+                            // the word too, so a text count can pass with zero
+                            // badges actually on screen.
+                            data-testid="archived-badge"
+                            className="ml-2 inline-block rounded-badge border border-border-hairline bg-background px-1.5 align-middle text-2xs uppercase tracking-wide text-foreground"
+                          >
                             {config?.lifecycle?.archive?.label ?? 'Archived'}
                           </span>
                         )}
