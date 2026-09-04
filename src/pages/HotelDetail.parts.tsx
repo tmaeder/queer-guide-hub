@@ -101,7 +101,6 @@ export function HotelHero({
   return (
     <>
       <ParallaxHero className="w-full h-[300px] mb-6">
-        { }
         <img
           loading="lazy"
           src={isValidImageUrl(heroImage) ? heroImage : heroFallback}
