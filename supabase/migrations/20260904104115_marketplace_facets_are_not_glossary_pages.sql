@@ -1,19 +1,33 @@
 -- Marketplace facets are not glossary pages.
 --
 -- =============================================================================
--- APPLIED OUT-OF-BAND, 2026-09-04 — read this before re-running
+-- APPLIED OUT-OF-BAND, 2026-09-04 — this file is the record of what ran
 -- =============================================================================
 --
 -- This ran against prod via the Supabase MCP `apply_migration`, because DNS was
 -- unreachable from this environment and the change could not be pushed to a
--- branch. The effects are LIVE. `apply_migration` returned success but wrote NO
--- row to supabase_migrations.schema_migrations, so remote history does not know
--- about it and `db push` WILL run this file again when it merges.
+-- branch. The effects are LIVE.
 --
--- Every step is therefore written to be idempotent, and every assertion checks
--- an END STATE rather than a row count — a count assertion aborts the replay on
--- a database that is already correct, which is the specific way this class of
--- migration bricks a later deploy. Verified on the live database after applying.
+-- THE FILENAME VERSION IS NOT A CHOICE. `apply_migration` stamps the version
+-- from its own call time — 20260904104115 — and this file is named to match, so
+-- `db push` matches by version, sees it already applied, and skips it. Renaming
+-- it to a tidier later version would make `db push` run the whole thing a
+-- second time against a database already in the target state.
+--
+-- The cost of applying this way was not free, and is recorded here rather than
+-- glossed: an applied version with no repo file is exactly what
+-- `check-migration-drift.mjs` fails on, and that check runs on EVERY pull
+-- request. Between the apply and this commit it reddened the whole repo and
+-- triggered three separate recovery PRs (#3388, #3390, #3392) that rebuild this
+-- migration from `schema_migrations.statements`. That rebuild is a lesser
+-- artifact — `statements` holds the parsed SQL, not the reasoning below.
+--
+-- Steps are idempotent and every assertion checks an END STATE rather than a
+-- row count regardless. Not for the `db push` path, which skips this file, but
+-- for a rebuild-from-zero: a `row_count = N` assertion in a repair migration
+-- breaks as soon as any earlier migration changes how many rows are in the
+-- defect state. Verified by replaying every data step against the live
+-- post-apply database inside a rolled-back transaction.
 --
 -- =============================================================================
 -- Measured on prod 2026-09-04
