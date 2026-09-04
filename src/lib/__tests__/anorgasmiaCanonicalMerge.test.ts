@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * `20261218100000_anorgasmia_canonical_merge.sql` takes a clinical sexual
+ * `20261229100000_anorgasmia_canonical_merge.sql` takes a clinical sexual
  * dysfunction off the Fetishes shelf and merges `orgasmic-dysfunction` into
  * `anorgasmia` — AGAINST the alias direction, because Q1772397's Wikidata label
  * is "anorgasmia" and "orgasmic dysfunction" is one of its aliases.
@@ -20,7 +20,7 @@ const MIGRATION = join(
   process.cwd(),
   'supabase',
   'migrations',
-  '20261218100000_anorgasmia_canonical_merge.sql',
+  '20261229100000_anorgasmia_canonical_merge.sql',
 );
 
 const sql = readFileSync(MIGRATION, 'utf8');

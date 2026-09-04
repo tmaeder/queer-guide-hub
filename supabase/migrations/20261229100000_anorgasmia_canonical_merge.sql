@@ -106,13 +106,23 @@
 -- no longer exists is worse than none, and the i18n cron refills it.
 -- `name_i18n` is KEPT — it translates the NAME, which is not changing.
 --
--- ORDERING. This migration must land AFTER 20261217100000, which asserts
--- `anorgasmia` is still `status='deprecated'` — an assertion this change makes
--- false. That migration has NOT applied yet (remote max is 20261216114900), so
--- "db push skips applied versions" does not protect it: if this lands first,
--- 20261217100000 aborts db push for the whole repo with a message about
--- anorgasmia having been revived, which is the wrong diagnosis to hand the next
--- person. The precondition below fails LOUDLY and says what to do instead.
+-- ORDERING. This migration must land AFTER 20261217100000 (PR #3346), which
+-- asserts `anorgasmia` is still `status='deprecated'` — an assertion this change
+-- makes false.
+--
+-- WHEN THIS WAS WRITTEN that migration had not applied (remote max was
+-- 20261216114900), so "db push skips applied versions" did not protect it: had
+-- this landed first, 20261217100000 would have aborted db push for the whole
+-- repo with a message about anorgasmia having been revived, which is the wrong
+-- diagnosis to hand the next person.
+--
+-- #3346 HAS SINCE MERGED and 20261217100000 is applied, so the precondition
+-- below is now a no-op. It is KEPT rather than deleted for two reasons: it costs
+-- one index probe, and it is the only thing that still states the dependency on
+-- a database rebuilt from zero, where every migration replays in version order
+-- and this file once again runs against a 20261217100000 that has just asserted
+-- the opposite of what this one is about to do. Deleting a guard because the
+-- race it covers happens not to be live today is how the race comes back.
 
 do $mig$
 declare
