@@ -315,14 +315,38 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
 
               Only the credits ODbL / CC BY / CC BY-SA actually compel are
               here; see src/lib/attribution.ts for what is left out and why. */}
-          <span className="flex flex-wrap items-center gap-x-4 gap-y-1 text-2xs text-background/50">
+          {/* /70, not the /50 the copyright line beside it uses. Measured on
+              the rendered plate: /50 is 3.5:1 and /70 is 6.9:1. AA wants 4.5:1
+              at this size, and a licence notice is the last thing on the page
+              that should be styled as unreadable fine print. */}
+          <span className="flex flex-wrap items-center gap-x-4 gap-y-1 text-2xs text-background/70">
             {REQUIRED_ATTRIBUTION.map((source) => (
               <span key={source.href}>
+                {/* NO `no-underline` here, and that absence is the whole
+                    mechanism — do not "tidy" it by adding one, and do not add
+                    an `underline` utility either.
+
+                    index.css underlines inline links with a `::after` bar and
+                    explicitly sets `text-decoration: none` on them, so reading
+                    `textDecorationLine` says "none" on a link that is in fact
+                    underlined, and a Tailwind `underline` class is inert
+                    against that unlayered rule. The selector is
+                    `span a:not(.no-underline)`, which this anchor matches by
+                    sitting in a span and staying bare — verified on prod:
+                    ::after 1px, full width, scaleX(1).
+
+                    The footer's own nav links DO carry `no-underline`, because
+                    they are standalone links. These are inline credits inside
+                    a line of text, which is exactly the case the rule is for.
+
+                    Full-strength colour against the row's /70 is a hierarchy
+                    choice, not the accessibility mechanism: it makes the
+                    credited name read ahead of its licence token. */}
                 <a
                   href={source.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-background/50 underline-offset-4 hover:text-background"
+                  className="text-background hover:text-background"
                 >
                   {source.name}
                 </a>{' '}
