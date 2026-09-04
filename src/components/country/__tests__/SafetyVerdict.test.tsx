@@ -53,6 +53,21 @@ describe('SafetyVerdict', () => {
     expect(queryByText('/100')).toBeNull();
   });
 
+  // The testid is load-bearing for e2e, not decoration. This banner has no
+  // other locator — its eyebrow and tier are sibling <p>s with no reachable
+  // ancestor — so `e2e/removed-ui-elements.spec.ts` used to match its text
+  // page-wide and raced the country row landing (measured 1 failure in 6 on
+  // prod). Deleting the attribute puts that flake straight back; this fails in
+  // seconds instead of intermittently, half an hour into a nightly.
+  it('exposes the testid the e2e waits on', () => {
+    const { getByTestId } = render(<SafetyVerdict countryId="c1" equalityScore={88} />);
+    const banner = getByTestId('country-safety-verdict');
+    // Asserted INSIDE the banner, matching how the e2e scopes it: if the label
+    // ever moves out of this element, this is what says so first.
+    expect(banner.textContent).toContain('Equality');
+    expect(banner.textContent).toMatch(/very high/i);
+  });
+
   it('renders "Use caution" + criminalized flag for a criminalizing country', () => {
     state.report = makeReport({ overallRisk: 'high', hasCriminalizedDestination: true });
     const { getByText } = render(<SafetyVerdict countryId="c1" equalityScore={20} />);
