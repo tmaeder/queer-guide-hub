@@ -183,6 +183,7 @@ export const hotelContentType: ContentTypeConfig = {
   // that could express archived — only seo_indexable, which governs crawlers
   // rather than the site, so an Archive button would have deindexed without
   // hiding. RLS is what makes the column bite across ~65 read call sites.
+  merge: { column: 'duplicate_of_id', label: 'Merged' },
   lifecycle: {
     type: 'hotel',
     archive: { column: 'archived_at', predicate: 'present', label: 'Archived' },

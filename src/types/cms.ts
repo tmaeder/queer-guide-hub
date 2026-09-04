@@ -241,6 +241,38 @@ export interface ContentLifecycleConfig {
   deletable?: boolean;
 }
 
+/**
+ * Declares that a row of this type can be SOFT-MERGED into another row.
+ *
+ * Separate from `ContentLifecycleConfig` on purpose, and the two must compose:
+ * a merged row is neither archived nor deleted, and a row can be both archived
+ * and merged. Nesting it under `lifecycle` would also force a mergeable but
+ * non-archivable type to invent a lifecycle block just to get a list predicate.
+ *
+ * Deliberately NOT derived from `admin.dedup`. Those sets coincide today, so
+ * inferring the predicate from `!!admin.dedup` plus an assumed column name
+ * would need zero registry edits — and would make a query predicate depend on
+ * an unverified guess about a column name. When that guess is wrong PostgREST
+ * answers 400 and the list renders EMPTY, which reads as "nothing here" rather
+ * than as an error. An explicit column is a fact `mergeCapability.test.ts`
+ * checks against the generated schema. `admin.dedup` answers a different
+ * question anyway: which merge RPC family `/admin/duplicates` should drive.
+ */
+export interface MergeCapability {
+  /**
+   * Column holding the surviving row's id. Non-null means THIS row was merged
+   * away and the reader should be looking at the survivor instead.
+   *
+   * `shell_status` is not an alternative spelling of this. Measured on prod:
+   * of 321 merged cities only 47 carry `shell_status='merged'` — 213 are
+   * `placeholder`, 52 `real`, 9 `ghost` — because `merge_cities` never writes
+   * that column. `duplicate_of_id` is the only truth.
+   */
+  column: string;
+  /** Human label for the list toggle. Defaults to "Merged". */
+  label?: string;
+}
+
 export interface ContentTypeConfig {
   /** Unique ID matching the source table (e.g., 'venues', 'events') */
   id: string;
@@ -342,6 +374,11 @@ export interface ContentTypeConfig {
    * must not remove from this screen. See `ContentLifecycleConfig`.
    */
   lifecycle?: ContentLifecycleConfig;
+  /**
+   * Soft-merge capability. Omit for a type whose table has no such column —
+   * the list must then emit no predicate at all. See `MergeCapability`.
+   */
+  merge?: MergeCapability;
   /**
    * Columns editable across selected rows. Rendered in the bulk bar beside the
    * workflow actions. Omit for types where mass-editing a column is not safe.
