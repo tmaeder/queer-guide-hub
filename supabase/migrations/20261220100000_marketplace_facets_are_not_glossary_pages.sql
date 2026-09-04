@@ -1,89 +1,127 @@
 -- Marketplace facets are not glossary pages.
 --
 -- =============================================================================
--- What is wrong
+-- Measured on prod 2026-09-04
 -- =============================================================================
 --
--- 15 active tags are `seo_indexable` and filed in NONE of the three filing
--- representations — `unified_tags.category` NULL, `unified_tags.category_id`
--- NULL, and zero `tag_category_assignments` rows. All three had to be checked,
--- because each reader surface reads a different one: `/tags/:slug` renders the
--- JUNCTION (TagDetail.tsx -> fetchTagWithCategories -> categories.find(is_primary)),
--- the search facet renders the denormalised `category` text, and `category_id`
--- is the lever that moves both.
+--   active marketplace facets ............ 94   (ALL of them entity_kind='attribute')
+--   filed in ANY of the three reps ........ 0
+--   seo_indexable ........................ 44   <- the defect
+--   already deindexed .................... 50   (49 stamped 'thin', 1 'system:trigger')
 --
---   mat-spandex 3237  vibe-vintage 2021  mat-lace 1168  genre-history 753
---   vibe-colorful 618  mat-glass 178  genre-romance 149  genre-memoir 59
---   mat-bamboo 55  genre-fiction 31  genre-poetry 28  genre-biography 7
---   genre-essays 0  genre-queer-theory 0  genre-ya 0
+-- "Filed" was checked across all three filing representations, because each
+-- reader surface reads a different one: `/tags/:slug` renders the JUNCTION
+-- (TagDetail.tsx -> fetchTagWithCategories -> categories.find(is_primary)), the
+-- search facet renders the denormalised `unified_tags.category` text, and
+-- `category_id` is the lever that moves both. All 94 are NULL/NULL/zero-rows.
 --
--- Being unfiled is NOT the defect. Every one of these is a marketplace
--- attribute facet, and `public.is_marketplace_facet()` (20261018130000) already
--- says so: the `mat-`/`vibe-`/`genre-` prefixes are three of its eleven
--- namespaces. The 2026-08-29 taxonomy rebuild decided deliberately that
--- marketplace-namespaced tags must be filed NOWHERE — 92 of 98 had been filed
--- by a bulk LLM run and, carrying the corpus's highest usage counts, OWNED the
--- head of 25 glossary stops. `tags_due_for_category`, `tags_without_category`
--- and `tag_hygiene_stats().uncategorized_active` all exclude them for that
--- reason.
+-- Being unfiled is NOT the defect. Every one is a marketplace attribute facet,
+-- and `public.is_marketplace_facet()` (20261018130000) already says so. The
+-- 2026-08-29 taxonomy rebuild decided deliberately that marketplace-namespaced
+-- tags must be filed NOWHERE — 92 of 98 had been filed by a bulk LLM run and,
+-- carrying the corpus's highest usage counts, OWNED the head of 25 glossary
+-- stops. `tags_due_for_category`, `tags_without_category` and
+-- `tag_hygiene_stats().uncategorized_active` all exclude them for that reason.
 --
--- The defect is that the same decision was never carried through to
--- `seo_indexable`. A tag that belongs to no category has no place in the
--- glossary information architecture, so it must not publish a glossary page —
--- and these do, at /tags/mat-spandex and fourteen others.
+-- The defect is that the decision was never carried through to `seo_indexable`.
+-- A tag that belongs to no category has no place in the glossary information
+-- architecture, so it must not publish a glossary page — and 44 do.
 --
--- Four of them publish prose about the wrong subject entirely, because
--- `tag-enrichment-sweep` resolved identity by name lookup on the bare word
--- (`vintage`, `colorful`, `ya`, `romance`) — the namesake defect already sealed
--- by _shared/tag-wiki-guard.ts, which these rows predate:
+-- NOTE ON SCOPE. The report that opened this named 15 rows, from a query scoped
+-- to `^(mat|genre|vibe)-`. The real namespace list is eleven prefixes plus the
+-- `entity_kind='attribute'` arm, so `occ-`, `color-`, `size-` and `fit-` were
+-- invisible to it — including the single worst row in the set. Always ask
+-- is_marketplace_facet(), never a hand-written prefix pattern.
 --
---   vibe-vintage   Q?  "In winemaking, vintage is the process of picking grapes"
---   vibe-colorful  Q?  "Color is the visual perception produced by activation"
---   genre-romance  Q1189047 = the EMOTION, not the literary genre
---   genre-ya       Q?  "In medicine and the social sciences, a young adult is"
+-- =============================================================================
+-- The 49 already-deindexed facets are NOT safely down
+-- =============================================================================
 --
--- The other eleven publish prose that is generically correct — spandex really
--- is a synthetic fibre, a memoir really is that form — which is why only the
--- four are retracted below. Generic prose about a material is not wrong for a
--- material facet; it is merely in the wrong vocabulary, and that is fixed by
--- deindexing the page, not by rewriting the definition.
+-- They are stamped `seo_deindex_reason='thin'`, and 'thin' is the ONE value
+-- `run_tag_thin_page_reindex()` reverses: the moment any of them gains prose it
+-- re-indexes them. They are re-stamped 'facet' in step 4 — under the
+-- default-deny rule that value is never auto-reversed, so the fix does not
+-- depend on the trigger below still existing.
+--
+-- =============================================================================
+-- Three rows are NOT facets and must keep their pages
+-- =============================================================================
+--
+-- `spandex`, `lace` and `denim` carry no marketplace prefix and are classed as
+-- facets purely by `entity_kind='attribute'`. They are not facets. They are
+-- curated kink glossary entries with hand-written bodies — "A fabric fetish for
+-- tight, stretchy spandex material" (343-char long_description), "A textile
+-- fetish involving lace fabric in lingerie" (394), "A material fetish centered
+-- on denim fabric" (334) — and `spandex` is `is_sensitive`. `long_description`
+-- is the curated kinktionary field that is never LLM-rewritten.
+--
+-- Their prefixed twins are the actual facets and are separate rows:
+-- `mat-spandex` (3,289 uses) says "Spandex, Lycra, or elastane is a synthetic
+-- fiber"; `spandex` (1 use) is the fetish entry. The entity_kind arm of
+-- is_marketplace_facet() exists for un-prefixed rows that ARE facet twins; on
+-- these three it has drifted onto the glossary row instead.
+--
+-- So the stamp is repaired (step 1) BEFORE anything is deindexed, rather than
+-- carving an exception into the gate. That keeps ONE definition of "is this a
+-- facet" — the rule is_marketplace_facet()'s own comment states — and it is
+-- what lets the sentinel be a true zero-invariant. Deindexing three curated
+-- glossary pages to close an SEO gap is not the trade.
+--
+-- Cost: `uncategorized_active` (ADVISORY) goes 7 -> 10, because these three
+-- genuinely do now need a category. That is the sweep's job and it is correct
+-- for them to be visible to it.
 --
 -- =============================================================================
 -- Why a trigger and not a one-shot
 -- =============================================================================
 --
 -- `unified_tags.seo_indexable` DEFAULTs to TRUE, so any producer that never
--- names the column publishes a page. That is the same root cause as the thin-page
--- sawtooth, and it gets the same answer: 20261030100000 made "thin => not
--- indexable" a write-time invariant with `enforce_tag_thin_page_gate`, and this
--- mirrors it exactly — BEFORE trigger, mutates NEW only, only ever forces false,
--- never writes another row, so there is no re-entrancy and no cross-row fan-out.
--- A one-shot alone would leave the next facet the marketplace taxonomy adds
--- publishing a glossary page again.
+-- names the column publishes a page. Same root cause as the thin-page sawtooth,
+-- same answer: 20261030100000 made "thin => not indexable" a write-time
+-- invariant with `enforce_tag_thin_page_gate`, and this mirrors it exactly —
+-- BEFORE trigger, mutates NEW only, only ever forces false, never writes another
+-- row, so no re-entrancy and no cross-row fan-out.
 --
 -- Deliberately scoped to FACETS, not to "uncategorized" in general. A new
 -- glossary tag arrives uncategorized too, but only TEMPORARILY — the category
 -- sweep files it within two hours. A facet is uncategorized PERMANENTLY, by
 -- decision. Gating on uncategorized-in-general would deindex legitimate new
 -- glossary tags and, under the default-deny rule on `seo_deindex_reason`, never
--- let them back: a one-way door on correct content. `is_marketplace_facet()` is
--- precisely the predicate that separates the two, which is why the gate is
--- written in terms of it rather than in terms of a category being absent.
+-- let them back: a one-way door on correct content.
 --
--- `seo_deindex_reason = 'facet'` is therefore correct as a NON-reversible
--- reason. Only 'thin' is ever auto-reversed by `run_tag_thin_page_reindex()`,
--- and a facet never gains a category, so it must never come back.
---
--- `run_tag_thin_page_reindex` is deliberately NOT restated to add a facet term
--- to its re-index arm. Its arm requires `seo_deindex_reason = 'thin'`; the first
--- time it re-indexes a facet that has gained prose, this trigger forces the row
--- back to false and stamps 'facet', after which the row no longer matches that
--- arm. The churn is one wasted UPDATE per facet, once, and is self-limiting —
--- which does not justify restating a function that another branch may also be
--- restating.
+-- Rehearsed on a throwaway Postgres 17 before shipping: `trg_tag_facet_page_gate`
+-- sorts BEFORE `trg_tag_thin_page_gate`, BEFORE triggers fire in name order, and
+-- the thin gate's `if new.seo_indexable is true` is already false by the time it
+-- runs — so a facet with no prose is stamped 'facet', not 'thin', and is
+-- therefore never auto-re-indexed. A non-facet tag with prose stays indexable.
 
 -- ---------------------------------------------------------------------------
--- 1. A marketplace facet is never indexable.
+-- 1. Repair the three mis-stamped glossary rows FIRST.
+--
+-- Ordering is load-bearing: after this they are no longer marketplace facets,
+-- so steps 2-4 cannot touch them and the assertions in step 6 are reachable.
+-- `concept` is the glossary kind (3,523 rows: queer, gay, drag).
+
+do $$
+declare v int;
+begin
+  perform set_config('app.actor', 'migration:20261220100000_marketplace_facets_are_not_glossary_pages', true);
+
+  update public.unified_tags
+     set entity_kind = 'concept', updated_at = now()
+   where slug in ('spandex', 'lace', 'denim')
+     and status = 'active'
+     and entity_kind = 'attribute';
+  get diagnostics v = row_count;
+
+  raise notice 'un-stamped % mis-classed glossary row(s) from attribute -> concept', v;
+  if v <> 3 then
+    raise exception 'expected 3 mis-stamped glossary rows, found % — re-measure before deindexing', v;
+  end if;
+end $$;
+
+-- ---------------------------------------------------------------------------
+-- 2. A marketplace facet is never indexable.
 
 create or replace function public.enforce_tag_facet_page_gate()
 returns trigger
@@ -112,31 +150,29 @@ drop trigger if exists trg_tag_facet_page_gate on public.unified_tags;
 
 -- `slug` and `entity_kind` are in scope because they are the predicate's own
 -- inputs — re-slugging a tag into a facet namespace, or stamping
--- entity_kind='attribute' on it, is the other way an indexable facet appears.
--- `status`/`merged_into_id` for the same reason as the thin gate: reviving a
--- deprecated tag re-mints its redirects, and a column-scoped trigger only fires
--- on the columns named in the UPDATE statement, never on what another BEFORE
--- trigger wrote.
+-- entity_kind='attribute' on it, is the other way an indexable facet appears
+-- (and step 1 is the inverse move). `status`/`merged_into_id` for the same
+-- reason as the thin gate: reviving a deprecated tag re-mints its redirects,
+-- and a column-scoped trigger only fires on the columns named in the UPDATE
+-- statement, never on what another BEFORE trigger wrote.
 --
--- Name sorts BEFORE trg_tag_thin_page_gate, and that ordering is load-bearing
--- in one direction only: BEFORE triggers fire in name order, so a thin facet is
--- stamped 'facet' rather than 'thin', and therefore is never auto-re-indexed
--- when prose arrives. Stamped 'thin' it would come back.
+-- Name sorts BEFORE trg_tag_thin_page_gate. Verified by execution, not by
+-- reading: a facet with no prose is stamped 'facet' rather than 'thin', and is
+-- therefore never auto-re-indexed when prose arrives.
 create trigger trg_tag_facet_page_gate
   before insert or update of slug, entity_kind, seo_indexable, status, merged_into_id
   on public.unified_tags
   for each row execute function public.enforce_tag_facet_page_gate();
 
 -- ---------------------------------------------------------------------------
--- 2. The existing backlog.
+-- 3. The 44 indexable facets.
 --
 -- Predicate, not a frozen id list: any other row in the same shape is the same
--- defect and gets the same treatment, and the set can only have grown between
--- this being written and CI applying it. The bound is a runaway guard, not an
--- expected count — the whole facet vocabulary is a fixed ~54-row seed plus the
--- three un-prefixed twins carrying the namespace in `entity_kind`, so anything
--- approaching 200 means `is_marketplace_facet` has been widened into the
--- glossary and this migration must not mass-deindex on that basis.
+-- defect, and the set can only have grown between this being written and CI
+-- applying it. The bound is a runaway guard, not an expected count — the facet
+-- vocabulary is 94 active rows, so anything approaching 200 means
+-- is_marketplace_facet() has been widened into the glossary and this must not
+-- mass-deindex on that basis.
 --
 -- Declares an actor because much of the glossary is `human_reviewed` and
 -- log_unified_tag_change() RAISEs when a `system:%` actor touches such a row.
@@ -147,7 +183,7 @@ create trigger trg_tag_facet_page_gate
 do $$
 declare v int;
 begin
-  perform set_config('app.actor', 'migration:20261218100000_marketplace_facets_are_not_glossary_pages', true);
+  perform set_config('app.actor', 'migration:20261220100000_marketplace_facets_are_not_glossary_pages', true);
 
   update public.unified_tags
      set seo_indexable = false,
@@ -161,38 +197,94 @@ begin
 
   raise notice 'deindexed % marketplace facet page(s)', v;
   if v > 200 then
-    raise exception 'facet deindex matched % rows, expected ~15 — refusing to mass-deindex', v;
+    raise exception 'facet deindex matched % rows, expected ~44 — refusing to mass-deindex', v;
   end if;
 end $$;
 
 -- ---------------------------------------------------------------------------
--- 3. Retract the four wrong-subject definitions.
+-- 4. Make the 49 pre-existing deindexes permanent.
 --
--- A frozen slug list here, unlike step 2, because "this prose is about the
--- wrong subject" is a hand-verified judgment on four specific rows and no
--- predicate expresses it. The eleven generic-sense rows are deliberately NOT
--- touched.
---
--- Retraction only ever REMOVES; no replacement prose is written. It nulls the
--- Wikidata identity in the same UPDATE for the reason `tag_prose_apply`'s
--- retract branch gives: `tag_medical_codes_sync` and the tag hierarchy sync
--- rebuild weekly FROM `wikidata_id`, so a plausible-but-wrong identifier
--- regenerates wrong data forever while a null one regenerates nothing. Prefer
--- NULL to a guess — this corpus has already published ICPC-2 A96 (death) on a
--- trans glossary entry that way.
---
--- One statement, not two, so the page can never be both empty and indexable
--- even momentarily (20261015093000). `seo_indexable` is already false from step
--- 2; it is restated here so this block is correct on its own.
---
--- NOTE for the concurrent duplicate-wikidata_id session: this NULLs the QID on
--- these four rows. They were excluded there as generic-sense twins and are not
--- being merged, so nulling only shrinks the groups it was measuring.
+-- They are stamped 'thin', which run_tag_thin_page_reindex() reverses on prose
+-- arrival. The trigger above would catch the republish and force it back, but
+-- that makes correctness depend on the trigger existing; 'facet' is never
+-- auto-reversed and holds on its own. The one row stamped 'system:trigger' is
+-- left alone — it is another writer's recorded decision and, being neither
+-- 'thin' nor NULL, is already non-reversible.
 
 do $$
 declare v int;
 begin
-  perform set_config('app.actor', 'migration:20261218100000_marketplace_facets_are_not_glossary_pages', true);
+  perform set_config('app.actor', 'migration:20261220100000_marketplace_facets_are_not_glossary_pages', true);
+
+  update public.unified_tags
+     set seo_deindex_reason = 'facet', updated_at = now()
+   where status = 'active'
+     and merged_into_id is null
+     and not seo_indexable
+     and seo_deindex_reason = 'thin'
+     and public.is_marketplace_facet(slug, entity_kind);
+  get diagnostics v = row_count;
+
+  raise notice 're-stamped % facet(s) from reversible thin -> facet', v;
+end $$;
+
+-- ---------------------------------------------------------------------------
+-- 5. Retract the wrong-subject definitions.
+--
+-- A frozen slug list, unlike steps 3 and 4, because "this prose is about the
+-- wrong subject" is a hand-verified judgment per row and no predicate expresses
+-- it. Each was read against its own stored QID:
+--
+--   occ-pride       Q3071551  "Pride is a primary emotion characterized by..."
+--                             2,179 uses. On an LGBTQ+ platform, occ-pride is
+--                             the event. This is the single worst row here and
+--                             the opening report could not see it.
+--   vibe-vintage    Q1975981  "In winemaking, vintage is the process of picking
+--                             grapes"
+--   vibe-colorful   Q1075     "Color is the visual perception produced by..."
+--   genre-romance   Q1189047  the EMOTION, not the literary genre
+--   genre-ya        Q17156455 "In medicine and the social sciences, a young
+--                             adult is..."
+--   color-navy      Q4508     "A navy, naval force, military maritime fleet"
+--   color-gold      Q897      "Gold is a chemical element"
+--   color-silver    Q1090     "Silver is a chemical element"
+--   color-cream     Q13228    "Cream is a dairy product"
+--   color-multicolor Q6934607 "Multicolor is a subtractive two-color motion
+--                             picture process"
+--   size-m          Q9933     "M is the thirteenth letter of the Latin alphabet"
+--   size-3xl        Q3321715  "3XL was one of the television channels operated
+--                             by..."
+--   size-queen      (no QID)  "Person who prefers large partners" — a real kink
+--                             term, filed on a garment/bedding size facet
+--   fit-petite      (no QID)  "Petit is a French-language surname"
+--
+-- All are the pre-guard `tag-enrichment-sweep` name-lookup defect, sealed since
+-- by _shared/tag-wiki-guard.ts: identity was resolved by fetching the Wikipedia
+-- summary for the bare word (`pride`, `navy`, `m`, `cream`).
+--
+-- DELIBERATELY NOT RETRACTED. The remaining 30 publish prose that is
+-- generically correct FOR A FACET — spandex really is a synthetic fibre, a
+-- memoir really is that form, `color-red` really is that wavelength. Generic
+-- prose about a material is not wrong for a material facet; it is merely in the
+-- wrong vocabulary, and deindexing fixes that. Two marginal rows are left as
+-- well rather than resolved by guess: `color-rainbow` (Q1052, the optical
+-- phenomenon — a rainbow colourway literally is one) and `color-rose-gold`
+-- (Q309191, coloured gold alloys — rose gold is one).
+--
+-- Retraction only ever REMOVES; no replacement prose is written. It nulls the
+-- Wikidata identity in the same UPDATE for the reason tag_prose_apply's retract
+-- branch gives: tag_medical_codes_sync and the tag hierarchy sync rebuild
+-- WEEKLY from wikidata_id, so a plausible-but-wrong identifier regenerates
+-- wrong data forever while a null one regenerates nothing. This corpus has
+-- already published ICPC-2 A96 (death) on a trans glossary entry that way.
+--
+-- One statement, not two, so a row can never be both empty and indexable even
+-- momentarily (20261015093000).
+
+do $$
+declare v int;
+begin
+  perform set_config('app.actor', 'migration:20261220100000_marketplace_facets_are_not_glossary_pages', true);
 
   update public.unified_tags
      set description = null,
@@ -203,15 +295,21 @@ begin
          seo_indexable = false,
          seo_deindex_reason = 'facet',
          updated_at = now()
-   where slug in ('vibe-vintage', 'vibe-colorful', 'genre-romance', 'genre-ya')
-     and status = 'active';
+   where status = 'active'
+     and slug in ('occ-pride', 'vibe-vintage', 'vibe-colorful', 'genre-romance',
+                  'genre-ya', 'color-navy', 'color-gold', 'color-silver',
+                  'color-cream', 'color-multicolor', 'size-m', 'size-3xl',
+                  'size-queen', 'fit-petite');
   get diagnostics v = row_count;
 
   raise notice 'retracted wrong-subject prose on % facet(s)', v;
+  if v <> 14 then
+    raise exception 'expected 14 wrong-subject rows, updated % — the slug set moved', v;
+  end if;
 end $$;
 
 -- ---------------------------------------------------------------------------
--- 4. The sentinel.
+-- 6. The sentinel.
 --
 -- The body below is the live definition (latest: 20261211120300) with ONE key
 -- appended. It is restated in full rather than wrapped because
@@ -226,7 +324,7 @@ end $$;
 --
 -- Why this is a HARD zero-invariant and not an advisory counter: the baseline's
 -- own rule is to gate on a count only when a write-time invariant makes that
--- count structural. Step 1 is exactly that invariant, so this has no window to
+-- count structural. Step 2 is exactly that invariant, so this has no window to
 -- land in — unlike `uncategorized_active`, which is a genuine queue depth
 -- because nothing can assign a category at INSERT time.
 
@@ -306,8 +404,8 @@ begin
          and coalesce(nullif(btrim(description), ''), short_description) is null),
     -- ── 2026-09-04 ───────────────────────────────────────────────────────
     -- A marketplace attribute facet publishing a glossary page. Filed in none
-    -- of the three representations BY DECISION, so an indexable one is a page
-    -- with no place in the information architecture.
+    -- of the three representations BY DECISION (measured: 0 of 94 filed), so an
+    -- indexable one is a page with no place in the information architecture.
     --
     -- Deliberately NOT written as "indexable and uncategorized": that reads
     -- non-zero every time the ingest lands a tag before the two-hourly category
@@ -447,7 +545,7 @@ end;
 $function$;
 
 -- ---------------------------------------------------------------------------
--- 5. Assertions. The migration fails rather than shipping the state it exists
+-- 7. Assertions. The migration fails rather than shipping the state it exists
 -- to remove.
 
 do $$
@@ -458,28 +556,63 @@ begin
     raise exception 'indexable_marketplace_facet is % after the gate, expected 0', v_facet;
   end if;
 
-  -- Step 3 nulls prose on four rows. If any of them were still indexable the
-  -- corpus would carry a blank page in the sitemap — the exact regression
-  -- 20261015093000 exists to prevent — so assert the sibling invariant too.
+  -- Step 5 nulls prose on 14 rows. If any were still indexable the corpus would
+  -- carry a blank page in the sitemap — the exact regression 20261015093000
+  -- exists to prevent — so assert the sibling invariant too.
   select (public.tag_hygiene_stats()->>'indexable_without_description')::int into v_thin;
   if v_thin <> 0 then
     raise exception 'indexable_without_description is % after the retraction, expected 0', v_thin;
   end if;
 end $$;
 
--- Assert the retraction actually removed the claims, rather than silently
--- matching zero rows because a slug moved.
+-- The retraction removed the claims, rather than silently matching zero rows.
 do $$
 declare v int;
 begin
   select count(*) into v
     from public.unified_tags
-   where slug in ('vibe-vintage', 'vibe-colorful', 'genre-romance', 'genre-ya')
-     and status = 'active'
+   where status = 'active'
+     and slug in ('occ-pride', 'vibe-vintage', 'vibe-colorful', 'genre-romance',
+                  'genre-ya', 'color-navy', 'color-gold', 'color-silver',
+                  'color-cream', 'color-multicolor', 'size-m', 'size-3xl',
+                  'size-queen', 'fit-petite')
      and (description is not null or short_description is not null
           or long_description is not null or wikidata_id is not null);
   if v > 0 then
     raise exception '% wrong-subject facet(s) still publish prose or a Wikidata identity', v;
+  end if;
+end $$;
+
+-- The three curated glossary rows KEPT their pages and their prose. Without
+-- this the migration's most likely silent failure is that it quietly deindexed
+-- them along with the facets.
+do $$
+declare v int;
+begin
+  select count(*) into v
+    from public.unified_tags
+   where slug in ('spandex', 'lace', 'denim')
+     and status = 'active'
+     and seo_indexable
+     and entity_kind = 'concept'
+     and length(coalesce(long_description, '')) > 100;
+  if v <> 3 then
+    raise exception 'expected 3 curated glossary rows still indexable with their bodies, found %', v;
+  end if;
+end $$;
+
+-- No facet is left carrying an auto-reversible reason.
+do $$
+declare v int;
+begin
+  select count(*) into v
+    from public.unified_tags
+   where status = 'active' and merged_into_id is null
+     and not seo_indexable
+     and seo_deindex_reason = 'thin'
+     and public.is_marketplace_facet(slug, entity_kind);
+  if v > 0 then
+    raise exception '% facet(s) still stamped ''thin'' — run_tag_thin_page_reindex would republish them', v;
   end if;
 end $$;
 
@@ -488,7 +621,7 @@ end $$;
 do $$
 declare v_id uuid; v_indexable boolean; v_reason text;
 begin
-  perform set_config('app.actor', 'migration:20261218100000_marketplace_facets_are_not_glossary_pages', true);
+  perform set_config('app.actor', 'migration:20261220100000_marketplace_facets_are_not_glossary_pages', true);
 
   insert into public.unified_tags (name, slug, status, description)
   values ('Mat Zz Facet Gate Probe', 'mat-zz-facet-gate-probe', 'active', 'Probe prose.')
