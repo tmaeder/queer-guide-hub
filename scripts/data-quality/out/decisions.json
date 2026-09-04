@@ -1,0 +1,3315 @@
+[
+ {
+  "wikidata_id": "Q10048327",
+  "qid_label": "mutual masturbation",
+  "qid_desc": "sex act in which two or more people simultaneously stimulate their own genitalia or each other's",
+  "disposition": "wrong-qid",
+  "winner": null,
+  "losers": [],
+  "retract": [
+   "group-masturbation"
+  ],
+  "reason": "group vs mutual masturbation are distinct.",
+  "members": [
+   {
+    "slug": "group-masturbation",
+    "name": "Group Masturbation",
+    "status": "active",
+    "seo_indexable": false,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Fetishes",
+    "is_adult": true
+   },
+   {
+    "slug": "mutual-masturbation",
+    "name": "Mutual Masturbation",
+    "status": "active",
+    "seo_indexable": false,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Practices & Play",
+    "is_adult": true
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q1035954",
+  "qid_label": "heterosexuality",
+  "qid_desc": "romantic and/or sexual attraction or behavior between people of different genders",
+  "disposition": "merge",
+  "winner": "heterosexual",
+  "losers": [
+   "straight"
+  ],
+  "retract": [],
+  "reason": "\"straight\" is the colloquial synonym.",
+  "members": [
+   {
+    "slug": "heterosexual",
+    "name": "Heterosexual",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 15,
+    "entity_kind": "concept",
+    "category_name": "Orientation",
+    "is_adult": false
+   },
+   {
+    "slug": "straight",
+    "name": "Straight",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 2,
+    "entity_kind": "concept",
+    "category_name": "Orientation",
+    "is_adult": false
+   },
+   {
+    "slug": "heterosexuality",
+    "name": "Heterosexuality",
+    "status": "deprecated",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Orientation",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q1052281",
+  "qid_label": "trans woman",
+  "qid_desc": "woman assigned male at birth",
+  "disposition": "wrong-qid",
+  "winner": null,
+  "losers": [],
+  "retract": [
+   "femminiello"
+  ],
+  "reason": "HARM. Q1052281 is \"trans woman\". Femminiello is a specific Neapolitan cultural identity, not a synonym; merging erases it.",
+  "members": [
+   {
+    "slug": "femminiello",
+    "name": "Femminiello",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Gender",
+    "is_adult": false
+   },
+   {
+    "slug": "trans-woman",
+    "name": "Trans Woman",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Gender",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q1053501",
+  "qid_label": "gender-affirming surgery",
+  "qid_desc": "surgical procedures to alter sexual characteristics to match identified gender",
+  "disposition": "review",
+  "winner": null,
+  "losers": [],
+  "retract": [],
+  "reason": "gender-affirming-surgery vs gender-affirmation: the latter is broader than surgery.",
+  "members": [
+   {
+    "slug": "gender-affirming-surgery",
+    "name": "Gender-Affirming Surgery",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 27,
+    "entity_kind": "concept",
+    "category_name": "Gender",
+    "is_adult": false
+   },
+   {
+    "slug": "gender-affirmation",
+    "name": "Gender Affirmation",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 9,
+    "entity_kind": "concept",
+    "category_name": "Gender",
+    "is_adult": false
+   },
+   {
+    "slug": "gender-affirmation-surgery",
+    "name": "Gender Affirmation Surgery",
+    "status": "deprecated",
+    "seo_indexable": false,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": null,
+    "is_adult": false
+   },
+   {
+    "slug": "gender-confirmation-surgery",
+    "name": "Gender Confirmation Surgery",
+    "status": "deprecated",
+    "seo_indexable": false,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Sexual Health",
+    "is_adult": false
+   },
+   {
+    "slug": "gender-reassignment-surgery",
+    "name": "Gender Reassignment Surgery",
+    "status": "deprecated",
+    "seo_indexable": false,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": null,
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q1063174",
+  "qid_label": "nyotaimori",
+  "qid_desc": "serving sushi or sashimi on naked bodies",
+  "disposition": "wrong-qid",
+  "winner": null,
+  "losers": [],
+  "retract": [
+   "nantaimori"
+  ],
+  "reason": "nyotaimori (female body) vs nantaimori (male body) are distinct practices.",
+  "members": [
+   {
+    "slug": "nantaimori",
+    "name": "Nantaimori",
+    "status": "active",
+    "seo_indexable": false,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Fetishes",
+    "is_adult": true
+   },
+   {
+    "slug": "nyotaimori",
+    "name": "Nyotaimori",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Fetishes",
+    "is_adult": true
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q11424",
+  "qid_label": "film",
+  "qid_desc": "visual art work that simulates experiences and communicates ideas, stories, or emotions through moving images, generally synchronized with sound since the 1930s",
+  "disposition": "merge",
+  "winner": "film",
+  "losers": [
+   "cinema",
+   "movies"
+  ],
+  "retract": [],
+  "reason": "QID label is \"film\"; movies/cinema are the same concept.",
+  "members": [
+   {
+    "slug": "film",
+    "name": "Film",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 2683,
+    "entity_kind": "concept",
+    "category_name": "Media & Entertainment",
+    "is_adult": false
+   },
+   {
+    "slug": "movies",
+    "name": "Movies",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 14,
+    "entity_kind": "concept",
+    "category_name": "Media & Entertainment",
+    "is_adult": false
+   },
+   {
+    "slug": "cinema",
+    "name": "Cinema",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 13,
+    "entity_kind": "concept",
+    "category_name": "Media & Entertainment",
+    "is_adult": false
+   },
+   {
+    "slug": "films",
+    "name": "Films",
+    "status": "merged",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": null,
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q11426",
+  "qid_label": "metal",
+  "qid_desc": "element, compound, or alloy that is a good conductor of both electricity and heat",
+  "disposition": "generic-sense-twin",
+  "winner": null,
+  "losers": [],
+  "retract": [],
+  "reason": "VERIFIED FROM PROSE: mat-metal is the element (\"lustrous, conducts electricity\"); metal is a metal-RESTRAINTS fetish (\"chains, cuffs, collars\"). NOT the music genre - an earlier reading of mine said so and was wrong.",
+  "members": [
+   {
+    "slug": "mat-metal",
+    "name": "Metal",
+    "status": "active",
+    "seo_indexable": false,
+    "usage_count": 1377,
+    "entity_kind": "attribute",
+    "category_name": null,
+    "is_adult": false
+   },
+   {
+    "slug": "metal",
+    "name": "Metal",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "descriptor",
+    "category_name": "Vibe & Crowd",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q11460",
+  "qid_label": "clothing",
+  "qid_desc": "covering worn on the body",
+  "disposition": "review",
+  "winner": null,
+  "losers": [],
+  "retract": [],
+  "reason": "clothing vs apparel. apparel is filed Gear/ADULT - merging risks flipping is_adult onto clothing.",
+  "members": [
+   {
+    "slug": "clothing",
+    "name": "Clothing",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 6,
+    "entity_kind": "concept",
+    "category_name": "Expression & Style",
+    "is_adult": false
+   },
+   {
+    "slug": "apparel",
+    "name": "Apparel",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 3,
+    "entity_kind": "concept",
+    "category_name": "Gear",
+    "is_adult": true
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q11639",
+  "qid_label": "dance",
+  "qid_desc": "rhythmic movement of the body",
+  "disposition": "review",
+  "winner": null,
+  "losers": [],
+  "retract": [],
+  "reason": "dance (Events descriptor) vs dancing (Expression concept) - activity vs event.",
+  "members": [
+   {
+    "slug": "dancing",
+    "name": "Dancing",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 71,
+    "entity_kind": "concept",
+    "category_name": "Expression & Style",
+    "is_adult": false
+   },
+   {
+    "slug": "dance",
+    "name": "Dance",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 69,
+    "entity_kind": "descriptor",
+    "category_name": "Events & Parties",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q11707",
+  "qid_label": "restaurant",
+  "qid_desc": "single establishment which prepares and serves food, located in building",
+  "disposition": "merge",
+  "winner": "restaurant",
+  "losers": [
+   "eateries"
+  ],
+  "retract": [],
+  "reason": "QID label \"restaurant\"; \"eateries\" is a plural synonym.",
+  "members": [
+   {
+    "slug": "restaurant",
+    "name": "Restaurant",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 525,
+    "entity_kind": "descriptor",
+    "category_name": "Venue Types",
+    "is_adult": false
+   },
+   {
+    "slug": "eateries",
+    "name": "Eateries",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 2,
+    "entity_kind": "descriptor",
+    "category_name": "Venue Types",
+    "is_adult": false
+   },
+   {
+    "slug": "restaurant-venue",
+    "name": "Restaurant",
+    "status": "merged",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "venue_feature",
+    "category_name": null,
+    "is_adult": false
+   },
+   {
+    "slug": "restaurants",
+    "name": "Restaurants",
+    "status": "merged",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": null,
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q1190983",
+  "qid_label": "Japanese bondage",
+  "qid_desc": "Japanese style of bondage",
+  "disposition": "merge",
+  "winner": "shibari",
+  "losers": [
+   "japanese-bondage"
+  ],
+  "retract": [],
+  "reason": "QID label \"Japanese bondage\"; shibari is the reader-facing name.",
+  "members": [
+   {
+    "slug": "shibari",
+    "name": "Shibari",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 3,
+    "entity_kind": "concept",
+    "category_name": "Practices & Play",
+    "is_adult": true
+   },
+   {
+    "slug": "japanese-bondage",
+    "name": "Japanese Bondage",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Practices & Play",
+    "is_adult": true
+   },
+   {
+    "slug": "kinbaku",
+    "name": "Kinbaku",
+    "status": "deprecated",
+    "seo_indexable": false,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Fetishes",
+    "is_adult": true
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q124822805",
+  "qid_label": "iamvanosexuality",
+  "qid_desc": null,
+  "disposition": "wrong-qid",
+  "winner": null,
+  "losers": [],
+  "retract": [
+   "accipiosexual"
+  ],
+  "reason": "Distinct micro-labels; the QID is iamvanosexuality.",
+  "members": [
+   {
+    "slug": "accipiosexual",
+    "name": "Accipiosexual",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Orientation",
+    "is_adult": false
+   },
+   {
+    "slug": "iamvanosexual",
+    "name": "Iamvanosexual",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Orientation",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q127443415",
+  "qid_label": "feeding",
+  "qid_desc": "fetishism of gaining weight.",
+  "disposition": "wrong-qid",
+  "winner": null,
+  "losers": [],
+  "retract": [
+   "feedee"
+  ],
+  "reason": "Role (feedee) vs practice (feedism) are distinct entries.",
+  "members": [
+   {
+    "slug": "feedee",
+    "name": "Feedee",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Dynamics & Roles",
+    "is_adult": true
+   },
+   {
+    "slug": "feedism",
+    "name": "Feedism",
+    "status": "active",
+    "seo_indexable": false,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Practices & Play",
+    "is_adult": true
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q127630273",
+  "qid_label": "pillow princess",
+  "qid_desc": null,
+  "disposition": "wrong-qid",
+  "winner": null,
+  "losers": [],
+  "retract": [
+   "pillow-prince"
+  ],
+  "reason": "Gendered counterpart, not a synonym.",
+  "members": [
+   {
+    "slug": "pillow-princess",
+    "name": "Pillow Princess",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 1,
+    "entity_kind": "concept",
+    "category_name": "Relationship Structures",
+    "is_adult": false
+   },
+   {
+    "slug": "pillow-prince",
+    "name": "Pillow Prince",
+    "status": "active",
+    "seo_indexable": false,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Dynamics & Roles",
+    "is_adult": true
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q132071673",
+  "qid_label": "triple penetration",
+  "qid_desc": "sex position in which a person is penetrated vaginally, anally and orally at the same time",
+  "disposition": "review",
+  "winner": null,
+  "losers": [],
+  "retract": [],
+  "reason": "air-tight vs triple-penetration: related, arguably not identical.",
+  "members": [
+   {
+    "slug": "air-tight",
+    "name": "Air Tight",
+    "status": "active",
+    "seo_indexable": false,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Fetishes",
+    "is_adult": true
+   },
+   {
+    "slug": "triple-penetration",
+    "name": "Triple Penetration",
+    "status": "active",
+    "seo_indexable": false,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Positions",
+    "is_adult": true
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q132241",
+  "qid_label": "festival",
+  "qid_desc": "organized set of events or activities focused on a theme (cultural, religious or other) that recurs regularly (e.g. once a year) and lasts anywhere from several hours to weeks",
+  "disposition": "review",
+  "winner": null,
+  "losers": [],
+  "retract": [],
+  "reason": "festival vs celebration: celebration is broader.",
+  "members": [
+   {
+    "slug": "festival",
+    "name": "Festival",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 482,
+    "entity_kind": "descriptor",
+    "category_name": "Events & Parties",
+    "is_adult": false
+   },
+   {
+    "slug": "celebration",
+    "name": "Celebration",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 48,
+    "entity_kind": "descriptor",
+    "category_name": "Events & Parties",
+    "is_adult": false
+   },
+   {
+    "slug": "occ-festival",
+    "name": "Festival",
+    "status": "merged",
+    "seo_indexable": false,
+    "usage_count": 0,
+    "entity_kind": "attribute",
+    "category_name": null,
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q1328245",
+  "qid_label": "diaper fetishism",
+  "qid_desc": "sexual fetish in which a person feels a desire to wear or use diapers",
+  "disposition": "review",
+  "winner": null,
+  "losers": [],
+  "retract": [],
+  "reason": "FOUR members (adult-baby, diaper-fetish, diaper-lover, infantilism) on \"diaper fetishism\". Role vs practice vs identity - needs itemising.",
+  "members": [
+   {
+    "slug": "adult-baby",
+    "name": "Adult Baby",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Dynamics & Roles",
+    "is_adult": true
+   },
+   {
+    "slug": "diaper-fetish",
+    "name": "Diaper Fetish",
+    "status": "active",
+    "seo_indexable": false,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Practices & Play",
+    "is_adult": true
+   },
+   {
+    "slug": "diaper-lover",
+    "name": "Diaper Lover",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Fetishes",
+    "is_adult": true
+   },
+   {
+    "slug": "infantilism",
+    "name": "Infantilism",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Fetishes",
+    "is_adult": true
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q13411011",
+  "qid_label": "sex-positive movement",
+  "qid_desc": "ideology which promotes and embraces open sexuality",
+  "disposition": "review",
+  "winner": null,
+  "losers": [],
+  "retract": [],
+  "reason": "sex-positive (descriptor) vs sex-positive-movement (the ideology).",
+  "members": [
+   {
+    "slug": "sex-positive",
+    "name": "Sex-Positive",
+    "status": "active",
+    "seo_indexable": false,
+    "usage_count": 52,
+    "entity_kind": "concept",
+    "category_name": "Slang & Language",
+    "is_adult": false
+   },
+   {
+    "slug": "sex-positive-movement",
+    "name": "Sex-Positive Movement",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Politics & Activism",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q1404482",
+  "qid_label": "female dominance",
+  "qid_desc": "BDSM erotic practice",
+  "disposition": "merge",
+  "winner": "female-dominance",
+  "losers": [
+   "femdom"
+  ],
+  "retract": [],
+  "reason": "QID label matches; femdom is the community abbreviation.",
+  "members": [
+   {
+    "slug": "female-dominance",
+    "name": "Female Dominance",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Dynamics & Roles",
+    "is_adult": true
+   },
+   {
+    "slug": "femdom",
+    "name": "Femdom",
+    "status": "active",
+    "seo_indexable": false,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Dynamics & Roles",
+    "is_adult": true
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q1419997",
+  "qid_label": "event producer",
+  "qid_desc": "person specializing in planning and execution of parties, events, exhibitions, meetings, conventions, weddings and other things",
+  "disposition": "wrong-qid",
+  "winner": null,
+  "losers": [],
+  "retract": [
+   "event-organizer"
+  ],
+  "reason": "\"organizer\" is an events descriptor; \"event-organizer\" is filed Dynamics & Roles/adult. Different senses.",
+  "members": [
+   {
+    "slug": "organizer",
+    "name": "Organizer",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 1,
+    "entity_kind": "descriptor",
+    "category_name": "Events & Parties",
+    "is_adult": false
+   },
+   {
+    "slug": "event-organizer",
+    "name": "Event Organizer",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Dynamics & Roles",
+    "is_adult": true
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q1639034",
+  "qid_label": "strap-on dildo",
+  "qid_desc": "device used for sexual penetration or other sexual activity",
+  "disposition": "review",
+  "winner": null,
+  "losers": [],
+  "retract": [],
+  "reason": "strap-on vs dildo-harness: the toy vs the harness are arguably distinct products.",
+  "members": [
+   {
+    "slug": "strap-on",
+    "name": "Strap On",
+    "status": "active",
+    "seo_indexable": false,
+    "usage_count": 1,
+    "entity_kind": "concept",
+    "category_name": "Fetishes",
+    "is_adult": true
+   },
+   {
+    "slug": "dildo-harness",
+    "name": "Dildo Harness",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Gear",
+    "is_adult": true
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q1651685",
+  "qid_label": "shoe fetishism",
+  "qid_desc": "sexual interest or obsession with footwear",
+  "disposition": "review",
+  "winner": null,
+  "losers": [],
+  "retract": [],
+  "reason": "retifism (Fetishes) vs shoe-fetish (Slang & Language). Clinical vs colloquial, cross-category.",
+  "members": [
+   {
+    "slug": "retifism",
+    "name": "Retifism",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Fetishes",
+    "is_adult": true
+   },
+   {
+    "slug": "shoe-fetish",
+    "name": "Shoe Fetish",
+    "status": "active",
+    "seo_indexable": false,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Slang & Language",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q17625913",
+  "qid_label": "LGBTQ rights",
+  "qid_desc": "civil rights of LGBTQ people",
+  "disposition": "merge",
+  "winner": "lgbtqia-rights",
+  "losers": [
+   "queer-rights"
+  ],
+  "retract": [],
+  "reason": "Same concept; matches the RIGHT_TOPICS umbrella already used.",
+  "members": [
+   {
+    "slug": "lgbtqia-rights",
+    "name": "LGBTQIA+ Rights",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 3143,
+    "entity_kind": "concept",
+    "category_name": "Laws & Legal Rights",
+    "is_adult": false
+   },
+   {
+    "slug": "queer-rights",
+    "name": "Queer Rights",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 8,
+    "entity_kind": "concept",
+    "category_name": "Laws & Legal Rights",
+    "is_adult": false
+   },
+   {
+    "slug": "lesbian-rights",
+    "name": "Lesbian Rights",
+    "status": "deprecated",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": null,
+    "is_adult": false
+   },
+   {
+    "slug": "lgbt-rights",
+    "name": "LGBT+ Rights",
+    "status": "deprecated",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": null,
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q17888",
+  "qid_label": "sexual orientation",
+  "qid_desc": "enduring pattern of sexual attraction",
+  "disposition": "review",
+  "winner": null,
+  "losers": [],
+  "retract": [],
+  "reason": "sexuality vs sexual-orientation: overlapping but not identical.",
+  "members": [
+   {
+    "slug": "sexuality",
+    "name": "Sexuality",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 189,
+    "entity_kind": "concept",
+    "category_name": "Orientation",
+    "is_adult": false
+   },
+   {
+    "slug": "sexual-orientation",
+    "name": "Sexual Orientation",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 86,
+    "entity_kind": "concept",
+    "category_name": "Orientation",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q178885",
+  "qid_label": "deity",
+  "qid_desc": "natural or supernatural god or goddess, divine being",
+  "disposition": "wrong-qid",
+  "winner": null,
+  "losers": [],
+  "retract": [
+   "god",
+   "goddess"
+  ],
+  "reason": "Q178885 is \"deity\". god/goddess are gendered honorifics; merging deletes one.",
+  "members": [
+   {
+    "slug": "deity",
+    "name": "Deity",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Dynamics & Roles",
+    "is_adult": true
+   },
+   {
+    "slug": "god",
+    "name": "God",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Dynamics & Roles",
+    "is_adult": true
+   },
+   {
+    "slug": "goddess",
+    "name": "Goddess",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Dynamics & Roles",
+    "is_adult": true
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q17897",
+  "qid_label": "LGBTQ history",
+  "qid_desc": "history of LGBTQ people and cultures",
+  "disposition": "merge",
+  "winner": "queer-history",
+  "losers": [
+   "lgbt-history"
+  ],
+  "retract": [],
+  "reason": "Acronym variant of one concept.",
+  "members": [
+   {
+    "slug": "queer-history",
+    "name": "Queer History",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 19,
+    "entity_kind": "concept",
+    "category_name": "History & Rights",
+    "is_adult": false
+   },
+   {
+    "slug": "lgbt-history",
+    "name": "LGBT History",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 2,
+    "entity_kind": "concept",
+    "category_name": "Movements & Milestones",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q1803422",
+  "qid_label": "erotic sexual denial",
+  "qid_desc": "sexual practice or sex play in which a person is kept in a heightened state of sexual arousal for an extended length of time without orgasm",
+  "disposition": "review",
+  "winner": null,
+  "losers": [],
+  "retract": [],
+  "reason": "orgasm-denial vs tease-and-denial: overlapping practices.",
+  "members": [
+   {
+    "slug": "orgasm-denial",
+    "name": "Orgasm Denial",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 1,
+    "entity_kind": "concept",
+    "category_name": "Practices & Play",
+    "is_adult": true
+   },
+   {
+    "slug": "tease-and-denial",
+    "name": "Tease And Denial",
+    "status": "active",
+    "seo_indexable": false,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Fetishes",
+    "is_adult": true
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q18116794",
+  "qid_label": "genderfluid",
+  "qid_desc": "gender identity which doesn't conform to fixed gender roles or varies over time",
+  "disposition": "review",
+  "winner": null,
+  "losers": [],
+  "retract": [],
+  "reason": "gender-fluid vs genderflux: genderflux is fluctuating INTENSITY, arguably distinct.",
+  "members": [
+   {
+    "slug": "gender-fluid",
+    "name": "Gender Fluid",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 14,
+    "entity_kind": "concept",
+    "category_name": "Gender",
+    "is_adult": false
+   },
+   {
+    "slug": "genderflux",
+    "name": "Genderflux",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Gender",
+    "is_adult": false
+   },
+   {
+    "slug": "gender-fluidity",
+    "name": "Gender Fluidity",
+    "status": "deprecated",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": null,
+    "is_adult": false
+   },
+   {
+    "slug": "genderfluid",
+    "name": "Genderfluid",
+    "status": "deprecated",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Orientation",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q182832",
+  "qid_label": "concert",
+  "qid_desc": "live performance of music",
+  "disposition": "wrong-qid",
+  "winner": null,
+  "losers": [],
+  "retract": [
+   "live-music-venue"
+  ],
+  "reason": "Q182832 is \"concert\" (an event). live-music-venue is a VENUE type.",
+  "members": [
+   {
+    "slug": "live-music",
+    "name": "Live-Music",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 57,
+    "entity_kind": "descriptor",
+    "category_name": "Events & Parties",
+    "is_adult": false
+   },
+   {
+    "slug": "live-music-venue",
+    "name": "Live Music",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 2,
+    "entity_kind": "descriptor",
+    "category_name": "Venue Types",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q190845",
+  "qid_label": "BDSM",
+  "qid_desc": "erotic practices involving domination and sadomasochism",
+  "disposition": "wrong-qid",
+  "winner": null,
+  "losers": [],
+  "retract": [
+   "rough-sex"
+  ],
+  "reason": "Q190845 is BDSM (a subculture). rough-sex is not BDSM.",
+  "members": [
+   {
+    "slug": "bdsm",
+    "name": "BDSM",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 123,
+    "entity_kind": "concept",
+    "category_name": "Dynamics & Roles",
+    "is_adult": true
+   },
+   {
+    "slug": "rough-sex",
+    "name": "Rough Sex",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Fetishes",
+    "is_adult": true
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q191808",
+  "qid_label": "nun",
+  "qid_desc": "female member of a monastic order",
+  "disposition": "wrong-qid",
+  "winner": null,
+  "losers": [],
+  "retract": [
+   "sister"
+  ],
+  "reason": "Q191808 is \"nun\". \"sister\" is a distinct role/term in this corpus.",
+  "members": [
+   {
+    "slug": "nun",
+    "name": "Nun",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Dynamics & Roles",
+    "is_adult": true
+   },
+   {
+    "slug": "sister",
+    "name": "Sister",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Dynamics & Roles",
+    "is_adult": true
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q19810527",
+  "qid_label": "sexual fluidity",
+  "qid_desc": "changes in sexuality or sexual identity",
+  "disposition": "wrong-qid",
+  "winner": null,
+  "losers": [],
+  "retract": [
+   "abrosexual"
+  ],
+  "reason": "Q is \"sexual fluidity\"; abrosexual is its own label.",
+  "members": [
+   {
+    "slug": "abrosexual",
+    "name": "Abrosexual",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 27,
+    "entity_kind": "concept",
+    "category_name": "Orientation",
+    "is_adult": false
+   },
+   {
+    "slug": "sexually-fluid",
+    "name": "Sexually Fluid",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Orientation",
+    "is_adult": false
+   },
+   {
+    "slug": "sexual-fluidity",
+    "name": "Sexual Fluidity",
+    "status": "deprecated",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": null,
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q20011275",
+  "qid_label": "sapiosexuality",
+  "qid_desc": "sexual attraction based primarily on intellect",
+  "disposition": "wrong-qid",
+  "winner": null,
+  "losers": [],
+  "retract": [
+   "noetisexual"
+  ],
+  "reason": "Distinct label from sapiosexual.",
+  "members": [
+   {
+    "slug": "noetisexual",
+    "name": "Noetisexual",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Orientation",
+    "is_adult": false
+   },
+   {
+    "slug": "sapiosexual",
+    "name": "Sapiosexual",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Orientation",
+    "is_adult": false
+   },
+   {
+    "slug": "sapiosexuality",
+    "name": "Sapiosexuality",
+    "status": "deprecated",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Orientation",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q20746702",
+  "qid_label": "stepbrother",
+  "qid_desc": "male stepsibling",
+  "disposition": "merge",
+  "winner": "stepbrother",
+  "losers": [
+   "step-brother"
+  ],
+  "retract": [],
+  "reason": "Hyphenation variant; QID label \"stepbrother\".",
+  "members": [
+   {
+    "slug": "step-brother",
+    "name": "Step-Brother",
+    "status": "active",
+    "seo_indexable": false,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Fetishes",
+    "is_adult": true
+   },
+   {
+    "slug": "stepbrother",
+    "name": "Stepbrother",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Fetishes",
+    "is_adult": true
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q210749",
+  "qid_label": "anilingus",
+  "qid_desc": "erotic stimulation via contact between mouth and anus",
+  "disposition": "merge",
+  "winner": "rimming",
+  "losers": [
+   "analingus"
+  ],
+  "retract": [],
+  "reason": "QID label \"anilingus\"; rimming is the reader-facing name.",
+  "members": [
+   {
+    "slug": "rimming",
+    "name": "Rimming",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 1,
+    "entity_kind": "concept",
+    "category_name": "Practices & Play",
+    "is_adult": true
+   },
+   {
+    "slug": "analingus",
+    "name": "Analingus",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Fetishes",
+    "is_adult": true
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q2192288",
+  "qid_label": "vulva",
+  "qid_desc": "external genital organs of the female mammal",
+  "disposition": "wrong-qid",
+  "winner": null,
+  "losers": [],
+  "retract": [
+   "cunt"
+  ],
+  "reason": "Q2192288 is the anatomical \"vulva\". \"cunt\" is filed Dynamics & Roles / adult. Merging puts a reclaimed slur on an anatomy page or vice versa.",
+  "members": [
+   {
+    "slug": "cunt",
+    "name": "Cunt",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Dynamics & Roles",
+    "is_adult": true
+   },
+   {
+    "slug": "vulva",
+    "name": "Vulva",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Body & Reproductive Health",
+    "is_adult": false
+   },
+   {
+    "slug": "female-genitalia",
+    "name": "Female Genitalia",
+    "status": "deprecated",
+    "seo_indexable": false,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": null,
+    "is_adult": false
+   },
+   {
+    "slug": "female-reproductive-organs",
+    "name": "Female Reproductive Organs",
+    "status": "deprecated",
+    "seo_indexable": false,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": null,
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q2211650",
+  "qid_label": "sadomasochism",
+  "qid_desc": "term covering phenomena of giving or receiving of pleasure from acts involving the receipt (M) or infliction (S) of pain or humiliation",
+  "disposition": "wrong-qid",
+  "winner": null,
+  "losers": [],
+  "retract": [
+   "algolagnia",
+   "algophilia"
+  ],
+  "reason": "Q is \"sadomasochism\"; algolagnia/algophilia are distinct clinical terms.",
+  "members": [
+   {
+    "slug": "algolagnia",
+    "name": "Algolagnia",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Practices & Play",
+    "is_adult": true
+   },
+   {
+    "slug": "algophilia",
+    "name": "Algophilia",
+    "status": "active",
+    "seo_indexable": false,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Fetishes",
+    "is_adult": true
+   },
+   {
+    "slug": "sadomasochism",
+    "name": "Sadomasochism",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Dynamics & Roles",
+    "is_adult": true
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q231250",
+  "qid_label": "lace",
+  "qid_desc": "openwork fabric, patterned with open holes in the work, made by machine or by hand",
+  "disposition": "generic-sense-twin",
+  "winner": null,
+  "losers": [],
+  "retract": [],
+  "reason": "VERIFIED FROM PROSE: mat-lace is the openwork textile; lace is a textile fetish in lingerie. Two real senses.",
+  "members": [
+   {
+    "slug": "mat-lace",
+    "name": "Lace",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 1168,
+    "entity_kind": "attribute",
+    "category_name": null,
+    "is_adult": false
+   },
+   {
+    "slug": "lace",
+    "name": "Lace",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "attribute",
+    "category_name": null,
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q2449503",
+  "qid_label": "trans man",
+  "qid_desc": "man who was assigned female at birth",
+  "disposition": "review",
+  "winner": null,
+  "losers": [],
+  "retract": [],
+  "reason": "trans-man vs transmasculine: transmasculine is broader (includes non-binary people). Likely wrong-qid, not merge.",
+  "members": [
+   {
+    "slug": "trans-man",
+    "name": "Trans Man",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 39,
+    "entity_kind": "concept",
+    "category_name": "Gender",
+    "is_adult": false
+   },
+   {
+    "slug": "transmasculine",
+    "name": "Transmasculine",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 22,
+    "entity_kind": "concept",
+    "category_name": "Gender",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q2599391",
+  "qid_label": "muscle worship",
+  "qid_desc": "form of body worship",
+  "disposition": "merge",
+  "winner": "muscle-worship",
+  "losers": [
+   "sthenolagnia"
+  ],
+  "retract": [],
+  "reason": "QID label matches; sthenolagnia is the clinical synonym.",
+  "members": [
+   {
+    "slug": "muscle-worship",
+    "name": "Muscle Worship",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Fetishes",
+    "is_adult": true
+   },
+   {
+    "slug": "sthenolagnia",
+    "name": "Sthenolagnia",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Practices & Play",
+    "is_adult": true
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q2651749",
+  "qid_label": "breast fetishism",
+  "qid_desc": "sexual interest focused on female breasts",
+  "disposition": "review",
+  "winner": null,
+  "losers": [],
+  "retract": [],
+  "reason": "breast-fetish (Slang) vs breast-fetishism (Fetishes). Cross-category direction call.",
+  "members": [
+   {
+    "slug": "breast-fetish",
+    "name": "Breast Fetish",
+    "status": "active",
+    "seo_indexable": false,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Slang & Language",
+    "is_adult": false
+   },
+   {
+    "slug": "breast-fetishism",
+    "name": "Breast Fetishism",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Fetishes",
+    "is_adult": true
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q27303706",
+  "qid_label": "anthropomorphic cat",
+  "qid_desc": "cat with human-like traits",
+  "disposition": "qid-belongs-to-neither",
+  "winner": null,
+  "losers": [],
+  "retract": [
+   "catboy",
+   "catgirl"
+  ],
+  "reason": "Q27303706 is \"anthropomorphic cat\". catboy and catgirl are gendered and distinct, and NEITHER is that QID. Both retract.",
+  "members": [
+   {
+    "slug": "catboy",
+    "name": "Catboy",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Dynamics & Roles",
+    "is_adult": true
+   },
+   {
+    "slug": "catgirl",
+    "name": "Catgirl",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Dynamics & Roles",
+    "is_adult": true
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q2736",
+  "qid_label": "association football",
+  "qid_desc": "sport that is practiced between two teams of eleven players",
+  "disposition": "review",
+  "winner": null,
+  "losers": [],
+  "retract": [],
+  "reason": "football vs soccer: same sport, but \"football\" is ambiguous by region.",
+  "members": [
+   {
+    "slug": "football",
+    "name": "Football",
+    "status": "active",
+    "seo_indexable": false,
+    "usage_count": 162,
+    "entity_kind": "descriptor",
+    "category_name": "Sports & Recreation",
+    "is_adult": false
+   },
+   {
+    "slug": "soccer",
+    "name": "Soccer",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 59,
+    "entity_kind": "descriptor",
+    "category_name": "Sports & Recreation",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q2739889",
+  "qid_label": "sensual play",
+  "qid_desc": "activities meant to impart physical sensations",
+  "disposition": "review",
+  "winner": null,
+  "losers": [],
+  "retract": [],
+  "reason": "sensation-play vs sensual-play: overlapping but distinguished by many practitioners.",
+  "members": [
+   {
+    "slug": "sensation-play",
+    "name": "Sensation Play",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Dynamics & Roles",
+    "is_adult": true
+   },
+   {
+    "slug": "sensual-play",
+    "name": "Sensual Play",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Fetishes",
+    "is_adult": true
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q2823834",
+  "qid_label": "medroxyprogesterone acetate",
+  "qid_desc": "injectible form of birth control",
+  "disposition": "merge",
+  "winner": "medroxyprogesterone-acetate",
+  "losers": [
+   "provera"
+  ],
+  "retract": [],
+  "reason": "Brand (Provera) vs generic. NOTE: provera is misfiled under Events & Parties.",
+  "members": [
+   {
+    "slug": "medroxyprogesterone-acetate",
+    "name": "Medroxyprogesterone Acetate",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Sexual Health",
+    "is_adult": false
+   },
+   {
+    "slug": "provera",
+    "name": "Provera",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "descriptor",
+    "category_name": "Events & Parties",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q2880760",
+  "qid_label": "heteroflexibility",
+  "qid_desc": "a form of a sexual orientation or situational sexual behavior characterized by minimal homosexual activity in an otherwise primarily heterosexual orientation",
+  "disposition": "merge",
+  "winner": "heteroflexibility",
+  "losers": [
+   "heteroflexible"
+  ],
+  "retract": [],
+  "reason": "Noun/adjective of one term.",
+  "members": [
+   {
+    "slug": "heteroflexibility",
+    "name": "Heteroflexibility",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 1,
+    "entity_kind": "concept",
+    "category_name": "Orientation",
+    "is_adult": false
+   },
+   {
+    "slug": "heteroflexible",
+    "name": "Heteroflexible",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Orientation",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q2911974",
+  "qid_label": "recreation room",
+  "qid_desc": "room used for a variety of purposes, such as parties, games and other everyday or casual use",
+  "disposition": "wrong-qid",
+  "winner": null,
+  "losers": [],
+  "retract": [
+   "play-room"
+  ],
+  "reason": "Q2911974 is a domestic \"recreation room\". A play-room here is a sex-club space.",
+  "members": [
+   {
+    "slug": "play-room",
+    "name": "Play Room",
+    "status": "active",
+    "seo_indexable": false,
+    "usage_count": 0,
+    "entity_kind": "descriptor",
+    "category_name": "Venue Types",
+    "is_adult": false
+   },
+   {
+    "slug": "rumpus-room",
+    "name": "Rumpus Room",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "descriptor",
+    "category_name": "Venue Types",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q30022",
+  "qid_label": "caf\u00e9",
+  "qid_desc": "establishment that serves coffee and tea",
+  "disposition": "merge",
+  "winner": "cafe",
+  "losers": [
+   "coffee-shop"
+  ],
+  "retract": [],
+  "reason": "QID label \"cafe\"; coffee-shop is the same venue type.",
+  "members": [
+   {
+    "slug": "cafe",
+    "name": "Cafe",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 334,
+    "entity_kind": "descriptor",
+    "category_name": "Venue Types",
+    "is_adult": false
+   },
+   {
+    "slug": "coffee-shop",
+    "name": "Coffee-Shop",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 272,
+    "entity_kind": "descriptor",
+    "category_name": "Venue Types",
+    "is_adult": false
+   },
+   {
+    "slug": "caf",
+    "name": "Caf\u00e9",
+    "status": "merged",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "descriptor",
+    "category_name": "Venue Types",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q309",
+  "qid_label": "history",
+  "qid_desc": "past events and their documentation, studied through historiography, archaeology, and related disciplines",
+  "disposition": "cross-vocab",
+  "winner": null,
+  "losers": [],
+  "retract": [],
+  "reason": "genre-history (genre vocabulary, attribute) vs history (topical concept).",
+  "members": [
+   {
+    "slug": "genre-history",
+    "name": "History",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 753,
+    "entity_kind": "attribute",
+    "category_name": null,
+    "is_adult": false
+   },
+   {
+    "slug": "history",
+    "name": "History",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 692,
+    "entity_kind": "concept",
+    "category_name": "Movements & Milestones",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q316",
+  "qid_label": "love",
+  "qid_desc": "strong, positive emotion based on affection",
+  "disposition": "review",
+  "winner": null,
+  "losers": [],
+  "retract": [],
+  "reason": "love vs affection: distinct emotions, cross-category.",
+  "members": [
+   {
+    "slug": "love",
+    "name": "Love",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 130,
+    "entity_kind": "concept",
+    "category_name": "Dating & Connection",
+    "is_adult": false
+   },
+   {
+    "slug": "affection",
+    "name": "Affection",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 1,
+    "entity_kind": "concept",
+    "category_name": "Culture & Community",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q327018",
+  "qid_label": "interrogation",
+  "qid_desc": "interviewing employed by law enforcement officers, military personnel, and intelligence agencies with the goal of eliciting useful information",
+  "disposition": "wrong-qid",
+  "winner": null,
+  "losers": [],
+  "retract": [
+   "questioning"
+  ],
+  "reason": "HARM. Q327018 is law-enforcement INTERROGATION. \"questioning\" is the LGBTQ+ identity - a namesake collision, the exact 2026-08-29 class. Merging would publish the questioning identity as a kink fetish.",
+  "members": [
+   {
+    "slug": "questioning",
+    "name": "Questioning",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 1,
+    "entity_kind": "concept",
+    "category_name": "Umbrella Terms & Labels",
+    "is_adult": false
+   },
+   {
+    "slug": "interrogation",
+    "name": "Interrogation",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Fetishes",
+    "is_adult": true
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q330262",
+  "qid_label": "spandex",
+  "qid_desc": "elastic synthetic fiber",
+  "disposition": "generic-sense-twin",
+  "winner": null,
+  "losers": [],
+  "retract": [],
+  "reason": "VERIFIED FROM PROSE: mat-spandex is the polyether-polyurea fiber; spandex is a fabric fetish (\"second-skin sensation\"). Two real senses.",
+  "members": [
+   {
+    "slug": "mat-spandex",
+    "name": "Spandex",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 3237,
+    "entity_kind": "attribute",
+    "category_name": null,
+    "is_adult": false
+   },
+   {
+    "slug": "spandex",
+    "name": "Spandex",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 1,
+    "entity_kind": "attribute",
+    "category_name": null,
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q330284",
+  "qid_label": "marketplace",
+  "qid_desc": "space in which a market operates",
+  "disposition": "review",
+  "winner": null,
+  "losers": [],
+  "retract": [],
+  "reason": "market vs marketplace, both place/Destinations.",
+  "members": [
+   {
+    "slug": "market",
+    "name": "Market",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 10,
+    "entity_kind": "place",
+    "category_name": "Destinations",
+    "is_adult": false
+   },
+   {
+    "slug": "marketplace",
+    "name": "Marketplace",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 2,
+    "entity_kind": "place",
+    "category_name": "Destinations",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q337084",
+  "qid_label": "drag queen",
+  "qid_desc": "drag artist who dresses and acts with exaggerated femininity for performance purposes",
+  "disposition": "merge",
+  "winner": "drag-queen",
+  "losers": [
+   "dragqueen"
+  ],
+  "retract": [],
+  "reason": "Spacing variant.",
+  "members": [
+   {
+    "slug": "drag-queen",
+    "name": "Drag Queen",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 101,
+    "entity_kind": "concept",
+    "category_name": "Drag & Performance",
+    "is_adult": false
+   },
+   {
+    "slug": "dragqueen",
+    "name": "Dragqueen",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Expression & Style",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q349",
+  "qid_label": "sport",
+  "qid_desc": "form of event or activity involving competition; series of activities that provides challenges for an individual or team/s of participants",
+  "disposition": "cross-vocab",
+  "winner": null,
+  "losers": [],
+  "retract": [],
+  "reason": "news-sports is the news-taxonomy tag; sport is the general topical tag.",
+  "members": [
+   {
+    "slug": "news-sports",
+    "name": "Sports",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 2500,
+    "entity_kind": "descriptor",
+    "category_name": "Sports & Recreation",
+    "is_adult": false
+   },
+   {
+    "slug": "sport",
+    "name": "Sport",
+    "status": "active",
+    "seo_indexable": false,
+    "usage_count": 43,
+    "entity_kind": "descriptor",
+    "category_name": "Sports & Recreation",
+    "is_adult": false
+   },
+   {
+    "slug": "sports",
+    "name": "Sports",
+    "status": "merged",
+    "seo_indexable": false,
+    "usage_count": 0,
+    "entity_kind": "descriptor",
+    "category_name": "Events & Parties",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q37226",
+  "qid_label": "teacher",
+  "qid_desc": "person who helps others to acquire knowledge, competences or values",
+  "disposition": "wrong-qid",
+  "winner": null,
+  "losers": [],
+  "retract": [
+   "teacher"
+  ],
+  "reason": "Q37226 is the profession \"teacher\". \"teacher\" here is filed Fetishes/adult. Merging would carry is_adult onto \"educator\" - the recorded category-junction trap.",
+  "members": [
+   {
+    "slug": "teacher",
+    "name": "Teacher",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 5,
+    "entity_kind": "concept",
+    "category_name": "Fetishes",
+    "is_adult": true
+   },
+   {
+    "slug": "educator",
+    "name": "Educator",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 1,
+    "entity_kind": "descriptor",
+    "category_name": "Identity",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q376032",
+  "qid_label": "tribadism",
+  "qid_desc": "lesbian sexual practice in which the vulva is rubbed against a partner\u2019s body for sexual stimulation",
+  "disposition": "review",
+  "winner": null,
+  "losers": [],
+  "retract": [],
+  "reason": "scissoring vs tribbing, QID label \"tribadism\". Three names, cross-category.",
+  "members": [
+   {
+    "slug": "scissoring",
+    "name": "Scissoring",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 2,
+    "entity_kind": "concept",
+    "category_name": "Positions",
+    "is_adult": true
+   },
+   {
+    "slug": "tribbing",
+    "name": "Tribbing",
+    "status": "active",
+    "seo_indexable": false,
+    "usage_count": 2,
+    "entity_kind": "concept",
+    "category_name": "Practices & Play",
+    "is_adult": true
+   },
+   {
+    "slug": "tribadism",
+    "name": "Tribadism",
+    "status": "deprecated",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Orientation",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q392963",
+  "qid_label": "ageplay",
+  "qid_desc": "form of roleplaying in which an individual acts or treats another as if they were a different age",
+  "disposition": "merge",
+  "winner": "age-play",
+  "losers": [
+   "ageplay"
+  ],
+  "retract": [],
+  "reason": "Hyphenation variant.",
+  "members": [
+   {
+    "slug": "age-play",
+    "name": "Age Play",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 2,
+    "entity_kind": "concept",
+    "category_name": "Practices & Play",
+    "is_adult": true
+   },
+   {
+    "slug": "ageplay",
+    "name": "Ageplay",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 1,
+    "entity_kind": "concept",
+    "category_name": "Fetishes",
+    "is_adult": true
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q422244",
+  "qid_label": "fluoxetine",
+  "qid_desc": "selective serotonin reuptake inhibitor invented by Eli Lilly and Company in 1972",
+  "disposition": "merge",
+  "winner": "fluoxetine",
+  "losers": [
+   "prozac"
+  ],
+  "retract": [],
+  "reason": "Brand (Prozac) vs generic; QID is the compound.",
+  "members": [
+   {
+    "slug": "fluoxetine",
+    "name": "Fluoxetine",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Substances & Recovery",
+    "is_adult": false
+   },
+   {
+    "slug": "prozac",
+    "name": "Prozac",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Substances & Recovery",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q424965",
+  "qid_label": "dapoxetine",
+  "qid_desc": "chemical compound",
+  "disposition": "merge",
+  "winner": "dapoxetine",
+  "losers": [
+   "priligy"
+  ],
+  "retract": [],
+  "reason": "Brand (Priligy) vs generic.",
+  "members": [
+   {
+    "slug": "dapoxetine",
+    "name": "Dapoxetine",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Substances & Recovery",
+    "is_adult": false
+   },
+   {
+    "slug": "priligy",
+    "name": "Priligy",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Substances & Recovery",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q43",
+  "qid_label": "Turkey",
+  "qid_desc": "country in West Asia and Southeast Europe",
+  "disposition": "review",
+  "winner": null,
+  "losers": [],
+  "retract": [],
+  "reason": "turkey vs turkiye. Exonym/endonym - a naming-politics call, not a data call.",
+  "members": [
+   {
+    "slug": "turkey",
+    "name": "Turkey",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 56,
+    "entity_kind": "place",
+    "category_name": "Destinations",
+    "is_adult": false
+   },
+   {
+    "slug": "turkiye",
+    "name": "Turkiye",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 5,
+    "entity_kind": "place",
+    "category_name": "Destinations",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q43200",
+  "qid_label": "bisexuality",
+  "qid_desc": "sexual and/or romantic attraction to people of more than one gender",
+  "disposition": "review",
+  "winner": null,
+  "losers": [],
+  "retract": [],
+  "reason": "bisexual (u=1592) vs bisexuality (u=40). QID label is \"bisexuality\"; the reader-facing tag is \"bisexual\". Direction is an editorial call.",
+  "members": [
+   {
+    "slug": "bisexual",
+    "name": "Bisexual",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 1592,
+    "entity_kind": "concept",
+    "category_name": "Orientation",
+    "is_adult": false
+   },
+   {
+    "slug": "bisexuality",
+    "name": "Bisexuality",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 40,
+    "entity_kind": "concept",
+    "category_name": "Orientation",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q43405",
+  "qid_label": "exhibitionism",
+  "qid_desc": "act of exposing in a public or semi-public context one's suggestive body parts",
+  "disposition": "review",
+  "winner": null,
+  "losers": [],
+  "retract": [],
+  "reason": "exhibitionism vs flashing: flashing is one act within exhibitionism.",
+  "members": [
+   {
+    "slug": "exhibitionism",
+    "name": "Exhibitionism",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Fetishes",
+    "is_adult": true
+   },
+   {
+    "slug": "flashing",
+    "name": "Flashing",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Fetishes",
+    "is_adult": true
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q459409",
+  "qid_label": "hate crime",
+  "qid_desc": "crime, motivated by prejudice and usually violent",
+  "disposition": "review",
+  "winner": null,
+  "losers": [],
+  "retract": [],
+  "reason": "hate-crimes (u=453) vs hate-crime (u=162). Repo has a plural auto-merge convention favouring singular; usage favours plural.",
+  "members": [
+   {
+    "slug": "hate-crimes",
+    "name": "Hate Crimes",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 453,
+    "entity_kind": "concept",
+    "category_name": "Violence & Hate",
+    "is_adult": false
+   },
+   {
+    "slug": "hate-crime",
+    "name": "Hate Crime",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 162,
+    "entity_kind": "concept",
+    "category_name": "Violence & Hate",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q463859",
+  "qid_label": "foot fetishism",
+  "qid_desc": "pronounced sexual attraction to feet",
+  "disposition": "review",
+  "winner": null,
+  "losers": [],
+  "retract": [],
+  "reason": "foot-fetish (Practices & Play) vs foot-worship (Fetishes). Called out in the brief as same shape as anorgasmia.",
+  "members": [
+   {
+    "slug": "foot-fetish",
+    "name": "Foot Fetish",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Practices & Play",
+    "is_adult": true
+   },
+   {
+    "slug": "foot-worship",
+    "name": "Foot Worship",
+    "status": "active",
+    "seo_indexable": false,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Fetishes",
+    "is_adult": true
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q48270",
+  "qid_label": "non-binary",
+  "qid_desc": "gender identity that exists outside of the gender binary",
+  "disposition": "review",
+  "winner": null,
+  "losers": [],
+  "retract": [],
+  "reason": "MIXED: enby is a genuine synonym of non-binary, but gender-non-conforming is a DISTINCT concept (GNC is expression, NB is identity). Needs splitting into a merge + a wrong-qid.",
+  "members": [
+   {
+    "slug": "non-binary",
+    "name": "Non-Binary",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 638,
+    "entity_kind": "concept",
+    "category_name": "Gender",
+    "is_adult": false
+   },
+   {
+    "slug": "gender-non-conforming",
+    "name": "Gender Non-Conforming",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 7,
+    "entity_kind": "concept",
+    "category_name": "Orientation",
+    "is_adult": false
+   },
+   {
+    "slug": "enby",
+    "name": "Enby",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 5,
+    "entity_kind": "concept",
+    "category_name": "Gender",
+    "is_adult": false
+   },
+   {
+    "slug": "gnc",
+    "name": "GNC",
+    "status": "deprecated",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": null,
+    "is_adult": false
+   },
+   {
+    "slug": "nonbinary",
+    "name": "Nonbinary",
+    "status": "merged",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Gender",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q505371",
+  "qid_label": "agender",
+  "qid_desc": "absence of a gender identity",
+  "disposition": "merge",
+  "winner": "agender",
+  "losers": [
+   "genderless"
+  ],
+  "retract": [],
+  "reason": "QID label \"agender\"; genderless is the synonym. Cross-category (Gender vs Orientation) - winner is the correctly-filed row.",
+  "members": [
+   {
+    "slug": "agender",
+    "name": "Agender",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 1,
+    "entity_kind": "concept",
+    "category_name": "Gender",
+    "is_adult": false
+   },
+   {
+    "slug": "genderless",
+    "name": "Genderless",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 1,
+    "entity_kind": "concept",
+    "category_name": "Orientation",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q51389",
+  "qid_label": "LGBTQ+ culture",
+  "qid_desc": "common culture shared by lesbian, gay, bisexual, transgender and queer people",
+  "disposition": "merge",
+  "winner": "lgbtq-culture",
+  "losers": [
+   "lgbt-culture"
+  ],
+  "retract": [],
+  "reason": "Acronym variant.",
+  "members": [
+   {
+    "slug": "lgbtq-culture",
+    "name": "LGBTQ-Culture",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 55,
+    "entity_kind": "descriptor",
+    "category_name": "Events & Parties",
+    "is_adult": false
+   },
+   {
+    "slug": "lgbt-culture",
+    "name": "LGBT Culture",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 3,
+    "entity_kind": "concept",
+    "category_name": "Culture & Community",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q51393",
+  "qid_label": "LGBTQ community",
+  "qid_desc": "group of people that aren't cisgender and/or heterosexual",
+  "disposition": "merge",
+  "winner": "lgbtq-community",
+  "losers": [
+   "lgbt-community"
+  ],
+  "retract": [],
+  "reason": "Acronym variant, same category.",
+  "members": [
+   {
+    "slug": "lgbtq-community",
+    "name": "LGBTQ-Community",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 57,
+    "entity_kind": "concept",
+    "category_name": "Culture & Community",
+    "is_adult": false
+   },
+   {
+    "slug": "lgbt-community",
+    "name": "LGBT Community",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 19,
+    "entity_kind": "concept",
+    "category_name": "Culture & Community",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q53140604",
+  "qid_label": "HIV/AIDS activism",
+  "qid_desc": "social movement advocating for a societal response to HIV/AIDS",
+  "disposition": "review",
+  "winner": null,
+  "losers": [],
+  "retract": [],
+  "reason": "hiv-aids-awareness vs hiv-aids-activism: QID is activism; awareness is arguably distinct.",
+  "members": [
+   {
+    "slug": "hiv-aids-awareness",
+    "name": "HIV/AIDS Awareness",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 2,
+    "entity_kind": "concept",
+    "category_name": "Sexual Health",
+    "is_adult": false
+   },
+   {
+    "slug": "hiv-aids-activism",
+    "name": "HIV/AIDS Activism",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 1,
+    "entity_kind": "concept",
+    "category_name": "Sexual Health",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q555097",
+  "qid_label": "accessibility",
+  "qid_desc": "design approach that enables people to perceive, understand, and use digital or physical products",
+  "disposition": "merge",
+  "winner": "accessibility",
+  "losers": [
+   "accessible"
+  ],
+  "retract": [],
+  "reason": "QID label \"accessibility\"; \"accessible\" is the adjective form.",
+  "members": [
+   {
+    "slug": "accessibility",
+    "name": "Accessibility",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 1764,
+    "entity_kind": "descriptor",
+    "category_name": "Venue Features & Policies",
+    "is_adult": false
+   },
+   {
+    "slug": "accessible",
+    "name": "Accessible",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 3,
+    "entity_kind": "descriptor",
+    "category_name": "Venue Features & Policies",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q622425",
+  "qid_label": "nightclub",
+  "qid_desc": "entertainment venue which usually operates late into the night",
+  "disposition": "merge",
+  "winner": "nightclub",
+  "losers": [
+   "night-club"
+  ],
+  "retract": [],
+  "reason": "Hyphenation variant.",
+  "members": [
+   {
+    "slug": "nightclub",
+    "name": "Nightclub",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 108,
+    "entity_kind": "descriptor",
+    "category_name": "Venue Types",
+    "is_adult": false
+   },
+   {
+    "slug": "night-club",
+    "name": "Night-Club",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 44,
+    "entity_kind": "descriptor",
+    "category_name": "Venue Types",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q64214281",
+  "qid_label": "Pride Month",
+  "qid_desc": "June commemorative month",
+  "disposition": "review",
+  "winner": null,
+  "losers": [],
+  "retract": [],
+  "reason": "pride-month (a specific month) vs lgbtq-pride (the broader concept).",
+  "members": [
+   {
+    "slug": "pride-month",
+    "name": "Pride Month",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 260,
+    "entity_kind": "descriptor",
+    "category_name": "Events & Parties",
+    "is_adult": false
+   },
+   {
+    "slug": "lgbtq-pride",
+    "name": "LGBTQ-Pride",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 16,
+    "entity_kind": "descriptor",
+    "category_name": "Events & Parties",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q64606208",
+  "qid_label": "polygender",
+  "qid_desc": "condition of people with multiple gender identities",
+  "disposition": "review",
+  "winner": null,
+  "losers": [],
+  "retract": [],
+  "reason": "multigender vs polygender: often distinguished.",
+  "members": [
+   {
+    "slug": "multigender",
+    "name": "Multigender",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Orientation",
+    "is_adult": false
+   },
+   {
+    "slug": "polygender",
+    "name": "Polygender",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Orientation",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q646522",
+  "qid_label": "prostate massage",
+  "qid_desc": "massage of the prostate gland via the rectum or perineum",
+  "disposition": "review",
+  "winner": null,
+  "losers": [],
+  "retract": [],
+  "reason": "prostate-massage (medical/sexual) vs prostate-milking (the community term).",
+  "members": [
+   {
+    "slug": "prostate-massage",
+    "name": "Prostate Massage",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Fetishes",
+    "is_adult": true
+   },
+   {
+    "slug": "prostate-milking",
+    "name": "Prostate Milking",
+    "status": "active",
+    "seo_indexable": false,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Fetishes",
+    "is_adult": true
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q658022",
+  "qid_label": "queer theory",
+  "qid_desc": "a field of post-structuralist critical theory",
+  "disposition": "generic-sense-twin",
+  "winner": null,
+  "losers": [],
+  "retract": [],
+  "reason": "VERIFIED FROM PROSE: genre-queer-theory is the post-structuralist field; queerness is the umbrella identity term. Distinct concepts, not a duplicate. Left untouched rather than retracted - see notes.",
+  "members": [
+   {
+    "slug": "queerness",
+    "name": "Queerness",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 55,
+    "entity_kind": "concept",
+    "category_name": "Umbrella Terms & Labels",
+    "is_adult": false
+   },
+   {
+    "slug": "genre-queer-theory",
+    "name": "Queer Theory",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "attribute",
+    "category_name": null,
+    "is_adult": false
+   },
+   {
+    "slug": "queer-theory",
+    "name": "Queer Theory",
+    "status": "deprecated",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Orientation",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q6581072",
+  "qid_label": "female",
+  "qid_desc": "to be used in \"sex or gender\" (P21) to indicate that the human subject is a female or \"semantic gender\" (P10339) to indicate that a word refers to a female person",
+  "disposition": "wrong-qid",
+  "winner": null,
+  "losers": [],
+  "retract": [
+   "woman",
+   "girl",
+   "lady"
+  ],
+  "reason": "Q6581072 is the P21 value \"female\". \"lady\" is a kink honorific (Dynamics & Roles/adult), not a synonym for woman.",
+  "members": [
+   {
+    "slug": "woman",
+    "name": "Woman",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 2,
+    "entity_kind": "concept",
+    "category_name": "Orientation",
+    "is_adult": false
+   },
+   {
+    "slug": "female",
+    "name": "Female",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 1,
+    "entity_kind": "concept",
+    "category_name": "Orientation",
+    "is_adult": false
+   },
+   {
+    "slug": "lady",
+    "name": "Lady",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 1,
+    "entity_kind": "concept",
+    "category_name": "Dynamics & Roles",
+    "is_adult": true
+   },
+   {
+    "slug": "girl",
+    "name": "Girl",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Orientation",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q6581097",
+  "qid_label": "male",
+  "qid_desc": "to be used in \"sex or gender\" (P21) to indicate that the human subject is a male or \"semantic gender\" (P10339) to indicate that a word refers to a male person",
+  "disposition": "wrong-qid",
+  "winner": null,
+  "losers": [],
+  "retract": [
+   "man",
+   "boy",
+   "masc"
+  ],
+  "reason": "Q6581097 is the P21 sex-or-gender VALUE \"male\", not a glossary concept. boy/masc are distinct terms in this corpus.",
+  "members": [
+   {
+    "slug": "man",
+    "name": "Man",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 10,
+    "entity_kind": "concept",
+    "category_name": "Orientation",
+    "is_adult": false
+   },
+   {
+    "slug": "male",
+    "name": "Male",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 4,
+    "entity_kind": "concept",
+    "category_name": "Orientation",
+    "is_adult": false
+   },
+   {
+    "slug": "boy",
+    "name": "Boy",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Orientation",
+    "is_adult": false
+   },
+   {
+    "slug": "masc",
+    "name": "Masc",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Orientation",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q661717",
+  "qid_label": "gay-friendly",
+  "qid_desc": "said of someone or something that promotes a respectful environment for LGBTI people",
+  "disposition": "merge",
+  "winner": "lgbtq-friendly",
+  "losers": [
+   "lgbt-friendly"
+  ],
+  "retract": [],
+  "reason": "Same descriptor, same category; \"lgbt-\" is the older spelling.",
+  "members": [
+   {
+    "slug": "lgbtq-friendly",
+    "name": "LGBTQ-Friendly",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 2832,
+    "entity_kind": "descriptor",
+    "category_name": "Venue Features & Policies",
+    "is_adult": false
+   },
+   {
+    "slug": "lgbt-friendly",
+    "name": "LGBT-Friendly",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 1415,
+    "entity_kind": "descriptor",
+    "category_name": "Venue Features & Policies",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q6636",
+  "qid_label": "homosexuality",
+  "qid_desc": "romantic or sexual attraction or behavior between members of the same sex",
+  "disposition": "review",
+  "winner": null,
+  "losers": [],
+  "retract": [],
+  "reason": "homosexual vs homosexuality - same shape as bisexual.",
+  "members": [
+   {
+    "slug": "homosexuality",
+    "name": "Homosexuality",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 57,
+    "entity_kind": "concept",
+    "category_name": "Orientation",
+    "is_adult": false
+   },
+   {
+    "slug": "homosexual",
+    "name": "Homosexual",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 2,
+    "entity_kind": "concept",
+    "category_name": "Orientation",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q69488",
+  "qid_label": "MDMA",
+  "qid_desc": "empathogen and stimulant",
+  "disposition": "merge",
+  "winner": "mdma",
+  "losers": [
+   "ecstasy"
+  ],
+  "retract": [],
+  "reason": "Street name / compound name for one substance.",
+  "members": [
+   {
+    "slug": "mdma",
+    "name": "MDMA",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 2,
+    "entity_kind": "concept",
+    "category_name": "Substances & Recovery",
+    "is_adult": false
+   },
+   {
+    "slug": "ecstasy",
+    "name": "Ecstasy",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Substances & Recovery",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q7560",
+  "qid_label": "mother",
+  "qid_desc": "female parent",
+  "disposition": "wrong-qid",
+  "winner": null,
+  "losers": [],
+  "retract": [
+   "mommy"
+  ],
+  "reason": "Q7560 is the kinship \"mother\". \"mommy\" is a kink honorific.",
+  "members": [
+   {
+    "slug": "mother",
+    "name": "Mother",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 2,
+    "entity_kind": "concept",
+    "category_name": "Slang & Language",
+    "is_adult": false
+   },
+   {
+    "slug": "mommy",
+    "name": "Mommy",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Kink Community & Scenes",
+    "is_adult": true
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q76903164",
+  "qid_label": "submission",
+  "qid_desc": "act of putting forward an item for consideration for approval, consideration, marking etc.",
+  "disposition": "qid-belongs-to-neither",
+  "winner": null,
+  "losers": [],
+  "retract": [
+   "offering",
+   "submission"
+  ],
+  "reason": "Q76903164 is bureaucratic \"submission\" (putting an item forward for approval). Neither BDSM member belongs on it. Both retract.",
+  "members": [
+   {
+    "slug": "offering",
+    "name": "Offering",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Fetishes",
+    "is_adult": true
+   },
+   {
+    "slug": "submission",
+    "name": "Submission",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Dynamics & Roles",
+    "is_adult": true
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q833304",
+  "qid_label": "creampie",
+  "qid_desc": "ejaculation in and subsequent leakage of semen from anus or vagina",
+  "disposition": "wrong-qid",
+  "winner": null,
+  "losers": [],
+  "retract": [
+   "anal-creampie"
+  ],
+  "reason": "anal vs vaginal - distinct entries.",
+  "members": [
+   {
+    "slug": "anal-creampie",
+    "name": "Anal Creampie",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Fetishes",
+    "is_adult": true
+   },
+   {
+    "slug": "creampie",
+    "name": "Creampie",
+    "status": "active",
+    "seo_indexable": false,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Fetishes",
+    "is_adult": true
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q8401",
+  "qid_label": "fellatio",
+  "qid_desc": "oral sex by sucking on the penis",
+  "disposition": "merge",
+  "winner": "blowjob",
+  "losers": [
+   "cocksucking"
+  ],
+  "retract": [],
+  "reason": "QID label \"fellatio\"; both members name the same act.",
+  "members": [
+   {
+    "slug": "blowjob",
+    "name": "Blowjob",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Practices & Play",
+    "is_adult": true
+   },
+   {
+    "slug": "cocksucking",
+    "name": "Cocksucking",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Fetishes",
+    "is_adult": true
+   },
+   {
+    "slug": "blow-jobs",
+    "name": "Blow Jobs",
+    "status": "deprecated",
+    "seo_indexable": false,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Fetishes",
+    "is_adult": true
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q8402",
+  "qid_label": "cunnilingus",
+  "qid_desc": "oral sex on the vulva by a sexual partner",
+  "disposition": "wrong-qid",
+  "winner": null,
+  "losers": [],
+  "retract": [
+   "cunnilinguist"
+  ],
+  "reason": "Role (a person) vs the act. Not synonyms.",
+  "members": [
+   {
+    "slug": "cunnilinguist",
+    "name": "Cunnilinguist",
+    "status": "active",
+    "seo_indexable": false,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Dynamics & Roles",
+    "is_adult": true
+   },
+   {
+    "slug": "eating-pussy",
+    "name": "Eating Pussy",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Fetishes",
+    "is_adult": true
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q93929090",
+  "qid_label": "prostate massager",
+  "qid_desc": null,
+  "disposition": "merge",
+  "winner": "prostate-massager",
+  "losers": [
+   "prostate-stimulator"
+  ],
+  "retract": [],
+  "reason": "QID label \"prostate massager\"; stimulator is the same product.",
+  "members": [
+   {
+    "slug": "prostate-massager",
+    "name": "Prostate Massager",
+    "status": "active",
+    "seo_indexable": false,
+    "usage_count": 1,
+    "entity_kind": "concept",
+    "category_name": "Fetishes",
+    "is_adult": true
+   },
+   {
+    "slug": "prostate-stimulator",
+    "name": "Prostate Stimulator",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Practices & Play",
+    "is_adult": true
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q93955709",
+  "qid_label": "demigirl",
+  "qid_desc": "gender identity where a person identifies as only partly female",
+  "disposition": "merge",
+  "winner": "demigirl",
+  "losers": [
+   "demiwoman"
+  ],
+  "retract": [],
+  "reason": "QID label \"demigirl\"; demiwoman is the same identity.",
+  "members": [
+   {
+    "slug": "demigirl",
+    "name": "Demigirl",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Gender",
+    "is_adult": false
+   },
+   {
+    "slug": "demiwoman",
+    "name": "Demiwoman",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Gender",
+    "is_adult": false
+   },
+   {
+    "slug": "demifemme",
+    "name": "Demifemme",
+    "status": "merged",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Slang & Language",
+    "is_adult": false
+   }
+  ]
+ },
+ {
+  "wikidata_id": "Q96188028",
+  "qid_label": "panromantic",
+  "qid_desc": "romantic attraction towards person(s) of any, every, and all genders (panromanticism)",
+  "disposition": "wrong-qid",
+  "winner": null,
+  "losers": [],
+  "retract": [
+   "omniromantic"
+  ],
+  "reason": "omniromantic and panromantic are deliberately distinct labels.",
+  "members": [
+   {
+    "slug": "omniromantic",
+    "name": "Omniromantic",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Orientation",
+    "is_adult": false
+   },
+   {
+    "slug": "panromantic",
+    "name": "Panromantic",
+    "status": "active",
+    "seo_indexable": true,
+    "usage_count": 0,
+    "entity_kind": "concept",
+    "category_name": "Orientation",
+    "is_adult": false
+   }
+  ]
+ }
+]
