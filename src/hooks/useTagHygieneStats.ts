@@ -25,6 +25,11 @@ export interface TagHygieneStats {
   redirect_to_non_canonical: number;
   merged_but_not_status_merged: number;
   sensitive_without_description: number;
+  /** A marketplace attribute facet published as a glossary page. A facet belongs
+   *  to no glossary category by decision, so it must never publish /tags/:slug;
+   *  `enforce_tag_facet_page_gate` deindexes one at write time, which makes
+   *  non-zero mean the gate was bypassed rather than a queue to work through. */
+  indexable_marketplace_facet: number;
   indexable_without_description: number;
   /** A marketplace attribute facet — the `color-`, `size-`, `genre-` and `fit-`
    *  namespaces — publishing a /tags/:slug page. Facets belong to no glossary
