@@ -26,6 +26,12 @@ export interface TagHygieneStats {
   merged_but_not_status_merged: number;
   sensitive_without_description: number;
   indexable_without_description: number;
+  /** A marketplace filter facet ("under-50", "in-stock") publishing as a
+   *  glossary page at /tags/:slug. A facet is a query control, not a concept:
+   *  it has no definition to write, so the page is thin by construction and can
+   *  only be fixed by deindexing, never by enrichment — which is why this is a
+   *  floor of 0 rather than a level. */
+  indexable_marketplace_facet: number;
   /** The junction names a category, `unified_tags.category_id` names none. The
    *  junction is the source of truth and the column is derived from it, so
    *  non-zero means a writer inserted an assignment without letting the denorm
