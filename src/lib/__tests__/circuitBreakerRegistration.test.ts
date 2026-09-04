@@ -15,12 +15,12 @@ import { join } from 'node:path';
  * failure is not "unguarded until the first failure creates a row"; the row is
  * never created and the breaker is decorative forever.
  *
- * Measured 2026-09-04: TWENTY breaker names were called in edge-function code
- * with no registered row, twelve of them LLM breakers — i.e. most of this
- * platform's enrichment spend ran with no circuit at all.
+ * Measured 2026-09-04: TWENTY-ONE breaker names were called in edge-function code
+ * with no registered row, thirteen of them LLM/Workers-AI breakers — i.e. most of
+ * this platform's enrichment spend ran with no circuit at all.
  *
  * WHY THIS TEST RESOLVES CONSTANTS. Scanning only for a string literal in the
- * breaker-argument position finds 16 of those 20. The other four are passed
+ * breaker-argument position finds 16 of those 21. Four are passed
  * through a module-level constant:
  *
  *     const BREAKER = 'llm.editorial'
@@ -31,6 +31,10 @@ import { join } from 'node:path';
  * bindings. Names that are genuinely dynamic (built per-item at runtime, e.g.
  * `source-rss-news`'s per-provider `apiName`) cannot be resolved statically and
  * are out of scope; that is a known limit, stated rather than hidden.
+ *
+ * The 21st, `cf-ai-safety-relevance`, was not in the first draft of the
+ * accompanying migration at all — it surfaced only because this test scans the
+ * whole tree instead of the names the migration's author already knew about.
  */
 
 const ROOT = join(__dirname, '..', '..', '..');
