@@ -8,6 +8,20 @@ import type { ReactNode } from 'react';
 vi.mock('@/hooks/useMeta', () => ({ useMeta: vi.fn() }));
 vi.mock('@/components/tags/TagRelationshipGraph', () => ({ default: () => <div>graph</div> }));
 
+// The page now renders GatedTagsNotice, which reads useAuth — and useAuth
+// THROWS outside an AuthProvider, so without this every case here dies before
+// asserting anything. Signed-out is the state the notice exists for, and the
+// state these cases already assume.
+vi.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({ user: null, session: null, loading: false }),
+}));
+
+// `gated_tag_count` for that notice. 0 keeps it out of the way of the cases
+// below, which are about the grid; GatedTagsNotice.test.tsx owns its behaviour.
+vi.mock('@/integrations/supabase/untyped', () => ({
+  untypedRpc: () => Promise.resolve({ data: { total: 0, non_adult: 0 }, error: null }),
+}));
+
 let aliasHits: unknown[] = [];
 vi.mock('@/hooks/useTagAliasSearch', () => ({
   useTagAliasSearch: () => ({ hits: aliasHits, loading: false }),

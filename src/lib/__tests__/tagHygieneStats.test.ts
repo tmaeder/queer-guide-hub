@@ -134,7 +134,9 @@ describe('tag_hygiene_stats language sentinels', () => {
     const start = stripped.indexOf(`'${key}'`);
     expect(start, `${key} is not defined`).toBeGreaterThan(-1);
     const next = stripped.slice(start + key.length + 2).search(/\n\s+'[a-z_]+',\s*\(/);
-    return next === -1 ? stripped.slice(start) : stripped.slice(start, start + key.length + 2 + next);
+    return next === -1
+      ? stripped.slice(start)
+      : stripped.slice(start, start + key.length + 2 + next);
   }
 
   it('defines all four sentinels', () => {
@@ -165,14 +167,27 @@ describe('tag_hygiene_stats language sentinels', () => {
     // A CREATE OR REPLACE that silently drops a key breaks TagHygienePanel and
     // makes check-tag-hygiene.mjs stop guarding whatever it dropped.
     for (const k of [
-      'uncategorized_active', 'dangling_category_id', 'denorm_category_missing',
-      'placeholder_description_active', 'active_tags_with_image_url',
-      'assignment_to_non_active_tag', 'nonclean_entity_type', 'duplicate_active_name',
-      'redirect_to_non_canonical', 'merged_but_not_status_merged',
-      'sensitive_without_description', 'indexable_without_description',
-      'event_tag_strings_unresolved', 'events_with_tags_unlinked', 'alias_equals_name',
-      'alias_mojibake', 'refusal_prose_active', 'unreviewed_typed_alias',
-      'relations_pending_review', 'prose_unreviewed',
+      'uncategorized_active',
+      'dangling_category_id',
+      'denorm_category_missing',
+      'placeholder_description_active',
+      'active_tags_with_image_url',
+      'assignment_to_non_active_tag',
+      'nonclean_entity_type',
+      'duplicate_active_name',
+      'redirect_to_non_canonical',
+      'merged_but_not_status_merged',
+      'sensitive_without_description',
+      'indexable_without_description',
+      'event_tag_strings_unresolved',
+      'events_with_tags_unlinked',
+      'alias_equals_name',
+      'alias_mojibake',
+      'refusal_prose_active',
+      'unreviewed_typed_alias',
+      'relations_pending_review',
+      'prose_unreviewed',
+      'indexable_marketplace_facet',
     ]) {
       expect(sql, `${k} was dropped from tag_hygiene_stats`).toContain(`'${k}'`);
     }
@@ -196,6 +211,7 @@ describe('tag_hygiene_stats language sentinels', () => {
       name_mojibake: 1,
       name_contains_hashtag: 0,
       non_latin_name: 0,
+      indexable_marketplace_facet: 0,
     };
     for (const [k, v] of Object.entries(expected)) {
       expect(baseline[k], `${k} has no baseline entry`).toBe(v);
@@ -269,5 +285,97 @@ describe('tag_hygiene_stats() keeps the event-linker sentinel', () => {
       baseline._advisory ?? [],
       'the sentinel must be able to FAIL the gate, not merely drift',
     ).not.toContain('event_tag_pairs_unlinked');
+  });
+});
+
+/**
+ * `indexable_marketplace_facet` — a marketplace attribute facet publishing a
+ * glossary page at /tags/:slug.
+ *
+ * 15 rows carried this on 2026-09-04 (mat-spandex 3,237 uses, vibe-vintage
+ * 2,021, mat-lace 1,168 ...). Being unfiled was never the defect: the
+ * 2026-08-29 taxonomy rebuild unfiled 92 of 98 marketplace-namespaced tags on
+ * purpose, because they carry the corpus's highest usage counts and OWNED the
+ * head of 25 glossary stops. What was never carried through was `seo_indexable`,
+ * so a tag deliberately given no place in the information architecture kept
+ * publishing a page in it — four of them about the wrong subject entirely
+ * (vibe-vintage on winemaking, genre-ya on the medical sense of "young adult").
+ *
+ * Two things here are load-bearing and neither is visible from the counter's
+ * value, which is why they are asserted rather than commented:
+ *
+ *   is_marketplace_facet()  is the term that separates PERMANENTLY uncategorized
+ *                           (a facet, by decision) from TEMPORARILY uncategorized
+ *                           (a new glossary tag, filed by the two-hourly sweep).
+ *                           Rewriting this counter as "indexable and has no
+ *                           category" reads non-zero every time ingest lands
+ *                           ahead of that sweep — the exact sawtooth that forced
+ *                           uncategorized_active to become advisory — and the
+ *                           matching gate would deindex legitimate new glossary
+ *                           tags with no way back, since only 'thin' is ever
+ *                           auto-reversed.
+ *
+ *   trg_tag_facet_page_gate is what makes the count STRUCTURAL rather than a
+ *                           queue depth, and therefore fair to gate on at all.
+ *                           Without it the backlog simply regrows: seo_indexable
+ *                           DEFAULTs to true, so any producer that never names
+ *                           the column publishes a facet page.
+ */
+describe('tag_hygiene_stats() facet-page sentinel', () => {
+  // Key-DEFINITION form, not a bare mention: the migration's header prose and
+  // its assertion block both contain the quoted string, so `toContain` passes
+  // even when the counter itself has been deleted.
+  const KEY_DEF = /'indexable_marketplace_facet'\s*,\s*\(/;
+
+  it('defines indexable_marketplace_facet as a counter', () => {
+    expect(
+      KEY_DEF.test(sql),
+      'the facet-page sentinel was dropped from tag_hygiene_stats() — most likely by a ' +
+        'concurrent branch restating the function; re-add the counter rather than re-baselining',
+    ).toBe(true);
+  });
+
+  it('scopes the counter with is_marketplace_facet, not with a missing category', () => {
+    const start = sql.search(KEY_DEF);
+    expect(start, 'no counter body to check').toBeGreaterThan(-1);
+    const end = sql.indexOf("'event_tag_strings_unresolved'", start);
+    const body = sql.slice(start, end > -1 ? end : undefined).replace(/^\s*--.*$/gm, '');
+
+    expect(body).toMatch(/is_marketplace_facet\s*\(\s*slug\s*,\s*entity_kind\s*\)/i);
+    expect(body).toMatch(/seo_indexable/);
+    // The sawtooth rewrite. `category_id is null` here would count every tag
+    // waiting on the category sweep.
+    expect(body, 'counting uncategorized tags makes this a queue depth').not.toMatch(
+      /category_id\s+is\s+null/i,
+    );
+  });
+
+  it('is backed by a write-time gate that only ever forces seo_indexable false', () => {
+    const gate = (() => {
+      for (let i = files.length - 1; i >= 0; i -= 1) {
+        if (/create\s+trigger\s+trg_tag_facet_page_gate/i.test(sources[i])) return sources[i];
+      }
+      throw new Error('trg_tag_facet_page_gate is never created');
+    })();
+
+    // BEFORE, and column-scoped on the predicate's own inputs. A trigger scoped
+    // only to seo_indexable would miss a tag re-slugged into a facet namespace.
+    expect(gate).toMatch(/before\s+insert\s+or\s+update\s+of[^\n]*slug/i);
+    expect(gate).toMatch(/before\s+insert\s+or\s+update\s+of[^\n]*entity_kind/i);
+
+    // Only ever forces false. An assignment to `true` anywhere in the gate
+    // function would make it a writer that can republish pages other writers
+    // took down — the defect 20261030100000 exists to have removed.
+    const fn = gate.slice(
+      gate.search(/create\s+or\s+replace\s+function\s+public\.enforce_tag_facet_page_gate/i),
+    );
+    const body = fn.slice(0, fn.indexOf('$fn$;') + 1).replace(/^\s*--.*$/gm, '');
+    expect(body).toMatch(/new\.seo_indexable\s*:=\s*false/i);
+    expect(body).not.toMatch(/new\.seo_indexable\s*:=\s*true/i);
+
+    // Stamped with a reason that is never auto-reversed. 'thin' is the ONLY
+    // value run_tag_thin_page_reindex reverses, and a facet never gains a
+    // category, so stamping 'thin' here would republish all 15 the next night.
+    expect(body).toMatch(/seo_deindex_reason\s*:=\s*'facet'/i);
   });
 });
