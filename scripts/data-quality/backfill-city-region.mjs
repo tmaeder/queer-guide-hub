@@ -33,11 +33,19 @@
  *   node scripts/data-quality/backfill-city-region.mjs --out /tmp/region.sql
  */
 
+import { randomUUID } from 'node:crypto';
 import { writeFileSync } from 'node:fs';
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
 const ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
-const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || '';
+// SUPABASE_SERVICE_ROLE_KEY is the name the scheduled workflows use; the
+// singular form is kept for the hand-run path and for search-eval's precedent.
+const SERVICE_KEY =
+  process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+// Reads are world-readable, so the anon key is preferred — but CI has no anon
+// secret, and the service key reads fine. Without this fallback the scheduled
+// job cannot start.
+const READ_KEY = ANON_KEY || SERVICE_KEY;
 const PHOTON = process.env.PHOTON_REVERSE_URL || 'https://photon.komoot.io/reverse';
 
 // 1100ms is the interval this repo has empirically found Photon tolerates for
@@ -55,8 +63,10 @@ const DRY_RUN = args.includes('--dry-run');
 const LIMIT = Number(flag('limit', 5000));
 const OUT = flag('out', null);
 
-if (!SUPABASE_URL || !ANON_KEY) {
-  console.error('Need VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in the environment.');
+if (!SUPABASE_URL || !READ_KEY) {
+  console.error(
+    'Need SUPABASE_URL plus either VITE_SUPABASE_ANON_KEY or SUPABASE_SERVICE_ROLE_KEY.',
+  );
   process.exit(1);
 }
 
@@ -72,7 +82,7 @@ async function loadCities() {
     `&latitude=not.is.null&longitude=not.is.null` +
     `&slug=not.like.tmp-*` +
     `&order=id.asc&limit=${LIMIT}`;
-  const res = await fetch(url, { headers: { apikey: ANON_KEY, Authorization: `Bearer ${ANON_KEY}` } });
+  const res = await fetch(url, { headers: { apikey: READ_KEY, Authorization: `Bearer ${READ_KEY}` } });
   if (!res.ok) throw new Error(`load cities ${res.status}: ${await res.text()}`);
   return res.json();
 }
@@ -111,18 +121,48 @@ function buildSql(rows) {
   return out.join('\n\n');
 }
 
-async function writeDirect(rows) {
+const svcHeaders = {
+  apikey: SERVICE_KEY,
+  Authorization: `Bearer ${SERVICE_KEY}`,
+  'Content-Type': 'application/json',
+};
+
+/**
+ * One batch_id per run, so the whole sweep reverts with
+ *   select rollback_external_correction_batch('<id>');
+ * This only ever fills a NULL, so before_value is always jsonb 'null' — the
+ * audit row still earns its place, because it is what the correction-rate
+ * sentinel counts and what makes an unnoticed bad Photon day undoable.
+ */
+async function writeDirect(rows, batchId) {
   for (let i = 0; i < rows.length; i += WRITE_BATCH) {
     const chunk = rows.slice(i, i + WRITE_BATCH);
+
+    // Audit BEFORE the write: if the process dies mid-batch, the audit row is
+    // the only record that makes the change reversible.
+    const aRes = await fetch(`${SUPABASE_URL}/rest/v1/external_correction_audit`, {
+      method: 'POST',
+      headers: { ...svcHeaders, Prefer: 'return=minimal' },
+      body: JSON.stringify(
+        chunk.map((r) => ({
+          batch_id: batchId,
+          entity_type: 'city',
+          entity_id: r.id,
+          field: 'region_name',
+          before_value: null,
+          after_value: r.state,
+          source: 'photon-reverse',
+          actor: 'script:backfill-city-region',
+          reason: 'fill empty region_name by reverse geocode',
+        })),
+      ),
+    });
+    if (!aRes.ok) throw new Error(`audit insert ${aRes.status}: ${await aRes.text()}`);
+
     for (const r of chunk) {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/cities?id=eq.${r.id}&region_name=is.null`, {
         method: 'PATCH',
-        headers: {
-          apikey: SERVICE_KEY,
-          Authorization: `Bearer ${SERVICE_KEY}`,
-          'Content-Type': 'application/json',
-          Prefer: 'return=minimal',
-        },
+        headers: { ...svcHeaders, Prefer: 'return=minimal' },
         body: JSON.stringify({ region_name: r.state }),
       });
       if (!res.ok) console.warn(`  write ${r.id} failed ${res.status}`);
@@ -164,7 +204,9 @@ if (DRY_RUN) {
   console.error('--dry-run: no writes');
   console.error(resolved.slice(0, 10));
 } else if (SERVICE_KEY) {
-  await writeDirect(resolved);
+  const batchId = randomUUID();
+  await writeDirect(resolved, batchId);
+  console.error(`\nrevert this run:  select rollback_external_correction_batch('${batchId}');`);
 } else {
   const sql = buildSql(resolved);
   if (OUT) {
