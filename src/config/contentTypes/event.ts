@@ -292,6 +292,7 @@ export const eventContentType: ContentTypeConfig = {
       fuzzyRpc: 'find_event_fuzzy_duplicate_clusters',
     },
   },
+  merge: { column: 'duplicate_of_id', label: 'Merged' },
   lifecycle: { type: 'event', archive: { column: 'status', value: 'cancelled', label: 'Cancelled' } },
   publicPath: (row) => (row.slug ? `/events/${row.slug}` : null),
 };

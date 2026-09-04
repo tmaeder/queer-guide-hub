@@ -55,6 +55,7 @@ export function useNearbyCities({ origin, limit = 9 }: { origin: Origin | null; 
         .select(
           'id, name, slug, latitude, longitude, image_url, major_airport_code, is_major_city, is_capital, population, country_id, countries(name, flag_emoji, equality_score, lgbti_criminalization)',
         )
+        .is('duplicate_of_id', null)
         .or('is_major_city.eq.true,is_capital.eq.true')
         .not('latitude', 'is', null)
         .not('longitude', 'is', null)
