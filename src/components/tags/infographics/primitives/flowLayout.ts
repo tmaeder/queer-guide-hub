@@ -146,12 +146,7 @@ function bend(a: Point, b: Point, index: number): { d: string; label: Point } {
   // it is why the test can compare by set membership.
   const d = `M ${a.x} ${a.y} C ${c1.x} ${c1.y}, ${c2.x} ${c2.y}, ${b.x} ${b.y}`;
 
-  // Cubic at t=0.5.
-  const label = {
-    x: round((a.x + 3 * c1.x + 3 * c2.x + b.x) / 8),
-    y: round((a.y + 3 * c1.y + 3 * c2.y + b.y) / 8),
-  };
-  return { d, label };
+  return { d, label: bezierAt(a, c1, c2, b, 0.5) };
 }
 
 /**
@@ -167,11 +162,26 @@ function loopBack(a: Point, b: Point, w: number): { d: string; label: Point } {
   const c1 = { x: round(a.x + reach), y: round(a.y) };
   const c2 = { x: round(b.x + reach), y: round(b.y) };
   const d = `M ${a.x} ${a.y} C ${c1.x} ${c1.y}, ${c2.x} ${c2.y}, ${b.x} ${b.y}`;
-  const label = {
-    x: round((a.x + 3 * c1.x + 3 * c2.x + b.x) / 8),
-    y: round((a.y + 3 * c1.y + 3 * c2.y + b.y) / 8),
-  };
+  // Labelled at t=0.3 rather than the midpoint. A loop returns to a node the
+  // forward edges also reach, so its midpoint lands in the same neighbourhood
+  // as theirs and the two label plates overlap — measured, 31 units apart on
+  // the consent figure, against plates about 40 wide. A quarter of the way
+  // along puts the label on the loop's own arc, where it belongs anyway.
+  const label = bezierAt(a, c1, c2, b, 0.3);
   return { d, label };
+}
+
+/** A cubic evaluated at `t`. */
+function bezierAt(a: Point, c1: Point, c2: Point, b: Point, t: number): Point {
+  const u = 1 - t;
+  const w0 = u * u * u;
+  const w1 = 3 * u * u * t;
+  const w2 = 3 * u * t * t;
+  const w3 = t * t * t;
+  return {
+    x: round(w0 * a.x + w1 * c1.x + w2 * c2.x + w3 * b.x),
+    y: round(w0 * a.y + w1 * c1.y + w2 * c2.y + w3 * b.y),
+  };
 }
 
 export function flowLayout(
@@ -209,8 +219,7 @@ export function flowLayout(
     if (!a || !b) {
       throw new Error(`flowLayout: edge ${e.from}->${e.to} references a node that does not exist`);
     }
-    const geo =
-      e.kind === 'loop' ? loopBack(a.center, b.center, w) : bend(a.center, b.center, i);
+    const geo = e.kind === 'loop' ? loopBack(a.center, b.center, w) : bend(a.center, b.center, i);
     return { ...e, d: geo.d, from_: a.center, to_: b.center, label: geo.label };
   });
 
