@@ -50,6 +50,7 @@ export const communityGroupsContentType: ContentTypeConfig = {
     },
   },
   // `archived_at` added in 20261029100000 — see hotel.ts.
+  merge: { column: 'duplicate_of_id', label: 'Merged' },
   lifecycle: {
     type: 'group',
     archive: { column: 'archived_at', predicate: 'present', label: 'Archived' },
