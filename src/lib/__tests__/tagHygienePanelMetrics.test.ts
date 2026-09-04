@@ -21,8 +21,35 @@ const ROOT = process.cwd();
 const MIGRATIONS = join(ROOT, 'supabase', 'migrations');
 const BASELINE = join(ROOT, 'scripts', 'tag-hygiene-baseline.json');
 
-/** Keys of the jsonb the live function returns, minus the `totals` context block. */
+/**
+ * Keys of the jsonb the live function returns, minus the `totals` context block.
+ *
+ * Computed ONCE and memoised, and found by scanning NEWEST-FIRST with an early
+ * exit. Both halves are load-bearing for the runtime, not tidiness.
+ *
+ * This used to read every file in `supabase/migrations` on every call, and it is
+ * called from more than one test. Measured 2026-09-04 at 1,478 files / 12 MB:
+ *
+ *     full scan, cold    36,143 ms      full scan, warm   10,569 ms
+ *     newest-first        12 ms (cold)  /  1 ms (warm), 7 files read
+ *
+ * The cost is per-file syscall overhead on an iCloud-synced checkout, not
+ * bandwidth, so it scales with the FILE COUNT and grows every time anyone adds a
+ * migration. Two calls at ~10.5 s each against vitest's 15 s per-test timeout is
+ * why this suite failed on repo size rather than on the invariant it guards —
+ * the same failure its sibling `tagHygieneStats.test.ts` documents from when the
+ * directory held 1,322 files.
+ *
+ * Newest-first is not merely an optimisation, it is the definition: `create or
+ * replace` means the LAST migration to define the function is the one in effect,
+ * so the first match scanning backwards IS the answer. Reading the other ~1,471
+ * files could only ever confirm what is already known.
+ */
+let cachedKeys: string[] | null = null;
+
 function sqlMetricKeys(): string[] {
+  if (cachedKeys) return cachedKeys;
+
   const files = readdirSync(MIGRATIONS)
     .filter((f) => f.endsWith('.sql'))
     .sort();
@@ -35,13 +62,18 @@ function sqlMetricKeys(): string[] {
   // added. A scan that can read the wrong file must not fail quietly elsewhere.
   const DEFINES = /create\s+or\s+replace\s+function\s+public\.tag_hygiene_stats/i;
 
-  const defining = files.filter((f) => DEFINES.test(readFileSync(join(MIGRATIONS, f), 'utf8')));
-  expect(defining.length, 'no migration defines tag_hygiene_stats').toBeGreaterThan(0);
-
-  const sql = readFileSync(join(MIGRATIONS, defining[defining.length - 1]), 'utf8');
-  const at = sql.search(new RegExp(DEFINES.source, 'gi'));
+  let sql: string | null = null;
+  for (let i = files.length - 1; i >= 0; i -= 1) {
+    const body = readFileSync(join(MIGRATIONS, files[i]), 'utf8');
+    if (DEFINES.test(body)) {
+      sql = body;
+      break;
+    }
+  }
+  expect(sql, 'no migration defines tag_hygiene_stats').not.toBeNull();
+  const at = sql!.search(new RegExp(DEFINES.source, 'gi'));
   expect(at, 'the defining migration matched the filter but not the body scan').toBeGreaterThan(-1);
-  const body = sql.slice(at);
+  const body = sql!.slice(at);
 
   // Top-level keys of the jsonb_build_object sit at four spaces; the members of
   // the nested `totals` object are indented further and are deliberately missed.
@@ -49,7 +81,8 @@ function sqlMetricKeys(): string[] {
   expect(keys, 'indentation-based key scan found nothing — the SQL was reformatted').toContain(
     'totals',
   );
-  return keys.filter((k) => k !== 'totals');
+  cachedKeys = keys.filter((k) => k !== 'totals');
+  return cachedKeys;
 }
 
 const baseline = JSON.parse(readFileSync(BASELINE, 'utf8')) as Record<string, unknown>;
