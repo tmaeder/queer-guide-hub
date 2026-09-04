@@ -7,8 +7,9 @@ import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { buildSql, pairs, DECISIONS, MIGRATION } from '../../../scripts/data-quality/generate-tag-merge-migration.mjs'
 import { retractions } from '../../../scripts/data-quality/generate-tag-qid-retraction-migration.mjs'
+import type { TagDecision } from '../../../scripts/data-quality/generate-tag-qid-retraction-migration.d.mts'
 
-const decisions = JSON.parse(readFileSync(DECISIONS, 'utf8'))
+const decisions = JSON.parse(readFileSync(DECISIONS, 'utf8')) as TagDecision[]
 const sql = readFileSync(MIGRATION, 'utf8')
 
 describe('tag merge migration', () => {
@@ -19,17 +20,18 @@ describe('tag merge migration', () => {
   it('merges exactly the pairs the decision file names', () => {
     const rows = pairs(decisions)
     const expected = decisions
-      .filter((d: any) => d.disposition === 'merge')
-      .flatMap((d: any) => d.losers.map((l: string) => `${d.winner}<-${l}`))
+      .filter((d) => d.disposition === 'merge')
+      .flatMap((d) => d.losers.map((l) => `${d.winner}<-${l}`))
     expect(rows.map((r) => `${r.winner}<-${r.loser}`).sort()).toEqual(expected.sort())
   })
 
   it('honours a partial merge instead of absorbing the whole group', () => {
     // Q48270: enby is a synonym of non-binary, gender-non-conforming is not.
     // Auto-deriving losers as "every member except the winner" would swallow it.
-    const g = decisions.find((d: any) => d.wikidata_id === 'Q48270')
-    expect(g.excluded).toContain('gender-non-conforming')
-    expect(g.losers).toEqual(['enby'])
+    const g = decisions.find((d) => d.wikidata_id === 'Q48270')
+    expect(g).toBeDefined()
+    expect(g?.excluded).toContain('gender-non-conforming')
+    expect(g?.losers).toEqual(['enby'])
     expect(pairs(decisions).some((p) => p.loser === 'gender-non-conforming')).toBe(false)
   })
 
@@ -37,7 +39,7 @@ describe('tag merge migration', () => {
     // The two migrations ship separately and must stay disjoint: retracting a
     // row mid-merge, or merging away a row whose identifier is being cleared,
     // makes the order they apply in load-bearing.
-    const retracted = new Set(retractions(decisions).map((r: any) => r.slug))
+    const retracted = new Set(retractions(decisions).map((r) => r.slug))
     expect(retracted.size).toBeGreaterThan(0)
     for (const p of pairs(decisions)) {
       expect(retracted.has(p.winner)).toBe(false)

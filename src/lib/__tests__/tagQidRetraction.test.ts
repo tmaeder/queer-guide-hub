@@ -7,8 +7,9 @@
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { buildSql, retractions, DECISIONS, MIGRATION } from '../../../scripts/data-quality/generate-tag-qid-retraction-migration.mjs'
+import type { TagDecision } from '../../../scripts/data-quality/generate-tag-qid-retraction-migration.d.mts'
 
-const decisions = JSON.parse(readFileSync(DECISIONS, 'utf8'))
+const decisions = JSON.parse(readFileSync(DECISIONS, 'utf8')) as TagDecision[]
 const sql = readFileSync(MIGRATION, 'utf8')
 
 describe('tag QID retraction migration', () => {
@@ -19,8 +20,8 @@ describe('tag QID retraction migration', () => {
   it('retracts exactly the slugs dispositioned wrong-qid, and no others', () => {
     const rows = retractions(decisions)
     const expected = decisions
-      .filter((d: any) => d.disposition === 'wrong-qid' || d.disposition === 'qid-belongs-to-neither')
-      .flatMap((d: any) => d.retract)
+      .filter((d) => d.disposition === 'wrong-qid' || d.disposition === 'qid-belongs-to-neither')
+      .flatMap((d) => d.retract)
     expect(rows.map((r) => r.slug).sort()).toEqual(expected.sort())
     expect(new Set(rows.map((r) => r.slug)).size).toBe(rows.length) // no slug twice
   })
@@ -28,7 +29,7 @@ describe('tag QID retraction migration', () => {
   it('never retracts a slug that some other group is merging INTO', () => {
     // Retracting a merge winner's identifier would strip the QID off the row
     // the merge migration is about to make canonical.
-    const winners = new Set(decisions.map((d: any) => d.winner).filter(Boolean))
+    const winners = new Set(decisions.map((d) => d.winner).filter(Boolean))
     for (const r of retractions(decisions)) expect(winners.has(r.slug)).toBe(false)
   })
 
@@ -36,8 +37,8 @@ describe('tag QID retraction migration', () => {
     // generic-sense twins and real vocabulary boundaries are decisions to do
     // NOTHING. If one ever appears in the SQL body, the disposition was ignored.
     const untouched = decisions
-      .filter((d: any) => d.disposition === 'generic-sense-twin' || d.disposition === 'cross-vocab')
-      .flatMap((d: any) => d.members.filter((m: any) => m.status === 'active').map((m: any) => m.slug))
+      .filter((d) => d.disposition === 'generic-sense-twin' || d.disposition === 'cross-vocab')
+      .flatMap((d) => d.members.filter((m) => m.status === 'active').map((m) => m.slug))
     expect(untouched.length).toBeGreaterThan(0) // the assertion must have subjects
     const body = sql.slice(sql.indexOf('insert into _retract'))
     for (const slug of untouched) expect(body).not.toContain(`'${slug}'`)
