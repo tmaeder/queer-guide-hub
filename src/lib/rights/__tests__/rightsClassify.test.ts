@@ -99,6 +99,25 @@ describe('classifyCountryRight — gender-recognition (uncounted by the summary)
     expect(classifyCountryRight({ [topic.column]: 'Not possible' }, topic)).toBe('no');
     expect(classifyCountryRight({}, topic)).toBe('none');
   });
+
+  /**
+   * The shape production actually stores, and the one this topic was blind to
+   * until 2026-09-01: `topicScalarValue` had no `gender-recognition` branch,
+   * so it returned the jsonb OBJECT, `isReadableScalar` rejected it, and all
+   * 250 countries classified as `none` — the /rights choropleth painted this
+   * topic "no data" worldwide. The test above kept passing because it feeds a
+   * bare string, which no country row has ever held.
+   */
+  it('reads the real jsonb blob, not only a bare scalar', () => {
+    const blob = (gender_marker: string) => ({
+      [topic.column]: { gender_marker, self_id: 'No', requires_surgery: 'Not required' },
+    });
+    expect(classifyCountryRight(blob('Possible'), topic)).toBe('yes');
+    expect(classifyCountryRight(blob('Not Possible'), topic)).toBe('no');
+    expect(classifyCountryRight(blob('Nominally Possible'), topic)).toBe('partial');
+    // An empty blob is still absence, not a negative answer.
+    expect(classifyCountryRight({ [topic.column]: {} }, topic)).toBe('none');
+  });
 });
 
 describe('classifyCountryRight — never throws on malformed input', () => {
