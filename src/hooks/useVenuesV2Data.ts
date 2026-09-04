@@ -238,6 +238,7 @@ export function useCityAutocomplete(query: string) {
       const { data } = await supabase
         .from('cities')
         .select('id, name')
+        .is('duplicate_of_id', null)
         .ilike('name', `%${query}%`)
         .limit(5);
       if (!cancelled) setMatches((data as Array<{ id: string; name: string }>) ?? []);

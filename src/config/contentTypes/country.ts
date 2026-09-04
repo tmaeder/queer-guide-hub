@@ -169,6 +169,7 @@ export const countryContentType: ContentTypeConfig = {
    * (drop it from the index) and `shell_status` ('real' | 'territory').
    * archive_entity and delete_entity both refuse 'country' with that reasoning.
    */
+  merge: { column: 'duplicate_of_id', label: 'Merged' },
   lifecycle: { type: 'country', deletable: false },
   publicPath: (row) => (row.slug ? `/country/${row.slug}` : null),
 };

@@ -4,6 +4,7 @@ import {
   applyFilters,
   applySorts,
   applyArchivedView,
+  applyMergedView,
   type QueryBuilderLike,
 } from '../filterOps';
 import type { Filter } from '../viewSpec';
@@ -256,5 +257,61 @@ describe('applyArchivedView', () => {
     const { q, calls } = stub();
     applyArchivedView(q, { column: 'status' }, 'live');
     expect(calls).toEqual([]);
+  });
+});
+
+describe('applyMergedView', () => {
+  const MERGE = { column: 'duplicate_of_id' };
+
+  it('unmerged is a NULL check, merged is its exact inverse', () => {
+    const a = stub();
+    applyMergedView(a.q, MERGE, 'unmerged');
+    expect(a.calls).toEqual([['is', 'duplicate_of_id', null]]);
+
+    const b = stub();
+    applyMergedView(b.q, MERGE, 'merged');
+    expect(b.calls).toEqual([['not', 'duplicate_of_id', 'is', null]]);
+  });
+
+  it('never reaches for neq or or', () => {
+    // Unlike the `equals` archive shape, IS NULL / IS NOT NULL are exact
+    // complements over every row, so the NULL-safety dance has nothing to fix
+    // here. A `.neq()` rewrite would have nothing to compare against and would
+    // reintroduce the very bug applyArchivedView's `or` exists to avoid.
+    for (const view of ['unmerged', 'merged', 'all'] as const) {
+      const { q, calls } = stub();
+      applyMergedView(q, MERGE, view);
+      expect(calls.some(([m]) => m === 'neq' || m === 'or')).toBe(false);
+    }
+  });
+
+  it('`all` is how a merged row stays reachable', () => {
+    // The merged slice is the entry point for reviewing or undoing a bad
+    // merge, so hiding is a default and never a wall.
+    const { q, calls } = stub();
+    applyMergedView(q, MERGE, 'all');
+    expect(calls).toEqual([]);
+  });
+
+  it('emits NOTHING for a type with no merge column, in every view', () => {
+    // The expensive direction: `duplicate_of_id=is.null` against a table
+    // without the column is a PostgREST 400, and loadAllTypes only logs the
+    // error — that type would silently vanish from All content.
+    for (const view of ['unmerged', 'merged', 'all'] as const) {
+      const { q, calls } = stub();
+      applyMergedView(q, undefined, view);
+      expect(calls).toEqual([]);
+    }
+  });
+
+  it('composes with the archive slice rather than replacing it', () => {
+    // A row can be archived AND merged away; the two axes are independent.
+    const { q, calls } = stub();
+    applyArchivedView(q, { column: 'shell_status', value: 'ghost' }, 'live');
+    applyMergedView(q, MERGE, 'unmerged');
+    expect(calls).toEqual([
+      ['or', 'shell_status.is.null,shell_status.neq.ghost'],
+      ['is', 'duplicate_of_id', null],
+    ]);
   });
 });
