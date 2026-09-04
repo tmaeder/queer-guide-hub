@@ -80,6 +80,9 @@ export interface NewsArticleFull {
   media_type?: string | null;
   audio_url?: string | null;
   duration_seconds?: number | null;
+  // Per-row crawler gate, populated by select('*'). NULL means indexable, so
+  // this must stay nullable — see newsArticleNoIndex for the polarity rule.
+  seo_indexable?: boolean | null;
   // Trust-loop signals (truth loop, 2026-06-07) — optional, populated by select('*').
   corroboration_count?: number | null;
   integrity_flags?: string[] | null;
@@ -112,6 +115,24 @@ const FRESH_WINDOW_MS = 24 * 60 * 60 * 1000;
 export function isFreshArticle(publishedAt: string | null | undefined): boolean {
   if (!publishedAt) return false;
   return Date.now() - new Date(publishedAt).getTime() < FRESH_WINDOW_MS;
+}
+
+/**
+ * Should this article carry `noindex`?
+ *
+ * The edge already decides this — `functions/_middleware.ts` injects
+ * `<meta name="robots" content="noindex,nofollow">` when the row's
+ * `seo_indexable` is false. But `useMeta` REMOVES any robots tag whenever its
+ * `noIndex` option is falsy, and NewsDetail passed no `noIndex` at all — so on
+ * the JS render pass React silently deleted the edge's directive and
+ * re-exposed gated articles to crawlers.
+ *
+ * The polarity is load-bearing and must match the edge's `indexable !== false`
+ * (`functions/_lib/detail.ts`): NULL/undefined means INDEXABLE. A truthy test
+ * here would instead noindex every row whose flag was never set.
+ */
+export function newsArticleNoIndex(seoIndexable: boolean | null | undefined): boolean {
+  return seoIndexable === false;
 }
 
 // Known-noise / advertorial integrity flags we surface honestly to readers.
