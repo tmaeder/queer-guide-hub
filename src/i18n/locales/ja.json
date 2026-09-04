@@ -4501,7 +4501,8 @@
       "spansAllRights": "これは単一の法律ではなく、法分野全体を指します。18の権利を国ごとに記録しています。",
       "seeAllRights": "18の権利を国別に見る",
       "seeAllInSearch": "[JA] See all in search",
-      "shopAll": "すべて見る"
+      "shopAll": "すべて見る",
+      "figure": "[JA] Diagram"
     },
     "flagWall": {
       "eyebrow": "シンボル",
@@ -4514,6 +4515,115 @@
     "fromGlossary": {
       "title": "[JA] From the glossary",
       "all": "[JA] All terms"
+    },
+    "figures": {
+      "eyebrow": "[JA] Diagram",
+      "bandEyebrow": "[JA] Drawn",
+      "bandTitle": "[JA] The diagram",
+      "bandTitlePlural": "[JA] Diagrams",
+      "loading": "[JA] Drawing the diagram",
+      "readAsTable": "[JA] Read as a table",
+      "hideTable": "[JA] Hide the table",
+      "readMore": "[JA] Read the entry",
+      "sources": "[JA] Drawn from",
+      "checkedOn": "[JA] Claims last checked against these sources on {{date}}.",
+      "sensitiveBody": "[JA] This diagram covers a subject some readers find difficult. It is a definition, not advice.",
+      "adultBody": "[JA] This diagram is for adults.",
+      "adultReveal": "[JA] 18+ · Show diagram",
+      "table": {
+        "line": "[JA] Line",
+        "stops": "[JA] Stops",
+        "runsTo": "[JA] Runs to",
+        "stop": "[JA] Stop",
+        "kind": "[JA] Kind",
+        "detail": "[JA] Detail",
+        "leadsTo": "[JA] Leads to"
+      },
+      "fourLines": {
+        "title": "[JA] Four lines",
+        "caption": "[JA] Gender identity, gender expression, sex assigned at birth and attraction are four separate lines. Pick a stop on each. Nothing is stored or sent.",
+        "summary": "[JA] A transit map with four lines: gender identity drawn as two independent services on one corridor, gender expression, sex assigned at birth as a terminus that runs on to nothing, and attraction. They meet at a single interchange.",
+        "readout": "[JA] Where you are on each line",
+        "tableCaption": "[JA] Every line on the map and the stops it carries",
+        "corridor": {
+          "identity": "[JA] Gender identity: two independent services"
+        },
+        "axis": {
+          "identityWoman": "[JA] How much woman",
+          "identityMan": "[JA] How much man",
+          "expression": "[JA] Gender expression",
+          "assigned": "[JA] Sex assigned at birth",
+          "attraction": "[JA] Attraction"
+        },
+        "help": {
+          "identityWoman": "[JA] Who you know yourself to be. This runs independently of the line below it. You can be a lot of both, a little of both, or neither.",
+          "identityMan": "[JA] The second rail on the same corridor. Answering this one does not subtract from the one above.",
+          "expression": "[JA] How you present: clothes, voice, hair, the way you carry yourself. Stops, not a scale. Nothing here is halfway between two others.",
+          "assigned": "[JA] What someone wrote down when you were born. It is a starting point on the record, which is why this line stops instead of running on to the others.",
+          "attraction": "[JA] Who you are drawn to. Who you are and who you are drawn to are separate lines. That is the whole point of the map."
+        },
+        "amount": {
+          "notAtAll": "[JA] Not at all",
+          "aLittle": "[JA] A little",
+          "aLot": "[JA] A lot",
+          "entirely": "[JA] Entirely",
+          "ratherNot": "[JA] Rather not say"
+        },
+        "expression": {
+          "feminine": "[JA] Feminine",
+          "androgynous": "[JA] Androgynous",
+          "masculine": "[JA] Masculine",
+          "changes": "[JA] It changes"
+        },
+        "assigned": {
+          "female": "[JA] Female",
+          "male": "[JA] Male",
+          "intersex": "[JA] Intersex variation"
+        },
+        "attraction": {
+          "women": "[JA] Women",
+          "men": "[JA] Men",
+          "moreThanOne": "[JA] More than one gender",
+          "regardless": "[JA] Regardless of gender",
+          "noOne": "[JA] No one, or rarely"
+        }
+      },
+      "consentFlow": {
+        "title": "[JA] The line that stops",
+        "caption": "[JA] Consent as a route with signals, one speed restriction and no final destination. It loops back to the check-in and stays there. Not a legal test; the law differs by country.",
+        "summary": "[JA] A branching line. Asking without an answer, and anything that is not a clear yes, end at buffer stops. Capacity is a hatched speed-restriction section rather than a yes/no signal. The line does not terminate in approval. It loops back to a check-in signal that can be answered again at any time.",
+        "tableCaption": "[JA] Every stop on the line, and where it leads",
+        "groupLabel": "[JA] Stops on the line",
+        "hint": "[JA] Select any stop to light up the route that reaches it.",
+        "node": {
+          "start": "[JA] You want to do something with someone",
+          "asked": "[JA] Have you asked?",
+          "notAsked": "[JA] Guessing is not consent",
+          "clearYes": "[JA] Was the answer a clear yes?",
+          "notAYes": "[JA] No, maybe, or nothing",
+          "capacity": "[JA] Speed restriction: can everyone actually decide?",
+          "checkin": "[JA] Still yes, right now?",
+          "stopNow": "[JA] Stop",
+          "go": "[JA] Clear to proceed, for now"
+        },
+        "note": {
+          "asked": "[JA] Out loud, or in a way you have both already agreed reads as asking.",
+          "notAsked": "[JA] Not objecting is not agreeing. The line does not start here.",
+          "clearYes": "[JA] Theirs, not one you talked them into.",
+          "notAYes": "[JA] Anything that is not a yes is a no. This is the end of the line.",
+          "capacity": "[JA] Drink, drugs, exhaustion, being half asleep. Not a switch. If you cannot tell, you do not have an answer yet.",
+          "checkin": "[JA] The signal you come back to. Agreeing earlier is not agreeing now.",
+          "stopNow": "[JA] Anyone can stop anything at any point, for no reason. Then look after each other.",
+          "go": "[JA] And back to the check-in, which is why this line is a loop."
+        },
+        "edge": {
+          "no": "[JA] No",
+          "yes": "[JA] Yes",
+          "notAYes": "[JA] Not a yes",
+          "noOrUnsure": "[JA] No, or unsure",
+          "again": "[JA] And again, any time"
+        }
+      }
     }
   },
   "village": {

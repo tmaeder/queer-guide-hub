@@ -96,4 +96,51 @@ describe('TransSafetyBand — self_id is never an affirmative false negative', (
       unmount();
     }
   });
+
+  /**
+   * The marker row keeps ILGA's raw wording ON PURPOSE — "Not Possible
+   * (exceptions documented)" carries a qualification `readMarker` would flatten
+   * to `not_possible` — so it is deliberately NOT routed through a label
+   * function the way self_id and the two requirements are.
+   *
+   * The one value that must never reach the page is the unrecorded sentinel.
+   * Measured on prod 2026-09-04, "No data" is the marker on 69 of the 244
+   * countries carrying a non-empty `lgbti_gender_recognition`, each rendering
+   * "Gender marker change: No data" as though the sentinel were a finding.
+   * Found on /country/afghanistan, where every other row had correctly hidden
+   * itself and this one was left announcing the absence.
+   */
+  describe('gender_marker keeps its source wording but not its sentinel', () => {
+    const MARKER_LABEL = 'Gender marker change';
+
+    it.each([
+      'Possible',
+      'Not Possible',
+      'Nominally Possible',
+      'Not Possible (exceptions documented)',
+      'Unclear',
+      'Varies',
+    ])('renders %s verbatim', (raw) => {
+      band({ gender_marker: raw });
+      expect(valueFor(MARKER_LABEL)).toBe(raw);
+    });
+
+    it('hides the row rather than printing the "No data" sentinel', () => {
+      band({ gender_marker: 'No data', requires_surgery: 'Required' });
+      expect(screen.queryByText(MARKER_LABEL)).toBeNull();
+      // Positive control — the band still mounted and its other rows are
+      // intact, so the assertion above cannot pass by nothing rendering.
+      expect(valueFor('Surgery required first')).toBe('Yes');
+    });
+
+    it('covers every production marker value', () => {
+      for (const raw of LGR_VOCABULARY.gender_marker) {
+        const { unmount } = band({ gender_marker: raw, requires_surgery: 'Required' });
+        const v = valueFor(MARKER_LABEL);
+        if (raw === 'No data') expect(v, 'the sentinel must not render').toBeNull();
+        else expect(v, raw).toBe(raw);
+        unmount();
+      }
+    });
+  });
 });
