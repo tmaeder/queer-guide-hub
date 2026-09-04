@@ -18,6 +18,10 @@ on:
   # the filter unmergeable forever (admin-enforced, so no bypass). The filter now
   # lives in the `changes` job below. `push` keeps its filter: it gates nothing.
   pull_request:
+  # Merge queue: a required check that never reports on the merge_group event
+  # leaves the queued PR pending forever. Same failure this repo already hit
+  # twice with `paths:` filters on required checks.
+  merge_group:
   schedule:
     - cron: '30 6 * * *'
   workflow_dispatch:
@@ -86,6 +90,7 @@ jobs:
     if: >-
       needs.changes.outputs.relevant == 'true' && (
         github.event_name == 'pull_request' ||
+        github.event_name == 'merge_group' ||
         github.event_name == 'push' ||
         (github.event_name == 'workflow_dispatch' && inputs.base_url == '')
       )
