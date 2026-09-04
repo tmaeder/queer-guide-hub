@@ -26,6 +26,22 @@ export interface TagHygieneStats {
   merged_but_not_status_merged: number;
   sensitive_without_description: number;
   indexable_without_description: number;
+  /** An active tag that is BOTH `seo_indexable` and a marketplace filter facet
+   *  (`is_marketplace_facet(slug, entity_kind)`) — i.e. a query control like
+   *  `under-50` or `in-stock` publishing as a glossary page at /tags/:slug.
+   *
+   *  A zero-invariant rather than a backlog parked at zero: a facet has no
+   *  definition to write, so the page is thin by construction and cannot be
+   *  fixed by enrichment, only by deindexing. There is no legitimate value
+   *  above zero to drift toward.
+   *
+   *  This interface is hand-written (the RPC result is cast through `unknown`),
+   *  so a counter added to `tag_hygiene_stats()` does NOT appear here on its
+   *  own — and `MetricKey` in tagHygieneMetrics.ts is `keyof` this type. Adding
+   *  the counter to the panel list without declaring it here is a TS2322 that
+   *  no test catches, because the parity test compares the panel list to the
+   *  baseline JSON and both agreed. */
+  indexable_marketplace_facet: number;
   /** The junction names a category, `unified_tags.category_id` names none. The
    *  junction is the source of truth and the column is derived from it, so
    *  non-zero means a writer inserted an assignment without letting the denorm
