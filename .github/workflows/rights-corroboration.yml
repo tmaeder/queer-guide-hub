@@ -26,6 +26,14 @@ on:
         required: false
         default: '2023'
 
+# Least privilege. This job reads the repo, fetches public government pages and writes to
+# Supabase with its own service key — it never touches the GitHub API, so GITHUB_TOKEN gets
+# read-only contents and nothing else. Without an explicit block the token inherits the
+# repository default, which may be write.
+# (CodeQL actions/missing-workflow-permissions.)
+permissions:
+  contents: read
+
 concurrency:
   group: rights-corroboration
   cancel-in-progress: false

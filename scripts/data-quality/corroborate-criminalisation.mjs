@@ -66,15 +66,39 @@ const sb = (path, init = {}) =>
     },
   })
 
+/**
+ * HTML entities, decoded in ONE pass.
+ *
+ * A chain of `.replace()` calls ending with `&amp;` -> `&` can DOUBLE-UNESCAPE: the
+ * ampersand it produces can combine with the following text into a new entity that another
+ * rule then decodes again, so `&amp;#8217;` — an author writing the literal text
+ * `&#8217;` — comes out as an apostrophe rather than the characters they wrote. A single
+ * regex with a lookup table cannot do that, because each match is consumed exactly once.
+ * (CodeQL js/double-escaping.)
+ */
+const ENTITIES = {
+  '&#8216;': "'", '&#8217;': "'", '&#8218;': "'", '&#8219;': "'",
+  '&lsquo;': "'", '&rsquo;': "'", '&#39;': "'", '&apos;': "'",
+  '&#8220;': '"', '&#8221;': '"', '&ldquo;': '"', '&rdquo;': '"', '&quot;': '"',
+  '&nbsp;': ' ', '&#160;': ' ',
+  '&amp;': '&', '&lt;': '<', '&gt;': '>', '&#8211;': '-', '&#8212;': '-',
+}
+
 const plain = (h) =>
   h
-    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
-    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    // `\s*` before the closing `>`: `</script >` is valid HTML and a rigid `</script>`
+    // does not match it, so script source would survive into the extracted prose and could
+    // corrupt a verdict. `\b` stops `<scriptfoo>` being treated as an opening script tag.
+    // (CodeQL js/bad-tag-filter.)
+    .replace(/<script\b[\s\S]*?<\/script\s*>/gi, ' ')
+    .replace(/<style\b[\s\S]*?<\/style\s*>/gi, ' ')
     .replace(/<[^>]+>/g, ' ')
-    .replace(/&#821[6789];|&[lr]squo;/g, "'")
-    .replace(/&#822[01];|&[lr]dquo;/g, '"')
-    .replace(/&amp;/g, '&')
-    .replace(/&nbsp;/g, ' ')
+    // Unrecognised entities become a space rather than being left as-is: this text is
+    // matched against legal-status patterns, and a stray `&#8230;` inside a sentence is
+    // noise either way, but leaving a literal `&` invites the very re-combination the
+    // single pass exists to prevent.
+    .replace(/&(?:#\d{1,6}|#x[0-9a-fA-F]{1,6}|[a-zA-Z][a-zA-Z0-9]{1,8});/g,
+      (m) => ENTITIES[m] ?? ENTITIES[m.toLowerCase()] ?? ' ')
     .replace(/\s+/g, ' ')
 
 /** The report's own `Criminalization:` paragraph — see the anchor note in the header. */
