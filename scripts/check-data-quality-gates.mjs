@@ -18,13 +18,40 @@ if (!BASE || !KEY) {
   process.exit(0)
 }
 
-const res = await fetch(`${BASE}/rest/v1/rpc/release_gate_checks`, {
-  method: 'POST',
-  headers: { apikey: KEY, Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json' },
-  body: '{}',
-})
+const callGates = () =>
+  fetch(`${BASE}/rest/v1/rpc/release_gate_checks`, {
+    method: 'POST',
+    headers: { apikey: KEY, Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+
+let res = await callGates()
+let body = res.ok ? null : await res.text()
+
+// 57014 is Postgres's statement_timeout, NOT a gate failing. The RPC ran out of
+// time, so no gate was evaluated at all — the safety checks silently did not run
+// and the PR goes red for a reason unrelated to its diff. Retry once: at 17:11
+// UTC on 2026-09-04 one run passed and another failed in the SAME MINUTE, which
+// is a query sitting on its ceiling, and one retry is the difference between a
+// flake and a blocked release.
+//
+// Deliberately LOUD. A retry that quietly succeeds is how a function creeps back
+// toward the ceiling unnoticed — which is exactly what happened between
+// 20261021110000 and 20270108100000. If this appears in the logs, re-measure the
+// RPC per arm; do not raise the retry count.
+if (!res.ok && body?.includes('57014')) {
+  console.warn('⚠ release_gate_checks hit the statement timeout (57014) — no gate was evaluated. Retrying once.')
+  const t0 = Date.now()
+  res = await callGates()
+  body = res.ok ? null : await res.text()
+  console.warn(
+    `⚠ retry ${res.ok ? 'SUCCEEDED' : 'FAILED'} after ${Date.now() - t0}ms. The RPC is near its 8s ` +
+      'ceiling — re-measure per arm (see migration 20270108100000) rather than retrying harder.',
+  )
+}
+
 if (!res.ok) {
-  console.error(`release_gate_checks → HTTP ${res.status}: ${await res.text()}`)
+  console.error(`release_gate_checks → HTTP ${res.status}: ${body}`)
   process.exit(1)
 }
 
