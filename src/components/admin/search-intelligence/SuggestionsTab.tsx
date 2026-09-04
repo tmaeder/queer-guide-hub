@@ -3,7 +3,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertTriangle } from 'lucide-react';
 import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 import {
@@ -13,7 +14,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { callSearchIntelligence } from '@/hooks/useSearchIntelligence';
+import { callSearchIntelligence, createTagFromProposal } from '@/hooks/useSearchIntelligence';
+import { parseTagProposal, type TagProposalCollision, type NewTagProposal } from './tagProposal';
 
 type SuggestionStatus = 'pending' | 'approved' | 'applied' | 'rejected' | 'superseded' | 'expired';
 
@@ -78,6 +80,79 @@ function PrettyJson({ value, label }: { value: unknown; label: string }) {
       >
         {JSON.stringify(value, null, 2)}
       </pre>
+    </div>
+  );
+}
+
+/**
+ * The collision stamp, rendered loud.
+ *
+ * `tag_hygiene_stats().duplicate_active_name` is a HARD CI gate that
+ * `scripts/check-tag-hygiene.mjs` reads from production and fails on growth —
+ * so approving a name collision reds every open PR in the repo, not only the
+ * approver's. Approval is deliberately NOT blocked: a marketplace facet named
+ * "Silicone" and a glossary "Silicone" may be different vocabularies, and that
+ * is a human's call.
+ */
+function TagCollisionWarning({ c }: { c: TagProposalCollision }) {
+  const revival = c.tag_status === 'deprecated' || c.tag_status === 'merged';
+  return (
+    <Alert variant="destructive" data-testid="tag-collision-warning">
+      <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+      <AlertTitle>
+        {c.kind === 'name' ? 'Name collision' : 'Alias collision'} — this name is already taken
+      </AlertTitle>
+      <AlertDescription className="flex flex-col gap-1 text-xs">
+        <span>
+          {c.kind === 'name'
+            ? 'An existing tag already carries this exact name: '
+            : 'An existing tag already answers to this name through an alias: '}
+          <strong>{c.tag_name || '(unnamed)'}</strong> — slug <code>{c.tag_slug || '(none)'}</code>,
+          status <strong>{c.tag_status ?? 'unknown'}</strong>
+          {c.kind === 'alias' && (
+            <>
+              {' '}
+              via alias <strong>{c.via_alias || '(unknown)'}</strong> (
+              {c.alias_review_status ?? 'unreviewed'})
+            </>
+          )}
+          .
+        </span>
+        {c.kind === 'name' && (
+          <span>
+            Approving mints a second active tag with that name. duplicate_active_name is a hard CI
+            gate read from production, so it reds every open PR in the repo — not just yours.
+          </span>
+        )}
+        {revival && (
+          <span>
+            That tag is <strong>{c.tag_status}</strong>. Approving here mints a FRESH tag rather
+            than reviving it; a revival must go through restore_deprecated_tag().
+          </span>
+        )}
+        <span>
+          Approve only if this genuinely is a different vocabulary (a marketplace facet vs a
+          glossary term). Otherwise reject, or edit the name first.
+        </span>
+      </AlertDescription>
+    </Alert>
+  );
+}
+
+function NewTagProposalView({ p }: { p: NewTagProposal }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <div>
+        <span className="text-xs text-muted-foreground">New tag proposed</span>
+        <p className="text-title font-bold" data-testid="tag-proposal-name">
+          {p.name}
+        </p>
+        <p className="text-xs text-muted-foreground">
+          slug <code>{p.slug ?? '(derived on approval)'}</code>
+          {p.seenIn.length > 0 && <> · seen in {p.seenIn.join(', ')}</>}
+        </p>
+      </div>
+      {p.collidesWith && <TagCollisionWarning c={p.collidesWith} />}
     </div>
   );
 }
@@ -194,6 +269,41 @@ export function SuggestionsTab() {
     setBusy(null);
   };
 
+  /**
+   * Approve a NEW-TAG proposal: mint the tag, then close the suggestion out.
+   *
+   * Two steps rather than one PATCH because the edge function's `applySuggestion`
+   * cannot express this — its `tag` branch upserts a `unified_tag_assignments`
+   * row and requires entity_id + proposed_value.tag_id, both absent here.
+   * Sending `status:'applied'` skips that branch entirely (auto-apply only runs
+   * for `approved`), so the suggestion is closed without the failing apply.
+   *
+   * Order matters: if the insert fails, nothing is written to the suggestion, so
+   * the row stays pending and retryable.
+   */
+  const approveNewTag = async (s: AiSuggestion, proposedOverride?: unknown) => {
+    const proposal = parseTagProposal(
+      proposedOverride === undefined ? s : { ...s, proposed_value: proposedOverride },
+    );
+    if (!proposal) {
+      setError('This proposal carries no usable tag name — edit it or reject it.');
+      return;
+    }
+    setBusy(s.id);
+    setError(null);
+    setInfo(null);
+    const created = await createTagFromProposal(proposal.name);
+    if (!created.success) {
+      setError(
+        `Tag "${proposal.name}" was NOT created: ${created.error}. The proposal is unchanged.`,
+      );
+      setBusy(null);
+      return;
+    }
+    await setStatus(s.id, 'applied', proposedOverride);
+    setInfo(`Created tag "${created.data.name}" (${created.data.slug}); proposal marked applied.`);
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <Card>
@@ -203,7 +313,11 @@ export function SuggestionsTab() {
             Producers (auto-tag-content, automation taggers, translate-i18n-batch, future
             Claude-driven suggesters) write to <code>ai_suggestions</code>. Approving here
             auto-applies for <code>tag</code>, <code>synonym</code>, <code>cluster_membership</code>
-            , and <code>translation</code>; other types are flagged for manual application.
+            , and <code>translation</code>; other types are flagged for manual application. A{' '}
+            <code>tag</code> row with no entity is a NEW-TAG proposal from{' '}
+            <code>source-tags-extract</code>: approving it mints the tag in{' '}
+            <code>unified_tags</code>. Read the collision warning first — approving a name collision
+            grows <code>duplicate_active_name</code>, a hard CI gate.
           </p>
           <div className="flex flex-col md:flex-row gap-4 mt-4">
             <div className="flex flex-col gap-1 min-w-[140px]">
@@ -286,208 +400,221 @@ export function SuggestionsTab() {
         <AdminEmpty noun="suggestions" filtered />
       ) : (
         <div className="flex flex-col gap-2">
-          {items.map((s) => (
-            <Card key={s.id}>
-              <CardContent className="p-6">
-                <div className="flex flex-col md:flex-row justify-between gap-4 items-start">
-                  <div className="flex-1">
-                    <div className="flex flex-row items-center gap-2 flex-wrap">
-                      <Badge variant={STATUS_VARIANT[s.status]}>{s.status}</Badge>
-                      <Badge variant="secondary">{s.suggestion_type}</Badge>
-                      {s.entity_type && (
-                        <Badge variant="secondary">
-                          {s.entity_type}
-                          {s.entity_id ? `:${s.entity_id.slice(0, 8)}` : ''}
-                        </Badge>
-                      )}
-                      {s.locale && <Badge variant="secondary">{s.locale}</Badge>}
-                      <Badge variant="secondary">{s.source}</Badge>
-                      {s.confidence != null && (
-                        <Badge variant="secondary">conf {s.confidence.toFixed(2)}</Badge>
-                      )}
-                    </div>
-                    <div className="mt-4">
-                      {s.suggestion_type === 'translation' ? (
-                        <TranslationDiff s={s} />
-                      ) : (
-                        <div className="flex flex-col sm:flex-row gap-4">
-                          <div className="flex-1">
-                            <PrettyJson value={s.current_value} label="Current" />
-                          </div>
-                          <div className="flex-1">
-                            <PrettyJson value={s.proposed_value} label="Proposed" />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    {s.review_notes && (
-                      <Alert className="mt-2 border-border">
-                        <AlertDescription className="text-xs">{s.review_notes}</AlertDescription>
-                      </Alert>
-                    )}
-                    {editing?.id === s.id && (
-                      <div className="mt-2">
-                        {s.suggestion_type === 'translation' ? (
-                          <>
-                            <span className="text-xs text-muted-foreground">
-                              Edit translation ({s.locale ?? '?'}):
-                            </span>
-                            <textarea
-                              style={{
-                                width: '100%',
-                                minHeight: 100,
-                                fontSize: 14,
-                                background: 'hsl(var(--foreground) / 0.04)',
-                                border: '1px solid hsl(var(--foreground) / 0.2)',
-                              }}
-                              className="p-2"
-                              value={editing.draft}
-                              onChange={(e) =>
-                                setEditing({ id: s.id, draft: e.target.value, parseError: null })
-                              }
-                            />
-                          </>
-                        ) : (
-                          <>
-                            <span className="text-xs text-muted-foreground">
-                              Edit proposed_value (JSON):
-                            </span>
-                            <textarea
-                              style={{
-                                width: '100%',
-                                minHeight: 140,
-                                fontFamily: 'monospace',
-                                fontSize: 12,
-                                background: 'hsl(var(--foreground) / 0.04)',
-                                border: '1px solid hsl(var(--foreground) / 0.2)',
-                              }}
-                              className="p-2"
-                              value={editing.draft}
-                              onChange={(e) => {
-                                const val = e.target.value;
-                                let parseError: string | null = null;
-                                try {
-                                  JSON.parse(val);
-                                } catch (err) {
-                                  parseError = (err as Error).message;
-                                }
-                                setEditing({ id: s.id, draft: val, parseError });
-                              }}
-                            />
-                            {editing.parseError && (
-                              <span className="text-xs text-destructive">
-                                JSON parse error: {editing.parseError}
-                              </span>
-                            )}
-                          </>
+          {items.map((s) => {
+            const tagProposal = parseTagProposal(s);
+            return (
+              <Card key={s.id}>
+                <CardContent className="p-6">
+                  <div className="flex flex-col md:flex-row justify-between gap-4 items-start">
+                    <div className="flex-1">
+                      <div className="flex flex-row items-center gap-2 flex-wrap">
+                        <Badge variant={STATUS_VARIANT[s.status]}>{s.status}</Badge>
+                        <Badge variant="secondary">{s.suggestion_type}</Badge>
+                        {s.entity_type && (
+                          <Badge variant="secondary">
+                            {s.entity_type}
+                            {s.entity_id ? `:${s.entity_id.slice(0, 8)}` : ''}
+                          </Badge>
+                        )}
+                        {s.locale && <Badge variant="secondary">{s.locale}</Badge>}
+                        <Badge variant="secondary">{s.source}</Badge>
+                        {s.confidence != null && (
+                          <Badge variant="secondary">conf {s.confidence.toFixed(2)}</Badge>
                         )}
                       </div>
+                      <div className="mt-4">
+                        {s.suggestion_type === 'translation' ? (
+                          <TranslationDiff s={s} />
+                        ) : tagProposal ? (
+                          <NewTagProposalView p={tagProposal} />
+                        ) : (
+                          <div className="flex flex-col sm:flex-row gap-4">
+                            <div className="flex-1">
+                              <PrettyJson value={s.current_value} label="Current" />
+                            </div>
+                            <div className="flex-1">
+                              <PrettyJson value={s.proposed_value} label="Proposed" />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      {s.review_notes && (
+                        <Alert className="mt-2 border-border">
+                          <AlertDescription className="text-xs">{s.review_notes}</AlertDescription>
+                        </Alert>
+                      )}
+                      {editing?.id === s.id && (
+                        <div className="mt-2">
+                          {s.suggestion_type === 'translation' ? (
+                            <>
+                              <span className="text-xs text-muted-foreground">
+                                Edit translation ({s.locale ?? '?'}):
+                              </span>
+                              <textarea
+                                style={{
+                                  width: '100%',
+                                  minHeight: 100,
+                                  fontSize: 14,
+                                  background: 'hsl(var(--foreground) / 0.04)',
+                                  border: '1px solid hsl(var(--foreground) / 0.2)',
+                                }}
+                                className="p-2"
+                                value={editing.draft}
+                                onChange={(e) =>
+                                  setEditing({ id: s.id, draft: e.target.value, parseError: null })
+                                }
+                              />
+                            </>
+                          ) : (
+                            <>
+                              <span className="text-xs text-muted-foreground">
+                                Edit proposed_value (JSON):
+                              </span>
+                              <textarea
+                                style={{
+                                  width: '100%',
+                                  minHeight: 140,
+                                  fontFamily: 'monospace',
+                                  fontSize: 12,
+                                  background: 'hsl(var(--foreground) / 0.04)',
+                                  border: '1px solid hsl(var(--foreground) / 0.2)',
+                                }}
+                                className="p-2"
+                                value={editing.draft}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  let parseError: string | null = null;
+                                  try {
+                                    JSON.parse(val);
+                                  } catch (err) {
+                                    parseError = (err as Error).message;
+                                  }
+                                  setEditing({ id: s.id, draft: val, parseError });
+                                }}
+                              />
+                              {editing.parseError && (
+                                <span className="text-xs text-destructive">
+                                  JSON parse error: {editing.parseError}
+                                </span>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      )}
+                      <div className="text-xs text-muted-foreground mt-2 block">
+                        {s.source_model && <>model: {s.source_model} · </>}
+                        created {new Date(s.created_at).toLocaleString()}
+                        {s.applied_at && <> · applied {new Date(s.applied_at).toLocaleString()}</>}
+                      </div>
+                    </div>
+                    {s.status === 'pending' && editing?.id !== s.id && (
+                      <div className="flex flex-row gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() =>
+                            tagProposal ? approveNewTag(s) : setStatus(s.id, 'approved')
+                          }
+                          disabled={busy === s.id}
+                        >
+                          {tagProposal ? 'Approve + create tag' : 'Approve'}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            if (s.suggestion_type === 'translation') {
+                              const proposed = (s.proposed_value ?? {}) as { value?: string };
+                              setEditing({
+                                id: s.id,
+                                draft: proposed.value ?? '',
+                                parseError: null,
+                              });
+                            } else {
+                              setEditing({
+                                id: s.id,
+                                draft: JSON.stringify(s.proposed_value, null, 2),
+                                parseError: null,
+                              });
+                            }
+                          }}
+                          disabled={busy === s.id}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => setStatus(s.id, 'rejected')}
+                          disabled={busy === s.id}
+                        >
+                          Reject
+                        </Button>
+                      </div>
                     )}
-                    <div className="text-xs text-muted-foreground mt-2 block">
-                      {s.source_model && <>model: {s.source_model} · </>}
-                      created {new Date(s.created_at).toLocaleString()}
-                      {s.applied_at && <> · applied {new Date(s.applied_at).toLocaleString()}</>}
-                    </div>
-                  </div>
-                  {s.status === 'pending' && editing?.id !== s.id && (
-                    <div className="flex flex-row gap-2">
-                      <Button
-                        size="sm"
-                        onClick={() => setStatus(s.id, 'approved')}
-                        disabled={busy === s.id}
-                      >
-                        Approve
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          if (s.suggestion_type === 'translation') {
-                            const proposed = (s.proposed_value ?? {}) as { value?: string };
-                            setEditing({
-                              id: s.id,
-                              draft: proposed.value ?? '',
-                              parseError: null,
-                            });
-                          } else {
-                            setEditing({
-                              id: s.id,
-                              draft: JSON.stringify(s.proposed_value, null, 2),
-                              parseError: null,
-                            });
-                          }
-                        }}
-                        disabled={busy === s.id}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => setStatus(s.id, 'rejected')}
-                        disabled={busy === s.id}
-                      >
-                        Reject
-                      </Button>
-                    </div>
-                  )}
-                  {editing?.id === s.id && (
-                    <div className="flex flex-row gap-2">
-                      <Button
-                        size="sm"
-                        onClick={async () => {
-                          if (!editing) return;
-                          if (s.suggestion_type === 'translation') {
-                            const original = (s.proposed_value ?? {}) as { field?: string };
-                            await setStatus(s.id, 'approved', {
-                              field: original.field,
-                              value: editing.draft,
-                            });
+                    {editing?.id === s.id && (
+                      <div className="flex flex-row gap-2">
+                        <Button
+                          size="sm"
+                          onClick={async () => {
+                            if (!editing) return;
+                            if (s.suggestion_type === 'translation') {
+                              const original = (s.proposed_value ?? {}) as { field?: string };
+                              await setStatus(s.id, 'approved', {
+                                field: original.field,
+                                value: editing.draft,
+                              });
+                              setEditing(null);
+                              return;
+                            }
+                            if (editing.parseError) return;
+                            let parsed: unknown;
+                            try {
+                              parsed = JSON.parse(editing.draft);
+                            } catch (err) {
+                              setEditing({
+                                ...editing,
+                                parseError: (err as Error).message,
+                              });
+                              return;
+                            }
+                            if (tagProposal) {
+                              await approveNewTag(s, parsed);
+                            } else {
+                              await setStatus(s.id, 'approved', parsed);
+                            }
                             setEditing(null);
-                            return;
-                          }
-                          if (editing.parseError) return;
-                          let parsed: unknown;
-                          try {
-                            parsed = JSON.parse(editing.draft);
-                          } catch (err) {
-                            setEditing({
-                              ...editing,
-                              parseError: (err as Error).message,
-                            });
-                            return;
-                          }
-                          await setStatus(s.id, 'approved', parsed);
-                          setEditing(null);
-                        }}
-                        disabled={busy === s.id || !!editing.parseError}
-                      >
-                        Save &amp; Approve
-                      </Button>
+                          }}
+                          disabled={busy === s.id || !!editing.parseError}
+                        >
+                          Save &amp; Approve
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setEditing(null)}
+                          disabled={busy === s.id}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    )}
+                    {s.status === 'approved' && s.review_notes && (
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => setEditing(null)}
+                        onClick={() =>
+                          tagProposal ? approveNewTag(s) : setStatus(s.id, 'approved')
+                        }
                         disabled={busy === s.id}
                       >
-                        Cancel
+                        Retry apply
                       </Button>
-                    </div>
-                  )}
-                  {s.status === 'approved' && s.review_notes && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setStatus(s.id, 'approved')}
-                      disabled={busy === s.id}
-                    >
-                      Retry apply
-                    </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>

@@ -73,3 +73,13 @@ export const TRACK_BG: Record<Track, string> = {
   green: 'bg-track-green',
   yellow: 'bg-track-yellow',
 };
+
+/** SVG `stroke` values, for diagrams that DRAW the lines rather than fill a
+ *  shape. A record rather than a `hsl(var(--track-${t}))` template so a typo
+ *  is a type error instead of a silently transparent stroke. */
+export const TRACK_STROKE: Record<Track, string> = {
+  pink: 'hsl(var(--track-pink))',
+  blue: 'hsl(var(--track-blue))',
+  green: 'hsl(var(--track-green))',
+  yellow: 'hsl(var(--track-yellow))',
+};

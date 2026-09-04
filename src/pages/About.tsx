@@ -12,6 +12,7 @@ import { StationRing } from '@/components/transit/StationRing';
 import { TransitIcon } from '@/components/transit/TransitIcon';
 import type { TransitIconName } from '@/components/transit/transitIconPaths';
 import { useConsolidatedStats } from '@/hooks/useConsolidatedStats';
+import { useAuth } from '@/hooks/useAuth';
 
 /**
  * /about, drawn as the network itself.
@@ -65,6 +66,11 @@ function SectionHead({
 export default function About() {
   const { t } = useTranslation();
   const { stats, loading } = useConsolidatedStats();
+  // The colophon below is members-only. Gate on a resolved user rather than on
+  // `!loading`: while auth is still resolving `user` is null and the section
+  // stays out, so a signed-in reader sees it appear a beat late instead of a
+  // signed-out one seeing it flash and vanish.
+  const { user } = useAuth();
 
   // `events` is the full 40k archive and 99% of it is in the past — the hook
   // says so in as many words. `events_upcoming` is the one a reader can act on.
@@ -221,14 +227,35 @@ export default function About() {
   ];
 
   /**
-   * The colophon. OpenStreetMap is FIRST and is not optional: the city-card
-   * network diagrams are a derived work of its route relations, and ODbL asks
-   * for the credit. The rest are named because a reader deserves to know whose
-   * data they are reading, and because every one of them is live — each is
-   * written up in CLAUDE.md as a source an ingest path actually pulls from.
+   * The colophon, in two tiers.
+   *
+   * TIER 1 (`sources`, cards): open datasets that publish under a licence
+   * naming an attribution condition. OpenStreetMap is FIRST and is not
+   * optional — the city-card network diagrams are a derived work of its route
+   * relations, and ODbL asks for the credit. GeoNames (CC BY 4.0), the two
+   * ODbL country datasets and OurAirports are here for the same structural
+   * reason: the obligation is the entry criterion, not the row count.
+   *
+   * TIER 2 (`moreSources`, grouped lists): everything else the corpus was
+   * actually built from. It is deliberately not cards — Spartacus alone is
+   * 7.5k live venues and GayCities 36.8k events, so a card grid sized by
+   * importance would be thirty cards long and nobody would read any of them.
+   * Grouped is the honest compromise: named and linked, without pretending
+   * a photo API and a rights database are the same kind of thing.
+   *
+   * WHAT IS DELIBERATELY ABSENT, so it is not "fixed" back in:
+   * - `nude-places` (1,396 live venues) cites en.wikipedia.org on 1,389 of
+   *   them. That cohort is Wikipedia-derived and belongs to the Wikipedia
+   *   card; a separate credit would invent a second provenance for it.
+   * - `gaypinkspots` (432 live venues) has no verifiable upstream URL — the
+   *   only two rows carrying one point at Spartacus. Guessing a domain to
+   *   credit is a provenance claim, and this file does not make those.
+   * - Travel booking partners (Booking.com, GetYourGuide, Aviasales …) are
+   *   commercial links, not sources: they contribute zero rows.
    *
    * `licence` states what the upstream project publishes under, not a claim
-   * about this site's own licence.
+   * about this site's own licence. Every licence named here was read from the
+   * publisher's own page, not inferred.
    */
   const sources = [
     {
@@ -257,9 +284,19 @@ export default function About() {
       href: 'https://www.wikidata.org/',
       used: t(
         'about.sources.wikidata',
-        'City and country facts, glossary hierarchies and a lot of the biographical detail on the people pages.',
+        'City and country facts, glossary hierarchies, much of the biographical detail on the people pages, and the beach and naturist venue records drawn from Wikipedia articles.',
       ),
       licence: 'CC0 · CC BY-SA',
+    },
+    {
+      key: 'geonames',
+      name: 'GeoNames',
+      href: 'https://www.geonames.org/',
+      used: t(
+        'about.sources.geonames',
+        'City records, coordinates and time zones — including the nearest-city lookup that gives an event its local time.',
+      ),
+      licence: 'CC BY 4.0',
     },
     {
       key: 'worldbank',
@@ -277,6 +314,165 @@ export default function About() {
         'Practical country facts — calling codes, driving side, languages, national days.',
       ),
       licence: t('about.sources.publicDomain', 'Public domain'),
+    },
+    {
+      key: 'csc',
+      name: 'Countries States Cities Database',
+      href: 'https://github.com/dr5hn/countries-states-cities-database',
+      used: t(
+        'about.sources.csc',
+        'Calling codes, currencies and time zones, and the subdivision names behind the region field.',
+      ),
+      licence: 'ODbL 1.0',
+    },
+    {
+      key: 'mledoze',
+      name: 'mledoze/countries',
+      href: 'https://github.com/mledoze/countries',
+      used: t('about.sources.mledoze', 'Official languages per country.'),
+      licence: 'ODbL 1.0',
+    },
+    {
+      key: 'ourairports',
+      name: 'OurAirports',
+      href: 'https://ourairports.com/data/',
+      used: t(
+        'about.sources.ourairports',
+        'Airport names and IATA codes on the country and city travel cards.',
+      ),
+      licence: t('about.sources.publicDomain', 'Public domain'),
+    },
+  ];
+
+  /**
+   * Tier 2. `note` says what the group was used for; it is not decoration —
+   * it is the difference between crediting a source and implying it endorses
+   * the site. Several of these are already cited inline on the page where
+   * their data appears (the interaction grid names TripSit, eve&rave and the
+   * FDA label per row; the testing band names the directory per centre; every
+   * news card links its outlet). This block is the index of those, so a
+   * reader who wants the whole list does not have to find each surface.
+   */
+  const moreSources: {
+    key: string;
+    title: string;
+    note: string;
+    items: { name: string; href: string }[];
+  }[] = [
+    {
+      key: 'guides',
+      title: t('about.sources.groups.guides.title', 'Community guides & listings'),
+      note: t(
+        'about.sources.groups.guides.note',
+        'Where most venue, event and hotel records came from. Queer city guides, many of them run by volunteers for decades before this site existed.',
+      ),
+      items: [
+        { name: 'Spartacus', href: 'https://spartacus.gayguide.travel/' },
+        { name: 'GayCities', href: 'https://www.gaycities.com/' },
+        { name: 'Patroc', href: 'https://www.patroc.com/' },
+        { name: 'Refuge Restrooms', href: 'https://www.refugerestrooms.org/' },
+        { name: 'misterb&b', href: 'https://www.misterbandb.com/' },
+        { name: 'Siegessäule', href: 'https://www.siegessaeule.de/' },
+        { name: 'Display Magazin', href: 'https://www.display-magazin.ch/' },
+        { name: 'gay.ch', href: 'https://gay.ch/' },
+        { name: 'GayBasel', href: 'https://www.gaybasel.org/' },
+        { name: 'Milchjugend', href: 'https://milchjugend.ch/' },
+        { name: 'kweer', href: 'https://www.kweer.io/' },
+        { name: 'World Naked Bike Ride', href: 'https://worldnakedbikeride.org/' },
+      ],
+    },
+    {
+      key: 'places',
+      title: t('about.sources.groups.places.title', 'Maps, places & geocoding'),
+      note: t(
+        'about.sources.groups.places.note',
+        'Addresses resolved to coordinates, opening hours, and the logos on venue and shop cards.',
+      ),
+      items: [
+        { name: 'Nominatim', href: 'https://nominatim.openstreetmap.org/' },
+        { name: 'Photon (Komoot)', href: 'https://photon.komoot.io/' },
+        { name: 'Overpass API', href: 'https://overpass-api.de/' },
+        { name: 'Google Places', href: 'https://developers.google.com/maps/documentation/places' },
+        { name: 'Foursquare', href: 'https://location.foursquare.com/' },
+        { name: 'Tripadvisor', href: 'https://www.tripadvisor.com/' },
+        { name: 'Yelp', href: 'https://www.yelp.com/' },
+        { name: 'TomTom', href: 'https://developer.tomtom.com/' },
+        { name: 'Logo.dev', href: 'https://logo.dev/' },
+      ],
+    },
+    {
+      key: 'events',
+      title: t('about.sources.groups.events.title', 'Events & tickets'),
+      note: t(
+        'about.sources.groups.events.note',
+        'Listings and ticket links. An event page always links back to the seller rather than selling anything here.',
+      ),
+      items: [
+        { name: 'Ticketmaster', href: 'https://developer.ticketmaster.com/' },
+        { name: 'Eventbrite', href: 'https://www.eventbrite.com/' },
+        { name: 'Eventfrog', href: 'https://eventfrog.ch/' },
+        { name: 'Outsavvy', href: 'https://www.outsavvy.com/' },
+        { name: 'Ticketcorner', href: 'https://www.ticketcorner.ch/' },
+      ],
+    },
+    {
+      key: 'shops',
+      title: t('about.sources.groups.shops.title', 'Shops & product feeds'),
+      note: t(
+        'about.sources.groups.shops.note',
+        'The marketplace is built from the public feeds of queer-owned and queer-serving shops. Each listing names its shop and links there to buy.',
+      ),
+      items: [
+        { name: 'Shopify', href: 'https://www.shopify.com/' },
+        { name: 'Etsy', href: 'https://www.etsy.com/' },
+        { name: 'WooCommerce', href: 'https://woocommerce.com/' },
+        { name: 'AWIN', href: 'https://www.awin.com/' },
+      ],
+    },
+    {
+      key: 'news',
+      title: t('about.sources.groups.news.title', 'News'),
+      note: t(
+        'about.sources.groups.news.note',
+        'Headlines reach us through these APIs and through 300+ RSS feeds from queer outlets. Every article names the outlet that wrote it and links to the original.',
+      ),
+      items: [
+        { name: 'NewsData.io', href: 'https://newsdata.io/' },
+        { name: 'NewsAPI.org', href: 'https://newsapi.org/' },
+        { name: 'GNews.io', href: 'https://gnews.io/' },
+        { name: 'TheNewsAPI', href: 'https://www.thenewsapi.com/' },
+        { name: 'PubMed (NCBI)', href: 'https://pubmed.ncbi.nlm.nih.gov/' },
+        { name: 'Wikinews', href: 'https://en.wikinews.org/' },
+      ],
+    },
+    {
+      key: 'health',
+      title: t('about.sources.groups.health.title', 'Health & harm reduction'),
+      note: t(
+        'about.sources.groups.health.note',
+        'Safety data, cited per claim on the page it appears. None of it is written by us, and none of it is generated.',
+      ),
+      items: [
+        { name: 'TripSit', href: 'https://combo.tripsit.me/' },
+        { name: 'eve&rave Substanzhandbuch', href: 'https://www.eve-rave.ch/' },
+        { name: 'DailyMed (FDA labels)', href: 'https://dailymed.nlm.nih.gov/' },
+        { name: 'testfinder.info', href: 'https://testfinder.info/' },
+        { name: 'Aids-Hilfe Schweiz', href: 'https://aids.ch/en/addresses/' },
+        { name: 'TGEU Trans Murder Monitoring', href: 'https://transmurdermonitoring.tgeu.org/' },
+      ],
+    },
+    {
+      key: 'images',
+      title: t('about.sources.groups.images.title', 'Photography'),
+      note: t(
+        'about.sources.groups.images.note',
+        'Stock and archive imagery where a place has no photo of its own. Photographers are credited on the image.',
+      ),
+      items: [
+        { name: 'Pexels', href: 'https://www.pexels.com/' },
+        { name: 'Unsplash', href: 'https://unsplash.com/' },
+        { name: 'Wikimedia Commons', href: 'https://commons.wikimedia.org/' },
+      ],
     },
   ];
 
@@ -542,39 +738,71 @@ export default function About() {
         </ul>
       </PageContainer>
 
-      {/* Data & sources — the colophon.
-          This is where the ODbL attribution for the city-card transit diagrams
-          lives now. It was a line in the footer until 2026-08-30; the credit
-          still has to exist somewhere a reader can find it, because those
-          diagrams are a derived work of OpenStreetMap route relations and the
-          licence asks for it. A colophon is the conventional home, and it lets
-          the other sources this site is built on be named too instead of only
-          the one that is legally obliged. */}
-      <PageContainer as="section" flush className="pb-16 md:pb-24" id="sources">
-        <SectionHead
-          kicker={t('about.sources.kicker', 'Where the data comes from')}
-          title={t('about.sources.title', 'Data & sources')}
-          lede={t(
-            'about.sources.lede',
-            'Open data does a lot of the work here. These are the projects the guide is built on.',
-          )}
-        />
-        <ul className="m-0 mt-8 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
-          {sources.map((source) => (
-            <li key={source.key} className="flex h-full flex-col gap-2 p-6">
-              <h3 className="text-title font-bold leading-tight">
-                <a href={source.href} target="_blank" rel="noopener noreferrer">
-                  {source.name}
-                </a>
-              </h3>
-              <p className="text-13 leading-relaxed text-muted-foreground">{source.used}</p>
-              <p className="mt-auto pt-2 text-2xs uppercase tracking-label text-muted-foreground">
-                {source.licence}
-              </p>
-            </li>
-          ))}
-        </ul>
-      </PageContainer>
+      {/* Data & sources — the colophon. MEMBERS ONLY: a signed-out reader gets
+          nothing here, not a teaser and not a sign-in prompt.
+
+          Read the next paragraph before deleting the footer's credits row.
+          This section held the ODbL attribution for the city-card transit
+          diagrams from 2026-08-30, when it came out of the footer, until the
+          gate landed. Those diagrams are a derived work of OpenStreetMap route
+          relations and the licence asks for the credit to reach the reader —
+          anonymous readers included — so the obligated subset went BACK to the
+          footer, where it renders unconditionally on every page. That is the
+          only reason it is safe to hide this whole section. The two are one
+          change: gating this without the footer half publishes OSM-derived
+          artwork with no credit anywhere.
+
+          What stays here is the fuller story — the courtesy credits, the prose
+          saying what each source was used for, and tier 2. */}
+      {user && (
+        <PageContainer as="section" flush className="pb-16 md:pb-24" id="sources">
+          <SectionHead
+            kicker={t('about.sources.kicker', 'Where the data comes from')}
+            title={t('about.sources.title', 'Data & sources')}
+            lede={t(
+              'about.sources.lede',
+              'Open data does a lot of the work here. The projects below carry a licence that asks to be credited; everything else the guide was built from is named underneath.',
+            )}
+          />
+          <ul className="m-0 mt-8 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
+            {sources.map((source) => (
+              <li key={source.key} className="flex h-full flex-col gap-2 p-6">
+                <h3 className="text-title font-bold leading-tight">
+                  <a href={source.href} target="_blank" rel="noopener noreferrer">
+                    {source.name}
+                  </a>
+                </h3>
+                <p className="text-13 leading-relaxed text-muted-foreground">{source.used}</p>
+                <p className="mt-auto pt-2 text-2xs uppercase tracking-label text-muted-foreground">
+                  {source.licence}
+                </p>
+              </li>
+            ))}
+          </ul>
+
+          {/* Tier 2. Two columns, not three: these are prose-and-links rows, and
+            a third column shortens the measure past comfortable reading. */}
+          <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2">
+            {moreSources.map((group) => (
+              <section key={group.key}>
+                <h3 className="text-2xs uppercase tracking-label text-muted-foreground">
+                  {group.title}
+                </h3>
+                <p className="mt-2 text-13 leading-relaxed text-muted-foreground">{group.note}</p>
+                <ul className="m-0 mt-4 flex list-none flex-wrap gap-x-4 gap-y-2 p-0 text-13">
+                  {group.items.map((item) => (
+                    <li key={item.href}>
+                      <a href={item.href} target="_blank" rel="noopener noreferrer">
+                        {item.name}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ))}
+          </div>
+        </PageContainer>
+      )}
 
       {/* Extend the line */}
       <div className="bg-foreground text-background">
