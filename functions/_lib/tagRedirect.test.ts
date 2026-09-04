@@ -66,9 +66,14 @@ const unified_tags: Row[] = [
 const tag_slug_redirects: Row[] = [
   { old_slug: 'rack', new_slug: 'risk-aware-consensual-kink', tag_id: RACK_CANON },
   { old_slug: 'alex-j-rgen', new_slug: 'alex-jurgen', tag_id: DEPRECATED },
-  // new_slug is stale here and tag_id is right — prod has exactly one such row
-  // (`m-nchen` still says `munchen`, the tag was renamed to `munich`). Resolving
-  // through new_slug instead of the id would emit a 301 into a 404.
+  // new_slug is stale here and tag_id is right. Resolving through new_slug
+  // instead of the id would emit a 301 into a 404.
+  //
+  // `m-nchen` was the live prod example when this was written; 20270105100200
+  // repaired that row (its tag_id pointed at `munchen`, since merged into
+  // `munich`) and put the repoint in the merge trigger. The fixture stays — the
+  // property it guards is the resolver's, not that row's, and a clean corpus is
+  // exactly when a dropped `tag_id` lookup would go unnoticed.
   { old_slug: 'm-nchen', new_slug: 'munchen', tag_id: RACK_CANON },
 ];
 
