@@ -4497,7 +4497,8 @@
       "spansAllRights": "이것은 하나의 법률이 아니라 법 분야 전체를 가리킵니다. 18개 권리를 국가별로 기록합니다.",
       "seeAllRights": "18개 권리를 국가별로 보기",
       "seeAllInSearch": "[KO] See all in search",
-      "shopAll": "전체 보기"
+      "shopAll": "전체 보기",
+      "figure": "[KO] Diagram"
     },
     "flagWall": {
       "eyebrow": "상징",
@@ -4510,6 +4511,115 @@
     "fromGlossary": {
       "title": "[KO] From the glossary",
       "all": "[KO] All terms"
+    },
+    "figures": {
+      "eyebrow": "[KO] Diagram",
+      "bandEyebrow": "[KO] Drawn",
+      "bandTitle": "[KO] The diagram",
+      "bandTitlePlural": "[KO] Diagrams",
+      "loading": "[KO] Drawing the diagram",
+      "readAsTable": "[KO] Read as a table",
+      "hideTable": "[KO] Hide the table",
+      "readMore": "[KO] Read the entry",
+      "sources": "[KO] Drawn from",
+      "checkedOn": "[KO] Claims last checked against these sources on {{date}}.",
+      "sensitiveBody": "[KO] This diagram covers a subject some readers find difficult. It is a definition, not advice.",
+      "adultBody": "[KO] This diagram is for adults.",
+      "adultReveal": "[KO] 18+ · Show diagram",
+      "table": {
+        "line": "[KO] Line",
+        "stops": "[KO] Stops",
+        "runsTo": "[KO] Runs to",
+        "stop": "[KO] Stop",
+        "kind": "[KO] Kind",
+        "detail": "[KO] Detail",
+        "leadsTo": "[KO] Leads to"
+      },
+      "fourLines": {
+        "title": "[KO] Four lines",
+        "caption": "[KO] Gender identity, gender expression, sex assigned at birth and attraction are four separate lines. Pick a stop on each. Nothing is stored or sent.",
+        "summary": "[KO] A transit map with four lines: gender identity drawn as two independent services on one corridor, gender expression, sex assigned at birth as a terminus that runs on to nothing, and attraction. They meet at a single interchange.",
+        "readout": "[KO] Where you are on each line",
+        "tableCaption": "[KO] Every line on the map and the stops it carries",
+        "corridor": {
+          "identity": "[KO] Gender identity: two independent services"
+        },
+        "axis": {
+          "identityWoman": "[KO] How much woman",
+          "identityMan": "[KO] How much man",
+          "expression": "[KO] Gender expression",
+          "assigned": "[KO] Sex assigned at birth",
+          "attraction": "[KO] Attraction"
+        },
+        "help": {
+          "identityWoman": "[KO] Who you know yourself to be. This runs independently of the line below it. You can be a lot of both, a little of both, or neither.",
+          "identityMan": "[KO] The second rail on the same corridor. Answering this one does not subtract from the one above.",
+          "expression": "[KO] How you present: clothes, voice, hair, the way you carry yourself. Stops, not a scale. Nothing here is halfway between two others.",
+          "assigned": "[KO] What someone wrote down when you were born. It is a starting point on the record, which is why this line stops instead of running on to the others.",
+          "attraction": "[KO] Who you are drawn to. Who you are and who you are drawn to are separate lines. That is the whole point of the map."
+        },
+        "amount": {
+          "notAtAll": "[KO] Not at all",
+          "aLittle": "[KO] A little",
+          "aLot": "[KO] A lot",
+          "entirely": "[KO] Entirely",
+          "ratherNot": "[KO] Rather not say"
+        },
+        "expression": {
+          "feminine": "[KO] Feminine",
+          "androgynous": "[KO] Androgynous",
+          "masculine": "[KO] Masculine",
+          "changes": "[KO] It changes"
+        },
+        "assigned": {
+          "female": "[KO] Female",
+          "male": "[KO] Male",
+          "intersex": "[KO] Intersex variation"
+        },
+        "attraction": {
+          "women": "[KO] Women",
+          "men": "[KO] Men",
+          "moreThanOne": "[KO] More than one gender",
+          "regardless": "[KO] Regardless of gender",
+          "noOne": "[KO] No one, or rarely"
+        }
+      },
+      "consentFlow": {
+        "title": "[KO] The line that stops",
+        "caption": "[KO] Consent as a route with signals, one speed restriction and no final destination. It loops back to the check-in and stays there. Not a legal test; the law differs by country.",
+        "summary": "[KO] A branching line. Asking without an answer, and anything that is not a clear yes, end at buffer stops. Capacity is a hatched speed-restriction section rather than a yes/no signal. The line does not terminate in approval. It loops back to a check-in signal that can be answered again at any time.",
+        "tableCaption": "[KO] Every stop on the line, and where it leads",
+        "groupLabel": "[KO] Stops on the line",
+        "hint": "[KO] Select any stop to light up the route that reaches it.",
+        "node": {
+          "start": "[KO] You want to do something with someone",
+          "asked": "[KO] Have you asked?",
+          "notAsked": "[KO] Guessing is not consent",
+          "clearYes": "[KO] Was the answer a clear yes?",
+          "notAYes": "[KO] No, maybe, or nothing",
+          "capacity": "[KO] Speed restriction: can everyone actually decide?",
+          "checkin": "[KO] Still yes, right now?",
+          "stopNow": "[KO] Stop",
+          "go": "[KO] Clear to proceed, for now"
+        },
+        "note": {
+          "asked": "[KO] Out loud, or in a way you have both already agreed reads as asking.",
+          "notAsked": "[KO] Not objecting is not agreeing. The line does not start here.",
+          "clearYes": "[KO] Theirs, not one you talked them into.",
+          "notAYes": "[KO] Anything that is not a yes is a no. This is the end of the line.",
+          "capacity": "[KO] Drink, drugs, exhaustion, being half asleep. Not a switch. If you cannot tell, you do not have an answer yet.",
+          "checkin": "[KO] The signal you come back to. Agreeing earlier is not agreeing now.",
+          "stopNow": "[KO] Anyone can stop anything at any point, for no reason. Then look after each other.",
+          "go": "[KO] And back to the check-in, which is why this line is a loop."
+        },
+        "edge": {
+          "no": "[KO] No",
+          "yes": "[KO] Yes",
+          "notAYes": "[KO] Not a yes",
+          "noOrUnsure": "[KO] No, or unsure",
+          "again": "[KO] And again, any time"
+        }
+      }
     }
   },
   "village": {
