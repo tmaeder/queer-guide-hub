@@ -61,11 +61,32 @@ if (UPDATE) {
 const t = stats.totals ?? {}
 console.log(`tag corpus: ${t.active_tags} active tags, ${t.categories} categories, ${t.assignments} assignments`)
 
-// Metrics that drift continuously from writers OUTSIDE the tag glossary — the
-// profession pipeline lands is_adult tags and new images every day. Gating a PR
-// on those reds unrelated work for a change its author did not make, the same
-// reasoning that keeps check-legal-citation-links off pull_request. They still
-// report, loudly, and a step change is still visible in the run log.
+// Metrics that WARN instead of failing. TWO classes qualify, and the second was
+// added 2026-09-03 after the first proved too narrow.
+//
+//   (a) Counters driven by writers OUTSIDE the tag glossary — the profession
+//       pipeline lands is_adult tags and new images every day.
+//   (b) OSCILLATORS: counters that legitimately move both ways from ordinary
+//       in-glossary work, so an instantaneous value is not an invariant.
+//       redirect_to_non_canonical is the case in point — reviving a deprecated
+//       tag re-mints redirects (20260910181447), so any merge/rename wave moves
+//       it, and its own note has said since 2026-08-30 that "a counter
+//       documented to oscillate should not be a hard gate". It was hand-bumped
+//       three times (58→59, 59→61) for movement no gated PR had caused; the
+//       third time it was failing FOUR of six open PRs at once, none of which
+//       touched tags. A standing tax on unrelated PRs is not a quality signal,
+//       and re-baselining on each occurrence teaches reviewers to bump numbers.
+//
+// Both classes red unrelated work for a change its author did not make — the
+// same reasoning that keeps check-legal-citation-links off pull_request. They
+// still report, loudly, and a step change stays visible in the run log.
+//
+// This does NOT stop watching the number. If a metric here should be hard
+// again, gate on the quantity that actually means something broke — an AGE, or
+// a write-time invariant that makes the count structural — never on a level.
+// indexable_without_description is the worked example of a sawtooth fixed at
+// the source and kept as a hard gate; uncategorized_active is the one that
+// could not be, and stayed advisory.
 const ADVISORY = new Set(baseline._advisory ?? [])
 
 const regressions = []
