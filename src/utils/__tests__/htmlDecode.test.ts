@@ -6,6 +6,8 @@ import {
   cleanExcerpt,
   cleanContent,
   cleanTitle,
+  boundArticleBody,
+  ARTICLE_BODY_MAX_CHARS,
 } from '../htmlDecode';
 
 describe('decodeHtmlEntities', () => {
@@ -186,5 +188,61 @@ describe('cleanContent', () => {
 
   it('should return empty for falsy input', () => {
     expect(cleanContent('')).toBe('');
+  });
+});
+
+describe('boundArticleBody', () => {
+  // Regression guard for the 2026-09-02 finding: NewsDetail rendered
+  // news_articles.content in full, which measured as a complete verbatim copy
+  // of the third-party article (median stored/live length ratio 1.02).
+  const long = (n: number) => 'word '.repeat(Math.ceil(n / 5)).slice(0, n);
+
+  it('returns short bodies untouched and not truncated', () => {
+    const short = 'A complete short update.';
+    expect(boundArticleBody(short)).toEqual({ text: short, truncated: false });
+  });
+
+  it('bounds a full-length article body to the cap', () => {
+    const body = long(6000);
+    const { text, truncated } = boundArticleBody(body);
+    expect(truncated).toBe(true);
+    expect(text.length).toBeLessThanOrEqual(ARTICLE_BODY_MAX_CHARS + 1);
+  });
+
+  it('never renders the end of a long article', () => {
+    // The decisive property: an excerpt must not contain the source article's
+    // closing paragraph. This is what distinguishes quoting from republishing.
+    const ending = 'This is the final paragraph of the original report.';
+    const { text } = boundArticleBody(`${long(5000)}\n\n${ending}`);
+    expect(text).not.toContain(ending);
+  });
+
+  it('cuts on a paragraph break when one is available', () => {
+    const body = `${long(900)}\n\n${long(900)}`;
+    const { text } = boundArticleBody(body);
+    expect(text).not.toContain('\n\n');
+  });
+
+  it('cuts on a sentence boundary when no paragraph break fits', () => {
+    const body = `${long(700)}. ${long(900)}`;
+    const { text, truncated } = boundArticleBody(body);
+    expect(truncated).toBe(true);
+    expect(text.endsWith('.')).toBe(true);
+  });
+
+  it('never cuts mid-word', () => {
+    const body = 'x'.repeat(400) + ' ' + 'y'.repeat(4000);
+    const { text } = boundArticleBody(body);
+    // Trailing ellipsis aside, the excerpt ends on a whole token.
+    expect(text.replace(/…$/, '')).not.toMatch(/y{2,}$/);
+  });
+
+  it('respects an explicit cap', () => {
+    const { text } = boundArticleBody(long(3000), 200);
+    expect(text.length).toBeLessThanOrEqual(201);
+  });
+
+  it('handles empty input', () => {
+    expect(boundArticleBody('')).toEqual({ text: '', truncated: false });
   });
 });

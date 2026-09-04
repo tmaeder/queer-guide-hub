@@ -3474,6 +3474,8 @@
     "bodyFallback": "Полный текст доступен в оригинальном источнике.",
     "originallyPublishedBy": "Впервые опубликовано в {{source}}.",
     "viewOriginal": "Открыть оригинал",
+    "continueAtSource": "Читать статью полностью на {{source}}",
+    "continueAtSourceGeneric": "Читать полностью в источнике",
     "integritySatire": "Помечено как сатира — не буквальный репортаж.",
     "integrityAdvertorial": "Спонсорский / рекламный материал.",
     "integritySentimentConflict": "Источники расходятся в тоне — читайте внимательно.",
@@ -4115,7 +4117,9 @@
       "no": "[RU] No",
       "varies": "[RU] Varies",
       "unclear": "[RU] Unclear",
-      "notApplicable": "[RU] Not applicable"
+      "notApplicable": "[RU] Not applicable",
+      "required": "[RU] Required",
+      "notRequired": "[RU] Not required"
     },
     "attr": {
       "so": {
