@@ -16,6 +16,7 @@ import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip
 import { tintOf } from './types';
 import { ContentListTable } from './ContentListTable';
 import { ArchivedViewToggle } from './ArchivedViewToggle';
+import { MergedViewToggle } from './MergedViewToggle';
 import { ContentListGallery } from './ContentListGallery';
 import { ContentListBoard } from './ContentListBoard';
 import { ContentListTimeline } from './ContentListTimeline';
@@ -89,6 +90,8 @@ function ContentListPanelBody(props: ContentListPanelProps) {
     groupBy: c.groupBy,
     filters: c.filters,
     search: c.debouncedSearch,
+    archivedView: c.archivedView,
+    mergedView: c.mergedView,
     enabled: c.view === 'board',
   });
 
@@ -288,6 +291,10 @@ function ContentListPanelBody(props: ContentListPanelProps) {
             value={c.archivedView}
             onChange={c.setArchivedView}
           />
+        )}
+
+        {c.contentTypeId && config && (
+          <MergedViewToggle merge={config.merge} value={c.mergedView} onChange={c.setMergedView} />
         )}
 
         {c.contentTypeId && config && (
