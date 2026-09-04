@@ -44,6 +44,12 @@ export const HYGIENE_METRICS: HygieneMetric[] = [
     hint: 'Glossary photography retired 2026-08-28 (tags render drawn TagPlates). Non-zero means a writer is reintroducing photos.',
   },
   { key: 'indexable_without_description', label: 'Indexable, no prose', zero: true },
+  {
+    key: 'indexable_marketplace_facet',
+    label: 'Indexable marketplace facet',
+    zero: true,
+    hint: 'A marketplace filter facet ("under-50", "in-stock") publishing as a glossary page. A facet is a query control, not a concept: it has no definition to write, so the page is thin by construction and can only be fixed by deindexing, never by enrichment.',
+  },
   { key: 'merged_but_not_status_merged', label: 'Merged but still active', zero: true },
   {
     key: 'placeholder_description_active',
