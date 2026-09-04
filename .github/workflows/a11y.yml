@@ -178,13 +178,27 @@ jobs:
       - name: Serve dist on :4173
         if: needs.changes.outputs.relevant == 'true' && needs.build.result == 'success'
         run: |
-          # Local binary, not `npx -y serve@14`: that fetched the package from
-          # the registry at job runtime, inside a 30s readiness budget with no
-          # retry, so a slow npm turned into "serve did not become ready" and
-          # failed the job before a single test ran. `serve` is a pinned
-          # devDependency and `npm install` above has already placed it here.
-          ./node_modules/.bin/serve -s dist -l 4173 > serve.log 2>&1 &
-          for i in $(seq 1 30); do
+          # `serve` is fetched from npm HERE, not inside the readiness loop.
+          #
+          # This step used to start the server with `npx -y` and then poll for
+          # 30 attempts, which meant one 30s budget had to cover the npm
+          # download, the install AND the server starting. `serve` is in neither
+          # dependencies nor devDependencies, so that download happens every run.
+          # On 2026-09-04 it failed six consecutive times across two PRs that
+          # changed only vitest files, with an EMPTY serve.log — the process had
+          # not crashed and had not hit a port conflict, it simply had not begun
+          # listening yet. Reruns stopped clearing it.
+          #
+          # The Lighthouse job below has always installed first (`npm i -g
+          # lighthouse@12 serve@14`) and has NOT been failing, which is the
+          # corroboration: same server, same runner, different install path.
+          #
+          # Installing in its own command gives the download no artificial
+          # deadline, so the loop measures only startup. Widened 30 -> 60 anyway:
+          # a required check should fail on the thing it tests, not on npm.
+          npm i -g serve@14
+          serve -s dist -l 4173 > serve.log 2>&1 &
+          for i in $(seq 1 60); do
             if curl -sf http://localhost:4173/ > /dev/null; then
               echo "serve up after ${i}s"; exit 0
             fi
@@ -254,13 +268,27 @@ jobs:
       - name: Serve dist on :4173
         if: needs.build.result == 'success'
         run: |
-          # Local binary, not `npx -y serve@14`: that fetched the package from
-          # the registry at job runtime, inside a 30s readiness budget with no
-          # retry, so a slow npm turned into "serve did not become ready" and
-          # failed the job before a single test ran. `serve` is a pinned
-          # devDependency and `npm install` above has already placed it here.
-          ./node_modules/.bin/serve -s dist -l 4173 > serve.log 2>&1 &
-          for i in $(seq 1 30); do
+          # `serve` is fetched from npm HERE, not inside the readiness loop.
+          #
+          # This step used to start the server with `npx -y` and then poll for
+          # 30 attempts, which meant one 30s budget had to cover the npm
+          # download, the install AND the server starting. `serve` is in neither
+          # dependencies nor devDependencies, so that download happens every run.
+          # On 2026-09-04 it failed six consecutive times across two PRs that
+          # changed only vitest files, with an EMPTY serve.log — the process had
+          # not crashed and had not hit a port conflict, it simply had not begun
+          # listening yet. Reruns stopped clearing it.
+          #
+          # The Lighthouse job below has always installed first (`npm i -g
+          # lighthouse@12 serve@14`) and has NOT been failing, which is the
+          # corroboration: same server, same runner, different install path.
+          #
+          # Installing in its own command gives the download no artificial
+          # deadline, so the loop measures only startup. Widened 30 -> 60 anyway:
+          # a required check should fail on the thing it tests, not on npm.
+          npm i -g serve@14
+          serve -s dist -l 4173 > serve.log 2>&1 &
+          for i in $(seq 1 60); do
             if curl -sf http://localhost:4173/ > /dev/null; then
               echo "serve up after ${i}s"; exit 0
             fi
@@ -338,13 +366,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with: { node-version: 22 }
-      # This job deliberately does NOT run `npm install`, so it cannot use the
-      # pinned devDependency the other two jobs use — it would cost a full
-      # install across all 13 matrix routes to save one package, and it has to
-      # fetch lighthouse from the registry regardless. Pinned to the exact same
-      # version as package.json so all three jobs serve the build identically;
-      # keep the two in step.
-      - run: npm i -g lighthouse@12 serve@14.2.6
+      - run: npm i -g lighthouse@12 serve@14
       - name: Download dist
         if: needs.build.result == 'success'
         uses: actions/download-artifact@v8
