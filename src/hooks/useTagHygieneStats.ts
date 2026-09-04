@@ -26,6 +26,12 @@ export interface TagHygieneStats {
   merged_but_not_status_merged: number;
   sensitive_without_description: number;
   indexable_without_description: number;
+  /** A marketplace facet slug (mat-, color-, genre-, occ-, news-) that is
+   *  `seo_indexable`. Those namespaces are a FILTER vocabulary, not glossary
+   *  entries, so an indexable one publishes a page nobody wrote. Deliberately
+   *  NOT covered by `indexable_without_description`: a facet carrying any prose
+   *  at all slips past that counter. */
+  indexable_marketplace_facet: number;
   /** The junction names a category, `unified_tags.category_id` names none. The
    *  junction is the source of truth and the column is derived from it, so
    *  non-zero means a writer inserted an assignment without letting the denorm
