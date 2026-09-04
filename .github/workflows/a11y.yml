@@ -175,10 +175,19 @@ jobs:
         with:
           name: dist
           path: dist/
+      # Install serve BEFORE the readiness probe starts counting. `npx -y serve@14`
+      # downloads the package on first use, so the 30s budget below had to cover a
+      # registry fetch as well as startup — and when the fetch ran long the probe
+      # expired with an EMPTY serve.log (nothing had printed yet) and an orphaned
+      # `npm exec serve@14` at cleanup. That is what failed this job twice on
+      # 2026-09-04 while all 15 Lighthouse jobs, which pre-install serve, passed on
+      # the same artifact in the same run.
+      - run: npm i -g serve@14
+        if: needs.changes.outputs.relevant == 'true' && needs.build.result == 'success'
       - name: Serve dist on :4173
         if: needs.changes.outputs.relevant == 'true' && needs.build.result == 'success'
         run: |
-          npx -y serve@14 -s dist -l 4173 > serve.log 2>&1 &
+          serve -s dist -l 4173 > serve.log 2>&1 &
           for i in $(seq 1 30); do
             if curl -sf http://localhost:4173/ > /dev/null; then
               echo "serve up after ${i}s"; exit 0
@@ -246,10 +255,15 @@ jobs:
         with:
           name: dist
           path: dist/
+      # Same reason as the axe-playwright job above: keep the registry fetch out
+      # of the readiness budget. This job has not tipped over yet, but it is the
+      # identical construction and would fail the same way.
+      - run: npm i -g serve@14
+        if: needs.build.result == 'success'
       - name: Serve dist on :4173
         if: needs.build.result == 'success'
         run: |
-          npx -y serve@14 -s dist -l 4173 > serve.log 2>&1 &
+          serve -s dist -l 4173 > serve.log 2>&1 &
           for i in $(seq 1 30); do
             if curl -sf http://localhost:4173/ > /dev/null; then
               echo "serve up after ${i}s"; exit 0
