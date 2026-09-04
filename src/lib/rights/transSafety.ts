@@ -1,4 +1,28 @@
 import { RIGHT_TOPICS } from './rightsCatalog';
+import {
+  isAffirmed,
+  markerChangePossible,
+  requiresIt,
+} from '../../../supabase/functions/_shared/rights/ilgaVocabulary.ts';
+
+/**
+ * Re-exported so frontend callers have one import site for the vocabulary and
+ * cannot grow a fourth private `isYes`. The reader itself lives beside
+ * verdict.ts because the Deno importer needs it too — see that file's header.
+ */
+export {
+  isAffirmed,
+  markerChangePossible,
+  readAffirmation,
+  readMarker,
+  readRequirement,
+  requiresIt,
+} from '../../../supabase/functions/_shared/rights/ilgaVocabulary.ts';
+export type {
+  AffirmationReading,
+  MarkerReading,
+  RequirementReading,
+} from '../../../supabase/functions/_shared/rights/ilgaVocabulary.ts';
 
 /**
  * The trans safety dimension — three axes, rendered side by side, never summed.
@@ -164,9 +188,22 @@ export interface RecognitionLedger {
   selfId: number;
   requiresSurgery: number;
   requiresDiagnosis: number;
+  /**
+   * The same four facts counted in PEOPLE, which is the whole point of the
+   * page: 15 countries require sterilisation — 6% of the world's countries and
+   * 41% of the world's people. A count of countries treats Nauru and India as
+   * one unit each, and the law is written about people.
+   *
+   * `totalPeople` is every country's population, including the ones with no
+   * recognition record, so nothing is quietly dropped from a denominator.
+   */
+  totalPeople: number;
+  peopleMarkerChangePossible: number;
+  peopleSelfId: number;
+  peopleRequiresSurgery: number;
+  peopleRequiresDiagnosis: number;
 }
 
-const YES = /^yes$/i;
 const NO_DATA = /^(no data|unknown|n\/a)$/i;
 
 function lgrOf(row: Record<string, unknown>): Record<string, unknown> | null {
@@ -176,8 +213,10 @@ function lgrOf(row: Record<string, unknown>): Record<string, unknown> | null {
   return Object.keys(blob).length > 0 ? blob : null;
 }
 
-function isYes(v: unknown): boolean {
-  return typeof v === 'string' && YES.test(v.trim());
+/** Missing population is 0, never a dropped row — see `totalPeople`. */
+function popOf(row: Record<string, unknown>): number {
+  const n = Number(row.population ?? 0);
+  return Number.isFinite(n) && n > 0 ? n : 0;
 }
 
 export function summariseRecognition(rows: readonly Record<string, unknown>[]): RecognitionLedger {
@@ -188,20 +227,41 @@ export function summariseRecognition(rows: readonly Record<string, unknown>[]): 
     selfId: 0,
     requiresSurgery: 0,
     requiresDiagnosis: 0,
+    totalPeople: 0,
+    peopleMarkerChangePossible: 0,
+    peopleSelfId: 0,
+    peopleRequiresSurgery: 0,
+    peopleRequiresDiagnosis: 0,
   };
 
   for (const row of rows) {
+    const pop = popOf(row);
+    ledger.totalPeople += pop;
+
     const lgr = lgrOf(row);
     if (!lgr) continue;
     ledger.measured += 1;
 
     const marker = String(lgr.gender_marker ?? '').trim();
-    if (marker && !NO_DATA.test(marker) && /^possible$/i.test(marker)) {
+    if (marker && !NO_DATA.test(marker) && markerChangePossible(marker)) {
       ledger.markerChangePossible += 1;
+      ledger.peopleMarkerChangePossible += pop;
     }
-    if (isYes(lgr.self_id)) ledger.selfId += 1;
-    if (isYes(lgr.requires_surgery)) ledger.requiresSurgery += 1;
-    if (isYes(lgr.requires_diagnosis)) ledger.requiresDiagnosis += 1;
+    if (isAffirmed(lgr.self_id)) {
+      ledger.selfId += 1;
+      ledger.peopleSelfId += pop;
+    }
+    // `requiresIt`, not `isYes`. ILGA writes "Required"; every reader in this
+    // repo used to test /^yes$/i, so these two counters read 0 on all 244
+    // measured countries while the true answers were 15 and 21.
+    if (requiresIt(lgr.requires_surgery)) {
+      ledger.requiresSurgery += 1;
+      ledger.peopleRequiresSurgery += pop;
+    }
+    if (requiresIt(lgr.requires_diagnosis)) {
+      ledger.requiresDiagnosis += 1;
+      ledger.peopleRequiresDiagnosis += pop;
+    }
   }
 
   return ledger;
