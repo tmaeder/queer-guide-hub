@@ -319,6 +319,15 @@ has 34 and 13 of them in Germany today is a step change, it arrives at measured 
 precision, and once `venue_sources` carries the ids every subsequent refresh is free.
 What is *not* worth building is anything that depends on reaching 22,050.
 
+**Where this sits relative to work already in flight.** P0–P2 of the same plan are open as
+**#3370** — it retires the `venue_accessibility_osm` cron, points `source-osm-venue` at the
+hardened Overpass helper, adds `external_correction_audit` (the batch-revertible before-image
+the plan calls the must-build item), and lands the P2 deterministic city joins. Its own
+migration comment already describes the successor as a join "which matches once and PERSISTS
+the OSM element id into `venue_sources`" — that persistence is stated as intent there and is
+**not yet implemented anywhere**. It is the first thing P3 should carry, and it is worth doing
+even for the matches that fill no field, because identity is the expensive half.
+
 ---
 
 ## 10. Verified against production, 2026-09-04
