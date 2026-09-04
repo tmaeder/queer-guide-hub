@@ -10,6 +10,10 @@ name: CI
 
 on:
   pull_request:
+  # Merge queue: a required check that never reports on the merge_group event
+  # leaves the queued PR pending forever. Same failure this repo already hit
+  # twice with `paths:` filters on required checks.
+  merge_group:
   push:
     branches: [main]
 
@@ -156,9 +160,15 @@ jobs:
           node-version: "22.20.0"
       - name: Resolve migration base ref
         run: |
-          if [ -n "${{ github.base_ref }}" ]; then
-            git fetch --depth=1 origin "${{ github.base_ref }}"
-            echo "MIGRATION_BASE_REF=origin/${{ github.base_ref }}" >> "$GITHUB_ENV"
+          BASE="${{ github.base_ref }}"
+          # merge_group carries no base_ref, and HEAD~1 is not main's tip when
+          # the queue batches several PRs into one group.
+          if [ -z "$BASE" ] && [ "${{ github.event_name }}" = "merge_group" ]; then
+            BASE=main
+          fi
+          if [ -n "$BASE" ]; then
+            git fetch --depth=1 origin "$BASE"
+            echo "MIGRATION_BASE_REF=origin/$BASE" >> "$GITHUB_ENV"
           else
             echo "MIGRATION_BASE_REF=HEAD~1" >> "$GITHUB_ENV"
           fi
