@@ -4081,7 +4081,9 @@
       "no": "[ZH] No",
       "varies": "[ZH] Varies",
       "unclear": "[ZH] Unclear",
-      "notApplicable": "[ZH] Not applicable"
+      "notApplicable": "[ZH] Not applicable",
+      "required": "[ZH] Required",
+      "notRequired": "[ZH] Not required"
     },
     "attr": {
       "so": {
