@@ -32,7 +32,7 @@ export default function AdminFeedback() {
   const tabValue = c.state.tab;
 
   return (
-    <div className="p-4 sm:p-6">
+    <div>
       <div className="flex items-start gap-4 mb-2">
         <div className="flex-1">
           <PageHeader

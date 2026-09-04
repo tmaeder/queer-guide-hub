@@ -147,6 +147,8 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
                 alt="Page screenshot"
                 style={{ width: '100%', maxHeight: 280, objectFit: 'cover' }}
                 className="block"
+                loading="lazy"
+                decoding="async"
               />
             </div>
             <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
@@ -158,6 +160,8 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
                   src={screenshotUrl}
                   alt="Page screenshot"
                   style={{ maxWidth: '100%', maxHeight: '85vh', objectFit: 'contain' }}
+                  loading="lazy"
+                  decoding="async"
                 />
               </DialogContent>
             </Dialog>

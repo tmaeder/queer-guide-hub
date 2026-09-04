@@ -1,8 +1,11 @@
 /**
  * queer-guide extract worker — self-hosted deepcrawl extraction service.
  *
- *   POST /extract  { url, render?:bool, crawl?:bool }
- *     → { url, finalUrl, markdown, meta, jsonLd, microdata?, links?, method, charCount }
+ *   POST /extract  { url, render?:bool, crawl?:bool, html?:bool }
+ *     → { url, finalUrl, markdown, meta, jsonLd, microdata?, links?, method, charCount, html? }
+ *   html:true additionally returns the raw fetched/rendered page HTML (subject to the
+ *   same MAX_HTML_BYTES cap) for callers that need a selector-driven parse of markup
+ *   with no JSON-LD/microdata (e.g. source-shop-crawl's 'selector' reader).
  *   GET  /health   → { ok: true }
  *
  * Internal-only (X-Internal-Secret). Static path: fetch → cheerio main-content →
@@ -36,6 +39,31 @@ function json(body: unknown, status = 200): Response {
   });
 }
 
+// A hardcoded utf-8 decode corrupts any legacy-encoded page (iso-8859-1/15,
+// windows-1252 — still common on older German/European sites) into
+// unrecoverable U+FFFD replacement chars, since invalid utf-8 byte sequences
+// lose the original bytes on decode. Prefer the HTTP header's charset, then
+// sniff the HTML's own <meta charset>/http-equiv declaration (checked against
+// the safe latin1 decode of just the head, since a mis-decode there is still
+// ASCII-readable for the tag itself), and fall back to utf-8.
+function detectCharset(buf: ArrayBuffer, contentTypeHeader: string): string {
+  const headerMatch = /charset=([\w-]+)/i.exec(contentTypeHeader);
+  if (headerMatch) return headerMatch[1].toLowerCase();
+  const head = new TextDecoder('iso-8859-1').decode(buf.slice(0, 2048));
+  const metaMatch = /<meta[^>]+charset=["']?([\w-]+)/i.exec(head);
+  if (metaMatch) return metaMatch[1].toLowerCase();
+  return 'utf-8';
+}
+
+function decodeHtml(buf: ArrayBuffer, contentTypeHeader: string): string {
+  const charset = detectCharset(buf, contentTypeHeader);
+  try {
+    return new TextDecoder(charset, { fatal: false, ignoreBOM: false }).decode(buf);
+  } catch {
+    return new TextDecoder('utf-8', { fatal: false, ignoreBOM: false }).decode(buf);
+  }
+}
+
 async function fetchHtml(
   u: URL,
   maxBytes: number,
@@ -63,7 +91,7 @@ async function fetchHtml(
     assertPublicHttpUrl(finalUrl);
     const buf = await res.arrayBuffer();
     if (buf.byteLength > maxBytes) throw new Error(`html too large: ${buf.byteLength}`);
-    return { html: new TextDecoder('utf-8').decode(buf), finalUrl };
+    return { html: decodeHtml(buf, ct), finalUrl };
   } finally {
     clearTimeout(t);
   }
@@ -85,7 +113,7 @@ export default {
       return json({ error: 'unauthorized' }, 401);
     }
 
-    let body: { url?: string; render?: boolean; crawl?: boolean };
+    let body: { url?: string; render?: boolean; crawl?: boolean; html?: boolean };
     try {
       body = await req.json();
     } catch {
@@ -131,6 +159,7 @@ export default {
         method,
         contentMethod: result.contentMethod,
         charCount: result.charCount,
+        html: body.html === true ? html : undefined,
       });
     } catch (e) {
       if (e instanceof UnsafeUrlError) return json({ error: e.message, method }, 400);

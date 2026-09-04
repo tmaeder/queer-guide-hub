@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { X } from 'lucide-react';
 import { xStyle } from './constants';
+import { RemovableFilterX } from './RemovableFilterX';
 
 interface ActiveFilterBadgesProps {
   search: string;
@@ -50,59 +50,57 @@ export function ActiveFilterBadges({
       {search && (
         <Badge variant="secondary">
           &ldquo;{search}&rdquo;
-          <X style={xStyle} role="button" aria-label="Remove filter" onClick={onRemoveSearch} />
+          <RemovableFilterX style={xStyle} label="Remove filter" onRemove={onRemoveSearch} />
         </Badge>
       )}
       {city && (
         <Badge variant="secondary">
           {city}
-          <X style={xStyle} role="button" aria-label="Remove filter" onClick={onRemoveCity} />
+          <RemovableFilterX style={xStyle} label="Remove filter" onRemove={onRemoveCity} />
         </Badge>
       )}
       {selectedTags.map((tag) => (
         <Badge key={tag} variant="secondary">
           {tag}
-          <X style={xStyle} role="button" aria-label="Remove filter" onClick={() => onToggleTag(tag)} />
+          <RemovableFilterX style={xStyle} label="Remove filter" onRemove={() => onToggleTag(tag)} />
         </Badge>
       ))}
       {selectedAmenities.map((a) => (
         <Badge key={a} variant="secondary">
           {a}
-          <X style={xStyle} role="button" aria-label="Remove filter" onClick={() => onToggleAmenity(a)} />
+          <RemovableFilterX style={xStyle} label="Remove filter" onRemove={() => onToggleAmenity(a)} />
         </Badge>
       ))}
       {selectedServices.map((s) => (
         <Badge key={s} variant="secondary">
           {s}
-          <X style={xStyle} role="button" aria-label="Remove filter" onClick={() => onToggleService(s)} />
+          <RemovableFilterX style={xStyle} label="Remove filter" onRemove={() => onToggleService(s)} />
         </Badge>
       ))}
       {selectedAccessibilityAttributes.map((a) => (
         <Badge key={a} variant="secondary">
           {accessibilityLabel(a)}
-          <X
+          <RemovableFilterX
             style={xStyle}
-            role="button"
-            aria-label="Remove filter"
-            onClick={() => onToggleAccessibility(a)}
+            label="Remove filter"
+            onRemove={() => onToggleAccessibility(a)}
           />
         </Badge>
       ))}
       {selectedTargetGroups.map((g) => (
         <Badge key={g} variant="secondary">
           {g}
-          <X
+          <RemovableFilterX
             style={xStyle}
-            role="button"
-            aria-label="Remove filter"
-            onClick={() => onToggleTargetGroup(g)}
+            label="Remove filter"
+            onRemove={() => onToggleTargetGroup(g)}
           />
         </Badge>
       ))}
       {nearMe && (
         <Badge variant="secondary">
           Near Me
-          <X style={xStyle} role="button" aria-label="Remove filter" onClick={onNearMeToggle} />
+          <RemovableFilterX style={xStyle} label="Remove filter" onRemove={onNearMeToggle} />
         </Badge>
       )}
       <Button variant="ghost" size="sm" onClick={onClearAll}>

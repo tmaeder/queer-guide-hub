@@ -165,6 +165,8 @@ export function SeoMetaTab({ controller }: { controller: DesignSettingsControlle
                     src={meta.og_image_url}
                     alt="OG preview"
                     className="h-full w-full object-cover"
+                    loading="lazy"
+                    decoding="async"
                   />
                 ) : (
                   <span className="text-13 text-muted-foreground">

@@ -295,6 +295,8 @@ export function EventHero({
               alt=""
               role="presentation"
               referrerPolicy="no-referrer"
+              loading="eager"
+              decoding="async"
               className="absolute bottom-4 left-4 h-12 w-12 rounded-element bg-background/90 object-contain p-1"
               onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                 (e.target as HTMLImageElement).style.display = 'none';

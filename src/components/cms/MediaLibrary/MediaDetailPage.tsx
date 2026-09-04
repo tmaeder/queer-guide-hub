@@ -177,6 +177,8 @@ export function MediaDetailPage() {
                 src={imageUrl}
                 alt={detail.alt_text || detail.display_name}
                 className="max-w-full max-h-[500px] object-contain"
+                loading="eager"
+                decoding="async"
               />
               {detail.is_flagged && (
                 <Badge variant="destructive" className="absolute top-3 right-3">

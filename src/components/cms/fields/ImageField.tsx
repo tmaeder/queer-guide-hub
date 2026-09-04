@@ -56,6 +56,8 @@ export function ImageField({ field, value, onChange, error, disabled }: FieldPro
               role="presentation"
               className="w-full h-48 object-cover"
               onError={() => setImgError(true)}
+              loading="lazy"
+              decoding="async"
             />
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
               <a

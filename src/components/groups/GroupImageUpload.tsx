@@ -138,6 +138,8 @@ export const GroupImageUpload = ({
                   alt=""
                   role="presentation"
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  loading="lazy"
+                  decoding="async"
                   onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                     const target = e.target as HTMLImageElement;
                     target.src = '/placeholder.svg';

@@ -110,6 +110,8 @@ export function SwipeDeck({ cards, onLike, onPass, className }: SwipeDeckProps) 
                   alt=""
                   className="aspect-square w-full rounded-element object-cover"
                   draggable={false}
+                  loading="lazy"
+                  decoding="async"
                 />
               ) : (
                 <div className="aspect-square w-full rounded-element bg-muted" />

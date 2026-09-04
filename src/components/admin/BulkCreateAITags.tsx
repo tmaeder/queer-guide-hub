@@ -150,7 +150,7 @@ const BulkCreateAITags = ({ onComplete }: BulkCreateAITagsProps) => {
                         )}
                         {result.image_url && (
                           <div className="mt-1">
-                            <img src={result.image_url} alt={result.term} className="w-16 h-12 object-cover rounded-element mt-1" />
+                            <img src={result.image_url} alt={result.term} className="w-16 h-12 object-cover rounded-element mt-1" loading="lazy" decoding="async" />
                           </div>
                         )}
                         {result.description && (

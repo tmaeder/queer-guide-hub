@@ -177,6 +177,8 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete }: PostCardProps) =>
                   src={image}
                   alt=""
                   role="presentation"
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover"
                   onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                     const target = e.target as HTMLImageElement;

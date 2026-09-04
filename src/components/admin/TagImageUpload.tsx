@@ -71,6 +71,8 @@ export const TagImageUpload = ({
               src={previewUrl}
               alt={tagName || 'Tag image'}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              loading="lazy"
+              decoding="async"
             />
           </div>
           <Button type="button" variant="destructive" size="sm" onClick={handleDeleteImage}>

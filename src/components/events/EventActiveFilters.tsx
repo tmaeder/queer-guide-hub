@@ -26,8 +26,15 @@ function FilterPill({
         style={{ margin: -8, boxSizing: 'content-box' }}
         className="cursor-pointer p-2"
         role="button"
+        tabIndex={0}
         aria-label={clearLabel}
         onClick={onClear}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onClear();
+          }
+        }}
       />
     </Badge>
   );

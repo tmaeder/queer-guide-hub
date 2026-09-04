@@ -101,7 +101,7 @@ export function Footer() {
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               <LocalizedLink
-                to="/report"
+                to="/feedback"
                 className="border-2 border-background px-4 py-2 text-xs2 font-bold text-background no-underline hover:bg-background hover:text-foreground"
               >
                 {t('footer.reportSomething', 'Report something')}

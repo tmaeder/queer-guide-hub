@@ -132,6 +132,8 @@ export function BrandUploadField({
             alt={`${label} preview`}
             onError={() => setLoadFailed(true)}
             className={`${previewClassName} rounded-element border object-contain`}
+            loading="lazy"
+            decoding="async"
           />
         ))}
       {error ? (

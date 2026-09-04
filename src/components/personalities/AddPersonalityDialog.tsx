@@ -723,6 +723,8 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                           src={formData.image_url}
                           alt="Preview"
                           className="w-32 h-32 object-cover rounded-element"
+                          loading="lazy"
+                          decoding="async"
                         />
                         <Button type="button" variant="destructive" size="sm" onClick={removeImage}>
                           <X />

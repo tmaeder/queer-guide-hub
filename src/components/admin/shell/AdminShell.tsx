@@ -225,7 +225,7 @@ export function AdminShell() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0"
+                  className="h-11 w-11 p-0"
                   aria-label="Open admin navigation"
                   onClick={() => setMobileOpen(true)}
                 >
@@ -237,7 +237,7 @@ export function AdminShell() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0"
+                  className="h-11 w-11 p-0"
                   aria-label="Open command palette"
                   onClick={() => window.dispatchEvent(new Event(OPEN_COMMAND_PALETTE_EVENT))}
                 >

@@ -128,6 +128,9 @@ export default function PlaceDetail() {
               <img
                 src={place.image_url}
                 alt={place.name}
+                loading="eager"
+                decoding="async"
+                fetchPriority="high"
                 className="max-h-[420px] w-full rounded-container object-cover"
               />
             )}

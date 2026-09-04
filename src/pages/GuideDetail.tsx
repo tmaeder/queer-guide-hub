@@ -149,7 +149,14 @@ const GuideDetail = () => {
       {hero && (
         <PageContainer flush className="max-w-5xl mb-12">
           <div className="relative aspect-[16/9] rounded-container overflow-hidden bg-muted">
-            <img src={hero} alt="" className="absolute inset-0 size-full object-cover" />
+            <img
+              src={hero}
+              alt=""
+              loading="eager"
+              decoding="async"
+              fetchPriority="high"
+              className="absolute inset-0 size-full object-cover"
+            />
           </div>
         </PageContainer>
       )}

@@ -62,6 +62,9 @@ export function MarketplaceGallery({ listingId, images, title }: MarketplaceGall
             <img
               src={current.full}
               alt={current.alt || title}
+              loading="eager"
+              decoding="async"
+              fetchPriority="high"
               className="aspect-square w-full object-cover md:aspect-[4/5]"
               onError={() => setFailed((prev) => new Set(prev).add(safeActive))}
             />
@@ -100,6 +103,8 @@ export function MarketplaceGallery({ listingId, images, title }: MarketplaceGall
                   src={img.thumb}
                   alt=""
                   aria-hidden="true"
+                  loading="lazy"
+                  decoding="async"
                   className="h-full w-full object-cover"
                   onError={() => setFailed((prev) => new Set(prev).add(i))}
                 />

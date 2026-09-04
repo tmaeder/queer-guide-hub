@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import { toast } from 'sonner';
 import { Check, X, RotateCcw, Lock, ClipboardCheck, ImageOff } from 'lucide-react';
@@ -41,6 +41,8 @@ const REASON_LABEL: Record<string, string> = {
   non_person_flag: 'Nicht-Person',
 };
 
+const PAGE_SIZE = 25;
+
 const GUARD_MESSAGE: Record<string, string> = {
   non_person: 'Als Nicht-Person markiert — nicht freigebbar.',
   adult_use_consent_path: 'Adult-Profil — über die Consent-Freigabe unten veröffentlichen.',
@@ -70,7 +72,13 @@ export function PersonalityFreigabeQueue({
   const { data: rows, isLoading } = useFreigabeQueue(stage);
   const { freigeben, ablehnen, zuruecknehmen } = useFreigabeAction();
   const [busy, setBusy] = useState<string | null>(null);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const meta = FREIGABE_STAGE_META[stage];
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset pagination when the stage tab changes underneath it, not a data sync.
+    setVisibleCount(PAGE_SIZE);
+  }, [stage]);
 
   const doFreigeben = async (row: FreigabeQueueRow) => {
     setBusy(row.id);
@@ -168,12 +176,14 @@ export function PersonalityFreigabeQueue({
           <p className="text-13 text-muted-foreground">Keine Personen in dieser Stufe.</p>
         )}
 
-        {list.map((row) => (
+        {list.slice(0, visibleCount).map((row) => (
           <div key={row.id} className="flex items-center gap-4 rounded-element border p-4">
             {row.image_url ? (
               <img
                 src={row.image_url}
                 alt=""
+                loading="lazy"
+                decoding="async"
                 className="h-10 w-10 shrink-0 rounded-element object-cover"
               />
             ) : (
@@ -240,6 +250,16 @@ export function PersonalityFreigabeQueue({
             </div>
           </div>
         ))}
+        {list.length > visibleCount && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="self-center"
+            onClick={() => setVisibleCount((v) => v + PAGE_SIZE)}
+          >
+            Mehr anzeigen ({list.length - visibleCount} weitere)
+          </Button>
+        )}
       </CardContent>
     </Card>
   );

@@ -337,6 +337,8 @@ export function FeedbackButton() {
                       alt="Screenshot preview"
                       style={{ width: '100%', height: 'auto' }}
                       className="block"
+                      loading="lazy"
+                      decoding="async"
                     />
                   </div>
                 )}

@@ -93,6 +93,8 @@ export default function MediaUploader({ onUploaded, bucket, accept }: MediaUploa
               src={preview.url}
               alt="Preview"
               className="w-20 h-20 object-cover rounded-badge border border-border"
+              loading="lazy"
+              decoding="async"
             />
           ) : (
             <div className="w-20 h-20 flex items-center justify-center bg-muted rounded-badge">

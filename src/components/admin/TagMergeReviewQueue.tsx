@@ -39,10 +39,13 @@ interface RecentRow {
   created_at: string;
 }
 
+const PAGE_SIZE = 25;
+
 export function TagMergeReviewQueue() {
   const [queueOpen, setQueueOpen] = useState(false);
   const [recentOpen, setRecentOpen] = useState(false);
   const [keepDistinct, setKeepDistinct] = useState<Record<string, boolean>>({});
+  const [queueVisible, setQueueVisible] = useState(PAGE_SIZE);
   const queryClient = useQueryClient();
 
   const { data: queue, isLoading: queueLoading } = useQuery({
@@ -132,7 +135,7 @@ export function TagMergeReviewQueue() {
               <p className="text-13 text-muted-foreground">No pending merge proposals.</p>
             )}
             {!queueLoading &&
-              (queue ?? []).map((row) => {
+              (queue ?? []).slice(0, queueVisible).map((row) => {
                 const isApproving =
                   approve.isPending && approve.variables?.review_id === row.review_id;
                 const isRejecting =
@@ -189,6 +192,16 @@ export function TagMergeReviewQueue() {
                   </div>
                 );
               })}
+            {!queueLoading && pendingCount > queueVisible && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="self-center"
+                onClick={() => setQueueVisible((v) => v + PAGE_SIZE)}
+              >
+                Show more ({pendingCount - queueVisible} remaining)
+              </Button>
+            )}
           </div>
         )}
       </div>

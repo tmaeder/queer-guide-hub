@@ -181,6 +181,8 @@ export const WeatherForecast = ({ latitude, longitude, cityName, className }: We
                 <img
                   src={`https://openweathermap.org/img/wn/${day.icon}@2x.png`}
                   alt={day.description}
+                  loading="lazy"
+                  decoding="async"
                   style={{ width: 48, height: 48 }}
                 />
               </div>

@@ -65,6 +65,8 @@ export function MoreSupportBand({ orgs }: { orgs: SupportOrg[] }) {
                         src={org.logo_url}
                         alt=""
                         className="h-8 w-8 shrink-0 border-2 border-foreground object-contain"
+                        loading="lazy"
+                        decoding="async"
                       />
                     ) : (
                       <span className="flex h-8 w-8 shrink-0 items-center justify-center border-2 border-foreground">

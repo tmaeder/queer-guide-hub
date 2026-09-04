@@ -143,7 +143,13 @@ export const MessageInput = ({
         <div className="flex items-center gap-2">
           <div className="relative h-16 w-16 overflow-hidden rounded-element bg-muted">
             {pendingImage ? (
-              <img src={pendingImage.url} alt="" className="h-full w-full object-cover" />
+              <img
+                src={pendingImage.url}
+                alt=""
+                className="h-full w-full object-cover"
+                loading="lazy"
+                decoding="async"
+              />
             ) : null}
             {uploadingImage && (
               <div className="absolute inset-0 flex items-center justify-center bg-background/60">

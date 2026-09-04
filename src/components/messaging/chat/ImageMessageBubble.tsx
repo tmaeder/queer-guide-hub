@@ -69,6 +69,8 @@ export const ImageMessageBubble = ({ image, caption, isOwn, sending, highlighted
             src={image.url}
             alt={caption?.trim() || t('chat.image.alt', { defaultValue: 'Photo' })}
             className="mx-auto max-h-[85vh] w-auto max-w-full rounded-container object-contain"
+            loading="lazy"
+            decoding="async"
           />
         </DialogContent>
       </Dialog>

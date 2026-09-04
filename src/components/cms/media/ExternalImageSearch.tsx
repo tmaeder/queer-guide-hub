@@ -264,6 +264,8 @@ export default function ExternalImageSearch({
               src={selectedImage.thumbnail}
               alt=""
               className="w-10 h-10 object-cover rounded-badge"
+              loading="lazy"
+              decoding="async"
             />
             <div className="flex-1 min-w-0">
               <p className="text-xs font-semibold block truncate">{selectedImage.photographer}</p>

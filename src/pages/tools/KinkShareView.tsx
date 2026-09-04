@@ -104,6 +104,8 @@ export default function KinkShareView() {
           <img
             src={owner.owner_avatar_url}
             alt=""
+            loading="eager"
+            decoding="async"
             className="h-12 w-12 rounded-element object-cover"
           />
         ) : (

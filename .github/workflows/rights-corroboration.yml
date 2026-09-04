@@ -1,0 +1,71 @@
+name: Rights corroboration (US State Dept)
+
+# A SECOND OPINION ON THE TWO SAFETY-GATE RIGHTS FIELDS.
+#
+# All 18 RIGHT_TOPICS columns rest on ILGA alone — the data behind
+# location_is_high_risk(), venues/events/organizations RLS and compose_safety_note().
+# This fetches the US State Department Country Reports (public domain, independent embassy
+# reporting) and records what they say about criminalisation and the death penalty.
+#
+# It NEVER writes `countries`. Results land in `country_rights_corroboration`, which has no
+# write path into the rights columns — that is the structural form of "flag, never
+# overwrite", rather than a convention someone can forget.
+#
+# WEEKLY, NOT DAILY. The reports are annual; a daily pass would be 250 pointless requests
+# against a rate-limited government site. The script already backs off on 429 and records
+# `error` (not `unknown`) when it still fails, so a throttled run retries next week instead
+# of silently claiming a country has no second opinion.
+
+on:
+  schedule:
+    - cron: '17 5 * * 1' # Mondays, off the hour — see CronCreate guidance on :00 pileups
+  workflow_dispatch:
+    inputs:
+      year:
+        description: 'Report year (State Dept publishes annually)'
+        required: false
+        default: '2023'
+
+concurrency:
+  group: rights-corroboration
+  cancel-in-progress: false
+
+jobs:
+  corroborate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Corroborate criminalisation against US State Dept reports
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SD_REPORT_YEAR: ${{ github.event.inputs.year || '2023' }}
+        run: node scripts/data-quality/corroborate-criminalisation.mjs
+
+      # Disagreements are REPORTED, never merged. A mismatch is a prompt for a human to
+      # look at two sources, not evidence that either is wrong — and most of them are a
+      # source-year lag rather than an error, because the reports are annual and ILGA is
+      # nightly. Deliberately does not fail the job: a corroborator that turns the build
+      # red on a legitimate lag would be switched off within a month.
+      - name: Report disagreements
+        if: ${{ !cancelled() }}
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          curl -sS -X POST "$SUPABASE_URL/rest/v1/rpc/country_rights_disagreements" \
+            -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            -H 'Content-Type: application/json' -d '{}' \
+            | node -e '
+              let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{
+                let rows; try { rows=JSON.parse(s) } catch { console.log("(no parseable response)"); process.exit(0) }
+                if (!Array.isArray(rows)) { console.log(s.slice(0,400)); process.exit(0) }
+                console.log(`${rows.length} field-level disagreement(s) with ILGA:`);
+                for (const r of rows) console.log(`  ${r.country_code} ${r.country_name}: ${r.field} ilga=${r.ilga_says} state_dept=${r.source_says}`);
+              })'

@@ -99,6 +99,8 @@ export default function IntimateUserDetail() {
           <img
             src={displayProfile.avatar_url}
             alt=""
+            loading="eager"
+            decoding="async"
             className="h-16 w-16 object-cover rounded-element"
           />
         ) : (

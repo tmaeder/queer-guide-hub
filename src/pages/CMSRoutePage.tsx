@@ -283,6 +283,9 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
         <img
           src={page.cover_image_url}
           alt={page.cover_image_alt || page.title}
+          loading="eager"
+          decoding="async"
+          fetchPriority="high"
           className="mb-6 max-h-[400px] w-full border-[3px] border-foreground object-cover"
         />
       )}

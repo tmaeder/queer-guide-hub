@@ -1,3 +1,4 @@
+import * as cheerio from 'https://esm.sh/cheerio@1.0.0-rc.12'
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import type { SourceAdapter, RawItem, NormalizedItem } from '../_shared/source-adapter.ts'
 import { writeToStaging, skippedResponse } from '../_shared/source-adapter.ts'
@@ -26,7 +27,7 @@ import { withErrorReporting } from '../_shared/report-api-error.ts'
 // verify_jwt=false, which is an SSRF hole this function does not reproduce.
 //
 // config keys (per merchant):
-//   strategy          'jsonld' | 'microdata'   which reader parses a product page
+//   strategy          'jsonld' | 'microdata' | 'selector'   which reader parses a product page
 //   sitemap           absolute URL of the product sitemap (or a sitemapindex)
 //   url_include       regex a URL must match to be treated as a product page
 //   entity_id_from    'isbn' | undefined       how to derive source_entity_id
@@ -34,6 +35,10 @@ import { withErrorReporting } from '../_shared/report-api-error.ts'
 //   business_name     the SELLER (never the author)
 //   currency, lang, author_from, concurrency, crawl_delay_ms, render,
 //   refresh_after_days, lookahead
+//   selectors         'selector' strategy only — { name, price, image, description,
+//                      sku_regex } CSS selectors (+ one regex) for storefronts with
+//                      no JSON-LD/microdata at all. Requests raw HTML from the extract
+//                      worker (html:true) instead of its parsed jsonLd/microdata.
 //   crawl_cursor      {index,total,updated_at,wraps} — written by this function
 // ============================================================
 
@@ -58,6 +63,11 @@ interface CrawlConfig {
   url_include?: string
   entity_id_from?: string
   subcategory?: string
+  /** Tier-1 merchant-type label written to raw.product_type (classifyMerchantType()
+   *  in _shared/marketplace-normalize.ts). Defaults to 'Book' — this function's only
+   *  callers so far were queer bookshops. A film/DVD merchant MUST override this
+   *  (e.g. 'DVD') or its listings retype at Tier 2 with no film keywords at all. */
+  product_type?: string
   business_name?: string
   currency?: string
   lang?: string
@@ -67,6 +77,8 @@ interface CrawlConfig {
   render?: boolean
   refresh_after_days?: number
   lookahead?: number
+  selectors?: { name?: string; price?: string; image?: string; description?: string; sku_regex?: string }
+  treat_preorder_as_available?: boolean
   crawl_cursor?: { index?: number; total?: number; wraps?: number }
 }
 
@@ -205,17 +217,26 @@ function imagesFrom(v: unknown, pageUrl: string): string[] {
   return out
 }
 
-function availabilityToStock(v: unknown): boolean | null {
+// PreOrder is ambiguous across storefronts: some genuinely mean "not shipped
+// yet" (BackOrder-like), others (e.g. PrestaShop's default schema.org output
+// when a product has no strict stock count) stamp it on every single product
+// regardless of real availability — verified live on salzgeber.shop, where
+// EVERY product page carries PreOrder including titles that have been in the
+// active catalog for years. cfg.treat_preorder_as_available lets a merchant
+// opt out of the default (PreOrder = not buyable) once that's been confirmed
+// against the real site, rather than the whole catalog reading "Out of Stock".
+function availabilityToStock(v: unknown, treatPreorderAsAvailable: boolean): boolean | null {
   const s = str(v)
   if (!s) return null
   if (/InStock|in_stock|\bavailable\b/i.test(s)) return true
-  if (/OutOfStock|SoldOut|Discontinued|PreOrder|BackOrder/i.test(s)) return false
+  if (/PreOrder/i.test(s)) return treatPreorderAsAvailable ? true : false
+  if (/OutOfStock|SoldOut|Discontinued|BackOrder/i.test(s)) return false
   return null
 }
 
-type Extracted = { jsonLd?: Array<Record<string, unknown>>; microdata?: Record<string, unknown>; meta: { title?: string; description?: string; image?: string } }
+type Extracted = { jsonLd?: Array<Record<string, unknown>>; microdata?: Record<string, unknown>; meta: { title?: string; description?: string; image?: string }; html?: string }
 
-function readJsonLd(ex: Extracted, pageUrl: string): ProductRead | null {
+function readJsonLd(ex: Extracted, pageUrl: string, cfg: CrawlConfig): ProductRead | null {
   const prod = (ex.jsonLd ?? []).find(o => {
     const t = o['@type']
     const types = Array.isArray(t) ? t : [t]
@@ -231,13 +252,13 @@ function readJsonLd(ex: Extracted, pageUrl: string): ProductRead | null {
       : imagesFrom(ex.meta.image, pageUrl),
     price: num(ci(offer, 'price', 'lowPrice')),
     currency: str(ci(offer, 'priceCurrency')),
-    inStock: availabilityToStock(ci(offer, 'availability')),
+    inStock: availabilityToStock(ci(offer, 'availability'), cfg.treat_preorder_as_available === true),
     sku: str(ci(prod, 'sku', 'isbn', 'gtin13')),
     author: str(ci(asObj(ci(prod, 'author', 'brand')), 'name')) ?? str(ci(prod, 'author', 'brand')),
   }
 }
 
-function readMicrodata(ex: Extracted, pageUrl: string): ProductRead | null {
+function readMicrodata(ex: Extracted, pageUrl: string, cfg: CrawlConfig): ProductRead | null {
   const md = ex.microdata
   if (!md) return null
   const offer = asObj(ci(md, 'offers'))
@@ -250,15 +271,60 @@ function readMicrodata(ex: Extracted, pageUrl: string): ProductRead | null {
     images: imgs.length ? imgs : imagesFrom(ex.meta.image, pageUrl),
     price: num(ci(offer, 'price')),
     currency: str(ci(offer, 'priceCurrency')),
-    inStock: availabilityToStock(ci(offer, 'availability')),
+    inStock: availabilityToStock(ci(offer, 'availability'), cfg.treat_preorder_as_available === true),
     sku: str(ci(md, 'sku', 'isbn', 'gtin13')),
     author: null,
   }
 }
 
-const READERS: Record<string, (ex: Extracted, pageUrl: string) => ProductRead | null> = {
+// For storefronts with no JSON-LD/microdata at all (bare HTML labels/classes —
+// price/title/SKU are just text in specific elements, nothing schema.org-tagged).
+// Config-driven so the next bare-HTML shop reuses this reader instead of earning
+// its own. Requires `html: true` on the extractContent() call (see the fetch loop
+// below) since jsonLd/microdata are worker-parsed but raw HTML is opt-in only.
+function readSelector(ex: Extracted, pageUrl: string, cfg: CrawlConfig): ProductRead | null {
+  const sel = cfg.selectors
+  if (!ex.html || !sel) return null
+  let $: cheerio.CheerioAPI
+  try { $ = cheerio.load(ex.html) } catch { return null }
+
+  const fromSelector = (selector?: string): string => {
+    if (!selector) return ''
+    const el = $(selector).first()
+    if (el.length === 0) return ''
+    return (el.attr('content') ?? el.text() ?? '').trim()
+  }
+
+  const name = fromSelector(sel.name) || str(ex.meta.title) || ''
+  if (!name) return null
+  const description = fromSelector(sel.description) || str(ex.meta.description) || ''
+  const priceText = fromSelector(sel.price)
+  const imgEl = sel.image ? $(sel.image).first() : null
+  const imgSrc = imgEl && imgEl.length ? (imgEl.attr('src') ?? imgEl.attr('data-src')) : undefined
+  const images = imagesFrom(imgSrc ?? ex.meta.image, pageUrl)
+
+  let sku: string | null = null
+  if (sel.sku_regex) {
+    const m = $.root().text().match(new RegExp(sel.sku_regex))
+    if (m) sku = (m[1] ?? m[0]).trim()
+  }
+
+  return {
+    name,
+    description,
+    images,
+    price: num(priceText),
+    currency: null,
+    inStock: null,
+    sku,
+    author: null,
+  }
+}
+
+const READERS: Record<string, (ex: Extracted, pageUrl: string, cfg: CrawlConfig) => ProductRead | null> = {
   jsonld: readJsonLd,
   microdata: readMicrodata,
+  selector: readSelector,
 }
 
 // ── main ───────────────────────────────────────────────────────────────────────
@@ -292,10 +358,17 @@ Deno.serve(withErrorReporting('source-shop-crawl', async (req) => {
 
     const shopDomain = String(merchant.shop_domain ?? '')
     if (!shopDomain) return jsonResponse(skippedResponse('missing_config', ['shop_domain']), 200, req)
-    // The sitemap must belong to the registered merchant.
+    // The sitemap must belong to the registered merchant — UNLESS it's a synthetic
+    // sitemap we generated and self-host on our own domain (some storefronts have
+    // no sitemap of their own at all; the URL list is harvested once from their
+    // category pages and R2-hosted). That's not admin-supplied third-party content,
+    // and it doesn't weaken the actual boundary: every URL *inside* the sitemap is
+    // still independently host-checked against shopDomain in collectProductUrls()
+    // below, so a self-hosted sitemap can never smuggle a crawl target off-domain.
     try {
       const sh = new URL(cfg.sitemap).hostname.replace(/^www\./, '')
-      if (sh !== shopDomain.replace(/^www\./, '')) {
+      const selfHosted = /(^|\.)queer\.guide$/i.test(sh)
+      if (!selfHosted && sh !== shopDomain.replace(/^www\./, '')) {
         return jsonResponse(skippedResponse('sitemap_host_mismatch', [cfg.sitemap]), 200, req)
       }
     } catch { return jsonResponse(skippedResponse('invalid_sitemap_url', [cfg.sitemap]), 200, req) }
@@ -360,11 +433,12 @@ Deno.serve(withErrorReporting('source-shop-crawl', async (req) => {
         const ex = await extractContent(supabase, {
           url,
           render: cfg.render === true,
+          html: cfg.strategy === 'selector',
           timeoutMs: 12_000,
         })
         if (!ex) { extractFailures++; continue }
 
-        const read = reader(ex as unknown as Extracted, url)
+        const read = reader(ex as unknown as Extracted, url, cfg)
         if (!read || !read.name) { extractFailures++; continue }
         // A priceless row would commit (validateMarketplaceNormalized only WARNS on a
         // missing price) and render a blank price on the card. Skip instead.
@@ -381,7 +455,7 @@ Deno.serve(withErrorReporting('source-shop-crawl', async (req) => {
             // Tier 1 of the post-commit tag engine reads
             // marketplace_listing_sources.raw->>product_type. 'Book' resolves there at
             // 0.95, which stops Tier 2's \bring\b / \bgag\b rules from retyping a novel.
-            product_type: 'Book',
+            product_type: cfg.product_type || 'Book',
           },
         })
       }
@@ -420,7 +494,11 @@ Deno.serve(withErrorReporting('source-shop-crawl', async (req) => {
             // "Bücher" would fall through to 'other' — we always write the English
             // display string rather than the shop's own wording.
             subcategory,
-            brand: author, brand_name: author,
+            // marketplace_register_brands() only considers rows with a non-null
+            // brand — an author-less merchant (film/misc, no per-item author to
+            // browse by) would otherwise never register a brand at all. Fall back
+            // to the seller so it behaves like every other (non-book) merchant.
+            brand: author ?? businessName, brand_name: author ?? businessName,
             business_name: businessName,
             in_stock: d.availability as boolean | null,
             sku: d.isbn as string | null,

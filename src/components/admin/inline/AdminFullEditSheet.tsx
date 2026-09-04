@@ -211,6 +211,8 @@ function FieldDisplay({ field, value }: { field: FieldConfig; value: unknown }) 
         alt=""
         role="presentation"
         className="rounded-element border border-border max-w-32 max-h-32 object-cover"
+        loading="lazy"
+        decoding="async"
       />
     );
   }
@@ -226,6 +228,8 @@ function FieldDisplay({ field, value }: { field: FieldConfig; value: unknown }) 
               alt=""
               role="presentation"
               className="rounded-element border border-border w-12 h-12 object-cover"
+              loading="lazy"
+              decoding="async"
             />
           ))}
       </div>

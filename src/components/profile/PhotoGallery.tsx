@@ -175,6 +175,8 @@ export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
                             src={previewUrl}
                             alt="Preview"
                             className="w-full h-48 object-cover rounded-element"
+                            loading="lazy"
+                            decoding="async"
                           />
                         )}
                       </div>
@@ -253,6 +255,8 @@ export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
                     src={signedUrls[photo.storage_path] || ''}
                     alt={photo.caption || 'User photo'}
                     className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                    loading="lazy"
+                    decoding="async"
                   />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
                     <ZoomIn className="w-6 h-6 text-primary-foreground" />
@@ -324,6 +328,8 @@ export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
                   src={selectedImage}
                   alt=""
                   className="w-full max-h-[80vh] object-contain"
+                  loading="lazy"
+                  decoding="async"
                 />
                 <Button
                   className="absolute top-2 right-2"

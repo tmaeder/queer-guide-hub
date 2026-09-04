@@ -403,6 +403,8 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
                         src={selectedImage.url}
                         alt={selectedImage.alt || `Photo of ${name}`}
                         style={{ width: '100%', maxHeight: '80vh', objectFit: 'contain' }}
+                        loading="lazy"
+                        decoding="async"
                       />
 
                       {/* Image info overlay */}

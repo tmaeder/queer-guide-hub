@@ -100,6 +100,9 @@ export function MilestoneHero({ milestone }: { milestone: Milestone }) {
               src={imageUrl}
               alt={milestone.image_metadata?.alt ?? ''}
               onError={() => setImageFailed(true)}
+              loading="eager"
+              decoding="async"
+              fetchPriority="high"
               className={cn('w-full object-cover', restrained ? 'max-h-64' : 'aspect-[16/10]')}
             />
           </span>

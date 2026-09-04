@@ -42,6 +42,8 @@ export function OrgHero({ org }: { org: Organization }) {
           <img
             src={org.logo_url}
             alt=""
+            loading="eager"
+            decoding="async"
             className="-mt-16 h-24 w-24 rounded-element bg-background object-contain p-2"
           />
         )}

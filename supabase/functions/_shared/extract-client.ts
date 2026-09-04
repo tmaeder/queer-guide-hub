@@ -32,6 +32,10 @@ export interface ExtractResult {
   links?: { flat: string[]; external: string[] }
   method: 'fetch' | 'render'
   charCount: number
+  /** Raw fetched/rendered page HTML. Only present when the caller passed `html: true` —
+   *  for storefronts with no JSON-LD/microdata, where a selector-driven reader is the
+   *  only way to recover product data (see source-shop-crawl's 'selector' strategy). */
+  html?: string
 }
 
 const BREAKER = 'deepcrawl_extract'
@@ -40,7 +44,7 @@ const DEFAULT_TIMEOUT_MS = 12_000
 
 export async function extractContent(
   supabase: SupabaseClient,
-  opts: { url: string; render?: boolean; crawl?: boolean; timeoutMs?: number },
+  opts: { url: string; render?: boolean; crawl?: boolean; html?: boolean; timeoutMs?: number },
 ): Promise<ExtractResult | null> {
   const base = Deno.env.get('EXTRACT_WORKER_URL')
   // Dedicated secret for the extract worker handshake, decoupled from the global
@@ -72,6 +76,7 @@ export async function extractContent(
             url: opts.url,
             render: opts.render === true,
             crawl: opts.crawl === true,
+            html: opts.html === true,
           }),
         })
         if (!res.ok) throw new Error(`extract worker ${res.status}`)

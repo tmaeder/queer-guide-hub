@@ -11,8 +11,9 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { Badge } from '@/components/ui/badge';
-import { X, Check, ChevronDown} from 'lucide-react';
+import { Check, ChevronDown} from 'lucide-react';
 import { xStyle, type FilterOption } from './constants';
+import { RemovableFilterX } from './RemovableFilterX';
 
 // Extracted filter dropdown component to reduce repetition
 export function FilterDropdown({
@@ -110,11 +111,10 @@ export function FilterDropdown({
           {selected.map((val) => (
             <Badge key={val} variant="secondary">
               {val}
-              <X
+              <RemovableFilterX
                 style={xStyle}
-                role="button"
-                aria-label="Remove filter"
-                onClick={() => onToggle(val)}
+                label="Remove filter"
+                onRemove={() => onToggle(val)}
               />
             </Badge>
           ))}

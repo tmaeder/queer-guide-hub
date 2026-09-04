@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import type { GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -77,6 +77,18 @@ const DEMONYM: Record<string, string> = {
   icelandic: 'iceland',
 };
 
+/** Deterministic pseudo-random unit float in [0, 1) from a string key — stable
+ *  jitter per person instead of `Math.random()`, which is impure inside the
+ *  `useMemo` this feeds and would otherwise reshuffle every recompute. */
+function stableUnit(key: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < key.length; i++) {
+    h ^= key.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return ((h >>> 0) % 100000) / 100000;
+}
+
 function lookupCountry(
   nationality: string,
   index: Map<string, CountryCentroid>,
@@ -132,46 +144,55 @@ export function PersonalitiesMap({ personalities, height = 600 }: PersonalitiesM
     };
   }, []);
 
-  // Build features whenever the input list or country centroids change.
+  // Pure data transform, kept out of the map-sync effect so it only recomputes
+  // when the personality list or the (stable, fetched-once) centroids actually
+  // change — not on every re-render that happens to touch the effect's other
+  // deps (e.g. `navigate`'s identity shifting on a locale change).
+  const { features, unmappedCount: computedUnmapped } = useMemo(() => {
+    if (countriesLoading) return { features: [] as Feature[], unmappedCount: 0 };
+    const index = new Map(centroids.map((c) => [c.name, c]));
+    const built: Feature[] = [];
+    let unmapped = 0;
+    for (const p of personalities) {
+      if (!p.nationality) {
+        unmapped++;
+        continue;
+      }
+      const country = lookupCountry(p.nationality, index);
+      if (!country) {
+        unmapped++;
+        continue;
+      }
+      // Jitter slightly so points at the same country centroid don't pile on
+      // top — deterministic per-id so a recompute doesn't reshuffle the map.
+      const jitterLng = (stableUnit(p.id + ':lng') - 0.5) * 2;
+      const jitterLat = (stableUnit(p.id + ':lat') - 0.5) * 1.2;
+      built.push({
+        type: 'Feature',
+        geometry: {
+          type: 'Point',
+          coordinates: [country.longitude + jitterLng, country.latitude + jitterLat],
+        },
+        properties: {
+          id: p.id,
+          slug: p.slug ?? p.id,
+          name: p.name,
+          profession: p.profession ?? '',
+          image_url: p.image_url ?? '',
+        },
+      });
+    }
+    return { features: built, unmappedCount: unmapped };
+  }, [personalities, centroids, countriesLoading]);
+
+  // Apply the computed features to the map whenever they change.
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
     if (countriesLoading) return;
-    const index = new Map(centroids.map((c) => [c.name, c]));
     {
-      const features: Feature[] = [];
-      let unmapped = 0;
-      for (const p of personalities) {
-        if (!p.nationality) {
-          unmapped++;
-          continue;
-        }
-        const country = lookupCountry(p.nationality, index);
-        if (!country) {
-          unmapped++;
-          continue;
-        }
-        // Jitter slightly so points at the same country centroid don't pile on top.
-        const jitterLng = (Math.random() - 0.5) * 2;
-        const jitterLat = (Math.random() - 0.5) * 1.2;
-        features.push({
-          type: 'Feature',
-          geometry: {
-            type: 'Point',
-            coordinates: [country.longitude + jitterLng, country.latitude + jitterLat],
-          },
-          properties: {
-            id: p.id,
-            slug: p.slug ?? p.id,
-            name: p.name,
-            profession: p.profession ?? '',
-            image_url: p.image_url ?? '',
-          },
-        });
-      }
-
       // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-      setUnmappedCount(unmapped);
+      setUnmappedCount(computedUnmapped);
       setLoading(false);
 
       const geojson = { type: 'FeatureCollection' as const, features };
@@ -264,7 +285,7 @@ export function PersonalitiesMap({ personalities, height = 600 }: PersonalitiesM
             <div style="display:flex;gap:8px;align-items:center;">
               ${
                 props.image_url
-                  ? `<img src="${props.image_url}" alt="" referrerpolicy="no-referrer" style="width:40px;height:40px;border-radius:6px;object-fit:cover;flex-shrink:0;" />`
+                  ? `<img src="${props.image_url}" alt="" referrerpolicy="no-referrer" loading="lazy" decoding="async" style="width:40px;height:40px;border-radius:6px;object-fit:cover;flex-shrink:0;" />`
                   : ''
               }
               <div style="min-width:0;">
@@ -297,7 +318,7 @@ export function PersonalitiesMap({ personalities, height = 600 }: PersonalitiesM
       if (map.isStyleLoaded()) apply();
       else map.once('load', apply);
     }
-  }, [personalities, navigate, centroids, countriesLoading]);
+  }, [features, computedUnmapped, navigate, countriesLoading]);
 
   return (
     <div>

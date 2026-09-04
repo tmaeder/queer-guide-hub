@@ -231,6 +231,8 @@ export default function IntimateDiscovery() {
                       <img
                         src={c.avatar_url}
                         alt=""
+                        loading="lazy"
+                        decoding="async"
                         className="h-12 w-12 object-cover rounded-element"
                       />
                     ) : (

@@ -57,6 +57,8 @@ interface EmailIngestion {
 
 type StatusFilter = 'all' | 'completed' | 'failed' | 'no_content' | 'processing';
 
+const PAGE_SIZE = 25;
+
 const STATUS_BADGE_VARIANT: Record<string, 'default' | 'destructive' | 'secondary' | 'outline'> = {
   completed: 'default',
   failed: 'destructive',
@@ -92,6 +94,7 @@ export function EmailIngestionsManager() {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [expandedJson, setExpandedJson] = useState<Set<string>>(new Set());
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   const fetchIngestions = useCallback(async () => {
     try {
@@ -141,6 +144,11 @@ export function EmailIngestionsManager() {
     }
     return true;
   });
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset pagination when the filtered set changes underneath it, not a data sync.
+    setVisibleCount(PAGE_SIZE);
+  }, [statusFilter, searchQuery]);
 
   const totalCount = ingestions.length;
   const completedCount = ingestions.filter((i) => i.status === 'completed').length;
@@ -254,7 +262,7 @@ export function EmailIngestionsManager() {
         </Card>
       ) : (
         <div className="flex flex-col gap-4">
-          {filtered.map((ing) => (
+          {filtered.slice(0, visibleCount).map((ing) => (
             <Collapsible key={ing.id}>
               <Card
                 style={{
@@ -478,6 +486,16 @@ export function EmailIngestionsManager() {
               </Card>
             </Collapsible>
           ))}
+          {filtered.length > visibleCount && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="self-center"
+              onClick={() => setVisibleCount((v) => v + PAGE_SIZE)}
+            >
+              Show more ({filtered.length - visibleCount} remaining)
+            </Button>
+          )}
         </div>
       )}
     </div>

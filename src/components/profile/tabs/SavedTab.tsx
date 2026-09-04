@@ -237,6 +237,8 @@ export function SavedTab() {
                   src={item.image_url}
                   alt={item.title}
                   className="w-full h-full object-cover transition-transform duration-fast group-hover:scale-105"
+                  loading="lazy"
+                  decoding="async"
                 />
                 <div className="absolute top-2 left-2">
                   <Badge variant="secondary">
@@ -311,6 +313,8 @@ export function SavedTab() {
                   src={item.image_url}
                   alt={item.title}
                   className="w-20 h-20 object-cover rounded-element transition-transform duration-fast group-hover:scale-105"
+                  loading="lazy"
+                  decoding="async"
                 />
               </div>
             )}

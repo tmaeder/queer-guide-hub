@@ -213,9 +213,6 @@ verify_jwt = false
 [functions.source-airbnb]
 verify_jwt = false
 
-[functions.source-airports]
-verify_jwt = false
-
 [functions.source-awin]
 verify_jwt = false
 
@@ -377,10 +374,6 @@ verify_jwt = false
 
 [functions.existence-external-osm]
 verify_jwt = false
-
-# Community "report as closed" — requires a real user JWT.
-[functions.report-existence]
-verify_jwt = true
 
 # Workflow/pipeline functions (invoked by dispatcher with service-role bearer)
 [functions.marketplace-image-mirror]

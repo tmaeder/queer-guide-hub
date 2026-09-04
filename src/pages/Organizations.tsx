@@ -36,6 +36,8 @@ function OrgCard({ org }: { org: OrgListItem }) {
               <img
                 src={org.logo_url}
                 alt=""
+                loading="lazy"
+                decoding="async"
                 className="h-10 w-10 shrink-0 rounded-element object-contain"
               />
             ) : (

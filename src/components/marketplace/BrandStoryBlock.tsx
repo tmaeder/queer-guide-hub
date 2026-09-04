@@ -39,6 +39,8 @@ export function BrandStoryBlock({ listing }: { listing: MarketplaceListing }) {
               src={brand.logo_url}
               alt=""
               className="h-10 w-10 rounded-element bg-background object-contain p-1"
+              loading="lazy"
+              decoding="async"
             />
           ) : (
             <span className="flex h-10 w-10 items-center justify-center rounded-element bg-surface-container font-display text-title">

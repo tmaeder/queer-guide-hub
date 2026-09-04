@@ -85,7 +85,13 @@ export function InstallBanner() {
       aria-label={t('pwa.install.ariaLabel')}
       className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-[1300] w-[calc(100%-32px)] sm:w-auto max-w-[420px] bg-background/95 backdrop-blur-md p-4 flex items-start gap-4 animate-in slide-in-from-bottom-4 fade-in duration-normal rounded-container"
     >
-      <img src="/icons/icon-96.png" alt="" className="w-10 h-10 rounded-element shrink-0 mt-0.5" />
+      <img
+        src="/icons/icon-96.png"
+        alt=""
+        className="w-10 h-10 rounded-element shrink-0 mt-0.5"
+        loading="lazy"
+        decoding="async"
+      />
       <div className="flex-1 min-w-0">
         {showIOSHint ? (
           <>

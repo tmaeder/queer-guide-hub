@@ -3,6 +3,7 @@ import { useParams, useSearchParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { fetchAdminPersonalityById } from '@/hooks/usePageFetchers';
 import { personalityStatus } from '@/lib/personalityStatus';
+import { AdminCardSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 /**
  * Admin-only person data sheet ("Datenblatt"), ported from the standalone PHP
@@ -107,8 +108,8 @@ export default function PersonalityDataSheet() {
     return [nm, country].filter(Boolean).join(', ');
   }, [data]);
 
-  if (isLoading) return <div className="p-8">Lädt…</div>;
-  if (error || !data) return <div className="p-8">Person nicht gefunden.</div>;
+  if (isLoading) return <AdminCardSkeleton className="m-8" />;
+  if (error || !data) return <div className="p-8">Not found.</div>;
 
   const p = data;
   const st = personalityStatus(p);

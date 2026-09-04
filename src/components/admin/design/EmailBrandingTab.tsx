@@ -144,7 +144,7 @@ export function EmailBrandingTab({ controller }: { controller: DesignSettingsCon
             style={{ backgroundColor: effective.wrapper_bg, color: effective.wrapper_fg }}
           >
             {email.logo_url ? (
-              <img src={email.logo_url} alt="Email logo" className="mb-4 h-8 w-auto" />
+              <img src={email.logo_url} alt="Email logo" className="mb-4 h-8 w-auto" loading="lazy" decoding="async" />
             ) : (
               <p className="mb-4 text-15 font-medium">{effective.from_name}</p>
             )}

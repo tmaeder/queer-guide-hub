@@ -410,6 +410,8 @@ export const BulkCreatePersonalities = () => {
                             onError={(e) => {
                               (e.currentTarget as HTMLImageElement).style.display = 'none';
                             }}
+                            loading="lazy"
+                            decoding="async"
                           />
                         )}
                         <div className="flex-1">

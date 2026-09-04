@@ -99,6 +99,8 @@ export function TravelDealCard({
                 role="presentation"
                 className="rounded-full shrink-0"
                 style={{ width: 20, height: 20 }}
+                loading="lazy"
+                decoding="async"
                 onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                   e.currentTarget.style.display = 'none';
                 }}

@@ -55,6 +55,8 @@ export function UnifiedBookingCard({ result, originCity, onAddToTrip }: UnifiedB
         <img
           src={result.imageUrl}
           alt={result.title}
+          loading="lazy"
+          decoding="async"
           style={{ width: '100%', height: 140, objectFit: 'cover' }}
         />
       )}

@@ -92,6 +92,8 @@ export function ImagesField({ field, value, onChange, error, disabled }: FieldPr
                   role="presentation"
                   className="w-full h-24 object-cover"
                   onError={() => handleImageError(url)}
+                  loading="lazy"
+                  decoding="async"
                 />
               )}
 

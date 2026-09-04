@@ -66,6 +66,8 @@ export function BrandSpotlight() {
                 src={brand.logo_url}
                 alt=""
                 className="mb-4 h-12 w-12 rounded-element bg-background object-contain p-1.5"
+                loading="lazy"
+                decoding="async"
               />
             ) : (
               <span className="mb-4 flex h-12 w-12 items-center justify-center rounded-element bg-surface-container font-display text-title">

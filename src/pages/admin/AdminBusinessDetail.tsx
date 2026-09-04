@@ -112,7 +112,13 @@ export default function AdminBusinessDetail() {
         title={
           <span className="flex items-center gap-2">
             {org.logo_url && (
-              <img src={org.logo_url} alt="" className="h-8 w-8 rounded-badge object-cover" />
+              <img
+                src={org.logo_url}
+                alt=""
+                loading="lazy"
+                decoding="async"
+                className="h-8 w-8 rounded-badge object-cover"
+              />
             )}
             {org.name}
           </span>

@@ -4,8 +4,9 @@ import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { X, ChevronDown } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { FilterList } from './FilterList';
+import { RemovableFilterX } from './RemovableFilterX';
 
 interface WhatYouNeedProps {
   amenitiesSelected: string[];
@@ -126,11 +127,10 @@ export function WhatYouNeedDropdown({
           ].map(({ v, label, toggle }) => (
             <Badge key={v} variant="secondary">
               {label}
-              <X
+              <RemovableFilterX
                 className="w-3 h-3 cursor-pointer p-2 -m-2 box-content"
-                role="button"
-                aria-label="Remove filter"
-                onClick={() => toggle(v)}
+                label="Remove filter"
+                onRemove={() => toggle(v)}
               />
             </Badge>
           ))}

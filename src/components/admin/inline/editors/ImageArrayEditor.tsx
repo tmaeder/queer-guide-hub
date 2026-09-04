@@ -35,7 +35,7 @@ export function ImageArrayEditor({ field, initialValue, onSave, onCancel, saving
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
         {items.map((src, idx) => (
           <div key={`${src}-${idx}`} className="relative aspect-square overflow-hidden rounded-element border border-border">
-            <img src={src} alt="" role="presentation" className="w-full h-full object-cover" />
+            <img src={src} alt="" role="presentation" className="w-full h-full object-cover" loading="lazy" decoding="async" />
             <div className="absolute inset-0 flex flex-col justify-between p-1 opacity-0 hover:opacity-100 transition-opacity bg-foreground/30">
               <div className="flex justify-end">
                 <button

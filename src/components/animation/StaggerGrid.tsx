@@ -4,8 +4,6 @@ interface StaggerGridProps {
   children: React.ReactNode;
   /** Kept for API compatibility — no longer staggers entrance. */
   stagger?: number;
-  /** @deprecated kept for source compatibility. */
-  childSelector?: string;
   className?: string;
   style?: React.CSSProperties;
   /** Per-child class applied to each item wrapper. Either a single string

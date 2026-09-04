@@ -443,6 +443,8 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
                           src={hotel.imageUrl}
                           alt={hotel.title}
                           className="w-14 h-14 object-cover rounded-element"
+                          loading="lazy"
+                          decoding="async"
                         />
                       )}
                       <div className="flex-1 min-w-0">

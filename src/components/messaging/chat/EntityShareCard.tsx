@@ -21,6 +21,8 @@ export function EntityShareCard({ meta, note }: { meta: EntityShareMeta; note?: 
             alt=""
             className="rounded-element object-cover shrink-0"
             style={{ width: 44, height: 44 }}
+            loading="lazy"
+            decoding="async"
           />
         ) : (
           <div

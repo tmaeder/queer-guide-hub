@@ -464,6 +464,8 @@ export function AvatarChooser({ email, currentUrl, currentConfig, onSave }: Avat
                 src={importPreview}
                 alt="Imported avatar preview"
                 className="w-16 h-16 rounded-full object-cover"
+                loading="lazy"
+                decoding="async"
               />
               <div className="flex gap-2">
                 <Button onClick={confirmImport} disabled={busy}>
