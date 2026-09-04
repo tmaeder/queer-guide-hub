@@ -44,7 +44,7 @@
 update public.admin_automations
 set enabled = false,
     description = coalesce(description, '')
-      || ' [RETIRED 2026-09-03 (20261218110000): the per-venue Overpass matcher resolved'
+      || ' [RETIRED 2026-09-03 (20261228110000): the per-venue Overpass matcher resolved'
       || ' 2.7% of 916 probes (25 venues) and never persisted the OSM element id it'
       || ' resolved, so every pass re-derived identity by name. Superseded by the bulk'
       || ' regional-extract join, which matches once and writes the ref into venue_sources.'
@@ -73,7 +73,7 @@ declare
   v_marked  boolean;
   v_jobs    integer;
 begin
-  select enabled, description like '%[RETIRED 2026-09-03 (20261218110000)%'
+  select enabled, description like '%[RETIRED 2026-09-03 (20261228110000)%'
     into v_enabled, v_marked
   from public.admin_automations
   where slug = 'venue_accessibility_osm';
