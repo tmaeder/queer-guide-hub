@@ -450,6 +450,50 @@ if (!hygieneRes.ok) {
   }
 }
 
+// 5c. News sources the rotation is not reaching (2026-09-03).
+//
+// news_sources_eligible ordered `reliability_score DESC, last_fetched_at ASC` —
+// reliability PRIMARY — while source-rss-news asks for 15 rows a run. 293 live
+// sources sat at score 1.000 and exactly two at 0.999, so those two ranked ~294
+// and could never enter the window. NewsData.io and GNews.io went 53 days
+// without a fetch while every health column on the row read healthy:
+// is_active=true, auto_paused=false, consecutive_failures=0, last_error=''.
+//
+// Nothing could have caught that. consecutive_failures counts FAILED fetches
+// and a fetch that never runs cannot fail, so the entire existing health
+// apparatus was measuring a source that was not being asked to do anything.
+// This check asks the only question that distinguishes the state: when was it
+// last actually visited?
+//
+// 20280423151137 inverted the sort keys so staleness outranks reliability, and
+// reliability now scales the re-fetch interval instead. Starvation is therefore
+// structurally impossible and this has no baseline allowance — one source over
+// the threshold means the ordering regressed or a new exclusion appeared.
+const starveRes = await fetch(`${BASE}/rest/v1/rpc/news_source_starvation_stats`, {
+  method: 'POST',
+  headers: { ...headers, 'Content-Type': 'application/json' },
+  body: '{}',
+})
+if (!starveRes.ok) {
+  // An unreachable probe is not a clean result. Same rule as the absent-key
+  // branch above: "nobody looked" must never print like "nothing found".
+  console.warn(`⚠ news_source_starvation_stats → HTTP ${starveRes.status} —`)
+  console.warn('  20280423151137 is not applied, so this check measured NOTHING (it did not pass).')
+} else {
+  const starve = await starveRes.json()
+  const starved = starve.starved ?? {}
+  const starvedNames = Object.keys(starved)
+  if (starvedNames.length > 0) {
+    console.error(`✗ ${starvedNames.length} active news source(s) not fetched in over 7 days: ${JSON.stringify(starved)}`)
+    console.error('  These are eligible, unpaused and error-free — they are simply never selected.')
+    console.error('  Check news_sources_eligible ordering first: if the fleet is saturated at one')
+    console.error(`  reliability_score (currently ${starve.distinct_reliability_scores} distinct value(s) across`)
+    console.error(`  ${starve.active_sources} active sources), a lower score is an exile, not a demotion.`)
+    FAILED = true
+  }
+  console.log(`✓ News source rotation: 0 starved of ${starve.active_sources} active (no baseline)`)
+}
+
 // 6. Search reindex drain (P1 overhaul, 2026-08): entity writes enqueue into
 //    search_reindex_queue; search_reindex_drain applies them every minute. When
 //    it stops, nothing reaches search_documents and every newly committed
