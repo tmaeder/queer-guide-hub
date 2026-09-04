@@ -37,7 +37,7 @@ let body = res.ok ? null : await res.text()
 //
 // Deliberately LOUD. A retry that quietly succeeds is how a function creeps back
 // toward the ceiling unnoticed — which is exactly what happened between
-// 20261021110000 and 20270108100000. If this appears in the logs, re-measure the
+// 20261021110000 and 20270108164512. If this appears in the logs, re-measure the
 // RPC per arm; do not raise the retry count.
 if (!res.ok && body?.includes('57014')) {
   console.warn('⚠ release_gate_checks hit the statement timeout (57014) — no gate was evaluated. Retrying once.')
@@ -46,7 +46,7 @@ if (!res.ok && body?.includes('57014')) {
   body = res.ok ? null : await res.text()
   console.warn(
     `⚠ retry ${res.ok ? 'SUCCEEDED' : 'FAILED'} after ${Date.now() - t0}ms. The RPC is near its 8s ` +
-      'ceiling — re-measure per arm (see migration 20270108100000) rather than retrying harder.',
+      'ceiling — re-measure per arm (see migration 20270108164512) rather than retrying harder.',
   )
 }
 
