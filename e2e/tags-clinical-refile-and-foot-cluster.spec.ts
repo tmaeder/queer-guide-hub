@@ -47,14 +47,22 @@ function prerendered(html: string): string {
 function articleText(html: string): string {
   const m = html.match(/<article[\s\S]*?<\/article>/i);
   if (!m) return '';
-  return m[0]
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&#39;|&apos;/g, "'")
-    .replace(/&quot;/g, '"')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
+  return (
+    m[0]
+      .replace(/<[^>]+>/g, ' ')
+      // `&amp;` is decoded LAST, not first. Decoding it first turns
+      // `&amp;quot;` into `&quot;` and the next rule then turns that into `"`,
+      // so text that legitimately contained the literal string `&quot;` comes
+      // out as a quote character — double-unescaping. CodeQL's js/double-escaping
+      // caught this on the first version of this file, which had the `&amp;`
+      // rule at the top.
+      .replace(/&#39;|&apos;/g, "'")
+      .replace(/&quot;/g, '"')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/\s+/g, ' ')
+      .trim()
+  );
 }
 
 function robotsOf(html: string): string {
