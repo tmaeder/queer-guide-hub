@@ -62,6 +62,29 @@ describe('buildLegalLine', () => {
     expect(line[0].slug).toBeUndefined();
   });
 
+  // A country that decriminalised and later RE-criminalised carries both facts:
+  // import-ilga-data copies decrim_date_1/2 AND illegal_since verbatim with no `legal`
+  // gate. Without this guard the page renders a positive "Same-sex activity
+  // decriminalised" station for a country where it is currently a crime — and because
+  // `illegal_since` is in no sincePaths, the re-criminalization year can never appear to
+  // balance it.
+  it('does not derive a decriminalisation station while the country still criminalises', () => {
+    const line = buildLegalLine({
+      country: { lgbti_criminalization: { decrim_year_1: '1969', legal: false } },
+    });
+    expect(line.filter((s) => s.section === 'criminalisation')).toEqual([]);
+  });
+
+  it('still derives decriminalisation when the country is not criminalising', () => {
+    // legal:true AND legal absent must both keep the station — only an explicit `false`
+    // suppresses it, so an unknown legal status does not silently erase real history.
+    for (const crim of [{ decrim_year_1: '1969', legal: true }, { decrim_year_1: '1969' }]) {
+      const line = buildLegalLine({ country: { lgbti_criminalization: crim } });
+      expect(line).toHaveLength(1);
+      expect(line[0]).toMatchObject({ year: 1969, label: { kind: 'decriminalised' } });
+    }
+  });
+
   it('decodes the unions column, which is a JSON string not an object', () => {
     const line = buildLegalLine({
       country: {

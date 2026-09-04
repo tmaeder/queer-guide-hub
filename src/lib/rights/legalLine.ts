@@ -182,9 +182,22 @@ export function buildLegalLine({
       }
     }
 
+    // A country that decriminalised and later RE-criminalised carries both facts:
+    // `import-ilga-data` copies `decrim_date_1/2` and `illegal_since` verbatim with no
+    // `legal` gate (index.ts:189-191). The code this replaced gated the decriminalisation
+    // station on `crimLegal === true`; without that gate a currently-criminalizing
+    // country renders a positive "Same-sex activity decriminalised" station — and since
+    // `illegal_since` is in no `sincePaths`, the re-criminalization year can never appear
+    // to balance it. On a safety surface that is the wrong direction to be wrong in, so
+    // the gate is restored here rather than left to the label.
+    const currentlyCriminalizing =
+      (country.lgbti_criminalization as Record<string, unknown> | null | undefined)?.legal ===
+      false;
+
     for (const group of derived.values()) {
       if (covered.has(`${group.year}:${group.section}`)) continue;
       const isDecrim = group.section === 'criminalisation';
+      if (isDecrim && currentlyCriminalizing) continue;
       stations.push({
         id: `ilga:${group.section}:${group.year}`,
         year: group.year,
