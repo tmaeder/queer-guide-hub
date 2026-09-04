@@ -3,7 +3,7 @@ name: city-region-backfill
 # Weekly fill of cities.region_name by reverse-geocoding coordinates.
 #
 # WHY A WORKFLOW AND NOT A CRON. The sibling job for postal_code
-# (geo_address_enqueue_backlog, 20270108100500) feeds an edge-function drain,
+# (geo_address_enqueue_backlog, 20270301100500) feeds an edge-function drain,
 # because geo_address_queue already exists for it. Cities cannot use that queue
 # — its CHECK is `entity_type in ('venue','event','hotel','organization')` — and
 # the work does not fit an edge function anyway: 724 cities at Photon's

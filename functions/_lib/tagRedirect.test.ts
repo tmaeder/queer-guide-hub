@@ -69,7 +69,7 @@ const tag_slug_redirects: Row[] = [
   // new_slug is stale here and tag_id is right. Resolving through new_slug
   // instead of the id would emit a 301 into a 404.
   //
-  // `m-nchen` was the live prod example when this was written; 20270301100600
+  // `m-nchen` was the live prod example when this was written; 20270301100000
   // repaired that row (its tag_id pointed at `munchen`, since merged into
   // `munich`) and put the repoint in the merge trigger. The fixture stays — the
   // property it guards is the resolver's, not that row's, and a clean corpus is
