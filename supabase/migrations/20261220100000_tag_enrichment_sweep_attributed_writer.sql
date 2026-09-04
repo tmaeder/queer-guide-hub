@@ -56,9 +56,42 @@
 --      those rows at the head of the queue forever, which is the exact bug the
 --      edge function's own "stamp the cursor FIRST" comment warns about.
 --
--- Sensitive/adult rows are refused outright, mirroring `tag_prose_apply`:
--- the edge function already routes them to `queueDescription`, and this is
--- defence in depth against a bug in that branch.
+-- Sensitive/adult rows are refused for the CONTENT kinds, mirroring
+-- `tag_prose_apply`: the edge function already routes them to
+-- `queueDescription`, and this is defence in depth against a bug in that
+-- branch.
+--
+--   3. `links` is deliberately EXEMPT from that refusal, and the exemption is
+--      load-bearing rather than a loosening. `wikidata_id` / `wikipedia_url`
+--      are IDENTITY, not content: nothing about them is rendered as prose, and
+--      the review path the refusal exists to force is a prose review. A first
+--      draft of this migration refused them along with the rest, which read as
+--      conservative and was not — measured on prod, 1,360 of the 2,107 active
+--      sensitive/adult tags carry neither identifier, 358 of them with
+--      `human_reviewed = false`, i.e. writable today and written today. The
+--      edge function's links branch (`if (wiki && needsLinks)`) is the ONE RPC
+--      call site with no upstream `sensitive` test shadowing this refusal, so
+--      the raise would have been swallowed by its `if (!e && linked)`, no
+--      counter would have moved, and nothing would have been logged.
+--
+--      The cost is not merely that those rows stop gaining identity — which
+--      also starves the weekly `tag_medical_codes_sync` and
+--      `tag_wikidata_hierarchy` rebuilds, both keyed on `wikidata_id`. It is
+--      that `needsLinks` stays true forever, and the batch selector orders by
+--      `quality_score asc nulls first`: these rows score 10-17, so they are at
+--      the HEAD of the work list and would be re-selected every two hours,
+--      re-paying a Wikipedia summary plus a `wbgetentities` fetch each time,
+--      forever, with zero progress. That is the `cities_due_for_refresh`
+--      selector-starvation failure exactly.
+--
+--      Safety does not rest on this refusal anyway, and that is the real
+--      argument. Adopting a wiki identity is already gated by
+--      `mayAdoptWikiIdentity` — title agreement, P31 class plausibility, and
+--      on a sense category (Fetishes / Gear / Slang / …) a requirement that
+--      the extract corroborate the queer sense. That guard is strictly better
+--      targeted than `is_adult`, because the wrong-sense risk tracks the
+--      CATEGORY, not the sensitivity flag: "Vacuum Pump" under Fetishes is the
+--      danger, and it is caught there whether or not the row is flagged adult.
 
 create or replace function public.tag_enrichment_apply(
   p_tag_id uuid,
@@ -86,7 +119,8 @@ begin
     return true;
   end if;
 
-  if v_row.is_sensitive or v_row.is_adult then
+  -- Content kinds only; `links` is identity and stays reachable. See note 3.
+  if p_kind <> 'links' and (v_row.is_sensitive or v_row.is_adult) then
     raise exception 'tag_enrichment_apply: % is sensitive/adult — review path only', p_tag_id;
   end if;
   -- Not an error: this is the row the sweep already fails to write today.
@@ -113,7 +147,7 @@ end;
 $fn$;
 
 comment on function public.tag_enrichment_apply(uuid, text, uuid, text, text, text, text) is
-  'Attributed writer for tag-enrichment-sweep (app.actor=llm:tag-enrichment-sweep). PostgREST cannot set a session GUC, so without this the sweep''s writes log as the undeclared fallback ''system:trigger'' and misdirect any later investigation. Per-kind UPDATEs keep the column-scoped search trigger from firing on cursor stamps. Refuses sensitive/adult outright; returns false on human_reviewed rows, preserving the skip the audit guard already produces. Returns true when a row was written.';
+  'Attributed writer for tag-enrichment-sweep (app.actor=llm:tag-enrichment-sweep). PostgREST cannot set a session GUC, so without this the sweep''s writes log as the undeclared fallback ''system:trigger'' and misdirect any later investigation. Per-kind UPDATEs keep the column-scoped search trigger from firing on cursor stamps. Refuses sensitive/adult rows for the CONTENT kinds but NOT for ''links'' — wiki identity is not prose, adoption is already gated by mayAdoptWikiIdentity, and refusing it strands 1,360 tags at the head of a selector ordered by quality_score. Returns false on human_reviewed rows for every kind, preserving the skip the audit guard already produces. Returns true when a row was written.';
 
 revoke all on function public.tag_enrichment_apply(uuid, text, uuid, text, text, text, text)
   from public, anon, authenticated;
@@ -148,6 +182,40 @@ begin
   end if;
   if (select description from unified_tags where id = v_id) <> 'Probe prose.' then
     raise exception 'probe: human_reviewed row was modified';
+  end if;
+
+  -- A sensitive/adult row: content is refused, identity is NOT. Both halves are
+  -- asserted, because each alone passes for the wrong reason — a function that
+  -- refused everything would satisfy the first, and one that refused nothing
+  -- would satisfy the second.
+  update unified_tags
+     set human_reviewed = false, is_adult = true, wikidata_id = null, wikipedia_url = null
+   where id = v_id;
+
+  begin
+    perform public.tag_enrichment_apply(v_id, 'description', p_description => 'Must not land.');
+    raise exception 'probe: sensitive/adult row accepted a description write';
+  exception
+    when sqlstate 'P0001' then
+      if sqlerrm not like '%sensitive/adult%' then raise; end if;
+  end;
+
+  if not public.tag_enrichment_apply(
+       v_id, 'links', p_wikidata_id => 'Q_PROBE', p_wikipedia_url => 'https://example.invalid/probe'
+     ) then
+    raise exception 'probe: sensitive/adult row refused a links write — the narrowing is back';
+  end if;
+  if (select wikidata_id from unified_tags where id = v_id) is distinct from 'Q_PROBE' then
+    raise exception 'probe: links write returned true but wrote nothing';
+  end if;
+
+  -- human_reviewed still outranks the links exemption.
+  update unified_tags set human_reviewed = true where id = v_id;
+  if public.tag_enrichment_apply(v_id, 'links', p_wikidata_id => 'Q_SHOULD_NOT_LAND') then
+    raise exception 'probe: human_reviewed row accepted a links write';
+  end if;
+  if (select wikidata_id from unified_tags where id = v_id) <> 'Q_PROBE' then
+    raise exception 'probe: human_reviewed links row was modified';
   end if;
 
   delete from tag_change_log where tag_id = v_id;

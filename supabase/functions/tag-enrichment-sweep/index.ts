@@ -348,8 +348,30 @@ async function categorizePass(
         p_category: cat.name,
       })
       if (!error && applied) stats.cat_applied++
+      else if (error) logRpcRefusal('category', tag.name, error)
     }
   }
+}
+
+/**
+ * A refused `tag_enrichment_apply` call is a CONTRACT drift between this
+ * function and the RPC, and it must never be silent.
+ *
+ * Every call site gates its counter on the RPC returning true, which is right,
+ * but `if (!e && x)` also discards `e`. That is precisely how the sensitive/
+ * adult refusal nearly shipped as an invisible narrowing of the links branch:
+ * no counter would have moved, no row would have changed, and the only symptom
+ * would have been a batch that quietly re-fetched the same tags forever.
+ *
+ * Declining a row is not an error and does not come through here — the RPC
+ * returns false for `human_reviewed`. Reaching this function means the RPC
+ * RAISED, which is either a sensitive/adult row on a content kind or an
+ * unknown `p_kind`; both are bugs in the caller, not data conditions.
+ */
+function logRpcRefusal(kind: string, tagName: string, e: { message?: string }): void {
+  console.log(
+    `tag-enrichment-sweep: tag_enrichment_apply(${kind}) REFUSED "${tagName}": ${e.message ?? 'unknown error'}`,
+  )
 }
 
 interface ProseRow {
@@ -830,6 +852,14 @@ Deno.serve(async (req) => {
         }
       }
 
+      // NOTE: this is the one RPC call site with no upstream `sensitive` test.
+      // That is deliberate and matches the RPC, whose sensitive/adult refusal
+      // exempts `p_kind: 'links'` — wiki identity is not prose and the review
+      // path the refusal forces is a prose review. Do NOT "make this
+      // consistent" by adding a `sensitive` gate here: 1,360 of the 2,107
+      // active sensitive/adult tags have neither identifier, they sort to the
+      // HEAD of this batch on `quality_score asc`, and skipping them leaves
+      // `needsLinks` true so they are re-fetched every two hours forever.
       if (wiki && needsLinks) {
         const { data: linked, error: e } = await supabase.rpc('tag_enrichment_apply', {
           p_tag_id: tag.id,
@@ -840,6 +870,8 @@ Deno.serve(async (req) => {
         if (!e && linked) {
           stats.links_applied++
           didSomething = true
+        } else if (e) {
+          logRpcRefusal('links', tag.name, e)
         }
       }
 
@@ -864,6 +896,8 @@ Deno.serve(async (req) => {
             if (!e && wrote) {
               stats.desc_applied++
               didSomething = true
+            } else if (e) {
+              logRpcRefusal('description', tag.name, e)
             }
           }
         } else {
