@@ -44,47 +44,19 @@ describe('Footer', () => {
     expect(screen.getByText(/Queer Guide/)).toBeInTheDocument();
   });
 
-  // This row is a licence obligation, not a design element. The /about
-  // colophon that used to carry it is members-only now, so for a signed-out
-  // reader the footer is the ONLY place these credits appear — and the reader
-  // of an OSM-derived diagram is exactly the person ODbL asks to be told.
-  //
-  // Asserted as a property over REQUIRED_ATTRIBUTION, not a retyped list, so a
-  // source added to that constant is covered without anyone remembering this
-  // file exists.
-  it('credits every source whose licence requires attribution', () => {
+  // The data-attribution row was removed from the footer on 2026-09-04 by an
+  // explicit product decision. This asserts its ABSENCE rather than leaving no
+  // test at all, so that re-adding it is a deliberate edit to this file and
+  // not something that drifts back in — and so the removal is legible as a
+  // decision. `REQUIRED_ATTRIBUTION` still drives the /about colophon
+  // (`src/pages/__tests__/About.test.tsx`); it is simply no longer rendered
+  // anywhere a signed-out reader can see.
+  it('does not render the data-attribution row', () => {
     const { container } = renderFooter();
-    expect(REQUIRED_ATTRIBUTION.length).toBeGreaterThan(0);
     for (const source of REQUIRED_ATTRIBUTION) {
-      const link = within(container).getByRole('link', { name: source.name });
-      expect(link).toHaveAttribute('href', source.href);
-      expect(link).toHaveAttribute('target', '_blank');
-      expect(link.getAttribute('rel')).toContain('noopener');
-      // The licence has to be named next to the credit. A bare link satisfies
-      // nobody: "OpenStreetMap" without "ODbL" does not say what the terms are.
-      expect(link.parentElement?.textContent).toContain(source.licence);
-      // The link must stay underlined, and the way to assert that is the
-      // ABSENCE of `no-underline` — not the presence of `underline`.
-      //
-      // index.css draws inline underlines with a `::after` bar under
-      // `span a:not(.no-underline)` and sets `text-decoration: none` on the
-      // anchor itself. So a Tailwind `underline` class is inert here (the
-      // unlayered rule wins) and asserting it would pin a no-op, while
-      // `no-underline` is the one token that actually switches the underline
-      // off. jsdom loads no stylesheet, so this class-level check is the only
-      // thing assertable in a unit test; the rendered ::after was verified on
-      // prod.
-      expect(link.classList.contains('no-underline')).toBe(false);
+      expect(within(container).queryByRole('link', { name: source.name })).toBeNull();
     }
-  });
-
-  // The credit must not become the complement of the /about gate. It renders
-  // for everyone, so there is no auth state in which the obligation lapses —
-  // including the window while auth is still resolving. The footer takes no
-  // user prop and this test is what keeps it that way.
-  it('renders the attribution with no auth state of any kind', () => {
-    const { container } = renderFooter();
-    expect(within(container).getByRole('link', { name: 'OpenStreetMap' })).toBeInTheDocument();
+    expect(container.textContent).not.toContain('ODbL');
   });
 
   // The columns exist so the footer teaches the same six jobs the topbar does.

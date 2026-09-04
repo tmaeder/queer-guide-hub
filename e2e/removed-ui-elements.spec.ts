@@ -117,46 +117,41 @@ test.describe('removed: the 0-100 equality number on the geo singles', () => {
 });
 
 /**
- * BOTH ASSERTIONS IN HERE ARE THE OPPOSITE OF WHAT THEY USED TO BE. Read this
- * before "restoring" either one.
+ * THIS ASSERTION HAS BEEN INVERTED TWICE. Read this before "restoring" it.
  *
  * The OSM credit started in the footer, moved to the /about colophon on
- * 2026-08-30, and the two tests below pinned that move: footer must NOT carry
- * ODbL, /about MUST. Gating the colophon behind a login broke the second half
- * of that arrangement — a signed-out reader is still served the OSM-derived
- * city diagrams on the homepage, and ODbL asks that reader be told. So the
- * obligated credits went back to the footer, unconditionally, and the colophon
- * became the members-only long form.
+ * 2026-08-30, and came BACK to the footer when that colophon was gated behind
+ * a login — because a signed-out reader is still served the OSM-derived city
+ * diagrams on the homepage. On 2026-09-04 it was removed from the footer
+ * again, by an explicit product decision taken after being told that the
+ * colophon is members-only and that this leaves a signed-out reader with no
+ * credit anywhere on the site.
  *
- * These run SIGNED OUT (no storageState), which is the state that matters:
- * it is the one where the footer is the only credit on the site.
+ * So the current state is deliberate, not drift, and it is NOT licence
+ * compliance: the tests below pin the removal so that re-adding the row is a
+ * conscious edit. If someone later restores the credits, invert these back.
+ *
+ * These run SIGNED OUT (no storageState), which is the state that matters.
  */
-test.describe('the OpenStreetMap credit lives in the footer', () => {
-  test('the footer carries the ODbL attribution', async ({ page }) => {
+test.describe('the footer carries no data attribution', () => {
+  test('the footer has the copyright but no ODbL credit', async ({ page }) => {
     await open(page, '/');
     const footer = page.locator('footer');
     await expect(footer).toBeVisible({ timeout: BOOT });
+    // Positive control: "no ODbL in the footer" also passes on a footer that
+    // failed to render at all.
     await expect(footer.getByText(/Queer Guide/).first()).toBeVisible();
-    await expect(footer.getByRole('link', { name: 'OpenStreetMap' })).toHaveAttribute(
-      'href',
-      'https://www.openstreetmap.org/copyright',
-    );
-    await expect(footer).toContainText('ODbL');
-    // Not only OSM: the CC BY sources are compelled too, and the earlier
-    // hand-maintained list of "the ones that matter" had already lost two of
-    // them once. Naming a CC BY 4.0 source here keeps that half honest.
-    await expect(footer.getByRole('link', { name: 'GeoNames' })).toBeVisible();
-    await expect(footer).toContainText('CC BY 4.0');
+    await expect(footer.getByRole('link', { name: 'OpenStreetMap' })).toHaveCount(0);
+    await expect(footer.getByRole('link', { name: 'GeoNames' })).toHaveCount(0);
+    await expect(footer).not.toContainText('ODbL');
+    await expect(footer).not.toContainText('CC BY');
   });
 
   // The gate. `#sources` absent proves nothing unless the page rendered, so
-  // the heading is the positive control — and the footer credit is asserted
-  // again here because THIS is the page state where its absence would be a
-  // licence breach rather than a missing section.
+  // the heading is the positive control.
   test('/about hides the colophon from signed-out readers', async ({ page }) => {
     await open(page, '/about');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: BOOT });
     await expect(page.locator('#sources')).toHaveCount(0);
-    await expect(page.locator('footer').getByRole('link', { name: 'OpenStreetMap' })).toBeVisible();
   });
 });
