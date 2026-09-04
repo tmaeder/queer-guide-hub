@@ -1,10 +1,29 @@
-// venue-accessibility-osm — coordinate-keyed OSM accessibility enrichment.
+// venue-accessibility-osm — coordinate-keyed OSM venue enrichment.
+//
+// The name is now narrower than the job: it also fills hours, phone, website and
+// category. Renaming it would mean moving the registry slug, the cron job and
+// the `config.toml` entry together, so the name stays and this comment carries
+// the truth.
 //
 // OSM is SATURATED as a discovery source: the last five nightly `vn_fill_osm`
 // runs each fetched items_total 120 and skipped all 120 as already-known, and
 // only 200 venue_sources rows are OSM at all. The value is not in finding more
 // venues; it is in asking OSM about the 20,600 geocoded venues we already hold.
 // So this inverts the direction — query BY COORDINATE for a venue we know.
+//
+// WHAT ONE MATCH IS WORTH. Proving identity is the expensive and risky half, and
+// it was being spent to read a single tag. The same element carries four more
+// fields whose gaps dwarf accessibility's (measured 2026-09-04, 26,905 live
+// venues): hours 26,279 empty (97.7%), phone 18,796 (70%), website 16,908 (63%),
+// category='other' 6,930 (26%). Mapping lives in `_shared/osm-venue-fields.ts`
+// and is default-reject throughout.
+//
+// The two write policies are deliberately DIFFERENT, and the asymmetry is the
+// point: accessibility resolves conflicts by keeping the negative, flags the
+// venue and opens a review row, because being wrong strands a disabled person at
+// a door. The other four are fill-if-empty only — a stored value is never
+// touched, and a disagreement is recorded in `venue_field_provenance` without
+// raising `needs_attention` or queueing a human.
 //
 // WHAT MAKES A CLAIM SAFE TO WRITE
 // --------------------------------
@@ -40,6 +59,12 @@ import {
 } from '../_shared/overpass.ts'
 import { decideField, VENUE_FIELDS } from '../_shared/venue-consensus.ts'
 import { resolveContradictions } from '../_shared/accessibility-vocab.ts'
+import {
+  osmPhone,
+  osmVenueCategory,
+  osmWebsite,
+  parseOsmOpeningHours,
+} from '../_shared/osm-venue-fields.ts'
 
 const STEP = 'venue-accessibility-osm'
 const AUTOMATION_SLUG = 'venue_accessibility_osm'
@@ -72,6 +97,12 @@ const POLITENESS_MS = 1_100
 
 const ACCESS_SPEC = VENUE_FIELDS.find((f) => f.field === 'accessibility_attributes')!
 
+// Bump when the extractor learns a new field, so already-stamped rows whose
+// element we matched are re-offered once. The selector pairs this with a
+// `matched` check — a stamp with no match has nothing more to give and
+// re-probing it just re-derives the same null.
+const OSM_FIELDS_V = 2
+
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
 interface VenueRow {
@@ -81,6 +112,12 @@ interface VenueRow {
   longitude: number
   accessibility_attributes: string[] | null
   osm_ref: string | null
+  // Widened extraction reads these to decide fill-if-empty. They are NOT
+  // targets to overwrite.
+  hours: unknown
+  phone: string | null
+  website: string | null
+  category: string | null
 }
 
 /** POST one query to a specific mirror and classify the answer. */
@@ -247,6 +284,12 @@ Deno.serve(async (req: Request) => {
   let endpointIdx = 0
 
   let probed = 0, matched = 0, applied = 0, conflicted = 0, unknown = 0
+  // Widened-field counters. Reported per field because a single total cannot
+  // distinguish "hours are landing" from "only websites are landing", and the
+  // whole point of Wave 1 is the 97.7% hours gap.
+  let fieldsFilled = 0
+  const filledByField: Record<string, number> = {}
+  const disagreedByField: Record<string, number> = {}
   const results: Array<Record<string, unknown>> = []
 
   for (const v of venues) {
@@ -322,12 +365,56 @@ Deno.serve(async (req: Request) => {
       continue
     }
     matched++
+    const tags = pick.element.tags ?? {}
+    const osmRef = `${pick.element.type}/${pick.element.id}`
+
+    // ---- widened fields (hours / phone / website / category) ----
+    // Computed BEFORE the accessibility branch. Previously a matched element
+    // with no `wheelchair` tag hit the early `continue` below and its
+    // opening_hours, phone and website were discarded — which is 97.7%, 70% and
+    // 63% of the corpus respectively, thrown away after paying for the match.
+    const extra = widenedFields(tags, v)
+    if (extra.filled.length) fieldsFilled += extra.filled.length
+    for (const f of extra.filled) filledByField[f] = (filledByField[f] ?? 0) + 1
+    for (const f of extra.disagreed) disagreedByField[f] = (disagreedByField[f] ?? 0) + 1
+
+    if (!dryRun && extra.provenance.length) {
+      // Recorded even when nothing was written, so a disagreement is queryable
+      // instead of merely counted, and so the consensus engine has a second
+      // voter for these fields later.
+      await supabase.from('venue_field_provenance').upsert(
+        extra.provenance.map((p) => ({
+          venue_id: v.id,
+          field: p.field,
+          source: 'osm',
+          value: p.value,
+          confidence: 0.8,
+          is_winning: extra.filled.includes(p.field),
+          observed_at: new Date().toISOString(),
+        })),
+        { onConflict: 'venue_id,field,source' },
+      ).then(() => {}, () => {})
+    }
 
     // ---- map + default-reject against the controlled vocabulary ----
-    const osmSlugs = osmAccessibility(pick.element.tags ?? {}).filter((s) => vocab.accessibility.has(s))
+    const osmSlugs = osmAccessibility(tags).filter((s) => vocab.accessibility.has(s))
     if (osmSlugs.length === 0) {
-      if (!dryRun) await stamp(supabase, v.id, { state: 'none', matched: `${pick.element.type}/${pick.element.id}` })
-      results.push({ id: v.id, name: v.name, state: 'none', matched: true })
+      if (!dryRun) {
+        if (Object.keys(extra.update).length) {
+          await supabase.from('venues')
+            .update({ ...extra.update, last_refreshed_at: new Date().toISOString() })
+            .eq('id', v.id)
+        }
+        await stamp(supabase, v.id, {
+          state: 'none',
+          matched: osmRef,
+          filled: extra.filled.length ? extra.filled : undefined,
+        })
+      }
+      results.push({
+        id: v.id, name: v.name, state: 'none', matched: true,
+        filled: extra.filled, disagreed: extra.disagreed,
+      })
       await sleep(POLITENESS_MS)
       continue
     }
@@ -354,6 +441,11 @@ Deno.serve(async (req: Request) => {
 
     if (!dryRun) {
       const update: Record<string, unknown> = {
+        // The widened fields ride along in the SAME statement. A second UPDATE
+        // would double this venue's pass through trg_search_documents_venue,
+        // which is the batch-cost discipline the rest of the pipeline is sized
+        // against.
+        ...extra.update,
         accessibility_attributes: [...winner].sort(),
         last_refreshed_at: new Date().toISOString(),
       }
@@ -393,8 +485,9 @@ Deno.serve(async (req: Request) => {
 
       await stamp(supabase, v.id, {
         state: 'found',
-        matched: `${pick.element.type}/${pick.element.id}`,
+        matched: osmRef,
         slugs: osmSlugs,
+        filled: extra.filled.length ? extra.filled : undefined,
         conflict: hasConflict ? conflict.conflicts : undefined,
       })
       await supabase.from('enrichment_log').insert({
@@ -406,15 +499,29 @@ Deno.serve(async (req: Request) => {
     results.push({
       id: v.id, name: v.name, state: 'found', osm: osmSlugs,
       applied: [...winner].sort(), conflict: hasConflict ? conflict.conflicts : undefined,
+      filled: extra.filled, disagreed: extra.disagreed,
     })
     await sleep(POLITENESS_MS)
   }
 
+  const summary = {
+    processed: probed, matched, applied, conflicted, unknown,
+    // `applied` counts accessibility only, so on its own it reads 0 for a run
+    // that filled 20 sets of opening hours. Report the widened work separately
+    // rather than folding it in — a rate per field is what tells you whether the
+    // job is working, and a status alone cannot.
+    fields_filled: fieldsFilled,
+    filled_by_field: filledByField,
+    disagreed_by_field: disagreedByField,
+    probe,
+  }
   if (!dryRun && !venueIds?.length) {
-    await recordRun(supabase, runStarted, { processed: probed, matched, applied, conflicted, unknown, probe })
+    await recordRun(supabase, runStarted, summary)
   }
   return jsonResponse({
     processed: probed, matched, applied, conflicted, unknown,
+    fields_filled: fieldsFilled, filled_by_field: filledByField,
+    disagreed_by_field: disagreedByField,
     dry_run: dryRun, endpoints: probe, results,
   }, 200, req)
 })
@@ -423,14 +530,72 @@ Deno.serve(async (req: Request) => {
  *  Stamped on EVERY visit including a miss — an unstamped miss makes the same
  *  unfillable venue the permanent head of the queue (city-fields selector, 36
  *  days of filling nothing). `unknown` stays retryable via an attempt counter. */
+/**
+ * Map the matched element's remaining tags onto venue columns.
+ *
+ * FILL-IF-EMPTY, ALWAYS. An OSM value may fill a NULL and may never replace a
+ * stored one. A disagreement is RECORDED in `venue_field_provenance` and
+ * reported in the run summary, but it does not write, does not raise
+ * `needs_attention` and does not open a review row.
+ *
+ * That is a deliberate asymmetry with the accessibility path below, which does
+ * all three. Accessibility is a safety claim where being wrong strands somebody
+ * at a door. A website that differs from ours by a trailing slash is not, and
+ * queueing thousands of those teaches reviewers to rubber-stamp — the failure
+ * the tag-relation queue already demonstrated at ~19% precision.
+ */
+function widenedFields(tags: Record<string, string>, v: VenueRow) {
+  const update: Record<string, unknown> = {}
+  const provenance: Array<{ field: string; value: unknown }> = []
+  const filled: string[] = []
+  const disagreed: string[] = []
+
+  const consider = (field: string, osmValue: unknown, isEmpty: boolean, equal: boolean) => {
+    if (osmValue === null || osmValue === undefined) return
+    provenance.push({ field, value: osmValue })
+    if (isEmpty) {
+      update[field] = osmValue
+      filled.push(field)
+    } else if (!equal) {
+      disagreed.push(field)
+    }
+  }
+
+  // `{}` is stored on 17 rows and carries no schedule. Treat it as empty rather
+  // than as a value worth protecting.
+  const storedHours = v.hours && typeof v.hours === 'object' ? v.hours as Record<string, unknown> : null
+  const hoursEmpty = !storedHours || Object.keys(storedHours).length === 0
+  const osmHours = parseOsmOpeningHours(tags.opening_hours)
+  consider('hours', osmHours, hoursEmpty, false)
+
+  const phone = osmPhone(tags)
+  consider('phone', phone, !v.phone?.trim(), phone === v.phone)
+
+  const site = osmWebsite(tags)
+  // Compare on the normalised form so http/https and a trailing slash are not
+  // reported as a disagreement.
+  const storedSite = v.website ? osmWebsite({ website: v.website }) : null
+  consider('website', site, !v.website?.trim(), site === storedSite)
+
+  // Category may only move OFF `other`. A curated value is never reconsidered:
+  // OSM's generic feature tag has no idea this is a queer venue.
+  const cat = osmVenueCategory(tags)
+  const catEmpty = !v.category || v.category === 'other'
+  consider('category', cat, catEmpty, cat === v.category)
+
+  return { update, provenance, filled, disagreed }
+}
+
 async function stamp(
   supabase: ReturnType<typeof getServiceClient>,
   venueId: string,
   detail: Record<string, unknown>,
 ) {
+  // `v` is stamped here rather than at each call site so a new branch cannot
+  // forget it and quietly become permanently un-re-offerable.
   await supabase.rpc('stamp_venue_osm_accessibility', {
     p_venue_id: venueId,
-    p_detail: { ...detail, at: new Date().toISOString() },
+    p_detail: { ...detail, v: OSM_FIELDS_V, at: new Date().toISOString() },
   }).then(() => {}, () => {})
 }
 
