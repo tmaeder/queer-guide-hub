@@ -3438,6 +3438,8 @@
     "bodyFallback": "전체 내용은 원본 출처에서 확인할 수 있습니다.",
     "originallyPublishedBy": "원 출처: {{source}}.",
     "viewOriginal": "원문 보기",
+    "continueAtSource": "{{source}}에서 이 기사 계속 읽기",
+    "continueAtSourceGeneric": "원본 출처에서 계속 읽기",
     "integritySatire": "풍자로 표시됨 — 사실 보도가 아닙니다.",
     "integrityAdvertorial": "협찬/광고성 콘텐츠.",
     "integritySentimentConflict": "출처마다 논조가 다릅니다 — 주의해서 읽으세요.",

@@ -3448,6 +3448,8 @@
     "bodyFallback": "الخبر الكامل متاح في المصدر الأصلي.",
     "originallyPublishedBy": "نُشر أصلاً في {{source}}.",
     "viewOriginal": "عرض التقرير الأصلي",
+    "continueAtSource": "تابع قراءة هذا المقال على {{source}}",
+    "continueAtSourceGeneric": "تابع القراءة في المصدر",
     "integritySatire": "موسوم كمحتوى ساخر — وليس تقريرًا حرفيًا.",
     "integrityAdvertorial": "محتوى مموّل / إعلاني.",
     "integritySentimentConflict": "تختلف المصادر في النبرة — اقرأه بحذر.",
