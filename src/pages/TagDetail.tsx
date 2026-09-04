@@ -61,6 +61,7 @@ import { TrackLoader } from '@/components/transit/TrackLoader';
 import { TransitIcon } from '@/components/transit/TransitIcon';
 import { TagDetailWithGate } from '@/components/age-gate/TagDetailWithGate';
 import { GatedDetailFallback } from '@/components/safety/GatedDetailFallback';
+import { useGatedEntityExists } from '@/hooks/useGatedEntityExists';
 import { FollowTagButton } from '@/components/tags/FollowTagButton';
 import { TagAliasesDisplay } from '@/components/tags/TagAliasesDisplay';
 import { TagSafetyCallout } from '@/components/tags/TagSafetyCallout';
@@ -200,6 +201,23 @@ export default function TagDetail() {
     () => publishedSources.filter((s) => s.source_type === 'clinical_guideline'),
     [publishedSources],
   );
+
+  // Same query the GatedDetailFallback below runs — one shared hook, so the
+  // title and the rendered page cannot disagree about whether this term exists.
+  // React Query dedupes on the key, so the two observers cost one request.
+  // Gated only on "the tag query has settled with nothing", which is the only
+  // state where the answer changes anything.
+  const {
+    data: isGatedTag,
+    isPending: gateUnresolved,
+    fetchStatus: gateFetchStatus,
+  } = useGatedEntityExists('tag', slug, !isLoading && (isError || !tag));
+  // `isPending` alone is NOT "in flight". A DISABLED React Query sits at
+  // status 'pending' forever, and this query is disabled for every signed-in
+  // reader (the hook's own `!user`) — so keying the title on `isPending` would
+  // pin a signed-in visitor's genuine 404 to "Loading" permanently. Only
+  // `fetchStatus !== 'idle'` means a request is actually out.
+  const gateIsPending = gateUnresolved && gateFetchStatus !== 'idle';
 
   const primary = tag?.categories?.find((c) => c.is_primary) ?? tag?.categories?.[0];
   const parentName = primary?.parent_name ?? undefined;
@@ -363,7 +381,26 @@ export default function TagDetail() {
     // lever that shuts that off — the canonical cannot be suppressed here.
     if (isLoading) return { title: t('tags.detail.loading', 'Loading') };
     if (isError || !tag) {
-      return { title: t('tags.detail.notFound.title', 'No such term'), noIndex: true };
+      // `!tag` is TWO different pages for a signed-out reader, and titling both
+      // "No such term" is the same wrong answer this page exists to stop
+      // telling: the edge serves `<title>Sign in to view</title>` for a gated
+      // term, then the SPA hydrated and overwrote it, so the reader ended up
+      // with a tab, a bookmark and a history entry all denying a term that is
+      // right there on screen. Observed on prod 2026-09-04 — page heading
+      // "Sign in to view this term", tab "No such term | Queer Guide".
+      //
+      // While the gate check is still in flight we do not KNOW which page this
+      // is, so say nothing definitive rather than guessing and flipping. Both
+      // branches stay noIndex either way; only the words differ.
+      if (gateIsPending) {
+        return { title: t('tags.detail.loading', 'Loading'), noIndex: true };
+      }
+      return {
+        title: isGatedTag
+          ? t('safety.gatedDetail.tag.title', { defaultValue: 'Sign in to view this term' })
+          : t('tags.detail.notFound.title', 'No such term'),
+        noIndex: true,
+      };
     }
     const longFirst = tag.long_description
       ?.trim()
@@ -408,7 +445,10 @@ export default function TagDetail() {
     // `isLoading`/`isError` are load-bearing for the same reason: they gate the
     // two branches above, so leaving them out would pin the title to "Loading"
     // for the whole visit — exactly the bug this replaced.
-  }, [tag, publishedSources, isAdult, isLoading, isError, t]);
+    // `isGatedTag`/`gateIsPending` join them for exactly that reason: they
+    // resolve AFTER the first render, so omitting them would freeze the title
+    // at the pending value and never reach "Sign in to view this term".
+  }, [tag, publishedSources, isAdult, isLoading, isError, isGatedTag, gateIsPending, t]);
   useMeta(meta);
 
   if (isLoading) {
