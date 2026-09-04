@@ -392,7 +392,13 @@ export function Header() {
             PAGE_GUTTER,
           )}
         >
-          <Link to="/" className="no-underline" aria-label={siteName}>
+          {/* `flex items-center`, not a bare block: the wordmark span is an
+              inline-block, so a block link boxes it against the line's strut
+              and Anton's own metrics leave the ink hanging at the TOP of a
+              44px box. Measured on prod at 1440: 12px above the mark, 27px
+              below it, in a bar whose every other item is centred. Making the
+              link a flex row centres the span box itself — 20/19. */}
+          <Link to="/" className="flex items-center no-underline" aria-label={siteName}>
             <Wordmark className="text-title text-background" />
           </Link>
           {activeIntent && ActiveIntentIcon && (

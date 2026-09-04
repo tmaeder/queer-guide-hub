@@ -22,7 +22,7 @@ export const fourLinesMeta: InfographicMeta = {
     'Gender identity, gender expression, sex assigned at birth and attraction are four separate lines. Pick a stop on each. Nothing is stored or sent.',
   summaryKey: 'tags.figures.fourLines.summary',
   summaryFallback:
-    'A transit map with four lines — gender identity drawn as two independent services on one corridor, gender expression, sex assigned at birth as a terminus that runs on to nothing, and attraction — meeting at a single interchange.',
+    'A transit map with four lines: gender identity drawn as two independent services on one corridor, gender expression, sex assigned at birth as a terminus that runs on to nothing, and attraction. They meet at a single interchange.',
   checkedOn: '2026-09-02',
   gate: { adult: false, sensitive: false },
   teaches: [
@@ -86,7 +86,7 @@ export const fourLinesMeta: InfographicMeta = {
     rows: AXES.map((axis) => [
       axis.labelFallback,
       axis.stations.map((s) => s.labelFallback).join(', '),
-      axis.terminus ? 'Ends here — a starting point, not a destination' : 'The interchange',
+      axis.terminus ? 'Ends here. A starting point, not a destination' : 'The interchange',
     ]),
   }),
 };
