@@ -954,7 +954,12 @@ export async function countRows(
 export async function listFromWhere<T = unknown>(
   table: string,
   select: string,
-  filters: Array<{ col: string; val: unknown; op?: 'eq' | 'neq' | 'in' | 'gte' | 'lte' | 'ilike' }>,
+  filters: Array<{
+    col: string;
+    val: unknown;
+    /** `is` is the only way to express IS NULL — needed to hide merged rows. */
+    op?: 'eq' | 'neq' | 'in' | 'gte' | 'lte' | 'ilike' | 'is';
+  }>,
   opts?: { order?: { col: string; ascending?: boolean }; limit?: number },
 ): Promise<T[]> {
   let q = untypedFrom(table).select(select as never);
@@ -1034,7 +1039,8 @@ export async function deleteRow(table: string, id: string): Promise<{ error: unk
 /** AdminQueerVillages.tsx — list cities + countries. */
 export async function fetchAllCitiesAndCountries() {
   const [citiesRes, countriesRes] = await Promise.all([
-    supabase.from('cities').select('id, name, slug'),
+    // Merged-away cities are redirect tombstones, never a village's parent.
+    supabase.from('cities').select('id, name, slug').is('duplicate_of_id', null),
     supabase.from('countries').select('id, name'),
   ]);
   return {
