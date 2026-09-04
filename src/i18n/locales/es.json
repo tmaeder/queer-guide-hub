@@ -4083,7 +4083,9 @@
       "no": "[ES] No",
       "varies": "[ES] Varies",
       "unclear": "[ES] Unclear",
-      "notApplicable": "[ES] Not applicable"
+      "notApplicable": "[ES] Not applicable",
+      "required": "[ES] Required",
+      "notRequired": "[ES] Not required"
     },
     "attr": {
       "so": {
