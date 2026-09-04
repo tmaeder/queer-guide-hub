@@ -20,7 +20,7 @@ const ROOT = join(HERE, '..', '..')
 export const DECISIONS = join(HERE, 'out', 'decisions.json')
 export const MIGRATION = join(
   ROOT, 'supabase', 'migrations',
-  '20261219100000_retract_wrong_wikidata_ids_on_tags.sql',
+  '20261221100000_retract_wrong_wikidata_ids_on_tags.sql',
 )
 
 const q = (s) => (s === null || s === undefined ? 'null' : `'${String(s).replace(/'/g, "''")}'`)
