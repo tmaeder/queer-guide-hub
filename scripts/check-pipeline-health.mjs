@@ -23,6 +23,26 @@ async function get(path) {
   return res.json()
 }
 
+// Every section runs; the script exits ONCE, at the end.
+//
+// Until 2026-09-04 each check called `process.exit(1)` inline, so the FIRST
+// failure hid every section after it. That is not a hypothetical cost — on
+// 2026-09-03 and 09-04 the nightly died in section 2 on `marketplace-ingestion`
+// only-failures, and sections 3-10 never ran. Section 10 is the circuit-breaker
+// sentinel added on 2026-08-30 precisely to make a silently-dead source
+// visible, and breaker state was exactly the diagnostic wanted during that
+// incident. It reported nothing, two nights running.
+//
+// A fail-fast health check reports the first problem it happens to hit, not the
+// state of the system — and the ordering of these sections is historical
+// accident, not severity. So: record and continue. `FAILED` is set by every ✗
+// branch and read once at the bottom.
+//
+// Sections whose LATER code would break or go vacuous after a failure use a
+// labelled `break` instead (see `reindexDrain` and `substanceFreshness`), so
+// "stop this section" survives without stopping the whole script.
+let FAILED = false
+
 // 1. Open alerts
 const alerts = await get('pipeline_health_alerts?resolved_at=is.null&select=kind,subject,first_seen_at')
 if (alerts.length > 0) {
@@ -42,7 +62,7 @@ console.log(`✓ Pipelines completed in last 24h: ${[...completed24h].join(', ')
 
 if (onlyFailed.length > 0) {
   console.error(`✗ Pipelines with ONLY failures in last 24h: ${onlyFailed.join(', ')}`)
-  process.exit(1)
+  FAILED = true
 }
 
 // 3. Daily pipelines — warn if missing from 24h window
@@ -79,21 +99,21 @@ if (!hygieneRes.ok) {
   const legacy = hygiene.legacy_cron_jobs ?? []
   if (legacy.length > 0) {
     console.error(`✗ Legacy pipeline crons resurrected: ${legacy.join(', ')}`)
-    process.exit(1)
+    FAILED = true
   }
   if ((hygiene.i18n_percombo_cron_count ?? 0) > 0) {
     console.error(`✗ Per-combo i18n crons re-appeared (${hygiene.i18n_percombo_cron_count}) — the i18n_translation_dispatch job replaced them`)
-    process.exit(1)
+    FAILED = true
   }
   const pending = hygiene.staging_pending_review ?? 0
   if (pending > 5000) {
     console.error(`✗ ingestion_staging pending_review backlog at ${pending} (limit 5000) — auto-triage sweeps are falling behind`)
-    process.exit(1)
+    FAILED = true
   }
   const unregistered = hygiene.unregistered_cron_jobs ?? []
   if (unregistered.length > 0) {
     console.error(`✗ Cron jobs with no admin_automations registry row: ${unregistered.join(', ')} — register them (P1 registry-of-record policy)`)
-    process.exit(1)
+    FAILED = true
   }
   // Starved-path sentinel (overhaul P2): rows stuck mid-pipeline >48h. Live
   // baseline at introduction was ~2.8k (news ~1.9k, marketplace ~0.9k, oldest
@@ -141,7 +161,7 @@ if (!hygieneRes.ok) {
         `Prime suspect: a stage advancing enrichment_status on a row it did not enrich ` +
         `(see supabase/functions/_shared/quality-score-gating.ts).`,
       )
-      process.exit(1)
+      FAILED = true
     }
     if (total > 0) {
       console.warn(
@@ -159,7 +179,7 @@ if (!hygieneRes.ok) {
   const deadNote = unreachable ? ` — ${unreachable.total} of these are UNREACHABLE news rows` : ''
   if ((staleWorst && Number(staleWorst[1]) > 5000) || staleTotal > 10000) {
     console.error(`✗ Staging starvation: ${staleTotal} rows pending >48h (${JSON.stringify(stale)})${deadNote} — a drain/fill path is dead`)
-    process.exit(1)
+    FAILED = true
   }
   if (staleTotal > 3500) {
     console.warn(`⚠ Staging stale-pending rising: ${staleTotal} rows >48h (${JSON.stringify(stale)})${deadNote}`)
@@ -180,7 +200,7 @@ if (!hygieneRes.ok) {
     console.error(`✗ ${strandedTotal} staging row(s) approved by a human but blocked from every downstream stage (${JSON.stringify(stranded)})`)
     console.error('  They read ai_validation_status <> approved while review_status = approved.')
     console.error('  Find the writer that set review_status without an UPDATE the promotion trigger can see.')
-    process.exit(1)
+    FAILED = true
   }
   // Accessibility contradictions (2026-08-30). An entity asserting both halves
   // of a pair — "wheelchair accessible" AND "not wheelchair accessible" — is
@@ -211,7 +231,7 @@ if (!hygieneRes.ok) {
     console.error('  The BEFORE triggers make this unreachable, so a writer bypassed them —')
     console.error('  check for a COPY, a disabled trigger, or a new table with the column and no guard.')
     console.error('  Resolve with: UPDATE <t> SET accessibility_attributes = accessibility_attributes WHERE ...')
-    process.exit(1)
+    FAILED = true
   }
   // City duplication (2026-08-25). Every unique key on `cities` keys on the
   // string, so exact-name duplicates are already impossible — measured 0 groups
@@ -232,7 +252,7 @@ if (!hygieneRes.ok) {
     console.error('  A path is creating cities without going through city_resolve_or_create.')
     console.error('  Check the five writers: backfill-venue-cities, resolve-or-create-city,')
     console.error('  venue-import-helpers, commit_city_staging_item, useCMSEditor.')
-    process.exit(1)
+    FAILED = true
   }
   // The queue is the sink for every refusal. A refusal nobody drains is a
   // silent loss, which is the exact failure refusing exists to prevent — so
@@ -244,7 +264,7 @@ if (!hygieneRes.ok) {
   if (qPending > 50 && qOldestH > 48) {
     console.error(`✗ city_resolve_queue: ${qPending} pending, oldest ${qOldestH}h — the drain is dead`)
     console.error('  Expected job: city_resolve_drain (*/15). Check admin_automations.enabled and cron.job.')
-    process.exit(1)
+    FAILED = true
   }
   // Warnings only: these are the machinery that makes prevention structural,
   // and they improve over nights, not over one CI run. A stall is worth saying
@@ -289,7 +309,7 @@ if (!hygieneRes.ok) {
       for (const r of rows.slice(0, 10)) console.error(`    /tags/${r.slug} → ${r.wikidata_id}`)
       console.error('  tag-enrichment-sweep is adopting name-resolved identities again.')
       console.error('  Check mayAdoptWikiIdentity in supabase/functions/_shared/tag-wiki-guard.ts is still called.')
-      process.exit(1)
+      FAILED = true
     }
     console.log('✓ No glossary tag has re-acquired a cleared wrong-entity Wikidata id')
   }
@@ -321,7 +341,7 @@ if (!hygieneRes.ok) {
         `✗ Automations dispatching HTTP through an untracked helper: ${untracked.join(', ')} — ` +
           `route the helper through public.automation_http_post and add it to admin_automation_tracked_callers`,
       )
-      process.exit(1)
+      FAILED = true
     }
 
     // Runs left open long past any pg_net timeout mean the reaper is not
@@ -330,7 +350,7 @@ if (!hygieneRes.ok) {
     const openRuns = Number(gaps.open_runs_over_1h ?? 0)
     if (openRuns > 50) {
       console.error(`✗ ${openRuns} automation runs open >1h — admin_automation_reap is not running`)
-      process.exit(1)
+      FAILED = true
     }
 
     // A client-side pg_net timeout is absence of evidence, not evidence of
@@ -370,20 +390,22 @@ if (!hygieneRes.ok) {
 //    working through a 25k backfill at 400 rows/min legitimately leaves the
 //    oldest row an hour old, while a DEAD drain on a quiet day never gets deep
 //    at all. Whether it ran is unambiguous, so that is what fails the build.
-{
+reindexDrain: {
   const drain = await get('admin_automations?slug=eq.search_reindex_drain&select=enabled')
   if (!drain.length) {
     // Not "nothing to check": the registry row IS the schedule for this job
     // (sync_automations_to_cron drives pg_cron from it), so a missing row means
     // nothing runs the drain at all.
     console.error('✗ no admin_automations row for search_reindex_drain — nothing schedules the drain')
-    process.exit(1)
+    FAILED = true
+    // `drain[0].enabled` on the next line would throw on an empty result.
+    break reindexDrain
   }
   if (!drain[0].enabled) {
     console.error('✗ search_reindex_drain is DISABLED — the whole search index is frozen')
     console.error('  Check admin_automation_runs.summary for `auto_paused` before assuming a human did it:')
     console.error('  a later success resets consecutive_failures/last_run_status but never re-enables the row.')
-    process.exit(1)
+    FAILED = true
   }
 
   const stats = await get('search_reindex_drain_stats?select=ran_at,failed&limit=1')
@@ -393,7 +415,7 @@ if (!hygieneRes.ok) {
     const staleMin = (Date.now() - new Date(stats[0].ran_at).getTime()) / 60000
     if (staleMin > 15) {
       console.error(`✗ search_reindex_drain last ran ${staleMin.toFixed(0)}min ago (schedule is every minute) — index frozen`)
-      process.exit(1)
+      FAILED = true
     }
     if (stats[0].failed > 0) {
       console.warn(`⚠ last drain re-queued ${stats[0].failed} row(s) after per-row errors`)
@@ -485,7 +507,7 @@ if (!hygieneRes.ok) {
       console.error("  then SELECT sync_automations_to_cron(true) — and CHECK its `recreated` list actually names them:")
       console.error("  an action of type 'rpc' carries no action.command, so the reconciler CANNOT reschedule it and")
       console.error('  the cron must be recreated from the migration that first scheduled it.')
-      process.exit(1)
+      FAILED = true
     }
     if (!falseDisabled.length) {
       console.log(`✓ No auto-paused-then-recovered automations (${disabled.length} disabled row(s) checked)`)
@@ -532,7 +554,7 @@ if (!hygieneRes.ok) {
       )
       console.error('  Check the queer-guide-search-ingest cron in the Cloudflare dashboard.')
       console.error('  A 1027 on any *.queer.guide worker means the account request quota, not this worker.')
-      process.exit(1)
+      FAILED = true
     }
 
     const oldestH = b.oldest_dirty_at
@@ -655,7 +677,7 @@ if (!hygieneRes.ok) {
 //    the path has demonstrably written at least once; until then it warns —
 //    but only for two weeks, after which "registered and has never written a
 //    row" is itself the failure.
-{
+substanceFreshness: {
   const STALE_FAIL_DAYS = 14 // two missed runs of a weekly schedule
   const days = (iso) => (Date.now() - new Date(iso).getTime()) / 864e5
 
@@ -671,11 +693,18 @@ if (!hygieneRes.ok) {
 
   if (rows.length === 0) {
     console.error('✗ substance_interactions is EMPTY — /tags/interactions renders nothing')
-    process.exit(1)
+    FAILED = true
+    // Continuing would iterate the per-source loop zero times and print the
+    // freshness gate's ✓ — the exact vacuous pass its positive control exists
+    // to prevent.
+    break substanceFreshness
   }
   if (rows.length >= ROW_CAP) {
     console.error(`✗ substance_interactions read hit the ${ROW_CAP}-row cap — per-source max(fetched_at) is computed over a truncated set and cannot be trusted`)
-    process.exit(1)
+    FAILED = true
+    // The rest of this section computes max(fetched_at) over that truncated
+    // set; the whole point of the guard is that the number is not usable.
+    break substanceFreshness
   }
 
   // POSITIVE CONTROL: this gate must be watching something.
@@ -699,7 +728,7 @@ if (!hygieneRes.ok) {
       `✗ substance_interactions has ${rows.length} rows but NO enabled row in ingestion_sources — ` +
         `the staleness gate is disarmed and would have passed without checking anything`,
     )
-    process.exit(1)
+    FAILED = true
   }
 
   const newest = new Map()
@@ -772,7 +801,7 @@ if (!hygieneRes.ok) {
     console.error(`✗ substance_interactions staleness:`)
     for (const f of failures) console.error(`    ${f}`)
     console.error('  /tags/interactions is serving ratings nobody has re-checked. Check the source_* cron and its breaker.')
-    process.exit(1)
+    FAILED = true
   }
 }
 
@@ -869,11 +898,27 @@ if (!hygieneRes.ok) {
           '— a paused cron does not stop a DAG node), then either repair it or retire it and add a ' +
           'reason to DISPOSITIONED above.',
       )
-      process.exit(1)
+      FAILED = true
     }
+    // The ✓ is gated on `undocumented`, not just on `open`. Written ungated on
+    // 2026-08-30 it printed "all with a recorded disposition" directly BENEATH
+    // its own ✗ for an undocumented breaker — a reassuring line that was false
+    // exactly when the check had just fired. Caught by running the script
+    // against a stub whose only open breaker was undocumented; the real nightly
+    // never showed it because prod's open breakers were all dispositioned.
     if (open.length === 0) console.log('✓ No circuit breakers open')
-    else console.log(`✓ ${open.length} breaker(s) open, all with a recorded disposition`)
+    else if (undocumented.length === 0) {
+      console.log(`✓ ${open.length} breaker(s) open, all with a recorded disposition`)
+    }
   }
+}
+
+// The single exit. Reached whether or not anything failed, so the ✗ lines above
+// are the complete list rather than "the first one we tripped over".
+if (FAILED) {
+  console.error('')
+  console.error('✗ Pipeline health check FAILED — every section above ran; each ✗ line is a separate problem')
+  process.exit(1)
 }
 
 console.log('✓ Pipeline health check passed')
