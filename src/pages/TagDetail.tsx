@@ -277,20 +277,6 @@ export default function TagDetail() {
       s.push({ id: 'about', title: t('tags.detail.about', 'About') });
       s.push(...(wiki?.sections ?? []).map((x) => ({ ...x, depth: 2 as const })));
     }
-    // A figure elaborates the definition; it never replaces it, so it follows
-    // #about. Sub-stations only when there is more than one to disambiguate.
-    if (figures.length > 0) {
-      s.push({ id: 'figure', title: t('tags.detail.figure', 'Diagram') });
-      if (figures.length > 1) {
-        s.push(
-          ...figures.map((f) => ({
-            id: `figure-${f.id}`,
-            title: t(f.titleKey, f.titleFallback),
-            depth: 2 as const,
-          })),
-        );
-      }
-    }
     // Both flag presence and the hanky slug are synchronous TS data, so unlike
     // the async counts below they need no extra memo deps beyond `tag`.
     if (flagByTagSlug.has(tag.slug)) {
@@ -315,6 +301,21 @@ export default function TagDetail() {
     }
     if (mythFactCount > 0) {
       s.push({ id: 'myths', title: t('tags.myths.eyebrow', 'Check the facts') });
+    }
+    // Immediately above the taxonomy, for the same reason as `combinations`:
+    // a reader who can see the thing drawn does not need the ontology first.
+    // Sub-stations only when there is more than one figure to disambiguate.
+    if (figures.length > 0) {
+      s.push({ id: 'figure', title: t('tags.detail.figure', 'Diagram') });
+      if (figures.length > 1) {
+        s.push(
+          ...figures.map((f) => ({
+            id: `figure-${f.id}`,
+            title: t(f.titleKey, f.titleFallback),
+            depth: 2 as const,
+          })),
+        );
+      }
     }
     s.push({ id: 'taxonomy', title: t('tags.detail.inTaxonomy', 'In the taxonomy') });
     if (usage?.venue_count) s.push({ id: 'venues', title: t('tags.detail.venues', 'Venues') });
@@ -555,10 +556,6 @@ export default function TagDetail() {
         </section>
       )}
 
-      {/* The picture, then its place in the taxonomy. A figure elaborates the
-          definition; it never replaces it, so it always follows #about. */}
-      <TagInfographics slug={tag.slug} pageAlreadyGated={isAdult} />
-
       <TagFlagBand tagSlug={tag.slug} />
 
       <TagHankyCodeBand tagSlug={tag.slug} />
@@ -588,6 +585,13 @@ export default function TagDetail() {
           <TagMythFacts tagId={tag.id} tagName={tag.name} />
         </div>
       )}
+
+      {/* Directly above <TagInterchange>, which IS the #taxonomy section. This
+          pairing is load-bearing: the `figure` station is pushed immediately
+          before `taxonomy` in `stations` above, and useActiveStation derives
+          the active stop from document order, so moving one without the other
+          desynchronises the route strip from the page. */}
+      <TagInfographics slug={tag.slug} pageAlreadyGated={isAdult} />
 
       <TagInterchange tagId={tag.id} tagName={tag.name} />
 

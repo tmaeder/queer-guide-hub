@@ -109,6 +109,7 @@ export const marketplaceContentType: ContentTypeConfig = {
       fuzzyRpc: 'find_marketplace_fuzzy_duplicate_clusters',
     },
   },
+  merge: { column: 'duplicate_of_id', label: 'Merged' },
   lifecycle: { type: 'marketplace', archive: { column: 'status', value: 'inactive', label: 'Inactive' } },
   publicPath: (row) => (row.slug ? `/marketplace/${row.slug}` : null),
 };
