@@ -1,10 +1,20 @@
 import { describe, it, expect } from 'vitest';
-// @ts-expect-error — plain .mjs helper, no types
-import {
-  parseWorktreePaths,
-  findSiblingCollisions,
-  groupSiblingCollisions,
-} from '../../../scripts/lib/sibling-migrations.mjs';
+
+// NAMESPACE import, and the shape is load-bearing. `@ts-expect-error` suppresses
+// the next LINE, and TS7016 for an untyped .mjs is reported at the MODULE
+// SPECIFIER, not at `import {`. A named multi-line import therefore puts the
+// directive on a line that no longer errors (TS2578 unused) while the real error
+// moves out from under it — two CI failures from a purely cosmetic reformat.
+//
+// recoverMigrationDrift.test.ts documents that exact trap and solves it by
+// keeping the named import on one line. That line is 114 chars against a
+// printWidth of 100, so it survives only while nothing reformats it; the
+// equivalent here would be 128. A namespace import is 80 chars, cannot be
+// wrapped by prettier, and so cannot regress the same way.
+// @ts-expect-error — .mjs script lib, no type declarations
+import * as siblingMigrations from '../../../scripts/lib/sibling-migrations.mjs';
+
+const { parseWorktreePaths, findSiblingCollisions, groupSiblingCollisions } = siblingMigrations;
 
 /**
  * check-migration-versions.mjs compares the working tree against REMOTE HISTORY,
