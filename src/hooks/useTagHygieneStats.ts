@@ -26,6 +26,12 @@ export interface TagHygieneStats {
   merged_but_not_status_merged: number;
   sensitive_without_description: number;
   indexable_without_description: number;
+  /** A marketplace attribute facet — the `color-`, `size-`, `genre-` and `fit-`
+   *  namespaces — publishing a /tags/:slug page. Facets belong to no glossary
+   *  category by decision, so they have no place in the glossary IA.
+   *  `enforce_tag_facet_page_gate` makes this a write-time invariant rather
+   *  than a queue depth. */
+  indexable_marketplace_facet: number;
   /** The junction names a category, `unified_tags.category_id` names none. The
    *  junction is the source of truth and the column is derived from it, so
    *  non-zero means a writer inserted an assignment without letting the denorm
