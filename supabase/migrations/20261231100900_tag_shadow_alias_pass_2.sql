@@ -18,7 +18,7 @@
 -- is BEFORE INSERT OR UPDATE on `tag_aliases` ONLY: it refuses an alias that
 -- would shadow a live tag, and has nothing to say when a TAG is created or
 -- revived into a slug an alias already holds. So the guard is one-directional
--- and the cleanup regrows. 20261229104400 closes it; this migration is the
+-- and the cleanup regrows. 20261231101000 closes it; this migration is the
 -- cleanup that has to land first, because a seal cannot be added while the
 -- corpus still violates it.
 --
@@ -105,7 +105,7 @@
 --                                 `unmerge_tag_concept` did not remove them
 --                                 because `__alias_added` was false: the merge
 --                                 had found an alias already there and skipped
---                                 its own insert. 20261229104400 fixes that.
+--                                 its own insert. 20261231101000 fixes that.
 --   sub          -> submissive    NOT the kink abbreviation. The 80 uses are
 --                                 AHA/SUB community-centre listings — "AHA
 --                                 Plenum", "Eurovision Karaoke", "Queer Poetry
