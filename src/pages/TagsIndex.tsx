@@ -45,6 +45,7 @@ import { TrackLoader } from '@/components/transit/TrackLoader';
 import { getCategoryShortName, parentOrder } from '@/components/resources/categoryMeta';
 import { CATEGORY_LINE_ORDER, lineForCategory } from '@/lib/tags/categoryIdentity';
 import { redirectedCategorySlug } from '@/lib/tags/categorySlugRedirects';
+import { GatedTagsNotice } from '@/components/tags/GatedTagsNotice';
 import {
   applyTagsParams,
   hasActiveFilters,
@@ -601,6 +602,19 @@ export default function TagsIndex() {
                   />
                 </div>
               </section>
+            )}
+
+            {/* Only on the UNSCOPED, UNFILTERED index. `gated_tag_count()` is a
+                whole-corpus number, so on a category stop or a search it would
+                describe a set the reader is not looking at — and a confidently
+                wrong count is worse than no notice. `hasActiveFilters`
+                deliberately excludes `state.adult`, so "Include 18+ terms"
+                keeps the notice and moves it from the safe-mode subset to the
+                full count, which is the moment it becomes most informative. */}
+            {!filtered && !scope && (
+              <div className="mt-12">
+                <GatedTagsNotice adultHidden={hideAdult} />
+              </div>
             )}
           </div>
         </div>
