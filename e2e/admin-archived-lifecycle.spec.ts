@@ -24,8 +24,18 @@ import { test, expect, type Page } from '@playwright/test';
 const BADGE = '[data-testid="archived-badge"]';
 const TOGGLE = 'Show live or archived rows';
 
+/**
+ * The data rows, via their select checkbox.
+ *
+ * Scoped to <tbody> ON PURPOSE. The header carries `aria-label="Select all
+ * rows"`, which also matches /^Select /, and including it broke this spec twice
+ * in one run: the row count came back one HIGHER than the badge count (26 vs
+ * 25, which reads like a missing badge), and `.first()` in the bulk test
+ * clicked select-all — whose state goes indeterminate rather than checked, so
+ * Playwright reported "clicking the checkbox did not change its state".
+ */
 function rows(page: Page) {
-  return page.getByRole('checkbox', { name: /^Select / });
+  return page.locator('tbody').getByRole('checkbox', { name: /^Select / });
 }
 
 /**
