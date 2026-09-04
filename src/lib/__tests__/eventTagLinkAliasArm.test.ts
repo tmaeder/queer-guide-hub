@@ -56,9 +56,6 @@ const files = readdirSync(MIGRATIONS)
   .filter((f) => f.endsWith('.sql'))
   .sort();
 
-// Read once: this directory holds ~1,470 files on an iCloud-synced checkout and
-// re-reading per assertion is what put a sibling suite over its own timeout.
-const sources = files.map((f) => readFileSync(join(MIGRATIONS, f), 'utf8'));
 
 /**
  * Newest migration that DEFINES the function.
@@ -70,9 +67,17 @@ const sources = files.map((f) => readFileSync(join(MIGRATIONS, f), 'utf8'));
  * asserts against the wrong text.
  */
 function latestDefinitionOf(fn: string): string {
+  // Reads newest-first and STOPS at the first hit — it must not pre-read the
+  // directory. Measured 2026-09-04 at 1,478 files / 12 MB: reading them all costs
+  // 36.1 s cold / 10.6 s warm, against 12 ms / 1 ms for this loop, which touches
+  // ~7 files. That is per-file syscall overhead, so it grows with every migration
+  // added and is exactly what pushed tagHygienePanelMetrics.test.ts past its 15 s
+  // per-test timeout. Scanning backwards is also the definition rather than a
+  // shortcut: `create or replace` means the last definition wins.
+  const DEFINES = new RegExp(`create\\s+(or\\s+replace\\s+)?function\\s+public\\.${fn}\\s*\\(`, 'i');
   for (let i = files.length - 1; i >= 0; i -= 1) {
-    if (new RegExp(`create\\s+(or\\s+replace\\s+)?function\\s+public\\.${fn}\\s*\\(`, 'i').test(sources[i]))
-      return sources[i];
+    const body = readFileSync(join(MIGRATIONS, files[i]), 'utf8');
+    if (DEFINES.test(body)) return body;
   }
   throw new Error(`no migration defines ${fn}`);
 }
