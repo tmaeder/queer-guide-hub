@@ -125,8 +125,19 @@ describe('summariseRecognition — the ledger /rights cannot draw', () => {
 
   it('counts surgery and diagnosis requirements as harms', () => {
     const l = summariseRecognition([
-      row({ gender_marker: 'Possible', requires_surgery: 'Yes', requires_diagnosis: 'Yes' }),
-      row({ gender_marker: 'Possible', requires_surgery: 'No', requires_diagnosis: 'No' }),
+      // ILGA's vocabulary. This fixture said 'Yes'/'No' until 2026-09-01 —
+      // values this column has never held — so it agreed with a reader that
+      // was counting 0 of the 15 countries that actually require surgery.
+      row({
+        gender_marker: 'Possible',
+        requires_surgery: 'Required',
+        requires_diagnosis: 'Required',
+      }),
+      row({
+        gender_marker: 'Possible',
+        requires_surgery: 'Not required',
+        requires_diagnosis: 'Not required',
+      }),
     ]);
     expect(l.requiresSurgery).toBe(1);
     expect(l.requiresDiagnosis).toBe(1);
@@ -134,6 +145,45 @@ describe('summariseRecognition — the ledger /rights cannot draw', () => {
     // Collapsing this into one "recognition" bar is exactly what /rights
     // refuses to do, and why UNCOUNTED_SLUGS exists.
     expect(l.markerChangePossible).toBe(2);
+  });
+
+  it('does not count Yes as a requirement — that was the bug', () => {
+    const l = summariseRecognition([
+      row({ gender_marker: 'Possible', requires_surgery: 'Yes', requires_diagnosis: 'Yes' }),
+    ]);
+    expect(l.requiresSurgery).toBe(0);
+    expect(l.requiresDiagnosis).toBe(0);
+  });
+
+  it('never reads N/A, Unclear or Varies as a requirement', () => {
+    for (const value of ['N/A', 'Unclear', 'Varies', 'No data']) {
+      const l = summariseRecognition([row({ requires_surgery: value })]);
+      expect(l.requiresSurgery, value).toBe(0);
+    }
+  });
+
+  it('counts people alongside countries, and never drops one from a denominator', () => {
+    const l = summariseRecognition([
+      { lgbti_gender_recognition: { requires_surgery: 'Required' }, population: 1_000 },
+      { lgbti_gender_recognition: { requires_surgery: 'Not required' }, population: 9_000 },
+      // No recognition record at all: still part of the world's population.
+      { lgbti_gender_recognition: {}, population: 500 },
+    ]);
+    expect(l.requiresSurgery).toBe(1);
+    expect(l.peopleRequiresSurgery).toBe(1_000);
+    expect(l.totalPeople).toBe(10_500);
+    expect(l.measured).toBe(2);
+    expect(l.total).toBe(3);
+  });
+
+  it('treats a missing population as zero rather than skipping the row', () => {
+    const l = summariseRecognition([
+      { lgbti_gender_recognition: { requires_surgery: 'Required' } },
+      { lgbti_gender_recognition: { requires_surgery: 'Required' }, population: null },
+    ]);
+    expect(l.requiresSurgery).toBe(2);
+    expect(l.peopleRequiresSurgery).toBe(0);
+    expect(l.totalPeople).toBe(0);
   });
 
   it('does not treat "No data" as a marker change being possible', () => {
