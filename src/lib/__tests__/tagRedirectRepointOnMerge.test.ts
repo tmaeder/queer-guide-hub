@@ -28,7 +28,7 @@ import { join } from 'node:path';
  *     says it was written that way so it would "also cover the next merge that
  *     forgets a redirect". A one-shot statement cannot cover a future merge.
  *
- * 20270108100000 puts it in the trigger. These assertions exist so the third
+ * 20270301100600 puts it in the trigger. These assertions exist so the third
  * repair is the last one: a future `create or replace` that drops the repoint
  * fails here rather than silently regenerating dead URLs, which nothing but a
  * baselined ratchet would notice.
