@@ -36,8 +36,11 @@ function goodRow(over: Record<string, unknown> = {}) {
     lgbti_gender_recognition: {
       gender_marker: 'Possible',
       self_id: 'Yes',
-      requires_surgery: 'No',
-      requires_diagnosis: 'No',
+      // ILGA's vocabulary, not Yes/No. This fixture said 'No' until
+      // 2026-09-01 — a value the column has never held, which is precisely
+      // why the readers were wrong and every test still passed.
+      requires_surgery: 'Not required',
+      requires_diagnosis: 'Not required',
     },
     lgbti_conversion_therapy_regulation: 'Banned',
     lgbti_intersex_protection: 'Yes',
@@ -162,8 +165,8 @@ describe('INV-5 — a sterilisation requirement caps the trans verdict', () => {
       lgbti_gender_recognition: {
         gender_marker: 'Possible',
         self_id: 'Yes',
-        requires_surgery: 'Yes',
-        requires_diagnosis: 'No',
+        requires_surgery: 'Required',
+        requires_diagnosis: 'Not required',
       },
     });
     const p = computeRightsProfile(row);
@@ -172,6 +175,58 @@ describe('INV-5 — a sterilisation requirement caps the trans verdict', () => {
     expect(p.general.verdict).toBe('hostile');
     // ...while the LGB lens is unaffected, which is the point of lenses.
     expect(p.lgb.verdict).toBe('protected');
+  });
+
+  /**
+   * The shape this invariant exists for, and the one it never saw until
+   * 2026-09-01. Montenegro scores 99/100 on `equality_score` and requires
+   * sterilisation; while the vocabulary was misread it published as `partial`.
+   */
+  it('caps a country whose other protections would otherwise lift it', () => {
+    const row = goodRow({
+      lgbti_gender_recognition: {
+        gender_marker: 'Possible',
+        self_id: 'No',
+        requires_surgery: 'Required',
+        requires_diagnosis: 'Required',
+      },
+    });
+    expect(computeRightsProfile(row).trans.verdict).toBe('hostile');
+  });
+
+  /**
+   * The other half of the invariant, and the more dangerous half to get
+   * wrong. None of these is a sterilisation requirement, and reading them as
+   * one would cap ten countries on no evidence — Australia, Slovenia,
+   * Slovakia, Kosovo, North Macedonia, Moldova, Peru and three Australian
+   * territories.
+   */
+  it.each(['N/A', 'Unclear', 'Varies', 'No data'])(
+    'does not fire on requires_surgery = %s',
+    (value) => {
+      const row = goodRow({
+        lgbti_gender_recognition: {
+          gender_marker: 'Possible',
+          self_id: 'Yes',
+          requires_surgery: value,
+          requires_diagnosis: 'Not required',
+        },
+      });
+      expect(computeRightsProfile(row).trans.verdict).not.toBe('hostile');
+    },
+  );
+
+  /** The dead-code guard: 'Yes' is not this column's vocabulary. */
+  it('does not fire on the Yes this used to test for', () => {
+    const row = goodRow({
+      lgbti_gender_recognition: {
+        gender_marker: 'Possible',
+        self_id: 'Yes',
+        requires_surgery: 'Yes',
+        requires_diagnosis: 'Not required',
+      },
+    });
+    expect(computeRightsProfile(row).trans.verdict).not.toBe('hostile');
   });
 });
 
