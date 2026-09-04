@@ -71,7 +71,7 @@ test.describe('@p1-4 /tags/[slug] 404', () => {
   // status=active (correctly — see the deprecated case below), /tags/m-nchen
   // resolved to nothing. Measured on prod 2026-09-03: 404, while /tags/munchen
   // 301'd to /tags/munich the whole time. Repaired and sealed in the trigger by
-  // 20261218110000.
+  // 20261222100000.
   //
   // These are the POSITIVE half of the pair the deprecated case below completes.
   // On their own they would also pass if the status filter were simply dropped —
