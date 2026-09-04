@@ -43,9 +43,14 @@ export function ArchivedViewToggle({ lifecycle, value, onChange }: ArchivedViewT
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
+        {/* The middle option is the BARE label. Appending "only" reads fine for
+            "Archived" and "Cancelled" but yields "Not a place only" for a ghost
+            city — and that is the label most in need of being legible, since it
+            is the one whose meaning is not obvious. "All" dodges the same
+            problem on the third option ("Live + not a place"). */}
         <SelectItem value="live">Live only</SelectItem>
-        <SelectItem value="archived">{label} only</SelectItem>
-        <SelectItem value="all">Live + {label.toLowerCase()}</SelectItem>
+        <SelectItem value="archived">{label}</SelectItem>
+        <SelectItem value="all">All</SelectItem>
       </SelectContent>
     </Select>
   );

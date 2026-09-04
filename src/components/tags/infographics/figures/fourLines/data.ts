@@ -39,12 +39,12 @@ export const AXES: readonly AxisSpec[] = [
     id: 'identity-woman',
     track: 'pink',
     corridorKey: 'tags.figures.fourLines.corridor.identity',
-    corridorFallback: 'Gender identity — two independent services',
+    corridorFallback: 'Gender identity: two independent services',
     labelKey: 'tags.figures.fourLines.axis.identityWoman',
     labelFallback: 'How much woman',
     helpKey: 'tags.figures.fourLines.help.identityWoman',
     helpFallback:
-      'Who you know yourself to be. This runs independently of the line below it — you can be a lot of both, a little of both, or neither.',
+      'Who you know yourself to be. This runs independently of the line below it. You can be a lot of both, a little of both, or neither.',
     runIn: { x: 0, y: 20 },
     runOut: JUNCTION,
     stations: [
@@ -84,7 +84,7 @@ export const AXES: readonly AxisSpec[] = [
     id: 'identity-man',
     track: 'pink',
     corridorKey: 'tags.figures.fourLines.corridor.identity',
-    corridorFallback: 'Gender identity — two independent services',
+    corridorFallback: 'Gender identity: two independent services',
     labelKey: 'tags.figures.fourLines.axis.identityMan',
     labelFallback: 'How much man',
     helpKey: 'tags.figures.fourLines.help.identityMan',
@@ -134,7 +134,7 @@ export const AXES: readonly AxisSpec[] = [
     labelFallback: 'Gender expression',
     helpKey: 'tags.figures.fourLines.help.expression',
     helpFallback:
-      'How you present — clothes, voice, hair, the way you carry yourself. Stops, not a scale: nothing here is halfway between two others.',
+      'How you present: clothes, voice, hair, the way you carry yourself. Stops, not a scale. Nothing here is halfway between two others.',
     runIn: { x: 0, y: 90 },
     runOut: JUNCTION,
     stations: [
@@ -219,7 +219,7 @@ export const AXES: readonly AxisSpec[] = [
     labelFallback: 'Attraction',
     helpKey: 'tags.figures.fourLines.help.attraction',
     helpFallback:
-      'Who you are drawn to. Who you are and who you are drawn to are separate lines — that is the whole point of the map.',
+      'Who you are drawn to. Who you are and who you are drawn to are separate lines. That is the whole point of the map.',
     runIn: { x: 0, y: 186 },
     runOut: JUNCTION,
     // Six stops, so this line keeps its own spacing rather than the shared
