@@ -1,29 +1,30 @@
--- Carry `indexable_marketplace_facet` into the repo's LATEST definition of
--- tag_hygiene_stats().
+-- Restate tag_hygiene_stats() ABOVE the definitions that shadow it.
 --
--- The counter is already live on prod: 20260904104115 added it, applied via MCP
--- `apply_migration`, and that migration is committed at its stamped version so
--- `db push` skips it.
+-- `indexable_marketplace_facet` was added to the live function by
+-- 20260904104115_marketplace_facets_are_not_glossary_pages, applied to prod via
+-- MCP on 2026-09-04. Prod therefore RETURNS the key. The repo does not agree:
+-- 20260904104115 sorts BELOW 20261211110000 and 20261211120300, which each
+-- `create or replace` the same function without it — so the last definition a
+-- version-ordered replay executes is one that DROPS the counter again.
 --
--- But 20260904104115 sorts in SEPTEMBER, and two later migrations
--- (20261211110000, 20261211120300) also `create or replace` this function. So
--- the repo's newest definition — the one a rebuild-from-zero ends on, and the
--- one every guard test reads — does NOT contain the counter, while prod does.
--- Three things break on that mismatch and only the third is loud:
+-- Two consequences, both live:
 --
---   * a rebuild-from-zero produces a function without the counter, so the
---     sentinel silently stops existing;
---   * `check-tag-hygiene.mjs` derives its metric list from the LIVE response,
---     so it would keep passing while the repo could no longer reproduce it;
---   * `src/lib/__tests__/tagHygienePanelMetrics.test.ts` pins SQL <-> baseline
---     <-> admin panel as one set, and fails.
+--   * A rebuild from zero silently loses the metric, and with it
+--     enforce_tag_facet_page_gate's only sentinel.
+--   * src/lib/__tests__/tagHygienePanelMetrics.test.ts reads the LAST defining
+--     migration by filename sort, so panel/baseline/SQL cannot be made to agree
+--     while the newest definition is the one without the key. That is why
+--     `Critical data-quality gates` (which reads PROD, and sees the key) and
+--     `test` (which reads the REPO, and does not) could not both be satisfied:
+--     adding the baseline entry fixed the first and broke the second.
 --
--- This is not a second write to prod. `create or replace` with the identical
--- body is a no-op there; the file exists so the REPO agrees with the database.
--- Restated in full rather than wrapped, for the reason 20261211120300 gives:
--- the guard tests text-scan the latest defining migration, so a thin wrapper
--- delegating to a renamed core would pass the scan while the keys it asserts
--- lived somewhere else.
+-- The body below is 20261211120300's, verbatim, plus the one counter. Nothing
+-- else changes; this is an ordering repair, not a behaviour change. Re-running
+-- it on prod is a no-op that replaces the function with what it already is.
+--
+-- The lesson for next time: a `create or replace` applied out of version order
+-- is not durable. `db push` replays by version, so a later-sorting definition
+-- wins on a rebuild no matter when it was applied in wall-clock time.
 
 create or replace function public.tag_hygiene_stats()
  RETURNS jsonb
@@ -99,18 +100,6 @@ begin
       select count(*) from active
        where seo_indexable
          and coalesce(nullif(btrim(description), ''), short_description) is null),
-    -- ── 2026-09-04 ───────────────────────────────────────────────────────
-    -- A marketplace attribute facet publishing a glossary page. Filed in none
-    -- of the three representations BY DECISION (measured: 0 of 94 filed), so an
-    -- indexable one is a page with no place in the information architecture.
-    --
-    -- Deliberately NOT written as "indexable and uncategorized": that reads
-    -- non-zero every time the ingest lands a tag before the two-hourly category
-    -- sweep files it, which is the sawtooth that made uncategorized_active
-    -- advisory. is_marketplace_facet() is the term that separates permanently
-    -- uncategorized from temporarily uncategorized, and only the first is a
-    -- defect. Backed at write time by trg_tag_facet_page_gate, which is what
-    -- makes this structural enough to be a hard gate.
     'indexable_marketplace_facet', (
       select count(*) from active
        where seo_indexable
@@ -136,7 +125,14 @@ begin
             where a.entity_id = e.id and a.entity_type = 'event')),
     -- Carried forward from 20261211110000 (PR #3323), NOT authored here.
     --
-    -- THE sentinel for run_event_tag_link, and a true zero-invariant.
+    -- `create or replace` overwrites the whole body, so two branches that each
+    -- restate this function do not conflict in git — the one that APPLIES last
+    -- silently wins the entire key set. This migration sorts above 20261211110000
+    -- and therefore applies after it, so omitting this counter would delete it.
+    -- src/lib/__tests__/tagHygieneStats.test.ts asserts it survives in the latest
+    -- definition, so that deletion fails CI rather than passing quietly.
+    --
+    -- What it is: THE sentinel for run_event_tag_link, and a true zero-invariant.
     -- `events_with_tags_unlinked` above cannot reach 0 — ~3,856 events carry only
     -- strings the ambiguity guard blocks by design — so it read "non-zero" for
     -- 1,106 consecutive runs while the linker was wedged. Pairs fix that: an

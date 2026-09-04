@@ -26,12 +26,11 @@ export interface TagHygieneStats {
   merged_but_not_status_merged: number;
   sensitive_without_description: number;
   indexable_without_description: number;
-  /** A marketplace attribute facet publishing a glossary page at /tags/:slug.
-   *  Facets are filed in NO category by decision (0 of 94 on 2026-09-04), so an
-   *  indexable one is a page with no place in the glossary IA — 44 were, led by
-   *  `occ-pride` defining Pride as "a primary emotion". Held at zero at write
-   *  time by `trg_tag_facet_page_gate`, which is what makes it a hard gate
-   *  rather than a queue depth like `uncategorized_active`. */
+  /** A marketplace attribute facet — the `color-`, `size-`, `genre-` and `fit-`
+   *  namespaces — publishing a /tags/:slug page. Facets belong to no glossary
+   *  category by decision, so they have no place in the glossary IA.
+   *  `enforce_tag_facet_page_gate` makes this a write-time invariant rather
+   *  than a queue depth. */
   indexable_marketplace_facet: number;
   /** The junction names a category, `unified_tags.category_id` names none. The
    *  junction is the source of truth and the column is derived from it, so

@@ -393,9 +393,15 @@ export function useAllCountriesRightsFull() {
  *
  * There is no Trans Rights Index column here on purpose — that axis is an
  * attributed outbound link, never a local copy. See src/lib/rights/transSafety.ts.
+ *
+ * The four demographic scalars are here and NOT on the shared literal for the
+ * same reason. They exist to answer one question this page asks and no other
+ * does: how many PEOPLE does a law govern, as against how many countries.
+ * 15 countries require sterilisation — 6% of the world's countries, and 41%
+ * of its people. A country count cannot show that.
  */
 export const TRANS_RIGHTS_SELECT_COLUMNS =
-  `${RIGHTS_SELECT_COLUMNS}, trans_violence_documented` as const;
+  `${RIGHTS_SELECT_COLUMNS}, trans_violence_documented, population, human_development_index, gdp_per_capita_usd, continent_id` as const;
 
 export interface TransRightsCountry extends RightsCountry {
   /**
@@ -406,6 +412,23 @@ export interface TransRightsCountry extends RightsCountry {
   lgbti_gender_recognition: Record<string, unknown> | null;
   /** TGEU Trans Murder Monitoring aggregates. `{}` means no recorded case. */
   trans_violence_documented: Record<string, unknown> | null;
+  /**
+   * Non-null on all 250 rows as measured 2026-09-01 (world 8,218,889,254), but
+   * typed nullable and summed as 0 rather than dropped: a row silently missing
+   * from a denominator is how a "share of humanity" figure starts lying.
+   */
+  population: number | null;
+  /**
+   * Used ONLY as a counter-example, never as a ramp. Recognition does correlate
+   * with development (self-ID mean HDI 0.877 vs 0.722), which is exactly why
+   * the page names Singapore (0.925), Japan (0.903), South Korea (0.901),
+   * Montenegro (0.832) and Romania (0.802) — all of which demand sterilisation.
+   * Plotting HDI against rights would draw the ramp and invite the reader to
+   * conclude wealth causes recognition.
+   */
+  human_development_index: number | null;
+  gdp_per_capita_usd: number | null;
+  continent_id: string | null;
 }
 
 export function useAllCountriesTransRights() {

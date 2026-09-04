@@ -46,9 +46,9 @@ export const HYGIENE_METRICS: HygieneMetric[] = [
   { key: 'indexable_without_description', label: 'Indexable, no prose', zero: true },
   {
     key: 'indexable_marketplace_facet',
-    label: 'Facet publishing a glossary page',
+    label: 'Indexable marketplace facet',
     zero: true,
-    hint: 'A marketplace attribute facet (mat-/vibe-/occ-/color-/size-/genre-/fit- prefixes, or entity_kind=attribute) that is seo_indexable. Facets are filed in no category BY DECISION, so an indexable one publishes a page with no place in the glossary IA — 44 did, including occ-pride defining Pride as "a primary emotion". Held at zero at write time by trg_tag_facet_page_gate; non-zero means that trigger was dropped, or is_marketplace_facet() was widened into the glossary.',
+    hint: 'A marketplace attribute facet (color-*/size-*/genre-*/fit-*) publishing a /tags/:slug page. Facets belong to no glossary category by decision, so they have no place in the glossary IA. enforce_tag_facet_page_gate makes this a write-time invariant, not a queue depth.',
   },
   { key: 'merged_but_not_status_merged', label: 'Merged but still active', zero: true },
   {
