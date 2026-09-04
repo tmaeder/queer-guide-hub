@@ -1,27 +1,30 @@
--- Bring `tag_hygiene_stats()` in the repo back level with production.
+-- Restate tag_hygiene_stats() ABOVE the definitions that shadow it.
 --
--- `indexable_marketplace_facet` was added to the LIVE function by raw SQL with
--- no migration. Raw SQL records no version in `schema_migrations`, so the
--- migration-drift check saw nothing — but `check-tag-hygiene.mjs` reads the
--- function off PROD, found a metric with no baseline entry, and correctly
--- refused to treat an unknown gate as passing:
+-- `indexable_marketplace_facet` was added to the live function by
+-- 20260904104115_marketplace_facets_are_not_glossary_pages, applied to prod via
+-- MCP on 2026-09-04. Prod therefore RETURNS the key. The repo does not agree:
+-- 20260904104115 sorts BELOW 20261211110000 and 20261211120300, which each
+-- `create or replace` the same function without it — so the last definition a
+-- version-ordered replay executes is one that DROPS the counter again.
 --
---   ✗ 1 metric(s) have no baseline entry: indexable_marketplace_facet = 0
+-- Two consequences, both live:
 --
--- That failed EVERY open pull request in the repo, including several that had
--- not touched tags at all. The counter itself is right and worth keeping — a
--- marketplace facet (`color-*`, `size-*`, `genre-*`) is not glossary content
--- and must never be offered to crawlers as a definition page — it simply was
--- never written down.
+--   * A rebuild from zero silently loses the metric, and with it
+--     enforce_tag_facet_page_gate's only sentinel.
+--   * src/lib/__tests__/tagHygienePanelMetrics.test.ts reads the LAST defining
+--     migration by filename sort, so panel/baseline/SQL cannot be made to agree
+--     while the newest definition is the one without the key. That is why
+--     `Critical data-quality gates` (which reads PROD, and sees the key) and
+--     `test` (which reads the REPO, and does not) could not both be satisfied:
+--     adding the baseline entry fixed the first and broke the second.
 --
--- Verified before restating, so this cannot silently drop somebody's gate:
--- prod's key set is EXACTLY the repo's plus this one key, and no repo key is
--- missing from prod. The body below is the repo's newest definition
--- (20261211120300) with the live arm inserted verbatim.
+-- The body below is 20261211120300's, verbatim, plus the one counter. Nothing
+-- else changes; this is an ordering repair, not a behaviour change. Re-running
+-- it on prod is a no-op that replaces the function with what it already is.
 --
--- The other three layers move in lockstep, which is what the pin test in
--- src/lib/__tests__/tagHygienePanelMetrics.test.ts exists to force:
--- baseline (0, a true zero-invariant), panel metric, and the TS type.
+-- The lesson for next time: a `create or replace` applied out of version order
+-- is not durable. `db push` replays by version, so a later-sorting definition
+-- wins on a rebuild no matter when it was applied in wall-clock time.
 
 create or replace function public.tag_hygiene_stats()
  RETURNS jsonb
@@ -93,20 +96,14 @@ begin
       select count(*) from active
        where (is_sensitive or is_adult)
          and coalesce(nullif(btrim(description), ''), short_description) is null),
-    -- A marketplace FACET (color-*, size-*, genre-*) is not glossary content
-    -- and must never be offered to crawlers as a definition page. Added to the
-    -- LIVE function by raw SQL with no migration, which is why this file
-    -- exists: prod computed a key the repo could not, so check-tag-hygiene
-    -- read an unknown metric off prod and refused to treat it as passing —
-    -- failing EVERY pull request in the repo, none of which had touched tags.
-    'indexable_marketplace_facet', (
-      select count(*) from active
-       where seo_indexable
-         and public.is_marketplace_facet(slug, entity_kind)),
     'indexable_without_description', (
       select count(*) from active
        where seo_indexable
          and coalesce(nullif(btrim(description), ''), short_description) is null),
+    'indexable_marketplace_facet', (
+      select count(*) from active
+       where seo_indexable
+         and public.is_marketplace_facet(slug, entity_kind)),
     -- `not (A or B)` split into `not A and not B` so each arm can use its own
     -- functional index. Re-merging them into one OR silently restores the
     -- 4M-row nested loop that put this function over the PostgREST timeout.

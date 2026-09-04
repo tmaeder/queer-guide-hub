@@ -48,7 +48,7 @@ export const HYGIENE_METRICS: HygieneMetric[] = [
     key: 'indexable_marketplace_facet',
     label: 'Indexable marketplace facet',
     zero: true,
-    hint: 'color-*/size-*/genre-* are namespaced vocabulary, not definitions. Non-zero means facet pages are being offered to crawlers.',
+    hint: 'A marketplace attribute facet (color-*/size-*/genre-*/fit-*) publishing a /tags/:slug page. Facets belong to no glossary category by decision, so they have no place in the glossary IA. enforce_tag_facet_page_gate makes this a write-time invariant, not a queue depth.',
   },
   { key: 'merged_but_not_status_merged', label: 'Merged but still active', zero: true },
   {

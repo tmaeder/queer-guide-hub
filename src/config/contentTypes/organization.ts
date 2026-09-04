@@ -41,5 +41,6 @@ export const organizationContentType: ContentTypeConfig = {
       mergePath: 'entities',
     },
   },
+  merge: { column: 'duplicate_of_id', label: 'Merged' },
   lifecycle: { type: 'organization', archive: { column: 'status', value: 'archived', label: 'Archived' } },
 };
