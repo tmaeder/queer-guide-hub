@@ -32,12 +32,35 @@
  * the stricter flag is set, because the cost of over-flagging is a filter and
  * the cost of under-flagging is exposure.
  *
- * TWO TERMS ARE DELIBERATELY ABSENT: `footjob` and `anorgasmia` already exist in
- * `unified_tags` as DEPRECATED rows. Creating them here would produce a second
- * row for the same concept, which is why the migration asserts against it and
- * why they were removed rather than force-created. They need reviving (and in
- * footjob's case its placeholder description "Sexual activity tag" replacing),
- * which is a different decision with a different audit trail.
+ * TWO TERMS ARE ABSENT FROM THIS FILE, and neither is a settled exclusion:
+ * `footjob` and `anorgasmia` already exist in `unified_tags` as DEPRECATED
+ * rows, so creating them here would produce a second row for the same concept —
+ * which is what the migrations assert against. Both were culled by the
+ * 2026-06-05 orphan sweep ("no entity assignments, relations, synonyms, or
+ * aliases"), the same sweep 20261211100000 revived `femdom`, `voyeur` and
+ * `pretzel` from on the reasoning that a glossary term has no entity
+ * assignments by nature. They were therefore revive CANDIDATES on identical
+ * grounds, not terms this file had rejected.
+ *
+ * They were dispositioned separately in 20261217100000, and they did not land
+ * the same way — the difference is the alias each slug is shadowed by, which an
+ * anon read of `unified_tags` cannot see because RLS hides non-active rows:
+ *
+ *   `footjob`     REVIVED. Its alias pointed at `foot-worship`, and that alias
+ *                 was wrong: Q107417158 "stimulation of the penis with the feet"
+ *                 is an act, Q463859 "foot fetishism" is an attraction. The act
+ *                 was genuinely missing from the glossary. Revived unpublished,
+ *                 with the placeholder description "Sexual activity tag"
+ *                 replaced, and the wrong aliases deleted.
+ *
+ *   `anorgasmia`  HELD BACK — a merge candidate, not a revival. Its alias points
+ *                 at the ACTIVE tag `orgasmic-dysfunction`, which carries THE
+ *                 SAME Wikidata item (Q1772397), is seo_indexable and
+ *                 human_reviewed, and whose own long_description opens
+ *                 "Anorgasmia is a type of sexual dysfunction…". The concept is
+ *                 published already, under another slug. Same disposition as the
+ *                 `genderfluid` / `gloryhole` entries in
+ *                 generate-kinktionary-revival-migrations.mjs's HOLD_BACK.
  */
 
 /** @typedef {{slug:string,name:string,cat:string,kind?:string,adult?:boolean,sensitive?:boolean,sourced:boolean,desc:string,long:string}} Term */
