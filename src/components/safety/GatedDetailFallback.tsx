@@ -1,14 +1,11 @@
 import type { ReactNode } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { Lock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { untypedRpc } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
+import { useGatedEntityExists, type GatedEntityType } from '@/hooks/useGatedEntityExists';
 import { Button } from '@/components/ui/button';
 import { PageLoading } from '@/components/ui/loading';
-
-type GatedEntityType = 'venue' | 'event' | 'organization' | 'milestone' | 'queer_village' | 'tag';
 
 interface GatedDetailFallbackProps {
   entityType: GatedEntityType;
@@ -36,19 +33,7 @@ export function GatedDetailFallback({ entityType, slug, notFound }: GatedDetailF
   const { t } = useTranslation();
   const { user } = useAuth();
 
-  const { data: gated, isLoading } = useQuery({
-    queryKey: ['gated-entity-exists', entityType, slug ?? null],
-    queryFn: async (): Promise<boolean> => {
-      const { data, error } = await untypedRpc('gated_entity_exists', {
-        p_entity_type: entityType,
-        p_slug: slug,
-      });
-      if (error) throw error;
-      return Boolean(data);
-    },
-    enabled: !user && !!slug,
-    staleTime: 5 * 60 * 1000,
-  });
+  const { data: gated, isLoading } = useGatedEntityExists(entityType, slug);
 
   if (!user && !!slug) {
     if (isLoading) return <PageLoading />;
