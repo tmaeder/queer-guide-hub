@@ -338,7 +338,7 @@ async function categorizePass(
       // which is what the old line 327 did on every pass.
       // Through tag_enrichment_apply, not PostgREST: PostgREST cannot set a
       // session GUC, so a direct .update() lands in tag_change_log under the
-      // undeclared fallback actor 'system:trigger' (see 20261218100000). The
+      // undeclared fallback actor 'system:trigger' (see 20261220100000). The
       // RPC's 'category' branch names the same two columns for the reason
       // above.
       const { data: applied, error } = await supabase.rpc('tag_enrichment_apply', {
