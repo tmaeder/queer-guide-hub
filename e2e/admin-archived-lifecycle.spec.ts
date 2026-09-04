@@ -81,6 +81,12 @@ async function selectView(page: Page, option: string) {
   const trigger = page.getByLabel(TOGGLE);
   if ((await trigger.textContent())?.trim() === option) return;
 
+  // The baseline must be a REAL row set. Capturing it while the table is still
+  // loading yields '', and then the OUTGOING slice finishing its own fetch
+  // satisfies "changed" — so the assertions run against the wrong rows. That is
+  // what made the cities test flaky on prod: it failed twice with "no ghost
+  // cities returned" and passed on the third attempt, purely on load timing.
+  await expect(rows(page).first()).toBeVisible({ timeout: 30_000 });
   const before = await rowKey(page);
   await trigger.click();
   await page.getByRole('option', { name: option, exact: true }).click();
