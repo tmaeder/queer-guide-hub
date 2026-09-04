@@ -58,6 +58,42 @@ test.describe('@p1-4 /tags/[slug] 404', () => {
     });
   }
 
+  // A RENAME-TRAIL redirect whose target was later merged. Distinct from the
+  // MERGED cases above, and it is the gap that let three URLs die:
+  //
+  //   MERGED above     old_slug IS the merged tag's own slug  (`rack`)
+  //   here             old_slug is an older NAME of a tag that was merged later
+  //
+  // `log_unified_tag_merge_redirect` only ever minted a row for the merged tag's
+  // own slug, so a redirect already pointing AT that tag was invisible to it.
+  // The 2026-08-02 diacritic repair left `m-nchen -> munchen`; `munchen` was then
+  // merged into `munich`, and because the edge filters redirect targets on
+  // status=active (correctly — see the deprecated case below), /tags/m-nchen
+  // resolved to nothing. Measured on prod 2026-09-03: 404, while /tags/munchen
+  // 301'd to /tags/munich the whole time. Repaired and sealed in the trigger by
+  // 20261217100100.
+  //
+  // These are the POSITIVE half of the pair the deprecated case below completes.
+  // On their own they would also pass if the status filter were simply dropped —
+  // which would turn all 57 deprecated-target rows into 301s into 404s. Neither
+  // half means anything without the other.
+  const RENAME_TRAIL = [
+    { from: 'm-nchen', to: 'munich' },
+    { from: 'b-hne', to: 'stage' },
+    { from: 'nonbin-r', to: 'non-binary' },
+  ];
+
+  for (const { from, to } of RENAME_TRAIL) {
+    test(`rename-trail /tags/${from} reaches /tags/${to} across the merge`, async ({ page }) => {
+      const res = await page.goto(`/tags/${from}`);
+      expect(res?.status(), `/tags/${from} must not be a 404`).toBeLessThan(400);
+      await expect(page).toHaveURL(new RegExp(`/tags/${to}(?:[?#]|$)`), { timeout: 10_000 });
+      await expect(
+        page.getByRole('heading', { name: /no stop here|doesn'?t exist|not found|no such term/i }),
+      ).toHaveCount(0);
+    });
+  }
+
   // A tag merged into a target that was ITSELF later deprecated has no live
   // concept to reach, so 404 is the correct answer — a 301 there would just be a
   // redirect into a 404. Measured on prod: 57 of 195 redirect rows are this shape.
