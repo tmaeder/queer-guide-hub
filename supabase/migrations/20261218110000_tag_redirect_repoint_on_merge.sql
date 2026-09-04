@@ -64,6 +64,17 @@
 --     coverage decision, not this defect. merge_tag_concept() flattens the
 --     canonical up front (20260802141407), so the single hop is correct for
 --     every caller that goes through it.
+--
+-- KNOWN ASYMMETRY: unmerge_tag_concept() is not a true inverse of this. An
+-- unmerge restores the duplicate to active but does NOT send these redirects
+-- back to it -- they stay on the canonical the trigger moved them to. That is
+-- the same direction the redirect minted by branch (a) already had, and it is
+-- better than pointing at a row that is active again under its own concept, so
+-- it is left alone rather than papered over. Recorded because it is a real gap
+-- and the next person should not have to rediscover it. The observation comes
+-- from #3363, which reached this same fix independently from the defect side
+-- and was closed in favour of this one; its header was the only place it was
+-- written down.
 
 -- ---------------------------------------------------------------------------
 -- 1. One definition of "where does this tag actually live now", shared by the
