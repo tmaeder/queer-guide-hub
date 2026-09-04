@@ -122,12 +122,26 @@ ${values};
     raise exception 'new terms: % row(s) name a category that does not exist', v_bad;
   end if;
 
-  -- Refuse to create anything that already exists under any status. A term that
-  -- is merely deprecated needs REVIVING, not a duplicate concept alongside it.
+  -- An ACTIVE or MERGED slug aborts: a live tag must never be silently
+  -- overwritten by a bulk import, and a merged one is a redirect whose target
+  -- this migration knows nothing about.
+  --
+  -- A DEPRECATED slug is revived instead. The original guard here refused every
+  -- existing slug under any status while telling the reader to "revive them
+  -- instead of creating duplicates" — advice it gave no way to follow — so it
+  -- aborted \`db push\` on main and stranded seven later migrations behind it.
+  -- db push applies in version order and stops at the first failure.
+  --
+  -- The colliding rows are the same concepts this migration authors: femdom,
+  -- voyeur and pretzel were deprecated by the orphan sweep for having "no
+  -- entity assignments, relations, synonyms, or aliases", with merged_into_id
+  -- NULL. A glossary term has no entity assignments by nature, so that sweep
+  -- culled vocabulary rather than junk.
   select count(*) into v_bad from _new n
-   where exists (select 1 from public.unified_tags t where t.slug = n.slug);
+    join public.unified_tags t on t.slug = n.slug
+   where t.status <> 'deprecated';
   if v_bad > 0 then
-    raise exception 'new terms: % slug(s) already exist — revive them instead of creating duplicates', v_bad;
+    raise exception 'new terms: % slug(s) already exist and are not deprecated — resolve by hand', v_bad;
   end if;
 
   for r in select * from _new order by slug loop
@@ -141,7 +155,29 @@ ${values};
            c.id, c.name, r.kind::tag_entity_kind,
            r.adult, r.sensitive,
            'active', false, false, 'unverified'
-      from public.tag_categories c where c.slug = r.cat;
+      from public.tag_categories c where c.slug = r.cat
+    -- status, deprecated_at and deprecation_reason are cleared TOGETHER, which
+    -- is the whole difference between a revive and a resurrection. An upsert
+    -- that wrote status='active' and left deprecated_at set is what stranded
+    -- 297 tags in a state where the page rendered but search refused to index
+    -- them (lgbtiq, sauna, kink unreachable for three months). Since
+    -- 20261007100000 that state is unrepresentable, so getting this wrong now
+    -- fails loudly here rather than silently in production.
+    on conflict (slug) do update set
+      name                = excluded.name,
+      description         = excluded.description,
+      long_description    = excluded.long_description,
+      category_id         = excluded.category_id,
+      category            = excluded.category,
+      entity_kind         = excluded.entity_kind,
+      is_adult            = excluded.is_adult,
+      is_sensitive        = excluded.is_sensitive,
+      status              = 'active',
+      deprecated_at       = null,
+      deprecation_reason  = null,
+      seo_indexable       = false,
+      human_reviewed      = false,
+      verification_status = 'unverified';
     v_made := v_made + 1;
 
     insert into public.tag_sources (tag_id, source_type, claim_summary, is_public)
