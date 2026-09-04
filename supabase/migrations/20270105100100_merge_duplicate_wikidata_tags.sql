@@ -1,6 +1,6 @@
 -- Merge genuine duplicate tags that share a Wikidata identifier.
 --
--- Companion to 20261221100000, which retracted the 34 identifiers that were
+-- Companion to 20270105100000, which retracted the 34 identifiers that were
 -- simply WRONG. These 37 pairs are the opposite case: two names for one thing.
 -- Everything not in either migration is still open on purpose -- 21 groups need
 -- a human call, 4 are generic-sense twins (mat-lace the textile vs lace the
