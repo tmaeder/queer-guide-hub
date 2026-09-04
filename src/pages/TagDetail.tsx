@@ -75,6 +75,8 @@ import { TagLinkedContent } from '@/components/tags/TagLinkedContent';
 import { StiProfile } from '@/components/tags/StiProfile';
 import { TagMythFacts } from '@/components/tags/TagMythFacts';
 import { TAG_DIAGRAMS } from '@/components/tags/tagDiagrams';
+import { TagInfographics } from '@/components/tags/TagInfographics';
+import { figuresForSlug } from '@/components/tags/infographics/registry';
 import { useTagMedicalCodes, countMedicalCodes } from '@/hooks/useTagMedicalCodes';
 import { useStiProfile, useTagMythFacts } from '@/hooks/useStiProfile';
 
@@ -239,6 +241,11 @@ export default function TagDetail() {
     return extractSections(body);
   }, [tag?.long_description]);
 
+  /** Read from the EAGER registry, never from the lazy renderer. The station
+   *  has to exist on first render — a strip that grows a stop once a chunk
+   *  resolves points at nothing in the meantime. */
+  const figures = useMemo(() => figuresForSlug(tag?.slug), [tag?.slug]);
+
   /** The stations are the page's BANDS, with the wiki's own `<h2>`s as
    *  sub-stations under "About". A prose-only table of contents renders nothing
    *  on most terms — only a minority carry a `long_description` with headings —
@@ -250,6 +257,20 @@ export default function TagDetail() {
     if (tag.description || tag.long_description) {
       s.push({ id: 'about', title: t('tags.detail.about', 'About') });
       s.push(...(wiki?.sections ?? []).map((x) => ({ ...x, depth: 2 as const })));
+    }
+    // A figure elaborates the definition; it never replaces it, so it follows
+    // #about. Sub-stations only when there is more than one to disambiguate.
+    if (figures.length > 0) {
+      s.push({ id: 'figure', title: t('tags.detail.figure', 'Diagram') });
+      if (figures.length > 1) {
+        s.push(
+          ...figures.map((f) => ({
+            id: `figure-${f.id}`,
+            title: t(f.titleKey, f.titleFallback),
+            depth: 2 as const,
+          })),
+        );
+      }
     }
     // Both flag presence and the hanky slug are synchronous TS data, so unlike
     // the async counts below they need no extra memo deps beyond `tag`.
@@ -298,6 +319,7 @@ export default function TagDetail() {
     hasStiProfile,
     mythFactCount,
     diagrams,
+    figures,
     t,
   ]);
 
@@ -482,6 +504,10 @@ export default function TagDetail() {
           ) : null}
         </section>
       )}
+
+      {/* The picture, then its place in the taxonomy. A figure elaborates the
+          definition; it never replaces it, so it always follows #about. */}
+      <TagInfographics slug={tag.slug} pageAlreadyGated={isAdult} />
 
       <TagFlagBand tagSlug={tag.slug} />
 

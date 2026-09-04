@@ -15,9 +15,13 @@ name: E2E Critical Path (PR)
 on:
   pull_request:
     branches: [main]
+  # Merge queue: a required check that never reports on the merge_group event
+  # leaves the queued PR pending forever. Same failure this repo already hit
+  # twice with `paths:` filters on required checks.
+  merge_group:
 
 concurrency:
-  group: e2e-pr-${{ github.head_ref }}
+  group: e2e-pr-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
 permissions:

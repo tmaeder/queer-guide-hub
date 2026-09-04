@@ -9,6 +9,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Wordmark } from '@/components/brand/Wordmark';
 import { TrackSwatch } from '@/components/transit/TrackSwatch';
 import { PAGE_GUTTER } from '@/components/layout/PageContainer';
+import { REQUIRED_ATTRIBUTION } from '@/lib/attribution';
 import { FooterTracks } from './FooterTracks';
 
 /**
@@ -73,6 +74,12 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
   const localePath = pathname.replace(/^\/(?:[a-z]{2}\/)?/, '/');
 
   if (variant === 'compact') {
+    // No data-attribution row here, deliberately. The obligation attaches to
+    // pages that publish the derived work, and the compact variant is scoped
+    // to /auth, /claim-username, /onboarding, /hub and /settings — forms and
+    // account screens, none of which render the OSM-derived city diagrams or
+    // the country data. If that list ever grows to cover a content surface,
+    // this branch needs the row from the full footer below.
     return (
       <footer className="mt-auto">
         <div className={cn('mx-auto w-full max-w-page py-8', PAGE_GUTTER)}>
@@ -292,6 +299,61 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
               the header wordmark became a graphic — dropping it left the page
               with no machine-readable owner. */}
           <span className="text-2xs text-background/50">&copy; {currentYear} Queer Guide</span>
+
+          {/* Data attribution. This row came OUT of the footer on 2026-08-30
+              and moved to the /about colophon, which was the right home for it
+              while /about was public. The colophon is now members-only, so the
+              obligated subset comes back here.
+
+              UNCONDITIONAL on purpose — not "render this when signed out".
+              Making it the exact complement of the /about gate sounds tidier
+              and is the bug: the two conditions are evaluated in different
+              components against an auth state that resolves asynchronously, so
+              any window where both read false is a page publishing OSM-derived
+              artwork with no credit anywhere. One always-public home costs a
+              wrapped line for signed-in readers and cannot have that gap.
+
+              Only the credits ODbL / CC BY / CC BY-SA actually compel are
+              here; see src/lib/attribution.ts for what is left out and why. */}
+          {/* /70, not the /50 the copyright line beside it uses. Measured on
+              the rendered plate: /50 is 3.5:1 and /70 is 6.9:1. AA wants 4.5:1
+              at this size, and a licence notice is the last thing on the page
+              that should be styled as unreadable fine print. */}
+          <span className="flex flex-wrap items-center gap-x-4 gap-y-1 text-2xs text-background/70">
+            {REQUIRED_ATTRIBUTION.map((source) => (
+              <span key={source.href}>
+                {/* NO `no-underline` here, and that absence is the whole
+                    mechanism — do not "tidy" it by adding one, and do not add
+                    an `underline` utility either.
+
+                    index.css underlines inline links with a `::after` bar and
+                    explicitly sets `text-decoration: none` on them, so reading
+                    `textDecorationLine` says "none" on a link that is in fact
+                    underlined, and a Tailwind `underline` class is inert
+                    against that unlayered rule. The selector is
+                    `span a:not(.no-underline)`, which this anchor matches by
+                    sitting in a span and staying bare — verified on prod:
+                    ::after 1px, full width, scaleX(1).
+
+                    The footer's own nav links DO carry `no-underline`, because
+                    they are standalone links. These are inline credits inside
+                    a line of text, which is exactly the case the rule is for.
+
+                    Full-strength colour against the row's /70 is a hierarchy
+                    choice, not the accessibility mechanism: it makes the
+                    credited name read ahead of its licence token. */}
+                <a
+                  href={source.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-background hover:text-background"
+                >
+                  {source.name}
+                </a>{' '}
+                {source.licence}
+              </span>
+            ))}
+          </span>
         </div>
       </div>
     </footer>

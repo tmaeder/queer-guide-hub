@@ -131,10 +131,29 @@ describe('kinktionary new terms — nothing is published on creation', () => {
       expect(body).toContain('must be created unreviewed and unindexed');
     });
 
-    it(`${file} refuses to duplicate a slug that already exists`, () => {
-      // A deprecated row needs REVIVING; a second row for one concept is how a
-      // glossary ends up with two pages disagreeing about a term.
-      expect(sql(file)).toContain('revive them instead of creating duplicates');
+    it(`${file} refuses a live slug and revives a deprecated one`, () => {
+      const body = sql(file);
+      // A second row for one concept is how a glossary ends up with two pages
+      // disagreeing about a term, so a collision is never simply inserted past.
+      // But the two collision kinds are not the same problem: an ACTIVE row is
+      // someone's live tag and a MERGED one is a redirect these migrations know
+      // nothing about, so both stop the migration for a human. A DEPRECATED row
+      // is this same concept, culled by the orphan sweep for having no entity
+      // assignments — which a glossary term never has — so it is revived.
+      expect(body).toContain('already exist and are not deprecated');
+      expect(body).toMatch(/on conflict \(slug\) do update set/);
+    });
+
+    it(`${file} clears the whole deprecation state when it revives`, () => {
+      const body = sql(file);
+      // status, deprecated_at and deprecation_reason must move TOGETHER. An
+      // upsert that set status='active' and left deprecated_at is what once
+      // stranded 297 tags rendering-but-unindexable (lgbtiq, sauna, kink
+      // unreachable for three months), so a revival that clears only the
+      // status is the specific bug this asserts against.
+      expect(body).toMatch(/status\s*=\s*'active'/);
+      expect(body).toMatch(/deprecated_at\s*=\s*null/);
+      expect(body).toMatch(/deprecation_reason\s*=\s*null/);
     });
 
     it(`${file} records provenance privately`, () => {
