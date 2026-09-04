@@ -2,7 +2,8 @@ import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { useStiProfile } from '@/hooks/useStiProfile';
-import { transmissionRiskVisual, BloodIcon } from '@/lib/stiRisk';
+import { transmissionRiskVisual } from '@/lib/stiRisk';
+import { RiskMark } from '@/components/health/RiskMark';
 
 /**
  * The sexual-health band on an STI tag page: how it spreads (worst route
@@ -58,30 +59,39 @@ export function StiProfile({ tagId, tagName }: Props) {
         <h3 className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
           {t('tags.sti.transmission', 'How it spreads (unprotected)')}
         </h3>
-        <ul className="mt-4 flex list-none flex-wrap gap-2 p-0">
+        {/* The mark is `RiskMark` and the practice is text beside it, rather
+            than one tinted chip carrying both. Two reasons: the fill's ink
+            border is a contract that now lives in exactly one component (this
+            block used to draw `border-width: 0` while the file header claimed
+            "tint + ink border"), and it makes this band read identically to the
+            per-infection blocks on /tags/sti-guide — same mark, same order,
+            same grammar, so a reader meets one visual language on both. */}
+        <ul className="m-0 mt-4 list-none p-0">
           {profile.transmission.map((route) => {
             const v = transmissionRiskVisual(route.risk);
-            const Icon = v.Icon;
             return (
               <li
                 key={route.practice}
-                className="inline-flex items-center gap-2 bg-muted rounded-element px-2 py-1.5"
-                style={{ backgroundColor: `hsl(${v.tint})`, color: `hsl(${v.ink})` }}
+                className="flex items-center gap-2 border-b border-border-hairline py-2 last:border-b-0"
               >
-                <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                {/* `describedByRow`: the level is visible text at the end of
+                    this row, so naming the mark too made every row announce
+                    "High risk High risk". */}
+                <RiskMark risk={route.risk} blood={route.blood} size="sm" describedByRow className="shrink-0" />
                 <span className="text-13 font-bold">{route.label}</span>
-                {route.blood && <BloodIcon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />}
-                {/* The level is already visible text below, so the sr-only
-                    span carries ONLY the blood modifier — repeating the label
-                    here made every chip announce "High risk High risk". */}
-                {route.blood && (
-                  <span className="sr-only">
-                    {' — '}
-                    {t('tags.sti.bloodNote', 'risk rises when blood is involved')}
-                  </span>
-                )}
-                <span className="text-2xs font-bold uppercase tracking-label opacity-70">
+                <span className="ml-auto text-2xs font-bold uppercase tracking-label text-muted-foreground">
                   {v.label}
+                  {/* The blood modifier is VISIBLE text, not an sr-only string
+                      hanging off the icon. It used to be announced as a bare
+                      em-dash fragment before the practice name, and sighted
+                      readers got only a droplet — colour and glyph alone
+                      carrying a meaning (WCAG 1.4.1). Now both get the words. */}
+                  {route.blood && (
+                    <span className="text-muted-foreground">
+                      {' · '}
+                      {t('tags.sti.bloodShort', 'with blood')}
+                    </span>
+                  )}
                 </span>
               </li>
             );
