@@ -6,6 +6,10 @@ on:
   # skip the workflow entirely for non-i18n PRs, which left them
   # permanently BLOCKED on the missing required check.
   pull_request:
+  # Merge queue: a required check that never reports on the merge_group event
+  # leaves the queued PR pending forever. Same failure this repo already hit
+  # twice with `paths:` filters on required checks.
+  merge_group:
   push:
     branches: [main]
     paths:

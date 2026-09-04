@@ -3438,6 +3438,8 @@
     "bodyFallback": "完整报道请见原始来源。",
     "originallyPublishedBy": "最初由 {{source}} 发布。",
     "viewOriginal": "查看原始报道",
+    "continueAtSource": "在 {{source}} 继续阅读全文",
+    "continueAtSourceGeneric": "在原始来源继续阅读",
     "integritySatire": "已标记为讽刺——并非字面报道。",
     "integrityAdvertorial": "赞助/软文内容。",
     "integritySentimentConflict": "各来源对语气存在分歧——请谨慎阅读。",
@@ -4079,7 +4081,9 @@
       "no": "[ZH] No",
       "varies": "[ZH] Varies",
       "unclear": "[ZH] Unclear",
-      "notApplicable": "[ZH] Not applicable"
+      "notApplicable": "[ZH] Not applicable",
+      "required": "[ZH] Required",
+      "notRequired": "[ZH] Not required"
     },
     "attr": {
       "so": {

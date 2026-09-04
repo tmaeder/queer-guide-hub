@@ -3438,6 +3438,8 @@
     "bodyFallback": "全文は元のソースでご覧いただけます。",
     "originallyPublishedBy": "初出: {{source}}。",
     "viewOriginal": "元の記事を見る",
+    "continueAtSource": "この記事の続きは{{source}}で読む",
+    "continueAtSourceGeneric": "続きは元のソースで読む",
     "integritySatire": "風刺としてフラグ付け — 事実の報道ではありません。",
     "integrityAdvertorial": "広告・タイアップコンテンツ。",
     "integritySentimentConflict": "トーンについて情報源が一致していません — 注意してお読みください。",
@@ -4079,7 +4081,9 @@
       "no": "[JA] No",
       "varies": "[JA] Varies",
       "unclear": "[JA] Unclear",
-      "notApplicable": "[JA] Not applicable"
+      "notApplicable": "[JA] Not applicable",
+      "required": "[JA] Required",
+      "notRequired": "[JA] Not required"
     },
     "attr": {
       "so": {

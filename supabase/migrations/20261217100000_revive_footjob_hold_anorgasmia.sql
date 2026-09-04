@@ -48,12 +48,22 @@
 -- to reject, and it would be created by the very migration that knows better.
 --
 -- NOTHING HERE IS PUBLISHED. The revived row lands seo_indexable=false,
--- human_reviewed=false, verification_status='unverified' — usable for tagging,
--- browsing and site search, invisible to crawlers until a human reads it. That
--- is the posture of the 296 rows 20261211100000/100100 created, and it is not a
--- formality: this programme has retracted machine-written prose from production
--- twice, and the lesson both times was that a presence check is not a sense
--- check.
+-- human_reviewed=false, verification_status='unverified' — invisible to crawlers
+-- until a human reads it. That is the posture of the 296 rows
+-- 20261211100000/100100 created, and it is not a formality: this programme has
+-- retracted machine-written prose from production twice, and the lesson both
+-- times was that a presence check is not a sense check.
+--
+-- CORRECTION 2026-09-04: this paragraph also said "usable for tagging, browsing
+-- and site search". That is true of an unverified NON-sensitive row and false of
+-- a sensitive one, which is what both rows here are. `unified_tags_public_gated_read`
+-- admits anon only when a row is non-sensitive OR verification_status is
+-- 'reviewed'/'locked', so `footjob` is not anon-browsable, not in anon site
+-- search, and — measured on prod 2026-09-03 — its /tags/footjob page answered a
+-- signed-out visitor with a hard 404 while rendering in full for a signed-in
+-- one. It is one of 101 active tags in that state. 20261220113000 replaced the
+-- 404 with a sign-in gate, which is the honest answer; the invisibility is
+-- intended and unchanged, and `verification_status` is the lever that ends it.
 --
 -- BOTH prose columns are rewritten, not just `description`. The crawler builds
 -- a tag's body as `long_description ?? description` (functions/_lib/detail.ts)
