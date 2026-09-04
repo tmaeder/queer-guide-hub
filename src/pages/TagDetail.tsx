@@ -60,6 +60,7 @@ import { SidebarCard, SidebarRow } from '@/components/transit/SidebarCard';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { TransitIcon } from '@/components/transit/TransitIcon';
 import { TagDetailWithGate } from '@/components/age-gate/TagDetailWithGate';
+import { GatedDetailFallback } from '@/components/safety/GatedDetailFallback';
 import { FollowTagButton } from '@/components/tags/FollowTagButton';
 import { TagAliasesDisplay } from '@/components/tags/TagAliasesDisplay';
 import { TagSafetyCallout } from '@/components/tags/TagSafetyCallout';
@@ -419,7 +420,7 @@ export default function TagDetail() {
   }
 
   if (isError || !tag) {
-    return (
+    const tagNotFound = (
       <PageContainer data-testid="tag-not-found" className="text-center">
         <h1 className="font-display text-display">
           {t('tags.detail.notFound.title', 'No such term')}
@@ -436,6 +437,15 @@ export default function TagDetail() {
         </LocalizedLink>
       </PageContainer>
     );
+    // `!tag` is NOT the same thing as "no such term" for a signed-out reader.
+    // `unified_tags_public_gated_read` hides a sensitive term until an editor
+    // reviews it, so `fetchTagWithCategories` returns null and this branch used
+    // to publish "Nothing in the glossary is filed under /footjob" about 101
+    // active terms that are filed, and that a signed-in reader sees in full.
+    // Same wrong answer the safety layer already fixed for places, same fix:
+    // ask the anon-safe boolean RPC whether a gated row exists here first.
+    // `noIndex` is unchanged either way — a sign-in gate must not be indexed.
+    return <GatedDetailFallback entityType="tag" slug={slug} notFound={tagNotFound} />;
   }
 
   const taxonomyPath = [parentName, childName]
