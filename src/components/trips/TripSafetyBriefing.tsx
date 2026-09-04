@@ -18,6 +18,7 @@ import { useRiskVisual } from '@/hooks/useRiskVisual';
 import { TripNewsSection } from './TripNewsSection';
 import { AiSafetyNarrativeCard } from './AiSafetyNarrativeCard';
 import { getScoreLabel, parseSsuSummary, getProtectionStatus } from '@/utils/equalityScore';
+import { requiresIt } from '@/lib/rights/transSafety';
 import type { TripPlace, TripDay } from '@/hooks/useTrips';
 import { PerLegSafety } from './PerLegSafety';
 
@@ -235,9 +236,12 @@ function CountryAccordion({
     const marker = String(lgr.gender_marker ?? '').trim();
     if (!marker || /^(no data|unknown|n\/a)$/i.test(marker)) return null;
     const costs: string[] = [];
-    if (/^yes$/i.test(String(lgr.requires_surgery ?? '')))
+    // ILGA writes "Required", not "Yes". The /^yes$/i test that stood here
+    // until 2026-09-01 matched no country, so this annotation — the cost of a
+    // document change, on the trip safety briefing — never rendered at all.
+    if (requiresIt(lgr.requires_surgery))
       costs.push(t('trips.safety.detail.gr.surgery', 'surgery required'));
-    if (/^yes$/i.test(String(lgr.requires_diagnosis ?? '')))
+    if (requiresIt(lgr.requires_diagnosis))
       costs.push(t('trips.safety.detail.gr.diagnosis', 'diagnosis required'));
     return costs.length > 0 ? `${marker} — ${costs.join(', ')}` : marker;
   })();
