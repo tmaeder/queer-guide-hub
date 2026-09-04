@@ -14,10 +14,10 @@ export const consentFlowMeta: InfographicMeta = {
   titleFallback: 'The line that stops',
   captionKey: 'tags.figures.consentFlow.caption',
   captionFallback:
-    'Consent as a route with signals, one speed restriction and no final destination — it loops back to the check-in and stays there. Not a legal test: the law differs by country.',
+    'Consent as a route with signals, one speed restriction and no final destination. It loops back to the check-in and stays there. Not a legal test; the law differs by country.',
   summaryKey: 'tags.figures.consentFlow.summary',
   summaryFallback:
-    'A branching line. Asking without an answer, and anything that is not a clear yes, end at buffer stops. Capacity is a hatched speed-restriction section rather than a yes/no signal. The line does not terminate in approval — it loops back to a check-in signal that can be answered again at any time.',
+    'A branching line. Asking without an answer, and anything that is not a clear yes, end at buffer stops. Capacity is a hatched speed-restriction section rather than a yes/no signal. The line does not terminate in approval. It loops back to a check-in signal that can be answered again at any time.',
   checkedOn: '2026-09-02',
   // Not adult, and not flagged sensitive: a content note on the definition of
   // consent would be the wrong instinct. The test `TagSafetyCallout` applies

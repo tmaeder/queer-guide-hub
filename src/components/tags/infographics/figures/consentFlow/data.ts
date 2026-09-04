@@ -94,7 +94,7 @@ export const NODES: readonly FlowNode[] = [
     labelFallback: 'Speed restriction: can everyone actually decide?',
     noteKey: `${K}.note.capacity`,
     noteFallback:
-      'Drink, drugs, exhaustion, being half asleep. Not a switch — if you cannot tell, you do not have an answer yet.',
+      'Drink, drugs, exhaustion, being half asleep. Not a switch. If you cannot tell, you do not have an answer yet.',
     slug: 'chemsex',
   },
   {
@@ -127,7 +127,7 @@ export const NODES: readonly FlowNode[] = [
     lane: 5,
     slot: 2,
     labelKey: `${K}.node.go`,
-    labelFallback: 'Clear to proceed — for now',
+    labelFallback: 'Clear to proceed, for now',
     noteKey: `${K}.note.go`,
     noteFallback: 'And back to the check-in, which is why this line is a loop.',
   },

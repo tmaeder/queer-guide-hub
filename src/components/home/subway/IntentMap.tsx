@@ -53,7 +53,7 @@ export function IntentMap() {
         id="intent-map-heading"
         // `max-w-page`, not `max-w-7xl`: the heading is page copy and lines up
         // with the nav above it. The map STAGE below deliberately does not —
-        // it is a full-bleed illustration with its own 1728px canvas.
+        // it is a full-bleed illustration and takes the whole window.
         className="mx-auto mb-8 max-w-page font-display text-headline lg:mb-24 lg:px-8"
       >
         {t('header.intents.sheetHeading', 'What are you here for?')}
@@ -65,7 +65,13 @@ export function IntentMap() {
           mirrors itself internally and the stations get mirrored percentages
           — ordinary physical `left` the whole way down, no double flips, and
           the type is never reversed because nothing is scaled. */}
-      <div className="intent-map relative lg:mx-auto lg:max-w-[1728px]">
+      {/* NO max-width. The tracks are drawn from x=-40 to x=1480 in a 0..1440
+          viewBox precisely so they bleed off both edges of the stage; a cap on
+          the stage put that bleed 96px inside the window at 1920px and the
+          lines read as four short strokes with rounded ends floating in a
+          margin. Full bleed is the whole point of the drawing — the section
+          already drops its gutter at `lg`, and `SubwayHero` clips. */}
+      <div className="intent-map relative">
         {/* Decorative: every label on this map is HTML. */}
         <svg
           viewBox={`0 0 ${VIEWBOX.w} ${VIEWBOX.h}`}
