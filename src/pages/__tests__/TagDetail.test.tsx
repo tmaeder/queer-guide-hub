@@ -13,8 +13,11 @@ vi.mock('@/hooks/useMeta', () => ({ useMeta: (o: unknown) => useMeta(o) }));
 // outside an AuthProvider. Signed-out is the interesting state here anyway:
 // it is the only one that can be shown a term that does not appear to exist.
 // Same mock as EventDetail.test.tsx / QueerVillageDetail.test.tsx.
+// Mutable so one case can assert the SIGNED-IN path, where the gate query is
+// disabled and must not leave the title stuck on "Loading".
+let authUser: { id: string } | null = null;
 vi.mock('@/hooks/useAuth', () => ({
-  useAuth: () => ({ user: null, session: null, loading: false }),
+  useAuth: () => ({ user: authUser, session: null, loading: false }),
 }));
 
 // `gated_entity_exists` for the tag branch. Default: nothing is gated, so the
@@ -113,6 +116,7 @@ beforeEach(() => {
   useMeta.mockClear();
   gatedRpc.mockClear();
   gatedSlugs = [];
+  authUser = null;
   tagReferences = [];
   substanceInteractions = [];
   tagRow = { ...BASE };
@@ -283,6 +287,45 @@ describe('TagDetail — page', () => {
     renderPage();
     await screen.findByRole('heading', { name: /sign in to view this term/i });
     await waitFor(() => expect(lastMeta()?.noIndex).toBe(true));
+  });
+
+  // The <title> is the reader's tab, bookmark and history entry. Titling a
+  // gated term "No such term" is the same denial the page body stopped making:
+  // observed on prod 2026-09-04 with the heading reading "Sign in to view this
+  // term" and the tab reading "No such term | Queer Guide".
+  it('titles a gated term as the gate, not as a 404', async () => {
+    tagRow = null;
+    gatedSlugs = ['bear'];
+    renderPage();
+    await screen.findByRole('heading', { name: /sign in to view this term/i });
+    await waitFor(() => expect(lastMeta()?.title).toMatch(/sign in to view this term/i));
+  });
+
+  it('still titles a genuinely missing term "No such term"', async () => {
+    // The other half of the pair. Without it the case above passes on a build
+    // that titles EVERY dead glossary URL as a sign-in gate, which would be a
+    // worse lie than the one being fixed.
+    tagRow = null;
+    gatedSlugs = [];
+    renderPage();
+    await screen.findByTestId('tag-not-found');
+    await waitFor(() => expect(lastMeta()?.title).toBe('No such term'));
+  });
+
+  it('does not strand a SIGNED-IN reader on "Loading" for a missing term', async () => {
+    // React Query v5 keeps a DISABLED query at status 'pending' forever, and
+    // the gate query is disabled for every signed-in reader. Keying the title
+    // on `isPending` alone therefore pins their 404 to "Loading" permanently —
+    // caught here, not in review. `fetchStatus !== 'idle'` is the real
+    // in-flight test.
+    authUser = { id: 'u1' };
+    tagRow = null;
+    gatedSlugs = ['bear']; // would be gated IF asked — but signed-in never asks
+    renderPage();
+    await screen.findByTestId('tag-not-found');
+    await waitFor(() => expect(lastMeta()?.title).toBe('No such term'));
+    expect(lastMeta()?.title).not.toMatch(/loading/i);
+    expect(gatedRpc).not.toHaveBeenCalled();
   });
 
   it('noindexes an unknown slug and does not title it "Loading"', async () => {
