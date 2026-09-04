@@ -120,21 +120,39 @@ test.describe('@safety glossary: clinical re-file and the foot cluster', () => {
     expect(robotsOf(html), 'foot-fetish must stay indexable').not.toMatch(/noindex/);
   });
 
-  // foot-worship's prose was rewritten, so its review flag was cleared by
-  // design. The correct anon answer is a sign-in gate — NOT the new prose, and
-  // NOT a 404 (a real term must not read as a typo).
-  for (const slug of ['foot-worship', 'footjob']) {
-    test(`${slug} answers a sign-in gate rather than a 404`, async ({ request }) => {
+  // Both rows were created/rewritten with machine-written prose and therefore
+  // held UNPUBLISHED, and until 2026-09-04 these two cases asserted the sign-in
+  // gate. `20270107114500` published them after a human read, so the assertion
+  // is inverted here rather than deleted: the behaviour changed deliberately,
+  // and the pages still need pinning — now to the published state.
+  //
+  // Each case still pairs a POSITIVE fingerprint from the specific reviewed body
+  // with the negatives, so a blank page, a gate or a 404 all fail. That matters
+  // more after publishing than before: an empty `<article>` would satisfy "not
+  // noindex" on its own.
+  const PUBLISHED: Array<{ slug: string; fingerprint: RegExp }> = [
+    // Distinguishes the practice from the attraction — the whole point of
+    // 20261219100000, and the sentence a wrong-sense rewrite would lose first.
+    { slug: 'foot-worship', fingerprint: /a practice rather than an attraction/i },
+    // The risk framing, which is the part of this body worth not silently losing.
+    { slug: 'footjob', fingerprint: /non-penetrative/i },
+  ];
+
+  for (const { slug, fingerprint } of PUBLISHED) {
+    test(`${slug} serves its reviewed prose to a signed-out visitor`, async ({ request }) => {
       const res = await request.get(`/tags/${slug}`, { headers: { 'User-Agent': BOT_UA } });
       const html = await res.text();
 
-      expect(res.status(), 'a real term must not answer 404').toBe(200);
-      // POSITIVE CONTROL: the gate itself rendered, so the negatives below are
-      // not passing on a blank page.
-      expect(html, 'the sign-in gate must render').toMatch(/sign in/i);
-      // Withheld prose must genuinely be withheld from the crawler.
-      expect(prerendered(html), 'unreviewed prose must not be prerendered').toBe('');
-      expect(robotsOf(html), 'a gated term must not be indexable').toMatch(/noindex/);
+      expect(res.status(), 'a published term must answer 200').toBe(200);
+      // POSITIVE CONTROL: the reviewed body is actually being served, so the
+      // negatives below cannot pass on an empty or gated page.
+      expect(prerendered(html), 'published prose must be prerendered').not.toBe('');
+      expect(articleText(html), `${slug} must serve its reviewed body`).toMatch(fingerprint);
+      // The gate is gone and the crawler is welcome.
+      expect(html, 'a published term must not offer a sign-in gate').not.toMatch(
+        /sign in to view/i,
+      );
+      expect(robotsOf(html), 'a published term must be indexable').not.toMatch(/noindex/);
     });
   }
 });
