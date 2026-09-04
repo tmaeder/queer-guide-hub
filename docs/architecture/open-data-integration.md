@@ -109,7 +109,7 @@ trusting the prose — a stale figure here is worse than no figure.
 | STI transmission + testing windows | Editorial / clinical | — | `built` — `sti_profiles`, `sti_transmission_risks`, `sti_testing_windows`, `sti_protection_methods` | `pathogen IN ('virus','bacteria')` | — |
 | Clinical codes | Wikidata registered properties | — | `built` — `tag_medical_codes_sync` (`30 5 * * 1`), 11 systems | `code_pattern` rejects malformed | — |
 | **Dosage, onset/duration, half-life, redose** | **none exists** — see §5 Phase 3 | — | **`missing`, and NOT buildable from open data** | — | prose only on `/tags/:slug` |
-| **Adulteration / drug-checking results** | **EUDA TEDI** (CC BY 4.0, 7,120 rows) — *not* DrugsData or UNODC, both measured unavailable | — | **`missing` — costed proposal in §5 Phase 3, awaiting a decision** | — | `drug-checking` exists as a *service* amenity, not as data |
+| **Adulteration / drug-checking results** | **EUDA TEDI** (CC BY 4.0, 7,120 rows) — *not* DrugsData or UNODC, both measured unavailable | — | **`missing`** — approved to build 2026-09-02, but the fetch **cannot be a cron**: EUDA serves a Cloudflare JS challenge to datacenter IPs (§5 Phase 3). Human download, committed, per semester | — | `drug-checking` exists as a *service* amenity, not as data |
 | Regional purity / market trends | **EUDA TEDI** (mean + decile bands, MDMA mg-per-tablet) | RADARS | `missing` — same proposal; the EUDA *Statistical Bulletin* price/purity tables are **HTML-only, 0 CSVs**, so TEDI is the machine-readable path | — | — |
 
 ### 1.5 Legal & Travel Advisory — `public.countries` (250)
@@ -887,13 +887,45 @@ recommendation survives — but the *reason* for the dosage half changed, and th
 > or half-life at all. Structuring this would mean *generating* numbers by extraction from frozen
 > prose and publishing them as harm-reduction guidance. **Do not.**
 
-**Adulteration is a real build, and the source is EUDA TEDI.** Verified live: four static CSVs plus a
-zip (`tedi25-table-{1..4}_en.csv`, all `200 text/csv`), catalogue date **16.07.2026**,
-**CC BY 4.0** — the legal notice states EUDA content "may be reproduced, adapted and/or distributed"
-with attribution. Table 4 is 7,120 rows of *sold-as* versus *found-in-it*
+**Adulteration is a real build, and the source is EUDA TEDI.** Four static CSVs plus a zip
+(`tedi25-table-{1..4}_en.csv`), catalogue date **16.07.2026**, **CC BY 4.0** — the legal notice
+states EUDA content "may be reproduced, adapted and/or distributed" with attribution. Table 4 is
+7,120 rows of *sold-as* versus *found-in-it*
 (`"Austria","Graz",2024,"January-June","Amphetamine","Caffeine",85,119,71.43`); table 2 carries mean
 purity plus decile bands and an adulteration rate; table 3 bins MDMA tablets by mg. Coverage:
 **10 countries, 90 cities, 2018–2025, 6 sold-as categories, 368 distinct substances identified.**
+
+> **THE FETCH CANNOT BE A CRON, AND THAT IS MEASURED (2026-09-02).** EUDA sits behind a Cloudflare
+> bot challenge. Evidence from three network positions:
+>
+> | from | result |
+> |---|---|
+> | dev sandbox (Swiss residential ISP) — curl, WebFetch, headless Chromium | **403 Cloudflare block, every path including `/`** |
+> | Supabase `net.http_get` — EUDA homepage | **200, 201,252 bytes of real HTML** |
+> | Supabase `net.http_get` — four further paths, moments later | **403, ~5,500 bytes, body reads `Just a moment...`** |
+>
+> Read together: the production network path **exists** — the homepage really was served — and then
+> Cloudflare began issuing a **JavaScript challenge** to the datacenter IP. Neither `net.http_post`
+> nor Deno `fetch` can solve one.
+>
+> **Two 403s that mean opposite things, and telling them apart IS the finding.** A ~99 KB body whose
+> Matomo call sets `setDocumentTitle "403/UR…"` is EUDA's OWN error page — a wrong URL, fixable. A
+> ~5.5 KB body containing `Just a moment...` is Cloudflare — not fixable from a server. The status
+> code alone conflates them.
+>
+> **Why a cron is unsafe even when it sometimes works:** a challenge page is `200`-shaped HTML that
+> parses to zero rows. `source-euda-tedi` would look healthy while publishing "no adulterant findings
+> this period" — the `feed ≠ parsed` failure `20261119100000` exists to refuse, one source later, on
+> data where absence reads as reassurance.
+>
+> **So the fetch is a HUMAN DOWNLOAD committed to the repo**, refreshed per semester, date stamped on
+> every row — precedent `cityNetworkGeometry.ts`. The alternative is asking EUDA to allowlist us
+> (CC BY 4.0, so a reasonable request, merely slower). **Do not spend another session trying to
+> automate this fetch.** It is the Equaldex lesson from §5 Phase 2 repeating: the blocker is
+> external, and the honest state is a snapshot, not a feed.
+>
+> The `data.europa.eu` catalogue is not a way around it — both TEDI bulletins are listed there with
+> **0 distributions**, i.e. stubs linking back to the blocked host.
 
 The two richer individual-sample corpora are **closed, and neither is a scraping problem**:
 

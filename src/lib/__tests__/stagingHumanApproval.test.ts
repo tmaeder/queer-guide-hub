@@ -112,7 +112,16 @@ describe('the stranded shape is a CI-visible sentinel', () => {
     const guard = /if\s*\(strandedTotal\s*>\s*(\d+)\)\s*\{([\s\S]*?)\n\s*\}/.exec(block);
     expect(guard, 'no strandedTotal guard').toBeTruthy();
     expect(Number(guard![1])).toBe(0);
-    expect(guard![2]).toMatch(/process\.exit\(1\)/);
+
+    // The PROPERTY is "this is a hard failure, not a warning" — not the
+    // mechanism that delivers it. This asserted `process.exit(1)` until
+    // 2026-09-04, when the script stopped exiting inline so a failure in an
+    // early section could no longer hide every section after it; the guard
+    // still fails the build, now via `FAILED = true` plus one exit at the
+    // bottom. Pinning the mechanism made a behaviour-preserving refactor read
+    // as a regression, so assert the two things that actually matter.
+    expect(guard![2]).toMatch(/FAILED\s*=\s*true|process\.exit\(1\)/);
+    expect(guard![2]).not.toMatch(/console\.warn/);
   });
 });
 
