@@ -1,12 +1,35 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
+import {
+  RecognitionLedger,
+  type LedgerUnit,
+  type RecognitionLedgerRow,
+} from '@/components/rights/RecognitionLedger';
+import { HumanityBand } from '@/components/rights/HumanityBand';
+import { RecognitionWorldMap } from '@/components/rights/RecognitionWorldMap';
+import { RecognitionMapLegend } from '@/components/rights/RecognitionMapLegend';
+import { CoverageNote } from '@/components/intent/CoverageNote';
+import { SelfIdTimeline } from '@/components/rights/SelfIdTimeline';
+import { DevelopmentCounterpoint } from '@/components/rights/DevelopmentCounterpoint';
+import { TmmCountryTable, type TmmRow } from '@/components/rights/TmmCountryTable';
+import { TmmReportingPanel } from '@/components/rights/TmmReportingPanel';
+import { latestPeriodOf, summariseTmmReporting } from '@/lib/rights/tmmCoverage';
+import {
+  developmentCounterexamples,
+  selfIdTimeline,
+  summariseRecognitionWorld,
+  type RegimeId,
+} from '@/lib/rights/recognitionPerspective';
+import { formatPeople, formatShare } from '@/lib/format';
 import { useMeta } from '@/hooks/useMeta';
 import { IntentPageLayout } from '@/components/intent/IntentPageLayout';
 import { useAllCountriesTransRights } from '@/hooks/useIntentData';
 import { TgeuSourceLine } from '@/components/rights/SourceLine';
 import {
   readTransViolence,
+  requiresIt,
   summariseRecognition,
   TGEU_TMM_URL,
   TGEU_TRI_URL,
@@ -49,67 +72,119 @@ import type { SectionDef } from '@/components/entity/editorial';
  */
 const TRANS_BLIND_SPOTS = computeRightsProfile({}).trans.notCovered;
 
-/** Monochrome CSS bar. The house pattern from RightsLedger — no chart library. */
-function Bar({ value, of }: { value: number; of: number }) {
-  const pct = of > 0 ? Math.round((value / of) * 100) : 0;
-  return (
-    <span
-      className="inline-block h-1 w-20 shrink-0 bg-muted align-middle"
-      role="presentation"
-      aria-hidden="true"
-    >
-      <span className="block h-full bg-foreground/60" style={{ width: `${pct}%` }} />
-    </span>
-  );
-}
-
-function LedgerRow({
-  label,
-  value,
-  of,
-  note,
-}: {
-  label: string;
-  value: number;
-  of: number;
-  note?: string;
-}) {
-  return (
-    <li className="flex items-baseline justify-between gap-4 border-b border-border py-2">
-      <span className="min-w-0">
-        {label}
-        {note ? <span className="block text-xs text-muted-foreground">{note}</span> : null}
-      </span>
-      <span className="flex shrink-0 items-center gap-2">
-        <Bar value={value} of={of} />
-        <span className="text-13 tabular-nums text-muted-foreground">
-          {value} / {of}
-        </span>
-      </span>
-    </li>
-  );
-}
+// The local `Bar` / `LedgerRow` pair moved to
+// src/components/rights/RecognitionLedger.tsx when each row gained a second
+// unit. They kept the RightsLedger house pattern — a monochrome CSS bar, no
+// chart library — and so does their replacement.
 
 export default function TransRights() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const navigate = useLocalizedNavigate();
   const { data: countries, isLoading, error } = useAllCountriesTransRights();
 
+  /**
+   * Countries or people. Default `countries`, deliberately: the reader arrives
+   * in the familiar frame, and switching is what PRODUCES the surprise. Both
+   * figures are rendered either way — the toggle changes emphasis, not what is
+   * available.
+   */
+  const [unit, setUnit] = useState<LedgerUnit>('countries');
+
+  /** Legend station filter for the map. Null shows every regime. */
+  const [activeRegime, setActiveRegime] = useState<RegimeId | null>(null);
+
   const rows = useMemo(() => countries ?? [], [countries]);
+
+  /**
+   * Clicking a country opens its page. The map hands back an ISO_A2 rather
+   * than a row, so the lookup lives here — the choropleth stays ignorant of
+   * what a country is.
+   */
+  const handleMapSelect = useCallback(
+    (iso: string) => {
+      const match = rows.find((c) => (c.code ?? '').toUpperCase() === iso);
+      if (match?.slug) navigate(`/country/${match.slug}`);
+    },
+    [rows, navigate],
+  );
 
   const recognition = useMemo(
     () => summariseRecognition(rows as unknown as Record<string, unknown>[]),
     [rows],
   );
 
-  /** Countries whose law demands surgery before it will change a document. */
+  const world = useMemo(() => summariseRecognitionWorld(rows), [rows]);
+  const timeline = useMemo(() => selfIdTimeline(rows), [rows]);
+  const counterpoint = useMemo(() => developmentCounterexamples(rows), [rows]);
+
+  /**
+   * Denominators are the WHOLE world — 250 countries, every person alive — not
+   * the 244 rows that carry a recognition record. Dividing by `measured`
+   * flatters every percentage on the page, and "no record" is a real answer
+   * about our knowledge that belongs in the total rather than out of it. The
+   * per-field measured count is still stated below the ledger.
+   */
+  const ledgerRows: RecognitionLedgerRow[] = useMemo(
+    () => [
+      {
+        id: 'marker',
+        label: t('rights.trans.ledger.marker', 'Gender marker change is possible'),
+        countries: recognition.markerChangePossible,
+        ofCountries: recognition.total,
+        people: recognition.peopleMarkerChangePossible,
+        ofPeople: recognition.totalPeople,
+      },
+      {
+        id: 'self-id',
+        label: t('rights.trans.ledger.selfId', 'Recognition by self-determination'),
+        note: t('rights.trans.ledger.selfIdNote', 'No medical or judicial gatekeeper required.'),
+        countries: recognition.selfId,
+        ofCountries: recognition.total,
+        people: recognition.peopleSelfId,
+        ofPeople: recognition.totalPeople,
+      },
+      {
+        id: 'surgery',
+        label: t('rights.trans.ledger.surgery', 'Requires surgery'),
+        note: t(
+          'rights.trans.ledger.surgeryNote',
+          'A sterilisation requirement. Counted as a harm, not a missing protection.',
+        ),
+        countries: recognition.requiresSurgery,
+        ofCountries: recognition.total,
+        people: recognition.peopleRequiresSurgery,
+        ofPeople: recognition.totalPeople,
+      },
+      {
+        id: 'diagnosis',
+        label: t('rights.trans.ledger.diagnosis', 'Requires a psychiatric diagnosis'),
+        countries: recognition.requiresDiagnosis,
+        ofCountries: recognition.total,
+        people: recognition.peopleRequiresDiagnosis,
+        ofPeople: recognition.totalPeople,
+      },
+    ],
+    [recognition, t],
+  );
+
+  /**
+   * Countries whose law demands surgery before it will change a document.
+   *
+   * This tested `/^yes$/i` until 2026-09-01 and so was ALWAYS empty, which
+   * meant the entire section below it was omitted from the page — see
+   * ilgaVocabulary.ts. There are 15, and they hold 3.39bn people.
+   */
   const surgeryCountries = useMemo(
     () =>
       rows
-        .filter((c) => {
-          const lgr = c.lgbti_gender_recognition as Record<string, unknown> | null;
-          return typeof lgr?.requires_surgery === 'string' && /^yes$/i.test(lgr.requires_surgery);
-        })
-        .map((c) => ({ id: c.id, name: c.name, slug: c.slug })),
+        .filter((c) => requiresIt((c.lgbti_gender_recognition ?? {}).requires_surgery))
+        .map((c) => ({
+          id: c.id,
+          name: c.name,
+          slug: c.slug,
+          population: Number(c.population ?? 0),
+        }))
+        .sort((a, b) => b.population - a.population),
     [rows],
   );
 
@@ -117,10 +192,29 @@ export default function TransRights() {
     () =>
       rows
         .map((c) => ({ country: c, record: readTransViolence(c.trans_violence_documented) }))
-        .filter((e) => e.record.state === 'documented')
-        .sort((a, b) => (b.record.total ?? 0) - (a.record.total ?? 0)),
+        .filter((e) => e.record.state === 'documented'),
     [rows],
   );
+
+  /**
+   * Deliberately NOT sorted here. The table sorts alphabetically by default
+   * and offers the case ordering as an opt-in — a list of countries ordered by
+   * killings reads as a danger ranking, and this one is close to its inverse.
+   */
+  const tmmRows: TmmRow[] = useMemo(
+    () =>
+      violence.map(({ country, record }) => ({
+        id: country.id,
+        name: country.name,
+        slug: country.slug ?? null,
+        record,
+      })),
+    [violence],
+  );
+
+  const latestPeriod = useMemo(() => latestPeriodOf(violence.map((v) => v.record)), [violence]);
+
+  const reporting = useMemo(() => summariseTmmReporting(rows), [rows]);
 
   const violenceTotal = violence.reduce((sum, e) => sum + (e.record.total ?? 0), 0);
   const fetchedAt = violence[0]?.record.fetchedAt ?? null;
@@ -152,50 +246,87 @@ export default function TransRights() {
       label: t('rights.trans.section.recognition', 'Legal gender recognition'),
       kicker: t('rights.trans.kicker.recognition', 'What a document change costs'),
       content: (
-        <div className="max-w-prose">
-          <p className="mb-4">
+        <div>
+          <p className="mb-4 max-w-prose">
             {t(
               'rights.trans.body.recognition',
               'The main rights index counts each right as a single yes or no. Gender recognition does not fit that shape: a country can allow you to change your gender marker and still require surgery, a psychiatric diagnosis or a divorce first. Those are counted separately here.',
             )}
           </p>
-          <ul className="list-none p-0 m-0 mb-4">
-            <LedgerRow
-              label={t('rights.trans.ledger.marker', 'Gender marker change is possible')}
-              value={recognition.markerChangePossible}
-              of={recognition.measured}
+
+          {/*
+            The sentence the whole page turns on. The numbers are separate
+            nodes rather than {{interpolations}} so a locale missing the key
+            degrades to English text and never prints a raw {{pct}} to a
+            reader — the SourceLine {{parent}} lesson.
+          */}
+          <p className="mb-6 max-w-prose font-medium">
+            <span className="tabular-nums">{recognition.requiresSurgery}</span>{' '}
+            {t(
+              'rights.trans.body.headlineA',
+              'countries will not change your gender marker unless you have been sterilised. That is',
+            )}{' '}
+            <span className="tabular-nums">
+              {formatShare(recognition.requiresSurgery, recognition.total)}%
+            </span>{' '}
+            {t('rights.trans.body.headlineB', 'of the world’s countries and')}{' '}
+            <span className="tabular-nums">
+              {formatShare(recognition.peopleRequiresSurgery, recognition.totalPeople)}%
+            </span>{' '}
+            {t('rights.trans.body.headlineC', 'of the world’s people —')}{' '}
+            <span className="tabular-nums">
+              {formatPeople(recognition.peopleRequiresSurgery, i18n.language)}
+            </span>{' '}
+            {t('rights.trans.body.headlineD', 'of us.')}
+          </p>
+
+          {/*
+            Map ABOVE the band, always, and never on its own. A choropleth is
+            area-weighted: read alone it makes the sterilisation regime look
+            like a speckle, when it is 41% of humanity. Area first, then
+            population directly underneath, so neither reading stands
+            unqualified. Both are drawn from the same `world` object.
+          */}
+          <div className="mb-4">
+            <RecognitionWorldMap
+              countries={rows}
+              activeRegime={activeRegime}
+              onCountrySelect={handleMapSelect}
             />
-            <LedgerRow
-              label={t('rights.trans.ledger.selfId', 'Recognition by self-determination')}
-              value={recognition.selfId}
-              of={recognition.measured}
-              note={t(
-                'rights.trans.ledger.selfIdNote',
-                'No medical or judicial gatekeeper required.',
+            <div className="mt-4">
+              <RecognitionMapLegend
+                world={world}
+                activeRegime={activeRegime}
+                onActiveRegimeChange={setActiveRegime}
+              />
+            </div>
+            <CoverageNote>
+              {t(
+                'rights.trans.map.coverage',
+                'Legal gender recognition from the ILGA World Database, re-imported nightly. Countries with nothing recorded are drawn as no data, never as permissive. A few territories have no boundary to draw at this scale and cannot appear on the map at all, so its counts run slightly below the figures beneath it. The map is sized by land area — the band below is sized by people, which is the reading this page is about.',
               )}
-            />
-            <LedgerRow
-              label={t('rights.trans.ledger.surgery', 'Requires surgery')}
-              value={recognition.requiresSurgery}
-              of={recognition.measured}
-              note={t(
-                'rights.trans.ledger.surgeryNote',
-                'A sterilisation requirement. Counted as a harm, not a missing protection.',
-              )}
-            />
-            <LedgerRow
-              label={t('rights.trans.ledger.diagnosis', 'Requires a psychiatric diagnosis')}
-              value={recognition.requiresDiagnosis}
-              of={recognition.measured}
-            />
-          </ul>
-          <p className="text-muted-foreground text-13">
-            {t('rights.trans.body.measured', 'Counted against the')}{' '}
+            </CoverageNote>
+          </div>
+
+          <div className="mb-6">
+            <HumanityBand world={world} unit={unit} />
+          </div>
+
+          <RecognitionLedger rows={ledgerRows} unit={unit} onUnitChange={setUnit} />
+
+          <p className="mt-4 max-w-prose text-13 text-muted-foreground">
+            {t(
+              'rights.trans.body.denominator',
+              'Every figure here divides by the whole world — all {{total}} countries, everyone alive — never only by the countries where a value happens to be recorded. A blank in the source is shown as its own block rather than dropped, because leaving it out of the denominator would quietly inflate every percentage on this page.',
+              { total: recognition.total },
+            )}
+          </p>
+          <p className="mt-2 max-w-prose text-13 text-muted-foreground">
+            {t('rights.trans.body.measured', 'A recognition record exists for')}{' '}
             <span className="tabular-nums">{recognition.measured}</span>{' '}
             {t(
               'rights.trans.body.measuredTail',
-              'countries where a value is recorded, not all {{total}} we cover. The rest are blank in the source, which is not the same as a "no".',
-              { total: recognition.total },
+              'of them. The rest are blank in the source, which is not the same as a "no".',
             )}
           </p>
         </div>
@@ -226,18 +357,84 @@ export default function TransRights() {
                     'In these countries the law will not change your gender marker unless you have had surgery. Where a country records this, the rights verdict for trans people is capped at “few or no protections” however much anti-discrimination law it also has.',
                   )}
                 </p>
-                <ul className="m-0 flex list-none flex-wrap gap-x-4 gap-y-1 p-0">
+                {/*
+                  Ordered by population, with the figure beside each name. A
+                  flat alphabetical list of 15 reads as 15 equally-sized
+                  places; two of these countries are most of the total, and
+                  the caveat below says so rather than letting the list imply
+                  otherwise.
+                */}
+                <ul className="m-0 flex list-none flex-col gap-1 p-0 sm:max-w-md">
                   {surgeryCountries.map((c) => (
-                    <li key={c.id} className="text-13">
-                      {c.slug ? (
-                        <LocalizedLink to={`/country/${c.slug}`}>{c.name}</LocalizedLink>
-                      ) : (
-                        c.name
-                      )}
+                    <li
+                      key={c.id}
+                      className="flex items-baseline justify-between gap-4 border-b border-border py-1 text-13"
+                    >
+                      <span>
+                        {c.slug ? (
+                          <LocalizedLink to={`/country/${c.slug}`}>{c.name}</LocalizedLink>
+                        ) : (
+                          c.name
+                        )}
+                      </span>
+                      <span className="shrink-0 tabular-nums text-muted-foreground">
+                        {formatPeople(c.population, i18n.language)}
+                      </span>
                     </li>
                   ))}
                 </ul>
+                <p className="mt-4 max-w-prose text-13 text-muted-foreground">
+                  {t(
+                    'rights.trans.body.surgeryConcentration',
+                    'The two largest account for most of that total, so this is a list of where the law falls hardest on the most people — not a ranking of 15 equally bad places.',
+                  )}
+                </p>
               </div>
+            ),
+          } satisfies SectionDef,
+        ]
+      : []),
+
+    // ---------------------------------------------------------------------
+    // Still axis 1, read along time rather than across countries. Self-hiding
+    // on data, so a source that stops recording start years empties the
+    // section instead of drawing a line from two points.
+    // ---------------------------------------------------------------------
+    ...(timeline.length > 1
+      ? [
+          {
+            id: 'timeline',
+            label: t('rights.trans.section.timeline', 'When it arrived'),
+            kicker: t('rights.trans.kicker.timeline', 'Self-determination since 2012'),
+            content: (
+              <div>
+                <p className="mb-6 max-w-prose">
+                  {t(
+                    'rights.trans.body.timeline',
+                    'Recognition on a person’s own word is recent everywhere it exists. Argentina was the first country to grant it, and most of the rest followed within the last decade — which is also why it is fragile: nothing here has been settled long enough to be taken for granted.',
+                  )}
+                </p>
+                <SelfIdTimeline years={timeline} />
+              </div>
+            ),
+          } satisfies SectionDef,
+        ]
+      : []),
+
+    // ---------------------------------------------------------------------
+    // The correlation exists; the exceptions are what is worth showing. See
+    // the component header for why this is not a scatter plot.
+    // ---------------------------------------------------------------------
+    ...(counterpoint.highHdiRequiresSurgery.length > 0 || counterpoint.lowHdiHasSelfId.length > 0
+      ? [
+          {
+            id: 'development',
+            label: t('rights.trans.section.development', 'Not a question of wealth'),
+            content: (
+              <DevelopmentCounterpoint
+                highHdiRequiresSurgery={counterpoint.highHdiRequiresSurgery}
+                lowHdiHasSelfId={counterpoint.lowHdiHasSelfId}
+              />
             ),
           } satisfies SectionDef,
         ]
@@ -322,43 +519,13 @@ export default function TransRights() {
               { total: violenceTotal, countries: violence.length },
             )}
           </p>
-          <div className="overflow-x-auto">
-            <table className="w-full text-13">
-              <thead>
-                <tr className="border-b border-border text-left">
-                  <th scope="col" className="py-2 font-medium">
-                    {t('rights.trans.table.country', 'Country')}
-                  </th>
-                  <th scope="col" className="py-2 text-right font-medium">
-                    {t('rights.trans.table.since', 'Recorded since 2008')}
-                  </th>
-                  <th scope="col" className="py-2 text-right font-medium">
-                    {t('rights.trans.table.latest', 'Most recent period')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {violence.map(({ country, record }) => (
-                  <tr key={country.id} className="border-b border-border">
-                    <td className="py-2">
-                      {country.slug ? (
-                        <LocalizedLink to={`/country/${country.slug}`}>
-                          {country.name}
-                        </LocalizedLink>
-                      ) : (
-                        country.name
-                      )}
-                    </td>
-                    {/* No --destructive, no colour scale: see the file header. */}
-                    <td className="py-2 text-right tabular-nums">{record.total}</td>
-                    <td className="py-2 text-right tabular-nums text-muted-foreground">
-                      {record.latestPeriod ? `${record.latestCases} · ${record.latestPeriod}` : '—'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          {/*
+            The argument comes BEFORE the table, so a reader cannot reach the
+            country list without passing the reason it is not a ranking.
+          */}
+          <TmmReportingPanel reporting={reporting} />
+
+          <TmmCountryTable rows={tmmRows} latestPeriod={latestPeriod} />
           <p className="mt-4 max-w-prose text-13 text-muted-foreground">
             {t(
               'rights.trans.body.absent',
