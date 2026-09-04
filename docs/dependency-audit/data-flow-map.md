@@ -34,6 +34,29 @@ NVIDIA_DISABLED=1          # whole provider off, key left in place
                            # or unset NVIDIA_API_KEY — the router goes inert
 ```
 
+**Live setting, verified 2026-09-03: `NVIDIA_EXCLUDE_CALLERS=translate-i18n-batch`** — one batch
+job, and **every caller named above is still in scope**, so nothing in this section's residency
+claim changes. That one entry is a reliability exclusion, not a privacy retreat.
+
+It briefly held all 13 callers above, which silently narrowed the decision recorded here down to
+batch pipelines only; cleared 2026-09-02 after review. `translate-i18n-batch` was added back on
+its own the next day on measured evidence: over four hours it failed **3 of 7 calls (43%)** on
+45s timeouts while every other caller ran at **1.6% across 61 calls/hour**. Its 4,000-token
+translation batches are simply too big for the free tier's latency, and because it fires as a
+burst on the hour it spent all three breaker failures inside two minutes — taking NVIDIA fully
+offline (measured: **zero** calls) for the 900s reset, **15 minutes in every hour**, for the eight
+callers that were working. Excluding it costs ~8 calls/hour and recovers ~61.
+
+**A secret's value cannot be read back, and that is how the drift hid.** `supabase secrets list`
+prints only a name and a **plain `sha256(value)`** digest, so a variable that contradicts this
+document looks identical to one that agrees with it. Two ways to check, cheapest first: hash a
+candidate and compare (validate the method against a variable whose value you just set — but
+brute force is hopeless past a few names; 7.5M candidates failed to find these 13), or deploy a
+throwaway token-gated function that returns the one variable and delete it immediately.
+**Do not infer the setting from traffic** — the excluded callers are the interactive ones, which
+can go days without firing, so "no NVIDIA calls from `trip-concierge`" is equally consistent with
+"excluded" and with "nobody planned a trip this week".
+
 Out of scope and still Cloudflare-only: embeddings (`bge-m3`, a fixed 1024-dim space the entire
 search index is built on), vision, and everything on the Workers `env.AI.run` binding.
 
