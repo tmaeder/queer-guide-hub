@@ -12,6 +12,7 @@ import { StationRing } from '@/components/transit/StationRing';
 import { TransitIcon } from '@/components/transit/TransitIcon';
 import type { TransitIconName } from '@/components/transit/transitIconPaths';
 import { useConsolidatedStats } from '@/hooks/useConsolidatedStats';
+import { useAuth } from '@/hooks/useAuth';
 
 /**
  * /about, drawn as the network itself.
@@ -65,6 +66,11 @@ function SectionHead({
 export default function About() {
   const { t } = useTranslation();
   const { stats, loading } = useConsolidatedStats();
+  // The colophon below is members-only. Gate on a resolved user rather than on
+  // `!loading`: while auth is still resolving `user` is null and the section
+  // stays out, so a signed-in reader sees it appear a beat late instead of a
+  // signed-out one seeing it flash and vanish.
+  const { user } = useAuth();
 
   // `events` is the full 40k archive and 99% of it is in the past — the hook
   // says so in as many words. `events_upcoming` is the one a reader can act on.
@@ -732,61 +738,71 @@ export default function About() {
         </ul>
       </PageContainer>
 
-      {/* Data & sources — the colophon.
-          This is where the ODbL attribution for the city-card transit diagrams
-          lives now. It was a line in the footer until 2026-08-30; the credit
-          still has to exist somewhere a reader can find it, because those
-          diagrams are a derived work of OpenStreetMap route relations and the
-          licence asks for it. A colophon is the conventional home, and it lets
-          the other sources this site is built on be named too instead of only
-          the one that is legally obliged. */}
-      <PageContainer as="section" flush className="pb-16 md:pb-24" id="sources">
-        <SectionHead
-          kicker={t('about.sources.kicker', 'Where the data comes from')}
-          title={t('about.sources.title', 'Data & sources')}
-          lede={t(
-            'about.sources.lede',
-            'Open data does a lot of the work here. The projects below carry a licence that asks to be credited; everything else the guide was built from is named underneath.',
-          )}
-        />
-        <ul className="m-0 mt-8 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
-          {sources.map((source) => (
-            <li key={source.key} className="flex h-full flex-col gap-2 p-6">
-              <h3 className="text-title font-bold leading-tight">
-                <a href={source.href} target="_blank" rel="noopener noreferrer">
-                  {source.name}
-                </a>
-              </h3>
-              <p className="text-13 leading-relaxed text-muted-foreground">{source.used}</p>
-              <p className="mt-auto pt-2 text-2xs uppercase tracking-label text-muted-foreground">
-                {source.licence}
-              </p>
-            </li>
-          ))}
-        </ul>
+      {/* Data & sources — the colophon. MEMBERS ONLY: a signed-out reader gets
+          nothing here, not a teaser and not a sign-in prompt.
 
-        {/* Tier 2. Two columns, not three: these are prose-and-links rows, and
+          Read the next paragraph before deleting the footer's credits row.
+          This section held the ODbL attribution for the city-card transit
+          diagrams from 2026-08-30, when it came out of the footer, until the
+          gate landed. Those diagrams are a derived work of OpenStreetMap route
+          relations and the licence asks for the credit to reach the reader —
+          anonymous readers included — so the obligated subset went BACK to the
+          footer, where it renders unconditionally on every page. That is the
+          only reason it is safe to hide this whole section. The two are one
+          change: gating this without the footer half publishes OSM-derived
+          artwork with no credit anywhere.
+
+          What stays here is the fuller story — the courtesy credits, the prose
+          saying what each source was used for, and tier 2. */}
+      {user && (
+        <PageContainer as="section" flush className="pb-16 md:pb-24" id="sources">
+          <SectionHead
+            kicker={t('about.sources.kicker', 'Where the data comes from')}
+            title={t('about.sources.title', 'Data & sources')}
+            lede={t(
+              'about.sources.lede',
+              'Open data does a lot of the work here. The projects below carry a licence that asks to be credited; everything else the guide was built from is named underneath.',
+            )}
+          />
+          <ul className="m-0 mt-8 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
+            {sources.map((source) => (
+              <li key={source.key} className="flex h-full flex-col gap-2 p-6">
+                <h3 className="text-title font-bold leading-tight">
+                  <a href={source.href} target="_blank" rel="noopener noreferrer">
+                    {source.name}
+                  </a>
+                </h3>
+                <p className="text-13 leading-relaxed text-muted-foreground">{source.used}</p>
+                <p className="mt-auto pt-2 text-2xs uppercase tracking-label text-muted-foreground">
+                  {source.licence}
+                </p>
+              </li>
+            ))}
+          </ul>
+
+          {/* Tier 2. Two columns, not three: these are prose-and-links rows, and
             a third column shortens the measure past comfortable reading. */}
-        <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2">
-          {moreSources.map((group) => (
-            <section key={group.key}>
-              <h3 className="text-2xs uppercase tracking-label text-muted-foreground">
-                {group.title}
-              </h3>
-              <p className="mt-2 text-13 leading-relaxed text-muted-foreground">{group.note}</p>
-              <ul className="m-0 mt-4 flex list-none flex-wrap gap-x-4 gap-y-2 p-0 text-13">
-                {group.items.map((item) => (
-                  <li key={item.href}>
-                    <a href={item.href} target="_blank" rel="noopener noreferrer">
-                      {item.name}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ))}
-        </div>
-      </PageContainer>
+          <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2">
+            {moreSources.map((group) => (
+              <section key={group.key}>
+                <h3 className="text-2xs uppercase tracking-label text-muted-foreground">
+                  {group.title}
+                </h3>
+                <p className="mt-2 text-13 leading-relaxed text-muted-foreground">{group.note}</p>
+                <ul className="m-0 mt-4 flex list-none flex-wrap gap-x-4 gap-y-2 p-0 text-13">
+                  {group.items.map((item) => (
+                    <li key={item.href}>
+                      <a href={item.href} target="_blank" rel="noopener noreferrer">
+                        {item.name}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ))}
+          </div>
+        </PageContainer>
+      )}
 
       {/* Extend the line */}
       <div className="bg-foreground text-background">

@@ -9,6 +9,10 @@ name: Trust & Safety Gates
 on:
   pull_request:
     branches: [main]
+  # Merge queue: a required check that never reports on the merge_group event
+  # leaves the queued PR pending forever. Same failure this repo already hit
+  # twice with `paths:` filters on required checks.
+  merge_group:
   schedule:
     - cron: '0 7 * * *'
   workflow_dispatch:
