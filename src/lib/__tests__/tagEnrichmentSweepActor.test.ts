@@ -75,8 +75,55 @@ describe('tag_enrichment_apply', () => {
     expect(body).not.toMatch(/'system:/);
   });
 
-  it('refuses sensitive and adult rows outright', () => {
+  it('refuses sensitive and adult rows on the CONTENT kinds', () => {
     expect(body).toMatch(/is_sensitive\s+or\s+v_row\.is_adult/i);
+    expect(body).toMatch(/raise\s+exception[^;]*sensitive\/adult/i);
+  });
+
+  /**
+   * The refusal must NOT cover `links`. This assertion is the whole reason the
+   * test above is no longer phrased "outright": scoping the guard keeps the
+   * old regex matching, so without this the suite would have gone on passing
+   * while its name described the opposite of the behaviour.
+   *
+   * Measured on prod: 1,360 of 2,107 active sensitive/adult tags carry neither
+   * `wikidata_id` nor `wikipedia_url`, 358 of them writable. They sort to the
+   * head of the batch on `quality_score asc`, so refusing them does not merely
+   * withhold identity — it pins the work list and re-fetches them forever.
+   */
+  it('exempts links from that refusal — identity is not content', () => {
+    const guard = body.slice(
+      body.search(/if[^;]*is_sensitive/i),
+      body.search(/raise\s+exception[^;]*sensitive\/adult/i),
+    );
+    expect(guard, "the sensitive guard must exclude p_kind 'links'").toMatch(
+      /p_kind\s*(<>|!=)\s*'links'/i,
+    );
+  });
+
+  it('still lets a links write reach the human_reviewed refusal', () => {
+    // Exempting links from the SENSITIVE guard must not also exempt it from
+    // the human_reviewed one — that check is unconditional for every kind
+    // below the prose_cursor early return, and it is what preserves the skip
+    // the audit guard produces today.
+    const sensitiveAt = body.search(/if[^;]*p_kind\s*(<>|!=)\s*'links'/i);
+    const humanAt = body.search(/human_reviewed\s+then\s+return\s+false/i);
+    expect(sensitiveAt, 'no scoped sensitive guard').toBeGreaterThan(-1);
+    expect(humanAt, 'no human_reviewed refusal').toBeGreaterThan(sensitiveAt);
+    const linksBranch = body.search(/p_kind\s*=\s*'links'/i);
+    expect(
+      humanAt,
+      'human_reviewed must be checked BEFORE the links UPDATE branch',
+    ).toBeLessThan(linksBranch);
+  });
+
+  it('logs an RPC refusal instead of swallowing it', () => {
+    // `if (!e && x)` gates the counter correctly and discards `e`. That is how
+    // the links narrowing would have shipped invisibly.
+    expect(sweep).toMatch(/function\s+logRpcRefusal/);
+    for (const kind of ['links', 'category', 'description']) {
+      expect(sweep, `${kind} swallows its RPC error`).toContain(`logRpcRefusal('${kind}'`);
+    }
   });
 
   it('declines human_reviewed rows instead of writing them', () => {
