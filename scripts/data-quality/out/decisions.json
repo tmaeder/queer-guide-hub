@@ -9,6 +9,8 @@
   "retract": [
    "group-masturbation"
   ],
+  "excluded": [],
+  "refile": null,
   "reason": "group vs mutual masturbation are distinct.",
   "members": [
    {
@@ -43,6 +45,8 @@
    "straight"
   ],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "\"straight\" is the colloquial synonym.",
   "members": [
    {
@@ -87,6 +91,8 @@
   "retract": [
    "femminiello"
   ],
+  "excluded": [],
+  "refile": null,
   "reason": "HARM. Q1052281 is \"trans woman\". Femminiello is a specific Neapolitan cultural identity, not a synonym; merging erases it.",
   "members": [
    {
@@ -119,6 +125,8 @@
   "winner": null,
   "losers": [],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "gender-affirming-surgery vs gender-affirmation: the latter is broader than surgery.",
   "members": [
    {
@@ -183,6 +191,8 @@
   "retract": [
    "nantaimori"
   ],
+  "excluded": [],
+  "refile": null,
   "reason": "nyotaimori (female body) vs nantaimori (male body) are distinct practices.",
   "members": [
    {
@@ -218,6 +228,8 @@
    "movies"
   ],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "QID label is \"film\"; movies/cinema are the same concept.",
   "members": [
    {
@@ -270,6 +282,8 @@
   "winner": null,
   "losers": [],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "VERIFIED FROM PROSE: mat-metal is the element (\"lustrous, conducts electricity\"); metal is a metal-RESTRAINTS fetish (\"chains, cuffs, collars\"). NOT the music genre - an earlier reading of mine said so and was wrong.",
   "members": [
    {
@@ -302,7 +316,9 @@
   "winner": null,
   "losers": [],
   "retract": [],
-  "reason": "clothing vs apparel. apparel is filed Gear/ADULT - merging risks flipping is_adult onto clothing.",
+  "excluded": [],
+  "refile": null,
+  "reason": "DO NOT MERGE YET. The prose is INVERTED against the filing: clothing (Expression & Style, is_adult=false) carries the FETISH prose (\"erotic, sexually exciting ... fetishize\") while apparel (Gear, is_adult=true) carries the generic one (\"Items worn on the human body\"). Either direction yields a page whose category and body disagree. A prose call, not a merge call.",
   "members": [
    {
     "slug": "clothing",
@@ -334,6 +350,8 @@
   "winner": null,
   "losers": [],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "dance (Events descriptor) vs dancing (Expression concept) - activity vs event.",
   "members": [
    {
@@ -368,6 +386,8 @@
    "eateries"
   ],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "QID label \"restaurant\"; \"eateries\" is a plural synonym.",
   "members": [
    {
@@ -422,6 +442,8 @@
    "japanese-bondage"
   ],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "QID label \"Japanese bondage\"; shibari is the reader-facing name.",
   "members": [
    {
@@ -466,6 +488,8 @@
   "retract": [
    "accipiosexual"
   ],
+  "excluded": [],
+  "refile": null,
   "reason": "Distinct micro-labels; the QID is iamvanosexuality.",
   "members": [
    {
@@ -500,6 +524,8 @@
   "retract": [
    "feedee"
   ],
+  "excluded": [],
+  "refile": null,
   "reason": "Role (feedee) vs practice (feedism) are distinct entries.",
   "members": [
    {
@@ -534,6 +560,8 @@
   "retract": [
    "pillow-prince"
   ],
+  "excluded": [],
+  "refile": null,
   "reason": "Gendered counterpart, not a synonym.",
   "members": [
    {
@@ -566,6 +594,8 @@
   "winner": null,
   "losers": [],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "air-tight vs triple-penetration: related, arguably not identical.",
   "members": [
    {
@@ -598,6 +628,8 @@
   "winner": null,
   "losers": [],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "festival vs celebration: celebration is broader.",
   "members": [
    {
@@ -640,6 +672,8 @@
   "winner": null,
   "losers": [],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "FOUR members (adult-baby, diaper-fetish, diaper-lover, infantilism) on \"diaper fetishism\". Role vs practice vs identity - needs itemising.",
   "members": [
    {
@@ -692,6 +726,8 @@
   "winner": null,
   "losers": [],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "sex-positive (descriptor) vs sex-positive-movement (the ideology).",
   "members": [
    {
@@ -726,6 +762,8 @@
    "femdom"
   ],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "QID label matches; femdom is the community abbreviation.",
   "members": [
    {
@@ -760,6 +798,8 @@
   "retract": [
    "event-organizer"
   ],
+  "excluded": [],
+  "refile": null,
   "reason": "\"organizer\" is an events descriptor; \"event-organizer\" is filed Dynamics & Roles/adult. Different senses.",
   "members": [
    {
@@ -792,6 +832,8 @@
   "winner": null,
   "losers": [],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "strap-on vs dildo-harness: the toy vs the harness are arguably distinct products.",
   "members": [
    {
@@ -820,11 +862,15 @@
   "wikidata_id": "Q1651685",
   "qid_label": "shoe fetishism",
   "qid_desc": "sexual interest or obsession with footwear",
-  "disposition": "review",
-  "winner": null,
-  "losers": [],
+  "disposition": "merge",
+  "winner": "retifism",
+  "losers": [
+   "shoe-fetish"
+  ],
   "retract": [],
-  "reason": "retifism (Fetishes) vs shoe-fetish (Slang & Language). Clinical vs colloquial, cross-category.",
+  "excluded": [],
+  "refile": null,
+  "reason": "shoe-fetish is a not-indexable stub (\"Philia tag\") in Slang & Language; retifism is indexable with real prose and correctly filed Fetishes.",
   "members": [
    {
     "slug": "retifism",
@@ -858,6 +904,8 @@
    "queer-rights"
   ],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "Same concept; matches the RIGHT_TOPICS umbrella already used.",
   "members": [
    {
@@ -910,6 +958,8 @@
   "winner": null,
   "losers": [],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "sexuality vs sexual-orientation: overlapping but not identical.",
   "members": [
    {
@@ -945,6 +995,8 @@
    "god",
    "goddess"
   ],
+  "excluded": [],
+  "refile": null,
   "reason": "Q178885 is \"deity\". god/goddess are gendered honorifics; merging deletes one.",
   "members": [
    {
@@ -989,6 +1041,8 @@
    "lgbt-history"
   ],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "Acronym variant of one concept.",
   "members": [
    {
@@ -1021,6 +1075,8 @@
   "winner": null,
   "losers": [],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "orgasm-denial vs tease-and-denial: overlapping practices.",
   "members": [
    {
@@ -1053,6 +1109,8 @@
   "winner": null,
   "losers": [],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "gender-fluid vs genderflux: genderflux is fluctuating INTENSITY, arguably distinct.",
   "members": [
    {
@@ -1107,6 +1165,8 @@
   "retract": [
    "live-music-venue"
   ],
+  "excluded": [],
+  "refile": null,
   "reason": "Q182832 is \"concert\" (an event). live-music-venue is a VENUE type.",
   "members": [
    {
@@ -1141,6 +1201,8 @@
   "retract": [
    "rough-sex"
   ],
+  "excluded": [],
+  "refile": null,
   "reason": "Q190845 is BDSM (a subculture). rough-sex is not BDSM.",
   "members": [
    {
@@ -1175,6 +1237,8 @@
   "retract": [
    "sister"
   ],
+  "excluded": [],
+  "refile": null,
   "reason": "Q191808 is \"nun\". \"sister\" is a distinct role/term in this corpus.",
   "members": [
    {
@@ -1209,6 +1273,8 @@
   "retract": [
    "abrosexual"
   ],
+  "excluded": [],
+  "refile": null,
   "reason": "Q is \"sexual fluidity\"; abrosexual is its own label.",
   "members": [
    {
@@ -1253,6 +1319,8 @@
   "retract": [
    "noetisexual"
   ],
+  "excluded": [],
+  "refile": null,
   "reason": "Distinct label from sapiosexual.",
   "members": [
    {
@@ -1297,6 +1365,8 @@
    "step-brother"
   ],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "Hyphenation variant; QID label \"stepbrother\".",
   "members": [
    {
@@ -1331,6 +1401,8 @@
    "analingus"
   ],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "QID label \"anilingus\"; rimming is the reader-facing name.",
   "members": [
    {
@@ -1365,6 +1437,8 @@
   "retract": [
    "cunt"
   ],
+  "excluded": [],
+  "refile": null,
   "reason": "Q2192288 is the anatomical \"vulva\". \"cunt\" is filed Dynamics & Roles / adult. Merging puts a reclaimed slur on an anatomy page or vice versa.",
   "members": [
    {
@@ -1420,6 +1494,8 @@
    "algolagnia",
    "algophilia"
   ],
+  "excluded": [],
+  "refile": null,
   "reason": "Q is \"sadomasochism\"; algolagnia/algophilia are distinct clinical terms.",
   "members": [
    {
@@ -1462,6 +1538,8 @@
   "winner": null,
   "losers": [],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "VERIFIED FROM PROSE: mat-lace is the openwork textile; lace is a textile fetish in lingerie. Two real senses.",
   "members": [
    {
@@ -1494,6 +1572,8 @@
   "winner": null,
   "losers": [],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "trans-man vs transmasculine: transmasculine is broader (includes non-binary people). Likely wrong-qid, not merge.",
   "members": [
    {
@@ -1528,6 +1608,8 @@
    "sthenolagnia"
   ],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "QID label matches; sthenolagnia is the clinical synonym.",
   "members": [
    {
@@ -1556,11 +1638,15 @@
   "wikidata_id": "Q2651749",
   "qid_label": "breast fetishism",
   "qid_desc": "sexual interest focused on female breasts",
-  "disposition": "review",
-  "winner": null,
-  "losers": [],
+  "disposition": "merge",
+  "winner": "breast-fetishism",
+  "losers": [
+   "breast-fetish"
+  ],
   "retract": [],
-  "reason": "breast-fetish (Slang) vs breast-fetishism (Fetishes). Cross-category direction call.",
+  "excluded": [],
+  "refile": null,
+  "reason": "breast-fetish is a not-indexable stub (\"Philia tag\") in Slang & Language; breast-fetishism is indexable and correctly filed Fetishes.",
   "members": [
    {
     "slug": "breast-fetish",
@@ -1595,6 +1681,8 @@
    "catboy",
    "catgirl"
   ],
+  "excluded": [],
+  "refile": null,
   "reason": "Q27303706 is \"anthropomorphic cat\". catboy and catgirl are gendered and distinct, and NEITHER is that QID. Both retract.",
   "members": [
    {
@@ -1627,6 +1715,8 @@
   "winner": null,
   "losers": [],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "football vs soccer: same sport, but \"football\" is ambiguous by region.",
   "members": [
    {
@@ -1659,6 +1749,8 @@
   "winner": null,
   "losers": [],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "sensation-play vs sensual-play: overlapping but distinguished by many practitioners.",
   "members": [
    {
@@ -1693,6 +1785,8 @@
    "provera"
   ],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "Brand (Provera) vs generic. NOTE: provera is misfiled under Events & Parties.",
   "members": [
    {
@@ -1727,6 +1821,8 @@
    "heteroflexible"
   ],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "Noun/adjective of one term.",
   "members": [
    {
@@ -1761,6 +1857,8 @@
   "retract": [
    "play-room"
   ],
+  "excluded": [],
+  "refile": null,
   "reason": "Q2911974 is a domestic \"recreation room\". A play-room here is a sex-club space.",
   "members": [
    {
@@ -1795,6 +1893,8 @@
    "coffee-shop"
   ],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "QID label \"cafe\"; coffee-shop is the same venue type.",
   "members": [
    {
@@ -1837,6 +1937,8 @@
   "winner": null,
   "losers": [],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "genre-history (genre vocabulary, attribute) vs history (topical concept).",
   "members": [
    {
@@ -1869,6 +1971,8 @@
   "winner": null,
   "losers": [],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "love vs affection: distinct emotions, cross-category.",
   "members": [
    {
@@ -1903,6 +2007,8 @@
   "retract": [
    "questioning"
   ],
+  "excluded": [],
+  "refile": null,
   "reason": "HARM. Q327018 is law-enforcement INTERROGATION. \"questioning\" is the LGBTQ+ identity - a namesake collision, the exact 2026-08-29 class. Merging would publish the questioning identity as a kink fetish.",
   "members": [
    {
@@ -1935,6 +2041,8 @@
   "winner": null,
   "losers": [],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "VERIFIED FROM PROSE: mat-spandex is the polyether-polyurea fiber; spandex is a fabric fetish (\"second-skin sensation\"). Two real senses.",
   "members": [
    {
@@ -1963,11 +2071,15 @@
   "wikidata_id": "Q330284",
   "qid_label": "marketplace",
   "qid_desc": "space in which a market operates",
-  "disposition": "review",
-  "winner": null,
-  "losers": [],
+  "disposition": "merge",
+  "winner": "market",
+  "losers": [
+   "marketplace"
+  ],
   "retract": [],
-  "reason": "market vs marketplace, both place/Destinations.",
+  "excluded": [],
+  "refile": null,
+  "reason": "Same category (Destinations); market u=10 vs marketplace u=2.",
   "members": [
    {
     "slug": "market",
@@ -2001,6 +2113,8 @@
    "dragqueen"
   ],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "Spacing variant.",
   "members": [
    {
@@ -2033,6 +2147,8 @@
   "winner": null,
   "losers": [],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "news-sports is the news-taxonomy tag; sport is the general topical tag.",
   "members": [
    {
@@ -2077,6 +2193,8 @@
   "retract": [
    "teacher"
   ],
+  "excluded": [],
+  "refile": null,
   "reason": "Q37226 is the profession \"teacher\". \"teacher\" here is filed Fetishes/adult. Merging would carry is_adult onto \"educator\" - the recorded category-junction trap.",
   "members": [
    {
@@ -2105,11 +2223,15 @@
   "wikidata_id": "Q376032",
   "qid_label": "tribadism",
   "qid_desc": "lesbian sexual practice in which the vulva is rubbed against a partner\u2019s body for sexual stimulation",
-  "disposition": "review",
-  "winner": null,
-  "losers": [],
+  "disposition": "merge",
+  "winner": "scissoring",
+  "losers": [
+   "tribbing"
+  ],
   "retract": [],
-  "reason": "scissoring vs tribbing, QID label \"tribadism\". Three names, cross-category.",
+  "excluded": [],
+  "refile": null,
+  "reason": "scissoring is indexable (Positions); tribbing is not. Cross-category, winner correctly filed.",
   "members": [
    {
     "slug": "scissoring",
@@ -2153,6 +2275,8 @@
    "ageplay"
   ],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "Hyphenation variant.",
   "members": [
    {
@@ -2187,6 +2311,8 @@
    "prozac"
   ],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "Brand (Prozac) vs generic; QID is the compound.",
   "members": [
    {
@@ -2221,6 +2347,8 @@
    "priligy"
   ],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "Brand (Priligy) vs generic.",
   "members": [
    {
@@ -2253,6 +2381,8 @@
   "winner": null,
   "losers": [],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "turkey vs turkiye. Exonym/endonym - a naming-politics call, not a data call.",
   "members": [
    {
@@ -2281,11 +2411,15 @@
   "wikidata_id": "Q43200",
   "qid_label": "bisexuality",
   "qid_desc": "sexual and/or romantic attraction to people of more than one gender",
-  "disposition": "review",
-  "winner": null,
-  "losers": [],
+  "disposition": "merge",
+  "winner": "bisexual",
+  "losers": [
+   "bisexuality"
+  ],
   "retract": [],
-  "reason": "bisexual (u=1592) vs bisexuality (u=40). QID label is \"bisexuality\"; the reader-facing tag is \"bisexual\". Direction is an editorial call.",
+  "excluded": [],
+  "refile": null,
+  "reason": "Same category. bisexual u=1592 vs bisexuality u=40 - merge toward the live row; the QID label form survives as an alias.",
   "members": [
    {
     "slug": "bisexual",
@@ -2317,6 +2451,8 @@
   "winner": null,
   "losers": [],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "exhibitionism vs flashing: flashing is one act within exhibitionism.",
   "members": [
    {
@@ -2345,11 +2481,15 @@
   "wikidata_id": "Q459409",
   "qid_label": "hate crime",
   "qid_desc": "crime, motivated by prejudice and usually violent",
-  "disposition": "review",
-  "winner": null,
-  "losers": [],
+  "disposition": "merge",
+  "winner": "hate-crimes",
+  "losers": [
+   "hate-crime"
+  ],
   "retract": [],
-  "reason": "hate-crimes (u=453) vs hate-crime (u=162). Repo has a plural auto-merge convention favouring singular; usage favours plural.",
+  "excluded": [],
+  "refile": null,
+  "reason": "Same category; hate-crimes u=453 vs hate-crime u=162.",
   "members": [
    {
     "slug": "hate-crimes",
@@ -2381,6 +2521,8 @@
   "winner": null,
   "losers": [],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "foot-fetish (Practices & Play) vs foot-worship (Fetishes). Called out in the brief as same shape as anorgasmia.",
   "members": [
    {
@@ -2409,11 +2551,17 @@
   "wikidata_id": "Q48270",
   "qid_label": "non-binary",
   "qid_desc": "gender identity that exists outside of the gender binary",
-  "disposition": "review",
-  "winner": null,
-  "losers": [],
+  "disposition": "merge",
+  "winner": "non-binary",
+  "losers": [
+   "enby"
+  ],
   "retract": [],
-  "reason": "MIXED: enby is a genuine synonym of non-binary, but gender-non-conforming is a DISTINCT concept (GNC is expression, NB is identity). Needs splitting into a merge + a wrong-qid.",
+  "excluded": [
+   "gender-non-conforming"
+  ],
+  "refile": null,
+  "reason": "PARTIAL: enby is a genuine synonym and merges. gender-non-conforming is a DISTINCT concept (expression, not identity) and is deliberately left on this QID - the group stays shared and needs its own wrong-qid call.",
   "members": [
    {
     "slug": "non-binary",
@@ -2477,6 +2625,8 @@
    "genderless"
   ],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "QID label \"agender\"; genderless is the synonym. Cross-category (Gender vs Orientation) - winner is the correctly-filed row.",
   "members": [
    {
@@ -2511,6 +2661,8 @@
    "lgbt-culture"
   ],
   "retract": [],
+  "excluded": [],
+  "refile": "Culture & Community",
   "reason": "Acronym variant.",
   "members": [
    {
@@ -2545,6 +2697,8 @@
    "lgbt-community"
   ],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "Acronym variant, same category.",
   "members": [
    {
@@ -2577,6 +2731,8 @@
   "winner": null,
   "losers": [],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "hiv-aids-awareness vs hiv-aids-activism: QID is activism; awareness is arguably distinct.",
   "members": [
    {
@@ -2611,6 +2767,8 @@
    "accessible"
   ],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "QID label \"accessibility\"; \"accessible\" is the adjective form.",
   "members": [
    {
@@ -2645,6 +2803,8 @@
    "night-club"
   ],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "Hyphenation variant.",
   "members": [
    {
@@ -2677,6 +2837,8 @@
   "winner": null,
   "losers": [],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "pride-month (a specific month) vs lgbtq-pride (the broader concept).",
   "members": [
    {
@@ -2709,6 +2871,8 @@
   "winner": null,
   "losers": [],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "multigender vs polygender: often distinguished.",
   "members": [
    {
@@ -2737,11 +2901,15 @@
   "wikidata_id": "Q646522",
   "qid_label": "prostate massage",
   "qid_desc": "massage of the prostate gland via the rectum or perineum",
-  "disposition": "review",
-  "winner": null,
-  "losers": [],
+  "disposition": "merge",
+  "winner": "prostate-massage",
+  "losers": [
+   "prostate-milking"
+  ],
   "retract": [],
-  "reason": "prostate-massage (medical/sexual) vs prostate-milking (the community term).",
+  "excluded": [],
+  "refile": null,
+  "reason": "Same category; prostate-massage is indexable, prostate-milking is not.",
   "members": [
    {
     "slug": "prostate-massage",
@@ -2773,6 +2941,8 @@
   "winner": null,
   "losers": [],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "VERIFIED FROM PROSE: genre-queer-theory is the post-structuralist field; queerness is the umbrella identity term. Distinct concepts, not a duplicate. Left untouched rather than retracted - see notes.",
   "members": [
    {
@@ -2819,6 +2989,8 @@
    "girl",
    "lady"
   ],
+  "excluded": [],
+  "refile": null,
   "reason": "Q6581072 is the P21 value \"female\". \"lady\" is a kink honorific (Dynamics & Roles/adult), not a synonym for woman.",
   "members": [
    {
@@ -2875,6 +3047,8 @@
    "boy",
    "masc"
   ],
+  "excluded": [],
+  "refile": null,
   "reason": "Q6581097 is the P21 sex-or-gender VALUE \"male\", not a glossary concept. boy/masc are distinct terms in this corpus.",
   "members": [
    {
@@ -2929,6 +3103,8 @@
    "lgbt-friendly"
   ],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "Same descriptor, same category; \"lgbt-\" is the older spelling.",
   "members": [
    {
@@ -2957,11 +3133,15 @@
   "wikidata_id": "Q6636",
   "qid_label": "homosexuality",
   "qid_desc": "romantic or sexual attraction or behavior between members of the same sex",
-  "disposition": "review",
-  "winner": null,
-  "losers": [],
+  "disposition": "merge",
+  "winner": "homosexuality",
+  "losers": [
+   "homosexual"
+  ],
   "retract": [],
-  "reason": "homosexual vs homosexuality - same shape as bisexual.",
+  "excluded": [],
+  "refile": null,
+  "reason": "Same category; homosexuality u=57 vs homosexual u=2.",
   "members": [
    {
     "slug": "homosexuality",
@@ -2995,6 +3175,8 @@
    "ecstasy"
   ],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "Street name / compound name for one substance.",
   "members": [
    {
@@ -3029,6 +3211,8 @@
   "retract": [
    "mommy"
   ],
+  "excluded": [],
+  "refile": null,
   "reason": "Q7560 is the kinship \"mother\". \"mommy\" is a kink honorific.",
   "members": [
    {
@@ -3064,6 +3248,8 @@
    "offering",
    "submission"
   ],
+  "excluded": [],
+  "refile": null,
   "reason": "Q76903164 is bureaucratic \"submission\" (putting an item forward for approval). Neither BDSM member belongs on it. Both retract.",
   "members": [
    {
@@ -3098,6 +3284,8 @@
   "retract": [
    "anal-creampie"
   ],
+  "excluded": [],
+  "refile": null,
   "reason": "anal vs vaginal - distinct entries.",
   "members": [
    {
@@ -3132,6 +3320,8 @@
    "cocksucking"
   ],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "QID label \"fellatio\"; both members name the same act.",
   "members": [
    {
@@ -3176,6 +3366,8 @@
   "retract": [
    "cunnilinguist"
   ],
+  "excluded": [],
+  "refile": null,
   "reason": "Role (a person) vs the act. Not synonyms.",
   "members": [
    {
@@ -3205,12 +3397,14 @@
   "qid_label": "prostate massager",
   "qid_desc": null,
   "disposition": "merge",
-  "winner": "prostate-massager",
+  "winner": "prostate-stimulator",
   "losers": [
-   "prostate-stimulator"
+   "prostate-massager"
   ],
   "retract": [],
-  "reason": "QID label \"prostate massager\"; stimulator is the same product.",
+  "excluded": [],
+  "refile": null,
+  "reason": "DIRECTION FLIPPED on re-measure: the QID label favours prostate-massager, but that row is seo_indexable=false with stub prose (\"Toys tag\") while prostate-stimulator is indexable with real prose. Merge toward the live row.",
   "members": [
    {
     "slug": "prostate-massager",
@@ -3244,6 +3438,8 @@
    "demiwoman"
   ],
   "retract": [],
+  "excluded": [],
+  "refile": null,
   "reason": "QID label \"demigirl\"; demiwoman is the same identity.",
   "members": [
    {
@@ -3288,6 +3484,8 @@
   "retract": [
    "omniromantic"
   ],
+  "excluded": [],
+  "refile": null,
   "reason": "omniromantic and panromantic are deliberately distinct labels.",
   "members": [
    {
