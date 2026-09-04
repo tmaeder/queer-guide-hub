@@ -58,7 +58,7 @@ export function TagSafetyCallout({ isSensitive, topics }: TagSafetyCalloutProps)
           {list.map((topic) => (
             <li
               key={topic}
-              className="inline-flex h-10 items-center justify-center border border-background px-4 text-center text-2xs font-bold uppercase tracking-label"
+              className="inline-flex min-h-11 items-center justify-center border border-background px-4 text-center text-2xs font-bold uppercase tracking-label"
             >
               {humanize(topic)}
             </li>
@@ -67,7 +67,7 @@ export function TagSafetyCallout({ isSensitive, topics }: TagSafetyCalloutProps)
       )}
       <LocalizedLink
         to="/help"
-        className="border mt-4 inline-flex h-10 items-center justify-center border-background px-4 text-center text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
+        className="border mt-4 inline-flex min-h-11 items-center justify-center border-background px-4 text-center text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
       >
         {t('tags.detail.findSupport', 'Find support')}
       </LocalizedLink>
