@@ -68,13 +68,26 @@ exactly one hit accepts, more than one **blocks**. Each later row adds one chang
 | strategy | both | OSM only | Overture only | **either** | **union recall** |
 |---|---|---|---|---|---|
 | a0 | 174 | 165 | 255 | 594 | **36.0%** |
-| b | 218 | 211 | 248 | 677 | 41.1% |
-| c1 | 331 | 198 | 262 | 791 | **48.0%** |
-| c2 | 544 | 142 | 309 | 995 | 60.4% |
+| b | 219 | 211 | 248 | 678 | 41.1% |
+| c1 | 333 | 197 | 261 | 791 | **48.0%** |
+| c2 | 546 | 141 | 308 | 995 | 60.4% |
 
 Precision is *weighted*: each tier's hand-read rate applied to that tier's real population.
 Per-tier samples are 8–14, so individual tier rates carry wide intervals; the cumulative
 figures are the ones to quote.
+
+**Every row above is CUMULATIVE** — each is "matched by this rule *or any stricter one*",
+which is what the leading `+` in the labels means. Read standalone instead, the per-tier
+numbers are lower (OSM a2 is 407 alone against 408 cumulative), because a venue the strict
+rule matched can be *blocked* by a looser one that surfaces a second candidate. The
+cumulative reading is the right one for costing — a production run applies the tiers in
+order and keeps the first hit — but the two must not be mixed in one table.
+
+All three tables were re-derived from the saved databases after the report was written.
+The per-source columns and every **union recall** figure reproduce exactly. The
+both / OSM-only / Overture-only decomposition moves by ≤2 rows (≤0.12 pp) depending on
+whether the intermediate 150 m tier is folded into `b`, so **quote the `either` column,
+not the split** — the split is indicative, the union is the measurement.
 
 ---
 
