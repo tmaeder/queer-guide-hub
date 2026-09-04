@@ -37,13 +37,35 @@
  *     (`sweep_skips_attribute_kind` + `news_vocab_dump_residue`), which stranded
  *     five migrations from an unrelated PR until a file was renamed by hand.
  *
- * The residual hole this does NOT close: a duplicate can exist in NEITHER PR
- * alone and appear only once both land, because `pull_request` CI runs against a
- * merge commit computed before the other PR merged. On main the run that would
- * catch it can also be cancelled by `cancel-in-progress` on the next push. So
- * treat a green check as "no duplicate as of this base", not "no duplicate after
- * merge" — and if `db push` ever fails on schema_migrations_pkey, look for a
- * version shared by two files before anything else.
+ * The hole this used to leave open, and what closes HALF of it (2026-09-03):
+ * a duplicate can exist in NEITHER PR alone and appear only once both land,
+ * because `pull_request` CI runs against a merge commit computed before the
+ * other PR merged. On main the run that would catch it can also be cancelled by
+ * `cancel-in-progress` on the next push.
+ *
+ * That is not theoretical. FOUR migrations across four worktrees simultaneously
+ * claimed 20261211100000 — tag_slug_seal,
+ * event_tag_link_reads_approved_aliases, kinktionary_new_terms_sourced,
+ * news_commit_requires_a_verdict — and every check here was green in all four,
+ * because none could see the other three. The escape each session reaches for
+ * compounds it: bump to the next day's `<day>100000` to clear the current max,
+ * which becomes the next session's collision. One such bump landed on main under
+ * the title "renumber off a collision that landed while this PR sat green".
+ *
+ * Check 5 closes the CONCURRENT-SESSIONS-ON-ONE-MACHINE half by reading sibling
+ * git worktrees directly — where every measured collision in this repo came
+ * from. It is fatal only when OUR file is the new one; if ours is already on the
+ * base ref the sibling is the tree that must move, and that is reported as a
+ * single informational line rather than one per hit (74 of them the first time
+ * it ran, almost all from abandoned worktrees).
+ *
+ * STILL OPEN: a branch that exists only on another machine or only on the
+ * remote. Check 5 is a no-op in CI, where there are no sibling worktrees.
+ * Closing that needs the GitHub API (open PRs and their changed files), a
+ * network dependency this guard deliberately does not have. So a green check
+ * still means "no duplicate as of this base and this machine", not "no duplicate
+ * after merge" — and if `db push` ever fails on schema_migrations_pkey, look for
+ * a version shared by two files before anything else.
  *
  * Base ref: $MIGRATION_BASE_REF (default `origin/main`). If it can't be
  * resolved (e.g. a shallow checkout without the base), every file is treated as
@@ -52,9 +74,10 @@
  * Usage: node scripts/check-migration-versions.mjs
  */
 
-import { readdirSync } from 'node:fs'
-import { execSync } from 'node:child_process'
+import { readdirSync, realpathSync } from 'node:fs'
+import { execSync, execFileSync } from 'node:child_process'
 import { fetchRemoteMigrations, findAppliedNameMismatches } from './lib/remote-migrations.mjs'
+import { parseWorktreePaths, findSiblingCollisions, groupSiblingCollisions } from './lib/sibling-migrations.mjs'
 
 const MIGRATIONS_DIR = 'supabase/migrations'
 const VERSION_RE = /^(\d{14})_.+\.sql$/
@@ -85,6 +108,53 @@ function baseFiles() {
 
 const base = baseFiles()
 const isNew = (file) => base === null || !base.has(file)
+
+/**
+ * Migration collisions against sibling git worktrees (check 5).
+ *
+ * Fails OPEN throughout: no git, no worktrees, an unreadable sibling — all
+ * return/skip rather than erroring. This check is additive, and a guard that
+ * cannot look should not block a push over what it could not see.
+ *
+ * Sibling paths are realpath'd on both sides because `git worktree list` prints
+ * real paths while process.cwd() can arrive through a symlink; without that the
+ * current tree reads as its own sibling and every file collides with itself.
+ */
+function siblingCollisions() {
+  let porcelain, self
+  try {
+    // execFileSync, not execSync: no shell, so nothing here can be interpreted
+    // as a shell metacharacter even if the argument list later grows a variable.
+    porcelain = execFileSync('git', ['worktree', 'list', '--porcelain'], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    })
+    self = realpathSync(process.cwd())
+  } catch {
+    return []
+  }
+
+  const siblingFiles = []
+  for (const p of parseWorktreePaths(porcelain, self)) {
+    let real
+    try {
+      real = realpathSync(p)
+    } catch {
+      continue
+    }
+    if (real === self) continue
+    try {
+      for (const f of readdirSync(`${real}/${MIGRATIONS_DIR}`)) {
+        if (f.endsWith('.sql')) siblingFiles.push({ worktree: p, file: f })
+      }
+    } catch {
+      // Worktree without a migrations dir, or pruned since `git worktree list`.
+      continue
+    }
+  }
+  if (siblingFiles.length === 0) return []
+  return findSiblingCollisions(files, isNew, siblingFiles)
+}
 
 // Remote history, fetched ONCE and shared by checks 2 and 3. They ask opposite
 // questions of the same set — check 2 "is this duplicate half-applied", check 3
@@ -309,6 +379,56 @@ for (const hit of findAppliedNameMismatches(files, remoteMap, isNew)) {
     `    → Rename it to a version above the current max, then re-run the deploy.`
   if (hit.isNew) errors.push(line)
   else warnings.push(`${line}\n    (pre-existing — clean up in a dedicated pass)`)
+}
+
+// 5) Sibling-worktree collisions — the hole this file's header has always
+//    described and never closed: "a duplicate can exist in NEITHER PR alone and
+//    appear only once both land". Checks 2-4 compare against remote history, so
+//    a version claimed by an unmerged branch is invisible to every one of them.
+//
+//    Measured 2026-09-03: FOUR migrations across four worktrees simultaneously
+//    claimed 20261211100000 (tag_slug_seal,
+//    event_tag_link_reads_approved_aliases, kinktionary_new_terms_sourced,
+//    news_commit_requires_a_verdict). All four checks were green in all four
+//    trees, because none could see the other three. Whichever merges first wins;
+//    the rest are skipped permanently and silently while their PRs read as
+//    shipped — the same end state as check 4's applied-name mismatch, reached
+//    from the other direction.
+//
+//    Fatal only when OUR file is the new one. If ours is already on the base ref
+//    the sibling has to move, and failing our push for their unmerged branch
+//    would be blaming the wrong tree.
+//
+//    Fails OPEN on any I/O problem. A guard that cannot enumerate worktrees
+//    should say so and get out of the way; this check is an addition to the
+//    existing ones, not a gate anything else depends on.
+const sibling = groupSiblingCollisions(siblingCollisions())
+for (const hit of sibling.blocking) {
+  // Cap the path list: the actionable facts are the version and the sibling
+  // FILENAME. A live run listed ten worktrees on one line, which buries both.
+  const wts =
+    hit.worktrees.length > 2
+      ? `${hit.worktrees.slice(0, 2).join(', ')}, +${hit.worktrees.length - 2} more`
+      : hit.worktrees.join(', ')
+  errors.push(
+    `this branch's "${hit.file}" shares version ${hit.version} with "${hit.siblingFile}" ` +
+      `in ${hit.worktrees.length} sibling worktree(s): ${wts}\n` +
+      `    → Both cannot apply. \`db push\` matches by version: whichever merges first wins, ` +
+      `the other is skipped SILENTLY and its PR still reads as shipped.\n` +
+      `    → Rename above the current max, and prefer an OFF-ROUND timestamp — every session ` +
+      `picking <next-day>100000 is what produced a four-way collision on 20261211100000.`,
+  )
+}
+// Advisory half is deliberately one line, not one per hit. It is dominated by
+// abandoned worktrees carrying old branches that will never merge, and the
+// sibling session is the one that has to act — it cannot read this output.
+if (sibling.advisory.count > 0) {
+  const shown = sibling.advisory.versions.slice(0, 3).join(', ')
+  const more = sibling.advisory.versions.length > 3 ? `, +${sibling.advisory.versions.length - 3} more` : ''
+  console.log(
+    `ℹ ${sibling.advisory.count} sibling-worktree version overlap(s) on files already at ${BASE_REF} ` +
+      `(${shown}${more}) — the sibling worktree is the one that would have to renumber, not this branch.`,
+  )
 }
 
 if (applied.length > 0) {
