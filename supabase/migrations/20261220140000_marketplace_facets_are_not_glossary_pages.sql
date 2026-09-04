@@ -1,6 +1,21 @@
 -- Marketplace facets are not glossary pages.
 --
 -- =============================================================================
+-- APPLIED OUT-OF-BAND, 2026-09-04 — read this before re-running
+-- =============================================================================
+--
+-- This ran against prod via the Supabase MCP `apply_migration`, because DNS was
+-- unreachable from this environment and the change could not be pushed to a
+-- branch. The effects are LIVE. `apply_migration` returned success but wrote NO
+-- row to supabase_migrations.schema_migrations, so remote history does not know
+-- about it and `db push` WILL run this file again when it merges.
+--
+-- Every step is therefore written to be idempotent, and every assertion checks
+-- an END STATE rather than a row count — a count assertion aborts the replay on
+-- a database that is already correct, which is the specific way this class of
+-- migration bricks a later deploy. Verified on the live database after applying.
+--
+-- =============================================================================
 -- Measured on prod 2026-09-04
 -- =============================================================================
 --
@@ -103,9 +118,9 @@
 -- `concept` is the glossary kind (3,523 rows: queer, gay, drag).
 
 do $$
-declare v int;
+declare v int; v_end int;
 begin
-  perform set_config('app.actor', 'migration:20261220100000_marketplace_facets_are_not_glossary_pages', true);
+  perform set_config('app.actor', 'migration:marketplace_facets_are_not_glossary_pages', true);
 
   update public.unified_tags
      set entity_kind = 'concept', updated_at = now()
@@ -113,10 +128,24 @@ begin
      and status = 'active'
      and entity_kind = 'attribute';
   get diagnostics v = row_count;
-
   raise notice 'un-stamped % mis-classed glossary row(s) from attribute -> concept', v;
-  if v <> 3 then
-    raise exception 'expected 3 mis-stamped glossary rows, found % — re-measure before deindexing', v;
+
+  -- Asserts the END STATE, not the row count. This migration was applied to
+  -- prod out-of-band on 2026-09-04 (git was unreachable; see the repo notes),
+  -- so `db push` will run it a SECOND time when this lands — at which point the
+  -- UPDATE legitimately matches zero rows. A `v <> 3` count assertion would
+  -- abort the replay on a database that is already in the desired state, and
+  -- would equally abort a rebuild-from-zero where a later migration had
+  -- re-stamped one of them. The end state is the thing that must hold.
+  select count(*) into v_end
+    from public.unified_tags
+   where slug in ('spandex', 'lace', 'denim')
+     and status = 'active'
+     and entity_kind = 'concept';
+  if v_end <> 3 then
+    raise exception
+      'expected spandex/lace/denim to be entity_kind=concept, found % — re-measure before deindexing',
+      v_end;
   end if;
 end $$;
 
