@@ -85,12 +85,24 @@ test.describe('removed: the 0-100 equality number on the geo singles', () => {
     await open(page, '/country/germany');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: BOOT });
 
-    // `SafetyVerdict` — the banner at the top of the country page. Its eyebrow
-    // and tier are two sibling <p>s, so match the text rather than a container:
-    // an ancestor-shaped locator here either resolves to the link's immediate
-    // parent or to the page root, and neither is the banner.
-    await expect(page.getByText('Equality', { exact: true }).first()).toBeVisible();
-    await expect(page.getByText('Very high', { exact: true }).first()).toBeVisible();
+    // `SafetyVerdict` — the banner at the top of the country page.
+    //
+    // Wait on the BANNER, not on page-wide text. This used to match
+    // `getByText('Equality')` across the whole page, because the eyebrow and
+    // tier are sibling <p>s with no reachable ancestor. That RACED, and the
+    // <h1> asserted above is why: it renders from the page shell while the
+    // country row is still in flight, so the heading going visible says
+    // nothing about whether this banner has mounted — and the text match then
+    // had only the default 5s to catch up. Measured 1 failure in 6 on prod.
+    //
+    // Fixed at the component: SafetyVerdict now carries a testid, mirroring
+    // `geo-safety-verdict` on GeoSafetyBlock, which is what the two cases
+    // above already wait on. Assert INSIDE it, so "Equality" cannot be
+    // satisfied by some other occurrence elsewhere on the page.
+    const verdict = page.getByTestId('country-safety-verdict');
+    await expect(verdict).toBeVisible({ timeout: BOOT });
+    await expect(verdict.getByText('Equality', { exact: true })).toBeVisible();
+    await expect(verdict.getByText('Very high', { exact: true })).toBeVisible();
 
     // The deleted ring carried this label on every size it rendered at.
     await expect(page.locator('[aria-label^="Equality score"]')).toHaveCount(0);

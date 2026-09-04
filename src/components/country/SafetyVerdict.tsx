@@ -85,6 +85,14 @@ export function SafetyVerdict({
 
   return (
     <div
+      /* Mirrors `geo-safety-verdict` on GeoSafetyBlock, and exists for the same
+         reason: this banner has no locator an e2e can reach. Its eyebrow and
+         tier are sibling <p>s, so the only handle was matching their text
+         page-wide — and that RACES, because <h1> renders from the page shell
+         while this component is still waiting on the country row, so a test
+         that waits for the heading and then matches text has nothing to wait
+         ON. Measured 1 failure in 6 against prod before this existed. */
+      data-testid="country-safety-verdict"
       className={
         'flex flex-col gap-4 rounded-container border p-6 sm:flex-row sm:items-center sm:justify-between' +
         (settled ? '' : ' bg-surface-container border-border')
