@@ -58,5 +58,6 @@
   "slug_diacritic_lossy": 0,
   "name_mojibake": 1,
   "name_contains_hashtag": 0,
-  "non_latin_name": 0
+  "non_latin_name": 0,
+  "indexable_marketplace_facet": 0
 }
