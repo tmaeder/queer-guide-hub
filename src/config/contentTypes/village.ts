@@ -204,6 +204,7 @@ export const queerVillageContentType: ContentTypeConfig = {
       mergePath: 'entities',
     },
   },
+  merge: { column: 'duplicate_of_id', label: 'Merged' },
   lifecycle: { type: 'queer_village', archive: { column: 'shell_status', value: 'ghost', label: 'Ghost' } },
   publicPath: (row) => (row.slug ? `/villages/${row.slug}` : null),
 };
