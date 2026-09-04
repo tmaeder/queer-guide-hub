@@ -26,6 +26,13 @@ export interface TagHygieneStats {
   merged_but_not_status_merged: number;
   sensitive_without_description: number;
   indexable_without_description: number;
+  /** A marketplace attribute facet publishing a glossary page at /tags/:slug.
+   *  Facets are filed in NO category by decision (0 of 94 on 2026-09-04), so an
+   *  indexable one is a page with no place in the glossary IA — 44 were, led by
+   *  `occ-pride` defining Pride as "a primary emotion". Held at zero at write
+   *  time by `trg_tag_facet_page_gate`, which is what makes it a hard gate
+   *  rather than a queue depth like `uncategorized_active`. */
+  indexable_marketplace_facet: number;
   /** The junction names a category, `unified_tags.category_id` names none. The
    *  junction is the source of truth and the column is derived from it, so
    *  non-zero means a writer inserted an assignment without letting the denorm
