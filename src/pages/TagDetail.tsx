@@ -223,6 +223,10 @@ export default function TagDetail() {
   const parentName = primary?.parent_name ?? undefined;
   const parentSlug = (primary as { parent_slug?: string | null } | undefined)?.parent_slug;
   const childName = primary?.level === 1 ? primary.name : undefined;
+  // `/tags/c/:categorySlug` resolves CHILD slugs too (TagsIndex falls back to
+  // scanning each parent's children), so the sub-category crumb is a real
+  // destination — it just never carried the href.
+  const childSlug = primary?.level === 1 ? primary.slug : undefined;
 
   const { data: usage } = useTagUsageBreakdown(tag?.id);
   // Fetched here as well as inside the band so the route strip and the rail can
@@ -356,10 +360,17 @@ export default function TagDetail() {
       ...(parentName && parentSlug
         ? [{ label: getCategoryShortName(parentName), href: `/tags/c/${parentSlug}` }]
         : []),
-      ...(childName ? [{ label: getCategoryShortName(childName) }] : []),
+      ...(childName
+        ? [
+            {
+              label: getCategoryShortName(childName),
+              href: childSlug ? `/tags/c/${childSlug}` : undefined,
+            },
+          ]
+        : []),
       { label: tag.name },
     ];
-  }, [tag, parentName, parentSlug, childName, t]);
+  }, [tag, parentName, parentSlug, childName, childSlug, t]);
   useBreadcrumbs(breadcrumbs);
 
   // ── Meta ────────────────────────────────────────────────────────────────
