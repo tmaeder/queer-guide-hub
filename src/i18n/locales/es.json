@@ -3440,6 +3440,8 @@
     "bodyFallback": "La noticia completa está en la fuente original.",
     "originallyPublishedBy": "Publicado originalmente por {{source}}.",
     "viewOriginal": "Ver el artículo original",
+    "continueAtSource": "Seguir leyendo este artículo en {{source}}",
+    "continueAtSourceGeneric": "Seguir leyendo en la fuente",
     "integritySatire": "Marcado como sátira: no es un informe literal.",
     "integrityAdvertorial": "Contenido patrocinado / publirreportaje.",
     "integritySentimentConflict": "Las fuentes no coinciden en el tono: léelo con cautela.",
