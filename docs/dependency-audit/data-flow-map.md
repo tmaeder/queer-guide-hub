@@ -34,9 +34,18 @@ NVIDIA_DISABLED=1          # whole provider off, key left in place
                            # or unset NVIDIA_API_KEY — the router goes inert
 ```
 
-**Live setting, verified 2026-09-02: `NVIDIA_EXCLUDE_CALLERS` is UNSET** — full scope, exactly as
-this section describes. It had been set to all 13 callers named above, which silently narrowed the
-decision recorded here down to batch pipelines only; cleared deliberately after review.
+**Live setting, verified 2026-09-03: `NVIDIA_EXCLUDE_CALLERS=translate-i18n-batch`** — one batch
+job, and **every caller named above is still in scope**, so nothing in this section's residency
+claim changes. That one entry is a reliability exclusion, not a privacy retreat.
+
+It briefly held all 13 callers above, which silently narrowed the decision recorded here down to
+batch pipelines only; cleared 2026-09-02 after review. `translate-i18n-batch` was added back on
+its own the next day on measured evidence: over four hours it failed **3 of 7 calls (43%)** on
+45s timeouts while every other caller ran at **1.6% across 61 calls/hour**. Its 4,000-token
+translation batches are simply too big for the free tier's latency, and because it fires as a
+burst on the hour it spent all three breaker failures inside two minutes — taking NVIDIA fully
+offline (measured: **zero** calls) for the 900s reset, **15 minutes in every hour**, for the eight
+callers that were working. Excluding it costs ~8 calls/hour and recovers ~61.
 
 **A secret's value cannot be read back, and that is how the drift hid.** `supabase secrets list`
 prints only a name and a **plain `sha256(value)`** digest, so a variable that contradicts this

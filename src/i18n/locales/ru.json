@@ -3474,6 +3474,8 @@
     "bodyFallback": "Полный текст доступен в оригинальном источнике.",
     "originallyPublishedBy": "Впервые опубликовано в {{source}}.",
     "viewOriginal": "Открыть оригинал",
+    "continueAtSource": "Читать статью полностью на {{source}}",
+    "continueAtSourceGeneric": "Читать полностью в источнике",
     "integritySatire": "Помечено как сатира — не буквальный репортаж.",
     "integrityAdvertorial": "Спонсорский / рекламный материал.",
     "integritySentimentConflict": "Источники расходятся в тоне — читайте внимательно.",
