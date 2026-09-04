@@ -56,12 +56,26 @@ export function useIntentLocation(citySlugParam?: string | null): IntentLocation
     (async () => {
       // 1. Explicit slug in the URL always wins.
       if (citySlugParam) {
-        const { data } = await supabase
+        const select = 'id, name, slug, country_id, duplicate_of_id, countries:country_id(id, code)';
+        let { data } = await supabase
           .from('cities')
-          .select('id, name, slug, country_id, countries:country_id(id, code)')
+          .select(select)
           .eq('slug', citySlugParam)
           .maybeSingle();
         if (cancelled) return;
+        // Follow, do not reject: a merged city keeps its old slug and links to
+        // it stay live, so the URL must resolve to the survivor rather than
+        // fall through to inference. Same rule as `followMerged` in usePlaces.
+        const mergedInto = (data as { duplicate_of_id?: string | null } | null)?.duplicate_of_id;
+        if (mergedInto) {
+          const survivor = await supabase
+            .from('cities')
+            .select(select)
+            .eq('id', mergedInto)
+            .maybeSingle();
+          if (cancelled) return;
+          data = survivor.data ?? data;
+        }
         if (data) {
           const country = (data as { countries?: { id?: string | null; code?: string | null } | null })
             .countries;
@@ -105,6 +119,7 @@ export function useIntentLocation(citySlugParam?: string | null): IntentLocation
           ? await supabase
               .from('cities')
               .select('id, name, slug, countries:country_id(id, code)')
+              .is('duplicate_of_id', null)
               .eq('country_id', countryRow.id as string)
               .ilike('name', cityName)
               .not('slug', 'is', null)

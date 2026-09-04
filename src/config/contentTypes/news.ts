@@ -201,6 +201,7 @@ export const newsArticleContentType: ContentTypeConfig = {
     },
   },
   // `archived_at` added in 20261029100000 — see hotel.ts.
+  merge: { column: 'duplicate_of_id', label: 'Merged' },
   lifecycle: {
     type: 'news',
     archive: { column: 'archived_at', predicate: 'present', label: 'Archived' },
