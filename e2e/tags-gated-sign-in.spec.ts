@@ -48,8 +48,22 @@ function publishesDefinedTerm(html: string): boolean {
   return html.includes('DefinedTerm');
 }
 
-// Four of the 101, spread across both creating migrations.
-const GATED = ['footjob', 'anal-whore', 'gag-slut', 'spit-slut'];
+// Four of the cohort, spread across both creating migrations.
+//
+// `footjob` was here and was REMOVED on 2026-09-04, not because the assertion
+// was wrong but because it stopped being true: 20270107114500 published it
+// (verification_status='reviewed' + seo_indexable), so it is no longer gated and
+// this spec failed on it. `bagpiping` replaces it — same creating migration
+// (20261211100000) and the same Practices & Play category, so the sample keeps
+// its shape.
+//
+// The cohort is a MOVING SET. It was 101 when this spec was written and is 100
+// now, and any of these four can be published the same way. When one starts
+// failing here, check `verification_status` before "fixing" the assertion: a
+// deliberate publish and a regression look identical from the HTTP response, and
+// only the flag tells them apart. The invariant this spec defends is "a gated
+// term answers sign-in rather than 404" — not the membership of the list.
+const GATED = ['bagpiping', 'anal-whore', 'gag-slut', 'spit-slut'];
 
 test.describe('@safety gated glossary terms', () => {
   for (const slug of GATED) {
