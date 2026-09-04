@@ -1,31 +1,47 @@
--- Bring `tag_hygiene_stats()` back into the repo. Prod is one counter ahead of
--- every migration in this tree, and that gap has the whole repo deadlocked.
+-- Re-assert `tag_hygiene_stats()` at the END of the migration order, because the
+-- two definitions of it are applied OUT OF ORDER and a replay loses a counter.
 --
--- WHAT HAPPENED. `indexable_marketplace_facet` was added to the live function
--- out of band -- it appears in NO migration here, and `pg_get_functiondef` on
--- prod returns 27 top-level keys where the newest defining migration
--- (20261211120300) has 26. The diff is exactly that one key; nothing else in the
--- body differs, which is what makes copying the live definition a safe repair
--- rather than a guess.
+-- WHAT IS ACTUALLY WRONG -- and it is not what the first draft of this header
+-- said. That draft claimed `indexable_marketplace_facet` "appears in NO
+-- migration here". It does now: `20260904104115_marketplace_facets_are_not_
+-- glossary_pages` was applied to prod out of band (MCP `apply_migration`) and
+-- was recovered into this tree alongside this file. The real defect is the
+-- ORDERING it left behind:
 --
--- WHY IT BLOCKS EVERYTHING. `scripts/check-tag-hygiene.mjs` errors on any prod
--- stats key with no baseline entry -- deliberately, because a counter with no
--- baseline is "how a new gate silently does nothing". So `Critical data-quality
--- gates` has been red on EVERY open PR since that SQL landed, for a change none
--- of their authors made.
+--   20260904104115  defines tag_hygiene_stats WITH indexable_marketplace_facet
+--   20261211120300  defines it WITHOUT -- 26 keys -- and sorts AFTER it
+--
+-- Both are applied on prod, and prod has the counter, because they were applied
+-- in wall-clock order rather than in version order. Any environment rebuilt from
+-- zero replays them in VERSION order, so 20261211120300 runs last and silently
+-- drops the counter again. The version an MCP apply stamps is its own call
+-- timestamp (2026-09-04), which is why it landed below a tree that numbers
+-- migrations months ahead.
+--
+-- So this file is not a copy for its own sake: it is the definition that has to
+-- sort LAST. `pg_get_functiondef` on prod returns 27 top-level keys against
+-- 26 in 20261211120300, and the diff is exactly that one key with nothing else
+-- in the body changed -- which is what makes copying the live definition a
+-- repair rather than a guess.
+--
+-- WHY IT BLOCKED THE WHOLE REPO. `scripts/check-tag-hygiene.mjs` errors on any
+-- prod stats key with no baseline entry -- deliberately, because a counter with
+-- no baseline is "how a new gate silently does nothing". So `Critical
+-- data-quality gates` was red on EVERY open PR, for a change none of their
+-- authors made.
 --
 -- AND THE OBVIOUS FIX IS REFUSED, CORRECTLY. Adding the key to the baseline
--- alone fails `src/lib/__tests__/tagHygienePanelMetrics.test.ts`, a THREE-WAY pin
--- across the SQL, the baseline and the admin panel's `HYGIENE_METRICS`. Two PRs
--- reached for that shortcut independently (#3369, and this author on #3359 before
--- reverting it) and the pin caught both. The three layers have to move together,
--- which is why this migration ships beside the panel and baseline edits rather
--- than on its own.
+-- alone fails `src/lib/__tests__/tagHygienePanelMetrics.test.ts`, a pin across
+-- the SQL, the baseline and the admin panel's `HYGIENE_METRICS`. Two PRs reached
+-- for that shortcut independently (#3369, and this author on #3359 before
+-- reverting it) and the pin caught both. There is a FOURTH layer the pin does
+-- not cover and typecheck does: `MetricKey` is `Exclude<keyof TagHygieneStats,
+-- 'totals'>`, so the interface in `src/hooks/useTagHygieneStats.ts` has to carry
+-- the key too. All four move together in this PR.
 --
 -- The body below is `pg_get_functiondef()` output copied verbatim from prod, not
--- retyped -- the drift-recovery rule from `recover_drifted_migration_as_bytes`.
--- Re-running it against prod is a provable no-op; against any other environment
--- it closes the same gap.
+-- retyped -- the drift-recovery rule. Re-running it against prod is a provable
+-- no-op; against a rebuilt environment it is what stops the counter vanishing.
 
 CREATE OR REPLACE FUNCTION public.tag_hygiene_stats()
  RETURNS jsonb
