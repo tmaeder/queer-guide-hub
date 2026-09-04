@@ -27,7 +27,13 @@ import { estimateReadingTime } from '@/lib/share';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchNewsCategories } from '@/hooks/usePageFetchers';
-import { cleanTitle, cleanAuthor, cleanExcerpt, cleanContent } from '@/utils/htmlDecode';
+import {
+  cleanTitle,
+  cleanAuthor,
+  cleanExcerpt,
+  cleanContent,
+  boundArticleBody,
+} from '@/utils/htmlDecode';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { formatDistanceToNow, format } from 'date-fns';
@@ -282,6 +288,10 @@ export default function NewsDetail() {
   const authorName = cleanAuthor(article.author || '');
   const excerptText = cleanExcerpt(article.excerpt || '');
   const contentText = article.content ? cleanContent(article.content) : '';
+  // We store the full third-party body for the ingest pipeline but only ever
+  // RENDER a bounded excerpt — publishing the whole thing is republication.
+  // `contentText` stays full for the admin editor and the reading estimate.
+  const { text: bodyExcerpt, truncated: bodyTruncated } = boundArticleBody(contentText);
   const dek = excerptText ? extractDek(excerptText) : '';
   const readMins = estimateReadingTime(article.content, article.excerpt);
   const fresh = isFreshArticle(article.published_at);
@@ -513,7 +523,7 @@ export default function NewsDetail() {
                   className="whitespace-pre-line text-body-lg text-foreground"
                   style={{ lineHeight: 1.8 }}
                 >
-                  {contentText}
+                  {bodyExcerpt}
                 </p>
               ) : excerptText ? (
                 <p className="text-body-lg text-foreground" style={{ lineHeight: 1.8 }}>
@@ -525,6 +535,22 @@ export default function NewsDetail() {
                 </p>
               )}
             </Editable>
+
+            {/* We bound the body to an excerpt, so the rest of the story is only
+                available at the publisher. Make that the prominent next step. */}
+            {bodyTruncated && (
+              <p className="mt-6 text-body-lg">
+                <a href={article.url} target="_blank" rel="noopener noreferrer">
+                  {sourceName
+                    ? t(
+                        'newsDetail.continueAtSource',
+                        'Continue reading this article at {{source}}',
+                        { source: sourceName },
+                      )
+                    : t('newsDetail.continueAtSourceGeneric', 'Continue reading at the source')}
+                </a>
+              </p>
+            )}
 
             {/* Quiet source attribution — one outbound link, no second button. */}
             <p className="mt-8 pt-6 text-sm text-muted-foreground">
