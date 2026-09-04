@@ -27,9 +27,16 @@
 -- (Measured: 0 of these 34 currently carry a diagnostic code, so no clinical
 -- claim is being unwound here -- but that is luck, not design.)
 --
--- Prose is deliberately NOT touched. femminiello's description was overwritten
--- from the wrong entity and still opens "A trans woman ... assigned male at
--- birth"; that is real harm and it is a separate, reviewed pass, not a silent
+-- Prose is deliberately NOT touched, and it is worth being exact about where
+-- the damage sits, because it is NOT the field you would guess. femminiello's
+-- "description" is correct (the Neapolitan gender role); its short_description
+-- reads "Woman assigned male at birth" and its long_description opens "A trans
+-- woman, or transgender woman, is a woman who was assigned male at birth".
+-- "cunt" is the same shape: a correct kink "description" over a vulva
+-- short/long_description. questioning, by contrast, has all three fields right
+-- despite the wrong id -- so a wrong QID does NOT imply contaminated prose and
+-- the two have to be measured separately. long_description is what the crawler
+-- renders, so this is live and it is a separate reviewed pass, not a silent
 -- side effect of a QID cleanup.
 --
 -- Merges are a SEPARATE migration. Retraction only nulls two columns; a merge
