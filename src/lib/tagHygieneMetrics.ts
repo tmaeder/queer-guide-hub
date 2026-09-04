@@ -44,6 +44,12 @@ export const HYGIENE_METRICS: HygieneMetric[] = [
     hint: 'Glossary photography retired 2026-08-28 (tags render drawn TagPlates). Non-zero means a writer is reintroducing photos.',
   },
   { key: 'indexable_without_description', label: 'Indexable, no prose', zero: true },
+  {
+    key: 'indexable_marketplace_facet',
+    label: 'Indexable marketplace facet',
+    zero: true,
+    hint: 'A marketplace attribute facet (color-*/size-*/genre-*/fit-*) publishing a /tags/:slug page. Facets belong to no glossary category by decision, so they have no place in the glossary IA. enforce_tag_facet_page_gate makes this a write-time invariant, not a queue depth.',
+  },
   { key: 'merged_but_not_status_merged', label: 'Merged but still active', zero: true },
   {
     key: 'placeholder_description_active',
