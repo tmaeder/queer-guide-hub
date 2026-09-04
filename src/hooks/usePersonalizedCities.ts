@@ -18,6 +18,7 @@ export async function fetchPersonalizedCitiesByIds(
   const { data } = await supabase
     .from('cities')
     .select('id, name, slug, image_url, population, editorial_hook, best_time_to_visit, countries:country_id(name, equality_score)')
+    .is('duplicate_of_id', null)
     .in('id', cityIds);
   return ((data ?? []) as unknown) as PersonalizedCityRow[];
 }
@@ -43,6 +44,7 @@ export async function fetchTrendingCities(
     .from('cities')
     .select('id, name, slug, image_url, population, editorial_hook, best_time_to_visit, countries:country_id(name, equality_score)')
     .in('name', FEATURED_CITY_WHITELIST)
+    .is('duplicate_of_id', null)
     .not('slug', 'like', 'tmp-%');
 
   // Several DB cities can share a whitelist name (Berlin DE vs Berlin US) —
@@ -64,6 +66,7 @@ export async function fetchTrendingCities(
   const { data: filtered } = await supabase
     .from('cities')
     .select('id, name, slug, image_url, population, editorial_hook, best_time_to_visit, countries:country_id!inner(name, equality_score)')
+    .is('duplicate_of_id', null)
     .not('slug', 'like', 'tmp-%')
     .gte('population', minPopulation)
     .gte('countries.equality_score', 60)
