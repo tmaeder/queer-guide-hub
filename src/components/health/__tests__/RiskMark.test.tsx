@@ -1,11 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { RiskMark } from '@/components/health/RiskMark';
-import {
-  TRANSMISSION_RISK_ORDER,
-  transmissionRiskVisual,
-  RISK_MARK_BORDER,
-} from '@/lib/stiRisk';
+import { TRANSMISSION_RISK_ORDER, transmissionRiskVisual, RISK_MARK_BORDER } from '@/lib/stiRisk';
 
 /**
  * The invariant `stiRisk.ts` has always stated and nothing has ever checked.
@@ -99,12 +95,30 @@ describe('RiskMark', () => {
     expect(mark.style.borderColor).toBe(asRendered(RISK_MARK_BORDER));
   });
 
+  it('has an intrinsic width unless the caller asks it to fill', () => {
+    // `w-full` was baked in, so the mark was greedy everywhere. In the legend
+    // it stretched and squeezed its sibling text until "WITH BLOOD" wrapped to
+    // two lines beside it. Width is the container's call, not the mark's.
+    const plain = render(<RiskMark risk="high" srLabel="x" />);
+    expect((plain.container.firstElementChild as HTMLElement).className).not.toMatch(/\bw-full\b/);
+    plain.unmount();
+
+    const filled = render(<RiskMark risk="high" fill srLabel="x" />);
+    expect((filled.container.firstElementChild as HTMLElement).className).toMatch(/\bw-full\b/);
+  });
+
+  it('keeps a labelled mark on one line', () => {
+    const { container } = render(<RiskMark risk="high" label />);
+    expect((container.firstElementChild as HTMLElement).className).toMatch(/\bwhitespace-nowrap\b/);
+  });
+
   it('takes the badge radius rank — never element/container/full, never square', () => {
     // 12px (`rounded-element`) pinched adjacent cells into four-point stars;
     // 0px violates the system's "Nothing square". `rounded-badge` is the
     // documented rank for a swatch and is what the mark must carry.
-    const cls = (render(<RiskMark risk="high" srLabel="x" />).container
-      .firstElementChild as HTMLElement).className;
+    const cls = (
+      render(<RiskMark risk="high" srLabel="x" />).container.firstElementChild as HTMLElement
+    ).className;
     expect(cls).toMatch(/\brounded-badge\b/);
     expect(cls).not.toMatch(/rounded-(element|container|full)\b/);
   });
