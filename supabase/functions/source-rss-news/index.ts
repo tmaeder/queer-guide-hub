@@ -38,6 +38,15 @@ const LGBTQ_KEYWORDS = ['lgbtq', 'lgbt', 'gay', 'lesbian', 'trans', 'transgender
 // Capped runs lose nothing: last_fetched_at is stamped at claim time and
 // news_sources_eligible orders by it ASC, so the next run picks up the feeds
 // this one didn't touch.
+//
+// THAT WAS ONLY TRUE WITHIN A RELIABILITY TIER, and the difference cost two
+// sources 53 days of silence. Until 20280423151137 the selector ordered
+// `reliability_score DESC` FIRST and used last_fetched_at only as a tiebreaker,
+// so with 293 live sources at score 1.000 and two at 0.999, those two sat at
+// rank ~294 and this cap could never reach them — however stale they got.
+// Staleness is the primary key now and reliability scales the re-fetch interval
+// instead, so the sentence above holds as written. Sentinel:
+// news_source_starvation_stats(), checked by scripts/check-pipeline-health.mjs.
 const MAX_FEEDS_HARD_CAP = 30
 const DEFAULT_MAX_FEEDS_PER_RUN = 15
 
@@ -313,6 +322,29 @@ function detectApiName(url: string): string | null {
   return getApiNameFromUrl(url)
 }
 
+// RETIRED PATH — all four aggregator rows were set is_active=false by
+// 20280423151137, so nothing below currently runs. It is kept rather than
+// deleted because the admin UI (NewsSourcesManager.tsx) toggles is_active with
+// one click, and whoever flips one back on should meet these two defects here
+// rather than rediscover them from the corpus:
+//
+//   1. `news_sources.keywords` IS NEVER READ. Every aggregator row carries a
+//      curated array — NewsData's names "Sexual Orientation" and "Christopher
+//      Street Day", NewsAPI's names "hiv" and "aids" — and news_sources_eligible
+//      RETURNS the column. The NewsSource interface at the top of this file
+//      omits it, so it is dropped at the type boundary before any fetcher sees
+//      it. The per-source curation has never had any effect.
+//
+//   2. WHAT IS SENT INSTEAD is `LGBTQ_KEYWORDS.slice(0, 5)`, identical for all
+//      four: `lgbtq OR lgbt OR gay OR lesbian OR trans`. That is simultaneously
+//      too loose and too narrow — bare "gay" and "trans" match namesakes and
+//      prefixes, while the five-term slice omits queer (this site's own name),
+//      pride, nonbinary, bisexual, drag, rainbow and same-sex, so those
+//      identities were never searched for at all.
+//
+// Reviving one means fixing both first. Context for whether it is worth it: the
+// quality gate rejected 8,338 of the 14,838 articles these produced (56%, none
+// of them indexable), and monthly volume rose after they stopped.
 async function fetchFromApi(source: NewsSource, sinceHours: number): Promise<Record<string, unknown>[]> {
   const url = source.url
   const since = new Date(Date.now() - sinceHours * 3600000).toISOString()
