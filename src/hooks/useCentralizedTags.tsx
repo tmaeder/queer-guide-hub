@@ -38,16 +38,34 @@ export interface CategoryTreeChild {
   tag_count: number;
 }
 
+/**
+ * A `unified_tags` row. Shared with the detail page and the CMS, which fetch
+ * their own single row and legitimately read the whole width of it.
+ *
+ * `useCentralizedTags` does NOT fill all of this — it fetches only
+ * TAG_INDEX_COLUMNS (see there for why), so on a tag that came from this hook
+ * every field outside that list is `undefined` at runtime even where the type
+ * permits a value. Optionality is what makes that safe; do not tighten a field
+ * to required, and do not read one of the excluded fields off `allTags`.
+ */
 export interface CentralizedTag {
   id: string;
   name: string;
+  slug: string;
   category?: string;
   categories?: TagCategoryInfo[];
   description?: string;
+  short_description?: string | null;
+  /** `concept` | `practice` | `aesthetic` | `descriptor` | `label` | `person`. */
+  entity_kind?: string | null;
+  usage_count: number;
+  status?: string;
+  deprecation_reason?: string | null;
+  created_at: string;
+
+  /* ── Not fetched by useCentralizedTags — detail-page / CMS only. ────── */
   /** Long-form editorial body shown on the tag detail page (wiki/guide voice). */
   long_description?: string | null;
-  short_description?: string | null;
-  usage_count: number;
   image_url?: string;
   /** Attribution / source for the hero image (license compliance caption). */
   image_attribution?: string | null;
@@ -56,13 +74,10 @@ export interface CentralizedTag {
   wikipedia_url?: string | null;
   wikidata_id?: string | null;
   scientific_data?: Record<string, unknown> | null;
-  slug: string;
-  status?: string;
   seo_indexable?: boolean;
   is_sensitive?: boolean;
   is_adult?: boolean;
-  created_at: string;
-  updated_at: string;
+  updated_at?: string;
 }
 
 export interface TagCategory {
@@ -83,63 +98,103 @@ const EMPTY_CATEGORIES: TagCategory[] = [];
 const EMPTY_TREE: CategoryTreeNode[] = [];
 
 /**
- * Core fetch function — parallelises independent queries and enriches tags
- * with multi-category assignments.
+ * The columns /tags, the tag picker and /admin/tags actually render.
+ *
+ * This was `select=*`, and `*` on this table is 42 columns wide — including
+ * `long_description` (full wiki bodies), `description_i18n`/`name_i18n` and
+ * `quality_breakdown`. Measured on prod 2026-09-05: the active corpus came to
+ * **7.98 MB** as `*` against **1.98 MB** as this list, for an index that shows
+ * a name, a blurb and a use count. That payload — not the query, which returns
+ * in ~0.2s server-side — is what put a signed-in /tags load at 28.9s and started
+ * timing out the nightly e2e specs.
+ *
+ * Adding a column here is a real cost paid by every reader on every visit. If a
+ * SINGLE surface needs a field, fetch that row where you need it instead.
  */
-// PostgREST caps any single request at max-rows (1000) — the assignments
-// table holds ~5k rows, so an unpaged select silently dropped 80% of
-// category links. That broke category chips AND the adult age-gate (a tag
-// with no categories never matches ADULT_CATEGORY_NAMES). Page through.
+export const TAG_INDEX_COLUMNS =
+  'id, name, slug, category, description, short_description, usage_count, created_at, entity_kind, status, deprecation_reason';
+
+const PAGE = 1000;
+
+export interface PageResult<T> {
+  data: T[] | null;
+  error: { message: string } | null;
+  count: number | null;
+}
+
+/**
+ * Read a whole table through PostgREST's max-rows cap (1000), CONCURRENTLY.
+ *
+ * The first page carries an exact count, so every remaining page can be fired
+ * at once instead of walking `range()` in a loop — the corpus grows daily and a
+ * sequential pager makes the page's round-trip DEPTH a function of row count
+ * (the assignments table alone is at 8 pages and climbing).
+ *
+ * `page` MUST order by a fully unique key. Concurrent `range()` requests are
+ * independent queries: under a non-unique sort Postgres may order ties
+ * differently per request, which silently duplicates rows into one page and
+ * drops them from another.
+ *
+ * A failed page THROWS rather than returning what arrived. A short corpus here
+ * is not a degraded glossary — it is a wrong one: missing category assignments
+ * are what the adult age-gate reads, and a tag with no categories can never
+ * match ADULT_CATEGORY_NAMES, so a swallowed page un-gates 18+ terms. React
+ * Query retries; a silent truncation does not.
+ */
+export async function fetchAllPages<T>(
+  label: string,
+  page: (from: number, to: number) => PromiseLike<PageResult<T>>,
+): Promise<T[]> {
+  const first = await page(0, PAGE - 1);
+  if (first.error) throw new Error(`${label}: ${first.error.message}`);
+  const rows = first.data ?? [];
+  const total = first.count ?? rows.length;
+  if (rows.length < PAGE || total <= PAGE) return rows;
+
+  const rest = await Promise.all(
+    Array.from({ length: Math.ceil(total / PAGE) - 1 }, (_, i) =>
+      page((i + 1) * PAGE, (i + 2) * PAGE - 1),
+    ),
+  );
+  for (const r of rest) {
+    if (r.error) throw new Error(`${label}: ${r.error.message}`);
+    rows.push(...(r.data ?? []));
+  }
+  return rows;
+}
+
 interface AssignmentRow {
   tag_id: string;
   category_id: string;
   is_primary: boolean;
-  tag_categories: {
-    id: string;
-    name: string;
-    slug: string;
-    level: number;
-    parent_id: string | null;
-  } | null;
 }
 
-async function fetchAllAssignments(): Promise<AssignmentRow[]> {
-  const PAGE = 1000;
-  const rows: AssignmentRow[] = [];
-  for (let from = 0; ; from += PAGE) {
-    const { data, error } = await supabase
+// No `tag_categories(...)` embed: `allCats` below already reads that whole
+// table (53 rows, 8 KB) for the parent lookup, so embedding it per assignment
+// re-sent the same 53 categories 7,201 times — 307 KB per page against 124 KB.
+function fetchAllAssignments(): Promise<AssignmentRow[]> {
+  return fetchAllPages('tag_category_assignments', (from, to) =>
+    supabase
       .from('tag_category_assignments')
-      .select('tag_id, category_id, is_primary, tag_categories(id, name, slug, level, parent_id)')
+      .select('tag_id, category_id, is_primary', { count: 'exact' })
       .order('tag_id', { ascending: true })
-      .range(from, from + PAGE - 1);
-    if (error) break;
-    rows.push(...(data ?? []));
-    if (!data || data.length < PAGE) break;
-  }
-  return rows;
+      // Second key is load-bearing: a tag has many assignments, so `tag_id`
+      // alone is not a unique order and the concurrent pages could disagree.
+      .order('category_id', { ascending: true })
+      .range(from, to),
+  );
 }
 
-// Same max-rows cap: ~3.7k active tags, so `.limit(10000)` still returned
-// only the first 1000. Page through all of them.
-async function fetchAllActiveTags() {
-  const PAGE = 1000;
-  const rows: Record<string, unknown>[] = [];
-  for (let from = 0; ; from += PAGE) {
-    const { data, error } = await supabase
+function fetchAllActiveTags(): Promise<Record<string, unknown>[]> {
+  return fetchAllPages('unified_tags', (from, to) =>
+    supabase
       .from('unified_tags')
-      .select('*')
+      .select(TAG_INDEX_COLUMNS, { count: 'exact' })
       .eq('status', 'active')
       .order('usage_count', { ascending: false })
       .order('id', { ascending: true })
-      .range(from, from + PAGE - 1);
-    if (error) {
-      if (rows.length === 0) throw error;
-      break;
-    }
-    rows.push(...((data as Record<string, unknown>[]) ?? []));
-    if (!data || data.length < PAGE) break;
-  }
-  return rows;
+      .range(from, to),
+  ) as Promise<Record<string, unknown>[]>;
 }
 
 async function fetchAllTagsWithCategories(): Promise<CentralizedTagsData> {
@@ -150,6 +205,10 @@ async function fetchAllTagsWithCategories(): Promise<CentralizedTagsData> {
     supabase.from('tag_categories').select('id, name, slug, level, parent_id'),
     supabase.rpc('get_category_tree'),
   ]);
+  // Every tag's category name, slug and parent now come from THIS result — the
+  // assignment rows carry ids only. Failing it silently would leave every tag
+  // category-less, which is the age-gate hole described on fetchAllPages.
+  if (allCatsResult.error) throw new Error(`tag_categories: ${allCatsResult.error.message}`);
   const allCats = allCatsResult.data;
   const treeData = treeResult.data;
 
@@ -168,12 +227,12 @@ async function fetchAllTagsWithCategories(): Promise<CentralizedTagsData> {
   const tagCatsMap = new Map<string, TagCategoryInfo[]>();
   if (catAssignments) {
     for (const a of catAssignments) {
-      const cat = (a as Record<string, unknown>).tag_categories as Record<string, unknown> | null;
+      const cat = catLookup.get(a.category_id);
       if (!cat) continue;
       const parentInfo = cat.parent_id ? catLookup.get(cat.parent_id) : null;
       if (!tagCatsMap.has(a.tag_id)) tagCatsMap.set(a.tag_id, []);
       tagCatsMap.get(a.tag_id)!.push({
-        id: cat.id,
+        id: a.category_id,
         name: cat.name,
         slug: cat.slug,
         level: cat.level,
@@ -261,7 +320,9 @@ export const useCentralizedTags = () => {
 
       const { data, error } = await supabase
         .from('unified_tags')
-        .select('*')
+        // Same columns as the corpus above — a search hit and a browsed tag are
+        // rendered by the same components and must carry the same fields.
+        .select(TAG_INDEX_COLUMNS)
         .eq('status', 'active')
         .or(`name.ilike.%${sanitized}%,description.ilike.%${sanitized}%`)
         .order('usage_count', { ascending: false })
@@ -441,27 +502,32 @@ export function useTagUsageCounts() {
       const ANY_USAGE = ['usage_count', ...ENTITY_COUNT_COLUMNS]
         .map((col) => `${col}.gt.0`)
         .join(',');
-      const PAGE = 1000;
-      const data: Array<Record<string, number | string>> = [];
+      let data: Array<Record<string, number | string>> = [];
       let fetchError: unknown = null;
-      for (let from = 0; ; from += PAGE) {
-        const { data: page, error } = await supabase
-          .from('tag_usage_summary' as 'venues')
-          .select(
-            'id, name, usage_count, venue_count, event_count, group_count, news_count, post_count, marketplace_count, content_count',
-          )
-          .or(ANY_USAGE)
-          .order('id', { ascending: true })
-          .range(from, from + PAGE - 1);
-        if (error) {
-          fetchError = error;
-          break;
-        }
-        data.push(...((page ?? []) as unknown as Array<Record<string, number | string>>));
-        if (!page || page.length < PAGE) break;
+      try {
+        data = await fetchAllPages<Record<string, number | string>>(
+          'tag_usage_summary',
+          (from, to) =>
+            supabase
+              .from('tag_usage_summary' as 'venues')
+              .select(
+                'id, name, usage_count, venue_count, event_count, group_count, news_count, post_count, marketplace_count, content_count',
+                { count: 'exact' },
+              )
+              .or(ANY_USAGE)
+              .order('id', { ascending: true })
+              .range(from, to) as unknown as PromiseLike<
+              PageResult<Record<string, number | string>>
+            >,
+        );
+      } catch (err) {
+        fetchError = err;
       }
 
-      if (fetchError && data.length === 0) {
+      // Unlike the corpus fetch, this one degrades rather than throws: a use
+      // count is a label on a card, not a gate, so a broken page here must not
+      // take the glossary down with it.
+      if (fetchError) {
         console.error('Error fetching tag usage counts:', fetchError);
         // Fallback: top tags by the denormalized counter (capped at max-rows,
         // so order by usage to keep the rows that matter).

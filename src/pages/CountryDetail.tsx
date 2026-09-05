@@ -38,7 +38,6 @@ import { PlanTripFromHereButton } from '@/components/trips/PlanTripFromHereButto
 import { PersonalitiesForEntity } from '@/components/discovery/PersonalitiesForEntity';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
 import { hasAnyCriminalizationSignal } from '@/utils/equalityScore';
-import { MarketplaceForCountry } from '@/components/marketplace/MarketplaceForCountry';
 import { SeeAllLink } from '@/components/ui/SectionHeader';
 import {
   CountryRightsTab,
@@ -480,7 +479,6 @@ export default function CountryDetail() {
               the composite figure; the band this page passed props for would
               now render empty. It stays on /city/:slug, which has the
               city-anchored "Next leg from here". */}
-          <MarketplaceForCountry countryId={country.id} countryName={country.name} />
           <SimilarItems
             entity={{ type: 'country', id: country.id }}
             title={t('country.similar', 'More destinations')}
