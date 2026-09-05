@@ -90,8 +90,13 @@ const plain = (h) =>
     // does not match it, so script source would survive into the extracted prose and could
     // corrupt a verdict. `\b` stops `<scriptfoo>` being treated as an opening script tag.
     // (CodeQL js/bad-tag-filter.)
-    .replace(/<script\b[\s\S]*?<\/script\s*>/gi, ' ')
-    .replace(/<style\b[\s\S]*?<\/style\s*>/gi, ' ')
+    // `[^>]*` rather than `\s*` before the closing `>`: the HTML spec ends a script
+    // element on `</script` followed by any of whitespace, `/` or `>`, so `</script foo>`
+    // and `</script/>` both close it and a `\s*`-only pattern misses them — script source
+    // then survives into the extracted prose and can corrupt a verdict. This is the
+    // CodeQL js/bad-tag-filter finding the comment claimed to have handled.
+    .replace(/<script\b[\s\S]*?<\/script[^>]*>/gi, ' ')
+    .replace(/<style\b[\s\S]*?<\/style[^>]*>/gi, ' ')
     .replace(/<[^>]+>/g, ' ')
     // Unrecognised entities become a space rather than being left as-is: this text is
     // matched against legal-status patterns, and a stray `&#8230;` inside a sentence is
@@ -231,14 +236,54 @@ async function classify(name) {
   // negation is carried entirely by the two words in front of it. Testing CRIM first (or
   // testing both and calling a double match ambiguous) made Albania, Andorra and
   // Argentina read `ambiguous` when all three state the legal position unambiguously.
-  if (NOCRIM.test(head)) {
-    return {
-      verdict: 'legal',
-      url,
-      criminalized: false,
-      death_penalty: false,
-      evidence: para.slice(0, 900),
+  // ...but the negation only wins when the affirmative it contains belongs to the SAME
+  // clause. The paragraph above is right that "no laws criminalized ..." carries its
+  // negation in the words in front of the CRIM match; it is not right that a NOCRIM hit
+  // ANYWHERE in the lead makes the country legal. Measured against real State Dept
+  // phrasings, the unguarded form resolved all three of these to `legal`:
+  //
+  //   "The law criminalized consensual same-sex sexual conduct between adults, and there
+  //    was no movement toward decriminalization."
+  //   "The law criminalized same-sex sexual conduct, although the constitutional court
+  //    struck down a related provision in 2022."
+  //   "Consensual same-sex sexual conduct was illegal and activists campaigning for
+  //    decriminalization faced harassment."
+  //
+  // Each states criminalization outright and merely mentions decriminalization, but
+  // NOCRIM matches the bare stems `decriminaliz` / `struck down`, so it fired and
+  // returned `criminalized: false, death_penalty: false`. On this platform that is the
+  // direction that gets someone hurt: a false `legal` understates exposure, where a false
+  // `ambiguous` only asks a human to look. So the CRIM match must fall OUTSIDE the
+  // negation's own span before the negation is trusted.
+  // The discriminator is ORDER, not overlap. A negation governs the criminalization
+  // clause that FOLLOWS it ("no laws criminalized…", "did not criminalize…", "ruled
+  // unconstitutional the law criminalizing…"); an affirmative that comes FIRST is the
+  // main clause, and a later negation is a subordinate aside about reform, campaigning
+  // or a partial strike-down. Verified against all eight shapes: the three false-safe
+  // phrasings above all have CRIM before NOCRIM, and the five that must stay `legal` —
+  // the Switzerland/Cyprus/Belarus/Albania forms plus India's "ruled unconstitutional
+  // the law criminalizing same-sex conduct" — all have NOCRIM first.
+  //
+  // An earlier attempt tested whether CRIM fell outside the negation's matched span
+  // instead; that reads India as ambiguous, because "ruled unconstitutional" and "law
+  // criminaliz" are adjacent but non-overlapping. Order is the property that separates
+  // the two sets.
+  const nocrimHit = head.match(NOCRIM)
+  if (nocrimHit) {
+    const crimHit = head.match(CRIM)
+    const affirmativeLeads = crimHit && crimHit.index < nocrimHit.index
+    if (!affirmativeLeads) {
+      return {
+        verdict: 'legal',
+        url,
+        criminalized: false,
+        death_penalty: false,
+        evidence: para.slice(0, 900),
+      }
     }
+    // else: the paragraph states criminalization and only mentions reform afterwards.
+    // Fall through to the mixed-wording path, which resolves `ambiguous` and asks a
+    // human — the safe direction when the wording is genuinely mixed.
   }
   let yes = CRIM.test(head)
   let no = false
@@ -297,7 +342,23 @@ async function pooled(items, worker) {
 await pooled(countries, async (c) => {
   const ilgaLegal = c.lgbti_criminalization?.legal
   const ilgaCrim = ilgaLegal === undefined || ilgaLegal === null ? null : String(ilgaLegal) === 'false'
-  const ilgaDeath = /^yes$/i.test(String(c.lgbti_criminalization?.death_penalty ?? ''))
+  // ILGA splits capital exposure across TWO fields and neither is sufficient alone —
+  // `death_penalty: 'No legal certainty'` is ILGA explicitly recording that death IS
+  // possible, not that it is absent. Reading `/^yes$/i` alone made Afghanistan, Pakistan,
+  // Qatar, Somalia and the UAE come back `false`, exactly as if ILGA had said "No", and
+  // this script then reported them as disagreeing with the State Dept report — a
+  // disagreement it had manufactured itself. `src/utils/equalityScore.ts` carries the
+  // canonical `deathPenaltyRisk()` and names these same five countries; this is that
+  // function, inlined because it is TS and this is a plain .mjs script. Keep the two in
+  // step: `'possible'` must never read as a negative finding.
+  const ilgaDeath = (() => {
+    const crim = c.lgbti_criminalization ?? {}
+    const dp = String(crim.death_penalty ?? '').trim()
+    // Checked first: Nigeria is 'Yes' while its penalty text names only prison.
+    if (/^yes$/i.test(dp) || /death/i.test(dp)) return true
+    if (/no legal certainty/i.test(dp)) return true
+    return /death/i.test(String(crim.penalty ?? ''))
+  })()
 
   const out = await classify(c.name)
   tally[out.verdict] = (tally[out.verdict] || 0) + 1
