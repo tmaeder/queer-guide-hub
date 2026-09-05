@@ -212,19 +212,23 @@ $$;
 revoke all on function public.run_geo_containment_sweep() from public, anon, authenticated;
 grant execute on function public.run_geo_containment_sweep() to service_role;
 
-insert into public.admin_automations (slug, name, description, schedule, enabled, action, conditions)
+-- `trigger` is NOT NULL on this table and every scheduled automation carries
+-- {"type":"schedule"}; omitting it fails with 23502.
+insert into public.admin_automations (slug, name, description, schedule, enabled, trigger, action, conditions)
 values (
   'geo_containment_sweep',
   'Geo containment sweep',
   'Re-derives geo_containment_findings and geo_city_coord_findings from the Natural Earth boundary set. Feeds geo_hygiene_stats() and the /admin/quality address panel.',
   '55 3 * * *',
   true,
+  jsonb_build_object('type', 'schedule'),
   jsonb_build_object('type', 'rpc', 'function', 'run_geo_containment_sweep'),
   '{}'::jsonb
 )
 on conflict (slug) do update
   set schedule = excluded.schedule,
       action = excluded.action,
+      trigger = excluded.trigger,
       description = excluded.description;
 
 -- rpc automations carry no action.command, so sync_automations_to_cron() cannot

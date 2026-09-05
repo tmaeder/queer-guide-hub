@@ -956,8 +956,18 @@ substanceFreshness: {
 // Baselines may only ever SHRINK. If a number below is beaten, lower it in the same
 // PR — that is the ratchet.
 const GEO_BASELINE = {
-  containment_total: 438,          // measured 2026-09-05 after the Key West repair
-  city_coord_defects_with_content: 14,
+  // Measured on prod 2026-09-05, stable across two consecutive sweeps:
+  // 333 venue + 17 event + 2 org country mismatches, 51 offshore, 6 undecidable.
+  //
+  // An earlier reading of 450 was WRONG and the reason is worth keeping: the
+  // first boundary load derived only 9 geo_country_parent rows and zero from the
+  // `sovereign` arm, so 41 territory venues (Gibraltar filed GI resolving into
+  // GB's polygon, Hong Kong into CN, Puerto Rico and Guam into US, Åland into FI)
+  // counted as mismatches. A reload populated all 41 sovereign mappings and they
+  // correctly stopped being findings. If this number jumps by ~40, suspect
+  // geo_country_parent before suspecting the corpus.
+  containment_total: 409,
+  city_coord_defects_with_content: 7,
   queue_depth_warn: 5000,
   findings_max_age_hours: 48,      // sweep is nightly at 03:55; two misses is stale
 }
