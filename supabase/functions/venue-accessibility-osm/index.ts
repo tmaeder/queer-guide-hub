@@ -368,6 +368,38 @@ Deno.serve(async (req: Request) => {
     const tags = pick.element.tags ?? {}
     const osmRef = `${pick.element.type}/${pick.element.id}`
 
+    // ---- PERSIST THE IDENTITY WE JUST PAID FOR ----
+    // This is the defect 20270301100300 named when it retired the cron: the
+    // matcher "resolves pick.element.type/id, uses it, and never writes it back
+    // anywhere the selector can read -- which is why 916 probes produced no
+    // durable identity at all and every pass starts over". Establishing identity
+    // is the expensive, risky half (name match inside 60 m, two candidates
+    // block); throwing it away afterwards is what made the per-venue shape
+    // hopeless. `venues_due_for_osm_accessibility` ALREADY reads this row back
+    // as `osm_ref` and skips inference when it is present, so writing it turns
+    // every future pass over this venue into an id lookup.
+    //
+    // Written as `osm-<type>-<id>` because that is the shape the selector's
+    // regexp_replace expects, and it must round-trip.
+    //
+    // INSERT-IF-ABSENT, never upsert. The unique key is
+    // (source_slug, source_entity_id) and does NOT include venue_id, so an
+    // ordinary upsert would silently REPOINT an element already attached to a
+    // different venue. Two venues resolving to one OSM element is a duplicate
+    // signal for the dedup engine to weigh, not something this function should
+    // decide by overwriting.
+    if (!dryRun) {
+      await supabase.from('venue_sources').upsert({
+        venue_id: v.id,
+        source_slug: 'osm',
+        source_entity_id: `osm-${pick.element.type}-${pick.element.id}`,
+        source_url: `https://www.openstreetmap.org/${osmRef}`,
+        is_primary: false,
+        last_seen_at: new Date().toISOString(),
+      }, { onConflict: 'source_slug,source_entity_id', ignoreDuplicates: true })
+        .then(() => {}, () => {})
+    }
+
     // ---- widened fields (hours / phone / website / category) ----
     // Computed BEFORE the accessibility branch. Previously a matched element
     // with no `wheelchair` tag hit the early `continue` below and its

@@ -199,32 +199,25 @@ END;
 $function$;
 
 -- ---------------------------------------------------------------------------
--- Bracket the gateway rather than pre-empting it.
+-- WHAT THIS MIGRATION DELIBERATELY NO LONGER DOES.
 --
--- The registered timeout was 250000 (250s), sized against the old 240s
--- in-function budget. The function's budget is now 120s, inside the gateway's
--- 150s. pg_net's timeout must stay ABOVE the gateway's so that we actually
--- RECEIVE the 504 and can classify it -- setting it below 150s would convert
--- every slow run into a pg_net `timed_out` with no response body at all, which
--- is strictly less evidence. 180s brackets 150s with margin.
-update public.admin_automations
-set action = jsonb_set(action, '{command}',
-      to_jsonb(replace(action->>'command', 'timeout_milliseconds := 250000',
-                                           'timeout_milliseconds := 180000'))),
-    updated_at = now()
-where slug = 'venue_accessibility_osm'
-  and action->>'command' like '%timeout_milliseconds := 250000%';
-
--- Re-enable. Safe to do ahead of the edge-function deploy: a fire in the gap
--- still 504s, but the reaper above now records it `partial`, which cannot
--- reach consecutive_failures and so cannot re-pause the row.
+-- It was written to fix the reaper AND to bring `venue_accessibility_osm` back:
+-- re-bracket its pg_net timeout to 180s and set `enabled = true`. While it sat
+-- unmerged, `20270301100300_retire_venue_accessibility_osm_cron` landed on main
+-- and retired that cron on measured evidence -- 916 probes, 81% no name match
+-- within 60 m, 2.7% resolved, 72 fires/day of Overpass traffic -- superseding
+-- the per-venue matcher with a bulk regional-extract join.
 --
--- consecutive_failures is reset explicitly. The auto-pause trigger accumulates
--- terminal error runs since the last terminal non-error run, and leaving a
--- stale count here would let two future failures trip a threshold of three.
-update public.admin_automations
-set enabled = true, consecutive_failures = 0, updated_at = now()
-where slug = 'venue_accessibility_osm';
+-- This migration now sorts ABOVE that one, so keeping the re-enable would have
+-- silently reverted a deliberate decision made with better data than the one
+-- that motivated the restore. Both statements and their three assertions are
+-- removed. The row stays disabled and the timeout stays as the retirement left
+-- it; the edge function is retained, per that migration, for the bulk rewrite.
+--
+-- The reaper fix above is INDEPENDENT of that and is why this migration still
+-- exists: a gateway give-up is not evidence of failure for ANY of the ~144
+-- automations on the net.http_post path, and misreading it is what burns the
+-- auto-pause counter. venue_accessibility_osm was the example, not the scope.
 
 -- ---------------------------------------------------------------------------
 do $verify$
@@ -281,23 +274,22 @@ begin
     raise exception 'the n_timeout 504 test was widened beyond the IDLE_TIMEOUT envelope';
   end if;
 
-  select enabled, consecutive_failures, action->>'command' as cmd
+  -- Assert the retirement is INTACT, which is the inverse of what this block
+  -- originally checked. 20270301100300 disabled this row on measured evidence;
+  -- if a later edit to this migration re-arms it, fail here rather than
+  -- resuming 72 Overpass fires a day for a 2.7% match rate.
+  select enabled, consecutive_failures
   into v_row
   from public.admin_automations where slug = 'venue_accessibility_osm';
 
   if not found then
     raise exception 'venue_accessibility_osm registry row is missing';
   end if;
-  if not v_row.enabled then
-    raise exception 'venue_accessibility_osm did not re-enable';
-  end if;
-  if v_row.consecutive_failures <> 0 then
-    raise exception 'venue_accessibility_osm consecutive_failures not cleared (%)', v_row.consecutive_failures;
-  end if;
-  if v_row.cmd not like '%timeout_milliseconds := 180000%' then
-    raise exception 'venue_accessibility_osm timeout was not re-bracketed above the gateway limit';
+  if v_row.enabled then
+    raise exception
+      'venue_accessibility_osm is enabled; 20270301100300 retired it deliberately — do not re-arm it here';
   end if;
 
-  raise notice 'gateway IDLE_TIMEOUT reclassified as partial; venue_accessibility_osm re-enabled';
+  raise notice 'gateway IDLE_TIMEOUT reclassified as partial for all net.http_post automations';
 end
 $verify$;
