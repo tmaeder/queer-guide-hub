@@ -465,7 +465,7 @@ if (!hygieneRes.ok) {
 // This check asks the only question that distinguishes the state: when was it
 // last actually visited?
 //
-// 20270903142735 inverted the sort keys so staleness outranks reliability, and
+// 20280417125946 inverted the sort keys so staleness outranks reliability, and
 // reliability now scales the re-fetch interval instead. Starvation is therefore
 // structurally impossible and this has no baseline allowance — one source over
 // the threshold means the ordering regressed or a new exclusion appeared.
@@ -478,7 +478,7 @@ if (!starveRes.ok) {
   // An unreachable probe is not a clean result. Same rule as the absent-key
   // branch above: "nobody looked" must never print like "nothing found".
   console.warn(`⚠ news_source_starvation_stats → HTTP ${starveRes.status} —`)
-  console.warn('  20270903142735 is not applied, so this check measured NOTHING (it did not pass).')
+  console.warn('  20280417125946 is not applied, so this check measured NOTHING (it did not pass).')
 } else {
   const starve = await starveRes.json()
   const starved = starve.starved ?? {}
