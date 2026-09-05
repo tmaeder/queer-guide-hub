@@ -523,10 +523,20 @@ async function prosePass(
     const desc = typeof out.description === 'string' ? out.description.trim() : ''
     const short = typeof out.short_description === 'string' ? out.short_description.trim().slice(0, 80) : ''
     if (desc.length < 30) continue
-    // A rewrite that says nothing new is a no-op, not a write.
-    if (desc === (tag.description ?? '').trim() && (!short || short === (tag.short_description ?? '').trim())) {
-      continue
-    }
+
+    // Each field is judged SEPARATELY for whether it actually changes
+    // anything. The old guard skipped the tag only when BOTH fields were
+    // unchanged, so a tag whose short_description was empty queued a
+    // `description` suggestion that was byte-identical to the text already in
+    // the column. Measured on the first review-only batch: of 4 rewrites, TWO
+    // (`Side Piece`, `Triathlon`) proposed the existing description verbatim
+    // and a third (`Otter Chaser`) changed only "Someone" to "A person".
+    // A reviewer who has to open rows that propose nothing learns to approve
+    // without reading, which is the failure this whole review gate exists to
+    // avoid — so a no-op field is never queued.
+    const descChanged = desc !== (tag.description ?? '').trim()
+    const shortChanged = !!short && short !== (tag.short_description ?? '').trim()
+    if (!descChanged && !shortChanged) continue
 
     // Rewrites are QUEUED, never applied — `sensitive` and `confidence` no
     // longer gate a direct write. The auto-apply branch was measured on the
@@ -538,10 +548,10 @@ async function prosePass(
     // be trusted to retract cannot be trusted to overwrite either.
     {
       let queued = false
-      if (await queueDescription(tag as unknown as TagRow, desc, llmSource(), 'gpt-4o-mini', confidence)) {
+      if (descChanged && await queueDescription(tag as unknown as TagRow, desc, llmSource(), 'gpt-4o-mini', confidence)) {
         queued = true
       }
-      if (short && short !== (tag.short_description ?? '').trim()) {
+      if (shortChanged) {
         const { data: existing } = await supabase
           .from('ai_suggestions')
           .select('id')
