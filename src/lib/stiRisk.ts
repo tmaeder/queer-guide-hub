@@ -21,6 +21,24 @@ import { AlertOctagon, AlertTriangle, Circle, Droplet } from 'lucide-react';
 
 export type TransmissionRisk = 'high' | 'medium' | 'low';
 
+/**
+ * The border colour every filled mark carries. A MODE-INDEPENDENT LITERAL, and
+ * that is the whole point.
+ *
+ * `border-foreground` is the trap here, the same one `--color-logo-plate-ink`
+ * exists to dodge: it reads as "ink", is ink in light mode, passes review and
+ * every class-name test — and in dark mode `--foreground` IS paper, so a
+ * near-white 2px border would land on a near-white tint and the contrast this
+ * border exists to provide would be gone in the mode where it is least
+ * recoverable. The tints in `VISUALS` are fixed light pastels in BOTH modes
+ * (they are literals, not tokens), so their border has to be too: polarity
+ * belongs to the MARK, not to the theme.
+ *
+ * `stiRisk.test.ts` measures against this export rather than a copy, so the
+ * constant and the guarantee cannot drift apart.
+ */
+export const RISK_MARK_BORDER = '0 0% 7%';
+
 export interface TransmissionRiskVisual {
   /** HSL channel triple — wrap in hsl() at the call site. */
   tint: string;
@@ -67,7 +85,13 @@ export const TRANSMISSION_RISK_ORDER: TransmissionRisk[] = ['high', 'medium', 'l
 export const BloodIcon = Droplet;
 
 export function isTransmissionRisk(v: string): v is TransmissionRisk {
-  return v in VISUALS;
+  // `in` walks the prototype chain, so `'toString'` answered TRUE and
+  // `VISUALS['toString']` handed back `Object.prototype.toString` — an object
+  // with no `.Icon`, which React renders as `Element type is invalid` and takes
+  // the WHOLE ROUTE down, not one cell. That is the exact opposite of the
+  // fail-safe contract the next function documents. A DB CHECK constrains the
+  // column today; this file's job is to survive the day it does not.
+  return Object.prototype.hasOwnProperty.call(VISUALS, v);
 }
 
 /**

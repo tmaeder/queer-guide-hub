@@ -4,6 +4,7 @@ import type { RawItem, NormalizedItem } from '../_shared/source-adapter.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { normalizeVenueCategory, normalizeIso2Country } from '../_shared/venue-category.ts'
 import { osmAccessibility } from '../_shared/osm-accessibility.ts'
+import { fetchOverpassElements } from '../_shared/overpass-fetch.ts'
 
 // Source: OpenStreetMap (Overpass API) — LGBTQ+ venues
 // Queries OSM for nodes/ways tagged lgbtq=yes or similar identifiers
@@ -14,32 +15,21 @@ const UA = 'QueerGuideBot/1.0 (https://queer.guide; contact@queer.guide)'
 const OVERPASS_PER_CALL_MS = 25_000
 const WALL_CLOCK_LIMIT_MS = 90_000
 
+/**
+ * Fetch one city's LGBTQ+ features. `null` means UNKNOWN and the caller skips.
+ *
+ * This used to `return json.elements ?? []` on any `res.ok`, so Overpass's own
+ * timeout signal (HTTP 200 carrying a `remark`) staged as "this city has no
+ * queer venues". The bboxes here are whole metros against a 20s query timeout,
+ * so that is the expected failure for London or New York, not an edge case.
+ */
 async function fetchOverpassWithRetry(query: string, city: string): Promise<unknown[] | null> {
-  for (let attempt = 0; attempt < 2; attempt++) {
-    try {
-      const res = await fetch(OVERPASS_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': UA },
-        body: `data=${encodeURIComponent(query)}`,
-        signal: AbortSignal.timeout(OVERPASS_PER_CALL_MS),
-      })
-      if (res.ok) {
-        const json = await res.json() as { elements?: unknown[] }
-        return json.elements ?? []
-      }
-      if (res.status >= 500) {
-        console.warn(`OSM ${city} HTTP ${res.status} (attempt ${attempt + 1}/2)`)
-        await new Promise(r => setTimeout(r, 1500 * (attempt + 1)))
-        continue
-      }
-      console.warn(`OSM ${city} non-retryable HTTP ${res.status}`)
-      return null
-    } catch (e) {
-      console.warn(`OSM ${city} attempt ${attempt + 1}/2 failed:`, (e as Error).message)
-      if (attempt < 1) await new Promise(r => setTimeout(r, 1500))
-    }
-  }
-  return null
+  const { elements } = await fetchOverpassElements(OVERPASS_URL, query, {
+    perCallMs: OVERPASS_PER_CALL_MS,
+    userAgent: UA,
+    label: `${city}:`,
+  })
+  return elements
 }
 
 // OSM tags that indicate LGBTQ+ relevance
@@ -162,6 +152,10 @@ Deno.serve(withErrorReporting('source-osm-venue', async (req) => {
     const allItems: RawItem[] = []
     const deadline = Date.now() + WALL_CLOCK_LIMIT_MS
     let citiesQueried = 0
+    // Cities Overpass never actually answered for. Counted separately because
+    // `cities_queried: 15, items: 0` reads identically whether the corpus is
+    // stable or every single query timed out, and those need different responses.
+    let citiesUnknown = 0
 
     // Shuffle so that we don't always time out on the same trailing cities
     const cityOrder = [...CITIES].sort(() => Math.random() - 0.5)
@@ -177,7 +171,7 @@ Deno.serve(withErrorReporting('source-osm-venue', async (req) => {
 
       const elements = await fetchOverpassWithRetry(query, city.name)
       citiesQueried++
-      if (!elements) continue
+      if (!elements) { citiesUnknown++; continue }
 
       for (const el of elements) {
         const e = el as Record<string, unknown>
@@ -230,6 +224,7 @@ Deno.serve(withErrorReporting('source-osm-venue', async (req) => {
       items_skipped: allItems.length - written,
       items_failed: 0,
       cities_queried: citiesQueried,
+      cities_unknown: citiesUnknown,
       dry_run: dryRun,
     }, 200, req)
   } catch (error) {

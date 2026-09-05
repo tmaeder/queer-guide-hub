@@ -193,9 +193,12 @@ Live state after the CRM data-quality rollout:
   Active events) + "Data Health" dashboard + "Pending QG review flag" workflow (creates a
   task when `qgNeedsAttention` flips true on a company). Stock demo workflows removed.
 - **Enrichment (source-side)**: `venue-contact-enrich` (crawl + regex + MX + LLM fallback),
-  `venue-osm-enrich` (Nominatim trickle), `scripts/data-quality/enrich-organizations.mjs`,
-  extended `pipeline-enrich-country-editorial`, star-rating grounding guard in
+  `scripts/data-quality/enrich-organizations.mjs`, extended
+  `pipeline-enrich-country-editorial`, star-rating grounding guard in
   `hotel-agentic-enrich`. All provenance-stamped, review-gated below auto-apply confidence.
+  (`venue-osm-enrich` was listed here as a "Nominatim trickle" but was never wired — no
+  cron, no registry row, no `config.toml` entry, and zero `enrichment_log` rows in its
+  lifetime. Deleted; coordinate/website fill is the OSM bulk-extract job's work now.)
 - **Dedup/normalize**: `link_org_merchant_domain_matches()` (merchant→org by domain),
   `organization` entity in dedup-engine, `run_data_normalization_guard()` nightly,
   `run_org_quality_recompute()` + `run_content_completeness_recompute()` nightly.

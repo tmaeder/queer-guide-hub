@@ -8,18 +8,22 @@ import { cn } from '@/lib/utils';
  * breadcrumbs across the app (global bar, detail pages, admin shell).
  * Monochrome design tokens only; no shadows/gradients.
  */
-const Breadcrumb = forwardRef<HTMLElement, ComponentPropsWithoutRef<'nav'>>(
-  function Breadcrumb({ ...props }, ref) {
-    return <nav ref={ref} aria-label="Breadcrumb" {...props} />;
-  },
-);
+const Breadcrumb = forwardRef<HTMLElement, ComponentPropsWithoutRef<'nav'>>(function Breadcrumb(
+  { ...props },
+  ref,
+) {
+  return <nav ref={ref} aria-label="Breadcrumb" {...props} />;
+});
 
 const BreadcrumbList = forwardRef<HTMLOListElement, ComponentPropsWithoutRef<'ol'>>(
   function BreadcrumbList({ className, ...props }, ref) {
     return (
       <ol
         ref={ref}
-        className={cn('flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground', className)}
+        className={cn(
+          'flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground',
+          className,
+        )}
         {...props}
       />
     );
@@ -28,30 +32,33 @@ const BreadcrumbList = forwardRef<HTMLOListElement, ComponentPropsWithoutRef<'ol
 
 const BreadcrumbItem = forwardRef<HTMLLIElement, ComponentPropsWithoutRef<'li'>>(
   function BreadcrumbItem({ className, ...props }, ref) {
-    return <li ref={ref} className={cn('inline-flex items-center gap-1.5', className)} {...props} />;
+    return (
+      <li ref={ref} className={cn('inline-flex items-center gap-1.5', className)} {...props} />
+    );
   },
 );
 
 type BreadcrumbLinkProps = ComponentPropsWithoutRef<'a'> & { asChild?: boolean };
 
-const BreadcrumbLink = forwardRef<HTMLAnchorElement, BreadcrumbLinkProps>(
-  function BreadcrumbLink({ asChild, className, ...props }, ref) {
-    const Comp = asChild ? Slot : 'a';
-    return (
-      <Comp
-        ref={ref}
-        className={cn(
-          // inline-flex + items-center so the link text stays vertically centered
-          // even though the global touch-target rule forces a 44px min-height on
-          // anchors (otherwise the text pins to the top and misaligns the row).
-          'inline-flex items-center no-underline transition-colors hover:text-foreground',
-          className,
-        )}
-        {...props}
-      />
-    );
-  },
-);
+const BreadcrumbLink = forwardRef<HTMLAnchorElement, BreadcrumbLinkProps>(function BreadcrumbLink(
+  { asChild, className, ...props },
+  ref,
+) {
+  const Comp = asChild ? Slot : 'a';
+  return (
+    <Comp
+      ref={ref}
+      className={cn(
+        // inline-flex + items-center so the link text stays vertically centered
+        // even though the global touch-target rule forces a 44px min-height on
+        // anchors (otherwise the text pins to the top and misaligns the row).
+        'inline-flex items-center no-underline transition-colors hover:text-foreground',
+        className,
+      )}
+      {...props}
+    />
+  );
+});
 
 const BreadcrumbPage = forwardRef<HTMLSpanElement, ComponentPropsWithoutRef<'span'>>(
   function BreadcrumbPage({ className, ...props }, ref) {
@@ -81,6 +88,13 @@ function BreadcrumbSeparator({ children, className, ...props }: ComponentPropsWi
   );
 }
 
+/**
+ * The "⋯" glyph. Decorative BY DESIGN and correspondingly aria-hidden — it is
+ * the visual for an overflow control, never the control itself. Whatever
+ * renders it (see `CollapsedCrumbsMenu`) owns the button and its accessible
+ * name. It used to carry an `sr-only` "More", which was announced to nobody
+ * (aria-hidden hides the subtree) and read as if the glyph were labelled.
+ */
 function BreadcrumbEllipsis({ className, ...props }: ComponentPropsWithoutRef<'span'>) {
   return (
     <span
@@ -90,7 +104,6 @@ function BreadcrumbEllipsis({ className, ...props }: ComponentPropsWithoutRef<'s
       {...props}
     >
       <MoreHorizontal size={14} />
-      <span className="sr-only">More</span>
     </span>
   );
 }

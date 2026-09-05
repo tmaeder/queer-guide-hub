@@ -103,9 +103,11 @@ jobs:
             e2e/marketplace.spec.ts \
             e2e/admin-pipelines.spec.ts \
             e2e/admin-route-baseline.spec.ts \
+            e2e/admin-archived-lifecycle.spec.ts \
             e2e/venues/detail-content.spec.ts \
             e2e/help-locale.spec.ts \
             e2e/locale-prefix.spec.ts \
+            e2e/breadcrumb-reachability.spec.ts \
             e2e/hotels-filters.spec.ts \
             e2e/nested-interactive.spec.ts \
             e2e/intent-nav.spec.ts \
