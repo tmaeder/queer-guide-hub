@@ -422,6 +422,54 @@ begin
     raise exception 'stamp repair: updated % rows, expected 60', v_updated;
   end if;
 
+  -- THE RE-FILE DOES NOT FINISH ON ITS OWN, and without this the age-gate
+  -- assertion below fails on exactly one row.
+  --
+  -- Setting category_id fires sync_tag_category_assignment_after, which DEMOTES
+  -- the previous primary junction row and promotes the new one. Demotes, not
+  -- deletes -- the old tag_category_assignments row survives with
+  -- is_primary=false. And unified_tags_recompute_is_adult() gates on
+  -- `exists (... from tag_category_assignments ...)` over ANY assignment,
+  -- primary or not. So a row moved OUT of the Sex & Kink family keeps whatever
+  -- age gate its old, now-secondary filing implies.
+  --
+  -- Measured: `rope-compatibility-checks` is re-filed to Consent & Negotiation
+  -- (parent Safety & Consent, correctly not adult) while retaining a
+  -- non-primary assignment to Practices & Play (parent Sex & Kink). It came out
+  -- is_adult=true against an expected false, and the assertion below refused --
+  -- correctly -- to call the repair done.
+  --
+  -- This is the same shape the merge path already pays for ("the merge carries
+  -- the loser's category junction, and the winner becomes 18+"): a residual
+  -- junction row silently keeps a gate its owner no longer earns.
+  --
+  -- The expectation was right and stays. A consent-and-negotiation topic under
+  -- Safety & Consent should be readable without an age wall -- gating it would
+  -- put a safety article behind the barrier, which is the wrong direction to
+  -- fail in. What was wrong is that the re-file left the old filing behind.
+  --
+  -- Scoped tightly, and only in the direction that REMOVES a gate that is no
+  -- longer earned: non-primary assignments only, in the Sex & Kink family only,
+  -- and only for rows whose NEW category is outside that family. A row re-filed
+  -- INTO Sex & Kink is untouched, so this can never drop an age gate that the
+  -- destination category still implies.
+  delete from public.tag_category_assignments a
+   using public.unified_tags t, public.tag_categories tc,
+         public.tag_categories tgt
+    left join public.tag_categories tgtp on tgtp.id = tgt.parent_id
+   where a.tag_id = t.id
+     and t.slug in (select coalesce(f.new_slug, f.slug) from _fix f)
+     and tgt.id = t.category_id
+     and tc.id = a.category_id
+     and coalesce(a.is_primary, false) = false
+     and (tc.name in ('Sex & Kink','Practices & Play','Dynamics & Roles','Fetishes','Gear',
+                      'Kink Community & Scenes')
+          or exists (select 1 from public.tag_categories p
+                      where p.id = tc.parent_id and p.name = 'Sex & Kink'))
+     and not (tgt.name in ('Sex & Kink','Practices & Play','Dynamics & Roles','Fetishes','Gear',
+                           'Kink Community & Scenes')
+              or tgtp.name = 'Sex & Kink');
+
   -- Every repaired row must be adult-gated. The re-file is supposed to TIGHTEN
   -- this (six rows were is_adult=false only because they were misfiled outside
   -- Sex & Kink); asserting it is what makes that a fact rather than an
