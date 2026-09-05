@@ -341,13 +341,23 @@ async function processForwardRepair(
     .from('venues')
     .select('id, name, address, city, postal_code, country, country_id, city_id, latitude, longitude, enrichment_status')
     .is('duplicate_of_id', null)
-    .eq('geocode_attempted', true)
     .not('address', 'is', null)
     .neq('address', '')
     .not('address', 'like', '%,%')
     .not('latitude', 'is', null)
     .not('longitude', 'is', null)
     .filter('enrichment_status->geocode->>verified_at', 'is', null)
+  // `geocode_attempted` scopes the UNTARGETED sweep to rows a geocoder produced
+  // — the population this mode was built to re-verify. It stays on for the cron.
+  //
+  // With an explicit `ids` list the caller has already selected the rows, and
+  // for a coordinate the boundary authority has PROVEN to be in the wrong
+  // country the provenance is irrelevant: a bad coordinate is bad whether a
+  // geocoder or an importer wrote it. 122 of the 258 remaining mismatches carry
+  // geocode_attempted=false and are unreachable otherwise. Dropping the filter
+  // globally instead would silently widen the nightly job's pool, so it is
+  // conditional on the targeting flag rather than removed.
+  if (!onlyIds?.length) q = q.eq('geocode_attempted', true)
   if (onlyIds?.length) q = q.in('id', onlyIds)
   const { data: rows, error } = await q.order('id').limit(batchSize * 3)
 
