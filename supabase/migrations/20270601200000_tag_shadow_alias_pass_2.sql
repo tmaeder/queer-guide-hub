@@ -413,16 +413,29 @@ begin
     raise exception 'shadow pass 2: % alias(es) are still parented to a row this pass merged away', v_bad;
   end if;
 
-  -- Corpus zero-invariants a merge is known to move.
+  -- Zero-invariants a merge is known to move -- SCOPED to the ten rows this pass
+  -- touched, for the same reason the check above is scoped and states outright.
+  -- Neither invariant is enforced by a trigger or a constraint; both are
+  -- `tag_hygiene_stats()` sentinels maintained by cleanup passes. So the
+  -- corpus-wide form asserts a property this migration neither owns nor can
+  -- repair: one tag rename or one admin-created alias anywhere in ~15k rows
+  -- aborts db push here and strands every migration behind it, for a defect on a
+  -- row this pass never read. That is the failure class that held the queue down
+  -- for seven hours on 2026-09-05. Scoped, they still catch what they exist to
+  -- catch, because a merge can only move these on the rows it merged.
   select count(*) into v_bad from public.tag_aliases a
     join public.unified_tags t on t.id = a.canonical_tag_id
-   where lower(a.alias_name) = lower(t.name);
+   where lower(a.alias_name) = lower(t.name)
+     and t.slug in ('bisexual','lgbtq-friendly','violence','music','bimboification',
+                    'bisexuell','gayfriendly','gewalt','musik','bimbofication');
   if v_bad > 0 then
     raise exception 'shadow pass 2: % alias(es) now equal their own tag name', v_bad;
   end if;
 
   select count(*) into v_bad from public.unified_tags
-   where merged_into_id is not null and status <> 'merged';
+   where merged_into_id is not null and status <> 'merged'
+     and slug in ('bisexual','lgbtq-friendly','violence','music','bimboification',
+                  'bisexuell','gayfriendly','gewalt','musik','bimbofication');
   if v_bad > 0 then
     raise exception 'shadow pass 2: % row(s) carry merged_into_id without status=merged', v_bad;
   end if;
