@@ -167,25 +167,46 @@ UPDATE public.news_sources
 
 -- ============================================================================
 -- Re-assert what this migration exists to do, against the live rows.
+-- ----------------------------------------------------------------------------
+-- Both guards below are scoped to THIS migration's own effect. An assertion
+-- about ambient state — "no aggregator anywhere is active", "no source anywhere
+-- is starved" — aborts `db push` on data this file never touched, and an
+-- aborted push strands every later migration behind it.
 -- ============================================================================
 DO $verify$
 DECLARE
   v_live_aggregators int;
   v_starved int;
 BEGIN
+  -- Predicate matches the UPDATE above exactly, so this asserts the rows THIS
+  -- migration wrote and nothing else. Counting every `is_aggregator AND
+  -- is_active` row would make it abort on an unrelated aggregator an admin
+  -- toggled on by hand — NewsSourcesManager.tsx edits is_active directly —
+  -- which says nothing about whether the retirement took.
   SELECT count(*) INTO v_live_aggregators
-    FROM public.news_sources WHERE is_aggregator = true AND is_active = true;
+    FROM public.news_sources
+   WHERE is_aggregator = true
+     AND name IN ('NewsData.io', 'GNews.io', 'NewsAPI.org', 'TheNewsAPI.com')
+     AND is_active = true;
   IF v_live_aggregators <> 0 THEN
-    RAISE EXCEPTION 'retirement did not take: % aggregator(s) still active', v_live_aggregators;
+    RAISE EXCEPTION 'retirement did not take: % of the four retired aggregator(s) still active',
+      v_live_aggregators;
   END IF;
 
-  -- The two starved sources are retired above, so the sentinel must now be
-  -- clean. A non-empty result here means a THIRD source is starving and the
-  -- ordering fix did not cover it — which is exactly what this should block on.
+  -- WARNING, not EXCEPTION. Starvation is pre-existing data this migration
+  -- cannot repair: last_fetched_at only moves when the cron runs, so a source
+  -- starved by the OLD ordering is still starved the instant the new ordering
+  -- is installed — the fix takes effect on the next fetch, not at apply time.
+  -- Under the live ordering a single editorial rejection knocks a source off
+  -- the saturated 1.000 tier and starves it immediately, so a third starved
+  -- source at apply time is entirely plausible and would abort the push that
+  -- delivers the cure. The condition is still enforced: the same PR adds a
+  -- news-source-rotation sentinel to scripts/check-pipeline-health.mjs that
+  -- hard-fails CI on any starved source. Measurement and message are unchanged.
   SELECT count(*) INTO v_starved
     FROM jsonb_object_keys((public.news_source_starvation_stats()->'starved')) k;
   IF v_starved <> 0 THEN
-    RAISE EXCEPTION 'sentinel reports % starved source(s) after the fix: %',
+    RAISE WARNING 'sentinel reports % starved source(s) after the fix: %',
       v_starved, public.news_source_starvation_stats()->'starved';
   END IF;
 END

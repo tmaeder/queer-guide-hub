@@ -416,8 +416,12 @@ if (!starveRes.ok) {
     console.error(`  reliability_score (currently ${starve.distinct_reliability_scores} distinct value(s) across`)
     console.error(`  ${starve.active_sources} active sources), a lower score is an exile, not a demotion.`)
     FAILED = true
+  } else {
+    // In the else branch on purpose: printed unconditionally it followed the ✗
+    // line with "0 starved", so a starved fleet reported both failure and
+    // health in consecutive lines and a reader skimming for ✓ saw the green.
+    console.log(`✓ News source rotation: 0 starved of ${starve.active_sources} active (no baseline)`)
   }
-  console.log(`✓ News source rotation: 0 starved of ${starve.active_sources} active (no baseline)`)
 }
 
 // 6. Search reindex drain (P1 overhaul, 2026-08): entity writes enqueue into
