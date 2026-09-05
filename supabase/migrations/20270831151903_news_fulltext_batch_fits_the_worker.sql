@@ -64,6 +64,28 @@ $cmd$::text)
       || ' edge worker''s compute budget and returned HTTP 546 WORKER_RESOURCE_LIMIT on roughly'
       || ' one run in three since June 2026; three consecutive failures auto-paused the job on'
       || ' 2026-09-03. Observed: 18 items completes, 50 does not.]',
+    -- Re-enable, and clear the counter that paused it.
+    --
+    -- This migration exists BECAUSE 50/5 auto-paused the job on 2026-09-03, so
+    -- the row it edits is disabled -- and the verification block below asserts
+    -- `enabled is true`. Without these two columns that assertion reads ambient
+    -- state this migration never wrote, and aborts `db push` over the very
+    -- condition the retune above is the fix for. A failed push strands every
+    -- later migration; that class held the queue down for hours on 2026-09-05.
+    -- With them, the assertion verifies this migration's OWN effect, which is
+    -- the only thing a migration may safely assert.
+    --
+    -- It is also required for the reschedule to survive at all:
+    -- `sync_automations_to_cron()` branch (b) unschedules the cron of any row
+    -- that is `enabled = false`, so retuning without re-enabling would leave the
+    -- job correctly tuned and then silently unscheduled by the nightly pass.
+    --
+    -- `consecutive_failures` is reset explicitly because the auto-pause trigger
+    -- counts terminal error runs since the last terminal non-error run; a stale
+    -- 3 would re-trip the pause on the first new failure instead of after
+    -- `auto_pause_threshold`.
+    enabled = true,
+    consecutive_failures = 0,
     updated_at = now()
 where slug = 'news_fulltext_backfill';
 
