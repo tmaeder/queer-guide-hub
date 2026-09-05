@@ -88,12 +88,35 @@ begin
   v_recreated := coalesce(v_sync -> 'recreated', '[]'::jsonb);
   v_killed    := coalesce(v_sync -> 'disabled_killed', '[]'::jsonb);
 
-  -- Nothing about re-enabling one row should unschedule another. If this call
-  -- killed anything, a registry row was disabled without its cron being
-  -- retired and this migration is not the place to discover that.
-  if jsonb_array_length(v_killed) > 0 then
+  -- CORRECTED. This originally aborted whenever `disabled_killed` was
+  -- non-empty, on the reasoning that re-enabling one row should not unschedule
+  -- another. That conflated two different things, and it cost a deployment:
+  -- `disabled_killed` is branch (b) of the reconciler doing its DOCUMENTED job
+  -- — retiring the pg_cron entry of a registry row somebody deliberately
+  -- disabled. It is the kill switch, not a side effect, and the nightly
+  -- automation_cron_sync performs exactly the same retirement at 05:10.
+  --
+  -- On the first real run it fired on `marketplace_image_mirror`
+  -- (enabled=false with a still-active cron), aborted this migration, and
+  -- because `db push` stops at the first failure it took 20270501174244
+  -- (geo_boundaries) down with it. Worse, an unapplied migration that always
+  -- raises does not fail once — it blocks EVERY later migration in the repo on
+  -- every subsequent push, so a too-strict assertion here is a repo-wide
+  -- outage rather than a local annoyance.
+  --
+  -- What is actually worth refusing is an ENABLED automation losing its cron,
+  -- which no correct reconciler pass produces. That is checked below. Ordinary
+  -- kill-switch retirements are recorded in the notice instead, so the
+  -- information is not lost — it just stops being fatal.
+  if exists (
+    select 1
+    from jsonb_array_elements(v_killed) k
+    join public.admin_automations a
+      on a.slug = coalesce(k->>'jobname', k->>'slug', k #>> '{}')
+    where a.enabled is true
+  ) then
     raise exception
-      'sync_automations_to_cron(true) unscheduled jobs as a side effect of re-enabling venue_geocode_repair: %',
+      'sync_automations_to_cron(true) unscheduled a job whose registry row is still ENABLED: %',
       v_killed;
   end if;
 
@@ -117,6 +140,8 @@ begin
       (select schedule from cron.job where jobname = 'venue_geocode_repair');
   end if;
 
-  raise notice 'venue_geocode_repair re-enabled at 5,25,45 * * * *; sync recreated=%', v_recreated;
+  raise notice
+    'venue_geocode_repair re-enabled at 5,25,45 * * * *; sync recreated=%, kill-switch retirements (expected, not fatal)=%',
+    v_recreated, v_killed;
 end
 $reenable$;
