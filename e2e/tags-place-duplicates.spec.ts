@@ -2,11 +2,11 @@ import { test, expect } from '@playwright/test';
 
 // A glossary tag that names a city or country must not compete with that place's own page.
 //
-// `/tags/brighton` and `/city/brighton` were both indexable and both about Brighton — except
-// the tag page published verbatim encyclopaedic geography ("Brighton is a seaside resort in
-// the unitary authority area and city of Brighton and Hove…") with no queer content at all,
-// duplicating Wikipedia and the city page simultaneously. Measured 2026-09-04: 322 Destination
-// tags, 157 of which name a live city or country.
+// `/tags/chicago` and `/city/chicago` were both indexable and both about Chicago — except the
+// tag page published verbatim encyclopaedic geography ("Chicago is the most populous city in
+// the U.S. state of Illinois…") with no queer content at all, duplicating Wikipedia and the
+// city page simultaneously. Measured 2026-09-04: 322 Destination tags, 157 of which name a
+// live city or country.
 //
 // THE MECHANISM THIS FILE PROTECTS, because it is not obvious and it self-reverses.
 // `enforce_tag_thin_page_gate()` deindexes any tag with no description and stamps
@@ -39,7 +39,6 @@ function hasRobotsNoindex(html: string): boolean {
 
 /** Tag pages that duplicate a geo page. Each names the geo route that owns the subject. */
 const DUPLICATES: Array<{ slug: string; geo: string; bucket: string }> = [
-  { slug: 'brighton', geo: '/city/brighton', bucket: 'C one real city' },
   { slug: 'chicago', geo: '/city/chicago', bucket: 'C one real city' },
   { slug: 'philadelphia', geo: '/city/philadelphia', bucket: 'C one real city' },
   { slug: 'germany', geo: '/country/germany', bucket: 'A country' },
@@ -67,6 +66,15 @@ const MUST_STAY_INDEXABLE: Array<{ slug: string; why: string }> = [
     why: 'bucket D — matches San Francisco US (665 venues) AND San Francisco AR (0). '
       + 'Ambiguous same-name matches are deliberately excluded pending review; deindexing '
       + 'them was NOT authorised by the audit.',
+  },
+  {
+    slug: 'brighton',
+    why: 'bucket D — matches Brighton GB (182 venues) AND Brighton CA (1). Listed as a '
+      + 'bucket-C duplicate in the first draft of this spec and caught by prod: the '
+      + 'migration correctly refused it, the spec was wrong. A second ambiguous control '
+      + 'alongside san-francisco, because the two differ in shape — SF has a 665-vs-0 split '
+      + 'that a content-mass rule resolves easily, Brighton is 182-vs-1 and still excluded, '
+      + 'so this pins that the exclusion is on AMBIGUITY, not on the size of the gap.',
   },
   {
     slug: 'travel',
