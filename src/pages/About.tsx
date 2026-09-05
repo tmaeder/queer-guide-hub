@@ -90,9 +90,10 @@ export default function About() {
       type: 'venue',
       to: '/venues',
       name: t('about.lines.venues.name', 'Venues'),
+      // "reviewed by real people" was here. There are zero venue reviews.
       description: t(
         'about.lines.venues.description',
-        'Queer-friendly bars, cafés, clubs and businesses, reviewed by real people.',
+        'Queer-friendly bars, cafés, clubs and businesses, with the source of each one on record.',
       ),
     },
     {
@@ -196,32 +197,54 @@ export default function About() {
     },
   ];
 
+  /**
+   * Who actually runs this.
+   *
+   * The previous version of this array described three standing corps of
+   * volunteers — "community moderators … around the clock", "local
+   * ambassadors … community leaders in their region", and "contributors …
+   * members who write reviews". Measured against prod on 2026-09-05: one
+   * moderator, four admins, seventeen accounts in total, zero venue reviews,
+   * zero check-ins and zero user submissions. The ambassador programme does
+   * not exist anywhere in the product — `ambassador` appears in `src/` only
+   * as the name of a gamification tier, which is the same fiction the old
+   * /contact FAQ told before it was deleted.
+   *
+   * "Around the clock" was the worst of them: /contact now tells a person in
+   * crisis, correctly, that this platform is NOT watched around the clock.
+   * Two pages cannot answer that question differently.
+   *
+   * What replaced it is the honest division of labour, which is a small team
+   * plus a large amount of machinery. That is not a lesser story — the
+   * machinery is what put 26,905 venues on the map, and the colophon below
+   * names every source it was built from.
+   */
   const people = [
     {
-      key: 'moderators',
-      name: t('about.people.moderators.name', 'Community moderators'),
-      role: t('about.people.moderators.role', 'Keeping it safe'),
+      key: 'team',
+      name: t('about.people.team.name', 'A small team'),
+      role: t('about.people.team.role', 'Builds and reviews'),
       description: t(
-        'about.people.moderators.description',
-        'Volunteers who keep the platform welcoming and respectful, around the clock.',
+        'about.people.team.description',
+        'A handful of people write the code, set the safety rules and clear the review queues. No newsroom, no call centre.',
       ),
     },
     {
-      key: 'ambassadors',
-      name: t('about.people.ambassadors.name', 'Local ambassadors'),
-      role: t('about.people.ambassadors.role', 'Eyes on the ground'),
+      key: 'machine',
+      name: t('about.people.machine.name', 'A lot of machinery'),
+      role: t('about.people.machine.role', 'Does the volume'),
       description: t(
-        'about.people.ambassadors.description',
-        'Community leaders who surface local needs and champion inclusive spaces in their region.',
+        'about.people.machine.description',
+        'Pipelines pull from open datasets and public feeds, then normalise, deduplicate and score every row before it appears.',
       ),
     },
     {
-      key: 'contributors',
-      name: t('about.people.contributors.name', 'Contributors'),
-      role: t('about.people.contributors.role', 'Sharing knowledge'),
+      key: 'you',
+      name: t('about.people.you.name', 'And you, if you want'),
+      role: t('about.people.you.role', 'Corrects the record'),
       description: t(
-        'about.people.contributors.description',
-        'Members who write reviews, post events and build the resources everyone else relies on.',
+        'about.people.you.description',
+        'Submissions and corrections go through the same review queue the pipelines do. Nothing skips it.',
       ),
     },
   ];
@@ -483,26 +506,32 @@ export default function About() {
     title: string;
     desc: string;
   }[] = [
+    // `/venues/new` and `/events/new` are NOT routes and never were. Both
+    // fell through to the detail route's `:slug`, so for as long as these
+    // tiles have existed "Add a venue" has opened a real unrelated bar in
+    // New York whose slug happens to be "new" (verified on prod), and "Post
+    // an event" has opened a soft 404. The working path is `/submit`, which
+    // this same page already linked to correctly in its primary button.
     {
       key: 'addVenues',
       icon: 'add-station',
-      to: '/venues/new',
+      to: '/submit/venue',
       title: t('about.cta.addVenues.title', 'Add a venue'),
       desc: t('about.cta.addVenues.desc', 'Know a safe spot? Put it on the map.'),
     },
     {
       key: 'createEvents',
       icon: 'events',
-      to: '/events/new',
+      to: '/submit/event',
       title: t('about.cta.createEvents.title', 'Post an event'),
       desc: t('about.cta.createEvents.desc', 'Organize something. Bring people together.'),
     },
     {
-      key: 'joinGroups',
-      icon: 'chat',
-      to: '/groups',
-      title: t('about.cta.joinGroups.title', 'Join a group'),
-      desc: t('about.cta.joinGroups.desc', 'Your voice belongs in the conversation.'),
+      key: 'fixSomething',
+      icon: 'tune',
+      to: '/contact',
+      title: t('about.cta.fixSomething.title', 'Correct something'),
+      desc: t('about.cta.fixSomething.desc', 'Wrong hours, closed venue, bad listing. Tell us.'),
     },
     {
       key: 'support',
@@ -515,18 +544,29 @@ export default function About() {
 
   return (
     <div className="min-h-screen">
-      {/* Masthead */}
-      <PageContainer as="section" className="pb-0">
+      {/* Masthead.
+
+          `flush` + an explicit top, never `className="pb-0"`: tailwind-merge
+          drops the base `py-8` but leaves `md:py-12` standing (different
+          modifier, different merge key), so the bottom padding silently came
+          back at md and the masthead sat ~48px further from the scale band
+          than the class claimed. Same trap as `px-0` against the gutter
+          ladder, which is the only half docs/design-system/README.md names. */}
+      <PageContainer as="section" flush className="pt-8 md:pt-12">
         <Eyebrow variant="kicker" as="div">
           {t('about.eyebrow', 'About')}
         </Eyebrow>
         <h1 className="mt-6 text-hero leading-[0.95] md:text-hero-xl">
           {t('about.title', 'Built by queers, for everyone.')}
         </h1>
+        {/* "verified by the community" stood here and was not true: zero
+            venue reviews, zero check-ins, zero user submissions. What IS
+            true is the sourcing, and saying so is a stronger claim than the
+            one it replaces, because the colophon further down proves it. */}
         <p className="mt-6 max-w-reading text-body-lg leading-relaxed text-muted-foreground">
           {t(
             'about.lede',
-            'Queer Guide maps the places, events and people that make up queer life — verified by the community, free for everyone, everywhere in the world.',
+            'Queer Guide maps the places, events and people that make up queer life. Built from open data and public feeds, credited source by source, free for everyone, everywhere in the world.',
           )}
         </p>
         <NetworkDiagram
@@ -603,10 +643,14 @@ export default function About() {
                 "Finding a queer-friendly bar shouldn't take a group chat, three forum threads and a leap of faith. We started Queer Guide because we were tired of guessing which spaces were actually safe — and which just put a rainbow on the logo in June.",
               )}
             </p>
+            {/* "verified by the community, built on real experience" was the
+                second false version of the same claim. The honest sentence is
+                about method, and it sets up the colophon rather than
+                contradicting it. */}
             <p className="text-body-lg leading-relaxed text-muted-foreground">
               {t(
                 'about.story.p2',
-                'A personal list of trusted venues turned into a global directory: verified by the community, built on real experience, free to use. Travelling solo, moving city, or just looking for somewhere to be on a Friday night — start here.',
+                'That list became a directory the only way one person can build a global one: by pulling from every open dataset and public feed that would give up a queer venue, and crediting each of them. Travelling solo, moving city, or just looking for somewhere to be on a Friday night, start here.',
               )}
             </p>
           </div>
@@ -621,33 +665,40 @@ export default function About() {
         />
         <FactGrid
           className="mt-8"
+          // "Community-verified: every venue is reviewed by real LGBTQ+
+          // people, not an algorithm" used to lead this grid. There are zero
+          // venue reviews in the database and 98.6% of venues carry a
+          // recorded upstream source, so it was false in both halves — and
+          // the half that denied being algorithmic was the falser one. What
+          // replaced it is the set of promises this codebase actually keeps
+          // and enforces, each traceable to a mechanism rather than a value.
           facts={[
             {
-              label: t('about.legend.verified.label', 'Community-verified'),
+              label: t('about.legend.sourced.label', 'Sourced, not asserted'),
               value: t(
-                'about.legend.verified.body',
-                'Every venue is reviewed by real LGBTQ+ people, not an algorithm.',
+                'about.legend.sourced.body',
+                'Almost every venue and event records where it came from. The list of sources is on this page.',
               ),
             },
             {
               label: t('about.legend.safety.label', 'Safety-first'),
               value: t(
                 'about.legend.safety.body',
-                'Local laws, rights and risk notes on every country page.',
+                'Local laws, rights and risk notes on every country page. In criminalising countries, listings are hidden from anonymous visitors.',
+              ),
+            },
+            {
+              label: t('about.legend.gaps.label', 'Gaps stay visible'),
+              value: t(
+                'about.legend.gaps.body',
+                'A missing opening time is left blank rather than guessed, and "not step-free" is recorded as carefully as "step-free".',
               ),
             },
             {
               label: t('about.legend.free.label', 'Always free'),
               value: t(
                 'about.legend.free.body',
-                'No paywall, no premium tier. The platform belongs to everyone.',
-              ),
-            },
-            {
-              label: t('about.legend.global.label', 'Global reach'),
-              value: t(
-                'about.legend.global.body',
-                'Berlin to Bangkok, São Paulo to Sydney — and growing.',
+                'No paywall, no premium tier, no selling your data.',
               ),
             },
           ]}
@@ -687,9 +738,11 @@ export default function About() {
             },
             {
               year: t('about.history.y2026.year', '2026'),
+              // "join the contributor circle" named a thing that does not
+              // exist. The two routes below do.
               body: t(
                 'about.history.y2026.body',
-                'You are here. Add a venue, post an event, or join the contributor circle.',
+                'You are here. Add a place, or tell us what we got wrong.',
               ),
             },
           ]}
@@ -718,7 +771,10 @@ export default function About() {
         <SectionHead
           kicker={t('about.people.kicker', 'Who runs it')}
           title={t('about.people.title', 'The people behind it')}
-          lede={t('about.people.lede', 'No corporation. Community members who give their time.')}
+          lede={t(
+            'about.people.lede',
+            'No corporation, and no volunteer army either. It is a small team and a lot of machinery.',
+          )}
         />
         <ul className="m-0 mt-8 grid list-none grid-cols-1 gap-4 p-0 md:grid-cols-3">
           {people.map((member) => (
