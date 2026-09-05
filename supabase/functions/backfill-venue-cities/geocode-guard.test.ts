@@ -8,6 +8,7 @@ import {
   isLocalityFallback,
   normPostal,
   postalContradicts,
+  postalJobOutcome,
   stampGeocode,
   type GeoVenue,
 } from './geocode-guard.ts'
@@ -148,4 +149,45 @@ Deno.test('the stamp merges rather than replacing enrichment_status', () => {
     reason: 'postal_mismatch:46049_vs_59755',
     at: '2026-08-22T00:00:00.000Z',
   })
+})
+
+// ── postalJobOutcome ────────────────────────────────────────────────────────
+//
+// These pin the prod defect of 2026-09-05 (49 reported fills across two drain
+// cycles, `missing_postal` unmoved). Each case is written so it FAILS against
+// the old rule, which was `if (postcode || state || countrycode) { filled++;
+// delete the row }`.
+
+Deno.test('postalJobOutcome: a countrycode-only answer is NOT a fill', () => {
+  // The exact prod shape. All five sampled venues already had country_id, so
+  // even the country write hit zero rows — yet each was reported as filled and
+  // deleted, and the hourly backlog re-selected it.
+  const out = postalJobOutcome({ postcode: null }, false)
+  assertEquals(out.filled, false)
+  assertEquals(out.disposition, 'park')
+})
+
+Deno.test('postalJobOutcome: a postcode that was written IS a fill, and finishes the row', () => {
+  const out = postalJobOutcome({ postcode: '10115' }, true)
+  assertEquals(out.filled, true)
+  assertEquals(out.disposition, 'done')
+})
+
+Deno.test('postalJobOutcome: a postcode that hit no row is done but NOT counted', () => {
+  // Concurrent fill: the row already had a postal code, so the guarded update
+  // matched nothing. The work is finished either way, but claiming a fill we
+  // did not perform is precisely how the original bug read as success.
+  const out = postalJobOutcome({ postcode: '10115' }, false)
+  assertEquals(out.filled, false)
+  assertEquals(out.disposition, 'done')
+})
+
+Deno.test('postalJobOutcome: an empty answer parks rather than deleting', () => {
+  // Deleting is what let the row come back every hour. Parking is the memory
+  // the drain and the backlog both already respect.
+  for (const geo of [null, { postcode: null }]) {
+    const out = postalJobOutcome(geo, false)
+    assertEquals(out.disposition, 'park')
+    assertEquals(out.filled, false)
+  }
 })
