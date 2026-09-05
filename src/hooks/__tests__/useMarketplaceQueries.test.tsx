@@ -45,15 +45,14 @@ vi.mock('@/integrations/supabase/client', () => ({
 import {
   useMarketplaceSubcategoryTiles,
   useMarketplaceListingsRelated,
-  useMarketplaceTopCities,
-  useMarketplaceListingsForCity,
-  useMarketplaceListingsForVenue,
   useMarketplaceSimilarListings,
   useMarketplaceFacets,
   useMarketplacePriceHistory,
 } from '../useMarketplaceQueries';
 
-function withResults(...r: MockResult[]) { state.results.push(...r); }
+function withResults(...r: MockResult[]) {
+  state.results.push(...r);
+}
 
 beforeEach(() => {
   state.results.length = 0;
@@ -95,80 +94,20 @@ describe('useMarketplaceSubcategoryTiles', () => {
 describe('useMarketplaceListingsRelated', () => {
   it('queries active listings with priority orders + limit', async () => {
     withResults({
-      data: [{ id: 'l1', title: 'Pin' }, { id: 'l2', title: 'Tote' }],
+      data: [
+        { id: 'l1', title: 'Pin' },
+        { id: 'l2', title: 'Tote' },
+      ],
       error: null,
     });
     const { result } = renderHook(() => useMarketplaceListingsRelated(2));
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    expect(result.current.data.map(l => l.id)).toEqual(['l1', 'l2']);
+    expect(result.current.data.map((l) => l.id)).toEqual(['l1', 'l2']);
     const call = state.calls[0];
     expect(call.table).toBe('marketplace_listings');
-    const limit = call.chain.find(s => s.method === 'limit');
+    const limit = call.chain.find((s) => s.method === 'limit');
     expect(limit?.args).toEqual([2]);
-  });
-});
-
-describe('useMarketplaceTopCities', () => {
-  it('aggregates listings by city with slug, ranks top N', async () => {
-    withResults({
-      data: [
-        { venues: { city: 'Berlin', cities: { slug: 'berlin' } } },
-        { venues: { city: 'Berlin', cities: { slug: 'berlin' } } },
-        { venues: { city: 'Paris', cities: { slug: 'paris' } } },
-        { venues: null },
-        { venues: { city: null } },
-      ],
-      error: null,
-    });
-
-    const { result } = renderHook(() => useMarketplaceTopCities(5));
-    await waitFor(() => expect(result.current.loading).toBe(false));
-
-    expect(result.current.data).toEqual([
-      { name: 'Berlin', slug: 'berlin', count: 2 },
-      { name: 'Paris', slug: 'paris', count: 1 },
-    ]);
-  });
-});
-
-describe('useMarketplaceListingsForCity', () => {
-  it('returns [] when cityName is undefined without hitting supabase', async () => {
-    const { result } = renderHook(() => useMarketplaceListingsForCity(undefined));
-    await waitFor(() => expect(result.current.loading).toBe(false));
-    expect(result.current.data).toEqual([]);
-    expect(state.calls).toHaveLength(0);
-  });
-
-  it('filters by venues.city when cityName is provided', async () => {
-    withResults({ data: [{ id: 'l1' }], error: null });
-    const { result } = renderHook(() => useMarketplaceListingsForCity('Berlin'));
-    await waitFor(() => expect(result.current.loading).toBe(false));
-
-    expect(result.current.data.map(l => l.id)).toEqual(['l1']);
-    const eqCalls = state.calls[0].chain.filter(s => s.method === 'eq');
-    const eqMap = Object.fromEntries(eqCalls.map(c => c.args as [string, unknown]));
-    expect(eqMap['venues.city']).toBe('Berlin');
-    expect(eqMap.status).toBe('active');
-  });
-});
-
-describe('useMarketplaceListingsForVenue', () => {
-  it('returns [] when venueId is undefined without hitting supabase', async () => {
-    const { result } = renderHook(() => useMarketplaceListingsForVenue(undefined));
-    await waitFor(() => expect(result.current.loading).toBe(false));
-    expect(state.calls).toHaveLength(0);
-  });
-
-  it('filters by venue_id when provided', async () => {
-    withResults({ data: [{ id: 'l1' }], error: null });
-    const { result } = renderHook(() => useMarketplaceListingsForVenue('v1'));
-    await waitFor(() => expect(result.current.loading).toBe(false));
-
-    const eqCall = state.calls[0].chain.find(
-      s => s.method === 'eq' && (s.args as [string, unknown])[0] === 'venue_id',
-    );
-    expect(eqCall?.args).toEqual(['venue_id', 'v1']);
   });
 });
 
@@ -185,8 +124,8 @@ describe('useMarketplaceSimilarListings', () => {
     renderHook(() => useMarketplaceSimilarListings(listing));
     await waitFor(() => expect(state.calls).toHaveLength(1));
 
-    const eqs = state.calls[0].chain.filter(s => s.method === 'eq');
-    const cols = eqs.map(e => (e.args as [string, unknown])[0]);
+    const eqs = state.calls[0].chain.filter((s) => s.method === 'eq');
+    const cols = eqs.map((e) => (e.args as [string, unknown])[0]);
     expect(cols).toContain('category_id');
     expect(cols).not.toContain('category');
   });
@@ -197,20 +136,18 @@ describe('useMarketplaceSimilarListings', () => {
     renderHook(() => useMarketplaceSimilarListings(listing));
     await waitFor(() => expect(state.calls).toHaveLength(1));
 
-    const eqs = state.calls[0].chain.filter(s => s.method === 'eq');
-    const cols = eqs.map(e => (e.args as [string, unknown])[0]);
+    const eqs = state.calls[0].chain.filter((s) => s.method === 'eq');
+    const cols = eqs.map((e) => (e.args as [string, unknown])[0]);
     expect(cols).toContain('category');
     expect(cols).not.toContain('category_id');
   });
 
   it('excludes the current listing via .neq', async () => {
     withResults({ data: [], error: null });
-    renderHook(() =>
-      useMarketplaceSimilarListings({ id: 'l1', category: 'pins' } as never),
-    );
+    renderHook(() => useMarketplaceSimilarListings({ id: 'l1', category: 'pins' } as never));
     await waitFor(() => expect(state.calls).toHaveLength(1));
 
-    const neq = state.calls[0].chain.find(s => s.method === 'neq');
+    const neq = state.calls[0].chain.find((s) => s.method === 'neq');
     expect(neq?.args).toEqual(['id', 'l1']);
   });
 });
@@ -251,9 +188,7 @@ describe('useMarketplaceFacets', () => {
 
   it('passes scope params to the RPC call', async () => {
     withResults({ data: { total: 0 }, error: null });
-    renderHook(() =>
-      useMarketplaceFacets({ category: 'art', businessType: 'business' }),
-    );
+    renderHook(() => useMarketplaceFacets({ category: 'art', businessType: 'business' }));
     await waitFor(() => expect(state.calls).toHaveLength(1));
 
     const call = state.calls[0];
@@ -286,7 +221,7 @@ describe('useMarketplacePriceHistory', () => {
 
     const call = state.calls[0];
     expect(call.table).toBe('marketplace_price_history');
-    const eq = call.chain.find(s => s.method === 'eq');
+    const eq = call.chain.find((s) => s.method === 'eq');
     expect(eq?.args).toEqual(['listing_id', 'l1']);
   });
 
