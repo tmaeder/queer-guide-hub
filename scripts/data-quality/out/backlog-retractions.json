@@ -1,0 +1,482 @@
+[
+ {
+  "slug": "aftercare",
+  "qid": "Q494330",
+  "wd_label": "after-school activity",
+  "wd_desc": "type of educational activity",
+  "category": "Dynamics & Roles",
+  "seo_indexable": true,
+  "usage_count": 2,
+  "reason": "BDSM aftercare. The QID is a type of educational activity."
+ },
+ {
+  "slug": "awareness",
+  "qid": "Q9081",
+  "wd_label": "knowledge",
+  "wd_desc": "awareness of facts, familiarity with individuals and situations, or practical skill; encompasses descriptive, procedural, and acquaintance knowledge, typically characterized as justified true belief distinct from opinion or guesswork",
+  "category": "Slang & Language",
+  "seo_indexable": true,
+  "usage_count": 35,
+  "reason": "Awareness-raising. The QID is knowledge/familiarity in general."
+ },
+ {
+  "slug": "binding",
+  "qid": "Q2648051",
+  "wd_label": "obligation",
+  "wd_desc": "legal or moral requirement to take a certain course of action",
+  "category": "Trans Health & Gender-Affirming Care",
+  "seo_indexable": true,
+  "usage_count": 0,
+  "reason": "Chest binding (Trans Health). The QID is a legal/moral obligation."
+ },
+ {
+  "slug": "bootblack",
+  "qid": "Q1517909",
+  "wd_label": "shoeshiner",
+  "wd_desc": "occupation",
+  "category": "Dynamics & Roles",
+  "seo_indexable": true,
+  "usage_count": 0,
+  "reason": "Leather-community role (Dynamics & Roles). The QID is the occupation."
+ },
+ {
+  "slug": "decriminalization-of-homosexuality",
+  "qid": "Q1266145",
+  "wd_label": "sexual orientation and gender identity at the United Nations",
+  "wd_desc": "legal concept, declarations and resolutions of the United Nations in favor of the universal decriminalization of homosexuality and the respect for the sexual orientation and gender identity of individuals",
+  "category": "Orientation",
+  "seo_indexable": true,
+  "usage_count": 0,
+  "reason": "Decriminalisation specifically. The QID is the broad SOGI legal concept - a different claim."
+ },
+ {
+  "slug": "dependency",
+  "qid": "Q3044808",
+  "wd_label": "outbuilding",
+  "wd_desc": "annex to a construction, as a distinct building or a secondary part of the main one",
+  "category": "Dynamics & Roles",
+  "seo_indexable": true,
+  "usage_count": 0,
+  "reason": "A BDSM dynamic. The QID is an annex to a building."
+ },
+ {
+  "slug": "devotee",
+  "qid": "Q193432",
+  "wd_label": "fan",
+  "wd_desc": "person who is enthusiastically devoted to something or someone",
+  "category": "Dynamics & Roles",
+  "seo_indexable": true,
+  "usage_count": 2,
+  "reason": "A kink/community role. The QID is a sports-or-music fan."
+ },
+ {
+  "slug": "feeder",
+  "qid": "Q1048902",
+  "wd_label": "pitcher",
+  "wd_desc": "player responsible for throwing (\"pitching\") the ball to the batters in a game of baseball or softball",
+  "category": "Dynamics & Roles",
+  "seo_indexable": true,
+  "usage_count": 0,
+  "reason": "A feedism role. The QID is the BASEBALL player who pitches."
+ },
+ {
+  "slug": "fire-bottom",
+  "qid": "Q110289863",
+  "wd_label": "grate inset",
+  "wd_desc": null,
+  "category": "Dynamics & Roles",
+  "seo_indexable": true,
+  "usage_count": 0,
+  "reason": "Receiver of fire play. The QID is a fireplace part."
+ },
+ {
+  "slug": "footboy",
+  "qid": "Q4382663",
+  "wd_label": "footman",
+  "wd_desc": "male servant",
+  "category": "Practices & Play",
+  "seo_indexable": true,
+  "usage_count": 0,
+  "reason": "A foot-fetish role. The QID is a male household servant."
+ },
+ {
+  "slug": "health-well-being",
+  "qid": "Q2284929",
+  "wd_label": "health risk assessment",
+  "wd_desc": "screening tools and systematic approach in the field of health promotion for collecting information from individuals that identifies risk factors, providing feedback, and facilitating intervention to promote health and prevent disease",
+  "category": "Sexual Health",
+  "seo_indexable": true,
+  "usage_count": 0,
+  "reason": "A health topic hub. The QID is a specific screening instrument."
+ },
+ {
+  "slug": "honorifics",
+  "qid": "Q135725",
+  "wd_label": "Z\"l",
+  "wd_desc": "abbreviation",
+  "category": "Slang & Language",
+  "seo_indexable": false,
+  "usage_count": 0,
+  "reason": "Kink honorifics. The QID is a Hebrew abbreviation."
+ },
+ {
+  "slug": "host",
+  "qid": "Q947873",
+  "wd_label": "television presenter",
+  "wd_desc": "person who introduces or hosts television programs",
+  "category": "Dynamics & Roles",
+  "seo_indexable": true,
+  "usage_count": 0,
+  "reason": "A kink role. The QID is a TV presenter."
+ },
+ {
+  "slug": "huntress",
+  "qid": "Q1714828",
+  "wd_label": "hunter",
+  "wd_desc": "person who hunts",
+  "category": "Dynamics & Roles",
+  "seo_indexable": false,
+  "usage_count": 0,
+  "reason": "A kink role, and gendered. The QID is a person who hunts."
+ },
+ {
+  "slug": "international-solidarity",
+  "qid": "Q775858",
+  "wd_label": "humanitarianism",
+  "wd_desc": "belief system to value human life and in actively assisting other humans to improve conditions of humanity",
+  "category": "Politics & Activism",
+  "seo_indexable": true,
+  "usage_count": 0,
+  "reason": "Political solidarity. The QID is humanitarianism."
+ },
+ {
+  "slug": "interracial",
+  "qid": "Q1378555",
+  "wd_label": "multiracial people",
+  "wd_desc": "people of more than one race",
+  "category": "Fetishes",
+  "seo_indexable": true,
+  "usage_count": 0,
+  "reason": "A Fetishes tag. The QID is multiracial PEOPLE."
+ },
+ {
+  "slug": "leader",
+  "qid": "Q871232",
+  "wd_label": "editorial",
+  "wd_desc": "journalism genre",
+  "category": "Identity",
+  "seo_indexable": true,
+  "usage_count": 2,
+  "reason": "An identity tag. The QID is the JOURNALISM genre (a leader column)."
+ },
+ {
+  "slug": "librarians",
+  "qid": "Q58325960",
+  "wd_label": "library profession",
+  "wd_desc": null,
+  "category": "Fetishes",
+  "seo_indexable": true,
+  "usage_count": 0,
+  "reason": "A Fetishes archetype. The QID is the actual profession."
+ },
+ {
+  "slug": "locker-room",
+  "qid": "Q1070054",
+  "wd_label": "changing room",
+  "wd_desc": "room where you can change your clothes",
+  "category": "Fetishes",
+  "seo_indexable": true,
+  "usage_count": 1,
+  "reason": "A Fetishes tag. The QID is a generic changing room."
+ },
+ {
+  "slug": "long-hair",
+  "qid": "Q14130",
+  "wd_label": "waist-length hair",
+  "wd_desc": "any hairstyle where the head hair is allowed to grow past the shoulder but no longer than the waist",
+  "category": "Fetishes",
+  "seo_indexable": true,
+  "usage_count": 0,
+  "reason": "A Fetishes tag (attraction). The QID is a hair LENGTH."
+ },
+ {
+  "slug": "marineflieger",
+  "qid": "Q1898391",
+  "wd_label": "German Naval Aviation Command",
+  "wd_desc": "aviation component of Germany's navy",
+  "category": "Sex & Kink",
+  "seo_indexable": false,
+  "usage_count": 0,
+  "reason": "Filed under Sex & Kink. The QID is a branch of the German navy."
+ },
+ {
+  "slug": "medical-transition",
+  "qid": "Q136209093",
+  "wd_label": null,
+  "wd_desc": "book 2014",
+  "category": "Trans Health & Gender-Affirming Care",
+  "seo_indexable": true,
+  "usage_count": 2,
+  "reason": "The QID is a BOOK published 2014, not the medical process."
+ },
+ {
+  "slug": "mutha",
+  "qid": "Q212761",
+  "wd_label": "Al Muthanna Governorate",
+  "wd_desc": "governorate of Iraq",
+  "category": "Fetishes",
+  "seo_indexable": true,
+  "usage_count": 0,
+  "reason": "A kink term. The QID is a governorate of Iraq."
+ },
+ {
+  "slug": "office",
+  "qid": "Q294414",
+  "wd_label": "public office",
+  "wd_desc": "elected or appointed political position",
+  "category": "Work, School & Institutions",
+  "seo_indexable": true,
+  "usage_count": 10,
+  "reason": "A workplace venue. The QID is an elected political position."
+ },
+ {
+  "slug": "old-theatre",
+  "qid": "Q32676474",
+  "wd_label": "Stamford Arts Centre",
+  "wd_desc": "theatre in Stamford, England",
+  "category": "Venue Types",
+  "seo_indexable": true,
+  "usage_count": 1,
+  "reason": "A venue TYPE. The QID is one specific theatre in Stamford, England."
+ },
+ {
+  "slug": "owner",
+  "qid": "Q618532",
+  "wd_label": "landlord",
+  "wd_desc": "owner of a house, apartment, condominium, land or real estate, which is rented or leased to an individual or business, called a tenant, lessee or renter",
+  "category": "Dynamics & Roles",
+  "seo_indexable": true,
+  "usage_count": 0,
+  "reason": "A BDSM role. The QID is a property landlord."
+ },
+ {
+  "slug": "pack",
+  "qid": "Q113469875",
+  "wd_label": "Packard Fellowship for Science and Engineering",
+  "wd_desc": "science fellowship",
+  "category": "Dynamics & Roles",
+  "seo_indexable": true,
+  "usage_count": 0,
+  "reason": "A kink group dynamic. The QID is a science fellowship."
+ },
+ {
+  "slug": "packing",
+  "qid": "Q11640447",
+  "wd_label": "carrying",
+  "wd_desc": "lifting and transporting something",
+  "category": "Trans Health & Gender-Affirming Care",
+  "seo_indexable": true,
+  "usage_count": 0,
+  "reason": "Trans packing (a prosthetic). The QID is lifting and transporting things."
+ },
+ {
+  "slug": "pet-owner",
+  "qid": "Q123059176",
+  "wd_label": "pet keeper",
+  "wd_desc": "person who owns a pet",
+  "category": "Dynamics & Roles",
+  "seo_indexable": false,
+  "usage_count": 0,
+  "reason": "A BDSM role. The QID is someone who owns an animal."
+ },
+ {
+  "slug": "restraints",
+  "qid": "Q56162322",
+  "wd_label": "WikiProject Property constraints",
+  "wd_desc": "Wikidata project about property constraints",
+  "category": "Dynamics & Roles",
+  "seo_indexable": false,
+  "usage_count": 0,
+  "reason": "Bondage gear. The QID is a WIKIDATA-INTERNAL project page."
+ },
+ {
+  "slug": "rumpus-room",
+  "qid": "Q2911974",
+  "wd_label": "recreation room",
+  "wd_desc": "room used for a variety of purposes, such as parties, games and other everyday or casual use",
+  "category": "Venue Types",
+  "seo_indexable": true,
+  "usage_count": 0,
+  "reason": "Its own prose says \"in the context of kink\". The QID is a domestic rec room."
+ },
+ {
+  "slug": "sacred-play",
+  "qid": "Q136232489",
+  "wd_label": null,
+  "wd_desc": "book 2007",
+  "category": "Fetishes",
+  "seo_indexable": true,
+  "usage_count": 0,
+  "reason": "The QID is a BOOK published 2007."
+ },
+ {
+  "slug": "scat",
+  "qid": "Q30015788",
+  "wd_label": "subcutaneous adipose tissue",
+  "wd_desc": "adipose tissue that is part of the hypodermis",
+  "category": "Fetishes",
+  "seo_indexable": true,
+  "usage_count": 0,
+  "reason": "A kink practice. The QID is body fat."
+ },
+ {
+  "slug": "scent",
+  "qid": "Q485537",
+  "wd_label": "odor",
+  "wd_desc": "thing sensed by smell",
+  "category": "Fetishes",
+  "seo_indexable": true,
+  "usage_count": 0,
+  "reason": "A Fetishes tag. The QID is odour in general."
+ },
+ {
+  "slug": "schoolgirl",
+  "qid": "Q48942",
+  "wd_label": "schoolchild",
+  "wd_desc": "child studying in a school",
+  "category": "Fetishes",
+  "seo_indexable": true,
+  "usage_count": 0,
+  "reason": "A Fetishes archetype. The QID is \"child studying in a school\" - an adult roleplay tag must never resolve to a real child."
+ },
+ {
+  "slug": "sensualism",
+  "qid": "Q651205",
+  "wd_label": "sensationism",
+  "wd_desc": "view in epistemology and cognitive psychology that perceptions underlie all cognition; thinking is recollection, modification, association,and comparison of perceptions",
+  "category": "Fetishes",
+  "seo_indexable": true,
+  "usage_count": 0,
+  "reason": "A kink lifestyle. The QID is a position in epistemology."
+ },
+ {
+  "slug": "size-l",
+  "qid": "Q9927",
+  "wd_label": "L/l",
+  "wd_desc": "12th letter of the basic Latin alphabet",
+  "category": "-",
+  "seo_indexable": false,
+  "usage_count": 2,
+  "reason": "A garment size. The QID is the 12th LETTER of the Latin alphabet."
+ },
+ {
+  "slug": "size-s",
+  "qid": "Q9956",
+  "wd_label": null,
+  "wd_desc": "19th letter of the basic Latin alphabet",
+  "category": "-",
+  "seo_indexable": false,
+  "usage_count": 1,
+  "reason": "A garment size. The QID is the 19th LETTER of the Latin alphabet."
+ },
+ {
+  "slug": "stability",
+  "qid": "Q23611288",
+  "wd_label": "never changes",
+  "wd_desc": "value of this property is not expected to change",
+  "category": "Mental Health",
+  "seo_indexable": true,
+  "usage_count": 1,
+  "reason": "Mental-health stability. The QID is a Wikidata property-constraint value."
+ },
+ {
+  "slug": "support",
+  "qid": "Q861259",
+  "wd_label": "painting support",
+  "wd_desc": "material which forms the surface on which a painting of picture is applicated, for example canvas or paper",
+  "category": "Community Life & Support",
+  "seo_indexable": true,
+  "usage_count": 201,
+  "reason": "Community support (u=201). The QID is the canvas a painting sits on."
+ },
+ {
+  "slug": "suspension",
+  "qid": "Q87406427",
+  "wd_label": "account suspension",
+  "wd_desc": "action performed by an administrative entity to deny an account from interacting with their website",
+  "category": "Practices & Play",
+  "seo_indexable": true,
+  "usage_count": 3,
+  "reason": "Rope suspension. The QID is an administrative account ban."
+ },
+ {
+  "slug": "switch",
+  "qid": "Q19610114",
+  "wd_label": null,
+  "wd_desc": "hybrid video game console",
+  "category": "Dynamics & Roles",
+  "seo_indexable": true,
+  "usage_count": 0,
+  "reason": "The BDSM role. The QID is the NINTENDO SWITCH."
+ },
+ {
+  "slug": "switching",
+  "qid": "Q1429051",
+  "wd_label": "shunting",
+  "wd_desc": "sorting railway vehicles into complete trains (or the reverse)",
+  "category": "Dynamics & Roles",
+  "seo_indexable": true,
+  "usage_count": 0,
+  "reason": "Alternating dom/sub roles. The QID is sorting RAILWAY vehicles."
+ },
+ {
+  "slug": "values",
+  "qid": "Q23766486",
+  "wd_label": "list of values as qualifiers",
+  "wd_desc": "dummy value for \"union of\" P2737 and \"disjoint union of\" P2738 to specify the items of which this class is the union. Use \"list item\" P11260 as a qualifier to specify the items.",
+  "category": "History & Rights",
+  "seo_indexable": true,
+  "usage_count": 2,
+  "reason": "The QID is a Wikidata DUMMY value for a property union."
+ },
+ {
+  "slug": "vers",
+  "qid": "Q5185279",
+  "wd_label": "poem",
+  "wd_desc": "form of literature, work of poetry, often composed of verses",
+  "category": "Dynamics & Roles",
+  "seo_indexable": true,
+  "usage_count": 0,
+  "reason": "Versatile (Dynamics & Roles). The QID is a form of poetry."
+ },
+ {
+  "slug": "whore",
+  "qid": "Q14915751",
+  "wd_label": "prostitute",
+  "wd_desc": "person who has sex for money",
+  "category": "Fetishes",
+  "seo_indexable": true,
+  "usage_count": 0,
+  "reason": "A reclaimed kink term (Fetishes). The QID is a sex worker - conflating the two mislabels real people."
+ },
+ {
+  "slug": "women-only",
+  "qid": "Q133041419",
+  "wd_label": null,
+  "wd_desc": "exhibition in Centraal Museum, Utrecht, The Netherlands in 2002",
+  "category": "Relationship Structures",
+  "seo_indexable": true,
+  "usage_count": 7,
+  "reason": "The QID is an EXHIBITION at the Centraal Museum, Utrecht."
+ },
+ {
+  "slug": "workshop",
+  "qid": "Q746628",
+  "wd_label": "studio",
+  "wd_desc": "working place set aside for artist to work, the term is generally applied to workspaces used by artists creating fine art, particularly art dating from the 16th century to the present",
+  "category": "Events & Parties",
+  "seo_indexable": true,
+  "usage_count": 384,
+  "reason": "An event type (u=384). The QID is an artist\u2019s studio room."
+ }
+]

@@ -133,11 +133,15 @@ test('an unscored country is never filed as Protected or Mixed', async ({ page }
   await expect(world.getByRole('table')).toContainText('Not scored');
 });
 
-test('Afghanistan warns about the death penalty rather than calling it criminalised only', async ({ page }) => {
+test('Afghanistan warns about the death penalty rather than calling it criminalised only', async ({
+  page,
+}) => {
   await page.goto('/country/afghanistan');
   await dismiss(page);
   await expect(page.locator('main')).toContainText(
-    /Travel Warning: Same-sex activity may carry the death penalty/, { timeout: 30_000 });
+    /Travel Warning: Same-sex activity may carry the death penalty/,
+    { timeout: 30_000 },
+  );
   await expect(page.locator('main')).toContainText(/no legal certainty/);
 });
 
@@ -149,7 +153,10 @@ test('INVARIANT: a criminalising country never renders as Welcoming', async ({ p
   const seen: string[] = [];
   await page.goto('/country/afghanistan', { waitUntil: 'commit' });
   for (let i = 0; i < 240; i++) {
-    const txt = await page.locator('main').innerText().catch(() => '');
+    const txt = await page
+      .locator('main')
+      .innerText()
+      .catch(() => '');
     const m = txt.match(/FOR LGBTQ\+ TRAVELERS\s*\n\s*([^\n]+)/i);
     if (m && seen[seen.length - 1] !== m[1]) seen.push(m[1]);
     if (seen.includes('Dangerous')) break;
@@ -196,6 +203,21 @@ async function glyphFor(page, label: string): Promise<string> {
   return (cls.match(/lucide-[a-z-]+/) ?? [''])[0];
 }
 
+/**
+ * Open one of the country card's collapsed rights sections.
+ *
+ * Criminalisation stays open — it is the reason the page exists — but the
+ * other four defer their rows behind a disclosure. The polarity assertions
+ * below are about the glyph, not about how many clicks reach it, so the test
+ * opens the section rather than the card giving up the reduction.
+ */
+async function openRightsSection(page, label: string): Promise<void> {
+  const trigger = page.getByRole('button', { name: new RegExp(label, 'i') }).first();
+  await expect(trigger).toBeVisible({ timeout: 30_000 });
+  if ((await trigger.getAttribute('aria-expanded')) !== 'true') await trigger.click();
+  await expect(trigger).toHaveAttribute('aria-expanded', 'true', { timeout: 30_000 });
+}
+
 test('a legal barrier renders as negative, not as a protection', async ({ page }) => {
   await page.goto('/country/afghanistan');
   await dismiss(page);
@@ -210,9 +232,38 @@ test('the best available outcome renders as positive, not partial', async ({ pag
   await dismiss(page);
   // Germany: adoption "Joint & Second Parent Adoption" — the best case, which
   // fell through to the partial default before the vocabulary existed.
+  // `adoption` sits in `family`, which now starts collapsed.
+  await openRightsSection(page, 'Family & relationships');
   expect(await glyphFor(page, 'Adoption rights')).toBe('lucide-check');
   // Control: a genuine "No known legal barriers" must still read positive.
   expect(await glyphFor(page, 'Freedom of expression')).toBe('lucide-check');
+});
+
+test('a collapsed rights section states its count, not just its name', async ({ page }) => {
+  // A closed drawer that says only "Family & relationships" cannot be told
+  // apart from one with nothing behind it. The count is what makes the
+  // reduction honest — and it is interpolated, which no unit test in this repo
+  // can assert (the harness returns i18n defaults verbatim), so it is pinned
+  // here or nowhere.
+  await page.goto('/country/germany');
+  await dismiss(page);
+  const trigger = page.getByRole('button', { name: /Family & relationships/i }).first();
+  await expect(trigger).toBeVisible({ timeout: 30_000 });
+  await expect(trigger).toContainText(/\d+ of \d+|No data/);
+});
+
+test('criminal status is never behind a disclosure', async ({ page }) => {
+  // The card defers four of its five sections to cut an 18-row wall down to
+  // the question a traveller arrives with. Criminalisation is the one that
+  // must never be deferred: a click between the reader and "same-sex activity
+  // carries the death penalty here" is the one reduction this page cannot
+  // make. Asserted on the country where it matters most.
+  await page.goto('/country/afghanistan');
+  await dismiss(page);
+  const main = page.locator('main');
+  await expect(main).toContainText(/Same-sex activity/i, { timeout: 30_000 });
+  // The penalty detail, not just the row label — with no interaction first.
+  await expect(main).toContainText(/death penalty/i);
 });
 
 test('/rights/sources exists, states its coverage and refuses to oversell the score', async ({
@@ -279,10 +330,9 @@ test('the verdict names what our source does not record', async ({ page }) => {
   await dismiss(page);
   // Without this, a green trans verdict reads as a promise about a passport
   // check ILGA never made.
-  await expect(page.locator('main')).toContainText(
-    /identity documents are treated at borders/i,
-    { timeout: 30_000 },
-  );
+  await expect(page.locator('main')).toContainText(/identity documents are treated at borders/i, {
+    timeout: 30_000,
+  });
 });
 
 /**

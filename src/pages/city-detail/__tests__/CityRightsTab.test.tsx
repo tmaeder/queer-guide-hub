@@ -7,7 +7,9 @@ import { MemoryRouter } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 vi.mock('@/components/routing/LocalizedLink', () => ({
-  LocalizedLink: ({ to, children }: { to: string; children: React.ReactNode }) => <a href={to}>{children}</a>,
+  LocalizedLink: ({ to, children }: { to: string; children: React.ReactNode }) => (
+    <a href={to}>{children}</a>
+  ),
 }));
 vi.mock('@/components/ui/loading', () => ({
   InlineLoading: (p: { text: string }) => <div>{p.text}</div>,
@@ -15,10 +17,12 @@ vi.mock('@/components/ui/loading', () => ({
 vi.mock('@/components/country/LGBTJurisdictionInfo', () => ({
   default: () => <div data-testid="rights" />,
 }));
-// CountryLegalHistory runs a real useQuery (useMilestonesForCountry); stub it so
-// the tab test needs no QueryClientProvider.
-vi.mock('@/components/country/CountryLegalHistory', () => ({
-  CountryLegalHistory: () => <div data-testid="legal-history" />,
+// The legal line runs two real useQuerys (country + city milestones). Stub the
+// hooks rather than the component so the fusion still runs against the country
+// row — that join is the point of the block.
+vi.mock('@/hooks/useMilestones', () => ({
+  useMilestonesForCountry: () => ({ data: [] }),
+  useMilestonesForCity: () => ({ data: [] }),
 }));
 
 import { CityRightsTab } from '../CityRightsTab';
@@ -50,8 +54,56 @@ describe('CityRightsTab', () => {
   });
 
   it('renders city safety notes + jurisdiction info', () => {
-    render(inRouter(<CityRightsTab city={city} fullCountry={{ id: 'co-de' } as never} countryLoading={false} />));
+    render(
+      inRouter(
+        <CityRightsTab city={city} fullCountry={{ id: 'co-de' } as never} countryLoading={false} />,
+      ),
+    );
     expect(screen.getByText(/Generally very safe/i)).toBeInTheDocument();
     expect(screen.getByTestId('rights')).toBeInTheDocument();
+  });
+
+  it('renders ONE legal record, not the two duplicated blocks it replaced', () => {
+    // `CityMilestones` was a copy of `CountryLegalHistory` and said so in a
+    // comment; both stacked here, and neither knew about the adoption years
+    // the rights card above was already printing.
+    render(
+      inRouter(
+        <CityRightsTab
+          city={city}
+          fullCountry={
+            {
+              id: 'co-de',
+              name: 'Germany',
+              lgbti_same_sex_unions: JSON.stringify({ marriage_since: '2017' }),
+            } as never
+          }
+          countryLoading={false}
+        />,
+      ),
+    );
+    expect(screen.getAllByRole('heading', { name: /legal record/i })).toHaveLength(1);
+    expect(screen.queryByText(/Queer history in/i)).not.toBeInTheDocument();
+  });
+
+  it('shows an adoption year even when the country has no milestone rows', () => {
+    // The old blocks read milestones only, so a country whose whole legal
+    // record lives on the rights columns rendered nothing at all.
+    render(
+      inRouter(
+        <CityRightsTab
+          city={city}
+          fullCountry={
+            {
+              id: 'co-de',
+              name: 'Germany',
+              lgbti_same_sex_unions: JSON.stringify({ marriage_since: '2017' }),
+            } as never
+          }
+          countryLoading={false}
+        />,
+      ),
+    );
+    expect(screen.getByText('2017')).toBeInTheDocument();
   });
 });

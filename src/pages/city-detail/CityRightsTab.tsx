@@ -3,9 +3,7 @@ import { Trans, useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { InlineLoading } from '@/components/ui/loading';
 import LGBTJurisdictionInfo from '@/components/country/LGBTJurisdictionInfo';
-import { CountryLegalHistory } from '@/components/country/CountryLegalHistory';
-import { MilestoneRow } from '@/components/milestones/MilestoneRow';
-import { useMilestonesForCity } from '@/hooks/useMilestones';
+import { CountryLegalLine } from '@/components/rights/CountryLegalLine';
 import type { CityRelation, CountryRelation } from './types';
 
 export interface CityRightsTabProps {
@@ -64,8 +62,21 @@ export function CityRightsTab({ city, fullCountry, countryLoading }: CityRightsT
       ) : fullCountry ? (
         <div className="flex flex-col gap-6">
           <LGBTJurisdictionInfo country={fullCountry} />
-          <CityMilestones cityId={city.id} cityName={city.name} />
-          <CountryLegalHistory countryId={fullCountry.id} countryName={fullCountry.name} />
+          {/* One line, both scopes. This used to be two stacked blocks —
+              `CityMilestones` and `CountryLegalHistory` — the first of which
+              was a copy of the second, and neither knew about the adoption
+              years the card above was already printing as grey sub-lines. */}
+          <div>
+            <h3 className="mb-4 text-2xs uppercase tracking-label text-muted-foreground">
+              {t('city.rights.legalRecord', 'Legal record')}
+            </h3>
+            <CountryLegalLine
+              country={fullCountry}
+              countryId={fullCountry.id}
+              countryName={fullCountry.name}
+              cityId={city.id}
+            />
+          </div>
         </div>
       ) : (
         <p className="py-8 text-center text-muted-foreground">
@@ -73,26 +84,5 @@ export function CityRightsTab({ city, fullCountry, countryLoading }: CityRightsT
         </p>
       )}
     </div>
-  );
-}
-
-/** Milestones that happened in this city itself (via milestones.city_id). Self-hides. */
-function CityMilestones({ cityId, cityName }: { cityId: string; cityName: string }) {
-  const { t } = useTranslation();
-  const { data } = useMilestonesForCity(cityId);
-  if (!data?.length) return null;
-  return (
-    // Matches CountryLegalHistory, which this block is a copy of minus the
-    // see-all link.
-    <section className="bg-muted rounded-element p-4">
-      <h3 className="mb-4 text-2xs uppercase tracking-label text-muted-foreground">
-        {t('milestones.city.title', 'Queer history in {{city}}', { city: cityName })}
-      </h3>
-      <div className="space-y-4">
-        {data.map((m) => (
-          <MilestoneRow key={m.id} milestone={m} density="compact" />
-        ))}
-      </div>
-    </section>
   );
 }

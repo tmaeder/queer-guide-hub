@@ -44,7 +44,15 @@ export function useGuideReadTracker(guideId: string | undefined): void {
       if (!error) startedRef.current = true;
     })();
 
-    const onScroll = () => {
+    // The measurement is rAF-gated even though the DB write is already
+    // throttled to 4s: reading scrollHeight/clientHeight forces layout, and on
+    // the raw scroll event that ran once per event rather than once per painted
+    // frame. Coalescing costs nothing here — the reader's furthest point is a
+    // max over samples, so sampling per frame reaches the same value.
+    let frame = 0;
+
+    const measure = () => {
+      frame = 0;
       if (!startedRef.current || completedRef.current) return;
       const doc = document.documentElement;
       const max = Math.max(1, doc.scrollHeight - doc.clientHeight);
@@ -72,10 +80,15 @@ export function useGuideReadTracker(guideId: string | undefined): void {
         .is('completed_at', null);
     };
 
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(measure);
+    };
+
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => {
       cancelled = true;
       window.removeEventListener('scroll', onScroll);
+      if (frame) cancelAnimationFrame(frame);
     };
   }, [guideId, user]);
 }
