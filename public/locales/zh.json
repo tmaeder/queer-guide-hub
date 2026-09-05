@@ -3438,6 +3438,8 @@
     "bodyFallback": "完整报道请见原始来源。",
     "originallyPublishedBy": "最初由 {{source}} 发布。",
     "viewOriginal": "查看原始报道",
+    "continueAtSource": "在 {{source}} 继续阅读全文",
+    "continueAtSourceGeneric": "在原始来源继续阅读",
     "integritySatire": "已标记为讽刺——并非字面报道。",
     "integrityAdvertorial": "赞助/软文内容。",
     "integritySentimentConflict": "各来源对语气存在分歧——请谨慎阅读。",
@@ -4079,7 +4081,9 @@
       "no": "[ZH] No",
       "varies": "[ZH] Varies",
       "unclear": "[ZH] Unclear",
-      "notApplicable": "[ZH] Not applicable"
+      "notApplicable": "[ZH] Not applicable",
+      "required": "[ZH] Required",
+      "notRequired": "[ZH] Not required"
     },
     "attr": {
       "so": {
@@ -4497,7 +4501,8 @@
       "spansAllRights": "这涵盖整个法律领域，而非单一法律。我们逐国记录 18 项独立权利。",
       "seeAllRights": "查看各国的 18 项权利",
       "seeAllInSearch": "[ZH] See all in search",
-      "shopAll": "查看全部"
+      "shopAll": "查看全部",
+      "figure": "[ZH] Diagram"
     },
     "flagWall": {
       "eyebrow": "符号",
@@ -4510,6 +4515,115 @@
     "fromGlossary": {
       "title": "[ZH] From the glossary",
       "all": "[ZH] All terms"
+    },
+    "figures": {
+      "eyebrow": "[ZH] Diagram",
+      "bandEyebrow": "[ZH] Drawn",
+      "bandTitle": "[ZH] The diagram",
+      "bandTitlePlural": "[ZH] Diagrams",
+      "loading": "[ZH] Drawing the diagram",
+      "readAsTable": "[ZH] Read as a table",
+      "hideTable": "[ZH] Hide the table",
+      "readMore": "[ZH] Read the entry",
+      "sources": "[ZH] Drawn from",
+      "checkedOn": "[ZH] Claims last checked against these sources on {{date}}.",
+      "sensitiveBody": "[ZH] This diagram covers a subject some readers find difficult. It is a definition, not advice.",
+      "adultBody": "[ZH] This diagram is for adults.",
+      "adultReveal": "[ZH] 18+ · Show diagram",
+      "table": {
+        "line": "[ZH] Line",
+        "stops": "[ZH] Stops",
+        "runsTo": "[ZH] Runs to",
+        "stop": "[ZH] Stop",
+        "kind": "[ZH] Kind",
+        "detail": "[ZH] Detail",
+        "leadsTo": "[ZH] Leads to"
+      },
+      "fourLines": {
+        "title": "[ZH] Four lines",
+        "caption": "[ZH] Gender identity, gender expression, sex assigned at birth and attraction are four separate lines. Pick a stop on each. Nothing is stored or sent.",
+        "summary": "[ZH] A transit map with four lines: gender identity drawn as two independent services on one corridor, gender expression, sex assigned at birth as a terminus that runs on to nothing, and attraction. They meet at a single interchange.",
+        "readout": "[ZH] Where you are on each line",
+        "tableCaption": "[ZH] Every line on the map and the stops it carries",
+        "corridor": {
+          "identity": "[ZH] Gender identity: two independent services"
+        },
+        "axis": {
+          "identityWoman": "[ZH] How much woman",
+          "identityMan": "[ZH] How much man",
+          "expression": "[ZH] Gender expression",
+          "assigned": "[ZH] Sex assigned at birth",
+          "attraction": "[ZH] Attraction"
+        },
+        "help": {
+          "identityWoman": "[ZH] Who you know yourself to be. This runs independently of the line below it. You can be a lot of both, a little of both, or neither.",
+          "identityMan": "[ZH] The second rail on the same corridor. Answering this one does not subtract from the one above.",
+          "expression": "[ZH] How you present: clothes, voice, hair, the way you carry yourself. Stops, not a scale. Nothing here is halfway between two others.",
+          "assigned": "[ZH] What someone wrote down when you were born. It is a starting point on the record, which is why this line stops instead of running on to the others.",
+          "attraction": "[ZH] Who you are drawn to. Who you are and who you are drawn to are separate lines. That is the whole point of the map."
+        },
+        "amount": {
+          "notAtAll": "[ZH] Not at all",
+          "aLittle": "[ZH] A little",
+          "aLot": "[ZH] A lot",
+          "entirely": "[ZH] Entirely",
+          "ratherNot": "[ZH] Rather not say"
+        },
+        "expression": {
+          "feminine": "[ZH] Feminine",
+          "androgynous": "[ZH] Androgynous",
+          "masculine": "[ZH] Masculine",
+          "changes": "[ZH] It changes"
+        },
+        "assigned": {
+          "female": "[ZH] Female",
+          "male": "[ZH] Male",
+          "intersex": "[ZH] Intersex variation"
+        },
+        "attraction": {
+          "women": "[ZH] Women",
+          "men": "[ZH] Men",
+          "moreThanOne": "[ZH] More than one gender",
+          "regardless": "[ZH] Regardless of gender",
+          "noOne": "[ZH] No one, or rarely"
+        }
+      },
+      "consentFlow": {
+        "title": "[ZH] The line that stops",
+        "caption": "[ZH] Consent as a route with signals, one speed restriction and no final destination. It loops back to the check-in and stays there. Not a legal test; the law differs by country.",
+        "summary": "[ZH] A branching line. Asking without an answer, and anything that is not a clear yes, end at buffer stops. Capacity is a hatched speed-restriction section rather than a yes/no signal. The line does not terminate in approval. It loops back to a check-in signal that can be answered again at any time.",
+        "tableCaption": "[ZH] Every stop on the line, and where it leads",
+        "groupLabel": "[ZH] Stops on the line",
+        "hint": "[ZH] Select any stop to light up the route that reaches it.",
+        "node": {
+          "start": "[ZH] You want to do something with someone",
+          "asked": "[ZH] Have you asked?",
+          "notAsked": "[ZH] Guessing is not consent",
+          "clearYes": "[ZH] Was the answer a clear yes?",
+          "notAYes": "[ZH] No, maybe, or nothing",
+          "capacity": "[ZH] Speed restriction: can everyone actually decide?",
+          "checkin": "[ZH] Still yes, right now?",
+          "stopNow": "[ZH] Stop",
+          "go": "[ZH] Clear to proceed, for now"
+        },
+        "note": {
+          "asked": "[ZH] Out loud, or in a way you have both already agreed reads as asking.",
+          "notAsked": "[ZH] Not objecting is not agreeing. The line does not start here.",
+          "clearYes": "[ZH] Theirs, not one you talked them into.",
+          "notAYes": "[ZH] Anything that is not a yes is a no. This is the end of the line.",
+          "capacity": "[ZH] Drink, drugs, exhaustion, being half asleep. Not a switch. If you cannot tell, you do not have an answer yet.",
+          "checkin": "[ZH] The signal you come back to. Agreeing earlier is not agreeing now.",
+          "stopNow": "[ZH] Anyone can stop anything at any point, for no reason. Then look after each other.",
+          "go": "[ZH] And back to the check-in, which is why this line is a loop."
+        },
+        "edge": {
+          "no": "[ZH] No",
+          "yes": "[ZH] Yes",
+          "notAYes": "[ZH] Not a yes",
+          "noOrUnsure": "[ZH] No, or unsure",
+          "again": "[ZH] And again, any time"
+        }
+      }
     }
   },
   "village": {

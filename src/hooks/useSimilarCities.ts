@@ -10,6 +10,7 @@ export async function fetchSimilarCitiesPool(
   const { data } = await supabase
     .from('cities')
     .select('id, name, slug, population, country_id, countries:country_id(name, equality_score)')
+    .is('duplicate_of_id', null)
     .neq('id', cityId)
     .gte('population', 100000)
     .order('population', { ascending: false })
@@ -24,6 +25,7 @@ export async function fetchSameCountryCities(
   const { data } = await supabase
     .from('cities')
     .select('id, name, slug, population, country_id, countries:country_id(name, equality_score)')
+    .is('duplicate_of_id', null)
     .eq('country_id', countryId)
     .neq('id', cityId)
     .gte('population', 50000)

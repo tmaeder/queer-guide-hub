@@ -56,6 +56,10 @@ export interface FlowGraphProps extends InfographicViewProps {
   hintLabel: string;
 }
 
+/** How far above a terminal node's centre the buffer stop sits, in viewBox
+ *  units, so it clears the opaque plate drawn on that centre. */
+const BUFFER_STOP_RISE = 22;
+
 /** Risk wash for an outcome plate. Colour is never the only channel — the
  *  plate carries the tier's icon too, and every outcome is in the data table. */
 function OutcomePlate({ tier, children }: { tier: RiskTier; children: React.ReactNode }) {
@@ -104,7 +108,8 @@ export function FlowGraph({
   const ordered = useMemo(() => flowOrder(layout.nodes, rtl), [layout.nodes, rtl]);
 
   return (
-    <div className="relative w-full md:aspect-[var(--flow-aspect)]"
+    <div
+      className="relative w-full md:aspect-[var(--flow-aspect)]"
       style={{ '--flow-aspect': `${viewBox.w} / ${viewBox.h}` } as React.CSSProperties}
     >
       {/* The drawing. Hidden below `md`, where the stacked list carries the
@@ -150,17 +155,22 @@ export function FlowGraph({
             );
           })}
 
-          {/* Buffer stops: a bar across the line at every terminal. This is how
-              a map says "the line ends here" without spending a colour. */}
+          {/* Buffer stops: a bar across the line at every terminal — how a map
+              says "the line ends here" without spending a colour.
+
+              Offset ABOVE the node centre, because the plate is an opaque HTML
+              element centred on that same point and would hide the bar
+              completely. `BUFFER_STOP_RISE` clears a typical plate's half
+              height, so the bar sits where the track disappears behind it. */}
           {layout.nodes
             .filter((n) => n.kind === 'outcome')
             .map((n) => (
               <line
                 key={`stop-${n.id}`}
-                x1={n.center.x - 16}
-                y1={n.center.y}
-                x2={n.center.x + 16}
-                y2={n.center.y}
+                x1={n.center.x - 15}
+                y1={n.center.y - BUFFER_STOP_RISE}
+                x2={n.center.x + 15}
+                y2={n.center.y - BUFFER_STOP_RISE}
                 stroke="hsl(var(--foreground))"
                 strokeWidth={7}
                 vectorEffect="non-scaling-stroke"

@@ -1647,6 +1647,35 @@ h2,
   );
 }
 
+/* ── Hatched ink: "we hold no answer" ──────────────────────────────────
+   Texture, not decoration. On /rights/trans the recognition band segments
+   the world's population across seven regimes, and two of them mean the
+   source gives no usable answer. Seven steps of one ink is past what tone
+   alone resolves, so those two differ by SHAPE — otherwise "unrecorded"
+   reads as a rung on the ladder between "possible" and "impossible", which
+   is exactly the inference the page exists to prevent (WCAG 1.4.1).
+
+   Lives in CSS for the same reason .intersection-gradient does: the JSX
+   gradient ban is scoped to `**​/*.{ts,tsx}` and never parses this file.
+   (That glob carries a zero-width space after the `**`, the same trick the
+   ESLint note at ~L1482 uses: written plainly it contains a close-comment
+   sequence, which ends the comment early, leaves the rest as stray
+   declarations, and makes Tailwind reject the whole stylesheet — the site
+   then renders blank rather than unstyled.) */
+.hatch-ink {
+  /* The solid base is load-bearing, not a fallback. Stripes over a
+     transparent ground leave the segment's own label composited against
+     whatever is behind it — measured at 1.11:1 in light mode, i.e. invisible.
+     `--muted` is a real surface in both themes, so the label has a defined
+     ground and the stripes only texture it. */
+  background-color: hsl(var(--muted));
+  background-image: repeating-linear-gradient(
+    45deg,
+    hsl(var(--foreground) / 0.35) 0 1px,
+    transparent 1px 5px
+  );
+}
+
 /* ── Intent map: a station lights its own line ─────────────────────────
    The station plates are HTML siblings of the track <svg>, not descendants
    of it, so `group-hover` cannot reach across the boundary. `:has()` on the

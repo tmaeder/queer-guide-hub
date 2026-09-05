@@ -1,7 +1,15 @@
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { TgeuSourceLine } from '@/components/rights/SourceLine';
-import { readTransViolence, TGEU_TMM_URL, TMM_REPORTING_CAVEAT } from '@/lib/rights/transSafety';
+import {
+  readAffirmation,
+  readMarker,
+  readRequirement,
+  readTransViolence,
+  requiresIt,
+  TGEU_TMM_URL,
+  TMM_REPORTING_CAVEAT,
+} from '@/lib/rights/transSafety';
 
 /**
  * The trans-specific facts for one country, under Rights & safety.
@@ -21,12 +29,6 @@ import { readTransViolence, TGEU_TMM_URL, TMM_REPORTING_CAVEAT } from '@/lib/rig
  * because the countries with the highest counts are mostly the legally
  * progressive ones and colouring them as danger inverts the truth.
  */
-
-const YES = /^yes$/i;
-
-function isYes(v: unknown): boolean {
-  return typeof v === 'string' && YES.test(v.trim());
-}
 
 function Row({ label, value, note }: { label: string; value: string; note?: string }) {
   return (
@@ -53,9 +55,110 @@ export function TransSafetyBand({ country }: { country: Record<string, unknown> 
   // src/pages/rights/TransRights.tsx for why — so it cannot gate this band.)
   if (!hasLgr && violence.state !== 'documented') return null;
 
-  const marker = String(lgr.gender_marker ?? '').trim();
+  /**
+   * `gender_marker` is the one row still rendered as its raw source string, and
+   * that is deliberate — ILGA's own words carry nuance no mapping preserves.
+   * "Not Possible (exceptions documented)" (4 countries) says something real
+   * that `readMarker`'s `not_possible` throws away, so this row is NOT routed
+   * through a label function the way self_id and the two requirements are.
+   *
+   * The one value that must not reach the page is the unrecorded SENTINEL.
+   * Measured on prod 2026-09-04, "No data" is the marker on 69 of the 244
+   * countries carrying a non-empty `lgbti_gender_recognition` — a third of the
+   * corpus rendering "Gender marker change: No data" as though the sentinel
+   * were a finding. Found on /country/afghanistan, where every other row had
+   * correctly hidden itself and this one was left announcing the absence.
+   *
+   * A blank hides; a stamp reads as content. Every sibling row in this band
+   * already hides when nothing is recorded, so this is consistency, not a new
+   * rule — and an empty string was ALREADY hidden here, so the leak was only
+   * ever the literal sentinel.
+   */
+  const rawMarker = String(lgr.gender_marker ?? '').trim();
+  const marker = readMarker(lgr.gender_marker) === 'unrecorded' ? '' : rawMarker;
   const yes = t('rights.trans.yes', 'Yes');
   const no = t('rights.trans.no', 'No');
+
+  /**
+   * ILGA answers these two with Required / Not required / N/A / Unclear /
+   * Varies — never Yes / No. Rendering a bare yes/no here printed "Surgery
+   * required first: No" on Japan, Iran, Turkey and Romania until 2026-09-01:
+   * an affirmative false negative on the exact fact this band exists to state.
+   *
+   * "N/A" is not a "No" either. It means the country has no marker-change
+   * procedure for a condition to attach to, which is worse news than "not
+   * required", not better — so it gets its own words.
+   */
+  const requirementLabel = (raw: unknown): string | null => {
+    switch (readRequirement(raw)) {
+      case 'required':
+        return yes;
+      case 'not_required':
+        return no;
+      case 'inapplicable':
+        return t('rights.trans.row.noProcedure', 'No procedure exists');
+      case 'indeterminate':
+        return t('rights.trans.row.unclear', 'Unclear');
+      default:
+        return null;
+    }
+  };
+
+  /**
+   * The same defect as `requirementLabel`, one row up and left standing when
+   * that one was fixed: `self_id` was rendered `isAffirmed(...) ? yes : no`,
+   * so every reading that is not a bare "Yes" printed "No".
+   *
+   * ILGA answers this one with No / No data / Yes / Varies / Unclear / N/A /
+   * "Yes (for NB marker only)". Measured on prod, 2026-09-03, over the 244
+   * countries carrying a non-empty `lgbti_gender_recognition`:
+   *
+   *   No 138 · No data 70 · Yes 22 · Varies 7 · Unclear 4 · N/A 2 · Yes(NB) 1
+   *
+   * So 83 of 244 — every `No data`, `Varies`, `Unclear` and `N/A` — printed
+   * "By self-determination: No" for a fact nobody recorded. On a trans-rights
+   * page that asymmetry is the whole point: telling a reader a country refuses
+   * self-determination when the truth is "unrecorded" is an affirmative false
+   * negative, and it is worse than saying nothing.
+   *
+   * `N/A` gets "No procedure exists" for the same reason it does above, and
+   * the claim was re-measured rather than inherited: both `N/A` rows (Hungary,
+   * Qatar) carry `gender_marker = "Not Possible"` and
+   * `established_procedure = "No"` — 2 of 2. There is no procedure for
+   * self-declaration to be part of.
+   *
+   * `unrecorded` returns null and the row hides, matching `requirementLabel`
+   * and this band's "presence of a recorded value is the only signal" contract.
+   * That is a deliberate behaviour change: the row used to render for the 70
+   * `No data` countries, because `lgr.self_id != null` is true of the STRING
+   * "No data".
+   */
+  const affirmationLabel = (raw: unknown): string | null => {
+    switch (readAffirmation(raw)) {
+      case 'yes':
+        return yes;
+      // Nepal, and only Nepal. Not general self-determination, but rendering it
+      // as a flat "No" erases a provision that does exist — so the source value
+      // is shown verbatim.
+      case 'yes_qualified':
+        return String(raw);
+      case 'no':
+        return no;
+      case 'inapplicable':
+        return t('rights.trans.row.noProcedure', 'No procedure exists');
+      // Both `Varies` and `Unclear` land here, following `readAffirmation`.
+      // They are not the same thing — `Varies` is how ILGA codes a federation
+      // whose sub-jurisdictions disagree (Australia, Canada, Mexico, US), which
+      // carries more information than doubt does — but separating them means a
+      // new `AffirmationReading` state, which moves `affirmationPolarity` and
+      // therefore trans verdicts. That is a vocabulary decision, not a
+      // rendering one, and it does not belong in this fix.
+      case 'indeterminate':
+        return t('rights.trans.row.unclear', 'Unclear');
+      default:
+        return null;
+    }
+  };
 
   return (
     <section
@@ -78,19 +181,19 @@ export function TransSafetyBand({ country }: { country: Record<string, unknown> 
           {marker ? (
             <Row label={t('rights.trans.row.marker', 'Gender marker change')} value={marker} />
           ) : null}
-          {lgr.self_id != null ? (
+          {affirmationLabel(lgr.self_id) ? (
             <Row
               label={t('rights.trans.row.selfId', 'By self-determination')}
-              value={isYes(lgr.self_id) ? yes : no}
+              value={affirmationLabel(lgr.self_id) as string}
               note={t('rights.trans.row.selfIdNote', 'No medical or judicial gatekeeper.')}
             />
           ) : null}
-          {lgr.requires_surgery != null ? (
+          {requirementLabel(lgr.requires_surgery) ? (
             <Row
               label={t('rights.trans.row.surgery', 'Surgery required first')}
-              value={isYes(lgr.requires_surgery) ? yes : no}
+              value={requirementLabel(lgr.requires_surgery) as string}
               note={
-                isYes(lgr.requires_surgery)
+                requiresIt(lgr.requires_surgery)
                   ? t(
                       'rights.trans.row.surgeryNote',
                       'A sterilisation requirement. This caps the rights verdict for trans people regardless of other protections.',
@@ -99,10 +202,10 @@ export function TransSafetyBand({ country }: { country: Record<string, unknown> 
               }
             />
           ) : null}
-          {lgr.requires_diagnosis != null ? (
+          {requirementLabel(lgr.requires_diagnosis) ? (
             <Row
               label={t('rights.trans.row.diagnosis', 'Psychiatric diagnosis required')}
-              value={isYes(lgr.requires_diagnosis) ? yes : no}
+              value={requirementLabel(lgr.requires_diagnosis) as string}
             />
           ) : null}
         </ul>
