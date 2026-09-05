@@ -284,6 +284,80 @@ if (!hygieneRes.ok) {
   }
 }
 
+// 4b. Event dedup health (2027-05-02). There was no check here at all: the dedup
+//     section above is city-only, so the event auto arms matched ZERO pairs for
+//     eleven days — nightly sweep green, consecutive_failures=0, 645 merges then
+//     nothing — while 84 pairs aged in the review queue and nothing said so.
+//
+//     Read the boundary honestly. A blocked engine is detectable and hard-fails; a
+//     BLIND one (arms mis-specified, would_merge=0 because nothing matches) is not,
+//     and the first draft of this check would have missed the incident for exactly
+//     that reason. The rotting-backlog warning is the part that would have surfaced
+//     it, and it is a warning because a deep queue mid-import is legitimate.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/event_dup_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    console.warn(`⚠ event_dup_signals → HTTP ${res.status} (RPC missing? migration 20270822093816)`)
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else {
+    const ev = (await res.json()) ?? {}
+    const wouldMerge = ev.would_merge
+    const merges7 = Number(ev.merges_last_7d ?? 0)
+    const openPairs = Number(ev.open_pairs ?? 0)
+    const oldestH = Number(ev.oldest_open_pair_hours ?? 0)
+
+    // "Could not look" must never read as "looked and found none".
+    if (ev.dry_run_error) {
+      console.error(`✗ event dedup dry run failed: ${ev.dry_run_error}`)
+      console.error('  run_dedup_truth_sweep(event, dry_run) is the probe; it is broken, so nothing below was measured.')
+      FAILED = true
+    } else if (wouldMerge === null || wouldMerge === undefined) {
+      console.error('✗ event_dup_signals returned no would_merge and no error — the probe is broken')
+      FAILED = true
+    } else if (Number(wouldMerge) > 0 && merges7 === 0) {
+      console.error(`✗ Event dedup sees ${wouldMerge} auto-eligible pair(s) and has merged none in 7 days`)
+      console.error('  The sweep is running but not merging: check admin_automations dedup_truth_sweep')
+      console.error('  conditions.mode is "full" (queue_only merges nothing), and that merge_entities')
+      console.error('  is not throwing — the loop counts a failed merge as "skipped", silently.')
+      FAILED = true
+    }
+
+    // An auto-eligible pair sitting in the review queue means the merge branch never
+    // reached it. In mode=full this should be structurally impossible.
+    const stuckAuto = Number(ev.open_auto_eligible ?? 0)
+    if (stuckAuto > 0) {
+      console.error(`✗ ${stuckAuto} auto-eligible event pair(s) stuck in dedup_review_queue`)
+      console.error('  Either the merge cap is biting every run, or mode is not "full".')
+      FAILED = true
+    }
+
+    // 20270822093614 retired the 06:15 legacy merger because it honours no human
+    // rejection. If it is back, a rejected pair can be merged anyway.
+    if (ev.legacy_sweep_scheduled === true) {
+      console.error('✗ cron job event_dedup_sweep is scheduled again — it was retired in 20270822093614')
+      console.error('  It merges without a review queue and with NO memory of rejected pairs.')
+      console.error('  Disable the admin_automations row first, then unschedule.')
+      FAILED = true
+    }
+
+    // Warning: the backlog. This is the signal that would have caught the original
+    // incident, and it needs a human rather than a red build.
+    if (openPairs > 60 && oldestH > 336) {
+      console.warn(`⚠ Event dedup review backlog: ${openPairs} open pairs, oldest ${oldestH}h (>14d)`)
+      console.warn('  Nobody is draining /admin/inbox?queue=dedup-review, or the arms are mis-specified')
+      console.warn('  and are queueing pairs that should auto-merge. Read a sample before tuning anything.')
+    }
+    console.log(
+      `✓ Event dup signals: would_merge=${wouldMerge}, would_queue=${ev.would_queue}, ` +
+      `merges_7d=${merges7}, open=${openPairs} (oldest ${oldestH}h)`,
+    )
+  }
+}
+
 // 5a. Wrong-entity Wikidata links on the glossary (2026-08-29). tag-enrichment-sweep
 //     resolved a tag's QID by fetching the Wikipedia summary of its RAW NAME and
 //     adopting whatever the redirect served — `golden-shower` → Cassia fistula,
@@ -931,6 +1005,124 @@ substanceFreshness: {
     if (open.length === 0) console.log('✓ No circuit breakers open')
     else if (undocumented.length === 0) {
       console.log(`✓ ${open.length} breaker(s) open, all with a recorded disposition`)
+    }
+  }
+}
+
+// 11. Geographic data quality (2026-09-05)
+//
+// Before this section there was no geographic check in CI at all —
+// pipeline_hygiene_stats() had ten keys and none were geo, and release_gate_checks()
+// had none either. Every geo signal lived on an admin page nobody had to open, which
+// is how a Key West centroid sat 151 km out in the Gulf of Mexico, propagated to 48
+// events and 22 venues by run_event_geo_fill, and was never reported.
+//
+// AN ABSENT SENTINEL AND A CLEAN ONE MUST NOT LOOK ALIKE, and they fail differently
+// here on purpose:
+//   - RPC missing entirely  -> ⚠, named as "not deployed". Legitimate while a
+//     migration is in flight; db push has been jammed on main and hard-failing here
+//     would red the nightly for reasons unrelated to geo.
+//   - RPC present, authority EMPTY -> ✗. A containment check over zero polygons
+//     returns zero violations, which is indistinguishable from a clean corpus. This
+//     is the state the whole section exists to make impossible: geo_boundaries was
+//     created with a loader and helper functions and sat at 0 rows.
+//
+// Baselines may only ever SHRINK. If a number below is beaten, lower it in the same
+// PR — that is the ratchet.
+const GEO_BASELINE = {
+  // Measured on prod 2026-09-05, stable across two consecutive sweeps:
+  // 333 venue + 17 event + 2 org country mismatches, 51 offshore, 6 undecidable.
+  //
+  // An earlier reading of 450 was WRONG and the reason is worth keeping: the
+  // first boundary load derived only 9 geo_country_parent rows and zero from the
+  // `sovereign` arm, so 41 territory venues (Gibraltar filed GI resolving into
+  // GB's polygon, Hong Kong into CN, Puerto Rico and Guam into US, Åland into FI)
+  // counted as mismatches. A reload populated all 41 sovereign mappings and they
+  // correctly stopped being findings. If this number jumps by ~40, suspect
+  // geo_country_parent before suspecting the corpus.
+  //
+  // 409 -> 364 (forward_repair fixed 45 coordinates) -> 334 (30 venues relinked
+  // to the city their coordinate is actually in) -> 296 (a calibrated 2 km
+  // border tolerance dropped 38 rows that were never defects) -> 212 (84
+  // coordinates restored from the venue_sources payload that produced the row)
+  // -> 82 (10 name-geocoded, 120 uncorroborated coordinates RETRACTED to null
+  // rather than guessed).
+  //
+  // The 82 are a floor, not a backlog to grind down: 50 offshore, 6 in disputed
+  // features the validator declines to adjudicate, and 24 border-zone rows where
+  // the honest answer needs a human — is FKK-Strand Hard in St. Gallen or in
+  // Hard, Austria? Driving this toward zero means loosening a rule, and the
+  // rules are what stopped a Polish sauna being moved to Ukraine.
+  containment_total: 82,
+  city_coord_defects_with_content: 7,
+  queue_depth_warn: 5000,
+  findings_max_age_hours: 48,      // sweep is nightly at 03:55; two misses is stale
+}
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/geo_hygiene_stats`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    console.warn(`⚠ geo_hygiene_stats → HTTP ${res.status} — geo sentinel NOT DEPLOYED (migration 20270816143714). This is absence of a check, not absence of defects.`)
+  } else {
+    const geo = await res.json()
+
+    const rows = geo.boundary_rows ?? 0
+    const cells = geo.boundary_cells ?? 0
+    if (rows === 0 || cells === 0) {
+      console.error(`✗ Geo authority is EMPTY (geo_boundaries=${rows}, geo_boundary_cells=${cells}) — every containment figure below is vacuous. Run scripts/data-quality/load-geo-boundaries.mjs, then select refresh_geo_boundary_cells().`)
+      FAILED = true
+    } else {
+      console.log(`✓ Geo authority loaded: ${rows} boundary rows, ${cells} cells, ${geo.boundary_iso_codes} ISO codes`)
+
+      const total = geo.containment_total ?? 0
+      const byClass = geo.containment ?? {}
+      if (total > GEO_BASELINE.containment_total) {
+        console.error(`✗ Coordinate/country contradictions at ${total}, above the ${GEO_BASELINE.containment_total} baseline: ${JSON.stringify(byClass)}`)
+        FAILED = true
+      } else {
+        if (total < GEO_BASELINE.containment_total) {
+          console.log(`✓ Containment findings ${total}, below the ${GEO_BASELINE.containment_total} baseline — lower GEO_BASELINE.containment_total to ${total}`)
+        } else {
+          console.log(`✓ Containment findings at baseline (${total})`)
+        }
+      }
+
+      const cityDefects = geo.city_coord_defects_with_content ?? 0
+      if (cityDefects > GEO_BASELINE.city_coord_defects_with_content) {
+        console.error(`✗ ${cityDefects} cities carry a wrong coordinate AND have venues/events hanging off it (baseline ${GEO_BASELINE.city_coord_defects_with_content}). A bad city centroid propagates to every entity linked to it.`)
+        FAILED = true
+      } else {
+        console.log(`✓ City coordinate defects with content: ${cityDefects}`)
+      }
+
+      // Staleness. A sweep that stopped running leaves yesterday's counts looking
+      // healthy forever — the same failure mode as the search reindex drain.
+      const age = geo.findings_age_hours
+      if (age === null || age === undefined) {
+        console.error('✗ geo_containment_findings is empty — the sweep has never run, so the counts above measure nothing')
+        FAILED = true
+      } else if (age > GEO_BASELINE.findings_max_age_hours) {
+        console.error(`✗ Geo findings are ${age}h old (limit ${GEO_BASELINE.findings_max_age_hours}h) — geo_containment_sweep has stopped`)
+        FAILED = true
+      }
+
+      const q = geo.address_queue ?? {}
+      if ((q.parked ?? 0) > 0) {
+        console.error(`✗ ${q.parked} geo_address_queue rows parked at 4 failed attempts — inspect geo_address_queue.last_error`)
+        FAILED = true
+      }
+      if ((q.depth ?? 0) > GEO_BASELINE.queue_depth_warn) {
+        console.warn(`⚠ geo_address_queue depth ${q.depth} (oldest ${q.oldest_hours}h) — the */5 drain moves 25 rows a run`)
+      }
+
+      const integrity = geo.integrity_violations ?? {}
+      const integrityTotal = Object.values(integrity).reduce((a, b) => a + b, 0)
+      if (integrityTotal > 0) {
+        console.warn(`⚠ ${integrityTotal} geo_integrity_violations (city_id's country vs the row's own country_id): ${JSON.stringify(integrity)}`)
+      }
     }
   }
 }
