@@ -969,8 +969,15 @@ const GEO_BASELINE = {
   // 450 -> 409 (geo_country_parent completed) -> 364 (forward_repair fixed 45
   // coordinates) -> 334 (30 venues relinked) -> 296 (border tolerance dropped 38
   // rows that were never defects) -> 212 (84 coordinates restored from the
-  // venue_sources payload that produced the row).
-  containment_total: 212,
+  // venue_sources payload) -> 82 (10 name-geocoded, 120 uncorroborated
+  // coordinates RETRACTED to null rather than guessed).
+  //
+  // The 82 are a floor, not a backlog to grind down: 50 offshore rows, 6 in
+  // disputed features the validator declines to adjudicate, 15 events and 9
+  // venues in border zones where the honest answer needs a human. Driving this
+  // toward zero means loosening a rule, and the rules are what stopped a Polish
+  // sauna being moved to Ukraine.
+  containment_total: 82,
   city_coord_defects_with_content: 7,
   queue_depth_warn: 5000,
   findings_max_age_hours: 48,      // sweep is nightly at 03:55; two misses is stale
