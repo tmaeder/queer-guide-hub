@@ -60,7 +60,7 @@ set action = jsonb_set(
 $cmd$::text)
     ),
     description = coalesce(description, '')
-      || ' [20270831151903: batch 50/5 -> 20/3. The original 50/5 (20260619150100) exceeded the'
+      || ' [20280417113817: batch 50/5 -> 20/3. The original 50/5 (20260619150100) exceeded the'
       || ' edge worker''s compute budget and returned HTTP 546 WORKER_RESOURCE_LIMIT on roughly'
       || ' one run in three since June 2026; three consecutive failures auto-paused the job on'
       || ' 2026-09-03. Observed: 18 items completes, 50 does not.]',
