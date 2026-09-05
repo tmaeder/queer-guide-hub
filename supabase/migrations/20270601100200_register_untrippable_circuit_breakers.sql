@@ -102,14 +102,25 @@ begin
     raise exception 'breakers still unregistered: %', v_missing;
   end if;
 
-  -- The tuning this migration must NOT have touched. llm.nvidia is the recorded
-  -- casualty of the ON CONFLICT DO UPDATE registrar; if it reads 5/120 here, this
-  -- migration used the wrong one.
+  -- NOTICE, not EXCEPTION -- and the demotion is not caution, it is that the
+  -- assertion cannot mean what it says. `llm.nvidia` is NOT in this migration's
+  -- VALUES list, and the INSERT is `on conflict (api_name) do nothing`, so there
+  -- is no conflict clause by which this file could reach that row: the check can
+  -- never observe its own effect. What it actually asserts is a LITERAL 3/900
+  -- about a row production runtime owns and has silently reset before
+  -- (20261128100000 records it reading 5/120 after a SUCCESS did the resetting).
+  --
+  -- So an exception here aborts db push -- stranding every later migration -- on
+  -- a value this migration neither wrote nor can repair. That is the class that
+  -- held the queue down for seven hours on 2026-09-05. The DO NOTHING is verified
+  -- by reading the statement above, which is where that property actually lives;
+  -- drift in the tuning is still worth SAYING, so it is still reported.
   select count(*) into v_clobbered
   from public.api_circuit_breakers
   where api_name = 'llm.nvidia' and (threshold <> 3 or reset_timeout_seconds <> 900);
   if v_clobbered > 0 then
-    raise exception 'llm.nvidia tuning was overwritten — this migration must use ON CONFLICT DO NOTHING';
+    raise notice
+      'llm.nvidia is not at its deliberate 3/900 tuning. This migration cannot have caused that (it does not list the row), but something reset it — see 20261128100000.';
   end if;
 
   raise notice 'registered 21 previously un-trippable circuit breakers';
