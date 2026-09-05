@@ -120,10 +120,38 @@ declare
   -- and note the dangerous half was already removed at the DB layer by
   -- 20261018094000 (tag_prose_apply lost its retract branch), so an enabled cron
   -- is not the same hazard the doc describes. Flagged, not silently asserted.
+  -- `venue_geocode_repair` was REMOVED from this list on 2026-09-05. It is the
+  -- one entry whose premise did not hold, and leaving it here blocked `db push`
+  -- for the entire repo.
+  --
+  -- The header above reasons: "Description begins 'ONE-SHOT: re-geocodes
+  -- bare-street venues...'. It ran once (2026-08-22) and was disabled. Its
+  -- schedule is `* * * * *`, so re-enabling a finished one-shot would re-run it
+  -- EVERY MINUTE." Both halves are answered:
+  --
+  --   * IT IS NOT FINISHED. The job's batch_size is 50 and the pool it drains
+  --     was measured at 2,628 bare-street venues, with ZERO carrying the
+  --     `enrichment_status.geocode.verified_at` stamp the function writes on
+  --     every row it examines — including the rows it skips. One run of 50
+  --     cannot clear 2,628; the arithmetic settles it without a query. That
+  --     agrees with docs/audits/2026-08-22-venue-forward-geocode.md, whose
+  --     status line records the historical population as "measured but NOT
+  --     repaired".
+  --
+  --   * IT NO LONGER RUNS EVERY MINUTE. 20270501174243 — which sorts BEFORE
+  --     this migration and therefore always applies first — re-enables it at
+  --     '5,25,45 * * * *', offset from venue_geocode_forward's '*/15' so the
+  --     two Nominatim consumers never fire on the same minute.
+  --
+  -- With the entry present the two migrations contradicted each other and
+  -- `db push` aborted HERE on every deploy (runs 33966247046, 33967897986),
+  -- stranding every later migration while edge functions kept shipping — prod
+  -- running new code against an older schema. The rest of this list is
+  -- untouched and its reasoning stands.
   k_stay_off constant text[] := array[
     'tag_relation_verify', 'ev_fill_eventbrite',
     'marketplace_variant_backfill', 'city_cost_of_living_backfill',
-    'marketplace_affiliate_backfill', 'venue_geocode_repair',
+    'marketplace_affiliate_backfill',
     'marketplace_catalog_prune', 'tag_image_provenance_sync'
   ];
   r         record;
