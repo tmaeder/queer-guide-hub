@@ -1,10 +1,47 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
+import { buildCountryCanon, canonCountry } from '../_shared/geo-normalize.ts'
 
 // Geo-validation worker. Reverse-geocodes a small batch of venues via
 // Nominatim and writes to geo_validations. Country mismatch is the primary
 // signal — distance-based detection is intentionally out of scope (too many
 // false positives for venues vs. their administrative city).
+//
+// COMPARISON BUG, fixed 20270501: this compared two different representations
+// of the same fact and called the difference a finding. `normalizeCountry` was
+// a local trim().toLowerCase(), so the stored ISO-2 code 'US' was compared
+// against Nominatim's English country name 'United States' and disagreed —
+// always. Measured before the fix: 692 of 985 rows carried has_mismatch.
+// Recomputing every verdict by canonicalising both sides through the
+// `countries` table leaves 41 — so the signal was ~6% precision, and 652 rows
+// were pure artifact.
+//
+// Do NOT restate that as "it never found anything". It did: A-House (filed
+// Eastham, Massachusetts) reverse-geocoded to Hobart, Australia, and several
+// more of the 670 known antipodal venues are in the surviving 41. The defect
+// was that ~16 real findings sat under 652 identical-looking false ones, so
+// nobody could read the queue — not that the queue was empty.
+//
+// (An earlier draft of this comment claimed zero real findings, from a regex
+// that matched the *message shape* `Stored country '<X>' ≠ geocoded '<Y>'`.
+// Every row has that shape, the true positives included, so the test measured
+// formatting and not content. Compare canonical values, never rendered text.)
+//
+// The fix is to canonicalise both sides before comparing. buildCountryCanon()
+// derives the lookup from the live `countries` table (all 250 name+code pairs)
+// plus the shared alias map, so this needs no hand-maintained ISO list. We
+// prefer Nominatim's `address.country_code` — an unambiguous ISO-2 that was
+// already declared in the local response type and never read — over the
+// localized `address.country` string.
+//
+// KNOWN REMAINING FALSE POSITIVE: dependent territories. A venue in Guam
+// stored as 'US' reverse-geocodes to country_code 'gu' and will still be
+// flagged. `countries` has no sovereign/parent column, so sovereignty is not
+// representable in this function at all. It becomes representable with
+// geo_boundaries.sovereign_iso_a2 (Natural Earth) and is resolved there, in
+// the containment validator. Flagging a handful of territory venues is a much
+// smaller and more honest error than flagging every US venue, which is what
+// this function did until now.
 //
 // Rate limit: Nominatim asks for ≤1 req/sec. We sleep 1100ms between calls.
 // Batch size 30 → ~33 sec runtime, well under the edge-function timeout.
@@ -41,9 +78,10 @@ interface NominatimResult {
 
 function sleep(ms: number) { return new Promise((r) => setTimeout(r, ms)) }
 
-function normalizeCountry(s: string | null | undefined): string {
-  return (s || '').trim().toLowerCase()
-}
+// canonCountry lives in _shared/geo-normalize.ts so the containment validator
+// and this function cannot drift into two different ideas of what "same
+// country" means — the mistake that put one city-collision rule in a SQL
+// runner and a subtly different one in an edge function.
 
 Deno.serve(withErrorReporting('pipeline-geo-validate', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
@@ -54,6 +92,22 @@ Deno.serve(withErrorReporting('pipeline-geo-validate', async (req) => {
     const body = await req.json().catch(() => ({}))
     const batchSize = Math.min(body.batch_size ?? 30, 50)
     const onlyNew = body.only_new ?? true
+
+    // One read, reused for the whole batch. Without it every comparison below
+    // is between an ISO-2 code and an English name — see the header.
+    const { data: countryRows, error: countryErr } = await supabase
+      .from('countries')
+      .select('name, code') as { data: Array<{ name: string | null, code: string | null }> | null, error: { message: string } | null }
+    if (countryErr) return errorResponse(`countries: ${countryErr.message}`, 500, req)
+    // Fail closed. With an empty canon map every canonCountry() returns '',
+    // every comparison is skipped, and the run reports "0 mismatches" over a
+    // corpus it never actually checked — a clean bill of health from a
+    // validator that did nothing. That reads identically to success, so it
+    // must be an error instead.
+    if (!countryRows || countryRows.length === 0) {
+      return errorResponse('countries table empty or unreadable — refusing to validate with no canon map', 500, req)
+    }
+    const countryCanon = buildCountryCanon(countryRows)
 
     // Pick venues missing or with stale geo_validations rows.
     // only_new=true → just last 24h of updates; else oldest unvalidated.
@@ -105,8 +159,15 @@ Deno.serve(withErrorReporting('pipeline-geo-validate', async (req) => {
         const geocodedCity = addr.city || addr.town || addr.village || null
         const geocodedAddress = json.display_name || null
 
-        const expected = normalizeCountry(v.country)
-        const actual   = normalizeCountry(geocodedCountry)
+        // Prefer the ISO-2 code over the localized country name. Both sides go
+        // through the same canon map, so 'US' / 'us' / 'United States' all
+        // collapse to one value and only a real disagreement survives.
+        const geocodedCode = addr.country_code || null
+        const expected = canonCountry(countryCanon, v.country)
+        const actual   = canonCountry(countryCanon, geocodedCode) ||
+                         canonCountry(countryCanon, geocodedCountry)
+        // '' on either side means "unrecognised or absent" — no opinion, not a
+        // mismatch. Never let an unknown spelling contradict a known one.
         const hasMismatch = expected !== '' && actual !== '' && expected !== actual
         if (hasMismatch) mismatches++
 
@@ -120,10 +181,17 @@ Deno.serve(withErrorReporting('pipeline-geo-validate', async (req) => {
           geocoded_address: geocodedAddress,
           country: geocodedCountry,
           city: geocodedCity,
+          // Carry the admin-1 name through. Nominatim already returns it and
+          // it was being discarded; the containment validator needs a stored
+          // admin-1 to check the same-name-twin case (Portland ME vs OR).
+          region: addr.state ?? null,
           confidence: hasMismatch ? 0.4 : 0.9,
           has_mismatch: hasMismatch,
+          // Record the canonical forms that were actually compared, not the
+          // raw strings. The old message showed `'US' ≠ 'United States'`,
+          // which looks like a finding and was an artifact.
           mismatch_details: hasMismatch
-            ? `Stored country '${v.country}' ≠ geocoded '${geocodedCountry}'`
+            ? `Coordinate resolves to ${actual}${geocodedCode ? ` (${geocodedCode.toUpperCase()})` : ''} but venue is filed under ${expected} (stored '${v.country}')`
             : null,
           source: 'nominatim',
           last_validated_at: new Date().toISOString(),
