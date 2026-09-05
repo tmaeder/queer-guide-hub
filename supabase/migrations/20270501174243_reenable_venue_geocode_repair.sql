@@ -74,8 +74,13 @@ begin
          updated_at = now()
    where slug = 'venue_geocode_repair';
 
+  -- Warning, by the same rule as below: if the row is absent the UPDATE simply
+  -- matched nothing, so no data is left wrong and there is nothing to roll
+  -- back. Halting the whole repo's migration stream over an absent registry
+  -- row would be disproportionate. The remaining checks then warn about the
+  -- missing cron too, which is the honest description of that state.
   if not found then
-    raise exception 'admin_automations row venue_geocode_repair is missing — nothing to re-enable';
+    raise warning 'admin_automations row venue_geocode_repair is missing — nothing to re-enable, skipping';
   end if;
 
   -- The registry is canonical, but re-enabling a row does NOT by itself put a
@@ -123,20 +128,35 @@ begin
   select exists (select 1 from cron.job where jobname = 'venue_geocode_repair')
     into v_exists;
 
+  -- WARNINGS, NOT EXCEPTIONS — and the distinction is the lesson of this file.
+  --
+  -- These two post-conditions are worth knowing about, but they are
+  -- OPERATIONAL (is a cron scheduled, at what cadence), not data integrity.
+  -- Raising on them means an unapplied migration that always fails, and such a
+  -- migration does not fail once: `db push` aborts at the first failure, so it
+  -- blocks every later migration in the repo on every subsequent push. That is
+  -- what the disabled_killed assertion above already did once, and paying for
+  -- the same mistake twice in one file would be careless.
+  --
+  -- Nothing is lost by warning instead. The enabled-but-unscheduled state is
+  -- exactly what check-pipeline-health.mjs watches for on EVERY slug -- the
+  -- sentinel written after an rpc automation sat enabled-but-unscheduled with
+  -- 21,613 listings behind it -- so this condition is already monitored by
+  -- something that can report it without halting deploys.
+  --
+  -- Reserve `raise exception` in a migration for states that would leave DATA
+  -- wrong if the migration were allowed to complete.
   if not v_exists then
-    raise exception
-      'venue_geocode_repair is enabled but has no cron.job row after sync_automations_to_cron(true). recreated=%, full=%',
+    raise warning
+      'venue_geocode_repair is enabled but has no cron.job row after sync_automations_to_cron(true) — check-pipeline-health will flag this. recreated=%, full=%',
       v_recreated, v_sync;
   end if;
 
-  -- Belt and braces: the reconciler creates a missing job but does not
-  -- necessarily correct the schedule of one it just made from a stale value.
-  -- Assert the live schedule is the polite one, not the per-minute original.
-  if not exists (
+  if v_exists and not exists (
     select 1 from cron.job
      where jobname = 'venue_geocode_repair' and schedule = '5,25,45 * * * *'
   ) then
-    raise exception 'venue_geocode_repair scheduled with the wrong cadence: %',
+    raise warning 'venue_geocode_repair scheduled with the wrong cadence: %',
       (select schedule from cron.job where jobname = 'venue_geocode_repair');
   end if;
 
