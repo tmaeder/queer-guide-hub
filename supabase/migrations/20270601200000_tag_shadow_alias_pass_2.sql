@@ -191,6 +191,18 @@ declare
   v_n        int;
   v_bad      int;
   v_adult    jsonb := '{}'::jsonb;
+  v_skip_del    int := 0;
+  v_skip_merge  int := 0;
+  v_extra       text;
+  -- The 27 pairs this pass reviewed, as the alias slug each one shadows. Used
+  -- by the precondition to test SET membership rather than a count.
+  k_reviewed constant text[] := array[
+    'alter','anonym','band','coach','danseur','dapoxetine','fluoxetine',
+    'frottage','garten','gbl','mosh','pretzel','sertraline','sexarbeiter',
+    'sildenafil','sub','villa','voyeur',
+    'bisexuell','gayfriendly','gewalt','musik','ecstasy','femdom',
+    'bimbofication','priligy','prozac'
+  ];
 begin
   -- Declared INSIDE the block: db push makes no promise that a bare statement
   -- before a `do` block shares its transaction, and several rows here are
@@ -199,15 +211,30 @@ begin
   perform set_config('app.actor', 'migration:tag-shadow-alias-pass-2', true);
 
   ---------------------------------------------------------------- preconditions
-  -- The pass was reasoned about 27 pairs. If the corpus has moved — a sibling
-  -- session merged one, an ingest minted a new one — the review is about a
-  -- different set and must be redone rather than partially applied.
-  select count(*) into v_n
-    from public.tag_aliases a
-    join public.unified_tags t
-      on lower(t.slug) = lower(a.alias_slug) and t.status = 'active' and t.id <> a.canonical_tag_id;
-  if v_n <> 27 then
-    raise exception 'shadow pass 2: corpus holds % shadowing aliases, not the 27 reviewed — re-read before applying', v_n;
+  -- The pass was reasoned about 27 specific pairs, so the precondition tests
+  -- that SET, not its size.
+  --
+  -- It was a bare `count(*) <> 27` and that was wrong in both directions. It
+  -- blocked on 2026-09-05 because a sibling session had already merged four of
+  -- the nine (ecstasy, femdom, priligy, prozac — each to the winner named
+  -- below), leaving 23 pairs that are all still exactly as reviewed; db push
+  -- stopped there and stranded every migration behind it. And it would have
+  -- PASSED on a corpus where four vanished and four brand-new unreviewed
+  -- shadows appeared, which is the case it exists to catch. A count is a proxy
+  -- for the set; assert the set.
+  --
+  -- Reviewed-but-absent is fine and is handled per pair below (already done).
+  -- Present-but-unreviewed is what must stop the pass.
+  select string_agg(x.alias_slug, ', ' order by x.alias_slug) into v_extra
+    from (
+      select distinct a.alias_slug
+        from public.tag_aliases a
+        join public.unified_tags t
+          on lower(t.slug) = lower(a.alias_slug) and t.status = 'active' and t.id <> a.canonical_tag_id
+       where lower(a.alias_slug) <> all (k_reviewed)
+    ) x;
+  if v_extra is not null then
+    raise exception 'shadow pass 2: unreviewed shadowing alias(es) present (%) — re-read before applying', v_extra;
   end if;
 
   ------------------------------------------------------- part A: 18 alias deletes
@@ -229,7 +256,16 @@ begin
       join public.unified_tags t on t.id = a.canonical_tag_id
      where lower(a.alias_slug) = r.alias_slug and t.slug = r.target_slug;
     if v_alias is null then
-      raise exception 'shadow pass 2: alias % -> % no longer exists as reviewed', r.alias_slug, r.target_slug;
+      -- Two very different reasons the pair can be missing. GONE is a sibling
+      -- having already done this delete: idempotent, skip it. STILL PRESENT but
+      -- parented elsewhere means the alias now means something else and the
+      -- reviewed decision no longer describes it — that must still stop.
+      if exists (select 1 from public.tag_aliases a2 where lower(a2.alias_slug) = r.alias_slug) then
+        raise exception 'shadow pass 2: alias % is no longer parented to % — re-read before applying',
+          r.alias_slug, r.target_slug;
+      end if;
+      v_skip_del := v_skip_del + 1;
+      continue;
     end if;
 
     -- Synonyms FIRST, while `search_synonyms.tag_alias_id` still points at the
@@ -246,8 +282,12 @@ begin
     v_del := v_del + 1;
   end loop;
 
-  if v_del <> 18 then
-    raise exception 'shadow pass 2: deleted % aliases, expected 18', v_del;
+  -- COVERAGE of the reviewed set, not the number of writes: a pair a sibling
+  -- already deleted is still accounted for. The old form asserted the write
+  -- count and so could only ever pass on a corpus nobody else had touched.
+  if v_del + v_skip_del <> 18 then
+    raise exception 'shadow pass 2: accounted for % of the 18 reviewed deletes (% deleted, % already gone)',
+      v_del + v_skip_del, v_del, v_skip_del;
   end if;
 
   -------------------------------------------------------------- part B: 9 merges
@@ -278,8 +318,44 @@ begin
   loop
     select id into v_loser  from public.unified_tags where slug = r.loser_slug  and status = 'active';
     select id into v_winner from public.unified_tags where slug = r.winner_slug and status = 'active';
-    if v_loser is null or v_winner is null then
-      raise exception 'shadow pass 2: merge % -> % did not resolve to two active rows', r.loser_slug, r.winner_slug;
+    if v_winner is null then
+      raise exception 'shadow pass 2: merge % -> % has no active winner', r.loser_slug, r.winner_slug;
+    end if;
+
+    if v_loser is null then
+      -- Already merged by someone else. Acceptable ONLY if it went to the winner
+      -- this pass reviewed; merged somewhere else is a different decision and
+      -- stops the pass. Measured 2026-09-05: ecstasy, femdom, priligy and prozac
+      -- were all merged to exactly these winners in one batch at 17:39 on 09-04.
+      select id into v_loser
+        from public.unified_tags
+       where slug = r.loser_slug and status = 'merged' and merged_into_id = v_winner;
+      if v_loser is null then
+        raise exception 'shadow pass 2: % is neither active nor merged into % — re-read before applying',
+          r.loser_slug, r.winner_slug;
+      end if;
+      v_skip_merge := v_skip_merge + 1;
+
+      -- THE SKIP IS NOT A NO-OP, and this is the whole reason the pass still has
+      -- to run over these four. merge_tag_concept does not move aliases, so a
+      -- merge done without this step leaves them parented to a tombstone —
+      -- measured on prod after that sibling batch: ecstasy 18, priligy 6,
+      -- prozac 4, femdom 0, i.e. 28 orphans, exactly the counts predicted below.
+      -- The assertion further down ("still parented to a row this pass merged
+      -- away") would otherwise fail on work this migration did not do.
+      --
+      -- This DEPENDS on part A having already run, for the same reason the
+      -- merge branch below does: priligy still carries the alias `dapoxetine`
+      -- and prozac the alias `fluoxetine`, so re-parenting before those two are
+      -- deleted would launder each into a self-alias on the winner. Verified on
+      -- prod 2026-09-05 — those are the only two collisions among the 28, and
+      -- part A deletes exactly them. trg_tag_alias_reject_shadow does NOT catch
+      -- this (it permits canonical_tag_id = the tag itself); the
+      -- alias_equals_name assertion is what would.
+      update public.tag_aliases set canonical_tag_id = v_winner where canonical_tag_id = v_loser;
+      get diagnostics v_n = row_count;
+      v_reparent := v_reparent + v_n;
+      continue;
     end if;
 
     -- DEMOTE BEFORE MERGE. merge_tag_concept deletes the loser's category row
@@ -320,8 +396,9 @@ begin
     v_reparent := v_reparent + v_n;
   end loop;
 
-  if v_merged <> 9 then
-    raise exception 'shadow pass 2: merged % pairs, expected 9', v_merged;
+  if v_merged + v_skip_merge <> 9 then
+    raise exception 'shadow pass 2: accounted for % of the 9 reviewed merges (% merged, % already merged)',
+      v_merged + v_skip_merge, v_merged, v_skip_merge;
   end if;
 
   -- The one stray junction this pass can produce. gayfriendly's Venue Types row
@@ -409,7 +486,7 @@ begin
     raise exception 'shadow pass 2: usage_count disagrees with the assignment count on % row(s)', v_bad;
   end if;
 
-  raise notice 'shadow pass 2: % aliases deleted (% synonyms), % merges, % aliases re-parented, 0 shadows remain',
-    v_del, v_syn, v_merged, v_reparent;
+  raise notice 'shadow pass 2: % aliases deleted (% already gone, % synonyms), % merges (% already merged), % aliases re-parented, 0 shadows remain',
+    v_del, v_skip_del, v_syn, v_merged, v_skip_merge, v_reparent;
 end
 $mig$;
