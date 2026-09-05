@@ -1,5 +1,5 @@
 -- Make "an alias occupying a live tag's slug" unrepresentable, in both
--- directions, so the pass in 20270401101200 does not have to be run a third time.
+-- directions, so the pass in 20270501190000 does not have to be run a third time.
 --
 -- WHY THE EXISTING GUARD WAS NOT ENOUGH. `trg_tag_alias_reject_shadow` is
 -- BEFORE INSERT OR UPDATE on `tag_aliases`. It refuses an alias that would
@@ -17,7 +17,7 @@
 -- because `merge_tag_concept` skips its insert in that case. So the unmerge
 -- sets the loser back to `active` while an alias still carries its slug: the
 -- precise state Part 2 refuses. Without this fix, Part 2 would make every such
--- merge irreversible — including all nine merged by 20270401101200, whose
+-- merge irreversible — including all nine merged by 20270501190000, whose
 -- losers all had a pre-existing alias. That is exactly how the live
 -- `sildenafil` -> `viagra` shadow came to exist: 20261015110000 reversed that
 -- merge to put 1,088 chars of drug-interaction prose back in circulation, and
@@ -101,7 +101,7 @@ begin
   -- which cleared only the alias this merge itself created. Any alias carrying
   -- the duplicate's slug becomes a shadow the moment the duplicate goes back to
   -- `active` a few lines below, whoever wrote it and whatever its type — and
-  -- since 20270401101300 that state is refused outright, so the narrow form
+  -- since 20270501190100 that state is refused outright, so the narrow form
   -- would abort the unmerge instead of completing it.
   --
   -- Synonyms first: `search_synonyms.tag_alias_id` is ON DELETE SET NULL, so a
@@ -143,7 +143,7 @@ begin
   if v_owner is not null then
     raise exception
       'tag % cannot be active: the slug % is held as an alias of another tag', NEW.id, NEW.slug
-      using hint = 'Delete the tag_aliases row (and its search_synonyms row FIRST -- that FK is ON DELETE SET NULL) in the same transaction, or merge the two tags instead. See 20270401101200.';
+      using hint = 'Delete the tag_aliases row (and its search_synonyms row FIRST -- that FK is ON DELETE SET NULL) in the same transaction, or merge the two tags instead. See 20270501190000.';
   end if;
   return NEW;
 end;
@@ -167,7 +167,7 @@ declare v_bad int; v_slug text; v_fired boolean := false; v_audit uuid;
 begin
   perform set_config('app.actor', 'migration:tag-shadow-seal', true);
 
-  -- The seal cannot be added while the corpus violates it. 20270401101200 is
+  -- The seal cannot be added while the corpus violates it. 20270501190000 is
   -- the cleanup and sorts before this; if it did not apply, say so here rather
   -- than leaving a trigger that aborts the next revival for an unrelated reason.
   select count(*) into v_bad
@@ -175,7 +175,7 @@ begin
     join public.unified_tags t
       on lower(t.slug) = lower(a.alias_slug) and t.status = 'active' and t.id <> a.canonical_tag_id;
   if v_bad > 0 then
-    raise exception 'tag shadow seal: % shadowing alias(es) still exist — 20270401101200 must apply first', v_bad;
+    raise exception 'tag shadow seal: % shadowing alias(es) still exist — 20270501190000 must apply first', v_bad;
   end if;
 
   -- Prove the trigger FIRES, rather than asserting it exists. A trigger that is
@@ -214,7 +214,7 @@ begin
   end if;
 
   -- Prove Part 1 is actually a prerequisite, by REVERSING one of the merges
-  -- 20270401101200 just made while the seal is live. Without the widening this
+  -- 20270501190000 just made while the seal is live. Without the widening this
   -- aborts: `prozac` had a pre-existing alias, so that merge's snapshot carries
   -- `__alias_added = false`, the old unmerge would have left the alias standing,
   -- and setting the row back to `active` would then hit the trigger above.
@@ -230,7 +230,7 @@ begin
    where source = 'shadow-alias-pass-2' and duplicate_slug = 'prozac' and not is_reversed
    limit 1;
   if v_audit is null then
-    raise exception 'tag shadow seal: no reversible pass-2 merge to probe with — 20270401101200 must apply first';
+    raise exception 'tag shadow seal: no reversible pass-2 merge to probe with — 20270501190000 must apply first';
   end if;
 
   begin
