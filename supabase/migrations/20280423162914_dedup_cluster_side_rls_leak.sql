@@ -34,7 +34,7 @@
 --      `GRANT EXECUTE ... TO anon` re-grants this function (something did grant
 --      it: the ACL reads `anon=X/postgres`, an explicit grant, not the PUBLIC
 --      default my original REVOKE removed), the function still cannot bypass RLS.
---   2. Grants narrowed to service_role — matching what 20280301100000 (#3490)
+--   2. Grants narrowed to service_role — matching what 20280301104412 (#3490)
 --      did to event_dup_signals, the sibling function from the same PR whose
 --      `authenticated` grant failed `Critical data-quality gates` on every open
 --      PR in the repo until someone else revoked it.
