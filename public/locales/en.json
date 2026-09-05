@@ -4133,7 +4133,6 @@
   "about": {
     "eyebrow": "About",
     "title": "Built by queers, for everyone.",
-    "lede": "Queer Guide maps the places, events and people that make up queer life, verified by the community, free for everyone, everywhere in the world.",
     "diagram": {
       "label": "Four lines converging on one station: venues, events, community and places."
     },
@@ -4150,8 +4149,7 @@
       "lede": "Each part of the platform runs on its own line. Take whichever one you need.",
       "action": "Open",
       "venues": {
-        "name": "Venues",
-        "description": "Queer-friendly bars, cafés, clubs and businesses, reviewed by real people."
+        "name": "Venues"
       },
       "events": {
         "name": "Events",
@@ -4173,27 +4171,16 @@
     "story": {
       "kicker": "Our story",
       "title": "How this started",
-      "p1": "Finding a queer-friendly bar shouldn't take a group chat, three forum threads and a leap of faith. We started Queer Guide because we were tired of guessing which spaces were actually safe, and which just put a rainbow on the logo in June.",
-      "p2": "A personal list of trusted venues turned into a global directory: verified by the community, built on real experience, free to use. Travelling solo, moving city, or just looking for somewhere to be on a Friday night. Start here."
+      "p1": "Finding a queer-friendly bar shouldn't take a group chat, three forum threads and a leap of faith. We started Queer Guide because we were tired of guessing which spaces were actually safe, and which just put a rainbow on the logo in June."
     },
     "legend": {
       "kicker": "Legend",
       "title": "What makes us different",
-      "verified": {
-        "label": "Community-verified",
-        "body": "Every venue is reviewed by real LGBTQ+ people, not an algorithm."
-      },
       "safety": {
-        "label": "Safety-first",
-        "body": "Local laws, rights and risk notes on every country page."
+        "label": "Safety-first"
       },
       "free": {
-        "label": "Always free",
-        "body": "No paywall, no premium tier. The platform belongs to everyone."
-      },
-      "global": {
-        "label": "Global reach",
-        "body": "Berlin to Bangkok, São Paulo to Sydney. And growing."
+        "label": "Always free"
       }
     },
     "history": {
@@ -4213,8 +4200,7 @@
         "body": "Tens of thousands of venues on every continent. Marketplace, trip planner, safety briefings and country-by-country rights."
       },
       "y2026": {
-        "year": "2026",
-        "body": "You are here. Add a venue, post an event, or join the contributor circle."
+        "year": "2026"
       }
     },
     "values": {
@@ -4247,23 +4233,7 @@
     },
     "people": {
       "kicker": "Who runs it",
-      "title": "The people behind it",
-      "lede": "No corporation. Community members who give their time.",
-      "moderators": {
-        "name": "Community moderators",
-        "role": "Keeping it safe",
-        "description": "Volunteers who keep the platform welcoming and respectful, around the clock."
-      },
-      "ambassadors": {
-        "name": "Local ambassadors",
-        "role": "Eyes on the ground",
-        "description": "Community leaders who surface local needs and champion inclusive spaces in their region."
-      },
-      "contributors": {
-        "name": "Contributors",
-        "role": "Sharing knowledge",
-        "description": "Members who write reviews, post events and build the resources everyone else relies on."
-      }
+      "title": "The people behind it"
     },
     "cta": {
       "title": "Help us extend the line.",
@@ -4277,10 +4247,6 @@
       "createEvents": {
         "title": "Post an event",
         "desc": "Organize something. Bring people together."
-      },
-      "joinGroups": {
-        "title": "Join a group",
-        "desc": "Your voice belongs in the conversation."
       },
       "support": {
         "title": "Support us",
