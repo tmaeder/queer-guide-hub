@@ -1088,7 +1088,20 @@ const GEO_BASELINE = {
   // counted as mismatches. A reload populated all 41 sovereign mappings and they
   // correctly stopped being findings. If this number jumps by ~40, suspect
   // geo_country_parent before suspecting the corpus.
-  containment_total: 409,
+  //
+  // 409 -> 364 (forward_repair fixed 45 coordinates) -> 334 (30 venues relinked
+  // to the city their coordinate is actually in) -> 296 (a calibrated 2 km
+  // border tolerance dropped 38 rows that were never defects) -> 212 (84
+  // coordinates restored from the venue_sources payload that produced the row)
+  // -> 82 (10 name-geocoded, 120 uncorroborated coordinates RETRACTED to null
+  // rather than guessed).
+  //
+  // The 82 are a floor, not a backlog to grind down: 50 offshore, 6 in disputed
+  // features the validator declines to adjudicate, and 24 border-zone rows where
+  // the honest answer needs a human — is FKK-Strand Hard in St. Gallen or in
+  // Hard, Austria? Driving this toward zero means loosening a rule, and the
+  // rules are what stopped a Polish sauna being moved to Ukraine.
+  containment_total: 82,
   city_coord_defects_with_content: 7,
   queue_depth_warn: 5000,
   findings_max_age_hours: 48,      // sweep is nightly at 03:55; two misses is stale
