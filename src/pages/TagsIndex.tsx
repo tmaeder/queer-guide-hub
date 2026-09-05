@@ -48,6 +48,7 @@ import { redirectedCategorySlug } from '@/lib/tags/categorySlugRedirects';
 import { GatedTagsNotice } from '@/components/tags/GatedTagsNotice';
 import {
   applyTagsParams,
+  compareTagsBy,
   hasActiveFilters,
   letterFor,
   parseTagsParams,
@@ -279,23 +280,8 @@ export default function TagsIndex() {
 
   const sortEntries = useCallback(
     (list: TagIndexEntry[]) => {
-      const dir = state.dir === 'asc' ? 1 : -1;
-      return [...list].sort((a, b) => {
-        switch (state.sort) {
-          case 'usage':
-            return dir * ((usageCounts[b.tag.name] || 0) - (usageCounts[a.tag.name] || 0));
-          case 'recent':
-            return (
-              dir *
-              (new Date(b.tag.created_at || 0).getTime() -
-                new Date(a.tag.created_at || 0).getTime())
-            );
-          default: {
-            const cmp = a.tag.name.localeCompare(b.tag.name);
-            return state.dir === 'asc' ? cmp : -cmp;
-          }
-        }
-      });
+      const compare = compareTagsBy(state.sort, state.dir, usageCounts);
+      return [...list].sort((a, b) => compare(a.tag, b.tag));
     },
     [state.sort, state.dir, usageCounts],
   );
