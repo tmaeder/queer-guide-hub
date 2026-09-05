@@ -172,9 +172,19 @@ test.describe('removed: the 0-100 equality number on the geo singles', () => {
  * compliance: the tests below pin the removal so that re-adding the row is a
  * conscious edit. If someone later restores the credits, invert these back.
  *
- * These run SIGNED OUT (no storageState), which is the state that matters.
+ * These run SIGNED OUT, which is the state that matters.
+ *
+ * That used to be a COMMENT claiming "no storageState" with nothing enforcing
+ * it. The `chromium` project attaches the ADMIN storageState whenever
+ * E2E_ADMIN_EMAIL / _PASSWORD are set (playwright.config.ts), so in CI these
+ * ran signed IN — About.tsx renders `#sources` for any `user`, and the gate
+ * test below failed on every nightly. It passed on a laptop, which has no
+ * credentials, and that asymmetry is what made it read as a prod regression.
+ * The empty state is now declared rather than assumed.
  */
 test.describe('the footer carries no data attribution', () => {
+  test.use({ storageState: { cookies: [], origins: [] } });
+
   test('the footer has the copyright but no ODbL credit', async ({ page }) => {
     await open(page, '/');
     const footer = page.locator('footer');
