@@ -82,10 +82,26 @@ begin
   select count(*) into v_before
     from public.unified_tag_assignments where tag_id = v_canonical;
 
+  -- Snapshot the survivor's identity metadata BEFORE the merge, so the check
+  -- below can compare it across the merge instead of against a literal.
+  -- Pinning the literal 'Pride events and celebrations' would make this migration
+  -- abort -- taking the whole db push with it -- if anything edited news-pride's
+  -- description first, and `description` is legitimately written by
+  -- tag_enrichment_apply / the enrichment sweep and by hand in the admin CMS.
+  -- What the assertion actually wants to prove is "the merge did not copy the
+  -- loser's metadata onto the survivor", which is a BEFORE/AFTER property.
+  create temp table if not exists _pride_merge_snapshot (
+    description text,
+    wikidata_id text
+  ) on commit drop;
+  delete from _pride_merge_snapshot;
+  insert into _pride_merge_snapshot (description, wikidata_id)
+  select description, wikidata_id from public.unified_tags where id = v_canonical;
+
   perform public.merge_tag_concept(
     p_canonical_id := v_canonical,
     p_duplicate_id := v_duplicate,
-    p_actor        := 'migration:20270105100500_merge_occ_pride',
+    p_actor        := 'migration:20270401100500_merge_occ_pride',
     p_source       := 'pride key collision blocked 7,398 event tag uses; duplicates confirmed at 56.6%/58.3% pride-titled'
   );
 
@@ -125,12 +141,25 @@ begin
   select description, wikidata_id into v_desc, v_qid
     from public.unified_tags where slug = 'news-pride';
 
-  if v_desc is distinct from 'Pride events and celebrations' then
-    raise exception 'pride merge: the survivor''s description changed — got %', coalesce(v_desc, '<null>');
+  -- Compare ACROSS the merge, not against a literal. The snapshot is taken in the
+  -- block above; if it is missing the migration short-circuited (occ-pride already
+  -- merged), and there is nothing to verify.
+  if to_regclass('pg_temp._pride_merge_snapshot') is not null then
+    if exists (
+      select 1 from _pride_merge_snapshot s
+       where s.description is distinct from v_desc
+          or s.wikidata_id is distinct from v_qid
+    ) then
+      raise exception
+        'pride merge: the survivor''s identity metadata changed across the merge — description now %, wikidata_id now %',
+        coalesce(v_desc, '<null>'), coalesce(v_qid, '<null>');
+    end if;
   end if;
 
-  if v_qid is not null then
-    raise exception 'pride merge: the survivor inherited a wikidata id (%) — Q3071551 is pride the EMOTION', v_qid;
+  -- Independent of the above: the survivor must not carry the loser's QID.
+  -- Q3071551 is pride the EMOTION, which is what occ-pride was wrongly linked to.
+  if v_qid = 'Q3071551' then
+    raise exception 'pride merge: the survivor inherited Q3071551 — that is pride the EMOTION, not the event';
   end if;
 
   select count(*) into v_bad from public.unified_tags
