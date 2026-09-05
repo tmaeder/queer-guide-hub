@@ -64,12 +64,26 @@ function token() {
   const raw = execFileSync('security', ['find-generic-password', '-s', 'Supabase CLI', '-w'], { encoding: 'utf8' }).trim()
   return Buffer.from(raw.replace(/^go-keyring-base64:/, ''), 'base64').toString('utf8')
 }
-const TOKEN = token()
+
+// LAZY, and that is not a style choice. `const TOKEN = token()` at module scope
+// runs on IMPORT, so geoBoundaryIso.test.ts — which imports isoOf from this
+// file — reached into the macOS keychain just by loading the module. That
+// passed locally and died on CI with `spawnSync security ENOENT`, because
+// Linux has no `security` binary.
+//
+// The guard around the main loop at the bottom of this file was not enough: it
+// stops the LOOP, not module-level initialisation. Worse, the local check that
+// "the import did not trigger a load" passed for the wrong reason — macOS
+// happens to have the binary, so the keychain read succeeded silently and
+// looked like no side effect at all. A side effect that works on your machine
+// is still a side effect.
+let _token = null
+const getToken = () => (_token ??= token())
 
 async function sql(query) {
   const res = await fetch(`https://api.supabase.com/v1/projects/${PROJECT}/database/query`, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${TOKEN}`, 'Content-Type': 'application/json', 'User-Agent': UA },
+    headers: { Authorization: `Bearer ${getToken()}`, 'Content-Type': 'application/json', 'User-Agent': UA },
     body: JSON.stringify({ query }),
   })
   if (!res.ok) throw new Error(`mgmt API ${res.status}: ${(await res.text()).slice(0, 500)}`)
