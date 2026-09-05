@@ -21,7 +21,8 @@
     "contributors": "Contributors",
     "wishlists": "Wishlists",
     "guides": "Guides",
-    "people": "Meet people"
+    "people": "Meet people",
+    "showCollapsed": "Show the levels above"
   },
   "inbox": {
     "title": "Inbox",

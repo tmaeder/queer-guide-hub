@@ -34,6 +34,19 @@ jobs:
         if: ${{ env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
         run: node scripts/check-trust-safety-gates.mjs
 
+      # search_facets and search_hybrid must count the same candidate set (the
+      # anon facet leak of 20260829041548). NOT run on pull_request on purpose,
+      # for the same two reasons spelled out in the script's header: it reads live
+      # prod, so a migration-borne divergence can only ever land AFTER both the
+      # pull_request and merge_group runs and would red an unrelated PR; and its
+      # ten full-corpus scans measure 2.4-3.5 s warm and 7 s cold against the 8 s
+      # statement_timeout PostgREST inherits from `authenticator`, so it timed out
+      # on #3402 and #3437 and passed on re-run. Daily is the right resolution for
+      # drift that can only arrive at merge.
+      - name: search_facets and search_hybrid agree on the candidate set
+        if: ${{ !cancelled() && github.event_name != 'pull_request' && github.event_name != 'merge_group' && env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
+        run: node scripts/check-search-facets-parity.mjs
+
       - name: Skip gates (missing secrets)
         if: ${{ env.SUPABASE_URL == '' || env.SUPABASE_SERVICE_ROLE_KEY == '' }}
         run: echo "::warning::SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not set — skipping trust-&-safety gates. Configure repo secrets to enable."

@@ -71,13 +71,29 @@ test.describe('removed: the 0-100 equality number on the geo singles', () => {
   // which read as a precise measurement of a country's safety when it is a
   // roll-up of legal flags, is gone. So each case asserts the verdict is still
   // there AND the number is not.
+  //
+  // EVERY content assertion here carries `timeout: BOOT`, and that is not a
+  // flake papered over with a bigger number — it is the same wait the banner
+  // itself gets. These banners mount before their data does: useTripSafety
+  // resolves afterwards and re-renders them, so for a moment the container is
+  // present but empty. Assertions that inherited Playwright's default 5s
+  // raced that window. Measured on prod: the /city/berlin case failed with
+  // `not.toContainText('/100')` receiving "" — an EMPTY container, not a page
+  // showing the number — and the /country/germany case failed while its own
+  // DOM dump showed the banner visible at 824x98 with <p> textContent exactly
+  // "Equality". The elements were right; only the deadline was wrong.
   for (const path of ['/city/berlin', '/villages/chueca']) {
     test(`${path} states the tier, not the number`, async ({ page }) => {
       await open(page, path);
       const verdict = page.getByTestId('geo-safety-verdict');
       await expect(verdict).toBeVisible({ timeout: BOOT });
-      await expect(verdict).toContainText(/equality|criminal|death penalty|check local laws/i);
-      await expect(verdict).not.toContainText('/100');
+      await expect(verdict).toContainText(/equality|criminal|death penalty|check local laws/i, {
+        timeout: BOOT,
+      });
+      // Ordered after the positive assertion on purpose: a negative against a
+      // container that is merely still empty is vacuously true, so the line
+      // above is what proves there is content to judge.
+      await expect(verdict).not.toContainText('/100', { timeout: BOOT });
     });
   }
 
@@ -99,10 +115,23 @@ test.describe('removed: the 0-100 equality number on the geo singles', () => {
     // `geo-safety-verdict` on GeoSafetyBlock, which is what the two cases
     // above already wait on. Assert INSIDE it, so "Equality" cannot be
     // satisfied by some other occurrence elsewhere on the page.
+    //
+    // That testid took the failure rate from 1-in-6 to 1-in-20 and did NOT
+    // eliminate it, because waiting for the banner is only half the problem:
+    // the banner mounts before useTripSafety resolves and re-renders it. A DOM
+    // dump taken at the moment of a surviving failure showed the banner
+    // visible at 824x98 with <p> textContent exactly "Equality" — the element
+    // was there and correct, and the assertion had simply spent its default
+    // 5s. Hence `timeout: BOOT` on the content assertions, matching the wait
+    // the container itself gets.
+    //
+    // Asserted with toContainText on the CONTAINER rather than toBeVisible on
+    // a child: the re-render can detach the child mid-check, and retrying the
+    // container's text survives that where re-resolving a child does not.
     const verdict = page.getByTestId('country-safety-verdict');
     await expect(verdict).toBeVisible({ timeout: BOOT });
-    await expect(verdict.getByText('Equality', { exact: true })).toBeVisible();
-    await expect(verdict.getByText('Very high', { exact: true })).toBeVisible();
+    await expect(verdict).toContainText('Equality', { timeout: BOOT });
+    await expect(verdict).toContainText('Very high', { timeout: BOOT });
 
     // The deleted ring carried this label on every size it rendered at.
     await expect(page.locator('[aria-label^="Equality score"]')).toHaveCount(0);
@@ -129,56 +158,51 @@ test.describe('removed: the 0-100 equality number on the geo singles', () => {
 });
 
 /**
- * BOTH ASSERTIONS IN HERE ARE THE OPPOSITE OF WHAT THEY USED TO BE. Read this
- * before "restoring" either one.
+ * THIS ASSERTION HAS BEEN INVERTED TWICE. Read this before "restoring" it.
  *
  * The OSM credit started in the footer, moved to the /about colophon on
- * 2026-08-30, and the two tests below pinned that move: footer must NOT carry
- * ODbL, /about MUST. Gating the colophon behind a login broke the second half
- * of that arrangement — a signed-out reader is still served the OSM-derived
- * city diagrams on the homepage, and ODbL asks that reader be told. So the
- * obligated credits went back to the footer, unconditionally, and the colophon
- * became the members-only long form.
+ * 2026-08-30, and came BACK to the footer when that colophon was gated behind
+ * a login — because a signed-out reader is still served the OSM-derived city
+ * diagrams on the homepage. On 2026-09-04 it was removed from the footer
+ * again, by an explicit product decision taken after being told that the
+ * colophon is members-only and that this leaves a signed-out reader with no
+ * credit anywhere on the site.
  *
- * These run SIGNED OUT, which is the state that matters: it is the one where
- * the footer is the only credit on the site.
+ * So the current state is deliberate, not drift, and it is NOT licence
+ * compliance: the tests below pin the removal so that re-adding the row is a
+ * conscious edit. If someone later restores the credits, invert these back.
  *
- * That was a COMMENT claiming "no storageState" with nothing enforcing it. The
- * `chromium` project attaches the ADMIN storageState whenever E2E_ADMIN_EMAIL /
- * _PASSWORD are set (playwright.config.ts), so in CI these ran signed IN —
- * About.tsx renders `#sources` for any `user`, and the gate test below failed
- * on every nightly. It passed on a laptop, which has no credentials, and that
- * asymmetry is what made it read as a prod regression. The empty state is now
- * declared rather than assumed.
+ * These run SIGNED OUT, which is the state that matters.
+ *
+ * That used to be a COMMENT claiming "no storageState" with nothing enforcing
+ * it. The `chromium` project attaches the ADMIN storageState whenever
+ * E2E_ADMIN_EMAIL / _PASSWORD are set (playwright.config.ts), so in CI these
+ * ran signed IN — About.tsx renders `#sources` for any `user`, and the gate
+ * test below failed on every nightly. It passed on a laptop, which has no
+ * credentials, and that asymmetry is what made it read as a prod regression.
+ * The empty state is now declared rather than assumed.
  */
-test.describe('the OpenStreetMap credit lives in the footer', () => {
+test.describe('the footer carries no data attribution', () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
-  test('the footer carries the ODbL attribution', async ({ page }) => {
+  test('the footer has the copyright but no ODbL credit', async ({ page }) => {
     await open(page, '/');
     const footer = page.locator('footer');
     await expect(footer).toBeVisible({ timeout: BOOT });
+    // Positive control: "no ODbL in the footer" also passes on a footer that
+    // failed to render at all.
     await expect(footer.getByText(/Queer Guide/).first()).toBeVisible();
-    await expect(footer.getByRole('link', { name: 'OpenStreetMap' })).toHaveAttribute(
-      'href',
-      'https://www.openstreetmap.org/copyright',
-    );
-    await expect(footer).toContainText('ODbL');
-    // Not only OSM: the CC BY sources are compelled too, and the earlier
-    // hand-maintained list of "the ones that matter" had already lost two of
-    // them once. Naming a CC BY 4.0 source here keeps that half honest.
-    await expect(footer.getByRole('link', { name: 'GeoNames' })).toBeVisible();
-    await expect(footer).toContainText('CC BY 4.0');
+    await expect(footer.getByRole('link', { name: 'OpenStreetMap' })).toHaveCount(0);
+    await expect(footer.getByRole('link', { name: 'GeoNames' })).toHaveCount(0);
+    await expect(footer).not.toContainText('ODbL');
+    await expect(footer).not.toContainText('CC BY');
   });
 
   // The gate. `#sources` absent proves nothing unless the page rendered, so
-  // the heading is the positive control — and the footer credit is asserted
-  // again here because THIS is the page state where its absence would be a
-  // licence breach rather than a missing section.
+  // the heading is the positive control.
   test('/about hides the colophon from signed-out readers', async ({ page }) => {
     await open(page, '/about');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: BOOT });
     await expect(page.locator('#sources')).toHaveCount(0);
-    await expect(page.locator('footer').getByRole('link', { name: 'OpenStreetMap' })).toBeVisible();
   });
 });
