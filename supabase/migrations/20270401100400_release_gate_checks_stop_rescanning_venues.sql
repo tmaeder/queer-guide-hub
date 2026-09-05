@@ -164,11 +164,23 @@ AS $function$
         from public.geo_places gp
        where gp.place_type = 'city'
     )
+    -- The `or category = 'cruising'` term is LOAD-BEARING and must not be dropped
+    -- when this function is restated. `venues.safety_gated` is
+    -- `location_is_high_risk(country_id, city_id) OR category = 'cruising'`
+    -- (20261112100000), so a country-only comparison reports every gated cruising
+    -- venue as drift. Measured on prod while this PR omitted it: 106 drift rows
+    -- against the live arm's 0, over 107 gated cruising venues — and
+    -- `city_safety_gate_drift` is `critical`, so that reds every open PR.
+    -- 20261112100000 patched the live function by string surgery, which is why a
+    -- full CREATE OR REPLACE keeps re-introducing the pre-fix text; 20270309161544
+    -- restored it set-based and this restatement must carry it forward.
     select 'venues' tbl, count(*) cnt from public.venues t
       left join cc on cc.id = t.city_id
       where t.duplicate_of_id is null
         and coalesce(t.safety_gated, false)
-            is distinct from coalesce(coalesce(t.country_id, cc.country_id) in (select country_id from hr), false)
+            is distinct from coalesce(
+              (coalesce(t.country_id, cc.country_id) in (select country_id from hr))
+              or coalesce(t.category = 'cruising', false), false)
     union all
     select 'events', count(*) from public.events t
       left join cc on cc.id = t.city_id
