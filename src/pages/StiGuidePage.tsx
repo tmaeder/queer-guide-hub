@@ -213,8 +213,7 @@ function TestingWindow({ row }: { row: TestingRow }) {
   return (
     <>
       <span className="block text-2xs font-bold">
-        {row.test_kind} ·{' '}
-        {t('stiGuide.fromWeeks', '{{n}}w+', { n: row.earliest_weeks })}
+        {row.test_kind} · {t('stiGuide.fromWeeks', '{{n}}w+', { n: row.earliest_weeks })}
       </span>
       <span aria-hidden="true" className="relative mt-1.5 block h-3">
         {/* Ticks sit behind the bar so a value can be read off the chart
@@ -304,11 +303,7 @@ const NO_PLATES: RouteStation[] = [];
 
 export default function StiGuidePage() {
   const { t } = useTranslation();
-  const {
-    data: matrix,
-    isLoading: loadingMatrix,
-    isError: matrixError,
-  } = useTransmissionMatrix();
+  const { data: matrix, isLoading: loadingMatrix, isError: matrixError } = useTransmissionMatrix();
   const {
     data: protection,
     isLoading: loadingProtection,
@@ -438,9 +433,7 @@ export default function StiGuidePage() {
     return (
       <PageContainer>
         <Eyebrow>{t('stiGuide.eyebrow', 'Sexual health')}</Eyebrow>
-        <h1 className="mt-2 font-display text-display">
-          {t('stiGuide.title', 'The STI guide')}
-        </h1>
+        <h1 className="mt-2 font-display text-display">{t('stiGuide.title', 'The STI guide')}</h1>
         <p className="mt-6 max-w-reading text-body-lg leading-relaxed">
           {t(
             'stiGuide.loadError',
@@ -465,9 +458,7 @@ export default function StiGuidePage() {
     <PageContainer>
       {/* ── Masthead ─────────────────────────────────────────────────────── */}
       <Eyebrow>{t('stiGuide.eyebrow', 'Sexual health')}</Eyebrow>
-      <h1 className="mt-2 font-display text-hero">
-        {t('stiGuide.title', 'The STI guide')}
-      </h1>
+      <h1 className="mt-2 font-display text-hero">{t('stiGuide.title', 'The STI guide')}</h1>
       <p className="mt-6 max-w-reading text-body-lg leading-relaxed">
         {t(
           'stiGuide.intro',
@@ -601,8 +592,7 @@ export default function StiGuidePage() {
                               ·
                             </span>
                             <span className="sr-only">
-                              {sti.name}, {p.label}:{' '}
-                              {t('stiGuide.noEntry', 'no documented route')}
+                              {sti.name}, {p.label}: {t('stiGuide.noEntry', 'no documented route')}
                             </span>
                           </td>
                         );
@@ -615,6 +605,7 @@ export default function StiGuidePage() {
                           <RiskMark
                             risk={cell.risk}
                             blood={cell.blood}
+                            fill
                             srLabel={`${sti.name}, ${p.label}: ${transmissionRiskVisual(cell.risk).label}${
                               cell.blood ? ` — ${t('stiGuide.bloodNote', 'risk with blood')}` : ''
                             }`}
