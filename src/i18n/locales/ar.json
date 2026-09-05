@@ -3365,7 +3365,8 @@
     "tags": "الوسوم",
     "organizations": "[AR] Organizations",
     "guides": "الأدلة",
-    "people": "تعرّف على أشخاص"
+    "people": "تعرّف على أشخاص",
+    "showCollapsed": "إظهار المستويات الأعلى"
   },
   "chat": {
     "react": "تفاعل",
