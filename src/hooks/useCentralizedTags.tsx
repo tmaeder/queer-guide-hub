@@ -94,22 +94,23 @@ interface AssignmentRow {
   tag_id: string;
   category_id: string;
   is_primary: boolean;
-  tag_categories: {
-    id: string;
-    name: string;
-    slug: string;
-    level: number;
-    parent_id: string | null;
-  } | null;
 }
 
 async function fetchAllAssignments(): Promise<AssignmentRow[]> {
   const PAGE = 1000;
   const rows: AssignmentRow[] = [];
   for (let from = 0; ; from += PAGE) {
+    // NO `tag_categories(...)` EMBED. `fetchAllTagsWithCategories` already
+    // selects every row of `tag_categories` in the same `Promise.all` and
+    // builds `catLookup` from it, so embedding shipped a full category object
+    // on each of ~6,000 assignment rows — the same ~53 records repeated over
+    // and over — and made the server join per page. Measured on prod
+    // 2026-09-04, six of these cost 2.0s, 2.0s, 1.3s, 1.2s, 0.7s and 0.6s on
+    // ONE page load. The category is resolved from `catLookup` by
+    // `category_id` instead, which is the same data by a cheaper route.
     const { data, error } = await supabase
       .from('tag_category_assignments')
-      .select('tag_id, category_id, is_primary, tag_categories(id, name, slug, level, parent_id)')
+      .select('tag_id, category_id, is_primary')
       .order('tag_id', { ascending: true })
       .range(from, from + PAGE - 1);
     if (error) break;
@@ -119,6 +120,44 @@ async function fetchAllAssignments(): Promise<AssignmentRow[]> {
   return rows;
 }
 
+/**
+ * The columns the glossary INDEX actually renders.
+ *
+ * `select('*')` pulled all ~40 columns of `unified_tags` for all 4,627 active
+ * rows, five paged requests deep. Measured on prod 2026-09-04: 4,097 kB for
+ * `*` against 668 kB for this list — 16.3%, i.e. the index was shipping ~3.4 MB
+ * it never read, `long_description` (full wiki bodies, 1,163 kB / 28.4%) worst
+ * of all.
+ *
+ * NOT the same set as the `CentralizedTag` interface, deliberately. That type is
+ * shared with `fetchTagWithCategories`, which fetches ONE tag for the detail
+ * page and legitimately needs `long_description`, `image_*`, `wikipedia_url`
+ * and `scientific_data`. Those stay optional on the type and are simply absent
+ * from corpus rows — no consumer of the corpus reads them (verified across
+ * TagsIndex, TagResults, TagIndexCard, CategoryTreeRail, TagSelector and
+ * AdminTags before narrowing).
+ *
+ * Adding a column here is cheap; adding one to the RENDER without adding it
+ * here yields `undefined` at runtime, which is why the guard test asserts this
+ * list against what the index reads.
+ */
+export const INDEX_TAG_COLUMNS = [
+  'id',
+  'name',
+  'slug',
+  'description',
+  'short_description',
+  'usage_count',
+  'status',
+  'category',
+  'entity_kind',
+  'is_adult',
+  'is_sensitive',
+  'seo_indexable',
+  'created_at',
+  'updated_at',
+].join(', ');
+
 // Same max-rows cap: ~3.7k active tags, so `.limit(10000)` still returned
 // only the first 1000. Page through all of them.
 async function fetchAllActiveTags() {
@@ -127,7 +166,7 @@ async function fetchAllActiveTags() {
   for (let from = 0; ; from += PAGE) {
     const { data, error } = await supabase
       .from('unified_tags')
-      .select('*')
+      .select(INDEX_TAG_COLUMNS)
       .eq('status', 'active')
       .order('usage_count', { ascending: false })
       .order('id', { ascending: true })
@@ -164,16 +203,32 @@ async function fetchAllTagsWithCategories(): Promise<CentralizedTagsData> {
     }
   }
 
+  // SAFETY GUARD, not defensive noise. Since the embed was dropped, a tag's
+  // categories come ONLY from `catLookup` — and the adult age gate decides what
+  // to hide by matching category names (ADULT_CATEGORY_NAMES), so a tag with no
+  // categories reads as not-adult. If this fetch failed we would therefore
+  // silently un-gate every adult term rather than show an error. Fail loudly
+  // instead: React Query surfaces it and the index shows its error state.
+  //
+  // The old embedded shape degraded the other way (categories survived, parent
+  // names were lost), so this is the one behaviour change here — and it turns a
+  // silent safety regression into a visible failure.
+  if (!allCats || allCats.length === 0) {
+    throw new Error(
+      'tag_categories fetch returned nothing — refusing to build the glossary with no categories, because the adult age gate keys on category names',
+    );
+  }
+
   // Build tag_id → categories map
   const tagCatsMap = new Map<string, TagCategoryInfo[]>();
   if (catAssignments) {
     for (const a of catAssignments) {
-      const cat = (a as Record<string, unknown>).tag_categories as Record<string, unknown> | null;
+      const cat = catLookup.get(a.category_id);
       if (!cat) continue;
       const parentInfo = cat.parent_id ? catLookup.get(cat.parent_id) : null;
       if (!tagCatsMap.has(a.tag_id)) tagCatsMap.set(a.tag_id, []);
       tagCatsMap.get(a.tag_id)!.push({
-        id: cat.id,
+        id: a.category_id,
         name: cat.name,
         slug: cat.slug,
         level: cat.level,
