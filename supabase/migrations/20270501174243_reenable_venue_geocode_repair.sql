@@ -60,13 +60,46 @@
 -- anything, and the nightly automation_cron_sync at 05:10 applies it anyway.
 -- The assertion below fails the migration if this call would kill a job, so an
 -- unexpected ride-along cannot pass silently.
+-- 2026-09-05: the dry run above was taken on 09-04 and the registry moved under
+-- it. On the live push this aborted with
+--   disabled_killed: ["marketplace_image_mirror"]
+-- and, because db push stops at the first failing migration, it stranded every
+-- migration behind it -- five and counting -- while edge functions kept
+-- deploying, i.e. prod running new code against an older schema.
+--
+-- marketplace_image_mirror was not killed BY this migration. It was already
+-- `enabled = false` with a live cron.job, which is the ordinary intermediate
+-- state of an auto-paused automation: auto-pause sets enabled=false and does NOT
+-- unschedule, and the nightly automation_cron_sync at 05:10 is what retires the
+-- job. The sync was going to unschedule it within the day regardless; this
+-- migration merely happened to be the next caller.
+--
+-- The guard is still worth having -- a job this migration genuinely knocked out
+-- must fail loudly -- so it is scoped to that rather than to "any kill":
+-- snapshot the rows ALREADY disabled-with-a-live-cron before the call, and fail
+-- only on a kill outside that set. Pre-existing ones are reported as a NOTICE so
+-- they stay visible instead of being silently tolerated.
 do $reenable$
 declare
-  v_sync      jsonb;
-  v_recreated jsonb;
-  v_killed    jsonb;
-  v_exists    boolean;
+  v_sync       jsonb;
+  v_recreated  jsonb;
+  v_killed     jsonb;
+  v_exists     boolean;
+  v_prekill    text[];
+  v_unexpected text[];
 begin
+  select coalesce(array_agg(a.slug order by a.slug), '{}')
+    into v_prekill
+    from public.admin_automations a
+    join cron.job j on j.jobname = a.slug
+   where a.enabled is not true;
+
+  if coalesce(array_length(v_prekill, 1), 0) > 0 then
+    raise notice
+      'pre-existing disabled-but-scheduled automations (the nightly sync retires these regardless): %',
+      v_prekill;
+  end if;
+
   update public.admin_automations
      set enabled  = true,
          schedule = '5,25,45 * * * *',
@@ -88,13 +121,25 @@ begin
   v_recreated := coalesce(v_sync -> 'recreated', '[]'::jsonb);
   v_killed    := coalesce(v_sync -> 'disabled_killed', '[]'::jsonb);
 
-  -- Nothing about re-enabling one row should unschedule another. If this call
-  -- killed anything, a registry row was disabled without its cron being
-  -- retired and this migration is not the place to discover that.
-  if jsonb_array_length(v_killed) > 0 then
+  -- Nothing about re-enabling one row should unschedule another -- but a row that
+  -- was ALREADY disabled-with-a-live-cron before this ran was queued for
+  -- retirement by the nightly sync whatever happened here, so killing it is not
+  -- this migration's doing. Fail only on a kill outside that snapshot.
+  select coalesce(array_agg(k order by k), '{}')
+    into v_unexpected
+    from jsonb_array_elements_text(v_killed) as k
+   where k <> all (v_prekill);
+
+  if coalesce(array_length(v_unexpected, 1), 0) > 0 then
     raise exception
-      'sync_automations_to_cron(true) unscheduled jobs as a side effect of re-enabling venue_geocode_repair: %',
-      v_killed;
+      'sync_automations_to_cron(true) unscheduled jobs that were NOT already pending retirement, as a side effect of re-enabling venue_geocode_repair: % (pre-existing: %)',
+      v_unexpected, v_prekill;
+  end if;
+
+  if jsonb_array_length(v_killed) > 0 then
+    raise notice
+      'sync retired % already-disabled job(s), all of which were pending retirement before this migration: %',
+      jsonb_array_length(v_killed), v_killed;
   end if;
 
   select exists (select 1 from cron.job where jobname = 'venue_geocode_repair')
