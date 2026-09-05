@@ -1,17 +1,3 @@
--- RECOVERED FROM PROD BY scripts/recover-migration-drift.mjs.
---
--- Applied to prod as version 20260904203255 with no repo file — the signature of
--- MCP `apply_migration`, which stamps a version and commits nothing. An applied
--- version with no file fails migration-versions on every PR in the repo and
--- makes `db push` refuse to run.
---
--- Reconstructed from `schema_migrations.statements`, which holds the PARSED
--- statements: trailing semicolons are stripped (re-added here) and any original
--- comment header is NOT recorded, so the reasoning that accompanied this
--- migration is lost. Verified by md5 against a server-computed digest.
---
--- Never re-run: `db push` matches on version and skips an applied one. The file
--- exists so history is complete and a rebuild from zero works.
 -- Feed the three-state capital-penalty reading into the safety-note composer.
 --
 -- `run_city_safety_backfill` tested `(co.lgbti_criminalization->>'death_penalty')='Yes'`
@@ -25,6 +11,12 @@
 -- lines, because a restatement of this function is a known merge-collision surface and
 -- every line I did not intend to touch is a line I could get wrong. The replacement count
 -- is asserted, so a silent no-op — the actual danger of string surgery — cannot pass.
+--
+-- REPLAY-SAFE ON A FRESH REBUILD: this reads whatever definition is current and rewrites
+-- two expressions in it. On `db reset` the current definition at this point is
+-- 20261103100000's, which contains exactly the two occurrences asserted below. If a later
+-- migration ever changes that function, this one will find a count other than 2 and RAISE
+-- rather than silently doing nothing.
 --
 -- CONSEQUENCE, and it is the intended one: `death_penalty` is one of the eight fields in
 -- the fact fingerprint, so cities in those five countries now mismatch their stamp and
@@ -80,4 +72,4 @@ BEGIN
   IF position('rec.stale_note OR rec.fact_drift' in v_def) = 0 THEN
     RAISE EXCEPTION 'retraction condition missing after substitution';
   END IF;
-END $$;;
+END $$;

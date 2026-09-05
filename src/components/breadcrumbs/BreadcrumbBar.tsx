@@ -1,7 +1,14 @@
 import { Fragment, useEffect } from 'react';
 import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   Breadcrumb,
   BreadcrumbEllipsis,
@@ -99,10 +106,16 @@ export function BreadcrumbBar() {
                       className={`shrink-0 ${hideSep ? 'hidden md:inline-flex' : ''}`}
                     />
                   )}
-                  {/* Mobile-only ellipsis stand-in, shown once after the first crumb. */}
+                  {/* Mobile-only overflow control, rendered once after the first
+                      crumb. It carries the crumbs the row has no width for, so
+                      collapsing the trail hides them from VIEW without putting
+                      them out of REACH. */}
                   {collapse && i === 1 && (
-                    <BreadcrumbItem className="shrink-0 md:hidden">
-                      <BreadcrumbEllipsis />
+                    <BreadcrumbItem
+                      data-testid="breadcrumb-overflow"
+                      className="shrink-0 md:hidden"
+                    >
+                      <CollapsedCrumbsMenu crumbs={trail.slice(1, lastIndex)} t={t} />
                     </BreadcrumbItem>
                   )}
                   <BreadcrumbItem
@@ -129,6 +142,56 @@ export function BreadcrumbBar() {
         </Breadcrumb>
       </div>
     </div>
+  );
+}
+
+/**
+ * The crumbs the mobile row collapsed, as a menu behind the ellipsis.
+ *
+ * Until 2026-09-05 the ellipsis was a `<span role="presentation"
+ * aria-hidden="true">` — decoration standing in for content nobody could get
+ * to. The middle crumbs are `display: none` below `md`, which removes them
+ * from the tab order and the accessibility tree as well as from view, so a
+ * phone measured on prod offered exactly ONE reachable level (Home) on a trail
+ * of five. Breadcrumbs exist to navigate UP; a trail that cannot be climbed is
+ * decoration too.
+ *
+ * A menu rather than an expand-in-place toggle: the row is deliberately locked
+ * to one line (`flex-nowrap overflow-hidden`), so revealing the crumbs inline
+ * would clip them against the same width that hid them.
+ *
+ * A crumb with no href stays unreachable — it has no destination (a venue in a
+ * city we hold no record for). It is rendered as a disabled item rather than
+ * dropped, so the menu still describes the full path.
+ */
+function CollapsedCrumbsMenu({ crumbs, t }: { crumbs: Crumb[]; t: TFunction }) {
+  if (crumbs.length === 0) return null;
+  return (
+    <DropdownMenu>
+      {/* The glyph is decorative and stays aria-hidden; the BUTTON carries the
+          accessible name. `min-height: 44px` comes from the base layer. */}
+      <DropdownMenuTrigger
+        className="inline-flex items-center justify-center px-1 text-muted-foreground transition-colors hover:text-foreground"
+        aria-label={t('breadcrumb.showCollapsed', 'Show the levels above')}
+      >
+        <BreadcrumbEllipsis />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start">
+        {crumbs.map((crumb, i) =>
+          crumb.href ? (
+            <DropdownMenuItem key={i} asChild>
+              <LocalizedLink to={crumb.href} className="no-underline">
+                {crumb.label}
+              </LocalizedLink>
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem key={i} disabled>
+              {crumb.label}
+            </DropdownMenuItem>
+          ),
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
