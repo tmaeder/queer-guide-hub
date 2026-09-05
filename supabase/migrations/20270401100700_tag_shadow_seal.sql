@@ -1,5 +1,5 @@
 -- Make "an alias occupying a live tag's slug" unrepresentable, in both
--- directions, so the pass in 20270105101000 does not have to be run a third time.
+-- directions, so the pass in 20270401100600 does not have to be run a third time.
 --
 -- WHY THE EXISTING GUARD WAS NOT ENOUGH. `trg_tag_alias_reject_shadow` is
 -- BEFORE INSERT OR UPDATE on `tag_aliases`. It refuses an alias that would
@@ -17,7 +17,7 @@
 -- because `merge_tag_concept` skips its insert in that case. So the unmerge
 -- sets the loser back to `active` while an alias still carries its slug: the
 -- precise state Part 2 refuses. Without this fix, Part 2 would make every such
--- merge irreversible — including all nine merged by 20270105101000, whose
+-- merge irreversible — including all nine merged by 20270401100600, whose
 -- losers all had a pre-existing alias. That is exactly how the live
 -- `sildenafil` -> `viagra` shadow came to exist: 20261015110000 reversed that
 -- merge to put 1,088 chars of drug-interaction prose back in circulation, and
@@ -101,7 +101,7 @@ begin
   -- which cleared only the alias this merge itself created. Any alias carrying
   -- the duplicate's slug becomes a shadow the moment the duplicate goes back to
   -- `active` a few lines below, whoever wrote it and whatever its type — and
-  -- since 20270105101100 that state is refused outright, so the narrow form
+  -- since 20270401100700 that state is refused outright, so the narrow form
   -- would abort the unmerge instead of completing it.
   --
   -- Synonyms first: `search_synonyms.tag_alias_id` is ON DELETE SET NULL, so a
@@ -128,37 +128,61 @@ create or replace function public.tag_reject_alias_shadow()
  language plpgsql
  set search_path to 'public'
 as $function$
-declare v_owner uuid;
+declare
+  v_owner uuid;
+  v_slug  text;
 begin
-  if NEW.status is distinct from 'active' or NEW.slug is null then
+  if NEW.status is distinct from 'active' then
+    return NEW;
+  end if;
+
+  -- Do NOT read NEW.slug directly, and do NOT return early when it is null. On an
+  -- INSERT that supplies only `name`, the slug is DERIVED by
+  -- unified_tags_normalize_slug -- and a free-text feed minting tags by name is
+  -- exactly the producer this seal exists to stop (12 of the 27 shadows came from
+  -- one German event feed). Deriving it here too makes the check independent of
+  -- trigger firing order and of whether the caller supplied a slug at all.
+  -- normalize_tag_slug is idempotent, so re-deriving an already-normalized slug is
+  -- a no-op.
+  v_slug := public.normalize_tag_slug(coalesce(NEW.slug, NEW.name));
+  if v_slug is null then
     return NEW;
   end if;
 
   select a.canonical_tag_id into v_owner
     from public.tag_aliases a
-   where lower(a.alias_slug) = lower(NEW.slug)
+   where lower(a.alias_slug) = lower(v_slug)
      and a.canonical_tag_id <> NEW.id
    limit 1;
 
   if v_owner is not null then
     raise exception
-      'tag % cannot be active: the slug % is held as an alias of another tag', NEW.id, NEW.slug
-      using hint = 'Delete the tag_aliases row (and its search_synonyms row FIRST -- that FK is ON DELETE SET NULL) in the same transaction, or merge the two tags instead. See 20270105101000.';
+      'tag % cannot be active: the slug % is held as an alias of another tag', NEW.id, v_slug
+      using hint = 'Delete the tag_aliases row (and its search_synonyms row FIRST -- that FK is ON DELETE SET NULL) in the same transaction, or merge the two tags instead. See 20270401100600.';
   end if;
   return NEW;
 end;
 $function$;
 
--- UPDATE is column-scoped to the two columns that can create the state. A
--- column-scoped trigger fires on the columns named in the UPDATE *statement*,
--- not on what another BEFORE trigger wrote -- which is fine here because
--- `unified_tags_normalize_slug` only ever rewrites `slug` on a statement that
--- already names `slug` or `name`, and `name` cannot reach a slug an alias holds
--- without also being a slug change. The alternative, an unscoped trigger, would
--- evaluate on every prose sweep and category resync for no gain.
+-- The `zz_` prefix is LOAD-BEARING, not cosmetic. BEFORE triggers on one table
+-- fire in NAME order (the rule this repo already documents for
+-- `news_articles_zz_content_hash`), and `trg_tag_reject_alias_shadow` sorts
+-- BEFORE `trg_unified_tags_normalize_slug` -- the trigger that DERIVES the slug.
+-- So on a name-only INSERT the seal used to run first, see a null slug, and
+-- return early: inert against the one producer it was written to stop. The
+-- function above no longer depends on that ordering either (it derives the slug
+-- itself), so this is belt and braces rather than the sole fix.
+--
+-- `name` is in the UPDATE column list for the same reason. A column-scoped
+-- trigger fires on the columns named in the UPDATE *statement*, not on what
+-- another BEFORE trigger wrote, so `UPDATE unified_tags SET name = ...` -- which
+-- the normalizer turns into a slug change -- would not have fired a trigger
+-- scoped to (status, slug). Still scoped rather than unscoped, so ordinary prose
+-- sweeps and category resyncs do not pay for it.
 drop trigger if exists trg_tag_reject_alias_shadow on public.unified_tags;
-create trigger trg_tag_reject_alias_shadow
-  before insert or update of status, slug on public.unified_tags
+drop trigger if exists trg_zz_tag_reject_alias_shadow on public.unified_tags;
+create trigger trg_zz_tag_reject_alias_shadow
+  before insert or update of status, slug, name on public.unified_tags
   for each row execute function public.tag_reject_alias_shadow();
 
 ------------------------------------------------------------------ part 3
@@ -167,15 +191,24 @@ declare v_bad int; v_slug text; v_fired boolean := false; v_audit uuid;
 begin
   perform set_config('app.actor', 'migration:tag-shadow-seal', true);
 
-  -- The seal cannot be added while the corpus violates it. 20270105101000 is
+  -- The seal cannot be added while the corpus violates it. 20270401100600 is
   -- the cleanup and sorts before this; if it did not apply, say so here rather
   -- than leaving a trigger that aborts the next revival for an unrelated reason.
   select count(*) into v_bad
     from public.tag_aliases a
     join public.unified_tags t
       on lower(t.slug) = lower(a.alias_slug) and t.status = 'active' and t.id <> a.canonical_tag_id;
+  -- NOTICE, not EXCEPTION. The premise for failing here was that the trigger
+  -- "cannot be added while the corpus violates it" — that is false. CREATE TRIGGER
+  -- does not validate existing rows: the seal installs cleanly over a dirty corpus
+  -- and simply refuses the violators the next time someone touches their
+  -- status/slug/name. Raising here instead couples this file to a population that
+  -- regrows ~5/day from an unsealed producer, so a single new shadow minted between
+  -- the pass and this seal would abort db push and strand every later migration —
+  -- which is the opposite of what a seal is for.
   if v_bad > 0 then
-    raise exception 'tag shadow seal: % shadowing alias(es) still exist — 20270105101000 must apply first', v_bad;
+    raise notice
+      'tag shadow seal: % shadowing alias(es) still exist. The trigger is installed and will refuse them on their next write; run another disposition pass to clear the backlog.', v_bad;
   end if;
 
   -- Prove the trigger FIRES, rather than asserting it exists. A trigger that is
@@ -214,7 +247,7 @@ begin
   end if;
 
   -- Prove Part 1 is actually a prerequisite, by REVERSING one of the merges
-  -- 20270105101000 just made while the seal is live. Without the widening this
+  -- 20270401100600 just made while the seal is live. Without the widening this
   -- aborts: `prozac` had a pre-existing alias, so that merge's snapshot carries
   -- `__alias_added = false`, the old unmerge would have left the alias standing,
   -- and setting the row back to `active` would then hit the trigger above.
@@ -230,7 +263,7 @@ begin
    where source = 'shadow-alias-pass-2' and duplicate_slug = 'prozac' and not is_reversed
    limit 1;
   if v_audit is null then
-    raise exception 'tag shadow seal: no reversible pass-2 merge to probe with — 20270105101000 must apply first';
+    raise exception 'tag shadow seal: no reversible pass-2 merge to probe with — 20270401100600 must apply first';
   end if;
 
   begin

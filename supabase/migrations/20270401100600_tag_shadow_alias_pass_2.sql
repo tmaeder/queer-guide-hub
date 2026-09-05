@@ -18,7 +18,7 @@
 -- is BEFORE INSERT OR UPDATE on `tag_aliases` ONLY: it refuses an alias that
 -- would shadow a live tag, and has nothing to say when a TAG is created or
 -- revived into a slug an alias already holds. So the guard is one-directional
--- and the cleanup regrows. 20270105101100 closes it; this migration is the
+-- and the cleanup regrows. 20270401100700 closes it; this migration is the
 -- cleanup that has to land first, because a seal cannot be added while the
 -- corpus still violates it.
 --
@@ -105,7 +105,7 @@
 --                                 `unmerge_tag_concept` did not remove them
 --                                 because `__alias_added` was false: the merge
 --                                 had found an alias already there and skipped
---                                 its own insert. 20270105101100 fixes that.
+--                                 its own insert. 20270401100700 fixes that.
 --   sub          -> submissive    NOT the kink abbreviation. The 80 uses are
 --                                 AHA/SUB community-centre listings — "AHA
 --                                 Plenum", "Eurovision Karaoke", "Queer Poetry
@@ -206,8 +206,20 @@ begin
     from public.tag_aliases a
     join public.unified_tags t
       on lower(t.slug) = lower(a.alias_slug) and t.status = 'active' and t.id <> a.canonical_tag_id;
-  if v_n <> 27 then
-    raise exception 'shadow pass 2: corpus holds % shadowing aliases, not the 27 reviewed — re-read before applying', v_n;
+  -- SUPERSET, not equality. This counts a population the header itself describes
+  -- as regrowing (~5/day from a free-text feed) and which is NOT sealed until the
+  -- next file in this same push — so an equality test races the producer: one new
+  -- shadowing alias minted between the measurement and the merge aborts db push
+  -- and strands every migration behind it.
+  --
+  -- FEWER than 27 is the case actually worth aborting on — it means a reviewed
+  -- pair was resolved elsewhere and this file's hand-checked dispositions are
+  -- stale. MORE than 27 is safe here, because parts A and B below resolve each of
+  -- the 27 BY NAME and raise individually if a reviewed pair has moved; the extras
+  -- are simply left for the next pass.
+  if v_n < 27 then
+    raise exception
+      'shadow pass 2: corpus holds only % shadowing aliases, fewer than the 27 reviewed — a reviewed pair was resolved elsewhere, re-read before applying', v_n;
   end if;
 
   ------------------------------------------------------- part A: 18 alias deletes
