@@ -1,6 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { applyFilters } from '@/components/cms/ContentListPanel/filterOps';
+import {
+  applyFilters,
+  applyArchivedView,
+  applyMergedView,
+  type ArchivedView,
+  type MergedView,
+} from '@/components/cms/ContentListPanel/filterOps';
 import type { Filter } from '@/components/cms/ContentListPanel/viewSpec';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 
@@ -58,10 +64,26 @@ interface Args {
   groupBy: string | null;
   filters: Filter[];
   search: string;
+  /**
+   * The list's archive and merge slices, so the board shows the same rows and
+   * the same counts as the table. Until this was threaded through, the hook
+   * applied NEITHER, so a board column counted archived and merged-away rows
+   * the table had already hidden.
+   */
+  archivedView: ArchivedView;
+  mergedView: MergedView;
   enabled: boolean;
 }
 
-export function useGroupedRows({ config, groupBy, filters, search, enabled }: Args) {
+export function useGroupedRows({
+  config,
+  groupBy,
+  filters,
+  search,
+  archivedView,
+  mergedView,
+  enabled,
+}: Args) {
   const field = config?.fields.find((f) => f.name === groupBy);
   const values = groupValuesFor(field);
 
@@ -74,6 +96,11 @@ export function useGroupedRows({ config, groupBy, filters, search, enabled }: Ar
       groupBy,
       search,
       JSON.stringify(filters.map((f) => [f.field, f.op, f.value ?? null])),
+      // Both slices are part of the query shape. Omit one and toggling it
+      // serves the previous slice's cached rows AND counts — no network call,
+      // no error, just stale numbers that look authoritative.
+      archivedView,
+      mergedView,
     ],
     enabled: enabled && !!config && !!groupBy && values.length > 0,
     queryFn: async (): Promise<RowGroup[]> => {
@@ -87,6 +114,8 @@ export function useGroupedRows({ config, groupBy, filters, search, enabled }: Ar
 
         if (search) q = q.ilike(ct.titleField, `%${search}%`);
         q = applyFilters(q as never, filters) as typeof q;
+        q = applyArchivedView(q as never, ct.lifecycle?.archive, archivedView) as typeof q;
+        q = applyMergedView(q as never, ct.merge, mergedView) as typeof q;
 
         // The group predicate is one more ordinary filter.
         q =

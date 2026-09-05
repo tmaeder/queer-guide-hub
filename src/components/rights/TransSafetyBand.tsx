@@ -3,6 +3,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { TgeuSourceLine } from '@/components/rights/SourceLine';
 import {
   readAffirmation,
+  readMarker,
   readRequirement,
   readTransViolence,
   requiresIt,
@@ -54,7 +55,27 @@ export function TransSafetyBand({ country }: { country: Record<string, unknown> 
   // src/pages/rights/TransRights.tsx for why — so it cannot gate this band.)
   if (!hasLgr && violence.state !== 'documented') return null;
 
-  const marker = String(lgr.gender_marker ?? '').trim();
+  /**
+   * `gender_marker` is the one row still rendered as its raw source string, and
+   * that is deliberate — ILGA's own words carry nuance no mapping preserves.
+   * "Not Possible (exceptions documented)" (4 countries) says something real
+   * that `readMarker`'s `not_possible` throws away, so this row is NOT routed
+   * through a label function the way self_id and the two requirements are.
+   *
+   * The one value that must not reach the page is the unrecorded SENTINEL.
+   * Measured on prod 2026-09-04, "No data" is the marker on 69 of the 244
+   * countries carrying a non-empty `lgbti_gender_recognition` — a third of the
+   * corpus rendering "Gender marker change: No data" as though the sentinel
+   * were a finding. Found on /country/afghanistan, where every other row had
+   * correctly hidden itself and this one was left announcing the absence.
+   *
+   * A blank hides; a stamp reads as content. Every sibling row in this band
+   * already hides when nothing is recorded, so this is consistency, not a new
+   * rule — and an empty string was ALREADY hidden here, so the leak was only
+   * ever the literal sentinel.
+   */
+  const rawMarker = String(lgr.gender_marker ?? '').trim();
+  const marker = readMarker(lgr.gender_marker) === 'unrecorded' ? '' : rawMarker;
   const yes = t('rights.trans.yes', 'Yes');
   const no = t('rights.trans.no', 'No');
 

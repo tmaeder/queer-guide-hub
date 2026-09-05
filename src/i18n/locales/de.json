@@ -3357,7 +3357,8 @@
     "tags": "Tags",
     "organizations": "[DE] Organizations",
     "guides": "Guides",
-    "people": "Leute treffen"
+    "people": "Leute treffen",
+    "showCollapsed": "Übergeordnete Ebenen anzeigen"
   },
   "chat": {
     "react": "Reagieren",
@@ -4503,7 +4504,8 @@
       "spansAllRights": "Dies umfasst ein ganzes Rechtsgebiet, nicht ein einzelnes Gesetz. Wir erfassen 18 einzelne Rechte, Land für Land.",
       "seeAllRights": "Alle 18 Rechte nach Land ansehen",
       "seeAllInSearch": "[DE] See all in search",
-      "shopAll": "Alle ansehen"
+      "shopAll": "Alle ansehen",
+      "figure": "[DE] Diagram"
     },
     "flagWall": {
       "eyebrow": "Symbole",
@@ -4516,6 +4518,115 @@
     "fromGlossary": {
       "title": "[DE] From the glossary",
       "all": "[DE] All terms"
+    },
+    "figures": {
+      "eyebrow": "[DE] Diagram",
+      "bandEyebrow": "[DE] Drawn",
+      "bandTitle": "[DE] The diagram",
+      "bandTitlePlural": "[DE] Diagrams",
+      "loading": "[DE] Drawing the diagram",
+      "readAsTable": "[DE] Read as a table",
+      "hideTable": "[DE] Hide the table",
+      "readMore": "[DE] Read the entry",
+      "sources": "[DE] Drawn from",
+      "checkedOn": "[DE] Claims last checked against these sources on {{date}}.",
+      "sensitiveBody": "[DE] This diagram covers a subject some readers find difficult. It is a definition, not advice.",
+      "adultBody": "[DE] This diagram is for adults.",
+      "adultReveal": "[DE] 18+ · Show diagram",
+      "table": {
+        "line": "[DE] Line",
+        "stops": "[DE] Stops",
+        "runsTo": "[DE] Runs to",
+        "stop": "[DE] Stop",
+        "kind": "[DE] Kind",
+        "detail": "[DE] Detail",
+        "leadsTo": "[DE] Leads to"
+      },
+      "fourLines": {
+        "title": "[DE] Four lines",
+        "caption": "[DE] Gender identity, gender expression, sex assigned at birth and attraction are four separate lines. Pick a stop on each. Nothing is stored or sent.",
+        "summary": "[DE] A transit map with four lines: gender identity drawn as two independent services on one corridor, gender expression, sex assigned at birth as a terminus that runs on to nothing, and attraction. They meet at a single interchange.",
+        "readout": "[DE] Where you are on each line",
+        "tableCaption": "[DE] Every line on the map and the stops it carries",
+        "corridor": {
+          "identity": "[DE] Gender identity: two independent services"
+        },
+        "axis": {
+          "identityWoman": "[DE] How much woman",
+          "identityMan": "[DE] How much man",
+          "expression": "[DE] Gender expression",
+          "assigned": "[DE] Sex assigned at birth",
+          "attraction": "[DE] Attraction"
+        },
+        "help": {
+          "identityWoman": "[DE] Who you know yourself to be. This runs independently of the line below it. You can be a lot of both, a little of both, or neither.",
+          "identityMan": "[DE] The second rail on the same corridor. Answering this one does not subtract from the one above.",
+          "expression": "[DE] How you present: clothes, voice, hair, the way you carry yourself. Stops, not a scale. Nothing here is halfway between two others.",
+          "assigned": "[DE] What someone wrote down when you were born. It is a starting point on the record, which is why this line stops instead of running on to the others.",
+          "attraction": "[DE] Who you are drawn to. Who you are and who you are drawn to are separate lines. That is the whole point of the map."
+        },
+        "amount": {
+          "notAtAll": "[DE] Not at all",
+          "aLittle": "[DE] A little",
+          "aLot": "[DE] A lot",
+          "entirely": "[DE] Entirely",
+          "ratherNot": "[DE] Rather not say"
+        },
+        "expression": {
+          "feminine": "[DE] Feminine",
+          "androgynous": "[DE] Androgynous",
+          "masculine": "[DE] Masculine",
+          "changes": "[DE] It changes"
+        },
+        "assigned": {
+          "female": "[DE] Female",
+          "male": "[DE] Male",
+          "intersex": "[DE] Intersex variation"
+        },
+        "attraction": {
+          "women": "[DE] Women",
+          "men": "[DE] Men",
+          "moreThanOne": "[DE] More than one gender",
+          "regardless": "[DE] Regardless of gender",
+          "noOne": "[DE] No one, or rarely"
+        }
+      },
+      "consentFlow": {
+        "title": "[DE] The line that stops",
+        "caption": "[DE] Consent as a route with signals, one speed restriction and no final destination. It loops back to the check-in and stays there. Not a legal test; the law differs by country.",
+        "summary": "[DE] A branching line. Asking without an answer, and anything that is not a clear yes, end at buffer stops. Capacity is a hatched speed-restriction section rather than a yes/no signal. The line does not terminate in approval. It loops back to a check-in signal that can be answered again at any time.",
+        "tableCaption": "[DE] Every stop on the line, and where it leads",
+        "groupLabel": "[DE] Stops on the line",
+        "hint": "[DE] Select any stop to light up the route that reaches it.",
+        "node": {
+          "start": "[DE] You want to do something with someone",
+          "asked": "[DE] Have you asked?",
+          "notAsked": "[DE] Guessing is not consent",
+          "clearYes": "[DE] Was the answer a clear yes?",
+          "notAYes": "[DE] No, maybe, or nothing",
+          "capacity": "[DE] Speed restriction: can everyone actually decide?",
+          "checkin": "[DE] Still yes, right now?",
+          "stopNow": "[DE] Stop",
+          "go": "[DE] Clear to proceed, for now"
+        },
+        "note": {
+          "asked": "[DE] Out loud, or in a way you have both already agreed reads as asking.",
+          "notAsked": "[DE] Not objecting is not agreeing. The line does not start here.",
+          "clearYes": "[DE] Theirs, not one you talked them into.",
+          "notAYes": "[DE] Anything that is not a yes is a no. This is the end of the line.",
+          "capacity": "[DE] Drink, drugs, exhaustion, being half asleep. Not a switch. If you cannot tell, you do not have an answer yet.",
+          "checkin": "[DE] The signal you come back to. Agreeing earlier is not agreeing now.",
+          "stopNow": "[DE] Anyone can stop anything at any point, for no reason. Then look after each other.",
+          "go": "[DE] And back to the check-in, which is why this line is a loop."
+        },
+        "edge": {
+          "no": "[DE] No",
+          "yes": "[DE] Yes",
+          "notAYes": "[DE] Not a yes",
+          "noOrUnsure": "[DE] No, or unsure",
+          "again": "[DE] And again, any time"
+        }
+      }
     }
   },
   "village": {
