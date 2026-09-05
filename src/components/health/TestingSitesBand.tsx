@@ -221,6 +221,7 @@ export function TestingSitesBand({
   lng,
   limit = 8,
   headingId = 'testing-sites',
+  plate,
 }: {
   countryCode?: string;
   cityId?: string;
@@ -228,6 +229,16 @@ export function TestingSitesBand({
   lng?: number;
   limit?: number;
   headingId?: string;
+  /**
+   * Plate number, when this band is a numbered plate in a host page's sequence
+   * (the STI guide runs 01–04 and this is 04). Opt-in: on a tag page the band
+   * is a section among many with no numbering to join, and it keeps its
+   * `text-headline` rank there. Without this the STI guide's own route strip
+   * listed it as station "4" over a heading that carried no number and sat a
+   * rank below the three plates above it — the strip promised a sequence the
+   * page did not deliver.
+   */
+  plate?: string;
 }) {
   const { t } = useTranslation();
   const { data: sites = [], isLoading } = useTestingSites({
@@ -254,10 +265,28 @@ export function TestingSitesBand({
   // degrades to exactly the old behaviour — the coverage note below always
   // renders and always links out.
   return (
-    <section className="mt-12 border-t border-border-hairline pt-8" aria-labelledby={headingId}>
-      <h2 id={headingId} className="font-display text-headline leading-tight">
-        {t('testing.where_to_test', 'Where to get tested')}
-      </h2>
+    <section
+      className={
+        plate
+          ? 'mt-16 border-t-2 border-foreground pt-6'
+          : 'mt-12 border-t border-border-hairline pt-8'
+      }
+      aria-labelledby={headingId}
+    >
+      {plate ? (
+        <div className="flex items-baseline gap-4">
+          <span aria-hidden="true" className="font-display text-headline">
+            {plate}
+          </span>
+          <h2 id={headingId} className="scroll-mt-24 font-display text-display">
+            {t('testing.where_to_test', 'Where to get tested')}
+          </h2>
+        </div>
+      ) : (
+        <h2 id={headingId} className="scroll-mt-24 font-display text-headline leading-tight">
+          {t('testing.where_to_test', 'Where to get tested')}
+        </h2>
+      )}
 
       {isLoading ? (
         <div className="mt-6 flex flex-col gap-4">
