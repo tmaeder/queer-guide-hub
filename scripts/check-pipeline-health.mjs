@@ -966,9 +966,10 @@ const GEO_BASELINE = {
   // counted as mismatches. A reload populated all 41 sovereign mappings and they
   // correctly stopped being findings. If this number jumps by ~40, suspect
   // geo_country_parent before suspecting the corpus.
-  // 409 -> 364 after the targeted forward_repair pass fixed 45 venues whose
-  // coordinate sat in the wrong country (Alpine Bistro was 16,320 km out).
-  containment_total: 364,
+  // 450 -> 409 (geo_country_parent completed) -> 364 (forward_repair fixed 45
+  // coordinates) -> 334 (30 venues relinked to the city their coordinate is
+  // actually in).
+  containment_total: 334,
   city_coord_defects_with_content: 7,
   queue_depth_warn: 5000,
   findings_max_age_hours: 48,      // sweep is nightly at 03:55; two misses is stale
