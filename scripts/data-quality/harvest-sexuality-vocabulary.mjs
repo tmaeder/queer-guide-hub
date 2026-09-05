@@ -101,6 +101,22 @@ export const CATEGORIES = [
   { name: 'Fetish subculture', weight: 'medium' },
   { name: 'Sexual attraction', weight: 'medium' },
   { name: 'Sexuality', weight: 'medium' },
+  // Toys, practice and the industry around them.
+  { name: 'Sex toys', weight: 'high' },
+  { name: 'Masturbation', weight: 'high' },
+  { name: 'Sex industry', weight: 'medium' },
+  // Movements and framings. `Identity politics` and `Interpersonal
+  // relationships` are the two broadest categories in the whole sweep and are
+  // expected to yield mostly `review` and `reject` — they are general
+  // sociology, not queer vocabulary, and are included because the decision was
+  // to sweep every requested source and filter hard per row.
+  { name: 'Sex positivism', weight: 'high' },
+  { name: 'Free love', weight: 'medium' },
+  { name: 'Sexuality and society', weight: 'medium' },
+  { name: 'Body positivity', weight: 'medium' },
+  { name: 'Interpersonal attraction', weight: 'medium' },
+  { name: 'Identity politics', weight: 'low' },
+  { name: 'Interpersonal relationships', weight: 'low' },
   // Mostly biology. Kept in scope per the explicit decision to sweep all
   // sources and filter hard per row, NOT because they are expected to yield.
   // Measured: Category:Mating is zoology (Amplexus, Mating of gastropods),
@@ -338,12 +354,23 @@ async function harvest() {
 
   for (const p of PAGES) add(p, 'page');
 
+  // A subcategory INHERITS its parent's weight. Without this, "Ulster
+  // loyalism" escaped the relevance arm because it also arrived via
+  // Category:Ethnicity in politics — a subcategory of Identity politics that
+  // was not itself in the low-weight set, so `sources.every(isLowWeight)` was
+  // false and the row was admitted. Same for Sectarianism (via
+  // Category:Sectarianism) and Mimpathy (via Category:Empathy).
+  const lowWeightSources = new Set();
   for (const { name } of CATEGORIES) {
     process.stderr.write(`category: ${name}\n`);
+    const weight = CATEGORIES.find((c) => c.name === name)?.weight;
+    const isLow = weight === 'low' || weight === 'none';
+    if (isLow) lowWeightSources.add(`Category:${name}`);
     for (const t of await categoryMembers(name, 'page')) add(t, `Category:${name}`);
     const subs = await categoryMembers(name, 'subcat');
     for (const sub of subs) {
       const clean = sub.replace(/^Category:/, '');
+      if (isLow) lowWeightSources.add(`Category:${clean}`);
       process.stderr.write(`  subcat: ${clean}\n`);
       for (const t of await categoryMembers(clean, 'page')) add(t, `Category:${clean}`);
     }
@@ -353,12 +380,75 @@ async function harvest() {
   process.stderr.write(`\n${titles.length} distinct titles; fetching metadata\n`);
   const meta = await pageMeta(titles);
 
+  /**
+   * The SOURCE CATEGORY is decisive for the critique routing, and the title is
+   * not. CRITIQUE_RULES matches title patterns, which caught "Faggot" and
+   * "Dyke (slang)" but let 14 members of Category:LGBTQ-related slurs through
+   * as ordinary vocabulary — "Fag (slang)", "Queer (pejorative)", "Sissy",
+   * "Moffie (slang)", "Cuntboy", "Troll (gay slang)". Filing those under Slang
+   * & Language presents a slur as a neutral synonym, which is the exact harm
+   * the critique disposition exists to prevent.
+   *
+   * Wikipedia has already made this judgement by putting the article in that
+   * category, so use it. Some members are arguably reclaimed rather than
+   * slurs today (Queer, Butch); routing them to `critique` does not decide
+   * that — it means a human writes the framing instead of a regex skipping it.
+   */
+  const CRITIQUE_SOURCES = /Category:(.*slur|LGBTQ erasure|Ethnic pornography|Race and sexuality)/i;
+
+  /**
+   * The FOURTH axis: topical relevance. The other three ask "is this a term?"
+   * and none asks "is it a term for THIS glossary".
+   *
+   * Measured after adding the broad categories: Category:Identity politics came
+   * back 74% `import` and Category:Interpersonal relationships 89%, and the
+   * samples are "Ulster loyalism", "Sectarianism", "Client politics",
+   * "Diaspora politics", "Actor-partner interdependence model", "Homophily",
+   * "Norm of reciprocity" and "Mimpathy". Every one is a real, well-defined
+   * term with a clean entity kind, a plausible Wikidata class and a short
+   * title — so arms 1, 2 and 3 all correctly pass them. They are simply
+   * general sociology and Northern Irish politics, and publishing them on an
+   * LGBTQ+ travel glossary would be the kind mismatch this whole file exists
+   * to prevent.
+   *
+   * Only rows whose ONLY provenance is a `weight: 'low'` category are tested,
+   * because a term that also appears under LGBTQ slang or Sexual acts has
+   * already earned its place. And the verdict is `review`, never `reject`:
+   * "Homophily" and "Long-distance relationship" are defensible entries a
+   * human might well want, and the same sweep legitimately surfaced "Chibados"
+   * (an Angolan gender-variant role) and "Beard (companion)" through exactly
+   * this path.
+   */
+  const LOW_WEIGHT = lowWeightSources;
+  const TOPICAL =
+    /\b(lgbt|lgbtq|queer|gay|lesbian|bisexual|bi|trans|transgender|transsexual|nonbinary|non-binary|intersex|asexual|aromantic|homosexual|heterosexual|sapphic|dyke|butch|femme|drag|pride|sex|sexual|sexuality|gender|erotic|kink|bdsm|fetish|polyamor|monogam|romantic|orientation|coming out|closet|cruising|camp)\b/i;
+
   let rows = titles.map((title) => {
     const m = meta.get(title);
-    const c = classify(title, m);
+    const sources = [...found.get(title)].sort();
+    let c = classify(title, m);
+    if (
+      c.disposition === 'import' &&
+      sources.every((s) => LOW_WEIGHT.has(s)) &&
+      !TOPICAL.test(title) &&
+      !(m?.cats ?? []).some((cat) => TOPICAL.test(cat))
+    ) {
+      c = {
+        disposition: 'review',
+        reason: 'only reached via a broad category and shows no topical signal — general sociology rather than queer vocabulary',
+      };
+    }
+    if (c.disposition === 'import' && sources.some((s) => CRITIQUE_SOURCES.test(s))) {
+      const src = sources.find((s) => CRITIQUE_SOURCES.test(s));
+      c = {
+        disposition: 'critique',
+        targetCategory: 'violence-hate',
+        reason: `filed by Wikipedia under ${src} — must not publish as neutral vocabulary`,
+      };
+    }
     return {
       title,
-      sources: [...found.get(title)].sort(),
+      sources,
       qid: m?.qid ?? null,
       ...c,
       // Filled by --match. `null` means NOT LOOKED, which is a different
