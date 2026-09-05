@@ -33,7 +33,7 @@
  * the migration and anything NEW fails here.
  *
  * THE ALLOWLIST IS AUDITED. Every entry was read as anon with the outcome noted beside
- * it in supabase/migrations/20291001093418_definer_content_exposure_gate.sql. That audit
+ * it in supabase/migrations/20310615140233_definer_content_exposure_gate.sql. That audit
  * found two MORE leaks (location_closure_timeline, which returned a row for 1,346 of
  * 1,346 gated venues, and find_duplicates, which returned a gated venue's id/slug/title/
  * country including NG), so the migration closes three rather than one.
@@ -107,7 +107,7 @@ console.error(
     '\n  cron / service-role only -> revoke execute ... from public, anon, authenticated;' +
     '\n  admin console          -> perform assert_admin_or_internal(); in the body' +
     '\n  verified safe          -> allowlist it in' +
-    '\n                            supabase/migrations/20291001093418_definer_content_exposure_gate.sql' +
+    '\n                            supabase/migrations/20310615140233_definer_content_exposure_gate.sql' +
     '\n                            WITH the evidence — read it under `set local role anon`' +
     '\n                            against a gated row and paste what you got.',
 )
