@@ -177,6 +177,32 @@ test('crisis-adjacent surfaces stay animation-free', async ({ page }) => {
  * whole time; only the polarity was wrong, and that is what a reader scans.
  */
 async function glyphFor(page, label: string): Promise<string> {
+  // Expand every collapsed section first. The rights card became a set of
+  // disclosures, so most rows are no longer in the DOM until their section is
+  // opened — "Adoption rights" lives under a collapsed FAMILY & RELATIONSHIPS,
+  // and this helper timed out waiting for a glyph on a row that was never
+  // rendered. Verified on prod: `innerText` of <main> contained "Freedom of
+  // expression" but not "Adoption rights" or "Family & relationships".
+  //
+  // Deliberately expands ALL of them rather than mapping label -> section: the
+  // mapping is exactly the kind of copy that rots when a right is re-filed, and
+  // the criminalisation section (the one that must never collapse) has no
+  // trigger to click, so it is unaffected either way.
+  // Snapshot the trigger NAMES first, then click each by name. Iterating a live
+  // `button[aria-expanded="false"]` locator re-queries after every click (each
+  // one leaves the set), which spent the whole test budget inside count().
+  const names = await page
+    .locator('button[aria-expanded="false"]')
+    .evaluateAll((els) => els.map((e) => (e.textContent ?? '').trim()).filter(Boolean));
+  for (const name of names) {
+    await page
+      .locator('button[aria-expanded="false"]')
+      .filter({ hasText: name })
+      .first()
+      .click({ timeout: 5_000 })
+      .catch(() => {});
+  }
+
   const row = page
     .locator('div')
     .filter({ has: page.locator(`:scope > p:text-is("${label}")`) })
@@ -197,6 +223,9 @@ async function glyphFor(page, label: string): Promise<string> {
 }
 
 test('a legal barrier renders as negative, not as a protection', async ({ page }) => {
+  // The rights card is now a set of disclosures; opening them costs time on top
+  // of the page load, which does not fit the default 30s budget.
+  test.setTimeout(90_000);
   await page.goto('/country/afghanistan');
   await dismiss(page);
   // Afghanistan: expression "Non-Explicit Legal Barriers",
@@ -206,6 +235,9 @@ test('a legal barrier renders as negative, not as a protection', async ({ page }
 });
 
 test('the best available outcome renders as positive, not partial', async ({ page }) => {
+  // The rights card is now a set of disclosures; opening them costs time on top
+  // of the page load, which does not fit the default 30s budget.
+  test.setTimeout(90_000);
   await page.goto('/country/germany');
   await dismiss(page);
   // Germany: adoption "Joint & Second Parent Adoption" — the best case, which

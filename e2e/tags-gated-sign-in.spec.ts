@@ -48,8 +48,20 @@ function publishesDefinedTerm(html: string): boolean {
   return html.includes('DefinedTerm');
 }
 
-// Four of the 101, spread across both creating migrations.
-const GATED = ['footjob', 'anal-whore', 'gag-slut', 'spit-slut'];
+// Three of the 101, spread across both creating migrations.
+//
+// `footjob` was in this list until #3415 published it and `foot-worship` — "the
+// human read has happened" — which is a deliberate editorial decision, not a gate
+// failure, so the test was asserting a gate that no longer exists and had been
+// failing nightly. Verified against prod before removing it: footjob and
+// foot-worship serve `<title>Footjob | Queer Guide</title>` with NO `noindex`,
+// while all three below still serve `Sign in to view | Queer Guide` WITH it.
+//
+// Three is a floor, not an accident: this list must keep at least one genuinely
+// gated slug, or the loop iterates an empty set and the describe block passes
+// having asserted nothing. If publishing ever empties it, delete the test rather
+// than leave it idling green.
+const GATED = ['anal-whore', 'gag-slut', 'spit-slut'];
 
 test.describe('@safety gated glossary terms', () => {
   for (const slug of GATED) {
