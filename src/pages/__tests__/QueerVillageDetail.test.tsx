@@ -12,6 +12,17 @@ vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
 vi.mock('@/hooks/useAuth', () => ({
   useAuth: () => ({ user: null, session: null, loading: false }),
 }));
+// See the matching note in EventDetail.test.tsx. `GatedDetailFallback` asks
+// `gated_entity_exists` before choosing between the sign-in gate and the
+// not-found stop, and `useAuth` above makes every case here signed-out, which
+// is precisely when that query runs. Unmocked, this "unit" test issues a live
+// request to the production database and its result depends on prod latency —
+// it failed on 2026-09-05 for that reason alone, with no code change.
+//
+// `data: false` = nothing is gated, so the not-found branch below is reached.
+vi.mock('@/integrations/supabase/untyped', () => ({
+  untypedRpc: () => Promise.resolve({ data: false, error: null }),
+}));
 vi.mock('@/hooks/useFavorites', () => ({
   useFavorites: () => ({ toggleFavorite: vi.fn(), isFavorited: () => false }),
 }));
