@@ -224,7 +224,7 @@ export default function TagsIndex() {
   const base = useMemo(
     () =>
       entries.filter((e) => {
-        const entityKind = (e.tag as { entity_kind?: string | null }).entity_kind ?? 'concept';
+        const entityKind = e.tag.entity_kind ?? 'concept';
         // Proper names are not glossary content — never on the public index.
         if (entityKind === 'person') return false;
         if (state.kind !== 'all' && !KIND_FILTER_MATCHES[state.kind].has(entityKind)) {
