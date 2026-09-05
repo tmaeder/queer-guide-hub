@@ -71,13 +71,29 @@ test.describe('removed: the 0-100 equality number on the geo singles', () => {
   // which read as a precise measurement of a country's safety when it is a
   // roll-up of legal flags, is gone. So each case asserts the verdict is still
   // there AND the number is not.
+  //
+  // EVERY content assertion here carries `timeout: BOOT`, and that is not a
+  // flake papered over with a bigger number — it is the same wait the banner
+  // itself gets. These banners mount before their data does: useTripSafety
+  // resolves afterwards and re-renders them, so for a moment the container is
+  // present but empty. Assertions that inherited Playwright's default 5s
+  // raced that window. Measured on prod: the /city/berlin case failed with
+  // `not.toContainText('/100')` receiving "" — an EMPTY container, not a page
+  // showing the number — and the /country/germany case failed while its own
+  // DOM dump showed the banner visible at 824x98 with <p> textContent exactly
+  // "Equality". The elements were right; only the deadline was wrong.
   for (const path of ['/city/berlin', '/villages/chueca']) {
     test(`${path} states the tier, not the number`, async ({ page }) => {
       await open(page, path);
       const verdict = page.getByTestId('geo-safety-verdict');
       await expect(verdict).toBeVisible({ timeout: BOOT });
-      await expect(verdict).toContainText(/equality|criminal|death penalty|check local laws/i);
-      await expect(verdict).not.toContainText('/100');
+      await expect(verdict).toContainText(/equality|criminal|death penalty|check local laws/i, {
+        timeout: BOOT,
+      });
+      // Ordered after the positive assertion on purpose: a negative against a
+      // container that is merely still empty is vacuously true, so the line
+      // above is what proves there is content to judge.
+      await expect(verdict).not.toContainText('/100', { timeout: BOOT });
     });
   }
 
@@ -99,10 +115,23 @@ test.describe('removed: the 0-100 equality number on the geo singles', () => {
     // `geo-safety-verdict` on GeoSafetyBlock, which is what the two cases
     // above already wait on. Assert INSIDE it, so "Equality" cannot be
     // satisfied by some other occurrence elsewhere on the page.
+    //
+    // That testid took the failure rate from 1-in-6 to 1-in-20 and did NOT
+    // eliminate it, because waiting for the banner is only half the problem:
+    // the banner mounts before useTripSafety resolves and re-renders it. A DOM
+    // dump taken at the moment of a surviving failure showed the banner
+    // visible at 824x98 with <p> textContent exactly "Equality" — the element
+    // was there and correct, and the assertion had simply spent its default
+    // 5s. Hence `timeout: BOOT` on the content assertions, matching the wait
+    // the container itself gets.
+    //
+    // Asserted with toContainText on the CONTAINER rather than toBeVisible on
+    // a child: the re-render can detach the child mid-check, and retrying the
+    // container's text survives that where re-resolving a child does not.
     const verdict = page.getByTestId('country-safety-verdict');
     await expect(verdict).toBeVisible({ timeout: BOOT });
-    await expect(verdict.getByText('Equality', { exact: true })).toBeVisible();
-    await expect(verdict.getByText('Very high', { exact: true })).toBeVisible();
+    await expect(verdict).toContainText('Equality', { timeout: BOOT });
+    await expect(verdict).toContainText('Very high', { timeout: BOOT });
 
     // The deleted ring carried this label on every size it rendered at.
     await expect(page.locator('[aria-label^="Equality score"]')).toHaveCount(0);
