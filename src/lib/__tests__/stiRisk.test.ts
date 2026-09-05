@@ -4,11 +4,20 @@ import {
   TRANSMISSION_RISK_ORDER,
   transmissionRiskVisual,
   isTransmissionRisk,
+  RISK_MARK_BORDER,
 } from '@/lib/stiRisk';
 
-/** Page background and the ink every filled cell is bordered with. */
+/**
+ * Page background, and the ink every filled mark is bordered with.
+ *
+ * The border is IMPORTED, not restated. As a local copy this file could go on
+ * certifying a contrast ratio against a value the renderer had stopped using —
+ * and that ratio is the entire reason the border is mandatory.
+ * `RiskMark.test.tsx` asserts the same constant reaches the DOM, which is the
+ * half a constants module cannot see.
+ */
 const PAPER = '60 33% 97%';
-const INK = '0 0% 7%';
+const INK = RISK_MARK_BORDER;
 
 describe('sti transmission risk palette', () => {
   it('parses every channel triple', () => {
@@ -55,5 +64,21 @@ describe('sti transmission risk palette', () => {
     expect(isTransmissionRisk('HIGH RISK')).toBe(false);
     expect(transmissionRiskVisual('HIGH RISK').label).toBe('High risk');
     expect(transmissionRiskVisual('').label).toBe('High risk');
+  });
+
+  it('does not mistake an Object.prototype member for a risk level', () => {
+    // `v in VISUALS` walks the prototype chain, so `'toString'` answered TRUE
+    // and the lookup returned `Object.prototype.toString` — an object with no
+    // `.Icon`, which React renders as "Element type is invalid", taking down
+    // the WHOLE ROUTE rather than one cell. The previous "unknown risk" case
+    // could not see it: it probed `'not-a-level'`, which is not on the
+    // prototype, so the buggy predicate passed it too.
+    for (const key of ['toString', 'valueOf', 'constructor', 'hasOwnProperty', '__proto__']) {
+      expect(isTransmissionRisk(key), `${key} recognised as a risk`).toBe(false);
+      const v = transmissionRiskVisual(key);
+      expect(v.label, `${key} label`).toBe('High risk');
+      expect(typeof v.Icon, `${key} icon`).not.toBe('undefined');
+      expect(v.tint, `${key} tint`).toBeTruthy();
+    }
   });
 });
