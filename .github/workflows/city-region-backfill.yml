@@ -1,0 +1,93 @@
+name: city-region-backfill
+
+# Weekly fill of cities.region_name by reverse-geocoding coordinates.
+#
+# WHY A WORKFLOW AND NOT A CRON. The sibling job for postal_code
+# (geo_address_enqueue_backlog, 20270301100500) feeds an edge-function drain,
+# because geo_address_queue already exists for it. Cities cannot use that queue
+# — its CHECK is `entity_type in ('venue','event','hotel','organization')` — and
+# the work does not fit an edge function anyway: 724 cities at Photon's
+# sustained-use interval of 1100 ms is ~13 minutes against a 546 s wall.
+#
+# WHY IT HAD NOT RUN. `backfill-city-region.mjs` has existed since the address
+# work and was only ever a hand-run one-shot, so nothing revisits the residue.
+# region_name is the keystone for `state` on venues, events and hotels — the
+# derive_entity_geo_address trigger reads it — so an unfilled city silently
+# withholds an address field from every entity inside it.
+#
+# SCOPE. 2,097 cities have no region, but 1,373 of those are `tmp-` placeholder
+# stubs from the personality-birth-place path, which the script excludes by
+# design. 724 are real.
+#
+# Writes record an external_correction_audit row per change under one batch_id,
+# so a bad Photon day is revertible with a single RPC call.
+
+on:
+  schedule:
+    - cron: '35 2 * * 3' # Wednesdays 02:35 UTC — off the 03:00 cron herd
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'Max cities to process'
+        required: false
+        default: '900'
+      dry_run:
+        description: 'Resolve and report without writing'
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  # Photon is a shared free service and this job paces itself against it. Two
+  # overlapping runs would double the request rate and earn 429s for both.
+  group: city-region-backfill
+  cancel-in-progress: false
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    # 724 cities x 1.1s is ~13 min; the cap allows for 429 backoff pauses
+    # (the script sleeps 30s and retries the same city) without running away.
+    timeout-minutes: 60
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      # The script uses only global fetch and node: builtins, so there is
+      # deliberately no `npm ci` here — installing the whole root tree to run one
+      # file would add minutes and a dependency-resolution failure mode to a job
+      # that needs neither.
+      - name: Backfill city region_name
+        if: ${{ env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
+        env:
+          # Dispatch inputs go through the environment and are never
+          # interpolated into the script body: `${{ inputs.limit }}` inline in a
+          # `run:` is string substitution BEFORE the shell sees it, so a value
+          # like `1; curl … | sh` would execute. Quoted expansion of an env var
+          # is passed as one argv element and cannot.
+          LIMIT: ${{ inputs.limit || '900' }}
+          DRY_RUN: ${{ inputs.dry_run || 'false' }}
+        run: |
+          set -euo pipefail
+          case "$LIMIT" in
+            ''|*[!0-9]*) echo "::error::limit must be a positive integer, got '$LIMIT'"; exit 1 ;;
+          esac
+          args=(--limit "$LIMIT")
+          if [ "$DRY_RUN" = "true" ]; then args+=(--dry-run); fi
+          node scripts/data-quality/backfill-city-region.mjs "${args[@]}"
+
+      # A missing secret must SAY so. Silently succeeding here would look
+      # identical to "there was no work", which is exactly how this backlog went
+      # unnoticed in the first place.
+      - name: Report missing credentials
+        if: ${{ env.SUPABASE_URL == '' || env.SUPABASE_SERVICE_ROLE_KEY == '' }}
+        run: |
+          echo "::warning::SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not set — city region backfill did not run. Configure repo secrets to enable."
