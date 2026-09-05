@@ -176,16 +176,46 @@ as $$
                 when near_m is not null and near_m <= 5000 then 'nearest'
                 else 'none' end as kind
       from near
+  ), flagged as (
+    select * from resolved
+     where kind = 'none'
+        or actual is null
+        or not public.geo_countries_equivalent(claimed, actual)
+  ), bordered as (
+    -- BORDER TOLERANCE. A 1:10m boundary generalises a land border exactly as it
+    -- generalises a coastline, so a venue in a border town lands a few hundred
+    -- metres inside the neighbour and reads as a country mismatch.
+    --
+    -- 2 km is CALIBRATED, not chosen. Nine of these rows were independently
+    -- verified by Nominatim at km≈0 INSIDE their claimed country: Konstanz and
+    -- Weil am Rhein on the Swiss border, Basel's Dreiländereck (literally
+    -- "three-country corner"), Kerkrade, Mexicali, Podčetrtek, and Monaco, which
+    -- is 2 km² surrounded by France. Their distance to the claimed border runs
+    -- 0.118 – 1.203 km, so 2 km clears every measured true-negative with margin
+    -- while leaving the 2–10 km band (24 rows) flagged.
+    --
+    -- Scoped to the ~400 already-flagged rows and bbox-limited, so this costs a
+    -- KNN per FINDING rather than per venue.
+    select f.*,
+           (select min(ST_Distance(c.geom::geography, f.g::geography))
+              from geo_boundary_cells c
+             where c.iso_a2 = f.claimed
+               and c.geom && ST_Expand(f.g, 0.5)) as m_to_claimed
+      from flagged f
   )
   select t, id, nm, claimed, actual, kind,
          case when kind = 'none'   then 'offshore'
               when actual is null  then 'undecidable'
               else 'country_mismatch' end,
          lat, lng
-    from resolved
-   where kind = 'none'
-      or actual is null
-      or not public.geo_countries_equivalent(claimed, actual)
+    from bordered
+   -- Only a country_mismatch can be excused by the border: an offshore point is
+   -- already handled by its own 5 km tolerance, and an undecidable one sits in a
+   -- disputed feature where proximity proves nothing.
+   where not (
+     kind <> 'none' and actual is not null
+     and m_to_claimed is not null and m_to_claimed <= 2000
+   )
    limit p_limit;
 $$;
 
