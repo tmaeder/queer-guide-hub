@@ -330,13 +330,14 @@ async function processForwardRepair(
   supabase: ReturnType<typeof getServiceClient>,
   batchSize: number,
   dryRun: boolean,
+  onlyIds: string[] | null = null,
 ): Promise<Record<string, unknown>> {
   // Resumable by STAMP, not by offset: every row examined gets
   // enrichment_status.geocode.verified_at, so the pool drains and a re-run is
   // idempotent. An offset cursor would re-walk repaired rows and, worse, would
   // silently stall the moment the window filled with rows the sweep skips —
   // the same starvation that pinned cities_due_for_refresh to 545 shells.
-  const { data: rows, error } = await supabase
+  let q = supabase
     .from('venues')
     .select('id, name, address, city, postal_code, country, country_id, city_id, latitude, longitude, enrichment_status')
     .is('duplicate_of_id', null)
@@ -347,8 +348,8 @@ async function processForwardRepair(
     .not('latitude', 'is', null)
     .not('longitude', 'is', null)
     .filter('enrichment_status->geocode->>verified_at', 'is', null)
-    .order('id')
-    .limit(batchSize * 3)
+  if (onlyIds?.length) q = q.in('id', onlyIds)
+  const { data: rows, error } = await q.order('id').limit(batchSize * 3)
 
   if (error) throw error
   if (!rows?.length) return { done: true, examined: 0, remaining: 0 }
@@ -1203,7 +1204,20 @@ Deno.serve(async (req) => {
     // Writes. dry_run defaults to TRUE — a mode that rewrites coordinates must
     // not do so because a caller forgot a flag.
     if (mode === 'forward_repair') {
-      const repair = await processForwardRepair(supabase, batchSize, body.dry_run !== false)
+      // `ids` narrows the sweep to a caller-supplied set. The unscoped work list
+      // is ~3.2k rows and public Nominatim allows 1 req/sec, so draining it to
+      // reach a known-bad subset would mean hours of requests against a free
+      // service for rows nobody asked about. Targeting the 126 venues the
+      // containment validator flags costs ~2.5 minutes instead.
+      //
+      // It only ever NARROWS: every filter and guard below is unchanged, so a
+      // targeted run and the nightly cron reach the same verdict for a row.
+      const repair = await processForwardRepair(
+        supabase,
+        batchSize,
+        body.dry_run !== false,
+        Array.isArray(body.ids) ? (body.ids as string[]) : null,
+      )
       return jsonResponse({ success: true, mode: 'forward_repair', ...repair }, 200, req)
     }
 
