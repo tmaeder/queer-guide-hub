@@ -1,17 +1,3 @@
--- RECOVERED FROM PROD BY scripts/recover-migration-drift.mjs.
---
--- Applied to prod as version 20260904203525 with no repo file — the signature of
--- MCP `apply_migration`, which stamps a version and commits nothing. An applied
--- version with no file fails migration-versions on every PR in the repo and
--- makes `db push` refuse to run.
---
--- Reconstructed from `schema_migrations.statements`, which holds the PARSED
--- statements: trailing semicolons are stripped (re-added here) and any original
--- comment header is NOT recorded, so the reasoning that accompanied this
--- migration is lost. Verified by md5 against a server-computed digest.
---
--- Never re-run: `db push` matches on version and skips an applied one. The file
--- exists so history is complete and a rebuild from zero works.
 -- Flag the eight human-approved notes that understate capital risk. Do not overwrite them,
 -- and do not retract them.
 --
@@ -43,6 +29,10 @@
 -- So: the corrected note is queued as a proposal, `needs_attention` is raised, and the
 -- existing note keeps serving until a human chooses. The machine states the better reading;
 -- the human decides. Nothing is published by this migration.
+--
+-- An earlier draft of this migration tried to RETRACT instead, and its own guard stopped
+-- it: the WHERE clause excluded 'llm+human', so it matched zero rows and raised rather than
+-- reporting a silent success. That is why the exclusion is stated explicitly here.
 
 DO $$
 DECLARE
@@ -109,4 +99,4 @@ BEGIN
    WHERE public.death_penalty_risk(co.lgbti_criminalization)='possible'
      AND c.safety_notes IS NOT NULL AND length(trim(c.safety_notes))>0;
   IF v_still < 8 THEN RAISE EXCEPTION 'a note was removed — expected all 8 to remain published, % left', v_still; END IF;
-END $$;;
+END $$;
