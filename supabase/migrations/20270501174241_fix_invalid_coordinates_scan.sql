@@ -120,7 +120,7 @@ grant execute on function public.find_invalid_coordinates(text, int)
   to authenticated, service_role;
 
 comment on function public.find_invalid_coordinates(text, int) is
-  'Returns rows from venues/events/hotels/organizations/cities/countries/queer_villages and spine landmarks that fail one or more coordinate validation rules (missing, zero_zero, lat/lng out of range). Admin-only. Raised 42703 on every call from 20260429140000 until 20270309174241 because it scanned a marketplace_listings.latitude column that has never existed.';
+  'Returns rows from venues/events/hotels/organizations/cities/countries/queer_villages and spine landmarks that fail one or more coordinate validation rules (missing, zero_zero, lat/lng out of range). Admin-only. Raised 42703 on every call from 20260429140000 until 20270501174241 because it scanned a marketplace_listings.latitude column that has never existed.';
 comment on function public.count_invalid_coordinates() is
   'Aggregate count of invalid coordinates per entity type. Wraps find_invalid_coordinates(NULL, large_limit) and groups. Inherits the entity list from that function.';
 
