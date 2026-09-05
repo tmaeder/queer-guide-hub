@@ -31,6 +31,17 @@ interface Base {
   /** The "risk with blood" modifier: a second glyph, never a colour. */
   blood?: boolean;
   size?: 'sm' | 'md';
+  /**
+   * Stretch to the container's width. For a matrix cell, where the mark IS the
+   * cell and a ragged column of intrinsic-width marks would read as noise.
+   *
+   * Off by default, because width is the CALLER's decision and baking `w-full`
+   * into the component made the mark greedy everywhere else. In the legend it
+   * ate its own row: the mark stretched, the sibling text got squeezed, and
+   * "WITH BLOOD" wrapped to two lines against it. A mark that always fills has
+   * no intrinsic size to lay out next to anything.
+   */
+  fill?: boolean;
   className?: string;
 }
 
@@ -55,7 +66,7 @@ type Props = Base &
     | { label?: false; srLabel?: never; describedByRow: true }
   );
 
-export function RiskMark({ risk, blood, label, srLabel, size = 'md', className }: Props) {
+export function RiskMark({ risk, blood, label, srLabel, size = 'md', fill, className }: Props) {
   const v = transmissionRiskVisual(risk);
   const Icon = v.Icon;
   const glyph = size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4';
@@ -69,8 +80,11 @@ export function RiskMark({ risk, blood, label, srLabel, size = 'md', className }
         // four cells met. The first draft answered that by going square, but
         // the system's rule is "Nothing square" with no chart exception, and
         // 9px on a 28px cell does not pinch. Right diagnosis, wrong rank.
-        'inline-flex items-center justify-center gap-1.5 rounded-badge border-2',
-        label ? 'px-2 py-1' : size === 'sm' ? 'h-6 w-6' : 'h-7 w-full min-w-7',
+        // `whitespace-nowrap` so a mark carrying its level as text stays one
+        // line whatever the container does to it.
+        'inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-badge border-2',
+        label ? 'px-2 py-1' : size === 'sm' ? 'h-6 w-6' : 'h-7 min-w-7 px-1.5',
+        fill && 'w-full',
         className,
       )}
       style={{
@@ -81,9 +95,7 @@ export function RiskMark({ risk, blood, label, srLabel, size = 'md', className }
     >
       <Icon className={cn(glyph, 'shrink-0')} aria-hidden="true" />
       {blood && <BloodIcon className={cn(glyph, 'shrink-0')} aria-hidden="true" />}
-      {label && (
-        <span className="text-2xs font-bold uppercase tracking-label">{v.label}</span>
-      )}
+      {label && <span className="text-2xs font-bold uppercase tracking-label">{v.label}</span>}
       {srLabel && <span className="sr-only">{srLabel}</span>}
     </span>
   );

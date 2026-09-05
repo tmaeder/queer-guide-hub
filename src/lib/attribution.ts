@@ -2,12 +2,18 @@
  * The sources whose licence *requires* a credit, as opposed to the ones the
  * colophon names out of courtesy.
  *
- * This exists because the `/about` colophon is now behind a login. That is a
- * product decision and a legitimate one, but attribution is not a product
- * decision — ODbL and the CC BY family ask for the credit to reach the reader
- * of the work, and an anonymous reader is still a reader. So the obligated
- * subset lives here and is rendered by the footer on every page, signed in or
- * out, while `/about` keeps the fuller story for members.
+ * HISTORY, because the shape of this file only makes sense with it. It was
+ * split out when the `/about` colophon went behind a login, so the obligated
+ * subset could also render in the footer on every page — ODbL and the CC BY
+ * family ask for the credit to reach the reader of the work, and an anonymous
+ * reader is still a reader.
+ *
+ * On 2026-09-04 that footer row was removed by an explicit product decision,
+ * taken after the tradeoff was stated. So this list now drives ONLY the
+ * members-only colophon: a signed-out reader is served OSM-derived city
+ * diagrams on the homepage and sees no credit anywhere on the site. That is
+ * the current state on purpose, recorded here rather than left implicit, so
+ * whoever revisits it knows it was chosen and not lost.
  *
  * ENTRY CRITERION is the licence, not the row count. Present:
  *   - OpenStreetMap ........ ODbL. Not optional: the city-card network

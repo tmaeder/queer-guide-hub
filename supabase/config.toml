@@ -293,6 +293,62 @@ verify_jwt = false
 [functions.source-tripsit]
 verify_jwt = false
 
+# Cron and DAG source targets that were missing an entry entirely (found
+# 2026-09-04). They kept working only because their pg_cron command happens to
+# send an anon-key Bearer, which satisfies the platform gate by accident — so
+# any invocation path without that header 401s, and an anon-key rotation would
+# break all of them at once. A 401 here is indistinguishable from an outage and
+# burns the auto-pause counter.
+#
+# Every one of these self-gates with requireInternalOrAdmin, so verify_jwt=false
+# removes a redundant platform check, not the only check.
+#
+# NOT added, deliberately: source-bluesky-url, source-social-url and
+# source-tiktok-url. Those are the opposite class — deliberately PUBLIC endpoints
+# where a user pastes a URL, each with its own per-hour rate limit, an SSRF guard
+# and a forced 'pending' review status. They have no requireInternalOrAdmin call,
+# so adding this line would leave a public write path into community_submissions
+# with no auth at all. Their posture is a product decision, not a config
+# oversight; leave them on the platform default until someone decides otherwise.
+#
+# ALSO NOT added, for an entirely different reason: source-gays-cruising. It
+# self-gates like the ten below, so "does it self-gate" — the question this block
+# was originally written to answer — says yes. That question is insufficient.
+# gays-cruising.com (Keyup Studio S.L., Valencia) carries an EXPRESS PROHIBITION
+# in Condiciones de Uso §5: no reproducing, copying, reselling or exploiting any
+# part of the service without consent given expressly and in writing. A parser is
+# offline work and is allowed; `verify_jwt = false` is what lets a cron REACH the
+# function, which makes it a crawler. Until Keyup Studio supply that written
+# consent this line may not exist, whatever the auth posture.
+# Guarded by src/lib/__tests__/gaysCruisingLicence.test.ts, which caught this
+# exact entry in CI.
+[functions.source-display-magazin]
+verify_jwt = false
+
+[functions.source-eventfrog]
+verify_jwt = false
+
+[functions.source-gay-ch]
+verify_jwt = false
+
+[functions.source-gaybasel]
+verify_jwt = false
+
+[functions.source-haz-ch]
+verify_jwt = false
+
+[functions.source-kweer]
+verify_jwt = false
+
+[functions.source-lgbtnetwork]
+verify_jwt = false
+
+[functions.source-milchjugend]
+verify_jwt = false
+
+[functions.source-woocommerce-public]
+verify_jwt = false
+
 # Admin feedback P3/P5/P6 edge functions
 [functions.github-webhook]
 verify_jwt = false
