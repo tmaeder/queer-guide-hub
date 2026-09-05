@@ -293,69 +293,6 @@ export function useMarketplaceListingsRelated(limit = 4) {
   );
 }
 
-interface CityChip {
-  name: string;
-  slug: string | null;
-  count: number;
-}
-
-/**
- * Top cities by number of active marketplace listings hosted there.
- * Joins venues for city name + city slug, aggregates client-side, takes top N.
- */
-export function useMarketplaceTopCities(limit = 10) {
-  return useAsync<CityChip[]>(
-    [limit],
-    async () => {
-      const { data, error } = await supabase
-        .from('marketplace_listings')
-        .select('venues!inner(city, cities(slug))')
-        .eq('status', 'active')
-        .limit(2000);
-      if (error || !data) return [];
-      type Row = {
-        venues: { city: string | null; cities?: { slug: string | null } | null } | null;
-      };
-      const counts = new Map<string, { count: number; slug: string | null }>();
-      for (const row of data as unknown as Row[]) {
-        const city = row.venues?.city;
-        if (!city) continue;
-        const slug = row.venues?.cities?.slug ?? null;
-        const cur = counts.get(city);
-        if (cur) cur.count += 1;
-        else counts.set(city, { count: 1, slug });
-      }
-      return Array.from(counts.entries())
-        .sort((a, b) => b[1].count - a[1].count)
-        .slice(0, limit)
-        .map(([name, { count, slug }]) => ({ name, slug, count }));
-    },
-    [],
-  );
-}
-
-export function useMarketplaceListingsForCity(cityName: string | undefined, limit = 4) {
-  return useAsync<MarketplaceListing[]>(
-    [cityName, limit],
-    async () => {
-      if (!cityName) return [];
-      // Inner join to venues filtered by city; surfaces marketplace items hosted by venues in that city.
-      const { data, error } = await supabase
-        .from('marketplace_listings')
-        .select('*, venues!inner(name, address, city)')
-        .eq('status', 'active')
-        .in('content_rating', SFW_RATINGS)
-        .eq('venues.city', cityName)
-        .order('featured', { ascending: false })
-        .order('updated_at', { ascending: false })
-        .limit(limit);
-      if (error || !data) return [];
-      return data as MarketplaceListing[];
-    },
-    [],
-  );
-}
-
 /**
  * SFW listings carrying an occasion tag (occ-pride, occ-drag, occ-wedding)
  * for contextual rails — e.g. Pride outfits on a Pride event page.
@@ -418,50 +355,6 @@ export function useCityUpcomingOccasion(cityId: string | undefined) {
       return null;
     },
     null,
-  );
-}
-
-export function useMarketplaceListingsForCountry(countryId: string | undefined, limit = 4) {
-  return useAsync<MarketplaceListing[]>(
-    [countryId, limit],
-    async () => {
-      if (!countryId) return [];
-      // Inner join to venues filtered by country_id — surfaces marketplace items
-      // hosted by any venue in that country.
-      const { data, error } = await supabase
-        .from('marketplace_listings')
-        .select('*, venues!inner(name, address, city)')
-        .eq('status', 'active')
-        .in('content_rating', SFW_RATINGS)
-        .eq('venues.country_id', countryId)
-        .order('featured', { ascending: false })
-        .order('updated_at', { ascending: false })
-        .limit(limit);
-      if (error || !data) return [];
-      return data as MarketplaceListing[];
-    },
-    [],
-  );
-}
-
-export function useMarketplaceListingsForVenue(venueId: string | undefined, limit = 4) {
-  return useAsync<MarketplaceListing[]>(
-    [venueId, limit],
-    async () => {
-      if (!venueId) return [];
-      const { data, error } = await supabase
-        .from('marketplace_listings')
-        .select('*, venues(name, address, city)')
-        .eq('status', 'active')
-        .in('content_rating', SFW_RATINGS)
-        .eq('venue_id', venueId)
-        .order('featured', { ascending: false })
-        .order('updated_at', { ascending: false })
-        .limit(limit);
-      if (error || !data) return [];
-      return data as MarketplaceListing[];
-    },
-    [],
   );
 }
 
