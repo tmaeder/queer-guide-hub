@@ -117,6 +117,26 @@ export interface NormalizedItem {
    * says both. Do not resolve them in the adapter — that hides the disagreement.
    */
   accessibility_attributes?: string[]
+  /**
+   * The venue an event happens at, as free text.
+   *
+   * Added 2027-05-02. Until then this interface had no venue_name either, so the
+   * event adapters that knew one had nowhere to put it and stashed it in
+   * `metadata.venue_name` — while `commit_event_staging_item` read the TOP level.
+   * The two never met: Ticketmaster had 417 live events missing a venue name and
+   * all 417 carried one in metadata. Same shape as the accessibility gap above,
+   * one column later.
+   *
+   * This matters out of proportion to its size. Only 5.4% of live events carry a
+   * resolved `venue_id`, so venue_name is the identity signal the event dedup arms
+   * actually run on (`despace_same_venue_name_exact_ts`, auto at 0.96, and the
+   * cross-source arm). Where it is null those arms are blind.
+   *
+   * Emit it here, at the top level. The commit function still falls back to
+   * `metadata.venue_name` for adapters that have not moved, so both work — but a
+   * fallback is not the contract.
+   */
+  venue_name?: string
   contacts?: {
     email?: string
     phone?: string

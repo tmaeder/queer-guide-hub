@@ -11,6 +11,20 @@ const state = vi.hoisted(() => ({ event: null as unknown }));
 vi.mock('@/hooks/useAuth', () => ({
   useAuth: () => ({ user: null, session: null, loading: false }),
 }));
+// `GatedDetailFallback` asks `gated_entity_exists` before it can decide between
+// "sign in to see this" and "no such event", and `useAuth` above makes every
+// case here a SIGNED-OUT one, which is exactly when that query is enabled.
+// Unmocked, `untypedRpc` reaches the real client and this unit test issues a
+// live request to production: it then passes or fails on how fast prod happens
+// to be, which is not a property of EventDetail. It failed for real on
+// 2026-09-05 while the database was slow, taking `test` — a required check —
+// red on main and blocking every open PR.
+//
+// Default `data: false` = "nothing is gated", so the not-found branch resolves
+// immediately and the assertions below keep their original meaning.
+vi.mock('@/integrations/supabase/untyped', () => ({
+  untypedRpc: () => Promise.resolve({ data: false, error: null }),
+}));
 vi.mock('@/hooks/useTrackEvent', () => ({ useTrackEvent: () => ({ track: vi.fn() }) }));
 vi.mock('@/hooks/useTrackView', () => ({ useTrackView: () => {} }));
 vi.mock('@/hooks/useEntityTripStatus', () => ({
