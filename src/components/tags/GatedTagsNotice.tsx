@@ -78,10 +78,27 @@ export function GatedTagsNotice({ adultHidden }: GatedTagsNoticeProps) {
               defaultValue: '{{count}} more terms are shown to signed-in members',
             })}
           </p>
+          {/*
+            "sensitive topics", NOT "explicit material". The gate is
+            `is_sensitive AND not reviewed` — the review-gate axis, which
+            20270107100000's own header names correctly — and `is_sensitive` is set
+            wholesale on health and harm-reduction vocabulary (20260907100000 for
+            the saferparty substances; 20261003110100:572 sets it for the entire
+            substances-harm-reduction category). Adultness is a SEPARATE axis,
+            `is_adult`, and under safe mode — the default — `revealed` is
+            `nonAdult`, i.e. by construction the subset that is NOT adult.
+
+            So the previous wording asserted "explicit material" about a set that
+            excludes adult terms by definition. Sampled from the live non-adult
+            sensitive population: Metoidioplasty, Orchiectomy, Feminizing Hormone
+            Therapy, Exposure To Suicide, Stealthing, Spiking, GBL, Comedown.
+            Describing those as explicit material labels gender-affirming care,
+            suicide-exposure and drug-safety vocabulary as pornography.
+          */}
           <p className="text-15 text-muted-foreground">
             {t('tags.gated.body', {
               defaultValue:
-                'These entries cover explicit material and no editor has reviewed their definitions yet, so they are not shown publicly.',
+                'These entries cover sensitive topics and no editor has reviewed their definitions yet, so they are not shown publicly.',
             })}
           </p>
           {alsoHeldBySafeMode > 0 && (
