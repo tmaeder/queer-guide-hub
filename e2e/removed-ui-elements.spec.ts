@@ -140,10 +140,20 @@ test.describe('removed: the 0-100 equality number on the geo singles', () => {
  * obligated credits went back to the footer, unconditionally, and the colophon
  * became the members-only long form.
  *
- * These run SIGNED OUT (no storageState), which is the state that matters:
- * it is the one where the footer is the only credit on the site.
+ * These run SIGNED OUT, which is the state that matters: it is the one where
+ * the footer is the only credit on the site.
+ *
+ * That was a COMMENT claiming "no storageState" with nothing enforcing it. The
+ * `chromium` project attaches the ADMIN storageState whenever E2E_ADMIN_EMAIL /
+ * _PASSWORD are set (playwright.config.ts), so in CI these ran signed IN —
+ * About.tsx renders `#sources` for any `user`, and the gate test below failed
+ * on every nightly. It passed on a laptop, which has no credentials, and that
+ * asymmetry is what made it read as a prod regression. The empty state is now
+ * declared rather than assumed.
  */
 test.describe('the OpenStreetMap credit lives in the footer', () => {
+  test.use({ storageState: { cookies: [], origins: [] } });
+
   test('the footer carries the ODbL attribution', async ({ page }) => {
     await open(page, '/');
     const footer = page.locator('footer');
