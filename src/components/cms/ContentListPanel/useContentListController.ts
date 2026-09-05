@@ -6,7 +6,14 @@
 
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { applyFilters, applySorts, applyArchivedView, type ArchivedView } from './filterOps';
+import {
+  applyFilters,
+  applySorts,
+  applyArchivedView,
+  applyMergedView,
+  type ArchivedView,
+  type MergedView,
+} from './filterOps';
 import { normalizeSpec, type Filter, type SortSpec, type ViewSpec } from './viewSpec';
 import { useParams } from 'react-router';
 import { useContext } from 'react';
@@ -102,6 +109,8 @@ export function useContentListController({
    * a list that has lost its contents.
    */
   const [archivedView, setArchivedView] = useState<ArchivedView>('live');
+  /** Same reasoning as `archivedView`: a momentary task, never persisted. */
+  const [mergedView, setMergedView] = useState<MergedView>('unmerged');
 
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
@@ -197,8 +206,19 @@ export function useContentListController({
     } finally {
       setLoading(false);
     }
+    // mergedView belongs in these deps or the toggle renders and does nothing.
     // eslint-disable-next-line react-hooks/exhaustive-deps -- helpers below, deps control re-fetching
-  }, [contentTypeId, config, page, rowsPerPage, debouncedSearch, sorts, filters, archivedView]);
+  }, [
+    contentTypeId,
+    config,
+    page,
+    rowsPerPage,
+    debouncedSearch,
+    sorts,
+    filters,
+    archivedView,
+    mergedView,
+  ]);
 
   async function loadSingleType(ct: ContentTypeConfig) {
     const from = page * rowsPerPage;
@@ -228,6 +248,9 @@ export function useContentListController({
     // After the user's own filters, so an explicit filter on the archive column
     // still composes rather than being overwritten.
     query = applyArchivedView(query as never, ct.lifecycle?.archive, archivedView) as typeof query;
+    // Orthogonal to the archive slice, so it composes rather than replaces:
+    // a row can be archived AND merged away.
+    query = applyMergedView(query as never, ct.merge, mergedView) as typeof query;
 
     const { data, error, count } = await query;
     if (error) throw error;
@@ -255,7 +278,19 @@ export function useContentListController({
         query = query.ilike(ct.titleField, `%${debouncedSearch}%`);
       }
 
-      const { data } = await query;
+      // Threaded rather than hardcoded to 'unmerged'. There is no toggle in
+      // All-content mode today (index.tsx gates both on a chosen type), so the
+      // value can only be the default here — but hardcoding it would create a
+      // second source of truth that diverges the day a toggle is added.
+      query = applyMergedView(query as never, ct.merge, mergedView) as typeof query;
+
+      // This loop touches EVERY registry type, tags and pages included, and the
+      // error is only logged rather than thrown so one bad type cannot blank
+      // the whole screen. That makes `applyMergedView`'s "no capability, no
+      // predicate" arm load-bearing: a predicate against a column the table
+      // does not have answers 400, and this type would silently vanish.
+      const { data, error } = await query;
+      if (error) console.error(`All content: ${ct.id} failed`, error);
 
       const mapped = (data || []).map((row: Record<string, unknown>) => ({
         id: row[ct.primaryKey],
@@ -300,7 +335,7 @@ export function useContentListController({
     // archivedView belongs here too: switching to the archived slice while on
     // page 3 of the live list lands on a page that does not exist, which renders
     // as an empty table rather than as "there are no archived rows".
-  }, [debouncedSearch, filters, archivedView]);
+  }, [debouncedSearch, filters, archivedView, mergedView]);
 
   // There is deliberately NO "restore on content-type change" effect.
   //
@@ -436,6 +471,8 @@ export function useContentListController({
     setSelected,
     archivedView,
     setArchivedView,
+    mergedView,
+    setMergedView,
     dynamicOptions,
     allListColumns,
     extraColumns,

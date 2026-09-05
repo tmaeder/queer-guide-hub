@@ -5,14 +5,14 @@ import { MapInset } from '@/components/transit/MapInset';
 import { StopList, type Stop } from '@/components/transit/StopList';
 import { OccurrenceList, type Occurrence } from '@/components/transit/OccurrenceList';
 import { venueStops, newsRows } from '@/components/transit/entityRows';
-import { VersionHistory, type Revision } from '@/components/transit/VersionHistory';
+import { LegalLine } from '@/components/rights/CountryLegalLine';
+import type { LegalStation } from '@/lib/rights/legalLine';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import LGBTJurisdictionInfo from '@/components/country/LGBTJurisdictionInfo';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { TravelDealsSection } from '@/components/travel/TravelDealsSection';
 import { ActivitiesWidget } from '@/components/activities/ActivitiesWidget';
-import { useMilestonesForCountry } from '@/hooks/useMilestones';
 import { supabase } from '@/integrations/supabase/client';
 
 // CountryDetail accesses joined fields (continents, regions) on a row that doesn't
@@ -92,41 +92,35 @@ export function CountryActions({
  * a country page is "a living legal record" where "safety information without
  * a date is dangerous".
  *
- * The source is `milestones_for_country`, i.e. real dated legal events
- * (decriminalisation, marriage, gender recognition). It is deliberately NOT
- * `countries.updated_at`: every row shares the nightly ILGA sync stamp, so a
- * history built from it would print the same date for all 250 countries and
- * call a cron run a change in the law.
+ * The source is `buildLegalLine`, which fuses `milestones_for_country` with
+ * the adoption years already on the rights columns (`decrim_year_*`,
+ * `marriage_since`, each matrix's `*_since`). Before that join the two told
+ * the same story in two vocabularies on one page — "Marriage since 2017" as a
+ * grey sub-line in the rights card, "Marriage equality" as a row down here —
+ * and a country with adoption years but no milestone rows showed no record at
+ * all.
  *
- * Sorted newest-first here because the RPC ranks by significance, and the
- * module's contract is chronological.
+ * It is deliberately NOT `countries.updated_at`: every row shares the nightly
+ * ILGA sync stamp, so a history built from it would print the same date for
+ * all 250 countries and call a cron run a change in the law.
+ *
+ * `LegalLine` renders newest-first; the builder's own order is ascending.
  */
 export function CountryLegalRecord({
-  countryId,
   countryName,
-  seeAllLabel,
+  stations,
 }: {
-  countryId: string;
   countryName: string;
-  seeAllLabel: string;
+  /** Built by the page, which needs the count to decide the section exists. */
+  stations: LegalStation[];
 }) {
-  const { data } = useMilestonesForCountry(countryId, 12);
-  if (!data?.length) return null;
-
-  const revisions: Revision[] = [...data]
-    .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))
-    .map((m) => ({ id: m.id, date: m.date, change: m.title, by: m.category ?? null }));
+  if (!stations.length) return null;
 
   return (
-    <div>
-      <VersionHistory revisions={revisions} />
-      <LocalizedLink
-        to={`/history?country=${encodeURIComponent(countryName)}`}
-        className="mt-4 inline-block px-4 py-2 text-xs2 font-bold no-underline transition-colors hover:bg-foreground hover:text-background"
-      >
-        {seeAllLabel}
-      </LocalizedLink>
-    </div>
+    <LegalLine
+      stations={stations}
+      seeAllHref={`/history?country=${encodeURIComponent(countryName)}`}
+    />
   );
 }
 

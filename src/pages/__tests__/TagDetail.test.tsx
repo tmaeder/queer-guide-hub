@@ -3,7 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Routes, Route } from 'react-router';
 import { SafeModeProvider } from '@/providers/SafeModeProvider';
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 
 const useMeta = vi.fn();
 vi.mock('@/hooks/useMeta', () => ({ useMeta: (o: unknown) => useMeta(o) }));
@@ -67,6 +67,11 @@ vi.mock('@/components/tags/FollowTagButton', () => ({
 }));
 
 import TagDetail from '../TagDetail';
+import {
+  BreadcrumbProvider,
+  useBreadcrumbState,
+  type BreadcrumbItem,
+} from '@/contexts/BreadcrumbContext';
 
 const BASE = {
   id: 't1',
@@ -111,6 +116,31 @@ const renderPage = () =>
   );
 
 const lastMeta = () => useMeta.mock.calls.at(-1)?.[0] as Record<string, unknown>;
+
+// The trail is published to a context the global BreadcrumbBar reads from
+// LayoutShell, which this route does not mount — so read the context directly
+// rather than asserting on chrome that is not in the tree.
+let publishedTrail: BreadcrumbItem[] | null = null;
+function TrailProbe() {
+  const trail = useBreadcrumbState();
+  // Captured in an effect, not during render: `react-hooks/globals` is an
+  // error here, and a render-phase write is a side effect either way.
+  useEffect(() => {
+    publishedTrail = trail;
+  }, [trail]);
+  return null;
+}
+
+const renderWithTrail = () =>
+  render(
+    <BreadcrumbProvider>
+      <Routes>
+        <Route path="/tags/:tagName" element={<TagDetail />} />
+      </Routes>
+      <TrailProbe />
+    </BreadcrumbProvider>,
+    { wrapper: wrap },
+  );
 
 beforeEach(() => {
   useMeta.mockClear();
@@ -365,5 +395,41 @@ describe('TagDetail — page', () => {
     renderPage();
     await screen.findByRole('heading', { level: 1, name: 'Bear' });
     expect(screen.queryByText(/Elsewhere/i)).not.toBeInTheDocument();
+  });
+});
+
+describe('TagDetail — breadcrumbs', () => {
+  // The defect: the SUB-category crumb ("Fetishes" on /tags/denim-play) was the
+  // one link in the trail that was never a link — it carried a label and no
+  // href while its parent and the glossary root both linked. `/tags/c/:slug`
+  // resolves child slugs too (TagsIndex scans each parent's children), so the
+  // destination existed the whole time.
+  it('links every crumb above the term itself', async () => {
+    renderWithTrail();
+    await screen.findByRole('heading', { level: 1, name: 'Bear' });
+    await waitFor(() => expect(publishedTrail?.length).toBeGreaterThan(2));
+    const trail = publishedTrail ?? [];
+    expect(trail.map((c) => c.href)).toEqual([
+      '/tags',
+      '/tags/c/community-culture',
+      '/tags/c/slang-terminology',
+      undefined,
+    ]);
+    // The property, not the list: only the term itself — the page you are on —
+    // may be unreachable.
+    expect(trail.slice(0, -1).every((c) => Boolean(c.href))).toBe(true);
+  });
+
+  it('leaves the sub-category unlinked when the row carries no slug', async () => {
+    tagRow = {
+      ...BASE,
+      categories: [{ ...BASE.categories[0], slug: undefined }],
+    };
+    renderWithTrail();
+    await screen.findByRole('heading', { level: 1, name: 'Bear' });
+    await waitFor(() => expect(publishedTrail?.length).toBeGreaterThan(2));
+    // Positive control for the test above: a missing slug must yield no href
+    // rather than `/tags/c/undefined`, which is a soft 404.
+    expect(publishedTrail?.[2].href).toBeUndefined();
   });
 });
