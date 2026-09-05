@@ -67,9 +67,29 @@
 --       Re-enabling would run a no-op every 15 minutes forever.
 --
 --   venue_geocode_repair
---       Description begins "ONE-SHOT: re-geocodes bare-street venues...". It ran
---       once (2026-08-22) and was disabled. Its schedule is `* * * * *`, so
---       re-enabling a finished one-shot would re-run it EVERY MINUTE.
+--       SUPERSEDED 2026-09-05 — REMOVED from k_stay_off below. Both claims here
+--       were checked by 20270501174243, which runs BEFORE this migration and
+--       deliberately re-enables the job, and both turn out to be wrong:
+--
+--         "a finished one-shot"  -> measured 2026-09-04, 3,366 rows still match
+--           the sweep's filters, 2,628 of them bare-street addresses, and ZERO
+--           carry the enrichment_status.geocode.verified_at stamp. The pool it
+--           was meant to drain is entirely undrained. Nothing else targets it:
+--           venue_coord_snap only acts on rows with no usable address, and
+--           venue_geocode_forward only fills rows with no coordinates at all.
+--
+--         "would re-run EVERY MINUTE" -> that is the objection, and 20270501174243
+--           is what fixes it: it rewrites the schedule to `5,25,45 * * * *`,
+--           offset from venue_geocode_forward's `*/15` so the two Nominatim
+--           consumers never fire on the same minute.
+--
+--       This entry was written from the registry description and the run count
+--       without measuring the remaining pool, which is exactly the distinction
+--       this migration's own header insists on: the shape of a row does not
+--       decide the case, the evidence does. Leaving it here deadlocked `db push`
+--       repo-wide — 20270501174243 enables the job, this assertion then aborts on
+--       finding it enabled, and every migration behind them was stranded
+--       (measured: run 33966247046, `these must stay disabled: {venue_geocode_repair}`).
 --
 --   marketplace_catalog_prune
 --       Its last two runs say it plainly:
@@ -120,10 +140,14 @@ declare
   -- and note the dangerous half was already removed at the DB layer by
   -- 20261018094000 (tag_prose_apply lost its retract branch), so an enabled cron
   -- is not the same hazard the doc describes. Flagged, not silently asserted.
+  --
+  -- venue_geocode_repair was REMOVED from this list on 2026-09-05. See the
+  -- "SUPERSEDED" note in the header — 20270501174243 runs before this migration
+  -- and deliberately re-enables it, so asserting it stays off deadlocked db push.
   k_stay_off constant text[] := array[
     'tag_relation_verify', 'ev_fill_eventbrite',
     'marketplace_variant_backfill', 'city_cost_of_living_backfill',
-    'marketplace_affiliate_backfill', 'venue_geocode_repair',
+    'marketplace_affiliate_backfill',
     'marketplace_catalog_prune', 'tag_image_provenance_sync'
   ];
   r         record;
