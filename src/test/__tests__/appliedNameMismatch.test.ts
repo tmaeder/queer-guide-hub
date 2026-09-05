@@ -103,6 +103,32 @@ describe('findAppliedNameMismatches', () => {
     expect(findAppliedNameMismatches(['20261019100000_anything.sql'], null, isNew)).toEqual([]);
   });
 
+  it('ignores a version whose remote name is EMPTY', () => {
+    // 71 versions applied 2026-02-24..2026-04-15 carry name = '' (older CLI,
+    // immutable history). An absent name cannot contradict a filename, and
+    // treating it as a mismatch failed migration-versions on every open PR in
+    // the repo — none of which had touched migrations.
+    expect(
+      findAppliedNameMismatches(
+        ['20260224193400_create_pgmq_queues_and_workflow_tables.sql'],
+        new Map([['20260224193400', '']]),
+        isNew,
+      ),
+    ).toHaveLength(0);
+  });
+
+  it('still reports a real mismatch when the remote name is present', () => {
+    // Positive control for the guard above: the empty-name skip must not
+    // swallow the case this function exists to catch.
+    expect(
+      findAppliedNameMismatches(
+        ['20261019100000_kinktionary_overlap_deindex_complete.sql'],
+        new Map([['20261019100000', 'entity_lifecycle_dispatchers']]),
+        isNew,
+      ),
+    ).toHaveLength(1);
+  });
+
   it('ignores versions that are not applied yet', () => {
     expect(
       findAppliedNameMismatches(['20261231120000_new_future.sql'], new Map(), isNew),

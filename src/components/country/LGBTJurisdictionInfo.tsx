@@ -18,6 +18,8 @@ import { ProtectionCells, ProtectionCellsHeader } from '@/components/rights/Prot
 import { RightRow } from '@/components/rights/RightRow';
 import { SourceLine, type RightsProvenance } from '@/components/rights/SourceLine';
 import { LensVerdictSummary } from '@/components/rights/LensVerdictSummary';
+import { RightsSection } from '@/components/rights/RightsSection';
+import { summariseSection } from '@/lib/rights/sectionSummary';
 
 interface LGBTJurisdictionInfoProps {
   country: Record<string, unknown>;
@@ -81,210 +83,211 @@ export default function LGBTJurisdictionInfo({
     const topics = topicsInSection(section);
     const isMatrix = section === 'antiDiscrimination' || section === 'criminalJustice';
 
-    return (
-      <div key={section}>
-        {section === 'antiDiscrimination' ? (
-          <div className="mb-2 flex items-center justify-between">
-            <p className="text-xs2 font-bold uppercase tracking-[0.05em] text-muted-foreground">
-              {t(`country.rights.section.${section}`, RIGHT_SECTION_LABEL[section])}
-            </p>
-            <ProtectionCellsHeader />
-          </div>
-        ) : (
-          <SectionLabel>
-            {t(`country.rights.section.${section}`, RIGHT_SECTION_LABEL[section])}
-          </SectionLabel>
-        )}
-
-        <div className={isMatrix ? 'flex flex-col' : 'flex flex-col gap-1'}>
-          {topics.map((topic) => {
-            // --- Criminalisation: penalty detail + the death-penalty split ---
-            if (topic.slug === 'criminalisation') {
-              return (
-                <React.Fragment key={topic.slug}>
-                  <div className="flex items-center gap-4 py-2">
-                    <Scale
-                      size={15}
-                      className="shrink-0 text-muted-foreground"
-                      aria-hidden="true"
-                    />
-                    <p className="flex-1 text-13 font-medium">{topicLabel(t, topic)}</p>
-                    {crimStatus ? (
-                      <div className="flex shrink-0 items-center gap-2">
-                        {dpRisk !== 'none' ? (
-                          <Skull
-                            size={15}
-                            className="shrink-0 text-destructive"
-                            aria-hidden="true"
-                          />
-                        ) : (
-                          <StatusGlyph kind={crimLegal === false ? 'severe' : 'yes'} />
+    const rows = (
+      <div className={isMatrix ? 'flex flex-col' : 'flex flex-col gap-1'}>
+        {topics.map((topic) => {
+          // --- Criminalisation: penalty detail + the death-penalty split ---
+          if (topic.slug === 'criminalisation') {
+            return (
+              <React.Fragment key={topic.slug}>
+                <div className="flex items-center gap-4 py-2">
+                  <Scale size={15} className="shrink-0 text-muted-foreground" aria-hidden="true" />
+                  <p className="flex-1 text-13 font-medium">{topicLabel(t, topic)}</p>
+                  {crimStatus ? (
+                    <div className="flex shrink-0 items-center gap-2">
+                      {dpRisk !== 'none' ? (
+                        <Skull size={15} className="shrink-0 text-destructive" aria-hidden="true" />
+                      ) : (
+                        <StatusGlyph kind={crimLegal === false ? 'severe' : 'yes'} />
+                      )}
+                      <Badge
+                        variant={crimLegal === false ? 'destructive' : 'secondary'}
+                        className="text-2xs"
+                      >
+                        {t(
+                          `rights.value.${crimLegal === false ? 'criminalised' : 'legal'}`,
+                          crimStatus,
                         )}
-                        <Badge
-                          variant={crimLegal === false ? 'destructive' : 'secondary'}
-                          className="text-2xs"
-                        >
-                          {t(
-                            `rights.value.${crimLegal === false ? 'criminalised' : 'legal'}`,
-                            crimStatus,
-                          )}
-                        </Badge>
-                      </div>
-                    ) : (
-                      <span className="shrink-0 text-xs text-muted-foreground">
-                        {t('country.rights.noData', 'No data')}
-                      </span>
-                    )}
-                  </div>
-                  {crimLegal === false && (crim?.penalty as string) && (
-                    <p className="pl-8 text-xs font-medium text-destructive">
-                      {t('country.rights.penalty', 'Penalty')}: {crim?.penalty as string}
-                      {crim?.max_prison ? ` (${crim.max_prison as string})` : ''}
-                      {dpRisk === 'confirmed'
-                        ? ` — ${t('country.rights.deathPenalty', 'death penalty')}`
-                        : dpRisk === 'possible'
-                          ? ` — ${t('country.rights.deathPenaltyPossible', 'death penalty possible, no legal certainty')}`
-                          : ''}
-                    </p>
-                  )}
-                  {crimLegal === true && (crim?.decrim_year_1 as string) && (
-                    <p className="pl-8 text-xs text-muted-foreground">
-                      {t('country.rights.decriminalized', 'Decriminalized')}:{' '}
-                      {crim?.decrim_year_1 as string}
-                      {crim?.decrim_year_2 ? ` / ${crim.decrim_year_2 as string}` : ''}
-                    </p>
-                  )}
-                </React.Fragment>
-              );
-            }
-
-            // --- Unions: one row for the pair, with the adoption years ------
-            if (topic.slug === 'marriage') {
-              return (
-                <React.Fragment key={topic.slug}>
-                  <div className="flex items-center gap-4 py-2">
-                    <topic.icon
-                      size={15}
-                      className="shrink-0 text-muted-foreground"
-                      aria-hidden="true"
-                    />
-                    <p className="flex-1 text-13 font-medium">{topicLabel(t, topic)}</p>
-                    {ssuValue.raw ? (
-                      <div className="flex shrink-0 items-center gap-2">
-                        <StatusGlyph kind={ssuValue.kind} />
-                        <Badge variant="secondary" className="text-2xs">
-                          {ssuValue.valueKey
-                            ? t(`rights.value.${ssuValue.valueKey}`, ssuValue.raw)
-                            : ssuValue.raw}
-                        </Badge>
-                      </div>
-                    ) : (
-                      <span className="shrink-0 text-xs text-muted-foreground">
-                        {t('country.rights.noData', 'No data')}
-                      </span>
-                    )}
-                  </div>
-                  {ssu.marriage_since && (
-                    <p className="pl-8 text-xs text-muted-foreground">
-                      {t('country.rights.marriageSince', 'Marriage since')} {ssu.marriage_since}
-                      {ssu.civil_union_since
-                        ? ` · ${t('country.rights.civilUnionSince', 'civil union since')} ${ssu.civil_union_since}`
-                        : ''}
-                    </p>
-                  )}
-                </React.Fragment>
-              );
-            }
-            // Rendered as part of the marriage row above.
-            if (topic.slug === 'civil-union') return null;
-
-            // --- Gender recognition: a chip cluster, not a single value -----
-            if (topic.slug === 'gender-recognition') {
-              if (!gender || Object.keys(gender).length === 0) return null;
-              return (
-                <div key={topic.slug} className="flex items-start gap-4 py-2">
-                  <Fingerprint
-                    size={15}
-                    className="mt-0.5 shrink-0 text-muted-foreground"
-                    aria-hidden="true"
-                  />
-                  <div className="flex-1">
-                    <p className="text-13 font-medium">{topicLabel(t, topic)}</p>
-                    <div className="mt-1 flex flex-wrap gap-1">
-                      {gender.gender_marker ? (
-                        <Badge variant="secondary" className="text-2xs">
-                          {t('country.rights.marker', 'Marker')}:{' '}
-                          {(() => {
-                            const v = readRightValue(String(gender.gender_marker));
-                            return v.valueKey
-                              ? t(`rights.value.${v.valueKey}`, v.raw ?? '')
-                              : String(gender.gender_marker);
-                          })()}
-                        </Badge>
-                      ) : null}
-                      {isAffirmed(gender.self_id) && (
-                        <Badge variant="secondary" className="gap-1 text-2xs">
-                          <Check size={11} aria-hidden="true" />
-                          {t('country.rights.selfId', 'Self-ID')}
-                        </Badge>
-                      )}
-                      {/*
-                        `requiresIt`, not `=== 'Yes'`. ILGA writes "Required",
-                        so these two badges rendered on no country at all until
-                        2026-09-01 — including the 15 that demand sterilisation.
-                      */}
-                      {requiresIt(gender.requires_surgery) && (
-                        <Badge variant="destructive" className="text-2xs">
-                          {t('country.rights.requiresSurgery', 'Requires surgery')}
-                        </Badge>
-                      )}
-                      {requiresIt(gender.requires_diagnosis) && (
-                        <Badge variant="outline" className="text-2xs">
-                          {t('country.rights.requiresDiagnosis', 'Requires diagnosis')}
-                        </Badge>
-                      )}
+                      </Badge>
                     </div>
-                  </div>
+                  ) : (
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      {t('country.rights.noData', 'No data')}
+                    </span>
+                  )}
                 </div>
-              );
-            }
+                {crimLegal === false && (crim?.penalty as string) && (
+                  <p className="pl-8 text-xs font-medium text-destructive">
+                    {t('country.rights.penalty', 'Penalty')}: {crim?.penalty as string}
+                    {crim?.max_prison ? ` (${crim.max_prison as string})` : ''}
+                    {dpRisk === 'confirmed'
+                      ? ` — ${t('country.rights.deathPenalty', 'death penalty')}`
+                      : dpRisk === 'possible'
+                        ? ` — ${t('country.rights.deathPenaltyPossible', 'death penalty possible, no legal certainty')}`
+                        : ''}
+                  </p>
+                )}
+                {crimLegal === true && (crim?.decrim_year_1 as string) && (
+                  <p className="pl-8 text-xs text-muted-foreground">
+                    {t('country.rights.decriminalized', 'Decriminalized')}:{' '}
+                    {crim?.decrim_year_1 as string}
+                    {crim?.decrim_year_2 ? ` / ${crim.decrim_year_2 as string}` : ''}
+                  </p>
+                )}
+              </React.Fragment>
+            );
+          }
 
-            // --- The SO/GI/GE/SC matrix rows -------------------------------
-            if (topic.kind === 'protection-matrix') {
-              const data = country[topic.column] as Record<string, unknown> | null;
-              const since = (data?.so_since || data?.gi_since) as string | undefined;
-              return (
-                <div key={topic.slug} className="flex items-center gap-4 py-2">
+          // --- Unions: one row for the pair, with the adoption years ------
+          if (topic.slug === 'marriage') {
+            return (
+              <React.Fragment key={topic.slug}>
+                <div className="flex items-center gap-4 py-2">
                   <topic.icon
                     size={15}
                     className="shrink-0 text-muted-foreground"
                     aria-hidden="true"
                   />
-                  <p className="min-w-0 flex-1 text-13 font-medium leading-snug">
-                    {topicLabel(t, topic)}
-                  </p>
-                  <ProtectionCells data={data} />
-                  {since && (
-                    <span className="shrink-0 text-xs2 text-muted-foreground">{since}</span>
+                  <p className="flex-1 text-13 font-medium">{topicLabel(t, topic)}</p>
+                  {ssuValue.raw ? (
+                    <div className="flex shrink-0 items-center gap-2">
+                      <StatusGlyph kind={ssuValue.kind} />
+                      <Badge variant="secondary" className="text-2xs">
+                        {ssuValue.valueKey
+                          ? t(`rights.value.${ssuValue.valueKey}`, ssuValue.raw)
+                          : ssuValue.raw}
+                      </Badge>
+                    </div>
+                  ) : (
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      {t('country.rights.noData', 'No data')}
+                    </span>
                   )}
                 </div>
-              );
-            }
-
-            // --- Everything else is a plain status row ---------------------
-            if (CUSTOM_SLUGS.has(topic.slug)) return null;
-            return (
-              <RightRow
-                key={topic.slug}
-                label={topicLabel(t, topic)}
-                icon={topic.icon}
-                value={topicScalarValue(country, topic) as string | null | undefined}
-                severeNegative={topic.severeNegative}
-              />
+                {ssu.marriage_since && (
+                  <p className="pl-8 text-xs text-muted-foreground">
+                    {t('country.rights.marriageSince', 'Marriage since')} {ssu.marriage_since}
+                    {ssu.civil_union_since
+                      ? ` · ${t('country.rights.civilUnionSince', 'civil union since')} ${ssu.civil_union_since}`
+                      : ''}
+                  </p>
+                )}
+              </React.Fragment>
             );
-          })}
-        </div>
+          }
+          // Rendered as part of the marriage row above.
+          if (topic.slug === 'civil-union') return null;
+
+          // --- Gender recognition: a chip cluster, not a single value -----
+          if (topic.slug === 'gender-recognition') {
+            if (!gender || Object.keys(gender).length === 0) return null;
+            return (
+              <div key={topic.slug} className="flex items-start gap-4 py-2">
+                <Fingerprint
+                  size={15}
+                  className="mt-0.5 shrink-0 text-muted-foreground"
+                  aria-hidden="true"
+                />
+                <div className="flex-1">
+                  <p className="text-13 font-medium">{topicLabel(t, topic)}</p>
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {gender.gender_marker ? (
+                      <Badge variant="secondary" className="text-2xs">
+                        {t('country.rights.marker', 'Marker')}:{' '}
+                        {(() => {
+                          const v = readRightValue(String(gender.gender_marker));
+                          return v.valueKey
+                            ? t(`rights.value.${v.valueKey}`, v.raw ?? '')
+                            : String(gender.gender_marker);
+                        })()}
+                      </Badge>
+                    ) : null}
+                    {isAffirmed(gender.self_id) && (
+                      <Badge variant="secondary" className="gap-1 text-2xs">
+                        <Check size={11} aria-hidden="true" />
+                        {t('country.rights.selfId', 'Self-ID')}
+                      </Badge>
+                    )}
+                    {/*
+                        `requiresIt`, not `=== 'Yes'`. ILGA writes "Required",
+                        so these two badges rendered on no country at all until
+                        2026-09-01 — including the 15 that demand sterilisation.
+                      */}
+                    {requiresIt(gender.requires_surgery) && (
+                      <Badge variant="destructive" className="text-2xs">
+                        {t('country.rights.requiresSurgery', 'Requires surgery')}
+                      </Badge>
+                    )}
+                    {requiresIt(gender.requires_diagnosis) && (
+                      <Badge variant="outline" className="text-2xs">
+                        {t('country.rights.requiresDiagnosis', 'Requires diagnosis')}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          }
+
+          // --- The SO/GI/GE/SC matrix rows -------------------------------
+          if (topic.kind === 'protection-matrix') {
+            const data = country[topic.column] as Record<string, unknown> | null;
+            const since = (data?.so_since || data?.gi_since) as string | undefined;
+            return (
+              <div key={topic.slug} className="flex items-center gap-4 py-2">
+                <topic.icon
+                  size={15}
+                  className="shrink-0 text-muted-foreground"
+                  aria-hidden="true"
+                />
+                <p className="min-w-0 flex-1 text-13 font-medium leading-snug">
+                  {topicLabel(t, topic)}
+                </p>
+                <ProtectionCells data={data} />
+                {since && <span className="shrink-0 text-xs2 text-muted-foreground">{since}</span>}
+              </div>
+            );
+          }
+
+          // --- Everything else is a plain status row ---------------------
+          if (CUSTOM_SLUGS.has(topic.slug)) return null;
+          return (
+            <RightRow
+              key={topic.slug}
+              label={topicLabel(t, topic)}
+              icon={topic.icon}
+              value={topicScalarValue(country, topic) as string | null | undefined}
+              severeNegative={topic.severeNegative}
+            />
+          );
+        })}
       </div>
+    );
+
+    // Criminalisation never collapses. It is the only `severeNegative` section
+    // and the reason a traveller opened the page; putting a click between the
+    // reader and "same-sex activity is a crime here" would be the one
+    // reduction this card must not make.
+    if (section === 'criminalisation') {
+      return (
+        <div key={section} className="border-b border-border-hairline pb-4">
+          <SectionLabel>
+            {t(`country.rights.section.${section}`, RIGHT_SECTION_LABEL[section])}
+          </SectionLabel>
+          {rows}
+        </div>
+      );
+    }
+
+    return (
+      <RightsSection
+        key={section}
+        section={section}
+        summary={summariseSection(country, section)}
+        columnHeader={section === 'antiDiscrimination' ? <ProtectionCellsHeader /> : undefined}
+      >
+        {rows}
+      </RightsSection>
     );
   };
 

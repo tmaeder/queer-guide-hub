@@ -112,3 +112,6 @@ out-aids-ch/
 # Kinktionary scrape cache + the browser profile whose cf_clearance cookie is
 # what gets the run past Cloudflare. The fetcher is committed; the fetch is not.
 scripts/data-quality/out-kinktionary/
+
+# Köppen raster and other large downloaded reference data for scripts/data-quality/*
+scripts/.cache/

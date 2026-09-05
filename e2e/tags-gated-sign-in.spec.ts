@@ -48,64 +48,47 @@ function publishesDefinedTerm(html: string): boolean {
   return html.includes('DefinedTerm');
 }
 
-/**
- * Candidates from the gated cohort — NOT an assertion that each one is gated.
- *
- * Editorial review PUBLISHES a term (verification_status -> 'reviewed'), which
- * is the gate working, not breaking. `footjob` was gated all through
- * 2026-09-04 and reviewed by an editor that evening, and a spec that demanded
- * a gate from a fixed slug went red on correct editorial work. Each candidate
- * is CLASSIFIED from what prod serves, and the invariants are asserted over the
- * classification.
- */
-const CANDIDATES = ['footjob', 'anal-whore', 'gag-slut', 'spit-slut'];
-
-type Verdict = 'gated' | 'readable' | 'missing';
-
-function classify(status: number, html: string): Verdict {
-  if (status === 404) return 'missing';
-  return /sign in to view/i.test(titleOf(html)) ? 'gated' : 'readable';
-}
+// Four of the cohort, spread across both creating migrations.
+//
+// `footjob` was here and was REMOVED on 2026-09-04, not because the assertion
+// was wrong but because it stopped being true: 20270107114500 published it
+// (verification_status='reviewed' + seo_indexable), so it is no longer gated and
+// this spec failed on it. `bagpiping` replaces it — same creating migration
+// (20261211100000) and the same Practices & Play category, so the sample keeps
+// its shape.
+//
+// The cohort is a MOVING SET. It was 101 when this spec was written and is 100
+// now, and any of these four can be published the same way. When one starts
+// failing here, check `verification_status` before "fixing" the assertion: a
+// deliberate publish and a regression look identical from the HTTP response, and
+// only the flag tells them apart. The invariant this spec defends is "a gated
+// term answers sign-in rather than 404" — not the membership of the list.
+const GATED = ['bagpiping', 'anal-whore', 'gag-slut', 'spit-slut'];
 
 test.describe('@safety gated glossary terms', () => {
-  test('a gated term is never a 404, and a gate leaks no content', async ({ request }) => {
-    const seen: Record<string, Verdict> = {};
-
-    for (const slug of CANDIDATES) {
+  for (const slug of GATED) {
+    test(`/tags/${slug} answers a sign-in gate, not a 404`, async ({ request }) => {
       const res = await request.get(`/tags/${slug}`, { headers: { 'User-Agent': BOT_UA } });
+      // The status is the whole finding. 404 here means the edge conceded the
+      // term does not exist and the SPA never mounted, so no gate can render.
+      expect(res.status(), `${slug} must not 404 for a signed-out visitor`).toBe(200);
+
       const html = await res.text();
-      const verdict = classify(res.status(), html);
-      seen[slug] = verdict;
-
-      // THE ORIGINAL DEFECT, and it holds for every candidate whatever its
-      // review state: a term that exists must never answer 404. 404 means the
-      // edge conceded it does not exist and the SPA never mounted, so no gate
-      // can render.
-      expect(verdict, `${slug} must not 404 — it exists`).not.toBe('missing');
-
-      if (verdict !== 'gated') continue;
-
-      // Still withheld from the index — a sign-in wall is not a page to rank.
+      // Still withheld from the index — a sign-in wall is not a page to rank,
+      // and these rows are seo_indexable=false deliberately.
       expect(robotsOf(html), `${slug} must stay noindex`).toContain('noindex');
-      // The term must not travel as content. The row is unreviewed
-      // machine-written material; `seo_indexable=false` suppresses indexing,
-      // not the bytes we hand over. (The title already proved this is the
-      // gated document, so the absence below is not vacuous.)
+      // Positive control FIRST, so the absence below is not vacuous: this is
+      // the gated document and not an empty body, an error page or a 404.
+      expect(titleOf(html), `${slug} must serve the gated document`).toMatch(/sign in to view/i);
+      // And the term itself must not travel as content. The row is unreviewed
+      // machine-written material about an explicit act; `seo_indexable=false`
+      // suppresses indexing, not the bytes we hand over.
       expect(publishesDefinedTerm(html), `${slug} must publish no DefinedTerm`).toBe(false);
       // The slug is deliberately NOT asserted absent: it is echoed in
       // `<link rel="canonical">` and `og:url`, which is the URL the crawler
       // asked for, not a disclosure of the definition.
-    }
-
-    // POSITIVE CONTROL. Without this the whole case passes on a corpus where
-    // every candidate has been reviewed — i.e. it would stop testing the gate
-    // and nobody would notice. If this ever fires legitimately (the cohort
-    // really was fully reviewed), replace the candidates rather than delete it.
-    expect(
-      Object.values(seen).filter((v) => v === 'gated').length,
-      `at least one candidate must still be gated, else this asserts nothing — saw ${JSON.stringify(seen)}`,
-    ).toBeGreaterThan(0);
-  });
+    });
+  }
 
   // NO BROWSER-RENDERED CASE HERE, AND THAT IS A DELIBERATE OMISSION.
   //

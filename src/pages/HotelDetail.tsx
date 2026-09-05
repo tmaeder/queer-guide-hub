@@ -18,13 +18,16 @@ import {
   HotelOverview,
   HotelSidebar,
   HotelPhotos,
+  buildHotelBreadcrumbs,
   type HotelWithRelations,
 } from './HotelDetail.parts';
 import { getHotelPhotosToShow } from './hotelPhotosUtil';
 import { PageContainer } from '@/components/layout/PageContainer';
 
 // Bare geo embeds (no column hints) — see VenueDetail.parts VENUE_SELECT_FIELDS.
-const JOIN_SPEC = '*, cities(id, name), countries(id, name)';
+// `slug` is load-bearing, not cosmetic: it is what the breadcrumb's city and
+// country crumbs link to.
+const JOIN_SPEC = '*, cities(id, name, slug), countries(id, name, slug)';
 
 export default function HotelDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -118,14 +121,7 @@ export default function HotelDetail() {
       ]
     : [];
 
-  const breadcrumbs = hotel
-    ? [
-        { label: t('pages.hotelDetail.backToHotels', 'Hotels'), href: '/hotels' },
-        ...(countryName ? [{ label: countryName }] : []),
-        ...(cityName ? [{ label: cityName }] : []),
-        { label: hotel.name },
-      ]
-    : undefined;
+  const breadcrumbs = hotel ? buildHotelBreadcrumbs(hotel, t) : undefined;
 
   return (
     <>

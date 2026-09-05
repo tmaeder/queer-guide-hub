@@ -3355,7 +3355,8 @@
     "tags": "태그",
     "organizations": "[KO] Organizations",
     "guides": "가이드",
-    "people": "사람 만나기"
+    "people": "사람 만나기",
+    "showCollapsed": "상위 단계 보기"
   },
   "chat": {
     "react": "반응",

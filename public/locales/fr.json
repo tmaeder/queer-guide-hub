@@ -3361,7 +3361,8 @@
     "tags": "Tags",
     "organizations": "[FR] Organizations",
     "guides": "Guides",
-    "people": "Rencontrer"
+    "people": "Rencontrer",
+    "showCollapsed": "Afficher les niveaux supérieurs"
   },
   "chat": {
     "react": "Réagir",
