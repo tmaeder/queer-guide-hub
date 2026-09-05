@@ -959,12 +959,34 @@ substanceFreshness: {
     } else if (undocumentedOpen.length === 0) {
       console.log(`✓ ${open.length} breaker(s) open, all with a recorded disposition`)
     } else if (undocumented.length === 0) {
-      console.log(
-        `✓ ${open.length} breaker(s) open; ${undocumentedOpen.length} with no disposition ` +
-          `(${undocumentedOpen.map((b) => b.api_name).join(', ')}) — not failed, because each has ` +
-          `succeeded before: a flaky upstream, not a dead source. Add a DISPOSITIONED entry if ` +
-          `that is a decision rather than an oversight.`,
-      )
+      // "each has succeeded before" is a claim ABOUT success_count, so it may only
+      // be made over rows filtered on success_count. `undocumentedOpen` is
+      // `open ∧ ¬DISPOSITIONED` and never looks at it — a breaker that is open,
+      // undocumented, has NEVER succeeded, and whose last_failure_at is older than
+      // 24h drops out of `neverWorked` (which requires the failure to be recent),
+      // therefore out of `undocumented`, and lands here. It would print with a ✓
+      // described as a flaky upstream: a stalled, never-working source reported as
+      // healthy. That is the same "claimed what it did not check" defect this block
+      // exists to remove, one set later.
+      const provenOpen = undocumentedOpen.filter((b) => (b.success_count ?? 0) > 0)
+      const unprovenOpen = undocumentedOpen.filter((b) => (b.success_count ?? 0) === 0)
+      if (provenOpen.length > 0) {
+        console.log(
+          `✓ ${open.length} breaker(s) open; ${provenOpen.length} with no disposition ` +
+            `(${provenOpen.map((b) => b.api_name).join(', ')}) — not failed, because each has ` +
+            `succeeded before: a flaky upstream, not a dead source. Add a DISPOSITIONED entry if ` +
+            `that is a decision rather than an oversight.`,
+        )
+      }
+      if (unprovenOpen.length > 0) {
+        console.log(
+          `  ⚠ ${unprovenOpen.length} open breaker(s) have NEVER succeeded and carry no ` +
+            `disposition (${unprovenOpen
+              .map((b) => `${b.api_name}, last failure ${b.last_failure_at ?? 'never'}`)
+              .join('; ')}). Not failed here only because the last failure is stale — the 24h ` +
+            `window belongs to the check above. Treat as a dead source until proven otherwise.`,
+        )
+      }
     }
   }
 }
