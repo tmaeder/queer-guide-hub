@@ -66,10 +66,18 @@
 --       external_url 0. It did its job and was switched off as instructed.
 --       Re-enabling would run a no-op every 15 minutes forever.
 --
---   venue_geocode_repair
---       Description begins "ONE-SHOT: re-geocodes bare-street venues...". It ran
---       once (2026-08-22) and was disabled. Its schedule is `* * * * *`, so
---       re-enabling a finished one-shot would re-run it EVERY MINUTE.
+--   venue_geocode_repair  -- RETRACTED, this entry was WRONG. See the note on
+--       k_stay_off below. The reasoning was "description begins ONE-SHOT, it ran
+--       once on 2026-08-22, schedule is `* * * * *`, therefore finished". The
+--       first two facts are true and the conclusion does not follow:
+--       20270501174243 measured 3,366 rows still matching the sweep, 2,628 of
+--       them bare-street, ZERO carrying the verified_at stamp. The pool was never
+--       empty. Only the `* * * * *` schedule was wrong (Nominatim caps at
+--       1 req/s and one batch runs ~55 s), and that migration re-enables it on
+--       `5,25,45 * * * *`. Left here rather than deleted because the mistake is
+--       the instructive part: a finished one-shot and an abandoned one look
+--       identical from the registry row, and only the remaining pool tells them
+--       apart.
 --
 --   marketplace_catalog_prune
 --       Its last two runs say it plainly:
@@ -120,10 +128,32 @@ declare
   -- and note the dangerous half was already removed at the DB layer by
   -- 20261018094000 (tag_prose_apply lost its retract branch), so an enabled cron
   -- is not the same hazard the doc describes. Flagged, not silently asserted.
+  --
+  -- `venue_geocode_repair` WAS in this list and is removed, because a
+  -- better-evidenced migration overtook it while this one sat unmerged. The
+  -- reasoning here had been: its description begins "One-shot: re-geocodes
+  -- bare-street venues", it ran exactly once (2026-08-22), its schedule was
+  -- `* * * * *` -- therefore finished, leave it off.
+  --
+  -- 20270501174243_reenable_venue_geocode_repair MEASURED the thing that was
+  -- merely inferred: 3,366 rows still match the sweep's filters, 2,628 of them
+  -- bare-street, and ZERO carry the enrichment_status.geocode.verified_at stamp.
+  -- The work is not done. What was wrong was the SCHEDULE -- one batch of 50 with
+  -- Nominatim's required 1100 ms courtesy sleep runs ~55 s, so `* * * * *` is
+  -- continuous back-to-back querying of a free service whose policy caps
+  -- throughput at 1 req/s. It re-enables on `5,25,45 * * * *` and records
+  -- "Retire once remaining=0".
+  --
+  -- "It ran once and stopped" was the observation; "therefore its pool is empty"
+  -- was the inference, and the inference was wrong. Measuring the remaining pool
+  -- is what separates a FINISHED one-shot from an ABANDONED one, and this
+  -- migration did not do that for this row. Keeping the assertion would now
+  -- revert a correct decision -- and it did exactly that in CI, aborting
+  -- `db push` after four migrations had already applied.
   k_stay_off constant text[] := array[
     'tag_relation_verify', 'ev_fill_eventbrite',
     'marketplace_variant_backfill', 'city_cost_of_living_backfill',
-    'marketplace_affiliate_backfill', 'venue_geocode_repair',
+    'marketplace_affiliate_backfill',
     'marketplace_catalog_prune', 'tag_image_provenance_sync'
   ];
   r         record;
