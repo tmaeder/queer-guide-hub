@@ -50,9 +50,6 @@ vi.mock('@/components/discovery/SimilarItems', () => ({ SimilarItems: () => null
 vi.mock('@/components/discovery/PersonalitiesForEntity', () => ({
   PersonalitiesForEntity: () => null,
 }));
-vi.mock('@/components/marketplace/MarketplaceForCountry', () => ({
-  MarketplaceForCountry: () => null,
-}));
 vi.mock('@/components/travel/TravelDealsSection', () => ({ TravelDealsSection: () => null }));
 vi.mock('@/components/activities/ActivitiesWidget', () => ({ ActivitiesWidget: () => null }));
 

@@ -107,8 +107,22 @@ export function implausibleClassOf(p31Labels: readonly string[]): string | null 
 export interface WikiIdentity {
   /** Title of the article Wikipedia actually served (post-redirect). */
   title: string | null
-  /** P31 labels of the linked Wikidata entity, English. Empty when unknown. */
-  p31Labels: readonly string[]
+  /**
+   * P31 labels of the linked Wikidata entity, English.
+   *
+   * `null` means the class COULD NOT BE DETERMINED — there was no QID to ask about, or
+   * the wbgetentities call failed. It is REFUSED, because adopting on a null class rests
+   * on title agreement alone, and name agreement is exactly what the namesake bug
+   * produces. `[]` is a different answer and is allowed through: it means the entity was
+   * read successfully and genuinely carries no non-deprecated P31 statement.
+   *
+   * Until 2026-09-04 this was `readonly string[]` and the fetcher collapsed every failure
+   * into `[]`. `implausibleClassOf([])` returns null, so the class gate was SKIPPED and a
+   * Wikidata outage silently degraded this module to gate 1 alone — the single-signal
+   * condition the header calls unsafe. The fetcher's own doc comment already claimed the
+   * behaviour that is now actually implemented.
+   */
+  p31Labels: readonly string[] | null
   /**
    * Set when the tag lives in a category whose members carry a queer/kink-
    * specific sense (`isSenseCategory` in tag-style.ts). For such a tag pass
@@ -125,7 +139,13 @@ export interface WikiIdentity {
 export interface AdoptionVerdict {
   adopt: boolean
   /** Machine-readable reason, logged so a refusal is visible rather than silent. */
-  reason: 'ok' | 'title-mismatch' | 'implausible-class' | 'no-title' | 'generic-sense'
+  reason:
+    | 'ok'
+    | 'title-mismatch'
+    | 'implausible-class'
+    | 'class-unknown'
+    | 'no-title'
+    | 'generic-sense'
   detail?: string
 }
 
@@ -138,6 +158,10 @@ export function mayAdoptWikiIdentity(tagName: string, id: WikiIdentity): Adoptio
   if (!titleAgrees(tagName, id.title)) {
     return { adopt: false, reason: 'title-mismatch', detail: id.title }
   }
+  // Absence of evidence is not evidence of plausibility. A null class means we could not
+  // read one, so the only surviving signal is the title — and the title agreeing is what
+  // the namesake failure looks like, not what a correct resolution looks like.
+  if (id.p31Labels === null) return { adopt: false, reason: 'class-unknown' }
   const bad = implausibleClassOf(id.p31Labels)
   if (bad) return { adopt: false, reason: 'implausible-class', detail: bad }
   if (id.senseCategory && !extractSupportsQueerSense(id.extract)) {

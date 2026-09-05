@@ -6,7 +6,9 @@ import {
   normalizeLetter,
   letterFor,
   hasActiveFilters,
+  compareTagsBy,
   DEFAULT_TAGS_STATE,
+  TAG_SORTS,
 } from '../tagsIndexState';
 
 const sp = (s: string) => new URLSearchParams(s);
@@ -178,5 +180,43 @@ describe('hasActiveFilters', () => {
     expect(hasActiveFilters({ ...DEFAULT_TAGS_STATE, q: 'bear' })).toBe(true);
     expect(hasActiveFilters({ ...DEFAULT_TAGS_STATE, letter: 'B' })).toBe(true);
     expect(hasActiveFilters({ ...DEFAULT_TAGS_STATE, usage: 'unused' })).toBe(true);
+  });
+});
+
+describe('compareTagsBy', () => {
+  const corpus = [
+    { name: 'Ace', created_at: '2026-01-01' },
+    { name: 'Bear', created_at: '2026-06-01' },
+    { name: 'Cub', created_at: '2026-03-01' },
+  ];
+  const usage = { Ace: 1, Bear: 900, Cub: 40 };
+  const order = (sort: (typeof TAG_SORTS)[number], dir: 'asc' | 'desc') =>
+    [...corpus].sort(compareTagsBy(sort, dir, usage)).map((e) => e.name);
+
+  // The one that matters: /tags with no params IS this comparison, so getting
+  // its direction wrong opens the glossary on the least-used terms — which is
+  // exactly what shipped until 2026-09-05.
+  it('opens the default view on the MOST-used term', () => {
+    expect(DEFAULT_TAGS_STATE.sort).toBe('usage');
+    expect(DEFAULT_TAGS_STATE.dir).toBe('desc');
+    expect(order(DEFAULT_TAGS_STATE.sort, DEFAULT_TAGS_STATE.dir)).toEqual(['Bear', 'Cub', 'Ace']);
+  });
+
+  it('sorts descending by the named quantity', () => {
+    expect(order('usage', 'desc')).toEqual(['Bear', 'Cub', 'Ace']); // most used
+    expect(order('recent', 'desc')).toEqual(['Bear', 'Cub', 'Ace']); // newest
+    expect(order('alphabetical', 'desc')).toEqual(['Cub', 'Bear', 'Ace']); // Z→A
+  });
+
+  // The defect was one branch disagreeing with another about what `dir` means,
+  // so assert the relationship across ALL sorts rather than three literals: asc
+  // is the exact reverse of desc, whatever the branch computes.
+  it.each(TAG_SORTS)('makes asc the exact reverse of desc for sort=%s', (sort) => {
+    expect(order(sort, 'asc')).toEqual([...order(sort, 'desc')].reverse());
+  });
+
+  it('treats a missing created_at as the oldest, not the newest', () => {
+    const withNull = [{ name: 'Zed', created_at: null }, ...corpus];
+    expect([...withNull].sort(compareTagsBy('recent', 'desc', usage)).at(-1)?.name).toBe('Zed');
   });
 });
