@@ -2,13 +2,11 @@ import { test, expect, type Page } from '@playwright/test';
 import { readFileSync, existsSync } from 'node:fs';
 
 /**
- * The /about colophon is members-only; the licence-required credits it used to
- * carry render in the footer instead, for everyone.
- *
- * Both halves are asserted here because neither is safe alone. Hiding the
- * colophon without the footer row publishes OSM-derived city diagrams with no
- * credit anywhere, and the footer row alone would let the colophon silently
- * stop rendering for the members it was kept for.
+ * The /about colophon is members-only, and as of 2026-09-04 it is the ONLY
+ * place on the site the licence-required credits appear — the footer row that
+ * carried them for signed-out readers was removed by an explicit product
+ * decision. So this spec is what keeps the colophon itself from silently
+ * disappearing; there is no second home for the credits to fall back to.
  *
  * Runs against the DEPLOYED site (config baseURL is https://queer.guide).
  *
@@ -48,30 +46,29 @@ async function seedSession(page: Page) {
   ] as const);
 }
 
-/** The footer credit is unconditional, so this runs in BOTH auth states. */
-async function expectFooterAttribution(page: Page) {
+/**
+ * The footer no longer carries any credit, in either auth state. Asserted
+ * rather than dropped so the removal stays a decision on the record — see
+ * `e2e/removed-ui-elements.spec.ts` for the full history of the inversions.
+ */
+async function expectNoFooterAttribution(page: Page) {
   const footer = page.locator('footer');
   await expect(footer).toBeVisible({ timeout: BOOT });
   for (const source of REQUIRED) {
-    const link = footer.getByRole('link', { name: source.name });
-    await expect(link).toBeVisible();
-    await expect(link).toHaveAttribute('target', '_blank');
-    await expect(link).toHaveAttribute('rel', /noopener/);
-    await expect(link).toHaveAttribute('href', /^https:\/\//);
+    await expect(footer.getByRole('link', { name: source.name })).toHaveCount(0);
   }
-  await expect(footer).toContainText('ODbL');
-  await expect(footer).toContainText('CC BY 4.0');
-  await expect(footer).toContainText('CC BY-SA');
+  await expect(footer).not.toContainText('ODbL');
+  await expect(footer).not.toContainText('CC BY');
 }
 
 test.describe('/about colophon gate', () => {
-  test('signed out: colophon hidden, footer still carries the credits', async ({ page }) => {
+  test('signed out: colophon hidden, and no credit in the footer either', async ({ page }) => {
     await page.goto('/about', { waitUntil: 'domcontentloaded' });
     // Positive control. Without it, "#sources absent" also passes on a page
     // that 404'd, is still booting, or rendered an error boundary.
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: BOOT });
     await expect(page.locator('#sources')).toHaveCount(0);
-    await expectFooterAttribution(page);
+    await expectNoFooterAttribution(page);
   });
 
   test('signed in: colophon renders in full', async ({ page }) => {
@@ -117,9 +114,8 @@ test.describe('/about colophon gate', () => {
     );
     expect(unsafe, `unsafe credit links: ${JSON.stringify(unsafe)}`).toEqual([]);
 
-    // Signing in must not COST the reader the footer credit. The row is
-    // deliberately unconditional; this is what stops it being "optimised" into
-    // the complement of the gate above.
-    await expectFooterAttribution(page);
+    // The footer carries no credit for signed-in readers either — the
+    // colophon above is the whole of it now.
+    await expectNoFooterAttribution(page);
   });
 });
