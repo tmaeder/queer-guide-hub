@@ -43,6 +43,19 @@ async function get(path) {
 // "stop this section" survives without stopping the whole script.
 let FAILED = false
 
+// One stream, so the log reads in the order it was written.
+//
+// `console.log` goes to stdout and `console.warn`/`console.error` to stderr, and
+// GitHub buffers the two independently — so the summary line at the bottom
+// surfaced ABOVE lines written before it. Measured on the 2026-09-05 prod run:
+// the "every section above ran" line printed with two `· breaker OPEN` lines and
+// a ✓ after it, which makes a true statement read as a false one.
+//
+// Failure is signalled by the exit code, not by the stream, so collapsing both
+// onto stdout costs nothing and makes ordering deterministic.
+console.warn = (...a) => console.log(...a)
+console.error = (...a) => console.log(...a)
+
 // 1. Open alerts
 const alerts = await get('pipeline_health_alerts?resolved_at=is.null&select=kind,subject,first_seen_at')
 if (alerts.length > 0) {
@@ -448,6 +461,50 @@ if (!hygieneRes.ok) {
       console.log('✓ Every at-most-daily automation recorded a run in the last 48h')
     }
   }
+}
+
+// 5c. News sources the rotation is not reaching (2026-09-03).
+//
+// news_sources_eligible ordered `reliability_score DESC, last_fetched_at ASC` —
+// reliability PRIMARY — while source-rss-news asks for 15 rows a run. 293 live
+// sources sat at score 1.000 and exactly two at 0.999, so those two ranked ~294
+// and could never enter the window. NewsData.io and GNews.io went 53 days
+// without a fetch while every health column on the row read healthy:
+// is_active=true, auto_paused=false, consecutive_failures=0, last_error=''.
+//
+// Nothing could have caught that. consecutive_failures counts FAILED fetches
+// and a fetch that never runs cannot fail, so the entire existing health
+// apparatus was measuring a source that was not being asked to do anything.
+// This check asks the only question that distinguishes the state: when was it
+// last actually visited?
+//
+// 20280423151137 inverted the sort keys so staleness outranks reliability, and
+// reliability now scales the re-fetch interval instead. Starvation is therefore
+// structurally impossible and this has no baseline allowance — one source over
+// the threshold means the ordering regressed or a new exclusion appeared.
+const starveRes = await fetch(`${BASE}/rest/v1/rpc/news_source_starvation_stats`, {
+  method: 'POST',
+  headers: { ...headers, 'Content-Type': 'application/json' },
+  body: '{}',
+})
+if (!starveRes.ok) {
+  // An unreachable probe is not a clean result. Same rule as the absent-key
+  // branch above: "nobody looked" must never print like "nothing found".
+  console.warn(`⚠ news_source_starvation_stats → HTTP ${starveRes.status} —`)
+  console.warn('  20280423151137 is not applied, so this check measured NOTHING (it did not pass).')
+} else {
+  const starve = await starveRes.json()
+  const starved = starve.starved ?? {}
+  const starvedNames = Object.keys(starved)
+  if (starvedNames.length > 0) {
+    console.error(`✗ ${starvedNames.length} active news source(s) not fetched in over 7 days: ${JSON.stringify(starved)}`)
+    console.error('  These are eligible, unpaused and error-free — they are simply never selected.')
+    console.error('  Check news_sources_eligible ordering first: if the fleet is saturated at one')
+    console.error(`  reliability_score (currently ${starve.distinct_reliability_scores} distinct value(s) across`)
+    console.error(`  ${starve.active_sources} active sources), a lower score is an exile, not a demotion.`)
+    FAILED = true
+  }
+  console.log(`✓ News source rotation: 0 starved of ${starve.active_sources} active (no baseline)`)
 }
 
 // 6. Search reindex drain (P1 overhaul, 2026-08): entity writes enqueue into
@@ -967,6 +1024,10 @@ substanceFreshness: {
       (b) => (b.success_count ?? 0) === 0 && b.last_failure_at && Date.parse(b.last_failure_at) >= dayAgo,
     )
     const undocumented = neverWorked.filter((b) => !DISPOSITIONED[b.api_name])
+    // Every open breaker with no entry, whether or not it has ever succeeded.
+    // `undocumented` above is the FAILING set (never worked AND no disposition);
+    // this is the wider set the closing ✓ has to be honest about.
+    const undocumentedOpen = open.filter((b) => !DISPOSITIONED[b.api_name])
 
     for (const b of open) {
       const tag = DISPOSITIONED[b.api_name] ? 'known' : 'UNDOCUMENTED'
@@ -1002,9 +1063,48 @@ substanceFreshness: {
     // exactly when the check had just fired. Caught by running the script
     // against a stub whose only open breaker was undocumented; the real nightly
     // never showed it because prod's open breakers were all dispositioned.
-    if (open.length === 0) console.log('✓ No circuit breakers open')
-    else if (undocumented.length === 0) {
+    // …and gating it on `undocumented` was still not enough. On the 2026-09-05
+    // prod run it printed "all with a recorded disposition" while listing
+    //   · breaker OPEN [UNDOCUMENTED] deepcrawl_extract: 5 failures, 8441 successes
+    // two lines above. `undocumented` is the FAILING set — never succeeded AND
+    // no entry — so a breaker that is undocumented but currently working fell
+    // out of it and the ✓ asserted something plainly contradicted on screen.
+    //
+    // A summary line may only claim what it actually checked. This one now
+    // reports the wider set and says why it is not a failure.
+    if (open.length === 0) {
+      console.log('✓ No circuit breakers open')
+    } else if (undocumentedOpen.length === 0) {
       console.log(`✓ ${open.length} breaker(s) open, all with a recorded disposition`)
+    } else if (undocumented.length === 0) {
+      // "each has succeeded before" is a claim ABOUT success_count, so it may only
+      // be made over rows filtered on success_count. `undocumentedOpen` is
+      // `open ∧ ¬DISPOSITIONED` and never looks at it — a breaker that is open,
+      // undocumented, has NEVER succeeded, and whose last_failure_at is older than
+      // 24h drops out of `neverWorked` (which requires the failure to be recent),
+      // therefore out of `undocumented`, and lands here. It would print with a ✓
+      // described as a flaky upstream: a stalled, never-working source reported as
+      // healthy. That is the same "claimed what it did not check" defect this block
+      // exists to remove, one set later.
+      const provenOpen = undocumentedOpen.filter((b) => (b.success_count ?? 0) > 0)
+      const unprovenOpen = undocumentedOpen.filter((b) => (b.success_count ?? 0) === 0)
+      if (provenOpen.length > 0) {
+        console.log(
+          `✓ ${open.length} breaker(s) open; ${provenOpen.length} with no disposition ` +
+            `(${provenOpen.map((b) => b.api_name).join(', ')}) — not failed, because each has ` +
+            `succeeded before: a flaky upstream, not a dead source. Add a DISPOSITIONED entry if ` +
+            `that is a decision rather than an oversight.`,
+        )
+      }
+      if (unprovenOpen.length > 0) {
+        console.log(
+          `  ⚠ ${unprovenOpen.length} open breaker(s) have NEVER succeeded and carry no ` +
+            `disposition (${unprovenOpen
+              .map((b) => `${b.api_name}, last failure ${b.last_failure_at ?? 'never'}`)
+              .join('; ')}). Not failed here only because the last failure is stale — the 24h ` +
+            `window belongs to the check above. Treat as a dead source until proven otherwise.`,
+        )
+      }
     }
   }
 }
