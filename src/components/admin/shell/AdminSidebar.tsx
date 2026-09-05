@@ -5,7 +5,7 @@
  */
 
 import { useMemo, useState } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router';
+import { useLocation, Link } from 'react-router';
 import {
   ChevronDown,
   LogOut,
@@ -81,7 +81,6 @@ function CountBadge({ count, overdue }: { count: number | undefined; overdue?: n
 }
 
 export function AdminSidebar() {
-  const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
   const { theme, setTheme } = useTheme();
@@ -142,6 +141,28 @@ export function AdminSidebar() {
       ? location.pathname === '/admin'
       : location.pathname.startsWith(item.route);
 
+  /**
+   * The ONE row that may announce itself as the current page.
+   *
+   * `isItemActive` is a prefix match, which is right for the highlight —
+   * "Content" should read as active while you are inside it — but wrong as an
+   * announced claim: on `/admin/content/venues` both Content and Venues match,
+   * and `aria-current="page"` is supposed to identify a single element.
+   * Measured before this existed: three elements claimed it on one route.
+   *
+   * Longest match wins, so a deep route still marks its nearest nav item
+   * rather than marking nothing.
+   */
+  const currentRoute = useMemo(() => {
+    let best = '';
+    for (const { item } of visibleItems) {
+      if (isItemActive(item) && item.route.length > best.length) best = item.route;
+    }
+    return best;
+    // isItemActive closes over location.pathname, which is the real dependency.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibleItems, location.pathname]);
+
   const userEmail = user?.email ?? '';
   const userDisplayName =
     (user?.user_metadata?.display_name as string) ||
@@ -150,18 +171,35 @@ export function AdminSidebar() {
     'User';
   const userInitial = userDisplayName.charAt(0).toUpperCase();
 
-  // ── One nav button row ──────────────────────────────────────────
+  // ── One nav row ─────────────────────────────────────────────────
+  //
+  // A real <Link>, not a <button onClick={navigate}>. Both move you to the
+  // route, but only the anchor carries a destination the BROWSER understands:
+  // cmd/middle-click to open a queue in a new tab, right-click → copy link,
+  // the hover status-bar preview, and an accessibility tree that says "link"
+  // instead of "button" — every one of which an admin working two queues side
+  // by side reaches for. Found while auditing admin breadcrumbs (#3449): a
+  // probe for `a[href^="/admin"]` in the mobile drawer returned ZERO, and the
+  // drawer was fine — the nav simply had no hrefs in it.
+  //
+  // Closing the mobile drawer still works: AdminShell clears `mobileOpen` on
+  // every `location.pathname` change, which a Link triggers exactly as
+  // navigate() did.
   function NavRow({ item }: { item: AdminNavItem }) {
     const active = isItemActive(item);
     const { count, overdue, hasCount } = itemCount(item);
     const pinned = isPinned(item.id);
 
-    const button = (
-      <button
-        type="button"
-        onClick={() => navigate(item.route)}
+    const link = (
+      <Link
+        to={item.route}
+        // Screen readers announce the current page from `aria-current`, where
+        // sighted users read the fill. Keyed on `currentRoute`, NOT on
+        // `active` — see the comment there; `active` is true for every
+        // ancestor row and would claim the page three times over.
+        aria-current={item.route === currentRoute ? 'page' : undefined}
         className={cn(
-          'rounded-element mx-1.5 mb-px py-1.5 inline-flex items-center gap-2 transition-all hover:translate-x-0.5 w-[calc(100%-12px)]',
+          'rounded-element mx-1.5 mb-px py-1.5 inline-flex items-center gap-2 transition-all hover:translate-x-0.5 w-[calc(100%-12px)] no-underline text-foreground',
           active
             ? 'bg-muted font-semibold border-l border-border-hairline pl-4'
             : 'pl-4.5 border-l border-transparent',
@@ -181,22 +219,24 @@ export function AdminSidebar() {
               ))}
           </>
         )}
-      </button>
+      </Link>
     );
 
-    /* The pin is a SIBLING of the nav button, never a descendant. Both are
+    /* The pin is a SIBLING of the nav link, never a descendant. Both are
        interactive; nesting them was invalid HTML, hid the pin from keyboard and
        screen-reader users, and is axe `nested-interactive` (serious). The hover
-       group moves to this wrapper so the reveal still works. */
+       group moves to this wrapper so the reveal still works. The row becoming
+       an <a> does not soften this — a <button> inside an anchor is the same
+       violation as one inside a button. */
     const row = collapsed ? (
-      button
+      link
     ) : (
       <div className="group/navrow relative flex items-center">
-        {button}
-        {/* A SIBLING of the nav button, never a descendant: a control inside
-          a <button> is invalid HTML and axe `nested-interactive` (serious) —
-          keyboard and screen-reader users got one merged interactive node and
-          could not reach the pin at all.
+        {link}
+        {/* A SIBLING of the nav link, never a descendant: a control inside an
+          interactive element is invalid HTML and axe `nested-interactive`
+          (serious) — keyboard and screen-reader users got one merged
+          interactive node and could not reach the pin at all.
 
           A NATIVE <button>, not a <span role="button" tabIndex={0}>. The span
           worked and satisfied axe, but it had to hand-roll Enter/Space and
@@ -228,7 +268,7 @@ export function AdminSidebar() {
     if (collapsed) {
       return (
         <Tooltip>
-          <TooltipTrigger asChild>{button}</TooltipTrigger>
+          <TooltipTrigger asChild>{link}</TooltipTrigger>
           <TooltipContent side="right">{item.label}</TooltipContent>
         </Tooltip>
       );
