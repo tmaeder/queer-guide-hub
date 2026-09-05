@@ -226,7 +226,7 @@ create trigger trg_tag_facet_page_gate
 do $$
 declare v int;
 begin
-  perform set_config('app.actor', 'migration:20261220100000_marketplace_facets_are_not_glossary_pages', true);
+  perform set_config('app.actor', 'migration:marketplace_facets_are_not_glossary_pages', true);
 
   update public.unified_tags
      set seo_indexable = false,
@@ -257,7 +257,7 @@ end $$;
 do $$
 declare v int;
 begin
-  perform set_config('app.actor', 'migration:20261220100000_marketplace_facets_are_not_glossary_pages', true);
+  perform set_config('app.actor', 'migration:marketplace_facets_are_not_glossary_pages', true);
 
   update public.unified_tags
      set seo_deindex_reason = 'facet', updated_at = now()
@@ -327,7 +327,7 @@ end $$;
 do $$
 declare v int;
 begin
-  perform set_config('app.actor', 'migration:20261220100000_marketplace_facets_are_not_glossary_pages', true);
+  perform set_config('app.actor', 'migration:marketplace_facets_are_not_glossary_pages', true);
 
   update public.unified_tags
      set description = null,
@@ -664,7 +664,7 @@ end $$;
 do $$
 declare v_id uuid; v_indexable boolean; v_reason text;
 begin
-  perform set_config('app.actor', 'migration:20261220100000_marketplace_facets_are_not_glossary_pages', true);
+  perform set_config('app.actor', 'migration:marketplace_facets_are_not_glossary_pages', true);
 
   insert into public.unified_tags (name, slug, status, description)
   values ('Mat Zz Facet Gate Probe', 'mat-zz-facet-gate-probe', 'active', 'Probe prose.')

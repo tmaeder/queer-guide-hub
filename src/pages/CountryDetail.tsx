@@ -12,6 +12,7 @@ import { TrackLoader } from '@/components/transit/TrackLoader';
 import { SinglePage, StickyRailGroup } from '@/components/transit/SinglePage';
 import { ProvenanceLine } from '@/components/transit/ProvenanceLine';
 import { ClampedProse } from '@/components/ui/ClampedProse';
+import { buildLegalLine } from '@/lib/rights/legalLine';
 import { SafetyVerdict } from '@/components/country/SafetyVerdict';
 import { CountryFactSheet } from '@/components/country/CountryFactSheet';
 import { CountryStatsBand } from '@/components/country/CountryStatsBand';
@@ -96,7 +97,20 @@ export default function CountryDetail() {
   // returns null from its own body is invisible to the section filter, so the
   // route rail would draw a station pointing at an empty heading. The page has
   // to know whether the module has data BEFORE it builds the section.
+  //
+  // The gate is the STATION count, not the milestone count. A country can have
+  // no milestone rows and still have a legal record — its adoption years live
+  // on the rights columns, and gating on milestones alone hid the line for
+  // every such country.
   const { data: legalRecord } = useMilestonesForCountry(country?.id, 12);
+  const legalStations = useMemo(
+    () =>
+      buildLegalLine({
+        country: country as unknown as Record<string, unknown> | null,
+        milestones: legalRecord,
+      }),
+    [country, legalRecord],
+  );
 
   const worldBankData = useWorldBankData(country ?? null);
   const sdgData = useSDGData(country ?? null);
@@ -209,7 +223,7 @@ export default function CountryDetail() {
               {/* Self-hiding on data; see the component header. Placed above the
                   legal record because it is about the reader's own documents. */}
               <TransSafetyBand country={country as unknown as Record<string, unknown>} />
-              {legalRecord?.length ? (
+              {legalStations.length ? (
                 <div id="history" className="mt-10 scroll-mt-8">
                   <h3 className="text-title font-bold leading-tight">
                     {t('country.section.history', 'Legal record')}
@@ -221,11 +235,7 @@ export default function CountryDetail() {
                     )}
                   </p>
                   <div className="mt-4">
-                    <CountryLegalRecord
-                      countryId={country.id}
-                      countryName={country.name}
-                      seeAllLabel={t('country.history.seeAll', 'Full timeline')}
-                    />
+                    <CountryLegalRecord countryName={country.name} stations={legalStations} />
                   </div>
                 </div>
               ) : null}

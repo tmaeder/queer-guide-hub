@@ -79,6 +79,15 @@ export function findAppliedNameMismatches(files, remoteMap, isNew = () => true) 
     if (remoteName === undefined) continue
 
     const wanted = normalizeMigrationName(remoteName)
+    // An EMPTY remote name is absence of evidence, not evidence of a DIFFERENT
+    // name. 71 versions applied between 2026-02-24 and 2026-04-15 carry
+    // `name = ''` — recorded that way by an older CLI, and immutable history
+    // now. Comparing a repo filename against '' reported every one of them as
+    // a mismatch and failed `migration-versions` on EVERY open PR in the repo,
+    // none of which could have caused it or fixed it. This check exists to
+    // catch a version applied under a different migration's name; a nameless
+    // row makes no such claim.
+    if (wanted === '') continue
     if (normalizeMigrationName(rawName) === wanted) continue
     // Some other file in the repo IS the applied one -> plain duplicate.
     if ((namesByVersion.get(version) || []).includes(wanted)) continue

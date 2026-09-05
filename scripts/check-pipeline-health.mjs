@@ -476,7 +476,7 @@ reindexDrain: {
 //    genuinely-paused/retired rows on the warn path.
 {
   const since = new Date(Date.now() - 14 * 864e5).toISOString()
-  const disabled = await get('admin_automations?enabled=is.false&select=id,slug,consecutive_failures,last_run_status')
+  const disabled = await get('admin_automations?enabled=is.false&select=id,slug,consecutive_failures,last_run_status,description')
   if (disabled.length) {
     const ids = disabled.map((a) => a.id).join(',')
     const pausedRuns = await get(
@@ -484,11 +484,33 @@ reindexDrain: {
     )
     const pausedIds = new Set(pausedRuns.map((r) => r.automation_id))
     const suspects = disabled.filter((a) => pausedIds.has(a.id))
+    // A row can be auto-paused AND THEN deliberately retired, and the columns
+    // this rule reads cannot tell that apart from a transient blip: a retired
+    // job's last run often succeeded, which is exactly the false-disable shape.
+    // `venue_accessibility_osm` (20261217100000) is the case that surfaced it —
+    // retired for a measured 2.7% match rate while its final run reported
+    // success. Without this, a deliberate retirement hard-fails CI for the 14
+    // days its auto_paused run rows stay in the window.
+    //
+    // Deliberately a WARN, not a silent drop: the marker moves a row off the
+    // fail path but it still gets named on every run, so "retired" cannot
+    // quietly become "invisible". Anything claiming retirement has to say so in
+    // its own description, which is a migration-reviewed change.
+    const RETIRED_RE = /\[RETIRED\b/i
+    const retired = suspects.filter((a) => RETIRED_RE.test(a.description ?? ''))
+    const live = suspects.filter((a) => !retired.includes(a))
     // Recovered but still switched off — the row's own columns say "healthy".
-    const falseDisabled = suspects.filter(
+    const falseDisabled = live.filter(
       (a) => Number(a.consecutive_failures) === 0 && a.last_run_status === 'success',
     )
-    const stillFailing = suspects.filter((a) => !falseDisabled.includes(a))
+    const stillFailing = live.filter((a) => !falseDisabled.includes(a))
+
+    if (retired.length) {
+      console.warn(
+        `⚠ ${retired.length} automation(s) auto-paused then deliberately retired (expected to stay off): ` +
+          retired.map((a) => a.slug).join(', '),
+      )
+    }
 
     if (stillFailing.length) {
       console.warn(
