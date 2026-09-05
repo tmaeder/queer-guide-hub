@@ -3357,7 +3357,8 @@
     "tags": "Tags",
     "organizations": "[DE] Organizations",
     "guides": "Guides",
-    "people": "Leute treffen"
+    "people": "Leute treffen",
+    "showCollapsed": "Übergeordnete Ebenen anzeigen"
   },
   "chat": {
     "react": "Reagieren",
