@@ -3,8 +3,8 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * The second shadow-alias pass (`20270501190000`) and the seal that stops it
- * needing a third (`20270501190100`).
+ * The second shadow-alias pass (`20270601200000`) and the seal that stops it
+ * needing a third (`20270601200100`).
  *
  * Only properties whose loss is SILENT are pinned here — the migration still
  * applies, every constraint still holds, and the defect ships. Anything the
@@ -15,8 +15,8 @@ import { join } from 'node:path';
  */
 
 const DIR = join(process.cwd(), 'supabase', 'migrations');
-const pass = readFileSync(join(DIR, '20270501190000_tag_shadow_alias_pass_2.sql'), 'utf8');
-const seal = readFileSync(join(DIR, '20270501190100_tag_shadow_seal.sql'), 'utf8');
+const pass = readFileSync(join(DIR, '20270601200000_tag_shadow_alias_pass_2.sql'), 'utf8');
+const seal = readFileSync(join(DIR, '20270601200100_tag_shadow_seal.sql'), 'utf8');
 
 /** Offset of the first match in `sql`, or -1. */
 const at = (sql: string, re: RegExp): number => re.exec(sql)?.index ?? -1;
@@ -172,6 +172,6 @@ describe('tag shadow alias pass 2', () => {
   });
 
   it('refuses to seal a corpus that still violates the invariant', () => {
-    expect(seal).toMatch(/20270501190000 must apply first/);
+    expect(seal).toMatch(/20270601200000 must apply first/);
   });
 });
