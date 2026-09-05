@@ -109,6 +109,9 @@ const eventbriteAdapter: SourceAdapter = {
       urls: d.url ? [String(d.url)] : [],
       images: (d.logo as Record<string, Record<string, string>>)?.original?.url ? [String((d.logo as Record<string, Record<string, string>>).original.url)] : [],
       tags: ['lgbtq', 'event'],
+      // Top level is where commit_event_staging_item reads it; the metadata copy is
+      // kept for existing readers. See NormalizedItem.venue_name.
+      venue_name: venue.name ? String(venue.name) : undefined,
       metadata: { eventbrite_id: raw.sourceId, venue_name: venue.name, event_type: mapEventType(d.category_id as string) },
     }
   },

@@ -80,6 +80,9 @@ const gaycitiesAdapter: SourceAdapter = {
       urls: d.url ? [String(d.url)] : [],
       images: d.image ? [String(d.image)] : [],
       tags: ['lgbtq', 'event'],
+      // Top level is where commit_event_staging_item reads it; the metadata copy is
+      // kept for existing readers. See NormalizedItem.venue_name.
+      venue_name: d.venue_name ? String(d.venue_name) : undefined,
       // 'LGBTQ+ Event' is not a legal events.event_type; the real type is derived from
       // the title/description downstream, so leave it unset rather than illegal.
       metadata: { venue_name: d.venue_name, event_type: 'other', source_url: d.url },
