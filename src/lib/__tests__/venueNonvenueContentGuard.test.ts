@@ -50,7 +50,9 @@ describe('decide_venue_nonvenue content guard (SQL half)', () => {
   it('drops the 3-arg signature instead of overloading it', () => {
     // Two signatures make PostgREST resolve by argument name and answer a
     // mismatch with a silent PGRST202 404.
-    expect(sql).toMatch(/drop\s+function\s+if\s+exists\s+public\.decide_venue_nonvenue\(uuid,\s*boolean,\s*text\)/i);
+    expect(sql).toMatch(
+      /drop\s+function\s+if\s+exists\s+public\.decide_venue_nonvenue\(uuid,\s*boolean,\s*text\)/i,
+    );
   });
 
   it('records the event count even when it is zero', () => {
@@ -63,10 +65,65 @@ describe('decide_venue_nonvenue content guard (SQL half)', () => {
   });
 });
 
+/** The newest migration defining archive_entity — the one that is live. */
+function liveArchiveEntity(): string {
+  const files = readdirSync(MIGRATIONS)
+    .filter((f) => f.endsWith('.sql'))
+    .sort()
+    .filter((f) =>
+      /function\s+public\.archive_entity/i.test(readFileSync(join(MIGRATIONS, f), 'utf8')),
+    );
+  expect(files.length, 'no migration defines archive_entity').toBeGreaterThan(0);
+  const sql = readFileSync(join(MIGRATIONS, files[files.length - 1]), 'utf8');
+  const start = sql.indexOf('function public.archive_entity');
+  const end = sql.indexOf('end; $function$;', start);
+  expect(end, 'archive_entity body not delimited').toBeGreaterThan(start);
+  return sql.slice(start, end);
+}
+
+describe('archive_entity honours the refusal (second caller)', () => {
+  // `archive_entity` is the CMS Archive button and BulkActionsBar. It calls
+  // decide_venue_nonvenue and then writes an admin_lifecycle_audit row with
+  // action 'archive' unconditionally — so if it ignores `ok:false` the log
+  // records an archive that never happened, which is worse than the orphaned
+  // events the guard was added to prevent.
+  const fn = liveArchiveEntity();
+  const branchStart = fn.indexOf("when 'venue' then");
+  const venueBranch = fn.slice(branchStart, fn.indexOf("when '", branchStart + 10));
+
+  it('has a venue branch', () => {
+    expect(branchStart).toBeGreaterThan(-1);
+    expect(venueBranch).toMatch(/decide_venue_nonvenue/);
+  });
+
+  it('inspects ok and raises instead of falling through to the audit insert', () => {
+    expect(venueBranch).toMatch(/->>'ok'/);
+    expect(venueBranch).toMatch(/raise\s+exception/i);
+  });
+
+  it('does not silently hardcode the force override', () => {
+    // Force belongs to the review queue, which shows the count and lets a human
+    // decide. Here it would disable the guard on the one path that cannot
+    // report what it overrode.
+    expect(venueBranch).not.toMatch(/p_force\s*:?=\s*true/i);
+  });
+
+  it('raises before the audit row is written', () => {
+    // The insert is after the CASE, so raising anywhere inside the branch is
+    // enough — but only if the branch actually raises, which is asserted above.
+    expect(fn.indexOf('insert into public.admin_lifecycle_audit')).toBeGreaterThan(branchStart);
+  });
+});
+
 describe('decide_venue_nonvenue refusal (client half)', () => {
   it('throws on a has_events refusal, naming the count', () => {
     expect(() =>
-      assertNonvenueDecisionApplied({ ok: false, error: 'has_events', events: 34, hint: 'Re-point them first.' }),
+      assertNonvenueDecisionApplied({
+        ok: false,
+        error: 'has_events',
+        events: 34,
+        hint: 'Re-point them first.',
+      }),
     ).toThrow(/34 event\(s\)/);
   });
 
