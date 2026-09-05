@@ -99,11 +99,42 @@ Deno.test('mayAdoptWikiIdentity requires BOTH gates', () => {
 })
 
 Deno.test('an unknown class is not treated as proof of plausibility on a bad title', () => {
-  // wbgetentities failing (empty p31Labels) must not become a free pass: the title
-  // gate still has to hold on its own.
+  // wbgetentities failing must not become a free pass: the title gate still has to hold
+  // on its own.
   assertEquals(
-    mayAdoptWikiIdentity('Amateur', { title: 'Indianapolis', p31Labels: [] }).adopt,
+    mayAdoptWikiIdentity('Amateur', { title: 'Indianapolis', p31Labels: null }).adopt,
     false,
+  )
+})
+
+Deno.test('an unknown class is refused even when the title agrees exactly', () => {
+  // THE REGRESSION THIS FILE PREVIOUSLY MISSED. The old assertion above used a title that
+  // ALREADY disagreed ('Amateur' vs 'Indianapolis'), so it was satisfied by gate 1 and
+  // passed no matter what gate 2 did. It went green for the whole period in which
+  // fetchEntityClassLabels collapsed every failure into [], implausibleClassOf([])
+  // returned null, and a Wikidata outage silently degraded this module to a title check.
+  //
+  // The failing case has to be one where the title gate CANNOT save us. `bear` is the
+  // real example: the article is genuinely titled "Bear", so only the class gate ever
+  // rejected it — and with the class unknown there is nothing left to reject it with.
+  assertEquals(
+    mayAdoptWikiIdentity('Bear', { title: 'Bear', p31Labels: null }),
+    { adopt: false, reason: 'class-unknown' },
+  )
+
+  // The mirror case: a class we successfully read and that is genuinely empty is NOT a
+  // failure, and must still be allowed through. Distinguishing these two is the entire
+  // point of the null/[] split — collapsing them in either direction breaks one of them.
+  assertEquals(
+    mayAdoptWikiIdentity('Puppy Play', { title: 'Pup play', p31Labels: [] }),
+    { adopt: true, reason: 'ok' },
+  )
+
+  // Ordering: an unreadable class must not mask a title mismatch, which is the cheaper
+  // and more specific diagnosis.
+  assertEquals(
+    mayAdoptWikiIdentity('Golden Shower', { title: 'Cassia fistula', p31Labels: null }).reason,
+    'title-mismatch',
   )
 })
 
