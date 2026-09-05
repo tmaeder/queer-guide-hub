@@ -73,6 +73,10 @@ const ticketmasterAdapter: SourceAdapter = {
       urls: d.url ? [String(d.url)] : [],
       images: img ? [String(img.url)] : [],
       tags: ['lgbtq', 'event'],
+      // Top level, where commit_event_staging_item reads it. The metadata copy below
+      // is kept for existing readers; it was the ONLY copy until 2027-05-02, which is
+      // why 417 of these events reached the table with no venue name at all.
+      venue_name: venue.name ? String(venue.name) : undefined,
       metadata: {
         ticketmaster_id: raw.sourceId,
         event_type: mapTmType(d.classifications as Array<Record<string, Record<string, string>>>),
