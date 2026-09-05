@@ -9,11 +9,37 @@ import { EditorialHero } from '@/components/editorial/EditorialHero';
 import { EDITORIAL_IMAGES, type EditorialImage } from '@/lib/editorialImages';
 import { PageContainer } from '@/components/layout/PageContainer';
 
+/**
+ * What a donation actually pays for.
+ *
+ * The first item read "We pay moderators and community ambassadors to vet
+ * every venue" and was false in all three of its claims. Measured against
+ * prod on 2026-09-05: one moderator, zero community ambassadors (the
+ * programme exists nowhere in the product — `ambassador` appears in `src/`
+ * only as a gamification tier), and zero venue reviews against 26,905
+ * venues, so nothing is "vetted" in the sense a reader would understand.
+ * This is a donation page, so that is a statement about where someone's
+ * money goes, which is a materially worse thing to get wrong than the same
+ * sentence on /about.
+ *
+ * What replaced it is the safety work that demonstrably runs: 1,348 venues
+ * and 61 events are withheld from anonymous visitors in countries that
+ * criminalise us, and every country page carries its legal status.
+ *
+ * The claims NOT made here are deliberate. There is no figure for how
+ * donations are split, and the hero's "100% to platform costs and community
+ * programs" is gone with it: the "community programs" named nothing that
+ * exists, and the allocation is not something this repo can evidence. An
+ * unverifiable promise about money is the one kind of copy that should fail
+ * closed. "180+ countries" stays because it is true and conservative —
+ * 191 countries currently have at least one venue.
+ */
 const IMPACT = [
   {
     icon: ShieldCheck,
-    title: 'Verified safe spaces',
-    description: 'We pay moderators and community ambassadors to vet every venue.',
+    title: 'Safety that costs money',
+    description:
+      'Rights and risk data for every country, and listings hidden from anonymous visitors where being out is dangerous.',
   },
   {
     icon: Users,
@@ -24,7 +50,7 @@ const IMPACT = [
     icon: Globe,
     title: 'Independent + global',
     description:
-      'No investors steering the roadmap — just the community and 180+ countries served.',
+      'No investors steering the roadmap. Venues in 180+ countries, and the data behind them credited source by source.',
   },
 ];
 
@@ -50,10 +76,14 @@ export default function Donate() {
           decoration="grid"
           height="lg"
         >
+          {/* "100% to platform costs and community programs" stood here. The
+              programmes it named do not exist, and the allocation is not
+              something this repo can evidence — see the note on IMPACT. A
+              claim about where a stranger's money goes fails closed. */}
           <div className="flex items-center gap-2 text-white/90">
             <Heart className="w-4 h-4" aria-hidden="true" />
             <span className="text-13 font-medium uppercase tracking-label">
-              100% to platform costs and community programs
+              No ads. No paywall. No premium tier.
             </span>
           </div>
         </EditorialHero>
@@ -140,7 +170,7 @@ function ImpactImageTile({
   const [errored, setErrored] = useState(false);
   return (
     <div className="relative min-h-[240px] overflow-hidden rounded-container">
-      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */}
+      { }
       <img
         src={src}
         alt={image.alt}
