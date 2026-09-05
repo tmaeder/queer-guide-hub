@@ -40,7 +40,7 @@ const LGBTQ_KEYWORDS = ['lgbtq', 'lgbt', 'gay', 'lesbian', 'trans', 'transgender
 // this one didn't touch.
 //
 // THAT WAS ONLY TRUE WITHIN A RELIABILITY TIER, and the difference cost two
-// sources 53 days of silence. Until 20270502164139 the selector ordered
+// sources 53 days of silence. Until 20270903142735 the selector ordered
 // `reliability_score DESC` FIRST and used last_fetched_at only as a tiebreaker,
 // so with 293 live sources at score 1.000 and two at 0.999, those two sat at
 // rank ~294 and this cap could never reach them — however stale they got.
@@ -323,7 +323,7 @@ function detectApiName(url: string): string | null {
 }
 
 // RETIRED PATH — all four aggregator rows were set is_active=false by
-// 20270502164139, so nothing below currently runs. It is kept rather than
+// 20270903142735, so nothing below currently runs. It is kept rather than
 // deleted because the admin UI (NewsSourcesManager.tsx) toggles is_active with
 // one click, and whoever flips one back on should meet these two defects here
 // rather than rediscover them from the corpus:
