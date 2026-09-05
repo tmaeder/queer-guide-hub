@@ -184,7 +184,7 @@ begin
 
     insert into public.tag_sources (tag_id, source_type, claim_summary, is_public)
     select t.id, 'editorial:general-knowledge',
-           'Definition written by hand for migration 20280501100000 (bondage positions vocabulary).',
+           'Definition written by hand for migration 20290201100000 (bondage positions vocabulary).',
            false
       from public.unified_tags t
      where t.slug = r.slug
