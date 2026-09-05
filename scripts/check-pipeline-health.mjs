@@ -968,9 +968,9 @@ const GEO_BASELINE = {
   // geo_country_parent before suspecting the corpus.
   // 450 -> 409 (geo_country_parent completed) -> 364 (forward_repair fixed 45
   // coordinates) -> 334 (30 venues relinked) -> 296 (border tolerance dropped 38
-  // rows that were never defects — border towns a 1:10m boundary puts on the
-  // wrong side).
-  containment_total: 296,
+  // rows that were never defects) -> 212 (84 coordinates restored from the
+  // venue_sources payload that produced the row).
+  containment_total: 212,
   city_coord_defects_with_content: 7,
   queue_depth_warn: 5000,
   findings_max_age_hours: 48,      // sweep is nightly at 03:55; two misses is stale
