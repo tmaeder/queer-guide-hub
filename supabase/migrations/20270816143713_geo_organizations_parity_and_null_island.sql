@@ -48,7 +48,7 @@ end;
 $$;
 
 comment on function public.coerce_null_island_coords() is
-  'BEFORE trigger: (0,0) is a failed geocode, not a location. Existed in production from 2026-06 with no migration file; committed 20270602143713.';
+  'BEFORE trigger: (0,0) is a failed geocode, not a location. Existed in production from 2026-06 with no migration file; committed 20270816143713.';
 
 drop trigger if exists trg_organizations_null_island on public.organizations;
 create trigger trg_organizations_null_island

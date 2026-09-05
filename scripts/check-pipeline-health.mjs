@@ -978,7 +978,7 @@ const GEO_BASELINE = {
     body: '{}',
   })
   if (!res.ok) {
-    console.warn(`⚠ geo_hygiene_stats → HTTP ${res.status} — geo sentinel NOT DEPLOYED (migration 20270602143714). This is absence of a check, not absence of defects.`)
+    console.warn(`⚠ geo_hygiene_stats → HTTP ${res.status} — geo sentinel NOT DEPLOYED (migration 20270816143714). This is absence of a check, not absence of defects.`)
   } else {
     const geo = await res.json()
 
