@@ -283,6 +283,7 @@
         "npm:react@^19.2.8",
         "npm:recharts@^3.10.1",
         "npm:rollup-plugin-visualizer@^7.1.1",
+        "npm:serve@14.2.6",
         "npm:sonner@^2.0.8",
         "npm:tailwind-merge@^3.6.0",
         "npm:tailwindcss@^4.3.0",
