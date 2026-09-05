@@ -310,6 +310,18 @@ verify_jwt = false
 # so adding this line would leave a public write path into community_submissions
 # with no auth at all. Their posture is a product decision, not a config
 # oversight; leave them on the platform default until someone decides otherwise.
+#
+# ALSO NOT added, for an entirely different reason: source-gays-cruising. It
+# self-gates like the ten below, so "does it self-gate" — the question this block
+# was originally written to answer — says yes. That question is insufficient.
+# gays-cruising.com (Keyup Studio S.L., Valencia) carries an EXPRESS PROHIBITION
+# in Condiciones de Uso §5: no reproducing, copying, reselling or exploiting any
+# part of the service without consent given expressly and in writing. A parser is
+# offline work and is allowed; `verify_jwt = false` is what lets a cron REACH the
+# function, which makes it a crawler. Until Keyup Studio supply that written
+# consent this line may not exist, whatever the auth posture.
+# Guarded by src/lib/__tests__/gaysCruisingLicence.test.ts, which caught this
+# exact entry in CI.
 [functions.source-display-magazin]
 verify_jwt = false
 
@@ -320,9 +332,6 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.source-gaybasel]
-verify_jwt = false
-
-[functions.source-gays-cruising]
 verify_jwt = false
 
 [functions.source-haz-ch]

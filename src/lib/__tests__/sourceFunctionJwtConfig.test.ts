@@ -44,6 +44,30 @@ const CONFIG = join(ROOT, 'supabase', 'config.toml');
  */
 const PUBLIC_ENDPOINTS = new Set(['source-bluesky-url', 'source-social-url', 'source-tiktok-url']);
 
+/**
+ * Sources that MUST NOT be reachable by cron regardless of their auth posture,
+ * because the upstream forbids it.
+ *
+ * This category exists because the first version of this test did not have it
+ * and was WRONG in CI. Its rule was "self-gates => must have a config entry",
+ * which is a question about authentication, and authentication is not the only
+ * thing a config entry decides. `verify_jwt = false` is what lets pg_cron reach
+ * the function at all, so for a source under an express prohibition the entry is
+ * the difference between holding an offline parser (allowed) and running a
+ * crawler (not allowed).
+ *
+ * gays-cruising.com (Keyup Studio S.L., Valencia): Condiciones de Uso §5 forbids
+ * reproducing, copying, reselling or exploiting any part of the service without
+ * consent given expressly and in writing; §17 puts disputes under Spanish law.
+ * src/lib/__tests__/gaysCruisingLicence.test.ts is the primary guard and it is
+ * what caught the entry this file's rule had demanded.
+ *
+ * Adding a name here is not a workaround for a failing assertion — it is a claim
+ * that the upstream prohibits scheduled access, and it needs the same kind of
+ * citation the entry above carries.
+ */
+const LICENCE_BLOCKED = new Set(['source-gays-cruising']);
+
 /** Calls that make a function responsible for its own authorization. */
 const SELF_GATES = ['requireInternalOrAdmin', 'hasValidWebhookSecret', 'requireAdmin'];
 
@@ -82,13 +106,37 @@ describe('source-* edge functions declare verify_jwt = false', () => {
 
   it('every self-gating source function has a config.toml entry', () => {
     const missing = fns.filter(
-      (n) => !PUBLIC_ENDPOINTS.has(n) && selfGates(n) && !hasConfigEntry(config, n),
+      (n) =>
+        !PUBLIC_ENDPOINTS.has(n) &&
+        !LICENCE_BLOCKED.has(n) &&
+        selfGates(n) &&
+        !hasConfigEntry(config, n),
     );
     expect(
       missing,
       `these self-gate but have no [functions.<name>] block, so pg_cron reaches them only by ` +
         `accident of the anon-key Bearer:\n  ${missing.join('\n  ')}`,
     ).toEqual([]);
+  });
+
+  it('no licence-blocked source has been given verify_jwt = false', () => {
+    // This test AGREES with gaysCruisingLicence.test.ts instead of contradicting
+    // it. Two guards disagreeing about the same line is how one of them gets
+    // "fixed" by deleting the other; stating the same rule from both sides means
+    // a future edit has to argue with both.
+    const opened = [...LICENCE_BLOCKED].filter((n) => hasConfigEntry(config, n)).sort();
+    expect(
+      opened,
+      `the upstream forbids scheduled access to these; verify_jwt=false is what lets a cron ` +
+        `reach them, which turns an offline parser into a crawler:\n  ${opened.join('\n  ')}`,
+    ).toEqual([]);
+  });
+
+  it('the licence-blocked list names functions that actually exist', () => {
+    // A stale entry would silently exempt nothing and hide a real gap, the same
+    // way a rotting allowlist does. If the function is gone, delete the entry.
+    const ghosts = [...LICENCE_BLOCKED].filter((n) => !fns.includes(n)).sort();
+    expect(ghosts, `these are listed as licence-blocked but no such function exists`).toEqual([]);
   });
 
   it('no public endpoint has been given verify_jwt = false', () => {
