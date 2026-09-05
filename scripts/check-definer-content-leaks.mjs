@@ -32,12 +32,19 @@
  * through an indirection no regex can follow. So the current population is recorded in
  * the migration and anything NEW fails here.
  *
- * THE ALLOWLIST IS A RECORD, NOT AN ENDORSEMENT. Two entries are verified against prod;
- * the rest are marked UNAUDITED in
- * supabase/migrations/20291001093418_definer_content_exposure_gate.sql. Writing them
- * down as unaudited is the honest state. A gate that fails on 18 pre-existing functions
- * gets switched off in a week; a silent baseline reads as approval. The value here is
- * the NEXT one.
+ * THE ALLOWLIST IS AUDITED. Every entry was read as anon with the outcome noted beside
+ * it in supabase/migrations/20291001093418_definer_content_exposure_gate.sql. That audit
+ * found two MORE leaks (location_closure_timeline, which returned a row for 1,346 of
+ * 1,346 gated venues, and find_duplicates, which returned a gated venue's id/slug/title/
+ * country including NG), so the migration closes three rather than one.
+ *
+ * REPRODUCING IT: `set local role anon` ALONE IS NOT ANON. assert_admin_or_internal()
+ * returns early when request.jwt.claims is unset, so admin-guarded functions read as
+ * wide open — venues_due_for_description looked like a leak under that setup and is not.
+ * Set both the role and `request.jwt.claims = '{"role":"anon"}'`. The mirror-image error
+ * is a probe that joins `venues WHERE safety_gated` as anon: RLS already hid those rows,
+ * so it reports clean having tested nothing. Capture gated ids privileged first, then
+ * check membership as anon, and keep a positive control in the same run.
  */
 
 const BASE = process.env.SUPABASE_URL

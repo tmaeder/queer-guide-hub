@@ -36,56 +36,70 @@
 -- the shape of check-anon-function-grants.mjs: the current population is
 -- recorded, anything NEW fails.
 --
--- THE ALLOWLIST IS A RECORD, NOT AN ENDORSEMENT, and it says which is which.
--- Two entries are verified safe against prod. The rest are UNAUDITED: they match
--- the heuristic and nobody has checked them. Writing them down as "unaudited" is
--- the honest state — the alternative is either a gate that cries wolf on 18
--- functions until someone disables it, or a silent baseline that reads as
--- approval. The value of the gate is the NEXT one, not these.
+-- THE ALLOWLIST IS AUDITED, NOT ASSUMED. Every entry was read as anon and the
+-- outcome is noted beside it. That audit found TWO MORE live leaks, so this
+-- migration closes three:
+--
+--   event_previous_editions     -> 1 row for Dubai (AE), Kuala Lumpur, Doha (QA)
+--   location_closure_timeline   -> 1,346 of 1,346 gated venues returned a row
+--   find_duplicates             -> gated venue id/slug/title/country, incl. NG
+--
+-- find_duplicates is an oracle rather than a dump — the caller must already know
+-- the name — but it confirms existence and hands back a working slug, which is
+-- the same harm one step removed.
+--
+-- HOW TO REPRODUCE, because the obvious way is wrong. `set local role anon` ALONE
+-- IS NOT ANON: assert_admin_or_internal() returns early when
+-- `request.jwt.claims` is unset ("direct DB session: no JWT context"), so every
+-- admin-guarded function reads as wide open. Under that flawed setup
+-- venues_due_for_description looked like a leak and was not. Both must be set:
+--
+--   set local role anon;
+--   set local request.jwt.claims = '{"role":"anon"}';
+--
+-- The mirror-image error is just as easy: a probe that joins `public.venues
+-- WHERE safety_gated` AS ANON matches nothing, because RLS already hid those
+-- rows — so it reports a clean result having tested nothing. Capture the gated
+-- ids as a privileged user FIRST, then check membership as anon, and keep a
+-- positive control ("anon sees 0 gated venues in the table") in the same run.
 
 -- ---------------------------------------------------------------------------
--- 1. Close the leak.
+-- 1. Close the leaks. THREE, not one — see the audit note above.
 -- ---------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.event_previous_editions(p_title text, p_city text DEFAULT NULL::text, p_limit integer DEFAULT 3)
- RETURNS jsonb
- LANGUAGE sql
- STABLE
- SECURITY INVOKER
- SET search_path TO 'public', 'extensions', 'pg_temp'
-AS $function$
-  with norm as (
-    select lower(regexp_replace(trim(coalesce(p_title, '')), '\s+', ' ', 'g')) as t,
-           lower(trim(coalesce(p_city, ''))) as c
-  ),
-  seed_fests as (
-    select distinct e.festival_id
-    from public.events e, norm n
-    where n.t <> '' and e.festival_id is not null
-      and similarity(lower(e.title), n.t) > 0.45
-  ),
-  cand_ids as (
-    select e.id from public.events e join seed_fests f on e.festival_id = f.festival_id
-    union
-    select e.id from public.events e, norm n
-    where n.t <> '' and similarity(lower(e.title), n.t) > 0.45
-      and (n.c = '' or lower(coalesce(e.city, '')) = n.c)
-  ),
-  picked as (
-    select e.id, e.title, e.edition, e.start_date, e.festival_id, e.description,
-           e.event_type, e.venue_id, e.venue_name, e.address, e.city, e.city_id,
-           e.country, e.country_id, e.latitude, e.longitude, e.website, e.ticket_url,
-           e.is_free, e.price_min, e.price_max
-    from public.events e
-    where e.id in (select id from cand_ids)
-      and e.start_date < now()
-      and coalesce(e.status, 'active') <> 'rejected'
-      and e.duplicate_of_id is null
-    order by e.start_date desc
-    limit greatest(p_limit, 0)
-  )
-  select coalesce(jsonb_agg(to_jsonb(picked) order by picked.start_date desc), '[]'::jsonb)
-  from picked;
-$function$;
+-- ALTER, not CREATE OR REPLACE. Only the security bit changes, so restating a
+-- body I did not write is pure transcription risk for no benefit — and
+-- 20260522000000 is this repo's cautionary tale about a "no-op" re-assert that
+-- silently reverted a rule.
+--
+-- Each of these reads a safety_gated table with no gate of its own, so under
+-- INVOKER the existing RLS policy answers per caller: anon sees the ungated
+-- subset, a signed-in user still sees everything. None of them needs owner
+-- rights for anything else.
+-- (a) event_previous_editions: INVOKER. It reads only `events`, which anon may
+--     select under RLS, so it degrades exactly as intended — verified as anon:
+--     1 row for Dubai before, 0 after, and ungated lookups unaffected.
+ALTER FUNCTION public.event_previous_editions(text, text, integer) SECURITY INVOKER;
+
+-- (b) location_closure_timeline and find_duplicates: REVOKE, not INVOKER.
+--     Measured: under INVOKER both ERROR for anon —
+--       location_closure_timeline -> permission denied for table venue_closed_audit
+--       find_duplicates           -> permission denied for table search_embeddings
+--     They read helper tables anon cannot select, so INVOKER turns a leak into a
+--     hard failure on EVERY anon call, gated or not. That is a regression, not a
+--     fix. Neither has a caller anywhere in src/, supabase/functions or scripts —
+--     they are admin/pipeline helpers that were anon-callable only because of the
+--     stock ALTER DEFAULT PRIVILEGES grant.
+--
+--     `authenticated` is deliberately KEPT: a signed-in user is already permitted
+--     to see gated rows by the RLS policy, so removing it would restrict beyond
+--     the leak. The exposure is specifically to anon.
+--
+--     PUBLIC must be revoked too. Revoking `from anon` alone is a no-op while the
+--     built-in PUBLIC grant stands — has_function_privilege('anon', …) stays TRUE
+--     while the anon entry vanishes from proacl, which is the trap
+--     check-anon-function-grants.mjs warns about in its FIX block.
+REVOKE EXECUTE ON FUNCTION public.location_closure_timeline(text, uuid) FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.find_duplicates(text, text, vector, uuid, real, real, integer) FROM PUBLIC, anon;
 
 -- ---------------------------------------------------------------------------
 -- 2. The detector.
@@ -110,27 +124,22 @@ AS $function$
     -- VERIFIED SAFE against prod (returns nothing for a gated row):
     ('get_entity_detail'),          -- returns NULL for a safety_gated event
     ('related_by_tags'),            -- returns [] from a safety_gated event
-    -- UNAUDITED — matches the heuristic, nobody has checked it. Recorded so the
-    -- gate can fail on anything NEW; each of these still wants a look.
-    ('assert_search_hybrid_contract'),
-    ('cities_directory'),
-    ('city_markable_totals'),
-    ('existence_blind_spots'),
-    ('existence_recent_archives'),
-    ('existence_review_queue'),
-    ('find_duplicates'),
-    ('find_hotel_duplicate_clusters'),
-    ('find_polygon_for_point'),
-    ('find_semantic_duplicate_candidates'),
-    ('get_homepage_stats'),
-    ('link_event_venues'),
-    ('link_org_merchant_domain_matches'),
-    ('local_supporter_score'),
-    ('location_closure_timeline'),
-    ('organization_products'),
-    ('quest_progress'),
-    ('user_local_supporter_cities'),
-    ('venues_due_for_description')
+    -- AUDITED 2027-06-02, every one read as anon with BOTH `set role anon` and
+    -- `request.jwt.claims = '{"role":"anon"}'` set — the second is load-bearing,
+    -- see the header. Outcome noted per entry.
+    ('assert_search_hybrid_contract'),      -- aggregate contract string, no rows
+    ('cities_directory'),                   -- cities carry no safety_gated column
+    ('city_markable_totals'),               -- counts only
+    ('existence_blind_spots'),              -- raises 'admin only' for anon
+    ('existence_recent_archives'),          -- raises 'admin only' for anon
+    ('existence_review_queue'),             -- raises 'admin only' for anon
+    ('find_polygon_for_point'),             -- polygon layers, not entity rows
+    ('find_semantic_duplicate_candidates'), -- 10 rows, gated row absent from its OWN embedding
+    ('get_homepage_stats'),                 -- aggregate counts
+    ('local_supporter_score'),              -- user-scoped counters, no entity content
+    ('organization_products'),              -- 0 of 437 gated orgs return products
+    ('quest_progress'),                     -- counts only
+    ('user_local_supporter_cities')         -- 0 rows
   )
   select p.proname::text, pg_get_function_result(p.oid)::text
   from pg_proc p
@@ -158,7 +167,7 @@ REVOKE ALL ON FUNCTION public.definer_content_exposure() FROM authenticated;
 GRANT EXECUTE ON FUNCTION public.definer_content_exposure() TO service_role;
 
 COMMENT ON FUNCTION public.definer_content_exposure() IS
-  'CI gate: SECURITY DEFINER + anon-callable functions that read a safety_gated table, never mention the gate/session/admin assertion, and return row content. Allowlist is a RECORD, not an endorsement — entries marked UNAUDITED in the migration have not been checked. Read by scripts/check-definer-content-leaks.mjs.';
+  'CI gate: SECURITY DEFINER + anon-callable functions that read a safety_gated table, never mention the gate/session/admin assertion, and return row content. Every allowlist entry was audited as anon (role + request.jwt.claims both set) with the outcome noted in the migration. Read by scripts/check-definer-content-leaks.mjs.';
 
 -- ---------------------------------------------------------------------------
 -- 3. Assert both halves.
