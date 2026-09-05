@@ -129,15 +129,42 @@ async function fetchVerified(kind) {
   return { gj: JSON.parse(buf.toString('utf8')), sha }
 }
 
-/** SOV_A3 names the sovereign by 3-letter code; resolve it to an ISO-2 via the
- *  feature whose own ADM0_A3 matches. Yields GU->US, HK->CN, PR->US, MP->US. */
+/**
+ * Resolve each feature's sovereign to an ISO-2.
+ *
+ * BROKEN IN THE FIRST VERSION, and silently: it keyed a map on `ADM0_A3` and
+ * looked up `SOV_A3`. Those are different code spaces. Guam's SOV_A3 is `US1`
+ * and NO feature has ADM0_A3 = 'US1' — the United States is ADM0_A3 = 'USA'. So
+ * every lookup missed, `sovereign_iso_a2` was NULL on all 258 rows, and
+ * geo_country_parent got zero rows from this derivation. The failure was
+ * invisible because the centroid arm still produced 9 rows, so the table looked
+ * populated. Measured after the first real load: GU, PR, HK, MP, AS, VI all
+ * absent — precisely the territory false-positive class the whole design exists
+ * to eliminate.
+ *
+ * The fix keys on the SOVEREIGNT *name*, which every dependency carries and
+ * which matches the sovereign feature's own NAME. Verified against the real
+ * dataset: 41 dependency->sovereign pairs resolve, including GU->US, PR->US,
+ * MP->US, AS->US, VI->US and HK->CN.
+ *
+ * Self-sovereign states are deliberately unaffected. 20 features have a
+ * SOVEREIGNT that differs from their NAME (Tanzania / "United Republic of
+ * Tanzania", Serbia / "Republic of Serbia") and resolve to nothing — checked,
+ * every one is TYPE='Sovereign country' or 'Indeterminate' and NONE is a
+ * Dependency, so no real parent is lost. The `sov !== iso` guard at the call
+ * site means a country is never made its own parent.
+ */
 function sovereignMap(features) {
-  const byAdm0 = new Map()
+  const byName = new Map()
   for (const f of features) {
     const i = isoOf(f.properties)
-    if (i && f.properties.ADM0_A3) byAdm0.set(f.properties.ADM0_A3, i)
+    // First writer wins: a couple of names recur on disputed slivers, and the
+    // sovereign feature comes first in Natural Earth's ordering.
+    if (i && f.properties.NAME && !byName.has(f.properties.NAME)) {
+      byName.set(f.properties.NAME, i)
+    }
   }
-  return byAdm0
+  return byName
 }
 
 async function loadKind(kind) {
@@ -145,12 +172,14 @@ async function loadKind(kind) {
   const feats = gj.features
   console.log(`  ${feats.length} features`)
 
-  const byAdm0 = kind === 'country' ? sovereignMap(feats) : new Map()
+  const byName = kind === 'country' ? sovereignMap(feats) : new Map()
   const rows = []
   for (const f of feats) {
     const p = f.properties
     const iso = kind === 'country' ? isoOf(p) : (p.iso_a2 && p.iso_a2 !== '-99' ? p.iso_a2.toUpperCase() : null)
-    const sov = kind === 'country' ? (byAdm0.get(p.SOV_A3) ?? null) : null
+    // Keyed on SOVEREIGNT (a name), NOT SOV_A3 (a code in a different space
+    // from ADM0_A3) — see sovereignMap.
+    const sov = kind === 'country' ? (byName.get(p.SOVEREIGNT) ?? null) : null
     rows.push({
       iso_a2: iso,
       iso_3166_2: kind === 'admin1' ? (p.iso_3166_2 || null) : null,
@@ -174,7 +203,16 @@ async function loadKind(kind) {
   // Batch by PAYLOAD SIZE, not row count. Canada's geometry alone is 1.5 MB;
   // a fixed row count would produce a statement large enough to be rejected
   // while also wasting round-trips on the 0.2 KB microstates.
-  const MAX_BYTES = 3_000_000
+  // Measured, not guessed: 3 MB of GEOMETRY produced a 413 "request entity too
+  // large" from the Management API on the admin-1 set. The budget below counts
+  // raw GeoJSON, while the statement that goes over the wire also carries
+  // quote-escaping and the ST_Multi(ST_MakeValid(ST_GeomFromGeoJSON(...)))
+  // wrapper per row, so the real payload is materially bigger than the budget.
+  // 1 MB leaves headroom for that. The row cap is a second bound for the
+  // opposite shape — admin-1 has thousands of tiny provinces, where a
+  // byte-only budget would build a statement with too many VALUES tuples.
+  const MAX_BYTES = 1_000_000
+  const MAX_ROWS = 150
   let batch = []
   let bytes = 0
   let done = 0
@@ -193,7 +231,7 @@ async function loadKind(kind) {
     bytes = 0
   }
   for (const r of rows) {
-    if (bytes + r.geojson.length > MAX_BYTES && batch.length) await flush()
+    if (batch.length && (bytes + r.geojson.length > MAX_BYTES || batch.length >= MAX_ROWS)) await flush()
     batch.push(r)
     bytes += r.geojson.length
   }
@@ -277,6 +315,31 @@ async function assertCoverage() {
     throw new Error(`microstates missing from geo_boundaries: ${small.map((x) => x.code).join(', ')}`)
   }
   console.log('  microstate control passed (MC VA NR SM TV LI MT SG all present)')
+
+  // SOVEREIGNTY CONTROL. The first version of sovereignMap keyed on the wrong
+  // code space and produced ZERO 'sovereign' parents, which was invisible
+  // because the centroid arm still filled 9 rows and the table looked
+  // populated. These six pairs are the territory false positives the whole
+  // design exists to remove — a Guam venue filed 'US', a Hong Kong venue filed
+  // 'HK' — so assert them by name rather than trusting a row count.
+  const sov = await sql(`
+    select t.child, t.parent from (values
+      ('GU','US'),('PR','US'),('MP','US'),('AS','US'),('VI','US'),('HK','CN')
+    ) t(child, parent)
+    where not exists (
+      select 1 from public.geo_country_parent p
+      where p.child_code = t.child and p.parent_code = t.parent);`)
+  if (Array.isArray(sov) && sov.length) {
+    throw new Error(
+      `sovereignty control FAILED — missing territory->sovereign pairs: ` +
+      sov.map((r) => `${r.child}->${r.parent}`).join(', ') +
+      `. Every venue in those territories would be reported as a country mismatch that is not one.`)
+  }
+  console.log('  sovereignty control passed (GU PR MP AS VI -> US, HK -> CN)')
+
+  const byDerivation = await sql(
+    `select derivation, count(*)::int as n from public.geo_country_parent group by 1 order by 1;`)
+  console.log('  parents by derivation:', JSON.stringify(byDerivation))
 }
 
 // Guarded so the pure helpers above (isoOf in particular) can be imported by

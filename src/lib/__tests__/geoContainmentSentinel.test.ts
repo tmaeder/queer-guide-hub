@@ -67,6 +67,18 @@ describe('geo containment validator', () => {
     expect(sql).toMatch(/undecidable/);
   });
 
+  it('excuses a border town but never an offshore or disputed point', () => {
+    // A 1:10m boundary generalises land borders as well as coastlines, so
+    // Konstanz, Weil am Rhein, Basel's Dreiländereck, Kerkrade, Mexicali and
+    // Monaco all landed a few hundred metres inside a neighbour. Nominatim
+    // verified all nine at km≈0 inside their CLAIMED country; the tolerance is
+    // calibrated to that measurement (0.118–1.203 km), not picked.
+    expect(sql).toMatch(/m_to_claimed\s*<=\s*2000/);
+    // It must apply ONLY to country_mismatch — an offshore point already has its
+    // own 5 km rule, and proximity proves nothing about a disputed feature.
+    expect(sql).toMatch(/kind <> 'none' and actual is not null/);
+  });
+
   it('keeps the geography cast off the KNN predicate', () => {
     // Measured: ST_DWithin(cell::geography, ...) in the WHERE clause scans all
     // 12k cells per row and times out. The GIST-backed `<->` ordering plus a
