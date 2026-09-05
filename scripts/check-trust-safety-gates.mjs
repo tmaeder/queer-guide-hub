@@ -50,43 +50,18 @@ if (failedHigh.length > 0) {
   console.warn(`⚠ ${failedHigh.length} HIGH gate(s) over threshold: ${failedHigh.map((g) => g.gate).join(', ')}`)
 }
 
-// ── search_facets / search_hybrid candidate-set parity ──────────────────────
-// Separate RPC rather than another arm of trust_safety_gate_status(), because
-// this one has to CALL both search RPCs rather than count rows in a table.
+// The search_facets / search_hybrid candidate-set parity gate used to run here.
+// It now lives in scripts/check-search-facets-parity.mjs as a schedule-only step,
+// because it reads live prod (so it can only report a divergence that landed
+// BEFORE the PR it blocks) and because its 10 full-corpus scans have no headroom
+// under the 8s statement_timeout PostgREST inherits from `authenticator`. Both
+// reasons, and the measurements behind them, are in that file's header.
 //
-// It exists because the two functions build their candidate sets by hand, in two
-// places, and nothing forces them to agree: search_facets carried no safety_gated
-// filter from 20260623160001 until 20260829041548 and handed anonymous callers a
-// per-category, per-tag breakdown of gated venues in criminalising countries while
-// the results themselves were correctly withheld. Verified to FAIL against the
-// pre-fix body (berghain 65 vs 26, naloxone 43 vs 4, gated:anon 1 vs 81), so it
-// catches drift in both directions — under-counting AND over-counting.
-const parityRes = await fetch(`${BASE}/rest/v1/rpc/search_facets_parity_failures`, {
-  method: 'POST',
-  headers: { apikey: KEY, Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json' },
-  body: '{}',
-})
+// Everything left in this script is a table count that answers in well under a
+// second, which is what keeps this a required check.
 
-let parityFailures = []
-if (!parityRes.ok) {
-  // An unreachable gate is not a passing gate.
-  console.error(`✗ search_facets_parity_failures RPC → HTTP ${parityRes.status}: ${(await parityRes.text()).slice(0, 300)}`)
-  process.exit(1)
-}
-parityFailures = await parityRes.json()
-
-if (parityFailures.length > 0) {
-  console.error('✗ [critical] search_facets_parity: search_facets and search_hybrid disagree about the candidate set')
-  for (const f of parityFailures) {
-    console.error(`    ${f.probe}: hybrid=${f.hybrid_total} facets=${f.facet_total} — ${f.detail}`)
-  }
-  console.error('  Both build `cand` by hand; diff the two WHERE clauses (see 20260829041548).')
-} else {
-  console.log('  ✓ [critical] search_facets_parity: candidate sets in step')
-}
-
-if (failedCritical.length > 0 || parityFailures.length > 0) {
-  const names = [...failedCritical.map((g) => g.gate), ...(parityFailures.length ? ['search_facets_parity'] : [])]
+if (failedCritical.length > 0) {
+  const names = failedCritical.map((g) => g.gate)
   console.error(`✗ ${names.length} CRITICAL gate(s) breached — blocking: ${names.join(', ')}`)
   process.exit(1)
 }
