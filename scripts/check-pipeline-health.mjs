@@ -43,6 +43,19 @@ async function get(path) {
 // "stop this section" survives without stopping the whole script.
 let FAILED = false
 
+// One stream, so the log reads in the order it was written.
+//
+// `console.log` goes to stdout and `console.warn`/`console.error` to stderr, and
+// GitHub buffers the two independently — so the summary line at the bottom
+// surfaced ABOVE lines written before it. Measured on the 2026-09-05 prod run:
+// the "every section above ran" line printed with two `· breaker OPEN` lines and
+// a ✓ after it, which makes a true statement read as a false one.
+//
+// Failure is signalled by the exit code, not by the stream, so collapsing both
+// onto stdout costs nothing and makes ordering deterministic.
+console.warn = (...a) => console.log(...a)
+console.error = (...a) => console.log(...a)
+
 // 1. Open alerts
 const alerts = await get('pipeline_health_alerts?resolved_at=is.null&select=kind,subject,first_seen_at')
 if (alerts.length > 0) {
@@ -893,6 +906,10 @@ substanceFreshness: {
       (b) => (b.success_count ?? 0) === 0 && b.last_failure_at && Date.parse(b.last_failure_at) >= dayAgo,
     )
     const undocumented = neverWorked.filter((b) => !DISPOSITIONED[b.api_name])
+    // Every open breaker with no entry, whether or not it has ever succeeded.
+    // `undocumented` above is the FAILING set (never worked AND no disposition);
+    // this is the wider set the closing ✓ has to be honest about.
+    const undocumentedOpen = open.filter((b) => !DISPOSITIONED[b.api_name])
 
     for (const b of open) {
       const tag = DISPOSITIONED[b.api_name] ? 'known' : 'UNDOCUMENTED'
@@ -928,9 +945,26 @@ substanceFreshness: {
     // exactly when the check had just fired. Caught by running the script
     // against a stub whose only open breaker was undocumented; the real nightly
     // never showed it because prod's open breakers were all dispositioned.
-    if (open.length === 0) console.log('✓ No circuit breakers open')
-    else if (undocumented.length === 0) {
+    // …and gating it on `undocumented` was still not enough. On the 2026-09-05
+    // prod run it printed "all with a recorded disposition" while listing
+    //   · breaker OPEN [UNDOCUMENTED] deepcrawl_extract: 5 failures, 8441 successes
+    // two lines above. `undocumented` is the FAILING set — never succeeded AND
+    // no entry — so a breaker that is undocumented but currently working fell
+    // out of it and the ✓ asserted something plainly contradicted on screen.
+    //
+    // A summary line may only claim what it actually checked. This one now
+    // reports the wider set and says why it is not a failure.
+    if (open.length === 0) {
+      console.log('✓ No circuit breakers open')
+    } else if (undocumentedOpen.length === 0) {
       console.log(`✓ ${open.length} breaker(s) open, all with a recorded disposition`)
+    } else if (undocumented.length === 0) {
+      console.log(
+        `✓ ${open.length} breaker(s) open; ${undocumentedOpen.length} with no disposition ` +
+          `(${undocumentedOpen.map((b) => b.api_name).join(', ')}) — not failed, because each has ` +
+          `succeeded before: a flaky upstream, not a dead source. Add a DISPOSITIONED entry if ` +
+          `that is a decision rather than an oversight.`,
+      )
     }
   }
 }
