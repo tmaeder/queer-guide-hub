@@ -60,6 +60,8 @@ import { SidebarCard, SidebarRow } from '@/components/transit/SidebarCard';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { TransitIcon } from '@/components/transit/TransitIcon';
 import { TagDetailWithGate } from '@/components/age-gate/TagDetailWithGate';
+import { GatedDetailFallback } from '@/components/safety/GatedDetailFallback';
+import { useGatedEntityExists } from '@/hooks/useGatedEntityExists';
 import { FollowTagButton } from '@/components/tags/FollowTagButton';
 import { TagAliasesDisplay } from '@/components/tags/TagAliasesDisplay';
 import { TagSafetyCallout } from '@/components/tags/TagSafetyCallout';
@@ -200,10 +202,31 @@ export default function TagDetail() {
     [publishedSources],
   );
 
+  // Same query the GatedDetailFallback below runs — one shared hook, so the
+  // title and the rendered page cannot disagree about whether this term exists.
+  // React Query dedupes on the key, so the two observers cost one request.
+  // Gated only on "the tag query has settled with nothing", which is the only
+  // state where the answer changes anything.
+  const {
+    data: isGatedTag,
+    isPending: gateUnresolved,
+    fetchStatus: gateFetchStatus,
+  } = useGatedEntityExists('tag', slug, !isLoading && (isError || !tag));
+  // `isPending` alone is NOT "in flight". A DISABLED React Query sits at
+  // status 'pending' forever, and this query is disabled for every signed-in
+  // reader (the hook's own `!user`) — so keying the title on `isPending` would
+  // pin a signed-in visitor's genuine 404 to "Loading" permanently. Only
+  // `fetchStatus !== 'idle'` means a request is actually out.
+  const gateIsPending = gateUnresolved && gateFetchStatus !== 'idle';
+
   const primary = tag?.categories?.find((c) => c.is_primary) ?? tag?.categories?.[0];
   const parentName = primary?.parent_name ?? undefined;
   const parentSlug = (primary as { parent_slug?: string | null } | undefined)?.parent_slug;
   const childName = primary?.level === 1 ? primary.name : undefined;
+  // `/tags/c/:categorySlug` resolves CHILD slugs too (TagsIndex falls back to
+  // scanning each parent's children), so the sub-category crumb is a real
+  // destination — it just never carried the href.
+  const childSlug = primary?.level === 1 ? primary.slug : undefined;
 
   const { data: usage } = useTagUsageBreakdown(tag?.id);
   // Fetched here as well as inside the band so the route strip and the rail can
@@ -258,20 +281,6 @@ export default function TagDetail() {
       s.push({ id: 'about', title: t('tags.detail.about', 'About') });
       s.push(...(wiki?.sections ?? []).map((x) => ({ ...x, depth: 2 as const })));
     }
-    // A figure elaborates the definition; it never replaces it, so it follows
-    // #about. Sub-stations only when there is more than one to disambiguate.
-    if (figures.length > 0) {
-      s.push({ id: 'figure', title: t('tags.detail.figure', 'Diagram') });
-      if (figures.length > 1) {
-        s.push(
-          ...figures.map((f) => ({
-            id: `figure-${f.id}`,
-            title: t(f.titleKey, f.titleFallback),
-            depth: 2 as const,
-          })),
-        );
-      }
-    }
     // Both flag presence and the hanky slug are synchronous TS data, so unlike
     // the async counts below they need no extra memo deps beyond `tag`.
     if (flagByTagSlug.has(tag.slug)) {
@@ -296,6 +305,21 @@ export default function TagDetail() {
     }
     if (mythFactCount > 0) {
       s.push({ id: 'myths', title: t('tags.myths.eyebrow', 'Check the facts') });
+    }
+    // Immediately above the taxonomy, for the same reason as `combinations`:
+    // a reader who can see the thing drawn does not need the ontology first.
+    // Sub-stations only when there is more than one figure to disambiguate.
+    if (figures.length > 0) {
+      s.push({ id: 'figure', title: t('tags.detail.figure', 'Diagram') });
+      if (figures.length > 1) {
+        s.push(
+          ...figures.map((f) => ({
+            id: `figure-${f.id}`,
+            title: t(f.titleKey, f.titleFallback),
+            depth: 2 as const,
+          })),
+        );
+      }
     }
     s.push({ id: 'taxonomy', title: t('tags.detail.inTaxonomy', 'In the taxonomy') });
     if (usage?.venue_count) s.push({ id: 'venues', title: t('tags.detail.venues', 'Venues') });
@@ -336,10 +360,17 @@ export default function TagDetail() {
       ...(parentName && parentSlug
         ? [{ label: getCategoryShortName(parentName), href: `/tags/c/${parentSlug}` }]
         : []),
-      ...(childName ? [{ label: getCategoryShortName(childName) }] : []),
+      ...(childName
+        ? [
+            {
+              label: getCategoryShortName(childName),
+              href: childSlug ? `/tags/c/${childSlug}` : undefined,
+            },
+          ]
+        : []),
       { label: tag.name },
     ];
-  }, [tag, parentName, parentSlug, childName, t]);
+  }, [tag, parentName, parentSlug, childName, childSlug, t]);
   useBreadcrumbs(breadcrumbs);
 
   // ── Meta ────────────────────────────────────────────────────────────────
@@ -362,7 +393,26 @@ export default function TagDetail() {
     // lever that shuts that off — the canonical cannot be suppressed here.
     if (isLoading) return { title: t('tags.detail.loading', 'Loading') };
     if (isError || !tag) {
-      return { title: t('tags.detail.notFound.title', 'No such term'), noIndex: true };
+      // `!tag` is TWO different pages for a signed-out reader, and titling both
+      // "No such term" is the same wrong answer this page exists to stop
+      // telling: the edge serves `<title>Sign in to view</title>` for a gated
+      // term, then the SPA hydrated and overwrote it, so the reader ended up
+      // with a tab, a bookmark and a history entry all denying a term that is
+      // right there on screen. Observed on prod 2026-09-04 — page heading
+      // "Sign in to view this term", tab "No such term | Queer Guide".
+      //
+      // While the gate check is still in flight we do not KNOW which page this
+      // is, so say nothing definitive rather than guessing and flipping. Both
+      // branches stay noIndex either way; only the words differ.
+      if (gateIsPending) {
+        return { title: t('tags.detail.loading', 'Loading'), noIndex: true };
+      }
+      return {
+        title: isGatedTag
+          ? t('safety.gatedDetail.tag.title', { defaultValue: 'Sign in to view this term' })
+          : t('tags.detail.notFound.title', 'No such term'),
+        noIndex: true,
+      };
     }
     const longFirst = tag.long_description
       ?.trim()
@@ -407,7 +457,10 @@ export default function TagDetail() {
     // `isLoading`/`isError` are load-bearing for the same reason: they gate the
     // two branches above, so leaving them out would pin the title to "Loading"
     // for the whole visit — exactly the bug this replaced.
-  }, [tag, publishedSources, isAdult, isLoading, isError, t]);
+    // `isGatedTag`/`gateIsPending` join them for exactly that reason: they
+    // resolve AFTER the first render, so omitting them would freeze the title
+    // at the pending value and never reach "Sign in to view this term".
+  }, [tag, publishedSources, isAdult, isLoading, isError, isGatedTag, gateIsPending, t]);
   useMeta(meta);
 
   if (isLoading) {
@@ -419,7 +472,7 @@ export default function TagDetail() {
   }
 
   if (isError || !tag) {
-    return (
+    const tagNotFound = (
       <PageContainer data-testid="tag-not-found" className="text-center">
         <h1 className="font-display text-display">
           {t('tags.detail.notFound.title', 'No such term')}
@@ -436,6 +489,15 @@ export default function TagDetail() {
         </LocalizedLink>
       </PageContainer>
     );
+    // `!tag` is NOT the same thing as "no such term" for a signed-out reader.
+    // `unified_tags_public_gated_read` hides a sensitive term until an editor
+    // reviews it, so `fetchTagWithCategories` returns null and this branch used
+    // to publish "Nothing in the glossary is filed under /footjob" about 101
+    // active terms that are filed, and that a signed-in reader sees in full.
+    // Same wrong answer the safety layer already fixed for places, same fix:
+    // ask the anon-safe boolean RPC whether a gated row exists here first.
+    // `noIndex` is unchanged either way — a sign-in gate must not be indexed.
+    return <GatedDetailFallback entityType="tag" slug={slug} notFound={tagNotFound} />;
   }
 
   const taxonomyPath = [parentName, childName]
@@ -505,10 +567,6 @@ export default function TagDetail() {
         </section>
       )}
 
-      {/* The picture, then its place in the taxonomy. A figure elaborates the
-          definition; it never replaces it, so it always follows #about. */}
-      <TagInfographics slug={tag.slug} pageAlreadyGated={isAdult} />
-
       <TagFlagBand tagSlug={tag.slug} />
 
       <TagHankyCodeBand tagSlug={tag.slug} />
@@ -538,6 +596,13 @@ export default function TagDetail() {
           <TagMythFacts tagId={tag.id} tagName={tag.name} />
         </div>
       )}
+
+      {/* Directly above <TagInterchange>, which IS the #taxonomy section. This
+          pairing is load-bearing: the `figure` station is pushed immediately
+          before `taxonomy` in `stations` above, and useActiveStation derives
+          the active stop from document order, so moving one without the other
+          desynchronises the route strip from the page. */}
+      <TagInfographics slug={tag.slug} pageAlreadyGated={isAdult} />
 
       <TagInterchange tagId={tag.id} tagName={tag.name} />
 

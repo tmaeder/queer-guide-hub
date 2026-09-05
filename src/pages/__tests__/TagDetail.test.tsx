@@ -3,10 +3,36 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Routes, Route } from 'react-router';
 import { SafeModeProvider } from '@/providers/SafeModeProvider';
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 
 const useMeta = vi.fn();
 vi.mock('@/hooks/useMeta', () => ({ useMeta: (o: unknown) => useMeta(o) }));
+
+// The not-found branch renders GatedDetailFallback, which reads useAuth (it
+// only probes for a gated row when nobody is signed in) — and useAuth THROWS
+// outside an AuthProvider. Signed-out is the interesting state here anyway:
+// it is the only one that can be shown a term that does not appear to exist.
+// Same mock as EventDetail.test.tsx / QueerVillageDetail.test.tsx.
+// Mutable so one case can assert the SIGNED-IN path, where the gate query is
+// disabled and must not leave the title stuck on "Loading".
+let authUser: { id: string } | null = null;
+vi.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({ user: authUser, session: null, loading: false }),
+}));
+
+// `gated_entity_exists` for the tag branch. Default: nothing is gated, so the
+// existing not-found cases keep asserting the not-found UI.
+let gatedSlugs: string[] = [];
+const gatedRpc = vi.fn();
+vi.mock('@/integrations/supabase/untyped', () => ({
+  untypedRpc: (fn: string, args: Record<string, unknown>) => {
+    gatedRpc(fn, args);
+    return Promise.resolve({
+      data: fn === 'gated_entity_exists' && gatedSlugs.includes(String(args.p_slug)),
+      error: null,
+    });
+  },
+}));
 
 let tagRow: Record<string, unknown> | null = null;
 vi.mock('@/hooks/usePageFetchers', () => ({
@@ -41,6 +67,11 @@ vi.mock('@/components/tags/FollowTagButton', () => ({
 }));
 
 import TagDetail from '../TagDetail';
+import {
+  BreadcrumbProvider,
+  useBreadcrumbState,
+  type BreadcrumbItem,
+} from '@/contexts/BreadcrumbContext';
 
 const BASE = {
   id: 't1',
@@ -86,8 +117,36 @@ const renderPage = () =>
 
 const lastMeta = () => useMeta.mock.calls.at(-1)?.[0] as Record<string, unknown>;
 
+// The trail is published to a context the global BreadcrumbBar reads from
+// LayoutShell, which this route does not mount — so read the context directly
+// rather than asserting on chrome that is not in the tree.
+let publishedTrail: BreadcrumbItem[] | null = null;
+function TrailProbe() {
+  const trail = useBreadcrumbState();
+  // Captured in an effect, not during render: `react-hooks/globals` is an
+  // error here, and a render-phase write is a side effect either way.
+  useEffect(() => {
+    publishedTrail = trail;
+  }, [trail]);
+  return null;
+}
+
+const renderWithTrail = () =>
+  render(
+    <BreadcrumbProvider>
+      <Routes>
+        <Route path="/tags/:tagName" element={<TagDetail />} />
+      </Routes>
+      <TrailProbe />
+    </BreadcrumbProvider>,
+    { wrapper: wrap },
+  );
+
 beforeEach(() => {
   useMeta.mockClear();
+  gatedRpc.mockClear();
+  gatedSlugs = [];
+  authUser = null;
   tagReferences = [];
   substanceInteractions = [];
   tagRow = { ...BASE };
@@ -220,6 +279,85 @@ describe('TagDetail — page', () => {
     expect(await screen.findByTestId('tag-not-found')).toBeInTheDocument();
   });
 
+  // `unified_tags_public_gated_read` withholds a sensitive term from anon until
+  // an editor reviews it, so `fetchTagWithCategories` returns null for a term
+  // that plainly exists — 101 active tags on prod 2026-09-03, every one of them
+  // telling a signed-out reader "Nothing in the glossary is filed under
+  // /footjob" while a signed-in reader read the entry in full. The row being
+  // withheld is right; calling it absent is not.
+  it('offers a sign-in gate, not "no such term", for a gated term', async () => {
+    tagRow = null;
+    gatedSlugs = ['bear'];
+    renderPage();
+    expect(
+      await screen.findByRole('heading', { name: /sign in to view this term/i }),
+    ).toBeInTheDocument();
+    expect(screen.queryByTestId('tag-not-found')).not.toBeInTheDocument();
+    expect(gatedRpc).toHaveBeenCalledWith('gated_entity_exists', {
+      p_entity_type: 'tag',
+      p_slug: 'bear',
+    });
+  });
+
+  it('does not borrow the high-risk-destination copy for a glossary term', async () => {
+    // The venue/event gate explains a criminalising jurisdiction. Reusing it
+    // here would tell a reader that a kink term is a dangerous place to travel:
+    // false, and alarming in the one register this site must not get wrong.
+    tagRow = null;
+    gatedSlugs = ['bear'];
+    renderPage();
+    await screen.findByRole('heading', { name: /sign in to view this term/i });
+    expect(screen.queryByText(/heightened legal risk/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/this place/i)).not.toBeInTheDocument();
+  });
+
+  it('keeps the gate out of the index — a sign-in wall is not indexable', async () => {
+    tagRow = null;
+    gatedSlugs = ['bear'];
+    renderPage();
+    await screen.findByRole('heading', { name: /sign in to view this term/i });
+    await waitFor(() => expect(lastMeta()?.noIndex).toBe(true));
+  });
+
+  // The <title> is the reader's tab, bookmark and history entry. Titling a
+  // gated term "No such term" is the same denial the page body stopped making:
+  // observed on prod 2026-09-04 with the heading reading "Sign in to view this
+  // term" and the tab reading "No such term | Queer Guide".
+  it('titles a gated term as the gate, not as a 404', async () => {
+    tagRow = null;
+    gatedSlugs = ['bear'];
+    renderPage();
+    await screen.findByRole('heading', { name: /sign in to view this term/i });
+    await waitFor(() => expect(lastMeta()?.title).toMatch(/sign in to view this term/i));
+  });
+
+  it('still titles a genuinely missing term "No such term"', async () => {
+    // The other half of the pair. Without it the case above passes on a build
+    // that titles EVERY dead glossary URL as a sign-in gate, which would be a
+    // worse lie than the one being fixed.
+    tagRow = null;
+    gatedSlugs = [];
+    renderPage();
+    await screen.findByTestId('tag-not-found');
+    await waitFor(() => expect(lastMeta()?.title).toBe('No such term'));
+  });
+
+  it('does not strand a SIGNED-IN reader on "Loading" for a missing term', async () => {
+    // React Query v5 keeps a DISABLED query at status 'pending' forever, and
+    // the gate query is disabled for every signed-in reader. Keying the title
+    // on `isPending` alone therefore pins their 404 to "Loading" permanently —
+    // caught here, not in review. `fetchStatus !== 'idle'` is the real
+    // in-flight test.
+    authUser = { id: 'u1' };
+    tagRow = null;
+    gatedSlugs = ['bear']; // would be gated IF asked — but signed-in never asks
+    renderPage();
+    await screen.findByTestId('tag-not-found');
+    await waitFor(() => expect(lastMeta()?.title).toBe('No such term'));
+    expect(lastMeta()?.title).not.toMatch(/loading/i);
+    expect(gatedRpc).not.toHaveBeenCalled();
+  });
+
   it('noindexes an unknown slug and does not title it "Loading"', async () => {
     // The meta memo used to branch on `!tag` alone, which conflated "still
     // loading" with "no such tag": a dead URL shipped `<title>Loading</title>`
@@ -257,5 +395,41 @@ describe('TagDetail — page', () => {
     renderPage();
     await screen.findByRole('heading', { level: 1, name: 'Bear' });
     expect(screen.queryByText(/Elsewhere/i)).not.toBeInTheDocument();
+  });
+});
+
+describe('TagDetail — breadcrumbs', () => {
+  // The defect: the SUB-category crumb ("Fetishes" on /tags/denim-play) was the
+  // one link in the trail that was never a link — it carried a label and no
+  // href while its parent and the glossary root both linked. `/tags/c/:slug`
+  // resolves child slugs too (TagsIndex scans each parent's children), so the
+  // destination existed the whole time.
+  it('links every crumb above the term itself', async () => {
+    renderWithTrail();
+    await screen.findByRole('heading', { level: 1, name: 'Bear' });
+    await waitFor(() => expect(publishedTrail?.length).toBeGreaterThan(2));
+    const trail = publishedTrail ?? [];
+    expect(trail.map((c) => c.href)).toEqual([
+      '/tags',
+      '/tags/c/community-culture',
+      '/tags/c/slang-terminology',
+      undefined,
+    ]);
+    // The property, not the list: only the term itself — the page you are on —
+    // may be unreachable.
+    expect(trail.slice(0, -1).every((c) => Boolean(c.href))).toBe(true);
+  });
+
+  it('leaves the sub-category unlinked when the row carries no slug', async () => {
+    tagRow = {
+      ...BASE,
+      categories: [{ ...BASE.categories[0], slug: undefined }],
+    };
+    renderWithTrail();
+    await screen.findByRole('heading', { level: 1, name: 'Bear' });
+    await waitFor(() => expect(publishedTrail?.length).toBeGreaterThan(2));
+    // Positive control for the test above: a missing slug must yield no href
+    // rather than `/tags/c/undefined`, which is a soft 404.
+    expect(publishedTrail?.[2].href).toBeUndefined();
   });
 });

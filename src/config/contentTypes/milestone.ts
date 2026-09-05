@@ -227,6 +227,7 @@ export const milestoneContentType: ContentTypeConfig = {
       mergePath: 'entities',
     },
   },
+  merge: { column: 'duplicate_of_id', label: 'Merged' },
   lifecycle: { type: 'milestone', archive: { column: 'status', value: 'archived', label: 'Archived' } },
   publicPath: (row) => (row.slug ? `/history/${row.slug}` : null),
 };

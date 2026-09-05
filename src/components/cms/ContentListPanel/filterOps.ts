@@ -207,3 +207,47 @@ export function applyArchivedView<T extends QueryBuilderLike<T>>(
     ? query.eq(archive.column, archive.value)
     : query.or(`${archive.column}.is.null,${archive.column}.neq.${archive.value}`);
 }
+
+// ── Merged view ────────────────────────────────────────────────────
+
+/** Which slice of the list to show. Defaults to `unmerged` everywhere. */
+export type MergedView = 'unmerged' | 'merged' | 'all';
+
+/**
+ * Hide rows that were soft-merged into another row.
+ *
+ * Every PUBLIC read path already does this — `cities_directory`, `usePlaces`,
+ * `useDirectory`, `sitemap-places`, the search indexer all carry
+ * `duplicate_of_id is null`. The admin CMS list was the one layer reading raw,
+ * which is how "Freisenbruch, Essen" and "Rüttenscheid, Essen" kept sitting
+ * beside Essen months after `merge_cities` folded them into it, and how 15,994
+ * merged rows across nine types stayed on screen (venues 11,062, marketplace
+ * 2,898, events 964, news 566, cities 321, personalities 123, orgs 54,
+ * milestones 5, hotels 1, measured on prod).
+ *
+ * Unlike `applyArchivedView`'s `equals` shape this is NULL-safe BY
+ * CONSTRUCTION: `.is(col,null)` and `.not(col,'is',null)` are exact
+ * complements over every row, so the `.or('c.is.null,c.neq.v')` dance the
+ * archived view needs has nothing to fix here. Two tempting "improvements" are
+ * both wrong — rewriting the unmerged arm as `.neq()` has nothing to compare
+ * against and resurrects the NULL-drop bug, and expressing merged-ness through
+ * the archive block's `shell_status` misses 274 of 321 merged cities (see
+ * `MergeCapability.column`).
+ *
+ * `merge` undefined means the table has no such column, and then NO predicate
+ * is emitted. That arm is load-bearing: `loadAllTypes` iterates every registry
+ * type, including tags/guides/pages/redirects/vocabularies, and only logs the
+ * PostgREST error — so a predicate against a missing column there would drop
+ * that whole type from All content with nothing on screen to say so.
+ */
+export function applyMergedView<T extends QueryBuilderLike<T>>(
+  query: T,
+  merge: { column: string } | undefined,
+  view: MergedView,
+): T {
+  if (!merge || view === 'all') return query;
+
+  return view === 'merged'
+    ? query.not(merge.column, 'is', null)
+    : query.is(merge.column, null);
+}

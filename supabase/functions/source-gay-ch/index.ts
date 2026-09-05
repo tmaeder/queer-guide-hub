@@ -2,6 +2,7 @@ import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInt
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
 import { writeToStaging } from '../_shared/source-adapter.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
+import { extractCategoryKeywords } from '../_shared/gaych-parse.ts'
 
 // ============================================================
 // Source: gay.ch/parties — the Swiss queer party agenda
@@ -199,7 +200,13 @@ function parseEvent(html: string, url: string): ParsedEvent | null {
     image: (ld?.image as string) || html.match(/<meta property="og:image" content="([^"]+)"/)?.[1] || null,
     cost: stripTags(side).match(/Eintritt:\s*([^\n]+)/)?.[1]?.trim() || null,
     website: links.find((l) => !/facebook|instagram|tiktok|twitter|x\.com|youtube/i.test(l)) || null,
-    keywords: [...html.matchAll(/class="link-category"[^>]*>([\s\S]*?)<\/a>/g)].map((m) => stripTags(m[1])).filter(Boolean),
+    // Extracted to _shared/gaych-parse.ts so it can be unit-tested (importing
+    // this file runs Deno.serve). Every value the inline version produced on
+    // prod was attribute soup rather than a label — 2,699 rows of
+    // `class="link-category" rel="nofollow">Zürich` — because the pattern was
+    // anchored on the bare attribute text instead of an <a> element, and
+    // stripTags decodes entities AFTER stripping tags. See that file's header.
+    keywords: extractCategoryKeywords(html),
     venue,
   }
 }

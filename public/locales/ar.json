@@ -3365,7 +3365,8 @@
     "tags": "الوسوم",
     "organizations": "[AR] Organizations",
     "guides": "الأدلة",
-    "people": "تعرّف على أشخاص"
+    "people": "تعرّف على أشخاص",
+    "showCollapsed": "إظهار المستويات الأعلى"
   },
   "chat": {
     "react": "تفاعل",
@@ -4091,7 +4092,9 @@
       "no": "[AR] No",
       "varies": "[AR] Varies",
       "unclear": "[AR] Unclear",
-      "notApplicable": "[AR] Not applicable"
+      "notApplicable": "[AR] Not applicable",
+      "required": "[AR] Required",
+      "notRequired": "[AR] Not required"
     },
     "attr": {
       "so": {
@@ -4509,7 +4512,8 @@
       "spansAllRights": "هذا يشمل مجالًا قانونيًا كاملًا، لا قانونًا واحدًا. نتتبّع 18 حقًا منفصلًا لكل دولة.",
       "seeAllRights": "اطّلع على الحقوق الـ18 حسب الدولة",
       "seeAllInSearch": "[AR] See all in search",
-      "shopAll": "تسوق الكل"
+      "shopAll": "تسوق الكل",
+      "figure": "[AR] Diagram"
     },
     "flagWall": {
       "eyebrow": "رموز",
@@ -4522,6 +4526,115 @@
     "fromGlossary": {
       "title": "[AR] From the glossary",
       "all": "[AR] All terms"
+    },
+    "figures": {
+      "eyebrow": "[AR] Diagram",
+      "bandEyebrow": "[AR] Drawn",
+      "bandTitle": "[AR] The diagram",
+      "bandTitlePlural": "[AR] Diagrams",
+      "loading": "[AR] Drawing the diagram",
+      "readAsTable": "[AR] Read as a table",
+      "hideTable": "[AR] Hide the table",
+      "readMore": "[AR] Read the entry",
+      "sources": "[AR] Drawn from",
+      "checkedOn": "[AR] Claims last checked against these sources on {{date}}.",
+      "sensitiveBody": "[AR] This diagram covers a subject some readers find difficult. It is a definition, not advice.",
+      "adultBody": "[AR] This diagram is for adults.",
+      "adultReveal": "[AR] 18+ · Show diagram",
+      "table": {
+        "line": "[AR] Line",
+        "stops": "[AR] Stops",
+        "runsTo": "[AR] Runs to",
+        "stop": "[AR] Stop",
+        "kind": "[AR] Kind",
+        "detail": "[AR] Detail",
+        "leadsTo": "[AR] Leads to"
+      },
+      "fourLines": {
+        "title": "[AR] Four lines",
+        "caption": "[AR] Gender identity, gender expression, sex assigned at birth and attraction are four separate lines. Pick a stop on each. Nothing is stored or sent.",
+        "summary": "[AR] A transit map with four lines: gender identity drawn as two independent services on one corridor, gender expression, sex assigned at birth as a terminus that runs on to nothing, and attraction. They meet at a single interchange.",
+        "readout": "[AR] Where you are on each line",
+        "tableCaption": "[AR] Every line on the map and the stops it carries",
+        "corridor": {
+          "identity": "[AR] Gender identity: two independent services"
+        },
+        "axis": {
+          "identityWoman": "[AR] How much woman",
+          "identityMan": "[AR] How much man",
+          "expression": "[AR] Gender expression",
+          "assigned": "[AR] Sex assigned at birth",
+          "attraction": "[AR] Attraction"
+        },
+        "help": {
+          "identityWoman": "[AR] Who you know yourself to be. This runs independently of the line below it. You can be a lot of both, a little of both, or neither.",
+          "identityMan": "[AR] The second rail on the same corridor. Answering this one does not subtract from the one above.",
+          "expression": "[AR] How you present: clothes, voice, hair, the way you carry yourself. Stops, not a scale. Nothing here is halfway between two others.",
+          "assigned": "[AR] What someone wrote down when you were born. It is a starting point on the record, which is why this line stops instead of running on to the others.",
+          "attraction": "[AR] Who you are drawn to. Who you are and who you are drawn to are separate lines. That is the whole point of the map."
+        },
+        "amount": {
+          "notAtAll": "[AR] Not at all",
+          "aLittle": "[AR] A little",
+          "aLot": "[AR] A lot",
+          "entirely": "[AR] Entirely",
+          "ratherNot": "[AR] Rather not say"
+        },
+        "expression": {
+          "feminine": "[AR] Feminine",
+          "androgynous": "[AR] Androgynous",
+          "masculine": "[AR] Masculine",
+          "changes": "[AR] It changes"
+        },
+        "assigned": {
+          "female": "[AR] Female",
+          "male": "[AR] Male",
+          "intersex": "[AR] Intersex variation"
+        },
+        "attraction": {
+          "women": "[AR] Women",
+          "men": "[AR] Men",
+          "moreThanOne": "[AR] More than one gender",
+          "regardless": "[AR] Regardless of gender",
+          "noOne": "[AR] No one, or rarely"
+        }
+      },
+      "consentFlow": {
+        "title": "[AR] The line that stops",
+        "caption": "[AR] Consent as a route with signals, one speed restriction and no final destination. It loops back to the check-in and stays there. Not a legal test; the law differs by country.",
+        "summary": "[AR] A branching line. Asking without an answer, and anything that is not a clear yes, end at buffer stops. Capacity is a hatched speed-restriction section rather than a yes/no signal. The line does not terminate in approval. It loops back to a check-in signal that can be answered again at any time.",
+        "tableCaption": "[AR] Every stop on the line, and where it leads",
+        "groupLabel": "[AR] Stops on the line",
+        "hint": "[AR] Select any stop to light up the route that reaches it.",
+        "node": {
+          "start": "[AR] You want to do something with someone",
+          "asked": "[AR] Have you asked?",
+          "notAsked": "[AR] Guessing is not consent",
+          "clearYes": "[AR] Was the answer a clear yes?",
+          "notAYes": "[AR] No, maybe, or nothing",
+          "capacity": "[AR] Speed restriction: can everyone actually decide?",
+          "checkin": "[AR] Still yes, right now?",
+          "stopNow": "[AR] Stop",
+          "go": "[AR] Clear to proceed, for now"
+        },
+        "note": {
+          "asked": "[AR] Out loud, or in a way you have both already agreed reads as asking.",
+          "notAsked": "[AR] Not objecting is not agreeing. The line does not start here.",
+          "clearYes": "[AR] Theirs, not one you talked them into.",
+          "notAYes": "[AR] Anything that is not a yes is a no. This is the end of the line.",
+          "capacity": "[AR] Drink, drugs, exhaustion, being half asleep. Not a switch. If you cannot tell, you do not have an answer yet.",
+          "checkin": "[AR] The signal you come back to. Agreeing earlier is not agreeing now.",
+          "stopNow": "[AR] Anyone can stop anything at any point, for no reason. Then look after each other.",
+          "go": "[AR] And back to the check-in, which is why this line is a loop."
+        },
+        "edge": {
+          "no": "[AR] No",
+          "yes": "[AR] Yes",
+          "notAYes": "[AR] Not a yes",
+          "noOrUnsure": "[AR] No, or unsure",
+          "again": "[AR] And again, any time"
+        }
+      }
     }
   },
   "village": {
