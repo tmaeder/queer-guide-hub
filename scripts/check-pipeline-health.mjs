@@ -284,6 +284,80 @@ if (!hygieneRes.ok) {
   }
 }
 
+// 4b. Event dedup health (2027-05-02). There was no check here at all: the dedup
+//     section above is city-only, so the event auto arms matched ZERO pairs for
+//     eleven days — nightly sweep green, consecutive_failures=0, 645 merges then
+//     nothing — while 84 pairs aged in the review queue and nothing said so.
+//
+//     Read the boundary honestly. A blocked engine is detectable and hard-fails; a
+//     BLIND one (arms mis-specified, would_merge=0 because nothing matches) is not,
+//     and the first draft of this check would have missed the incident for exactly
+//     that reason. The rotting-backlog warning is the part that would have surfaced
+//     it, and it is a warning because a deep queue mid-import is legitimate.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/event_dup_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    console.warn(`⚠ event_dup_signals → HTTP ${res.status} (RPC missing? migration 20270602172048)`)
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else {
+    const ev = (await res.json()) ?? {}
+    const wouldMerge = ev.would_merge
+    const merges7 = Number(ev.merges_last_7d ?? 0)
+    const openPairs = Number(ev.open_pairs ?? 0)
+    const oldestH = Number(ev.oldest_open_pair_hours ?? 0)
+
+    // "Could not look" must never read as "looked and found none".
+    if (ev.dry_run_error) {
+      console.error(`✗ event dedup dry run failed: ${ev.dry_run_error}`)
+      console.error('  run_dedup_truth_sweep(event, dry_run) is the probe; it is broken, so nothing below was measured.')
+      FAILED = true
+    } else if (wouldMerge === null || wouldMerge === undefined) {
+      console.error('✗ event_dup_signals returned no would_merge and no error — the probe is broken')
+      FAILED = true
+    } else if (Number(wouldMerge) > 0 && merges7 === 0) {
+      console.error(`✗ Event dedup sees ${wouldMerge} auto-eligible pair(s) and has merged none in 7 days`)
+      console.error('  The sweep is running but not merging: check admin_automations dedup_truth_sweep')
+      console.error('  conditions.mode is "full" (queue_only merges nothing), and that merge_entities')
+      console.error('  is not throwing — the loop counts a failed merge as "skipped", silently.')
+      FAILED = true
+    }
+
+    // An auto-eligible pair sitting in the review queue means the merge branch never
+    // reached it. In mode=full this should be structurally impossible.
+    const stuckAuto = Number(ev.open_auto_eligible ?? 0)
+    if (stuckAuto > 0) {
+      console.error(`✗ ${stuckAuto} auto-eligible event pair(s) stuck in dedup_review_queue`)
+      console.error('  Either the merge cap is biting every run, or mode is not "full".')
+      FAILED = true
+    }
+
+    // 20270602171846 retired the 06:15 legacy merger because it honours no human
+    // rejection. If it is back, a rejected pair can be merged anyway.
+    if (ev.legacy_sweep_scheduled === true) {
+      console.error('✗ cron job event_dedup_sweep is scheduled again — it was retired in 20270602171846')
+      console.error('  It merges without a review queue and with NO memory of rejected pairs.')
+      console.error('  Disable the admin_automations row first, then unschedule.')
+      FAILED = true
+    }
+
+    // Warning: the backlog. This is the signal that would have caught the original
+    // incident, and it needs a human rather than a red build.
+    if (openPairs > 60 && oldestH > 336) {
+      console.warn(`⚠ Event dedup review backlog: ${openPairs} open pairs, oldest ${oldestH}h (>14d)`)
+      console.warn('  Nobody is draining /admin/inbox?queue=dedup-review, or the arms are mis-specified')
+      console.warn('  and are queueing pairs that should auto-merge. Read a sample before tuning anything.')
+    }
+    console.log(
+      `✓ Event dup signals: would_merge=${wouldMerge}, would_queue=${ev.would_queue}, ` +
+      `merges_7d=${merges7}, open=${openPairs} (oldest ${oldestH}h)`,
+    )
+  }
+}
+
 // 5a. Wrong-entity Wikidata links on the glossary (2026-08-29). tag-enrichment-sweep
 //     resolved a tag's QID by fetching the Wikipedia summary of its RAW NAME and
 //     adopting whatever the redirect served — `golden-shower` → Cassia fistula,
