@@ -38,16 +38,23 @@ describe('tag shadow alias pass 2', () => {
     const deletes = deletePairs();
     const merges = mergePairs();
     expect(deletes).toHaveLength(18);
-    expect(merges).toHaveLength(9);
+    expect(merges).toHaveLength(5);
 
     // Every shadowed slug is dispositioned once and only once. A slug appearing
     // in both lists would delete an alias and then merge the row it protects.
     const slugs = [...deletes.map(([a]) => a), ...merges.map(([l]) => l)];
-    expect(new Set(slugs).size).toBe(27);
+    expect(new Set(slugs).size).toBe(23);
 
-    // And the precondition counts the same 27 it reviewed, so a corpus that has
-    // moved aborts rather than half-applying.
-    expect(pass).toMatch(/if v_n <> 27 then/);
+    // The precondition is a SUPERSET test, not equality. This population regrows
+    // (~5/day from a free-text feed) and is not sealed until the next file in the
+    // same push, so `<> 27` races the producer: one new shadowing alias between
+    // the measurement and the merge aborts db push and strands every migration
+    // behind it. Fewer than reviewed is the case worth aborting on — it means a
+    // reviewed pair was resolved elsewhere and these dispositions are stale.
+    expect(pass).toMatch(/if v_n < 23 then/);
+    // And pin the direction, so a revert to equality fails here rather than in CI
+    // three PRs later.
+    expect(pass).not.toMatch(/if v_n <> 23 then/);
   });
 
   it('pins the nine merge directions', () => {
@@ -56,17 +63,22 @@ describe('tag shadow alias pass 2', () => {
     // the header from the Wikidata label, the German-name policy of
     // 20261211120100, or the corpus's own generic/brand pattern; a silent flip
     // would look like a diff-noise reordering.
+    // Five, not the nine reviewed: ecstasy->mdma, femdom->female-dominance,
+    // priligy->dapoxetine and prozac->fluoxetine were merged by a sibling
+    // session while this sat in review, in exactly these directions. Their
+    // argument stays in the migration header; only the statements are gone.
     expect(mergePairs()).toEqual([
       ['bisexuell', 'bisexual'],
-      ['gayfriendly', 'lgbt-friendly'],
+      ['gayfriendly', 'lgbtq-friendly'],
       ['gewalt', 'violence'],
       ['musik', 'music'],
-      ['ecstasy', 'mdma'],
-      ['femdom', 'female-dominance'],
       ['bimbofication', 'bimboification'],
-      ['priligy', 'dapoxetine'],
-      ['prozac', 'fluoxetine'],
     ]);
+    // The four that landed elsewhere must not silently come back: re-merging an
+    // already-merged row raises 'duplicate already merged' and aborts the push.
+    for (const gone of ['ecstasy', 'femdom', 'priligy', 'prozac']) {
+      expect(mergePairs().flat(), `${gone} was merged elsewhere`).not.toContain(gone);
+    }
   });
 
   it('leaves sildenafil and viagra as two live pages', () => {
@@ -132,12 +144,30 @@ describe('tag shadow alias pass 2', () => {
   });
 
   it('seals the producer in the direction the old guard did not cover', () => {
-    // trg_tag_alias_reject_shadow guards writes to tag_aliases only. The new
-    // trigger guards the other order — a tag arriving at `active` on a slug an
-    // alias already holds.
+    // trg_tag_alias_reject_shadow guards writes to tag_aliases only. This trigger
+    // guards the other order — a tag arriving at `active` on a slug an alias
+    // already holds.
+    //
+    // The `zz_` prefix is LOAD-BEARING. BEFORE triggers fire in NAME order, and
+    // `trg_tag_reject_alias_shadow` sorts before `trg_unified_tags_normalize_slug`
+    // — the trigger that DERIVES the slug. Under the old name, a name-only INSERT
+    // (the free-text-feed shape that produced 12 of the 27) hit the seal while
+    // NEW.slug was still null and walked straight through. Verified on a
+    // throwaway PG 17.9: old name -> `INSERT 0 1`, new -> refused.
     expect(seal).toMatch(
-      /create trigger trg_tag_reject_alias_shadow\s+before insert or update of status, slug on public\.unified_tags/,
+      /create trigger trg_zz_tag_reject_alias_shadow\s+before insert or update of status, slug, name on public\.unified_tags/,
     );
+    // `name` must be in the column list: a column-scoped trigger fires on the
+    // columns named in the UPDATE STATEMENT, not on what another BEFORE trigger
+    // wrote, so `SET name = ...` would otherwise miss.
+    expect(seal).toMatch(/update of status, slug, name/);
+
+    // The function must derive the slug rather than trust NEW.slug, so it holds
+    // even if the firing order is ever changed back.
+    expect(seal).toMatch(/normalize_tag_slug\(coalesce\(NEW\.slug, NEW\.name\)\)/);
+    // And it must NOT early-return on a null slug — that was the inert path.
+    expect(seal).not.toMatch(/NEW\.slug is null then\s+return NEW/);
+
     // A self-alias is a different defect and must not abort a write.
     expect(seal).toMatch(/a\.canonical_tag_id <> NEW\.id/);
   });
