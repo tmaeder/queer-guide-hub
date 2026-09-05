@@ -3357,7 +3357,8 @@
     "tags": "Etiquetas",
     "organizations": "[ES] Organizations",
     "guides": "Guías",
-    "people": "Conocer gente"
+    "people": "Conocer gente",
+    "showCollapsed": "Mostrar los niveles superiores"
   },
   "chat": {
     "react": "Reaccionar",

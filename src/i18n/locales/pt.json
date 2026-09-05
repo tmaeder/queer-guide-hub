@@ -3357,7 +3357,8 @@
     "tags": "Tags",
     "organizations": "[PT] Organizations",
     "guides": "Guias",
-    "people": "Conhecer"
+    "people": "Conhecer",
+    "showCollapsed": "Mostrar os níveis acima"
   },
   "chat": {
     "react": "Reagir",

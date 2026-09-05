@@ -3355,7 +3355,8 @@
     "tags": "タグ",
     "organizations": "[JA] Organizations",
     "guides": "ガイド",
-    "people": "出会う"
+    "people": "出会う",
+    "showCollapsed": "上の階層を表示"
   },
   "chat": {
     "react": "リアクション",

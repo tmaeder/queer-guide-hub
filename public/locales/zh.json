@@ -3355,7 +3355,8 @@
     "tags": "标签",
     "organizations": "[ZH] Organizations",
     "guides": "指南",
-    "people": "认识朋友"
+    "people": "认识朋友",
+    "showCollapsed": "显示上级层级"
   },
   "chat": {
     "react": "回应",
