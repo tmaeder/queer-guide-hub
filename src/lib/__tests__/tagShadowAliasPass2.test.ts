@@ -3,8 +3,8 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * The second shadow-alias pass (`20270401100600`) and the seal that stops it
- * needing a third (`20270401100700`).
+ * The second shadow-alias pass (`20270602094300`) and the seal that stops it
+ * needing a third (`20270602094400`).
  *
  * Only properties whose loss is SILENT are pinned here — the migration still
  * applies, every constraint still holds, and the defect ships. Anything the
@@ -15,8 +15,8 @@ import { join } from 'node:path';
  */
 
 const DIR = join(process.cwd(), 'supabase', 'migrations');
-const pass = readFileSync(join(DIR, '20270401100600_tag_shadow_alias_pass_2.sql'), 'utf8');
-const seal = readFileSync(join(DIR, '20270401100700_tag_shadow_seal.sql'), 'utf8');
+const pass = readFileSync(join(DIR, '20270602094300_tag_shadow_alias_pass_2.sql'), 'utf8');
+const seal = readFileSync(join(DIR, '20270602094400_tag_shadow_seal.sql'), 'utf8');
 
 /** Offset of the first match in `sql`, or -1. */
 const at = (sql: string, re: RegExp): number => re.exec(sql)?.index ?? -1;
@@ -38,12 +38,12 @@ describe('tag shadow alias pass 2', () => {
     const deletes = deletePairs();
     const merges = mergePairs();
     expect(deletes).toHaveLength(18);
-    expect(merges).toHaveLength(9);
+    expect(merges).toHaveLength(5);
 
     // Every shadowed slug is dispositioned once and only once. A slug appearing
     // in both lists would delete an alias and then merge the row it protects.
     const slugs = [...deletes.map(([a]) => a), ...merges.map(([l]) => l)];
-    expect(new Set(slugs).size).toBe(27);
+    expect(new Set(slugs).size).toBe(23);
 
     // The precondition is a SUPERSET test, not equality. This population regrows
     // (~5/day from a free-text feed) and is not sealed until the next file in the
@@ -51,10 +51,10 @@ describe('tag shadow alias pass 2', () => {
     // the measurement and the merge aborts db push and strands every migration
     // behind it. Fewer than reviewed is the case worth aborting on — it means a
     // reviewed pair was resolved elsewhere and these dispositions are stale.
-    expect(pass).toMatch(/if v_n < 27 then/);
+    expect(pass).toMatch(/if v_n < 23 then/);
     // And pin the direction, so a revert to equality fails here rather than in CI
     // three PRs later.
-    expect(pass).not.toMatch(/if v_n <> 27 then/);
+    expect(pass).not.toMatch(/if v_n <> 23 then/);
   });
 
   it('pins the nine merge directions', () => {
@@ -63,17 +63,22 @@ describe('tag shadow alias pass 2', () => {
     // the header from the Wikidata label, the German-name policy of
     // 20261211120100, or the corpus's own generic/brand pattern; a silent flip
     // would look like a diff-noise reordering.
+    // Five, not the nine reviewed: ecstasy->mdma, femdom->female-dominance,
+    // priligy->dapoxetine and prozac->fluoxetine were merged by a sibling
+    // session while this sat in review, in exactly these directions. Their
+    // argument stays in the migration header; only the statements are gone.
     expect(mergePairs()).toEqual([
       ['bisexuell', 'bisexual'],
-      ['gayfriendly', 'lgbt-friendly'],
+      ['gayfriendly', 'lgbtq-friendly'],
       ['gewalt', 'violence'],
       ['musik', 'music'],
-      ['ecstasy', 'mdma'],
-      ['femdom', 'female-dominance'],
       ['bimbofication', 'bimboification'],
-      ['priligy', 'dapoxetine'],
-      ['prozac', 'fluoxetine'],
     ]);
+    // The four that landed elsewhere must not silently come back: re-merging an
+    // already-merged row raises 'duplicate already merged' and aborts the push.
+    for (const gone of ['ecstasy', 'femdom', 'priligy', 'prozac']) {
+      expect(mergePairs().flat(), `${gone} was merged elsewhere`).not.toContain(gone);
+    }
   });
 
   it('leaves sildenafil and viagra as two live pages', () => {
@@ -197,6 +202,6 @@ describe('tag shadow alias pass 2', () => {
   });
 
   it('refuses to seal a corpus that still violates the invariant', () => {
-    expect(seal).toMatch(/20270401100600 must apply first/);
+    expect(seal).toMatch(/20270602094300 must apply first/);
   });
 });

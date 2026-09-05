@@ -1,5 +1,5 @@
 -- Make "an alias occupying a live tag's slug" unrepresentable, in both
--- directions, so the pass in 20270401100600 does not have to be run a third time.
+-- directions, so the pass in 20270602094300 does not have to be run a third time.
 --
 -- WHY THE EXISTING GUARD WAS NOT ENOUGH. `trg_tag_alias_reject_shadow` is
 -- BEFORE INSERT OR UPDATE on `tag_aliases`. It refuses an alias that would
@@ -17,7 +17,7 @@
 -- because `merge_tag_concept` skips its insert in that case. So the unmerge
 -- sets the loser back to `active` while an alias still carries its slug: the
 -- precise state Part 2 refuses. Without this fix, Part 2 would make every such
--- merge irreversible — including all nine merged by 20270401100600, whose
+-- merge irreversible — including all nine merged by 20270602094300, whose
 -- losers all had a pre-existing alias. That is exactly how the live
 -- `sildenafil` -> `viagra` shadow came to exist: 20261015110000 reversed that
 -- merge to put 1,088 chars of drug-interaction prose back in circulation, and
@@ -101,7 +101,7 @@ begin
   -- which cleared only the alias this merge itself created. Any alias carrying
   -- the duplicate's slug becomes a shadow the moment the duplicate goes back to
   -- `active` a few lines below, whoever wrote it and whatever its type — and
-  -- since 20270401100700 that state is refused outright, so the narrow form
+  -- since 20270602094400 that state is refused outright, so the narrow form
   -- would abort the unmerge instead of completing it.
   --
   -- Synonyms first: `search_synonyms.tag_alias_id` is ON DELETE SET NULL, so a
@@ -158,7 +158,7 @@ begin
   if v_owner is not null then
     raise exception
       'tag % cannot be active: the slug % is held as an alias of another tag', NEW.id, v_slug
-      using hint = 'Delete the tag_aliases row (and its search_synonyms row FIRST -- that FK is ON DELETE SET NULL) in the same transaction, or merge the two tags instead. See 20270401100600.';
+      using hint = 'Delete the tag_aliases row (and its search_synonyms row FIRST -- that FK is ON DELETE SET NULL) in the same transaction, or merge the two tags instead. See 20270602094300.';
   end if;
   return NEW;
 end;
@@ -191,7 +191,7 @@ declare v_bad int; v_slug text; v_fired boolean := false; v_audit uuid;
 begin
   perform set_config('app.actor', 'migration:tag-shadow-seal', true);
 
-  -- The seal cannot be added while the corpus violates it. 20270401100600 is
+  -- The seal cannot be added while the corpus violates it. 20270602094300 is
   -- the cleanup and sorts before this; if it did not apply, say so here rather
   -- than leaving a trigger that aborts the next revival for an unrelated reason.
   select count(*) into v_bad
@@ -219,10 +219,23 @@ begin
   -- row), and a handler that accepts any P0001 would then pass while the seal
   -- was inert. The plpgsql exception block is an implicit savepoint, so nothing
   -- survives either branch.
+  --
+  -- THE FIXTURE MUST BE NORMALIZE-STABLE, and finding that out is why this probe
+  -- earns its place. The first version took the alphabetically-first candidate,
+  -- which on this corpus is `-183`; `unified_tags_normalize_slug` rewrites that
+  -- to `183` on the way in, the trigger looks up `183`, finds no alias, and the
+  -- probe reported the seal INERT. The seal was correct the whole time — the
+  -- fixture simply could not reach it.
+  --
+  -- It also states a real property: an alias whose slug does not survive
+  -- normalization can never be shadowed by a tag, because any tag arriving with
+  -- that name or slug is rewritten to a different one. Those aliases are
+  -- structurally out of the seal's reach, so probing with one proves nothing.
   select a.alias_slug into v_slug
     from public.tag_aliases a
     join public.unified_tags t on t.id = a.canonical_tag_id and t.status = 'active'
    where not exists (select 1 from public.unified_tags u where lower(u.slug) = lower(a.alias_slug))
+     and a.alias_slug = public.normalize_tag_slug(a.alias_slug)
    order by a.alias_slug
    limit 1;
   if v_slug is null then
@@ -247,8 +260,8 @@ begin
   end if;
 
   -- Prove Part 1 is actually a prerequisite, by REVERSING one of the merges
-  -- 20270401100600 just made while the seal is live. Without the widening this
-  -- aborts: `prozac` had a pre-existing alias, so that merge's snapshot carries
+  -- 20270602094300 just made while the seal is live. Without the widening this
+  -- aborts: `musik` had a pre-existing alias, so that merge's snapshot carries
   -- `__alias_added = false`, the old unmerge would have left the alias standing,
   -- and setting the row back to `active` would then hit the trigger above.
   --
@@ -260,10 +273,10 @@ begin
   -- The probe undoes itself: `raise` inside the block rolls back plpgsql's
   -- implicit savepoint, so the unmerge is discarded and the merge stands.
   select id into v_audit from public.tag_merge_audit
-   where source = 'shadow-alias-pass-2' and duplicate_slug = 'prozac' and not is_reversed
+   where source = 'shadow-alias-pass-2' and duplicate_slug = 'musik' and not is_reversed
    limit 1;
   if v_audit is null then
-    raise exception 'tag shadow seal: no reversible pass-2 merge to probe with — 20270401100600 must apply first';
+    raise exception 'tag shadow seal: no reversible pass-2 merge to probe with — 20270602094300 must apply first';
   end if;
 
   begin

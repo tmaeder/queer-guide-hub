@@ -18,7 +18,7 @@
 -- is BEFORE INSERT OR UPDATE on `tag_aliases` ONLY: it refuses an alias that
 -- would shadow a live tag, and has nothing to say when a TAG is created or
 -- revived into a slug an alias already holds. So the guard is one-directional
--- and the cleanup regrows. 20270401100700 closes it; this migration is the
+-- and the cleanup regrows. 20270602094400 closes it; this migration is the
 -- cleanup that has to land first, because a seal cannot be added while the
 -- corpus still violates it.
 --
@@ -105,7 +105,7 @@
 --                                 `unmerge_tag_concept` did not remove them
 --                                 because `__alias_added` was false: the merge
 --                                 had found an alias already there and skipped
---                                 its own insert. 20270401100700 fixes that.
+--                                 its own insert. 20270602094400 fixes that.
 --   sub          -> submissive    NOT the kink abbreviation. The 80 uses are
 --                                 AHA/SUB community-centre listings — "AHA
 --                                 Plenum", "Eurovision Karaoke", "Queer Poetry
@@ -119,14 +119,34 @@
 --                                 the practice. Rewriting one to the other
 --                                 discards that decision.
 --
--- === MERGE (9) ===
+-- === MERGE (5 of the 9 reviewed; 4 landed elsewhere) ===
+--
+-- FOUR OF THE NINE WERE MERGED BY A SIBLING SESSION WHILE THIS SAT IN REVIEW,
+-- and in exactly the directions argued below: ecstasy -> mdma,
+-- femdom -> female-dominance, priligy -> dapoxetine, prozac -> fluoxetine.
+-- Their reasoning is KEPT in this header — it is the record of why those pages
+-- resolve the way they do, and deleting it because someone else typed the
+-- statement would lose the argument along with the work. The four pairs are
+-- simply absent from the VALUES list, so this migration merges the five that
+-- are still outstanding. Their reciprocal alias deletes (dapoxetine, fluoxetine)
+-- are still in part A and still needed: those aliases now point at rows that are
+-- already tombstones.
 -- Two families. German feed twins follow the policy 20261211120100 set —
 -- `unified_tags.name` IS the English label by design, so a German name is a
 -- vocabulary defect and the fix is to route it to the English row. The rest are
 -- same-Wikidata-item duplicates.
 --
 --   bisexuell    -> bisexual        German twin. Both Orientation. 542 -> 1592.
---   gayfriendly  -> lgbt-friendly   German-feed spelling of the descriptor.
+--   gayfriendly  -> lgbtq-friendly  German-feed spelling of the descriptor.
+--                                   RETARGETED: the reviewed winner was
+--                                   `lgbt-friendly`, which a sibling session has
+--                                   since merged into `lgbtq-friendly` (4,247
+--                                   uses, carries Q661717). merge_tag_concept
+--                                   would have followed the chain on its own,
+--                                   but this migration resolves the winner with
+--                                   `status='active'` and so aborted instead —
+--                                   correctly, because a moved target deserves a
+--                                   re-read rather than a silent follow.
 --                                   584 -> 1415. CROSS-CATEGORY (Venue Types
 --                                   vs Venue Features & Policies) — the only
 --                                   pair here that is, hence the demote below.
@@ -217,9 +237,9 @@ begin
   -- stale. MORE than 27 is safe here, because parts A and B below resolve each of
   -- the 27 BY NAME and raise individually if a reviewed pair has moved; the extras
   -- are simply left for the next pass.
-  if v_n < 27 then
+  if v_n < 23 then
     raise exception
-      'shadow pass 2: corpus holds only % shadowing aliases, fewer than the 27 reviewed — a reviewed pair was resolved elsewhere, re-read before applying', v_n;
+      'shadow pass 2: corpus holds only % shadowing aliases, fewer than the 23 still outstanding — a reviewed pair was resolved elsewhere, re-read before applying', v_n;
   end if;
 
   ------------------------------------------------------- part A: 18 alias deletes
@@ -278,14 +298,12 @@ begin
            'junctions', (select count(*) from public.tag_category_assignments c where c.tag_id = t.id)))
     into v_adult
     from public.unified_tags t
-   where t.slug in ('bisexual','lgbt-friendly','violence','music','mdma',
-                    'female-dominance','bimboification','dapoxetine','fluoxetine');
+   where t.slug in ('bisexual','lgbtq-friendly','violence','music','bimboification');
 
   for r in
     select * from (values
-      ('bisexuell','bisexual'), ('gayfriendly','lgbt-friendly'), ('gewalt','violence'),
-      ('musik','music'), ('ecstasy','mdma'), ('femdom','female-dominance'),
-      ('bimbofication','bimboification'), ('priligy','dapoxetine'), ('prozac','fluoxetine')
+      ('bisexuell','bisexual'), ('gayfriendly','lgbtq-friendly'), ('gewalt','violence'),
+      ('musik','music'), ('bimbofication','bimboification')
     ) as t(loser_slug, winner_slug)
   loop
     select id into v_loser  from public.unified_tags where slug = r.loser_slug  and status = 'active';
@@ -332,8 +350,8 @@ begin
     v_reparent := v_reparent + v_n;
   end loop;
 
-  if v_merged <> 9 then
-    raise exception 'shadow pass 2: merged % pairs, expected 9', v_merged;
+  if v_merged <> 5 then
+    raise exception 'shadow pass 2: merged % pairs, expected 5', v_merged;
   end if;
 
   -- The one stray junction this pass can produce. gayfriendly's Venue Types row
@@ -345,7 +363,7 @@ begin
   delete from public.tag_category_assignments a
    using public.unified_tags t, public.tag_categories c
    where a.tag_id = t.id and a.category_id = c.id
-     and t.slug = 'lgbt-friendly' and c.slug = 'venues-nightlife' and not a.is_primary;
+     and t.slug = 'lgbtq-friendly' and c.slug = 'venues-nightlife' and not a.is_primary;
 
   ------------------------------------------------------------------ assertions
   -- The point of the whole pass.
@@ -364,8 +382,12 @@ begin
   select count(*) into v_bad from public.unified_tags t
    where v_adult ? t.slug
      and (t.is_adult is distinct from (v_adult->t.slug->>'adult')::boolean
+          -- GAINED, not "changed". The cleanup below deliberately REMOVES the
+          -- stray Venue Types junction that lgbtq-friendly already carried from
+          -- the lgbt-friendly merge a sibling session made, so a decrease is the
+          -- intended outcome; only a junction riding ON is the defect.
           or (select count(*) from public.tag_category_assignments c where c.tag_id = t.id)
-             is distinct from (v_adult->t.slug->>'junctions')::int);
+             > (v_adult->t.slug->>'junctions')::int);
   if v_bad > 0 then
     raise exception 'shadow pass 2: % winner(s) changed is_adult or gained a category — a junction rode the merge', v_bad;
   end if;
@@ -373,8 +395,7 @@ begin
   -- Every merge loser is a clean tombstone, and every merged loser's URL still
   -- resolves. resolve_tag_slug reads unified_tags then tag_slug_redirects, so
   -- this is the actual reader path, not a proxy for it.
-  for r in select unnest(array['bisexuell','gayfriendly','gewalt','musik','ecstasy',
-                               'femdom','bimbofication','priligy','prozac']) as slug
+  for r in select unnest(array['bisexuell','gayfriendly','gewalt','musik','bimbofication']) as slug
   loop
     if not exists (select 1 from public.resolve_tag_slug(r.slug) x where x.redirected) then
       raise exception 'shadow pass 2: /tags/% no longer resolves after the merge', r.slug;
@@ -387,8 +408,7 @@ begin
   -- assert nothing. Measured, not assumed — the first dry run failed here.
   select count(*) into v_bad
     from public.tag_aliases a join public.unified_tags t on t.id = a.canonical_tag_id
-   where t.slug in ('bisexuell','gayfriendly','gewalt','musik','ecstasy',
-                    'femdom','bimbofication','priligy','prozac');
+   where t.slug in ('bisexuell','gayfriendly','gewalt','musik','bimbofication');
   if v_bad > 0 then
     raise exception 'shadow pass 2: % alias(es) are still parented to a row this pass merged away', v_bad;
   end if;
@@ -412,9 +432,8 @@ begin
   -- 20261210100000 and would have re-baselined `bisexual` (1,592) and
   -- `lgbt-friendly` (1,415) downward; asserted rather than cited.
   select count(*) into v_bad from public.unified_tags t
-   where t.slug in ('bisexual','lgbt-friendly','violence','music','mdma','female-dominance',
-                    'bimboification','dapoxetine','fluoxetine','bisexuell','gayfriendly',
-                    'gewalt','musik','ecstasy','femdom','bimbofication','priligy','prozac')
+   where t.slug in ('bisexual','lgbtq-friendly','violence','music','bimboification',
+                    'bisexuell','gayfriendly','gewalt','musik','bimbofication')
      and t.usage_count is distinct from
          (select count(*)::int from public.unified_tag_assignments a where a.tag_id = t.id);
   if v_bad > 0 then
