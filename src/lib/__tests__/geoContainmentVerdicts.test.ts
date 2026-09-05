@@ -39,6 +39,15 @@ function latestContainmentMigration(): string {
  * (That was a real bug in the first draft of this file, caught by replaying the
  * assertions against the migration instead of trusting them.)
  */
+/** The migration with `--` comment text removed, for assertions that must
+ *  distinguish executable SQL from the prose explaining it. */
+function codeOnly(sql: string): string {
+  return sql
+    .split('\n')
+    .map((l) => l.replace(/--.*$/, ''))
+    .join('\n');
+}
+
 function arm(sql: string, verdict: string): number {
   const i = sql.search(new RegExp(`(then|else)\\s+'${verdict}'`));
   expect(i, `verdict arm '${verdict}' is missing from the CASE expression`).toBeGreaterThan(-1);
@@ -48,12 +57,13 @@ function arm(sql: string, verdict: string): number {
 describe('geo_containment_check — verdict arm ordering', () => {
   const sql = latestContainmentMigration();
 
-  it('tests offshore before anything else', () => {
-    // A null coordinate country must short-circuit. Every later arm calls
-    // geo_countries_equivalent(coord_iso, ...) which returns false on null, so
-    // without this first the row would fall through to `unresolved` and a
-    // point in the ocean would read as a contradiction between signals.
-    expect(arm(sql, 'offshore')).toBeLessThan(arm(sql, 'ok'));
+  it('tests ok BEFORE offshore — the Key West fix', () => {
+    // The near-the-claim test must run before "no polygon contains this point".
+    // A 1:10m coastline renders the Florida Keys thin enough that a real US
+    // venue in Islamorada is 12 km off the US polygon and contained by nothing.
+    // Checking `offshore` first would classify it as nowhere; checking
+    // near-claim first correctly calls it ok.
+    expect(arm(sql, 'ok')).toBeLessThan(arm(sql, 'offshore'));
   });
 
   it('tests ok BEFORE link_wrong — the Guam regression', () => {
@@ -102,19 +112,50 @@ describe('geo_containment_check — refusals that keep it honest', () => {
 
   it('only refines admin1 on rows already agreeing at country level', () => {
     // Checking the province of a row whose COUNTRY is wrong reports the region
-    // of a country the row is not in. The join must be gated on verdict='ok'.
-    expect(sql).toMatch(/on j\.verdict = 'ok'/);
+    // of a country the row is not in.
     expect(sql).toMatch(/when j\.verdict = 'ok'/);
   });
 
-  it('gives geo_admin1_at no nearest-neighbour fallback', () => {
+  it('gates admin1_wrong on distance as well as polygon identity', () => {
+    // Metro areas legitimately span a regional border, but only nearby.
+    // Measured disagreement by distance from the linked city: 3.5% under 25 km,
+    // 84% at 100-500 km, 90% past 500 km. Without the distance gate the arm is
+    // majority false positives; with it, a same-name twin (Portland ME vs OR)
+    // still qualifies because it is a different state away by construction.
+    expect(sql).toMatch(/km_to_city\s*>\s*100/);
+    expect(sql).toMatch(/venue_admin1\s*<>\s*j?\.?city_admin1|j\.venue_admin1 <> j\.city_admin1/);
+  });
+
+  it('compares admin-1 by polygon identity, never by name', () => {
+    // Name comparison against cities.region_name was measured at 37% false
+    // positives — Bavaria vs Bayern, Paris vs Île-de-France — because Natural
+    // Earth's admin-1 names are a different vocabulary at a different level of
+    // the hierarchy. That is the ISO-2-vs-English-name defect one layer along.
+    expect(sql).toContain('geo_admin1_id_at');
+    // A CALL, not a mention — and the comment names `regions_contradict()`
+    // WITH parentheses to explain why it was abandoned, so even a call-shaped
+    // regex matches the prose. Strip `--` comments first and assert on the
+    // executable text only. A test that cannot tell code from its own
+    // documentation forbids documenting the reasoning.
+    expect(codeOnly(sql)).not.toMatch(/regions_contradict\s*\(/);
+  });
+
+  it('gives the admin-1 lookup no nearest-neighbour fallback', () => {
     // geo_country_at deliberately falls back to a bounded nearest search for
     // coastal points. admin1 must NOT: guessing a neighbouring province would
     // manufacture admin1_wrong verdicts on every border town.
-    const admin1 = sql.slice(
-      sql.indexOf('function public.geo_admin1_at'),
-      sql.indexOf('geo_checkable_entities'),
-    );
+    const start = sql.indexOf('function public.geo_admin1_id_at');
+    expect(start, 'geo_admin1_id_at is missing').toBeGreaterThan(-1);
+    const admin1 = sql.slice(start, sql.indexOf('geo_checkable_entities'));
     expect(admin1).not.toContain('ST_DWithin');
+  });
+
+  it('keeps the near-country tolerance and its justification together', () => {
+    // The tolerance is only defensible because the two populations are
+    // separated by orders of magnitude (border artifacts reach 12.4 km; real
+    // defects start at 7,584 km). If someone changes the number, the measured
+    // range in the comment must move with it.
+    expect(sql).toMatch(/p_tolerance_m integer default 25000/);
+    expect(sql).toMatch(/12,369|12369/);
   });
 });
