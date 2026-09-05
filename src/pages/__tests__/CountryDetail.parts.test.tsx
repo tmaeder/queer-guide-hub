@@ -10,9 +10,9 @@ import { renderWithProviders } from '@/test/test-utils';
 // refuses to resolve. Nothing here exercises the map.
 vi.mock('@/components/map/EntityMap', () => ({ EntityMap: () => <div data-testid="map" /> }));
 
-const milestones = vi.hoisted(() => ({ data: [] as unknown[] }));
 vi.mock('@/hooks/useMilestones', () => ({
-  useMilestonesForCountry: () => ({ data: milestones.data }),
+  useMilestonesForCountry: () => ({ data: [] }),
+  useMilestonesForCity: () => ({ data: [] }),
 }));
 
 import {
@@ -24,6 +24,7 @@ import {
   countryVenueStops,
   countryNewsRows,
 } from '../CountryDetail.parts';
+import type { LegalStation } from '@/lib/rights/legalLine';
 
 describe('CountryDetail.parts', () => {
   it('CountryRightsTab renders', () => {
@@ -57,38 +58,69 @@ describe('CountryDetail.parts', () => {
 });
 
 describe('CountryLegalRecord — module 12, the country single OWNER module', () => {
-  it('renders nothing when the country has no dated milestones', () => {
-    milestones.data = [];
+  const line = (over: Partial<LegalStation> = {}): LegalStation => ({
+    id: 'm1',
+    year: 2017,
+    source: 'milestone',
+    section: 'family',
+    label: { kind: 'milestone', title: 'Marriage equality' },
+    impact: 'positive',
+    slug: 'marriage-equality',
+    scope: 'country',
+    ...over,
+  });
+
+  it('renders nothing when the country has no legal record at all', () => {
     const { container } = renderWithProviders(
-      <CountryLegalRecord countryId="co1" countryName="Germany" seeAllLabel="Full timeline" />,
+      <CountryLegalRecord countryName="Germany" stations={[]} />,
     );
     expect(container.firstChild).toBeNull();
   });
 
   it('orders the legal record newest-first, not by significance', () => {
-    // `milestones_for_country` ranks by significance; a version history is
-    // chronological or it is not a history.
-    milestones.data = [
-      { id: 'm1', date: '2001-08-01', title: 'Civil partnerships', category: 'legal' },
-      { id: 'm2', date: '2017-10-01', title: 'Marriage equality', category: 'legal' },
-      { id: 'm3', date: '1994-03-11', title: 'Paragraph 175 repealed', category: 'legal' },
-    ];
+    // `milestones_for_country` ranks by significance; a legal record is
+    // chronological or it is not a record. `buildLegalLine` hands over the
+    // canonical ascending order, so the reversal is the component's job.
     const { container } = renderWithProviders(
-      <CountryLegalRecord countryId="co1" countryName="Germany" seeAllLabel="Full timeline" />,
+      <CountryLegalRecord
+        countryName="Germany"
+        stations={[
+          line({
+            id: 'm3',
+            year: 1994,
+            label: { kind: 'milestone', title: 'Paragraph 175 repealed' },
+          }),
+          line({ id: 'm1', year: 2001, label: { kind: 'milestone', title: 'Civil partnerships' } }),
+          line({ id: 'm2', year: 2017, label: { kind: 'milestone', title: 'Marriage equality' } }),
+        ]}
+      />,
     );
     const text = container.textContent ?? '';
     expect(text.indexOf('Marriage equality')).toBeLessThan(text.indexOf('Civil partnerships'));
     expect(text.indexOf('Civil partnerships')).toBeLessThan(text.indexOf('Paragraph 175 repealed'));
   });
 
-  it('prints absolute dates — a legal record read as "2 months ago" re-reads as fresh forever', () => {
-    milestones.data = [
-      { id: 'm2', date: '2017-10-01', title: 'Marriage equality', category: 'legal' },
-    ];
-    renderWithProviders(
-      <CountryLegalRecord countryId="co1" countryName="Germany" seeAllLabel="Full timeline" />,
+  it('prints absolute years — a legal record read as "2 months ago" re-reads as fresh forever', () => {
+    renderWithProviders(<CountryLegalRecord countryName="Germany" stations={[line()]} />);
+    expect(screen.getByText('2017')).toBeInTheDocument();
+  });
+
+  it('renders a derived adoption year with no link, since it has no page', () => {
+    const { container } = renderWithProviders(
+      <CountryLegalRecord
+        countryName="Germany"
+        stations={[
+          line({
+            id: 'ilga:family:2017',
+            source: 'ilga',
+            slug: undefined,
+            label: { kind: 'topics', slugs: ['marriage'] },
+          }),
+        ]}
+      />,
     );
-    expect(screen.getByText(/2017/)).toBeInTheDocument();
+    expect(screen.getByText('2017')).toBeInTheDocument();
+    expect(container.querySelector('a[href*="/history/"]')).toBeNull();
   });
 });
 

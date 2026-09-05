@@ -25,12 +25,43 @@ import { AFFILIATE_REL, tagKnownAffiliateUrl } from '@/lib/affiliate/links';
 import type { Database } from '@/integrations/supabase/types';
 import { getFallbackImage } from '@/utils/fallbackImages';
 import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
+import { buildPlaceChain } from '@/config/breadcrumbs';
+import type { TFunction } from 'i18next';
+import type { ReactNode } from 'react';
 
 type Hotel = Database['public']['Tables']['hotels']['Row'];
 export type HotelWithRelations = Hotel & {
-  cities?: { id: string; name: string } | null;
-  countries?: { id: string; name: string } | null;
+  // `slug` is what makes the breadcrumb's city/country crumbs clickable. The
+  // join selected `id, name` only, so the trail rendered "Spain" and
+  // "Barcelona" as dead text while every other detail type linked them.
+  cities?: { id: string; name: string; slug?: string | null } | null;
+  countries?: { id: string; name: string; slug?: string | null } | null;
 };
+
+/**
+ * Hotels / Country / City / Name — the same shape venues and villages publish,
+ * and pulled out of the page for the same reason theirs are: so the trail is
+ * assertable without mounting the whole detail route.
+ *
+ * The FK row supplies the LINK; `hotels.country`/`hotels.city` free text is a
+ * label-only fallback. A row with no city record has nothing to point at, and
+ * a crumb with no target beats a guessed slug that 404s.
+ */
+export function buildHotelBreadcrumbs(
+  hotel: HotelWithRelations,
+  t: TFunction,
+): Array<{ label: ReactNode; href?: string }> {
+  return [
+    { label: t('breadcrumb.hotels', 'Hotels'), href: '/hotels' },
+    ...buildPlaceChain({
+      countryName: hotel.countries?.name || hotel.country || null,
+      countrySlug: hotel.countries?.slug || hotel.countries?.id || null,
+      cityName: hotel.cities?.name || hotel.city || null,
+      citySlug: hotel.cities?.slug || hotel.cities?.id || null,
+    }),
+    { label: hotel.name },
+  ];
+}
 
 const TYPE_LABELS: Record<string, string> = {
   hotel: 'Hotel',
@@ -52,7 +83,15 @@ interface HeroProps {
   onContentUpdated?: () => void;
 }
 
-export function HotelHero({ hotel, cityName, countryName, tripCount, isInTrip, onAddToTrip, onContentUpdated }: HeroProps) {
+export function HotelHero({
+  hotel,
+  cityName,
+  countryName,
+  tripCount,
+  isInTrip,
+  onAddToTrip,
+  onContentUpdated,
+}: HeroProps) {
   const heroImage = hotel.images && hotel.images.length > 0 ? hotel.images[0] : null;
   const heroFallback = getFallbackImage('hotel', hotel.id);
   // Website is only useful when it points somewhere different than the
@@ -62,15 +101,17 @@ export function HotelHero({ hotel, cityName, countryName, tripCount, isInTrip, o
   return (
     <>
       <ParallaxHero className="w-full h-[300px] mb-6">
-          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */}
-          <img
-            loading="lazy"
-            src={isValidImageUrl(heroImage) ? heroImage : heroFallback}
-            alt={hotel.name}
-            referrerPolicy="no-referrer"
-            onError={(e: React.SyntheticEvent<HTMLImageElement>) => { if ((e.target as HTMLImageElement).src !== heroFallback) (e.target as HTMLImageElement).src = heroFallback; }}
-            className="w-full h-full object-cover"
-          />
+        <img
+          loading="lazy"
+          src={isValidImageUrl(heroImage) ? heroImage : heroFallback}
+          alt={hotel.name}
+          referrerPolicy="no-referrer"
+          onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+            if ((e.target as HTMLImageElement).src !== heroFallback)
+              (e.target as HTMLImageElement).src = heroFallback;
+          }}
+          className="w-full h-full object-cover"
+        />
       </ParallaxHero>
       <div className="flex justify-between items-start flex-wrap gap-4 mb-4">
         <div>
@@ -90,15 +131,17 @@ export function HotelHero({ hotel, cityName, countryName, tripCount, isInTrip, o
           </div>
           <p className="text-muted-foreground">
             {hotel.hotel_type && <>{TYPE_LABELS[hotel.hotel_type] || hotel.hotel_type} &middot; </>}
-            {cityName && countryName ? `${cityName}, ${countryName}` : cityName || countryName || ''}
+            {cityName && countryName
+              ? `${cityName}, ${countryName}`
+              : cityName || countryName || ''}
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-                      <Button variant="outline" size="sm" onClick={onAddToTrip}>
-              <Luggage className="w-3.5 h-3.5 mr-1.5" />
-              Add to Trip
-            </Button>
-                    {isInTrip && (
+          <Button variant="outline" size="sm" onClick={onAddToTrip}>
+            <Luggage className="w-3.5 h-3.5 mr-1.5" />
+            Add to Trip
+          </Button>
+          {isInTrip && (
             <Badge variant="secondary">
               In {tripCount} trip{tripCount !== 1 ? 's' : ''}
             </Badge>
@@ -113,17 +156,17 @@ export function HotelHero({ hotel, cityName, countryName, tripCount, isInTrip, o
             onSaved={() => window.location.reload()}
           />
           {bookingLink && (
-                          <Button size="sm" asChild>
-                <a
-                  href={bookingLink.href}
-                  target="_blank"
-                  rel={bookingLink.isAffiliate ? AFFILIATE_REL : 'noopener noreferrer'}
-                >
-                  <ExternalLink className="w-4 h-4 mr-1.5" />
-                  Book Now
-                </a>
-              </Button>
-                      )}
+            <Button size="sm" asChild>
+              <a
+                href={bookingLink.href}
+                target="_blank"
+                rel={bookingLink.isAffiliate ? AFFILIATE_REL : 'noopener noreferrer'}
+              >
+                <ExternalLink className="w-4 h-4 mr-1.5" />
+                Book Now
+              </a>
+            </Button>
+          )}
           {showWebsite && (
             <Button variant="outline" size="sm" asChild>
               <a href={hotel.website!} target="_blank" rel="noopener noreferrer">
@@ -159,7 +202,15 @@ export function HotelHero({ hotel, cityName, countryName, tripCount, isInTrip, o
   );
 }
 
-export function HotelOverview({ hotel, t, onContentUpdated }: { hotel: HotelWithRelations; t: (k: string, d?: string) => string; onContentUpdated?: () => void }) {
+export function HotelOverview({
+  hotel,
+  t,
+  onContentUpdated,
+}: {
+  hotel: HotelWithRelations;
+  t: (k: string, d?: string) => string;
+  onContentUpdated?: () => void;
+}) {
   const hasMap = typeof hotel.latitude === 'number' && typeof hotel.longitude === 'number';
   const nearby = useNearbyMapPoints({
     lat: typeof hotel.latitude === 'number' ? hotel.latitude : null,
@@ -170,110 +221,134 @@ export function HotelOverview({ hotel, t, onContentUpdated }: { hotel: HotelWith
   });
   return (
     <ScrollReveal direction="up">
-    <div className="flex flex-col gap-6">
-      {hotel.description && (
-        <Card>
-          <CardHeader><CardTitle>{t('pages.hotelDetail.about', 'About')}</CardTitle></CardHeader>
-          <CardContent>
-            <Editable
-              contentType="hotels"
-              recordId={hotel.id}
-              field="description"
-              value={hotel.description}
-              onSaved={onContentUpdated}
-              fieldOverride={{ type: 'textarea' }}
-              as="div"
-            >
-              <p className="whitespace-pre-wrap">{hotel.description}</p>
-            </Editable>
-          </CardContent>
-        </Card>
-      )}
-      {hotel.queer_safety_notes && (
-        <Card>
-          <CardHeader><CardTitle>{t('pages.hotelDetail.safetyNotes', 'Safety Notes')}</CardTitle></CardHeader>
-          <CardContent><p className="text-sm">{hotel.queer_safety_notes}</p></CardContent>
-        </Card>
-      )}
-      {/* Accessibility gets the same prominent, separate block it already gets on
+      <div className="flex flex-col gap-6">
+        {hotel.description && (
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('pages.hotelDetail.about', 'About')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Editable
+                contentType="hotels"
+                recordId={hotel.id}
+                field="description"
+                value={hotel.description}
+                onSaved={onContentUpdated}
+                fieldOverride={{ type: 'textarea' }}
+                as="div"
+              >
+                <p className="whitespace-pre-wrap">{hotel.description}</p>
+              </Editable>
+            </CardContent>
+          </Card>
+        )}
+        {hotel.queer_safety_notes && (
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('pages.hotelDetail.safetyNotes', 'Safety Notes')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm">{hotel.queer_safety_notes}</p>
+            </CardContent>
+          </Card>
+        )}
+        {/* Accessibility gets the same prominent, separate block it already gets on
           venues and events. It was missing here only because the columns did not
           exist, so there was nothing to pass. */}
-      <AmenityDisplay
-        amenities={hotel.amenities}
-        accessibility={hotel.accessibility_attributes}
-        accessibilityNotes={hotel.accessibility_notes}
-      />
-      {hasMap && (
-        <Card>
-          <CardHeader><CardTitle>{t('pages.hotelDetail.location', 'Location')}</CardTitle></CardHeader>
-          <CardContent>
-            <EntityMap
-              center={[hotel.longitude as number, hotel.latitude as number]}
-              zoom={14}
-              height={320}
-              markers={[
-                {
-                  id: hotel.id,
-                  lat: hotel.latitude as number,
-                  lng: hotel.longitude as number,
-                  name: hotel.name,
-                  type: 'venues',
-                  primary: true,
-                },
-                ...nearby,
-              ]}
-            />
-          </CardContent>
-        </Card>
-      )}
-    </div>
+        <AmenityDisplay
+          amenities={hotel.amenities}
+          accessibility={hotel.accessibility_attributes}
+          accessibilityNotes={hotel.accessibility_notes}
+        />
+        {hasMap && (
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('pages.hotelDetail.location', 'Location')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <EntityMap
+                center={[hotel.longitude as number, hotel.latitude as number]}
+                zoom={14}
+                height={320}
+                markers={[
+                  {
+                    id: hotel.id,
+                    lat: hotel.latitude as number,
+                    lng: hotel.longitude as number,
+                    name: hotel.name,
+                    type: 'venues',
+                    primary: true,
+                  },
+                  ...nearby,
+                ]}
+              />
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </ScrollReveal>
   );
 }
 
-export function HotelSidebar({ hotel, t }: { hotel: HotelWithRelations; t: (k: string, d?: string) => string }) {
+export function HotelSidebar({
+  hotel,
+  t,
+}: {
+  hotel: HotelWithRelations;
+  t: (k: string, d?: string) => string;
+}) {
   const hasContact = Boolean(hotel.address || hotel.phone || hotel.email);
   return (
     <ScrollReveal direction="up">
-    <div className="flex flex-col gap-4">
-      {hasContact && (
-        <Card>
-          <CardHeader><CardTitle>{t('pages.hotelDetail.contact', 'Contact')}</CardTitle></CardHeader>
-          <CardContent>
-            {hotel.address && (
-              <div className="flex items-start gap-2">
-                <MapPin className="w-4 h-4 mt-0.5 shrink-0" />
-                <p className="text-sm">{hotel.address}</p>
+      <div className="flex flex-col gap-4">
+        {hasContact && (
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('pages.hotelDetail.contact', 'Contact')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {hotel.address && (
+                <div className="flex items-start gap-2">
+                  <MapPin className="w-4 h-4 mt-0.5 shrink-0" />
+                  <p className="text-sm">{hotel.address}</p>
+                </div>
+              )}
+              {hotel.phone && (
+                <div className="flex items-center gap-2">
+                  <Phone className="w-4 h-4 shrink-0" />
+                  <a href={`tel:${hotel.phone}`} className="text-sm">
+                    {hotel.phone}
+                  </a>
+                </div>
+              )}
+              {hotel.email && (
+                <div className="flex items-center gap-2">
+                  <Mail className="w-4 h-4 shrink-0" />
+                  <a href={`mailto:${hotel.email}`} className="text-sm">
+                    {hotel.email}
+                  </a>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+        {hotel.tags && hotel.tags.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('pages.hotelDetail.tags', 'Tags')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-1">
+                {hotel.tags.map((tag, i) => (
+                  <Badge key={i} variant="outline">
+                    {tag}
+                  </Badge>
+                ))}
               </div>
-            )}
-            {hotel.phone && (
-              <div className="flex items-center gap-2">
-                <Phone className="w-4 h-4 shrink-0" />
-                <a href={`tel:${hotel.phone}`} className="text-sm">{hotel.phone}</a>
-              </div>
-            )}
-            {hotel.email && (
-              <div className="flex items-center gap-2">
-                <Mail className="w-4 h-4 shrink-0" />
-                <a href={`mailto:${hotel.email}`} className="text-sm">{hotel.email}</a>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-      {hotel.tags && hotel.tags.length > 0 && (
-        <Card>
-          <CardHeader><CardTitle>{t('pages.hotelDetail.tags', 'Tags')}</CardTitle></CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-1">
-              {hotel.tags.map((tag, i) => (
-                <Badge key={i} variant="outline">{tag}</Badge>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </ScrollReveal>
   );
 }
