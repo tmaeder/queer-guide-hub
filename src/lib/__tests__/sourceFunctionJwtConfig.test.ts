@@ -18,7 +18,7 @@ import { join } from 'node:path';
  * upstream being down, it is recorded as an error, and it burns the
  * `auto_pause_threshold = 3` counter. That is the same mechanism that had already
  * taken `venue_accessibility_osm` offline (see
- * 20270401101500_gateway_idle_timeout_is_not_a_failure.sql).
+ * 20270601100000_gateway_idle_timeout_is_not_a_failure.sql).
  *
  * THE ENTRY IS NOT A RUBBER STAMP. `verify_jwt = false` removes the platform's
  * check, so it is only correct for a function that gates itself. The second test
