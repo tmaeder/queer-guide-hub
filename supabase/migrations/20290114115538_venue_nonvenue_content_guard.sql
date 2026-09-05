@@ -310,7 +310,7 @@ update public.venues v set
     coalesce(v.enrichment_status->'nonvenue_candidate', '{}'::jsonb)
       || jsonb_build_object(
            'repaired_at', now(),
-           'repaired_by', 'migration:20280422103812',
+           'repaired_by', 'migration:20290114115538',
            -- Only snapshot if the earlier decision never did; overwriting an
            -- existing snapshot would destroy the undo it exists to provide.
            'archived', coalesce(
