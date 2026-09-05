@@ -106,6 +106,32 @@ describe('getBreadcrumbsForRoute', () => {
     expect(crumbs.length).toBeGreaterThan(1);
   });
 
+  // The reachability property, swept over the whole tree rather than the two
+  // hand-picked routes above. The public bar shipped two trails whose middle
+  // crumbs carried no href (#3409) and a mobile ellipsis that hid three more
+  // behind a non-interactive span (#3433); this is the admin analogue, and it
+  // is a sweep because a defect of that shape arrives one route at a time.
+  it('every crumb above the current page is a live link, on every route', () => {
+    const routes = adminNavSections.flatMap((s) => s.items.map((i) => i.route));
+    expect(routes.length).toBeGreaterThan(20);
+
+    for (const route of routes) {
+      const trail = getBreadcrumbsForRoute(route);
+      for (const crumb of trail.slice(0, -1)) {
+        expect(crumb.route, `${route}: crumb "${crumb.label}" has no destination`).toBeTruthy();
+        // A crumb pointing at an unregistered path is a dead link that reads
+        // exactly like a live one.
+        expect(
+          crumb.route === '/admin' || routes.includes(crumb.route!),
+          `${route}: crumb "${crumb.label}" -> ${crumb.route} is not a nav route`,
+        ).toBe(true);
+      }
+      // Positive control: the page you are ON must not be a link, so the
+      // assertion above cannot pass by everything being linked.
+      expect(trail.at(-1)!.route, `${route}: the current page must not link`).toBeUndefined();
+    }
+  });
+
   it('returns just the root crumb when nothing matches', () => {
     const crumbs = getBreadcrumbsForRoute('/totally/unrelated');
     expect(crumbs).toEqual([{ label: 'Admin Console', route: '/admin' }]);
