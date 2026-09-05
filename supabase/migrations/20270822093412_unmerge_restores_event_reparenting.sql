@@ -3,7 +3,7 @@
 -- Before this, the event branch flipped duplicate_of_id and deleted a slug redirect
 -- and stopped there. Every reparented row -- sources, attendees, occurrences, trip
 -- places, programme children, dup children -- stayed on the keep side, so "unmerge"
--- produced a live event stripped of its own children. With 20270602171543 recording
+-- produced a live event stripped of its own children. With 20270822093311 recording
 -- the moved ids, the reparenting can now be replayed backwards.
 --
 -- TWO THINGS ARE DELIBERATE.
@@ -45,7 +45,7 @@ begin
   select * into r from public.entity_merge_audit where id = p_audit_id and undone_at is null;
   if not found then raise exception 'merge audit % not found or already undone', p_audit_id; end if;
   if r.entity_type = 'event' then
-    -- A merge recorded before 20270602171543 has no id lists, so its reparenting is
+    -- A merge recorded before 20270822093311 has no id lists, so its reparenting is
     -- unrecoverable. Refuse loudly instead of reporting a success that did not happen.
     if coalesce((r.details->>'schema')::int, 0) < 1 then
       if not p_force then

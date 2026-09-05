@@ -2,8 +2,8 @@
 --
 -- Two reasons, and the second one is not cosmetic.
 --
--- 1. The backlog is 11 days old. The arms are fixed by 20270602171745 and the venue
---    name column by 20270602171947, so the pairs are mergeable the moment this series
+-- 1. The backlog is 11 days old. The arms are fixed by 20270822093513 and the venue
+--    name column by 20270822093715, so the pairs are mergeable the moment this series
 --    applies; leaving them for the cron means another day of duplicates on the site
 --    for no reason.
 --
@@ -19,7 +19,7 @@
 --
 -- This is a real data change: ~39 merges. It is the same work the cron would do
 -- tonight, through the same code path, under the same caps -- and it is reversible for
--- the first time, which is why 20270602171543/100100 land before it rather than after.
+-- the first time, which is why 20270822093311/100100 land before it rather than after.
 -- Every merged pair is an entity_merge_audit row carrying details.moved, so any one of
 -- them can be undone with unmerge_entities(audit_id).
 --
@@ -40,7 +40,7 @@ BEGIN
   -- The whole series exists to make this number non-zero. If it is still zero the
   -- arms did not take effect and the deploy must not look successful.
   IF v_merged = 0 THEN
-    RAISE EXCEPTION 'event sweep merged nothing after the arm fix -- 20270602171745 did not take effect (result: %)', v_res;
+    RAISE EXCEPTION 'event sweep merged nothing after the arm fix -- 20270822093513 did not take effect (result: %)', v_res;
   END IF;
 
   -- The loop counts a failed merge as "skipped", silently. A drain that skipped more
@@ -71,7 +71,7 @@ BEGIN
     RAISE EXCEPTION 'auto-eligible event pairs left sitting in the review queue: %', v;
   END IF;
   IF (v->>'legacy_sweep_scheduled')::boolean IS TRUE THEN
-    RAISE EXCEPTION 'legacy event_dedup_sweep is still scheduled -- 20270602171846 did not take';
+    RAISE EXCEPTION 'legacy event_dedup_sweep is still scheduled -- 20270822093614 did not take';
   END IF;
   RAISE NOTICE 'event dedup healthy after drain: %', v;
 END $verify$;

@@ -5,7 +5,7 @@ import { join } from 'node:path';
 /**
  * The event dedup sweep's arms, pinned.
  *
- * Before 20270602171745 the two auto arms both required a venue and matched ZERO
+ * Before 20270822093513 the two auto arms both required a venue and matched ZERO
  * pairs on the live corpus — 5.4% of events carry a venue_id, 17.5% a venue_name —
  * so the nightly sweep ran green in mode='full' and merged nothing for eleven days
  * while 84 pairs aged in the review queue.

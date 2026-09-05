@@ -569,7 +569,7 @@ update public.dedup_review_queue
 --
 -- Measured expectation at authoring time: 37, entirely from exact_instant_same_city;
 -- the two venue arms are reachable but empty, because venue_name is null on the feeds
--- that would fill them. 20270602171947 backfills that column later in this series and
+-- that would fill them. 20270822093715 backfills that column later in this series and
 -- the number becomes 39 (35 exact-instant + 4 venue_name) -- the 0.96 arm coming alive
 -- is the outcome that migration exists for, and is why this band is not a fixed count.
 --

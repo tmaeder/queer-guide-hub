@@ -301,7 +301,7 @@ if (!hygieneRes.ok) {
     body: '{}',
   })
   if (!res.ok) {
-    console.warn(`⚠ event_dup_signals → HTTP ${res.status} (RPC missing? migration 20270602172048)`)
+    console.warn(`⚠ event_dup_signals → HTTP ${res.status} (RPC missing? migration 20270822093816)`)
     console.warn('  This check measured NOTHING — it did not pass.')
   } else {
     const ev = (await res.json()) ?? {}
@@ -335,10 +335,10 @@ if (!hygieneRes.ok) {
       FAILED = true
     }
 
-    // 20270602171846 retired the 06:15 legacy merger because it honours no human
+    // 20270822093614 retired the 06:15 legacy merger because it honours no human
     // rejection. If it is back, a rejected pair can be merged anyway.
     if (ev.legacy_sweep_scheduled === true) {
-      console.error('✗ cron job event_dedup_sweep is scheduled again — it was retired in 20270602171846')
+      console.error('✗ cron job event_dedup_sweep is scheduled again — it was retired in 20270822093614')
       console.error('  It merges without a review queue and with NO memory of rejected pairs.')
       console.error('  Disable the admin_automations row first, then unschedule.')
       FAILED = true

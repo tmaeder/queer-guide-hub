@@ -90,7 +90,7 @@ begin
        where entity_type = 'event' and status = 'open'
          and (cluster->>'auto_eligible')::boolean is true),
     'legacy_sweep_scheduled', (
-      -- 20270602171846 retired it. If it comes back, something rescheduled a merger
+      -- 20270822093614 retired it. If it comes back, something rescheduled a merger
       -- that ignores human rejections.
       select count(*) > 0 from cron.job where jobname = 'event_dedup_sweep')
   );

@@ -33,7 +33,7 @@ UPDATE public.admin_automations
    SET enabled = false,
        updated_at = now(),
        description = coalesce(description,'') ||
-         ' [RETIRED 20270602171846: superseded by run_dedup_truth_sweep(''event''), which honours human rejections. Do not re-enable.]'
+         ' [RETIRED 20270822093614: superseded by run_dedup_truth_sweep(''event''), which honours human rejections. Do not re-enable.]'
  WHERE slug = 'event_dedup_sweep';
 
 -- 2. Then unschedule, guarded so a re-run is a no-op.
@@ -46,7 +46,7 @@ END $$;
 
 -- The function stays callable for a deliberate manual run, but says what it is.
 COMMENT ON FUNCTION public.run_event_dedup_sweep(boolean, integer) IS
-  'RETIRED 20270602171846. Legacy venue_id-keyed event merger: no review queue, no confidence, no showtime suppression, and no memory of rejected dedup_review_queue pairs. Superseded by run_dedup_truth_sweep(''event''). Do not reschedule; disable the admin_automations row first if you ever do.';
+  'RETIRED 20270822093614. Legacy venue_id-keyed event merger: no review queue, no confidence, no showtime suppression, and no memory of rejected dedup_review_queue pairs. Superseded by run_dedup_truth_sweep(''event''). Do not reschedule; disable the admin_automations row first if you ever do.';
 
 -- Assert both halves, and that the row survived. Checking only the cron job would
 -- pass on a DELETE, which is the failure mode this migration is written to avoid.

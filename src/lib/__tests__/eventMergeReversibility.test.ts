@@ -11,7 +11,7 @@ import { join } from 'node:path';
  * row on the keep side — an "unmerge" that produced a live event stripped of its own
  * sources, attendees, occurrences and trip places. That asymmetry is the stated reason
  * the city geo arm is never auto-eligible; the event arms ARE, which is why
- * 20270602171543/100100 had to land before the arms were widened.
+ * 20270822093311/100100 had to land before the arms were widened.
  *
  * Verified end to end against production in a rolled-back transaction: a 86-source
  * event merged and unmerged returned all 86 rows, and the pre-fix behaviour (skip the
