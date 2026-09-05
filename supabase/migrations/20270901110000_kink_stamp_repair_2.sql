@@ -348,6 +348,24 @@ begin
     where t.slug = r.slug;
     v_updated := v_updated + 1;
 
+    -- Delete junction rows for any OTHER category. The AFTER trigger demotes the
+    -- old primary but does not remove it, and unified_tags_recompute_is_adult()
+    -- matches ANY assignment, not the primary one — so a row moved OUT of a kink
+    -- stop keeps its 18+ flag from the junction it left behind.
+    --
+    -- This is not hypothetical: it aborted this migration's first apply on
+    -- "rope-compatibility-checks", the only one of the eight deliberately
+    -- un-gated safety terms that was moving out of an ADULT stop (Practices &
+    -- Play). The prod dry run had probed "after-scene-drop", which came from
+    -- Slang & Language and is not adult, so the case went untested. Same trap as
+    -- 20261230113700 and the six venue descriptors that stayed 18+ after being
+    -- "moved" in the taxonomy v3 cutover.
+    delete from public.tag_category_assignments a
+     using public.unified_tags t
+     where t.slug = coalesce(r.new_slug, r.slug)
+       and a.tag_id = t.id
+       and a.category_id <> v_cat;
+
     if r.drop_alias is not null then
       delete from public.tag_aliases a
        using public.unified_tags t
