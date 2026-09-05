@@ -71,6 +71,15 @@
 --       once (2026-08-22) and was disabled. Its schedule is `* * * * *`, so
 --       re-enabling a finished one-shot would re-run it EVERY MINUTE.
 --
+--       SUPERSEDED 2026-09-05, and dropped from k_stay_off below. The objection
+--       above is about a finished one-shot on a per-minute schedule, and
+--       20270501174243 -- applied in the same push, ahead of this file -- answers
+--       both halves: it re-arms the job at `5,25,45 * * * *` (three times an hour,
+--       not sixty), and the geo-validation work gave it a real backlog again, so
+--       it is no longer a completed one-shot. The repair path also now refuses to
+--       relocate a venue when the geocoded state disagrees with `venues.state`,
+--       which was the live hazard in re-running it at all.
+--
 --   marketplace_catalog_prune
 --       Its last two runs say it plainly:
 --         06:30  {"reason":"prune_low_relevance_2026_08","archived":0,"remaining":0}
@@ -120,10 +129,25 @@ declare
   -- and note the dangerous half was already removed at the DB layer by
   -- 20261018094000 (tag_prose_apply lost its retract branch), so an enabled cron
   -- is not the same hazard the doc describes. Flagged, not silently asserted.
+  -- `venue_geocode_repair` was dropped from this list on 2026-09-05, for exactly
+  -- the reason stated just above: the assertion had become false before this file
+  -- could apply, so it aborted db push for a reason unrelated to its purpose --
+  -- and took the rest of the queue with it, since db push stops at the first
+  -- failure.
+  --
+  -- It is not drift. 20270501174243_reenable_venue_geocode_repair applied in the
+  -- SAME push, ahead of this file, and re-enables it DELIBERATELY: its own header
+  -- argues the case, it sets a schedule, and the repair path now requires the
+  -- geocoded state to agree with `venues.state` before relocating a row. So a
+  -- later explicit decision superseded the 09-04 snapshot; of the two statements
+  -- this list is the older one.
+  --
+  -- Same treatment as tag_prose_pass above -- dropped from the assertion and
+  -- flagged here, rather than silently asserted against a world that has moved.
   k_stay_off constant text[] := array[
     'tag_relation_verify', 'ev_fill_eventbrite',
     'marketplace_variant_backfill', 'city_cost_of_living_backfill',
-    'marketplace_affiliate_backfill', 'venue_geocode_repair',
+    'marketplace_affiliate_backfill',
     'marketplace_catalog_prune', 'tag_image_provenance_sync'
   ];
   r         record;
