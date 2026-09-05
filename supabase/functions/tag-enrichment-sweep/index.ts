@@ -91,20 +91,30 @@ const WIKI_UA = 'queer.guide tag-enrichment (admin@queer.guide)'
 
 /**
  * English labels of an entity's P31 (instance-of) statements. Two batched calls: the
- * claims, then the labels of the classes they name. Failure returns [] — the caller
- * treats an unknown class as "no evidence", never as "plausible", so a Wikidata outage
- * degrades into refusing to link rather than into linking blind.
+ * claims, then the labels of the classes they name.
+ *
+ * Returns `null` when the class could not be DETERMINED — non-200, missing entity, or a
+ * throw. The caller treats an unknown class as "no evidence", never as "plausible", so a
+ * Wikidata outage degrades into refusing to link rather than into linking blind.
+ *
+ * Returns `[]` only for the genuinely different answer "the entity was read and carries no
+ * non-deprecated P31". That is knowledge, and the class gate is entitled to pass it.
+ *
+ * Until 2026-09-04 every branch here returned `[]`, which `implausibleClassOf` reports as
+ * plausible — so the class gate was SKIPPED on failure and the sweep adopted on title
+ * agreement alone, the single-signal condition that produced the 1,535 wrong links. This
+ * comment already described the correct behaviour; only the code disagreed.
  */
-async function fetchEntityClassLabels(qid: string): Promise<string[]> {
+async function fetchEntityClassLabels(qid: string): Promise<string[] | null> {
   try {
     const base = 'https://www.wikidata.org/w/api.php?action=wbgetentities&format=json'
     const res = await fetch(`${base}&ids=${encodeURIComponent(qid)}&props=claims`, {
       headers: { 'User-Agent': WIKI_UA },
     })
-    if (!res.ok) return []
+    if (!res.ok) return null
     const j = await res.json()
     const entity = j?.entities?.[qid]
-    if (!entity || entity.missing !== undefined) return []
+    if (!entity || entity.missing !== undefined) return null
     const classIds = [
       ...new Set(
         ((entity.claims?.P31 ?? []) as Array<Record<string, never>>)
@@ -115,18 +125,22 @@ async function fetchEntityClassLabels(qid: string): Promise<string[]> {
           .filter((v: unknown): v is string => typeof v === 'string'),
       ),
     ]
+    // Read successfully, no P31 to report. Knowledge, not failure — hence [] not null.
     if (classIds.length === 0) return []
     const lr = await fetch(
       `${base}&ids=${classIds.join('|')}&props=labels&languages=en`,
       { headers: { 'User-Agent': WIKI_UA } },
     )
-    if (!lr.ok) return []
+    if (!lr.ok) return null
     const lj = await lr.json()
-    return classIds
+    const labels = classIds
       .map((id) => lj?.entities?.[id]?.labels?.en?.value)
       .filter((v: unknown): v is string => typeof v === 'string')
+    // The entity HAS classes but we resolved none of their labels, so we cannot test them.
+    // Reporting [] here would read as "no implausible class found" on zero evidence.
+    return labels.length === 0 ? null : labels
   } catch {
-    return []
+    return null
   }
 }
 
@@ -800,9 +814,13 @@ Deno.serve(async (req) => {
         // mismatch is refused whatever the class turns out to be. Only a candidate
         // that already survived it is worth two more round trips — this batch can be
         // 50 tags and the function has a gateway budget to stay inside.
+        // null, not [], when we skip the call: a summary with no wikibase_item leaves us
+        // no class evidence at all, and adopting on that is the title-only adopt this
+        // module exists to prevent. When the title already disagrees the verdict reports
+        // `title-mismatch` regardless, since that gate runs first.
         const p31Labels = raw.wikidata_id && titleAgrees(tag.name, raw.title)
           ? await fetchEntityClassLabels(raw.wikidata_id)
-          : []
+          : null
         const verdict = mayAdoptWikiIdentity(tag.name, {
           title: raw.title,
           p31Labels,
