@@ -201,6 +201,41 @@ export function letterFor(name: string): string {
   return first >= 'A' && first <= 'Z' ? first : LETTER_OTHER;
 }
 
+/** The fields a sort reads. The page's richer entry type carries the rest. */
+export interface TagSortSubject {
+  name: string;
+  created_at?: string | null;
+}
+
+/**
+ * Every branch computes its DESCENDING comparison — most used, most recent,
+ * Z→A — and `asc` negates that once, at the end.
+ *
+ * The negation is deliberately in one place rather than folded into each
+ * branch. Until 2026-09-05 `usage` and `recent` each multiplied an already-
+ * descending `(b - a)` by `dir === 'asc' ? 1 : -1`, so both ran BACKWARDS while
+ * `alphabetical` (which handled direction separately, and correctly) did not.
+ * Since the default state is `sort: 'usage', dir: 'desc'`, the glossary index
+ * opened on the least-used terms.
+ */
+export function compareTagsBy(
+  sort: TagSort,
+  dir: 'asc' | 'desc',
+  usageCounts: Record<string, number>,
+): (a: TagSortSubject, b: TagSortSubject) => number {
+  const descending = (a: TagSortSubject, b: TagSortSubject): number => {
+    switch (sort) {
+      case 'usage':
+        return (usageCounts[b.name] || 0) - (usageCounts[a.name] || 0);
+      case 'recent':
+        return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+      default:
+        return b.name.localeCompare(a.name);
+    }
+  };
+  return dir === 'asc' ? (a, b) => -descending(a, b) : descending;
+}
+
 export function hasActiveFilters(state: TagsIndexState): boolean {
   return (
     !!state.q.trim() ||

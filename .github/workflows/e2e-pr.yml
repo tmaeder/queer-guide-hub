@@ -113,6 +113,7 @@ jobs:
             e2e/intent-nav.spec.ts \
             e2e/glossary-integration.spec.ts \
             e2e/tags-substance-interactions.spec.ts \
+            e2e/tags-sti-guide.spec.ts \
             e2e/singles.spec.ts \
             e2e/legal-pages.spec.ts \
             e2e/map-shell.spec.ts \
@@ -136,6 +137,16 @@ jobs:
           # a dead layout branch with no safety gating because NOTHING
           # exercised it. A spec written to close that gap, parked behind a
           # hardcoded list it is not on, closes nothing.
+          # tags-sti-guide.spec.ts sits here, not just in the nightly, because
+          # the page it guards is the sexual-health reference linked from the
+          # main nav and it has already shipped four measured defects: six
+          # duplicated practice bands, risk marks with `border-width: 0` against
+          # an explicit contract, a 3.66x horizontal drag at phone width, and
+          # HIV's "12w+" clipped into background-coloured text. Nightly-only
+          # means a fifth one ships and serves readers for up to 24h. Note this
+          # job sets E2E_BASE_URL to the local preview, so the spec tests THIS
+          # build; its own default baseURL (prod) applies only when run by hand
+          # or by the nightly.
           # tags-substance-interactions.spec.ts is on this list for the reason
           # stated for singles.spec.ts above. `substance_interactions` is written
           # by migrations and, since `source_tripsit`, by a weekly cron — and a
