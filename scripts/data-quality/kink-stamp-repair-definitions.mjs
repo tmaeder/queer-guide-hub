@@ -687,3 +687,97 @@ export const KEEP_LONG = REPAIRS.filter((r) => r.long === null).map((r) => r.slu
 
 /** Slugs whose Wikidata identifier is provably the wrong entity and is cleared. */
 export const CLEAR_QID = REPAIRS.filter((r) => r.clearQid).map((r) => r.slug);
+
+/**
+ * The cohort narrative, emitted verbatim into the migration header by
+ * generate-kink-stamp-repair-migration.mjs. It lives here rather than in the
+ * generator because it is a fact about THESE rows, and a shared generator
+ * that hardcoded it would stamp cohort 1's findings onto cohort 2.
+ */
+export const MIGRATION_HEADER = `-- WHY THE STAMP MATTERS. 41 active rows carried the literal string 'Toys tag'
+-- as their description and 20 carried 'Philia tag'. Both are counted by
+-- tag_hygiene_stats().placeholder_description_active (121 corpus-wide before
+-- this migration, so this cohort is half of a tracked backlog). A stamp is
+-- WORSE than a blank: it is non-null, so tag_has_prose() is satisfied,
+-- enforce_tag_thin_page_gate does not fire, the fill sweep never selects the
+-- row and indexable_without_description cannot see it. The row reads as
+-- finished. Identical reasoning to the "No information available" prose nulled
+-- by 20261012090000.
+--
+-- THE STAMP WAS NOT THE WORST PART. long_description on this cohort is
+-- frequently prose about a DIFFERENT ENTITY, left by the pre-guard name-lookup
+-- enrichment path that 20261008100000 repaired. That repair cleared the wrong
+-- identifiers; it did not always clear what they had written, and it never
+-- touched aliases. Three limbs survived, all measured on prod 2026-09-05:
+--
+--   1. PROSE LEFT AFTER THE QID WAS CLEARED — 2 rows. tag_wikidata_repair_audit
+--      shows collar -> Q37558810 ("Collar", a family name) and humbler ->
+--      Q123735487 ("Humblers", a family name), both disposition='cleared' with
+--      previous_long_description NULL: the identifier was retracted and its
+--      prose was not. /tags/collar opened "The term Collar can refer to a
+--      family name or surname." The six rows in the same audit batch whose
+--      prose WAS retracted (bat, hashira, manties, paddle, speculum,
+--      st-andrews-cross) are the ones now sitting with an empty body.
+--
+--   2. QIDs THE REPAIR STRUCTURALLY COULD NOT CATCH — {{nClear}} rows, cleared here.
+--      Verified live against wbgetentities:
+--        crops           Q235352     "crop"             a plant grown for profit
+--        pinwheel        Q14371      "Pinwheel Galaxy"  spiral galaxy, Ursa Major
+--        impact-tools    Q130321232  US patent 11247321
+--        ovipositor      Q868460     insect egg-laying organ
+--        inflatable-ball Q97722170   "inflatable ball", a commodity
+--        xenophilia      Q144125     "free"/affinity for foreign cultures
+--      None is a person, place or journal, so the class arm of the namesake
+--      repair passes. This is the wrong-SENSE class that tag-wiki-guard.ts
+--      added its third gate ('generic-sense') for, and only a human reading the
+--      page can find it.
+--
+--   3. ALIASES NOBODY REVISITED — {{nAlias}} deleted here. flogger carried eight naming
+--      the Soviet MiG-23 fighter (NATO reporting name "Flogger"); pinwheel
+--      carried "Messier 101" and "Arp 26"; ovipositor carried "Legestachel";
+--      crops carried "cosecha agrícola". These were LATENT, NOT LIVE — all
+--      alias_type='multilingual', display has been approved-only since
+--      20261012090000, and none had a search_synonyms bridge row (measured: 0
+--      of 35 across the seven affected slugs). They are removed because they
+--      are wrong, not because they were leaking.
+--
+-- NO QID IS RE-RESOLVED. Every one above is set to NULL and left there. A
+-- plausible-but-wrong identifier regenerates wrong data into tag_medical_codes,
+-- broader edges and the "Elsewhere" rail every week; a null one regenerates
+-- nothing. Prefer NULL to a guess — the rule 20261008100000 established.
+--
+-- RE-FILING IS HALF THE REPAIR. Gear held 79 tags while 36 of the 41 pieces of
+-- equipment sat in Fetishes (23), Dynamics & Roles (6), Sexual Health (4),
+-- Events & Parties (spreader-bar) and Slang & Language (fucking-machine) — the
+-- same kind mismatch the 2026-08-29 taxonomy rebuild fixed for the rest of the
+-- corpus. Category is written as category_id ONLY: the BEFORE trigger derives
+-- the category text mirror and the AFTER trigger moves the junction row.
+-- Writing the text, or inserting a junction row, propagates nothing.
+--
+-- THE RE-FILE TIGHTENS THE AGE GATE, IT DOES NOT LOOSEN IT. is_adult is derived
+-- from the junction by unified_tags_recompute_is_adult() and is never written
+-- by hand here. Every target stop (Gear, Fetishes, Practices & Play) is in that
+-- function's adult set, and six rows that were is_adult=false because they were
+-- misfiled outside Sex & Kink — ass-fetish, giantess-fetish, pregnancy-fetish,
+-- uniform-fetish (Slang & Language), spreader-bar (Events & Parties),
+-- fucking-machine (Slang & Language) — become adult-gated. The final assertion
+-- checks that no row came out un-gated rather than assuming it.
+--
+-- PUBLISHING NEEDS FOUR THINGS, NOT ONE. prose present (or
+-- enforce_tag_thin_page_gate stamps 'thin'), human_reviewed=true (or
+-- enforce_tag_seo_sensitivity_gate forces seo_indexable false, because every
+-- row here is adult), verification_status='reviewed' (or
+-- unified_tags_public_gated_read hides a sensitive row from anon entirely — it
+-- is verification_status, NOT seo_indexable, that shows a sensitive term to a
+-- signed-out reader), and seo_indexable=true. All four are set. human_reviewed
+-- is truthful: every definition was written by hand for this migration.
+--
+-- {{nKeepLong}} rows keep their existing long_description because it is already correct
+-- (nipple-clamps, strap-on, sex-swing); only their stamp is replaced.
+--
+-- {{nRename}} row is renamed: "Crops" -> "Riding Crop", slug crops -> riding-crop. The
+-- row was the agriculture article under a kink stop; the object it was always
+-- meant to be is on the List of BDSM equipment. The slug write emits a redirect
+-- through log_unified_tag_slug_redirect().
+--
+`;
