@@ -61,3 +61,40 @@ export function buildCountryCanon(rows: Array<{ name: string | null; code: strin
   }
   return m
 }
+
+/**
+ * Resolve one country value — ISO-2 code, English name, local name or demonym —
+ * to its canonical English name using a map from buildCountryCanon().
+ *
+ * Returns '' for both "empty" and "unrecognised", deliberately. Callers treat
+ * '' as *no opinion* and must skip the comparison rather than treating it as a
+ * disagreement.
+ *
+ * This exists because comparing two representations of the same fact and
+ * calling the difference a finding is a defect this repo has already paid for:
+ * pipeline-geo-validate compared the stored ISO-2 'US' against Nominatim's
+ * 'United States' for four months and produced 692 alerts, none of them real.
+ * Any new geo check must canonicalise through here before comparing.
+ */
+export function canonCountry(canon: Map<string, string>, s: string | null | undefined): string {
+  const key = (s || '').trim().toLowerCase()
+  if (!key) return ''
+  return canon.get(key) ?? ''
+}
+
+/**
+ * True only when both sides are recognised AND they disagree.
+ *
+ * The `!==  ''` guards are the load-bearing part: an unrecognised spelling must
+ * never be allowed to contradict a recognised one, or the check manufactures
+ * findings out of its own vocabulary gaps.
+ */
+export function countriesDisagree(
+  canon: Map<string, string>,
+  a: string | null | undefined,
+  b: string | null | undefined,
+): boolean {
+  const ca = canonCountry(canon, a)
+  const cb = canonCountry(canon, b)
+  return ca !== '' && cb !== '' && ca !== cb
+}
