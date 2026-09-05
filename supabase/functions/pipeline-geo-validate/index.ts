@@ -7,7 +7,7 @@ import { buildCountryCanon, canonCountry } from '../_shared/geo-normalize.ts'
 // signal — distance-based detection is intentionally out of scope (too many
 // false positives for venues vs. their administrative city).
 //
-// COMPARISON BUG, fixed 20270302: this compared two different representations
+// COMPARISON BUG, fixed 20270309: this compared two different representations
 // of the same fact and called the difference a finding. `normalizeCountry` was
 // a local trim().toLowerCase(), so the stored ISO-2 code 'US' was compared
 // against Nominatim's English country name 'United States' and disagreed —
