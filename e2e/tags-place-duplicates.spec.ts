@@ -15,7 +15,7 @@ import { test, expect } from '@playwright/test';
 // them for 'thin', and zero for any other reason — so the entire cohort was held out of the
 // index purely by being empty, while `tag-enrichment-sweep` runs nightly selecting exactly
 // `description is null`. The first sweep to reach them would have written Wikipedia geography
-// and re-indexed all 224. Migration 20261221100000 restamps the reason to 'place-duplicate',
+// and re-indexed all 224. Migration 20270501180000 restamps the reason to 'place-duplicate',
 // which is not auto-reversible, so a future description can no longer re-index them.
 //
 // This spec therefore asserts the DISPOSITION, not the emptiness. A test that only checked

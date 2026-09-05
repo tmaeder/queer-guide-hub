@@ -12,7 +12,7 @@ via CI `db push`.
 
 | Artifact | State | Verification |
 |---|---|---|
-| `supabase/migrations/20261221100000_tag_place_duplicate_deindex.sql` | **written, NOT applied** | predicate verified read-only on prod: selects exactly A=39 B=1 C=95 (135), 0 leakage from D/E/F |
+| `supabase/migrations/20270501180000_tag_place_duplicate_deindex.sql` | **written, NOT applied** | predicate verified read-only on prod: selects exactly A=39 B=1 C=95 (135), 0 leakage from D/E/F |
 | `_shared/tag-wiki-guard.ts` fail-open fix | **code complete, NOT deployed** | 9/9 unit tests; mutation-tested (removing the guard fails the new test); full edge suite 1,072 passed / 0 failed; `deno check` and `typecheck:functions` clean |
 | `e2e/tags-place-duplicates.spec.ts` | **written, not executed** | assertions hand-evaluated against live prod — see below |
 | Merges (46 groups) | **deliberately not done** | §3.3 — needs hand-reading; would red every open PR |
@@ -318,6 +318,7 @@ Guard 1 asserts exactly `(39, 1, 95)`, so if the corpus shifts the migration ref
 3. Dry-run the migration in a rolled-back transaction on prod, diffing `tag_hygiene_stats()` (§3.3.5).
 4. Run the content-mass rule over bucket D separately and review all 13 by hand.
 5. Merges go one group at a time, mixed-adult ones last, each asserting `is_adult` on the survivor.
+6. **Compute the migration ceiling as `remote schema_migrations ∪ origin/main ∪ your branch`, immediately before pushing.** This migration was first numbered `20261221100000` from remote `max(version)` (`20261220113000`) plus the local worktree — omitting `origin/main`, which already held a *different* file at that exact version. `db push` matches by version, so the loser's SQL never runs while the deploy stays green and history looks normal. CI's `migration-versions` caught it; nothing downstream would have. Worse, **23 further migrations were applied in the ~40 minutes between reading the ceiling and pushing** — a sibling session was landing concurrently — moving the true ceiling to `20270501174244`. A ceiling read at the start of a session is stale by the end of it.
 
 ## 8. Product decisions, not data decisions
 
