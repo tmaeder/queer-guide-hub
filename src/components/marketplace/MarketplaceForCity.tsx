@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import { MarketplaceRailShell } from './MarketplaceRailShell';
 import {
   useCityUpcomingOccasion,
-  useMarketplaceListingsForCity,
   useMarketplaceListingsForOccasion,
 } from '@/hooks/useMarketplaceQueries';
 
@@ -13,9 +12,15 @@ const OCCASION_SUBTITLES: Record<string, (city: string) => string> = {
 };
 
 /**
- * City marketplace rail: venue-hosted "local" listings first, topped up
- * with online occasion gear when the city has an upcoming pride/drag/
- * wedding event. Self-hides when both buckets are empty.
+ * City marketplace rail: occasion gear for the city's next pride/drag/
+ * wedding event. Self-hides when there is no upcoming occasion.
+ *
+ * This used to lead with "local" listings hosted by venues in the city.
+ * That half was removed because it could never return a row:
+ * `marketplace_listings.venue_id` is NULL on all 70,206 rows, and the query
+ * joined `venues!inner`, so the result set was empty by construction — and
+ * the hook swallowed the error, so the rail rendered nothing either way.
+ * Restoring it means populating `venue_id` first, not re-adding the query.
  */
 export function MarketplaceForCity({
   cityName,
@@ -26,33 +31,18 @@ export function MarketplaceForCity({
   cityId?: string;
   limit?: number;
 }) {
-  const { data: local, loading: localLoading } = useMarketplaceListingsForCity(cityName, 6);
   const { data: occ } = useCityUpcomingOccasion(cityId);
-  const { data: occasion, loading: occLoading } = useMarketplaceListingsForOccasion(
-    occ ?? undefined,
-    6,
-  );
+  const { data: occasion, loading } = useMarketplaceListingsForOccasion(occ ?? undefined, 6);
 
-  const items = useMemo(() => {
-    const seen = new Set<string>();
-    const merged = [];
-    for (const l of [...local, ...occasion]) {
-      if (seen.has(l.id)) continue;
-      seen.add(l.id);
-      merged.push(l);
-    }
-    return merged.slice(0, limit);
-  }, [local, occasion, limit]);
+  const items = useMemo(() => occasion.slice(0, limit), [occasion, limit]);
 
-  if (localLoading || occLoading || items.length === 0) return null;
-
-  const occasionContributed = occ && occasion.length > 0;
+  if (loading || items.length === 0) return null;
 
   return (
     <MarketplaceRailShell
       id="city-marketplace"
       title={`From the marketplace in ${cityName}`}
-      subtitle={occasionContributed ? OCCASION_SUBTITLES[occ]?.(cityName) : undefined}
+      subtitle={occ ? OCCASION_SUBTITLES[occ]?.(cityName) : undefined}
       listings={items}
       loading={false}
       surface="city_rail"

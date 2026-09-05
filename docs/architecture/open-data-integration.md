@@ -119,7 +119,8 @@ trusting the prose — a stale figure here is worse than no figure.
 | All 18 `RIGHT_TOPICS` columns | **ILGA live GraphQL** `database.ilga.org/graphql`, 17 parallel queries | — | `built` — `wf_import_ilga_data` (`0 2 * * *`), **239/250 updated nightly** | national-level only (`!subjurisdiction`), matched on `a2_code` | `equality_score` recomputed each run |
 | The other 11 | inherited from parent state (5) / recorded decision (6) | — | `built` (2026-08-30) — **not a join failure.** ILGA returns 239 national jurisdictions, **239 distinct `a2_code`s, zero nulls** — a 100% hit rate. The 11 are outside ILGA's corpus because they have **no distinct legal system**; ILGA *does* carry dependent territories that have one (Cook Islands, Niue, Tokelau, Jersey, Anguilla all update nightly), so "dependent territory" is not the discriminator | `enrichment_status.lgbti_rights.state` on every one of the 11 | `import-ilga-data` re-derives the 5 inherited each run |
 | Second legal opinion | ~~Equaldex~~ → **decided: US State Dept, gate fields only** | — | `missing` — **Equaldex is closed on licence, not on HTTP.** `/api` returns **200** and the region endpoint **401** (key required); `20260330600000`'s stated reason *"no public API exists (returns 403/404)"* is measured false. The blocker is the terms: non-commercial only, *"may not… display it in a paid app or website"*, and **no storage beyond 30 days** — structurally incompatible with `countries` backing `location_is_high_risk()`. Row retired `licence_incompatible` in `20260830132743` | — | — |
-| **Single-source risk** | — | — | **`missing` — this is the honest state.** All 18 topics still rest on ILGA alone. The corroborator is *decided* (US State Dept Country Reports: public domain, independent embassy reporting, scoped to `lgbti_criminalization.legal` + `death_penalty`, ~66 jurisdictions) but **deliberately not built** — an empty registered table is the `equaldex-api` anti-pattern it exists to avoid | on landing: writes its own table, flags to `entity_review_queue`, **never** writes `countries` | — |
+| Second opinion, gate fields | **US State Dept Country Reports** → `country_rights_corroboration` | — | `built` (2026-09-04) — public domain, so no licence constraint; independent embassy reporting, so *not* a derivative of ILGA (which is why the Wikipedia/Wikidata tables were rejected — they cite ILGA). Weekly via `rights-corroboration.yml`. First pass: **48 criminalized / 113 legal / 88 unknown / 1 ambiguous / 0 errors** over 250 | anchored on the reports' structured `Criminalization:` sub-label; `unknown` is a verdict, and a throttled fetch records `error` (retried) not `unknown` | writes its own table, flags to `entity_review_queue`, **never** `countries` |
+| **Single-source risk** | — | — | **`partial` — the other 16 topics still rest on ILGA alone.** Only `lgbti_criminalization.legal` + `death_penalty` are corroborated, deliberately: those two drive the gate, and a second opinion on 250×18 is a large build for marginal safety value | — | — |
 | Equaldex timeline | `equaldex-timeline` → **`news_articles`** | — | `built` — ran today 03:45, 0 failures | — | Different arm, different purpose: this is a news feed, **not** a rights corroborator. Do not mistake its green status for legal corroboration |
 | `rights_verdicts` | Derived from the 18 | — | `built` — `_shared/rights/verdict.ts`, 4 lenses | CHECK 6 verdict values | — |
 | Trans-specific | TGEU TMM | Williams Institute | `partial` — `tgeu_tmm_import` (`20 3 * * 1`) fills `trans_violence_documented`; `trans_rights_index` has no live feed | `MonitorState` distinguishes `none_recorded` from `unmatched` | — |
@@ -216,10 +217,34 @@ ILGA/Equaldex categories collapse into the consumer tier already used by `useTri
 
 | Tier | Condition | UI |
 |---|---|---|
-| `critical` | `death_penalty = yes` | red, sign-in gated content |
+| `critical` | `death_penalty_risk() <> 'none'` | red, sign-in gated content |
 | `high` | `lgbti_criminalization.legal = false` | red |
 | `moderate` | `equality_score < 40` | amber |
 | `low` | otherwise | green |
+
+**`death_penalty` is THREE states, not a boolean, and reading it as one understated five
+countries for as long as the SQL layer existed.** ILGA splits the capital-penalty fact across
+two fields and neither is sufficient alone:
+
+| | `death_penalty` | `penalty` | risk |
+|---|---|---|---|
+| Yemen | `Yes` | `Death Penalty` | `confirmed` |
+| Nigeria | `Yes` | `10 years to life in prison` | `confirmed` |
+| Qatar | `No legal certainty` | `Death Penalty (possible)` | `possible` |
+
+Nigeria rules out reading `penalty` alone; **AE, AF, PK, QA and SO** rule out reading
+`death_penalty` alone — ILGA uses `No legal certainty` to record that it *cannot rule out*
+execution, which every `= 'yes'` test read as identical to `No`. Absence of certainty is not a
+negative finding. Measured effect before the fix: `compose_safety_note` rated Kabul `high` with
+the penalty buried as *"(penalty: Death Penalty (possible))"* instead of `critical` with *"can
+carry the death penalty. Exercise extreme caution"*.
+
+One definition, two languages, and they must not drift: `deathPenaltyRisk()` in
+`src/utils/equalityScore.ts` and `public.death_penalty_risk(jsonb)` (`20260904203201`), guarded
+by `src/lib/__tests__/deathPenaltyRiskSqlParity.test.ts`. `confirmed` and `possible` stay
+distinct — a surface that states a fact ("carries the death penalty") uses `confirmed`; "should
+this reader be warned" uses `<> 'none'`. Collapsing them would overstate on five countries,
+a smaller harm than understating but still a false claim.
 
 Value normalisation is a closed `VOCAB` map in `src/lib/rights/rightsValue.ts` (~26 strings →
 `{kind, key}`), with `EMPTY = ['', 'no data', 'unknown', 'null', 'undefined']` and a
@@ -599,7 +624,10 @@ the row is ABSENT, so an unregistered breaker can never trip and would never app
 ### 4.1 Hostile jurisdictions — what is enforced
 
 One predicate, `location_is_high_risk(country_id, city_id)`, resolving country via city when needed:
-`lgbti_criminalization->>'legal' = 'false' OR lower(->>'death_penalty') = 'yes'`. Each entity carries
+`lgbti_criminalization->>'legal' = 'false' OR death_penalty_risk(lgbti_criminalization) <> 'none'`
+— the second arm was `lower(->>'death_penalty') = 'yes'` until `20260904203201`, which missed the
+five `No legal certainty` countries (§2.2). Widening it moved **no** stored row, since all five
+already gate on the first arm; that is asserted inside the migration. Each entity carries
 a denormalized `safety_gated` boolean maintained by a BEFORE trigger, plus
 `recompute_safety_gated_for_country()` fired from a trigger on `countries.lgbti_criminalization` —
 so a law change re-gates the whole corpus without a backfill.
@@ -739,6 +767,13 @@ inheritance in `import-ilga-data`. Design: `docs/superpowers/specs/2026-08-30-le
    measured false, which is what kept inviting a re-enable.
 5. **`is_enabled=false` is not a kill switch.** `scrape-web-sources` drops the
    `.eq('is_enabled', true)` filter when invoked with an explicit `sourceSlug`/`sourceId`.
+6. **The corroborator's first real finding was a bug in US, not in ILGA** (2026-09-04). It
+   flagged Afghanistan, Somalia and Sudan on `death_penalty`. Two of the three were our own
+   `= 'yes'` test collapsing ILGA's three-state field — see §2.2 — and the third (Sudan) was
+   the extractor false-positiving on a country where ILGA is right. **Nothing in `countries`
+   was overwritten.** That is the corroborator behaving exactly as intended: a disagreement
+   is a prompt to go and look, not evidence that the primary source is wrong. Budget for
+   the possibility that most early flags indict the reader rather than the source.
 
 **Exit, as met:** **250/250 accounted for, 0 silent skips** — deliberately *not* "250/250
 fresh". Six countries keep their old timestamp because nothing checked them and there is
@@ -749,11 +784,17 @@ nothing to check; stamping them fresh would record an observation that never hap
 zero-tolerance, no baseline. Keys on *a recorded disposition*, with a 30-day threshold so a
 one-night ILGA outage cannot trip it while a permanently skipped country must.
 
-**Still open, deliberately:** the corroborator is decided but unbuilt (§1.5); the
-`rights_verdict_general` engine is incoherent (10 countries at `equality_score = 100` split
-across four verdicts — Norway, Sweden, France, Germany, UK and Canada all publish as
-`hostile`), tracked separately; and `anon` holds `TRUNCATE` on 464 tables, which RLS does
-not gate, also tracked separately.
+**Corroborator: BUILT 2026-09-04** (§1.5) — scoped to the two gate fields, 250 rows, weekly.
+Its 10 disagreements split into three real death-penalty gaps and seven **source-year lags**:
+the reports are annual and ILGA is nightly, so Barbados, Dominica, Saint Lucia, Namibia and CAR
+decriminalised *after* the 2023 report while Burkina Faso and Indonesia criminalised after it.
+A lag is the expected behaviour of a corroborator, not a fault; `source_year` is stored so a
+reviewer sees it immediately.
+
+**Still open:** `anon` holds `TRUNCATE` on 464 tables, which RLS does not gate — tracked
+separately. (The `rights_verdict_general` incoherence listed here previously was **fixed** by
+#3292 on 2026-09-02: `general` is no longer rendered as a traveller-facing adjective, and the
+traffic light reads `worstOf(lgb, trans)` instead.)
 
 **Also still open — a UI bulk toggle can silently revert a migration's decision.**
 `20260330600000` disabled six `scrape_sources` rows; all six read `true` afterwards. The
