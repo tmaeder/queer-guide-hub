@@ -129,10 +129,16 @@ Deno.serve(withErrorReporting('pipeline-geo-validate', async (req) => {
 
     // Skip venues already validated recently (within 30 days)
     const venueIds = venues.map((v) => v.id)
+    // `.eq('source','nominatim')` is load-bearing since 20270501174245 added
+    // source to the unique key. geo_containment_check writes a row for EVERY
+    // venue it sweeps, so without this filter the freshness check would see
+    // those rows, conclude every venue was validated recently, and skip the
+    // whole batch — starving this path to zero while reporting success.
     const { data: existingValidations } = await supabase
       .from('geo_validations')
       .select('content_id, last_validated_at')
       .eq('content_type', 'venue')
+      .eq('source', 'nominatim')
       .in('content_id', venueIds)
       .gte('last_validated_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
     const skipSet = new Set((existingValidations ?? []).map((r: { content_id: string }) => r.content_id))
@@ -195,7 +201,11 @@ Deno.serve(withErrorReporting('pipeline-geo-validate', async (req) => {
             : null,
           source: 'nominatim',
           last_validated_at: new Date().toISOString(),
-        }, { onConflict: 'content_type,content_id' })
+        }, { onConflict: 'content_type,content_id,source' })
+        // `source` joined the unique key in 20270501174245 so this
+        // function and geo_containment_check stop overwriting each
+        // other's verdicts. ON CONFLICT must name the index's columns
+        // exactly, so this list is not optional.
 
         validated++
       } catch (e) {

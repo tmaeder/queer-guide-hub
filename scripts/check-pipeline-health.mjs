@@ -935,6 +935,84 @@ substanceFreshness: {
   }
 }
 
+// ── 11. Geo containment ──────────────────────────────────────────────────────
+// Until this section existed there was NO geo sentinel here beyond city
+// duplicate signals: nothing watched venues_misplaced, geo_validations
+// coverage, null coordinates or the boundary set. That is how 670 venues came
+// to sit >500 km from their linked city unnoticed, while a broken validator
+// produced 692 alerts of which ~94% were an ISO-2-vs-English-name artifact.
+{
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/geo_hygiene_stats`, {
+    method: 'POST',
+    headers: { apikey: KEY, Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    // "Could not look" is not "looked and found nothing".
+    console.warn(`⚠ geo_hygiene_stats → HTTP ${res.status} (RPC missing? migration 20270501174247)`)
+    console.warn('  This section measured NOTHING — it did not pass.')
+  } else {
+    const geo = await res.json()
+
+    // THE POSITIVE CONTROL, and it is why every number below can be trusted.
+    // geo_country_at over an empty geo_boundaries returns no row for every
+    // coordinate, so geo_containment_check classifies the whole corpus
+    // `offshore` and a reader of the ok-count sees zero country mismatches.
+    // An absent boundary set and a pristine corpus are indistinguishable from
+    // the verdict distribution alone, so this must be fatal, not advisory.
+    if (!geo.boundary_countries || Number(geo.boundary_countries) === 0) {
+      console.error('✗ geo_boundaries holds NO country polygons — every containment verdict below is meaningless')
+      console.error('  A containment sweep over an empty boundary set reports zero mismatches,')
+      console.error('  which is indistinguishable from a clean corpus. Run:')
+      console.error('    node scripts/data-quality/load-geo-boundaries.mjs --kind both')
+      FAILED = true
+    } else {
+      // A country our corpus actually uses, with no polygon AND no derived
+      // parent, makes every venue under it read as a false mismatch. The
+      // loader asserts this at load time; re-asserting here catches a country
+      // ADDED to the corpus after the last load.
+      const orphan = Number(geo.countries_without_geometry ?? 0)
+      if (orphan > 0) {
+        console.error(`✗ ${orphan} country/countries hold venues or events but have no boundary geometry and no derived parent`)
+        console.error('  Every row under them will be reported as a country mismatch that is not one.')
+        console.error('  Re-run the boundary loader; it fails loudly on this condition.')
+        FAILED = true
+      }
+
+      const v = geo.containment ?? {}
+      const real = Number(v.coord_wrong ?? 0) + Number(v.link_wrong ?? 0) + Number(v.admin1_wrong ?? 0)
+      if (Number(geo.containment_rows ?? 0) === 0) {
+        console.warn('⚠ geo_containment_check has never run — the boundary set is loaded but nothing has been adjudicated')
+      } else if (real > 0) {
+        // Advisory, not fatal: this is a BACKLOG being worked down by the
+        // repair pass, not an invariant. Making it fatal would leave CI red
+        // for as long as the cleanup takes, which teaches people to ignore it.
+        console.warn(`⚠ geo containment: ${real} row(s) with a localised defect ${JSON.stringify(v)}`)
+        console.warn('  coord_wrong = the pin is wrong; link_wrong = the CITY LINK is wrong and the pin is right;')
+        console.warn('  admin1_wrong = same-name city in the wrong state. Drain with run_geo_containment_repair.')
+      } else {
+        console.log(`✓ geo containment clean over ${geo.containment_rows} adjudicated row(s)`)
+      }
+
+      const misplaced = Number(geo.venues_misplaced ?? 0)
+      if (misplaced > 2600) {
+        console.warn(`⚠ venues_misplaced is ${misplaced} and rising (was 2,536 on 2026-09-04)`)
+        console.warn('  venue_coord_snap only handles rows with no usable address; the rest need venue_geocode_repair.')
+      }
+
+      // The legacy Nominatim comparison ran at ~6% precision until its
+      // canonicalisation was fixed. Re-inflation means the comparison
+      // regressed to comparing an ISO-2 code against an English name.
+      const nominatim = Number(geo.nominatim_flagged ?? 0)
+      if (nominatim > 200) {
+        console.error(`✗ nominatim geo_validations flagged ${nominatim} rows — the ISO-2 vs English-name comparison has regressed`)
+        console.error('  pipeline-geo-validate must canonicalise BOTH sides via _shared/geo-normalize.ts.')
+        FAILED = true
+      }
+    }
+  }
+}
+
 // The single exit. Reached whether or not anything failed, so the ✗ lines above
 // are the complete list rather than "the first one we tripped over".
 if (FAILED) {
