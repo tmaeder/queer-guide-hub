@@ -6293,6 +6293,9 @@ export type Database = {
           safety_gated: boolean
           sensitivity_flags: Json | null
           seo_indexable: boolean
+          series_key: string | null
+          series_next: boolean
+          series_size: number | null
           slug: string
           social_links: Json
           start_date: string
@@ -6373,6 +6376,9 @@ export type Database = {
           safety_gated?: boolean
           sensitivity_flags?: Json | null
           seo_indexable?: boolean
+          series_key?: string | null
+          series_next?: boolean
+          series_size?: number | null
           slug: string
           social_links?: Json
           start_date: string
@@ -6453,6 +6459,9 @@ export type Database = {
           safety_gated?: boolean
           sensitivity_flags?: Json | null
           seo_indexable?: boolean
+          series_key?: string | null
+          series_next?: boolean
+          series_size?: number | null
           slug?: string
           social_links?: Json
           start_date?: string
