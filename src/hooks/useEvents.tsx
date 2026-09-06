@@ -182,6 +182,22 @@ export function useEvents(autoFetch: boolean = true, opts?: { skipDatasetTotal?:
             .eq('status', 'active')
             .is('duplicate_of_id', null);
 
+          // Collapse a recurring series to its next occurrence. 70.9% of the
+          // upcoming feed was repeat dates of 289 same-title/city groups — one
+          // Zürich library's opening hours appeared 112 times — which the dedup
+          // engine correctly refuses to merge because each date carries its own
+          // description and ticket URL (see migration 20320201100000).
+          //
+          // Applied ONLY in the undifferentiated browse case: a reader who asked
+          // for a date range wants the occurrences inside it, and hiding all but
+          // one would drop dates they explicitly asked to see. `search_events`
+          // derives this exact condition from its own parameters, so both query
+          // paths collapse identically — the two diverging is what let 598 merged
+          // duplicates keep showing on the city-filtered feed.
+          if (!filters?.includePast && !filters?.dateRange) {
+            query = query.eq('series_next', true);
+          }
+
           const sort = filters?.sort ?? 'date-asc';
           if (sort === 'date-desc') {
             query = query
