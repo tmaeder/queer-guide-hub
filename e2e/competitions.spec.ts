@@ -40,13 +40,16 @@ const RENDER = { timeout: 25_000 };
  * migration — the RPC has stopped answering.
  */
 async function corpusIsLive(page: Page): Promise<boolean> {
+  // Wait for a DEFINITE answer — either the totals line (corpus present) or the
+  // error state (RPC absent) — rather than for one of them with a short
+  // timeout. React Query retries with backoff, so `isError` can take well over
+  // ten seconds to settle; a naive "did the error appear in 6s" probe returns
+  // "live" while the query is still retrying and every later assertion then
+  // fails against an empty page instead of skipping.
+  const totals = page.locator('main').getByText(/competitions ·.*editions ·.*entries/);
   const failed = page.locator('main').getByText(/could not be loaded/i);
-  try {
-    await failed.waitFor({ state: 'visible', timeout: 6_000 });
-    return false;
-  } catch {
-    return true;
-  }
+  await expect(totals.or(failed).first()).toBeVisible({ timeout: 45_000 });
+  return totals.isVisible();
 }
 
 async function gotoView(page: Page, view: string) {
@@ -205,7 +208,15 @@ test.describe('@smoke competitions', () => {
     expect(overflow, 'horizontal page overflow in px').toBeLessThanOrEqual(1);
   });
 
-  test('a crawler is served real prose, not an empty shell', async ({ request }) => {
+  test('a crawler is served real prose, not an empty shell', async ({ request, baseURL }) => {
+    // routeBody.ts is a Cloudflare PAGES FUNCTION. `vite preview` — what
+    // e2e-pr.yml serves — only serves static files, so this can only be
+    // asserted against a real deployment. Skipping on localhost rather than
+    // asserting something the harness structurally cannot serve.
+    test.skip(
+      !!baseURL && /localhost|127\.0\.0\.1/.test(baseURL),
+      'crawler body is a Pages Function; not served by vite preview',
+    );
     // The four views are client-rendered, so routeBody.ts is all a non-JS bot
     // ever sees. Without it the page is invisible to search.
     const res = await request.get('/competitions', {
