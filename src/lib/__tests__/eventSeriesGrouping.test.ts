@@ -173,4 +173,84 @@ describe('search_events', () => {
     ).toLowerCase();
     expect(migration).toMatch(/v_browse\s+is\s+null\s+or\s+v_ranged\s+is\s+null/);
   });
+
+  it('folds the series and programme rules into ONE clause', () => {
+    // A series repeat and a festival day-part are the same thing to a reader: a
+    // row represented in the feed by something else. Two parallel clauses drift
+    // — one expanding under a date range while the other does not — so they are
+    // written as a single condition.
+    expect(lower).toMatch(/e\.series_next\s+and\s+e\.parent_event_id\s+is\s+null/);
+  });
+});
+
+describe('run_event_programme_link', () => {
+  const sql = latestDefinitionOf('run_event_programme_link').toLowerCase();
+
+  it('subtracts the city name tokens from the shared-token evidence', () => {
+    // THE correctness guard. Same city_id is already a precondition of the join,
+    // so a token contributed by the city NAME is guaranteed rather than
+    // informative. Without this subtraction the rule yields 15 pairs of which 7
+    // are wrong — "Halloween Alegria, New York" adopting "Village Halloween
+    // Parade New York" on {new, york}, three unrelated Folsom parties on {san,
+    // francisco}, and "Atlanta Pride Circuit Party" adopting "Atlanta Pride 2026"
+    // BACKWARDS. With it: 8 pairs, all 8 correct.
+    expect(sql).toMatch(/except\s+select\s+unnest\(p\.city_toks\)/);
+    expect(sql).toMatch(/dedup_core_tokens\(ci\.name\)/);
+  });
+
+  it('requires at least 2 tokens of real evidence', () => {
+    expect(sql).toMatch(/\)\s*\)\s*>=\s*2/);
+  });
+
+  it('blocks a child that has more than one candidate umbrella', () => {
+    // A wrong parent is not self-correcting, and span-containment alone cannot
+    // resolve direction. Block rather than guess.
+    expect(sql).toMatch(/n_parents\s*=\s*1/);
+  });
+
+  it('reports blocked children instead of silently dropping them', () => {
+    // A run that links nothing because everything was ambiguous must not read the
+    // same as a run with nothing to do.
+    expect(sql).toMatch(/n_parents\s*>\s*1/);
+  });
+
+  it('refuses to build a two-level chain', () => {
+    // events_programme_depth_guard() raises on a grandchild, so the parent must be
+    // top-level and the child must not already be a parent.
+    expect(sql).toMatch(/p\.parent_event_id\s+is\s+null/);
+    expect(sql).toMatch(
+      /not\s+exists\s*\(\s*select\s+1\s+from\s+public\.events\s+x\s+where\s+x\.parent_event_id\s*=\s*c\.id/,
+    );
+  });
+
+  it('uses array_agg rather than min() on a uuid', () => {
+    // `min(uuid)` does not exist in Postgres.
+    expect(sql).toMatch(/array_agg\(parent_id\s+order\s+by\s+parent_id\)/);
+    expect(sql).not.toMatch(/min\(parent_id\)/);
+  });
+
+  it('is not callable by anon or authenticated', () => {
+    const migration = latestMigrationMatching(
+      /create\s+or\s+replace\s+function\s+public\.run_event_programme_link/i,
+    ).toLowerCase();
+    expect(migration).toMatch(/revoke\s+all\s+on\s+function\s+public\.run_event_programme_link/);
+  });
+
+  it('names the NOT NULL trigger column when registering its cron', () => {
+    // 20320201100000 omitted it, the INSERT aborted, db push rolled back the whole
+    // migration including its ALTER TABLE, and prod served a frontend against a
+    // column that did not exist.
+    const migration = latestMigrationMatching(
+      /create\s+or\s+replace\s+function\s+public\.run_event_programme_link/i,
+    ).toLowerCase();
+    expect(migration).toMatch(/insert\s+into\s+public\.admin_automations[\s\S]{0,200}trigger/);
+  });
+
+  it('asserts the reported lila case specifically', () => {
+    const migration = latestMigrationMatching(
+      /create\s+or\s+replace\s+function\s+public\.run_event_programme_link/i,
+    ).toLowerCase();
+    expect(migration).toMatch(/lila-queer-festival/);
+    expect(migration).toMatch(/v_lila\s*<>\s*3/);
+  });
 });
