@@ -109,6 +109,10 @@ const OUTCOME_ALIASES: Readonly<Record<string, DragOutcome>> = {
   SDADHH: 'win', // won the final Smackdown lip sync — see the legend note above
   TOP: 'win', // Drag Race Thailand: "won the maxi challenge"
   RW: 'win', // Drag Race Germany: "(Runway Winner) ... won the runway challenge"
+  BTOP: 'win', // All Stars: "(Blocked Top All Star) ... WON the challenge, lost
+  // the Lip Sync for Your Legacy and did not earn a star due to being blocked".
+  // The block costs her the star, not the challenge win.
+  BWIN: 'win', // All Stars: "(Blocked Win) ... won the challenge and the Lip Sync".
   // — high —
   HIGH: 'high',
   HIGHEST: 'high',
@@ -118,6 +122,10 @@ const OUTCOME_ALIASES: Readonly<Record<string, DragOutcome>> = {
   RUNNERUP: 'high',
   RUNNERSUP: 'high',
   RUP: 'high', // "R-up" — canonicalise() strips the hyphen, not the letters.
+  TSW: 'high', // All Stars: "(Talent Show Winner) ... the ELIMINATED contestant
+  // WON the Fame Games Variety Extravaganza". The mirror of FAME (same side
+  // game, lost). `high` rather than `win`, because a Fame Games victory is not
+  // a maxi-challenge win and must not be counted as one.
   // — safe —
   SAFE: 'safe',
   IMMUNE: 'safe',
@@ -137,6 +145,25 @@ const OUTCOME_ALIASES: Readonly<Record<string, DragOutcome>> = {
   CUT: 'safe', // All Stars: same shape as BLK, different badge.
   BVR: 'safe', // Canada vs the World: "(Beaver) received the Golden Beaver and
   // was saved from the bottom three".
+  // The "saved from the bottom" family. Every one of these is a format-specific
+  // token whose legend says the queen was RESCUED, so they land on `safe` for
+  // the same reason BDT does — the mark reads like danger and means the
+  // opposite.
+  BGT: 'safe', // España: "(Baguette) ... saved from the bottom two"
+  CT: 'safe', // UK: "(Chippy Tea) ... saved from the bottom two"
+  HRT: 'safe', // "(Heart) ... saved themself or was saved from the bottom"
+  GB: 'safe', // Philippines: "Golden Balut ... saved from participating in the
+  // final LaLaPaRuZa lip sync"
+  SAVE: 'safe', // "saved from participating in the final lip sync"
+  RSU: 'safe', // México: "(Reina de la Suerte) ... was up for elimination ...
+  // and was saved from lip syncing"
+  // RE-ENTRY. Measured across the ELEVEN pages that define it, `IN` always
+  // means the queen came back into the competition — but the mechanism varies
+  // and three of those legends involve no win at all ("was chosen to re-enter",
+  // All Stars 3 and The Switch). So it is `safe`, NOT `win`: mapping it to a
+  // win would invent a challenge victory for a queen who was simply brought
+  // back, and would inflate every derived `challenge_wins` in those seasons.
+  IN: 'safe',
   // — low —
   LOW: 'low',
   LOWEST: 'low',
@@ -171,6 +198,10 @@ const OUTCOME_ALIASES: Readonly<Record<string, DragOutcome>> = {
   DEPARTED: 'elim',
   QUIT: 'elim',
   WDN: 'elim',
+  WEL: 'elim', // Germany: "(Winner eliminated) ... although the contestant WON
+  // the maxi challenge, they were the worst in the runway challenge and were
+  // subsequently eliminated". The terminal fact for that episode is that she
+  // went home; `outcome_raw` keeps the rest of the story.
   // — guest (present, not competing) —
   GUEST: 'guest',
   GST: 'guest',
