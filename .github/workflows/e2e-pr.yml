@@ -116,6 +116,7 @@ jobs:
             e2e/glossary-integration.spec.ts \
             e2e/tags-substance-interactions.spec.ts \
             e2e/tags-sti-guide.spec.ts \
+            e2e/competitions.spec.ts \
             e2e/singles.spec.ts \
             e2e/legal-pages.spec.ts \
             e2e/map-shell.spec.ts \
