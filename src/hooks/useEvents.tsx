@@ -194,8 +194,15 @@ export function useEvents(autoFetch: boolean = true, opts?: { skipDatasetTotal?:
           // derives this exact condition from its own parameters, so both query
           // paths collapse identically — the two diverging is what let 598 merged
           // duplicates keep showing on the city-filtered feed.
+          //
+          // The same clause also hides a festival's programme children — a
+          // "lila Queer Festival" umbrella published four cards, one per day
+          // (see 20320201100200). A series repeat and a festival day-part are the
+          // same thing to a reader: a row represented in the feed by something
+          // else. `search_events` folds both into one condition for the same
+          // reason, so the two paths cannot drift apart.
           if (!filters?.includePast && !filters?.dateRange) {
-            query = query.eq('series_next', true);
+            query = query.eq('series_next', true).is('parent_event_id', null);
           }
 
           const sort = filters?.sort ?? 'date-asc';
