@@ -1,7 +1,7 @@
 -- Watch reversibility at RUNTIME, not just in the migration file.
 --
 -- src/lib/__tests__/venueMergeReversibility.test.ts pins what
--- 20330401100000 wrote, and that migration asserts it at deploy time. Neither
+-- 20350101100000 wrote, and that migration asserts it at deploy time. Neither
 -- notices if the LIVE function later drifts from the file — and in this repo
 -- that is not hypothetical:
 --
@@ -115,7 +115,7 @@ COMMENT ON FUNCTION public.venue_dup_signals() IS
   'Venue dedup health. Hard-fails on: would_merge > 0 with merges_last_7d = 0; '
   'open_auto_eligible > 0; legacy_automerge_callable; dry_run_error set; and '
   'merges_unreversible_since_fix > 0 (a merge recorded with no schema marker cannot be '
-  'undone — the live _venue_merge_core has drifted from 20330401100000). Warns on a '
+  'undone — the live _venue_merge_core has drifted from 20350101100000). Warns on a '
   'deep review backlog by MEDIAN age. merges_pre_schema_total is the frozen count of '
   'rows predating the fix and is informational, not a regression. service_role only.';
 
@@ -132,7 +132,7 @@ BEGIN
   -- Positive control: the pre-schema cohort must be non-zero, or this key is
   -- measuring nothing and would pass on a corpus with no audit rows at all.
   IF (v->>'merges_pre_schema_total')::int = 0 THEN
-    RAISE EXCEPTION 'merges_pre_schema_total is 0 — expected the ~1,544 rows predating 20330401100000; the key is not reading the audit table';
+    RAISE EXCEPTION 'merges_pre_schema_total is 0 — expected the ~1,544 rows predating 20350101100000; the key is not reading the audit table';
   END IF;
   RAISE NOTICE 'venue_dup_signals reversibility keys: unreversible_since_fix=%, pre_schema_total=%',
     v->>'merges_unreversible_since_fix', v->>'merges_pre_schema_total';

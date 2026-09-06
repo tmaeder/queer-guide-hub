@@ -52,7 +52,7 @@ ALTER TABLE public.venue_merge_audit ADD COLUMN IF NOT EXISTS details jsonb;
 COMMENT ON COLUMN public.venue_merge_audit.details IS
   'Reversibility record. {schema:1, moved:{relation: [ids...]}, drop_slug, '
   'slug_redirect_existed, slug_redirect_prior_venue_id}. Rows written before '
-  '20330401100000 have NULL here and their reparenting cannot be restored -- '
+  '20350101100000 have NULL here and their reparenting cannot be restored -- '
   'unmerge_venues refuses them unless p_force. `moved.venue_personal_visits` '
   'holds USER IDs, not row ids: that table is keyed (user_id, venue_id).';
 
@@ -205,7 +205,7 @@ begin
   if not found then raise exception 'audit % not found', p_audit_id; end if;
   if a.undone_at is not null then raise exception 'merge already undone'; end if;
 
-  -- A merge recorded before 20330401100000 has no id lists, so its reparenting is
+  -- A merge recorded before 20350101100000 has no id lists, so its reparenting is
   -- unrecoverable. Refuse loudly instead of reporting a success that did not
   -- happen -- all 1,544 audit rows that existed at that point are in this class.
   if coalesce((a.details->>'schema')::int, 0) < 1 then
