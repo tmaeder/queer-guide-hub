@@ -65,6 +65,19 @@ function buildDetArgs(type: EntityType, n: Record<string, unknown>, isHotel: boo
     }
     case 'venue':
     case 'hotel': {
+      // p_city_id stays null because staging genuinely has no city_id — measured
+      // across 8,161 venue staging rows over 60 days, ZERO carry one, while 8,081
+      // carry `location.city` text and 8,016 carry `location.address`. Until
+      // 20330101100600 those two were simply dropped on the floor here, which made
+      // three of the RPC's branches (despaced_exact 0.96, core_token 0.92,
+      // address_name_proximity) structurally unreachable at ingest along with the
+      // functional indexes built for them.
+      //
+      // p_city drives text-keyed name matching scored 0.88 — below the 0.90 auto
+      // bar in dedup-engine.ts, because `cities` cannot represent Portland ME vs
+      // Portland OR and a name-keyed city-text match is evidence, not proof.
+      // p_country drives the country veto that stopped a Berlin "Village" from
+      // merging into an Osaka one at score 1.000.
       const args: Record<string, unknown> = {
         p_name: String(n.name ?? ''),
         p_phone_e164: (c.phone_e164 as string) ?? null,
@@ -73,11 +86,23 @@ function buildDetArgs(type: EntityType, n: Record<string, unknown>, isHotel: boo
         p_lat: loc.lat ?? null,
         p_lng: loc.lng ?? null,
         p_city_id: null,
+        // Both RPCs take p_address; only the venue one takes p_city/p_country.
+        p_address: (loc.address as string) ?? (n.address as string) ?? null,
         p_limit: 10,
       }
       if (isHotel) {
         args.p_platform_ids = (n.platform_ids as Record<string, unknown>) ?? {}
         args.p_booking_url = (n.booking_url as string) ?? null
+      } else {
+        // NOT set for hotels: find_hotel_duplicate_candidates has no p_city or
+        // p_country parameter, and PostgREST resolves overloads BY ARGUMENT NAME —
+        // an unknown name is a silent PGRST202 404, not a rejected extra field, so
+        // hotel dedup would stop finding candidates entirely.
+        args.p_city = (loc.city as string) ?? (n.city as string) ?? null
+        // country_code first (the resolver takes ISO2 or a full name, verified on
+        // prod: 'DE'→DE, 'Germany'→DE, and 'MA'+Agawam→NULL rather than Morocco).
+        args.p_country =
+          (loc.country_code as string) ?? (loc.country as string) ?? (n.country as string) ?? null
       }
       return args
     }

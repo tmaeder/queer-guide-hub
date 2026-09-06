@@ -4,13 +4,12 @@ import { Link, useSearchParams } from 'react-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, GitMerge, Image as ImageIcon, Wand2 } from 'lucide-react';
+import { Check, GitMerge, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   useDedupTypes,
   useDuplicateClusters,
   useFuzzyDuplicateClusters,
-  runFuzzyAutomerge,
   mergeEntityPair,
   unmergeEntity,
   type Cluster,
@@ -328,21 +327,11 @@ function FuzzyDuplicates({ type }: { type: DedupType }) {
     return aBetter ? [a.id, b.id] : [b.id, a.id];
   };
 
-  // Bulk auto-merge sweep is available for types that declare an autoMergeRpc
-  // (venues today); events & marketplace are swept nightly server-side.
-  const autoMergeRpc = type.cfg.autoMergeRpc;
-  const autoMerge = useMutation({
-    mutationFn: () => runFuzzyAutomerge(autoMergeRpc!, false),
-    onSuccess: (r) => {
-      toast.success(
-        `Auto-merged ${r.merged} same-place pair${r.merged === 1 ? '' : 's'}` +
-          (r.skipped ? ` (${r.skipped} skipped)` : ''),
-      );
-      refresh();
-    },
-    onError: (e) => toast.error(`Auto-merge failed: ${(e as Error).message}`),
-  });
-
+  // No bulk auto-merge button any more. Venues were the only type that had one
+  // (run_venue_fuzzy_automerge), and it was retired in 20330101100300 because it
+  // merged without ever reading dedup_review_queue — it could undo a human's
+  // rejection. Every type is now swept nightly by run_dedup_truth_sweep, which
+  // honours rejections; this page stays the per-pair power tool.
   const mergeOne = useMutation({
     mutationFn: async (c: FuzzyCluster) => {
       const [keep, drop] = keepDrop(c);
@@ -365,8 +354,6 @@ function FuzzyDuplicates({ type }: { type: DedupType }) {
     onError: (e) => toast.error(`Merge failed: ${(e as Error).message}`),
   });
 
-  const autoCount = clusters.filter((c) => c.auto_eligible).length;
-
   if (isLoading) {
     return (
       <div className="text-muted-foreground flex items-center gap-2 p-4">
@@ -383,20 +370,10 @@ function FuzzyDuplicates({ type }: { type: DedupType }) {
     <div className="flex flex-col gap-4">
       <div className="rounded-container bg-muted flex items-center justify-between gap-4 p-4">
         <p className="text-muted-foreground text-15">
-          {clusters.length} candidate pairs · {autoCount} are key-identical and safe to merge
-          automatically
-          {autoMergeRpc ? '.' : ' (swept nightly server-side).'}
+          {clusters.length} candidate pairs. Auto-merging is decided nightly by
+          run_dedup_truth_sweep, which corroborates on address, domain and phone; this page is the
+          per-pair power tool.
         </p>
-        {autoMergeRpc && (
-          <Button
-            size="sm"
-            onClick={() => autoMerge.mutate()}
-            disabled={autoMerge.isPending || autoCount === 0}
-          >
-            {autoMerge.isPending ? <TrackLoader size={16} /> : <Wand2 size={16} />}
-            Auto-merge {autoCount} same-place
-          </Button>
-        )}
       </div>
 
       {clusters.map((c) => {
@@ -409,8 +386,14 @@ function FuzzyDuplicates({ type }: { type: DedupType }) {
           >
             <div className="flex items-center justify-between gap-4">
               <div className="flex flex-wrap items-center gap-2">
+                {/* `auto_eligible` here is find_fuzzy_duplicate_clusters' own
+                    `dist < 150 m` test, NOT the sweep's auto decision — the sweep
+                    stopped gating on distance in 20330101100100 because this corpus
+                    puts same-address duplicates hundreds of km apart. Label it as
+                    the measurement it is rather than as a verdict it no longer
+                    predicts. */}
                 <Badge variant={c.auto_eligible ? 'default' : 'secondary'}>
-                  {c.auto_eligible ? 'auto-safe' : 'review'}
+                  {c.auto_eligible ? 'within 150 m' : 'no geo proof'}
                 </Badge>
                 <Badge variant="outline">sim {c.score.toFixed(2)}</Badge>
                 {c.dist_m != null && <Badge variant="outline">{c.dist_m} m apart</Badge>}
