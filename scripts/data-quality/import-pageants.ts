@@ -79,6 +79,7 @@ import {
   parseInfobox,
   parseTables,
   parseWikiDate,
+  resolveQids,
   stripTags,
 } from './lib/dragrace-wiki.mjs';
 import { parsePlacement, type Placement } from './import-dragrace-spine';
@@ -1564,6 +1565,39 @@ async function main() {
     names_split_from_qualifying_title: reports.reduce((a, r) => a + r.stripped_prelim_titles, 0),
     per_pageant: reports,
   };
+
+  // -------------------------------------------------------------------------
+  // Resolve Wikidata QIDs, in one batched pass over the distinct titles.
+  //
+  // This is the ONLY join key to `personalities`: `personalities.wikipedia_url`
+  // is null on all 776 drag rows, so the QID is what links an entrant to their
+  // profile. Without it the pageant side of the corpus links to nothing at all
+  // while the Drag Race side links 724 of 1,019 — measured before this pass:
+  // 795 pageant entrants, 0 linked.
+  //
+  // Only a minority of titleholders have an article (49 of 795 at time of
+  // writing), and that is the honest ceiling here, not a parsing gap: a Miss
+  // Gay America winner from 1981 usually has no Wikipedia page. Everyone else
+  // keeps `wikidata_qid: null` and renders as plain text.
+  // -------------------------------------------------------------------------
+  const pageantTitles = [
+    ...new Set(all.flatMap((e) => e.entrants.map((x) => x.wikipedia_title).filter(Boolean))),
+  ] as string[];
+  console.log(`Resolving ${pageantTitles.length} Wikidata QIDs…`);
+  const qidMap = await resolveQids(fetchCached, pageantTitles);
+  let qidHits = 0;
+  for (const edition of all) {
+    for (const entrant of edition.entrants) {
+      entrant.wikidata_qid = entrant.wikipedia_title
+        ? (qidMap.get(entrant.wikipedia_title) ?? null)
+        : null;
+      if (entrant.wikidata_qid) qidHits++;
+    }
+  }
+  summary.entrants_with_wikidata_qid = qidHits;
+  summary.distinct_wikidata_qids = new Set(
+    all.flatMap((e) => e.entrants.map((x) => x.wikidata_qid).filter(Boolean)),
+  ).size;
 
   writeFileSync(join(OUT, 'pageants.ndjson'), all.map((e) => JSON.stringify(e)).join('\n') + '\n');
   writeFileSync(join(OUT, 'summary.json'), JSON.stringify(summary, null, 2));
