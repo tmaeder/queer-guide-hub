@@ -25,6 +25,7 @@ import {
   Scale,
   History,
   BookOpen,
+  Crown,
 } from 'lucide-react';
 import type { ComponentType } from 'react';
 import { transitIcon } from '@/components/transit/navTransitIcon';
@@ -151,6 +152,10 @@ export const DESTINATIONS: NavDestination[] = [
     cluster: 'community',
     searchType: 'milestone',
   },
+  // No `searchType`: a competition is not a search_documents entity type. The
+  // people in them are already indexed as personalities, which is where a
+  // search for a queen's name should land.
+  { to: '/competitions', icon: Crown, labelKey: 'header.nav.competitions', cluster: 'community' },
   { to: '/hotels', icon: Building, labelKey: 'header.nav.hotels', cluster: 'places' },
   { to: '/help', icon: LifeBuoy, labelKey: 'header.nav.help', cluster: 'support' },
 ];

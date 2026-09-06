@@ -2022,7 +2022,8 @@
       "tagsAll": "All terms",
       "tagsInteractions": "Substance safety",
       "tagsStiGuide": "STI guide",
-      "transRights": "Trans rights"
+      "transRights": "Trans rights",
+      "competitions": "Drag Race"
     },
     "intents": {
       "goingOut": {
