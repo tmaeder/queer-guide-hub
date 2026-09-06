@@ -244,13 +244,36 @@ test.describe('city network diagram', () => {
   });
 
   test('renders nothing for a city with no network rather than a fake one', async ({ page }) => {
-    // 22 of ~3,070 cities have generated geometry. The homepage card falls
+    // 309 of ~3,070 cities have generated geometry. The homepage card falls
     // back to a template squiggle so its grid has no holes; on a single, under
     // a heading about getting around, that squiggle would be a false claim.
-    // Zurich is a real, well-populated city with trams that OSM did not yield
+    // Basel is a real, well-populated city with trams that OSM did not yield
     // a usable relation set for — so it exercises the gate rather than a
     // thin-data page that might not render a travel section at all.
-    await open(page, '/city/zurich');
+    //
+    // SUBJECT CHANGED FROM ZURICH 2026-09-06, and the reason is worth keeping.
+    // This test did not break because the gate broke; it broke because
+    // 20320201100400 merged the duplicate city Zurich/US into Zürich/CH, so
+    // `/city/zurich` stopped resolving to a geometry-less row and started
+    // resolving to `zuerich` — which IS in CITY_NETWORKS and correctly renders
+    // its tram network. The subject of this test is data, and data moves.
+    //
+    // `Critical paths` does not run on main, so that landed green and surfaced
+    // on the next unrelated PR. If this fails again, check FIRST whether the
+    // subject city has gained geometry (grep its slug in
+    // src/components/home/subway/cityNetworkGeometry.ts) or been merged away —
+    // that is a stale premise, not a broken gate.
+    await open(page, '/city/basel');
+
+    // Positive control the earlier version lacked: "no network legend" also
+    // passes on a page that rendered no travel section at all, which is exactly
+    // how a moved subject would go quietly green instead of red.
+    await page.locator('#travel').scrollIntoViewIfNeeded();
+    await expect(
+      page.locator('#travel'),
+      'the travel section must render, or the absence of a legend proves nothing',
+    ).toBeVisible();
+
     await expect(page.getByText('Lines', { exact: true })).toHaveCount(0);
     for (const mode of ['Metro network', 'Light rail network', 'Tram network']) {
       await expect(page.getByText(mode, { exact: true })).toHaveCount(0);
