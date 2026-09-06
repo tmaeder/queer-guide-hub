@@ -178,12 +178,18 @@ grant execute on function public.run_event_series_recompute(integer) to service_
 -- Hourly, not nightly: the representative is "the next upcoming occurrence", so a
 -- purely nightly job leaves a passed date at the head of its series for up to 24h.
 -- The IS DISTINCT FROM guard above makes an hourly no-op run genuinely free.
-insert into public.admin_automations (slug, name, description, schedule, action, enabled, auto_pause_threshold)
+-- `trigger` and `managed_by` are both explicit: `trigger` is NOT NULL with NO
+-- default, so omitting it fails the insert outright, and `managed_by` defaults to
+-- 'user' while every scheduled sibling is 'system'.
+insert into public.admin_automations
+  (slug, name, description, schedule, trigger, managed_by, action, enabled, auto_pause_threshold)
 values (
   'event_series_recompute',
   'Event series recompute',
   'Marks the next upcoming occurrence of each recurring event series so the browse feed shows one card per series instead of every date.',
   '40 * * * *',
+  jsonb_build_object('type', 'schedule'),
+  'system',
   jsonb_build_object(
     'type', 'rpc',
     'fn', 'run_event_series_recompute',
