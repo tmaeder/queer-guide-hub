@@ -247,33 +247,27 @@ test.describe('city network diagram', () => {
     // 309 of ~3,070 cities have generated geometry. The homepage card falls
     // back to a template squiggle so its grid has no holes; on a single, under
     // a heading about getting around, that squiggle would be a false claim.
-    // Basel is a real, well-populated city with trams that OSM did not yield
-    // a usable relation set for — so it exercises the gate rather than a
+    // Edinburgh is a real, well-populated city WITH trams that OSM did not
+    // yield a usable relation set for — so it exercises the gate rather than a
     // thin-data page that might not render a travel section at all.
     //
-    // SUBJECT CHANGED FROM ZURICH 2026-09-06, and the reason is worth keeping.
-    // This test did not break because the gate broke; it broke because
-    // 20320201100400 merged the duplicate city Zurich/US into Zürich/CH, so
-    // `/city/zurich` stopped resolving to a geometry-less row and started
-    // resolving to `zuerich` — which IS in CITY_NETWORKS and correctly renders
-    // its tram network. The subject of this test is data, and data moves.
+    // This was `/city/zurich` until 2026-09-06, and it passed for the WRONG
+    // REASON. That slug resolved to a duplicate `cities` row filed under the
+    // United States — Zurich, Kansas — which has no network because it is a
+    // village of 100 people, not because OSM failed on Swiss Zürich. Merging
+    // that row away (20320201100400) repointed the slug at the real Zürich,
+    // which has a tram network in the geometry under the key `zuerich`, and the
+    // test went red. The premise had been false all along.
     //
-    // `Critical paths` does not run on main, so that landed green and surfaced
-    // on the next unrelated PR. If this fails again, check FIRST whether the
-    // subject city has gained geometry (grep its slug in
-    // src/components/home/subway/cityNetworkGeometry.ts) or been merged away —
-    // that is a stale premise, not a broken gate.
-    await open(page, '/city/basel');
-
-    // Positive control the earlier version lacked: "no network legend" also
-    // passes on a page that rendered no travel section at all, which is exactly
-    // how a moved subject would go quietly green instead of red.
-    await page.locator('#travel').scrollIntoViewIfNeeded();
+    // Hence the `#travel` assertion below: the comment above has always claimed
+    // this page renders a travel section, and nothing checked it. Without that
+    // control the test also passes on a page with no travel section at all,
+    // which is exactly how the Kansas village satisfied it for months.
+    await open(page, '/city/edinburgh');
     await expect(
       page.locator('#travel'),
-      'the travel section must render, or the absence of a legend proves nothing',
-    ).toBeVisible();
-
+      'no travel section — the network gate is not being exercised at all',
+    ).toHaveCount(1);
     await expect(page.getByText('Lines', { exact: true })).toHaveCount(0);
     for (const mode of ['Metro network', 'Light rail network', 'Tram network']) {
       await expect(page.getByText(mode, { exact: true })).toHaveCount(0);
