@@ -424,7 +424,7 @@ if (!hygieneRes.ok) {
     }
 
     // A merge whose audit row carries no schema marker cannot be undone — its
-    // reparenting was recorded as counts only. 20330201100000 made
+    // reparenting was recorded as counts only. 20330401100000 made
     // _venue_merge_core stamp it; if this goes non-zero the LIVE function has
     // drifted from that migration (it has been fully restated three times
     // already), and every merge since is unrecoverable. Zero tolerance, no
@@ -436,7 +436,7 @@ if (!hygieneRes.ok) {
     const unreversible = Number(vn.merges_unreversible_since_fix ?? 0)
     if (unreversible > 0) {
       console.error(`✗ ${unreversible} venue merge(s) recorded with no reversibility data since the fix landed`)
-      console.error('  _venue_merge_core is not stamping details.schema — diff it against 20330201100000.')
+      console.error('  _venue_merge_core is not stamping details.schema — diff it against 20330401100000.')
       console.error('  Those merges cannot be undone; unmerge_venues will refuse them without p_force.')
       FAILED = true
     }

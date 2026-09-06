@@ -272,7 +272,7 @@ describe('venue_dup_signals backlog warning', () => {
 
   it('anchors the unreversible-merge count to the fix, never to a time window', () => {
     // A `last 7 days` window is the obvious spelling and it fires on a correct
-    // deploy: measured, 52 merges in the trailing week predate 20330201100000
+    // deploy: measured, 52 merges in the trailing week predate 20330401100000
     // (40 from the 20330101100400 drain). Anchoring to the first stamped merge
     // has no false-alarm window — before one exists the subquery is NULL, so the
     // count is 0.
