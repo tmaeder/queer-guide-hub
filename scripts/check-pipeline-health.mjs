@@ -371,6 +371,66 @@ if (!hygieneRes.ok) {
   }
 }
 
+// 4b-ii. A city row whose own content says it is in a different country (2026-09-06).
+//
+//     Two instances surfaced on one day, both found only because someone happened to
+//     look. `Zurich` was filed under the United States while holding ten events all
+//     stamped country='CH', venues on Zürich streets, and Pink Apple — Zürich's LGBT
+//     film festival — rendering at Zurich, KANSAS coordinates. `Łódź` was filed under
+//     UKRAINE, carrying Łódź's population on Lutsk's coordinates.
+//
+//     The Zurich row had already been merged once by an admin and un-merged four days
+//     later, after which it silently re-accumulated ten Swiss events over five weeks
+//     with nothing reporting it. The repair is cheap; the DETECTION is what was
+//     missing, because a wrong-country city is indistinguishable from a correct one
+//     until you read its content.
+//
+//     UNANIMITY is the discriminator. 7 cities have SOME disagreement and only 1 has
+//     a unanimous one — the other 6 are same-name collisions affecting part of their
+//     content (Santa Fe/Argentina holds US events; the city row itself is fine) or
+//     `events.country` holding a state code ("SA", "MN") rather than ISO-2, which
+//     CLAUDE.md already documents. An `any`-based rule would report those forever.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/city_country_contradictions`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    console.warn(`⚠ city_country_contradictions → HTTP ${res.status} (RPC missing? migration 20330217141742)`)
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else {
+    const rows = (await res.json()) ?? []
+    if (!Array.isArray(rows)) {
+      console.error('✗ city_country_contradictions returned a non-array — the probe is broken')
+      FAILED = true
+    } else {
+      // Split threshold: one dissenting event is thin evidence a typo could produce,
+      // so it warns. Calibrated on the two known instances — Zurich was 10/10 and
+      // would have hard-failed for five weeks; Łódź was 1/1 and warns.
+      const hard = rows.filter((r) => Number(r.contradicting ?? 0) >= 3)
+      const soft = rows.filter((r) => Number(r.contradicting ?? 0) < 3)
+      for (const r of hard) {
+        console.error(
+          `✗ ${r.city_name} (/city/${r.city_slug}) is filed under ${r.city_country_code}, but all ` +
+          `${r.contradicting} of its events say ${(r.event_country_codes ?? []).join('/')}`,
+        )
+        console.error('  Either the city row is in the wrong country, or it is a duplicate of the real one.')
+        console.error('  Repair with merge_cities(keep, drop, p_confirm_cross_country => true) — and check')
+        console.error('  city_merge_audit FIRST: this pair may have been merged and deliberately un-merged before.')
+        FAILED = true
+      }
+      for (const r of soft) {
+        console.warn(
+          `⚠ ${r.city_name} (/city/${r.city_slug}) filed under ${r.city_country_code}, its ` +
+          `${r.contradicting} event(s) say ${(r.event_country_codes ?? []).join('/')}`,
+        )
+      }
+      if (rows.length === 0) console.log('✓ No city contradicts its own content\'s country')
+    }
+  }
+}
+
 // 4c. Venue dedup health (2026-09-06). Same omission as 4b, one entity later: the
 //     dedup section covered city and event and nothing else, so the VENUE auto arms
 //     matched zero of 483 candidate pairs while dedup_truth_sweep reported success
