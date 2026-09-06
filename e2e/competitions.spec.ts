@@ -57,6 +57,17 @@ async function gotoView(page: Page, view: string) {
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible(RENDER);
 }
 
+/**
+ * The filter input on the seasons and roster views.
+ *
+ * `getByRole('textbox')` does NOT match it: the field is `<input type="search">`,
+ * which maps to the ARIA role `searchbox`. That mismatch is what made three of
+ * these tests time out on their first run against production.
+ */
+function search(page: Page) {
+  return page.getByRole('searchbox').first();
+}
+
 async function requireCorpus(page: Page) {
   test.skip(
     !(await corpusIsLive(page)),
@@ -99,30 +110,43 @@ test.describe('@smoke competitions', () => {
   test('carries both domains, and the pageants are not an afterthought', async ({ page }) => {
     await gotoView(page, 'seasons');
     await requireCorpus(page);
-    const body = await page.locator('main').innerText(RENDER);
 
-    // One franchise and one pageant that cannot disappear.
-    expect(body).toContain("RuPaul's Drag Race");
-    expect(body).toMatch(/International Mr\.? Leather|Miss Continental|Miss Gay America/);
+    // The table WINDOWS to 25 rows behind a "Show all N" button, and rows are
+    // ordered by competition name — so NEITHER side of the corpus is on screen
+    // unfiltered ("Canada's Drag Race" through "Drag Race España" is all you
+    // get). Both halves must be reached through the filter. Asserting against
+    // the unfiltered body is how this test first failed on production, twice:
+    // once for the pageant and again for the franchise.
+    for (const [term, why] of [
+      ["RuPaul's Drag Race", 'the flagship TV franchise'],
+      ['Miss Continental', 'a pageant, not just the TV franchises'],
+    ] as const) {
+      await search(page).fill(term);
+      await expect(
+        page.locator('main').getByText(term).first(),
+        `${why} must be reachable`,
+      ).toBeVisible(RENDER);
+    }
   });
 
   test('renders every runner-up, not just the first', async ({ page }) => {
     await gotoView(page, 'seasons');
     await requireCorpus(page);
-    await page.getByRole('textbox').first().fill('Drag Race Season 4');
-    const body = await page.locator('main').innerText(RENDER);
 
-    // US season 4 has TWO runners-up sharing one rowspan cell on the source.
+    // US season 4 has TWO runners-up sharing one `rowspan` cell on the source.
     // Reading only the first is the exact bug this feature shipped a fix for,
-    // and a scalar winner/runner-up column would make it unrepresentable.
+    // and a scalar runner-up column could not represent them at all. Filtering
+    // by one of the two proves the OTHER is rendered on the same row.
+    await search(page).fill('Chad Michaels');
+    const body = await page.locator('main').innerText(RENDER);
     expect(body).toContain('Chad Michaels');
-    expect(body).toContain("Phi Phi O'Hara");
+    expect(body, 'the second runner-up is missing from the row').toContain("Phi Phi O'Hara");
   });
 
   test('the roster links public profiles and leaves the rest as plain text', async ({ page }) => {
     await gotoView(page, 'roster');
     await requireCorpus(page);
-    await page.getByRole('textbox').first().fill('Sasha Colby');
+    await search(page).fill('Sasha Colby');
 
     const link = page.locator('main a[href*="/personalities/"]').first();
     await expect(link, 'a public queen must deep-link to her profile').toBeVisible(RENDER);
