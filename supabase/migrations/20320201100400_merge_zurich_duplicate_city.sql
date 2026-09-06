@@ -21,9 +21,22 @@
 --   1. One city published as two pages: /city/zurich (10 events) beside
 --      /city/zuerich (3,260).
 --   2. EVERY city-keyed dedup arm is blind across the pair, because all of them
---      require a shared city_id. Concretely "Lila" (patroc, on the US row) and
---      "lila Queer Festival" (display-magazin, on the Swiss row) are the same
---      festival and cannot be detected while they sit on different city rows.
+--      require a shared city_id. That is how this split was found: "Lila" (patroc,
+--      on the US row) and "lila Queer Festival" (display-magazin, on the Swiss
+--      row) are the same festival sitting on different city rows.
+--
+--      BUT MERGING DOES NOT MAKE THAT PAIR DETECTABLE, and an earlier draft of
+--      this header implied it would. Measured: running run_dedup_truth_sweep
+--      inside the merged transaction returns would_queue = 0. The reason is
+--      independent of the city — the event blocking key requires
+--      `length(dsp) >= 8` on BOTH sides for title containment
+--      (20270822093513:198) and "Lila" despaces to "lila", 4 chars. That floor is
+--      a correct guard, not a bug: a 4-char containment key would match every
+--      title containing "lila". So this pair still needs a human or a different
+--      signal. The value of this merge is the city page and unblocking the arms
+--      IN GENERAL — not that specific pair. Stated plainly because "the fix will
+--      also catch X" is exactly the kind of claim that gets copied forward
+--      unverified.
 --   3. Wrong-country attribution. No safety consequence here — CH and US are both
 --      non-criminalizing — but the same shape in a criminalizing country WOULD
 --      have one, because `safety_gated` is derived from country_id.
