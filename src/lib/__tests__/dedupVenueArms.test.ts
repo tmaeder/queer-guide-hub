@@ -270,6 +270,25 @@ describe('venue_dup_signals backlog warning', () => {
     );
   });
 
+  it('anchors the unreversible-merge count to the fix, never to a time window', () => {
+    // A `last 7 days` window is the obvious spelling and it fires on a correct
+    // deploy: measured, 52 merges in the trailing week predate 20330201100000
+    // (40 from the 20330101100400 drain). Anchoring to the first stamped merge
+    // has no false-alarm window — before one exists the subquery is NULL, so the
+    // count is 0.
+    expect(signals).toContain('merges_unreversible_since_fix');
+    expect(signals).toMatch(
+      /created_at > \(select min\(created_at\) from public\.venue_merge_audit/,
+    );
+    expect(signals, 'the historical cohort is reported separately').toContain(
+      'merges_pre_schema_total',
+    );
+    expect(
+      signals,
+      'the unreversible key must not be windowed — that is the cry-wolf shape',
+    ).not.toMatch(/merges_unreversible[a-z_]* [\s\S]{0,200}now\(\) - interval '7 days'/);
+  });
+
   it('is service_role only — it is DEFINER and runs a full sweep per call', () => {
     expect(signals).toMatch(
       /REVOKE EXECUTE ON FUNCTION public\.venue_dup_signals\(\) FROM public, anon, authenticated/,

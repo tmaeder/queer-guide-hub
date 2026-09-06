@@ -38344,7 +38344,7 @@ export type Database = {
       unmerge_cities: { Args: { p_audit_id: string }; Returns: Json }
       unmerge_entities: { Args: { p_audit_id: string; p_force?: boolean }; Returns: Json }
       unmerge_tag_concept: { Args: { p_audit_id: string }; Returns: boolean }
-      unmerge_venues: { Args: { p_audit_id: string }; Returns: Json }
+      unmerge_venues: { Args: { p_audit_id: string; p_force?: boolean }; Returns: Json }
       unmerge_vocab_term: { Args: { p_audit_id: string }; Returns: Json }
       unpromote_personality: { Args: { p_id: string }; Returns: Json }
       update_roadmap_item: {
