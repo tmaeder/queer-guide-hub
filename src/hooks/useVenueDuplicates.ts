@@ -157,27 +157,12 @@ export function useFuzzyDuplicateClusters(typeKey: string) {
   };
 }
 
-/** Auto-merge the unambiguous same-place pairs via a type's bulk sweep RPC. */
-export async function runFuzzyAutomerge(
-  rpc: string,
-  dryRun: boolean,
-): Promise<{
-  merged: number;
-  eligible_pairs: number;
-  skipped: number;
-  chains_collapsed: number;
-  dry_run: boolean;
-}> {
-  const { data, error } = await untypedRpc<{
-    merged: number;
-    eligible_pairs: number;
-    skipped: number;
-    chains_collapsed: number;
-    dry_run: boolean;
-  }>(rpc, { p_dry_run: dryRun });
-  if (error) throw error;
-  return data!;
-}
+// runFuzzyAutomerge was removed in 20330101100300. Its only caller was the
+// "Auto-merge N same-place" button on /admin/duplicates, and its only target was
+// run_venue_fuzzy_automerge — a second venue merger that gated on `< 150 m` and,
+// unlike run_dedup_truth_sweep, never consulted dedup_review_queue, so it could
+// re-merge a pair a human had explicitly rejected. Bulk auto-merge is now solely
+// the nightly sweep's job; this module keeps the per-pair merge/unmerge helpers.
 
 /**
  * Merge one duplicate into the canonical for ANY dedup-enabled content type.

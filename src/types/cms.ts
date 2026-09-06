@@ -43,14 +43,7 @@ export type FieldType =
   | 'link_list';
 
 export type FieldGroup =
-  | 'basic'
-  | 'details'
-  | 'location'
-  | 'media'
-  | 'seo'
-  | 'settings'
-  | 'lgbtq'
-  | 'external';
+  'basic' | 'details' | 'location' | 'media' | 'seo' | 'settings' | 'lgbtq' | 'external';
 
 export interface SelectOption {
   value: string;
@@ -445,8 +438,9 @@ export interface DedupCapability {
   mergePath: 'venue' | 'city' | 'entities';
   /** Optional retroactive fuzzy-cluster finder RPC (same-place / same-item review). */
   fuzzyRpc?: string;
-  /** Optional bulk same-place auto-merge sweep RPC (venues today). */
-  autoMergeRpc?: string;
+  // No autoMergeRpc. Venues were the only type that declared one and it was
+  // retired in 20330101100300 (run_venue_fuzzy_automerge: no rejection memory).
+  // Bulk auto-merge belongs to run_dedup_truth_sweep, not to a console button.
   /** Override the generic clusterer for types not in `search_documents` (e.g. hotels). */
   clusterFinder?: string;
 }

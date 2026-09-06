@@ -281,11 +281,18 @@ export const venueContentType: ContentTypeConfig = {
       metaTable: 'venues',
       metaCols: 'id, quality_score, trust_score, images, created_at, is_featured',
       mergePath: 'venue',
+      // Deliberately no autoMergeRpc. run_venue_fuzzy_automerge was retired in
+      // 20330101100300: it merged on the same broken 150 m geo gate as the old
+      // sweep arm and, unlike run_dedup_truth_sweep, never read
+      // dedup_review_queue — so the button could merge a pair a human had
+      // explicitly rejected. Venues are swept nightly server-side instead.
       fuzzyRpc: 'find_fuzzy_duplicate_clusters',
-      autoMergeRpc: 'run_venue_fuzzy_automerge',
     },
   },
   merge: { column: 'duplicate_of_id', label: 'Merged' },
-  lifecycle: { type: 'venue', archive: { column: 'review_status', value: 'archived', label: 'Archived' } },
+  lifecycle: {
+    type: 'venue',
+    archive: { column: 'review_status', value: 'archived', label: 'Archived' },
+  },
   publicPath: (row) => (row.slug ? `/venues/${row.slug}` : null),
 };

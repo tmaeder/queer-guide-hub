@@ -371,6 +371,88 @@ if (!hygieneRes.ok) {
   }
 }
 
+// 4c. Venue dedup health (2026-09-06). Same omission as 4b, one entity later: the
+//     dedup section covered city and event and nothing else, so the VENUE auto arms
+//     matched zero of 483 candidate pairs while dedup_truth_sweep reported success
+//     nightly at 05:50 in mode='full' with consecutive_failures=0, and 530 pairs
+//     aged in the review queue for 43 days.
+//
+//     The honest boundary is the same one 4b states. A BLOCKED engine hard-fails
+//     here; a BLIND one does not, because in that state would_merge and merges_7d
+//     both read zero. The rotting-backlog WARNING is the rule that would actually
+//     have surfaced this incident, and it is a warning because a deep queue during
+//     an import is legitimate.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/venue_dup_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    console.warn(`⚠ venue_dup_signals → HTTP ${res.status} (RPC missing? migration 20330101100500)`)
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else {
+    const vn = (await res.json()) ?? {}
+    const wouldMerge = vn.would_merge
+    const merges7 = Number(vn.merges_last_7d ?? 0)
+    const openPairs = Number(vn.open_pairs ?? 0)
+    const oldestH = Number(vn.oldest_open_pair_hours ?? 0)
+    const medianH = Number(vn.median_open_pair_hours ?? 0)
+
+    // "Could not look" must never read as "looked and found none".
+    if (vn.dry_run_error) {
+      console.error(`✗ venue dedup dry run failed: ${vn.dry_run_error}`)
+      console.error('  run_dedup_truth_sweep(venue, dry_run) is the probe; it is broken, so nothing below was measured.')
+      FAILED = true
+    } else if (wouldMerge === null || wouldMerge === undefined) {
+      console.error('✗ venue_dup_signals returned no would_merge and no error — the probe is broken')
+      FAILED = true
+    } else if (Number(wouldMerge) > 0 && merges7 === 0) {
+      console.error(`✗ Venue dedup sees ${wouldMerge} auto-eligible pair(s) and has merged none in 7 days`)
+      console.error('  Check admin_automations dedup_truth_sweep conditions.mode is "full", and that')
+      console.error('  merge_venues is not throwing — run the dry run and read `merge_error` in its result.')
+      FAILED = true
+    }
+
+    // In mode=full an auto-eligible pair sitting in the review queue should be
+    // structurally impossible: the merge branch runs before the queue branch.
+    const stuckAuto = Number(vn.open_auto_eligible ?? 0)
+    if (stuckAuto > 0) {
+      console.error(`✗ ${stuckAuto} auto-eligible venue pair(s) stuck in dedup_review_queue`)
+      console.error('  Either the merge cap is biting every run, or mode is not "full".')
+      FAILED = true
+    }
+
+    // 20330101100300 retired run_venue_fuzzy_automerge by revoking its grant (it
+    // has no cron and no registry row, so the grant is the only way in). It merges
+    // on the old 150 m gate and with NO memory of rejected pairs.
+    if (vn.legacy_automerge_callable === true) {
+      console.error('✗ run_venue_fuzzy_automerge is callable by `authenticated` again — retired in 20330101100300')
+      console.error('  It has no rejection memory: it can re-merge a pair a human explicitly rejected.')
+      FAILED = true
+    }
+
+    // Warning: the backlog. The signal that would have caught the original
+    // incident, and it needs a human rather than a red build.
+    //
+    // Keyed on the MEDIAN age, not the oldest. Measured on the post-deploy state:
+    // 202 open, oldest 424h, median ~0h — 200 rows freshly re-queued by the new
+    // arms plus two hand-annotated stragglers left for a human on purpose. An
+    // oldest-based rule warns there, on a correct deploy, every run, forever.
+    if (openPairs > 200 && medianH > 336) {
+      console.warn(
+        `⚠ Venue dedup review backlog: ${openPairs} open pairs, median age ${medianH}h (>14d)`,
+      )
+      console.warn('  Nobody is draining /admin/inbox?queue=dedup-review, or the arms are mis-specified')
+      console.warn('  and are queueing pairs that should auto-merge. Read a sample before tuning anything.')
+    }
+    console.log(
+      `✓ Venue dup signals: would_merge=${wouldMerge}, would_queue=${vn.would_queue}, ` +
+      `merges_7d=${merges7}, open=${openPairs} (median ${medianH}h, oldest ${oldestH}h)`,
+    )
+  }
+}
+
 // 5a. Wrong-entity Wikidata links on the glossary (2026-08-29). tag-enrichment-sweep
 //     resolved a tag's QID by fetching the Wikipedia summary of its RAW NAME and
 //     adopting whatever the redirect served — `golden-shower` → Cassia fistula,
