@@ -53,10 +53,13 @@
 -- 145 same-address pairs are genuine duplicates took a human reading 106 rows.
 -- This function makes the backlog visible; it does not make the judgement.
 --
--- SERVICE_ROLE ONLY from the start. Its event twin shipped granted to
--- `authenticated`, which failed `Critical data-quality gates` on every open PR in
--- the repo until 20280301093500 closed anon and 20280301104412 closed the rest.
--- The reasoning there applies verbatim here: this is SECURITY DEFINER so RLS does
+-- SERVICE_ROLE ONLY from the start. Its event twin (20270822093816) shipped
+-- granted to `authenticated, service_role` and had to be narrowed afterwards by
+-- 20280301104412, which is where the reasoning below is set out. (That file's own
+-- header credits an earlier `20280301093500` with closing the anon grant; no such
+-- version exists as a file OR in schema_migrations, checked 2026-09-06, so it is
+-- not repeated here as if it were real.) The reasoning applies verbatim: this is
+-- SECURITY DEFINER so RLS does
 -- not apply to what it reads, it surfaces dedup_review_queue and merge-audit
 -- contents (moderation-internal), and it runs a full sweep per call on a
 -- disk-constrained instance -- a cheap denial of service. `authenticated` is every
