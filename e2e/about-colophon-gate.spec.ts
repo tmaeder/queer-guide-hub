@@ -62,13 +62,32 @@ async function expectNoFooterAttribution(page: Page) {
 }
 
 test.describe('/about colophon gate', () => {
-  test('signed out: colophon hidden, and no credit in the footer either', async ({ page }) => {
-    await page.goto('/about', { waitUntil: 'domcontentloaded' });
-    // Positive control. Without it, "#sources absent" also passes on a page
-    // that 404'd, is still booting, or rendered an error boundary.
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: BOOT });
-    await expect(page.locator('#sources')).toHaveCount(0);
-    await expectNoFooterAttribution(page);
+  /**
+   * The anonymous half needs an explicitly EMPTY storage state.
+   *
+   * The `chromium` project attaches the ADMIN storageState whenever
+   * E2E_ADMIN_EMAIL / _PASSWORD are set (playwright.config.ts), and
+   * `About.tsx` renders `#sources` for any `user` at all — so without this the
+   * "signed out" test runs signed IN, the colophon renders, and
+   * `toHaveCount(0)` fails. It failed on every CI nightly and passed on a
+   * laptop, which has no credentials: the asymmetry is the tell, and it points
+   * at the harness rather than at prod.
+   *
+   * `{ cookies: [], origins: [] }` is the repo's established form for this
+   * (auth-signup-renders, extension-submit, hub) — `undefined` would fall back
+   * to the project default, which is the thing being escaped.
+   */
+  test.describe('signed out', () => {
+    test.use({ storageState: { cookies: [], origins: [] } });
+
+    test('colophon hidden, and no credit in the footer either', async ({ page }) => {
+      await page.goto('/about', { waitUntil: 'domcontentloaded' });
+      // Positive control. Without it, "#sources absent" also passes on a page
+      // that 404'd, is still booting, or rendered an error boundary.
+      await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: BOOT });
+      await expect(page.locator('#sources')).toHaveCount(0);
+      await expectNoFooterAttribution(page);
+    });
   });
 
   test('signed in: colophon renders in full', async ({ page }) => {

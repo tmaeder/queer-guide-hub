@@ -177,3 +177,41 @@ export function stampGeocode(
 ): Record<string, unknown> {
   return { ...(prev || {}), geocode: { ...patch, at: now } }
 }
+
+/**
+ * What to do with a `geo_address_queue` row after the reverse geocoder answers.
+ *
+ * Pure and exported so the rule is testable without a Photon call or a database,
+ * because getting it wrong is invisible in production: the old code reported a
+ * "fill" whenever the response carried a postcode OR a state OR a countrycode,
+ * then DELETED the row. A countrycode alone satisfies that, so rows whose
+ * coordinates have no postal code at all were counted as filled and dropped —
+ * and `run_geo_address_enqueue_backlog` re-selected them an hour later, forever.
+ * Measured on prod 2026-09-05: 49 reported fills across two drain cycles moved
+ * `missing_postal` by 0.
+ *
+ * Two rules:
+ *   - `filled` means a postal code was WRITTEN. Not "a response arrived", not
+ *     "something was written". The caller measures the write and passes it in.
+ *   - A response with no postcode is a durable answer about these coordinates,
+ *     not a transient failure, so the row PARKS rather than being deleted and
+ *     re-enqueued. Parking is the queue's existing memory: the drain skips
+ *     parked rows and the backlog's depth budget ignores them.
+ *
+ * A transient failure (timeout, 429, 5xx) is NOT this function's business — it
+ * throws upstream and takes the retry-with-backoff path.
+ */
+export interface PostalJobOutcome {
+  /** 'done' → delete the row. 'park' → keep it, at the attempt ceiling. */
+  disposition: 'done' | 'park'
+  /** Count towards `filled` only when a postal code actually landed. */
+  filled: boolean
+}
+
+export function postalJobOutcome(
+  geo: { postcode: string | null } | null,
+  wrotePostal: boolean,
+): PostalJobOutcome {
+  if (geo?.postcode) return { disposition: 'done', filled: wrotePostal }
+  return { disposition: 'park', filled: false }
+}

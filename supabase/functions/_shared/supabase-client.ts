@@ -55,8 +55,10 @@ export function jsonResponse(data: unknown, status = 200, req?: Request): Respon
   })
 }
 
-export function errorResponse(message: string, status = 500, req?: Request): Response {
-  return jsonResponse({ error: message, success: false }, status, req)
+export function errorResponse(message: unknown, status = 500, req?: Request): Response {
+  const safeMessage =
+    typeof message === 'string' && message.trim().length > 0 ? message : 'Internal server error'
+  return jsonResponse({ error: safeMessage, success: false }, status, req)
 }
 
 export function corsResponse(req?: Request): Response {

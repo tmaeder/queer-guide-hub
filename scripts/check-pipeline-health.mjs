@@ -43,6 +43,19 @@ async function get(path) {
 // "stop this section" survives without stopping the whole script.
 let FAILED = false
 
+// One stream, so the log reads in the order it was written.
+//
+// `console.log` goes to stdout and `console.warn`/`console.error` to stderr, and
+// GitHub buffers the two independently — so the summary line at the bottom
+// surfaced ABOVE lines written before it. Measured on the 2026-09-05 prod run:
+// the "every section above ran" line printed with two `· breaker OPEN` lines and
+// a ✓ after it, which makes a true statement read as a false one.
+//
+// Failure is signalled by the exit code, not by the stream, so collapsing both
+// onto stdout costs nothing and makes ordering deterministic.
+console.warn = (...a) => console.log(...a)
+console.error = (...a) => console.log(...a)
+
 // 1. Open alerts
 const alerts = await get('pipeline_health_alerts?resolved_at=is.null&select=kind,subject,first_seen_at')
 if (alerts.length > 0) {
@@ -358,6 +371,148 @@ if (!hygieneRes.ok) {
   }
 }
 
+// 4b-ii. A city row whose own content says it is in a different country (2026-09-06).
+//
+//     Two instances surfaced on one day, both found only because someone happened to
+//     look. `Zurich` was filed under the United States while holding ten events all
+//     stamped country='CH', venues on Zürich streets, and Pink Apple — Zürich's LGBT
+//     film festival — rendering at Zurich, KANSAS coordinates. `Łódź` was filed under
+//     UKRAINE, carrying Łódź's population on Lutsk's coordinates.
+//
+//     The Zurich row had already been merged once by an admin and un-merged four days
+//     later, after which it silently re-accumulated ten Swiss events over five weeks
+//     with nothing reporting it. The repair is cheap; the DETECTION is what was
+//     missing, because a wrong-country city is indistinguishable from a correct one
+//     until you read its content.
+//
+//     UNANIMITY is the discriminator. 7 cities have SOME disagreement and only 1 has
+//     a unanimous one — the other 6 are same-name collisions affecting part of their
+//     content (Santa Fe/Argentina holds US events; the city row itself is fine) or
+//     `events.country` holding a state code ("SA", "MN") rather than ISO-2, which
+//     CLAUDE.md already documents. An `any`-based rule would report those forever.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/city_country_contradictions`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    console.warn(`⚠ city_country_contradictions → HTTP ${res.status} (RPC missing? migration 20330217141742)`)
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else {
+    const rows = (await res.json()) ?? []
+    if (!Array.isArray(rows)) {
+      console.error('✗ city_country_contradictions returned a non-array — the probe is broken')
+      FAILED = true
+    } else {
+      // Split threshold: one dissenting event is thin evidence a typo could produce,
+      // so it warns. Calibrated on the two known instances — Zurich was 10/10 and
+      // would have hard-failed for five weeks; Łódź was 1/1 and warns.
+      const hard = rows.filter((r) => Number(r.contradicting ?? 0) >= 3)
+      const soft = rows.filter((r) => Number(r.contradicting ?? 0) < 3)
+      for (const r of hard) {
+        console.error(
+          `✗ ${r.city_name} (/city/${r.city_slug}) is filed under ${r.city_country_code}, but all ` +
+          `${r.contradicting} of its events say ${(r.event_country_codes ?? []).join('/')}`,
+        )
+        console.error('  Either the city row is in the wrong country, or it is a duplicate of the real one.')
+        console.error('  Repair with merge_cities(keep, drop, p_confirm_cross_country => true) — and check')
+        console.error('  city_merge_audit FIRST: this pair may have been merged and deliberately un-merged before.')
+        FAILED = true
+      }
+      for (const r of soft) {
+        console.warn(
+          `⚠ ${r.city_name} (/city/${r.city_slug}) filed under ${r.city_country_code}, its ` +
+          `${r.contradicting} event(s) say ${(r.event_country_codes ?? []).join('/')}`,
+        )
+      }
+      if (rows.length === 0) console.log('✓ No city contradicts its own content\'s country')
+    }
+  }
+}
+
+// 4c. Venue dedup health (2026-09-06). Same omission as 4b, one entity later: the
+//     dedup section covered city and event and nothing else, so the VENUE auto arms
+//     matched zero of 483 candidate pairs while dedup_truth_sweep reported success
+//     nightly at 05:50 in mode='full' with consecutive_failures=0, and 530 pairs
+//     aged in the review queue for 43 days.
+//
+//     The honest boundary is the same one 4b states. A BLOCKED engine hard-fails
+//     here; a BLIND one does not, because in that state would_merge and merges_7d
+//     both read zero. The rotting-backlog WARNING is the rule that would actually
+//     have surfaced this incident, and it is a warning because a deep queue during
+//     an import is legitimate.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/venue_dup_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    console.warn(`⚠ venue_dup_signals → HTTP ${res.status} (RPC missing? migration 20330101100500)`)
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else {
+    const vn = (await res.json()) ?? {}
+    const wouldMerge = vn.would_merge
+    const merges7 = Number(vn.merges_last_7d ?? 0)
+    const openPairs = Number(vn.open_pairs ?? 0)
+    const oldestH = Number(vn.oldest_open_pair_hours ?? 0)
+    const medianH = Number(vn.median_open_pair_hours ?? 0)
+
+    // "Could not look" must never read as "looked and found none".
+    if (vn.dry_run_error) {
+      console.error(`✗ venue dedup dry run failed: ${vn.dry_run_error}`)
+      console.error('  run_dedup_truth_sweep(venue, dry_run) is the probe; it is broken, so nothing below was measured.')
+      FAILED = true
+    } else if (wouldMerge === null || wouldMerge === undefined) {
+      console.error('✗ venue_dup_signals returned no would_merge and no error — the probe is broken')
+      FAILED = true
+    } else if (Number(wouldMerge) > 0 && merges7 === 0) {
+      console.error(`✗ Venue dedup sees ${wouldMerge} auto-eligible pair(s) and has merged none in 7 days`)
+      console.error('  Check admin_automations dedup_truth_sweep conditions.mode is "full", and that')
+      console.error('  merge_venues is not throwing — run the dry run and read `merge_error` in its result.')
+      FAILED = true
+    }
+
+    // In mode=full an auto-eligible pair sitting in the review queue should be
+    // structurally impossible: the merge branch runs before the queue branch.
+    const stuckAuto = Number(vn.open_auto_eligible ?? 0)
+    if (stuckAuto > 0) {
+      console.error(`✗ ${stuckAuto} auto-eligible venue pair(s) stuck in dedup_review_queue`)
+      console.error('  Either the merge cap is biting every run, or mode is not "full".')
+      FAILED = true
+    }
+
+    // 20330101100300 retired run_venue_fuzzy_automerge by revoking its grant (it
+    // has no cron and no registry row, so the grant is the only way in). It merges
+    // on the old 150 m gate and with NO memory of rejected pairs.
+    if (vn.legacy_automerge_callable === true) {
+      console.error('✗ run_venue_fuzzy_automerge is callable by `authenticated` again — retired in 20330101100300')
+      console.error('  It has no rejection memory: it can re-merge a pair a human explicitly rejected.')
+      FAILED = true
+    }
+
+    // Warning: the backlog. The signal that would have caught the original
+    // incident, and it needs a human rather than a red build.
+    //
+    // Keyed on the MEDIAN age, not the oldest. Measured on the post-deploy state:
+    // 202 open, oldest 424h, median ~0h — 200 rows freshly re-queued by the new
+    // arms plus two hand-annotated stragglers left for a human on purpose. An
+    // oldest-based rule warns there, on a correct deploy, every run, forever.
+    if (openPairs > 200 && medianH > 336) {
+      console.warn(
+        `⚠ Venue dedup review backlog: ${openPairs} open pairs, median age ${medianH}h (>14d)`,
+      )
+      console.warn('  Nobody is draining /admin/inbox?queue=dedup-review, or the arms are mis-specified')
+      console.warn('  and are queueing pairs that should auto-merge. Read a sample before tuning anything.')
+    }
+    console.log(
+      `✓ Venue dup signals: would_merge=${wouldMerge}, would_queue=${vn.would_queue}, ` +
+      `merges_7d=${merges7}, open=${openPairs} (median ${medianH}h, oldest ${oldestH}h)`,
+    )
+  }
+}
+
 // 5a. Wrong-entity Wikidata links on the glossary (2026-08-29). tag-enrichment-sweep
 //     resolved a tag's QID by fetching the Wikipedia summary of its RAW NAME and
 //     adopting whatever the redirect served — `golden-shower` → Cassia fistula,
@@ -448,6 +603,50 @@ if (!hygieneRes.ok) {
       console.log('✓ Every at-most-daily automation recorded a run in the last 48h')
     }
   }
+}
+
+// 5c. News sources the rotation is not reaching (2026-09-03).
+//
+// news_sources_eligible ordered `reliability_score DESC, last_fetched_at ASC` —
+// reliability PRIMARY — while source-rss-news asks for 15 rows a run. 293 live
+// sources sat at score 1.000 and exactly two at 0.999, so those two ranked ~294
+// and could never enter the window. NewsData.io and GNews.io went 53 days
+// without a fetch while every health column on the row read healthy:
+// is_active=true, auto_paused=false, consecutive_failures=0, last_error=''.
+//
+// Nothing could have caught that. consecutive_failures counts FAILED fetches
+// and a fetch that never runs cannot fail, so the entire existing health
+// apparatus was measuring a source that was not being asked to do anything.
+// This check asks the only question that distinguishes the state: when was it
+// last actually visited?
+//
+// 20280423151137 inverted the sort keys so staleness outranks reliability, and
+// reliability now scales the re-fetch interval instead. Starvation is therefore
+// structurally impossible and this has no baseline allowance — one source over
+// the threshold means the ordering regressed or a new exclusion appeared.
+const starveRes = await fetch(`${BASE}/rest/v1/rpc/news_source_starvation_stats`, {
+  method: 'POST',
+  headers: { ...headers, 'Content-Type': 'application/json' },
+  body: '{}',
+})
+if (!starveRes.ok) {
+  // An unreachable probe is not a clean result. Same rule as the absent-key
+  // branch above: "nobody looked" must never print like "nothing found".
+  console.warn(`⚠ news_source_starvation_stats → HTTP ${starveRes.status} —`)
+  console.warn('  20280423151137 is not applied, so this check measured NOTHING (it did not pass).')
+} else {
+  const starve = await starveRes.json()
+  const starved = starve.starved ?? {}
+  const starvedNames = Object.keys(starved)
+  if (starvedNames.length > 0) {
+    console.error(`✗ ${starvedNames.length} active news source(s) not fetched in over 7 days: ${JSON.stringify(starved)}`)
+    console.error('  These are eligible, unpaused and error-free — they are simply never selected.')
+    console.error('  Check news_sources_eligible ordering first: if the fleet is saturated at one')
+    console.error(`  reliability_score (currently ${starve.distinct_reliability_scores} distinct value(s) across`)
+    console.error(`  ${starve.active_sources} active sources), a lower score is an exile, not a demotion.`)
+    FAILED = true
+  }
+  console.log(`✓ News source rotation: 0 starved of ${starve.active_sources} active (no baseline)`)
 }
 
 // 6. Search reindex drain (P1 overhaul, 2026-08): entity writes enqueue into
@@ -967,6 +1166,10 @@ substanceFreshness: {
       (b) => (b.success_count ?? 0) === 0 && b.last_failure_at && Date.parse(b.last_failure_at) >= dayAgo,
     )
     const undocumented = neverWorked.filter((b) => !DISPOSITIONED[b.api_name])
+    // Every open breaker with no entry, whether or not it has ever succeeded.
+    // `undocumented` above is the FAILING set (never worked AND no disposition);
+    // this is the wider set the closing ✓ has to be honest about.
+    const undocumentedOpen = open.filter((b) => !DISPOSITIONED[b.api_name])
 
     for (const b of open) {
       const tag = DISPOSITIONED[b.api_name] ? 'known' : 'UNDOCUMENTED'
@@ -1002,9 +1205,48 @@ substanceFreshness: {
     // exactly when the check had just fired. Caught by running the script
     // against a stub whose only open breaker was undocumented; the real nightly
     // never showed it because prod's open breakers were all dispositioned.
-    if (open.length === 0) console.log('✓ No circuit breakers open')
-    else if (undocumented.length === 0) {
+    // …and gating it on `undocumented` was still not enough. On the 2026-09-05
+    // prod run it printed "all with a recorded disposition" while listing
+    //   · breaker OPEN [UNDOCUMENTED] deepcrawl_extract: 5 failures, 8441 successes
+    // two lines above. `undocumented` is the FAILING set — never succeeded AND
+    // no entry — so a breaker that is undocumented but currently working fell
+    // out of it and the ✓ asserted something plainly contradicted on screen.
+    //
+    // A summary line may only claim what it actually checked. This one now
+    // reports the wider set and says why it is not a failure.
+    if (open.length === 0) {
+      console.log('✓ No circuit breakers open')
+    } else if (undocumentedOpen.length === 0) {
       console.log(`✓ ${open.length} breaker(s) open, all with a recorded disposition`)
+    } else if (undocumented.length === 0) {
+      // "each has succeeded before" is a claim ABOUT success_count, so it may only
+      // be made over rows filtered on success_count. `undocumentedOpen` is
+      // `open ∧ ¬DISPOSITIONED` and never looks at it — a breaker that is open,
+      // undocumented, has NEVER succeeded, and whose last_failure_at is older than
+      // 24h drops out of `neverWorked` (which requires the failure to be recent),
+      // therefore out of `undocumented`, and lands here. It would print with a ✓
+      // described as a flaky upstream: a stalled, never-working source reported as
+      // healthy. That is the same "claimed what it did not check" defect this block
+      // exists to remove, one set later.
+      const provenOpen = undocumentedOpen.filter((b) => (b.success_count ?? 0) > 0)
+      const unprovenOpen = undocumentedOpen.filter((b) => (b.success_count ?? 0) === 0)
+      if (provenOpen.length > 0) {
+        console.log(
+          `✓ ${open.length} breaker(s) open; ${provenOpen.length} with no disposition ` +
+            `(${provenOpen.map((b) => b.api_name).join(', ')}) — not failed, because each has ` +
+            `succeeded before: a flaky upstream, not a dead source. Add a DISPOSITIONED entry if ` +
+            `that is a decision rather than an oversight.`,
+        )
+      }
+      if (unprovenOpen.length > 0) {
+        console.log(
+          `  ⚠ ${unprovenOpen.length} open breaker(s) have NEVER succeeded and carry no ` +
+            `disposition (${unprovenOpen
+              .map((b) => `${b.api_name}, last failure ${b.last_failure_at ?? 'never'}`)
+              .join('; ')}). Not failed here only because the last failure is stale — the 24h ` +
+            `window belongs to the check above. Treat as a dead source until proven otherwise.`,
+        )
+      }
     }
   }
 }

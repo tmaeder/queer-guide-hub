@@ -115,3 +115,11 @@ scripts/data-quality/out-kinktionary/
 
 # Köppen raster and other large downloaded reference data for scripts/data-quality/*
 scripts/.cache/
+
+# MediaWiki/Wikidata response cache for harvest-sexuality-vocabulary.mjs (~25 MB).
+# The harvester and its classified OUTPUT are committed; the raw fetch is not.
+# The cache is what makes the sweep resumable against Wikipedia's rate limit, so
+# deleting it costs a re-fetch, never a different answer — the script fails
+# closed on a cache miss under --cached-only rather than reclassifying on
+# partial evidence.
+scripts/data-quality/cache/

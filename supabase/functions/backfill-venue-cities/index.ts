@@ -9,6 +9,7 @@ import {
   isLocalityFallback,
   normPostal,
   postalContradicts,
+  postalJobOutcome,
   stampGeocode,
   type CountryRef,
   type GeoVenue,
@@ -1024,6 +1025,12 @@ async function processSingleEvent(
 const PHOTON_REVERSE = Deno.env.get('PHOTON_REVERSE_URL') || 'https://photon.komoot.io/reverse'
 const PHOTON_INTERVAL_MS = Number(Deno.env.get('PHOTON_INTERVAL_MS') || 1100)
 
+// The attempt ceiling at which a row is "parked": the drain stops selecting it
+// and run_geo_address_enqueue_backlog stops counting it towards queue depth.
+// Must stay in step with the `attempts < 4` in that function (migration
+// 20270301100500).
+const PARK_ATTEMPTS = 4
+
 const QUEUE_TABLES: Record<string, string> = {
   venue: 'venues',
   event: 'events',
@@ -1063,19 +1070,22 @@ async function photonReverse(lat: number, lon: number): Promise<PhotonReverse | 
 async function processPostalQueue(
   supabase: ReturnType<typeof getServiceClient>,
   batchSize: number,
-): Promise<{ processed: number; filled: number; missed: number; failed: number; remaining: number }> {
+): Promise<{ processed: number; filled: number; extras: number; parked: number; failed: number; remaining: number }> {
   const { data: jobs, error } = await supabase
     .from('geo_address_queue')
     .select('entity_type, entity_id, latitude, longitude, attempts')
-    .lt('attempts', 4)
+    .lt('attempts', PARK_ATTEMPTS)
     .lte('next_attempt_at', new Date().toISOString())
     .order('next_attempt_at')
     .limit(batchSize)
 
   if (error) throw error
-  if (!jobs?.length) return { processed: 0, filled: 0, missed: 0, failed: 0, remaining: 0 }
+  if (!jobs?.length) return { processed: 0, filled: 0, extras: 0, parked: 0, failed: 0, remaining: 0 }
 
-  let filled = 0, missed = 0, failed = 0
+  // `filled` counts postal codes ACTUALLY written — the one thing this queue
+  // exists to do. `extras` counts opportunistic state/country_id fills taken
+  // from the same response. `parked` counts rows Photon has no postcode for.
+  let filled = 0, extras = 0, parked = 0, failed = 0
 
   for (const job of jobs) {
     const table = QUEUE_TABLES[job.entity_type]
@@ -1103,44 +1113,72 @@ async function processPostalQueue(
         geoCountryId = co?.id ?? null
       }
 
-      if (geo?.postcode || geo?.state || geoCountryId) {
-        // NULL-fill only — never overwrite a value a source already supplied.
-        const patch: Record<string, string> = {}
-        if (geo?.postcode) patch.postal_code = geo.postcode
-        if (geo?.state) patch.state = geo.state
-
-        if (Object.keys(patch).length > 0) {
-          let q = supabase.from(table).update(patch).eq('id', job.entity_id)
-          if (geo?.postcode) q = q.is('postal_code', null)
-          const { error: upErr } = await q
-          if (upErr) throw new Error(upErr.message)
-        }
-
-        // country_id gets its OWN statement with its own `is null` guard.
-        // PostgREST applies one filter set per update, so folding it into the
-        // patch above would let a row that already has a country be overwritten
-        // whenever it happened to be missing a postal code. Writing country_id
-        // fires the derive trigger and recomputes safety_gated — which is
-        // exactly why it must only ever fill a NULL.
-        if (geoCountryId) {
-          const { error: cErr } = await supabase
-            .from(table)
-            .update({ country_id: geoCountryId })
-            .eq('id', job.entity_id)
-            .is('country_id', null)
-          if (cErr) throw new Error(cErr.message)
-        }
-        filled++
-      } else {
-        // A real answer of "this place has no postcode/state" (city-states,
-        // micro-states). Not a failure — drop it so we never ask again.
-        missed++
+      // EVERY write gets its own statement with its own `is null` guard, and
+      // every one is measured by `.select('id')` rather than assumed.
+      //
+      // PostgREST applies one filter set per update, so a shared patch lets one
+      // column's guard decide another column's write: the old code filtered on
+      // `is('postal_code', null)` and set `state` in the same statement, which
+      // overwrote an existing state on any row that merely lacked a postcode —
+      // the exact opposite of the "NULL-fill only" rule it claimed to follow.
+      // Writing country_id additionally fires the derive trigger and recomputes
+      // safety_gated, which is why it must only ever fill a NULL.
+      const wrote = async (col: string, value: string): Promise<boolean> => {
+        const { data, error: wErr } = await supabase
+          .from(table)
+          .update({ [col]: value })
+          .eq('id', job.entity_id)
+          .is(col, null)
+          .select('id')
+        if (wErr) throw new Error(wErr.message)
+        return (data?.length ?? 0) > 0
       }
 
-      await supabase.from('geo_address_queue')
-        .delete()
-        .eq('entity_type', job.entity_type)
-        .eq('entity_id', job.entity_id)
+      const wrotePostal = geo?.postcode ? await wrote('postal_code', geo.postcode) : false
+      if (geo?.state) { if (await wrote('state', geo.state)) extras++ }
+      if (geoCountryId) { if (await wrote('country_id', geoCountryId)) extras++ }
+
+      const outcome = postalJobOutcome(geo, wrotePostal)
+      if (outcome.filled) filled++
+
+      if (outcome.disposition === 'done') {
+        // Photon had a postcode for these coordinates. Either we just wrote it,
+        // or the row acquired one concurrently — either way it is no longer
+        // missing one, so the job is done.
+        await supabase.from('geo_address_queue')
+          .delete()
+          .eq('entity_type', job.entity_type)
+          .eq('entity_id', job.entity_id)
+      } else {
+        // Photon answered and has NO postcode for this location (city-states,
+        // micro-states, unaddressed coordinates). PARK the row — do not delete
+        // it.
+        //
+        // Deleting was the bug. It looked safe while the queue was fed only by
+        // triggers, and the old comment here even said "drop it so we never ask
+        // again" — but run_geo_address_enqueue_backlog (hourly) re-selects on
+        // `postal_code is null` and excludes only rows STILL IN the queue, so a
+        // deleted row came straight back the next hour, forever. Measured on
+        // prod 2026-09-05: 49 reported fills across two cycles moved
+        // missing_postal by 0, because the reported "fills" were rows Photon
+        // has no postcode for at all.
+        //
+        // Parking is the memory the system already understands: the drain skips
+        // `attempts >= 4`, the backlog's depth budget ignores them, and its
+        // per-entity arms exclude any row present in the queue. No new column
+        // and no migration. `geo_address_gap_counts().queue.parked` surfaces
+        // them; deleting a parked row is the deliberate way to re-offer it if a
+        // better geocoder is wired up later.
+        parked++
+        await supabase.from('geo_address_queue')
+          .update({
+            attempts: PARK_ATTEMPTS,
+            last_error: 'no_postal_for_coordinates',
+            next_attempt_at: new Date().toISOString(),
+          })
+          .eq('entity_type', job.entity_type)
+          .eq('entity_id', job.entity_id)
+      }
     } catch (e) {
       failed++
       const attempts = (job.attempts ?? 0) + 1
@@ -1162,9 +1200,9 @@ async function processPostalQueue(
   const { count } = await supabase
     .from('geo_address_queue')
     .select('entity_id', { count: 'exact', head: true })
-    .lt('attempts', 4)
+    .lt('attempts', PARK_ATTEMPTS)
 
-  return { processed: jobs.length, filled, missed, failed, remaining: count ?? 0 }
+  return { processed: jobs.length, filled, extras, parked, failed, remaining: count ?? 0 }
 }
 
 Deno.serve(async (req) => {

@@ -4168,7 +4168,6 @@
   "about": {
     "eyebrow": "Sobre",
     "title": "Feito por pessoas queer, para todo mundo.",
-    "lede": "O Queer Guide mapeia os lugares, eventos e pessoas que formam a vida queer — verificado pela comunidade, gratuito para todo mundo, em qualquer lugar.",
     "diagram": {
       "label": "Quatro linhas que se encontram numa mesma estação: locais, eventos, comunidade e destinos."
     },
@@ -4185,8 +4184,7 @@
       "lede": "Cada parte da plataforma corre na sua própria linha. Pegue a que você precisa.",
       "action": "Abrir",
       "venues": {
-        "name": "Locais",
-        "description": "Bares, cafés, clubes e negócios queer-friendly, revisados por pessoas reais."
+        "name": "Locais"
       },
       "events": {
         "name": "Eventos",
@@ -4208,27 +4206,16 @@
     "story": {
       "kicker": "Nossa história",
       "title": "Como isso começou",
-      "p1": "Achar um bar queer-friendly não devia exigir um grupo de mensagens, três tópicos de fórum e um voto de confiança. Criamos o Queer Guide porque estávamos cansados de adivinhar quais espaços eram realmente seguros — e quais só colocavam um arco-íris no logo em junho.",
-      "p2": "Uma lista pessoal de lugares de confiança virou um diretório global: verificado pela comunidade, construído sobre experiências reais, gratuito. Viajando sozinho, mudando de cidade ou só procurando onde estar numa sexta à noite — comece por aqui."
+      "p1": "Achar um bar queer-friendly não devia exigir um grupo de mensagens, três tópicos de fórum e um voto de confiança. Criamos o Queer Guide porque estávamos cansados de adivinhar quais espaços eram realmente seguros — e quais só colocavam um arco-íris no logo em junho."
     },
     "legend": {
       "kicker": "Legenda",
       "title": "O que nos diferencia",
-      "verified": {
-        "label": "Verificado pela comunidade",
-        "body": "Cada local é revisado por pessoas LGBTQ+ reais, não por um algoritmo."
-      },
       "safety": {
-        "label": "Segurança em primeiro lugar",
-        "body": "Leis locais, direitos e avisos de risco em cada página de país."
+        "label": "Segurança em primeiro lugar"
       },
       "free": {
-        "label": "Sempre gratuito",
-        "body": "Sem paywall, sem plano premium. A plataforma é de todo mundo."
-      },
-      "global": {
-        "label": "Alcance global",
-        "body": "De Berlim a Bangkok, de São Paulo a Sydney — e crescendo."
+        "label": "Sempre gratuito"
       }
     },
     "history": {
@@ -4248,8 +4235,7 @@
         "body": "Dezenas de milhares de locais em todos os continentes. Mercado, planejador de viagens, informes de segurança e direitos país a país."
       },
       "y2026": {
-        "year": "2026",
-        "body": "Você está aqui. Adicione um local, publique um evento ou entre no time de colaboradores."
+        "year": "2026"
       }
     },
     "values": {
@@ -4282,23 +4268,7 @@
     },
     "people": {
       "kicker": "Quem toca isso",
-      "title": "As pessoas por trás",
-      "lede": "Nenhuma empresa. Pessoas da comunidade que doam seu tempo.",
-      "moderators": {
-        "name": "Moderação da comunidade",
-        "role": "Mantendo seguro",
-        "description": "Voluntários que mantêm a plataforma acolhedora e respeitosa, a qualquer hora."
-      },
-      "ambassadors": {
-        "name": "Embaixadores locais",
-        "role": "Olhos no território",
-        "description": "Lideranças da comunidade que trazem as necessidades locais e defendem espaços inclusivos na sua região."
-      },
-      "contributors": {
-        "name": "Colaboradores",
-        "role": "Compartilhando conhecimento",
-        "description": "Membros que escrevem avaliações, publicam eventos e constroem os recursos que todo mundo usa."
-      }
+      "title": "As pessoas por trás"
     },
     "cta": {
       "title": "Ajude a estender a linha.",
@@ -4312,10 +4282,6 @@
       "createEvents": {
         "title": "Publicar um evento",
         "desc": "Organize algo. Junte as pessoas."
-      },
-      "joinGroups": {
-        "title": "Entrar num grupo",
-        "desc": "Sua voz faz parte da conversa."
       },
       "support": {
         "title": "Apoie a gente",

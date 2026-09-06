@@ -104,6 +104,8 @@ jobs:
             e2e/admin-pipelines.spec.ts \
             e2e/admin-route-baseline.spec.ts \
             e2e/admin-archived-lifecycle.spec.ts \
+            e2e/about-colophon-gate.spec.ts \
+            e2e/removed-ui-elements.spec.ts \
             e2e/venues/detail-content.spec.ts \
             e2e/help-locale.spec.ts \
             e2e/locale-prefix.spec.ts \
