@@ -1,0 +1,111 @@
+name: POI match (P3)
+
+# Match venues against bulk map extracts, persist the identity, fill the blanks.
+# Scope and precision come from docs/audits/2026-09-04-poi-match-rate-measurement.md.
+#
+# workflow_dispatch ONLY, deliberately. This downloads a multi-GB Geofabrik
+# extract and scans an Overture release; putting it on a cron before anyone has
+# read a dry-run artifact would be the bulk write the plan says must not happen
+# first. Add a schedule once a country's artifact has been reviewed and applied.
+
+on:
+  workflow_dispatch:
+    inputs:
+      country:
+        description: 'ISO-2 country code (DE, GB, ES, …)'
+        required: true
+        default: 'DE'
+      geofabrik_path:
+        description: 'Geofabrik extract path, e.g. europe/germany'
+        required: true
+        default: 'europe/germany'
+      apply:
+        description: 'Write to the database (default: dry run)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: poi-match-${{ inputs.country }}
+  cancel-in-progress: false
+
+jobs:
+  match:
+    runs-on: ubuntu-latest
+    # The Germany extract is 4.8 GB and osmium's tag filter is the slow step;
+    # the match itself runs in about a minute once the extracts exist.
+    timeout-minutes: 120
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      # osmium, NOT DuckDB's bundled GDAL. Measured: GDAL silently returns ZERO
+      # ways for any PBF over ~21 MB — Bremen (21 MB) gives 224,154 ways, Berlin
+      # (99 MB) gives 0 with no error and no config that changes it. A silent
+      # partial result that reads as data is the failure this repo has paid for
+      # repeatedly; osmium does not have it.
+      - name: Install osmium and duckdb
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y osmium-tool
+          curl -fsSL https://install.duckdb.org | sh
+          echo "$HOME/.duckdb/cli/latest" >> "$GITHUB_PATH"
+
+      - name: Build the OSM extract
+        env:
+          GEOFABRIK: ${{ inputs.geofabrik_path }}
+        run: |
+          set -euo pipefail
+          # Dispatch inputs go through the environment and are never
+          # interpolated into a run: body — `${{ }}` is substituted before the
+          # shell sees it, so a crafted value would execute.
+          case "$GEOFABRIK" in
+            *[!a-z0-9/-]*) echo "::error::geofabrik_path must be [a-z0-9/-]"; exit 1 ;;
+          esac
+          curl -fL --retry 3 -o region.osm.pbf \
+            "https://download.geofabrik.de/${GEOFABRIK}-latest.osm.pbf"
+          # The wide tag filter. The production matcher queried only
+          # amenity|tourism|leisure, which alone costs ~4 points of recall —
+          # nude beaches are natural=beach and were never asked for.
+          osmium tags-filter region.osm.pbf -o poi.osm.pbf \
+            nwr/amenity nwr/shop nwr/tourism nwr/leisure nwr/club nwr/office \
+            nwr/healthcare nwr/craft nwr/historic nwr/natural nwr/sport nwr/man_made
+          osmium export poi.osm.pbf -f geojsonseq --geometry-types=point -o poi.geojsonseq \
+            --add-unique-id=type -x 'print_record_errors=true'
+          node scripts/data-quality/osm-geojsonseq-to-poi.mjs < poi.geojsonseq > osm.jsonl
+          wc -l osm.jsonl
+
+      - name: Match (dry run unless apply)
+        env:
+          COUNTRY: ${{ inputs.country }}
+          APPLY: ${{ inputs.apply }}
+        run: |
+          set -euo pipefail
+          case "$COUNTRY" in
+            [A-Z][A-Z]) ;;
+            *) echo "::error::country must be a two-letter uppercase ISO-2 code"; exit 1 ;;
+          esac
+          args=(--country "$COUNTRY" --extract osm=osm.jsonl --out "poi-match-${COUNTRY}.json")
+          if [ "$APPLY" = "true" ]; then args+=(--apply); fi
+          node scripts/data-quality/poi-match.mjs "${args[@]}"
+
+      # The artifact IS the deliverable of a dry run — the plan requires a diff
+      # to be reviewed before a first apply, so it must outlive the job.
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: poi-match-${{ inputs.country }}
+          path: poi-match-*.json
+          retention-days: 30
+
+      - name: Report missing credentials
+        if: ${{ env.SUPABASE_URL == '' || env.SUPABASE_SERVICE_ROLE_KEY == '' }}
+        run: echo "::warning::SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not set — POI match did not run."

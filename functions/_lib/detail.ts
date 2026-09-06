@@ -1527,6 +1527,20 @@ export async function resolveSlugRedirect(env: Env, pathname: string): Promise<s
       kind.redirectIdColumn,
       `old_slug=eq.${encodeURIComponent(slug)}`,
       1,
+      // ORDER BY old_slug, not fetchRows' `id.asc` default. Eleven of the twelve
+      // `<type>_slug_redirects` tables are keyed on old_slug and have NO `id`
+      // column at all — PostgREST answers `order=id.asc` on them with a 400, so
+      // fetchRows returned [] and every merged venue, event, personality, hotel,
+      // village, country, news article, milestone, guide, org and marketplace
+      // listing hard-404'd instead of 301-ing.
+      //
+      // tag_slug_redirects is the ONE table that happens to carry an `id`, which
+      // is why tags redirected correctly and hid this for everything else: the
+      // mechanism looked healthy because the entity someone last tested worked.
+      // Measured on prod 2027-06-02 — /tags/sluts -> /tags/slut (301), while
+      // /venues/berghain-7 and /events/gayhane both returned a hard 404 with no
+      // Location header.
+      'old_slug.asc',
     );
     const canonicalId = stringField(redirectRows[0] ?? {}, kind.redirectIdColumn);
     if (!canonicalId) return null;

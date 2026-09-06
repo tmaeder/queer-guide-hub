@@ -1,6 +1,6 @@
 {
   "project": "tsconfig.app.json",
-  "total": 832,
+  "total": 825,
   "files": {
     "src/assets/intimate/pictograms.tsx": {
       "TS2503": 2
@@ -599,9 +599,8 @@
       "TS2353": 2
     },
     "src/hooks/useCentralizedTags.tsx": {
-      "TS2322": 8,
-      "TS2345": 3,
-      "TS2352": 1
+      "TS2322": 3,
+      "TS2345": 2
     },
     "src/hooks/useCockpitRealtime.ts": {
       "TS2578": 1

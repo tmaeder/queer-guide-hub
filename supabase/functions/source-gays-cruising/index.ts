@@ -210,7 +210,8 @@ Deno.serve(
         items_failed: result?.failed ?? 0,
       })
     } catch (err) {
-      return errorResponse(err as Error)
+      console.error('source-gays-cruising failed', err)
+      return errorResponse('Internal server error', 500, req)
     }
   }),
 )

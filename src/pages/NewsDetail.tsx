@@ -290,7 +290,8 @@ export default function NewsDetail() {
   const contentText = article.content ? cleanContent(article.content) : '';
   // We store the full third-party body for the ingest pipeline but only ever
   // RENDER a bounded excerpt — publishing the whole thing is republication.
-  // `contentText` stays full for the admin editor and the reading estimate.
+  // `contentText` stays full for the admin editor and the reading estimate —
+  // and where the body IS bounded, the byline says so (see `minReadFull`).
   const { text: bodyExcerpt, truncated: bodyTruncated } = boundArticleBody(contentText);
   const dek = excerptText ? extractDek(excerptText) : '';
   const readMins = estimateReadingTime(article.content, article.excerpt);
@@ -402,7 +403,20 @@ export default function NewsDetail() {
             {readMins && (
               <span className="flex items-center gap-1">
                 <BookOpen size={14} />
-                {t('newsDetail.minRead', '{{count}} min read', { count: readMins })}
+                {/* Computed from the FULL stored body, which is deliberate: before
+                    clicking through, the useful fact is how long the whole article
+                    is, not how long our excerpt is. But in the byline row of a page
+                    that renders ~1200 characters, a bare "9 min read" reads as a
+                    claim about THIS page — which the page contradicts two lines
+                    down at "Continue reading at the source". Measured on prod:
+                    news_articles.content averages 3,789 chars and Washington Blade
+                    17,077 against a 1200-char bound, so the mismatch is the common
+                    case, not an edge one. Name the subject; don't drop the number. */}
+                {bodyTruncated
+                  ? t('newsDetail.minReadFull', 'full article: {{count}} min read', {
+                      count: readMins,
+                    })
+                  : t('newsDetail.minRead', '{{count}} min read', { count: readMins })}
               </span>
             )}
             {article.views_count > 0 && (

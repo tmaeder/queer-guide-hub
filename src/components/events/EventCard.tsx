@@ -201,6 +201,18 @@ export const EventCard = memo(function EventCard({
                   <Calendar size={12} className="shrink-0" />
                   {formatEventDate(event.start_date, event.end_date)}
                 </span>
+                {/* This card stands for a whole recurring series (see migration
+                    20320201100000). Without saying so it silently hides the other
+                    dates; the count is what makes the collapse honest rather than
+                    a disappearance. */}
+                {typeof event.series_size === 'number' && event.series_size > 1 && (
+                  <>
+                    {' · '}
+                    {t('events.card.moreDates', '+{{count}} more dates', {
+                      count: event.series_size - 1,
+                    })}
+                  </>
+                )}
                 {locationLabel && <> · {locationLabel}</>}
               </p>
               {eventTypeTag && (

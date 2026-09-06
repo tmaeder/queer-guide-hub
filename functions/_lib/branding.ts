@@ -292,28 +292,53 @@ export function brandingManifest(doc: BrandingDoc | null): Record<string, string
 // on fetch failure the stale value (or null = stock) is served. Accepted
 // staleness after publish: ≤60s per isolate (+5min on edge-cached detail pages).
 const TTL_MS = 60_000;
+
+// A failed lookup is remembered too, briefly. The 60s memo only ever cached
+// SUCCESS, so while the backend was unreachable every single HTML request
+// re-attempted the fetch and paid the full timeout — the outage cost was
+// multiplied by traffic instead of amortised. 10s keeps recovery quick.
+const FAILURE_TTL_MS = 10_000;
+
+// Branding is decoration with a documented fail-open to the stock site, so it
+// may never hold up a page for longer than it takes to render one. Without a
+// signal this inherits the platform subrequest timeout: measured on prod
+// 2026-09-05, while Postgres was refusing connections, PostgREST held the
+// socket open and EVERY document — apex and pages.dev alike — served at a
+// 19.5s TTFB while static assets stayed at 63ms. The site was up and unusable.
+const FETCH_TIMEOUT_MS = 1_000;
+
 let memo: { value: BrandingDoc | null; expiresAt: number } | null = null;
+
+/** Cache `value` for `ttl`, and return it. */
+function remember(value: BrandingDoc | null, ttl: number): BrandingDoc | null {
+  memo = { value, expiresAt: Date.now() + ttl };
+  return value;
+}
 
 export async function getBranding(env: Env): Promise<BrandingDoc | null> {
   const now = Date.now();
   if (memo && memo.expiresAt > now) return memo.value;
+  // Keep serving the last known-good doc through a blip rather than snapping
+  // the site back to stock the moment one fetch fails.
+  const lastKnown = memo?.value ?? null;
   try {
     const key = env.SUPABASE_ANON_KEY ?? env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!env.SUPABASE_URL || !key) return memo?.value ?? null;
+    if (!env.SUPABASE_URL || !key) return remember(lastKnown, FAILURE_TTL_MS);
     const url = `${env.SUPABASE_URL.replace(/\/$/, '')}/rest/v1/site_branding?id=eq.1&select=published,overrides_enabled`;
     const res = await fetch(url, {
       headers: { apikey: key, Authorization: `Bearer ${key}`, Accept: 'application/json' },
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     });
-    if (!res.ok) return memo?.value ?? null;
+    if (!res.ok) return remember(lastKnown, FAILURE_TTL_MS);
     const rows = (await res.json()) as Array<{ published?: unknown; overrides_enabled?: boolean }>;
     const row = rows?.[0];
     const value: BrandingDoc | null =
       row && row.overrides_enabled !== false && row.published && typeof row.published === 'object'
         ? (row.published as BrandingDoc)
         : null;
-    memo = { value, expiresAt: now + TTL_MS };
-    return value;
+    return remember(value, TTL_MS);
   } catch {
-    return memo?.value ?? null;
+    // Includes the AbortSignal timeout above, which lands here as an exception.
+    return remember(lastKnown, FAILURE_TTL_MS);
   }
 }

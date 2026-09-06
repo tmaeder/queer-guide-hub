@@ -104,16 +104,52 @@ export function useDecideVenueCategory() {
   });
 }
 
+export interface NonvenueDecisionResult {
+  ok?: boolean;
+  error?: string;
+  events?: number;
+  hint?: string;
+  status?: string;
+}
+
+/**
+ * Turn a REFUSAL from `decide_venue_nonvenue` into a thrown error.
+ *
+ * The content guard refuses by RETURNING `{ok:false}`, not by raising — so
+ * Supabase leaves `error` null and hands the refusal back as ordinary `data`.
+ * Without this the mutation resolves, `onSuccess` fires, the queue refetches,
+ * and the admin is told the venue was archived while it is still live. A guard
+ * reported as a success is worse than no guard, because it also stops anyone
+ * looking again.
+ */
+export function assertNonvenueDecisionApplied(data: unknown): void {
+  const r = data as NonvenueDecisionResult | null;
+  if (!r || r.ok !== false) return;
+  if (r.error === 'has_events') {
+    throw new Error(
+      `${r.events ?? 0} event(s) still point at this venue. ${r.hint ?? ''}`.trim(),
+    );
+  }
+  throw new Error(r.hint ?? r.error ?? 'decide_venue_nonvenue refused the change');
+}
+
 export function useDecideVenueNonvenue() {
   const invalidate = useDecisionInvalidation();
   return useMutation({
-    mutationFn: async (v: { venueId: string; confirm: boolean; note?: string | null }) => {
+    mutationFn: async (v: {
+      venueId: string;
+      confirm: boolean;
+      note?: string | null;
+      force?: boolean;
+    }) => {
       const { data, error } = await untypedRpc('decide_venue_nonvenue', {
         p_venue_id: v.venueId,
         p_confirm: v.confirm,
         p_note: v.note ?? null,
+        p_force: v.force ?? false,
       });
       if (error) throw error;
+      assertNonvenueDecisionApplied(data);
       return data;
     },
     onSuccess: invalidate,

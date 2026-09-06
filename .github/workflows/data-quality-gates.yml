@@ -57,6 +57,16 @@ jobs:
         if: ${{ !cancelled() && env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
         run: node scripts/check-anon-function-grants.mjs
 
+      # The gate above is scoped to VOLATILE definers — correct for what it guards, and
+      # exactly why it is blind to a READ-ONLY definer that leaks. Both halves were live
+      # at once: #3470 shipped two anon-callable definers and only the volatile one
+      # (event_dup_signals) tripped that gate, while the STABLE one exposed safety-gated
+      # events in Dubai and Kuala Lumpur for about five hours. Writing this check then
+      # found a third instance, event_previous_editions, that predated both.
+      - name: anon cannot read safety-gated content through a SECURITY DEFINER function
+        if: ${{ !cancelled() && env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
+        run: node scripts/check-definer-content-leaks.mjs
+
       # The same stock ALTER DEFAULT PRIVILEGES also granted anon TRUNCATE on 464 public
       # objects — and RLS does NOT gate TRUNCATE, so no row policy was ever in that path.
       # Revoked in 20260830202340, but the supabase_admin default ACL still grants it and

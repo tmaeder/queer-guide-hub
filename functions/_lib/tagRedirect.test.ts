@@ -41,6 +41,28 @@ function mockDb(tables: Record<string, Row[]>) {
       requested.push(`${table}?${u.searchParams.toString()}`);
       const eq = (k: string) => u.searchParams.get(k)?.replace(/^eq\./, '');
       let rows = tables[table] ?? [];
+
+      // ORDER BY a column the table does not have is a 400, not an empty 200.
+      // Modelling this is the whole point: `fetchRows` defaults to `id.asc`, and
+      // eleven of the twelve `<type>_slug_redirects` tables have no `id` column,
+      // so prod answered 400 -> [] -> hard 404 for every merged venue, event,
+      // personality, hotel, village, country, news article, milestone, guide,
+      // org and marketplace listing.
+      //
+      // The venue case below existed and PASSED throughout, because this mock
+      // used to return 200 for any `order`. A guard that cannot fail on the real
+      // defect is not a guard — it is why this shipped and stayed shipped.
+      const orderCol = u.searchParams.get('order')?.split('.')[0];
+      if (orderCol && rows.length > 0 && !rows.some((r) => orderCol in r)) {
+        return new Response(
+          JSON.stringify({
+            code: '42703',
+            message: `column ${table}.${orderCol} does not exist`,
+          }),
+          { status: 400 },
+        );
+      }
+
       for (const key of ['slug', 'old_slug', 'id', 'status']) {
         const want = eq(key);
         if (want !== undefined && want !== null) rows = rows.filter((r) => r[key] === want);
@@ -124,5 +146,70 @@ describe('merged tag slug redirects at the edge', () => {
     });
     await expect(resolveSlugRedirect(env, '/venues/old-venue')).resolves.toBe('/venues/new-venue');
     expect(requested.some((r) => r.startsWith('venues?') && r.includes('status='))).toBe(false);
+  });
+
+  // The redirect tables are keyed on old_slug and have no `id`. fetchRows'
+  // default order is `id.asc`, so ordering must be overridden per lookup or
+  // PostgREST 400s and the resolver silently returns null.
+  it('never orders a redirect-table lookup by a column those tables lack', async () => {
+    const requested = mockDb({
+      events: [{ id: 'e1', slug: 'gayhane-1' }],
+      event_slug_redirects: [{ old_slug: 'gayhane', event_id: 'e1' }],
+    });
+    await expect(resolveSlugRedirect(env, '/events/gayhane')).resolves.toBe('/events/gayhane-1');
+
+    const lookup = requested.find((r) => r.startsWith('event_slug_redirects?'));
+    expect(lookup, 'the redirect table must actually be queried').toBeTruthy();
+    expect(lookup).toContain('order=old_slug');
+    expect(lookup, 'id.asc is the default and 400s on these tables').not.toContain('order=id');
+  });
+
+  // One case per entity kind whose redirect table lacks an `id`: this is the
+  // blast radius of the default-order bug, and a per-kind case is what stops a
+  // future refactor from fixing events and leaving the other ten broken.
+  it.each([
+    ['venue', '/venues/old-v', 'venue_slug_redirects', 'venue_id', 'venues', '/venues/new-v'],
+    ['event', '/events/old-e', 'event_slug_redirects', 'event_id', 'events', '/events/new-e'],
+    ['hotel', '/hotels/old-h', 'hotel_slug_redirects', 'hotel_id', 'hotels', '/hotels/new-h'],
+    ['news', '/news/old-n', 'news_slug_redirects', 'article_id', 'news_articles', '/news/new-n'],
+    [
+      'personality',
+      '/personalities/old-p',
+      'personality_slug_redirects',
+      'personality_id',
+      'personalities',
+      '/personalities/new-p',
+    ],
+    [
+      'village',
+      '/villages/old-vi',
+      'village_slug_redirects',
+      'village_id',
+      'queer_villages',
+      '/villages/new-vi',
+    ],
+    [
+      'country',
+      '/country/old-c',
+      'country_slug_redirects',
+      'country_id',
+      'countries',
+      '/country/new-c',
+    ],
+  ])('301s a merged %s through an id-less redirect table', async (
+    _kind,
+    path,
+    redirectTable,
+    idColumn,
+    entityTable,
+    expected,
+  ) => {
+    const canonical = 'x1';
+    mockDb({
+      [entityTable]: [{ id: canonical, slug: expected.split('/').pop() }],
+      // No `id` key anywhere in these rows — exactly the prod shape.
+      [redirectTable]: [{ old_slug: path.split('/').pop(), [idColumn]: canonical }],
+    });
+    await expect(resolveSlugRedirect(env, path)).resolves.toBe(expected);
   });
 });
