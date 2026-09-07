@@ -50,7 +50,7 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
   // sees an empty shell. Counts are stated as "over N" on purpose: the corpus
   // grows with every season and an exact figure baked into prose would rot.
   '/competitions': {
-    h1: 'Drag Race seasons and LGBTQ+ title contests',
+    h1: 'Queer competition records, by type',
     paragraphs: [
       'Every season of the Drag Race television franchises and every year of the queer title-contest circuit, in one dataset: over 30 competitions, more than 340 editions and over 1,800 entries covering fifty years of competitive drag and leather title history.',
       'The Drag Race side covers the US series and All Stars alongside the international franchises: UK, Canada, España, France, Down Under, Philippines, Thailand, Italia, Holland, Belgique, México, Brasil, Sverige and Germany. Each season lists its contestant count, episode count, air dates, network, the winner, every runner-up and Miss Congeniality, plus an episode-by-episode placement grid.',
@@ -58,10 +58,101 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
       'Season, contestant and placement data comes from Wikipedia and is published under CC BY-SA.',
     ],
     links: [
-      { href: '/competitions?view=roster', label: 'Everyone who competed' },
-      { href: '/competitions?view=grid', label: 'Episode-by-episode placement grid' },
+      { href: '/competitions/drag-series', label: 'Drag competition series' },
+      { href: '/competitions/drag-kings', label: 'Drag king competitions' },
+      { href: '/competitions/drag-pageants', label: 'Drag pageantry' },
+      { href: '/competitions/trans-pageants', label: 'Transgender pageants' },
+      { href: '/competitions/gay-titles', label: 'Gay titleholder contests' },
+      { href: '/competitions/leather-titles', label: 'Leather and fetish titles' },
       { href: '/personalities', label: 'LGBTQ+ people and performers' },
-      { href: '/events', label: 'Find drag events near you' },
+    ],
+  },
+
+  // The six type pages. Each renders client-side from an RPC, so without an
+  // entry here a crawler sees an empty shell — the same reason the hub above
+  // has one. Counts are "over N" on purpose: an exact figure baked into prose
+  // rots with the next season.
+  '/competitions/drag-series': {
+    h1: 'Drag competition series, season by season',
+    paragraphs: [
+      'Over 30 drag competition television series and more than 110 seasons: the Drag Race franchises (US, All Stars, UK, Canada, Espana, France, Down Under, Philippines, Thailand, Italia, Holland, Belgique, Mexico, Brasil, Sverige, Germany) alongside the independent shows — Dragula, La Mas Draga, Drag Den, Queen of the Universe, House of Drag and others.',
+      'Each season lists its contestant count, episode count, air dates, network, the winner, every runner-up and Miss Congeniality, plus an episode-by-episode placement grid. Seasons with two runners-up show both. Where a queen already has a profile on Queer Guide, her entry links straight to it.',
+      'Season, contestant and placement data comes from Wikipedia and is published under CC BY-SA.',
+    ],
+    links: [
+      { href: '/competitions', label: 'All competition types' },
+      { href: '/competitions/drag-kings', label: 'Drag king competitions' },
+      { href: '/personalities', label: 'LGBTQ+ people and performers' },
+    ],
+  },
+
+  '/competitions/drag-kings': {
+    h1: 'Drag king competitions',
+    paragraphs: [
+      'Competitions for drag kings: King of Drag, the first drag king television series, and the San Francisco Drag King Contest, which has run since 1994 and is decades older than any televised drag competition.',
+      'Drag kings are badly served by the record. Only two king competitions have a Wikipedia article at all, which is why this page is short: it reflects what is documented, not what exists.',
+      'Contestant and placement data comes from Wikipedia and is published under CC BY-SA.',
+    ],
+    links: [
+      { href: '/competitions', label: 'All competition types' },
+      { href: '/competitions/drag-series', label: 'Drag competition series' },
+      { href: '/personalities', label: 'LGBTQ+ people and performers' },
+    ],
+  },
+
+  '/competitions/drag-pageants': {
+    h1: 'Drag pageantry: Miss Gay America and Miss Continental',
+    paragraphs: [
+      'Drag pageantry systems, decided at a single event rather than across a television season. Miss Gay America has run since 1973 and Miss Continental since 1980, both older than any drag competition on television, with close to 100 editions between them.',
+      'Every titleholder is listed by year. Where a performer already has a profile on Queer Guide, her entry links straight to it.',
+      'Titleholder data comes from Wikipedia and is published under CC BY-SA.',
+    ],
+    links: [
+      { href: '/competitions', label: 'All competition types' },
+      { href: '/competitions/trans-pageants', label: 'Transgender pageants' },
+      { href: '/personalities', label: 'LGBTQ+ people and performers' },
+    ],
+  },
+
+  '/competitions/trans-pageants': {
+    h1: 'Transgender beauty pageants',
+    paragraphs: [
+      'Beauty pageants for transgender women: Miss International Queen, which describes itself as the largest in the world, along with Miss T World, Miss Star International and Miss Fabulous Thailand — over 40 editions in total.',
+      'Every titleholder is listed by year with the country she represented. Where a titleholder already has a profile on Queer Guide, her entry links straight to it.',
+      'Titleholder data comes from Wikipedia and is published under CC BY-SA.',
+    ],
+    links: [
+      { href: '/competitions', label: 'All competition types' },
+      { href: '/competitions/drag-pageants', label: 'Drag pageantry' },
+      { href: '/personalities', label: 'LGBTQ+ people and performers' },
+    ],
+  },
+
+  '/competitions/gay-titles': {
+    h1: 'Gay titleholder contests',
+    paragraphs: [
+      'Titleholder contests for gay men, over 40 editions across three contests. Mr Gay World is an international final contested by national delegates; Mr Gay Europe describes itself as a competition about LGBTQIA+ themes rather than a pageant; Mr. Gay India is a national contest.',
+      'Every titleholder is listed by year with the country he represented. Where a titleholder already has a profile on Queer Guide, his entry links straight to it.',
+      'Titleholder data comes from Wikipedia and is published under CC BY-SA.',
+    ],
+    links: [
+      { href: '/competitions', label: 'All competition types' },
+      { href: '/competitions/leather-titles', label: 'Leather and fetish titles' },
+      { href: '/personalities', label: 'LGBTQ+ people and performers' },
+    ],
+  },
+
+  '/competitions/leather-titles': {
+    h1: 'Leather and fetish title contests',
+    paragraphs: [
+      'Leather and fetish title contests, both run as multi-day conventions rather than as pageants: International Mr. Leather, held in Chicago since 1979, and Mister International Rubber. Over 70 editions between them.',
+      'International Mr. Leather calls itself a convention and competition, and it is not a pageant — the weekend is a leather community gathering of which the title contest is one part. Every titleholder is listed by year.',
+      'Titleholder data comes from Wikipedia and is published under CC BY-SA.',
+    ],
+    links: [
+      { href: '/competitions', label: 'All competition types' },
+      { href: '/competitions/gay-titles', label: 'Gay titleholder contests' },
+      { href: '/personalities', label: 'LGBTQ+ people and performers' },
     ],
   },
 
