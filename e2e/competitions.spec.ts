@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { COMPETITION_CATEGORIES } from '../src/lib/competitionCategories';
 
 /**
  * /competitions — the Drag Race and title-contest spine.
@@ -312,7 +313,47 @@ test.describe('@smoke competitions', () => {
     });
     expect(res.status()).toBe(200);
     const html = await res.text();
-    expect(html).toMatch(/Drag Race seasons and LGBTQ\+ title contests/);
-    expect(html).toMatch(/International Mr\.? Leather/);
+
+    // Assert the PROPERTY, not the wording. This test pinned the hub's exact h1
+    // and went red on production the moment that copy was rewritten — a spec
+    // that fails on a rename it should not care about, while a genuinely empty
+    // body would look identical to a passing one. What must hold is that the
+    // hub routes a crawler onward to all six types.
+    for (const c of COMPETITION_CATEGORIES) {
+      expect(html, `hub crawler body must link ${c.slug}`).toContain(`/competitions/${c.slug}`);
+    }
+
+    // ...and that each type page serves its OWN prose rather than the generic
+    // shell. The discriminator is calibrated against the shell itself: an
+    // unrouted path under /competitions is fetched once, and every real type
+    // must answer with a DIFFERENT h1.
+    //
+    // This is not the obvious check, and the obvious check was vacuous. First
+    // draft asserted status 200, an h1 over ten characters and a body over
+    // 2,000 bytes. Measured against a bogus slug, the SPA shell answers 200
+    // with 28,603 bytes and `<h1>Queer Guide</h1>` — eleven characters — so all
+    // three passed for a page with no routeBody entry whatsoever. A page that
+    // is invisible to search would have gone green.
+    //
+    // Calibrating against the live control instead of a literal means the guard
+    // survives a rewrite of the shell copy, and the list is derived from the
+    // source of truth, so a seventh type is covered the day it is added.
+    const h1of = (html: string) => html.match(/<h1[^>]*>([^<]+)<\/h1>/)?.[1]?.trim() ?? '';
+    const control = await request.get('/competitions/not-a-real-type', {
+      headers: { 'User-Agent': 'Googlebot/2.1 (+http://www.google.com/bot.html)' },
+    });
+    const shellH1 = h1of(await control.text());
+    expect(shellH1, 'control must yield a shell h1 to calibrate against').not.toBe('');
+
+    for (const c of COMPETITION_CATEGORIES) {
+      const res2 = await request.get(`/competitions/${c.slug}`, {
+        headers: { 'User-Agent': 'Googlebot/2.1 (+http://www.google.com/bot.html)' },
+      });
+      expect(res2.status(), `${c.slug} crawler status`).toBe(200);
+      const body = await res2.text();
+      expect(h1of(body), `${c.slug} served the generic shell, not its own body`).not.toBe(shellH1);
+      // Every type body links back to the hub; a shell does not.
+      expect(body, `${c.slug} body must link the hub`).toContain('/competitions"');
+    }
   });
 });
