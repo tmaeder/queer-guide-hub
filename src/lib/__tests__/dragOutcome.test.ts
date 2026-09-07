@@ -108,6 +108,39 @@ describe('normalizeOutcome', () => {
     }
   });
 
+  it('reads the "saved from the bottom" family as safe, not as danger', () => {
+    // Every one of these is a format-specific rescue token whose legend says the
+    // queen was SAVED. They all read like danger markers and all mean the
+    // opposite — the same trap BDT set.
+    for (const code of ['BDT', 'BGT', 'CT', 'HRT', 'GB', 'SAVE', 'RSU', 'BVR', 'BLK']) {
+      expect(normalizeOutcome(code), `${code} should be safe`).toBe('safe');
+    }
+  });
+
+  it('treats IN as re-entry, never as a challenge win', () => {
+    // Measured across the ELEVEN season pages that define `IN`: it always means
+    // the queen came back, but three legends involve no win at all ("was chosen
+    // to re-enter"). Calling it a win would invent a challenge victory and
+    // inflate the derived challenge_wins for those seasons.
+    expect(normalizeOutcome('IN')).toBe('safe');
+    expect(normalizeOutcome('RTRN')).toBe('safe');
+  });
+
+  it('does not count a side-game or blocked result as a maxi-challenge win', () => {
+    // BTOP/BWIN really did win the challenge — the block costs a star, not the
+    // win. TSW won the Fame Games, which is NOT a maxi challenge.
+    expect(normalizeOutcome('BTOP')).toBe('win');
+    expect(normalizeOutcome('BWIN')).toBe('win');
+    expect(normalizeOutcome('TSW')).toBe('high');
+    expect(normalizeOutcome('FAME')).toBe('bottom');
+  });
+
+  it('records a winner who was still eliminated as eliminated', () => {
+    // Germany's WEL: won the maxi challenge, worst on the runway, sent home.
+    // The terminal fact for the episode is that she left.
+    expect(normalizeOutcome('WEL')).toBe('elim');
+  });
+
   it('reads BDT and SDADHH the way the source legend defines them', () => {
     // Both were mapped by intuition first and both were WRONG. The season 17/18
     // legend says BDT means the queen was *saved from elimination* by the
