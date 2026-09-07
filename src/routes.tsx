@@ -46,6 +46,7 @@ const TagDetail = lazyRetry(() => import('./pages/TagDetail'));
 const SubstanceInteractionsPage = lazyRetry(() => import('./pages/SubstanceInteractionsPage'));
 const StiGuidePage = lazyRetry(() => import('./pages/StiGuidePage'));
 const Competitions = lazyRetry(() => import('./pages/Competitions'));
+const CompetitionCategoryPage = lazyRetry(() => import('./pages/CompetitionCategoryPage'));
 const ConnectionsExplorer = lazyRetry(() => import('./pages/explore/ConnectionsExplorer'));
 const Personalities = lazyRetry(() => import('./pages/Personalities'));
 const PersonalityDetail = lazyRetry(() => import('./pages/PersonalityDetail'));
@@ -817,12 +818,40 @@ export const AppRoutes = () => {
                   <Route path="users" element={<LocalizedRedirect to="/community/members" />} />
                   <Route path="personalities" element={<Personalities />} />
                   <Route path="personalities/:slug" element={<PersonalityDetail />} />
-                  {/* ONE static segment. The four views are a `?view=` query
-                      param, NOT `competitions/:view` — a param in the second
-                      position ties with `/:locale/<X>` at rank 17 and resolves
-                      into LocaleRouter's unknown-locale → NotFound branch. See
-                      the routing notes at the top of this Route tree. */}
+                  {/* /competitions is a HUB; each comparable type has its own
+                      page. The six sub-routes below are STATIC two-segment
+                      paths, never `competitions/:category` — a param in the
+                      second position ties with `/:locale/<X>` at rank 17 and
+                      resolves into LocaleRouter's unknown-locale → NotFound
+                      branch. Views within a page stay a `?view=` query param
+                      for the same reason. Slugs mirror
+                      src/lib/competitionCategories.ts and are asserted against
+                      it by competitionRoutes.test.ts. */}
                   <Route path="competitions" element={<Competitions />} />
+                  <Route
+                    path="competitions/drag-series"
+                    element={<CompetitionCategoryPage category="drag_series" />}
+                  />
+                  <Route
+                    path="competitions/drag-kings"
+                    element={<CompetitionCategoryPage category="drag_king" />}
+                  />
+                  <Route
+                    path="competitions/drag-pageants"
+                    element={<CompetitionCategoryPage category="drag_pageant" />}
+                  />
+                  <Route
+                    path="competitions/trans-pageants"
+                    element={<CompetitionCategoryPage category="trans_pageant" />}
+                  />
+                  <Route
+                    path="competitions/gay-titles"
+                    element={<CompetitionCategoryPage category="gay_title" />}
+                  />
+                  <Route
+                    path="competitions/leather-titles"
+                    element={<CompetitionCategoryPage category="leather_title" />}
+                  />
                   {/* Legacy URL schemes still crawled — alias to canonical routes. */}
                   <Route
                     path="personality/:slug"

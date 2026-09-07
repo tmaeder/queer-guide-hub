@@ -4626,11 +4626,11 @@
     }
   },
   "competitions": {
-    "eyebrow": "Drag Race & the pageant circuit",
+    "eyebrow": "Drag Race & the title-contest circuit",
     "title": "Every season, every queen, every placement",
-    "intro": "The Drag Race television franchises and the LGBTQ+ titleholder pageants, in one place. Season tables, the full roster, and the episode-by-episode grid.",
-    "metaTitle": "Drag Race seasons, pageants and every queen who competed",
-    "metaDescription": "Every season of the Drag Race franchises and the LGBTQ+ titleholder pageant circuit: winners, runners-up, Miss Congeniality, and an episode-by-episode placement grid.",
+    "intro": "The Drag Race television franchises and the independent LGBTQ+ title contests, in one place. Season tables, the full roster, and the episode-by-episode grid.",
+    "metaTitle": "Drag Race seasons, title contests and every queen who competed",
+    "metaDescription": "Every season of the Drag Race franchises and the LGBTQ+ title-contest circuit: winners, runners-up, Miss Congeniality, and an episode-by-episode placement grid.",
     "totals": "{{competitions}} competitions · {{editions}} editions · {{entrants}} entries · {{linked}} linked to a profile",
     "viewNav": "Choose a view",
     "viewSeasons": "Seasons & editions",
@@ -4673,7 +4673,7 @@
     "entrantsPerCompetition": "Entrants per competition",
     "editionsPerYear": "Editions per year",
     "ageDistribution": "Age at filming",
-    "forPerson": "Drag Race & pageants",
+    "forPerson": "Drag Race & title contests",
     "charts": {
       "ageUnder": "Under 20",
       "ageOver": "45 and over",
@@ -4719,9 +4719,7 @@
       "empty": "No entrant matches."
     },
     "kind": {
-      "all": "All",
-      "dragRace": "Drag Race",
-      "pageant": "Pageants"
+      "all": "All"
     },
     "table": {
       "search": "Search seasons",
@@ -4739,7 +4737,26 @@
       "missCongeniality": "Miss Congeniality",
       "outlet": "Network / organizer",
       "showAll": "Show all {{n}} seasons",
-      "empty": "No season matches."
+      "empty": "No season matches.",
+      "filterFormat": "Filter by format"
+    },
+    "category": {
+      "dragSeries": "Drag competition series",
+      "dragSeriesBlurb": "Episodic television: the Drag Race franchises alongside independent shows like Dragula, La Más Draga and Drag Den. Each season carries an episode-by-episode placement grid.",
+      "dragKing": "Drag king competitions",
+      "dragKingBlurb": "Competitions for drag kings. King of Drag is a television series and sits here rather than with the other series, because filed among the queen franchises it would be one row in thirty-three.",
+      "dragPageant": "Drag pageantry",
+      "dragPageantBlurb": "Drag pageantry systems, decided at a single event rather than across a season. Miss Gay America has run since 1973 and Miss Continental since 1980, both older than the television.",
+      "transPageant": "Transgender pageants",
+      "transPageantBlurb": "Beauty pageants for transgender women, including Miss International Queen, which describes itself as the world’s largest, and Miss T World.",
+      "gayTitle": "Gay titleholder contests",
+      "gayTitleBlurb": "Titleholder contests for gay men. Mr Gay World is an international final; Mr Gay Europe describes itself as a competition about LGBTQIA+ themes rather than a pageant.",
+      "leatherTitle": "Leather & fetish titles",
+      "leatherTitleBlurb": "Leather and fetish title contests, both run as multi-day conventions. International Mr. Leather has been held since 1979 and calls itself a convention and competition, not a pageant.",
+      "hubTitle": "Competitions by type",
+      "hubIntro": "Comparison only makes sense between similar contests, so each type has its own page.",
+      "backToHub": "All competition types",
+      "countLine": "{{competitions}} competitions · {{editions}} editions"
     }
   }
 }
