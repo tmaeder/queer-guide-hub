@@ -9,6 +9,7 @@ import { useMeta } from '@/hooks/useMeta';
 import { Button } from '@/components/ui/button';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
 import { MilestonesForEntity } from '@/components/discovery/MilestonesForEntity';
+import { CompetitionsForEntity } from '@/components/discovery/CompetitionsForEntity';
 import { MoreLikeThisByTag } from '@/components/tags/MoreLikeThisByTag';
 import { EntityDetailLayout } from '@/components/entity/EntityDetailLayout';
 import { usePersonalities, type Personality } from '@/hooks/usePersonalities';
@@ -200,6 +201,12 @@ export default function PersonalityDetail() {
             entityType="personality"
             entityId={personality.id}
             heading={t('milestones.forPerson', 'Milestones')}
+          />
+          {/* Renders nothing unless this person actually competed, so it costs
+              nothing on the ~15k personalities who did not. */}
+          <CompetitionsForEntity
+            personalityId={personality.id}
+            heading={t('competitions.forPerson', 'Drag Race & pageants')}
           />
           <SimilarItems
             entity={{ type: 'personality', id: personality.id }}
