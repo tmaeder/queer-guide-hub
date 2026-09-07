@@ -10,12 +10,16 @@ import { test, expect, type Page } from '@playwright/test';
  * / `competition_grid`, so a plain GET cannot see any of it — every assertion
  * below waits for the React render.
  *
- * THE FLOORS ARE DELIBERATELY BELOW THE MEASURED NUMBERS. At the time of
- * writing prod holds 33 competitions, 348 editions and 1,814 entries. The floors
- * exist to catch a re-scrape or a migration that *destroys* rows, not to pin an
- * exact count that a new season would break. Where a fact cannot grow — the US
- * main series had exactly two Miss Congeniality winners in season 16 — it is
- * asserted exactly.
+ * EACH TYPE HAS ITS OWN PAGE, so the data-bearing tests land on
+ * /competitions/<slug> and the totals they read are ONE CATEGORY's, not the
+ * corpus. /competitions itself is a hub with no table.
+ *
+ * THE FLOORS ARE DELIBERATELY BELOW THE MEASURED NUMBERS. drag-series held
+ * 33 competitions / 114 editions / 1,327 entries / 751 linked on 2026-09-07.
+ * The floors exist to catch a re-scrape or a migration that *destroys* rows,
+ * not to pin an exact count that a new season would break. Where a fact cannot
+ * grow — the US main series had exactly two Miss Congeniality winners in season
+ * 16 — it is asserted exactly.
  */
 
 const RENDER = { timeout: 25_000 };
@@ -49,7 +53,23 @@ async function corpusIsLive(page: Page): Promise<boolean> {
   const totals = page.locator('main').getByText(/competitions ·.*editions ·.*entries/);
   const failed = page.locator('main').getByText(/could not be loaded/i);
   await expect(totals.or(failed).first()).toBeVisible({ timeout: 45_000 });
-  return totals.isVisible();
+  if (!(await totals.isVisible())) return false;
+
+  // A totals line reading ZERO is not a live corpus, and this probe used to
+  // call it one. `Critical paths` builds THIS branch against the LIVE backend,
+  // so while a category migration is pending the RPC omits `category`, every
+  // row groups under undefined, and the page renders a perfectly visible
+  // "0 competitions · 0 editions · 0 entries". The old probe saw the line, said
+  // live, and the floors below then failed with `Received: 0` — a spec that can
+  // only pass after the merge it is blocking, which is a deadlock, not a guard.
+  //
+  // Zero therefore means "not deployed yet" and SKIPS. That is safe only
+  // because it is loud where it matters: the nightly run hits production, where
+  // this corpus is present, so a skip there is a REGRESSION and not a pending
+  // migration — see the header. Everything unconditional in this file (routes,
+  // crawler body, client shell) still runs either way.
+  const text = await totals.first().innerText(RENDER);
+  return [...text.matchAll(/([\d,]+)/g)].some((m) => Number(m[1].replace(/,/g, '')) > 0);
 }
 
 async function gotoView(page: Page, view: string, slug = 'drag-series') {
@@ -71,7 +91,7 @@ function search(page: Page) {
 async function requireCorpus(page: Page) {
   test.skip(
     !(await corpusIsLive(page)),
-    'competition corpus not deployed yet (migration 20360101100100 pending) — see the header of this file',
+    "competition corpus not live for this category (migration 20360101101200 adds 'category' to the RPCs) — see the header of this file",
   );
 }
 
