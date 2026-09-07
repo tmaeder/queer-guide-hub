@@ -131,7 +131,6 @@ const OUTCOME_ALIASES: Readonly<Record<string, DragOutcome>> = {
   // — safe —
   SAFE: 'safe',
   IMMUNE: 'safe',
-  IMM: 'safe',
   SAVED: 'safe',
   ADV: 'safe',
   ADVANCED: 'safe',
@@ -205,7 +204,6 @@ const OUTCOME_ALIASES: Readonly<Record<string, DragOutcome>> = {
   ELIM: 'elim',
   ELIM2: 'elim',
   ELIMINATED: 'elim',
-  OUT: 'elim',
   WDR: 'elim',
   WITHDREW: 'elim',
   WITHDREW2: 'elim',
