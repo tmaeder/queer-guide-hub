@@ -49,7 +49,7 @@ export const COMPETITION_CATEGORIES: readonly CategoryDef[] = [
     blurbKey: 'competitions.category.dragSeriesBlurb',
     blurb:
       'Episodic television: the Drag Race franchises alongside independent shows like Dragula, La Más Draga and Drag Den. Each season carries an episode-by-episode placement grid.',
-    metaTitle: 'Drag Competition Series — Every Season | Queer Guide',
+    metaTitle: 'Drag Competition Series: Every Season | Queer Guide',
     metaDescription:
       'Every season of the Drag Race franchises and the independent drag competition series, with winners, runners-up and an episode-by-episode placement grid.',
     hasGrid: true,
@@ -75,7 +75,7 @@ export const COMPETITION_CATEGORIES: readonly CategoryDef[] = [
     blurbKey: 'competitions.category.dragPageantBlurb',
     blurb:
       'Drag pageantry systems, decided at a single event rather than across a season. Miss Gay America has run since 1973 and Miss Continental since 1980, both older than the television.',
-    metaTitle: 'Drag Pageantry — Miss Gay America, Miss Continental | Queer Guide',
+    metaTitle: 'Drag Pageantry: Miss Gay America and Miss Continental | Queer Guide',
     metaDescription:
       'Drag pageantry systems: Miss Gay America since 1973 and Miss Continental since 1980, with every titleholder by year.',
     hasGrid: false,
@@ -101,7 +101,7 @@ export const COMPETITION_CATEGORIES: readonly CategoryDef[] = [
     blurbKey: 'competitions.category.gayTitleBlurb',
     blurb:
       'Titleholder contests for gay men. Mr Gay World is an international final; Mr Gay Europe describes itself as a competition about LGBTQIA+ themes rather than a pageant.',
-    metaTitle: 'Gay Titleholder Contests — Mr Gay World & Europe | Queer Guide',
+    metaTitle: 'Gay Titleholder Contests: Mr Gay World and Mr Gay Europe | Queer Guide',
     metaDescription:
       'Gay titleholder contests: Mr Gay World, Mr Gay Europe and Mr. Gay India, with every titleholder by year.',
     hasGrid: false,
@@ -114,7 +114,7 @@ export const COMPETITION_CATEGORIES: readonly CategoryDef[] = [
     blurbKey: 'competitions.category.leatherTitleBlurb',
     blurb:
       'Leather and fetish title contests, both run as multi-day conventions. International Mr. Leather has been held since 1979 and calls itself a convention and competition, not a pageant.',
-    metaTitle: 'Leather & Fetish Titles — IML, MIR | Queer Guide',
+    metaTitle: 'Leather and Fetish Titles: IML and MIR | Queer Guide',
     metaDescription:
       'Leather and fetish title contests: International Mr. Leather since 1979 and Mister International Rubber, with every titleholder by year.',
     hasGrid: false,

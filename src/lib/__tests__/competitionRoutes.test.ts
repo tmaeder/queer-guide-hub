@@ -17,6 +17,7 @@ import { COMPETITION_CATEGORIES, categoryPath } from '@/lib/competitionCategorie
 const ROUTES = readFileSync(join(process.cwd(), 'src/routes.tsx'), 'utf8');
 const META = readFileSync(join(process.cwd(), 'functions/_lib/routeMeta.ts'), 'utf8');
 const BODY = readFileSync(join(process.cwd(), 'functions/_lib/routeBody.ts'), 'utf8');
+const EN = JSON.parse(readFileSync(join(process.cwd(), 'src/i18n/locales/en.json'), 'utf8'));
 
 describe('competition category routes', () => {
   it('registers every category as a route', () => {
@@ -54,6 +55,29 @@ describe('competition category routes', () => {
     // /competitions is a hub now. `?view=` belongs to the category pages, so a
     // hub link carrying one points at a tab that is not there.
     expect(BODY).not.toMatch(/'\/competitions\?view=/);
+  });
+
+  it('backs every category string with a real key, not a dead fallback', () => {
+    // AN INLINE t() FALLBACK IS NOT A COPY CHANGE. If the key exists, the key
+    // wins and the fallback is dead code; if it is missing, the string cannot
+    // be translated. Production shipped the hub's OLD eyebrow, h1, intro and
+    // meta for exactly this reason — new text was written as fallbacks under
+    // keys that already held the previous copy, so none of it ever rendered.
+    //
+    // Asserting presence alone would not have caught that, so the VALUES must
+    // agree too: a key that disagrees with its literal is the same bug, just
+    // pointing the other way.
+    const cat = EN.competitions?.category ?? {};
+    for (const c of COMPETITION_CATEGORIES) {
+      const leaf = c.labelKey.split('.').pop() as string;
+      expect(cat[leaf], `${c.id} label key missing`).toBe(c.label);
+      expect(cat[`${leaf}Blurb`], `${c.id} blurb key missing`).toBe(c.blurb);
+      // Derived by CompetitionCategoryPage from labelKey — see its useMeta call.
+      expect(cat[`${leaf}MetaTitle`], `${c.id} meta title key missing`).toBe(c.metaTitle);
+      expect(cat[`${leaf}MetaDescription`], `${c.id} meta description key missing`).toBe(
+        c.metaDescription,
+      );
+    }
   });
 
   it('keeps slugs unique and URL-safe', () => {
