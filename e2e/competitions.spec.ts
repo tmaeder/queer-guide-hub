@@ -52,8 +52,8 @@ async function corpusIsLive(page: Page): Promise<boolean> {
   return totals.isVisible();
 }
 
-async function gotoView(page: Page, view: string) {
-  await page.goto(`/competitions?view=${view}`);
+async function gotoView(page: Page, view: string, slug = 'drag-series') {
+  await page.goto(`/competitions/${slug}?view=${view}`);
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible(RENDER);
 }
 
@@ -92,13 +92,20 @@ test.describe('@smoke competitions', () => {
     await requireCorpus(page);
 
     const totals = await readTotals(page);
+    // Floors sit deliberately BELOW the measured drag-series numbers
+    // (33 / 114 / 1,327 / 751 on 2026-09-07). They exist to catch a sync that
+    // DESTROYS rows, not to pin a count that ordinary growth breaks. Note these
+    // are one CATEGORY's totals, not the corpus: this page is /drag-series.
     expect(totals.competitions, 'competitions').toBeGreaterThanOrEqual(25);
-    expect(totals.editions, 'editions').toBeGreaterThanOrEqual(300);
-    expect(totals.entries, 'entries').toBeGreaterThanOrEqual(1500);
+    expect(totals.editions, 'editions').toBeGreaterThanOrEqual(90);
+    expect(totals.entries, 'entries').toBeGreaterThanOrEqual(900);
 
     // The whole point of the feature is the join to the encyclopedia. If this
     // collapses, the seed's personality-link UPDATE silently stopped matching.
-    expect(totals.linked, 'entries linked to a personality').toBeGreaterThanOrEqual(500);
+    // Measured 751 of 1,327 here. The other categories are near zero (gay_title
+    // 1, drag_king 0), so this assertion belongs on the series page and nowhere
+    // else — it would be a false alarm anywhere it was copied to.
+    expect(totals.linked, 'entries linked to a personality').toBeGreaterThanOrEqual(400);
     expect(totals.linked).toBeLessThanOrEqual(totals.entries);
 
     // A real table, not a div grid — screen readers depend on it.
@@ -107,43 +114,63 @@ test.describe('@smoke competitions', () => {
     expect(rows, 'season table rows').toBeGreaterThan(10);
   });
 
-  test('carries both the series and the independent title contests', async ({ page }) => {
-    await gotoView(page, 'seasons');
-    await requireCorpus(page);
-
-    // The table WINDOWS to 25 rows behind a "Show all N" button, and rows are
-    // ordered by competition name — so NEITHER side of the corpus is on screen
-    // unfiltered ("Canada's Drag Race" through "Drag Race España" is all you
-    // get). Both halves must be reached through the filter. Asserting against
-    // the unfiltered body is how this test first failed on production, twice:
-    // once for the title contest and again for the franchise.
-    for (const [term, why] of [
-      ["RuPaul's Drag Race", 'the flagship TV franchise'],
-      ['International Mr. Leather', 'an independent title contest, not just the TV franchises'],
-    ] as const) {
-      await search(page).fill(term);
+  test('the hub offers one page per type and never mixes them', async ({ page }) => {
+    // THE POINT OF THE FEATURE. These three were once rows in one sortable
+    // table, where sorting by "entrants" or "first aired" ranked a leather
+    // convention against a television season. Comparison is only meaningful
+    // within a type, so the guard is that each type's page carries its OWN
+    // corpus and NOT the others'.
+    await page.goto('/competitions');
+    for (const slug of [
+      'drag-series',
+      'drag-kings',
+      'drag-pageants',
+      'trans-pageants',
+      'gay-titles',
+      'leather-titles',
+    ]) {
       await expect(
-        page.locator('main').getByText(term).first(),
-        `${why} must be reachable`,
+        page.locator(`main a[href$="/competitions/${slug}"]`).first(),
+        `hub must link ${slug}`,
       ).toBeVisible(RENDER);
     }
 
+    // Positive control FIRST: if the corpus is absent, "IML is not on the drag
+    // series page" passes on an empty table and proves nothing.
+    await gotoView(page, 'seasons', 'leather-titles');
+    await requireCorpus(page);
+    await expect(
+      page.locator('main').getByText('International Mr. Leather').first(),
+      'IML must appear on the leather page',
+    ).toBeVisible(RENDER);
+
+    // ...and must NOT appear on the series page, at any filter.
+    await gotoView(page, 'seasons', 'drag-series');
+    await requireCorpus(page);
+    await search(page).fill('International Mr');
+    await expect(
+      page.locator('main tbody tr'),
+      'a leather title must not be listed among the TV series',
+    ).toHaveCount(0);
+
+    // The flagship is the mirror control: present where it belongs.
+    await search(page).fill("RuPaul's Drag Race");
+    await expect(page.locator('main tbody tr').first()).toBeVisible(RENDER);
+  });
+
+  test('never calls a leather title a pageant', async ({ page }) => {
     // International Mr. Leather calls itself "a multi-day convention and
     // competition". It was briefly filed under a `pageant` bucket invented to
-    // mean "not Drag Race"; this asserts the page never describes it that way
-    // again. The word is legitimate elsewhere (Miss Gay America is "a national
-    // pageant for female impersonators") — it is wrong HERE.
-    await search(page).fill('International Mr. Leather');
-    // Scoped to the RESULT ROW, not all of <main>. Scanning the whole page also
-    // reads the intro paragraph and the filter chips, so this assertion failed
-    // in CI on prose rather than on data — the assertion has to look at the
-    // thing it is about.
+    // mean "not Drag Race". The word is legitimate elsewhere (Miss Gay America
+    // is "a national pageant for female impersonators") — it is wrong HERE.
+    await gotoView(page, 'seasons', 'leather-titles');
+    await requireCorpus(page);
+    // Scoped to the RESULT ROW, not all of <main>: scanning the whole page also
+    // reads the intro and the filter chips, so this assertion once failed in CI
+    // on prose rather than on data.
     const imlRow = page.locator('main tbody tr', { hasText: 'International Mr' }).first();
     await expect(imlRow).toBeVisible(RENDER);
-    expect(
-      await imlRow.innerText(),
-      'IML must not be labelled a pageant',
-    ).not.toMatch(/pageant/i);
+    expect(await imlRow.innerText(), 'IML must not be labelled a pageant').not.toMatch(/pageant/i);
   });
 
   test('renders every runner-up, not just the first', async ({ page }) => {
@@ -170,9 +197,9 @@ test.describe('@smoke competitions', () => {
 
     // Every rendered personality link must point at a real slug, never an empty
     // or "undefined" one — a null slug is supposed to render as plain text.
-    const hrefs = await page.locator('main a[href*="/personalities/"]').evaluateAll((as) =>
-      as.map((a) => (a as HTMLAnchorElement).getAttribute('href') ?? ''),
-    );
+    const hrefs = await page
+      .locator('main a[href*="/personalities/"]')
+      .evaluateAll((as) => as.map((a) => (a as HTMLAnchorElement).getAttribute('href') ?? ''));
     expect(hrefs.length).toBeGreaterThan(0);
     for (const href of hrefs) {
       expect(href, 'synthesised personality link').not.toMatch(
@@ -184,7 +211,7 @@ test.describe('@smoke competitions', () => {
   test('the placement grid is a labelled table whose cells are never colour-only', async ({
     page,
   }) => {
-    await page.goto('/competitions?view=grid&edition=rupauls-drag-race-season-18');
+    await page.goto('/competitions/drag-series?view=grid&edition=rupauls-drag-race-season-18');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible(RENDER);
     await requireCorpus(page);
 
@@ -224,7 +251,7 @@ test.describe('@smoke competitions', () => {
   });
 
   test('the legend names every state the grid can show', async ({ page }) => {
-    await page.goto('/competitions?view=grid&edition=rupauls-drag-race-season-18');
+    await page.goto('/competitions/drag-series?view=grid&edition=rupauls-drag-race-season-18');
     await requireCorpus(page);
     await expect(page.locator('main table').first()).toBeVisible(RENDER);
     const body = await page.locator('main').innerText(RENDER);
@@ -238,7 +265,7 @@ test.describe('@smoke competitions', () => {
 
   test('the page body never scrolls sideways, at phone width', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('/competitions?view=grid&edition=rupauls-drag-race-season-18');
+    await page.goto('/competitions/drag-series?view=grid&edition=rupauls-drag-race-season-18');
     await requireCorpus(page);
     await expect(page.locator('main table').first()).toBeVisible(RENDER);
 
