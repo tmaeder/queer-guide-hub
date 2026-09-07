@@ -110,11 +110,18 @@ export default function Competitions() {
                    */}
                   {loading
                     ? t('competitions.hubCountsPending', 'Counting')
-                    : t('competitions.hubCounts', {
-                        defaultValue: '{{competitions}} competitions, {{editions}} editions',
-                        competitions: count?.competitions ?? 0,
-                        editions: count?.editions ?? 0,
-                      })}
+                    : /*
+                       * Two independently pluralised numbers, so they are two
+                       * calls: i18next pluralises on `count`, and one string
+                       * carrying both cannot agree with either. "1 COMPETITIONS"
+                       * shipped to production before this.
+                       */
+                      [
+                        t('competitions.hubCountCompetitions', {
+                          count: count?.competitions ?? 0,
+                        }),
+                        t('competitions.hubCountEditions', { count: count?.editions ?? 0 }),
+                      ].join(', ')}
                 </span>
               </LocalizedLink>
             </li>

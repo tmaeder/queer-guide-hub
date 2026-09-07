@@ -4626,11 +4626,11 @@
     }
   },
   "competitions": {
-    "eyebrow": "Drag Race & the title-contest circuit",
-    "title": "Every season, every queen, every placement",
-    "intro": "The Drag Race television franchises and the independent LGBTQ+ title contests, in one place. Season tables, the full roster, and the episode-by-episode grid.",
-    "metaTitle": "Drag Race seasons, title contests and every queen who competed",
-    "metaDescription": "Every season of the Drag Race franchises and the LGBTQ+ title-contest circuit: winners, runners-up, Miss Congeniality, and an episode-by-episode placement grid.",
+    "eyebrow": "Competitions",
+    "title": "Six kinds of competition, six sets of records",
+    "intro": "Television series run as episodes and carry a placement grid. A pageant is decided in one night. A leather title is awarded at a convention. Each type keeps its own page, because a table that ranks them against each other answers no question anyone has.",
+    "metaTitle": "Drag competitions, pageants and title contests | Queer Guide",
+    "metaDescription": "The drag competition series, the drag and transgender pageant systems, and the gay and leather title contests. Six types, each with every edition and everyone who competed.",
     "totals": "{{competitions}} competitions · {{editions}} editions · {{entrants}} entries · {{linked}} linked to a profile",
     "viewNav": "Choose a view",
     "viewSeasons": "Seasons & editions",
@@ -4757,6 +4757,11 @@
       "hubIntro": "Comparison only makes sense between similar contests, so each type has its own page.",
       "backToHub": "All competition types",
       "countLine": "{{competitions}} competitions · {{editions}} editions"
-    }
+    },
+    "hubCountCompetitions_one": "{{count}} competition",
+    "hubCountCompetitions_other": "{{count}} competitions",
+    "hubCountEditions_one": "{{count}} edition",
+    "hubCountEditions_other": "{{count}} editions",
+    "hubCountsPending": "Counting"
   }
 }
