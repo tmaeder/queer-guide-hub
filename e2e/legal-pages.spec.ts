@@ -75,15 +75,42 @@ test.describe('Policy lines', () => {
     await expect(page).toHaveURL(/#managing-cookies$/);
 
     // The browser owns this scroll and animates it, so reading the rect right
-    // after the click samples the journey rather than the destination
-    // (measured on prod: top 2248 at t=0, 128 once settled). Wait for arrival
-    // instead of a fixed delay, so the assertion keeps its meaning if the
-    // animation changes.
+    // after the click samples the journey rather than the destination. Wait for
+    // the scroll to STOP, then assert where it stopped.
+    //
+    // This used to poll for `top < 200` and it was green by accident: the
+    // heading settles at 210 and only passed BELOW 200 in flight. Traced on
+    // prod under Chromium 1.62 — 2156, 1969, 1059, 570, 338, 225, 170 — the
+    // poll caught 170 mid-animation and returned. Playwright 1.63's Chromium
+    // honours `reducedMotion: 'reduce'` (set for this file) by jumping
+    // straight to the destination, so there is no longer a frame under 200 to
+    // catch and the same page fails. Verified against DEPLOYED PROD, not this
+    // branch: 1.62.1 passes, 1.63.0 fails, identical bytes.
+    //
+    // 210 is the designed resting place, not drift: `scroll-padding-top` on
+    // <html> is the pinned header (82px) and these headings carry
+    // `scroll-margin-top: 8rem` (128px), and the two stack.
     await page.waitForFunction(
-      () => (document.getElementById('managing-cookies')?.getBoundingClientRect().top ?? 1e6) < 200,
+      () => {
+        const w = window as unknown as { __lastY?: number; __stillFor?: number };
+        const y = window.scrollY;
+        w.__stillFor = y === w.__lastY ? (w.__stillFor ?? 0) + 1 : 0;
+        w.__lastY = y;
+        return (w.__stillFor ?? 0) >= 3;
+      },
       undefined,
       { timeout: 15_000 },
     );
+
+    // Parked under the sticky header, not left down the page and not scrolled
+    // past. The window is the header (82) + the heading's own scroll-margin
+    // (128) plus slack for a header-height change; a settled 2248 or a settled
+    // 0 both still fail.
+    const settledTop = await page
+      .locator('#managing-cookies')
+      .evaluate((el) => el.getBoundingClientRect().top);
+    expect(settledTop).toBeGreaterThanOrEqual(0);
+    expect(settledTop).toBeLessThan(260);
 
     // And the rail names the station the reader chose, not the one above it.
     await expect(page.locator(`${RAIL} a[aria-current="true"]`).last()).toHaveAttribute(
