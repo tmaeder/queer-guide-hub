@@ -2,8 +2,8 @@ import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { FilterChip } from '@/components/transit/FilterChip';
 import { EqualityChip } from './EqualityChip';
-import { TIER_LABEL } from './equalityTierLabels';
 import { EQUALITY_TIERS, CITIES_SORT_KEYS } from '@/utils/citiesFilter';
+import { EQUALITY_TIER_LABEL } from '@/utils/equalityScore';
 import type { CitiesSortKey, EqualityTier } from '@/utils/citiesFilter';
 
 interface CitiesControlBarProps {
@@ -137,7 +137,7 @@ export function CitiesControlBar({
             // Passed explicitly: the chip's visible content is an EqualityChip
             // whose own aria-label sits on a bare <span>, which axe flags as
             // aria-prohibited-attr. The button needs its own accessible name.
-            aria-label={TIER_LABEL[tier]}
+            aria-label={EQUALITY_TIER_LABEL[tier]}
             label={
               <EqualityChip
                 score={TIER_SCORE_HINT[tier]}

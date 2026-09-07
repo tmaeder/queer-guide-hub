@@ -1,5 +1,11 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, it, expect } from 'vitest';
 import {
+  EQUALITY_TIERS,
+  EQUALITY_TIER_CUTOFFS,
+  EQUALITY_TIER_I18N_KEY,
+  EQUALITY_TIER_LABEL,
   getScoreLabel,
   getScoreRingColor,
   parseSsuSummary,
@@ -11,14 +17,14 @@ import {
 } from '../equalityScore';
 
 describe('getScoreLabel', () => {
-  it('should return No Data for null', () => {
+  it('should return No data for null', () => {
     const result = getScoreLabel(null);
-    expect(result.label).toBe('No Data');
+    expect(result.label).toBe('No data');
     expect(result.score).toBe(0);
   });
 
-  it('should return No Data for undefined', () => {
-    expect(getScoreLabel(undefined).label).toBe('No Data');
+  it('should return No data for undefined', () => {
+    expect(getScoreLabel(undefined).label).toBe('No data');
   });
 
   it('should return Very High for score >= 80', () => {
@@ -154,9 +160,9 @@ describe('deathPenaltyRisk', () => {
   // Nigeria: the flag is set but the penalty prose names only prison, so
   // reading `penalty` alone would miss it.
   it('trusts an explicit death_penalty flag over the penalty prose', () => {
-    expect(
-      deathPenaltyRisk({ death_penalty: 'Yes', penalty: '10 years to life in prison' }),
-    ).toBe('confirmed');
+    expect(deathPenaltyRisk({ death_penalty: 'Yes', penalty: '10 years to life in prison' })).toBe(
+      'confirmed',
+    );
   });
 
   // Afghanistan, Pakistan, Qatar, Somalia, UAE. ILGA records uncertainty in
@@ -217,5 +223,58 @@ describe('getProtectionStatus', () => {
   it('should default missing fields to No data', () => {
     const result = getProtectionStatus({ so: 'Yes' });
     expect(result.gi).toBe('No data');
+  });
+});
+
+describe('the tier vocabulary is single-sourced', () => {
+  /**
+   * /cities carried its own copy of the tier→word map until the two were
+   * unified. They agreed on five tiers and disagreed on `unknown` ('No Data'
+   * against 'No data'), and both rendered — so the same city read differently
+   * depending on which surface you were on. These assertions are what stops a
+   * second copy, or a half-applied rename, from being invisible again.
+   */
+  it('both tier maps cover every tier and nothing else', () => {
+    expect(Object.keys(EQUALITY_TIER_LABEL).sort()).toEqual([...EQUALITY_TIERS].sort());
+    expect(Object.keys(EQUALITY_TIER_I18N_KEY).sort()).toEqual([...EQUALITY_TIERS].sort());
+  });
+
+  it('no two tiers share a word', () => {
+    // Distinctness is load-bearing beyond tidiness: a shared word makes two
+    // tiers indistinguishable in the chip, the filter's accessible name and
+    // the aria-label, none of which render anything but the word.
+    const labels = Object.values(EQUALITY_TIER_LABEL);
+    expect(new Set(labels).size).toBe(labels.length);
+  });
+
+  it('getScoreLabel reports the tier it took the label from', () => {
+    // The i18n key is now read off `tier`, so a breakdown whose tier and label
+    // disagreed would translate to the wrong word with nothing else failing.
+    for (const tier of EQUALITY_TIERS) {
+      const score =
+        tier === 'unknown' ? null : EQUALITY_TIER_CUTOFFS.find((c) => c.tier === tier)!.min;
+      const got = getScoreLabel(score);
+      expect(got.tier, `getScoreLabel(${score})`).toBe(tier);
+      expect(got.label).toBe(EQUALITY_TIER_LABEL[tier]);
+    }
+  });
+
+  it('every tier resolves to an i18n key that exists in en.json', () => {
+    // SafetyVerdict and TripSafetyBriefing both do
+    // t(`trips.safety.scoreLabel.${EQUALITY_TIER_I18N_KEY[tier]}`). A key with
+    // no entry silently renders the English defaultValue, which looks correct
+    // in English and ships untranslated everywhere else.
+    for (const file of ['../../i18n/locales/en.json', '../../../public/locales/en.json']) {
+      const en = JSON.parse(readFileSync(resolve(__dirname, file), 'utf8')) as {
+        trips: { safety: { scoreLabel: Record<string, string> } };
+      };
+      for (const tier of EQUALITY_TIERS) {
+        const key = EQUALITY_TIER_I18N_KEY[tier];
+        expect(
+          en.trips.safety.scoreLabel[key],
+          `${file} is missing scoreLabel.${key}`,
+        ).toBeTruthy();
+      }
+    }
   });
 });
