@@ -80,6 +80,25 @@ describe('competition category routes', () => {
     }
   });
 
+  it('serves the SAME meta to a crawler as to a reader', () => {
+    // routeMeta.ts holds its own COPY of every title and description, and that
+    // copy is what a bot and the initial HTML get, while the SPA renders
+    // en.json. They drifted the moment four titles were rewritten to drop em
+    // dashes: production served Google 'Leather & Fetish Titles — IML, MIR'
+    // while the page itself said 'Leather and Fetish Titles: IML and MIR'.
+    //
+    // Presence is not enough — the previous version of this file asserted only
+    // that a routeMeta entry EXISTED, which stayed green through exactly that.
+    // This is the /tags/hiv failure: humans read one description, Google
+    // indexed another.
+    for (const c of COMPETITION_CATEGORIES) {
+      expect(META, `${c.slug} crawler title drifted from the source of truth`).toContain(
+        `title: '${c.metaTitle}'`,
+      );
+      expect(META, `${c.slug} crawler description drifted`).toContain(c.metaDescription);
+    }
+  });
+
   it('keeps slugs unique and URL-safe', () => {
     const slugs = COMPETITION_CATEGORIES.map((c) => c.slug);
     expect(new Set(slugs).size, 'duplicate category slug').toBe(slugs.length);
