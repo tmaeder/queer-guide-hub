@@ -26,7 +26,7 @@ import { CompetitionCharts } from '@/components/competitions/CompetitionCharts';
 const CompetitionMap = lazy(() => import('@/components/competitions/CompetitionMap'));
 
 /**
- * /competitions — the Drag Race franchises and the titleholder pageant circuit,
+ * /competitions — the Drag Race franchises and the independent title contests,
  * as one browsable dataset.
  *
  * FOUR VIEWS OVER ONE FETCH
@@ -89,10 +89,13 @@ export default function Competitions() {
   const grid = useCompetitionGrid(view === 'grid' ? editionSlug : undefined);
 
   useMeta({
-    title: t('competitions.metaTitle', 'Drag Race seasons, pageants and every queen who competed'),
+    title: t(
+      'competitions.metaTitle',
+      'Drag Race seasons, title contests and every queen who competed',
+    ),
     description: t(
       'competitions.metaDescription',
-      'Every season of the Drag Race franchises and the LGBTQ+ titleholder pageant circuit: winners, runners-up, Miss Congeniality, and an episode-by-episode placement grid.',
+      'Every season of the Drag Race franchises and the LGBTQ+ title-contest circuit: winners, runners-up, Miss Congeniality, and an episode-by-episode placement grid.',
     ),
     canonicalPath: '/competitions',
   });
@@ -122,14 +125,14 @@ export default function Competitions() {
 
   return (
     <PageContainer>
-      <Eyebrow>{t('competitions.eyebrow', 'Drag Race & the pageant circuit')}</Eyebrow>
+      <Eyebrow>{t('competitions.eyebrow', 'Drag Race & the title-contest circuit')}</Eyebrow>
       <h1 className="text-display font-display">
         {t('competitions.title', 'Every season, every queen, every placement')}
       </h1>
       <p className="mt-4 max-w-reading text-body-lg text-muted-foreground">
         {t(
           'competitions.intro',
-          'The Drag Race television franchises and the LGBTQ+ titleholder pageants, in one place. Season tables, the full roster, and the episode-by-episode grid.',
+          'The Drag Race television franchises and the independent LGBTQ+ title contests, in one place. Season tables, the full roster, and the episode-by-episode grid.',
         )}
       </p>
 
@@ -221,7 +224,7 @@ function GridView({
 }) {
   const { t } = useTranslation();
 
-  // Only editions that actually have a grid are offered. A pageant is decided in
+  // Only editions that actually have a grid are offered. A title contest is decided in
   // one night and has no episodes at all, so listing it here would be an
   // invitation to an empty table.
   const options = useMemo(

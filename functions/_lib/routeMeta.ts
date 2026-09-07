@@ -119,9 +119,9 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
   // here), so an entry is what makes the page reachable by search at all — not
   // merely what titles it.
   '/competitions': {
-    title: 'Drag Race Seasons & Queer Pageants | Queer Guide',
+    title: 'Drag Race Seasons & Queer Title Contests | Queer Guide',
     description:
-      'Every Drag Race season and LGBTQ+ titleholder pageant: winners, runners-up, Miss Congeniality, and the episode-by-episode placement grid.',
+      'Every Drag Race season and LGBTQ+ title contest: winners, runners-up, Miss Congeniality, and the episode-by-episode placement grid.',
   },
   '/news': {
     title: 'LGBTQ+ News — Curated Daily | Queer Guide',

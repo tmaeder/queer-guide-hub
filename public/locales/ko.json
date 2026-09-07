@@ -4772,7 +4772,8 @@
       "missCongeniality": "[KO] Miss Congeniality",
       "outlet": "[KO] Network / organizer",
       "showAll": "[KO] Show all {{n}} seasons",
-      "empty": "[KO] No season matches."
+      "empty": "[KO] No season matches.",
+      "filterFormat": "[KO] Filter by format"
     }
   }
 }

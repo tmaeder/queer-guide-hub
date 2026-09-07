@@ -4772,7 +4772,8 @@
       "missCongeniality": "[JA] Miss Congeniality",
       "outlet": "[JA] Network / organizer",
       "showAll": "[JA] Show all {{n}} seasons",
-      "empty": "[JA] No season matches."
+      "empty": "[JA] No season matches.",
+      "filterFormat": "[JA] Filter by format"
     }
   }
 }

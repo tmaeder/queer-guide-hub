@@ -10,7 +10,21 @@ import type { DragOutcome } from '@/lib/dragOutcome';
  * text", never "look it up yourself".
  */
 
-export type CompetitionKind = 'drag_race' | 'pageant';
+/**
+ * STRUCTURE, not identity.
+ *
+ * `series` runs as episodes and therefore has a placement grid; `title` is
+ * decided at a single event and has none. That is the only thing any code here
+ * branches on.
+ *
+ * It used to be `drag_race | pageant`, which defined eleven independent
+ * competitions by what they were NOT and then named the residue — wrongly, for
+ * at least three of them. International Mr. Leather calls itself "a multi-day
+ * convention and competition", MIR "a convention and contest", Mr Gay Europe "a
+ * male competition ... about important LGBTQIA+ themes". What a competition IS
+ * now lives in `Competition.format`, in its own source's words.
+ */
+export type CompetitionKind = 'series' | 'title';
 
 export interface CompetitionEdition {
   slug: string;
@@ -38,6 +52,8 @@ export interface Competition {
   slug: string;
   name: string;
   kind: CompetitionKind;
+  /** What this competition IS, in its own source's words. Identity, not structure. */
+  format: string | null;
   network: string | null;
   organizer: string | null;
   country: string | null;
@@ -54,6 +70,7 @@ export interface RosterEntry {
   competition: string;
   competition_slug: string;
   kind: CompetitionKind;
+  format?: string;
   edition: string;
   edition_slug: string;
   edition_number: number | null;
@@ -116,6 +133,7 @@ export interface CompetitionHistoryEntry {
   competition: string;
   competition_slug: string;
   kind: CompetitionKind;
+  format?: string;
   edition: string;
   edition_slug: string;
   edition_number: number | null;

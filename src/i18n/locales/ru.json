@@ -4808,7 +4808,8 @@
       "missCongeniality": "[RU] Miss Congeniality",
       "outlet": "[RU] Network / organizer",
       "showAll": "[RU] Show all {{n}} seasons",
-      "empty": "[RU] No season matches."
+      "empty": "[RU] No season matches.",
+      "filterFormat": "[RU] Filter by format"
     }
   }
 }

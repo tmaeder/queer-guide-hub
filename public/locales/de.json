@@ -4774,7 +4774,8 @@
       "missCongeniality": "[DE] Miss Congeniality",
       "outlet": "[DE] Network / organizer",
       "showAll": "[DE] Show all {{n}} seasons",
-      "empty": "[DE] No season matches."
+      "empty": "[DE] No season matches.",
+      "filterFormat": "[DE] Filter by format"
     }
   }
 }
