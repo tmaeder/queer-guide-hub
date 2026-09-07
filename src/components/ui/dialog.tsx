@@ -1,12 +1,16 @@
 import * as React from 'react';
+// Primitives re-exported unchanged are imported BY NAME rather than aliased off
+// the namespace (`const Dialog = DialogPrimitive.Root`) — see the note in
+// accordion.tsx. Same value either way; only this form keeps fast refresh.
+import {
+  Root as Dialog,
+  Trigger as DialogTrigger,
+  Portal as DialogPortal,
+  Close as DialogClose,
+} from '@radix-ui/react-dialog';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-const Dialog = DialogPrimitive.Root;
-const DialogTrigger = DialogPrimitive.Trigger;
-const DialogPortal = DialogPrimitive.Portal;
-const DialogClose = DialogPrimitive.Close;
 
 const DialogOverlay = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Overlay>,
