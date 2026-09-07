@@ -134,8 +134,16 @@ test.describe('@smoke competitions', () => {
     // again. The word is legitimate elsewhere (Miss Gay America is "a national
     // pageant for female impersonators") — it is wrong HERE.
     await search(page).fill('International Mr. Leather');
-    const iml = await page.locator('main').innerText(RENDER);
-    expect(iml, 'IML must not be labelled a pageant').not.toMatch(/pageant/i);
+    // Scoped to the RESULT ROW, not all of <main>. Scanning the whole page also
+    // reads the intro paragraph and the filter chips, so this assertion failed
+    // in CI on prose rather than on data — the assertion has to look at the
+    // thing it is about.
+    const imlRow = page.locator('main tbody tr', { hasText: 'International Mr' }).first();
+    await expect(imlRow).toBeVisible(RENDER);
+    expect(
+      await imlRow.innerText(),
+      'IML must not be labelled a pageant',
+    ).not.toMatch(/pageant/i);
   });
 
   test('renders every runner-up, not just the first', async ({ page }) => {
