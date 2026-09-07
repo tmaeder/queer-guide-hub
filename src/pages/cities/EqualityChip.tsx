@@ -1,6 +1,7 @@
 import { cn } from '@/lib/utils';
-import { tierFor, type EqualityTier } from '@/utils/citiesFilter';
+import { tierFor } from '@/utils/citiesFilter';
 import { getScoreRingColor } from '@/utils/equalityScore';
+import { TIER_LABEL } from './equalityTierLabels';
 
 interface EqualityChipProps {
   score: number | null | undefined;
@@ -26,15 +27,6 @@ interface EqualityChipProps {
    */
   variant?: 'plate' | 'ink';
 }
-
-const TIER_LABEL: Record<EqualityTier, string> = {
-  'very-high': 'Very High',
-  high: 'High',
-  moderate: 'Moderate',
-  low: 'Low',
-  'very-low': 'Very Low',
-  unknown: 'No data',
-};
 
 /**
  * Compact equality chip for list rows. Monochrome plate; the only chromatic
@@ -103,5 +95,3 @@ export function EqualityChip({
     </span>
   );
 }
-
-export { TIER_LABEL };
