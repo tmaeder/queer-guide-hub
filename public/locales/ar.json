@@ -4782,7 +4782,8 @@
       "missCongeniality": "[AR] Miss Congeniality",
       "outlet": "[AR] Network / organizer",
       "showAll": "[AR] Show all {{n}} seasons",
-      "empty": "[AR] No season matches."
+      "empty": "[AR] No season matches.",
+      "filterFormat": "[AR] Filter by format"
     }
   }
 }

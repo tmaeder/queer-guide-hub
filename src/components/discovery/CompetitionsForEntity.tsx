@@ -7,7 +7,7 @@ import { useCompetitionHistory } from '@/hooks/useCompetitions';
 
 /**
  * The reciprocal half of the competition spine, on a personality page: every
- * Drag Race season and pageant edition this person competed in.
+ * Drag Race season and title-contest edition this person competed in.
  *
  * Same shape and placement as `MilestonesForEntity` — a compact per-entity
  * discovery block inside `EntityDetailLayout`. Renders NOTHING when the person
@@ -30,7 +30,7 @@ export function CompetitionsForEntity({
   if (!data?.length) return null;
 
   return (
-    <SingleSection title={heading ?? t('competitions.forPerson', 'Drag Race & pageants')}>
+    <SingleSection title={heading ?? t('competitions.forPerson', 'Drag Race & title contests')}>
       <ul className="space-y-4">
         {data.map((row) => (
           <li
