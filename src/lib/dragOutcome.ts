@@ -107,8 +107,14 @@ const OUTCOME_ALIASES: Readonly<Record<string, DragOutcome>> = {
   WINNERS: 'win',
   WINNNER: 'win', // observed typo upstream
   SDADHH: 'win', // won the final Smackdown lip sync — see the legend note above
+  DWIN: 'win', // Drag Den: "(Dragdagulan winner) ... was chosen by the main
+  // challenge winner and WON the lip sync".
   TOP: 'win', // Drag Race Thailand: "won the maxi challenge"
   RW: 'win', // Drag Race Germany: "(Runway Winner) ... won the runway challenge"
+  BTOP: 'win', // All Stars: "(Blocked Top All Star) ... WON the challenge, lost
+  // the Lip Sync for Your Legacy and did not earn a star due to being blocked".
+  // The block costs her the star, not the challenge win.
+  BWIN: 'win', // All Stars: "(Blocked Win) ... won the challenge and the Lip Sync".
   // — high —
   HIGH: 'high',
   HIGHEST: 'high',
@@ -118,10 +124,13 @@ const OUTCOME_ALIASES: Readonly<Record<string, DragOutcome>> = {
   RUNNERUP: 'high',
   RUNNERSUP: 'high',
   RUP: 'high', // "R-up" — canonicalise() strips the hyphen, not the letters.
+  TSW: 'high', // All Stars: "(Talent Show Winner) ... the ELIMINATED contestant
+  // WON the Fame Games Variety Extravaganza". The mirror of FAME (same side
+  // game, lost). `high` rather than `win`, because a Fame Games victory is not
+  // a maxi-challenge win and must not be counted as one.
   // — safe —
   SAFE: 'safe',
   IMMUNE: 'safe',
-  IMM: 'safe',
   SAVED: 'safe',
   ADV: 'safe',
   ADVANCED: 'safe',
@@ -137,6 +146,32 @@ const OUTCOME_ALIASES: Readonly<Record<string, DragOutcome>> = {
   CUT: 'safe', // All Stars: same shape as BLK, different badge.
   BVR: 'safe', // Canada vs the World: "(Beaver) received the Golden Beaver and
   // was saved from the bottom three".
+  // The "saved from the bottom" family. Every one of these is a format-specific
+  // token whose legend says the queen was RESCUED, so they land on `safe` for
+  // the same reason BDT does — the mark reads like danger and means the
+  // opposite.
+  BGT: 'safe', // España: "(Baguette) ... saved from the bottom two"
+  CT: 'safe', // UK: "(Chippy Tea) ... saved from the bottom two"
+  HRT: 'safe', // "(Heart) ... saved themself or was saved from the bottom"
+  GB: 'safe', // Philippines: "Golden Balut ... saved from participating in the
+  // final LaLaPaRuZa lip sync"
+  SAVE: 'safe', // "saved from participating in the final lip sync"
+  RSU: 'safe', // México: "(Reina de la Suerte) ... was up for elimination ...
+  // and was saved from lip syncing"
+  // RE-ENTRY. Measured across the ELEVEN pages that define it, `IN` always
+  // means the queen came back into the competition — but the mechanism varies
+  // and three of those legends involve no win at all ("was chosen to re-enter",
+  // All Stars 3 and The Switch). So it is `safe`, NOT `win`: mapping it to a
+  // win would invent a challenge victory for a queen who was simply brought
+  // back, and would inflate every derived `challenge_wins` in those seasons.
+  IN: 'safe',
+  IMM: 'safe', // Dragula S6 / Titans S2: "obtained a scroll with the power of
+  // granting ... immunity from the extermination". The successor code to KEY —
+  // the same show renamed it, which is why both are mapped.
+  DS: 'safe', // La Mas Draga: "declared safe and received the Duchess Scholarship".
+  KEY: 'safe', // Dragula: "obtained a key with the power of granting herself
+  // immunity or nominating a fellow contestant for the extermination, choosing
+  // immunity".
   // — low —
   LOW: 'low',
   LOWEST: 'low',
@@ -153,14 +188,22 @@ const OUTCOME_ALIASES: Readonly<Record<string, DragOutcome>> = {
   LOSS: 'bottom', // eliminated queen who returned for the Smackdown and lost a
   // lip sync. Not `guest`: she was competing.
   DUEL: 'bottom', // The Switch: "up for elimination" — the same words BTM uses.
-  NOM: 'bottom', // The Switch: "nominated to compete in the next elimination duel".
+  WUE: 'bottom', // Dragula: "(Winner up for extermination) ... WON the challenge
+  // but was still up for extermination". Genuinely both, and `bottom` is the
+  // honest read: Dragula decouples winning from safety, so the whole reason this
+  // code exists — as distinct from plain WIN — is the jeopardy. Mapping it to
+  // `win` would erase the source's own distinction and tell a reader scanning
+  // the row that she was safe. The cost is that it does not count toward
+  // `challenge_wins`; `outcome_raw` keeps "WUE" so that is recoverable.
+  NOM: 'bottom',
+  BDS: 'bottom', // La Mas Draga: "was UP FOR ELIMINATION and received the
+  // Duchess Scholarship" — the scholarship does not remove the jeopardy. // The Switch: "nominated to compete in the next elimination duel".
   FAME: 'bottom', // All Stars: eliminated queen who "performed in the Fame Games
   // ... but did not win". Same shape as LOSS.
   // — elim —
   ELIM: 'elim',
   ELIM2: 'elim',
   ELIMINATED: 'elim',
-  OUT: 'elim',
   WDR: 'elim',
   WITHDREW: 'elim',
   WITHDREW2: 'elim',
@@ -171,6 +214,13 @@ const OUTCOME_ALIASES: Readonly<Record<string, DragOutcome>> = {
   DEPARTED: 'elim',
   QUIT: 'elim',
   WDN: 'elim',
+  OUT: 'elim', // La Mas Draga: "lost the chance to re-enter the competition".
+  EXT: 'elim', // Dragula: "(Exterminated) indicates that the contestant was
+  // exterminated". Dragula's word for going home.
+  WEL: 'elim', // Germany: "(Winner eliminated) ... although the contestant WON
+  // the maxi challenge, they were the worst in the runway challenge and were
+  // subsequently eliminated". The terminal fact for that episode is that she
+  // went home; `outcome_raw` keeps the rest of the story.
   // — guest (present, not competing) —
   GUEST: 'guest',
   GST: 'guest',
@@ -182,6 +232,8 @@ const OUTCOME_ALIASES: Readonly<Record<string, DragOutcome>> = {
   MISSC: 'guest',
   MC: 'guest',
   MISSDS: 'guest',
+  LMQ: 'guest', // La Mas Draga's congeniality award ("voted La Mas Querida").
+  TUQ: 'guest', // Slaycation's equivalent ("voted Turn Up Queen").
   MISSCONGENIALITY: 'guest',
 };
 
@@ -193,7 +245,8 @@ const OUTCOME_ALIASES: Readonly<Record<string, DragOutcome>> = {
  * at all — the contestants table's outcome column does not mention it, which is
  * why a first pass over 113 seasons found the award on exactly zero of them.
  */
-export const MISS_CONGENIALITY_RE = /^\s*(miss\s*c(ongeniality)?|mc|miss\s*ds)\s*$/i;
+export const MISS_CONGENIALITY_RE =
+  /^\s*(miss\s*c(ongeniality)?|mc|miss\s*ds|lmq|tuq|miss\s*gp)\s*$/i;
 
 /**
  * Reduce a raw cell to a lookup key: drop footnote markers, punctuation,

@@ -39,14 +39,22 @@ const WINDOW = 25;
 
 type SortKey = 'competition' | 'edition' | 'entrants' | 'episodes' | 'first' | 'last';
 type SortDir = 'asc' | 'desc';
-type KindFilter = 'all' | CompetitionKind;
-
-const KIND_ORDER: readonly KindFilter[] = ['all', 'drag_race', 'pageant'];
+/**
+ * The chips group by FORMAT, not by a two-way kind.
+ *
+ * They used to be "All / Drag Race / Pageants", which defined eleven
+ * independent competitions by what they were not and then mislabelled the
+ * residue — International Mr. Leather is "a multi-day convention and
+ * competition", not a pageant. Each format now names itself, and the list is
+ * derived from the data so a new one appears without a code change.
+ */
+const ALL = '\u0000all';
 
 interface EditionRow {
   key: string;
   competition: string;
   kind: CompetitionKind;
+  format: string | null;
   title: string;
   entrants: number;
   /** `episode_count` is what the season HAS; `episodes` is how many we hold a
@@ -98,7 +106,7 @@ export function CompetitionSeasonTable({ competitions }: { competitions: Competi
   const locale = i18n.language;
 
   const [search, setSearch] = useState('');
-  const [kind, setKind] = useState<KindFilter>('all');
+  const [kind, setKind] = useState<string>(ALL);
   const [sort, setSort] = useState<{ key: SortKey; dir: SortDir } | null>(null);
   const [showAll, setShowAll] = useState(false);
 
@@ -109,6 +117,7 @@ export function CompetitionSeasonTable({ competitions }: { competitions: Competi
           key: `${c.slug}/${e.slug}`,
           competition: c.name,
           kind: c.kind,
+          format: c.format,
           title: e.title,
           entrants: e.entrants,
           episodes: e.episode_count ?? (e.episodes || null),
@@ -123,10 +132,15 @@ export function CompetitionSeasonTable({ competitions }: { competitions: Competi
     [competitions],
   );
 
-  const counts = useMemo(() => {
-    const out: Record<KindFilter, number> = { all: rows.length, drag_race: 0, pageant: 0 };
-    for (const r of rows) out[r.kind] += 1;
-    return out;
+  const formats = useMemo(() => {
+    const out = new Map<string, number>();
+    for (const r of rows) {
+      const f = r.format ?? '';
+      if (f) out.set(f, (out.get(f) ?? 0) + 1);
+    }
+    // Biggest first, then alphabetical, so the ordering is a fact about the
+    // corpus rather than a hand-kept list that goes stale.
+    return [...out.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
   }, [rows]);
 
   // Reset the window during render so "Show all N" always names the CURRENT
@@ -142,7 +156,7 @@ export function CompetitionSeasonTable({ competitions }: { competitions: Competi
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return rows.filter((r) => {
-      if (kind !== 'all' && r.kind !== kind) return false;
+      if (kind !== ALL && (r.format ?? '') !== kind) return false;
       if (q === '') return true;
       return (
         r.competition.toLowerCase().includes(q) ||
@@ -186,12 +200,6 @@ export function CompetitionSeasonTable({ competitions }: { competitions: Competi
       return null;
     });
 
-  const kindLabel: Record<KindFilter, string> = {
-    all: t('competitions.kind.all', 'All'),
-    drag_race: t('competitions.kind.dragRace', 'Drag Race'),
-    pageant: t('competitions.kind.pageant', 'Pageants'),
-  };
-
   return (
     <div>
       <div className="mb-4 flex flex-col gap-2 md:gap-4">
@@ -207,15 +215,21 @@ export function CompetitionSeasonTable({ competitions }: { competitions: Competi
         <div
           className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           role="group"
-          aria-label={t('competitions.table.filterKind', 'Filter by kind of competition')}
+          aria-label={t('competitions.table.filterFormat', 'Filter by format')}
         >
-          {KIND_ORDER.map((k) => (
+          <FilterChip
+            active={kind === ALL}
+            onClick={() => setKind(ALL)}
+            className="whitespace-nowrap"
+            label={`${t('competitions.kind.all', 'All')} ${rows.length}`}
+          />
+          {formats.map(([f, n]) => (
             <FilterChip
-              key={k}
-              active={kind === k}
-              onClick={() => setKind(k)}
+              key={f}
+              active={kind === f}
+              onClick={() => setKind(f)}
               className="whitespace-nowrap"
-              label={`${kindLabel[k]} ${counts[k]}`}
+              label={`${f} ${n}`}
             />
           ))}
         </div>

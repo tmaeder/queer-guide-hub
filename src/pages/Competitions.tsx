@@ -1,170 +1,85 @@
-import { Suspense, lazy, useMemo } from 'react';
-import { useSearchParams } from 'react-router';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { PageContainer } from '@/components/layout/PageContainer';
-import { Eyebrow } from '@/components/ui/Eyebrow';
-import { Button } from '@/components/ui/button';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { TrackLoader } from '@/components/transit/TrackLoader';
+import { Eyebrow } from '@/components/ui/Eyebrow';
+import { useCompetitionOverview } from '@/hooks/useCompetitions';
 import { useMeta } from '@/hooks/useMeta';
 import {
-  useCompetitionGrid,
-  useCompetitionOverview,
-  useCompetitionRoster,
-} from '@/hooks/useCompetitions';
-import { CompetitionSeasonTable } from '@/components/competitions/CompetitionSeasonTable';
-import { CompetitionRoster } from '@/components/competitions/CompetitionRoster';
-import { CompetitionGrid } from '@/components/competitions/CompetitionGrid';
-import { CompetitionCharts } from '@/components/competitions/CompetitionCharts';
+  COMPETITION_CATEGORIES,
+  categoryPath,
+  type CompetitionCategory,
+} from '@/lib/competitionCategories';
 
 /**
- * MUST stay lazy. `scripts/check-bundle-shape.mjs` treats the `maplibre-` chunk
- * as HEAVY_UNREACHABLE — it may not be statically reachable from the entry, and
- * a plain import here would fail the build. Same reason `/personalities` lazies
- * its map.
- */
-const CompetitionMap = lazy(() => import('@/components/competitions/CompetitionMap'));
-
-/**
- * /competitions — the Drag Race franchises and the titleholder pageant circuit,
- * as one browsable dataset.
+ * /competitions — the hub, and nothing else.
  *
- * FOUR VIEWS OVER ONE FETCH
+ * WHY THERE IS NO TABLE HERE ANY MORE
  *
- * The overview and the roster are fetched whole (22 competitions / 88 editions /
- * ~1,019 entrants) and filtered client-side, which is the house strategy for a
- * data-dense public page here — `/tags/interactions` and `cities_directory()`
- * both do it, and 1,019 rows is well inside the proven ceiling. Only the grid is
- * per-edition, because 7,377 cells at once is a payload nobody scrolls.
+ * This page used to list all 45 competitions in one sortable table. Miss Gay
+ * America, International Mr. Leather and Drag Race UK are not peers: a
+ * female-impersonation pageant, a leather title attached to a multi-day
+ * convention, and a licensed television format with an episode grid. Sorting
+ * them together by "entrants" or "first aired" produces a ranking that means
+ * nothing, and a single filter list asserts a peer relationship that does not
+ * exist. Comparison is only meaningful WITHIN a type, so the tables moved to
+ * the six category pages and this page routes to them.
  *
- * WHY THE VIEW IS A QUERY PARAM AND NOT A PATH SEGMENT
- *
- * `/competitions/:view` would tie with `/:locale/<X>` in the route table and
- * resolve into LocaleRouter's unknown-locale → NotFound branch (documented at
- * src/routes.tsx:633-748). `?view=` is unambiguous and keeps the view
- * linkable.
+ * THE COUNTS ARE LIVE, NEVER LITERALS. A hardcoded "22 competitions" is wrong
+ * the first time an edition is imported and says nothing when it is. Both
+ * figures are derived from the same overview fetch the category pages use, so
+ * the card and the page it opens can never disagree.
  */
 
-type View = 'seasons' | 'roster' | 'grid' | 'charts';
-
-const VIEWS: { id: View; labelKey: string; fallback: string }[] = [
-  { id: 'seasons', labelKey: 'competitions.viewSeasons', fallback: 'Seasons & editions' },
-  { id: 'roster', labelKey: 'competitions.viewRoster', fallback: 'Everyone who competed' },
-  { id: 'grid', labelKey: 'competitions.viewGrid', fallback: 'Placement grid' },
-  { id: 'charts', labelKey: 'competitions.viewCharts', fallback: 'Numbers' },
-];
-
-function isView(value: string | null): value is View {
-  return !!value && VIEWS.some((v) => v.id === value);
+interface CategoryCount {
+  competitions: number;
+  editions: number;
 }
 
 export default function Competitions() {
   const { t } = useTranslation();
-  const [params, setParams] = useSearchParams();
-
-  const view: View = isView(params.get('view')) ? (params.get('view') as View) : 'seasons';
-  const editionParam = params.get('edition') ?? undefined;
-
   const overview = useCompetitionOverview();
-  const roster = useCompetitionRoster();
-
-  // Memoised because the `?? []` fallback allocates a fresh array on every
-  // render, which would invalidate every downstream useMemo that depends on it.
-  const competitions = useMemo(
-    () => overview.data?.competitions ?? [],
-    [overview.data?.competitions],
-  );
-
-  // Default the grid to the most recent edition that actually has results —
-  // an edition with an empty grid is a confusing first impression.
-  const defaultEdition = useMemo(() => {
-    const withResults = competitions
-      .flatMap((c) => c.editions.map((e) => ({ ...e, competition: c.name })))
-      .filter((e) => e.results > 0)
-      .sort((a, b) => (b.first_aired ?? '').localeCompare(a.first_aired ?? ''));
-    return withResults[0]?.slug;
-  }, [competitions]);
-
-  const editionSlug = editionParam ?? defaultEdition;
-  const grid = useCompetitionGrid(view === 'grid' ? editionSlug : undefined);
 
   useMeta({
-    title: t('competitions.metaTitle', 'Drag Race seasons, pageants and every queen who competed'),
+    title: t(
+      'competitions.metaTitle',
+      'Drag competitions, pageants and title contests | Queer Guide',
+    ),
     description: t(
       'competitions.metaDescription',
-      'Every season of the Drag Race franchises and the LGBTQ+ titleholder pageant circuit: winners, runners-up, Miss Congeniality, and an episode-by-episode placement grid.',
+      'The drag competition series, the drag and transgender pageant systems, and the gay and leather title contests. Six types, each with every edition and everyone who competed.',
     ),
     canonicalPath: '/competitions',
   });
 
-  const setView = (next: View) => {
-    const p = new URLSearchParams(params);
-    p.set('view', next);
-    setParams(p, { replace: true });
-  };
+  const counts = useMemo(() => {
+    const byCategory = new Map<CompetitionCategory, CategoryCount>();
+    for (const c of overview.data?.competitions ?? []) {
+      const current = byCategory.get(c.category) ?? { competitions: 0, editions: 0 };
+      current.competitions += 1;
+      current.editions += c.editions.length;
+      byCategory.set(c.category, current);
+    }
+    return byCategory;
+  }, [overview.data?.competitions]);
 
-  const setEdition = (slug: string) => {
-    const p = new URLSearchParams(params);
-    p.set('view', 'grid');
-    p.set('edition', slug);
-    setParams(p, { replace: true });
-  };
-
-  const loading = overview.isLoading || roster.isLoading;
-  const failed = overview.isError || roster.isError;
-
-  const totals = useMemo(() => {
-    const editions = competitions.reduce((a, c) => a + c.editions.length, 0);
-    const entrants = roster.data?.length ?? 0;
-    const linked = (roster.data ?? []).filter((r) => r.personality_slug).length;
-    return { competitions: competitions.length, editions, entrants, linked };
-  }, [competitions, roster.data]);
+  const loading = overview.isLoading;
+  const failed = overview.isError;
 
   return (
     <PageContainer>
-      <Eyebrow>{t('competitions.eyebrow', 'Drag Race & the pageant circuit')}</Eyebrow>
+      <Eyebrow>{t('competitions.eyebrow', 'Competitions')}</Eyebrow>
       <h1 className="text-display font-display">
-        {t('competitions.title', 'Every season, every queen, every placement')}
+        {t('competitions.title', 'Six kinds of competition, six sets of records')}
       </h1>
       <p className="mt-4 max-w-reading text-body-lg text-muted-foreground">
         {t(
           'competitions.intro',
-          'The Drag Race television franchises and the LGBTQ+ titleholder pageants, in one place. Season tables, the full roster, and the episode-by-episode grid.',
+          'Television series run as episodes and carry a placement grid. A pageant is decided in one night. A leather title is awarded at a convention. Each type keeps its own page, because a table that ranks them against each other answers no question anyone has.',
         )}
       </p>
-
-      {!loading && !failed && (
-        <p className="mt-2 text-13 text-muted-foreground tabular-nums">
-          {t('competitions.totals', {
-            defaultValue:
-              '{{competitions}} competitions · {{editions}} editions · {{entrants}} entries · {{linked}} linked to a profile',
-            ...totals,
-          })}
-        </p>
-      )}
-
-      <nav
-        aria-label={t('competitions.viewNav', 'Choose a view')}
-        className="mt-8 flex flex-wrap gap-2"
-      >
-        {VIEWS.map((v) => (
-          <Button
-            key={v.id}
-            variant={view === v.id ? 'default' : 'outline'}
-            size="sm"
-            aria-current={view === v.id ? 'page' : undefined}
-            onClick={() => setView(v.id)}
-          >
-            {t(v.labelKey, v.fallback)}
-          </Button>
-        ))}
-      </nav>
-
-      {loading && (
-        <div className="mt-12 flex justify-center">
-          <TrackLoader />
-        </div>
-      )}
 
       {failed && (
         <p className="mt-12 text-body-lg">
@@ -172,27 +87,44 @@ export default function Competitions() {
         </p>
       )}
 
-      {!loading && !failed && (
-        <div className="mt-8">
-          {view === 'seasons' && <CompetitionSeasonTable competitions={competitions} />}
-          {view === 'roster' && <CompetitionRoster entries={roster.data ?? []} />}
-          {view === 'grid' && (
-            <GridView
-              competitions={competitions}
-              editionSlug={editionSlug}
-              onSelect={setEdition}
-              grid={grid.data ?? null}
-              loading={grid.isLoading}
-            />
-          )}
-          {view === 'charts' && (
-            <>
-              <CompetitionCharts competitions={competitions} entries={roster.data ?? []} />
-              <Suspense fallback={<div className="mt-8 h-[600px] w-full animate-pulse bg-muted" />}>
-                <CompetitionMap entries={roster.data ?? []} />
-              </Suspense>
-            </>
-          )}
+      <ul className="mt-10 grid list-none grid-cols-1 gap-4 p-0 md:grid-cols-2 lg:grid-cols-3">
+        {COMPETITION_CATEGORIES.map((c) => {
+          const count = counts.get(c.id);
+          return (
+            <li key={c.id}>
+              <LocalizedLink
+                to={categoryPath(c)}
+                className="card-lift flex h-full flex-col rounded-container bg-card p-6 no-underline shadow-soft"
+              >
+                <span className="text-title font-bold leading-tight text-balance">
+                  {t(c.labelKey, c.label)}
+                </span>
+                <span className="mt-2 text-15 text-muted-foreground">{t(c.blurbKey, c.blurb)}</span>
+                <span className="mt-4 text-2xs uppercase tracking-label tabular-nums text-muted-foreground">
+                  {/*
+                   * "Counting" means LOADING and nothing else. A loaded-but-empty
+                   * category must say zero: if the frontend ever ships ahead of the
+                   * migration that adds `category`, every row groups under undefined
+                   * and all six cards would otherwise sit at "Counting" forever,
+                   * which reads as a slow page rather than as missing data.
+                   */}
+                  {loading
+                    ? t('competitions.hubCountsPending', 'Counting')
+                    : t('competitions.hubCounts', {
+                        defaultValue: '{{competitions}} competitions, {{editions}} editions',
+                        competitions: count?.competitions ?? 0,
+                        editions: count?.editions ?? 0,
+                      })}
+                </span>
+              </LocalizedLink>
+            </li>
+          );
+        })}
+      </ul>
+
+      {loading && (
+        <div className="mt-12 flex justify-center">
+          <TrackLoader />
         </div>
       )}
 
@@ -203,67 +135,5 @@ export default function Competitions() {
         )}
       </p>
     </PageContainer>
-  );
-}
-
-function GridView({
-  competitions,
-  editionSlug,
-  onSelect,
-  grid,
-  loading,
-}: {
-  competitions: import('@/types/competition').Competition[];
-  editionSlug: string | undefined;
-  onSelect: (slug: string) => void;
-  grid: import('@/types/competition').CompetitionGrid | null;
-  loading: boolean;
-}) {
-  const { t } = useTranslation();
-
-  // Only editions that actually have a grid are offered. A pageant is decided in
-  // one night and has no episodes at all, so listing it here would be an
-  // invitation to an empty table.
-  const options = useMemo(
-    () =>
-      competitions
-        .flatMap((c) => c.editions.map((e) => ({ ...e, competition: c.name })))
-        .filter((e) => e.results > 0)
-        .sort(
-          (a, b) => a.competition.localeCompare(b.competition) || (a.number ?? 0) - (b.number ?? 0),
-        ),
-    [competitions],
-  );
-
-  return (
-    <div>
-      <label className="block text-13 font-medium" htmlFor="competition-edition">
-        {t('competitions.pickSeason', 'Season')}
-      </label>
-      <select
-        id="competition-edition"
-        className="mt-2 w-full max-w-form rounded-element border border-input bg-card px-4 py-2 text-15"
-        value={editionSlug ?? ''}
-        onChange={(e) => onSelect(e.target.value)}
-      >
-        {options.map((o) => (
-          <option key={o.slug} value={o.slug}>
-            {o.competition} — {o.title}
-          </option>
-        ))}
-      </select>
-
-      {loading && (
-        <div className="mt-8 flex justify-center">
-          <TrackLoader />
-        </div>
-      )}
-      {!loading && grid && <CompetitionGrid grid={grid} />}
-      {!loading && !grid && (
-        <p className="mt-8 text-body-lg">
-          {t('competitions.noGrid', 'No placement grid is recorded for this season.')}
-        </p>
-      )}
-    </div>
   );
 }
