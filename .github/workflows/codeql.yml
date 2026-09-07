@@ -47,6 +47,16 @@ jobs:
           build-mode: none
         - language: javascript-typescript
           build-mode: none
+        # Two Python files — scripts/gen-pwa-assets.py and
+        # scripts/data-quality/generate-milestone-og.py — and until this line
+        # they were scanned by NOTHING. #2143 dropped OSSAR as "overlapping
+        # SAST", which was right for BinSkim (Windows PE binaries; this repo has
+        # zero) but left Bandit's Python coverage with no successor, because
+        # this matrix does not list python. The gap was invisible because Bandit
+        # had reported 0 findings in all 2,362 of its analyses, so its removal
+        # changed no number anywhere.
+        - language: python
+          build-mode: none
         # CodeQL supports the following values keywords for 'language': 'actions', 'c-cpp', 'csharp', 'go', 'java-kotlin', 'javascript-typescript', 'python', 'ruby', 'rust', 'swift'
         # Use `c-cpp` to analyze code written in C, C++ or both
         # Use 'java-kotlin' to analyze code written in Java, Kotlin or both
