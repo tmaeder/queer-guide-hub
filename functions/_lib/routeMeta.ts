@@ -121,7 +121,39 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
   '/competitions': {
     title: 'Drag Race Seasons & Queer Title Contests | Queer Guide',
     description:
-      'Every Drag Race season and LGBTQ+ title contest: winners, runners-up, Miss Congeniality, and the episode-by-episode placement grid.',
+      'Drag competition series, drag and transgender pageantry, gay titleholder contests and leather titles. Each type has its own page.',
+  },
+  // One entry per comparable type. This table also drives sitemap-static.xml,
+  // so a category page missing here is invisible to search.
+  '/competitions/drag-series': {
+    title: 'Drag Competition Series — Every Season | Queer Guide',
+    description:
+      'Every season of the Drag Race franchises and the independent drag competition series, with winners, runners-up and an episode-by-episode placement grid.',
+  },
+  '/competitions/drag-kings': {
+    title: 'Drag King Competitions | Queer Guide',
+    description:
+      'Drag king competitions: King of Drag and the San Francisco Drag King Contest, which has run since 1994.',
+  },
+  '/competitions/drag-pageants': {
+    title: 'Drag Pageantry — Miss Gay America, Miss Continental | Queer Guide',
+    description:
+      'Drag pageantry systems: Miss Gay America since 1973 and Miss Continental since 1980, with every titleholder by year.',
+  },
+  '/competitions/trans-pageants': {
+    title: 'Transgender Beauty Pageants | Queer Guide',
+    description:
+      'Transgender beauty pageants: Miss International Queen, Miss T World, Miss Star International and Miss Fabulous Thailand, with every titleholder by year.',
+  },
+  '/competitions/gay-titles': {
+    title: 'Gay Titleholder Contests — Mr Gay World & Europe | Queer Guide',
+    description:
+      'Gay titleholder contests: Mr Gay World, Mr Gay Europe and Mr. Gay India, with every titleholder by year.',
+  },
+  '/competitions/leather-titles': {
+    title: 'Leather & Fetish Titles — IML, MIR | Queer Guide',
+    description:
+      'Leather and fetish title contests: International Mr. Leather since 1979 and Mister International Rubber, with every titleholder by year.',
   },
   '/news': {
     title: 'LGBTQ+ News — Curated Daily | Queer Guide',
