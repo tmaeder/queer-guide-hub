@@ -1,10 +1,14 @@
 import * as React from 'react';
+// Primitives re-exported unchanged are imported BY NAME rather than aliased off
+// the namespace (`const Popover = PopoverPrimitive.Root`) — see the note in
+// accordion.tsx. Same value either way; only this form keeps fast refresh.
+import {
+  Root as Popover,
+  Trigger as PopoverTrigger,
+  Anchor as PopoverAnchor,
+} from '@radix-ui/react-popover';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { cn } from '@/lib/utils';
-
-const Popover = PopoverPrimitive.Root;
-const PopoverTrigger = PopoverPrimitive.Trigger;
-const PopoverAnchor = PopoverPrimitive.Anchor;
 
 const PopoverContent = React.forwardRef<
   React.ElementRef<typeof PopoverPrimitive.Content>,

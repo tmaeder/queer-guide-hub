@@ -1,11 +1,15 @@
 import * as React from 'react';
+// Primitives re-exported unchanged are imported BY NAME rather than aliased off
+// the namespace (`const AlertDialog = AlertDialogPrimitive.Root`) — see the note
+// in accordion.tsx. Same value either way; only this form keeps fast refresh.
+import {
+  Root as AlertDialog,
+  Trigger as AlertDialogTrigger,
+  Portal as AlertDialogPortal,
+} from '@radix-ui/react-alert-dialog';
 import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog';
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
-
-const AlertDialog = AlertDialogPrimitive.Root;
-const AlertDialogTrigger = AlertDialogPrimitive.Trigger;
-const AlertDialogPortal = AlertDialogPrimitive.Portal;
 
 const AlertDialogOverlay = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Overlay>,

@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { FilterChip } from '@/components/transit/FilterChip';
-import { EqualityChip, TIER_LABEL } from './EqualityChip';
+import { EqualityChip } from './EqualityChip';
+import { TIER_LABEL } from './equalityTierLabels';
 import { EQUALITY_TIERS, CITIES_SORT_KEYS } from '@/utils/citiesFilter';
 import type { CitiesSortKey, EqualityTier } from '@/utils/citiesFilter';
 
