@@ -64,6 +64,53 @@ import {
  */
 const COMPANION_PAGE_RE = /untucked/i;
 
+/**
+ * Drag competition series that are NOT Drag Race.
+ *
+ * These cannot come from `discoverSeasonPages`, which walks
+ * `Category:Drag Race (franchise) seasons` — Dragula is an independent show and
+ * is not in that category. They are listed here rather than added to the shared
+ * `EXTRA_PAGES` so that `import-dragrace-contestants.mjs`, which also calls
+ * discovery, keeps its behaviour exactly as it was.
+ *
+ * Measured before adding: all six Dragula seasons parse fully through the same
+ * parser — contestants, a progress grid, an episode table and a network. Its
+ * outcome vocabulary is its own (EXT = Exterminated, WUE = Winner up for
+ * extermination, KEY) and was read off the show's own legend, not inferred.
+ */
+const EXTRA_SERIES: { title: string; franchise: string }[] = [
+  // Dragula and its Titans spin-off.
+  ...[1, 2, 3, 4, 5, 6].map((n) => ({
+    title: `The Boulet Brothers' Dragula season ${n}`,
+    franchise: "The Boulet Brothers' Dragula",
+  })),
+  ...[1, 2].map((n) => ({
+    title: `The Boulet Brothers' Dragula: Titans season ${n}`,
+    franchise: "The Boulet Brothers' Dragula: Titans",
+  })),
+  // La Mas Draga (Mexico, YouTube).
+  ...[1, 2, 3, 4, 5, 6, 7].map((n) => ({
+    title: `La Más Draga season ${n}`,
+    franchise: 'La Más Draga',
+  })),
+  // Titles use FOUR different conventions and must not be pattern-generated:
+  // `X season N`, `X (season N)`, a capital-S `Season 2`, and shows whose
+  // seasons all live on one page. Every one below was read off the article.
+  { title: 'Call Me Mother (season 1)', franchise: 'Call Me Mother' },
+  { title: 'Call Me Mother (season 2)', franchise: 'Call Me Mother' },
+  { title: 'Queen of the Universe season 1', franchise: 'Queen of the Universe' },
+  { title: 'Queen of the Universe season 2', franchise: 'Queen of the Universe' },
+  { title: 'King of Drag', franchise: 'King of Drag' },
+  { title: 'King of Drag Season 2', franchise: 'King of Drag' },
+  { title: 'Drag Den season 1', franchise: 'Drag Den' },
+  { title: 'Drag Den season 2', franchise: 'Drag Den' },
+  { title: 'House of Drag', franchise: 'House of Drag' },
+  { title: 'Drag Latina', franchise: 'Drag Latina' },
+  { title: 'Queen of Drags', franchise: 'Queen of Drags' },
+  { title: 'Love for the Arts', franchise: 'Love for the Arts' },
+  { title: 'Academia de Drags season 1', franchise: 'Academia de Drags' },
+];
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT = join(__dirname, 'out-dragrace-spine');
 const CACHE = join(OUT, 'cache');
@@ -180,10 +227,18 @@ async function main() {
     franchiseFilter: FRANCHISE_FILTER,
   });
   const companions = discovered.filter((p) => COMPANION_PAGE_RE.test(p.title));
-  const pages = discovered.filter((p) => !COMPANION_PAGE_RE.test(p.title)).slice(0, MAX_PAGES);
+  const extra = EXTRA_SERIES.filter(
+    (e) =>
+      !discovered.some((d) => d.title === e.title) &&
+      (!FRANCHISE_FILTER || e.franchise.toLowerCase().includes(FRANCHISE_FILTER)),
+  );
+  const pages = [...discovered.filter((p) => !COMPANION_PAGE_RE.test(p.title)), ...extra].slice(
+    0,
+    MAX_PAGES,
+  );
   console.log(
     `  ${pages.length} season pages across ${new Set(pages.map((p) => p.franchise)).size} franchises` +
-      ` (${companions.length} Untucked companion pages excluded)`,
+      ` (+${extra.length} non-Drag-Race series pages, ${companions.length} Untucked companion pages excluded)`,
   );
 
   const seasons: SpineSeason[] = [];

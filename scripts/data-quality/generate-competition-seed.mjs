@@ -87,7 +87,8 @@ for (const s of seasons) {
     competition: {
       slug: s.franchise_slug,
       name: s.franchise_name,
-      kind: 'drag_race',
+      // STRUCTURAL: these run as episodes, so they carry a placement grid.
+      kind: 'series',
       country: s.franchise_country ?? null,
       network: s.network ?? null,
       organizer: null,
@@ -152,7 +153,8 @@ for (const p of pageants) {
     competition: {
       slug: p.competition_slug,
       name: p.competition_name,
-      kind: 'pageant',
+      // STRUCTURAL: decided at a single event, so no episodes.
+      kind: 'title',
       country: p.competition_country ?? null,
       network: null,
       organizer: p.organizer ?? null,
@@ -481,7 +483,7 @@ console.log(
       ),
       episodes: editions.reduce((a, e) => a + e.episodes.length, 0),
       results: results.length,
-      pageant_editions: editions.filter((e) => e.competition.kind === 'pageant').length,
+      pageant_editions: editions.filter((e) => e.competition.kind === 'title').length,
       files: [f1.replace(/.*\/supabase/, 'supabase'), f2.replace(/.*\/supabase/, 'supabase')],
       bytes: [sql1.length, sql2.length],
     },
