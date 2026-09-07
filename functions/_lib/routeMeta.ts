@@ -115,6 +115,14 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'How STIs spread, when a test can detect them, and which prevention method protects against which infection — a harm-reduction reference.',
   },
+  // This table also drives sitemap-static.xml (it enumerates the indexable keys
+  // here), so an entry is what makes the page reachable by search at all — not
+  // merely what titles it.
+  '/competitions': {
+    title: 'Drag Race Seasons & Queer Title Contests | Queer Guide',
+    description:
+      'Every Drag Race season and LGBTQ+ title contest: winners, runners-up, Miss Congeniality, and the episode-by-episode placement grid.',
+  },
   '/news': {
     title: 'LGBTQ+ News — Curated Daily | Queer Guide',
     description:

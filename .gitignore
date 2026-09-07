@@ -102,6 +102,8 @@ playwright/.auth/
 
 # Drag Race import scrape cache/output (regenerable)
 scripts/data-quality/out-dragrace/
+scripts/data-quality/out-dragrace-spine/
+scripts/data-quality/out-pageants/
 graphify-out/
 out-spartacus/
 out-patroc/

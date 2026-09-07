@@ -45,6 +45,7 @@ const TagsIndex = lazyRetry(() => import('./pages/TagsIndex'));
 const TagDetail = lazyRetry(() => import('./pages/TagDetail'));
 const SubstanceInteractionsPage = lazyRetry(() => import('./pages/SubstanceInteractionsPage'));
 const StiGuidePage = lazyRetry(() => import('./pages/StiGuidePage'));
+const Competitions = lazyRetry(() => import('./pages/Competitions'));
 const ConnectionsExplorer = lazyRetry(() => import('./pages/explore/ConnectionsExplorer'));
 const Personalities = lazyRetry(() => import('./pages/Personalities'));
 const PersonalityDetail = lazyRetry(() => import('./pages/PersonalityDetail'));
@@ -816,6 +817,12 @@ export const AppRoutes = () => {
                   <Route path="users" element={<LocalizedRedirect to="/community/members" />} />
                   <Route path="personalities" element={<Personalities />} />
                   <Route path="personalities/:slug" element={<PersonalityDetail />} />
+                  {/* ONE static segment. The four views are a `?view=` query
+                      param, NOT `competitions/:view` — a param in the second
+                      position ties with `/:locale/<X>` at rank 17 and resolves
+                      into LocaleRouter's unknown-locale → NotFound branch. See
+                      the routing notes at the top of this Route tree. */}
+                  <Route path="competitions" element={<Competitions />} />
                   {/* Legacy URL schemes still crawled — alias to canonical routes. */}
                   <Route
                     path="personality/:slug"
