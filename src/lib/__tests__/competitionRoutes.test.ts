@@ -16,6 +16,7 @@ import { COMPETITION_CATEGORIES, categoryPath } from '@/lib/competitionCategorie
  */
 const ROUTES = readFileSync(join(process.cwd(), 'src/routes.tsx'), 'utf8');
 const META = readFileSync(join(process.cwd(), 'functions/_lib/routeMeta.ts'), 'utf8');
+const BODY = readFileSync(join(process.cwd(), 'functions/_lib/routeBody.ts'), 'utf8');
 
 describe('competition category routes', () => {
   it('registers every category as a route', () => {
@@ -37,6 +38,22 @@ describe('competition category routes', () => {
     for (const c of COMPETITION_CATEGORIES) {
       expect(META, `no routeMeta for ${c.slug}`).toContain(`'/competitions/${c.slug}'`);
     }
+  });
+
+  it('gives every category crawler prose, not an empty shell', () => {
+    // These pages render client-side from an RPC, so a non-JS crawler sees
+    // exactly what routeBody.ts provides and nothing else. This was NOT caught
+    // by the meta assertion above: the six had meta entries and no body, and
+    // the hub still linked `?view=` URLs it had stopped serving.
+    for (const c of COMPETITION_CATEGORIES) {
+      expect(BODY, `no routeBody for ${c.slug}`).toContain(`'/competitions/${c.slug}'`);
+    }
+  });
+
+  it('never links a view the hub no longer serves', () => {
+    // /competitions is a hub now. `?view=` belongs to the category pages, so a
+    // hub link carrying one points at a tab that is not there.
+    expect(BODY).not.toMatch(/'\/competitions\?view=/);
   });
 
   it('keeps slugs unique and URL-safe', () => {
