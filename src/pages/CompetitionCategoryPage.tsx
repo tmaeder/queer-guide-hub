@@ -6,11 +6,16 @@ import { CompetitionCharts } from '@/components/competitions/CompetitionCharts';
 import { CompetitionGrid } from '@/components/competitions/CompetitionGrid';
 import { CompetitionRoster } from '@/components/competitions/CompetitionRoster';
 import { CompetitionSeasonTable } from '@/components/competitions/CompetitionSeasonTable';
+import { CompetitionWinnersRail } from '@/components/competitions/CompetitionWinnersRail';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { DetailMasthead } from '@/components/transit/DetailMasthead';
+import { StationRing } from '@/components/transit/StationRing';
 import { TrackLoader } from '@/components/transit/TrackLoader';
+import { TransitIcon } from '@/components/transit/TransitIcon';
+import type { Track } from '@/components/transit/routeBulletMap';
+import type { TransitIconName } from '@/components/transit/transitIconPaths';
 import { Button } from '@/components/ui/button';
-import { Eyebrow } from '@/components/ui/Eyebrow';
 import {
   useCompetitionGrid,
   useCompetitionOverview,
@@ -141,25 +146,35 @@ export default function CompetitionCategoryPage({ category }: { category: Compet
         {t('competitions.backToHub', 'Back to all competitions')}
       </LocalizedLink>
 
-      <Eyebrow className="mt-6 block">{t('competitions.eyebrow', 'Competitions')}</Eyebrow>
-      <h1 className="text-display font-display">
-        {def ? t(def.labelKey, def.label) : t('competitions.title', 'Competitions')}
-      </h1>
-      {def && (
-        <p className="mt-4 max-w-reading text-body-lg text-muted-foreground">
-          {t(def.blurbKey, def.blurb)}
-        </p>
+      {/*
+       * ONE ACCENT PER PAGE. The hub is the legend and carries all six lines;
+       * a category page is a single line, so its bullet, its stat stations and
+       * nothing else take `def.bullet.track`. The glyph beside the eyebrow is a
+       * `TransitIcon`, which is ink on paper and never takes a track colour.
+       */}
+      <DetailMasthead
+        className="mt-6"
+        type={def?.id ?? 'competition'}
+        letter={def?.bullet.letter}
+        track={def?.bullet.track}
+        bulletLabel={def ? t(def.labelKey, def.label) : undefined}
+        eyebrow={t('competitions.eyebrow', 'Competitions')}
+        title={def ? t(def.labelKey, def.label) : t('competitions.title', 'Competitions')}
+        lead={def ? t(def.blurbKey, def.blurb) : undefined}
+      />
+
+      {!loading && !failed && def && (
+        <StatStations track={def.bullet.track} icon={def.icon} totals={totals} />
       )}
 
-      {!loading && !failed && (
-        <p className="mt-2 text-13 text-muted-foreground tabular-nums">
-          {t('competitions.totals', {
-            defaultValue:
-              '{{competitions}} competitions · {{editions}} editions · {{entrants}} entries · {{linked}} linked to a profile',
-            ...totals,
-          })}
-        </p>
-      )}
+      {/*
+       * Renders on ONE of the six pages, and that is the design. See
+       * CompetitionWinnersRail's header for the measured coverage: three
+       * categories hold no entrant photograph at all, so those pages open on
+       * the views instead of on a row of placeholders standing in for people
+       * we have no picture of.
+       */}
+      {!loading && !failed && <CompetitionWinnersRail entries={entries} />}
 
       <nav
         aria-label={t('competitions.viewNav', 'Choose a view')}
@@ -221,6 +236,66 @@ export default function CompetitionCategoryPage({ category }: { category: Compet
         )}
       </p>
     </PageContainer>
+  );
+}
+
+/**
+ * The four totals as stops on this category's line.
+ *
+ * It replaces one run-on sentence of middot-separated numbers, which asked the
+ * reader to parse "45 competitions · 348 editions · 1814 entries · 743 linked
+ * to a profile" as four facts. Four stations is the same information with the
+ * grouping done for them.
+ *
+ * NO CONNECTOR IS DRAWN BETWEEN THE RINGS. A single illustrative transit line
+ * always bends (hard rule 1), and a bending connector between four items that
+ * wrap onto two rows at narrow widths cannot be drawn honestly — the geometry
+ * would break at exactly the breakpoint it is meant to survive. The rings alone
+ * carry the vocabulary.
+ *
+ * Every ring is the SAME fill, because the four are peers. A track colour here
+ * would be encoding a rank if they differed, and this system does not let
+ * colour mean a state.
+ */
+function StatStations({
+  track,
+  icon,
+  totals,
+}: {
+  track: Track;
+  icon: TransitIconName;
+  totals: { competitions: number; editions: number; entrants: number; linked: number };
+}) {
+  const { t } = useTranslation();
+
+  const stops: { key: string; value: number; label: string }[] = [
+    {
+      key: 'competitions',
+      value: totals.competitions,
+      label: t('competitions.stat.competitions', 'Competitions'),
+    },
+    { key: 'editions', value: totals.editions, label: t('competitions.stat.editions', 'Editions') },
+    { key: 'entrants', value: totals.entrants, label: t('competitions.stat.entrants', 'Entries') },
+    {
+      key: 'linked',
+      value: totals.linked,
+      label: t('competitions.stat.linked', 'Linked to a profile'),
+    },
+  ];
+
+  return (
+    <dl className="m-0 mt-6 flex flex-wrap items-start gap-x-8 gap-y-4">
+      {stops.map((s) => (
+        <div key={s.key} className="flex items-start gap-2">
+          <StationRing state="typed" track={track} className="mt-1" />
+          <div>
+            <dt className="text-2xs uppercase tracking-label text-muted-foreground">{s.label}</dt>
+            <dd className="m-0 text-title font-bold tabular-nums leading-tight">{s.value}</dd>
+          </div>
+        </div>
+      ))}
+      <TransitIcon name={icon} size={32} className="ms-auto hidden self-center sm:block" />
+    </dl>
   );
 }
 

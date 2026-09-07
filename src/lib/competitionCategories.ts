@@ -16,7 +16,26 @@
  * A param in the second position ties with `/:locale/<X>` and resolves into
  * LocaleRouter's unknown-locale -> NotFound branch (src/routes.tsx). Each slug
  * below is registered as its own literal Route.
+ *
+ * EACH TYPE IS A LINE: a route bullet (letter + track colour) and a wayfinding
+ * glyph, defined here and nowhere else, so the hub card, the category masthead
+ * and anything added later cannot disagree about what colour a type is.
+ *
+ * THE TRACK IS FOR TELLING THE SIX APART AND NOTHING ELSE. Six types over four
+ * colours works for the same reason `ROUTE_BULLET_MAP` runs city C-green beside
+ * country C-yellow: the LETTER carries identity and the colour only separates
+ * neighbours. Do NOT "improve" this into a mapping from the design system's
+ * line names (feminine / masculine / non-binary / agender) onto the people who
+ * compete — filing trans pageants under a "non-binary" line would assert
+ * something about trans women that nobody here is entitled to assert, and a
+ * colour that means something is a colour that can be wrong. It is deliberately
+ * arbitrary, and the only constraints it satisfies are that every
+ * (letter, track) pair is unused in `ROUTE_BULLET_MAP` and that no two adjacent
+ * cards on the hub grid repeat a colour.
  */
+
+import type { Track } from '@/components/transit/routeBulletMap';
+import type { TransitIconName } from '@/components/transit/transitIconPaths';
 
 export type CompetitionCategory =
   'drag_series' | 'drag_pageant' | 'trans_pageant' | 'gay_title' | 'leather_title' | 'drag_king';
@@ -38,6 +57,10 @@ export interface CategoryDef {
    * has no episodes, and offering an empty grid is an invitation to a dead end.
    */
   hasGrid: boolean;
+  /** This type's route bullet. See the header for why the track is arbitrary. */
+  bullet: { letter: string; track: Track };
+  /** Wayfinding glyph. Never takes a track colour — it is ink on paper. */
+  icon: TransitIconName;
 }
 
 export const COMPETITION_CATEGORIES: readonly CategoryDef[] = [
@@ -53,6 +76,8 @@ export const COMPETITION_CATEGORIES: readonly CategoryDef[] = [
     metaDescription:
       'Every season of the Drag Race franchises and the independent drag competition series, with winners, runners-up and an episode-by-episode placement grid.',
     hasGrid: true,
+    bullet: { letter: 'S', track: 'pink' },
+    icon: 'theater',
   },
   {
     id: 'drag_king',
@@ -66,6 +91,8 @@ export const COMPETITION_CATEGORIES: readonly CategoryDef[] = [
     metaDescription:
       'Drag king competitions: King of Drag and the San Francisco Drag King Contest, which has run since 1994.',
     hasGrid: true,
+    bullet: { letter: 'K', track: 'blue' },
+    icon: 'nightlife',
   },
   {
     id: 'drag_pageant',
@@ -79,6 +106,8 @@ export const COMPETITION_CATEGORIES: readonly CategoryDef[] = [
     metaDescription:
       'Drag pageantry systems: Miss Gay America since 1973 and Miss Continental since 1980, with every titleholder by year.',
     hasGrid: false,
+    bullet: { letter: 'P', track: 'green' },
+    icon: 'disco',
   },
   {
     id: 'trans_pageant',
@@ -92,6 +121,8 @@ export const COMPETITION_CATEGORIES: readonly CategoryDef[] = [
     metaDescription:
       'Transgender beauty pageants: Miss International Queen, Miss T World, Miss Star International and Miss Fabulous Thailand, with every titleholder by year.',
     hasGrid: false,
+    bullet: { letter: 'T', track: 'yellow' },
+    icon: 'trans-pride',
   },
   {
     id: 'gay_title',
@@ -105,6 +136,8 @@ export const COMPETITION_CATEGORIES: readonly CategoryDef[] = [
     metaDescription:
       'Gay titleholder contests: Mr Gay World, Mr Gay Europe and Mr. Gay India, with every titleholder by year.',
     hasGrid: false,
+    bullet: { letter: 'G', track: 'pink' },
+    icon: 'achillean',
   },
   {
     id: 'leather_title',
@@ -118,6 +151,8 @@ export const COMPETITION_CATEGORIES: readonly CategoryDef[] = [
     metaDescription:
       'Leather and fetish title contests: International Mr. Leather since 1979 and Mister International Rubber, with every titleholder by year.',
     hasGrid: false,
+    bullet: { letter: 'L', track: 'blue' },
+    icon: 'collar',
   },
 ];
 

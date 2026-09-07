@@ -3,13 +3,17 @@ import { useTranslation } from 'react-i18next';
 
 import { PageContainer } from '@/components/layout/PageContainer';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { RouteBullet } from '@/components/transit/RouteBullet';
 import { TrackLoader } from '@/components/transit/TrackLoader';
+import { TransitIcon } from '@/components/transit/TransitIcon';
+import { TRACK_STROKE } from '@/components/transit/routeBulletMap';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { useCompetitionOverview } from '@/hooks/useCompetitions';
 import { useMeta } from '@/hooks/useMeta';
 import {
   COMPETITION_CATEGORIES,
   categoryPath,
+  type CategoryDef,
   type CompetitionCategory,
 } from '@/lib/competitionCategories';
 
@@ -36,6 +40,43 @@ import {
 interface CategoryCount {
   competitions: number;
   editions: number;
+}
+
+/**
+ * The hub is a LINE KEY, and it is the one competition surface that carries
+ * more than one accent.
+ *
+ * "One accent per context" is a hard rule, and the documented exception is the
+ * artifact whose own subject IS the set of lines — a city network diagram, or
+ * `LineKey` on the map, which draws every layer's colour in a single component
+ * because a key that names the lines has to show them. Six cards, six lines,
+ * one legend. Every category page below it takes a single track, which is
+ * where the rule does its work.
+ */
+
+/** The bent length of track between the bullet and the destination glyph.
+ *
+ *  It BENDS because a single illustrative transit line always does (hard rule
+ *  1) — the only straight-run exception is an octilinear network diagram, and
+ *  one segment is not a network. Both runs and the turn are on the 0/45/90
+ *  grid, so it is a piece of subway drawing rather than a swoosh.
+ *
+ *  A track-coloured line takes no ink casing: it is far past the size at which
+ *  WCAG 1.4.11 applies and reads as illustration. The BULLET beside it is the
+ *  mark that carries the ring. */
+function TrackSegment({ track }: { track: CategoryDef['bullet']['track'] }) {
+  return (
+    <svg width={44} height={38} viewBox="0 0 44 38" aria-hidden focusable="false">
+      <path
+        d="M 2 30 L 14 30 L 26 18 L 42 18"
+        fill="none"
+        stroke={TRACK_STROKE[track]}
+        strokeWidth={6}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
 }
 
 export default function Competitions() {
@@ -96,11 +137,33 @@ export default function Competitions() {
                 to={categoryPath(c)}
                 className="card-lift flex h-full flex-col rounded-container bg-card p-6 no-underline shadow-soft"
               >
+                {/*
+                 * Bullet, a bent length of track, destination glyph. The whole
+                 * mark is decorative: `RouteBullet` sets role="img" with the
+                 * type's name on it, and the card's own heading says the same
+                 * thing one line below, so leaving it exposed reads the label
+                 * twice. Colour is never the only cue here — the letter, the
+                 * glyph and the heading all carry it (WCAG 1.4.1).
+                 */}
+                <span aria-hidden className="mb-4 flex items-center gap-1">
+                  <RouteBullet
+                    type={c.id}
+                    letter={c.bullet.letter}
+                    track={c.bullet.track}
+                    label={c.label}
+                    size={38}
+                  />
+                  <TrackSegment track={c.bullet.track} />
+                  <TransitIcon name={c.icon} size={28} />
+                </span>
                 <span className="text-title font-bold leading-tight text-balance">
                   {t(c.labelKey, c.label)}
                 </span>
                 <span className="mt-2 text-15 text-muted-foreground">{t(c.blurbKey, c.blurb)}</span>
-                <span className="mt-4 text-2xs uppercase tracking-label tabular-nums text-muted-foreground">
+                {/* `mt-auto` bottoms the counts across a row of unequal blurbs,
+                    so the six read as one legend rather than six ragged cards
+                    (same grammar as TagIndexCard). */}
+                <span className="mt-auto pt-4 text-2xs uppercase tracking-label tabular-nums text-muted-foreground">
                   {/*
                    * "Counting" means LOADING and nothing else. A loaded-but-empty
                    * category must say zero: if the frontend ever ships ahead of the

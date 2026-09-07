@@ -1,6 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { ROUTE_BULLET_MAP } from '@/components/transit/routeBulletMap';
+import { TRANSIT_ICON_PATHS } from '@/components/transit/transitIconPaths';
 import { COMPETITION_CATEGORIES, categoryPath } from '@/lib/competitionCategories';
 
 /**
@@ -109,6 +111,57 @@ describe('competition category routes', () => {
     for (const c of COMPETITION_CATEGORIES) {
       expect(categoryPath(c)).toBe(`/competitions/${c.slug}`);
     }
+  });
+
+  it('gives every category a distinct bullet that collides with no entity line', () => {
+    // The header of competitionCategories.ts justifies six types over four
+    // track colours by pointing at ROUTE_BULLET_MAP's own city C-green vs
+    // country C-yellow: the LETTER carries identity. That only holds while the
+    // letters are actually unique and no pair duplicates an existing entity
+    // line — a competition bullet that renders identically to `personality` or
+    // `trip` would make the product's wayfinding ambiguous rather than dense.
+    const letters = COMPETITION_CATEGORIES.map((c) => c.bullet.letter);
+    expect(new Set(letters).size, 'two categories share a bullet letter').toBe(letters.length);
+
+    const taken = new Set(Object.values(ROUTE_BULLET_MAP).map((b) => `${b.letter}-${b.track}`));
+    for (const c of COMPETITION_CATEGORIES) {
+      const pair = `${c.bullet.letter}-${c.bullet.track}`;
+      expect(taken.has(pair), `${c.id} reuses the entity bullet ${pair}`).toBe(false);
+    }
+  });
+
+  it('never repeats a track colour on adjacent hub cards', () => {
+    // The hub renders COMPETITION_CATEGORIES in order at 1, 2 and 3 columns.
+    // Two same-coloured cards touching would read as one line split in half,
+    // which is the opposite of what a line legend is for. Checked at every
+    // column count the grid actually uses (grid-cols-1 / md:2 / lg:3).
+    const tracks = COMPETITION_CATEGORIES.map((c) => c.bullet.track);
+    for (const cols of [1, 2, 3]) {
+      for (let i = 0; i < tracks.length; i++) {
+        if (i % cols !== 0) {
+          expect(tracks[i], `cols=${cols}: card ${i} repeats its left neighbour`).not.toBe(
+            tracks[i - 1],
+          );
+        }
+        if (i >= cols) {
+          expect(tracks[i], `cols=${cols}: card ${i} repeats the card above`).not.toBe(
+            tracks[i - cols],
+          );
+        }
+      }
+    }
+  });
+
+  it('names a real wayfinding glyph for every category', () => {
+    // `icon` is typed as TransitIconName, so a typo is a compile error — but
+    // TRANSIT_ICON_PATHS is the runtime table, and a name present in the union
+    // with no path renders an empty <path d={undefined}>, i.e. an invisible
+    // icon that no type check can see.
+    for (const c of COMPETITION_CATEGORIES) {
+      expect(TRANSIT_ICON_PATHS[c.icon], `${c.id} has no drawn glyph`).toBeTruthy();
+    }
+    const icons = COMPETITION_CATEGORIES.map((c) => c.icon);
+    expect(new Set(icons).size, 'two categories share a glyph').toBe(icons.length);
   });
 
   it('offers the grid only where editions actually have episodes', () => {
