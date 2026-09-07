@@ -4774,6 +4774,24 @@
       "showAll": "[JA] Show all {{n}} seasons",
       "empty": "[JA] No season matches.",
       "filterFormat": "[JA] Filter by format"
+    },
+    "category": {
+      "dragSeries": "[JA] Drag competition series",
+      "dragSeriesBlurb": "[JA] Episodic television: the Drag Race franchises alongside independent shows like Dragula, La Más Draga and Drag Den. Each season carries an episode-by-episode placement grid.",
+      "dragKing": "[JA] Drag king competitions",
+      "dragKingBlurb": "[JA] Competitions for drag kings. King of Drag is a television series and sits here rather than with the other series, because filed among the queen franchises it would be one row in thirty-three.",
+      "dragPageant": "[JA] Drag pageantry",
+      "dragPageantBlurb": "[JA] Drag pageantry systems, decided at a single event rather than across a season. Miss Gay America has run since 1973 and Miss Continental since 1980 — both older than the television.",
+      "transPageant": "[JA] Transgender pageants",
+      "transPageantBlurb": "[JA] Beauty pageants for transgender women, including Miss International Queen — which describes itself as the world’s largest — and Miss T World.",
+      "gayTitle": "[JA] Gay titleholder contests",
+      "gayTitleBlurb": "[JA] Titleholder contests for gay men. Mr Gay World is an international final; Mr Gay Europe describes itself as a competition about LGBTQIA+ themes rather than a pageant.",
+      "leatherTitle": "[JA] Leather & fetish titles",
+      "leatherTitleBlurb": "[JA] Leather and fetish title contests, both run as multi-day conventions. International Mr. Leather has been held since 1979 and calls itself a convention and competition, not a pageant.",
+      "hubTitle": "[JA] Competitions by type",
+      "hubIntro": "[JA] Comparison only makes sense between similar contests, so each type has its own page.",
+      "backToHub": "[JA] All competition types",
+      "countLine": "[JA] {{competitions}} competitions · {{editions}} editions"
     }
   }
 }
