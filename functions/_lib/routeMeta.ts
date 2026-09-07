@@ -126,7 +126,7 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
   // One entry per comparable type. This table also drives sitemap-static.xml,
   // so a category page missing here is invisible to search.
   '/competitions/drag-series': {
-    title: 'Drag Competition Series — Every Season | Queer Guide',
+    title: 'Drag Competition Series: Every Season | Queer Guide',
     description:
       'Every season of the Drag Race franchises and the independent drag competition series, with winners, runners-up and an episode-by-episode placement grid.',
   },
@@ -136,7 +136,7 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
       'Drag king competitions: King of Drag and the San Francisco Drag King Contest, which has run since 1994.',
   },
   '/competitions/drag-pageants': {
-    title: 'Drag Pageantry — Miss Gay America, Miss Continental | Queer Guide',
+    title: 'Drag Pageantry: Miss Gay America and Miss Continental | Queer Guide',
     description:
       'Drag pageantry systems: Miss Gay America since 1973 and Miss Continental since 1980, with every titleholder by year.',
   },
@@ -146,12 +146,12 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
       'Transgender beauty pageants: Miss International Queen, Miss T World, Miss Star International and Miss Fabulous Thailand, with every titleholder by year.',
   },
   '/competitions/gay-titles': {
-    title: 'Gay Titleholder Contests — Mr Gay World & Europe | Queer Guide',
+    title: 'Gay Titleholder Contests: Mr Gay World and Mr Gay Europe | Queer Guide',
     description:
       'Gay titleholder contests: Mr Gay World, Mr Gay Europe and Mr. Gay India, with every titleholder by year.',
   },
   '/competitions/leather-titles': {
-    title: 'Leather & Fetish Titles — IML, MIR | Queer Guide',
+    title: 'Leather and Fetish Titles: IML and MIR | Queer Guide',
     description:
       'Leather and fetish title contests: International Mr. Leather since 1979 and Mister International Rubber, with every titleholder by year.',
   },
