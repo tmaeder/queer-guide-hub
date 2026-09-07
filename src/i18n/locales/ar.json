@@ -4802,6 +4802,11 @@
       "hubIntro": "[AR] Comparison only makes sense between similar contests, so each type has its own page.",
       "backToHub": "[AR] All competition types",
       "countLine": "[AR] {{competitions}} competitions · {{editions}} editions"
-    }
+    },
+    "hubCountCompetitions_one": "[AR] {{count}} competition",
+    "hubCountCompetitions_other": "[AR] {{count}} competitions",
+    "hubCountEditions_one": "[AR] {{count}} edition",
+    "hubCountEditions_other": "[AR] {{count}} editions",
+    "hubCountsPending": "[AR] Counting"
   }
 }

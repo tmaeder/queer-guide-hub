@@ -4794,6 +4794,11 @@
       "hubIntro": "[DE] Comparison only makes sense between similar contests, so each type has its own page.",
       "backToHub": "[DE] All competition types",
       "countLine": "[DE] {{competitions}} competitions · {{editions}} editions"
-    }
+    },
+    "hubCountCompetitions_one": "[DE] {{count}} competition",
+    "hubCountCompetitions_other": "[DE] {{count}} competitions",
+    "hubCountEditions_one": "[DE] {{count}} edition",
+    "hubCountEditions_other": "[DE] {{count}} editions",
+    "hubCountsPending": "[DE] Counting"
   }
 }

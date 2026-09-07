@@ -4828,6 +4828,11 @@
       "hubIntro": "[RU] Comparison only makes sense between similar contests, so each type has its own page.",
       "backToHub": "[RU] All competition types",
       "countLine": "[RU] {{competitions}} competitions · {{editions}} editions"
-    }
+    },
+    "hubCountCompetitions_one": "[RU] {{count}} competition",
+    "hubCountCompetitions_other": "[RU] {{count}} competitions",
+    "hubCountEditions_one": "[RU] {{count}} edition",
+    "hubCountEditions_other": "[RU] {{count}} editions",
+    "hubCountsPending": "[RU] Counting"
   }
 }
