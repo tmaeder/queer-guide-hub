@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { worstCountryOf, travelVerdictOf } from '../useTripSafety';
 import type { CountrySafety } from '../useTripSafety';
+import { getScoreLabel } from '@/utils/equalityScore';
 
 /**
  * The fabricated defaults, pinned.
@@ -22,7 +23,11 @@ const mk = (over: Partial<CountrySafety>): CountrySafety =>
     name: 'X',
     code: null,
     equality_score: null,
-    scoreBreakdown: { score: 0, label: 'No Data', color: '', bgColor: '' },
+    // Built by the real function rather than hand-written: the literal here
+    // spelled `label: 'No Data'` and carried no `tier`, and the `as
+    // CountrySafety` cast below meant neither the wrong string nor the missing
+    // field ever failed a typecheck.
+    scoreBreakdown: getScoreLabel(null),
     criminalized: false,
     deathPenalty: false,
     deathPenaltyRisk: 'none',
