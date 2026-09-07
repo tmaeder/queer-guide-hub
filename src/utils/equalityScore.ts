@@ -10,18 +10,18 @@
 
 export interface EqualityScoreBreakdown {
   score: number;
+  /**
+   * The tier itself. Carried alongside the label so a caller that needs to
+   * translate, filter or style by tier does not have to match the English
+   * `label` back to one — see EQUALITY_TIER_I18N_KEY.
+   */
+  tier: EqualityTier;
   label: string;
   color: string;
   bgColor: string;
 }
 
-export type EqualityTier =
-  | 'very-high'
-  | 'high'
-  | 'moderate'
-  | 'low'
-  | 'very-low'
-  | 'unknown';
+export type EqualityTier = 'very-high' | 'high' | 'moderate' | 'low' | 'very-low' | 'unknown';
 
 export const EQUALITY_TIERS: readonly EqualityTier[] = [
   'very-high',
@@ -44,13 +44,46 @@ export const EQUALITY_TIER_CUTOFFS: ReadonlyArray<{ tier: EqualityTier; min: num
   { tier: 'very-low', min: 0 },
 ];
 
+/**
+ * The ONE tier→word map. /cities carried a second copy for as long as
+ * EqualityChip has existed; the two agreed on five tiers and disagreed on
+ * `unknown` — 'No Data' here against 'No data' there — and both strings
+ * rendered, so the same city read differently depending on which surface you
+ * were on. Resolved toward 'No data': this module already spells it that way in
+ * ten other places (parseSsuSummary, parseProtection), and the translated form
+ * these labels resolve to, `trips.safety.scoreLabel.noData`, is "No data" too.
+ * 'No Data' was the outlier in its own file.
+ *
+ * Anything that renders a tier word reads THIS map. Adding a tier means adding
+ * a row here and in EQUALITY_TIER_I18N_KEY; the drift test fails otherwise.
+ */
 export const EQUALITY_TIER_LABEL: Record<EqualityTier, string> = {
   'very-high': 'Very High',
   high: 'High',
   moderate: 'Moderate',
   low: 'Low',
   'very-low': 'Very Low',
-  unknown: 'No Data',
+  unknown: 'No data',
+};
+
+/**
+ * i18n key suffix per tier, for `trips.safety.scoreLabel.<key>`.
+ *
+ * It keys on the TIER, not on the English label, and that is the whole point.
+ * SafetyVerdict and TripSafetyBriefing each carried their own private
+ * `label → key` lookup over the strings above, both ending `?? 'noData'`. That
+ * fallback is silent, so editing a label — exactly what this commit does — turns
+ * a real tier into "No data" on a safety surface with nothing failing. A
+ * criminalising country whose tier word had drifted would have rendered as
+ * missing data rather than as very low.
+ */
+export const EQUALITY_TIER_I18N_KEY: Record<EqualityTier, string> = {
+  'very-high': 'veryHigh',
+  high: 'high',
+  moderate: 'moderate',
+  low: 'low',
+  'very-low': 'veryLow',
+  unknown: 'noData',
 };
 
 export function tierForScore(score: number | null | undefined): EqualityTier {
@@ -84,6 +117,7 @@ export function getScoreLabel(score: number | null | undefined): EqualityScoreBr
   const { color, bgColor } = TIER_LABEL_COLOR[tier];
   return {
     score: score ?? 0,
+    tier,
     label: EQUALITY_TIER_LABEL[tier],
     color,
     bgColor,
@@ -113,7 +147,14 @@ export function parseSsuDetails(ssu: string | null | undefined): {
   civil_union: string | null;
   civil_union_since: string | null;
 } {
-  if (!ssu) return { summary: 'No data', marriage: null, marriage_since: null, civil_union: null, civil_union_since: null };
+  if (!ssu)
+    return {
+      summary: 'No data',
+      marriage: null,
+      marriage_since: null,
+      civil_union: null,
+      civil_union_since: null,
+    };
   try {
     const parsed = JSON.parse(ssu);
     return {
@@ -124,7 +165,13 @@ export function parseSsuDetails(ssu: string | null | undefined): {
       civil_union_since: parsed.civil_union_since || null,
     };
   } catch {
-    return { summary: ssu, marriage: null, marriage_since: null, civil_union: null, civil_union_since: null };
+    return {
+      summary: ssu,
+      marriage: null,
+      marriage_since: null,
+      civil_union: null,
+      civil_union_since: null,
+    };
   }
 }
 
@@ -165,7 +212,8 @@ export function hasAnyCriminalizationSignal(input: unknown): boolean {
   if (c.legal === false) return true;
   if (typeof c.death_penalty === 'string' && /^yes$/i.test(c.death_penalty)) return true;
   if (typeof c.max_prison === 'string' && !/^(no|none|0)$/i.test(c.max_prison)) return true;
-  if (typeof c.penalty === 'string' && c.penalty && !/^no criminali[sz]ation$/i.test(c.penalty)) return true;
+  if (typeof c.penalty === 'string' && c.penalty && !/^no criminali[sz]ation$/i.test(c.penalty))
+    return true;
   return false;
 }
 
