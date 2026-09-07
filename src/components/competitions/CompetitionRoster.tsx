@@ -6,7 +6,7 @@ import { FilterChip } from '@/components/transit/FilterChip';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import type { CompetitionKind, RosterEntry } from '@/types/competition';
+import type { RosterEntry } from '@/types/competition';
 
 /**
  * Every entrant across every edition, searchable.
@@ -27,9 +27,14 @@ import type { CompetitionKind, RosterEntry } from '@/types/competition';
 
 const WINDOW = 40;
 
-type KindFilter = 'all' | CompetitionKind | 'winners';
-
-const KIND_ORDER: readonly KindFilter[] = ['all', 'drag_race', 'pageant', 'winners'];
+/**
+ * Chips group by FORMAT. They used to be "Drag Race / Pageants", which named
+ * eleven independent competitions after what they were not — and got it wrong
+ * for the leather and rubber contests, which are conventions, not pageants.
+ * The list is derived from the data so a new format needs no code change.
+ */
+const ALL = '\u0000all';
+const WINNERS = '\u0000winners';
 
 function entryKey(e: RosterEntry): string {
   return `${e.edition_slug}/${e.name}`;
@@ -53,21 +58,21 @@ function EntrantName({ entry }: { entry: RosterEntry }) {
 export function CompetitionRoster({ entries }: { entries: RosterEntry[] }) {
   const { t } = useTranslation();
   const [search, setSearch] = useState('');
-  const [kind, setKind] = useState<KindFilter>('all');
+  const [kind, setKind] = useState<string>(ALL);
   const [showAll, setShowAll] = useState(false);
 
-  const counts = useMemo(() => {
-    const out: Record<KindFilter, number> = {
-      all: entries.length,
-      drag_race: 0,
-      pageant: 0,
-      winners: 0,
-    };
+  const { formats, winnerCount } = useMemo(() => {
+    const out = new Map<string, number>();
+    let w = 0;
     for (const e of entries) {
-      out[e.kind] += 1;
-      if (e.winner) out.winners += 1;
+      const f = e.format ?? '';
+      if (f) out.set(f, (out.get(f) ?? 0) + 1);
+      if (e.winner) w += 1;
     }
-    return out;
+    return {
+      formats: [...out.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])),
+      winnerCount: w,
+    };
   }, [entries]);
 
   const viewKey = `${kind} ${search}`;
@@ -80,8 +85,8 @@ export function CompetitionRoster({ entries }: { entries: RosterEntry[] }) {
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return entries.filter((e) => {
-      if (kind === 'winners' && !e.winner) return false;
-      if (kind !== 'all' && kind !== 'winners' && e.kind !== kind) return false;
+      if (kind === WINNERS && !e.winner) return false;
+      if (kind !== ALL && kind !== WINNERS && (e.format ?? '') !== kind) return false;
       if (q === '') return true;
       return (
         e.name.toLowerCase().includes(q) ||
@@ -93,13 +98,6 @@ export function CompetitionRoster({ entries }: { entries: RosterEntry[] }) {
   }, [entries, kind, search]);
 
   const visible = showAll ? filtered : filtered.slice(0, WINDOW);
-
-  const kindLabel: Record<KindFilter, string> = {
-    all: t('competitions.kind.all', 'All'),
-    drag_race: t('competitions.kind.dragRace', 'Drag Race'),
-    pageant: t('competitions.kind.pageant', 'Pageants'),
-    winners: t('competitions.roster.winnersOnly', 'Winners'),
-  };
 
   return (
     <div>
@@ -121,13 +119,25 @@ export function CompetitionRoster({ entries }: { entries: RosterEntry[] }) {
           role="group"
           aria-label={t('competitions.roster.filter', 'Filter entrants')}
         >
-          {KIND_ORDER.map((k) => (
+          <FilterChip
+            active={kind === ALL}
+            onClick={() => setKind(ALL)}
+            className="whitespace-nowrap"
+            label={`${t('competitions.kind.all', 'All')} ${entries.length}`}
+          />
+          <FilterChip
+            active={kind === WINNERS}
+            onClick={() => setKind(WINNERS)}
+            className="whitespace-nowrap"
+            label={`${t('competitions.roster.winnersOnly', 'Winners')} ${winnerCount}`}
+          />
+          {formats.map(([f, n]) => (
             <FilterChip
-              key={k}
-              active={kind === k}
-              onClick={() => setKind(k)}
+              key={f}
+              active={kind === f}
+              onClick={() => setKind(f)}
               className="whitespace-nowrap"
-              label={`${kindLabel[k]} ${counts[k]}`}
+              label={`${f} ${n}`}
             />
           ))}
         </div>

@@ -50,11 +50,11 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
   // sees an empty shell. Counts are stated as "over N" on purpose: the corpus
   // grows with every season and an exact figure baked into prose would rot.
   '/competitions': {
-    h1: 'Drag Race seasons and LGBTQ+ titleholder pageants',
+    h1: 'Drag Race seasons and LGBTQ+ title contests',
     paragraphs: [
-      'Every season of the Drag Race television franchises and every year of the queer titleholder pageant circuit, in one dataset: over 30 competitions, more than 340 editions and over 1,800 entries covering fifty years of competitive drag and leather title history.',
+      'Every season of the Drag Race television franchises and every year of the queer title-contest circuit, in one dataset: over 30 competitions, more than 340 editions and over 1,800 entries covering fifty years of competitive drag and leather title history.',
       'The Drag Race side covers the US series and All Stars alongside the international franchises: UK, Canada, España, France, Down Under, Philippines, Thailand, Italia, Holland, Belgique, México, Brasil, Sverige and Germany. Each season lists its contestant count, episode count, air dates, network, the winner, every runner-up and Miss Congeniality, plus an episode-by-episode placement grid.',
-      'The pageant side covers International Mr. Leather, Miss Continental, Miss Gay America, Mr Gay World, Mr Gay Europe, Mister International Rubber, Miss International Queen, Miss Star International, Miss T World, Miss Fabulous Thailand and Mr. Gay India. Several of them predate the television by decades: Miss Gay America has run since 1973 and International Mr. Leather since 1979. Where a competitor already has a profile on Queer Guide, their entry links straight to it.',
+      'The title-contest side covers International Mr. Leather, Miss Continental, Miss Gay America, Mr Gay World, Mr Gay Europe, Mister International Rubber, Miss International Queen, Miss Star International, Miss T World, Miss Fabulous Thailand and Mr. Gay India. Several of them predate the television by decades: Miss Gay America has run since 1973 and International Mr. Leather since 1979. Where a competitor already has a profile on Queer Guide, their entry links straight to it.',
       'Season, contestant and placement data comes from Wikipedia and is published under CC BY-SA.',
     ],
     links: [

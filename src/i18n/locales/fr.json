@@ -4778,7 +4778,8 @@
       "missCongeniality": "[FR] Miss Congeniality",
       "outlet": "[FR] Network / organizer",
       "showAll": "[FR] Show all {{n}} seasons",
-      "empty": "[FR] No season matches."
+      "empty": "[FR] No season matches.",
+      "filterFormat": "[FR] Filter by format"
     }
   }
 }

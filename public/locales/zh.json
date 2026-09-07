@@ -4772,7 +4772,8 @@
       "missCongeniality": "[ZH] Miss Congeniality",
       "outlet": "[ZH] Network / organizer",
       "showAll": "[ZH] Show all {{n}} seasons",
-      "empty": "[ZH] No season matches."
+      "empty": "[ZH] No season matches.",
+      "filterFormat": "[ZH] Filter by format"
     }
   }
 }

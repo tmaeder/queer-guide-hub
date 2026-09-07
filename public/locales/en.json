@@ -4719,9 +4719,7 @@
       "empty": "No entrant matches."
     },
     "kind": {
-      "all": "All",
-      "dragRace": "Drag Race",
-      "pageant": "Pageants"
+      "all": "All"
     },
     "table": {
       "search": "Search seasons",
@@ -4739,7 +4737,8 @@
       "missCongeniality": "Miss Congeniality",
       "outlet": "Network / organizer",
       "showAll": "Show all {{n}} seasons",
-      "empty": "No season matches."
+      "empty": "No season matches.",
+      "filterFormat": "Filter by format"
     }
   }
 }

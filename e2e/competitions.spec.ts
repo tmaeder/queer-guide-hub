@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 
 /**
- * /competitions — the Drag Race + pageant spine.
+ * /competitions — the Drag Race and title-contest spine.
  *
  * THESE RUN AGAINST PRODUCTION by default (playwright.config.ts sets
  * `baseURL` to https://queer.guide unless E2E_BASE_URL overrides it).
@@ -107,7 +107,7 @@ test.describe('@smoke competitions', () => {
     expect(rows, 'season table rows').toBeGreaterThan(10);
   });
 
-  test('carries both domains, and the pageants are not an afterthought', async ({ page }) => {
+  test('carries both the series and the independent title contests', async ({ page }) => {
     await gotoView(page, 'seasons');
     await requireCorpus(page);
 
@@ -116,10 +116,10 @@ test.describe('@smoke competitions', () => {
     // unfiltered ("Canada's Drag Race" through "Drag Race España" is all you
     // get). Both halves must be reached through the filter. Asserting against
     // the unfiltered body is how this test first failed on production, twice:
-    // once for the pageant and again for the franchise.
+    // once for the title contest and again for the franchise.
     for (const [term, why] of [
       ["RuPaul's Drag Race", 'the flagship TV franchise'],
-      ['Miss Continental', 'a pageant, not just the TV franchises'],
+      ['International Mr. Leather', 'an independent title contest, not just the TV franchises'],
     ] as const) {
       await search(page).fill(term);
       await expect(
@@ -127,6 +127,15 @@ test.describe('@smoke competitions', () => {
         `${why} must be reachable`,
       ).toBeVisible(RENDER);
     }
+
+    // International Mr. Leather calls itself "a multi-day convention and
+    // competition". It was briefly filed under a `pageant` bucket invented to
+    // mean "not Drag Race"; this asserts the page never describes it that way
+    // again. The word is legitimate elsewhere (Miss Gay America is "a national
+    // pageant for female impersonators") — it is wrong HERE.
+    await search(page).fill('International Mr. Leather');
+    const iml = await page.locator('main').innerText(RENDER);
+    expect(iml, 'IML must not be labelled a pageant').not.toMatch(/pageant/i);
   });
 
   test('renders every runner-up, not just the first', async ({ page }) => {
@@ -248,7 +257,7 @@ test.describe('@smoke competitions', () => {
     });
     expect(res.status()).toBe(200);
     const html = await res.text();
-    expect(html).toMatch(/Drag Race seasons and LGBTQ\+ titleholder pageants/);
+    expect(html).toMatch(/Drag Race seasons and LGBTQ\+ title contests/);
     expect(html).toMatch(/International Mr\.? Leather/);
   });
 });
