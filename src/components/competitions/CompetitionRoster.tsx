@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { FilterChip } from '@/components/transit/FilterChip';
+import { placementVisual } from '@/lib/dragPlacement';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/Image';
@@ -222,8 +223,26 @@ export function CompetitionRoster({ entries }: { entries: RosterEntry[] }) {
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-baseline gap-2">
                 <EntrantName entry={e} />
+                {/*
+                 * The WIN swatch from the locked placement palette, NOT a
+                 * track colour. `variant="ink"` is `bg-track-pink`, and a track
+                 * may never encode a state — winning is an outcome. The grid
+                 * already colours this exact outcome from `dragPlacement.ts`,
+                 * which is the ESLint-allowlisted functional palette that
+                 * exists for outcome encoding, so the badge and the grid legend
+                 * now agree instead of using two unrelated colour systems for
+                 * one fact. The word "Winner" carries it regardless of colour.
+                 */}
                 {e.winner ? (
-                  <Badge variant="ink">{t('competitions.winner', 'Winner')}</Badge>
+                  <Badge
+                    variant="ink"
+                    style={{
+                      backgroundColor: `hsl(${placementVisual('win').tint})`,
+                      color: `hsl(${placementVisual('win').ink})`,
+                    }}
+                  >
+                    {t('competitions.winner', 'Winner')}
+                  </Badge>
                 ) : null}
                 {e.runner_up ? (
                   <Badge variant="soft">{t('competitions.runnerUp', 'Runner-up')}</Badge>
