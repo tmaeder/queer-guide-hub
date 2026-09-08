@@ -1,4 +1,4 @@
--- Revive 14 glossary terms that two sweeps culled, and repair two miscategorised
+-- Revive 15 glossary terms that two sweeps culled, and repair two miscategorised
 -- or mis-summarised rows.
 --
 -- Found by comparing the glossary against three English Wikipedia categories —
@@ -7,7 +7,7 @@
 -- migration handles the second one, which was the more surprising: a large part
 -- of the "missing" vocabulary was not missing at all. It was DEPRECATED.
 --
--- All 14 were culled by one of two passes, neither of which was reasoning about
+-- All 15 were culled by one of two passes, neither of which was reasoning about
 -- glossary terms:
 -- TWO CANDIDATES WERE DROPPED BECAUSE THEY ARE HELD AS ALIASES, and the two
 -- cases are not the same finding:
@@ -36,14 +36,14 @@
 --                                              gender-bender, homonationalism,
 --                                              lesbian-feminism, queer-erasure
 --   2026-06-05 orphan audit ("no entity      — bi-erasure, gay-separatism, heterosexism,
---   assignments, relations, synonyms,          homophile-movement, men-who-have-sex-with-men,
---   or aliases")                               no-homo, pinkwashing, queer-theory,
---                                              transmisogyny
+--   assignments, relations, synonyms,          homophile-movement, lesbophobia,
+--   or aliases")                               men-who-have-sex-with-men, no-homo,
+--                                              pinkwashing, queer-theory, transmisogyny
 --
 -- THE PREMISE OF BOTH IS FALSE FOR A GLOSSARY TERM, which is exactly the finding
 -- 20261211100000 recorded when it revived `femdom`, `voyeur` and `pretzel` on
 -- identical grounds: a glossary term has no entity assignments by nature, so
--- those sweeps culled vocabulary rather than junk. None of the 14 is merged
+-- those sweeps culled vocabulary rather than junk. None of the 15 is merged
 -- (merged_into_id is NULL on every one), so none is a redirect to a surviving
 -- concept — they are simply gone. Every one carries a real body, 323 to 558
 -- characters, so nothing here is being invented; the prose already existed and
@@ -59,7 +59,7 @@
 -- comes back UNPUBLISHED — seo_indexable=false, human_reviewed=false,
 -- verification_status='unverified'. Rewriting them here would be the LLM prose
 -- rewrite this repo has banned since the judge measured at ~19% precision.
--- Reviving them published would be worse: most of the 14 are still
+-- Reviving them published would be worse: most of the 15 are still
 -- seo_indexable=true on their deprecated rows, so a revive that did not clear
 -- that flag would put unreviewed machine prose straight in front of crawlers.
 --
@@ -121,6 +121,7 @@ begin
     ('gay-separatism',            'political-activism'),
     ('heterosexism',              'violence-hate'),
     ('transmisogyny',             'violence-hate'),
+    ('lesbophobia',               'violence-hate'),
     ('men-who-have-sex-with-men', 'sexual-health'),
     ('no-homo',                   'slang-terminology'),
     ('bi-erasure',                'sexual-orientation');
@@ -190,8 +191,8 @@ begin
       from public.unified_tags t where t.slug = rec.slug;
   end loop;
 
-  if v_n <> 14 then
-    raise exception 'society revivals: expected 14, revived %', v_n;
+  if v_n <> 15 then
+    raise exception 'society revivals: expected 15, revived %', v_n;
   end if;
 
   ------------------------------------------------- repair: trauma summary line

@@ -151,7 +151,7 @@ describe('society revivals', () => {
   });
 
   it('asserts the exact revival count', () => {
-    expect(sql).toMatch(/if v_n <> 14 then/);
+    expect(sql).toMatch(/if v_n <> 15 then/);
   });
 });
 
