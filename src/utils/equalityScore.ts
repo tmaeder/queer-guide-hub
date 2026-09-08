@@ -54,15 +54,27 @@ export const EQUALITY_TIER_CUTOFFS: ReadonlyArray<{ tier: EqualityTier; min: num
  * these labels resolve to, `trips.safety.scoreLabel.noData`, is "No data" too.
  * 'No Data' was the outlier in its own file.
  *
+ * Sentence case, matching `trips.safety.scoreLabel` in en.json word for word.
+ * That was the THIRD spelling of this vocabulary: these strings are the
+ * defaultValue behind those keys, so a surface WITH a translation rendered
+ * "Very high" while one without a key — /cities, the home city cards — rendered
+ * "Very High" from the same tier. Only `very-high` and `very-low` actually
+ * differed; the other four already agreed, which is what kept it unnoticed.
+ *
+ * The code moved rather than en.json, because en.json is the form ten other
+ * locales were translated against, and because sentence case is what this file
+ * already used for `unknown` and what the repo's copy voice calls for.
+ *
  * Anything that renders a tier word reads THIS map. Adding a tier means adding
- * a row here and in EQUALITY_TIER_I18N_KEY; the drift test fails otherwise.
+ * a row here and in EQUALITY_TIER_I18N_KEY, and giving it an en.json entry;
+ * the drift tests fail on any of the three being missing or disagreeing.
  */
 export const EQUALITY_TIER_LABEL: Record<EqualityTier, string> = {
-  'very-high': 'Very High',
+  'very-high': 'Very high',
   high: 'High',
   moderate: 'Moderate',
   low: 'Low',
-  'very-low': 'Very Low',
+  'very-low': 'Very low',
   unknown: 'No data',
 };
 
