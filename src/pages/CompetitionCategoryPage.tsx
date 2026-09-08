@@ -284,9 +284,20 @@ function StatStations({
   ];
 
   return (
-    <dl className="m-0 mt-6 flex flex-wrap items-start gap-x-8 gap-y-4">
+    /*
+     * `data-testid` because the e2e probe has to find these WITHOUT depending
+     * on their copy. It used to match the run-on sentence these stations
+     * replaced; when the copy went, the regex could never match, so every data
+     * test waited out its full 45s timeout three times over and the whole
+     * Critical paths job blew its 20-minute budget — reported as `cancelled`,
+     * which reads like a concurrency cancellation and is not one.
+     */
+    <dl
+      className="m-0 mt-6 flex flex-wrap items-start gap-x-8 gap-y-4"
+      data-testid="competition-totals"
+    >
       {stops.map((s) => (
-        <div key={s.key} className="flex items-start gap-2">
+        <div key={s.key} className="flex items-start gap-2" data-stat={s.key}>
           <StationRing state="typed" track={track} className="mt-1" />
           <div>
             <dt className="text-2xs uppercase tracking-label text-muted-foreground">{s.label}</dt>
