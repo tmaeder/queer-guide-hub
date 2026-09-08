@@ -26,6 +26,7 @@ import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
 import { safeErrCode } from '../_shared/safe-error.ts'
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
 import { cityNameCandidates } from '../_shared/city-name-normalize.ts'
+import { plausibleCityScalar } from '../_shared/city-scalar-bounds.ts'
 import {
   airportQuery, applyLabels, capitalQuery, parseCityFacts, parseCityNames, pickAirports,
   pickCapitals, pickUniversities, resolveLabels, sparqlUrl, universityQuery,
@@ -392,6 +393,12 @@ async function runLinkPhase(
   const labelCache = new Map<string, string>()
   let processed = 0, updated = 0, skipped = 0, failed = 0, aliasesWritten = 0
   const results: Array<Record<string, unknown>> = []
+  // Values Wikidata offered that are physically impossible, refused before they
+  // could be written. Reported per run rather than dropped: a systematic upstream
+  // change (a unit retired, a bot rewriting P2046) must show up as a rising
+  // number, not as silence. Same reasoning as the `logodev_unauthorized` tally —
+  // a refusal we cannot see is indistinguishable from nothing to refuse.
+  const implausibleScalars: string[] = []
 
   for (const c of rows) {
     const started = Date.now()
@@ -506,17 +513,33 @@ async function runLinkPhase(
 
       // --- 4. Group-A columns, empty-only --------------------------------
       if (facts) {
-        if (facts.population != null) {
+        // THIS is the path that wrote every impossible scalar in the corpus —
+        // 181 areas, El Reno at 8,300,000,226 km2 — not `pipeline-validate`,
+        // which only ever sees `ingestion_staging` and is not on this code path
+        // at all. A plausibility check added only to the validator would not have
+        // stopped any of it. Reject here, BEFORE addCandidate, so an impossible
+        // value does not become provenance either; and count it, so a systematic
+        // upstream change shows up as a number rather than as silence.
+        const scalarReject = (field: 'area_km2' | 'elevation_m' | 'population', v: number) => {
+          implausibleScalars.push(`${c.id}:${field}=${v}`)
+        }
+        if (facts.population != null && !plausibleCityScalar('population', facts.population)) {
+          scalarReject('population', facts.population)
+        } else if (facts.population != null) {
           addCandidate(prov, 'population', 'wikidata', facts.population)
           if (c.population == null || stale('population', c.population)) update.population = facts.population
           else if (applyRankFix('population', c.population, facts.population, provBefore, update)) rankFixed.push('population')
         }
-        if (facts.area_km2 != null) {
+        if (facts.area_km2 != null && !plausibleCityScalar('area_km2', facts.area_km2)) {
+          scalarReject('area_km2', facts.area_km2)
+        } else if (facts.area_km2 != null) {
           addCandidate(prov, 'area_km2', 'wikidata', facts.area_km2)
           if (c.area_km2 == null || stale('area_km2', c.area_km2)) update.area_km2 = facts.area_km2
           else if (applyRankFix('area_km2', c.area_km2, facts.area_km2, provBefore, update)) rankFixed.push('area_km2')
         }
-        if (facts.elevation_m != null) {
+        if (facts.elevation_m != null && !plausibleCityScalar('elevation_m', facts.elevation_m)) {
+          scalarReject('elevation_m', facts.elevation_m)
+        } else if (facts.elevation_m != null) {
           addCandidate(prov, 'elevation_m', 'wikidata', facts.elevation_m)
           if (c.elevation_m == null || stale('elevation_m', c.elevation_m)) update.elevation_m = facts.elevation_m
           else if (applyRankFix('elevation_m', c.elevation_m, facts.elevation_m, provBefore, update)) rankFixed.push('elevation_m')
@@ -664,7 +687,13 @@ async function runLinkPhase(
     }
   }
 
-  return jsonResponse({ phase: 'link', processed, updated, skipped, failed, aliases_written: aliasesWritten, dry_run: dryRun, results }, 200, req)
+  return jsonResponse({
+    phase: 'link', processed, updated, skipped, failed,
+    aliases_written: aliasesWritten,
+    implausible_scalars_rejected: implausibleScalars.length,
+    implausible_scalars: implausibleScalars.slice(0, 20),
+    dry_run: dryRun, results,
+  }, 200, req)
 }
 
 // ------------------------------------------------------------------ phase: sparql
