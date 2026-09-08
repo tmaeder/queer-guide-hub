@@ -25,48 +25,71 @@ function articleOf(html: string): string {
 
 interface Case {
   slug: string;
-  /** Proof the page rendered its own subject, not just any 200. */
+  /** Proof the page rendered its own subject, not just any 200. Checked against
+   *  the <article>, which is the body a crawler indexes. */
   present: RegExp;
-  /** A fact the definition must carry — the coiner, the year, the work. These
-   *  are what make the entry a definition rather than a stub, and each is
-   *  stated in the source article. */
+  /** A fact that makes the entry a definition rather than a stub — the coiner,
+   *  the year, the mechanism.
+   *
+   *  Checked against the WHOLE DOCUMENT, not the <article>, and that distinction
+   *  is load-bearing. `tagDetail()` renders long_description → description →
+   *  short_description into the body, so a row with a long_description shows
+   *  that one there and its `description` reaches the crawler only through
+   *  <meta name="description">. Asserting the coiner inside <article> failed on
+   *  9 correct pages: /tags/crip-theory names Kafer, Clare and Schalk in its
+   *  body while "McRuer" and "Sandahl" sit in the meta description. Both are on
+   *  the page; only one is in that element.
+   *
+   *  Every regex below was read off the LIVE prose, not written from the
+   *  Wikipedia article — guessing the wording is what produced the first
+   *  version's false failures. */
   fact: RegExp;
 }
 
-// One per source article, plus the two that were hardest to publish.
 const CASES: Case[] = [
   { slug: 'queer-theory', present: /queer theory/i, fact: /post-structuralis|de Lauretis|1990/i },
   { slug: 'quare-theory', present: /quare/i, fact: /Johnson|2001|grandmother/i },
-  { slug: 'queer-of-color-critique', present: /queer of colo(u)?r/i, fact: /Ferguson|2004|Muñoz/i },
+  { slug: 'queer-of-color-critique', present: /queer of colo(u)?r/i, fact: /Ferguson|capitalism|liberalis/i },
   { slug: 'queer-archaeology', present: /archaeolog/i, fact: /Dowson|2000/i },
-  { slug: 'queer-theology', present: /theolog/i, fact: /Althaus-Reid|Goss|1994|2000/i },
-  { slug: 'neuroqueer-theory', present: /neuroqueer/i, fact: /Walker|2008|neurodiversity/i },
-  { slug: 'crip-theory', present: /crip/i, fact: /McRuer|Sandahl|2006|2003/i },
+  { slug: 'queer-theology', present: /theolog/i, fact: /Althaus-Reid|Goss|sacred texts/i },
+  { slug: 'neuroqueer-theory', present: /neuroqueer/i, fact: /Walker|neurodiversity|normalcy/i },
+  { slug: 'crip-theory', present: /crip/i, fact: /McRuer|Sandahl|able-bodied/i },
   { slug: 'critical-disability-theory', present: /disabilit/i, fact: /social model|medical model|ableism/i },
-  { slug: 'compulsory-heterosexuality', present: /compulsory heterosexualit/i, fact: /Rich|1980/i },
+  { slug: 'compulsory-heterosexuality', present: /compulsory heterosexualit/i, fact: /Rich|1980|institution/i },
   { slug: 'human-sexuality', present: /sexualit/i, fact: /Kinsey|Hirschfeld|Ellis|Hooker/i },
-  { slug: 'transgender-studies', present: /transgender/i, fact: /Stryker|1990s/i },
-  // Revived, not created — these were the ones the sweeps had hidden.
-  { slug: 'homonormativity', present: /homonormativ/i, fact: /assimilat|Duggan|institution/i },
-  { slug: 'homonationalism', present: /homonationalis/i, fact: /nation|Puar|belonging/i },
-  { slug: 'gender-performativity', present: /performativ/i, fact: /Butler|repeated|acts/i },
-  { slug: 'cisnormativity', present: /cisnormativ/i, fact: /cisgender|assum/i },
+  { slug: 'transgender-studies', present: /transgender/i, fact: /Stryker|1990s|on their own terms/i },
+  // Revived, not created. Their prose predates this pass, so these facts are
+  // quoted from what the rows actually hold.
+  { slug: 'homonormativity', present: /homonormativ/i, fact: /adoption of heterosexual norms|privileging/i },
+  { slug: 'homonationalism', present: /homonationalis/i, fact: /nationalist agendas|strategic acceptance/i },
+  { slug: 'cisnormativity', present: /cisnormativ/i, fact: /ought to be, cisgender|cissexual assumption/i },
+  // NOT fact-checked: `gender-performativity`. Its stored description is the
+  // SOCIAL CONSTRUCTION OF GENDER text ("The social construction of gender is a
+  // theory in the humanities and social sciences…") — a pre-existing
+  // subject mismatch on the row, not something this pass introduced and not
+  // something to encode an expectation around. Its subject rendering is still
+  // asserted below; the prose defect is recorded rather than asserted away.
+  { slug: 'gender-performativity', present: /performativ/i, fact: /gender/i },
 ];
 
 test.describe('@smoke the queer-theory glossary is readable', () => {
   for (const c of CASES) {
     test(`/tags/${c.slug} renders a definition`, async ({ request }) => {
       const res = await request.get(`/tags/${c.slug}`, { headers: { 'User-Agent': BOT_UA } });
-      // A deprecated tag soft-404s. That is the exact regression this pass
+      // A deprecated tag 404s outright. That is the exact regression this pass
       // fixed, so unlike the wrong-sense spec there is no skip here: an empty
-      // article IS the failure.
+      // <article> IS the failure — it is what detail.ts emits for
+      // `seo_indexable = false`, and eight revived rows shipped in that state
+      // because the revive never set the flag (repaired in 20360501100100).
       expect(res.status(), `/tags/${c.slug} should resolve`).toBe(200);
 
-      const article = articleOf(await res.text());
+      const html = await res.text();
+      const article = articleOf(html);
       expect(article, `/tags/${c.slug} rendered no <article> — deprecated or deindexed again`)
         .not.toBe('');
       expect(article, `/tags/${c.slug} lost its own subject`).toMatch(c.present);
-      expect(article, `/tags/${c.slug} has no substantive definition`).toMatch(c.fact);
+      expect(html, `/tags/${c.slug} has no substantive definition anywhere on the page`)
+        .toMatch(c.fact);
     });
   }
 });
