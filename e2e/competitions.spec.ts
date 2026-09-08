@@ -51,7 +51,12 @@ async function corpusIsLive(page: Page): Promise<boolean> {
   // ten seconds to settle; a naive "did the error appear in 6s" probe returns
   // "live" while the query is still retrying and every later assertion then
   // fails against an empty page instead of skipping.
-  const totals = page.locator('main').getByText(/competitions ·.*editions ·.*entries/);
+  // Found by data-testid, never by copy: this probe matched the old run-on
+  // middot sentence, and when the redesign replaced it with stat stations the
+  // regex silently stopped matching. Nothing failed fast — every data test sat
+  // out its 45s timeout, three attempts each, and Critical paths hit its
+  // 20-minute job budget four times running.
+  const totals = page.getByTestId('competition-totals');
   const failed = page.locator('main').getByText(/could not be loaded/i);
   await expect(totals.or(failed).first()).toBeVisible({ timeout: 45_000 });
   if (!(await totals.isVisible())) return false;
@@ -98,13 +103,18 @@ async function requireCorpus(page: Page) {
 
 /** The totals line the page prints about itself, parsed rather than assumed. */
 async function readTotals(page: Page) {
-  const text = await page
-    .locator('main')
-    .getByText(/competitions ·.*editions ·.*entries/)
-    .first()
-    .innerText(RENDER);
-  const nums = [...text.matchAll(/([\d,]+)/g)].map((m) => Number(m[1].replace(/,/g, '')));
-  return { competitions: nums[0], editions: nums[1], entries: nums[2], linked: nums[3] };
+  // Read per stat, not by position in one string — the stations can be
+  // reordered without silently shifting every number one slot.
+  const read = async (key: string) => {
+    const text = await page.locator(`[data-stat="${key}"] dd`).first().innerText(RENDER);
+    return Number(text.replace(/[^\d]/g, ''));
+  };
+  return {
+    competitions: await read('competitions'),
+    editions: await read('editions'),
+    entries: await read('entrants'),
+    linked: await read('linked'),
+  };
 }
 
 test.describe('@smoke competitions', () => {

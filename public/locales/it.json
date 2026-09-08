@@ -4683,7 +4683,11 @@
     "firstAired": "[IT] First aired",
     "lastAired": "[IT] Last aired",
     "winner": "[IT] Winner",
-    "winners": "[IT] Winners",
+    "winners": {
+      "title": "[IT] Winners",
+      "caption": "[IT] {{withPhoto}} of {{total}} winners have a photograph on file.",
+      "captionCapped": "[IT] The {{shown}} most recent of {{withPhoto}} winners with a photograph. {{total}} winners in total."
+    },
     "runnerUp": "[IT] Runner-up",
     "runnersUp": "[IT] Runners-up",
     "missCongeniality": "[IT] Miss Congeniality",
@@ -4811,6 +4815,12 @@
     "hubCountCompetitions_other": "[IT] {{count}} competitions",
     "hubCountEditions_one": "[IT] {{count}} edition",
     "hubCountEditions_other": "[IT] {{count}} editions",
-    "hubCountsPending": "[IT] Counting"
+    "hubCountsPending": "[IT] Counting",
+    "stat": {
+      "competitions": "[IT] Competitions",
+      "editions": "[IT] Editions",
+      "entrants": "[IT] Entries",
+      "linked": "[IT] Linked to a profile"
+    }
   }
 }

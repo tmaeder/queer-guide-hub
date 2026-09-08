@@ -4681,7 +4681,11 @@
     "firstAired": "[ZH] First aired",
     "lastAired": "[ZH] Last aired",
     "winner": "[ZH] Winner",
-    "winners": "[ZH] Winners",
+    "winners": {
+      "title": "[ZH] Winners",
+      "caption": "[ZH] {{withPhoto}} of {{total}} winners have a photograph on file.",
+      "captionCapped": "[ZH] The {{shown}} most recent of {{withPhoto}} winners with a photograph. {{total}} winners in total."
+    },
     "runnerUp": "[ZH] Runner-up",
     "runnersUp": "[ZH] Runners-up",
     "missCongeniality": "[ZH] Miss Congeniality",
@@ -4809,6 +4813,12 @@
     "hubCountCompetitions_other": "[ZH] {{count}} competitions",
     "hubCountEditions_one": "[ZH] {{count}} edition",
     "hubCountEditions_other": "[ZH] {{count}} editions",
-    "hubCountsPending": "[ZH] Counting"
+    "hubCountsPending": "[ZH] Counting",
+    "stat": {
+      "competitions": "[ZH] Competitions",
+      "editions": "[ZH] Editions",
+      "entrants": "[ZH] Entries",
+      "linked": "[ZH] Linked to a profile"
+    }
   }
 }
