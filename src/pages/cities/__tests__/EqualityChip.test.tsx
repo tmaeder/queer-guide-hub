@@ -23,7 +23,7 @@ describe('EqualityChip', () => {
 
   it('renders the tier label when showLabel=true', () => {
     render(<EqualityChip score={89} showLabel />);
-    expect(screen.getByText('Very High')).toBeInTheDocument();
+    expect(screen.getByText('Very high')).toBeInTheDocument();
   });
 
   it('exposes a descriptive aria-label', () => {

@@ -27,9 +27,9 @@ describe('getScoreLabel', () => {
     expect(getScoreLabel(undefined).label).toBe('No data');
   });
 
-  it('should return Very High for score >= 80', () => {
-    expect(getScoreLabel(80).label).toBe('Very High');
-    expect(getScoreLabel(100).label).toBe('Very High');
+  it('should return Very high for score >= 80', () => {
+    expect(getScoreLabel(80).label).toBe('Very high');
+    expect(getScoreLabel(100).label).toBe('Very high');
   });
 
   it('should return High for score 60-79', () => {
@@ -47,9 +47,9 @@ describe('getScoreLabel', () => {
     expect(getScoreLabel(39).label).toBe('Low');
   });
 
-  it('should return Very Low for score < 20', () => {
-    expect(getScoreLabel(0).label).toBe('Very Low');
-    expect(getScoreLabel(19).label).toBe('Very Low');
+  it('should return Very low for score < 20', () => {
+    expect(getScoreLabel(0).label).toBe('Very low');
+    expect(getScoreLabel(19).label).toBe('Very low');
   });
 
   it('should preserve input score in result', () => {
@@ -276,5 +276,40 @@ describe('the tier vocabulary is single-sourced', () => {
         ).toBeTruthy();
       }
     }
+  });
+
+  it('the code fallback and the en.json value are the same word', () => {
+    // These labels ARE the defaultValue behind `trips.safety.scoreLabel.*`, so
+    // a surface with a translation and a surface without one render the same
+    // tier from the same data. They disagreed on `very-high` and `very-low`
+    // until this was unified: /cities said "Very High", the trip briefing said
+    // "Very high". The other four already matched, which is exactly why nobody
+    // spotted it — a partial agreement reads as agreement.
+    //
+    // en.json only. Other locales are translations and MUST differ.
+    for (const file of ['../../i18n/locales/en.json', '../../../public/locales/en.json']) {
+      const en = JSON.parse(readFileSync(resolve(__dirname, file), 'utf8')) as {
+        trips: { safety: { scoreLabel: Record<string, string> } };
+      };
+      for (const tier of EQUALITY_TIERS) {
+        expect(
+          en.trips.safety.scoreLabel[EQUALITY_TIER_I18N_KEY[tier]],
+          `${file}: scoreLabel.${EQUALITY_TIER_I18N_KEY[tier]} disagrees with EQUALITY_TIER_LABEL['${tier}']`,
+        ).toBe(EQUALITY_TIER_LABEL[tier]);
+      }
+    }
+  });
+
+  it('the two en.json copies agree with each other', () => {
+    // src/i18n/locales/en.json is bundled; public/locales/en.json is fetched at
+    // runtime. A rename applied to one is invisible in whichever half you did
+    // not open — see the same trap in railDeparture.test.ts.
+    const read = (f: string) =>
+      (
+        JSON.parse(readFileSync(resolve(__dirname, f), 'utf8')) as {
+          trips: { safety: { scoreLabel: Record<string, string> } };
+        }
+      ).trips.safety.scoreLabel;
+    expect(read('../../i18n/locales/en.json')).toEqual(read('../../../public/locales/en.json'));
   });
 });
