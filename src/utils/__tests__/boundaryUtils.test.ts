@@ -10,7 +10,7 @@ function makeMarker(overrides: Partial<MapMarker> = {}): MapMarker {
     lng: 8.54,
     type: 'country',
     color: '#22c55e',
-    subtitle: 'Very High',
+    subtitle: 'Very high',
     linkTo: '/countries/CH',
     meta: { code: 'CH' },
     ...overrides,
@@ -24,7 +24,11 @@ function makeFeatureCollection(features: GeoJSON.Feature[] = []): GeoJSON.Featur
 describe('enrichBoundaryFeatures', () => {
   it('should return empty collection when no matches', () => {
     const boundaries = makeFeatureCollection([
-      { type: 'Feature', properties: { ISO_A2: 'XX' }, geometry: { type: 'Point', coordinates: [0, 0] } },
+      {
+        type: 'Feature',
+        properties: { ISO_A2: 'XX' },
+        geometry: { type: 'Point', coordinates: [0, 0] },
+      },
     ]);
     const result = enrichBoundaryFeatures(boundaries, [makeMarker()]);
     expect(result.features).toHaveLength(0);
@@ -32,7 +36,11 @@ describe('enrichBoundaryFeatures', () => {
 
   it('should match features by code in default mode', () => {
     const boundaries = makeFeatureCollection([
-      { type: 'Feature', properties: { ISO_A2: 'CH' }, geometry: { type: 'Point', coordinates: [8.54, 47.37] } },
+      {
+        type: 'Feature',
+        properties: { ISO_A2: 'CH' },
+        geometry: { type: 'Point', coordinates: [8.54, 47.37] },
+      },
     ]);
     const result = enrichBoundaryFeatures(boundaries, [makeMarker()]);
     expect(result.features).toHaveLength(1);
@@ -42,8 +50,16 @@ describe('enrichBoundaryFeatures', () => {
 
   it('should assign sequential numeric IDs', () => {
     const boundaries = makeFeatureCollection([
-      { type: 'Feature', properties: { ISO_A2: 'CH' }, geometry: { type: 'Point', coordinates: [0, 0] } },
-      { type: 'Feature', properties: { ISO_A2: 'DE' }, geometry: { type: 'Point', coordinates: [0, 0] } },
+      {
+        type: 'Feature',
+        properties: { ISO_A2: 'CH' },
+        geometry: { type: 'Point', coordinates: [0, 0] },
+      },
+      {
+        type: 'Feature',
+        properties: { ISO_A2: 'DE' },
+        geometry: { type: 'Point', coordinates: [0, 0] },
+      },
     ]);
     const markers = [
       makeMarker({ meta: { code: 'CH' } }),
@@ -56,7 +72,11 @@ describe('enrichBoundaryFeatures', () => {
 
   it('should match by entityId mode', () => {
     const boundaries = makeFeatureCollection([
-      { type: 'Feature', properties: { id: 'abc-123' }, geometry: { type: 'Point', coordinates: [0, 0] } },
+      {
+        type: 'Feature',
+        properties: { id: 'abc-123' },
+        geometry: { type: 'Point', coordinates: [0, 0] },
+      },
     ]);
     const marker = makeMarker({ id: 'city-abc-123', name: 'Zurich', meta: {} });
     const result = enrichBoundaryFeatures(boundaries, [marker], 'id', 'entityId');
@@ -75,7 +95,11 @@ describe('enrichBoundaryFeatures', () => {
   it('should flatten marker meta with meta_ prefix', () => {
     const marker = makeMarker({ meta: { code: 'CH', score: 90 } });
     const boundaries = makeFeatureCollection([
-      { type: 'Feature', properties: { ISO_A2: 'CH' }, geometry: { type: 'Point', coordinates: [0, 0] } },
+      {
+        type: 'Feature',
+        properties: { ISO_A2: 'CH' },
+        geometry: { type: 'Point', coordinates: [0, 0] },
+      },
     ]);
     const result = enrichBoundaryFeatures(boundaries, [marker]);
     expect(result.features[0].properties?.meta_code).toBe('CH');
