@@ -35,9 +35,13 @@ visited. Artifacts in `scripts/data-quality/out/lgbtq-political-orgs.json`.
 | Have inception (P571) | 318 (75%) |
 | Have dissolved date (P576) | 25 |
 | In the Defunct category | 28 |
+| **Defunct by either signal (union)** | **48** — they overlap on only 5 |
 | No P17 country claim | 118 (28%) |
 | No P31 class claim at all | 32 |
 | Already in `organizations` | 50 (26 by QID, 43 by name) |
+
+After exclusions the importable set is **408 entities**, of which 45 are
+defunct — the union above minus the excluded rows.
 
 424 of 426 appear under more than one root — the tree is nested views of one
 corpus, so root counts must never be summed.
@@ -68,10 +72,15 @@ real ones:
 So the state→country resolution runs *before* the comparison, and only then
 does disagreement block. Same shape as `resolve_country_from_text`.
 
-**3. Defunct cannot be read off P576.** Only 25 rows carry a dissolved date
-while the Defunct category holds 28. Category membership is the more
-complete signal; P576 supplies the *date* when there is one. Reading
-liveness from P576 alone silently publishes three dead organizations as live.
+**3. Defunct cannot be read off P576, and the gap is far wider than it
+looks.** 28 rows sit in a Defunct category and 25 carry a P576 dissolved
+date — but they overlap on only **5**, a union of **48**. Neither signal
+identifies more than about half the dead organizations. This was originally
+written as "28 defunct", which was wrong in the direction that matters:
+keying liveness off `dissolved_at` alone would have published 20 dead
+organizations as live and contactable. Hence `is_defunct` (the fact, from
+either signal) is a separate column from `dissolved_at` (the date, when there
+is one), and a CHECK enforces that a date implies the flag.
 
 **4. 32 QID'd articles carry no P31 at all** — `OutNebraska`, `Janus
 Society`, `Human Dignity Trust` among them, all real organizations. A P31
@@ -172,4 +181,45 @@ matching the existing `wikidata` / `ilga_member_directory` convention.
   non-null `closed_at`, and that no excluded title is present.
 - Unit tests: the exclusion list, the state→country resolver, and the
   auto-merge country guard (including its refusal cases).
-- Drift test: `roles` CHECK ↔ `OrgRole`.
+- Drift test: `roles` CHECK ↔ `OrgRole`. It *locates* the defining migration
+  by scanning for the highest-versioned file that declares the constraint,
+  rather than naming a filename the way the sibling venueCategories test does
+  — which is what let the migration be renumbered twice during review with no
+  test edit.
+
+## Measured outcome of the planning run
+
+Against prod, before any write:
+
+```
+entities              408  (426 titles - 4 redirects - 14 exclusions)
+insert new            356
+merge by QID           25
+merge by name+country  23
+refused (printed)       4
+defunct among them     45
+with description      356   (100%)
+with website          198
+no country resolved    15
+```
+
+The four refusals are the country guard, and each is a judgement a script
+should not make: `All Out` is Germany on the existing row and the United
+States in the category; `ILGA-Europe` matches `ILGA Europe` whose row has no
+country at all; `Sarajevo Open Centre` and `Kif-Kif` resolve to no single
+country (Kif-Kif spans Morocco and Spain). Nothing was merged that could not
+be corroborated.
+
+## Notes for a re-crawl
+
+The corpus JSON and the extracts JSON are both committed, so the import is
+reproducible without touching Wikipedia. If they are regenerated:
+
+- re-read the exclusion list before trusting the entity count assertion in
+  `wikipediaOrgs.test.ts`; it is `426 - 4 - EXCLUSIONS.size` by construction,
+  so a larger crawl needs the number re-derived, not bumped;
+- the conflict-count assertion (`< 10`) is the alarm for `SUBNATIONAL` going
+  stale against new country categories;
+- `resolveCategoryCountry` is asserted against *every* country string the
+  corpus contains, so a new unrecognised subdivision fails rather than being
+  filed as a country.
