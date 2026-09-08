@@ -98,7 +98,7 @@ declare v_n int; v_bad text;
 begin
   select count(*) into v_n from public.tag_categories where slug = 'theory-scholarship';
   if v_n <> 1 then
-    raise exception 'glossary: 20360301100000 must run first (theory-scholarship missing)';
+    raise exception 'glossary: 20360401100000 must run first (theory-scholarship missing)';
   end if;
 
   -- The three rows the identity repairs target must still hold what we measured.

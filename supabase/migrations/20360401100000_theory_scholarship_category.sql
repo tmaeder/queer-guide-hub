@@ -19,7 +19,7 @@
 -- as a kink role.
 --
 -- THIS MIGRATION CREATES THE CATEGORY AND NOTHING ELSE. Filing happens in
--- 20360301100100, which is the one place that writes tag rows, so there is a
+-- 20360401100100, which is the one place that writes tag rows, so there is a
 -- single owner of the three filing surfaces rather than two migrations racing to
 -- set them.
 --
