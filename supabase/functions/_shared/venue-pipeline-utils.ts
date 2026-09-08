@@ -1,6 +1,14 @@
 // Shared helpers for the hardened venue pipeline.
 // Pure functions — importable from pipeline-normalize, -validate, -deduplicate, -commit.
 
+import {
+  MAX_CITY_AREA_KM2,
+  MAX_COUNTRY_AREA_KM2,
+  MAX_DENSITY_PER_KM2,
+  MAX_ELEVATION_M,
+  MIN_ELEVATION_M,
+} from './city-scalar-bounds.ts'
+
 export function normalizePhone(raw: unknown): string | null {
   if (!raw) return null
   const s = String(raw).trim()
@@ -72,6 +80,65 @@ export interface ValidationOutcome {
   quality: number
 }
 
+/**
+ * Physical bounds for the dimensioned scalars.
+ *
+ * Until 2026-09-08 `area_km2` and `elevation_m` had NO validator branch on any
+ * entity, and population was checked only for `isFinite && >= 0`. What got
+ * through, measured on prod:
+ *
+ *   City of Hamilton, Bermuda   area 1,138,110,000 km2  (~7x Earth's land area)
+ *   Maui                        elevation 10,023 m      (above Everest)
+ *   Norfolk, United States      population 343,000,000  (above the entire US)
+ *
+ * Each bound sits just outside the real-world extreme so a true value is never
+ * flagged, and the extreme is named so a future reader can check it rather than
+ * trust it.
+ *
+ * THESE ARE WARNINGS, NEVER ERRORS, and that is load-bearing. `pipeline-validate`
+ * turns any `errors` entry into `ai_validation_status='rejected'`, and per the
+ * human-approval trigger a hard rejection is the one state an admin can NEVER
+ * override. Failing a scalar bound as an error would therefore discard the entire
+ * staged entity — name, coordinates, country link, legal payload — because one
+ * number was wrong. A bad number invalidates the number, not the row. This is the
+ * same failure class as a single `W_NO_COORDS` stranding a venue for 40 days.
+ *
+ * NOTE ON REACH. The measured defect did NOT come through this function. All 181
+ * bad areas were written by `city-factual-backfill`, which UPDATEs `cities`
+ * directly and never calls a validator; `validateCityNormalized` has exactly one
+ * caller, `pipeline-validate`, which only ever reads `ingestion_staging`. The
+ * plausibility guard on the producer that actually caused the incident lives in
+ * `city-factual-backfill/index.ts` (`plausibleCityScalar`). What follows covers
+ * the staging path, which had no such check either.
+ */
+/**
+ * NOT VALIDATED HERE, and the two cases are NOT the same — an earlier version of
+ * this comment said both live in SQL, which was false for the second one:
+ *
+ *   - city population vs. its country's population — MOVED TO SQL. Realised as
+ *     `population_exceeds_country` in `city_scalar_defects()`, where the country
+ *     row is in scope. This function is pure over one staged item and cannot see
+ *     it; approximating it from `metadata` would report a bound never checked.
+ *   - a staged value regressing against the corpus row it will replace —
+ *     **DROPPED, implemented nowhere.** It needs the row being replaced, which
+ *     the validator cannot see and SQL cannot either: at gate time the corpus row
+ *     IS the staged value's destination, so there is no "before" left to compare
+ *     against. Doing it properly means capturing a pre-commit snapshot, which is
+ *     a separate build. Do not read the SQL sentinel expecting to find it.
+ */
+function readNumber(...candidates: unknown[]): number | null {
+  for (const c of candidates) {
+    if (c == null) continue
+    // `Number('')` and `Number('  ')` are 0, and `Number.isFinite(0)` is true —
+    // so an empty-string field would read as a real zero, trip `area <= 0` and
+    // REJECT an otherwise-good city. An empty string is a missing value.
+    if (typeof c === 'string' && c.trim() === '') continue
+    const n = Number(c)
+    if (Number.isFinite(n)) return n
+  }
+  return null
+}
+
 // ISO 3166-1 alpha-2 / alpha-3: uppercase letters only.
 export function isValidIsoCode(raw: unknown): boolean {
   if (!raw) return false
@@ -118,6 +185,11 @@ export function validateCountryNormalized(n: Record<string, unknown>): Validatio
     warnings.push('W_NO_POPULATION'); quality -= 5
   }
 
+  const countryArea = readNumber(n.area_km2, meta.area_km2, meta.area)
+  if (countryArea != null && (countryArea <= 0 || countryArea > MAX_COUNTRY_AREA_KM2)) {
+    warnings.push('W_IMPLAUSIBLE_AREA'); quality -= 10
+  }
+
   if (!n.capital && !meta.capital) { warnings.push('W_NO_CAPITAL'); quality -= 5 }
   if (!n.currency && !meta.currency) { warnings.push('W_NO_CURRENCY'); quality -= 5 }
 
@@ -154,10 +226,30 @@ export function validateCityNormalized(n: Record<string, unknown>): ValidationOu
   }
 
   const population = (n.population ?? meta.population) as unknown
+  let pop: number | null = null
   if (population != null) {
     const p = Number(population)
     if (!Number.isFinite(p) || p < 0) errors.push('E_BAD_POPULATION')
-    else if (p > 50_000_000) warnings.push('W_IMPLAUSIBLE_POPULATION')
+    else {
+      pop = p
+      if (p > 50_000_000) { warnings.push('W_IMPLAUSIBLE_POPULATION'); quality -= 10 }
+    }
+  }
+
+  const area = readNumber(n.area_km2, meta.area_km2, meta.area)
+  const areaImplausible = area != null && (area <= 0 || area > MAX_CITY_AREA_KM2)
+  if (areaImplausible) { warnings.push('W_IMPLAUSIBLE_AREA'); quality -= 10 }
+
+  const elevation = readNumber(n.elevation_m, meta.elevation_m, meta.elevation)
+  if (elevation != null && (elevation < MIN_ELEVATION_M || elevation > MAX_ELEVATION_M)) {
+    warnings.push('W_IMPLAUSIBLE_ELEVATION'); quality -= 10
+  }
+
+  // Only meaningful when the area survived its own bound — a density derived from
+  // an already-flagged area says nothing extra, and would double-report it.
+  if (pop != null && pop > 0 && area != null && area > 0 &&
+      !areaImplausible && pop / area > MAX_DENSITY_PER_KM2) {
+    warnings.push('W_IMPLAUSIBLE_DENSITY'); quality -= 10
   }
 
   return { errors, warnings, quality: Math.max(0, Math.min(100, quality)) }

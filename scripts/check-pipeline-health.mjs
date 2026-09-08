@@ -1387,6 +1387,124 @@ const GEO_BASELINE = {
   }
 }
 
+// 11b. Physically impossible city scalars (2026-09-08)
+//
+// Before this, `area_km2` and `elevation_m` had no validator branch anywhere in
+// the pipeline and population was checked only for `isFinite && >= 0`. There was
+// also no validate-stage sentinel of any kind — nothing in this file read
+// ai_validation_status or the warning distribution. Measured on prod the day
+// this was written: 181 impossible areas, 1 impossible elevation, 4 cities more
+// populous than their own country, 35 impossible densities. El Reno held an area
+// of 8,300,000,226 km2.
+//
+// The producer was a unit bug: parseCityFacts read a Wikidata quantity's
+// `.amount` and ignored its `.unit`, so a P2046 stated in square metres landed
+// under the km2 label — a factor of 1e6, which is exactly Calgary's 825,290,000
+// against its real 825.29. Fixed at the source; 20360201100100 retracted what
+// had already been written.
+//
+// ZERO TOLERANCE ON THE HARD BOUNDS, ADVISORY ON DENSITY.
+//
+// The three hard bounds are single-column and unambiguous, so any count is a new
+// defect from a producer that stopped checking.
+//
+// Density is NOT ratcheted, and that is a correction rather than a softening. A
+// shrinking baseline was the first design and it was unshippable: the repair
+// nulled 181 areas, and `bad_dens` requires `a > 0`, so every one of those rows
+// left the density population BY CONSTRUCTION. As city-factual-backfill refills
+// them — which this same section's advisory line says it expects — each becomes
+// eligible for the density arm for the first time, and a commune-sized area
+// landing beside a metro-sized population is the Paris shape, which is already
+// counted. The number is therefore designed to RISE, a ratchet forbids exactly
+// that, and the "baselines may only shrink" rule would have left no legal
+// response but hand-writing another migration. Density is a human backlog; it is
+// reported with its trend and never fails the build.
+const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Context, not a gate.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/city_scalar_defects`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  // A 404 is "the migration has not landed yet" — legitimate while db push is in
+  // flight, and the geo section above treats it the same way. Anything else is a
+  // BROKEN probe: a 500 from a bad plan, a revoked grant, a statement timeout on
+  // the full cities scan. Collapsing both into a warning fails open on exactly
+  // the cases where the gate is most needed, which is what the message below
+  // claims not to do.
+  if (res.status === 404) {
+    console.warn(`⚠ city_scalar_defects → HTTP 404 — city scalar sentinel NOT DEPLOYED (migration 20360201100000). This is absence of a check, not absence of defects.`)
+  } else if (!res.ok) {
+    console.error(`✗ city_scalar_defects → HTTP ${res.status} — the gate could not run. Absence of a check is not absence of defects; failing rather than warning so a broken probe cannot read as a clean corpus.`)
+    FAILED = true
+  } else {
+    const d = await res.json()
+
+    // Shape check — NOT a positive control, and it was mislabelled as one until
+    // an audit called that out. It proves the probe returns the right KEYS; it
+    // proves nothing about whether the gate reports non-zero on a real defect.
+    // The mislabel was the worse half: it reads as satisfied, so the next reader
+    // would not add the real thing. The actual positive control lives in
+    // src/lib/__tests__/cityScalarBounds.test.ts, which feeds the section
+    // fixtures with known-bad counts and asserts it fails.
+    //
+    // What this does catch: PostgREST returns whatever the function returns, so a
+    // renamed or dropped key arrives as `undefined` and every `?? 0` below would
+    // report a clean corpus having measured nothing. An ABSENT key and a ZERO
+    // count must not look alike — the accessibility_contradictions rule.
+    const REQUIRED = [
+      'area_impossible',
+      'elevation_impossible',
+      'population_exceeds_country',
+      'density_impossible',
+      'retracted_pending_refill',
+    ]
+    const missing = REQUIRED.filter((k) => d?.[k] === undefined)
+    if (missing.length) {
+      console.error(`✗ city_scalar_defects is missing ${missing.join(', ')} — the gate cannot report what it does not return, so this is a broken probe, not a clean corpus`)
+      FAILED = true
+    } else {
+      // Hard bounds: no baseline, no floor. Each is a single column that is
+      // wrong on its own terms, so one row is a regression.
+      const hard = [
+        ['area_impossible', 'area <= 0 or > 200,000 km2'],
+        ['elevation_impossible', 'elevation < -500 m or > 5,300 m'],
+        ['population_exceeds_country', 'city more populous than its own country'],
+      ]
+      let hardTotal = 0
+      for (const [key, label] of hard) {
+        hardTotal += d[key]
+        if (d[key] > 0) {
+          const sample = JSON.stringify((d.samples ?? {})[key.split('_')[0]] ?? [])
+          // Name the producer that actually writes these. The defect this gate
+          // was built for came from city-factual-backfill, which UPDATEs `cities`
+          // directly; `pipeline-validate` never sees that path and an engineer
+          // sent to inspect the validate stage would find nothing wrong there.
+          console.error(`✗ ${d[key]} cities: ${label}. Bounds live in _shared/city-scalar-bounds.ts. Check city-factual-backfill (direct writes to cities, the usual source) before pipeline-validate (staging path only). Samples: ${sample}`)
+          FAILED = true
+        }
+      }
+      if (hardTotal === 0) console.log('✓ No physically impossible city area/elevation/population')
+
+      // Advisory only — see the comment on CITY_SCALAR_DENSITY_REPORTED for why
+      // this must not gate. Reported with its direction so a real jump is still
+      // visible to a human reading the log.
+      const dens = d.density_impossible
+      const delta = dens - CITY_SCALAR_DENSITY_REPORTED
+      const trend = delta === 0 ? 'unchanged' : delta > 0 ? `up ${delta}` : `down ${-delta}`
+      console.log(`  Density defects: ${dens} (${trend} vs the 2026-09-08 reading of ${CITY_SCALAR_DENSITY_REPORTED}) — advisory, human backlog. Expected to rise as retracted areas refill.`)
+
+      // Advisory. These were emptied by the repair and refill on the affected
+      // city's next city-factual-backfill visit, now that the unit conversion is
+      // correct. The number should fall on its own; a flat line across runs means
+      // the refill path is dead, which the retraction itself would otherwise hide.
+      if (d.retracted_pending_refill > 0) {
+        console.log(`  ${d.retracted_pending_refill} retracted city areas awaiting refill by city-factual-backfill (expected to fall; a flat line means the refill path stopped)`)
+      }
+    }
+  }
+}
+
 // The single exit. Reached whether or not anything failed, so the ✗ lines above
 // are the complete list rather than "the first one we tripped over".
 if (FAILED) {
