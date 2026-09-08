@@ -80,6 +80,20 @@ describe('raveitsafe interaction rows', () => {
     expect(code(MIX)).toMatch(/v_bad <> 1/);
   });
 
+  it('compares other sources before/after instead of against a frozen count', () => {
+    // The first version asserted `tripsit` was exactly 421 rows. That number is
+    // owned by the weekly `source_tripsit` cron, so one upstream combo-chart
+    // update would abort `db push` and block every migration behind it — for a
+    // reason unrelated to whether this migration is correct. The property worth
+    // asserting is that this migration only ADDS its own rows.
+    expect(code(MIX)).toMatch(/v_others int;/);
+    expect(code(MIX)).toMatch(/into v_others[\s\S]{0,120}source <> 'rave it safe'/);
+    expect(code(MIX)).toMatch(/v_bad <> v_others/);
+    // No literal row count for a source this migration does not own.
+    expect(code(MIX)).not.toMatch(/<>\s*421\b/);
+    expect(code(MIX)).not.toMatch(/source = 'tripsit'/);
+  });
+
   it('uses only the seven allowed status values', () => {
     const allowed = new Set([
       'dangerous',

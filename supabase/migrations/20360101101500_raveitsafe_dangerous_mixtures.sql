@@ -61,12 +61,23 @@ select set_config('app.actor', 'migration:raveitsafe-mixtures', true);
 
 do $mig$
 declare
-  r       record;
-  v_bad   int;
-  v_made  int := 0;
-  v_a     uuid;
-  v_b     uuid;
+  r        record;
+  v_bad    int;
+  v_made   int := 0;
+  v_a      uuid;
+  v_b      uuid;
+  v_others int;
 begin
+  -- Snapshot the other sources BEFORE touching anything. The assertion at the
+  -- bottom compares against this rather than a frozen literal, because the
+  -- weekly `source_tripsit` cron legitimately changes TripSit's row count: a
+  -- hardcoded 421 turns one upstream combo chart update into an aborted
+  -- `db push` that blocks every migration behind it, for a reason that has
+  -- nothing to do with whether THIS migration is correct. The property worth
+  -- asserting is "this migration did not disturb the other sources", and that
+  -- is a before/after comparison inside one transaction.
+  select count(*) into v_others
+    from public.substance_interactions where source <> 'rave it safe';
   create temp table _pair (
     slug_a text, slug_b text, status text, note text, source_pair text
   ) on commit drop;
@@ -153,10 +164,11 @@ begin
     raise exception 'raveitsafe mixtures: % row(s) violate canonical pair order', v_bad;
   end if;
 
-  -- No other source lost or gained rows.
-  select count(*) into v_bad from public.substance_interactions where source = 'tripsit';
-  if v_bad <> 421 then
-    raise exception 'raveitsafe mixtures: tripsit row count moved to % (expected 421)', v_bad;
+  -- No other source lost or gained rows, measured against the snapshot above.
+  select count(*) into v_bad
+    from public.substance_interactions where source <> 'rave it safe';
+  if v_bad <> v_others then
+    raise exception 'raveitsafe mixtures: other sources moved from % to % rows — this migration must only ADD its own', v_others, v_bad;
   end if;
 
   -- The staleness gate must not have armed. Only TripSit has a refresher, so it
