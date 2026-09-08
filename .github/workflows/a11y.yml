@@ -195,6 +195,20 @@ jobs:
         if: needs.changes.outputs.relevant == 'true'
       - if: always() && needs.changes.outputs.relevant == 'true'
         uses: actions/upload-artifact@v7
+        # Non-blocking: a failure to STORE the report must not fail a job whose
+        # assertions already passed. On 2026-09-08 GitHub's artifact service
+        # returned `403 Forbidden: Error from intermediary` on FinalizeArtifact
+        # for three separate runs across two jobs — after `19 passed` and after
+        # a Lighthouse score of 100 against the >=95 gate — so a green test run
+        # was reported as a red check and blocked auto-merge. Re-running
+        # reproduced it, so it is not a flake.
+        #
+        # This does NOT weaken the gate: the assertions above still run and
+        # still fail the job on a real violation. Only the upload of the
+        # diagnostic report is tolerated. The `dist` upload in the build job is
+        # deliberately NOT given this treatment — downstream jobs consume it,
+        # so a silent failure there is a real breakage, not a lost diagnostic.
+        continue-on-error: true
         with:
           name: playwright-a11y-report
           path: playwright-report/
@@ -313,6 +327,20 @@ jobs:
           "
       - if: always()
         uses: actions/upload-artifact@v7
+        # Non-blocking: a failure to STORE the report must not fail a job whose
+        # assertions already passed. On 2026-09-08 GitHub's artifact service
+        # returned `403 Forbidden: Error from intermediary` on FinalizeArtifact
+        # for three separate runs across two jobs — after `19 passed` and after
+        # a Lighthouse score of 100 against the >=95 gate — so a green test run
+        # was reported as a red check and blocked auto-merge. Re-running
+        # reproduced it, so it is not a flake.
+        #
+        # This does NOT weaken the gate: the assertions above still run and
+        # still fail the job on a real violation. Only the upload of the
+        # diagnostic report is tolerated. The `dist` upload in the build job is
+        # deliberately NOT given this treatment — downstream jobs consume it,
+        # so a silent failure there is a real breakage, not a lost diagnostic.
+        continue-on-error: true
         with:
           name: axe-postdeploy
           path: |
@@ -411,6 +439,20 @@ jobs:
           fi
       - if: always()
         uses: actions/upload-artifact@v7
+        # Non-blocking: a failure to STORE the report must not fail a job whose
+        # assertions already passed. On 2026-09-08 GitHub's artifact service
+        # returned `403 Forbidden: Error from intermediary` on FinalizeArtifact
+        # for three separate runs across two jobs — after `19 passed` and after
+        # a Lighthouse score of 100 against the >=95 gate — so a green test run
+        # was reported as a red check and blocked auto-merge. Re-running
+        # reproduced it, so it is not a flake.
+        #
+        # This does NOT weaken the gate: the assertions above still run and
+        # still fail the job on a real violation. Only the upload of the
+        # diagnostic report is tolerated. The `dist` upload in the build job is
+        # deliberately NOT given this treatment — downstream jobs consume it,
+        # so a silent failure there is a real breakage, not a lost diagnostic.
+        continue-on-error: true
         with:
           name: lighthouse-${{ strategy.job-index }}
           path: lh/
