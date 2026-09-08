@@ -2,7 +2,20 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
 
-export type OrgRole = 'publisher' | 'seller' | 'venue' | 'organizer' | 'community' | 'support';
+// Mirrors the `organizations_roles_known` CHECK. Both are parsed by
+// src/lib/__tests__/organizationRoles.test.ts — a value added to one and not
+// the other fails that test rather than silently dropping a tab.
+export type OrgRole =
+  | 'publisher'
+  | 'seller'
+  | 'venue'
+  | 'organizer'
+  | 'community'
+  | 'support'
+  | 'advocacy'
+  | 'hotel'
+  | 'affiliate_partner'
+  | 'brand';
 
 export interface OrgVenueRef {
   id: string;
@@ -91,6 +104,8 @@ export interface OrgListItem {
   website_domain: string | null;
   city_id: string | null;
   country_id: string | null;
+  founded_at: string | null;
+  dissolved_at: string | null;
 }
 
 /** List organizations for the directory + the /help support section. */
