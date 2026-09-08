@@ -147,7 +147,18 @@ describe('glossary migration', () => {
     expect(GLOSSARY).toMatch(/indexable row\(s\) corpus-wide have no description/);
     expect(GLOSSARY).toMatch(/alias\(es\) equal their own tag name/);
     expect(GLOSSARY).toMatch(/duplicate_active_name is/);
-    expect(GLOSSARY).toMatch(/duplicate QID across active tags/);
+  });
+
+  // The duplicate-QID assertion must be SCOPED to the rows this migration
+  // touches. Written corpus-wide it fails the deploy on somebody else's debt:
+  // prod already carries 27 duplicate-QID pairs across active tags, none of them
+  // related to this change.
+  it('scopes the duplicate-QID assertion to the touched rows', () => {
+    expect(GLOSSARY).toMatch(/this change leaves a duplicate QID on active tags/);
+    expect(GLOSSARY).not.toMatch(/glossary: duplicate QID across active tags/);
+    // it is scoped by an IN-list, not by a bare group-by over the whole table
+    const block = GLOSSARY.slice(GLOSSARY.indexOf('-- 5. No duplicate identifier'));
+    expect(block).toMatch(/t2\.slug in \(/);
   });
 
   // queer-people-of-color is deprecated but its slug is an APPROVED synonym

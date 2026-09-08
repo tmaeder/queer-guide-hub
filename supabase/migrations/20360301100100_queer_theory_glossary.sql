@@ -410,6 +410,11 @@ begin
            short_description = excluded.short_description,
            long_description = excluded.long_description,
            wikipedia_url = excluded.wikipedia_url,
+           -- Fill an absent identifier, never overwrite one. A concurrent
+           -- session created `compulsory-heterosexuality` with wikidata_id NULL
+           -- while this branch was open (#3551); coalesce adopts the verified
+           -- QID for it without touching an id somebody else resolved.
+           wikidata_id = coalesce(public.unified_tags.wikidata_id, excluded.wikidata_id),
            status = 'active', verification_status = 'reviewed', human_reviewed = true,
            seo_indexable = true, merged_into_id = null, deprecated_at = null,
            deprecation_reason = null, category_id = excluded.category_id,
@@ -670,15 +675,38 @@ begin
     raise exception 'glossary: queer-theory does not hold Q658022';
   end if;
 
-  -- 5. No duplicate identifier across active tags. The identity trigger cannot
-  --    catch this on a REVIVE — it returns early when wikidata_id does not move,
-  --    so a status flip can create exactly the state it exists to prevent.
-  select string_agg(wikidata_id || ' x' || n, ', ') into v_bad from (
-    select wikidata_id, count(*) n from public.unified_tags
-     where status = 'active' and wikidata_id is not null
-     group by wikidata_id having count(*) > 1) q;
+  -- 5. No duplicate identifier across active tags FOR THE ROWS THIS MIGRATION
+  --    TOUCHES. The identity trigger cannot catch this on a REVIVE — it returns
+  --    early when wikidata_id does not move, so a status flip can create exactly
+  --    the state it exists to prevent, which is why it is asserted here at all.
+  --
+  --    SCOPED, NOT CORPUS-WIDE, AND THAT IS A CORRECTION. This was first written
+  --    as a corpus-wide zero and it would have failed the deploy: prod already
+  --    carries 27 duplicate-QID pairs across active tags (Q316, Q309, Q349,
+  --    Q11639, Q43 …), none of them related to this change. Asserting a global
+  --    invariant that has never held turns someone else's pre-existing debt into
+  --    this migration's failure. What this change is answerable for is that it
+  --    does not ADD one — including Q658022, which it resolves from three
+  --    holders down to one.
+  select string_agg(q.wikidata_id || ' held by ' || q.slugs, ', ') into v_bad from (
+    select t.wikidata_id, string_agg(t.slug, '+' order by t.slug) as slugs
+      from public.unified_tags t
+     where t.status = 'active' and t.wikidata_id is not null
+       and t.wikidata_id in (
+         select t2.wikidata_id from public.unified_tags t2
+          where t2.wikidata_id is not null
+            and t2.slug in (
+              'queer-theory','homonormativity','homonationalism','performativity',
+              'gender-performativity','cisnormativity','disidentification','lesbian-feminism',
+              'queer-ecology','queer-pedagogy','social-construction-of-gender','asexual-studies',
+              'ecofeminism','gender-theory','homophile','queer-musicology','sex-positivity',
+              'quare-theory','queer-of-color-critique','queer-archaeology','queer-theology',
+              'neuroqueer-theory','crip-theory','critical-disability-theory','disability-studies',
+              'compulsory-heterosexuality','human-sexuality','transgender-studies',
+              'queer','queerness','intersectional','queer-studies'))
+     group by t.wikidata_id having count(*) > 1) q;
   if v_bad is not null then
-    raise exception 'glossary: duplicate QID across active tags: %', v_bad;
+    raise exception 'glossary: this change leaves a duplicate QID on active tags: %', v_bad;
   end if;
 
   -- 6. Corpus-wide zero-invariants from scripts/check-tag-hygiene.mjs. These read
