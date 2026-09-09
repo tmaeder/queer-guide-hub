@@ -89,6 +89,27 @@ const IMPLAUSIBLE_CLASS_PATTERNS: ReadonlyArray<readonly [string, RegExp]> = [
   ['place', /(municipality|human settlement|\bcity\b|\btown\b|\bvillage\b|commune|county|province|state of|island|mountain|neighborhood|hamlet|administrative territorial entity|sovereign state|railway line|railway station|metro station|constellation|\bbay\b|valley)/i],
   ['media', /\b(film|films|album|albums|song|songs|single|television series|television program|tv series|video game|videogame|novel|manga|anime|musical group|musical duo|rock band|band|comic strip|opera|periodical|magazine|newspaper|podcast|episode|literary work|written work|soundtrack|discography|film character)\b/i],
   ['org', /(political party|business enterprise|\bcompany\b|enterprise|nonprofit|non-profit|organization|organisation|university|record label|\bbrand\b|airline|airport)/i],
+  // An INSTITUTION whose class label does not happen to contain the word
+  // "organisation". Added 2026-09-09: the `org` arm above is a word list, not a
+  // concept, so `naval aviation command` — the P31 of Q1898391, the German Navy's
+  // air arm — passed it and the sweep published a military unit as a kink glossary
+  // term. This is the same rule the `org` arm already encodes ("an institution is
+  // not a concept"), stated in the vocabulary institutions actually use.
+  //
+  // Deliberately ORGANISATIONS ONLY, never ranks or posts. `military rank` and
+  // `military position` are live in this corpus (`Captain` → Q19100, `Commander`
+  // → Q11247470, both under Dynamics & Roles) and a leather/kink glossary really
+  // does contain rank words; banning a role class here would be the blanket
+  // over-rejection this module exists to avoid, and a wrong-sense role is the
+  // sense gate's job, not the class gate's.
+  //
+  // Measured over every distinct P31 label carried by the 1,518 QIDs on active
+  // tags (743 labels, 1,038 with a readable class): this arm matches exactly two
+  // labels the `org` arm misses — `naval aviation command` and `government
+  // agency` — reaching 2 rows, both hand-read and both wrong-entity links
+  // (Marineflieger; `Community-Oriented` → Q5154836, the US DOJ's Community
+  // Oriented Policing Services office). Zero collateral.
+  ['institution', /(military unit|military branch|military formation|military command|armed forces|\barmy\b|\bnavy\b|naval\b|air force|aviation command|government agency|government body|government organization|government organisation|intelligence agency|law enforcement agency|police force)/i],
   ['artifact', /(\bwebsite\b|online database|\bdatabase\b|software|web service|mobile app|computer program|medal|\baward\b|\bship\b)/i],
   ['disambiguation', /(disambiguation|Wikimedia|Wikipedia language edition)/i],
 ]
