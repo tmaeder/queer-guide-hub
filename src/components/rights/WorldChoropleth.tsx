@@ -325,6 +325,10 @@ export function WorldChoropleth({
         'fill-opacity',
         activeClass ? ['case', ['==', ['get', classProperty], activeClass], 1, 0.25] : 1,
       );
+      // Explicit, not incidental: `applyWhenStyleReady` retries on exactly
+      // `false`, so the applied path has to say so rather than fall off the
+      // end. `noImplicitReturns` (TS7030) rejects the mixed-return shape too.
+      return true;
     });
   }, [activeClass, mapReady, classified, classProperty]);
 
