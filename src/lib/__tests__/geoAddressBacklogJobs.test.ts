@@ -145,7 +145,13 @@ describe('backfill-city-region.mjs', () => {
   });
 
   it('audits before writing, under one batch id', () => {
-    const auditAt = src.indexOf('external_correction_audit');
+    // The audit goes through the `record_external_corrections` RPC rather than
+    // straight at `external_correction_audit`, because `before_value` has to be
+    // the jsonb scalar 'null' and no PostgREST body can express that — a JSON
+    // null becomes SQL NULL and violates the NOT NULL, which is what killed
+    // every run this job ever had. The property asserted here is unchanged:
+    // the audit row is written BEFORE the entity is mutated.
+    const auditAt = src.indexOf('record_external_corrections');
     const patchAt = src.indexOf("method: 'PATCH'");
     expect(auditAt).toBeGreaterThan(-1);
     expect(auditAt).toBeLessThan(patchAt);
