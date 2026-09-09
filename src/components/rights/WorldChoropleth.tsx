@@ -6,6 +6,7 @@ import { TrackLoader } from '@/components/transit/TrackLoader';
 import { getMapStyle } from '@/config/mapStyle';
 import { isWebglSupported } from '@/lib/webglSupport';
 import { useCountryBoundaries } from '@/hooks/useBoundaryData';
+import { applyWhenStyleReady, isMapAlive } from '@/components/map/mapStyleReady';
 import { ink } from '@/lib/mapTokens';
 import { tallyFeatureClasses, type ClassifiedFeatureCollection } from './rightsWorldMapModel';
 
@@ -132,9 +133,17 @@ export function WorldChoropleth({
       setMapReady(true);
     });
     return () => {
-      map.remove();
+      // ORDER IS LOAD-BEARING, and it used to be the other way round.
+      // `Map.remove()` runs `setStyle(null)`, whose `_updateStyle(null)` branch
+      // executes `delete this.style` — so between `map.remove()` and the next
+      // statement the ref published a live-looking map with NO STYLE AT ALL.
+      // That is the shape of the recorded production `TypeError: null is not
+      // an object (evaluating 'this.style.getLayer')`. Drop every handle
+      // FIRST, then destroy: the order `EntityMap` and `useMapInstance`
+      // already use.
       mapRef.current = null;
       setMapReady(false);
+      map.remove();
     };
   }, []);
 
@@ -152,127 +161,171 @@ export function WorldChoropleth({
     const el = mapContainer.current;
     if (!el || !mapReady) return;
     const map = mapRef.current;
-    if (!map) return;
+    if (!isMapAlive(map)) return;
     map.resize();
-    const observer = new ResizeObserver(() => map.resize());
+    // A resize notification can still land between `map.remove()` and this
+    // observer's own disconnect, and `resize()` on a removed map reaches a
+    // painter that no longer exists.
+    const observer = new ResizeObserver(() => {
+      if (isMapAlive(map)) map.resize();
+    });
     observer.observe(el);
     return () => observer.disconnect();
   }, [mapReady]);
 
-  // Wire source + layers once; subsequent data changes go through setData.
+  /**
+   * Wire source + layers once; subsequent data changes go through setData.
+   *
+   * This runs through `applyWhenStyleReady`, NOT off `mapReady` alone.
+   * `mapReady` is a React state flag latched once inside `load`: it records
+   * that the style WAS loaded at some past instant, and every call below is
+   * guarded by MapLibre's `Style._checkLoaded()`, which throws
+   * `"Style is not done loading."` the moment that stops being true. The throw
+   * happens inside a `useEffect` body, so React 18 hands it to the error
+   * boundary and the whole of /rights goes to the crash screen — measured in
+   * production on 2026-09-08 with this component's chunk as the top frame.
+   *
+   * When the style is not ready the work is DEFERRED to the next `styledata`
+   * and applied then. It is never dropped: a dropped source is a permanently
+   * blank map, which is the same failure by a quieter route.
+   *
+   * Each `addLayer` is guarded by `getLayer` so a deferred re-attempt after a
+   * partial pass cannot throw "there is already a layer with this id".
+   */
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !mapReady || !classified) return;
 
-    const existing = map.getSource(SRC) as GeoJSONSource | undefined;
-    if (existing) {
-      existing.setData(classified);
-      return;
-    }
-
-    map.addSource(SRC, { type: 'geojson', data: classified });
-
-    // One fill layer, coloured by the pre-computed class property — never a
-    // MapLibre expression over the raw jsonb.
-    map.addLayer({
-      id: FILL_LAYER,
-      type: 'fill',
-      source: SRC,
-      paint: {
-        'fill-color': ['match', ['get', classProperty], ...fillMatch],
-      } as never,
-    });
-
-    // Country hairlines, everyone the same fine weight.
-    map.addLayer({
-      id: LINE_LAYER,
-      type: 'line',
-      source: SRC,
-      paint: { 'line-color': ink(0.25), 'line-width': 0.5 },
-    });
-
-    // No-reading countries get a second, denser hairline on top so an absent
-    // reading never reads as the lightest measured class — the palest fill
-    // sits close enough to bare paper that a plain paper fill alone would be
-    // ambiguous with "no signal at all". A MapLibre `fill-pattern` would need
-    // a raster sprite, which cannot be resolved through mapTokens.ts at
-    // runtime, so the hatch lives only in the legend swatch.
-    map.addLayer({
-      id: EMPTY_LINE_LAYER,
-      type: 'line',
-      source: SRC,
-      paint: { 'line-color': ink(0.45), 'line-width': 0.75 },
-      filter: ['==', ['get', classProperty], emptyClass],
-    });
-
-    // Station ring — hover/selection only, no animation, no easing.
-    map.addLayer({
-      id: RING_LAYER,
-      type: 'line',
-      source: SRC,
-      paint: {
-        'line-color': ink(),
-        'line-width': 2,
-        'line-opacity': [
-          'case',
-          ['boolean', ['feature-state', 'selected'], false],
-          1,
-          ['boolean', ['feature-state', 'hovered'], false],
-          1,
-          0,
-        ],
-      },
-    });
-
-    map.on('mousemove', FILL_LAYER, (e: MapLayerMouseEvent) => {
-      const feat = e.features?.[0];
-      map.getCanvas().style.cursor = feat ? 'pointer' : '';
-      const numId = feat?.id as number | undefined;
-      if (hoveredIdRef.current !== null && hoveredIdRef.current !== numId) {
-        map.setFeatureState({ source: SRC, id: hoveredIdRef.current }, { hovered: false });
-      }
-      if (numId != null) {
-        map.setFeatureState({ source: SRC, id: numId }, { hovered: true });
-        hoveredIdRef.current = numId;
-      }
-    });
-
-    map.on('mouseleave', FILL_LAYER, () => {
-      map.getCanvas().style.cursor = '';
-      if (hoveredIdRef.current !== null) {
-        map.setFeatureState({ source: SRC, id: hoveredIdRef.current }, { hovered: false });
-        hoveredIdRef.current = null;
-      }
-    });
-
-    map.on('click', FILL_LAYER, (e: MapLayerMouseEvent) => {
-      const feat = e.features?.[0];
-      if (!feat) return;
-
-      const numId = feat.id as number | undefined;
-      if (selectedIdRef.current !== null && selectedIdRef.current !== numId) {
-        map.setFeatureState({ source: SRC, id: selectedIdRef.current }, { selected: false });
-      }
-      if (numId != null) {
-        map.setFeatureState({ source: SRC, id: numId }, { selected: true });
-        selectedIdRef.current = numId;
+    return applyWhenStyleReady(map, (m) => {
+      const existing = m.getSource(SRC) as GeoJSONSource | undefined;
+      if (existing) {
+        existing.setData(classified);
+        return;
       }
 
-      onFeatureSelectRef.current(String(feat.properties?.ISO_A2 ?? '').toUpperCase());
+      m.addSource(SRC, { type: 'geojson', data: classified });
+
+      // One fill layer, coloured by the pre-computed class property — never a
+      // MapLibre expression over the raw jsonb.
+      if (!m.getLayer(FILL_LAYER)) {
+        m.addLayer({
+          id: FILL_LAYER,
+          type: 'fill',
+          source: SRC,
+          paint: {
+            'fill-color': ['match', ['get', classProperty], ...fillMatch],
+          } as never,
+        });
+      }
+
+      // Country hairlines, everyone the same fine weight.
+      if (!m.getLayer(LINE_LAYER)) {
+        m.addLayer({
+          id: LINE_LAYER,
+          type: 'line',
+          source: SRC,
+          paint: { 'line-color': ink(0.25), 'line-width': 0.5 },
+        });
+      }
+
+      // No-reading countries get a second, denser hairline on top so an absent
+      // reading never reads as the lightest measured class — the palest fill
+      // sits close enough to bare paper that a plain paper fill alone would be
+      // ambiguous with "no signal at all". A MapLibre `fill-pattern` would need
+      // a raster sprite, which cannot be resolved through mapTokens.ts at
+      // runtime, so the hatch lives only in the legend swatch.
+      if (!m.getLayer(EMPTY_LINE_LAYER)) {
+        m.addLayer({
+          id: EMPTY_LINE_LAYER,
+          type: 'line',
+          source: SRC,
+          paint: { 'line-color': ink(0.45), 'line-width': 0.75 },
+          filter: ['==', ['get', classProperty], emptyClass],
+        });
+      }
+
+      // Station ring — hover/selection only, no animation, no easing.
+      if (!m.getLayer(RING_LAYER)) {
+        m.addLayer({
+          id: RING_LAYER,
+          type: 'line',
+          source: SRC,
+          paint: {
+            'line-color': ink(),
+            'line-width': 2,
+            'line-opacity': [
+              'case',
+              ['boolean', ['feature-state', 'selected'], false],
+              1,
+              ['boolean', ['feature-state', 'hovered'], false],
+              1,
+              0,
+            ],
+          },
+        });
+      }
+
+      m.on('mousemove', FILL_LAYER, (e: MapLayerMouseEvent) => {
+        if (!isMapAlive(m)) return;
+        const feat = e.features?.[0];
+        m.getCanvas().style.cursor = feat ? 'pointer' : '';
+        const numId = feat?.id as number | undefined;
+        if (hoveredIdRef.current !== null && hoveredIdRef.current !== numId) {
+          m.setFeatureState({ source: SRC, id: hoveredIdRef.current }, { hovered: false });
+        }
+        if (numId != null) {
+          m.setFeatureState({ source: SRC, id: numId }, { hovered: true });
+          hoveredIdRef.current = numId;
+        }
+      });
+
+      m.on('mouseleave', FILL_LAYER, () => {
+        if (!isMapAlive(m)) return;
+        m.getCanvas().style.cursor = '';
+        if (hoveredIdRef.current !== null) {
+          m.setFeatureState({ source: SRC, id: hoveredIdRef.current }, { hovered: false });
+          hoveredIdRef.current = null;
+        }
+      });
+
+      m.on('click', FILL_LAYER, (e: MapLayerMouseEvent) => {
+        if (!isMapAlive(m)) return;
+        const feat = e.features?.[0];
+        if (!feat) return;
+
+        const numId = feat.id as number | undefined;
+        if (selectedIdRef.current !== null && selectedIdRef.current !== numId) {
+          m.setFeatureState({ source: SRC, id: selectedIdRef.current }, { selected: false });
+        }
+        if (numId != null) {
+          m.setFeatureState({ source: SRC, id: numId }, { selected: true });
+          selectedIdRef.current = numId;
+        }
+
+        onFeatureSelectRef.current(String(feat.properties?.ISO_A2 ?? '').toUpperCase());
+      });
     });
   }, [mapReady, classified, classProperty, emptyClass, fillMatch]);
 
   // Dim every feature whose class differs from the legend's active filter.
   // fill-opacity, never removing a layer — dimming must not remove data from
   // the canvas.
+  //
+  // Returning `false` when the fill layer is not there yet parks this on the
+  // same `styledata` retry as the wiring effect above, so a dim chosen while
+  // the wire is deferred is applied once the layer lands instead of being
+  // silently lost — which the old `!map.getLayer(...)` early return did.
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !mapReady || !map.getLayer(FILL_LAYER)) return;
-    map.setPaintProperty(
-      FILL_LAYER,
-      'fill-opacity',
-      activeClass ? ['case', ['==', ['get', classProperty], activeClass], 1, 0.25] : 1,
-    );
+    if (!map || !mapReady) return;
+    return applyWhenStyleReady(map, (m) => {
+      if (!m.getLayer(FILL_LAYER)) return false;
+      m.setPaintProperty(
+        FILL_LAYER,
+        'fill-opacity',
+        activeClass ? ['case', ['==', ['get', classProperty], activeClass], 1, 0.25] : 1,
+      );
+    });
   }, [activeClass, mapReady, classified, classProperty]);
 
   const loading = !classified;
