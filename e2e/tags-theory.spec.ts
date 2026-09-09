@@ -80,7 +80,7 @@ test.describe('@smoke the queer-theory glossary is readable', () => {
       // fixed, so unlike the wrong-sense spec there is no skip here: an empty
       // <article> IS the failure — it is what detail.ts emits for
       // `seo_indexable = false`, and eight revived rows shipped in that state
-      // because the revive never set the flag (repaired in 20360501100100).
+      // because the revive never set the flag (repaired in 20361001100100).
       expect(res.status(), `/tags/${c.slug} should resolve`).toBe(200);
 
       const html = await res.text();
