@@ -1588,6 +1588,24 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
       console.error(`✗ ${badLinks} image_asset_links point at non-image assets (registry renders independently of news_articles.image_url)`)
       FAILED = true; sectionOk = false
     }
+    // search_documents keeps its OWN copy of image_url and is what a result card
+    // renders. It self-heals through search_reindex_drain rather than being
+    // repaired directly (verified on prod: 20 sampled rows went 20 → 0 through
+    // one drain), so a non-zero count here is normally just lag.
+    //
+    // The failure worth catching is a DESYNC, not lag: articles clean, queue
+    // empty, and search still serving audio. That is the shape where repairing
+    // one surface hides another — `articles` reports a clean zero while every
+    // search result still shows a broken image.
+    const sd = Number(sig?.search_documents ?? 0)
+    const queue = Number(sig?.reindex_queue_depth ?? 0)
+    if (sd > 0 && bad === 0 && queue === 0) {
+      console.error(`✗ ${sd} search_documents hold audio/video in image_url while news_articles is clean and the reindex queue is empty`)
+      console.error('  Not drain lag — the index disagrees with its source. Re-enqueue the affected rows.')
+      FAILED = true; sectionOk = false
+    } else if (sd > 0) {
+      console.log(`  ${sd} search_documents still carry a non-image image_url (queue depth ${queue}; expected to drain)`)
+    }
     // Advisory: drains as news_sources.artwork_url fills. Never reaches zero —
     // a show that publishes no <itunes:image> has no artwork to inherit — so
     // this warns and never fails.

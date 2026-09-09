@@ -232,7 +232,26 @@ AS $$
     'podcast_without_image', (
       SELECT count(*) FROM public.news_articles
       WHERE media_type = 'podcast' AND (image_url IS NULL OR btrim(image_url) = '')
-    )
+    ),
+    -- THE SURFACE USERS ACTUALLY SEE IN SEARCH. search_documents keeps its own
+    -- copy of image_url — 3,252 of them were audio when this was written — and
+    -- renders it on every result card. It is deliberately NOT repaired here:
+    -- clearing news_articles.image_url enqueues the row and search_reindex_drain
+    -- rewrites it. Verified on prod in a rolled-back txn: 20 sampled rows went
+    -- 20 → 0 through one drain, all 20 ending null.
+    --
+    -- It is REPORTED because that self-heal has a dependency. A stalled drain
+    -- leaves search serving audio URLs while `articles` above reads a clean
+    -- zero — the exact shape where one surface being fixed hides another that
+    -- is not. These two counts plus the queue depth are what separate ordinary
+    -- lag (expected for a few minutes after the repair enqueues ~5,600 rows)
+    -- from a real desync; check-pipeline-health.mjs fails only when the queue
+    -- is empty AND articles is zero AND search still disagrees.
+    'search_documents', (
+      SELECT count(*) FROM public.search_documents
+      WHERE public.is_non_image_url(image_url)
+    ),
+    'reindex_queue_depth', (SELECT count(*) FROM public.search_reindex_queue)
   );
 $$;
 
