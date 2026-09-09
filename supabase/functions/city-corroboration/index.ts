@@ -9,6 +9,7 @@
 
 import { getCorsHeaders, getServiceClient, requireInternalOrAdmin, jsonResponse } from '../_shared/supabase-client.ts'
 import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
+import { mergeFieldProv } from '../_shared/field-provenance.ts'
 
 const DEFAULT_BATCH_LIMIT = 200
 const GEO_AGREE_M = 25_000        // cities: within 25km counts as same place
@@ -104,7 +105,12 @@ Deno.serve(async (req: Request) => {
     for (const f of fields) {
       const fused = fuse(f, prov[f].candidates!)
       if (!fused) continue
-      out[f] = fused
+      // MERGE, do not replace. `fuse` returns a fresh object carrying exactly the
+      // six keys it computes, so a bare `out[f] = fused` silently deletes anything
+      // ELSE a writer stored under this field — while `out` five lines up is
+      // `{ ...prov }`, i.e. this function already intends to preserve. See
+      // _shared/field-provenance.ts for the measurement that found this.
+      out[f] = mergeFieldProv(prov[f], fused) as FieldProv
       confidences.push(fused.confidence!)
       if (fused.conflict && IMPORTANT.has(f)) conflictImportant = true
     }
