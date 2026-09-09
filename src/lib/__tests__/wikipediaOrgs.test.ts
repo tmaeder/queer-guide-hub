@@ -250,6 +250,36 @@ describe('collapseRecords against the real corpus', () => {
     }
   });
 
+  it('lets no disqualifying P31 class survive, listed or not', () => {
+    /**
+     * The test above iterates EXCLUSIONS.keys(), so it can only prove the list
+     * is APPLIED — never that it is COMPLETE. That gap shipped: `Black Lives
+     * Matter` (P31 = social movement) was named as excluded in the design doc
+     * and the PR description, was never added to the map, and reached
+     * production as an advocacy organization.
+     *
+     * This asserts the property instead of the list. A class that an
+     * organization can never be must not survive collapse, whether or not
+     * anyone remembered to name the article.
+     */
+    const DISQUALIFYING =
+      /^(human|social movement|black movement|micronation|kingdom|campaign|election campaign|criminal organization|Wikimedia list article|Wikimedia disambiguation page)$/i;
+    const survivors = collapsed
+      .filter((r) => (r.p31Labels ?? []).some((l) => DISQUALIFYING.test(l)))
+      .map((r) => `${r.name} (${(r.p31Labels ?? []).join(', ')})`);
+    expect(survivors).toEqual([]);
+  });
+
+  it('the disqualifying-class check is not vacuous', () => {
+    // Positive control: the raw corpus really does contain such rows, so the
+    // assertion above is doing work rather than filtering an empty set.
+    const DISQUALIFYING = /^(human|social movement|micronation|criminal organization)$/i;
+    const inRaw = corpus.records.filter((r) =>
+      (r.p31Labels ?? []).some((l) => DISQUALIFYING.test(l)),
+    );
+    expect(inRaw.length).toBeGreaterThan(2);
+  });
+
   it('keeps the one record that has no Wikidata QID', () => {
     // Dolphin Democrats is a real Houston political club with no QID. Keying
     // strictly on QID would silently discard it.
