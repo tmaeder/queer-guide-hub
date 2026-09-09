@@ -176,7 +176,13 @@ Guarded by a case in the existing `scraper/tests/unit/gaycities-parser.test.ts`.
   row stays eligible for a future commit to refill it.
 - **Clamps `p_batch` to 300 in the function body**, so the cap is enforced rather
   than commented and cannot be opted out of by argument.
-- Returns `{scanned, updated, emptied, remaining}`.
+- Returns `{batch, updated, emptied, remaining}`. `batch` is the clamped limit,
+  which makes the clamp observable; `scanned` was dropped as redundant, since
+  every selected row is updated. `emptied` is kept and is **not** redundant with
+  `updated`: they are equal for every row that exists today (`max_array_len=1`,
+  so stripping always empties) and diverge exactly when a mixed array appears —
+  the case the filtered rebuild exists to handle, and the one a single count
+  would hide.
 - **No cursor column.** Stripping the URL removes the row from the function's own
   predicate, so the work list shrinks monotonically, the job is self-terminating,
   and a re-run is idempotent.
