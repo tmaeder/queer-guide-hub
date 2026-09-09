@@ -3,7 +3,7 @@
  * Drain the dead gaycities S3 image urls out of events.images.
  *
  * 27,494 rows at 300 per call (~92 rounds), or 27,194 / ~91 rounds if the
- * migration's one-batch proof (20360902100000) already ran. This is a script
+ * migration's one-batch proof (20361101100000) already ran. This is a script
  * and not a loop inside the migration because each RPC call here is its own
  * top-level statement, so the 2-minute cluster-default `statement_timeout`
  * applies PER BATCH rather than to the whole ~27k-row job. A PL/pgSQL function

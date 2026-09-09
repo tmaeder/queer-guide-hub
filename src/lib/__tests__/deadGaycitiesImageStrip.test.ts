@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const MIGRATION = '20360902100000_event_dead_gaycities_images.sql';
+const MIGRATION = '20361101100000_event_dead_gaycities_images.sql';
 
 /** Comments are prose; a guard must live in the STATEMENTS. */
 function statements(sql: string): string {

@@ -316,7 +316,7 @@ if (!hygieneRes.ok) {
 //
 // WARN while the count falls, FAIL only when it is non-zero with nothing
 // draining it — a hard fail on any non-zero count would red every open PR
-// for the duration of the drain (migration 20360902100000 arms and proves
+// for the duration of the drain (migration 20361101100000 arms and proves
 // one batch; scripts/data-quality/strip-dead-gaycities-images.mjs drains
 // the rest out-of-band).
 //
@@ -329,7 +329,7 @@ if (!hygieneRes.ok) {
     body: '{}',
   })
   if (!res.ok) {
-    console.warn(`⚠ dead_gaycities_image_signals → HTTP ${res.status} (RPC missing? migration 20360902100000)`)
+    console.warn(`⚠ dead_gaycities_image_signals → HTTP ${res.status} (RPC missing? migration 20361101100000)`)
     console.warn('  This check measured NOTHING — it did not pass.')
   } else {
     const sig = (await res.json()) ?? {}
