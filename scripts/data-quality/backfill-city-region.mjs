@@ -36,6 +36,8 @@
 import { randomUUID } from 'node:crypto';
 import { writeFileSync } from 'node:fs';
 
+import { buildAuditRows } from './lib/city-region-audit.mjs';
+
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
 const ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
 // SUPABASE_SERVICE_ROLE_KEY is the name the scheduled workflows use; the
@@ -130,9 +132,13 @@ const svcHeaders = {
 /**
  * One batch_id per run, so the whole sweep reverts with
  *   select rollback_external_correction_batch('<id>');
- * This only ever fills a NULL, so before_value is always jsonb 'null' — the
- * audit row still earns its place, because it is what the correction-rate
- * sentinel counts and what makes an unnoticed bad Photon day undoable.
+ *
+ * The audit rows go through the `record_external_corrections` RPC rather than
+ * straight at the table, because `before_value` has to be the jsonb scalar
+ * 'null' ("the column was empty") and NO PostgREST body can express that — a
+ * JSON null becomes SQL NULL and violates the NOT NULL, which is what killed
+ * every run this job ever had. See lib/city-region-audit.mjs for the
+ * measurements and for why the two encodings that DO insert are worse.
  */
 async function writeDirect(rows, batchId) {
   for (let i = 0; i < rows.length; i += WRITE_BATCH) {
@@ -140,22 +146,12 @@ async function writeDirect(rows, batchId) {
 
     // Audit BEFORE the write: if the process dies mid-batch, the audit row is
     // the only record that makes the change reversible.
-    const aRes = await fetch(`${SUPABASE_URL}/rest/v1/external_correction_audit`, {
+    const aRes = await fetch(`${SUPABASE_URL}/rest/v1/rpc/record_external_corrections`, {
       method: 'POST',
       headers: { ...svcHeaders, Prefer: 'return=minimal' },
-      body: JSON.stringify(
-        chunk.map((r) => ({
-          batch_id: batchId,
-          entity_type: 'city',
-          entity_id: r.id,
-          field: 'region_name',
-          before_value: null,
-          after_value: r.state,
-          source: 'photon-reverse',
-          actor: 'script:backfill-city-region',
-          reason: 'fill empty region_name by reverse geocode',
-        })),
-      ),
+      // Named argument. PostgREST resolves overloads BY ARGUMENT NAME and
+      // answers a mismatch with a silent PGRST202 404, so `p_rows` is exact.
+      body: JSON.stringify({ p_rows: buildAuditRows(chunk, batchId) }),
     });
     if (!aRes.ok) throw new Error(`audit insert ${aRes.status}: ${await aRes.text()}`);
 
