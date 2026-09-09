@@ -37,6 +37,17 @@ const SENSE_CATEGORY_KEYS = new Set([
   // Every one of those has a dominant generic English sense, so an extract
   // about a gymnastic arch or a crustacean is evidence of the WRONG subject.
   'sex-positions',
+  // Added 2026-09-09. `Sex & Kink` was absent from this set, and that absence is
+  // what let `Marineflieger` — Q1898391, the German Navy's naval air arm — be
+  // re-adopted onto a kink glossary entry nine hours after a human cleared it.
+  // Measured on prod: the category is a German-scrape residue filed by surface
+  // form; its 19 members include Kriegerin, Entfesselungskunstler,
+  // Zirkuskuenstler, Vedette, Mentalist and the bare letter B. That is precisely
+  // the population where the generic English article is the wrong subject. It is
+  // a sibling of Fetishes / Practices & Play / Dynamics & Roles, all already
+  // here; it was omitted because the 2026-08-29 audit enumerated the categories
+  // it sampled, and this one holds 19 rows.
+  'sex-kink',
   'slang-terminology',
   'subcultures',
   'relationship-structures',
@@ -56,6 +67,7 @@ const SENSE_CATEGORY_KEYS = new Set([
   'expression & style',
   'consent & negotiation',
   'vibe & crowd',
+  'sex & kink',
 ])
 
 export function isSenseCategory(categorySlugOrName: string | null | undefined): boolean {
