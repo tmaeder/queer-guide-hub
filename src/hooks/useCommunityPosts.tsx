@@ -340,7 +340,7 @@ export const useCommunityPosts = (userId?: string) => {
           .subscribe();
       },
       teardown: (channel) => {
-        supabase.removeChannel(channel as Parameters<typeof supabase.removeChannel>[0]);
+        supabase.removeChannel(channel);
       },
     });
   }, [queryClient, instanceId]);

@@ -23,19 +23,22 @@ import * as Sentry from '@sentry/react';
  * `subsystem: 'realtime'` and the console gets it in dev.
  */
 
-/** Minimal shape we need — avoids importing realtime-js types into every caller. */
-export interface SafeChannel {
-  unsubscribe?: () => unknown;
-}
-
-export interface SubscribeSafelyOptions {
+/**
+ * The channel handle is opaque here — this module never inspects it, it only
+ * hands it back to `teardown`. Generic rather than a structural interface so
+ * the caller's own `RealtimeChannel` type flows through untouched, and so no
+ * caller is measured against a shape we invented. (An interface whose members
+ * are all optional is a *weak type*: TS then rejects any object literal with no
+ * property in common with it, TS2559.)
+ */
+export interface SubscribeSafelyOptions<TChannel> {
   /**
    * Builds AND subscribes the channel. Runs inside the guard, so a throw from
    * `.channel()`, `.on()` or `.subscribe()` is contained identically.
    */
-  subscribe: () => SafeChannel | null | undefined;
+  subscribe: () => TChannel | null | undefined;
   /** Tears the channel down. Also guarded — `removeChannel` can throw on a half-built channel. */
-  teardown: (channel: SafeChannel) => void;
+  teardown: (channel: TChannel) => void;
   /** Identifies the call site in the Sentry report. */
   context: string;
 }
@@ -66,11 +69,11 @@ function report(error: unknown, context: string, reason: string) {
  * Subscribe to a realtime channel without ever letting a transport failure
  * escape. Returns the cleanup function to hand back from `useEffect`.
  */
-export function subscribeSafely({
+export function subscribeSafely<TChannel>({
   subscribe,
   teardown,
   context,
-}: SubscribeSafelyOptions): () => void {
+}: SubscribeSafelyOptions<TChannel>): () => void {
   if (!isWebSocketAvailable()) {
     // Provably cannot work — don't construct a channel whose subscribe() would
     // throw. Still reported, so "no realtime here" is visible rather than silent.
@@ -82,7 +85,7 @@ export function subscribeSafely({
     return () => {};
   }
 
-  let channel: SafeChannel | null | undefined;
+  let channel: TChannel | null | undefined;
   try {
     channel = subscribe();
   } catch (error) {
