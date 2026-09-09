@@ -36,6 +36,13 @@ export const EXCLUSIONS = new Map([
   ['Yes Equality campaign', 'P31 = election campaign; ended 2015, not a standing body'],
   ['OneLove', 'P31 = campaign, not a standing body'],
 
+  // A decentralised movement, not a body with members, a country and a
+  // lifespan. Named as excluded in the original design doc but missing from
+  // this map, so the first production run imported it; the row was deleted and
+  // the `no disqualifying P31 survives` test below now catches the whole class
+  // rather than just the entries someone remembered to list.
+  ['Black Lives Matter', 'P31 = social movement, not an organization'],
+
   // Out of scope for a queer travel/community directory.
   ['SiegedSec', 'P31 = criminal organization; a hacktivist crew, not an advocacy group'],
 
