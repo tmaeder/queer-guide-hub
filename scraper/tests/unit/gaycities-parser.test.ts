@@ -457,4 +457,30 @@ describe('normalizeGcEvent dead image hosts', () => {
     if ('reject' in norm) throw new Error('unexpected reject: ' + norm.reject);
     expect(norm.images).toEqual(['https://s3.amazonaws.com/gc/iml.jpg']);
   });
+
+  // Regression pin: the filter compares the parsed hostname. A substring test
+  // over the whole url nulls this live BunnyCDN image because the dead host
+  // appears in its query string.
+  it('keeps a live url that merely mentions the dead host in a query param', () => {
+    const url =
+      'https://gaycities-lv.b-cdn.net/proxy?src=https://gaycities-featured-images-production.s3.amazonaws.com/events/sm_fb_1.jpg';
+    const norm = normalizeGcEvent(
+      detailFixture({ jsonLd: ld(url), bodyDescription: null }),
+      METRO,
+    );
+    if ('reject' in norm) throw new Error('unexpected reject: ' + norm.reject);
+    expect(norm.images).toEqual([url]);
+  });
+
+  // httpsOnly only checks the https:// prefix, so a degenerate value reaches
+  // the filter and `new URL()` throws on it. Unparseable is not our business:
+  // this removes one known-dead host, it is not a URL validator.
+  it('passes through an unparseable url rather than throwing', () => {
+    const norm = normalizeGcEvent(
+      detailFixture({ jsonLd: ld('https://'), bodyDescription: null }),
+      METRO,
+    );
+    if ('reject' in norm) throw new Error('unexpected reject: ' + norm.reject);
+    expect(norm.images).toEqual(['https://']);
+  });
 });
