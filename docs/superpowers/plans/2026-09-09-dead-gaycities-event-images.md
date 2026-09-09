@@ -29,7 +29,7 @@ Re-read these before changing any number below. All measured on prod 2026-09-09.
 | 300-row UPDATE, rolled back | 0.40 s, `search_reindex_queue` delta 300 |
 | `search_reindex_queue` depth at planning time | 1,502 |
 | remote `max(version)` at planning time | `20360901100100` |
-| remote `max(version)` measured again ~2h later | `20361001100100` — **it moved a month in version-space during implementation**, which is why the migration was renumbered to `20361101100000`. Re-read it again immediately before merge; do not reuse this number. |
+| remote `max(version)` measured again ~2h later | `20361001100100` — **it moved a month in version-space during implementation**, which is why the migration was renumbered to `20370601100000`. Re-read it again immediately before merge; do not reuse this number. |
 
 **Two traps encoded in the design, do not "simplify" them away:**
 
@@ -44,7 +44,7 @@ Re-read these before changing any number below. All measured on prod 2026-09-09.
 |---|---|
 | `scraper/src/sources/gaycities/lib.ts` (modify ~742–790) | `DEAD_IMAGE_HOSTS` + `liveImage()`, applied at the single image choke point |
 | `scraper/tests/unit/gaycities-parser.test.ts` (modify) | proves the filter drops the dead host and keeps live ones |
-| `supabase/migrations/20361101100000_event_dead_gaycities_images.sql` (create) | `run_event_dead_image_strip()`, the measurement notice, the assertions, and the standalone `dead_gaycities_image_signals()` sentinel |
+| `supabase/migrations/20370601100000_event_dead_gaycities_images.sql` (create) | `run_event_dead_image_strip()`, the measurement notice, the assertions, and the standalone `dead_gaycities_image_signals()` sentinel |
 | `src/lib/__tests__/deadGaycitiesImageStrip.test.ts` (create) | text-scan guard: the clamp and the synthetic control cannot be deleted silently |
 | `scripts/data-quality/strip-dead-gaycities-images.mjs` (create) | the drain |
 | `scripts/check-pipeline-health.mjs` (modify, after the accessibility block ~line 250) | warn-while-draining / fail-when-stalled |
@@ -194,9 +194,9 @@ legacy-template paths flow through."
 ### Task 2: Migration — arm and prove the runner
 
 **Files:**
-- Create: `supabase/migrations/20361101100000_event_dead_gaycities_images.sql`
+- Create: `supabase/migrations/20370601100000_event_dead_gaycities_images.sql`
 
-Remote `max(version)` was `20360901100100` at planning time. `20361101100000` leaves a deliberate gap — `min+1` dies on the next `main` merge. **Re-read the remote ceiling immediately before merging** and renumber if another PR landed higher.
+Remote `max(version)` was `20360901100100` at planning time. `20370601100000` leaves a deliberate gap — `min+1` dies on the next `main` merge. **Re-read the remote ceiling immediately before merging** and renumber if another PR landed higher.
 
 - [ ] **Step 1: Write the migration**
 
@@ -482,7 +482,7 @@ Expected: the `raise notice` lines report `events=27494 keeps_an_image=0 goes_em
 - [ ] **Step 6: Commit**
 
 ```bash
-git add supabase/migrations/20361101100000_event_dead_gaycities_images.sql
+git add supabase/migrations/20370601100000_event_dead_gaycities_images.sql
 git commit -m "feat(events): batched runner for dead gaycities S3 image urls
 
 27,494 events carry a url in a bucket that now 403s for every key. Every
@@ -512,7 +512,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const MIGRATION = '20361101100000_event_dead_gaycities_images.sql';
+const MIGRATION = '20370601100000_event_dead_gaycities_images.sql';
 
 /** Comments are prose; a guard must live in the STATEMENTS. */
 function statements(sql: string): string {
@@ -592,7 +592,7 @@ A text test that passes against a broken file is worse than none. Break each gua
 
 ```bash
 cd /Users/tobiasmaeder/QG/.claude/worktrees/pr-review-issue-triage-75b259
-M=supabase/migrations/20361101100000_event_dead_gaycities_images.sql
+M=supabase/migrations/20370601100000_event_dead_gaycities_images.sql
 cp $M /tmp/dead-img-backup.sql
 
 # Mutation 1: remove the clamp
@@ -788,7 +788,7 @@ Follow the shape of the existing `event_dup_signals` block. A non-OK response mu
     method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: '{}',
   })
   if (!res.ok) {
-    console.warn(`⚠ dead_gaycities_image_signals → HTTP ${res.status} (RPC missing? migration 20361101100000)`)
+    console.warn(`⚠ dead_gaycities_image_signals → HTTP ${res.status} (RPC missing? migration 20370601100000)`)
     console.warn('  This check measured NOTHING — it did not pass.')
   } else {
     const sig = await res.json()
@@ -849,7 +849,7 @@ Use mcp__6a75f005…__execute_sql with:
   select max(version) from supabase_migrations.schema_migrations;
 ```
 
-If the result is `>= 20361101100000`, `git mv` the migration to a version above it **with a gap** — `min+1` dies on the next `main` merge. A locally computed ceiling is not authoritative; this is the only reading that is.
+If the result is `>= 20370601100000`, `git mv` the migration to a version above it **with a gap** — `min+1` dies on the next `main` merge. A locally computed ceiling is not authoritative; this is the only reading that is.
 
 - [ ] **Step 2: Run the full local gates**
 
