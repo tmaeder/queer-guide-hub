@@ -757,16 +757,27 @@ function httpsOnly(url: string | null): string | null {
  * Referer or User-Agent. Live pages moved to gaycities-lv.b-cdn.net, so the
  * weekly sync no longer sees these — but a Wayback snapshot still carries the
  * old og:image, which is why this filter belongs here and not only in the
- * one-shot repair migration (20360902100000).
+ * one-shot migration that cleared the existing rows.
  *
  * Match the BUCKET, never the provider: unrelated s3.amazonaws.com images are
- * legitimate and one is asserted in this file's own test fixture.
+ * legitimate and one is asserted in this file's own test fixture. The
+ * comparison is against the parsed hostname, not a substring of the whole URL,
+ * so a live host carrying the dead one in a query parameter is left alone.
  */
 const DEAD_IMAGE_HOSTS = ['gaycities-featured-images-production.s3.amazonaws.com'];
 
 function liveImage(url: string | null): string | null {
   if (!url) return null;
-  return DEAD_IMAGE_HOSTS.some((h) => url.includes(h)) ? null : url;
+  let host: string;
+  try {
+    host = new URL(url).hostname;
+  } catch {
+    // Not parseable — not our business. This filter removes one known-dead
+    // host; it is not a URL validator, and swallowing junk here would be a
+    // second, undocumented behaviour.
+    return url;
+  }
+  return DEAD_IMAGE_HOSTS.includes(host) ? null : url;
 }
 
 /**
