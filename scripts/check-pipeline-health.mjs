@@ -1541,6 +1541,66 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
   }
 }
 
+// ── Audio/video stored in news_articles.image_url (2026-09-08) ────────────
+//
+// source-rss-news's extractMediaUrl took the first <enclosure url="..."> with
+// no type check, and on a podcast item the enclosure IS the audio — 5,607 rows,
+// 2,405 of them seo_indexable and therefore serving an MP3 as og:image.
+//
+// Standalone RPC rather than a key on pipeline_hygiene_stats(): adding one
+// there means restating that function's whole body, which is a merge-collision
+// surface (same reason event_dup_signals/venue_dup_signals are separate).
+//
+// Zero-tolerance, no baseline and no floor. news_articles_zz_reject_non_image_url
+// makes this state unreachable through INSERT and UPDATE, so a non-zero count is
+// never drift — it is a writer that got around the trigger.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/news_image_signals`, {
+    method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: '{}',
+  })
+  if (!res.ok) {
+    // A failed probe must SAY it failed. Falling through to a default would
+    // report a clean corpus on the strength of never having looked — the same
+    // shape as the `last_error` 42703 that hid an open circuit breaker for days.
+    console.warn(`⚠ news_image_signals → HTTP ${res.status} (20361118143700 not applied?) — this check measured NOTHING`)
+  } else {
+    const sig = await res.json()
+    const bad = Number(sig?.articles ?? 0)
+    const badLinks = Number(sig?.registry_links ?? 0)
+    // Local, not the global FAILED: this section's ✓ must not be suppressed by
+    // an unrelated failure in an earlier one.
+    let sectionOk = true
+
+    // The seal being ATTACHED is checked separately from the count, because an
+    // absent trigger and a clean corpus produce the same zero.
+    if (sig?.trigger_attached === false) {
+      console.error('✗ news_articles_zz_reject_non_image_url is NOT attached — image_url is unsealed')
+      console.error('  A zero count below therefore proves nothing about future writes.')
+      FAILED = true; sectionOk = false
+    }
+    if (bad > 0) {
+      console.error(`✗ ${bad} news_articles store audio/video in image_url (renders a broken image; also feeds og:image)`)
+      console.error('  The BEFORE trigger makes this unreachable, so a writer bypassed it —')
+      console.error('  check source-* enclosure parsing, pipeline-normalize, and news_commit_staging_batch.')
+      FAILED = true; sectionOk = false
+    }
+    if (badLinks > 0) {
+      console.error(`✗ ${badLinks} image_asset_links point at non-image assets (registry renders independently of news_articles.image_url)`)
+      FAILED = true; sectionOk = false
+    }
+    // Advisory: drains as news_sources.artwork_url fills. Never reaches zero —
+    // a show that publishes no <itunes:image> has no artwork to inherit — so
+    // this warns and never fails.
+    const noArt = Number(sig?.podcast_without_image ?? 0)
+    if (noArt > 0) {
+      console.log(`  ${noArt} podcast episodes still have no artwork (news_podcast_artwork_fill drains this as shows are re-fetched)`)
+    }
+    if (sectionOk) {
+      console.log('✓ no audio/video in news_articles.image_url; seal attached')
+    }
+  }
+}
+
 // The single exit. Reached whether or not anything failed, so the ✗ lines above
 // are the complete list rather than "the first one we tripped over".
 if (FAILED) {
