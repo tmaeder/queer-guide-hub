@@ -747,6 +747,29 @@ function httpsOnly(url: string | null): string | null {
 }
 
 /**
+ * Hosts whose objects are permanently unreachable, so a URL pointing at one is
+ * worse than no URL at all: an absent image degrades to the on-brand fallback,
+ * a dead one renders Chrome's torn-page glyph.
+ *
+ * gaycities-featured-images-production.s3.amazonaws.com — GayCities' old image
+ * CDN. Since ~2026-09 the bucket's public-read policy is gone and it answers
+ * `403 AccessDenied` for EVERY key, including keys that cannot exist, under any
+ * Referer or User-Agent. Live pages moved to gaycities-lv.b-cdn.net, so the
+ * weekly sync no longer sees these — but a Wayback snapshot still carries the
+ * old og:image, which is why this filter belongs here and not only in the
+ * one-shot repair migration (20360902100000).
+ *
+ * Match the BUCKET, never the provider: unrelated s3.amazonaws.com images are
+ * legitimate and one is asserted in this file's own test fixture.
+ */
+const DEAD_IMAGE_HOSTS = ['gaycities-featured-images-production.s3.amazonaws.com'];
+
+function liveImage(url: string | null): string | null {
+  if (!url) return null;
+  return DEAD_IMAGE_HOSTS.some((h) => url.includes(h)) ? null : url;
+}
+
+/**
  * Build a commit-ready normalized payload. Staging rows carry this pre-set in
  * normalized_data so pipeline-normalize (whose generic branch drops
  * venue_name/ticket_url/event_type) skips them and commit_event_staging_item
@@ -784,7 +807,7 @@ export function normalizeGcEvent(
 
   const offers = (ld['offers'] ?? {}) as Record<string, unknown>;
   const ticketUrl = httpsOnly(asString(offers['url']));
-  const image = httpsOnly(firstString(ld['image']) ?? asString(ld['thumbnailUrl']));
+  const image = liveImage(httpsOnly(firstString(ld['image']) ?? asString(ld['thumbnailUrl'])));
 
   const ldKeywords: string[] = Array.isArray(ld['keywords'])
     ? (ld['keywords'] as unknown[]).map((k) => String(k)).filter(Boolean)

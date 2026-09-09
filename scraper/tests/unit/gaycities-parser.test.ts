@@ -414,3 +414,47 @@ describe('mapEventType word boundaries', () => {
     expect(mapEventType('Oktoberfest Munich')).toBe('festival');
   });
 });
+
+describe('normalizeGcEvent dead image hosts', () => {
+  const ld = (image: string) => ({
+    '@type': 'Event',
+    name: 'Dead Image Event',
+    startDate: '2024-06-01T12:00:00',
+    image: [image],
+  });
+
+  it('drops a gaycities-featured-images S3 url — the bucket 403s for every key since 2026-09', () => {
+    const norm = normalizeGcEvent(
+      detailFixture({
+        jsonLd: ld('https://gaycities-featured-images-production.s3.amazonaws.com/events/sm_fb_1.jpg'),
+        bodyDescription: null,
+      }),
+      METRO,
+    );
+    if ('reject' in norm) throw new Error('unexpected reject: ' + norm.reject);
+    expect(norm.images).toEqual([]);
+  });
+
+  it('keeps the BunnyCDN host gaycities migrated to', () => {
+    const norm = normalizeGcEvent(
+      detailFixture({
+        jsonLd: ld('https://gaycities-lv.b-cdn.net/events/originals/1030855-atlanta-pride-alihaas.jpg'),
+        bodyDescription: null,
+      }),
+      METRO,
+    );
+    if ('reject' in norm) throw new Error('unexpected reject: ' + norm.reject);
+    expect(norm.images).toEqual([
+      'https://gaycities-lv.b-cdn.net/events/originals/1030855-atlanta-pride-alihaas.jpg',
+    ]);
+  });
+
+  it('keeps an unrelated s3.amazonaws.com host — the filter is the bucket, not the provider', () => {
+    const norm = normalizeGcEvent(
+      detailFixture({ jsonLd: ld('https://s3.amazonaws.com/gc/iml.jpg'), bodyDescription: null }),
+      METRO,
+    );
+    if ('reject' in norm) throw new Error('unexpected reject: ' + norm.reject);
+    expect(norm.images).toEqual(['https://s3.amazonaws.com/gc/iml.jpg']);
+  });
+});
