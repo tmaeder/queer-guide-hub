@@ -5,6 +5,8 @@
  * Exit 1 if any enabled pipeline only failed (no completions) in last 24h.
  */
 
+import { classifyParkedQueue } from './lib/geo-address-queue.mjs'
+
 const BASE = process.env.SUPABASE_URL
 const KEY  = process.env.SUPABASE_SERVICE_ROLE_KEY
 
@@ -1370,10 +1372,44 @@ const GEO_BASELINE = {
       }
 
       const q = geo.address_queue ?? {}
-      if ((q.parked ?? 0) > 0) {
-        console.error(`✗ ${q.parked} geo_address_queue rows parked at 4 failed attempts — inspect geo_address_queue.last_error`)
-        FAILED = true
+
+      // A parked row is not automatically a failure, and treating it as one made
+      // this workflow permanently red.
+      //
+      // `attempts >= 4` is reached two ways. The drain's catch branch stamps the
+      // exception message after exhausting its backoff — a real failure. The
+      // terminal branch stamps `no_postal_for_coordinates` when Photon ANSWERED
+      // and reported that no postcode exists for those coordinates; those rows can
+      // never drain, and parking rather than deleting them is the deliberate fix
+      // for a delete/re-enqueue loop (see migration 20360901100100). Measured
+      // 2026-09-09: 2,537 parked, ALL 2,537 terminal, zero transient — so the old
+      // `parked > 0` rule could not go green by any amount of correct work, and it
+      // buried a real wrong-entity regression underneath it for six days.
+      //
+      // The split is computed in Postgres by geo_address_queue_parked() and
+      // classified by scripts/lib/geo-address-queue.mjs, unit-tested in both
+      // directions. Transient still fails at ONE row — no threshold, no baseline.
+      {
+        let parked = null
+        const pr = await fetch(`${BASE}/rest/v1/rpc/geo_address_queue_parked`, {
+          method: 'POST',
+          headers: { ...headers, 'Content-Type': 'application/json' },
+          body: '{}',
+        })
+        if (pr.ok) parked = await pr.json()
+        else console.error(`✗ geo_address_queue_parked → HTTP ${pr.status} (is migration 20360901100100 applied?)`)
+
+        const verdict = classifyParkedQueue(parked)
+        if (verdict.level === 'fail') {
+          console.error(`✗ ${verdict.message}`)
+          FAILED = true
+        } else if (verdict.level === 'warn') {
+          console.warn(`⚠ ${verdict.message}`)
+        } else {
+          console.log(`✓ ${verdict.message}`)
+        }
       }
+
       if ((q.depth ?? 0) > GEO_BASELINE.queue_depth_warn) {
         console.warn(`⚠ geo_address_queue depth ${q.depth} (oldest ${q.oldest_hours}h) — the */5 drain moves 25 rows a run`)
       }
