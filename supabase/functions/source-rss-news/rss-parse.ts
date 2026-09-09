@@ -31,6 +31,8 @@ export function parseRssItems(
 ): Record<string, unknown>[] {
   const items: Record<string, unknown>[] = []
   if (maxItems <= 0) return items
+  // Computed ONCE, outside the loop — it is a property of the feed, not the item.
+  const channelImage = isPodcast ? extractChannelImage(xml) : null
   const itemRegex = /<item>([\s\S]*?)<\/item>/gi
   let textBytes = 0
   let match
@@ -58,7 +60,12 @@ export function parseRssItems(
       const audioUrl = extractAudioEnclosure(block)
       // An episode with no audio is not a podcast item — skip it.
       if (!audioUrl) continue
-      const image = extractItunesImage(block) || extractMediaUrl(block)
+      // Per-episode art first, then a typed image enclosure, then the show's own
+      // artwork. Most shows declare artwork at CHANNEL level only, so before the
+      // channel fallback existed the vast majority of episodes reached
+      // extractMediaUrl with nothing to find — which is what made its untyped
+      // enclosure branch fire on essentially the whole podcast corpus.
+      const image = extractItunesImage(block) || extractMediaUrl(block) || channelImage
       // cleanText ONCE per item. `content` and `excerpt` derive from the same
       // description, and calling it twice doubled the most expensive work in
       // the parser for no benefit.
@@ -139,8 +146,42 @@ export function extractTag(xml: string, tag: string): string | null {
 export function extractMediaUrl(block: string): string | null {
   const mediaMatch = /url="([^"]+\.(jpg|jpeg|png|gif|webp)[^"]*)"/i.exec(block)
   if (mediaMatch) return decodeUrlEntities(mediaMatch[1])
-  const encMatch = /<enclosure[^>]+url="([^"]+)"/i.exec(block)
-  return encMatch ? decodeUrlEntities(encMatch[1]) : null
+  // An <enclosure> is whatever the feed chose to attach, and on a podcast item
+  // that is the AUDIO. This fallback used to take the first enclosure with no
+  // type check at all, so every episode stored its own .mp3 as artwork: 5,607
+  // rows on prod (5,548 mp3 + 52 m4a + 1 wav + 6 mp4), 2,405 of them
+  // seo_indexable and therefore publishing an MP3 as og:image to crawlers.
+  //
+  // Same loop shape as extractAudioEnclosure above — an item may carry several
+  // enclosures, so matching the FIRST one and then testing it is also wrong.
+  // A typeless enclosure is rejected: it is not evidence of an image, and the
+  // two errors are not symmetric — a missing image degrades to the placeholder,
+  // a wrong one renders the browser's torn-page glyph and poisons og:image.
+  const re = /<enclosure\b[^>]*>/gi
+  let m
+  while ((m = re.exec(block)) !== null) {
+    const tag = m[0]
+    if (!/type="image\//i.test(tag)) continue
+    const url = /url="([^"]+)"/i.exec(tag)
+    if (url) return decodeUrlEntities(url[1])
+  }
+  return null
+}
+
+// Show-level artwork: <itunes:image href="..."/> in the channel header.
+//
+// SCOPED TO THE TEXT BEFORE THE FIRST <item>, which is the whole difficulty.
+// Item-level <itunes:image> exists too, so an unscoped regex over the document
+// finds the FIRST episode's art and stamps it on every other episode — wrong
+// for exactly the feeds that bother with per-episode artwork.
+//
+// itunes:image ONLY. RSS 2.0's <image><url> in the channel is the site logo
+// (historically an 88x31 banner); publishing that as an article hero is a
+// different wrong answer, not a better one.
+export function extractChannelImage(xml: string): string | null {
+  const head = xml.split(/<item[\s>]/i)[0]
+  const itunes = /<itunes:image[^>]+href="([^"]+)"/i.exec(head)
+  return itunes ? decodeUrlEntities(itunes[1]) : null
 }
 
 export function cleanText(s: string): string {

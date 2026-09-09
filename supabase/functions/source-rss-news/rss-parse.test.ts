@@ -1,5 +1,5 @@
 import { assertEquals } from 'https://deno.land/std@0.168.0/testing/asserts.ts'
-import { cleanText, excerptOf, extractMediaUrl, parseRssItems, stripLoneSurrogates } from './rss-parse.ts'
+import { cleanText, excerptOf, extractChannelImage, extractMediaUrl, parseRssItems, stripLoneSurrogates } from './rss-parse.ts'
 
 // Regression: parseRssItems used to build EVERY item in the feed, and the
 // caller sliced to maxArticles afterwards. Each item runs cleanText (a 4-pass
@@ -167,4 +167,89 @@ Deno.test('excerpt is derived from the same cleaned text as content', () => {
     `<description>&lt;p&gt;${'word '.repeat(200)}&lt;/p&gt;</description></item></channel></rss>`
   const [item] = parseRssItems(xml)
   assertEquals(String(item.excerpt), excerptOf(String(item.content)))
+})
+
+// ── Audio enclosures must never become artwork ─────────────────────────────
+//
+// extractMediaUrl's fallback took the first <enclosure url="..."> with NO type
+// check, so on a podcast item — where the enclosure IS the audio — every
+// episode stored its own .mp3 as its image. Measured on prod 2026-09-08:
+// 5,607 news_articles (5,548 mp3 + 52 m4a + 1 wav + 6 mp4), 2,405 of them
+// seo_indexable and therefore publishing an MP3 as og:image to crawlers.
+
+Deno.test('extractMediaUrl never returns an audio enclosure', () => {
+  const block = '<title>Ep 1</title>' +
+    '<enclosure url="https://www.buzzsprout.com/218346/episodes/17604553-ep-351.mp3" length="42" type="audio/mpeg"/>'
+  assertEquals(extractMediaUrl(block), null)
+})
+
+Deno.test('extractMediaUrl accepts an enclosure that DECLARES an image type', () => {
+  // The point of the fallback: a real image whose URL carries no extension.
+  const block = '<enclosure url="https://cdn.example/asset/9f2c1a?w=1200" type="image/jpeg"/>'
+  assertEquals(extractMediaUrl(block), 'https://cdn.example/asset/9f2c1a?w=1200')
+})
+
+Deno.test('extractMediaUrl rejects a TYPELESS enclosure — absence of a type is not evidence of an image', () => {
+  assertEquals(extractMediaUrl('<enclosure url="https://cdn.example/mystery" length="9"/>'), null)
+})
+
+Deno.test('extractMediaUrl scans ALL enclosures, not just the first', () => {
+  // Matching the first enclosure and then testing it is a different bug with
+  // the same symptom: the image is present but sits behind the audio.
+  const block =
+    '<enclosure url="https://cdn.example/ep.mp3" type="audio/mpeg"/>' +
+    '<enclosure url="https://cdn.example/art" type="image/png"/>'
+  assertEquals(extractMediaUrl(block), 'https://cdn.example/art')
+})
+
+// ── Channel artwork ────────────────────────────────────────────────────────
+
+const CHANNEL_ART = 'https://cdn.example/show-cover.jpg'
+const EPISODE_ART = 'https://cdn.example/episode-cover.jpg'
+
+function podcastFeed(itemInner: string): string {
+  return '<rss><channel><title>Show</title>' +
+    `<itunes:image href="${CHANNEL_ART}"/>` +
+    `<item><title>Ep 1</title><link>https://x/1</link><description>notes</description>${itemInner}</item>` +
+    '</channel></rss>'
+}
+
+const AUDIO = '<enclosure url="https://cdn.example/ep1.mp3" type="audio/mpeg"/>'
+
+Deno.test('extractChannelImage reads the channel header', () => {
+  assertEquals(extractChannelImage(podcastFeed(AUDIO)), CHANNEL_ART)
+})
+
+Deno.test('extractChannelImage does NOT adopt an item-level itunes:image as the show artwork', () => {
+  // The scoping trap: an unscoped regex finds the FIRST episode's art and
+  // stamps it on every other episode — wrong for exactly the feeds that
+  // bother with per-episode artwork.
+  const noChannelArt =
+    '<rss><channel><title>Show</title>' +
+    `<item><title>Ep 1</title><link>https://x/1</link><itunes:image href="${EPISODE_ART}"/></item>` +
+    '</channel></rss>'
+  assertEquals(extractChannelImage(noChannelArt), null)
+})
+
+Deno.test('extractChannelImage ignores RSS <image><url> — that is the site logo, not artwork', () => {
+  const logoOnly =
+    '<rss><channel><title>Show</title><image><url>https://cdn.example/88x31.gif</url></image>' +
+    '<item><title>Ep</title><link>https://x/1</link></item></channel></rss>'
+  assertEquals(extractChannelImage(logoOnly), null)
+})
+
+Deno.test('a podcast episode with no art of its own falls back to the SHOW artwork, never the audio', () => {
+  const [item] = parseRssItems(podcastFeed(AUDIO), true)
+  assertEquals(item.image_url, CHANNEL_ART)
+  assertEquals(item.audio_url, 'https://cdn.example/ep1.mp3')
+})
+
+Deno.test('per-episode art outranks the show artwork', () => {
+  const [item] = parseRssItems(podcastFeed(`${AUDIO}<itunes:image href="${EPISODE_ART}"/>`), true)
+  assertEquals(item.image_url, EPISODE_ART)
+})
+
+Deno.test('a NEWS feed never inherits channel artwork — one logo on every article is worse than none', () => {
+  const [item] = parseRssItems(podcastFeed(''), false)
+  assertEquals(item.image_url, null)
 })
