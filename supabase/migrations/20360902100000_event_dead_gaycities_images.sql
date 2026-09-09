@@ -73,6 +73,7 @@ as $fn$                          -- leaked safety-gated rows to anon once alread
 declare
   v_batch int;
   v_updated int;
+  v_emptied int;
   v_remaining int;
 begin
   -- Clamped, not merely documented. events' search trigger is UNSCOPED
@@ -86,17 +87,27 @@ begin
      where exists (select 1 from unnest(images) i
                     where i like '%gaycities-featured-images-production.s3%')
      limit v_batch
+  ),
+  upd as (
+    update public.events e
+       -- A filtered rebuild, not `images = '{}'`, and not array_remove (which
+       -- matches elements exactly while this match is a LIKE). Every affected row
+       -- today is a single dead element so the two would agree -- but the sync cron
+       -- runs weekly and the cohort is not frozen. If a mixed array ever appears,
+       -- this preserves the survivor and '{}' would destroy it. Same cost.
+       set images = array(select i from unnest(e.images) i
+                           where i not like '%gaycities-featured-images-production.s3%')
+      from b where e.id = b.id
+    returning cardinality(e.images) as n_after   -- RETURNING sees the NEW value
   )
-  update public.events e
-     -- A filtered rebuild, not `images = '{}'`, and not array_remove (which
-     -- matches elements exactly while this match is a LIKE). Every affected row
-     -- today is a single dead element so the two would agree -- but the sync cron
-     -- runs weekly and the cohort is not frozen. If a mixed array ever appears,
-     -- this preserves the survivor and '{}' would destroy it. Same cost.
-     set images = array(select i from unnest(e.images) i
-                         where i not like '%gaycities-featured-images-production.s3%')
-    from b where e.id = b.id;
-  get diagnostics v_updated = row_count;
+  -- `emptied` is reported separately from `updated` even though they are equal
+  -- for every row that exists today (max_array_len=1, so stripping always
+  -- empties). They diverge exactly when a mixed array appears -- the case the
+  -- filtered rebuild above exists to handle -- and that is precisely when a
+  -- single `updated` count would hide it.
+  select count(*), count(*) filter (where n_after = 0)
+    into v_updated, v_emptied
+    from upd;
 
   -- No cursor column is needed: stripping the url removes the row from this
   -- function's own predicate, so the work list shrinks monotonically, the job
@@ -105,7 +116,8 @@ begin
    where exists (select 1 from unnest(images) i
                   where i like '%gaycities-featured-images-production.s3%');
 
-  return jsonb_build_object('batch', v_batch, 'updated', v_updated, 'remaining', v_remaining);
+  return jsonb_build_object('batch', v_batch, 'updated', v_updated,
+                            'emptied', v_emptied, 'remaining', v_remaining);
 end $fn$;
 
 comment on function public.run_event_dead_image_strip(int) is
@@ -147,7 +159,7 @@ begin
   v_res := public.run_event_dead_image_strip(300);
 
   if (v_res->>'updated')::int = 0 then
-    raise exception 'run_event_dead_image_strip matched % rows but updated 0', v_before;
+    raise exception 'run_event_dead_image_strip updated 0 rows with a backlog of %', v_before;
   end if;
   if (v_res->>'remaining')::int >= v_before then
     raise exception 'run_event_dead_image_strip did not reduce the backlog: % -> %',
