@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards 20361001100200 — methadone's prose and the Lavender Scare duplicate.
+ * Guards 20361124161700 — methadone's prose and the Lavender Scare duplicate.
  *
  * Six things here are silently wrong if they regress:
  *
@@ -38,7 +38,7 @@ import { join } from 'node:path';
  */
 
 const MIGRATIONS = join(process.cwd(), 'supabase', 'migrations');
-const FILE = '20361001100200_methadone_prose_and_lavender_scare_merge.sql';
+const FILE = '20361124161700_methadone_prose_and_lavender_scare_merge.sql';
 
 /**
  * The file with every `--` comment line removed. Load-bearing: the header
@@ -51,7 +51,7 @@ const code = (f: string) =>
     .filter((l) => !/^\s*--/.test(l))
     .join('\n');
 
-describe('20361001100200 — methadone prose + lavender-scare merge', () => {
+describe('20361124161700 — methadone prose + lavender-scare merge', () => {
   const sql = code(FILE);
 
   it('demotes the loser’s primary junction BEFORE merging', () => {
