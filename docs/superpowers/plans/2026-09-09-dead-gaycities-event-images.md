@@ -4,7 +4,7 @@
 
 **Goal:** Strip the 27,494 permanently-403 `gaycities-featured-images-production.s3.amazonaws.com` URLs out of `events.images`, and seal the one code path that could write them again.
 
-**Architecture:** Four artifacts. A dead-host filter in the scraper's single image choke point (the only thing that runs again, so the only thing that can seal). A clamped batched SQL runner that the migration *arms and proves* on one batch but deliberately does not drain. A driver script that does the drain out-of-band, where the 2-minute `statement_timeout` applies per batch instead of to the whole job. A `pipeline_hygiene_stats` key that warns while draining and fails only if the drain stalls.
+**Architecture:** Four artifacts. A dead-host filter in the scraper's single image choke point (the only thing that runs again, so the only thing that can seal). A clamped batched SQL runner that the migration *arms and proves* on one batch but deliberately does not drain. A driver script that does the drain out-of-band, where the 2-minute `statement_timeout` applies per batch instead of to the whole job. A standalone `dead_gaycities_image_signals()` sentinel that warns while draining and fails only if the drain stalls.
 
 **Tech Stack:** PostgreSQL (Supabase), PL/pgSQL, Node 22 ESM driver scripts, TypeScript + Vitest (scraper), Vitest (root).
 
@@ -43,7 +43,7 @@ Re-read these before changing any number below. All measured on prod 2026-09-09.
 |---|---|
 | `scraper/src/sources/gaycities/lib.ts` (modify ~742–790) | `DEAD_IMAGE_HOSTS` + `liveImage()`, applied at the single image choke point |
 | `scraper/tests/unit/gaycities-parser.test.ts` (modify) | proves the filter drops the dead host and keeps live ones |
-| `supabase/migrations/20360902100000_event_dead_gaycities_images.sql` (create) | `run_event_dead_image_strip()`, the measurement notice, the assertions, the sentinel key |
+| `supabase/migrations/20360902100000_event_dead_gaycities_images.sql` (create) | `run_event_dead_image_strip()`, the measurement notice, the assertions, and the standalone `dead_gaycities_image_signals()` sentinel |
 | `src/lib/__tests__/deadGaycitiesImageStrip.test.ts` (create) | text-scan guard: the clamp and the synthetic control cannot be deleted silently |
 | `scripts/data-quality/strip-dead-gaycities-images.mjs` (create) | the drain |
 | `scripts/check-pipeline-health.mjs` (modify, after the accessibility block ~line 250) | warn-while-draining / fail-when-stalled |
@@ -401,24 +401,64 @@ begin
 end $$;
 ```
 
-- [ ] **Step 4: Add the sentinel key**
+- [ ] **Step 4: Add the sentinel — as a STANDALONE function**
 
-Append to the same file. `pipeline_hygiene_stats` is `CREATE OR REPLACE`, so the **entire** body must be restated. Copy the current live definition verbatim (`select pg_get_functiondef('public.pipeline_hygiene_stats()'::regprocedure)`) and add one key before the closing `);`:
+> **Design change, made during implementation.** This step originally said to add a
+> `dead_gaycities_images` key inside `pipeline_hygiene_stats()`. That was wrong for
+> this repo. `pipeline_hygiene_stats` is a `CREATE OR REPLACE` of ~150 lines, so
+> adding one key means restating every other key by hand — a merge-collision
+> surface where one dropped line silently reverts whatever another migration
+> added, and the one step no test can catch. CLAUDE.md states the rule directly:
+> *"Sentinel `event_dup_signals()` is a standalone function (restating
+> `pipeline_hygiene_stats` is a merge-collision surface)"*, and `venue_dup_signals`
+> follows the same pattern. `check-pipeline-health.mjs` already calls both as
+> separate RPCs.
+
+Append a standalone function instead:
 
 ```sql
-    -- 2026-09-09: dead gaycities S3 image urls in events.images. The producer is
-    -- sealed in scraper/src/sources/gaycities/lib.ts, so this is a smoke alarm,
-    -- not the seal. check-pipeline-health.mjs WARNS while the count falls and
-    -- FAILS only when it is non-zero with nothing draining it — a hard fail on
-    -- any non-zero count would red every open PR for the duration of the drain.
-    'dead_gaycities_images', (
+create or replace function public.dead_gaycities_image_signals()
+returns jsonb
+language sql
+stable
+security definer                 -- Definer is correct HERE and not on the
+set search_path to 'public'      -- runner: this returns aggregate counts only,
+as $fn$                          -- never rows, so it cannot leak a gated event.
+  select jsonb_build_object(
+    'remaining', (
       SELECT count(*) FROM public.events
       WHERE EXISTS (SELECT 1 FROM unnest(images) i
                      WHERE i LIKE '%gaycities-featured-images-production.s3%')
     ),
+    'events_logo_url', (
+      SELECT count(*) FROM public.events
+      WHERE logo_url LIKE '%gaycities-featured-images-production.s3%'
+    ),
+    'venues_images', (
+      SELECT count(*) FROM public.venues
+      WHERE EXISTS (SELECT 1 FROM unnest(images) i
+                     WHERE i LIKE '%gaycities-featured-images-production.s3%')
+    ),
+    'venues_logo_url', (
+      SELECT count(*) FROM public.venues
+      WHERE logo_url LIKE '%gaycities-featured-images-production.s3%'
+    )
+  );
+$fn$;
+
+revoke all on function public.dead_gaycities_image_signals() from public, anon, authenticated;
+grant execute on function public.dead_gaycities_image_signals() to service_role;
 ```
 
-Place it immediately before the `'city_dup_signals', jsonb_build_object(` key so the diff reads as one insertion.
+The three "reported, not repaired" surfaces are included deliberately: they are 0
+today, and if any becomes non-zero that is a *new producer*, which is worth seeing.
+
+**The function is `STABLE`, which has a consequence worth knowing:** called in the
+same SQL statement as the volatile runner it will report the pre-statement
+snapshot, not the runner's writes. Both real consumers call it in its own
+statement, so this is correct — but do not "verify" a drain by calling both in one
+`SELECT`. (Observed during the dry run: two strip calls plus a signals call in one
+statement reported `remaining` unchanged at 27,494.)
 
 - [ ] **Step 5: Verify the migration applies cleanly**
 
@@ -496,14 +536,38 @@ describe('dead gaycities image strip migration', () => {
     expect(sql).toMatch(/raise exception 'dead-image filter kept a dead url/);
   });
 
-  it('is security invoker — this function reads and writes events broadly', () => {
-    expect(sql).toMatch(/security\s+invoker/i);
-    expect(sql).not.toMatch(/security\s+definer[\s\S]*run_event_dead_image_strip/i);
+  // The migration defines TWO functions with DELIBERATELY DIFFERENT security
+  // modes, so a bare `expect(sql).toMatch(/security invoker/)` proves nothing —
+  // it would pass while the runner was definer and the sentinel invoker. Isolate
+  // each function's own definition block and assert against that.
+  function definitionOf(name: string): string {
+    const block = sql
+      .split(/create or replace function/i)
+      .find((chunk) => chunk.trimStart().startsWith(`public.${name}`));
+    if (!block) throw new Error(`no definition found for ${name}`);
+    return block;
+  }
+
+  it('the runner is security INVOKER — it reads and writes events broadly', () => {
+    const def = definitionOf('run_event_dead_image_strip');
+    expect(def).toMatch(/security\s+invoker/i);
+    expect(def).not.toMatch(/security\s+definer/i);
   });
 
-  it('grants execute to service_role only', () => {
+  it('the sentinel is security DEFINER — it returns aggregate counts, never rows', () => {
+    const def = definitionOf('dead_gaycities_image_signals');
+    expect(def).toMatch(/security\s+definer/i);
+  });
+
+  it('grants execute on both functions to service_role only', () => {
     expect(sql).toMatch(/revoke all on function public\.run_event_dead_image_strip\(int\) from public, anon, authenticated/);
     expect(sql).toMatch(/grant execute on function public\.run_event_dead_image_strip\(int\) to service_role/);
+    expect(sql).toMatch(/revoke all on function public\.dead_gaycities_image_signals\(\) from public, anon, authenticated/);
+    expect(sql).toMatch(/grant execute on function public\.dead_gaycities_image_signals\(\) to service_role/);
+  });
+
+  it('does not restate pipeline_hygiene_stats — that is a merge-collision surface', () => {
+    expect(sql).not.toMatch(/create or replace function public\.pipeline_hygiene_stats/i);
   });
 });
 ```
@@ -695,36 +759,58 @@ function has no cursor — the predicate is the work list."
 **Files:**
 - Modify: `scripts/check-pipeline-health.mjs` (insert after the accessibility-contradictions block, which ends ~line 250, before the `city_dup_signals` block)
 
-The SQL half landed in Task 2, Step 4. This is the reader. No third artifact: `pipeline_hygiene_stats` has no hand-written TS interface — `src/integrations/supabase/types.ts` types it as generated `Json`, and the only other consumer is a test.
+The SQL half landed in Task 2, Step 4 as the standalone `dead_gaycities_image_signals()`. This is the reader — a **separate RPC call**, matching how this file already consumes `event_dup_signals` (line ~313) and `venue_dup_signals` (line ~448).
 
 - [ ] **Step 1: Add the check**
 
+Follow the shape of the existing `event_dup_signals` block. A non-OK response must WARN and say the RPC may be missing — never fall through to a zero that reads as clean.
+
 ```js
-  // 2026-09-09: dead gaycities S3 image urls in events.images. The bucket lost
-  // its public-read policy and 403s for every key, so these render a torn-page
-  // glyph rather than the on-brand fallback.
-  //
-  // WARN while the count falls, FAIL only when it is non-zero with nothing
-  // draining it. A hard fail on any non-zero count would red every open PR for
-  // the duration of the drain — the same distinction this file already draws
-  // between an automation that is paused-and-still-failing and one that is
-  // paused-then-recovered.
-  //
-  // ABSENT is reported separately from zero: an undeployed sentinel must never
-  // read the same as a clean corpus.
-  const deadImages = hygiene.dead_gaycities_images
-  if (deadImages === undefined) {
-    console.warn('⚠ pipeline_hygiene_stats has no dead_gaycities_images key —')
-    console.warn('  20360902100000 is not applied, so this check measured NOTHING (it did not pass).')
-  } else if (Number(deadImages) > 0) {
-    console.warn(`⚠ ${deadImages} events still hold a dead gaycities S3 image url`)
-    console.warn('  Drain with: node scripts/data-quality/strip-dead-gaycities-images.mjs')
-    console.warn('  The producer is sealed in scraper/src/sources/gaycities/lib.ts (DEAD_IMAGE_HOSTS),')
-    console.warn('  so this should fall to 0 and stay there. If it is RISING, that filter was bypassed.')
+// 2026-09-09: dead gaycities S3 image urls in events.images. The bucket lost its
+// public-read policy and 403s for every key, so these render a torn-page glyph
+// rather than the on-brand fallback.
+//
+// WARN while the count falls, FAIL only when it is non-zero with nothing draining
+// it. A hard fail on any non-zero count would red every open PR for the duration
+// of the drain — the same distinction this file already draws between an
+// automation that is paused-and-still-failing and one that is paused-then-recovered.
+//
+// A FAILED PROBE IS REPORTED, NEVER SWALLOWED: an unreachable RPC must not read
+// the same as a clean corpus.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/dead_gaycities_image_signals`, {
+    method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: '{}',
+  })
+  if (!res.ok) {
+    console.warn(`⚠ dead_gaycities_image_signals → HTTP ${res.status} (RPC missing? migration 20360902100000)`)
+    console.warn('  This check measured NOTHING — it did not pass.')
   } else {
-    console.log('✓ Dead gaycities image urls: 0')
+    const sig = await res.json()
+    const remaining = Number(sig?.remaining ?? -1)
+    if (remaining < 0) {
+      console.error('✗ dead_gaycities_image_signals returned no `remaining` — the probe is broken')
+      FAILED = true
+    } else if (remaining > 0) {
+      console.warn(`⚠ ${remaining} events still hold a dead gaycities S3 image url`)
+      console.warn('  Drain with: node scripts/data-quality/strip-dead-gaycities-images.mjs')
+      console.warn('  The producer is sealed in scraper/src/sources/gaycities/lib.ts (DEAD_IMAGE_HOSTS),')
+      console.warn('  so this should fall to 0 and stay there. If it is RISING, that filter was bypassed.')
+    } else {
+      console.log('✓ Dead gaycities image urls: 0')
+    }
+    // These three are 0 today. Non-zero means a NEW producer reached a surface
+    // the events repair never covered, which is worth a hard look.
+    const spread = ['events_logo_url', 'venues_images', 'venues_logo_url']
+      .filter((k) => Number(sig?.[k] ?? 0) > 0)
+    if (spread.length) {
+      console.error(`✗ dead gaycities urls appeared on ${spread.join(', ')} — a new producer, not the known cohort`)
+      FAILED = true
+    }
   }
+}
 ```
+
+Insert it after the accessibility-contradictions block and before the `city_dup_signals` block. Confirm `BASE`, `headers` and `FAILED` are the identifiers actually in scope at that point in the file — read the surrounding code rather than trusting these names.
 
 - [ ] **Step 2: Verify the script still parses and runs**
 

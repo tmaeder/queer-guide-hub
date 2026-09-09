@@ -232,7 +232,7 @@ paused row is indistinguishable from a deliberate retirement.
 29 minutes to settle. Expected, self-managing, and worth watching rather than
 worrying about.
 
-### D. Sentinel — `dead_gaycities_images` in `pipeline_hygiene_stats()`
+### D. Sentinel — standalone `dead_gaycities_image_signals()`
 
 - **Warns** while the count is non-zero and falling.
 - **Fails** only when the count is non-zero with nothing draining it.
@@ -242,10 +242,31 @@ duration of the drain. This mirrors the distinction `check-pipeline-health.mjs`
 already draws between an automation that is paused-and-still-failing and one that
 is paused-then-recovered.
 
-`pipeline_hygiene_stats` baselines are inline constants in
-`check-pipeline-health.mjs`, not the JSON file behind `tag_hygiene_stats` — so
-adding a key here does **not** reproduce the deadlock where an unbaselined metric
-reds every open PR.
+**A standalone function, not a new key inside `pipeline_hygiene_stats()`** —
+revised during implementation. That function is a `CREATE OR REPLACE` of ~150
+lines, so adding one key means restating every other key by hand: a
+merge-collision surface where one dropped line silently reverts whatever another
+migration added, and the only step in this change that no test can catch.
+CLAUDE.md states the rule outright — *"Sentinel `event_dup_signals()` is a
+standalone function (restating `pipeline_hygiene_stats` is a merge-collision
+surface)"* — and `venue_dup_signals` follows it too;
+`check-pipeline-health.mjs` already calls both as separate RPCs.
+
+The original reasoning for putting it *in* `pipeline_hygiene_stats` was that its
+baselines are inline constants rather than the JSON file behind
+`tag_hygiene_stats`, so a new key would not reproduce the deadlock where an
+unbaselined metric reds every open PR. That remains true — it was simply the
+wrong risk to optimise against. The transcription risk is larger and is the one
+nothing would have caught.
+
+It reports the three "reported, not repaired" surfaces (`events.logo_url`,
+`venues.images`, `venues.logo_url`) alongside `remaining`. All three are 0 today;
+non-zero means a *new producer* reached a surface this repair never covered, so
+those hard-fail rather than warn.
+
+Being `STABLE`, it reports the statement snapshot — called in the same statement
+as the volatile runner it will not see that runner's writes. Both consumers call
+it in its own statement. Do not "verify" a drain by calling both in one `SELECT`.
 
 This is a smoke alarm, not the seal. The seal is A.
 
