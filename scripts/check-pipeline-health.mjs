@@ -299,6 +299,63 @@ if (!hygieneRes.ok) {
   }
 }
 
+// Dead gaycities S3 image urls (2026-09-09). The gaycities-featured-images-
+// production.s3.amazonaws.com bucket lost its public-read policy and 403s
+// for every key, so a url pointing at it renders Chrome's torn-page glyph
+// rather than the on-brand fallback. `dead_gaycities_image_signals()` is a
+// STANDALONE RPC (not a pipeline_hygiene_stats key) for the same reason
+// event_dup_signals/venue_dup_signals are standalone below: that function is
+// a ~150-line CREATE OR REPLACE and adding a key means restating every other
+// one by hand — a merge-collision surface.
+//
+// THIS BLOCK IS TOP LEVEL ON PURPOSE. It was first written inside the
+// pipeline_hygiene_stats else-block, and that fetch only WARNS when it fails —
+// so an outage of an UNRELATED rpc silently skipped this check entirely. That
+// is the same "nobody looked reads as clean" failure this block's own probe
+// guard exists to prevent, one level up. Do not nest it again.
+//
+// WARN while the count falls, FAIL only when it is non-zero with nothing
+// draining it — a hard fail on any non-zero count would red every open PR
+// for the duration of the drain (migration 20370601100000 arms and proves
+// one batch; scripts/data-quality/strip-dead-gaycities-images.mjs drains
+// the rest out-of-band).
+//
+// A FAILED PROBE IS REPORTED, NEVER SWALLOWED: an unreachable RPC must not
+// read the same as a clean corpus.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/dead_gaycities_image_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    console.warn(`⚠ dead_gaycities_image_signals → HTTP ${res.status} (RPC missing? migration 20370601100000)`)
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else {
+    const sig = (await res.json()) ?? {}
+    const remaining = Number(sig?.remaining ?? -1)
+    if (remaining < 0) {
+      console.error('✗ dead_gaycities_image_signals returned no `remaining` — the probe is broken')
+      FAILED = true
+    } else if (remaining > 0) {
+      console.warn(`⚠ ${remaining} events still hold a dead gaycities S3 image url`)
+      console.warn('  Drain with: node scripts/data-quality/strip-dead-gaycities-images.mjs')
+      console.warn('  The producer is sealed in scraper/src/sources/gaycities/lib.ts (DEAD_IMAGE_HOSTS),')
+      console.warn('  so this should fall to 0 and stay there. If it is RISING, that filter was bypassed.')
+    } else {
+      console.log('✓ Dead gaycities image urls: 0')
+    }
+    // These three are 0 today. Non-zero means a NEW producer reached a
+    // surface the events repair never covered, which is worth a hard look.
+    const spread = ['events_logo_url', 'venues_images', 'venues_logo_url']
+      .filter((k) => Number(sig?.[k] ?? 0) > 0)
+    if (spread.length) {
+      console.error(`✗ dead gaycities urls appeared on ${spread.join(', ')} — a new producer, not the known cohort`)
+      FAILED = true
+    }
+  }
+}
+
 // 4b. Event dedup health (2027-05-02). There was no check here at all: the dedup
 //     section above is city-only, so the event auto arms matched ZERO pairs for
 //     eleven days — nightly sweep green, consecutive_failures=0, 645 merges then

@@ -414,3 +414,73 @@ describe('mapEventType word boundaries', () => {
     expect(mapEventType('Oktoberfest Munich')).toBe('festival');
   });
 });
+
+describe('normalizeGcEvent dead image hosts', () => {
+  const ld = (image: string) => ({
+    '@type': 'Event',
+    name: 'Dead Image Event',
+    startDate: '2024-06-01T12:00:00',
+    image: [image],
+  });
+
+  it('drops a gaycities-featured-images S3 url — the bucket 403s for every key since 2026-09', () => {
+    const norm = normalizeGcEvent(
+      detailFixture({
+        jsonLd: ld('https://gaycities-featured-images-production.s3.amazonaws.com/events/sm_fb_1.jpg'),
+        bodyDescription: null,
+      }),
+      METRO,
+    );
+    if ('reject' in norm) throw new Error('unexpected reject: ' + norm.reject);
+    expect(norm.images).toEqual([]);
+  });
+
+  it('keeps the BunnyCDN host gaycities migrated to', () => {
+    const norm = normalizeGcEvent(
+      detailFixture({
+        jsonLd: ld('https://gaycities-lv.b-cdn.net/events/originals/1030855-atlanta-pride-alihaas.jpg'),
+        bodyDescription: null,
+      }),
+      METRO,
+    );
+    if ('reject' in norm) throw new Error('unexpected reject: ' + norm.reject);
+    expect(norm.images).toEqual([
+      'https://gaycities-lv.b-cdn.net/events/originals/1030855-atlanta-pride-alihaas.jpg',
+    ]);
+  });
+
+  it('keeps an unrelated s3.amazonaws.com host — the filter is the bucket, not the provider', () => {
+    const norm = normalizeGcEvent(
+      detailFixture({ jsonLd: ld('https://s3.amazonaws.com/gc/iml.jpg'), bodyDescription: null }),
+      METRO,
+    );
+    if ('reject' in norm) throw new Error('unexpected reject: ' + norm.reject);
+    expect(norm.images).toEqual(['https://s3.amazonaws.com/gc/iml.jpg']);
+  });
+
+  // Regression pin: the filter compares the parsed hostname. A substring test
+  // over the whole url nulls this live BunnyCDN image because the dead host
+  // appears in its query string.
+  it('keeps a live url that merely mentions the dead host in a query param', () => {
+    const url =
+      'https://gaycities-lv.b-cdn.net/proxy?src=https://gaycities-featured-images-production.s3.amazonaws.com/events/sm_fb_1.jpg';
+    const norm = normalizeGcEvent(
+      detailFixture({ jsonLd: ld(url), bodyDescription: null }),
+      METRO,
+    );
+    if ('reject' in norm) throw new Error('unexpected reject: ' + norm.reject);
+    expect(norm.images).toEqual([url]);
+  });
+
+  // httpsOnly only checks the https:// prefix, so a degenerate value reaches
+  // the filter and `new URL()` throws on it. Unparseable is not our business:
+  // this removes one known-dead host, it is not a URL validator.
+  it('passes through an unparseable url rather than throwing', () => {
+    const norm = normalizeGcEvent(
+      detailFixture({ jsonLd: ld('https://'), bodyDescription: null }),
+      METRO,
+    );
+    if ('reject' in norm) throw new Error('unexpected reject: ' + norm.reject);
+    expect(norm.images).toEqual(['https://']);
+  });
+});

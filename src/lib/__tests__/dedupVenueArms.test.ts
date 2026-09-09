@@ -261,7 +261,12 @@ describe('venue_dup_signals backlog warning', () => {
     // Measured post-deploy: 202 open, oldest 424h, median 0h. An oldest-based
     // rule warns there — on a correct deploy, on every CI run — because two
     // hand-annotated rows are deliberately left open for a human.
-    const block = health.slice(health.indexOf('venue_dup_signals'));
+    // Anchor on the FETCH URL, not the bare name. `venue_dup_signals` also
+    // appears in ordinary prose in that file — a comment ~200 lines earlier
+    // mentioning it moved this slice's start and swallowed the EVENT dedup
+    // section, whose `oldestH` rule is correct for events, tripping the
+    // negative assertion below. `rpc/venue_dup_signals` occurs exactly once.
+    const block = health.slice(health.indexOf('rpc/venue_dup_signals'));
     expect(block, 'the venue backlog warning keys on the median').toMatch(
       /openPairs > 200 && medianH > 336/,
     );
