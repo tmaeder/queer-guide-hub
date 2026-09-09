@@ -66,19 +66,34 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
  * than 429 is our own bad SQL/auth and must surface immediately, not be
  * retried into a longer, more confusing failure.
  */
+// The Management API's own ceiling is ~120s (it 524s past that) and one batch
+// measures well under a second, so a request still open at 150s is hung, not
+// slow. Without this, the loop has ONE path that is not self-terminating:
+// retry/backoff only engages once a response exists or an error is thrown, and
+// a promise that never settles bypasses both. Aborting is safe to retry for the
+// same reason every other retry here is — the predicate IS the work list, so a
+// half-applied batch is simply re-selected next round.
+const REQUEST_TIMEOUT_MS = 150_000;
+
 async function sql(query, attempt = 0) {
   let res;
+  const ac = new AbortController();
+  const timer = setTimeout(() => ac.abort(), REQUEST_TIMEOUT_MS);
   try {
     res = await fetch(`https://api.supabase.com/v1/projects/${PROJECT}/database/query`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${TOKEN}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ query }),
+      signal: ac.signal,
     });
   } catch (e) {
     if (attempt >= 5) throw e;
-    console.error(`  network error (${e.message}), retry ${attempt + 1}/5`);
+    const why = e.name === 'AbortError' ? `no response in ${REQUEST_TIMEOUT_MS / 1000}s` : e.message;
+    console.error(`  network error (${why}), retry ${attempt + 1}/5`);
     await sleep(2000 * 2 ** attempt);
     return sql(query, attempt + 1);
+  } finally {
+    clearTimeout(timer);
   }
   if (res.ok) return res.json();
   const body = (await res.text()).slice(0, 300);

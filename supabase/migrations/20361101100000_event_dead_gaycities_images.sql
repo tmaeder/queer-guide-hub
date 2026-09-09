@@ -83,6 +83,11 @@ begin
   v_batch := least(greatest(coalesce(p_batch, 300), 1), 300);
 
   with b as (
+    -- No ORDER BY: batch composition is deliberately nondeterministic. Harmless
+    -- for correctness -- the work list is a shrinking predicate and every row is
+    -- treated identically -- but it matters when verifying by hand, because a
+    -- single planted probe row lands inside or outside a given batch between
+    -- runs. A one-row experiment proves nothing here; plant across all rows.
     select id from public.events
      where exists (select 1 from unnest(images) i
                     where i like '%gaycities-featured-images-production.s3%')
