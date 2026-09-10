@@ -163,7 +163,96 @@ async function fetchOne(env: Env, table: string, slugCol: string, slug: string, 
   return rows[0] ?? null;
 }
 
-const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+// A `slugify` helper lived here, and its only caller shape was building a city
+// link out of the free-text `city` column. It is DELETED rather than kept for
+// reuse: it is the footgun this change exists to remove, and the next person
+// needing "a slug from a name" would reach for it and reintroduce `z-rich`.
+// Resolve a slug through the row's FK — publishableCitySlug below — never by
+// transforming a display name.
+
+/**
+ * The linked city's OWN slug, or null. Never derived from the city's name.
+ *
+ * `slugify` here is `toLowerCase().replace(/[^a-z0-9]+/g,'-')` — no
+ * transliteration, no trim — so "Zürich" becomes `z-rich` and
+ * "Wilmington (Long Beach)" becomes `wilmington-long-beach-`. Measured
+ * 2026-09-10 on the crawler bodies of the three types that emit a city link:
+ *
+ *   venues  9,293 of 23,077 (40.3%) linked to a slug no city row has
+ *   events    517 of  2,972 (17.4%)
+ *   hotels     80 of    323 (24.8%)
+ *
+ * …plus 636 venues that linked to a city which EXISTS BUT IS THE WRONG PLACE:
+ * every venue in Victoria, BC pointed at Victoria, SEYCHELLES, and Grad Hvar
+ * (Croatia) at a French commune. That is the same-name-city collision class
+ * recorded in CLAUDE.md, reached through a link instead of a resolver — and it
+ * is worse than a 404, because a wrong-but-live link looks correct to everyone.
+ *
+ * Returning null (no link at all) is the deliberate answer for the ~2,500 rows
+ * with no usable city_id. A missing link costs a crawl path; a wrong one sends
+ * a reader to another country.
+ */
+export function publishableCitySlug(row: Record<string, unknown>): string | null {
+  const c = (row.cities ?? null) as Record<string, unknown> | null;
+  if (!c) return null;
+  if (typeof c.slug !== 'string' || c.slug.length === 0) return null;
+  if (c.seo_indexable !== true) return null;
+  if (c.duplicate_of_id != null) return null;
+  if (c.shell_status === 'ghost' || c.shell_status === 'merged') return null;
+  return c.slug;
+}
+
+/** The `<li>` city link for a crawler nav, or '' when there is no safe target. */
+export function cityLinkItem(row: Record<string, unknown>, cityText: string | null | undefined): string {
+  const slug = publishableCitySlug(row);
+  if (!slug) return '';
+  return `<li><a href="/city/${encodeURIComponent(slug)}">More in ${escape(cityText ?? slug)}</a></li>`;
+}
+
+/**
+ * Opening hours for the crawler body, or null.
+ *
+ * Reads `hours.display` and NOTHING else. Measured 2026-09-10: 609 of the
+ * 23,664 publishable venues carry hours, and all 609 share one shape —
+ * `{display, open_now, popular, regular}` — where `display` is already a human
+ * string ("Mon-Thu 11:00-23:00; Fri-Sat 11:00-24:00; Sun 11:00-23:00").
+ *
+ * The first version of this function walked `monday`..`sunday` keys. ZERO rows
+ * have such a key, so it was dead code that rendered nothing on every page —
+ * and it looked like it worked, because the section simply never appeared.
+ *
+ * `open_now` is deliberately ignored: it is a boolean frozen at scrape time, so
+ * publishing it would state "open now" to a reader at an arbitrary later moment.
+ * `regular`/`popular` are ignored too — they encode close as "+0000" for
+ * after-midnight, which reads as a real time and is not one.
+ *
+ * Coverage is 2.6% of venues. Small, but it is real data already fetched and
+ * previously discarded; it is not a fix for the 11,302 empty descriptions.
+ */
+export function formatHoursForCrawler(raw: unknown): string | null {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  const display = (raw as Record<string, unknown>).display;
+  if (typeof display !== 'string') return null;
+  const text = display.trim();
+  if (!text || text.length > 300) return null;
+  return text.endsWith('.') ? text : `${text}.`;
+}
+
+/**
+ * " · Rated 4.2 from 2 sources." or '' — derived from the rating columns that
+ * are already fetched for the JSON-LD aggregateRating, so this states nothing
+ * the structured data does not already claim.
+ */
+function aggregateRatingSentence(row: Record<string, unknown>): string {
+  const ratings = [
+    numField(row, 'foursquare_rating'),
+    numField(row, 'tripadvisor_rating'),
+    numField(row, 'tomtom_rating'),
+  ].filter((n): n is number => n !== undefined);
+  if (ratings.length === 0) return '';
+  const avg = ratings.reduce((a, b) => a + b, 0) / ratings.length;
+  return ` · Rated ${avg.toFixed(1)} from ${ratings.length} source${ratings.length === 1 ? '' : 's'}.`;
+}
 
 // Venues
 
@@ -175,7 +264,17 @@ async function venueDetail(env: Env, slug: string, pathname: string): Promise<De
   const rows = await fetchRows(
     env,
     'venues',
-    'name,slug,description,address,city,state,country,postal_code,latitude,longitude,phone,website,images,category,venue_subtype,foursquare_rating,tripadvisor_rating,tomtom_rating,hours,updated_at,safety_gated,review_status,seo_indexable',
+    // cities(...) is embedded so the city LINK can use the city's real slug.
+    // The body used to link `/places/${slugify(city_text)}`, and slugify here is
+    // `toLowerCase().replace(/[^a-z0-9]+/g,'-')` — no transliteration, no trim —
+    // so "Zürich" became `z-rich` and "Wilmington (Long Beach)" became
+    // `wilmington-long-beach-`. Measured 2026-09-10 across the 23,077 indexable
+    // venues carrying a city: 9,293 (40.3%) linked to a slug no city row has,
+    // and a further 636 linked to a city that EXISTS BUT IS THE WRONG PLACE —
+    // every venue in Victoria, BC pointed at Victoria, SEYCHELLES, and Grad Hvar
+    // (Croatia) at a French commune. That is the same-name-city collision class
+    // recorded in CLAUDE.md, reached through a link rather than a resolver.
+    'name,slug,description,address,city,state,country,postal_code,latitude,longitude,phone,website,images,category,venue_subtype,foursquare_rating,tripadvisor_rating,tomtom_rating,hours,updated_at,safety_gated,review_status,seo_indexable,cities(slug,seo_indexable,duplicate_of_id,shell_status)',
     // review_status=neq.archived: fetchRows runs with the service role, so the
     // SPA's own archived filter (usePageFetchers → notFound) never applies here;
     // without it every soft-archived venue kept serving full meta + JSON-LD to
@@ -219,16 +318,28 @@ async function venueDetail(env: Env, slug: string, pathname: string): Promise<De
   };
   void label;
 
+  // Facts we already hold and were throwing away. `hours` was in the select list
+  // and rendered nowhere, while 11,506 of 24,236 live venues (47%) have an empty
+  // description — which is why the crawler body for one of those measured 64
+  // characters end to end: name, city, nav. These lines are derived from
+  // structured columns, never generated prose.
+  const factLine = [labelTitle, city ? `in ${city}` : null, country && country !== city ? country : null]
+    .filter(Boolean)
+    .join(' ');
+  const hoursText = formatHoursForCrawler(row.hours);
+
   const body = `<main data-prerendered="bot-ua">
     <article>
       <h1>${escape(name)}</h1>
       ${address || city ? `<p><strong>${escape([address, city, country].filter(Boolean).join(', '))}</strong></p>` : ''}
+      ${factLine ? `<p>${escape(factLine)}${aggregateRatingSentence(row)}</p>` : ''}
       ${description ? paragraphsHtml(description) : ''}
+      ${hoursText ? `<section><h2>Opening hours</h2><p>${escape(hoursText)}</p></section>` : ''}
     </article>
     <nav aria-label="Site sections">
       <ul>
         <li><a href="/venues">All venues</a></li>
-        ${city ? `<li><a href="/places/${escape(slugify(city))}">More in ${escape(city)}</a></li>` : ''}
+        ${cityLinkItem(row, city)}
         <li><a href="/events">Events</a></li>
       </ul>
     </nav>
@@ -310,7 +421,7 @@ async function eventDetail(env: Env, slug: string, pathname: string): Promise<De
   const rows = await fetchRows(
     env,
     'events',
-    'title,slug,description,address,city,state,country,postal_code,start_date,end_date,latitude,longitude,images,ticket_url,organizer_name,venue_name,price_min,price_max,is_free,event_type,timezone,updated_at,safety_gated,status,seo_indexable',
+    'title,slug,description,address,city,state,country,postal_code,start_date,end_date,latitude,longitude,images,ticket_url,organizer_name,venue_name,price_min,price_max,is_free,event_type,timezone,updated_at,safety_gated,status,seo_indexable,cities(slug,seo_indexable,duplicate_of_id,shell_status)',
     // status=neq.cancelled is the archive gate — the existence engine writes
     // 'cancelled' to archive an event, and sitemap-events.xml.ts already
     // excludes it, but this renderer did not, so an archived event kept a fully
@@ -352,7 +463,7 @@ async function eventDetail(env: Env, slug: string, pathname: string): Promise<De
     <nav aria-label="Site sections">
       <ul>
         <li><a href="/events">All events</a></li>
-        ${city ? `<li><a href="/places/${escape(slugify(city))}">More in ${escape(city)}</a></li>` : ''}
+        ${cityLinkItem(row, city)}
         <li><a href="/venues">Venues</a></li>
       </ul>
     </nav>
@@ -823,7 +934,7 @@ async function hotelDetail(env: Env, slug: string, pathname: string): Promise<De
   const rows = await fetchRows(
     env,
     'hotels',
-    'name,slug,description,address,city,country,latitude,longitude,images,hotel_type,star_rating,price_range,amenities,booking_url,phone,website,queer_safety_notes,lgbtq_friendly,updated_at,seo_indexable',
+    'name,slug,description,address,city,country,latitude,longitude,images,hotel_type,star_rating,price_range,amenities,booking_url,phone,website,queer_safety_notes,lgbtq_friendly,updated_at,seo_indexable,cities(slug,seo_indexable,duplicate_of_id,shell_status)',
     // archived_at — service-role read, RLS does not apply. See newsDetail.
     `slug=eq.${encodeURIComponent(slug)}&duplicate_of_id=is.null&archived_at=is.null`,
     1,
@@ -856,7 +967,7 @@ async function hotelDetail(env: Env, slug: string, pathname: string): Promise<De
     <nav aria-label="Site sections">
       <ul>
         <li><a href="/hotels">All hotels</a></li>
-        ${city ? `<li><a href="/city/${escape(slugify(city))}">More in ${escape(city)}</a></li>` : ''}
+        ${cityLinkItem(row, city)}
         <li><a href="/travel">Travel</a></li>
       </ul>
     </nav>
