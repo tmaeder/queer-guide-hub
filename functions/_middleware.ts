@@ -49,6 +49,7 @@ import { homepageJsonLd } from './_lib/jsonLd';
 import { getBranding, brandStyleTag, brandingMeta, brandFontPreloads } from './_lib/branding';
 import { isBotUserAgent } from './_lib/botUa';
 import { buildBodyHtml, buildNoscriptHtml } from './_lib/routeBody';
+import { buildHubLinksHtml } from './_lib/hubLinks';
 import { isLocaleLocalised, LOCALISED_LOCALES } from './_lib/localisedLocales';
 import { resolveDetailRoute, isDetailPath, resolveSlugRedirect } from './_lib/detail';
 import { resolveLandingRoute } from './_lib/landing';
@@ -489,10 +490,17 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   }
 
   const isBot = indexable && isBotUserAgent(request.headers.get('user-agent'));
+  let hubLinked = false;
   if (isBot) {
     const bodyHtml =
       detail?.body ?? buildBodyHtml(basePath, { title: meta.title, description: meta.description });
-    rewriter.on('#root', new RootBodyInjector(bodyHtml));
+    // Data-driven content links for the hub pages. Inside the isBot branch on
+    // purpose: this is a Supabase round-trip, and a human page view must not
+    // pay for it. Detail pages already list their own children (cityDetail
+    // links its venues and events), so they are skipped.
+    const hubHtml = detail ? '' : await buildHubLinksHtml(env, basePath);
+    hubLinked = hubHtml.length > 0;
+    rewriter.on('#root', new RootBodyInjector(bodyHtml + hubHtml));
   }
 
   const rewritten = rewriter.transform(response);
@@ -512,6 +520,14 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   // let the edge cache hold for 5 minutes to bound Supabase load.
   if (detail) {
     rewritten.headers.set('Cache-Control', 'public, s-maxage=300, max-age=60');
+  } else if (hubLinked) {
+    // A bot hub response now costs a Supabase round-trip, and crawlers re-hit
+    // hubs far more often than any single detail page. Cache it at the edge to
+    // bound that load. Safe against serving bot HTML to humans because
+    // `Vary: User-Agent` is already appended above for every indexable
+    // response — max-age is deliberately 0 so only the shared edge cache holds
+    // it, never a browser that might later be shown the human variant.
+    rewritten.headers.set('Cache-Control', 'public, s-maxage=600, max-age=0, must-revalidate');
   }
 
   return rewritten;
