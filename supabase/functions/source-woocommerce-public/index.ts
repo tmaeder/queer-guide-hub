@@ -4,6 +4,8 @@ import { writeToStaging, skippedResponse } from '../_shared/source-adapter.ts'
 import { extractMerchantDomain, normalizeCurrency } from '../_shared/marketplace-pipeline-utils.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
+import { pickProductDescription } from '../_shared/product-html.ts'
+import { decodeHtmlEntities } from '../_shared/news-quality/sanitize.ts'
 
 // ============================================================
 // source-woocommerce-public — ingest any WooCommerce storefront via its PUBLIC
@@ -32,15 +34,7 @@ interface WooProduct {
   brands?: { name: string }[]
 }
 
-function decodeEntities(s: string): string {
-  return s.replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-    .replace(/&#0?39;/g, "'").replace(/&quot;/g, '"').replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-}
-
-function stripHtml(s: string): string {
-  return decodeEntities(String(s || '').replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ').trim()
-}
+const decodeEntities = (s: string): string => decodeHtmlEntities(String(s ?? ''))
 
 function defaultSlug(shopDomain: string): string {
   return shopDomain.replace(/^www\./, '').split('.')[0]
@@ -77,7 +71,9 @@ function makeAdapter(shopDomain: string, sourceSlug: string): SourceAdapter {
       return {
         entityType: 'marketplace', sourceId: raw.sourceId, sourceName: sourceSlug,
         name: decodeEntities(p.name).trim(),
-        description: stripHtml(p.description || p.short_description),
+        // NOT `a || b`: a page-builder `description` is truthy but strips to empty,
+        // which discarded the prose in `short_description` on 58 of 112 rows.
+        description: pickProductDescription(p.description, p.short_description),
         urls: [externalUrl], images, tags,
         metadata: {
           source_slug: sourceSlug, shop_domain: shopDomain, product_id: String(p.id),
