@@ -7,10 +7,14 @@ import { DEDUP_REGISTRY } from '../_shared/dedup-engine.ts'
 // deduplicate passes as p_entity_type must appear here or the insert fails
 // 23514 — which is silent, because persistVerdict swallows it into
 // counters.onHardFail() and returns.
+// 'organization'/'organizations' added by 20390901100000 — it was the last
+// live registry value with no legal spelling, latent only because prod holds
+// zero organizations staging rows.
 const ALLOWED_DECISION_ENTITY_TYPES = new Set([
   'venue', 'event', 'place', 'stay', 'venues', 'events', 'city', 'country',
   'cities', 'countries', 'personality', 'personalities', 'news_article',
   'news_articles', 'marketplace', 'marketplace_listing',
+  'organization', 'organizations',
 ])
 
 // Mirrors the map in pipeline-deduplicate/index.ts. Kept as a literal rather
@@ -27,11 +31,11 @@ Deno.test('every DEDUP_REGISTRY entityType resolves to a value the DB CHECK acce
     // 'hotel' never reaches persistence: resolveDedupEntityType returns
     // 'unknown' for it (content-registry.ts), so it is not a live path.
     if (internal === 'hotel') continue
-    // 'organization' has no canonical spelling in the CHECK at all and prod
-    // holds zero organizations staging rows — a known latent gap that needs
-    // the constraint widened, tracked separately. Asserting on it here would
-    // fail for a condition this file cannot fix.
-    if (internal === 'organization') continue
+    // 'organization' used to be skipped here as a known latent gap. It is now
+    // legal (20390901100000 widened the CHECK), so it is asserted like the rest
+    // — the skip is deliberately NOT kept as a harmless leftover, because an
+    // exclusion that no longer excludes anything is how a guard quietly stops
+    // covering the thing it was written for.
     if (!ALLOWED_DECISION_ENTITY_TYPES.has(resolve(internal))) {
       offenders.push(`${key} → ${internal} → ${resolve(internal)}`)
     }

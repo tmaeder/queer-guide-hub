@@ -110,16 +110,50 @@ function buildDetArgs(type: EntityType, n: Record<string, unknown>, isHotel: boo
       const code = (n.code ?? meta.code ?? meta.cca2 ?? meta.iso_a2) as string | null
       return { p_name: String(n.name ?? ''), p_code: code ?? null, p_limit: 5 }
     }
-    case 'marketplace':
+    case 'marketplace': {
+      // FIVE of the six identity args were reaching the RPC as NULL, because
+      // pipeline-normalize emits them under `metadata` / `urls` / camelCase
+      // while this read them at top level. Measured on prod 2026-09-10 across
+      // the 708 marketplace rows stuck at dedup_status='merge_candidate':
+      //   source_entity_id  top-level 0/708   — it is `sourceId`
+      //   merchant_domain   top-level 0/708   — 708 in metadata
+      //   brand             top-level 0/708   — 708 in metadata
+      //   external_url      top-level 0/708   — 708 carry a `urls` array
+      //   source_slug       top-level 0/708   — it is `sourceName`
+      //
+      // find_marketplace_duplicate_candidates therefore received only p_title,
+      // which kills four of its five branches (source_entity_id → external_url
+      // → domain+title → brand+title) and leaves the title-trigram fallback.
+      // Everything then fell through to the semantic standalone-review path,
+      // which is why all 708 carry a CONSTANT fused score of 0.919 — that is
+      // the standalone-review value, not a similarity measure (marketplace has
+      // confirmWeight 0.05, so cosine barely moves the fused score at all).
+      //
+      // Same call, same rows, measured with the args restored:
+      //   "A Single Man"          title_trigram 0.75  → despaced_exact 0.95
+      //   "Upgraded Icy Silk …"   title_trigram 0.606 → domain_title   0.923
+      //   "Fourteen Poems: …"     NO CANDIDATES       → domain_title   0.911 ×2
+      // With autoMerge 0.92 the first two now resolve deterministically, while
+      // the ambiguous periodical correctly stays a review item.
+      //
+      // `pick` uses truthiness, NOT ??: pipeline-normalize emits absent fields
+      // as EMPTY STRINGS rather than omitting them, so `a ?? b` returns '' and
+      // the fallback never fires — the same trap the news validator documents.
+      const pick = (...vals: unknown[]): string | null => {
+        for (const v of vals) if (typeof v === 'string' && v.trim()) return v
+        return null
+      }
+      const urls = Array.isArray(n.urls) ? (n.urls as unknown[]) : []
       return {
         p_title: String(n.title ?? n.name ?? ''),
-        p_source_slug: (n.source_slug as string) ?? (n.source_type as string) ?? null,
-        p_source_entity_id: (n.source_entity_id as string) ?? null,
-        p_merchant_domain: (n.merchant_domain as string) ?? null,
-        p_external_url: (n.external_url as string) ?? (n.url as string) ?? null,
-        p_brand: (n.brand as string) ?? null,
+        p_source_slug: pick(n.source_slug, n.source_type, meta.source_slug, n.sourceName),
+        p_source_entity_id: pick(n.source_entity_id, n.sourceId, meta.source_entity_id),
+        p_merchant_domain: pick(n.merchant_domain, meta.merchant_domain, meta.shop_domain),
+        p_external_url: pick(n.external_url, n.url, urls[0]),
+        p_brand: pick(n.brand, meta.brand, meta.brand_name),
         p_limit: 10,
       }
+    }
     case 'organization':
       return {
         p_name: String(n.name ?? n.title ?? ''),
