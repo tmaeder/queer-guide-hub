@@ -61,7 +61,25 @@ const IDENTITY_TAGS: Record<
 };
 
 const PRIDE_YEAR_MIN = 2024;
-const PRIDE_YEAR_MAX = 2030;
+
+/**
+ * The newest Pride year that may be published — DERIVED, never a literal.
+ *
+ * It was a hardcoded 2030 until 2026-09-10, which put four years of URLs into
+ * the sitemap for which the corpus holds ZERO pride events. Measured that day:
+ * 2024 had 96, 2025 62, 2026 197 and 2027 128 — and 2028, 2029 and 2030 had
+ * none at all. A literal ceiling also rots silently in the other direction: it
+ * has to be edited by hand every year or the site stops publishing the year it
+ * is actually in.
+ *
+ * current + 1 is the honest window: next year's Pride dates are announced well
+ * in advance, anything beyond that is speculation. Evaluated per request rather
+ * than at module scope so a long-lived isolate cannot pin the value across a
+ * new year.
+ */
+function prideYearMax(): number {
+  return new Date().getUTCFullYear() + 1;
+}
 
 /**
  * Regional buckets for /pride/:year/region/:slug landing pages. Maps a slug
@@ -302,7 +320,7 @@ ${venuesHtml}
 
 function isValidPrideYear(s: string): number | null {
   const n = Number(s);
-  if (!Number.isInteger(n) || n < PRIDE_YEAR_MIN || n > PRIDE_YEAR_MAX) return null;
+  if (!Number.isInteger(n) || n < PRIDE_YEAR_MIN || n > prideYearMax()) return null;
   return n;
 }
 
@@ -727,6 +745,37 @@ export async function resolveLandingRoute(
   return null;
 }
 
+/**
+ * True for a URL shape this module OWNS and the SPA has no route for:
+ * `/pride/:year/:city` and `/pride/:year/region/:slug`.
+ *
+ * The middleware uses it to return a real 404 when resolveLandingRoute declines
+ * one of these, instead of falling through to the SPA — which has routes for
+ * `pride` and `pride/:year` but NOT for the two-segment forms, so it would
+ * render its catch-all not-found at HTTP 200. A soft 404 is the worst answer
+ * available here: these URLs were advertised in sitemap-landings.xml until
+ * 2026-09-10 (618 speculative 2028-2030 city pages), so they are likely
+ * indexed, and Google keeps a 200 while it drops a 404.
+ *
+ * Deliberately NOT matching `/pride` or `/pride/:year`: those ARE SPA routes
+ * (src/routes.tsx), and 404ing them would delete two working pages.
+ */
+export function isOwnedLandingShape(pathname: string): boolean {
+  return /^\/pride\/\d+\/[^/?#]+(\/[^/?#]+)?\/?$/.test(pathname);
+}
+
 export const IDENTITY_SLUGS = Object.keys(IDENTITY_TAGS);
-export const PRIDE_YEARS = Array.from({ length: PRIDE_YEAR_MAX - PRIDE_YEAR_MIN + 1 }, (_, i) => PRIDE_YEAR_MIN + i);
+
+/**
+ * Publishable Pride years, PRIDE_YEAR_MIN..current+1.
+ *
+ * A function, not a frozen array: the ceiling is derived per call (see
+ * prideYearMax) and a module-scope constant would freeze whatever year the
+ * isolate booted in.
+ */
+export function prideYears(): number[] {
+  const max = prideYearMax();
+  return Array.from({ length: max - PRIDE_YEAR_MIN + 1 }, (_, i) => PRIDE_YEAR_MIN + i);
+}
+
 export const PRIDE_REGION_SLUGS = Object.keys(PRIDE_REGIONS);
