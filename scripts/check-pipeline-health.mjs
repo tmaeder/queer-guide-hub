@@ -846,7 +846,16 @@ reindexDrain: {
     // fail path but it still gets named on every run, so "retired" cannot
     // quietly become "invisible". Anything claiming retirement has to say so in
     // its own description, which is a migration-reviewed change.
-    const RETIRED_RE = /\[RETIRED\b/i
+    // `[COMPLETED` counts too. A batched backfill whose work is finished is the
+    // second legitimate reason to be off, and it is NOT a false disable: the
+    // job succeeded, cleared its queue, and was switched off on purpose —
+    // which is precisely the shape this rule fires on. marketplace_affiliate_-
+    // backfill carried an accurate `[COMPLETED 2026-07-04: 6.5k fake copies
+    // cleared, remaining=0]` and still hard-failed CI, because the regex only
+    // knew one word. Re-verified 2026-09-10: its fake affiliate_url copies are
+    // still at zero. Both markers stay on the WARN path, so a finished backfill
+    // is still named on every run and cannot become invisible.
+    const RETIRED_RE = /\[(RETIRED|COMPLETED)\b/i
     const retired = suspects.filter((a) => RETIRED_RE.test(a.description ?? ''))
     const live = suspects.filter((a) => !retired.includes(a))
     // Recovered but still switched off — the row's own columns say "healthy".
@@ -857,7 +866,7 @@ reindexDrain: {
 
     if (retired.length) {
       console.warn(
-        `⚠ ${retired.length} automation(s) auto-paused then deliberately retired (expected to stay off): ` +
+        `⚠ ${retired.length} automation(s) auto-paused then deliberately retired or completed (expected to stay off): ` +
           retired.map((a) => a.slug).join(', '),
       )
     }
