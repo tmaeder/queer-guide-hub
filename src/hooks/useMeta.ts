@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router';
 
-interface MetaOptions {
+export interface MetaOptions {
   title?: string;
   description?: string;
   ogTitle?: string;

@@ -20,7 +20,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { useCMSPage } from '@/hooks/useCMSPage';
 import DOMPurify from 'dompurify';
-import { useMeta } from '@/hooks/useMeta';
+import { useDetailMeta } from '@/hooks/useDetailMeta';
 import { LegalPageLayout } from '@/components/ui/LegalPageLayout';
 import { AccessibilityControls } from '@/components/accessibility/AccessibilityControls';
 import { RouteBullet } from '@/components/transit/RouteBullet';
@@ -122,7 +122,9 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
   // layout than as an undifferentiated wall of prose.
   const isLineLayout = isLegalChild || slug === 'accessibility';
 
-  useMeta({
+  useDetailMeta({
+    status: loading ? 'loading' : notFound || !page ? 'notFound' : 'ready',
+    notFoundTitle: 'Page Not Found',
     title: page?.meta_title || page?.title || '',
     description: page?.meta_description || page?.excerpt || '',
     canonicalPath: `/${slug}`,

@@ -8,7 +8,6 @@ import { MemoryRouter, Routes, Route } from 'react-router';
 const { fetchStoryMock } = vi.hoisted(() => ({ fetchStoryMock: vi.fn() }));
 
 vi.mock('@/hooks/useNewsStories', () => ({ fetchStoryBySlug: fetchStoryMock }));
-vi.mock('@/hooks/useMeta', () => ({ useMeta: vi.fn() }));
 vi.mock('@/components/layout/PageLoadingState', () => ({
   PageLoadingState: () => <div data-testid="loading" />,
 }));
@@ -47,6 +46,16 @@ describe('NewsStoryDetail', () => {
     fetchStoryMock.mockResolvedValue(null);
     renderAt('missing');
     await waitFor(() => expect(screen.getByText(/Story not found/)).toBeInTheDocument());
+  });
+
+  it('noindexes a missing story instead of leaving "Story" indexable with no robots tag', async () => {
+    fetchStoryMock.mockResolvedValue(null);
+    renderAt('missing');
+    await waitFor(() => {
+      expect(document.querySelector('meta[name="robots"]')?.getAttribute('content')).toBe(
+        'noindex,nofollow',
+      );
+    });
   });
 
   it('renders story title + article list', async () => {

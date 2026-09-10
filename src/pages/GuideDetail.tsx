@@ -1,7 +1,7 @@
 import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Clock, BookOpen } from 'lucide-react';
-import { useMeta } from '@/hooks/useMeta';
+import { useDetailMeta } from '@/hooks/useDetailMeta';
 import { useGuide, questPhase, type GuideSection } from '@/hooks/useGuides';
 import { useGuideReadTracker } from '@/hooks/useGuideReadTracker';
 import { GuidePickBlock, GuideComparisonTable } from '@/components/guides/GuidePickBlock';
@@ -44,7 +44,9 @@ const GuideDetail = () => {
   const { data, isLoading, error } = useGuide(slug);
   useGuideReadTracker(data?.guide.id);
 
-  useMeta({
+  useDetailMeta({
+    status: isLoading ? 'loading' : error || !data ? 'notFound' : 'ready',
+    notFoundTitle: t('guides.detail.notFound.title', 'Guide not found.'),
     title: data?.guide?.title ?? t('guides.detail.fallbackTitle', 'Guide'),
     description: data?.guide?.dek ?? undefined,
     canonicalPath: data?.guide ? `/guides/${data.guide.slug}` : undefined,

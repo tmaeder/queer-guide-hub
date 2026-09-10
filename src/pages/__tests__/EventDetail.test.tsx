@@ -1,8 +1,8 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -32,7 +32,8 @@ vi.mock('@/hooks/useEntityTripStatus', () => ({
 }));
 vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => vi.fn() }));
 vi.mock('@/hooks/useSlugRedirect', () => ({ useSlugRedirect: () => null }));
-vi.mock('@/hooks/useMeta', () => ({ useMeta: () => {} }));
+const useMeta = vi.fn();
+vi.mock('@/hooks/useMeta', () => ({ useMeta: (o: unknown) => useMeta(o) }));
 vi.mock('@/hooks/usePageFetchers', () => ({ upsertEventAttendance: vi.fn() }));
 vi.mock('../EventDetail.parts', async (orig) => {
   const actual = await orig<typeof import('../EventDetail.parts')>();
@@ -64,6 +65,10 @@ function renderPage() {
 }
 
 describe('EventDetail', () => {
+  beforeEach(() => {
+    useMeta.mockClear();
+  });
+
   it('renders without crashing', () => {
     state.event = null;
     const { container } = renderPage();
@@ -74,5 +79,20 @@ describe('EventDetail', () => {
     state.event = null;
     renderPage();
     expect(await screen.findByText(/Event Not Found/i)).toBeInTheDocument();
+  });
+
+  it('noindexes a missing event instead of shipping a self-referential canonical', async () => {
+    // A dead/mistyped event slug used to call useMeta with `event?.title ??
+    // undefined` (falls back to the default "Queer Guide" title) and no
+    // `noIndex` at all — an indexable soft 404, same class as TagDetail's fix.
+    state.event = null;
+    renderPage();
+    await screen.findByText(/Event Not Found/i);
+    await waitFor(() => {
+      const last = useMeta.mock.calls.at(-1)?.[0] as Record<string, unknown>;
+      expect(last?.noIndex).toBe(true);
+    });
+    const last = useMeta.mock.calls.at(-1)?.[0] as Record<string, unknown>;
+    expect(last?.title).toBe('Event not found');
   });
 });

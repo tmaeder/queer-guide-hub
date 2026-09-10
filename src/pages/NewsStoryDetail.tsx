@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { fetchStoryBySlug, type StoryDetail } from '@/hooks/useNewsStories';
-import { useMeta } from '@/hooks/useMeta';
+import { useDetailMeta } from '@/hooks/useDetailMeta';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Badge } from '@/components/ui/badge';
 import { Layers, Clock, ArrowLeft } from 'lucide-react';
@@ -34,7 +34,9 @@ export default function NewsStoryDetail() {
   }, [slug]);
 
   const title = story ? safeText(decodeHtmlEntities(story.title)) : 'Story';
-  useMeta({
+  useDetailMeta({
+    status: loading ? 'loading' : !story ? 'notFound' : 'ready',
+    notFoundTitle: 'Story not found',
     title,
     description: story?.summary || `${story?.article_count ?? ''} articles covering ${title}`,
     canonicalPath: slug ? `/news/story/${slug}` : '/news',
