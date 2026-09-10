@@ -38,7 +38,7 @@ comment on function public.search_embeddings_reconcile(integer) is
   'after document). Both swallow write failures via `exception when others then null`, so a '
   'transient error strands a (doc_id, embedding) pair permanently with nothing to re-fire it. '
   'This job re-inserts those strays only; it is NOT the primary delivery path, contrary to the '
-  'header of migration 20260910144533, which is corrected by 20371101100000.';
+  'header of migration 20260910144533, which is corrected by 20380301100000.';
 
 do $$
 begin
