@@ -69,6 +69,24 @@ Detail routes follow the pattern `/<type>/:slug`. Supported types and their tabl
 | `/villages/:slug` | `queer_villages` | `TouristDestination` |
 | `/tags/:slug` | `unified_tags` | `DefinedTerm` |
 
+## Hub crawl links
+
+Measured on production 2026-09-10: of the ~65 `href`s Googlebot received on `/venues`, **57 were `/assets/*` bundles** and five were site nav. **Zero pointed at a venue.** The same held for `/cities`, `/tags`, `/personalities`, `/events` and `/hotels` — so every one of the 61,718 URLs the sitemaps publish was sitemap-only: no internal link equity, no crawl path, and a dependency on Google's render budget at 60k scale. That is the classic *Discovered – currently not indexed* shape.
+
+`functions/_lib/hubLinks.ts` closes it. Each hub gets a data-driven `<nav data-prerendered="hub-links">` block listing 60–80 of its own detail pages.
+
+The two-hop payoff is the real prize: `cityDetail` **already** lists a city's venues and events as real `<a href>` links, so linking cities from `/cities` opens `/cities → /city/berlin → /venues/:slug` across the whole corpus. The missing edge was only ever hub → detail.
+
+Three rules, none optional:
+
+1. **Bot-only.** It is called inside the `isBot` branch of `functions/_middleware.ts`, so a human page view never pays for the Supabase round-trip. Bot hub responses get `s-maxage=600` with `max-age=0`, safe because `Vary: User-Agent` is already set.
+2. **The gates are copied verbatim from the sitemap generators.** `fetchRows` *prefers the service-role key and therefore bypasses RLS*, so `safety_gated=eq.false` must be stated explicitly. Dropping it would publish venues in criminalizing countries to anonymous crawlers — measured: **1,106 venues are `seo_indexable`, non-duplicate and `safety_gated=true`**, and the hub orders by quality descending, so they would rank near the top. That is an outing risk, not a ranking bug, and it is the same defect that previously hit `villageDetail` and `personalityDetail`. `cities`/`countries` have no such column by design. A unit test enforces both the gate and its agreement with the sitemap filters.
+3. **Content parity.** Every link points at a page the SPA also renders in its own listing for that route, so this stays inside the cloaking contract below — a subset of what a user sees, never more.
+
+To add a hub, add an entry to `HUBS` in `hubLinks.ts` and to `HUBS` in `scripts/seo-hub-links.mjs`.
+
+**Why there is a post-deploy check as well as unit tests.** The production failure mode is environmental and silent: with `SUPABASE_URL` unset on the Pages project, `fetchRows` returns `[]`, `buildHubLinksHtml` returns `''` by design (a hub must never 500 over a missing link block), and the page keeps serving 200 with no links — indistinguishable from the bug it replaced. A mocked-fetch unit test cannot see that, so `scripts/seo-hub-links.mjs` asserts real link counts against a real deployment, and also that the block never leaks into the human response.
+
 ## i18n / hreflang
 
 Routes are mounted under an optional `/:locale?` segment in `src/routes.tsx`. The default locale (`en`) is served at the root path; the other ten get a two-letter prefix (`/de`, `/fr`, `/es`, `/pt`, `/it`, `/ru`, `/zh`, `/ja`, `/ko`, `/ar`).
