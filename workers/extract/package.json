@@ -17,11 +17,12 @@
     "@cloudflare/workers-types": "^5.20260726.1",
     "domhandler": "^5.0.3",
     "typescript": "~6.0.0",
-    "vitest": "^4.1.8",
+    "vitest": "^4.1.11",
     "wrangler": "^4.114.0"
   },
   "overrides": {
     "esbuild": "0.28.1",
-    "undici": "^7.29.0"
+    "undici": "^7.29.0",
+    "@puppeteer/browsers": "^3.2.2"
   }
 }

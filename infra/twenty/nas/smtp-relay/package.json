@@ -9,6 +9,6 @@
   },
   "dependencies": {
     "postal-mime": "^2.7.5",
-    "smtp-server": "^3.13.6"
+    "smtp-server": "^3.19.10"
   }
 }
