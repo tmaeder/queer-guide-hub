@@ -48,9 +48,26 @@ const pass = (m) => {
   return 0;
 };
 
+// Plain string scan rather than a constructed RegExp.
+//
+// The first version built one — `new RegExp('href="' + prefix.replace(/[/]/g,
+// '\\/') + '[^"]+"')` — and CodeQL flagged it high severity as
+// js/incomplete-sanitization: the escape handles `/` but not `\`. It was also
+// pointless, because `/` needs no escaping inside a RegExp *constructor* (only
+// in a literal). Both problems disappear if no pattern is built at all, and
+// these prefixes are fixed constants regardless.
 const countLinks = (html, prefix) => {
-  const re = new RegExp(`href="${prefix.replace(/[/]/g, '\\/')}[^"]+"`, 'g');
-  return new Set(html.match(re) ?? []).size;
+  const needle = `href="${prefix}`;
+  const found = new Set();
+  let i = html.indexOf(needle);
+  while (i !== -1) {
+    const valueStart = i + 'href="'.length;
+    const end = html.indexOf('"', valueStart);
+    if (end === -1) break;
+    found.add(html.slice(valueStart, end));
+    i = html.indexOf(needle, end);
+  }
+  return found.size;
 };
 
 async function main() {
