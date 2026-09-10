@@ -5,8 +5,9 @@
  * `press@` on queer.guide), bound via per-address Email Routing rules that take
  * priority over the apex catch-all. Each message is imported over JMAP into the
  * matching mailbox on the self-hosted Stalwart server (reached through the
- * existing Cloudflare Tunnel, no mail port exposed). Twenty then syncs those
- * mailboxes over IMAP and shows them as CRM message threads.
+ * existing Cloudflare Tunnel, no mail port exposed). Twenty CRM used to sync
+ * those mailboxes over IMAP; it was retired 2026-09-10 and this worker does not
+ * depend on it — the mail still lands in the Stalwart mailboxes either way.
  *
  * The message is DELIVERED here (JMAP import); nothing writes to Supabase. On
  * any failure we log and return without throwing — Cloudflare must not answer
