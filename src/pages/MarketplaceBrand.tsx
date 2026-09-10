@@ -1,6 +1,6 @@
 import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { useMeta } from '@/hooks/useMeta';
+import { useDetailMeta } from '@/hooks/useDetailMeta';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { MarketplaceFilteredView } from '@/components/marketplace/MarketplaceFilteredView';
 import { BrandMark } from '@/components/marketplace/BrandMark';
@@ -50,7 +50,9 @@ export default function MarketplaceBrand() {
   const { slug } = useParams<{ slug: string }>();
   const { data: brand, isLoading } = useMarketplaceBrand(slug);
 
-  useMeta({
+  useDetailMeta({
+    status: isLoading ? 'loading' : !brand ? 'notFound' : 'ready',
+    notFoundTitle: t('marketplace.noMaker', 'No maker here.'),
     title: brand ? `${brand.display_name} — Marketplace` : 'Brand',
     description: brand
       ? `Products from ${brand.display_name} on Queer Guide.`

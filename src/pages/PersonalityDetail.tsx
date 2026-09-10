@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useSlugRedirect } from '@/hooks/useSlugRedirect';
-import { useMeta } from '@/hooks/useMeta';
+import { useDetailMeta } from '@/hooks/useDetailMeta';
 import { Button } from '@/components/ui/button';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
 import { MilestonesForEntity } from '@/components/discovery/MilestonesForEntity';
@@ -95,13 +95,10 @@ export default function PersonalityDetail() {
     );
   }, [personality]);
 
-  const metaTitle = useMemo(() => {
-    if (!isLoading && !error && personality === null) return 'Personality not found';
-    return personality?.name ?? undefined;
-  }, [isLoading, error, personality]);
-
-  useMeta({
-    title: metaTitle,
+  useDetailMeta({
+    status: isLoading ? 'loading' : error || personality === null ? 'notFound' : 'ready',
+    notFoundTitle: 'Personality not found',
+    title: personality?.name ?? undefined,
     description: metaDescription,
     canonicalPath: personality ? `/personalities/${personality.slug ?? personality.id}` : undefined,
     ogType: 'profile',

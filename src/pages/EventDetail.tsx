@@ -19,7 +19,7 @@ import { useTrackEvent } from '@/hooks/useTrackEvent';
 import { useEntityTripStatus } from '@/hooks/useEntityTripStatus';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useSlugRedirect } from '@/hooks/useSlugRedirect';
-import { useMeta } from '@/hooks/useMeta';
+import { useDetailMeta } from '@/hooks/useDetailMeta';
 import { socialSameAs } from '@/lib/social/registry';
 import { toast } from '@/hooks/use-toast';
 import { upsertEventAttendance } from '@/hooks/usePageFetchers';
@@ -109,7 +109,12 @@ export default function EventDetail() {
 
   const cityForMeta = event?.cities?.name ?? event?.city ?? null;
   const eventOgImage = event ? resolveEntityImage('event', event).url : undefined;
-  useMeta({
+  useDetailMeta({
+    // `error` and "resolved with no event" both mean this URL has nothing to
+    // show — a dead/mistyped slug must not publish a self-referential
+    // canonical with no robots tag (the indexable-soft-404 shape).
+    status: isLoading ? 'loading' : error || !event ? 'notFound' : 'ready',
+    notFoundTitle: t('pages.eventDetail.notFoundTitle', 'Event not found'),
     title: event?.title ?? undefined,
     description: event
       ? (event.description?.slice(0, 160) ??

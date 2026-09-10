@@ -17,7 +17,7 @@ import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Badge } from '@/components/ui/badge';
 import DOMPurify from 'dompurify';
 import { useCMSPage } from '@/hooks/useCMSPage';
-import { useMeta } from '@/hooks/useMeta';
+import { useDetailMeta } from '@/hooks/useDetailMeta';
 import { PageContainer } from '@/components/layout/PageContainer';
 
 export default function Page() {
@@ -26,7 +26,9 @@ export default function Page() {
   const page = data?.page ?? null;
   const notFound = !!data && data.notFound;
 
-  useMeta({
+  useDetailMeta({
+    status: loading ? 'loading' : notFound || !page ? 'notFound' : 'ready',
+    notFoundTitle: 'Page Not Found',
     title: page?.meta_title || page?.title || '',
     description: page?.meta_description || page?.excerpt || '',
     ogImage: page?.og_image_url || page?.cover_image_url,

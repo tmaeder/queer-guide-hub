@@ -6,7 +6,6 @@ import { renderWithProviders, screen } from '@/test/test-utils';
 import { Routes, Route } from 'react-router';
 import { brandSlug } from '@/lib/marketplaceTaxonomy';
 
-vi.mock('@/hooks/useMeta', () => ({ useMeta: vi.fn() }));
 vi.mock('@/components/marketplace/MarketplaceFilteredView', () => ({
   MarketplaceFilteredView: (p: { filters: { brandKey?: string } }) => (
     <div data-testid="filtered" data-brand-key={p.filters.brandKey} />
@@ -35,6 +34,17 @@ describe('MarketplaceBrand', () => {
     brandState.value = null;
     renderAt('/marketplace/brands/nope');
     expect(screen.getByText(/No maker here/i)).toBeInTheDocument();
+  });
+
+  it('noindexes an unknown brand instead of shipping the plain "Brand" title indexable', () => {
+    // `useMeta` never set `noIndex` on the not-found branch — a dead brand
+    // slug published a real (if generic) title with no robots tag, same
+    // soft-404 shape as TagDetail's fix.
+    brandState.value = null;
+    renderAt('/marketplace/brands/nope');
+    expect(document.querySelector('meta[name="robots"]')?.getAttribute('content')).toBe(
+      'noindex,nofollow',
+    );
   });
 
   it('offers the makers directory as the way out of a dead end', () => {
