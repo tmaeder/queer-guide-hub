@@ -60,8 +60,13 @@
 -- trg_personalities_aa_profession_gate and trg_personalities_adult_dates_guard
 -- still exist, so this sorts between them as intended.
 --
--- Renumbered from 20260919100000, a version already taken on prod by
--- tag_category_consolidation — `db push` matches by VERSION, so this file
+-- Renumbered TWICE. First from 20260919100000, a version already taken on prod by
+-- tag_category_consolidation; then from 20370901100100, because the applied
+-- ceiling moved from 20370801100000 to 20371001100000 within the hour while a
+-- concurrent session was landing migrations. A month of headroom was not
+-- enough — this now sits a year clear. The ceiling is a treadmill, not an
+-- event: re-read it from remote history immediately before pushing, never
+-- from the local maximum — `db push` matches by VERSION, so this file
 -- could never have applied and would have been skipped in silence.
 --
 -- fetch-personality-data was part of the original draft and is NOT in this
