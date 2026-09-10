@@ -391,15 +391,31 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
   // below: public/_redirects 301s /resources to /tags, so no crawler could
   // reach this body and the canonical tag glossary served the generic fallback.
   // Found by routeMeta.contract.test.ts, not by hand.
+  // The copy here described a "resources library" — coming-out guides,
+  // healthcare references, legal explainers, reading lists — because it was
+  // written for '/resources' and only ever RE-KEYED to '/tags' (see the note
+  // above), never rewritten. So the one URL stated three different subjects at
+  // once: <title> "LGBTQ+ Glossary & Tag Index", <h1> "Queer Knowledge Hub —
+  // guides, references, and reading lists", and a description about browsing
+  // terms. It is the glossary; the title and description were the correct two.
+  //
+  // The category links are the real /tags/c/:slug hubs the SPA itself renders,
+  // not decoration: they are the only crawlable path from here into the 2,604
+  // tag pages, which nothing else on the page links to.
   '/tags': {
-    h1: 'Queer Knowledge Hub — guides, references, and reading lists',
+    h1: 'LGBTQ+ glossary — identities, practices, history, community language',
     paragraphs: [
-      'A growing library of practical and historical resources for queer people. Coming-out guides, healthcare references, legal explainers by jurisdiction, glossaries, reading lists, archive pointers, and crisis resources.',
-      "Written and reviewed by queer people. Where we link out, we say what we trust the source for and where its limits are. Where we don't have an answer, we say so.",
+      'A reference for the words queer people actually use: identities and orientations, relationship structures, kink and consent vocabulary, health and legal terms, subcultures, drag and ballroom language, and the historical terms behind them. Each entry is short, plainly written, and says where the term comes from.',
+      'Every term is linked to the venues, events, people and news on Queer Guide that use it, so a definition is also a way into the rest of the site. Terms are grouped into categories you can browse, and clinical entries carry their diagnostic codes where a recognised one exists.',
     ],
     links: [
-      { href: '/help', label: 'Crisis hotlines' },
-      { href: '/news', label: 'News' },
+      { href: '/tags/c/legal-rights', label: 'Legal & rights terms' },
+      { href: '/tags/c/health', label: 'Health terms' },
+      { href: '/tags/c/relationship-structures', label: 'Relationship structures' },
+      { href: '/tags/c/kink-community', label: 'Kink & community' },
+      { href: '/tags/c/drag-performance', label: 'Drag & performance' },
+      { href: '/tags/c/subcultures', label: 'Subcultures' },
+      { href: '/tags/c/figures-icons', label: 'Figures & icons' },
       { href: '/personalities', label: 'Notable LGBTQ+ figures' },
     ],
   },

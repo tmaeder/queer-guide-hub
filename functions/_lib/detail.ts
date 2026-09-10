@@ -469,16 +469,31 @@ async function newsDetail(env: Env, slug: string, pathname: string): Promise<Det
     datePublished: stringField(row, 'published_at'),
     dateModified: stringField(row, 'updated_at') ?? stringField(row, 'published_at'),
     author: author ? { '@type': 'Person', name: author } : undefined,
-    publisher: publisher
-      ? {
-          '@type': 'Organization',
-          name: publisher,
-          logo: {
-            '@type': 'ImageObject',
-            url: `${SITE_ORIGIN}/icons/icon-192.png`,
-          },
-        }
-      : undefined,
+    // `publisher` is the organization publishing THIS page, which is Queer
+    // Guide — so it takes Queer Guide's name and Queer Guide's logo.
+    //
+    // Until 2026-09-10 this emitted `news_articles.publisher_name` (the
+    // ORIGINATING outlet) paired with Queer Guide's own icon as that outlet's
+    // logo, e.g. `{"name":"Variety","logo":{"url":".../icons/icon-192.png"}}`
+    // — a false claim about a third party, served on up to 24,117 URLs, in the
+    // one property Google reads as a NewsArticle trust signal. The column is
+    // also not always an organization at all: the top values include
+    // "Google News LGBT Rights", "NewsData.io" and "Reddit LGBT", which are
+    // feeds, so no logo could ever have been correct for them.
+    //
+    // The originating outlet is still credited, in the property that actually
+    // means it. `sourceOrganization` carries no logo because we do not hold
+    // theirs — omitting it is honest, inventing one is how this started.
+    publisher: {
+      '@type': 'Organization',
+      name: 'Queer Guide',
+      url: SITE_ORIGIN,
+      logo: {
+        '@type': 'ImageObject',
+        url: `${SITE_ORIGIN}/icons/icon-192.png`,
+      },
+    },
+    sourceOrganization: publisher ? { '@type': 'Organization', name: publisher } : undefined,
     image: image ? [image] : undefined,
     mainEntityOfPage: { '@type': 'WebPage', '@id': `${SITE_ORIGIN}${pathname}` },
     url: `${SITE_ORIGIN}${pathname}`,
