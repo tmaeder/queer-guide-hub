@@ -52,7 +52,7 @@ import { buildBodyHtml, buildNoscriptHtml } from './_lib/routeBody';
 import { buildHubLinksHtml } from './_lib/hubLinks';
 import { isLocaleLocalised, LOCALISED_LOCALES } from './_lib/localisedLocales';
 import { resolveDetailRoute, isDetailPath, resolveSlugRedirect } from './_lib/detail';
-import { resolveLandingRoute } from './_lib/landing';
+import { resolveLandingRoute, isOwnedLandingShape } from './_lib/landing';
 import { bootGuardTag } from './_lib/boot-guard';
 import {
   applySecurityHeaders,
@@ -252,6 +252,23 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   if (landing) {
     applySecurityHeaders(landing, cspNonce);
     return landing;
+  }
+
+  // A /pride/:year/:city (or /region/:slug) URL this module declined — an
+  // out-of-range year, or a city with nothing on it. The SPA has no route for
+  // the two-segment form, so without this it renders its catch-all not-found at
+  // HTTP 200, and Google keeps a soft 404 while it drops a real one. These URLs
+  // were advertised until 2026-09-10, so they will be recrawled.
+  if (isOwnedLandingShape(basePath)) {
+    const landingNotFound = new Response(notFoundHtml(basePath), {
+      status: 404,
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'public, s-maxage=60, max-age=30',
+      },
+    });
+    applySecurityHeaders(landingNotFound, cspNonce);
+    return landingNotFound;
   }
 
   let response = await next();
