@@ -23,6 +23,7 @@
   "overrides": {
     "esbuild": "0.28.1",
     "undici": "^7.29.0",
-    "@puppeteer/browsers": "^3.2.2"
+    "@puppeteer/browsers": "^3.2.2",
+    "sharp": "^0.35.4"
   }
 }
