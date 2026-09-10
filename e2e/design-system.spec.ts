@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { neutralizeVisitorGeo } from './support/visitorGeo';
 
 /**
  * Design system enforcement tests (subway-map rebrand 2026-08, softened
@@ -70,6 +71,13 @@ const resolveRadius = (page, token: string): Promise<string> =>
 test.describe('design system: semantic radius (token-derived)', () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
+    // BEFORE the goto. /events applies a "Near you" city filter from
+    // Cloudflare's geo on mount, and the runner's own location decides whether
+    // this block has any cards to measure at all — the 2026-09-10 nightly ran
+    // from Dulles Town Center, VA, which has zero upcoming events, and all
+    // three card guards failed with "element(s) not found" against a page that
+    // was rendering its empty state. See e2e/support/visitorGeo.ts.
+    await neutralizeVisitorGeo(page);
     await page.goto('/events');
     // Wait for the app to paint, not for the network to fall idle. These guards
     // read computed styles under #root, and `networkidle` (500ms of zero
