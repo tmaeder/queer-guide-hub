@@ -204,6 +204,7 @@ Deno.serve(withErrorReporting('pipeline-deduplicate', async (req) => {
     const batchSize = body.batch_size || 50
     const dryRun = body.dry_run || false
     const filterEntityType = body.entityType as string | undefined
+    const filterTargetTable = body.targetTable as string | undefined
     // Per-run cap on embeddings (bge-m3 is cheap; circuit breaker bounds outages).
     const embedCap = Math.max(0, body.embed_cap ?? batchSize)
 
@@ -218,6 +219,11 @@ Deno.serve(withErrorReporting('pipeline-deduplicate', async (req) => {
 
     if (pipelineRunId) query = query.eq('pipeline_run_id', pipelineRunId)
     if (filterEntityType) query = query.eq('entity_type', filterEntityType)
+    // See pipeline-validate: entity_type is nullable and unnormalized, so an
+    // entityType filter silently skips whole cohorts. The dispatch below keys on
+    // item.target_table anyway (`const table = item.target_table`) — only the
+    // selector was blind.
+    if (filterTargetTable) query = query.eq('target_table', filterTargetTable)
 
     const { data: items, error } = await query
     if (error) return errorResponse(`load: ${error.message}`, 500, req)
