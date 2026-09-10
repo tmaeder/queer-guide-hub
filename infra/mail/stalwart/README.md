@@ -1,5 +1,14 @@
 # Stalwart — team-inbox mail server (NAS)
 
+> **Twenty CRM was retired on 2026-09-10.** This server stays: the `team-inbox`
+> Cloudflare Email Worker still imports `contact@` / `support@` / `legal@` /
+> `press@` over **JMAP**, and `smtp-relay` still carries Stalwart's outbound mail
+> to Cloudflare Email Sending. What lost its consumer is the **IMAP 993** arm and
+> the **submission 587** listener — both existed so Twenty could sync and reply.
+> They are left in place rather than edited out of a running server's config;
+> removing them is an operational change to make on the NAS, deliberately, not a
+> side effect of a repo cleanup. Read every "Twenty" below as history.
+
 Self-hosted mail server that backs the CRM team inboxes. It exists so Twenty has
 a **real IMAP mailbox** to sync (Twenty refuses forwarding aliases, and Cloudflare
 Email Routing is forwarding-only). It is **not** a public mail server:

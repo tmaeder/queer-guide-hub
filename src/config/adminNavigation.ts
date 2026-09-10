@@ -48,7 +48,6 @@ import {
   Mail,
   MailOpen,
   MailCheck,
-  Contact,
   Route as RouteIcon,
   Handshake,
   Workflow,
@@ -406,14 +405,6 @@ export const adminNavSections: AdminNavSection[] = [
         icon: MailOpen,
         route: '/admin/imports/email-ingestions',
         countTable: 'email_ingestions',
-      },
-      {
-        // An integration, not a content type — it used to sit in slot #2 of
-        // Content, above every real entity.
-        id: 'twenty-crm',
-        label: 'Twenty CRM',
-        icon: Contact,
-        route: '/admin/content/twenty-crm',
       },
       {
         // The cron / job registry that drives every engine above it.

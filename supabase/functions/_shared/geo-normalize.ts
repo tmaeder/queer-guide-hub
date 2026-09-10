@@ -1,5 +1,5 @@
 /**
- * Country name canonicalization — dependency-free so lean functions (twenty-sync)
+ * Country name canonicalization — dependency-free so lean functions
  * can import the alias map without pulling the automation/AI-suggestion stack.
  * automation-utils.ts re-exports COUNTRY_ALIASES from here for its existing users.
  */
