@@ -153,10 +153,67 @@ Smaller on-page defects:
 - The `<noscript>` fallback for `/map`, `/guides` and **every detail page** is the
   generic "Crisis support" hotline card, which says nothing about the page.
 
+## Outcome — landed 2026-09-10 via #3599
+
+W1, W2, W3, W5 and a fifth fix found along the way (venue/event/hotel city links)
+shipped as one batch, merge commit `97f6d9d46`. Serial merging could not
+converge: branch protection is `strict=true` with 12 required contexts, GitHub
+auto-merge **never updates a BEHIND branch**, and `main` moved throughout — so
+the five PRs were merged into one integration branch and landed together, the
+pattern already recorded in `batch_integration_branch_is_the_merge_queue`. It
+must be merged with a **merge commit**, not squashed, or the constituent PRs are
+not auto-marked (two were not, because a concurrent session pushed to their
+branches after the batch was built; both were verified content-complete on `main`
+and closed by hand).
+
+Verified on **production** after the deploy went live (`/build-id.txt` =
+`97f6d9d46…`, matching `main`):
+
+| Check | Result |
+|---|---|
+| `scripts/seo-check.mjs` | PASS — 15 static + 8 detail = 23 routes |
+| `scripts/seo-hub-links.mjs` | PASS — all 7 hubs carry crawl links |
+| `scripts/sitemap-freshness.mjs` | PASS — all 14 sitemaps |
+
+Hub detail links, every one of which was **0** before:
+
+| Hub | Before | After (prod) |
+|---|--:|--:|
+| `/venues` | 0 | 60 |
+| `/cities` | 0 | 80 |
+| `/tags` | 0 | 87 |
+| `/personalities` | 0 | 60 |
+| `/events` | 0 | 60 |
+| `/hotels` | 0 | 60 |
+
+Also on production: `sitemap-landings.xml` 647 → 382 entries; sitemap index
+14 → 13 (blog removed); `/pride/2030/moscow` and `/pride/2028/mombasa` return 404
+while `/pride`, `/pride/2026` and `/pride/2026/region/europe` stay 200;
+`NewsArticle.publisher` reads `Queer Guide` with `sourceOrganization: Variety`;
+and the sampled venue city links resolve — `fulford-harbour → /city/victoria-bc`,
+`checkpoint-zuerich → /city/zuerich`, `carpe-diem-1 → /city/grad-hvar-1`,
+`1350-club → /city/los-angeles`.
+
+**Safety gate, checked on production rather than locally.** The five
+highest-quality `safety_gated` venues (Nassawiyat/Morocco, Damj and
+Shams/Tunisia, two saunas) are all absent from `/venues`, against a positive
+control of 60 real venues served. Separately, **all 60 served venues are readable
+by the anon key**, so whatever key the Pages project uses, nothing the hub
+publishes is content an anonymous visitor could not already see.
+
+**What is NOT established, and must not be recorded as proven:** whether the
+Pages project supplies `SUPABASE_SERVICE_ROLE_KEY` or `SUPABASE_ANON_KEY`. Two
+discriminators were tried and both are inconclusive — a gated venue's detail page
+returns 200 under either key (`isGatedEntity` has an anon-safe fallback), and the
+served set is anon-visible under either. The explicit `safety_gated=eq.false`
+filter and RLS are both in place and the observable behaviour is correct, but the
+filter has not been *isolated* as the thing doing the work.
+
 ## Workstreams
 
 Sequenced by leverage against risk. W1–W3 are mechanical and high-confidence;
-W4 needs data decisions and is deliberately last.
+W4 needs data decisions and is deliberately last. W1/W2/W3/W5 are **done** — see
+the outcome section above; W4 and W6 remain.
 
 ### W1 — Make the guardrails honest
 Real `minEntries` floors derived from current live counts; add landmarks,
