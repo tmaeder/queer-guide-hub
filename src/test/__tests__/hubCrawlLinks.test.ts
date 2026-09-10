@@ -55,6 +55,18 @@ describe('hub crawl links — safety gate', () => {
     for (const f of filters) expect(f).toContain('seo_indexable=eq.true');
   });
 
+  it('every order carries a deterministic tiebreaker', () => {
+    // The ranking columns are coarse — venues.quality_score has 12 distinct
+    // values over 23,664 rows with 648 tied at the top — so a hub emits 60 rows
+    // drawn from a 648-row tie, and SQL guarantees no order within a tie.
+    // Without `,slug.asc` the emitted set can reshuffle on a plan change, a
+    // VACUUM or a score update, and rotating links mean the crawl graph never
+    // settles and no page accumulates equity.
+    const orders = [...hubLinksSrc.matchAll(/order: '([^']+)'/g)].map((m) => m[1]);
+    expect(orders.length).toBeGreaterThanOrEqual(8);
+    for (const o of orders) expect(o).toMatch(/,slug\.asc$/);
+  });
+
   it('the gates still agree with the sitemap generators', () => {
     // Rule 2 of hubLinks.ts is that these are copied verbatim from the
     // already-reviewed sitemap gates. Without this the two silently diverge and
