@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { gotoReady } from './support/appReady';
+import { REDUCED_MOTION } from './support/reducedMotion';
 
 /**
  * The route-change focus effect (`AppRoutes`, src/routes.tsx) must fire on
@@ -22,7 +23,7 @@ import { gotoReady } from './support/appReady';
  * simply delete the a11y behaviour it was gating (WCAG 2.4.3).
  */
 
-test.use({ reducedMotion: 'reduce' });
+test.use(REDUCED_MOTION);
 
 test('a fresh load does not scroll the document by itself', async ({ page }) => {
   await gotoReady(page, '/');

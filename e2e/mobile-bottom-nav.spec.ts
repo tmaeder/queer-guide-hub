@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { REDUCED_MOTION } from './support/reducedMotion';
 
 /**
  * Mobile bottom navigation bar (MobileBottomNav + MobileNavSheet).
@@ -18,7 +19,7 @@ import { test, expect, type Page } from '@playwright/test';
 // resolving between the 2026-08-18 and 08-19 nightlies, which is when all eight
 // cases here began failing: the bar renders different destinations for a signed-
 // in user, and the two gating cases assert on a redirect that no longer happens.
-test.use({ reducedMotion: 'reduce', storageState: { cookies: [], origins: [] } });
+test.use({ ...REDUCED_MOTION,  storageState: { cookies: [], origins: [] } });
 
 const MOBILE = { width: 390, height: 844 };
 // Scoped to the fixed bottom bar — the desktop header renders its own nav

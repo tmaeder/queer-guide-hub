@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { waitForAppReady } from './support/appReady';
+import { REDUCED_MOTION } from './support/reducedMotion';
 
 /**
  * The policy pages as subway lines: each `<h2>` is a station, the rail beside
@@ -17,7 +18,7 @@ import { waitForAppReady } from './support/appReady';
 
 // Route transitions fade opacity 0->1; scanning mid-fade yields phantom
 // contrast failures and unstable scroll positions.
-test.use({ reducedMotion: 'reduce' });
+test.use(REDUCED_MOTION);
 
 /**
  * axe reads computed styles, so a running transition is sampled at whatever

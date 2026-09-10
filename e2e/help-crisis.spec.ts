@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { waitForAppReady } from './support/appReady';
+import { REDUCED_MOTION } from './support/reducedMotion';
 
 /**
  * The crisis-UX invariants of /help, as tests rather than as comments.
@@ -8,7 +9,7 @@ import { waitForAppReady } from './support/appReady';
  * 2026-08-11 rebuild, so each one can regress silently again.
  */
 
-test.use({ reducedMotion: 'reduce' });
+test.use(REDUCED_MOTION);
 
 async function openHelp(page: import('@playwright/test').Page, path = '/help') {
   await page.goto(path, { waitUntil: 'domcontentloaded' });
