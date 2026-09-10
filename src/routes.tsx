@@ -92,7 +92,6 @@ const AdminLiveness = lazyRetry(() => import('./pages/admin/AdminLiveness'));
 const QualityHub = lazyRetry(() => import('./pages/admin/QualityHub'));
 const AdminTrash = lazyRetry(() => import('./pages/admin/AdminTrash'));
 const ContentGraph = lazyRetry(() => import('./pages/admin/ContentGraph'));
-const AdminTwentyCrm = lazyRetry(() => import('./pages/admin/AdminTwentyCrm'));
 const EmailTemplates = lazyRetry(() => import('./pages/admin/EmailTemplates'));
 const AdminPlacesEditorial = lazyRetry(() => import('./pages/admin/AdminPlacesEditorial'));
 const AdminPipelines = lazyRetry(() => import('./pages/admin/AdminPipelines'));
@@ -501,7 +500,6 @@ export const AppRoutes = () => {
                     path="content/marketplace-quality"
                     element={<Navigate to="/admin/quality" replace />}
                   />
-                  <Route path="content/twenty-crm" element={<AdminTwentyCrm />} />
                   <Route
                     path="content/village-quality"
                     element={<Navigate to="/admin/quality" replace />}
