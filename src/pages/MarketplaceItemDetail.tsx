@@ -16,7 +16,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useMarketplace } from '@/hooks/useMarketplace';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useSlugRedirect } from '@/hooks/useSlugRedirect';
-import { useMeta } from '@/hooks/useMeta';
+import { useDetailMeta } from '@/hooks/useDetailMeta';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { toast } from '@/hooks/use-toast';
 import { fetchMarketplaceListingBundle, toggleMarketplaceFavorite } from '@/hooks/usePageFetchers';
@@ -188,7 +188,9 @@ export default function MarketplaceItemDetail() {
       }
     : undefined;
 
-  useMeta({
+  useDetailMeta({
+    status: isLoading ? 'loading' : !listing ? 'notFound' : 'ready',
+    notFoundTitle: t('pages.marketplaceDetail.notFound', 'No listing here.'),
     title: listing?.title,
     description: listing?.description?.slice(0, 160),
     ogTitle: listing?.title,
