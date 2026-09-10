@@ -34,6 +34,7 @@ Deno.serve(withErrorReporting('pipeline-validate', async (req) => {
     const body = await req.json().catch(() => ({}))
     const pipelineRunId = body.pipeline_run_id as string | undefined
     const entityType    = body.entityType as string
+    const targetTable   = body.targetTable as string | undefined
     const batchSize     = body.batch_size || 50
     const dryRun        = body.dry_run || false
     const warnReview    = body.warn_review_threshold ?? 3  // >N warnings → review
@@ -48,6 +49,17 @@ Deno.serve(withErrorReporting('pipeline-validate', async (req) => {
 
     if (pipelineRunId) query = query.eq('pipeline_run_id', pipelineRunId)
     if (entityType)    query = query.eq('entity_type', entityType)
+    // entity_type is unnormalized AND nullable, so it cannot address a cohort:
+    // news staging rows carry 'news_article' (2,658), NULL (1,858) or 'news'
+    // (349), and `.eq()` never matches NULL — the 1,858 are unreachable by any
+    // entityType value, and the 41 NULL event rows are invisible to the
+    // ev-drain-validate cron that exists to drain them. target_table is NOT NULL
+    // on every staging row and is what pipeline_hygiene_stats partitions by.
+    // The body below already resolves the branch from target_table when
+    // entity_type is absent (`item.entity_type || entityType`), and
+    // pipeline-commit already takes this same param — only the two selectors
+    // were blind.
+    if (targetTable)   query = query.eq('target_table', targetTable)
 
     const { data: items, error } = await query
     if (error) return errorResponse(`load: ${error.message}`, 500, req)
