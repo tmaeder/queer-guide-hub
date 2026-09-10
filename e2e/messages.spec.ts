@@ -214,7 +214,20 @@ test.describe('/messages — unified inbox (signed in)', () => {
     const subject = `E2E compose ${Date.now()}`;
     await page.getByPlaceholder('recipient@example.com').fill(SEED.selfEmail);
     await page.getByPlaceholder('Email subject').fill(subject);
-    await page.getByPlaceholder('Write your message...').fill('Sent by the /messages e2e spec.');
+    // The message body is a Tiptap RichTextEditor, not a <textarea>. Its
+    // "Write your message..." string is fed to @tiptap/extension-placeholder,
+    // which renders it as a `data-placeholder` attribute drawn via CSS ::before —
+    // there is no `placeholder` (or `aria-placeholder`) attribute anywhere in the
+    // DOM, and those two are the only things getByPlaceholder matches. So the
+    // old locator could never resolve and the test spent its whole 30s budget
+    // waiting for an element that does not exist. Target the contenteditable.
+    // Keyed on `[contenteditable]` rather than Tiptap's own `.ProseMirror` class:
+    // the wrapper class is ours (RichTextEditor.tsx) and contenteditable is what
+    // the element must be for the field to work at all, so neither half can be
+    // renamed out from under this by a Tiptap upgrade.
+    await page
+      .locator('.rich-text-content [contenteditable]')
+      .fill('Sent by the /messages e2e spec.');
 
     const reqPromise = page.waitForRequest(
       (r) => r.url().includes('/functions/v1/send-mailbox-email') && r.method() === 'POST',

@@ -76,20 +76,35 @@ test.describe('/trips/inbox (signed out)', () => {
 });
 
 test.describe('header user menu', () => {
-  test('no longer exposes a standalone /bookings link', async ({ page }) => {
+  test('no longer exposes a standalone /bookings link', async ({ browser }) => {
     // Even when not authenticated, the menu items array is bundled into
     // the JS. We can't open the user menu without an account, so instead
     // we assert no anchor in the entire page points at /bookings — that
     // would only happen if we forgot to remove the nav entry.
-    await page.goto('/trips', { waitUntil: 'domcontentloaded' });
-    // /trips redirects anon to the /hub/plans auth gate; its Sign In link is
-    // the app-mounted signal (networkidle never settles on prod).
-    await expect(page).toHaveURL(/\/hub\/plans/, { timeout: 15_000 });
-    await page
-      .getByRole('link', { name: /sign in/i })
-      .first()
-      .waitFor({ timeout: 15_000 });
-    const directLinks = page.locator('a[href$="/bookings"], a[href*="/bookings?"]');
-    expect(await directLinks.count()).toBe(0);
+    //
+    // This assertion is SIGNED-OUT by construction: it waits for the /hub/plans
+    // auth gate's "Sign in" link as the app-mounted signal. The default
+    // `chromium` project carries the admin storageState from auth.setup.ts, so
+    // running it on the shared `page` signs the visitor in, the gate renders the
+    // planner instead of a sign-in link, and the wait times out — which is what
+    // it did on every nightly from 2026-08-19, the run in which E2E_ADMIN_EMAIL /
+    // _PASSWORD first resolved. Mint an explicit anonymous context (same pattern
+    // as kink-checklist.spec.ts) rather than depending on the project's state.
+    const anonContext = await browser.newContext({ storageState: { cookies: [], origins: [] } });
+    const anonPage = await anonContext.newPage();
+    try {
+      await anonPage.goto('/trips', { waitUntil: 'domcontentloaded' });
+      // /trips redirects anon to the /hub/plans auth gate; its Sign In link is
+      // the app-mounted signal (networkidle never settles on prod).
+      await expect(anonPage).toHaveURL(/\/hub\/plans/, { timeout: 15_000 });
+      await anonPage
+        .getByRole('link', { name: /sign in/i })
+        .first()
+        .waitFor({ timeout: 15_000 });
+      const directLinks = anonPage.locator('a[href$="/bookings"], a[href*="/bookings?"]');
+      expect(await directLinks.count()).toBe(0);
+    } finally {
+      await anonContext.close();
+    }
   });
 });
