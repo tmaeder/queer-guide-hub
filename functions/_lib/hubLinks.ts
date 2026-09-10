@@ -58,6 +58,17 @@ type HubSpec = {
    * the pages we most want crawled and they are a stable set, where
    * recently-touched would rotate the link target on every ingest run and never
    * accumulate equity anywhere.
+   *
+   * EVERY order MUST end in `,slug.asc`, and that is not cosmetic tidying.
+   * The ranking columns are coarse: `venues.quality_score` has just 12 distinct
+   * values across 23,664 rows, with 648 TIED AT THE TOP SCORE OF 95 — so the 60
+   * links a hub emits are 60 rows drawn from a 648-row tie, and SQL guarantees
+   * no ordering within a tie. Three consecutive live queries did return the
+   * same 60, but that only demonstrates one plan against unchanged data;
+   * `venues` is rewritten continuously by the truth engines, so a plan change,
+   * a VACUUM or a score update can reshuffle the set. Rotating links are worse
+   * than none: the crawl graph never settles and no page accumulates equity.
+   * The tiebreaker makes the emitted set a deterministic function of the data.
    */
   order: string;
   limit: number;
@@ -71,7 +82,7 @@ const HUBS: Record<string, HubSpec[]> = {
       labelColumn: 'name',
       prefix: '/venues/',
       filter: 'slug=not.is.null&seo_indexable=eq.true&safety_gated=eq.false&duplicate_of_id=is.null',
-      order: 'quality_score.desc.nullslast',
+      order: 'quality_score.desc.nullslast,slug.asc',
       limit: 60,
       heading: 'LGBTQ+ venues on Queer Guide',
     },
@@ -84,7 +95,7 @@ const HUBS: Record<string, HubSpec[]> = {
       prefix: '/events/',
       filter:
         'slug=not.is.null&seo_indexable=eq.true&status=neq.cancelled&safety_gated=eq.false&duplicate_of_id=is.null&start_date=gte.__TODAY__',
-      order: 'start_date.asc',
+      order: 'start_date.asc,slug.asc',
       limit: 60,
       heading: 'Upcoming LGBTQ+ events',
     },
@@ -96,7 +107,7 @@ const HUBS: Record<string, HubSpec[]> = {
       prefix: '/city/',
       filter:
         'slug=not.is.null&seo_indexable=eq.true&duplicate_of_id=is.null&shell_status=not.in.(ghost,merged)',
-      order: 'completeness_score.desc.nullslast',
+      order: 'completeness_score.desc.nullslast,slug.asc',
       limit: 80,
       heading: 'LGBTQ+ city guides',
     },
@@ -108,7 +119,7 @@ const HUBS: Record<string, HubSpec[]> = {
       prefix: '/city/',
       filter:
         'slug=not.is.null&seo_indexable=eq.true&duplicate_of_id=is.null&shell_status=not.in.(ghost,merged)',
-      order: 'completeness_score.desc.nullslast',
+      order: 'completeness_score.desc.nullslast,slug.asc',
       limit: 60,
       heading: 'LGBTQ+ city guides',
     },
@@ -118,7 +129,7 @@ const HUBS: Record<string, HubSpec[]> = {
       prefix: '/country/',
       filter:
         'slug=not.is.null&seo_indexable=eq.true&duplicate_of_id=is.null&shell_status=not.in.(ghost,merged)',
-      order: 'name.asc',
+      order: 'name.asc,slug.asc',
       limit: 60,
       heading: 'Countries',
     },
@@ -131,7 +142,7 @@ const HUBS: Record<string, HubSpec[]> = {
       // unified_tags has no duplicate_of_id — merges use merged_into_id, and
       // status=eq.active already excludes a merged row.
       filter: 'slug=not.is.null&status=eq.active&seo_indexable=eq.true',
-      order: 'usage_count.desc.nullslast',
+      order: 'usage_count.desc.nullslast,slug.asc',
       limit: 80,
       heading: 'Most-used glossary terms',
     },
@@ -143,7 +154,7 @@ const HUBS: Record<string, HubSpec[]> = {
       prefix: '/personalities/',
       filter:
         'slug=not.is.null&seo_indexable=eq.true&visibility=eq.public&duplicate_of_id=is.null',
-      order: 'completeness_score.desc.nullslast',
+      order: 'completeness_score.desc.nullslast,slug.asc',
       limit: 60,
       heading: 'Notable LGBTQ+ people',
     },
@@ -155,7 +166,7 @@ const HUBS: Record<string, HubSpec[]> = {
       prefix: '/hotels/',
       filter:
         'slug=not.is.null&seo_indexable=eq.true&safety_gated=eq.false&duplicate_of_id=is.null&archived_at=is.null',
-      order: 'completeness_score.desc.nullslast',
+      order: 'completeness_score.desc.nullslast,slug.asc',
       limit: 60,
       heading: 'LGBTQ+ friendly hotels',
     },
