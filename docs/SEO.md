@@ -124,7 +124,9 @@ Both were fixed; the reasoning matters more than the fix.
 **When measuring title/description length, decode HTML entities first.** `functions/_lib/detail.ts` truncates to `MAX_DESC` and *then* escapes, so each `"` becomes `&quot;` and adds 5 raw characters. `/city/salinas-us-fre8j` reads 163 raw and **153 rendered** — it is correct, and the first version of this check reported it as a defect. Google measures the rendered text. Do not "fix" the truncation to satisfy a raw-byte ruler.
 
 Note the sitemap index's own `<lastmod>` is **generation time, not data time** — all entries read today's date, including sitemaps whose content is months old. It is not a freshness signal.
-| `search-console-report.yml` | Mondays 08:00 UTC | Pulls top queries / pages / totals from the GSC API and commits a markdown report to `reports/seo-weekly-YYYY-WW.md`. Skips with exit 78 if `GOOGLE_SERVICE_ACCOUNT_KEY` and `SEARCH_CONSOLE_PROPERTY` secrets aren't set. |
+| `search-console-report.yml` | Mondays 08:00 UTC | Pulls top queries / pages / totals from the GSC API and commits a markdown report to `reports/seo-weekly-YYYY-WW.md`. Skips with **exit 0** if `GOOGLE_SERVICE_ACCOUNT_KEY` and `SEARCH_CONSOLE_PROPERTY` secrets aren't set — this table said "exit 78" until 2026-09-10, but the script's own comment records the deliberate change: GitHub treats any non-zero exit as red, which kept the weekly run permanently failing. |
+
+**As of 2026-09-10 this workflow has never produced a report.** Neither secret is set, so it has skipped every run since it was written, and there is no `reports/` directory. Nothing on this site currently measures impressions, clicks, CTR or index coverage — every other check here asserts technical *correctness*, not search *performance*. Wiring it up is the single highest-value SEO action available, because until it runs, no change on this page can be shown to have worked.
 
 All workflows accept a `workflow_dispatch` invocation so you can run them on demand.
 
