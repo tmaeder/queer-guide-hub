@@ -352,7 +352,50 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	const shouldRewrite = lang !== "en" || q.split(/\s+/).length < 3;
 	const rewrite = shouldRewrite ? await rewriteQuery(env, q, lang) : null;
 
-	const effectiveQ = rewrite?.q_en || q;
+	// THE REWRITE AUGMENTS. IT MUST NEVER REPLACE.
+	//
+	// Until 2026-09-02 this line read `const effectiveQ = rewrite?.q_en || q` and
+	// that single value drove BOTH search arms, so an LLM translation silently
+	// became the query. Measured on prod: `Heldenbar` (a Zürich event series with
+	// 23 keyword matches, German for "heroes' bar") returned 288 hits, none of
+	// them Heldenbar, led by `Hero` at 0.130873 — byte-identical to the score
+	// `search_hybrid('hero bar', vec => null)` produces, i.e. the query the user
+	// typed never reached Postgres at all.
+	//
+	// The two arms want DIFFERENT strings, and search_hybrid takes only one
+	// `p_query`, so the split has to happen here:
+	//
+	//   keywordQ — always the user's literal words. The keyword arm is
+	//     `search_tsv @@ websearch_to_tsquery('simple', …)` OR `title % q`, and
+	//     'simple' means no stemming, no stop-words, no language processing. It
+	//     is a LITERAL matcher whose entire value is that the string is the one
+	//     the user typed, and it is what earns the +0.08 `exact_title` term.
+	//     Handing it a machine translation converts the only exact arm we have
+	//     into a second, worse guess — and a venue/event name is a proper noun,
+	//     which is precisely what a translator destroys.
+	//
+	//   embedQ — the translation (plus LLM + Postgres synonyms, below). Cross-
+	//     language matching belongs on the vector arm, which is where a
+	//     translation genuinely buys recall. `schwul → gay` keeps working, and
+	//     keeps its keyword recall too: measured, `search_hybrid('schwul')`
+	//     matches 182 German-language documents that the old code THREW AWAY by
+	//     replacing the query with 'gay bar'.
+	//
+	// MEASURED ALTERNATIVE, REJECTED: OR-unioning the two into one p_query
+	// (`'Heldenbar or hero bar'` — websearch_to_tsquery does support `or`) nulls
+	// `exact_title`, because that term compares the whole string. Heldenbar
+	// 0.2207 → 0.1406 with `Hero` intruding at rank 3; Berghain 0.2314 → 0.2014
+	// with Klubnacht events taking ranks 2-5; `schwul or gay bar` returns a
+	// top-5 with no German result in it at all. It also dilutes the `title % q`
+	// trigram that provides typo tolerance: similarity('Heldenbar', …) falls
+	// 1.000 → 0.556, and a typo'd 'Heldnbar' falls 0.583 → 0.350 against a 0.3
+	// threshold. Worse on all three controls, so: split, don't concatenate.
+	const keywordQ = q;
+	const translatedQ =
+		rewrite?.q_en && rewrite.q_en.trim() && rewrite.q_en.trim().toLowerCase() !== q.trim().toLowerCase()
+			? rewrite.q_en.trim()
+			: null;
+	const embedQ = translatedQ ?? q;
 	const mergedFilters: ValidatedFilters = { ...filters };
 	// Only trust an LLM-extracted city when the user actually typed it (in the
 	// original or translated query). The model hallucinates associations —
@@ -364,7 +407,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	const rewriteCityTyped =
 		!!rewriteCity &&
 		(q.toLowerCase().includes(rewriteCity.toLowerCase()) ||
-			effectiveQ.toLowerCase().includes(rewriteCity.toLowerCase()));
+			embedQ.toLowerCase().includes(rewriteCity.toLowerCase()));
 	if (rewriteCityTyped && !mergedFilters.city && !mergedFilters.location) mergedFilters.city = rewriteCity;
 	// Normalise type/types: collapse `type` into `types` for downstream code.
 	// Note: rewrite.type_hint is intentionally NOT used to narrow indexes.
@@ -388,13 +431,21 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	// Postgres-backed synonyms (search_synonyms WHERE status='active'),
 	// cached in Worker KV (5 min). Augments the LLM rewrite synonyms.
 	// Fail-open on KV / Supabase errors — empty list is fine.
+	// Expanded over the original AND the translation, not the translation alone:
+	// a de-locale synonym row keyed on the word the user actually typed could
+	// never fire once `q_en` had replaced it.
 	const pgSyns = await loadActiveSynonyms(env);
-	const pgExpansionTerms = expandWithPgSynonyms(effectiveQ, pgSyns, { locale: lang });
+	const pgExpansionTerms = expandWithPgSynonyms(
+		translatedQ ? `${q} ${translatedQ}` : q,
+		pgSyns,
+		{ locale: lang },
+	);
 	const allSynonyms = Array.from(
 		new Set<string>([...(rewrite?.synonyms ?? []), ...pgExpansionTerms]),
 	);
 
-	const embedText = allSynonyms.length ? `${effectiveQ} ${allSynonyms.join(" ")}` : effectiveQ;
+	// Vector arm only. The keyword arm gets `keywordQ` (see pgArgs below).
+	const embedText = allSynonyms.length ? `${embedQ} ${allSynonyms.join(" ")}` : embedQ;
 	const [qVec, signal, recent] = await Promise.all([
 		embed(env, embedText, { cacheKey: `q:${embedModel}:${lang}:${embedText}` }),
 		loadSignal(env, { user_id, session_id }),
@@ -417,7 +468,9 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	const expandedTags = await expandTagsWithNarrower(env, mergedFilters.tags);
 
 	const pgArgs: PgSearchArgs = {
-		query: effectiveQ,
+		// The user's literal words — never the translation. See the keywordQ /
+		// embedQ split above.
+		query: keywordQ,
 		queryVec: blendedVec,
 		contentTypes: pgTypes.length ? pgTypes : null,
 		filters: {
@@ -547,7 +600,11 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 						embedFailed: qVec === null,
 						reranker: env.ENABLE_RERANKER === "1",
 						rewrite,
-						effectiveQ,
+						// Both arms, separately — a single `effectiveQ` is what hid
+						// the rewrite-replaces-the-query defect for as long as it did.
+						keywordQ,
+						embedQ,
+						embedText,
 					}
 				: undefined,
 		},
