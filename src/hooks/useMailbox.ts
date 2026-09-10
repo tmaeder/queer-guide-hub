@@ -210,11 +210,8 @@ export const useMailbox = () => {
   const saveDraft = useCallback(
     async (params: { to?: string; subject?: string; body_html?: string; body_text?: string }) => {
       if (!user) return;
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('mailbox_address, display_name')
-        .eq('user_id', user.id)
-        .single();
+      // mailbox_address is outside the `authenticated` column allowlist on `profiles`.
+      const { data: profile } = await supabase.rpc('get_my_profile').maybeSingle();
 
       const fromAddress = profile?.mailbox_address
         ? `${profile.mailbox_address}@queer.guide`

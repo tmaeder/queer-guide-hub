@@ -24,6 +24,25 @@ vi.mock('@/integrations/supabase/client', () => ({
       });
       return builder;
     },
+    // `fetchProfileTravelPreferences` reads the own row through the SECURITY
+    // DEFINER `get_my_profile()` rather than selecting from profiles, so the
+    // harness has to answer rpc() the same way it answers from().
+    rpc(fn: string) {
+      const record = { table: `rpc:${fn}`, chain: [] as Array<{ method: string; args: unknown[] }> };
+      state.calls.push(record);
+      const builder: unknown = new Proxy({}, {
+        get(_t, prop: string) {
+          if (prop === 'then') {
+            return (onFulfilled: (v: MockResult) => unknown) => {
+              const next = state.results.shift() ?? { data: [], error: null };
+              return Promise.resolve(next).then(onFulfilled);
+            };
+          }
+          return (...args: unknown[]) => { record.chain.push({ method: prop, args }); return builder; };
+        },
+      });
+      return builder;
+    },
   },
 }));
 
@@ -38,7 +57,8 @@ beforeEach(() => { state.results.length = 0; state.calls.length = 0; });
 
 describe('fetchProfileTravelPreferences', () => {
   it('returns the travel_preferences object', async () => {
-    withResults({ data: { travel_preferences: { budget_level: 'mid' } }, error: null });
+    // get_my_profile() returns the whole row; the hook checks user_id before trusting it.
+    withResults({ data: { user_id: 'u1', travel_preferences: { budget_level: 'mid' } }, error: null });
     const r = await fetchProfileTravelPreferences('u1');
     expect(r?.budget_level).toBe('mid');
   });

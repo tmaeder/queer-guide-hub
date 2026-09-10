@@ -13,6 +13,10 @@ vi.mock('@/hooks/useAuth', () => ({
 
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
+    // The own-row read moved off `from('profiles').select().eq()` onto the
+    // SECURITY DEFINER `get_my_profile()`, so the same mockMaybeSingle now has
+    // to answer rpc() as well — the hook's write paths still use from().
+    rpc: () => ({ maybeSingle: mockMaybeSingle }),
     from: () => ({
       select: () => ({
         eq: () => ({
