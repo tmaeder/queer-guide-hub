@@ -5,7 +5,6 @@ import { describe, it, expect, vi } from 'vitest';
 import { renderWithProviders, screen } from '@/test/test-utils';
 import { Routes, Route } from 'react-router';
 
-vi.mock('@/hooks/useMeta', () => ({ useMeta: vi.fn() }));
 vi.mock('@/components/layout/PageHeader', () => ({
   PageHeader: (p: { title: string; subtitle?: string; actions?: React.ReactNode }) => (
     <div><h1>{p.title}</h1><span>{p.subtitle}</span>{p.actions}</div>
@@ -34,6 +33,13 @@ describe('MarketplaceMerchant', () => {
     // (/404 "No stop here.", the maker page "No maker here.").
     expect(screen.getByText(/No such merchant/i)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /All makers/i })).toBeInTheDocument();
+  });
+
+  it('noindexes a missing domain instead of shipping the plain "Merchant" title indexable', () => {
+    renderAt('/marketplace/merchants/');
+    expect(document.querySelector('meta[name="robots"]')?.getAttribute('content')).toBe(
+      'noindex,nofollow',
+    );
   });
 
   it('renders merchant heading + visit link', () => {

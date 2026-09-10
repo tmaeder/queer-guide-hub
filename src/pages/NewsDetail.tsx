@@ -38,7 +38,7 @@ import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { formatDistanceToNow, format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
-import { useMeta } from '@/hooks/useMeta';
+import { useDetailMeta } from '@/hooks/useDetailMeta';
 import { Editable } from '@/components/admin/inline/Editable';
 import { useUserNewsReads } from '@/hooks/useUserNewsReads';
 import { localizedNewsTitle } from '@/lib/newsTitle';
@@ -106,7 +106,9 @@ export default function NewsDetail() {
   // Per-article SEO tags (client-side; edge-rendered tags are tracked separately for crawlers).
   const articleTitle = article ? cleanTitle(article.title) : undefined;
   const articleExcerpt = article?.excerpt ? cleanExcerpt(article.excerpt).slice(0, 200) : undefined;
-  useMeta({
+  useDetailMeta({
+    status: loading ? 'loading' : !article ? 'notFound' : 'ready',
+    notFoundTitle: t('newsDetail.notFound', 'Article Not Found'),
     title: articleTitle,
     description: articleExcerpt,
     ogImage: article?.image_url || undefined,
