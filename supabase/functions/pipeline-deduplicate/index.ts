@@ -204,6 +204,7 @@ Deno.serve(withErrorReporting('pipeline-deduplicate', async (req) => {
     const batchSize = body.batch_size || 50
     const dryRun = body.dry_run || false
     const filterEntityType = body.entityType as string | undefined
+    const filterTargetTable = body.targetTable as string | undefined
     // Per-run cap on embeddings (bge-m3 is cheap; circuit breaker bounds outages).
     const embedCap = Math.max(0, body.embed_cap ?? batchSize)
 
@@ -218,6 +219,11 @@ Deno.serve(withErrorReporting('pipeline-deduplicate', async (req) => {
 
     if (pipelineRunId) query = query.eq('pipeline_run_id', pipelineRunId)
     if (filterEntityType) query = query.eq('entity_type', filterEntityType)
+    // See pipeline-validate: entity_type is nullable and unnormalized, so an
+    // entityType filter silently skips whole cohorts. The dispatch below keys on
+    // item.target_table anyway (`const table = item.target_table`) — only the
+    // selector was blind.
+    if (filterTargetTable) query = query.eq('target_table', filterTargetTable)
 
     const { data: items, error } = await query
     if (error) return errorResponse(`load: ${error.message}`, 500, req)
@@ -410,18 +416,34 @@ Deno.serve(withErrorReporting('pipeline-deduplicate', async (req) => {
     // Flush buffered breaker success bookkeeping (one write pair per key).
     for (const b of breakers.values()) await b.flush()
 
+    // `success` must reflect whether anything was PERSISTED, not whether the
+    // handler reached the end. The counters are incremented at CLASSIFICATION
+    // time (persistVerdict calls onUnique/onDup/onFlag before its first write,
+    // then returns early via onHardFail), so a run in which every write failed
+    // still reported success:true with unique:100 — and because
+    // admin_automation_run_begin files an HTTP 200 as a success,
+    // consecutive_failures stayed 0 and auto_pause_threshold could never fire.
+    // That is how news dedup failed 23514 on every item for months in silence.
+    //
+    // It must be a non-2xx STATUS, not merely `success:false` in the body:
+    // admin_automation_reap_runs classifies a run by
+    // `status_code >= 400 OR error_msg IS NOT NULL` and never parses the body,
+    // so a 200 carrying success:false still counts as a successful run and
+    // still resets consecutive_failures.
+    const allFailed = items.length > 0 && hardFailures >= items.length
     return jsonResponse({
-      success: true,
+      success: !allFailed,
+      ...(allFailed ? { error: `every item failed to persist (${hardFailures}/${items.length}) — see logs for the write error` } : {}),
       items: unique + flagged,
       items_total: items.length,
       items_processed: unique + duplicates + flagged,
-      items_succeeded: unique,
+      items_succeeded: Math.max(0, (unique + duplicates + flagged) - hardFailures),
       items_failed: hardFailures,
       unique, duplicates, merge_candidates: flagged,
       circuit_tripped: circuitTripped,
       embedded,
       dry_run: dryRun,
-    }, 200, req)
+    }, allFailed ? 500 : 200, req)
   } catch (error) {
     console.error('pipeline-deduplicate:', error)
     await logPipelineError(supabase, 'pipeline-deduplicate', error, { severity: 'fatal' })
@@ -443,8 +465,29 @@ interface PersistArgs {
   counters: { onUnique: () => void; onDup: () => void; onFlag: () => void; onHardFail: () => void }
 }
 
+// DEDUP_REGISTRY keys are INTERNAL branch selectors; scraper_dedupe_decisions
+// .entity_type is CHECK-constrained to the canonical persistence spellings, and
+// 'news' is not among them (only 'news_article' / 'news_articles' are).
+// pipeline-deduplicate passed the internal key straight through, so EVERY news
+// decision insert failed 23514, persistVerdict took the onHardFail() early
+// return, and dedup_status was never written — measured on prod 2026-09-10:
+// scraper_dedupe_decisions holds 57,463 event / 31,266 venue / 8,654 marketplace
+// rows and ZERO news rows of any spelling, ever, while 77,381 of 90,244 news
+// staging rows sit dedup_status='pending'. content-registry.ts already declares
+// 'news_article' as canonical for exactly this reason.
+//
+// The internal key must NOT be renamed: pipeline-deduplicate branches on
+// `baseType === 'news'` for the fingerprint→url short-circuit, and EntityType is
+// the DEDUP_REGISTRY union. Translate at the persistence boundary instead.
+//
+// 'organization' has the same gap (absent from the CHECK) but is latent —
+// prod holds zero organizations staging rows — and has no canonical alternative
+// to map to, so it needs the constraint widened rather than a mapping here.
+const DECISION_ENTITY_TYPE: Readonly<Record<string, string>> = { news: 'news_article' }
+
 async function persistVerdict(supabase: ReturnType<typeof getServiceClient>, a: PersistArgs): Promise<void> {
   const { item, table, entityType, verdict, pipelineRunId, dryRun, semanticCosine, counters } = a
+  const decisionEntityType = DECISION_ENTITY_TYPE[entityType] ?? entityType
   if (verdict.decision === 'duplicate') counters.onDup()
   else if (verdict.decision === 'merge_candidate') counters.onFlag()
   else counters.onUnique()
@@ -455,7 +498,7 @@ async function persistVerdict(supabase: ReturnType<typeof getServiceClient>, a: 
   const reviewStatus = verdict.decision === 'merge_candidate' ? 'pending_review' : 'auto'
 
   const { error: decisionErr } = await supabase.rpc('record_dedup_decision', {
-    p_entity_type: entityType,
+    p_entity_type: decisionEntityType,
     p_staging_id: item.id,
     p_pipeline_run_id: pipelineRunId ?? null,
     p_match_id: matchId,
