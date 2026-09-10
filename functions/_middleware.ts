@@ -45,7 +45,7 @@ import {
   SUPPORTED_LOCALES,
   DEFAULT_LOCALE,
 } from './_lib/routeMeta';
-import { homepageJsonLd } from './_lib/jsonLd';
+import { homepageJsonLd, breadcrumbJsonLd } from './_lib/jsonLd';
 import { getBranding, brandStyleTag, brandingMeta, brandFontPreloads } from './_lib/branding';
 import { isBotUserAgent } from './_lib/botUa';
 import { buildBodyHtml, buildNoscriptHtml } from './_lib/routeBody';
@@ -466,6 +466,15 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   }
   if (detail?.jsonLd) {
     headInjections.push(detail.jsonLd);
+  }
+  // BreadcrumbList for detail pages. Gated on `indexable` because it is a
+  // rich-result signal, and emitting one on a page carrying noindex — a gated
+  // venue's sign-in fallback, a deindexed row — advertises a trail to something
+  // we are deliberately keeping out of the index. Returns '' for any path it
+  // does not recognise, so non-detail routes are unaffected.
+  if (detail && indexable) {
+    const crumbs = breadcrumbJsonLd(basePath, meta.title);
+    if (crumbs) headInjections.push(crumbs);
   }
 
   // Branding overrides: theme-color metas (last matching tag wins over the
