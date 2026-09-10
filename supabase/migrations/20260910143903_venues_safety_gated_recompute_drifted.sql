@@ -1,3 +1,10 @@
+-- !! THIS MIGRATION WAS WRONG. It is corrected by 20260910145524. Read that file first. !!
+-- It reconstructed venues.safety_gated from location_is_high_risk() alone, but the rule is
+-- `location_is_high_risk(country_id, city_id) OR category = 'cruising'`. All 122 rows it
+-- "repaired" were cruising venues, deliberately gated everywhere; it ungated them for ~40
+-- minutes until release_gate_checks().city_safety_gate_drift caught it. There was no drift.
+-- The reasoning below is preserved unedited because the flawed step is the instructive part.
+--
 -- P3: 122 venues carried safety_gated=true while location_is_high_risk(country_id, city_id) says false.
 -- Every one sits in a country with lgbti_criminalization->>'legal' = 'true' (Spain 36, Germany 21,
 -- Italy 10, Brazil 8, France 7, UK 7, NL 4, ...). Effect: hidden from logged-out visitors, excluded
