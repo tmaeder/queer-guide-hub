@@ -69,6 +69,24 @@ Detail routes follow the pattern `/<type>/:slug`. Supported types and their tabl
 | `/villages/:slug` | `queer_villages` | `TouristDestination` |
 | `/tags/:slug` | `unified_tags` | `DefinedTerm` |
 
+## Hub crawl links
+
+Measured on production 2026-09-10: of the ~65 `href`s Googlebot received on `/venues`, **57 were `/assets/*` bundles** and five were site nav. **Zero pointed at a venue.** The same held for `/cities`, `/tags`, `/personalities`, `/events` and `/hotels` — so every one of the 61,718 URLs the sitemaps publish was sitemap-only: no internal link equity, no crawl path, and a dependency on Google's render budget at 60k scale. That is the classic *Discovered – currently not indexed* shape.
+
+`functions/_lib/hubLinks.ts` closes it. Each hub gets a data-driven `<nav data-prerendered="hub-links">` block listing 60–80 of its own detail pages.
+
+The two-hop payoff is the real prize: `cityDetail` **already** lists a city's venues and events as real `<a href>` links, so linking cities from `/cities` opens `/cities → /city/berlin → /venues/:slug` across the whole corpus. The missing edge was only ever hub → detail.
+
+Three rules, none optional:
+
+1. **Bot-only.** It is called inside the `isBot` branch of `functions/_middleware.ts`, so a human page view never pays for the Supabase round-trip. Bot hub responses get `s-maxage=600` with `max-age=0`, safe because `Vary: User-Agent` is already set.
+2. **The gates are copied verbatim from the sitemap generators.** `fetchRows` *prefers the service-role key and therefore bypasses RLS*, so `safety_gated=eq.false` must be stated explicitly. Dropping it would publish venues in criminalizing countries to anonymous crawlers — measured: **1,106 venues are `seo_indexable`, non-duplicate and `safety_gated=true`**, and the hub orders by quality descending, so they would rank near the top. That is an outing risk, not a ranking bug, and it is the same defect that previously hit `villageDetail` and `personalityDetail`. `cities`/`countries` have no such column by design. A unit test enforces both the gate and its agreement with the sitemap filters.
+3. **Content parity.** Every link points at a page the SPA also renders in its own listing for that route, so this stays inside the cloaking contract below — a subset of what a user sees, never more.
+
+To add a hub, add an entry to `HUBS` in `hubLinks.ts` and to `HUBS` in `scripts/seo-hub-links.mjs`.
+
+**Why there is a post-deploy check as well as unit tests.** The production failure mode is environmental and silent: with `SUPABASE_URL` unset on the Pages project, `fetchRows` returns `[]`, `buildHubLinksHtml` returns `''` by design (a hub must never 500 over a missing link block), and the page keeps serving 200 with no links — indistinguishable from the bug it replaced. A mocked-fetch unit test cannot see that, so `scripts/seo-hub-links.mjs` asserts real link counts against a real deployment, and also that the block never leaks into the human response.
+
 ## i18n / hreflang
 
 Routes are mounted under an optional `/:locale?` segment in `src/routes.tsx`. The default locale (`en`) is served at the root path; the other ten get a two-letter prefix (`/de`, `/fr`, `/es`, `/pt`, `/it`, `/ru`, `/zh`, `/ja`, `/ko`, `/ar`).
@@ -109,10 +127,24 @@ These pages are HTML-only (no JS, minimal inline CSS). Every link is a regular `
 
 | Workflow | Trigger | Asserts |
 |---|---|---|
-| `seo-check.yml` | After every Pages deploy + daily 06:00 UTC | Per-route title uniqueness, length bounds, canonical correctness, og:image absoluteness, JSON-LD on `/`, hreflang count, bot-UA `<h1>` injection |
+| `seo-check.yml` | After every Pages deploy + daily 06:00 UTC | **15 static routes:** title uniqueness, length bounds, canonical correctness, og:image absoluteness, JSON-LD on `/`, hreflang count, bot-UA `<h1>` injection. **Plus 8 detail routes** sampled from the live sitemaps: 200, canonical, JSON-LD present, bot `<h1>`, title/description upper bounds |
 | `lighthouse.yml` | After every Pages deploy + Mondays 07:00 UTC | Lighthouse scores for performance/a11y/SEO/best-practices on 6 key routes. Reports uploaded as artifacts. |
-| `sitemap-freshness.yml` | Daily 05:00 UTC | Each sub-sitemap returns 200, has ≥ N entries, freshest `<lastmod>` ≤ 14 days old |
-| `search-console-report.yml` | Mondays 08:00 UTC | Pulls top queries / pages / totals from the GSC API and commits a markdown report to `reports/seo-weekly-YYYY-WW.md`. Skips with exit 78 if `GOOGLE_SERVICE_ACCOUNT_KEY` and `SEARCH_CONSOLE_PROPERTY` secrets aren't set. |
+| `sitemap-freshness.yml` | Daily 05:00 UTC | Each sub-sitemap returns 200 and clears a **real** `minEntries` floor (~60% of its live count); `maxAgeDays` on the continuously-written types (news, events, landings) |
+
+### Two things these did not assert before 2026-09-10
+
+Both were fixed; the reasoning matters more than the fix.
+
+**`minEntries: 0` is not a lenient floor, it is the absence of one.** News, blog, hotels, villages and tags all sat at `0`, so an empty sitemap passed. Three were in fact degraded and nothing alarmed: `sitemap-blog.xml` served **0 entries** against a `blog_posts` table that **does not exist** (its `.catch(() => [])` turned the missing relation into an empty list and a 200 response), while hotels and villages had been frozen for 84 and 94 days. The blog sitemap has been removed entirely — `/blog` is a single CMS page, not a post archive, so it belongs to `sitemap-static.xml`. Floors are now ~60% of live counts, so churn does not trip them but a collapse does.
+
+**`seo-check` covered only the 15 static routes** — none of the ~61,700 detail URLs. It now samples one live URL per type, discovered from the sitemaps at runtime rather than hardcoded, so it cannot pin a slug that later 404s. Detail titles are deliberately **not** held to `TITLE_MIN`: `Eunuch | Queer Guide` is 20 characters and correct, so the hub bound would fail by construction on real pages.
+
+**When measuring title/description length, decode HTML entities first.** `functions/_lib/detail.ts` truncates to `MAX_DESC` and *then* escapes, so each `"` becomes `&quot;` and adds 5 raw characters. `/city/salinas-us-fre8j` reads 163 raw and **153 rendered** — it is correct, and the first version of this check reported it as a defect. Google measures the rendered text. Do not "fix" the truncation to satisfy a raw-byte ruler.
+
+Note the sitemap index's own `<lastmod>` is **generation time, not data time** — all entries read today's date, including sitemaps whose content is months old. It is not a freshness signal.
+| `search-console-report.yml` | Mondays 08:00 UTC | Pulls top queries / pages / totals from the GSC API and commits a markdown report to `reports/seo-weekly-YYYY-WW.md`. Skips with **exit 0** if `GOOGLE_SERVICE_ACCOUNT_KEY` and `SEARCH_CONSOLE_PROPERTY` secrets aren't set — this table said "exit 78" until 2026-09-10, but the script's own comment records the deliberate change: GitHub treats any non-zero exit as red, which kept the weekly run permanently failing. |
+
+**As of 2026-09-10 this workflow has never produced a report.** Neither secret is set, so it has skipped every run since it was written, and there is no `reports/` directory. Nothing on this site currently measures impressions, clicks, CTR or index coverage — every other check here asserts technical *correctness*, not search *performance*. Wiring it up is the single highest-value SEO action available, because until it runs, no change on this page can be shown to have worked.
 
 All workflows accept a `workflow_dispatch` invocation so you can run them on demand.
 

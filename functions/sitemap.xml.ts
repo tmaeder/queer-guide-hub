@@ -10,10 +10,20 @@ export const onRequest: PagesFunction<Env> = async () => {
   // Order is roughly desire-to-crawl: static + landings first (highest
   // editorial value), then high-velocity content, then directories.
   // News is back in the index now that /news/:slug is a first-class page.
+  //
+  // sitemap-blog.xml was removed 2026-09-10. It had never published a single
+  // URL: its generator queried a `blog_posts` table that DOES NOT EXIST (its own
+  // comment claimed the table was "provisioned"), and the `.catch(() => [])`
+  // around that fetch turned the missing relation into an empty list, so the
+  // endpoint served a valid empty <urlset> with HTTP 200 forever. Three layers
+  // hid it: the swallowed error, the 200 status, and `minEntries: 0` in
+  // scripts/sitemap-freshness.mjs. `/blog` itself is a single CMS page
+  // (CMSRoutePage slug="blog"), not a post archive, so it belongs to
+  // sitemap-static.xml — there is no per-post URL space to advertise. Do not
+  // re-add this without a real table AND a real /blog/:slug route.
   const xml = indexXml([
     { loc: `${ORIGIN}/sitemap-static.xml`, lastmod },
     { loc: `${ORIGIN}/sitemap-landings.xml`, lastmod },
-    { loc: `${ORIGIN}/sitemap-blog.xml`, lastmod },
     { loc: `${ORIGIN}/sitemap-news.xml`, lastmod },
     { loc: `${ORIGIN}/sitemap-events.xml`, lastmod },
     { loc: `${ORIGIN}/sitemap-venues.xml`, lastmod },

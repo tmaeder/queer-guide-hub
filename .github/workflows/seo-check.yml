@@ -37,3 +37,15 @@ jobs:
         run: |
           BASE="${INPUT_BASE:-https://queer.guide}"
           node scripts/seo-check.mjs "$BASE"
+
+      # Separate step so a hub losing its crawl links is named as that, rather
+      # than folded into a generic SEO failure. It has to run post-deploy: the
+      # production failure mode is a missing SUPABASE_URL on the Pages project,
+      # which makes buildHubLinksHtml return '' and the page keep serving 200
+      # with no links — invisible to any unit test with a mocked fetch.
+      - name: Check hub crawl links
+        env:
+          INPUT_BASE: ${{ github.event.inputs.base_url }}
+        run: |
+          BASE="${INPUT_BASE:-https://queer.guide}"
+          node scripts/seo-hub-links.mjs "$BASE"
