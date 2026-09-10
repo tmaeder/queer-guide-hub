@@ -1,11 +1,12 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { REDUCED_MOTION } from './support/reducedMotion';
 
 // Route transitions fade opacity 0->1 (LayoutShell motion.div). axe blends that
 // opacity into computed text color, flagging transient mid-fade frames as contrast
 // failures. Emulate reduced motion (LayoutShell skips the fade) so axe analyzes the
 // settled DOM - the same render real reduced-motion users get.
-test.use({ reducedMotion: 'reduce' });
+test.use(REDUCED_MOTION);
 
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
@@ -28,10 +29,15 @@ test.describe('Admin shell — automated a11y', () => {
       await page.goto(route);
       await page.waitForLoadState('networkidle').catch(() => {});
       if (!new URL(page.url()).pathname.startsWith('/admin')) {
-        test.skip(true, 'Admin requires auth; provide E2E_STORAGE_STATE pointing at a signed-in session.');
+        test.skip(
+          true,
+          'Admin requires auth; provide E2E_STORAGE_STATE pointing at a signed-in session.',
+        );
         return;
       }
-      await page.waitForSelector('main, [role="main"], #admin-main-content', { timeout: 30_000 }).catch(() => {});
+      await page
+        .waitForSelector('main, [role="main"], #admin-main-content', { timeout: 30_000 })
+        .catch(() => {});
 
       const results = await new AxeBuilder({ page })
         .exclude('footer')

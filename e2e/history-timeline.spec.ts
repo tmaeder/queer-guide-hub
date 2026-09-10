@@ -1,8 +1,9 @@
 import { test, expect } from '@playwright/test';
+import { REDUCED_MOTION } from './support/reducedMotion';
 
 // /history era-chapter timeline (editorial redesign). The page is motion-free
 // by design; reducedMotion only stabilizes the shell fade for assertions.
-test.use({ reducedMotion: 'reduce' });
+test.use(REDUCED_MOTION);
 
 test.describe('/history era timeline', () => {
   test('renders era chapters with jump nav and single Home breadcrumb', async ({ page }) => {
@@ -10,9 +11,13 @@ test.describe('/history era timeline', () => {
     await expect(page.getByRole('heading', { level: 1, name: /queer history/i })).toBeVisible();
 
     // Era jump nav + at least 8 era sections
-    await expect(page.getByRole('navigation', { name: /jump to era/i })).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole('navigation', { name: /jump to era/i })).toBeVisible({
+      timeout: 30_000,
+    });
     const eraSections = page.locator('section[id^="era-"]');
-    await expect.poll(async () => eraSections.count(), { timeout: 30_000 }).toBeGreaterThanOrEqual(8);
+    await expect
+      .poll(async () => eraSections.count(), { timeout: 30_000 })
+      .toBeGreaterThanOrEqual(8);
 
     // Breadcrumb: exactly one Home
     const breadcrumb = page.getByRole('navigation', { name: /breadcrumb/i });
@@ -46,11 +51,12 @@ test.describe('/history era timeline', () => {
     const nav = page.getByRole('navigation', { name: /jump to era/i });
     await expect(nav).toBeVisible({ timeout: 30_000 });
 
-    const paths = await nav
-      .locator('svg path')
-      .evaluateAll((nodes) =>
-        nodes.map((n) => ({ d: n.getAttribute('d') ?? '', stroke: n.getAttribute('stroke') ?? '' })),
-      );
+    const paths = await nav.locator('svg path').evaluateAll((nodes) =>
+      nodes.map((n) => ({
+        d: n.getAttribute('d') ?? '',
+        stroke: n.getAttribute('stroke') ?? '',
+      })),
+    );
     // Zero paths would make every assertion below vacuously true.
     expect(paths.length).toBeGreaterThan(0);
     // Hard rule #1: an illustrative transit line is never straight.
