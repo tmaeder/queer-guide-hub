@@ -4820,5 +4820,27 @@
       "entrants": "[KO] Entries",
       "linked": "[KO] Linked to a profile"
     }
+  },
+  "styleguide": {
+    "metaTitle": "[KO] Editorial styleguide and tone of voice",
+    "metaDescription": "[KO] How queer.guide writes: the voice rules, the terminology we use and avoid, and the reasons for both. The same standard our automated content pipelines are given.",
+    "section": {
+      "terminology": "[KO] Terminology",
+      "examples": "[KO] Worked examples",
+      "machine": "[KO] For machines"
+    },
+    "terminologyLede": "[KO] Struck-through on the left is what we do not write. Bold on the right is what we write instead. The reason matters more than the rule: an editor who knows why a word is wrong can handle the word this table has not reached yet.",
+    "before": "[KO] Before",
+    "after": "[KO] After",
+    "machine": {
+      "intro": "[KO] Everything above is compiled into a versioned system prompt and handed to every automated writing and enrichment job on this platform. It is published, not internal. If you build on our data, you can read exactly what our pipelines were told.",
+      "params": "[KO] format=text|json · profile=full|core|compact · v=1.0.0 pins a version. Versions are immutable, so a pinned request returns the same text forever.",
+      "semver": "[KO] Patch releases change wording. Minor releases add or relax a rule. Major releases reverse one, which is the only case where output validated against an earlier version needs re-checking."
+    },
+    "breadcrumb": "[KO] Styleguide",
+    "eyebrow": "[KO] Editorial standard v{{version}}",
+    "eyebrowUnpublished": "[KO] Editorial standard",
+    "title": "[KO] How we write",
+    "lede": "[KO] The voice rules, the words we use and the words we do not, and the reasoning behind both. Community editors maintain this page, and the same rules are compiled into the instructions our automated content pipelines run on."
   }
 }

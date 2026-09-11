@@ -4856,5 +4856,27 @@
       "entrants": "[RU] Entries",
       "linked": "[RU] Linked to a profile"
     }
+  },
+  "styleguide": {
+    "metaTitle": "[RU] Editorial styleguide and tone of voice",
+    "metaDescription": "[RU] How queer.guide writes: the voice rules, the terminology we use and avoid, and the reasons for both. The same standard our automated content pipelines are given.",
+    "section": {
+      "terminology": "[RU] Terminology",
+      "examples": "[RU] Worked examples",
+      "machine": "[RU] For machines"
+    },
+    "terminologyLede": "[RU] Struck-through on the left is what we do not write. Bold on the right is what we write instead. The reason matters more than the rule: an editor who knows why a word is wrong can handle the word this table has not reached yet.",
+    "before": "[RU] Before",
+    "after": "[RU] After",
+    "machine": {
+      "intro": "[RU] Everything above is compiled into a versioned system prompt and handed to every automated writing and enrichment job on this platform. It is published, not internal. If you build on our data, you can read exactly what our pipelines were told.",
+      "params": "[RU] format=text|json · profile=full|core|compact · v=1.0.0 pins a version. Versions are immutable, so a pinned request returns the same text forever.",
+      "semver": "[RU] Patch releases change wording. Minor releases add or relax a rule. Major releases reverse one, which is the only case where output validated against an earlier version needs re-checking."
+    },
+    "breadcrumb": "[RU] Styleguide",
+    "eyebrow": "[RU] Editorial standard v{{version}}",
+    "eyebrowUnpublished": "[RU] Editorial standard",
+    "title": "[RU] How we write",
+    "lede": "[RU] The voice rules, the words we use and the words we do not, and the reasoning behind both. Community editors maintain this page, and the same rules are compiled into the instructions our automated content pipelines run on."
   }
 }

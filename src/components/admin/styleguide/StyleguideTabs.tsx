@@ -15,6 +15,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { RowEditorDialog, type FieldSpec } from './RowEditorDialog';
+import { STYLEGUIDE_SCOPES } from '@/lib/styleguideScopes';
 import {
   SECTION_LABELS,
   SECTION_ORDER,
@@ -89,9 +90,9 @@ const RULE_FIELDS: FieldSpec[] = [
   {
     key: 'applies_to',
     label: 'Applies to',
-    kind: 'list',
+    kind: 'scopes',
     required: true,
-    hint: 'Comma-separated scopes. Leave as "all" unless the rule really only governs one surface.',
+    hint: `Leave as "all" unless the rule really only governs one surface. Known scopes: ${STYLEGUIDE_SCOPES.join(', ')}.`,
   },
   { key: 'sort_order', label: 'Order', kind: 'number' },
   { key: 'is_active', label: 'Active', kind: 'switch' },

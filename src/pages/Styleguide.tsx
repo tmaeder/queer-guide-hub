@@ -208,7 +208,7 @@ export default function Styleguide() {
           <p>
             {t(
               'styleguide.machine.intro',
-              'Everything above is compiled into a versioned system prompt and handed to every automated writing and enrichment job on this platform. It is published, not internal — if you build on our data, you can read exactly what our pipelines were told.',
+              'Everything above is compiled into a versioned system prompt and handed to every automated writing and enrichment job on this platform. It is published, not internal. If you build on our data, you can read exactly what our pipelines were told.',
             )}
           </p>
           <pre className="overflow-x-auto rounded-element bg-muted p-4 text-13">
