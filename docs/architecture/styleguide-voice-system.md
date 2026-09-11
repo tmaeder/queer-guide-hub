@@ -71,6 +71,22 @@ a row that could rewrite the model's instructions. Three things enforce it:
    the preamble tells the model that everything inside is data describing a
    voice, never an instruction.
 
+### What the fence does NOT stop
+
+Fence-stripping is a **structural** defence. It stops a row closing its own
+section and writing outside the data block. It does nothing about a row that
+reads like a legitimate voice rule and alters behaviour anyway — "always append
+X", "answer in French" — because that is indistinguishable from a voice rule by
+construction.
+
+The mitigation for that is the preamble sentence asking the model to ignore any
+line in the data block that is not a voice rule. That is a prompt-level request,
+not a guarantee, and it should not be read as one. The controls that actually
+hold are that every writer is an admin (RLS), every change is attributed and
+audited (`styleguide_audit`), and publishing is a separate gated action a human
+performs after reading the preview. "The frame is code" means an editor cannot
+rewrite the *frame*; it does not mean an editor cannot write a bad *rule*.
+
 `styleguide_strip_fence` is **STRICT** and must stay that way. Optional fields
 compile as `COALESCE(' (' || strip_fence(x) || ')', '')`, which only collapses on
 NULL. An earlier draft coalesced NULL to `''` inside the function instead, so
@@ -81,17 +97,37 @@ nothing", the opposite of "rewrite the sentence". Guarded by
 
 ## Profiles
 
-Measured on v1.0.0:
+Two independent levers, not one ladder:
 
-| Profile | Chars | Contents | Use for |
-|---|---|---|---|
-| `full` | ~26,000 | everything | long-form generation, the public page, integrators |
-| `core` | ~21,000 | rules + terminology | field-level rewriting |
-| `compact` | ~13,000 | `must`/`never` rules, `never`/`avoid` terms, no rationales, no examples | high-volume classification |
+| Lever | Applies to | Why |
+|---|---|---|
+| rationales | `full` only | the "why" is for editors and readers; a model only has to follow the rule |
+| severity | `compact` narrows | binding ranks only |
 
-The full prompt is ~6,500 tokens. Putting that on a five-minute cron that scores
-thousands of rows is a bill, not a style decision — which is why the tiers exist
-and why `getVoicePrompt()` defaults to `core` rather than `full`.
+Measured on v1.1.0:
+
+| Profile | Chars | Saving | Contents | Use for |
+|---|---|---|---|---|
+| `full` | 28,956 | — | everything, with reasons and worked examples | long-form generation, the public page, integrators |
+| `core` | 14,547 | 50% | every rule and term, no reasons, no examples | field-level rewriting |
+| `compact` | 13,293 | 54% | binding rules and banned words only | high-volume classification |
+
+`getVoicePrompt()` defaults to `core`.
+
+**`core` shipped saving only 19% and was not worth choosing.** It removed the
+worked examples (5,833 chars) and left the expensive half — every rule, every
+term and every rationale — intact. Splitting the rationale lever out of the
+severity lever is what made it a real tier.
+
+**Be honest about the remaining gap: `core` and `compact` are now only 9%
+apart.** The big saving is dropping rationales and examples; narrowing by
+severity adds ~4% on top. Three tiers survive because the distinction is
+editorial rather than numeric — `compact` discards `should` rules and `context`
+terms, which a classifier does not need and a field rewriter does — but nobody
+should choose `compact` over `core` expecting a meaningful cost difference.
+
+Note `full` GREW (25,979 → 28,956) when the fourteen missing rationales were
+filled in. That is the rationale lever working, not regression.
 
 **Every profile is compiled at publish time and frozen into the version row.**
 Compiling on read would make `?profile=compact&v=1.0.0` silently follow live
@@ -185,3 +221,60 @@ end, but deleting one before its consumer reads the other is how you get zero.
   both copies pass every other test, because each is individually valid.
 - `supabase/functions/_shared/voice-style.test.ts` — fallback behaviour with no
   database, runs offline.
+- `src/lib/__tests__/styleguideScopes.test.ts` — the `applies_to` vocabulary
+  agrees across the TS list, `styleguide_scope_values()` and the CHECK
+  constraint. Unlike the `venueCategories.ts` precedent it finds the LATEST
+  migration defining each, so it cannot silently test a superseded file.
+- `e2e/styleguide-voice.spec.ts` — **asserts on the compiled OUTPUT**, against
+  production. This is the layer that was missing: twenty-one unit tests parse
+  migration source, and the `()` / `-> ""` defect was invisible to all of them.
+- `styleguide_signals()` via `scripts/check-pipeline-health.mjs` — see below.
+
+## The sentinel
+
+`styleguide_signals()` is read nightly by `scripts/check-pipeline-health.mjs`,
+which checks two things in two different places because this subsystem fails in
+two different places.
+
+**Database half** — hard-fails on: nothing published; a binding rule with no
+rationale; a rule whose scope is outside the vocabulary; empty-wrapper artifacts
+in the published prompt; a fence that is not exactly one pair; a published prompt
+that has lost its non-negotiables. Advisory on unpublished editorial drift.
+
+The artifact check is the one worth understanding. It reads the **published
+text**, not row counts, because the defect class it exists for — a compiler
+change that renders empty wrappers — is invisible to every row-count assertion
+and was invisible to twenty structural tests.
+
+**Repo half** — adoption. It counts edge functions that `import` from
+`voice-style.ts` and **fails at zero**. Nothing in the database can see whether
+anything consumes the voice; that is a fact about the source tree. The precedent
+is the Village Truth Engine, whose relink batch shipped with no cron and no
+registry row and sat dead long enough that 21 of 47,815 events carried a village.
+
+**Deliberately not built: audit retention.** `styleguide_audit` is uncapped, and
+on measuring it that is not worth a cron — 69 rows after a full seed, growing
+only when a human edits an editorial row. `styleguide_versions` IS capped at 50
+because each row stores three compiled prompts (~60 KB). The signal reports the
+audit row count so growth stays visible; a pruner for a table that gains a few
+rows a month is machinery nobody would schedule, which is its own failure mode
+here.
+
+## Adoption status
+
+`tag-enrichment-sweep` consumes the published voice via
+`withVoice(TAG_STYLE_SYSTEM, 'core')` at both of its generation call sites.
+
+It was chosen as the first adopter precisely because **its cron is disabled and
+both of its auto-apply paths are retired**, so changing its system prompt alters
+no live output. That makes it a real integration test of the wiring at zero
+behavioural risk, and it takes the adoption sentinel off zero.
+
+The remaining order is unchanged, and each still needs its own before/after
+measurement rather than a bulk switch:
+
+1. `pipeline-enrich-country-editorial` — long-form, `full`, already human-gated
+   for criminalising destinations.
+2. `city-agentic-enrich` — the `CITY_MOAT_KEYS` narrative fields.
+3. `marketplace-relevance` and the other classifiers — `compact` only, and only
+   after measuring the token delta against `llm_budget`.

@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { STYLEGUIDE_SCOPES, isStyleguideScope } from '@/lib/styleguideScopes';
 import {
   Select,
   SelectContent,
@@ -46,6 +47,8 @@ export type FieldSpec =
       required?: boolean;
     }
   | { key: string; label: string; kind: 'list'; hint?: string; required?: boolean }
+  /** Comma-separated, every entry checked against the STYLEGUIDE_SCOPES vocabulary. */
+  | { key: string; label: string; kind: 'scopes'; hint?: string; required?: boolean }
   | { key: string; label: string; kind: 'number'; hint?: string }
   | { key: string; label: string; kind: 'switch'; hint?: string }
   | {
@@ -99,7 +102,7 @@ export function RowEditorDialog({
     const row: Record<string, unknown> = { ...draft };
 
     for (const field of fields) {
-      if (field.kind === 'list') {
+      if (field.kind === 'list' || field.kind === 'scopes') {
         row[field.key] = fromList(toList(row[field.key]));
       }
       if (field.kind === 'number') {
@@ -110,6 +113,18 @@ export function RowEditorDialog({
       // and a CHECK constraint depends on that distinction.
       if ((field.kind === 'text' || field.kind === 'textarea') && row[field.key] === '') {
         row[field.key] = null;
+      }
+      if (field.kind === 'scopes') {
+        // The database CHECK is the real gate; this exists so an editor sees
+        // the mistake next to the field instead of as a Postgres error, and
+        // learns the vocabulary rather than guessing at it.
+        const bad = (row[field.key] as string[]).filter((v) => !isStyleguideScope(v));
+        if (bad.length) {
+          toast.error(
+            `Not a known scope: ${bad.join(', ')}. Valid: ${STYLEGUIDE_SCOPES.join(', ')}`,
+          );
+          return;
+        }
       }
       if (field.kind !== 'switch' && 'required' in field && field.required) {
         const v = row[field.key];
@@ -161,7 +176,7 @@ export function RowEditorDialog({
                     onChange={(e) => set(field.key, e.target.value)}
                   />
                 ) : null}
-                {field.kind === 'list' ? (
+                {field.kind === 'list' || field.kind === 'scopes' ? (
                   <Input
                     id={id}
                     value={toList(raw)}

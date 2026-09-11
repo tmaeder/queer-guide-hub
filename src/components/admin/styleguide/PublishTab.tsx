@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { VersionDiff } from './VersionDiff';
 import {
   useStyleguideAdmin,
   useStyleguidePreview,
@@ -42,12 +43,16 @@ export function PublishTab({ activeVersion }: { activeVersion: string | null }) 
   const [bump, setBump] = useState<'major' | 'minor' | 'patch'>('patch');
   const [note, setNote] = useState('');
   const [copied, setCopied] = useState(false);
+  const [compare, setCompare] = useState<string | null>(null);
 
   const preview = useStyleguidePreview(profile);
   const versions = useStyleguideVersions();
   const { publish, activate } = useStyleguideAdmin();
 
   const published = versions.data?.find((v) => v.is_active)?.doc?.prompts?.[profile];
+  // Always the `full` profile: rationales and worked examples are where a
+  // reversed rule is actually legible.
+  const activePrompt = versions.data?.find((v) => v.is_active)?.doc?.prompts?.full ?? null;
   // "Unpublished changes" compares the compiled TEXT, not a row timestamp: an
   // edit that does not change the compiled output (a sort_order nudge, a typo
   // in a field the compiler drops) is not a change anyone needs to publish.
@@ -184,14 +189,33 @@ export function PublishTab({ activeVersion }: { activeVersion: string | null }) 
                   </span>
                   <span className="min-w-0 flex-1 truncate text-13">{v.note ?? ''}</span>
                   {!v.is_active ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => doActivate(v.version)}
-                      loading={activate.isPending}
-                    >
-                      Make active
-                    </Button>
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setCompare(compare === v.version ? null : v.version)}
+                      >
+                        {compare === v.version ? 'Hide changes' : 'Compare'}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => doActivate(v.version)}
+                        loading={activate.isPending}
+                      >
+                        Make active
+                      </Button>
+                    </>
+                  ) : null}
+                  {compare === v.version && activePrompt ? (
+                    <div className="w-full pt-4">
+                      <VersionDiff
+                        fromPrompt={v.doc?.prompts?.full ?? ''}
+                        toPrompt={activePrompt}
+                        fromLabel={v.version}
+                        toLabel={activeVersion ?? 'current'}
+                      />
+                    </div>
                   ) : null}
                 </li>
               ))}

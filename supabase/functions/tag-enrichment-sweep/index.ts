@@ -53,6 +53,7 @@ import {
   buildProseReviewPrompt,
   isSenseCategory,
 } from '../_shared/tag-style.ts'
+import { withVoice } from '../_shared/voice-style.ts'
 import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
 import {
   getCorsHeaders,
@@ -184,7 +185,7 @@ async function generateDescription(name: string, categoryName: string | null): P
       callerFn: 'tag-enrichment-sweep',
       model: 'gpt-4o-mini',
       messages: [
-        { role: 'system', content: TAG_STYLE_SYSTEM },
+        { role: 'system', content: await withVoice(TAG_STYLE_SYSTEM, 'core') },
         { role: 'user', content: buildDefinePrompt(name, categoryName) },
       ],
       temperature: 0.3,
@@ -462,7 +463,7 @@ async function prosePass(
         callerFn: 'tag-enrichment-sweep',
         model: 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: TAG_STYLE_SYSTEM },
+          { role: 'system', content: await withVoice(TAG_STYLE_SYSTEM, 'core') },
           {
             role: 'user',
             content: buildProseReviewPrompt({

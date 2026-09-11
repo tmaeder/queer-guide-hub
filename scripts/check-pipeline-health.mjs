@@ -1685,6 +1685,133 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
   }
 }
 
+// ---------------------------------------------------------------------------
+// §  Styleguide & Tone of Voice
+// ---------------------------------------------------------------------------
+//
+// Two halves, because the two ways this subsystem fails live in different
+// places.
+//
+// DATABASE half: styleguide_signals() checks the PUBLISHED PROMPT ITSELF, not
+// row counts. That distinction is the whole reason it exists — the `()` and
+// `-> ""` artifacts that shipped in v1.0.0 survived twenty green structural
+// tests, every one of which parsed the migration source and none of which
+// looked at the compiled output.
+//
+// REPO half: adoption. The system's entire value is that pipelines read the
+// published voice instead of each restating a private one, and on the day it
+// shipped exactly zero edge functions imported `voice-style.ts`. Nothing in the
+// database can see that — it is a fact about the source tree — so it is counted
+// here. The precedent for why this matters is the Village Truth Engine, whose
+// relink batch shipped with no cron and no registry row and sat dead long
+// enough that 21 of 47,815 events carried a village.
+{
+  console.log('')
+  console.log('§ Styleguide & voice')
+
+  const res = await fetch(`${BASE}/rest/v1/rpc/styleguide_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+
+  if (!res.ok) {
+    console.warn(`⚠ styleguide_signals → HTTP ${res.status} (RPC missing? migration 20460318142900)`)
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else {
+    const sg = (await res.json()) ?? {}
+
+    // NULL, not zero. "Nothing is published" and "a styleguide with no rules"
+    // must not look the same here: the first means every pipeline is silently
+    // on its compiled-in fallback.
+    if (sg.active_version == null) {
+      console.error('✗ no styleguide version is published — every consumer is on its fallback copy')
+      FAILED = true
+    } else {
+      // Zero-invariants. Each is backed by a CHECK constraint, so a non-zero
+      // value means the constraint was dropped, not that one row slipped past.
+      const zeroChecks = [
+        ['binding_rules_without_reason', 'MUST/NEVER rule(s) state no reason'],
+        ['rules_with_unknown_scope',     'rule(s) carry an applies_to value outside the vocabulary'],
+        ['empty_wrapper_artifacts',      'empty-wrapper artifact(s) in the published prompt (strip_fence lost STRICT?)'],
+      ]
+      for (const [key, label] of zeroChecks) {
+        const n = Number(sg[key] ?? 0)
+        if (n > 0) {
+          console.error(`✗ ${n} ${label}`)
+          FAILED = true
+        }
+      }
+
+      // The fence is what separates editor data from the fixed frame. Anything
+      // other than exactly one pair means a row escaped its block, or the
+      // compiler changed shape and every injection guarantee is void.
+      const begin = Number(sg.fence_begin_count ?? 0)
+      const end = Number(sg.fence_end_count ?? 0)
+      if (begin !== 1 || end !== 1) {
+        console.error(`✗ published prompt fence is not exactly one pair (BEGIN ${begin}, END ${end})`)
+        FAILED = true
+      }
+      if (sg.has_non_negotiables === false) {
+        console.error('✗ the published prompt has lost its non-negotiables')
+        FAILED = true
+      }
+
+      // Advisory. A draft in progress is normal; a draft in progress for a
+      // fortnight means the standard people read is not the one the pipelines
+      // run on, which is the problem this system was built to end.
+      if (sg.unpublished_drift === true) {
+        console.log(`  editorial rows differ from published v${sg.active_version} — unpublished changes are pending`)
+      }
+
+      console.log(
+        `✓ styleguide v${sg.active_version}: ${sg.active_rules} rules, ${sg.active_terms} terms, ` +
+        `${sg.active_examples} examples (${sg.versions_kept} versions, ${sg.audit_rows} audit rows)`,
+      )
+    }
+  }
+
+  // Adoption — a source-tree fact, so it is measured from the source tree.
+  const { readdirSync, readFileSync, statSync } = await import('node:fs')
+  const { join } = await import('node:path')
+  const FN_ROOT = 'supabase/functions'
+  let consumers = []
+  try {
+    for (const dir of readdirSync(FN_ROOT)) {
+      const full = join(FN_ROOT, dir)
+      if (!statSync(full).isDirectory()) continue
+      // Underscore dirs are not deployable functions — the deploy workflow
+      // skips them for the same reason. Without this, `_shared` counts itself:
+      // voice-style.test.ts imports the module it tests, which would let this
+      // check report adoption while no pipeline had actually adopted anything.
+      if (dir.startsWith('_')) continue
+      for (const file of readdirSync(full)) {
+        if (!file.endsWith('.ts')) continue
+        const body = readFileSync(join(full, file), 'utf8')
+        // The import, not the word: a mention in a comment is not adoption.
+        if (/from\s+['"][^'"]*voice-style\.ts['"]/.test(body)) {
+          consumers.push(dir)
+          break
+        }
+      }
+    }
+  } catch {
+    console.warn('⚠ could not read supabase/functions — adoption not measured (this is not a pass)')
+    consumers = null
+  }
+
+  if (consumers !== null) {
+    if (consumers.length === 0) {
+      console.error('✗ nothing imports _shared/voice-style.ts — the styleguide is published but no pipeline reads it')
+      console.error('  A voice standard no generator consumes is documentation, not a standard.')
+      console.error('  Adoption order: docs/architecture/styleguide-voice-system.md')
+      FAILED = true
+    } else {
+      console.log(`✓ ${consumers.length} edge function(s) consume the published voice: ${[...new Set(consumers)].sort().join(', ')}`)
+    }
+  }
+}
+
 // The single exit. Reached whether or not anything failed, so the ✗ lines above
 // are the complete list rather than "the first one we tripped over".
 if (FAILED) {
