@@ -17,11 +17,9 @@ export const useMailboxAddress = () => {
       return;
     }
     (async () => {
-      const { data } = await supabase
-        .from('profiles')
-        .select('mailbox_address')
-        .eq('user_id', user.id)
-        .single();
+      // mailbox_address is not in the `authenticated` column allowlist — own-row reads
+      // go through the SECURITY DEFINER self-read.
+      const { data } = await supabase.rpc('get_my_profile').maybeSingle();
       setCurrentAddress(data?.mailbox_address || null);
       setLoading(false);
     })();

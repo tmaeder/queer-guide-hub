@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
 import { useAuth } from "./useAuth";
@@ -17,7 +17,6 @@ export const profileQueryKey = (userId: string | null | undefined) =>
 
 export const useProfile = () => {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
 
   // react-query dedupes parallel callers via the shared queryKey, so multiple
   // mounts of useProfile (Header, Settings, etc.) coalesce into one network
@@ -30,13 +29,13 @@ export const useProfile = () => {
     refetch,
   } = useQuery({
     queryKey: profileQueryKey(user?.id),
+    // `authenticated` holds only a narrow column allowlist on `profiles` — a column
+    // grant is per-ROLE, so it cannot say "all columns of my own row, few of anyone
+    // else's". get_my_profile() is the SECURITY DEFINER path for the own-row half; it
+    // reads auth.uid() itself and takes no argument.
     queryFn: async (): Promise<Profile | null> => {
       if (!user) return null;
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("user_id", user.id)
-        .maybeSingle();
+      const { data, error } = await supabase.rpc("get_my_profile").maybeSingle();
       if (error) throw error;
       return data;
     },
@@ -44,9 +43,6 @@ export const useProfile = () => {
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
-
-  const setProfile = (next: Profile | null) =>
-    queryClient.setQueryData(profileQueryKey(user?.id), next);
 
   const updateProfile = async (
     updates: Partial<Profile>,
@@ -63,22 +59,23 @@ export const useProfile = () => {
     }
 
     try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .upsert(
-          {
-            user_id: user.id,
-            ...sanitized,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: "user_id" },
-        )
-        .select()
-        .maybeSingle();
+      // No trailing .select(): a bare .select() resolves to `select=*` and adds
+      // `Prefer: return=representation`, so the UPDATE would RETURN all 173 columns —
+      // which needs SELECT privilege on all 173. Without it the write is return=minimal
+      // and needs nothing beyond the `user_id` in the WHERE. The fresh row comes back
+      // through get_my_profile() instead.
+      const { error } = await supabase.from("profiles").upsert(
+        {
+          user_id: user.id,
+          ...sanitized,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id" },
+      );
 
       if (error) throw error;
-      setProfile(data);
-      return { data, error: null, errorKind: null };
+      const { data } = await refetch();
+      return { data: data ?? null, error: null, errorKind: null };
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "An error occurred";
@@ -96,20 +93,19 @@ export const useProfile = () => {
     }
 
     try {
-      const { data, error } = await supabase
+      // Same as updateProfile above: no .select(), refetch through the RPC.
+      const { error } = await supabase
         .from("profiles")
         .update({
           avatar_config: avatarConfig,
           avatar_url: null,
           updated_at: new Date().toISOString(),
         })
-        .eq("user_id", user.id)
-        .select()
-        .single();
+        .eq("user_id", user.id);
 
       if (error) throw error;
-      setProfile(data);
-      return { data, error: null };
+      const { data } = await refetch();
+      return { data: data ?? null, error: null };
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "An error occurred";

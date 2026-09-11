@@ -18,15 +18,19 @@ export interface TravelPrefsHomeCity {
   timezone: string | null;
 }
 
+/**
+ * `travel_preferences` is not in the `authenticated` column allowlist on `profiles`, so
+ * this reads through the SECURITY DEFINER self-read. Every caller already passes the
+ * signed-in user's own id; `userId` is now only checked against the row the RPC returns
+ * (it scopes itself to auth.uid()), so a stale caller gets null rather than someone
+ * else's preferences.
+ */
 export async function fetchProfileTravelPreferences(
   userId: string,
 ): Promise<Partial<TravelPreferencesPayload> | null> {
-  const { data } = await supabase
-    .from('profiles')
-    .select('travel_preferences')
-    .eq('user_id', userId)
-    .single();
-  return (data?.travel_preferences as Partial<TravelPreferencesPayload> | undefined) ?? null;
+  const { data } = await supabase.rpc('get_my_profile').maybeSingle();
+  if (!data || data.user_id !== userId) return null;
+  return (data.travel_preferences as Partial<TravelPreferencesPayload> | undefined) ?? null;
 }
 
 export async function fetchTravelPrefsHomeCity(

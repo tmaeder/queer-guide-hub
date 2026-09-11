@@ -29842,6 +29842,38 @@ export type Database = {
         Args: { p_actor: string; p_drop_id: string; p_keep_id: string }
         Returns: Json
       }
+      admin_resolve_user_by_email: {
+        Args: { p_email: string }
+        Returns: string
+      }
+      admin_user_detail: {
+        Args: { p_user_id: string }
+        Returns: {
+          bio: string
+          gender_identity: string
+          location: string
+          pronouns: string
+          sexual_orientation: string
+        }[]
+      }
+      admin_user_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      admin_users_list: {
+        Args: {
+          p_ids?: string[]
+          p_is_online?: boolean
+          p_moderation_status?: string
+          p_page?: number
+          p_per_page?: number
+          p_search?: string
+          p_sort?: string
+          p_sort_asc?: boolean
+          p_user_mode?: string
+        }
+        Returns: Json
+      }
       accept_group_invite: {
         Args: { p_token: string }
         Returns: {
@@ -33867,6 +33899,10 @@ export type Database = {
           reason: string
           score: number
         }[]
+      }
+      get_my_profile: {
+        Args: Record<PropertyKey, never>
+        Returns: Database["public"]["Tables"]["profiles"]["Row"][]
       }
       get_public_profile_safe: {
         Args: { target_user_id: string }
