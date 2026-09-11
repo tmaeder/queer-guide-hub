@@ -13,11 +13,16 @@
  * `exempt` with a written reason. A new admin route fails the build until
  * somebody decides which frame it is.
  *
- * The honest score today is **24 of 40 clean, 11 with a stated caveat, 5
+ * The honest score today is **23 of 41 clean, 12 with a stated caveat, 6
  * exemptions with reasons** — recorded rather than rounded up, because a
  * registry that quietly rounds "nearly" to "yes" is worth less than no
- * registry. All 40 routes ARE accounted for; "caveated" means the frame fits
+ * registry. All 41 routes ARE accounted for; "caveated" means the frame fits
  * but the route carries something extra the frame does not describe.
+ *
+ * This prose had drifted from the assertion it describes: it read 24/11/5
+ * while `adminArchetypes.test.ts` asserted 23/11/6, so the Twenty CRM
+ * retirement and an earlier exemption moved the counts without moving the
+ * sentence. The test is the source of truth; this line now matches it.
  *
  * This file is deliberately inert: registering a route changes nothing on its
  * own. `AdminShell` reads it to decide whether a page still needs the legacy
@@ -258,6 +263,18 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
       'Genuinely ambiguous E vs H. Filed as H: QUALITY_GATES are named rules, the pending count ' +
       'is the fired-count, and the link-to-queue takes the toggle slot. E would demand a chart ' +
       'this page has no data for.',
+  },
+  {
+    path: 'styleguide',
+    archetype: 'H',
+    title: 'Styleguide & Voice',
+    caveat:
+      'Rules, terminology and examples are all H — named rules carrying an is_active toggle, ' +
+      'which is the frame verbatim. The fourth tab is not: Publish is a compiled-prompt preview ' +
+      'plus a version history, which is D. Recorded rather than filed under its loudest tab, ' +
+      'because three quarters of a page matching a frame is what `subFrames` and this field ' +
+      'exist to say out loud.',
+    subFrames: ['D'],
   },
   {
     path: 'trash',
