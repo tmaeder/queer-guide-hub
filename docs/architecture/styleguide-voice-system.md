@@ -278,3 +278,98 @@ measurement rather than a bulk switch:
 2. `city-agentic-enrich` — the `CITY_MOAT_KEYS` narrative fields.
 3. `marketplace-relevance` and the other classifiers — `compact` only, and only
    after measuring the token delta against `llm_budget`.
+
+## Auditing the corpus against the standard
+
+Added 2026-09-11, v1.2.0. The first audit of live content against the published
+standard produced one finding about the corpus and six about the vocabulary,
+and the vocabulary ones were larger.
+
+### Scope: whose voice binds
+
+The scan covers **our own voice only** — `cities`, `countries`, `unified_tags`,
+`queer_villages` (14,335 rows). Venues, events, news and marketplace listings
+are third-party text republished under our name; whether the editorial standard
+binds text we did not write is a product decision, not a technical one, and it
+is deliberately left open rather than answered by a scanner.
+
+### What the audit changed
+
+Six terms were corrected. Each is a measured count, not an opinion:
+
+| term | measured | change |
+|---|---|---|
+| `gay friendly` | 64 hyphen / **0 space** in live copy | both spellings, plus the `queer-` forms (50 more) |
+| `a transgender` | all 9 hits are the correct **adjective** | annotated `(as a noun)` |
+| `ethnic` | 26 hits, all "ethnic group/minority/majority" | narrowed to exoticising collocations |
+| `lifestyle` | 34 hits, mostly the kink community's own word | narrowed to the orientation sense |
+| `minorities` | 10 hits, "sexual minorities" etc. | dropped; the euphemism is covered by `non-white` |
+| `urban area` | 158 hits, all the geographic unit | narrowed to "urban" applied to people |
+
+**The rule this establishes: an avoid entry must be wrong in essentially every
+context.** A bare word that is usually correct does not merely produce noise in
+a scan — it is guidance telling a model to avoid correct English, and in two
+cases here it contradicted our own `community-words-in-their-real-sense` and
+`reclaimed-words` rules.
+
+`urban area` alone was 22% of the drift baseline. Narrowing it took the number
+from 714 to 571 without touching a single row of content.
+
+### What is deliberately NOT narrowed
+
+`clean` (hiv-negative) and `accessible` (step-free) stay exactly as they are.
+Both are useless to a matcher — they fire on "clean towels" and "accessible
+toilet" — and both are real, important guidance for a model reading the prompt.
+`step-free` carries severity `context` precisely because it needs a human rather
+than a matcher.
+
+**A term's job is to instruct an LLM, not to be greppable.** The six above
+changed because they instruct *wrongly*, not because they are hard to scan. The
+scanner excludes `it`, `clean` and `accessible` and the migration asserts all
+three still exist in the vocabulary, so that exclusion list can never become a
+back door for retiring a term.
+
+### The drift sentinel
+
+`styleguide_content_drift()` returns per-surface counts of own-voice rows
+matching an active avoid phrase. Baseline **571 of 14,335**:
+
+```
+city.description       356      vibrant         374
+city.editorial_hook     48      explore         174
+tag.long_description    80      gay-friendly     73
+tag.description         38      queer-friendly   50
+village.description     25      journey          22
+```
+
+`city.editorial_hook` at **48 of 105 (46%)** is the sharpest signal in the
+corpus: that is the LLM composer's register, not scattered author slips.
+
+It is **advisory on the counts, hard on a broken probe**. A backlog of known
+editorial debt is depth, not a regression — the same split the embedding drain
+uses. But an empty corpus, a vocabulary that failed to load and a genuinely
+clean corpus all return the same reassuring zero, so `rows_scanned` and
+`phrases_active` are reported separately and CI fails if either is zero.
+
+### Why this is a counter and not a rewrite
+
+The obvious next move is to have an LLM rewrite the ~400 offending city
+descriptions. **That is precisely the experiment this repo has already run and
+retired.** The tag prose judge retracted 16 of its first 18 rows and 13 of those
+were wrong; its two rewrites included a downgrade into the exact register
+`TAG_STYLE_SYSTEM` bans; both auto-apply paths are disabled and
+`tag_prose_apply` lost its retract branch at the DB layer so it cannot return by
+accident. Pointing the same class of machine at city descriptions would repeat
+that at six times the scale, on pages that rank.
+
+So the backlog is measured and shown, and fixed deliberately.
+
+### The other half, still open
+
+Stopping *new* copy arriving in this register means a `withVoice()` adoption on
+`city-agentic-enrich`, and that is **not** done here. It is a live enrichment
+pipeline whose prompts demand bare JSON from reasoning models that already need
+`chat_template_kwargs: {thinking:false}` to answer at all; prepending ~13k
+characters of voice to a 1.8k prompt is a change that wants its own before/after
+measurement, not a side effect of shipping a sentinel. It remains item 2 in the
+adoption order above.
