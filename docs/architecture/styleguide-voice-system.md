@@ -200,7 +200,8 @@ effect of shipping the machinery. The adoption order that makes sense:
    (`TAG_STYLE_SYSTEM`), and currently disabled, so a change there is free.
 2. `pipeline-enrich-country-editorial` — long-form, `full` profile, human-gated
    for criminalising destinations already.
-3. `city-agentic-enrich` — the `CITY_MOAT_KEYS` narrative fields.
+3. ~~`city-agentic-enrich`~~ — DONE 2026-09-11, wired and shipped `off`; see
+   "Second adopter" below.
 4. `marketplace-relevance` and the other classifiers — `compact` only, and only
    after measuring the token delta against `llm_budget`.
 
@@ -275,7 +276,8 @@ measurement rather than a bulk switch:
 
 1. `pipeline-enrich-country-editorial` — long-form, `full`, already human-gated
    for criminalising destinations.
-2. `city-agentic-enrich` — the `CITY_MOAT_KEYS` narrative fields.
+2. ~~`city-agentic-enrich`~~ — DONE 2026-09-11, wired and shipped `off`; see
+   "Second adopter" below.
 3. `marketplace-relevance` and the other classifiers — `compact` only, and only
    after measuring the token delta against `llm_budget`.
 
@@ -367,9 +369,101 @@ So the backlog is measured and shown, and fixed deliberately.
 ### The other half, still open
 
 Stopping *new* copy arriving in this register means a `withVoice()` adoption on
-`city-agentic-enrich`, and that is **not** done here. It is a live enrichment
-pipeline whose prompts demand bare JSON from reasoning models that already need
-`chat_template_kwargs: {thinking:false}` to answer at all; prepending ~13k
-characters of voice to a 1.8k prompt is a change that wants its own before/after
-measurement, not a side effect of shipping a sentinel. It remains item 2 in the
-adoption order above.
+`city-agentic-enrich`. That is now **wired, and shipped `off`** — see the next
+section.
+
+
+## Second adopter: `city-agentic-enrich` (2026-09-11)
+
+Wired, and shipped **`off`**. This is the first consumer that writes to LIVE
+published city columns, so the arm that runs by default has to be the arm that
+was measured — not the one that looked right.
+
+### The baseline, measured before writing any code
+
+328 real runs, 2026-06-07 → 2026-09-11, read straight out of
+`cities.enrichment_status.agentic` (every run already recorded its own output,
+so this cost no LLM calls):
+
+| | generated | carrying an avoid phrase | |
+|---|---|---|---|
+| `description` | 321 | 54 | **16.8%** |
+| `editorial_hook` | 321 | 70 | **21.8%** |
+
+Average confidence 0.609. The failure is extremely concentrated: **`vibrant`
+alone is 95 of ~124 hits**, then `explore` 17, `discover` 13, `gay-friendly` 6,
+`queer-friendly` 6.
+
+### Two measurements that changed the design
+
+**Scope filtering is not the lever.** `styleguide_compile` takes a
+`p_scope`, and `getVoicePrompt()` has never passed one. That looked like the
+way to shrink the prompt — until it was measured: `city` scope is only **3.7%**
+smaller than `all` (14,169 vs 14,711 chars), because 21 of 30 rules are
+`applies_to: ['all']`. Building scope-aware freezing would have bought nothing.
+
+**The cheap fix would cover 77% of the measured hits.** The rule and term that
+ban `vibrant`/`explore`/`discover` are ~634 characters of the 13,457-char
+`compact` profile. Hand-copying those into `CITY_MOAT_SYSTEM_PROMPT` would be
+cheaper and lower-risk.
+
+It is deliberately **not** what was done, for two reasons. Hand-copying the
+standard into a prompt recreates the three-divergent-prose-copies problem this
+whole system exists to end. And more importantly: **16.8% is a floor on the
+problem, not the problem.** A regex sees `vibrant`; it cannot see tokenism, a
+city note written as though every reader is a gay man, or an unsourced legal
+claim about a criminalising country. `not-only-gay-men`,
+`anti-racist-specificity`, `legal-claims-are-sourced` and `respect-the-gate` are
+exactly the rules that address those, and exactly the ones no scanner will ever
+score.
+
+### Why it ships off
+
+The risk is **not** bad content. `parseAIResponse` returns null on unparseable
+output and the run records `no_ai`, so a JSON regression degrades to *nothing
+enriched* — silence, which is this repo's most-repeated failure mode. Prepending
+~13.5k characters to a 1.8k bare-JSON prompt, on models that already need
+`chat_template_kwargs: {thinking:false}` to answer at all, is precisely the
+change that can cause it.
+
+So: `voice` is a rollout lever, not a constant.
+
+```
+body.voice ('off'|'compact'|'core'|'full')     — the A/B, used with dry_run
+  ↓ else
+admin_automations.conditions.voice             — the production lever
+  ↓ else
+'off'
+```
+
+Flipping it in production is a plain `UPDATE` on the registry row — no
+migration, no deploy — the same shape as the dedup sweep's `conditions.mode`.
+An unrecognised value falls back to `off` rather than throwing, because a typo
+in a hand-edited row must not take an hourly cron down.
+
+### How to actually run the measurement
+
+`dry_run` already guards every write, and the dry-run result now carries the
+**generated proposal** — a dry run that hides the model's output cannot be used
+to evaluate a prompt change. So both arms can be run against the same cities on
+production, writing nothing:
+
+```
+POST /functions/v1/city-agentic-enrich
+{ "dry_run": true, "city_ids": [...], "voice": "off" }      # control
+{ "dry_run": true, "city_ids": [...], "voice": "compact" }  # treatment
+```
+
+Compare: did JSON parse at all (a missing `proposal` means it did not), did
+`vibrant`/`explore`/`discover` disappear, did `confidence` hold near 0.609, and
+did latency stay inside the 45s ceiling against `max_tokens: 900` — a completion
+pinned at that ceiling is truncated and cannot be complete JSON.
+
+Note the dry run still **spends** `llm_budget` (one unit per city, cap 120/day),
+because the LLM call is the thing being measured. Keep the sample small.
+
+Every produced row is stamped `voice_profile` and `voice_system_chars` in
+`enrichment_status.agentic`, so the comparison stays answerable on real rows
+long after the dry runs are gone. Those are stamped **after** parsing and are
+deliberately absent from `CITY_MOAT_KEYS` — asking the model to report its own
+system prompt would be meaningless and would let it misreport which arm ran.
