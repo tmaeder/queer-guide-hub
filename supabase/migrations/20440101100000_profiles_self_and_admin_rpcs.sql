@@ -1,5 +1,11 @@
--- RENUMBERED from 20260818120000, which sorted far below the applied ceiling
--- (20400214091533 at the time of landing) and so could never have run. All four
+-- RENUMBERED TWICE. First from 20260818120000, which sorted far below the
+-- applied ceiling and so could never have run; then from 20410601100000,
+-- because the ceiling moved 20400214091533 -> 20420301100000 within hours
+-- while a concurrent session was landing migrations. A YEAR of headroom was
+-- not enough: the observed jumps are 3, 2, 6 and then NINETEEN months, because
+-- everyone applies the same leave-a-gap rule and the ceiling inflates. The gap
+-- has to exceed the largest single jump you can see in the history, not a
+-- fixed amount — hence 2044. All four
 -- preconditions this header relies on were re-verified against prod first:
 -- none of the five functions exist yet, postgres holds rolbypassrls, profiles is
 -- FORCE ROW LEVEL SECURITY, and both precedent definer functions
