@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { SUPPORTED_LOCALES } from '../functions/_lib/routeMeta';
 
 /**
  * No link may carry its locale twice.
@@ -27,7 +28,12 @@ const CASES = [
   { locale: 'de', path: '/de/news' },
 ];
 
-const LOCALES = ['fr', 'de', 'es', 'it', 'pt', 'nl', 'pl', 'tr', 'ru', 'uk', 'ar'];
+// Imported, never hand-written. The original list was authored by hand and
+// carried four locales the app does not support (nl, pl, tr, uk) while
+// OMITTING zh, ja, ko and en — so `/ko/ko/x` and `/zh/zh/x` were invisible to
+// this guard, and the error board contained `/ko/ko`. A literal list is a
+// second source of truth that silently drifts from the real one.
+const LOCALES = [...SUPPORTED_LOCALES];
 
 test.describe('locale prefixing', () => {
   test.setTimeout(90_000);
@@ -51,6 +57,46 @@ test.describe('locale prefixing', () => {
       expect(doubled, `doubled-locale hrefs on ${path}: ${doubled.join(', ')}`).toEqual([]);
     });
   }
+
+  /**
+   * The doubled-locale URLs must hard-404 and advertise NOTHING.
+   *
+   * The `a[href]` sweep above could never have caught this: the fan-out lives
+   * in `link[rel=alternate][hreflang]`, which that scan does not read. The
+   * producer was fixed on 2026-08-16, but `/fr/fr/places` still answered 200
+   * as an indexable SPA shell and emitted an alternate for all 11 locales,
+   * each carrying the stray segment — so one junk URL minted ten more and
+   * crawlers recycled them indefinitely.
+   *
+   * Asserted as a PROPERTY over live locale pairs rather than a frozen URL
+   * list, so adding a locale extends the guard automatically.
+   */
+  for (const [outer, inner] of [
+    ['fr', 'fr'],
+    ['it', 'fr'],
+    ['ko', 'ko'],
+  ] as const) {
+    test(`/${outer}/${inner}/places hard-404s and advertises no alternates`, async ({ request }) => {
+      const res = await request.get(`/${outer}/${inner}/places`, { maxRedirects: 0 });
+      expect(res.status(), `/${outer}/${inner}/places must hard-404, not soft-404 at 200`).toBe(404);
+
+      const html = await res.text();
+      // Nothing may point back at the doubled shape, in any locale.
+      const alternates = [...html.matchAll(/<link[^>]+rel="alternate"[^>]*>/g)].map((m) => m[0]);
+      expect(
+        alternates,
+        `a 404 must not advertise hreflang alternates: ${alternates.join(' ')}`,
+      ).toEqual([]);
+      expect(html).not.toMatch(new RegExp(`/[a-z]{2}/${inner}/places`));
+    });
+  }
+
+  test('positive control: the single-prefix URL still resolves', async ({ request }) => {
+    // Without this, the 404 assertions above would also pass if /places broke
+    // entirely or every locale route started 404-ing.
+    const res = await request.get('/fr/places', { maxRedirects: 0 });
+    expect(res.status()).toBe(200);
+  });
 
   test('a localized detail page keeps its breadcrumb links reachable', async ({ page }) => {
     // The detail path is where the bug actually bit: a list page's trail is a
