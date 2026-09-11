@@ -1810,6 +1810,48 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
       console.log(`✓ ${consumers.length} edge function(s) consume the published voice: ${[...new Set(consumers)].sort().join(', ')}`)
     }
   }
+
+  // CORPUS half: does the content we publish agree with the standard we publish?
+  // Advisory on the counts, hard on a broken probe. A backlog of known editorial
+  // debt is depth, not a regression — the same split the embedding drain uses
+  // (warn on depth, fail on liveness). But an empty corpus, a vocabulary that
+  // failed to load and a genuinely clean corpus all return the same reassuring
+  // zero, so rows_scanned and phrases_active are checked separately.
+  {
+    const res = await fetch(`${BASE}/rest/v1/rpc/styleguide_content_drift`, {
+      method: 'POST',
+      headers: { ...headers, 'Content-Type': 'application/json' },
+      body: '{}',
+    })
+
+    if (!res.ok) {
+      console.warn(`⚠ styleguide_content_drift → HTTP ${res.status} (RPC missing? migration 20470922084700)`)
+      console.warn('  This check measured NOTHING — it did not pass.')
+    } else {
+      const d = (await res.json()) ?? {}
+      const scanned = Number(d.rows_scanned ?? 0)
+      const phrases = Number(d.phrases_active ?? 0)
+
+      if (scanned === 0 || phrases === 0) {
+        console.error(`✗ content-drift probe is broken: scanned ${scanned} rows against ${phrases} phrases`)
+        console.error('  A probe that looked at nothing must never be read as a clean corpus.')
+        FAILED = true
+      } else {
+        const total = Number(d.total_flagged ?? 0)
+        const surfaces = Object.entries(d.by_surface ?? {}).sort((a, b) => b[1] - a[1])
+        const top = Object.entries(d.by_phrase ?? {}).sort((a, b) => b[1] - a[1]).slice(0, 5)
+        console.log(
+          `  voice drift: ${total} of ${scanned} own-voice rows match an avoid phrase (${phrases} phrases active)`,
+        )
+        if (surfaces.length) {
+          console.log(`    by surface: ${surfaces.map(([k, v]) => `${k} ${v}`).join(', ')}`)
+        }
+        if (top.length) {
+          console.log(`    most common: ${top.map(([k, v]) => `"${k}" ${v}`).join(', ')}`)
+        }
+      }
+    }
+  }
 }
 
 // The single exit. Reached whether or not anything failed, so the ✗ lines above
