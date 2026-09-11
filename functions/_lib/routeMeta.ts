@@ -293,6 +293,13 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'The source, refresh cadence, coverage and known limits behind the legal status we publish for every country and territory.',
   },
+  // Registered here, not only in src/routes.tsx: this map is both the crawler's
+  // <head> source and what sitemap-static.xml enumerates.
+  '/styleguide': {
+    title: 'Editorial Styleguide and Tone of Voice',
+    description:
+      'How queer.guide writes: the voice rules, the terminology we use and avoid, and the reasons for both. The same standard our automated content pipelines are given.',
+  },
   '/rights/trans': {
     title: 'Trans Rights and Safety by Country',
     description:

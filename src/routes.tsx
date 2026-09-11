@@ -41,6 +41,7 @@ const GoingOut = lazyRetry(() => import('./pages/intent/GoingOut'));
 const RightsIntent = lazyRetry(() => import('./pages/intent/Rights'));
 const RightsSources = lazyRetry(() => import('./pages/rights/RightsSources'));
 const TransRights = lazyRetry(() => import('./pages/rights/TransRights'));
+const Styleguide = lazyRetry(() => import('./pages/Styleguide'));
 const TagsIndex = lazyRetry(() => import('./pages/TagsIndex'));
 const TagDetail = lazyRetry(() => import('./pages/TagDetail'));
 const SubstanceInteractionsPage = lazyRetry(() => import('./pages/SubstanceInteractionsPage'));
@@ -102,6 +103,7 @@ const AdminGroupRequests = lazyRetry(() => import('./pages/admin/AdminGroupReque
 const AdminSearchIntelligence = lazyRetry(() => import('./pages/admin/AdminSearchIntelligence'));
 const AdminRecognition = lazyRetry(() => import('./pages/admin/Recognition'));
 const AdminDesignSystem = lazyRetry(() => import('./pages/admin/DesignSystem'));
+const AdminStyleguide = lazyRetry(() => import('./pages/admin/AdminStyleguide'));
 const Contributors = lazyRetry(() => import('./pages/Contributors'));
 
 // New feature pages
@@ -457,6 +459,7 @@ export const AppRoutes = () => {
                   <Route path="audit" element={<AuditLog />} />
                   <Route path="search-intelligence" element={<AdminSearchIntelligence />} />
                   <Route path="design" element={<AdminDesignSystem />} />
+                  <Route path="styleguide" element={<AdminStyleguide />} />
                   <Route path="links" element={<Navigate to="/admin/automation" replace />} />
                   <Route
                     path="affiliates"
@@ -742,6 +745,7 @@ export const AppRoutes = () => {
                          ties with the `/:locale/Y` branch and LocaleRouter
                          renders NotFound for an unknown "locale". */}
                   <Route path="going-out" element={<GoingOut />} />
+                  <Route path="styleguide" element={<Styleguide />} />
                   <Route path="rights" element={<RightsIntent />} />
                   {/* Static second segment — scores 24 and beats /:locale/<static>
                       at 17 unconditionally. A param here would tie at 17 and

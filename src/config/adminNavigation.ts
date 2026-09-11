@@ -57,6 +57,7 @@ import {
   MessageSquarePlus,
   Search,
   Palette,
+  SpellCheck,
   Award,
   Trophy,
   CopyCheck,
@@ -486,6 +487,17 @@ export const adminNavSections: AdminNavSection[] = [
         label: 'Design & Branding',
         icon: Palette,
         route: '/admin/design',
+        group: 'Configuration',
+      },
+      {
+        // The editorial voice: rules, terminology and the few-shot examples the
+        // content pipelines are calibrated on. Configuration rather than
+        // Content, for the same reason Design & Branding is — it governs how
+        // every entity is written, it is not an entity.
+        id: 'styleguide',
+        label: 'Styleguide & Voice',
+        icon: SpellCheck,
+        route: '/admin/styleguide',
         group: 'Configuration',
       },
       {
