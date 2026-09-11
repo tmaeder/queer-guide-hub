@@ -7,6 +7,13 @@
 
 import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { chatCompletion, isOpenAIAvailable } from './openai-client.ts'
+import { withVoice, type VoiceProfile } from './voice-style.ts'
+
+/**
+ * `off` keeps the compiled-in task prompt exactly as it was — the rollback, and
+ * the control arm of the A/B. Anything else prepends the published voice.
+ */
+export type VoiceSetting = VoiceProfile | 'off'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -575,6 +582,9 @@ export interface CityMoatEnrichment {
   rating_rationale?: string       // must cite evidence
   citations?: { field: string; url: string; quote: string }[]
   confidence?: number             // 0.0-1.0 how well sources supported the extraction
+  // Stamped by the extractor, not requested from the model.
+  voice_profile?: VoiceSetting    // which arm produced this row
+  voice_system_chars?: number     // system-prompt size, so cost is on the record
 }
 
 const CITY_MOAT_KEYS = ['description', 'editorial_hook', 'best_time_to_visit', 'local_customs',
@@ -601,7 +611,16 @@ Respond ONLY with valid JSON. No markdown code blocks.`
  */
 export async function researchEnrichCityFromSources(
   supabase: SupabaseClient,
-  input: { name: string; country?: string; region?: string; existingDescription?: string; sources: { url: string; text: string }[]; safetyContext?: string },
+  input: {
+    name: string; country?: string; region?: string; existingDescription?: string
+    sources: { url: string; text: string }[]; safetyContext?: string
+    /**
+     * Prepend the published editorial standard. Defaults to `off`: this is a
+     * LIVE pipeline, and the arm that ships must be the one that was measured.
+     * The caller resolves the setting; see city-agentic-enrich for the lever.
+     */
+    voice?: VoiceSetting
+  },
 ): Promise<CityMoatEnrichment | null> {
   if (!(await isOpenAIAvailable(supabase))) return null
   // Cap total grounding text (~5k chars) to stay within the model's latency budget,
@@ -622,13 +641,20 @@ ${blocks.join('\n\n')}
 Respond with JSON using these keys (null where unknown):
 {"description":"...","editorial_hook":"...","best_time_to_visit":"...","local_customs":"...","lgbt_friendly_rating":0,"rating_rationale":"...","citations":[{"field":"...","url":"...","quote":"..."}],"confidence":0.0}`
 
+  const voice: VoiceSetting = input.voice ?? 'off'
+  // The voice frame states that the task and output format belong to what
+  // follows it, so it must come FIRST and the task prompt second.
+  const systemPrompt = voice === 'off'
+    ? CITY_MOAT_SYSTEM_PROMPT
+    : await withVoice(CITY_MOAT_SYSTEM_PROMPT, voice)
+
   try {
     const result = await chatCompletion(supabase, {
       callerFn: 'shared:ai-enrichment',
       // Moat/editorial output quality-sensitive → opt into the 70B (daily-capped).
       model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
       messages: [
-        { role: 'system', content: CITY_MOAT_SYSTEM_PROMPT },
+        { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
       ],
       temperature: 0.2,
@@ -638,7 +664,14 @@ Respond with JSON using these keys (null where unknown):
     // CF Workers AI sometimes returns `response` already parsed as an object
     // (guided JSON); coerce to a string so parseAIResponse can handle both.
     const raw = typeof result.content === 'string' ? result.content : JSON.stringify(result.content ?? '')
-    return parseAIResponse<CityMoatEnrichment>(raw, CITY_MOAT_KEYS)
+    const parsed = parseAIResponse<CityMoatEnrichment>(raw, CITY_MOAT_KEYS)
+    if (!parsed) return null
+    // Stamped AFTER parsing, never added to CITY_MOAT_KEYS — those are the keys
+    // we ask the MODEL for, and asking it to report its own system prompt would
+    // be both meaningless and a way for it to lie about which arm ran.
+    // `enrichment_status.agentic` spreads this, so every stored row records the
+    // producer that wrote it and the A/B stays measurable on real data later.
+    return { ...parsed, voice_profile: voice, voice_system_chars: systemPrompt.length }
   } catch (err) {
     console.error('City moat enrichment failed:', (err as Error).message)
     return null
