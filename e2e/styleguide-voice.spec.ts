@@ -143,8 +143,14 @@ test.describe('@smoke styleguide — human interface', () => {
 
     // The published version is stated on the page, so a reader can tell which
     // standard they are looking at.
-    await expect(page.getByText(new RegExp(`v${api.version.replace(/\./g, '\\.')}`)).first())
-      .toBeVisible();
+    //
+    // Plain substring, not a constructed RegExp. Building a pattern from a
+    // value that came off the wire and escaping only `.` is incomplete
+    // escaping (CodeQL flagged exactly that here): a backslash or any other
+    // metacharacter in the input would survive into the pattern. Semver makes
+    // that unreachable in practice, but the fix that removes the class beats
+    // the fix that patches one character — and this reads better anyway.
+    await expect(page.getByText(`v${api.version}`, { exact: false }).first()).toBeVisible();
   });
 
   test('the page is indexable and in the sitemap', async ({ request }) => {
