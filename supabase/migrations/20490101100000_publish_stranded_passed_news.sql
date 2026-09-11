@@ -92,7 +92,7 @@ BEGIN
             ARRAY['seo_republish'],
             jsonb_build_object(
               'at', now(),
-              'via', 'migration:20430501100000',
+              'via', 'migration:20490101100000',
               'reason', 'stranded by news_enforce_seo_indexable one-way gate (review->passed never lifts the flag)',
               -- The honest per-row record of whether this particular article
               -- met the platform's own bar or was published by override.
@@ -109,7 +109,7 @@ BEGIN
 
   SELECT count(*) INTO v_below_bar
   FROM public.news_articles
-  WHERE enrichment_status->'seo_republish'->>'via' = 'migration:20430501100000'
+  WHERE enrichment_status->'seo_republish'->>'via' = 'migration:20490101100000'
     AND (enrichment_status->'seo_republish'->>'cleared_site_publish_bar')::boolean IS FALSE;
 
   RAISE NOTICE 'published % articles (% of them below the site publish bar, by operator decision)',
