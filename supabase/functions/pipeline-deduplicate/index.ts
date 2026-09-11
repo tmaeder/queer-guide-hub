@@ -43,7 +43,11 @@ const EMBED_MODEL = '@cf/baai/bge-m3' // 1024-d, must match workers/ingest store
 interface SemRow { entity_id: string; score: number; distance_m: number | null; country: string | null; title?: string | null }
 
 /** Build the deterministic blocker RPC args for a type from normalized_data. */
-function buildDetArgs(type: EntityType, n: Record<string, unknown>, isHotel: boolean): Record<string, unknown> | null {
+// Exported for _tests/dedup-det-args.test.ts. The venue branch's NULL domain is
+// a deliberate safety property rather than an oversight (see the comment on that
+// case), and a property that only exists in a comment is one nobody is told they
+// have broken.
+export function buildDetArgs(type: EntityType, n: Record<string, unknown>, isHotel: boolean): Record<string, unknown> | null {
   const loc = (n.location ?? {}) as Record<string, unknown>
   const c = (n.contacts ?? {}) as Record<string, unknown>
   const meta = (n.metadata ?? {}) as Record<string, unknown>
@@ -78,6 +82,41 @@ function buildDetArgs(type: EntityType, n: Record<string, unknown>, isHotel: boo
       // Portland OR and a name-keyed city-text match is evidence, not proof.
       // p_country drives the country veto that stopped a Berlin "Village" from
       // merging into an Osaka one at score 1.000.
+      //
+      // p_phone_e164 / p_email / p_website_domain are ALWAYS NULL here, because
+      // `contacts` on a venue staging row contains exactly one key — `website`.
+      // Measured 2026-09-10 over 7,962 rows from the last 30 days:
+      // phone_e164 0/7,962, email_lower 0/7,962, website_domain 0/7,962.
+      //
+      // DO NOT "FIX" THAT BY DERIVING A DOMAIN FROM contacts.website.
+      //
+      // It looks like the marketplace contract gap fixed in the same session
+      // (five args read at the top level that live under metadata/urls), and it
+      // is not. It was measured, and restoring it is DESTRUCTIVE:
+      //
+      //   * 4,709 of 7,962 staging rows do carry a real URL, and probing 40 of
+      //     them showed 31 whose domain exists on a live venue and 23 whose best
+      //     score improves — so the signal is genuinely "available".
+      //   * but the RPC scores every hit `domain_proximity` at a FLAT 0.950,
+      //     and venue autoMerge is 0.90. Those 40 rows produced 213 candidates,
+      //     every single one above the auto-merge bar.
+      //   * and venues.website_domain is frequently NOT the venue's own domain:
+      //     facebook.com is on 554 live venues, tinyurl.com 369,
+      //     display-magazin.ch 311, misterbandb.com 311, instagram.com 136.
+      //     3,037 live venues share a domain with at least one other venue.
+      //
+      // So the arm would propose auto-merging 554 unrelated venues whose only
+      // commonality is having a Facebook page. The single protection is
+      // geoGuard(250), and 2,665 live venues sit on 908 SHARED coordinate points
+      // because a missing geocode falls back to a city centroid — so the guard
+      // is porous in exactly the case that matters.
+      //
+      // If this is ever revisited it needs an aggregator/chain denylist (or a
+      // "domain appears on >1 venue" veto) FIRST, and a score below 0.90 —
+      // the same reasoning that pins p_city's text match at 0.88. Phone and
+      // email are a different story: they are absent from venue staging
+      // entirely, so there is nothing to recover, which is honest absence
+      // rather than a contract gap.
       const args: Record<string, unknown> = {
         p_name: String(n.name ?? ''),
         p_phone_e164: (c.phone_e164 as string) ?? null,

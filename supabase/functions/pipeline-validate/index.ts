@@ -43,6 +43,25 @@ Deno.serve(withErrorReporting('pipeline-validate', async (req) => {
       .from('ingestion_staging')
       .select('id, normalized_data, entity_type, target_table')
       .eq('ai_validation_status', 'pending')
+      // A dispositioned row is FINISHED — committed, rejected, or errored — and
+      // re-validating it changes nothing. Without this filter the work list is
+      // overwhelmingly dead rows, and because the order is FIFO on created_at
+      // they sort AHEAD of the real backlog. Measured for news on 2026-09-11:
+      //
+      //   rejected  27,928   oldest 2026-05-24
+      //   inserted  20,750   oldest 2026-05-24
+      //   pending    3,084   oldest 2026-07-14   <- the only actual work
+      //   updated/committed/error 440
+      //
+      // 3,084 of 52,202 rows — 5.9%. At 300/run the drain would spend ~6.8 days
+      // re-validating already-published and already-rejected rows before
+      // touching the first genuinely-pending one, while reporting 300 processed
+      // and items_failed 0 every hour. The July rows had not been touched since
+      // 2026-09-04 despite being the oldest pending work.
+      //
+      // pipeline-deduplicate has carried this same filter all along; validate
+      // simply never got it.
+      .eq('disposition', 'pending')
       .not('normalized_data', 'is', null)
       .order('created_at', { ascending: true })
       .limit(batchSize)

@@ -50,12 +50,18 @@ const pass = (m) => {
 
 // Plain string scan rather than a constructed RegExp.
 //
-// The first version built one — `new RegExp('href="' + prefix.replace(/[/]/g,
-// '\\/') + '[^"]+"')` — and CodeQL flagged it high severity as
-// js/incomplete-sanitization: the escape handles `/` but not `\`. It was also
-// pointless, because `/` needs no escaping inside a RegExp *constructor* (only
-// in a literal). Both problems disappear if no pattern is built at all, and
-// these prefixes are fixed constants regardless.
+// The first version built a RegExp out of the prefix and hand-escaped forward
+// slashes into it. CodeQL flagged that high severity as
+// js/incomplete-sanitization, and correctly so: an escape routine that rewrites
+// one metacharacter but not the backslash is incomplete. It was also pointless,
+// because a forward slash needs no escaping inside a RegExp *constructor* at
+// all (only in a literal). Both problems disappear once no pattern is built,
+// and these prefixes are fixed constants regardless.
+//
+// The offending expression is deliberately NOT quoted here. It was, and the
+// alert went on firing against the comment after the real code was gone —
+// a stale finding sitting on prose is indistinguishable from a live one at
+// review time and costs the next reader the same investigation.
 const countLinks = (html, prefix) => {
   const needle = `href="${prefix}`;
   const found = new Set();
