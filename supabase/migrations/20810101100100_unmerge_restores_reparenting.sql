@@ -11,7 +11,7 @@
 -- header that reads "every merge is reversible" -- so the reviewer was told the undo
 -- worked, across 2,965 marketplace merges, 139 news, 86 organization and 5 personality.
 --
--- What those merges actually moved is stated precisely in 20710101100000's header and
+-- What those merges actually moved is stated precisely in 20810101100000's header and
 -- is NOT what it looks like: no user row has ever been moved by a merge (the favourites,
 -- reviews and wishlist tables hold 1, 0 and 1 rows in the whole database). The loss is
 -- provenance and topical links -- 1,845 marketplace_listing_sources, 32
@@ -19,7 +19,7 @@
 -- fixing, and the user-data exposure is real the moment those tables fill -- but it is a
 -- future risk, not a past harm.
 --
--- 20710101100000 makes the nine cores record `details.moved`. This replays it.
+-- 20810101100000 makes the nine cores record `details.moved`. This replays it.
 --
 -- THREE RULES, all inherited from the event/venue precedents:
 --
@@ -38,7 +38,7 @@
 --    created; deleting on the way back destroys it. `slug_redirect_existed` says which.
 --
 -- THE SIX ID-LESS TABLES are restored by the key their core recorded -- see the header of
--- 20710101100000 for why each one is what it is. The recorded value is the half of the
+-- 20810101100000 for why each one is what it is. The recorded value is the half of the
 -- composite key the merge does NOT rewrite, so `where <recorded> in (...) and <fk> =
 -- keep_id` addresses exactly the moved rows and cannot touch rows that were already on
 -- the survivor. `personality_internal_notes` is the exception and is guarded separately:

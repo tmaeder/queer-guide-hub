@@ -25,7 +25,7 @@
 --
 -- Reproduced on prod in a rolled-back transaction against the CURRENT, unmodified
 -- functions, so this is pre-existing and not introduced by the reversibility work in
--- 20710101100000/100100. **2,925 of the 2,965 marketplace merges on record involve a
+-- 20810101100000/100100. **2,925 of the 2,965 marketplace merges on record involve a
 -- listing in this state**, which means marketplace merges have never been undoable --
 -- not "undoable but incomplete", but throwing before they change anything. The admin
 -- console's Undo button reports failure for them, which is at least honest; the silent
