@@ -1,6 +1,6 @@
 {
   "project": "tsconfig.app.json",
-  "total": 825,
+  "total": 823,
   "files": {
     "src/assets/intimate/pictograms.tsx": {
       "TS2503": 2
@@ -784,9 +784,6 @@
       "TS2322": 2,
       "TS6196": 1
     },
-    "src/hooks/useSignupFunnel.ts": {
-      "TS2322": 1
-    },
     "src/hooks/useStoryRoutine.ts": {
       "TS2300": 2,
       "TS2322": 4,
@@ -797,9 +794,6 @@
     },
     "src/hooks/useTagRelationships.tsx": {
       "TS2345": 1
-    },
-    "src/hooks/useTrackEvent.ts": {
-      "TS2322": 1
     },
     "src/hooks/useTravelPreferencesEditor.ts": {
       "TS2322": 1
