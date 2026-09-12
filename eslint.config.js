@@ -12,6 +12,7 @@ import noSupabaseFromInPages from './eslint-rules/no-supabase-from-in-pages.js';
 import noSonnerToastObject from './eslint-rules/no-sonner-toast-object.js';
 import adminUiPrimitives from './eslint-rules/admin-ui-primitives.js';
 import noHandRolledPageWrapper from './eslint-rules/no-hand-rolled-page-wrapper.js';
+import noUngatedAnalytics from './eslint-rules/no-ungated-analytics.js';
 
 // typescript-eslint v8 throws when its project-service auto-detect sees
 // multiple candidate root dirs (here: repo root + scraper/). Pin it via
@@ -74,6 +75,7 @@ export default tseslint.config(
           'no-sonner-toast-object': noSonnerToastObject,
           'admin-ui-primitives': adminUiPrimitives,
           'no-hand-rolled-page-wrapper': noHandRolledPageWrapper,
+          'no-ungated-analytics': noUngatedAnalytics,
         },
       },
     },
@@ -120,6 +122,10 @@ export default tseslint.config(
       // Catch the sonner toast({...}) object-arg bug class (renders blank
       // toasts). Use toast.success(msg, { description }) / toast.error(...).
       'queerguide/no-sonner-toast-object': 'error',
+      // Page views have ONE pipeline and it is consent-gated. A second
+      // emitter is how AnalyticsTracker came to carry 98.9% of tracking past
+      // a policy that promised consent, and how every view was counted twice.
+      'queerguide/no-ungated-analytics': 'error',
       // Accessibility rules (WCAG 2.2 AA)
       'jsx-a11y/alt-text': 'error',
       'jsx-a11y/anchor-has-content': 'error',

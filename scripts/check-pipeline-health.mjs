@@ -1928,6 +1928,132 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
   }
 }
 
+// ── Analytics hygiene (2026-09-12) ────────────────────────────────────────
+//
+// The whole analytics layer ran wrong for months with nothing watching it: an
+// ungated React tracker carried 98.9% of all sessions past a consent gate the
+// Cookie policy promised, every page view was recorded twice, a client-side
+// scroll-spy loop produced 59% of all traffic, and there was no retention of
+// any kind on a 1,248 MB schema inside a 14 GB database.
+//
+// sessions_null_country_pct_24h is the check that would have caught the first
+// of those on day one. `country` is attached ONLY by functions/api/track.ts,
+// which only runs because public/umami.js was injected, which only happens
+// after explicit consent — so a high null rate means a writer found its way
+// around the gate again. Baseline before the fix: 99.9%.
+//
+// Standalone RPC rather than a key on pipeline_hygiene_stats(): adding one
+// there means restating that function's whole body, which is a merge-collision
+// surface (same reason news_image_signals and venue_dup_signals are separate).
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/analytics_hygiene_stats`, {
+    method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: '{}',
+  })
+  if (!res.ok) {
+    // A failed probe must SAY it failed. Falling through to a default would
+    // report a clean layer on the strength of never having looked.
+    console.warn(`⚠ analytics_hygiene_stats → HTTP ${res.status} (20700301100500 not applied?)`)
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else {
+    const a = await res.json()
+    let sectionOk = true
+
+    if (a?.probe_ok !== true) {
+      console.error('✗ analytics_hygiene_stats did not report probe_ok — the sentinel itself is broken')
+      FAILED = true; sectionOk = false
+    }
+
+    // Consent. The single most important number in this section.
+    //
+    // Threshold, not zero: real visitors behind privacy proxies and some
+    // corporate egress arrive without a usable cf.country, so a small null
+    // share is normal. 20% is far above that and far below the 99.9% a
+    // bypassed gate produces — the two states are not close together, which is
+    // what makes a threshold safe here.
+    const nullPct = a?.sessions_null_country_pct_24h
+    const sessions = Number(a?.sessions_24h ?? 0)
+    if (sessions === 0) {
+      // Not a pass: zero sessions in 24h on a live site is itself a finding,
+      // and it makes every percentage below undefined.
+      console.warn('⚠ no umami sessions in the last 24h — the consent check has nothing to measure')
+    } else if (nullPct == null) {
+      console.error('✗ sessions_null_country_pct_24h is null with sessions present — the sentinel is miscomputing')
+      FAILED = true; sectionOk = false
+    } else if (Number(nullPct) > 20) {
+      console.error(`✗ ${nullPct}% of umami sessions in 24h have no country (${a.sessions_null_country_24h}/${sessions})`)
+      console.error('  country is attached only by the consent-gated /api/track path, so this means a')
+      console.error('  writer is reaching umami-analytics directly. Check for a re-added tracker')
+      console.error('  component or a direct supabase.functions.invoke (eslint: no-ungated-analytics).')
+      FAILED = true; sectionOk = false
+    }
+
+    // One page view, one row.
+    const dupes = Number(a?.duplicate_pageview_groups_24h ?? 0)
+    if (dupes > 0) {
+      console.error(`✗ ${dupes} page views recorded more than once in the same second (24h)`)
+      console.error('  A second emitter is live — either another history patch or a parallel tracker.')
+      FAILED = true; sectionOk = false
+    }
+
+    // A reader does not view one page 50 times a day.
+    const bursts = Number(a?.burst_sessions_24h ?? 0)
+    if (bursts > 0) {
+      console.error(`✗ ${bursts} sessions emitted 50+ page views in 24h — a client-side loop or an automated client`)
+      console.error('  Previously: the editorial scroll-spy writing ?section= on a 300ms debounce.')
+      FAILED = true; sectionOk = false
+    }
+
+    // Preview aliases and localhost are not traffic.
+    const foreignHosts = Number(a?.foreign_hostname_sessions_24h ?? 0)
+    if (foreignHosts > 0) {
+      console.error(`✗ ${foreignHosts} sessions in 24h came from a hostname that is not the live site`)
+      console.error('  track_umami_event refuses these, so something is writing past it.')
+      FAILED = true; sectionOk = false
+    }
+
+    // Retention REGISTERED is not retention RUNNING. Both are checked, because
+    // a scheduled job that never deletes anything is the failure this repo has
+    // hit repeatedly.
+    const scheduled = Number(a?.retention_jobs_scheduled ?? 0)
+    if (scheduled < 2) {
+      console.error(`✗ only ${scheduled}/2 analytics retention jobs are in pg_cron`)
+      console.error('  Expected umami_retention and user_events_retention (migration 20700301100100).')
+      FAILED = true; sectionOk = false
+    }
+    const stale = Number(a?.events_older_than_100d ?? 0)
+    if (scheduled >= 2 && stale > 100000) {
+      // 100 days against a 90-day window leaves room for the batch cap to catch
+      // up; a six-figure residue means it is not catching up at all.
+      console.error(`✗ ${stale} umami events are older than 100 days despite a 90-day retention job`)
+      console.error('  The job is scheduled but not keeping up — raise p_limit or check its run history.')
+      FAILED = true; sectionOk = false
+    }
+
+    // Silence is not health. A telemetry table with no rows in 24h is a dead
+    // writer or a rejected row, and both look exactly like "nobody visited"
+    // (docs/audits/2026-08-21-signup-consent-gap.md).
+    for (const [key, label] of [
+      ['page_views_24h', 'umami page views'],
+      ['user_events_24h', 'user_events'],
+      ['search_queries_24h', 'search_queries'],
+    ]) {
+      if (Number(a?.[key] ?? 0) === 0) {
+        console.error(`✗ zero ${label} in the last 24h — a writer is dead or its rows are being rejected`)
+        console.error('  A zero here is not a measurement until the row is proven writable.')
+        FAILED = true; sectionOk = false
+      }
+    }
+
+    if (sectionOk) {
+      const mb = Math.round(Number(a?.website_event_bytes ?? 0) / 1048576)
+      console.log(
+        `✓ analytics hygiene: ${sessions} sessions/24h, ${nullPct}% without country, ` +
+        `0 duplicates, 0 bursts, ${a.website_event_rows} events (${mb} MB)`,
+      )
+    }
+  }
+}
+
 // The single exit. Reached whether or not anything failed, so the ✗ lines above
 // are the complete list rather than "the first one we tripped over".
 if (FAILED) {

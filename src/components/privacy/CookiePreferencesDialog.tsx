@@ -113,7 +113,9 @@ export function CookiePreferencesDialog({ open, onOpenChange }: CookiePreference
                         {category.title}
                       </Label>
                       {category.required && (
-                        <span className="text-xs bg-accent px-2 py-0.5 rounded-badge">Required</span>
+                        <span className="text-xs bg-accent px-2 py-0.5 rounded-badge">
+                          Required
+                        </span>
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground">{category.description}</p>
@@ -151,7 +153,8 @@ export function CookiePreferencesDialog({ open, onOpenChange }: CookiePreference
         </div>
 
         <p className="text-xs text-muted-foreground text-center">
-          You can change these settings at any time from our Privacy Policy page.
+          You can change these settings at any time from the cookie preferences link in the footer.
+          We also honour your browser's Do Not Track setting, whatever you choose here.
         </p>
       </DialogContent>
     </Dialog>

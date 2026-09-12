@@ -119,6 +119,7 @@ jobs:
             e2e/competitions.spec.ts \
             e2e/singles.spec.ts \
             e2e/legal-pages.spec.ts \
+            e2e/analytics-consent.spec.ts \
             e2e/map-shell.spec.ts \
             e2e/trans-rights.spec.ts \
             --reporter=line
