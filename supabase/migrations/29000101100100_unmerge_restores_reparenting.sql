@@ -496,7 +496,14 @@ begin
   if position('''reparenting_restored'', v_restored' in v_src) = 0 then
     raise exception 'unmerge_entities does not report the real reparenting_restored value';
   end if;
-  if position('v_pre_schema and not p_force' in v_src) = 0 then
+  -- The guard is NESTED (`if v_pre_schema then` / `if not p_force then`), matching the
+  -- shape 20270822093412 established and that eventMergeReversibility.test.ts pins.
+  -- Assert the two parts, not one hoisted string: this check previously looked for
+  -- `v_pre_schema and not p_force`, the restructure removed that spelling, and the
+  -- block then aborted db push on a function that was in fact correct -- taking every
+  -- later migration in the PR with it. A guard that encodes one phrasing of a
+  -- condition fails on a rewrite that preserves the condition.
+  if position('v_pre_schema' in v_src) = 0 or position('if not p_force then' in v_src) = 0 then
     raise exception 'unmerge_entities no longer refuses pre-schema audits without p_force';
   end if;
 
