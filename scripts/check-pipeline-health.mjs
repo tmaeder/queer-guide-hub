@@ -2075,7 +2075,7 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
     body: '{}',
   })
   if (!res.ok) {
-    console.warn(`⚠ event_schedule_signals → HTTP ${res.status} (RPC missing? migration 20700101100100)`)
+    console.warn(`⚠ event_schedule_signals → HTTP ${res.status} (RPC missing? migration 20750101100100)`)
     console.warn('  This check measured NOTHING — it did not pass.')
   } else {
     const sig = (await res.json()) ?? {}

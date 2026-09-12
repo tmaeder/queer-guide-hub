@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { describe, it, expect } from 'vitest';
 
 /**
- * Guards on the event schedule model (20700101100000 / 20700101100100).
+ * Guards on the event schedule model (20750101100000 / 20750101100100).
  *
  * These are text scans over the migration source, the same shape as
  * citySafetyBackfill.test.ts. They exist because the properties below are not

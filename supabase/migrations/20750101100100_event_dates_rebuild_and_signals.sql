@@ -1,6 +1,6 @@
 -- Event temporal model, part 2: the derive job, its trigger, and its sentinel.
 --
--- Part 1 (20700101100000) added `events.schedule`, the pure expander and the
+-- Part 1 (20750101100000) added `events.schedule`, the pure expander and the
 -- `event_dates` index. This makes the index maintain itself and reports when it
 -- stops.
 --
