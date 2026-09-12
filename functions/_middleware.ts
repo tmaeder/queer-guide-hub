@@ -41,6 +41,7 @@ import {
   isIndexable,
   DEFAULT_OG_IMAGE,
   splitLocale,
+  startsWithLocale,
   localizedUrl,
   SUPPORTED_LOCALES,
   DEFAULT_LOCALE,
@@ -244,6 +245,31 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   // canonical (default-locale) path. Each translated URL keeps its own
   // self-canonical and exposes hreflang alternates to its 10 siblings.
   const { locale, basePath } = splitLocale(pathname);
+
+  // A doubled locale prefix (`/fr/fr/places`, `/it/fr/history`). `splitLocale`
+  // strips one, leaving a basePath that still starts with a locale — not a
+  // real route, but not a detail path either, so the hard-404 below never saw
+  // it and the SPA shell went out at HTTP 200. An indexable 200 then emits an
+  // hreflang alternate per locale, each one re-advertising the stray segment,
+  // so one bad URL minted ten more and crawlers kept recycling them. Verified
+  // on prod: `/fr/fr/places` returned 200 and advertised `/es/fr/places`,
+  // `/it/fr/places`, … with no robots meta.
+  //
+  // This must run BEFORE resolveLandingRoute, or `/fr/fr/pride/2026` resolves
+  // a real landing page off the stripped basePath and publishes it under the
+  // doubled URL. Same treatment as isOwnedLandingShape below, for the same
+  // reason: a soft 404 at 200 is worse than a hard one.
+  if (startsWithLocale(basePath)) {
+    const doubledNotFound = new Response(notFoundHtml(basePath), {
+      status: 404,
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'public, s-maxage=60, max-age=30',
+      },
+    });
+    applySecurityHeaders(doubledNotFound, cspNonce);
+    return doubledNotFound;
+  }
 
   // Phase 3.7: standalone landing pages (/spaces/:tag, /pride/:year,
   // /pride/:year/:city) bypass the SPA shell and return a complete HTML
