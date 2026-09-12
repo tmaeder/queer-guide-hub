@@ -49,6 +49,7 @@ import { matchNeeds, needLabel } from '@/lib/accessibilityNeeds';
 import { FactGrid } from '@/components/transit/FactGrid';
 import { NestedEntityCard } from '@/components/transit/NestedEntityCard';
 import { getEventLiveState } from '@/lib/event-countdown';
+import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
 
 export type EventWithRelations = Database['public']['Tables']['events']['Row'] & {
   social_links?: Record<string, string> | null;
@@ -753,7 +754,7 @@ export function EventAbout({
               className="max-w-[68ch] whitespace-pre-wrap text-body-lg text-foreground/90"
               style={{ lineHeight: 1.7 }}
             >
-              {event.description}
+              <GlossaryLinkedText text={event.description} />
             </p>
           </Editable>
         </section>

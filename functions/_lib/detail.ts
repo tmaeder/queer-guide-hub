@@ -9,6 +9,13 @@
  * middleware falls back to the slug-derived static fallback in routeMeta.ts.
  */
 import { fetchRows, type Env } from './sitemap';
+import {
+  glossaryHref,
+  segmentGlossaryText,
+  type FindGlossaryLinksOptions,
+  type GlossaryLinkTerm,
+} from '../../src/lib/glossaryLinks';
+import { getGlossaryVocabulary } from './glossaryVocabulary';
 import { SITE_ORIGIN, DEFAULT_OG_IMAGE, type RouteMeta } from './routeMeta';
 import { safeOgImage } from './safeOgImage';
 import { categoryLabel, categoryLabelTitle } from './categoryLabels';
@@ -207,14 +214,195 @@ const arrayField = (row: Record<string, unknown>, k: string): unknown[] | undefi
  * double space after a full stop — 110 `venues.description`, 117
  * `cities.description` and 35 `events.description` rows, all of them running
  * text ("…was 60 at the 2000 census.  The area is named for…").
+ *
+ * ONE splitter, because the copy is exactly what went wrong. `paragraphsHtmlLinked`
+ * below shipped with an older `collapseWs(...)`-then-split body; when the fix
+ * above landed the two auto-merged with NO conflict, and since all 13 call sites
+ * render through the linked variant, the everything-in-one-`<p>` bug would have
+ * come straight back under a green diff. Both now share `splitParagraphs`.
+ *
+ * Each returned paragraph is already whitespace-collapsed, so no `\n` survives
+ * inside one — `paragraphsHtmlLinked` relies on that to rejoin them safely.
  */
-export function paragraphsHtml(text: string): string {
+function splitParagraphs(text: string): string[] {
   return stripHtml(text)
     .replace(/\r\n?/g, '\n')
     .split(/\n\s*\n|(?<=[.!?:"'’”)\]])[ \t]*\n|(?<=[^\s,;])[ \t]*\n[ \t]*(?=[\p{Lu}0-9])/u)
     .map(collapseWs)
-    .filter(Boolean)
+    .filter(Boolean);
+}
+
+export function paragraphsHtml(text: string): string {
+  return splitParagraphs(text)
     .map((p) => `<p>${escape(p)}</p>`)
+    .join('\n      ');
+}
+
+/**
+ * `paragraphsHtml`, with the glossary terms the prose mentions turned into
+ * links to `/tags/:slug`.
+ *
+ * WHY THE LINKS ARE NOT SIMPLY STORED IN THE PROSE COLUMN: this function's
+ * sibling above is the reason. `stripHtml` would delete any `<a>` a migration
+ * wrote into the column and `escape` would neutralise whatever survived, so a
+ * stored anchor is invisible to exactly the audience it was written for. The
+ * vocabulary is read at render time instead, which also means a term that is
+ * later merged, deprecated or un-reviewed stops linking rather than rotting
+ * into a dead anchor — `unified_tags` keeps 5,802 deprecated and 144 merged
+ * rows at their old slugs.
+ *
+ * The escaping contract is unchanged and load-bearing: source text is ONLY ever
+ * emitted through `escape()`, and the `href` is built from the vocabulary's own
+ * slug, never from anything in the document. No source text can become markup.
+ *
+ * `docs/SEO.md`'s cloaking rule requires this set to be a subset of what a
+ * human sees, which is why the span decisions come from the same
+ * `src/lib/glossaryLinks.ts` the SPA uses rather than a second implementation.
+ *
+ * PARAGRAPHS COME FROM `splitParagraphs`, the same splitter `paragraphsHtml`
+ * uses — never a second copy of that regex. Every call site renders through this
+ * function, so a stale copy here silently reverts the paragraph fix for all 13
+ * of them, which is exactly what a no-conflict auto-merge nearly shipped.
+ *
+ * The matcher then runs ONCE over the whole document (paragraphs rejoined by a
+ * blank line) rather than per paragraph, so first-mention-only and the
+ * per-document cap mean what they say instead of being multiplied by the
+ * paragraph count. Rejoining is unambiguous because `splitParagraphs` has
+ * already collapsed whitespace inside each paragraph, so the only `\n` in the
+ * joined string are the ones added here.
+ */
+export function paragraphsHtmlLinked(
+  text: string,
+  vocabulary: readonly GlossaryLinkTerm[],
+  options: FindGlossaryLinksOptions = {},
+): string {
+  if (vocabulary.length === 0) return paragraphsHtml(text);
+
+  const paras = splitParagraphs(text);
+  if (paras.length === 0) return '';
+  const segments = segmentGlossaryText(paras.join('\n\n'), vocabulary, options);
+
+  const paragraphs: string[][] = [[]];
+  const push = (html: string) => paragraphs[paragraphs.length - 1].push(html);
+
+  for (const segment of segments) {
+    if (segment.kind === 'link') {
+      // `data-glossary-link` mirrors the SPA's attribute and is what lets a test
+      // tell an INLINE prose link from the nav and rail links on the same page —
+      // without it "no bad inline link" is indistinguishable from "no inline
+      // links at all".
+      push(
+        `<a href="${escape(glossaryHref(segment.slug))}" data-glossary-link="${escape(segment.slug)}">${escape(segment.text)}</a>`,
+      );
+      continue;
+    }
+    // Only the joins above can produce a blank line here, so this splits on
+    // exactly the paragraph boundaries `splitParagraphs` already decided.
+    const parts = segment.text.split('\n\n');
+    parts.forEach((part, i) => {
+      if (i > 0) paragraphs.push([]);
+      if (part) push(escape(part));
+    });
+  }
+
+  return paragraphs
+    .map((parts) => parts.join('').trim())
+    .filter(Boolean)
+    .map((body) => `<p>${body}</p>`)
+    .join('\n      ');
+}
+
+/**
+ * The content carrying a tag, as crawlable links, for the tag page's bot body.
+ *
+ * `cityDetail` has listed its venues and events since 20260910 — the "two-hop
+ * payoff" docs/SEO.md names — while `tagDetail` listed nothing at all, so the
+ * glossary was a leaf in the crawl graph. The SPA equivalent, `TagLinkedContent`
+ * over `get_tag_linked_content`, has rendered real anchors for months; this is
+ * the same relationships served to a crawler that does not run JS. Per the
+ * cloaking rule the bot set must be a SUBSET of the human one, which is why
+ * this covers three of that component's four types and never more.
+ *
+ * EVERY visibility predicate below is mandatory and none is a duplicate of an
+ * RLS policy: `fetchRows` authenticates with the service role, which bypasses
+ * RLS entirely. The gates are copied verbatim from the sitemap generators so
+ * the two cannot disagree about what is publishable — dropping
+ * `safety_gated=eq.false` alone would publish venues in criminalising countries
+ * to anonymous crawlers.
+ */
+async function tagLinkedContentHtml(env: Env, tagId: string, tagName: string): Promise<string> {
+  // `unified_tag_assignments` is polymorphic — no FK per type — so PostgREST
+  // embedding is not available and each type costs an id lookup plus a gated
+  // fetch. Assignment ids are over-fetched because the gates below reject some.
+  const ASSIGNMENT_FETCH = 60;
+  const RENDER_LIMIT = 10;
+  const today = new Date().toISOString().slice(0, 10);
+
+  const idsFor = async (entityType: string): Promise<string[]> => {
+    const rows = await fetchRows(
+      env,
+      'unified_tag_assignments',
+      'entity_id',
+      `tag_id=eq.${tagId}&entity_type=eq.${entityType}`,
+      ASSIGNMENT_FETCH,
+    ).catch(() => []);
+    return rows.map((r) => stringField(r, 'entity_id')).filter((v): v is string => Boolean(v));
+  };
+
+  const gated = async (
+    entityType: string,
+    table: string,
+    select: string,
+    filter: string,
+  ): Promise<Record<string, unknown>[]> => {
+    const ids = await idsFor(entityType);
+    if (ids.length === 0) return [];
+    return fetchRows(env, table, select, `id=in.(${ids.join(',')})&${filter}`, RENDER_LIMIT).catch(
+      () => [],
+    );
+  };
+
+  const [venues, events, news] = await Promise.all([
+    gated(
+      'venues',
+      'venues',
+      'name,slug',
+      'slug=not.is.null&seo_indexable=eq.true&safety_gated=eq.false&duplicate_of_id=is.null',
+    ),
+    gated(
+      'event',
+      'events',
+      'title,slug,start_date',
+      `slug=not.is.null&seo_indexable=eq.true&status=neq.cancelled&start_date=gte.${today}&safety_gated=eq.false&duplicate_of_id=is.null&order=start_date.asc`,
+    ),
+    gated(
+      'news',
+      'news_articles',
+      'title,slug',
+      'slug=not.is.null&seo_indexable=eq.true&duplicate_of_id=is.null&content=not.is.null&archived_at=is.null',
+    ),
+  ]);
+
+  const list = (
+    rows: Record<string, unknown>[],
+    prefix: string,
+    titleKey: string,
+    heading: string,
+  ): string => {
+    const items = rows
+      .map((r) => ({ title: stringField(r, titleKey), slug: stringField(r, 'slug') }))
+      .filter((r) => r.title && r.slug)
+      .map((r) => `<li><a href="${prefix}${escape(r.slug!)}">${escape(r.title!)}</a></li>`)
+      .join('\n        ');
+    return items ? `<section><h2>${escape(heading)}</h2><ul>\n        ${items}\n      </ul></section>` : '';
+  };
+
+  return [
+    list(venues, '/venues/', 'name', `Places tagged ${tagName}`),
+    list(events, '/events/', 'title', `Upcoming events tagged ${tagName}`),
+    list(news, '/news/', 'title', `Reporting tagged ${tagName}`),
+  ]
+    .filter(Boolean)
     .join('\n      ');
 }
 
@@ -388,12 +576,13 @@ async function venueDetail(env: Env, slug: string, pathname: string): Promise<De
     .join(' ');
   const hoursText = formatHoursForCrawler(row.hours);
 
+  const glossary = await getGlossaryVocabulary(env);
   const body = `<main data-prerendered="bot-ua">
     <article>
       <h1>${escape(name)}</h1>
       ${address || city ? `<p><strong>${escape([address, city, country].filter(Boolean).join(', '))}</strong></p>` : ''}
       ${factLine ? `<p>${escape(factLine)}${aggregateRatingSentence(row)}</p>` : ''}
-      ${description ? paragraphsHtml(description) : ''}
+      ${description ? paragraphsHtmlLinked(description, glossary) : ''}
       ${hoursText ? `<section><h2>Opening hours</h2><p>${escape(hoursText)}</p></section>` : ''}
     </article>
     <nav aria-label="Site sections">
@@ -513,12 +702,13 @@ async function eventDetail(env: Env, slug: string, pathname: string): Promise<De
     ogImage: safeOgImage((arrayField(row, 'images')?.[0] as string) ?? DEFAULT_OG_IMAGE),
   };
 
+  const glossary = await getGlossaryVocabulary(env);
   const body = `<main data-prerendered="bot-ua">
     <article>
       <h1>${escape(title)}</h1>
       ${startDate ? `<p><strong>When:</strong> <time datetime="${escape(startDate)}">${escape(startDate.slice(0, 10))}</time>${endDate ? ` – <time datetime="${escape(endDate)}">${escape(endDate.slice(0, 10))}</time>` : ''}</p>` : ''}
       ${city ? `<p><strong>Where:</strong> ${escape([stringField(row, 'venue_name'), stringField(row, 'address'), city, country].filter(Boolean).join(', '))}</p>` : ''}
-      ${description ? paragraphsHtml(description) : ''}
+      ${description ? paragraphsHtmlLinked(description, glossary) : ''}
     </article>
     <nav aria-label="Site sections">
       <ul>
@@ -616,11 +806,12 @@ async function newsDetail(env: Env, slug: string, pathname: string): Promise<Det
   };
 
   const sourceLink = stringField(row, 'url');
+  const glossary = await getGlossaryVocabulary(env);
   const body = `<main data-prerendered="bot-ua">
     <article>
       <h1>${escape(title)}</h1>
       <p>${author ? `<em>By ${escape(author)}</em>` : ''}${author && publisher ? ' · ' : ''}${publisher ? `Published on ${escape(publisher)}` : ''}</p>
-      ${excerpt ? `<p>${escape(excerpt)}</p>` : ''}
+      ${excerpt ? paragraphsHtmlLinked(excerpt, glossary) : ''}
       ${sourceLink ? `<p><a href="${escape(sourceLink)}" rel="nofollow noopener">Read the full article at ${escape(publisher ?? 'the source')}</a></p>` : ''}
     </article>
     <nav aria-label="Site sections">
@@ -728,13 +919,14 @@ async function personalityDetail(
     ogImage: safeOgImage(image ?? DEFAULT_OG_IMAGE),
   };
 
+  const glossary = await getGlossaryVocabulary(env);
   const body = `<main data-prerendered="bot-ua">
     <article>
       <h1>${escape(name)}</h1>
       ${profession ? `<p><strong>${escape(profession)}</strong></p>` : ''}
       ${birthDate || deathDate ? `<p>${birthDate ? escape(birthDate.slice(0, 10)) : '?'} – ${deathDate ? escape(deathDate.slice(0, 10)) : row.is_living === true ? 'present' : '?'}</p>` : ''}
-      ${description ? paragraphsHtml(description) : ''}
-      ${bio && bio !== description ? paragraphsHtml(bio) : ''}
+      ${description ? paragraphsHtmlLinked(description, glossary) : ''}
+      ${bio && bio !== description ? paragraphsHtmlLinked(bio, glossary) : ''}
     </article>
     <nav aria-label="Site sections">
       <ul>
@@ -863,10 +1055,11 @@ async function cityDetail(env: Env, slug: string, pathname: string): Promise<Det
     })
     .join('\n        ');
 
+  const glossary = await getGlossaryVocabulary(env);
   const body = `<main data-prerendered="bot-ua">
     <article>
       <h1>LGBTQ+ guide to ${escape(name)}</h1>
-      ${description ? paragraphsHtml(description) : `<p>${escape(name)} is part of the global queer life Queer Guide tracks. Below are the venues, events and travel tips we have on file for ${escape(name)}.</p>`}
+      ${description ? paragraphsHtmlLinked(description, glossary) : `<p>${escape(name)} is part of the global queer life Queer Guide tracks. Below are the venues, events and travel tips we have on file for ${escape(name)}.</p>`}
       ${venues.length ? `<section><h2>Top LGBTQ+ venues in ${escape(name)}</h2><ul>\n        ${venuesList}\n      </ul></section>` : ''}
       ${events.length ? `<section><h2>Upcoming LGBTQ+ events in ${escape(name)}</h2><ul>\n        ${eventsList}\n      </ul></section>` : ''}
       <section><h2>Plan your trip</h2><p>Check the <a href="/travel">country safety guide</a> before you go, and browse <a href="/hotels">queer-friendly hotels</a> and <a href="/villages">queer villages</a> for a place to stay.</p></section>
@@ -954,12 +1147,13 @@ async function countryDetail(
     ogImage: safeOgImage(image ?? DEFAULT_OG_IMAGE),
   };
 
+  const glossary = await getGlossaryVocabulary(env);
   const body = `<main data-prerendered="bot-ua">
     <article>
       <h1>LGBTQ+ guide to ${escape(name)}</h1>
       ${capital ? `<p><strong>Capital:</strong> ${escape(capital)}</p>` : ''}
       ${unions ? `<p><strong>Same-sex unions:</strong> ${escape(unions)}</p>` : ''}
-      ${description ? paragraphsHtml(description) : `<p>Country profile, legal status and travel notes for ${escape(name)}.</p>`}
+      ${description ? paragraphsHtmlLinked(description, glossary) : `<p>Country profile, legal status and travel notes for ${escape(name)}.</p>`}
       <section><h2>Plan your trip</h2><p>Read the <a href="/travel">global travel safety guide</a>, browse <a href="/places">cities and queer villages</a>, and check <a href="/help">crisis hotlines</a> before you go.</p></section>
     </article>
     <nav aria-label="Site sections">
@@ -1017,12 +1211,13 @@ async function hotelDetail(env: Env, slug: string, pathname: string): Promise<De
     ogImage: safeOgImage((arrayField(row, 'images')?.[0] as string) ?? DEFAULT_OG_IMAGE),
   };
 
+  const glossary = await getGlossaryVocabulary(env);
   const body = `<main data-prerendered="bot-ua">
     <article>
       <h1>${escape(name)}</h1>
       ${city ? `<p><strong>${escape([stringField(row, 'address'), city, country].filter(Boolean).join(', '))}</strong></p>` : ''}
-      ${description ? paragraphsHtml(description) : ''}
-      ${safetyNotes ? `<section><h2>Queer safety notes</h2>${paragraphsHtml(safetyNotes)}</section>` : ''}
+      ${description ? paragraphsHtmlLinked(description, glossary) : ''}
+      ${safetyNotes ? `<section><h2>Queer safety notes</h2>${paragraphsHtmlLinked(safetyNotes, glossary)}</section>` : ''}
     </article>
     <nav aria-label="Site sections">
       <ul>
@@ -1118,11 +1313,12 @@ async function villageDetail(
     .map((l) => `<li>${escape(l)}</li>`)
     .join('\n        ');
 
+  const glossary = await getGlossaryVocabulary(env);
   const body = `<main data-prerendered="bot-ua">
     <article>
       <h1>${escape(name)}</h1>
-      ${description ? paragraphsHtml(description) : ''}
-      ${history ? `<section><h2>History</h2>${paragraphsHtml(history)}</section>` : ''}
+      ${description ? paragraphsHtmlLinked(description, glossary) : ''}
+      ${history ? `<section><h2>History</h2>${paragraphsHtmlLinked(history, glossary)}</section>` : ''}
       ${landmarksList ? `<section><h2>Notable landmarks</h2><ul>\n        ${landmarksList}\n      </ul></section>` : ''}
     </article>
     <nav aria-label="Site sections">
@@ -1299,11 +1495,17 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
     ogImage: safeOgImage(DEFAULT_OG_IMAGE),
   };
 
+  const [glossary, linkedContent] = await Promise.all([
+    getGlossaryVocabulary(env),
+    // Best-effort: a failed content lookup must leave the definition page
+    // intact, not blank it.
+    tagId ? tagLinkedContentHtml(env, tagId, name).catch(() => '') : Promise.resolve(''),
+  ]);
   const body = `<main data-prerendered="bot-ua">
     <article>
       <h1>${escape(name)}</h1>
       ${category ? `<p><strong>Category:</strong> ${escape(category)}</p>` : ''}
-      ${article ? paragraphsHtml(article) : `<p>Browse content tagged ${escape(name)} on Queer Guide.</p>`}
+      ${article ? paragraphsHtmlLinked(article, glossary, { currentSlug: slug }) : `<p>Browse content tagged ${escape(name)} on Queer Guide.</p>`}
       ${
         citations.length
           ? `<section><h2>Source of law</h2><ul>${citations
@@ -1330,6 +1532,7 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
               .join('')}</ul></section>`
           : ''
       }
+      ${linkedContent}
       ${stringField(row, 'wikipedia_url') ? `<p><a href="${escape(stringField(row, 'wikipedia_url')!)}" rel="noopener">Read more on Wikipedia</a></p>` : ''}
     </article>
     <nav aria-label="Site sections">
@@ -1426,11 +1629,12 @@ async function milestoneDetail(
     ogImage: safeOgImage(image ?? DEFAULT_OG_IMAGE),
   };
 
+  const glossary = await getGlossaryVocabulary(env);
   const body = `<main data-prerendered="bot-ua">
     <article>
       <h1>${escape(title)}</h1>
       <p><strong>${escape(precision === 'year' ? year : date)}</strong>${place ? ` — ${escape(place)}` : ''}</p>
-      ${description ? paragraphsHtml(description) : ''}
+      ${description ? paragraphsHtmlLinked(description, glossary) : ''}
       ${sources.length ? `<h2>Sources</h2><ul>${sources.map((sRow) => `<li>${typeof sRow.url === 'string' ? `<a href="${escape(sRow.url)}" rel="nofollow noopener">${escape(String(sRow.label ?? sRow.url))}</a>` : escape(String(sRow.label ?? ''))}</li>`).join('')}</ul>` : ''}
     </article>
     <nav aria-label="Site sections">
@@ -1497,11 +1701,12 @@ async function guideDetail(env: Env, slug: string, pathname: string): Promise<De
     ogImage: safeOgImage(hero && /^https?:\/\//.test(hero) ? hero : DEFAULT_OG_IMAGE),
   };
 
+  const glossary = await getGlossaryVocabulary(env);
   const body = `<main data-prerendered="bot-ua">
     <article>
       <h1>${escape(title)}</h1>
       ${dek ? `<p><em>${escape(dek)}</em></p>` : ''}
-      ${intro ? paragraphsHtml(intro) : ''}
+      ${intro ? paragraphsHtmlLinked(intro, glossary) : ''}
       ${picks ? `<p>${picks} picks in this ${escape(formatLabel.toLowerCase())}.</p>` : ''}
     </article>
     <nav aria-label="Site sections">
