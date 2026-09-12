@@ -3,7 +3,10 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GlossaryLinkedProse, GlossaryLinkedText } from '../GlossaryLinkedText';
-import { GlossaryVocabularyProvider } from '@/hooks/useGlossaryLinkVocabulary';
+import {
+  GLOSSARY_LINK_FETCH_ENABLED,
+  GlossaryVocabularyProvider,
+} from '@/hooks/useGlossaryLinkVocabulary';
 import type { GlossaryLinkTerm } from '@/lib/glossaryLinks';
 
 /**
@@ -116,6 +119,44 @@ describe('GlossaryLinkedText with a vocabulary', () => {
     // First mention only — a per-paragraph pass would produce three.
     expect(screen.getAllByRole('link', { name: 'PrEP' })).toHaveLength(1);
     expect(screen.getByText(/PrEP in three/)).toBeInTheDocument();
+  });
+});
+
+describe('the shipped-off fetch flag', () => {
+  it('makes no request while disabled, and prose still renders', async () => {
+    // The whole reason the flag exists: `glossary_link_terms_public` does not
+    // exist on prod until this PR's migration applies, and a PostgREST 404 is
+    // logged by the browser on every page load — which failed
+    // e2e/trip-creation.spec.ts's `no console errors` assertion, and would have
+    // hit real visitors between merge and the migration applying.
+    expect(GLOSSARY_LINK_FETCH_ENABLED).toBe(false);
+
+    let called = 0;
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    client.setQueryDefaults(['glossary-link-vocabulary'], {
+      queryFn: () => {
+        called += 1;
+        return Promise.resolve([]);
+      },
+    });
+
+    render(
+      <QueryClientProvider client={client}>
+        <MemoryRouter>
+          <GlossaryVocabularyProvider>
+            <p>
+              <GlossaryLinkedText text="Ask about PrEP." />
+            </p>
+          </GlossaryVocabularyProvider>
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+
+    await Promise.resolve();
+    expect(called, 'the vocabulary was fetched while the flag is off').toBe(0);
+    // Turning the fetch off costs no behaviour today: the vocabulary ships
+    // empty, so it would have produced no links either way.
+    expect(screen.getByText('Ask about PrEP.')).toBeInTheDocument();
   });
 });
 

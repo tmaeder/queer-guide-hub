@@ -38,6 +38,35 @@ const VOCABULARY_HARD_CAP = 5000;
  */
 const STALE_TIME = 24 * 60 * 60_000;
 
+/**
+ * The SPA vocabulary fetch, off until the view exists on prod.
+ *
+ * WHY THIS SHIPS OFF, AND WHY IT COSTS NOTHING.
+ *
+ * `glossary_link_terms` ships EMPTY — every row starts as a `candidate` and
+ * links nothing until a human activates it — so this fetch currently returns
+ * `[]` and produces zero links either way. Turning it off loses no behaviour
+ * that exists today.
+ *
+ * What it avoids is a real defect. `Critical paths` builds this branch and
+ * points it at the LIVE backend, where `glossary_link_terms_public` does not
+ * exist until the migration in this PR is applied — so PostgREST answers 404 and
+ * Chrome logs `Failed to load resource: … 404` on EVERY page. That failed
+ * `e2e/trip-creation.spec.ts`'s `no console errors` assertion, which excludes
+ * only `net::ERR_*` infrastructure errors and correctly treats an HTTP 404 as an
+ * application fault. It is not a CI artefact either: between merge and the
+ * migration applying, real visitors would get the same 404 on every page load.
+ *
+ * An `/api/` Pages Function would NOT fix it — that job serves the build through
+ * `vite preview`, which runs no Functions, so the endpoint 404s there too.
+ *
+ * TO ENABLE: once migration 20520101100000 is applied to prod (check
+ * `to_regclass('public.glossary_link_terms_public')`), flip this to `true`. The
+ * crawler side needs no flag and works immediately — its fetch is server-side
+ * and already fails open to plain prose, so a 404 there is invisible to anyone.
+ */
+export const GLOSSARY_LINK_FETCH_ENABLED = false;
+
 type VocabularyRow = {
   surface_form: string | null;
   match_mode: string | null;
@@ -107,6 +136,10 @@ export function GlossaryVocabularyProvider({ children }: { children: ReactNode }
   const { data } = useQuery({
     queryKey: ['glossary-link-vocabulary'],
     queryFn: fetchGlossaryLinkVocabulary,
+    // See GLOSSARY_LINK_FETCH_ENABLED: off until the view exists on prod, so no
+    // request is made and no 404 is logged. A test seeded via setQueryData still
+    // resolves, which is what keeps the render path covered while this is off.
+    enabled: GLOSSARY_LINK_FETCH_ENABLED,
     staleTime: STALE_TIME,
     gcTime: STALE_TIME,
     retry: 1,
