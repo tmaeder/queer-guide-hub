@@ -282,7 +282,7 @@ describe('city merges are reversible', () => {
 /**
  * The merchant FK is NOT asserted here any more.
  *
- * This branch originally carried its own repoint (21000101095000), because
+ * This branch originally carried its own repoint (21500101095000), because
  * `marketplace_listings_merchant_id_fkey` referenced `affiliate_partners` while
  * 69,737 of 69,737 rows resolve in `marketplace_merchants`, and that made
  * `unmerge_entities` throw 23503 on 2,925 of the 2,965 marketplace merges on record.
