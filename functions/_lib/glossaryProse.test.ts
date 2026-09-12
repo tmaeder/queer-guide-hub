@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { paragraphsHtmlLinked } from './detail';
+import { paragraphsHtml, paragraphsHtmlLinked } from './detail';
 import { segmentGlossaryText, type GlossaryLinkTerm } from '../../src/lib/glossaryLinks';
 
 /**
@@ -94,6 +94,71 @@ describe('paragraphsHtmlLinked — escaping contract', () => {
     );
     expect(anchorOf(html)).toMatchObject({ href: '/tags/prep', text: 'PrEP' });
     expect(html).not.toContain('<em>');
+  });
+});
+
+describe('paragraphsHtmlLinked — paragraph structure matches paragraphsHtml', () => {
+  // THE REGRESSION THIS FILE EXISTS TO STOP. The linked variant shipped with its
+  // own older copy of the splitter (`collapseWs` before the split, which can
+  // never emit more than one `<p>`). When the real paragraph fix landed on
+  // `paragraphsHtml`, git auto-merged the two with NO conflict — and because all
+  // 13 crawler call sites render through the linked one, every detail page would
+  // have gone back to a single run-on block under a green diff. Both now share
+  // `splitParagraphs`; these tests fail the moment they diverge again.
+  const corpus: Array<[string, string]> = [
+    ['blank-line separated', 'First paragraph here.\n\nSecond paragraph here.\n\nThird one.'],
+    // The village/city shape: single newline after terminal punctuation, never a
+    // blank line. 106 of 175 `queer_villages.history` rows look like this.
+    ['single newline after a full stop', 'The bar opened in 1974.\nIt closed in 1990.'],
+    // The events shape: headings and timetables with no terminal punctuation.
+    ['heading then capitalised line', 'Zugänglichkeit\nDer Eingang ist stufenlos.'],
+    ['timetable lines', '23.15h - Milky Diamond\n23.30h - Sado Opera'],
+    // Must NOT split: a hard-wrapped single sentence.
+    ['hard-wrapped sentence', 'in the City of Salford in Greater Manchester, England,\n3 miles west.'],
+    ['typewriter double space', 'Population was 60 at the 2000 census.  The area is named for a river.'],
+  ];
+
+  const countParagraphs = (html: string) => (html.match(/<p>/g) ?? []).length;
+
+  for (const [name, text] of corpus) {
+    it(`agrees on ${name}`, () => {
+      // An empty vocabulary delegates, so it proves nothing — use a term that is
+      // present, so the linked path really runs its own paragraph assembly.
+      const v = vocab({ surfaceForm: 'the', slug: 'the-term' });
+      const plain = paragraphsHtml(text);
+      const linked = paragraphsHtmlLinked(text, v);
+      expect(countParagraphs(linked), `paragraph count diverged on: ${name}`).toBe(
+        countParagraphs(plain),
+      );
+      // And the text is identical once the anchors are removed.
+      expect(linked.replace(/<\/?a(?: [^>]*)?>/g, '')).toBe(plain);
+    });
+  }
+
+  it('emits more than one paragraph, so the count assertions above are not vacuous', () => {
+    const text = 'First paragraph here.\n\nSecond paragraph here.';
+    expect(countParagraphs(paragraphsHtml(text))).toBe(2);
+    expect(countParagraphs(paragraphsHtmlLinked(text, vocab({ surfaceForm: 'First', slug: 'f' })))).toBe(2);
+  });
+
+  it('links a term once across the whole document, not once per paragraph', () => {
+    // The reason the matcher runs on the rejoined document: a per-paragraph pass
+    // would re-link the same term in every paragraph and multiply the cap.
+    const html = paragraphsHtmlLinked(
+      'PrEP in one.\n\nPrEP in two.\n\nPrEP in three.',
+      vocab({ surfaceForm: 'PrEP', slug: 'prep' }),
+    );
+    expect([...html.matchAll(/data-glossary-link=/g)]).toHaveLength(1);
+    expect(countParagraphs(html)).toBe(3);
+  });
+
+  it('never leaves a blank-line join visible in the output', () => {
+    const html = paragraphsHtmlLinked(
+      'One.\n\nTwo.',
+      vocab({ surfaceForm: 'One', slug: 'one' }),
+    );
+    expect(html).not.toMatch(/<p>\s*<\/p>/);
+    expect(html).not.toContain('\n\n');
   });
 });
 

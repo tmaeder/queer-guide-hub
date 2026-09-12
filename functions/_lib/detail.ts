@@ -214,13 +214,26 @@ const arrayField = (row: Record<string, unknown>, k: string): unknown[] | undefi
  * double space after a full stop — 110 `venues.description`, 117
  * `cities.description` and 35 `events.description` rows, all of them running
  * text ("…was 60 at the 2000 census.  The area is named for…").
+ *
+ * ONE splitter, because the copy is exactly what went wrong. `paragraphsHtmlLinked`
+ * below shipped with an older `collapseWs(...)`-then-split body; when the fix
+ * above landed the two auto-merged with NO conflict, and since all 13 call sites
+ * render through the linked variant, the everything-in-one-`<p>` bug would have
+ * come straight back under a green diff. Both now share `splitParagraphs`.
+ *
+ * Each returned paragraph is already whitespace-collapsed, so no `\n` survives
+ * inside one — `paragraphsHtmlLinked` relies on that to rejoin them safely.
  */
-export function paragraphsHtml(text: string): string {
+function splitParagraphs(text: string): string[] {
   return stripHtml(text)
     .replace(/\r\n?/g, '\n')
     .split(/\n\s*\n|(?<=[.!?:"'’”)\]])[ \t]*\n|(?<=[^\s,;])[ \t]*\n[ \t]*(?=[\p{Lu}0-9])/u)
     .map(collapseWs)
-    .filter(Boolean)
+    .filter(Boolean);
+}
+
+export function paragraphsHtml(text: string): string {
+  return splitParagraphs(text)
     .map((p) => `<p>${escape(p)}</p>`)
     .join('\n      ');
 }
@@ -246,9 +259,17 @@ export function paragraphsHtml(text: string): string {
  * human sees, which is why the span decisions come from the same
  * `src/lib/glossaryLinks.ts` the SPA uses rather than a second implementation.
  *
- * NOTE: `collapseWs` runs before the split, so in practice this emits exactly
- * ONE paragraph — see the comment on `paragraphsHtml`'s split above. The
- * paragraph handling here is written to stay correct if that is ever fixed.
+ * PARAGRAPHS COME FROM `splitParagraphs`, the same splitter `paragraphsHtml`
+ * uses — never a second copy of that regex. Every call site renders through this
+ * function, so a stale copy here silently reverts the paragraph fix for all 13
+ * of them, which is exactly what a no-conflict auto-merge nearly shipped.
+ *
+ * The matcher then runs ONCE over the whole document (paragraphs rejoined by a
+ * blank line) rather than per paragraph, so first-mention-only and the
+ * per-document cap mean what they say instead of being multiplied by the
+ * paragraph count. Rejoining is unambiguous because `splitParagraphs` has
+ * already collapsed whitespace inside each paragraph, so the only `\n` in the
+ * joined string are the ones added here.
  */
 export function paragraphsHtmlLinked(
   text: string,
@@ -257,7 +278,9 @@ export function paragraphsHtmlLinked(
 ): string {
   if (vocabulary.length === 0) return paragraphsHtml(text);
 
-  const segments = segmentGlossaryText(collapseWs(stripHtml(text)), vocabulary, options);
+  const paras = splitParagraphs(text);
+  if (paras.length === 0) return '';
+  const segments = segmentGlossaryText(paras.join('\n\n'), vocabulary, options);
 
   const paragraphs: string[][] = [[]];
   const push = (html: string) => paragraphs[paragraphs.length - 1].push(html);
@@ -273,7 +296,9 @@ export function paragraphsHtmlLinked(
       );
       continue;
     }
-    const parts = segment.text.split(/\n{2,}|(?<=[.!?])\s{2,}/);
+    // Only the joins above can produce a blank line here, so this splits on
+    // exactly the paragraph boundaries `splitParagraphs` already decided.
+    const parts = segment.text.split('\n\n');
     parts.forEach((part, i) => {
       if (i > 0) paragraphs.push([]);
       if (part) push(escape(part));
