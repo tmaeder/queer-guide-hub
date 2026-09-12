@@ -32,7 +32,7 @@ const sql = stripSql(
       process.cwd(),
       'supabase',
       'migrations',
-      '20700101100000_retract_wrong_subject_city_descriptions.sql',
+      '20710601100000_retract_wrong_subject_city_descriptions.sql',
     ),
     'utf8',
   ),
