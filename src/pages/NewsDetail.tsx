@@ -125,14 +125,19 @@ export default function NewsDetail() {
     jsonLd: article
       ? article.media_type === 'podcast' && article.audio_url
         ? podcastEpisodeJsonLd({
-            title: articleTitle,
-            slug: slug ?? article.slug,
+            title: articleTitle ?? '',
+            // The route param, not a column: NewsArticleFull is the shape
+            // fetchNewsArticleBySlugOrId returns and does not carry `slug`.
+            slug: slug ?? '',
             excerpt: article.excerpt,
             imageUrl: article.image_url,
             publishedAt: article.published_at,
             audioUrl: article.audio_url,
-            durationSeconds: article.duration_seconds,
-            showName: sourceName,
+            // `sourceName` is destructured ~170 lines below this call. For a
+            // podcast the publisher IS the show, and the crawler path
+            // (functions/_lib/detail.ts) does the real news_sources lookup —
+            // this is the JS-render copy, which only needs a name.
+            showName: article.publisher_name,
           })
         : {
             '@context': 'https://schema.org',
@@ -163,7 +168,7 @@ export default function NewsDetail() {
     }
 
     let cancelled = false;
-     
+
     setLoading(true);
     setData(null);
 
@@ -533,7 +538,7 @@ export default function NewsDetail() {
                 durationSeconds={article.duration_seconds}
                 showName={sourceName ?? null}
                 artwork={article.image_url ?? null}
-                href={`/news/${article.slug}`}
+                href={slug ? `/news/${slug}` : null}
               />
             </div>
           )}

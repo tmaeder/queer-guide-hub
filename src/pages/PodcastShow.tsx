@@ -23,9 +23,7 @@ export default function PodcastShow() {
   const { data: episodes, isLoading: episodesLoading } = usePodcastEpisodes(show?.id);
 
   useMeta({
-    title: show
-      ? t('podcasts.showMetaTitle', '{{name}} — Podcast', { name: show.name })
-      : undefined,
+    title: show ? t('podcasts.showMetaTitle', '{{name}} Podcast', { name: show.name }) : undefined,
     description: show?.description ?? undefined,
     ogImage: show?.artwork_url ?? undefined,
     canonicalPath: slug ? `/podcasts/${slug}` : undefined,

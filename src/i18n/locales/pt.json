@@ -4847,7 +4847,7 @@
   },
   "podcasts": {
     "metaTitle": "Podcasts LGBTQ+",
-    "metaDescription": "Podcasts queer de todo o mundo — história, política, cultura e comunidade, com episódios novos assim que saem.",
+    "metaDescription": "Podcasts queer de todo o mundo. História, política, cultura e comunidade, com episódios novos assim que saem.",
     "eyebrow": "Ouvir",
     "title": "Podcasts",
     "subtitle": "{{shows}} programas, {{episodes}} episódios.",
@@ -4859,7 +4859,7 @@
     "noEpisodes": "Ainda não há episódios.",
     "website": "Site",
     "rssFeed": "Feed RSS",
-    "showMetaTitle": "{{name}} — Podcast",
+    "showMetaTitle": "{{name}} Podcast",
     "notFound": "Programa não encontrado",
     "notFoundDesc": "Este podcast não existe, ou já não está ativo.",
     "backToHub": "Todos os podcasts",

@@ -4845,7 +4845,7 @@
   },
   "podcasts": {
     "metaTitle": "LGBTQ+ 팟캐스트",
-    "metaDescription": "전 세계의 퀴어 팟캐스트 — 역사, 정치, 문화, 커뮤니티. 새 에피소드를 공개되는 대로.",
+    "metaDescription": "전 세계의 퀴어 팟캐스트. 역사, 정치, 문화, 커뮤니티. 새 에피소드를 공개되는 대로.",
     "eyebrow": "듣기",
     "title": "팟캐스트",
     "subtitle": "{{shows}}개 프로그램, {{episodes}}개 에피소드.",
@@ -4857,7 +4857,7 @@
     "noEpisodes": "아직 에피소드가 없습니다.",
     "website": "웹사이트",
     "rssFeed": "RSS 피드",
-    "showMetaTitle": "{{name}} — 팟캐스트",
+    "showMetaTitle": "{{name}} 팟캐스트",
     "notFound": "프로그램을 찾을 수 없습니다",
     "notFoundDesc": "이 팟캐스트는 존재하지 않거나 더 이상 운영되지 않습니다.",
     "backToHub": "모든 팟캐스트",

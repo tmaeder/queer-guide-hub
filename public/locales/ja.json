@@ -4845,7 +4845,7 @@
   },
   "podcasts": {
     "metaTitle": "LGBTQ+ ポッドキャスト",
-    "metaDescription": "世界中のクィア・ポッドキャスト — 歴史、政治、文化、コミュニティ。新着エピソードを公開と同時に。",
+    "metaDescription": "世界中のクィア・ポッドキャスト。歴史、政治、文化、コミュニティ。新着エピソードを公開と同時に。",
     "eyebrow": "聴く",
     "title": "ポッドキャスト",
     "subtitle": "{{shows}} 番組、{{episodes}} エピソード。",
@@ -4857,7 +4857,7 @@
     "noEpisodes": "まだエピソードがありません。",
     "website": "ウェブサイト",
     "rssFeed": "RSS フィード",
-    "showMetaTitle": "{{name}} — ポッドキャスト",
+    "showMetaTitle": "{{name}}（ポッドキャスト）",
     "notFound": "番組が見つかりません",
     "notFoundDesc": "このポッドキャストは存在しないか、現在は配信されていません。",
     "backToHub": "すべてのポッドキャスト",

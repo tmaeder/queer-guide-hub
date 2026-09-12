@@ -32,7 +32,7 @@ export default function Podcasts() {
     title: t('podcasts.metaTitle', 'LGBTQ+ Podcasts'),
     description: t(
       'podcasts.metaDescription',
-      'Queer podcasts from around the world — history, politics, culture and community, with new episodes as they publish.',
+      'Queer podcasts from around the world. History, politics, culture and community, with new episodes as they publish.',
     ),
     canonicalPath: '/podcasts',
   });

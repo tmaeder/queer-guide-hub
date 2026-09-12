@@ -113,7 +113,7 @@ const NewsCardImpl = ({
   density = 'comfortable',
   imageAsset,
 }: NewsCardProps) => {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [imgFailed, setImgFailed] = useState(false);
   const fallbackSrc = useMemo(() => getFallbackImage('news', article?.id), [article?.id]);
 

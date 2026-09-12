@@ -271,8 +271,10 @@ export const useNews = () => {
       // auto_paused_reason / consecutive_failures to every logged-out visitor).
       // A `*` here now fails 42501 for anon — and Postgres does not name the
       // offending column in that error, so the breakage looks unrelated.
-      const { data, error: fetchError } = await supabase
-        .from('news_sources')
+      // untypedFrom: slug / description / website_url / episode_count are newer
+      // than the last `supabase gen types` run, and naming an unknown column in
+      // a typed select collapses the whole builder to SelectQueryError.
+      const { data, error: fetchError } = await untypedFrom('news_sources')
         .select(
           'id, name, slug, description, url, website_url, category, feed_type, artwork_url, is_active, is_aggregator, organization_id, episode_count',
         )
@@ -286,7 +288,7 @@ export const useNews = () => {
       }
 
       if (data) {
-        setSources(data);
+        setSources(data as unknown as NewsSource[]);
       }
     } catch (err) {
       console.warn('Unexpected error fetching sources:', err);

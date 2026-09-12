@@ -44,7 +44,11 @@ export function AudioMiniBar() {
       return;
     }
     root.style.setProperty('--audio-bar-clearance', BAR_CLEARANCE);
-    return () => root.style.removeProperty('--audio-bar-clearance');
+    // Braces are load-bearing: removeProperty() RETURNS a string, so a concise
+    // arrow makes the cleanup `() => string` and the effect's type collapses.
+    return () => {
+      root.style.removeProperty('--audio-bar-clearance');
+    };
   }, [hidden]);
 
   if (!player || hidden || !current) return null;

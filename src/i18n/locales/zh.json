@@ -4845,7 +4845,7 @@
   },
   "podcasts": {
     "metaTitle": "LGBTQ+ 播客",
-    "metaDescription": "来自世界各地的酷儿播客——历史、政治、文化与社群，新一集上线即可收听。",
+    "metaDescription": "来自世界各地的酷儿播客。历史、政治、文化与社群，新一集上线即可收听。",
     "eyebrow": "收听",
     "title": "播客",
     "subtitle": "{{shows}} 个节目，{{episodes}} 集。",
@@ -4857,7 +4857,7 @@
     "noEpisodes": "暂无单集。",
     "website": "网站",
     "rssFeed": "RSS 订阅源",
-    "showMetaTitle": "{{name}} — 播客",
+    "showMetaTitle": "{{name}}（播客）",
     "notFound": "未找到该节目",
     "notFoundDesc": "该播客不存在，或已停止更新。",
     "backToHub": "全部播客",

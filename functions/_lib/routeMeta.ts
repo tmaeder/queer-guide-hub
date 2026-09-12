@@ -163,7 +163,7 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
   '/podcasts': {
     title: 'LGBTQ+ Podcasts | Queer Guide',
     description:
-      'Queer podcasts from around the world — history, politics, culture and community — with new episodes as they publish.',
+      'Queer podcasts from around the world. History, politics, culture and community, with new episodes as they publish.',
   },
   '/donate': {
     title: 'Support Queer Guide | Donate',

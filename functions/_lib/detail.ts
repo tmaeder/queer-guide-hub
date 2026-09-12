@@ -887,8 +887,8 @@ async function newsDetail(env: Env, slug: string, pathname: string): Promise<Det
         `id=eq.${encodeURIComponent(sourceId)}`,
         1,
       );
-      showName = stringField(shows[0] ?? {}, 'name');
-      showSlug = stringField(shows[0] ?? {}, 'slug');
+      showName = stringField(shows[0] ?? {}, 'name') ?? null;
+      showSlug = stringField(shows[0] ?? {}, 'slug') ?? null;
     }
     const dur = isoDuration(row.duration_seconds as number | null | undefined);
 
