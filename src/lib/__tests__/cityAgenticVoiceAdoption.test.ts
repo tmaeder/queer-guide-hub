@@ -32,6 +32,15 @@ function stripComments(src: string): string {
     .join('\n');
 }
 
+// The migration header quotes the Busan sentence and names every column it touches,
+// so an unstripped check passes on the prose with the INSERT deleted.
+function stripSql(src: string): string {
+  return src
+    .split('\n')
+    .map((line) => line.replace(/--.*$/, ''))
+    .join('\n');
+}
+
 const enrich = stripComments(readFileSync(join(FN, '_shared', 'ai-enrichment.ts'), 'utf8'));
 const city = stripComments(readFileSync(join(FN, 'city-agentic-enrich', 'index.ts'), 'utf8'));
 
@@ -105,6 +114,87 @@ describe('city-agentic-enrich — the rollout lever', () => {
 
   it('reports which arm ran in the response envelope', () => {
     expect(city).toMatch(/jsonResponse\(\{[^}]*voice,/);
+  });
+});
+
+describe('best_time_to_visit is review-gated, not auto-published', () => {
+  // The voice A/B (2026-09-11) filled this field on 2 of 5 cities where the control
+  // arm filled 0 of 5 — the composer had returned null on 209/209 cities before it —
+  // and one of the two dated the Busan Queer Culture Festival to "June or July". It
+  // is a September/October event. At the 0.8 auto-publish bar that sentence ships,
+  // and no drift regex sees it: the register is fine, the fact is wrong.
+
+  const autoBlock = (() => {
+    const start = city.indexOf('if (highConf) {');
+    return start < 0 ? '' : city.slice(start, city.indexOf('\n      }', start));
+  })();
+
+  it('has an auto-apply block to test against', () => {
+    // Guards every assertion below: an empty slice would make them all vacuous.
+    expect(autoBlock).toContain('update.description');
+  });
+
+  it('does not auto-apply the field', () => {
+    expect(autoBlock).not.toMatch(/best_time_to_visit/);
+  });
+
+  it('still auto-applies the two siblings that restate their sources', () => {
+    // description and local_customs paraphrase the grounding text; only travel
+    // timing has to reach past it. Gating all three would stall enrichment.
+    expect(autoBlock).toMatch(/update\.description = ai\.description/);
+    expect(autoBlock).toMatch(/update\.local_customs = ai\.local_customs/);
+  });
+
+  it('queues it for a human instead', () => {
+    expect(city).toMatch(/gatedProposals\.push\(\{[\s\S]{0,200}field:\s*'best_time_to_visit'/);
+  });
+
+  it('keeps fill-if-empty, so a curated value is never offered for overwrite', () => {
+    expect(city).toMatch(/if \(ai\.best_time_to_visit && !c\.best_time_to_visit\) \{/);
+  });
+});
+
+describe('the review registry row that makes the queue approvable', () => {
+  // approve_entity_review() RAISEs 'unsupported review field' when the registry has
+  // no row, so shipping the gate without the row builds a queue that collects human
+  // decisions and discards them — the failure this repo already shipped once.
+  const sql = stripSql(
+    readFileSync(
+      join(
+        process.cwd(),
+        'supabase',
+        'migrations',
+        '20490210090000_best_time_to_visit_review_gated.sql',
+      ),
+      'utf8',
+    ),
+  );
+
+  it('registers the field against the real column', () => {
+    expect(sql).toMatch(/INSERT INTO public\.review_field_registry/);
+    expect(sql).toMatch(/'city',\s*'best_time_to_visit'/);
+    expect(sql).toMatch(/'cities',\s*'best_time_to_visit'/);
+  });
+
+  it('refuses an empty proposal rather than blanking the column', () => {
+    expect(sql).toMatch(/'text_required'/);
+  });
+
+  it('is NOT batchable', () => {
+    // approve_entity_review_batch approves every batchable open row with no human
+    // reading it. A batchable row here puts the fabricated sentence straight back.
+    const values = sql.slice(sql.indexOf('VALUES'), sql.indexOf('ON CONFLICT'));
+    expect(values).toMatch(/false,\s*NULL,\s*true/);
+  });
+
+  it('asserts the batchable rule rather than merely setting it', () => {
+    const verify = sql.slice(sql.indexOf('$verify$'));
+    expect(verify).toMatch(/IF reg\.batchable THEN[\s\S]{0,200}RAISE EXCEPTION/);
+  });
+
+  it('refuses to gate the two siblings', () => {
+    const verify = sql.slice(sql.indexOf('$verify$'));
+    expect(verify).toMatch(/'description',\s*'local_customs'[\s\S]{0,200}RAISE EXCEPTION/);
   });
 });
 
