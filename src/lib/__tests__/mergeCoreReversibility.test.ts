@@ -40,32 +40,34 @@ function stripSqlComments(sql: string): string {
 }
 
 /**
- * Read every migration ONCE.
+ * Resolve a function's latest definition by scanning migrations in REVERSE, reading
+ * each file only when reached and caching what it reads.
  *
- * There are ~1,670 of them and this suite resolves a dozen function definitions.
- * Re-reading and re-stripping the directory per lookup blew vitest's 15s per-test
- * timeout — which surfaces as a FAILED ASSERTION, not as "slow", so it reads like a
- * broken guard. The repo lives on an iCloud-synced volume, which makes cold reads
- * much worse than they look locally.
+ * Both halves matter. Eagerly reading all ~1,670 migrations up front blew vitest's
+ * 15s per-test timeout on a loaded machine — and a timeout surfaces as a FAILED
+ * ASSERTION, so it reads like a broken guard rather than a slow one. Re-reading per
+ * lookup did the same. Reverse + lazy + cached means the functions this suite asks
+ * about, which live in the newest migrations, cost a handful of reads.
  */
-let cache: { name: string; stripped: string }[] | null = null;
-function migrations(): { name: string; stripped: string }[] {
-  if (!cache) {
-    cache = readdirSync(MIGRATIONS)
-      .filter((f) => f.endsWith('.sql'))
-      .sort()
-      .map((name) => ({
-        name,
-        stripped: stripSqlComments(readFileSync(join(MIGRATIONS, name), 'utf8')),
-      }));
+const fileNames = readdirSync(MIGRATIONS)
+  .filter((f) => f.endsWith('.sql'))
+  .sort();
+const strippedCache = new Map<string, string>();
+
+function strippedFile(name: string): string {
+  let v = strippedCache.get(name);
+  if (v === undefined) {
+    v = stripSqlComments(readFileSync(join(MIGRATIONS, name), 'utf8'));
+    strippedCache.set(name, v);
   }
-  return cache;
+  return v;
 }
 
 function findLatest(fn: string): string {
   const re = new RegExp(`create\\s+(or\\s+replace\\s+)?function\\s+public\\.${fn}\\s*\\(`, 'i');
-  for (let i = migrations().length - 1; i >= 0; i--) {
-    if (re.test(migrations()[i].stripped)) return migrations()[i].stripped;
+  for (let i = fileNames.length - 1; i >= 0; i--) {
+    const body = strippedFile(fileNames[i]);
+    if (re.test(body)) return body;
   }
   throw new Error(`no migration defines ${fn}`);
 }
@@ -76,11 +78,9 @@ function findLatest(fn: string): string {
  * Load-bearing, and it cost three vacuous assertions to find out. These migrations
  * end with a deploy-time guard that RAISEs on the same strings the statements
  * contain — `position('jsonb_populate_recordset' in v_src)`,
- * `position('where article_id = r.keep_id' in v_src)`,
- * `position('v_pre_schema and not p_force' in v_src)`. A `toContain` over the whole
+ * `position('where article_id = r.keep_id' in v_src)`. A `toContain` over the whole
  * file is therefore satisfied by the GUARD's copy of the string even when the
- * statement it guards has been deleted. Mutation testing caught all three: deleting
- * the real statement left the test green.
+ * statement it guards has been deleted. Mutation testing caught all three.
  *
  * Stripping comments is not enough for the same reason — the verify block is code.
  */
