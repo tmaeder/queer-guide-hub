@@ -1686,6 +1686,80 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
 }
 
 // ---------------------------------------------------------------------------
+// §  Inline glossary links in body prose
+// ---------------------------------------------------------------------------
+//
+// `glossary_link_terms` is the human-reviewed vocabulary of surface forms that
+// may become links inside body text. Nothing about it is safe by default:
+// matching every active tag name against 800 city descriptions linked the tag
+// literally named `A` on 747 of them, and put the ADULT tags `Middle`, `Public`
+// and `Offering` into ordinary travel copy. Same defect class as the alias
+// auto-tagging incident ('culture' → Crops on 2,609 articles).
+//
+// Standalone RPC rather than a key on tag_hygiene_stats(), for the reason the
+// news/venue/event signals are separate: restating that body to add a counter is
+// a merge-collision surface.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/glossary_link_signals`, {
+    method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: '{}',
+  })
+  if (!res.ok) {
+    // A failed probe must SAY it failed rather than fall through to a default —
+    // the shape that hid an open circuit breaker for days behind a 42703.
+    console.warn(`⚠ glossary_link_signals → HTTP ${res.status} (20510101100100 not applied?) — this check measured NOTHING`)
+  } else {
+    const sig = await res.json()
+    let sectionOk = true
+
+    // Checked separately from every count below: a dropped view and a clean
+    // corpus both make the violations zero.
+    if (sig?.view_present === false) {
+      console.error('✗ glossary_link_terms_public is MISSING — every renderer reads it, so all inline links are silently off')
+      FAILED = true; sectionOk = false
+    }
+
+    const zeroInvariants = [
+      ['dead_link_terms', 'active terms point at a deprecated/merged/deleted tag — dead links in body prose'],
+      ['adult_or_gated_terms', 'active terms are adult or anon-gated — an inline link has no affirmation step'],
+      ['definitionless_terms', 'active terms point at an entry with no definition'],
+      ['short_surface_forms', 'active terms are shorter than 3 characters (the tag named "A" matched 93% of city descriptions)'],
+      ['reasonless_rejections', 'rejected terms carry no reason, so the next reviewer re-litigates them'],
+    ]
+    for (const [key, why] of zeroInvariants) {
+      if (!(key in (sig ?? {}))) {
+        console.warn(`⚠ glossary_link_signals has no '${key}' key — that check measured NOTHING`)
+        continue
+      }
+      const n = Number(sig[key] ?? 0)
+      if (n > 0) {
+        console.error(`✗ ${n} ${why}`)
+        FAILED = true; sectionOk = false
+      }
+    }
+
+    // Advisory: a deindexed target still reads fine for a human, it just passes
+    // no crawl equity — which is half the reason this feature exists.
+    const deindexed = Number(sig?.deindexed_terms ?? 0)
+    if (deindexed > 0) {
+      console.log(`  ${deindexed} active terms point at a deindexed entry (link works for readers, passes no crawl equity)`)
+    }
+
+    // Coverage is reported, never failed on: the vocabulary ships EMPTY by
+    // design and grows only as a human reviews candidates. Stating the numbers
+    // is what stops "0 violations" reading as "the feature is live".
+    const active = Number(sig?.terms_active ?? 0)
+    const candidates = Number(sig?.terms_candidate ?? 0)
+    if (active === 0) {
+      console.log(`  glossary link vocabulary is EMPTY — no prose links anywhere yet (${candidates} candidates awaiting review)`)
+    } else {
+      console.log(`  ${active} active link terms, ${candidates} candidates awaiting review`)
+    }
+
+    if (sectionOk) console.log('✓ glossary link vocabulary clean (no dead, adult, gated or definitionless terms)')
+  }
+}
+
+// ---------------------------------------------------------------------------
 // §  Styleguide & Tone of Voice
 // ---------------------------------------------------------------------------
 //

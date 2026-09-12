@@ -64,6 +64,7 @@ import {
 } from './NewsDetail.parts';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { FromTheGlossary } from '@/components/tags/FromTheGlossary';
+import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
 
 interface DbCategory {
   slug: string;
@@ -534,16 +535,19 @@ export default function NewsDetail() {
               fieldOverride={{ type: 'textarea' }}
               as="div"
             >
+              {/* These links decorate OUR RENDERING of a publisher's excerpt.
+                  Nothing is written back to `news_articles.content`, so the
+                  stored text stays the publisher's words verbatim. */}
               {contentText ? (
                 <p
                   className="whitespace-pre-line text-body-lg text-foreground"
                   style={{ lineHeight: 1.8 }}
                 >
-                  {bodyExcerpt}
+                  <GlossaryLinkedText text={bodyExcerpt} />
                 </p>
               ) : excerptText ? (
                 <p className="text-body-lg text-foreground" style={{ lineHeight: 1.8 }}>
-                  {excerptText}
+                  <GlossaryLinkedText text={excerptText} />
                 </p>
               ) : (
                 <p className="text-body-lg italic text-muted-foreground">
