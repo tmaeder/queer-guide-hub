@@ -219,6 +219,7 @@ export default function AlertsTab() {
       <div className="rounded-element bg-muted overflow-hidden">
         <AdminSimpleTable
           caption="Data ops alerts"
+          stickyHeader
           className="max-h-[600px] overflow-y-auto"
           columns={alertColumns}
           rows={alerts}

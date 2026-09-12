@@ -239,6 +239,7 @@ export default function ErrorsTab() {
           <div className="max-h-[480px] overflow-auto border-r border-border">
             <AdminSimpleTable
               caption="Recent pipeline errors"
+              stickyHeader
               columns={errorColumns}
               rows={filtered}
               rowKey={(e) => String(e.id)}

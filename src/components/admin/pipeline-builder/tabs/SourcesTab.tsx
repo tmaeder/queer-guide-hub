@@ -332,6 +332,7 @@ export default function SourcesTab() {
 
           <AdminSimpleTable
             caption="Ingest sources"
+            stickyHeader
             className="max-h-[600px] overflow-y-auto"
             columns={columns}
             rows={filtered}

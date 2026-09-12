@@ -322,6 +322,7 @@ export default function ScraperHealthTab() {
           ) : (
             <AdminSimpleTable
               caption="Field coverage per recent scraper run"
+              stickyHeader
               columns={coverageColumns}
               rows={coverage}
               rowKey={(_c, i) => String(i)}
@@ -349,6 +350,7 @@ export default function ScraperHealthTab() {
           ) : (
             <AdminSimpleTable
               caption="Quality score distribution by source and entity type"
+              stickyHeader
               columns={qualityColumns}
               rows={quality}
               rowKey={(_q, i) => String(i)}

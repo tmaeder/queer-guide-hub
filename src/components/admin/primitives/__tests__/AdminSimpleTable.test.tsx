@@ -146,6 +146,23 @@ describe('AdminSimpleTable', () => {
     });
   });
 
+  describe('stickyHeader', () => {
+    // Eight converted tables carried `<thead className="... sticky top-0">` and
+    // lost it, which on a table scrolling inside a max-h container means the
+    // column headers scroll away. This prop is the regression fix.
+    it('is off by default', () => {
+      const { container } = renderTable();
+      expect(container.querySelector('thead')).not.toHaveClass('sticky');
+    });
+
+    it('sticks the header when asked', () => {
+      const { container } = renderTable({ stickyHeader: true });
+      const thead = container.querySelector('thead');
+      expect(thead).toHaveClass('sticky');
+      expect(thead).toHaveClass('top-0');
+    });
+  });
+
   describe('emptyContent', () => {
     it('replaces the default empty state entirely', () => {
       // AlertsTab's empty state is GOOD NEWS ("All clear"), not an absence.

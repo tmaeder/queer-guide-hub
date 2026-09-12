@@ -534,6 +534,7 @@ export default function HealthTab() {
           </div>
           <AdminSimpleTable
             caption="All pipeline and workflow definitions"
+            stickyHeader
             className="max-h-[400px] overflow-y-auto"
             columns={definitionColumns}
             rows={definitionRows}

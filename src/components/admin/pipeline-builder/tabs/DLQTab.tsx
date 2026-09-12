@@ -298,6 +298,7 @@ export default function DLQTab() {
         {/* Item drilldown */}
         <AdminSimpleTable
           caption="Dead-letter queue messages"
+          stickyHeader
           className="max-h-[500px] overflow-y-auto"
           columns={itemColumns}
           rows={rows}

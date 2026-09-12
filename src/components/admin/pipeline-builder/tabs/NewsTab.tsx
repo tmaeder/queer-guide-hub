@@ -258,6 +258,7 @@ export default function NewsTab() {
         </div>
         <AdminSimpleTable
           caption="News sources health"
+          stickyHeader
           className="max-h-[400px] overflow-y-auto"
           columns={newsSourceColumns}
           rows={sources}

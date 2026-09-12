@@ -137,6 +137,22 @@ export interface AdminSimpleTableProps<Row> {
    * Inbox glyph — a copy regression, and its own named test caught it.
    */
   emptyContent?: ReactNode;
+  /**
+   * Keeps the header row visible while the body scrolls.
+   *
+   * Opt-in, and restoring it was a REGRESSION FIX: eight of the converted
+   * pipeline-builder tables carried `<thead className="bg-muted/40 sticky top-0">`
+   * and lost it in the conversion, which on a table that scrolls inside a
+   * `max-h` container means the column headers scroll out of view — the exact
+   * situation sticky exists for.
+   *
+   * Default false rather than true, because `AdminShell`'s `<main>` is itself the
+   * scroll container (`data-scroll-container`), so a sticky header on a table
+   * that is NOT in a bounded box would start floating during ordinary page
+   * scroll. Faithfully restoring the eight is the goal; changing the other
+   * eleven is not.
+   */
+  stickyHeader?: boolean;
   /** Wrapper classes. The default supplies the container chrome. */
   className?: string;
 }
@@ -156,6 +172,7 @@ export function AdminSimpleTable<Row>({
   skeletonRows = 3,
   onRowClick,
   emptyContent,
+  stickyHeader = false,
   className,
 }: AdminSimpleTableProps<Row>) {
   return (
@@ -167,7 +184,7 @@ export function AdminSimpleTable<Row>({
         <caption className={captionVisible ? 'p-4 text-left text-13' : 'sr-only'}>
           {caption}
         </caption>
-        <thead className="bg-muted/40">
+        <thead className={cn('bg-muted/40', stickyHeader && 'sticky top-0 z-10')}>
           <tr className="border-b border-border">
             {columns.map((col) => (
               <th
