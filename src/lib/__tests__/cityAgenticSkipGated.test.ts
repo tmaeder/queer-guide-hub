@@ -28,7 +28,7 @@ const sql = stripSql(
       process.cwd(),
       'supabase',
       'migrations',
-      '20510305090000_city_agentic_enrich_stop_dropping_gated.sql',
+      '20540301100000_city_agentic_enrich_stop_dropping_gated.sql',
     ),
     'utf8',
   ),
