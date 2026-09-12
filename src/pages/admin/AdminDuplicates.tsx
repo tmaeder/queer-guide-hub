@@ -46,7 +46,7 @@ const hasImage = (m?: VenueMeta) => Array.isArray(m?.images) && (m!.images as un
 /**
  * Say what the undo actually did.
  *
- * Until 21500101100100 only two of the twelve types could put reparented children
+ * Until 29000101100100 only two of the twelve types could put reparented children
  * back; the other ten cleared `duplicate_of_id` and left every child on the survivor
  * while `unmerge_entities` returned `{"undone": true}`. This screen printed "Merge
  * undone" on that, under a header promising every merge is reversible. A merge that
@@ -107,7 +107,7 @@ export default function AdminDuplicates() {
 
       {/* The reversibility guarantee is the sentence that makes this
         destructive-looking screen safe to use, so it stays — but it has to be
-        TRUE. Until 21500101100100 it was false for ten of the twelve types,
+        TRUE. Until 29000101100100 it was false for ten of the twelve types,
         which cleared duplicate_of_id and left every reparented child on the
         survivor while the Undo toast said "Merge undone". Merges made before
         that migration still cannot be fully undone; the undo now says so per

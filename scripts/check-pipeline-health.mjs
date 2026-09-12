@@ -615,7 +615,7 @@ if (!hygieneRes.ok) {
   })
   if (!res.ok) {
     // Warn, never pass silently: a missing RPC and a healthy fleet must not look alike.
-    console.warn(`⚠ dedup_signals_all → HTTP ${res.status} (RPC missing? migration 21500101100500)`)
+    console.warn(`⚠ dedup_signals_all → HTTP ${res.status} (RPC missing? migration 29000101100500)`)
     console.warn('  This check measured NOTHING — it did not pass.')
   } else {
     const all = await res.json()
@@ -640,7 +640,7 @@ if (!hygieneRes.ok) {
       const unrev = Number(d.merges_unreversible_since_fix ?? 0)
       if (unrev > 0) {
         console.error(`✗ ${unrev} ${t} merge(s) recorded with no reversibility data since the fix landed`)
-        console.error(`  The live merge core has drifted from 21500101100000/100200 — those merges cannot be undone.`)
+        console.error(`  The live merge core has drifted from 29000101100000/100200 — those merges cannot be undone.`)
         FAILED = true
       }
 
