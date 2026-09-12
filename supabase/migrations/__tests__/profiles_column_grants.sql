@@ -1,4 +1,5 @@
--- Contract tests for the anon column-level SELECT allowlist on public.profiles.
+-- Contract tests for the column-level SELECT allowlists on public.profiles —
+-- BOTH roles since 20510101100000: anon (21 columns) and authenticated (38).
 -- Run via: psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f profiles_column_grants.sql
 -- (after 20260816120000_profiles_anon_column_grants.sql has been applied).
 --
@@ -199,6 +200,69 @@ begin
     raise exception 'FAIL(8): view(s) over profiles lost security_invoker: %', bad;
   end if;
   raise notice 'PASS 8: all five profiles-derived views keep security_invoker';
+end $$;
+
+-- 9: the authenticated allowlist (20510101100000) -----------------------------
+-- Until that migration `authenticated` held all 174 columns, so every signed-in
+-- user could read every OTHER user's email, phone, date_of_birth and
+-- kink_interests. RLS does not help: it filters ROWS. This asserts the live ACL.
+do $$
+declare
+  expected text[] := array[
+    'availability_tags','avatar_url','bio','created_at','display_name','dnd_until','id',
+    'is_business','last_active_at','last_seen_at','location','presence_visibility',
+    'status_emoji','status_expires_at','status_text','travel_mode','user_id','user_mode',
+    'username','verified_identity','website','age_range','education','gender_identity',
+    'has_children','has_pets','interests','occupation','pronouns','relationship_status',
+    'onboarding_completed_at','body_type','height_cm','moderation_status',
+    'privacy_settings','sexual_orientation','social_links','updated_at'
+  ];
+  granted text[];
+  sensitive text[] := array['email','phone','phone_encrypted','date_of_birth',
+    'kink_interests','kink_experience_level','verified_email','verified_phone',
+    'emergency_contact_phone','emergency_contact_phone_encrypted'];
+  leaked text;
+begin
+  select array_agg(column_name order by column_name) into granted
+    from information_schema.column_privileges
+   where table_schema='public' and table_name='profiles'
+     and grantee='authenticated' and privilege_type='SELECT';
+
+  -- Exact set equality, not a subset test: a superset is the leak this exists to catch.
+  if granted is distinct from (select array_agg(c order by c) from unnest(expected) c) then
+    raise exception 'FAIL(9): authenticated SELECT allowlist drifted. granted=%', granted;
+  end if;
+
+  select string_agg(s, ', ') into leaked from unnest(sensitive) s
+   where s = any(granted);
+  if leaked is not null then
+    raise exception 'FAIL(9): sensitive column(s) selectable by authenticated: %', leaked;
+  end if;
+  raise notice 'PASS 9: authenticated holds exactly the 38-column allowlist';
+end $$;
+
+-- 10: UPDATE/INSERT are deliberately NOT narrowed -----------------------------
+-- 20510101100000 narrowed SELECT only. The write set is assembled from
+-- updateProfile(updates) with a caller-supplied object and was not enumerable to
+-- a standard that justifies a grant change; writes are RLS-bound to the caller's
+-- own row, so an over-wide write grant is an integrity question, not disclosure.
+-- This asserts that scope explicitly so a future reader does not mistake the
+-- narrow SELECT for a narrow table.
+do $$
+declare n_update int; n_select int;
+begin
+  select count(*) into n_update from information_schema.column_privileges
+   where table_schema='public' and table_name='profiles'
+     and grantee='authenticated' and privilege_type='UPDATE';
+  select count(*) into n_select from information_schema.column_privileges
+   where table_schema='public' and table_name='profiles'
+     and grantee='authenticated' and privilege_type='SELECT';
+  if n_update <= n_select then
+    raise exception
+      'FAIL(10): UPDATE (%) is no wider than SELECT (%) — if the write set was narrowed, update this test and say so',
+      n_update, n_select;
+  end if;
+  raise notice 'PASS 10: UPDATE stays wide (%) while SELECT is narrowed (%)', n_update, n_select;
 end $$;
 
 rollback;

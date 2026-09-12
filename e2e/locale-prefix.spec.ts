@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { SUPPORTED_LOCALES } from '../functions/_lib/routeMeta';
 
 /**
  * No link may carry its locale twice.
@@ -27,7 +28,12 @@ const CASES = [
   { locale: 'de', path: '/de/news' },
 ];
 
-const LOCALES = ['fr', 'de', 'es', 'it', 'pt', 'nl', 'pl', 'tr', 'ru', 'uk', 'ar'];
+// Imported, never hand-written. The original list was authored by hand and
+// carried four locales the app does not support (nl, pl, tr, uk) while
+// OMITTING zh, ja, ko and en — so `/ko/ko/x` and `/zh/zh/x` were invisible to
+// this guard, and the error board contained `/ko/ko`. A literal list is a
+// second source of truth that silently drifts from the real one.
+const LOCALES = [...SUPPORTED_LOCALES];
 
 test.describe('locale prefixing', () => {
   test.setTimeout(90_000);
@@ -51,6 +57,14 @@ test.describe('locale prefixing', () => {
       expect(doubled, `doubled-locale hrefs on ${path}: ${doubled.join(', ')}`).toEqual([]);
     });
   }
+
+  // The doubled-locale hard 404 is asserted in
+  // e2e/hreflang-doubled-locale.spec.ts, NOT here. This spec is on the
+  // critical-path list, which runs against `vite preview`
+  // (E2E_BASE_URL=http://localhost:4173) — a static server that does not
+  // execute Pages Functions, so `functions/_middleware.ts` never runs and the
+  // 404 cannot happen. Asserting it here fails for the environment, not for
+  // the code.
 
   test('a localized detail page keeps its breadcrumb links reachable', async ({ page }) => {
     // The detail path is where the bug actually bit: a list page's trail is a

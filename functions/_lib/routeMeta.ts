@@ -538,6 +538,29 @@ export function splitLocale(pathname: string): { locale: string; basePath: strin
 }
 
 /**
+ * True when a path's FIRST segment is a supported locale code.
+ *
+ * `splitLocale` strips exactly one prefix, so a doubled URL like
+ * `/fr/fr/places` parses as locale `fr` + basePath `/fr/places` — a basePath
+ * that is not a real route but is also not a detail path, so nothing 404-ed it
+ * and the SPA shell was served at HTTP 200. That mattered because the shell is
+ * then treated as indexable and emits an hreflang alternate for all 11
+ * locales, every one of them carrying the stray segment: `/fr/fr/places`
+ * advertises `/es/fr/places`, `/it/fr/places`, … So each bad URL minted ten
+ * more and kept them alive in crawler queues indefinitely. Measured on the
+ * production error board: the original double-prefix producer was fixed in
+ * 0b3a2545b (2026-08-16) and every same-locale fingerprint pre-dates it, yet
+ * cross-locale ones kept appearing afterwards — those are this fan-out, not
+ * the old bug.
+ *
+ * No real route has a two-letter locale code as its first segment, so a
+ * doubled prefix is always junk and is safe to hard-404.
+ */
+export function startsWithLocale(pathname: string): boolean {
+  return LOCALE_RE.test(pathname);
+}
+
+/**
  * Builds the absolute URL for a given (locale, basePath) pair. The default
  * locale gets no prefix; any other locale gets `/{code}`.
  */
