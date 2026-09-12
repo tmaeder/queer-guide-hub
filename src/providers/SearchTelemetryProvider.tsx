@@ -7,28 +7,29 @@
  * - Per-session dedup — same entity within 5min counted once
  */
 
-import { useEffect, useRef } from "react";
-import { useLocation } from "react-router";
-import { untypedFrom } from "@/integrations/supabase/untyped";
-import { trackSearchEvent } from "@/lib/searchClient";
-import { useAuth } from "@/hooks/useAuth";
+import { useEffect, useRef } from 'react';
+import { useLocation } from 'react-router';
+import { untypedFrom } from '@/integrations/supabase/untyped';
+import { trackSearchEvent } from '@/lib/searchClient';
+import { useAuth } from '@/hooks/useAuth';
+import { stripLocale } from '@/lib/locale';
 
 interface RouteSpec {
-	pattern: RegExp;
-	type: string;
-	table: string;
-	slugCol?: string; // defaults to "slug"
+  pattern: RegExp;
+  type: string;
+  table: string;
+  slugCol?: string; // defaults to "slug"
 }
 
 const ROUTES: RouteSpec[] = [
-	{ pattern: /^\/venues\/([^/]+)/, type: "venue", table: "venues" },
-	{ pattern: /^\/events\/([^/]+)/, type: "event", table: "events" },
-	{ pattern: /^\/marketplace\/([^/]+)/, type: "marketplace", table: "marketplace_listings" },
-	{ pattern: /^\/villages\/([^/]+)/, type: "queer_village", table: "queer_villages" },
-	{ pattern: /^\/city\/([^/]+)/, type: "city", table: "cities" },
-	{ pattern: /^\/country\/([^/]+)/, type: "country", table: "countries" },
-	{ pattern: /^\/personalities\/([^/]+)/, type: "personality", table: "personalities" },
-	{ pattern: /^\/news\/([^/]+)/, type: "news", table: "news_articles" },
+  { pattern: /^\/venues\/([^/]+)/, type: 'venue', table: 'venues' },
+  { pattern: /^\/events\/([^/]+)/, type: 'event', table: 'events' },
+  { pattern: /^\/marketplace\/([^/]+)/, type: 'marketplace', table: 'marketplace_listings' },
+  { pattern: /^\/villages\/([^/]+)/, type: 'queer_village', table: 'queer_villages' },
+  { pattern: /^\/city\/([^/]+)/, type: 'city', table: 'cities' },
+  { pattern: /^\/country\/([^/]+)/, type: 'country', table: 'countries' },
+  { pattern: /^\/personalities\/([^/]+)/, type: 'personality', table: 'personalities' },
+  { pattern: /^\/news\/([^/]+)/, type: 'news', table: 'news_articles' },
 ];
 
 const slugCache = new Map<string, { id: string; ts: number }>();
@@ -38,61 +39,68 @@ const DEDUP_WINDOW_MS = 5 * 60 * 1000;
 const DEBOUNCE_MS = 1000;
 
 async function resolveSlug(table: string, slug: string): Promise<string | null> {
-	const key = `${table}:${slug}`;
-	const cached = slugCache.get(key);
-	if (cached && Date.now() - cached.ts < CACHE_TTL_MS) return cached.id;
+  const key = `${table}:${slug}`;
+  const cached = slugCache.get(key);
+  if (cached && Date.now() - cached.ts < CACHE_TTL_MS) return cached.id;
 
-	const { data, error } = await untypedFrom(table)
-		.select("id")
-		.eq("slug", slug)
-		.maybeSingle();
-	// typeof, not just truthiness: rows from `untypedFrom` carry `unknown`
-	// values, and this narrows to the string the cache and callers expect
-	// instead of stringifying whatever came back.
-	if (error || typeof data?.id !== 'string') return null;
-	slugCache.set(key, { id: data.id, ts: Date.now() });
-	return data.id;
+  const { data, error } = await untypedFrom(table).select('id').eq('slug', slug).maybeSingle();
+  // typeof, not just truthiness: rows from `untypedFrom` carry `unknown`
+  // values, and this narrows to the string the cache and callers expect
+  // instead of stringifying whatever came back.
+  if (error || typeof data?.id !== 'string') return null;
+  slugCache.set(key, { id: data.id, ts: Date.now() });
+  return data.id;
 }
 
 /** Hook variant — drop into any component with router context (e.g. AppRoutes). */
 // eslint-disable-next-line react-refresh/only-export-components
 export function useSearchTelemetry() {
-	const location = useLocation();
-	const { user } = useAuth();
-	const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const location = useLocation();
+  const { user } = useAuth();
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-	useEffect(() => {
-		// Suppress view telemetry when the page is rendered inside the CMS
-		// live-preview iframe (?preview=1) — those aren't real audience views.
-		if (new URLSearchParams(location.search).get('preview') === '1') return;
-		if (timer.current) clearTimeout(timer.current);
-		timer.current = setTimeout(() => {
-			void fireView(location.pathname, user?.id ?? null);
-		}, DEBOUNCE_MS);
-		return () => {
-			if (timer.current) clearTimeout(timer.current);
-		};
-	}, [location.pathname, location.search, user?.id]);
+  useEffect(() => {
+    // Suppress view telemetry when the page is rendered inside the CMS
+    // live-preview iframe (?preview=1) — those aren't real audience views.
+    if (new URLSearchParams(location.search).get('preview') === '1') return;
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => {
+      void fireView(location.pathname, user?.id ?? null);
+    }, DEBOUNCE_MS);
+    return () => {
+      if (timer.current) clearTimeout(timer.current);
+    };
+  }, [location.pathname, location.search, user?.id]);
 }
 
 /** Provider variant — for places that prefer wrapping children. */
 export function SearchTelemetryProvider({ children }: { children: React.ReactNode }) {
-	useSearchTelemetry();
-	return <>{children}</>;
+  useSearchTelemetry();
+  return <>{children}</>;
 }
 
 async function fireView(pathname: string, userId: string | null): Promise<void> {
-	for (const r of ROUTES) {
-		const m = pathname.match(r.pattern);
-		if (!m) continue;
-		const slug = decodeURIComponent(m[1]);
-		const id = await resolveSlug(r.table, slug);
-		if (!id) return;
-		const key = `${r.type}:${id}`;
-		const last = seenInSession.get(key) ?? 0;
-		if (Date.now() - last < DEDUP_WINDOW_MS) return;
-		seenInSession.set(key, Date.now());
-		void trackSearchEvent("view", { type: r.type, id }, { slug, path: pathname }, userId);
-		return;
-	}
+  // The ROUTES patterns are anchored at "/", so a localized path like
+  // /de/venues/berghain matched NONE of them and the view was silently
+  // dropped — for every visitor on 10 of the 11 supported locales. The
+  // personalization bias vector therefore only ever learned from
+  // English-locale traffic. stripLocale is the same helper the bottom nav,
+  // the header and the breadcrumbs already use.
+  const localeFree = stripLocale(pathname);
+  for (const r of ROUTES) {
+    const m = localeFree.match(r.pattern);
+    if (!m) continue;
+    const slug = decodeURIComponent(m[1]);
+    const id = await resolveSlug(r.table, slug);
+    if (!id) return;
+    const key = `${r.type}:${id}`;
+    const last = seenInSession.get(key) ?? 0;
+    if (Date.now() - last < DEDUP_WINDOW_MS) return;
+    seenInSession.set(key, Date.now());
+    void trackSearchEvent('view', { type: r.type, id }, { slug, path: pathname }, userId);
+    // NB: `path` is the RAW pathname on purpose — the locale is dropped for
+    // MATCHING, not for recording, so which locale a view came from stays
+    // visible in the event metadata.
+    return;
+  }
 }
