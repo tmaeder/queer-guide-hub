@@ -144,7 +144,7 @@ GRANT EXECUTE ON FUNCTION public.run_dedup_close_distinct(integer, boolean) TO s
 -- Registry first, then the cron -- the order every retirement/creation in this repo
 -- follows, because `sync_automations_to_cron` reconciles FROM the registry and a cron
 -- with no row is "unregistered", which branch (a) reports and deliberately never kills.
-INSERT INTO public.admin_automations (slug, name, description, owner, enabled, trigger, conditions, action, schedule)
+INSERT INTO public.admin_automations (slug, name, description, managed_by, enabled, trigger, conditions, action, schedule)
 VALUES ('dedup_close_distinct', 'Dedup: close provably-distinct pairs',
         'Closes queued venue pairs the ladder already judged to be different businesses: different city >25km apart, different street address with house numbers on both sides, and a contradicting domain or phone. Never merges anything; only moves open -> rejected with an auto-distinct note.',
         'system', true, '{"type":"schedule"}'::jsonb, '{}'::jsonb,
