@@ -160,6 +160,11 @@ test.describe('@smoke podcasts', () => {
     const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
     // hubLinks caps at 80 links, so without this sitemap a quarter of the shows
     // would have no crawl path at all.
+    //
+    // This floor is also the only thing that catches a missing column GRANT:
+    // fetchRows falls back to the anon key, a denied column returns 42501, and
+    // the generator then emits a well-formed urlset with nothing in it. Status
+    // and content-type both look perfect.
     expect(locs.length, 'show URLs in the sitemap').toBeGreaterThanOrEqual(100);
     expect(locs.every((l) => l.includes('/podcasts/'))).toBe(true);
 
@@ -190,6 +195,47 @@ test.describe('@smoke podcasts', () => {
       headers: { apikey: key!, Authorization: `Bearer ${key}` },
     });
     expect(ok.status(), 'anon can still read the public columns').toBe(200);
-    expect(res.status(), 'anon cannot read last_error').toBe(403);
+    // Measured on prod: PostgREST answers a missing COLUMN privilege with 401
+    // here, not the 403 the profiles allowlist produces. Accept either — the
+    // assertion is "denied", and pinning the exact code makes this spec a
+    // guard against PostgREST's error mapping rather than against the grant.
+    expect([401, 403], 'anon cannot read last_error').toContain(res.status());
+  });
+
+  test('every column the public surfaces select is actually granted to anon', async ({
+    request,
+  }) => {
+    // THE FAILURE THIS EXISTS FOR. Narrowing the grant broke
+    // sitemap-podcasts.xml, which selects `slug,updated_at`:
+    // functions/_lib/sitemap.ts prefers the service-role key and FALLS BACK to
+    // anon, so in production it drew `42501 permission denied for table
+    // news_sources` and emitted a well-formed, completely empty urlset. HTTP
+    // 200, valid XML, zero <loc> — nothing about the symptom points at a grant.
+    //
+    // Asserting the SELECTS rather than the grant list is what makes this
+    // survive: a future column added to any of these queries fails here.
+    const base = process.env.VITE_SUPABASE_URL;
+    const key = process.env.VITE_SUPABASE_ANON_KEY;
+    test.skip(!base || !key, 'needs VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY');
+
+    const selects = [
+      // functions/sitemap-podcasts.xml.ts
+      'slug,updated_at',
+      // functions/_lib/detail.ts — podcastShowDetail
+      'id,name,slug,description,url,website_url,artwork_url,episode_count',
+      // src/hooks/usePodcasts.ts
+      'id,name,slug,description,website_url,url,artwork_url,episode_count',
+      // src/hooks/useNews.tsx — fetchSources
+      'id,name,slug,description,url,website_url,category,feed_type,artwork_url,is_active,is_aggregator,organization_id,episode_count',
+      // src/hooks/usePageFetchers.ts — fetchNewsSourceById
+      'name,url',
+    ];
+    for (const sel of selects) {
+      const r = await request.get(
+        `${base}/rest/v1/news_sources?select=${encodeURIComponent(sel)}&limit=1`,
+        { headers: { apikey: key!, Authorization: `Bearer ${key}` } },
+      );
+      expect(r.status(), `anon cannot read: ${sel}`).toBe(200);
+    }
   });
 });
