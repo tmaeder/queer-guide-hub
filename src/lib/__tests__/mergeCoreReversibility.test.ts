@@ -40,6 +40,37 @@ function stripSqlComments(sql: string): string {
 }
 
 /**
+ * Read every migration ONCE.
+ *
+ * There are ~1,670 of them and this suite resolves a dozen function definitions.
+ * Re-reading and re-stripping the directory per lookup blew vitest's 15s per-test
+ * timeout — which surfaces as a FAILED ASSERTION, not as "slow", so it reads like a
+ * broken guard. The repo lives on an iCloud-synced volume, which makes cold reads
+ * much worse than they look locally.
+ */
+let cache: { name: string; stripped: string }[] | null = null;
+function migrations(): { name: string; stripped: string }[] {
+  if (!cache) {
+    cache = readdirSync(MIGRATIONS)
+      .filter((f) => f.endsWith('.sql'))
+      .sort()
+      .map((name) => ({
+        name,
+        stripped: stripSqlComments(readFileSync(join(MIGRATIONS, name), 'utf8')),
+      }));
+  }
+  return cache;
+}
+
+function findLatest(fn: string): string {
+  const re = new RegExp(`create\\s+(or\\s+replace\\s+)?function\\s+public\\.${fn}\\s*\\(`, 'i');
+  for (let i = migrations().length - 1; i >= 0; i--) {
+    if (re.test(migrations()[i].stripped)) return migrations()[i].stripped;
+  }
+  throw new Error(`no migration defines ${fn}`);
+}
+
+/**
  * Everything before the migration's own `do $verify$` block.
  *
  * Load-bearing, and it cost three vacuous assertions to find out. These migrations
@@ -54,32 +85,12 @@ function stripSqlComments(sql: string): string {
  * Stripping comments is not enough for the same reason — the verify block is code.
  */
 function statementsOf(fn: string): string {
-  const files = readdirSync(MIGRATIONS)
-    .filter((f) => f.endsWith('.sql'))
-    .sort();
-  for (const f of [...files].reverse()) {
-    const sql = readFileSync(join(MIGRATIONS, f), 'utf8');
-    if (
-      new RegExp(`create\\s+(or\\s+replace\\s+)?function\\s+public\\.${fn}\\s*\\(`, 'i').test(sql)
-    )
-      return stripSqlComments(sql).split(/do\s+\$verify\$/i)[0];
-  }
-  throw new Error(`no migration defines ${fn}`);
+  return findLatest(fn).split(/do\s+\$verify\$/i)[0];
 }
 
 /** The full comment-stripped migration, verify block included. */
 function latestDefinitionOf(fn: string): string {
-  const files = readdirSync(MIGRATIONS)
-    .filter((f) => f.endsWith('.sql'))
-    .sort();
-  for (const f of [...files].reverse()) {
-    const sql = readFileSync(join(MIGRATIONS, f), 'utf8');
-    if (
-      new RegExp(`create\\s+(or\\s+replace\\s+)?function\\s+public\\.${fn}\\s*\\(`, 'i').test(sql)
-    )
-      return stripSqlComments(sql);
-  }
-  throw new Error(`no migration defines ${fn}`);
+  return findLatest(fn);
 }
 
 /**
