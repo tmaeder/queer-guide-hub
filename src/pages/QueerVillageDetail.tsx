@@ -32,6 +32,7 @@ import {
 } from '@/components/geo/geoSectionModel';
 import { TripCoveringBanner } from '@/components/trips/TripCoveringBanner';
 import { PlanTripFromHereButton } from '@/components/trips/PlanTripFromHereButton';
+import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
 import {
   type VillageWithRelations,
   buildVillageBreadcrumbs,
@@ -299,7 +300,7 @@ export default function QueerVillageDetail() {
       eyebrow={t('village.eyebrow', 'District · Green line')}
       title={village.name}
       status={village.featured ? t('village.facts.editorsPick', 'Editor’s pick') : undefined}
-      lead={village.description}
+      lead={<GlossaryLinkedText text={village.description} />}
       tags={
         <div className="flex flex-col gap-4">
           <GeoCensus type="queer_village" items={census} />

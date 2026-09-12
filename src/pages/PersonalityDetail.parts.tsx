@@ -31,6 +31,7 @@ import { useTranslation } from 'react-i18next';
 import { resolveHistoricalPlace, type HistoricalNameEntry } from '@/lib/historicalPlace';
 import { codeToFlagEmoji } from '@/lib/countryFlag';
 import { resolvePublisherName } from '@/lib/publisherName';
+import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
 
 export interface PersonalityBirthCity {
   id: string;
@@ -456,7 +457,9 @@ export function PersonalityOverview({
                 fieldOverride={{ type: 'textarea' }}
                 as="div"
               >
-                <p className="text-muted-foreground">{personality.description}</p>
+                <p className="text-muted-foreground">
+                  <GlossaryLinkedText text={personality.description} />
+                </p>
               </Editable>
             </CardContent>
           </Card>

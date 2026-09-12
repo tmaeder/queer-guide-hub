@@ -10,6 +10,7 @@ import { PWAProvider } from '@/components/pwa/PWAProvider';
 import { CurrencyProvider } from '@/hooks/useCurrency';
 import { SafeModeProvider } from '@/providers/SafeModeProvider';
 import { AdminEditModeProvider } from '@/hooks/useAdminEditMode';
+import { GlossaryVocabularyProvider } from '@/hooks/useGlossaryLinkVocabulary';
 import { createOptimizedQueryClient } from '@/utils/queryOptimizations';
 import { CommunityLevelUpToast } from '@/components/score/CommunityLevelUpToast';
 
@@ -36,7 +37,11 @@ export const AppProviders = ({ children }: { children: React.ReactNode }) => (
                     <TooltipProvider>
                       <Sonner />
                       <CommunityLevelUpToast />
-                      {children}
+                      {/* Inline glossary links in body prose. Innermost on
+                          purpose: it is the only provider here whose absence is
+                          harmless — consumers fall back to plain text — so it
+                          adds no new way for the app shell to fail. */}
+                      <GlossaryVocabularyProvider>{children}</GlossaryVocabularyProvider>
                     </TooltipProvider>
                   </AdminEditModeProvider>
                 </SafeModeProvider>

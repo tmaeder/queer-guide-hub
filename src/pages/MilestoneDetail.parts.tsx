@@ -19,6 +19,7 @@ import { displayableMilestoneImage } from '@/lib/milestoneImage';
 import { detailHref } from '@/lib/searchRoutes';
 import { cn } from '@/lib/utils';
 import type { Milestone, MilestoneLink } from '@/types/milestone';
+import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
 
 export function MilestoneHero({ milestone }: { milestone: Milestone }) {
   const { t, i18n } = useTranslation();
@@ -134,7 +135,7 @@ export function MilestoneStory({ milestone }: { milestone: Milestone }) {
     // already uses — without it the widened frame runs ~118 characters a line.
     <SingleSection title={t('milestones.sections.story', 'What happened')}>
       <p className="max-w-[68ch] whitespace-pre-line text-body-lg leading-relaxed">
-        {milestone.description}
+        <GlossaryLinkedText text={milestone.description} />
       </p>
     </SingleSection>
   );
