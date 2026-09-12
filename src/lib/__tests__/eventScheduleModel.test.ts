@@ -17,12 +17,38 @@ import { describe, it, expect } from 'vitest';
 
 const MIGRATIONS = join(process.cwd(), 'supabase', 'migrations');
 
-function latest(match: RegExp): string {
+/**
+ * The migration carrying the LATEST definition of `symbol`, found by content rather
+ * than by filename.
+ *
+ * Pinning a filename is the trap: this file originally read
+ * `_event_dates_rebuild_and_signals.sql`, and when a later migration replaced
+ * `event_dates_rebuild_one` the test went on happily asserting the superseded body —
+ * green while the live function did something else. Search for the definition, and a
+ * CREATE OR REPLACE anywhere moves the guard with it.
+ */
+function latestDefining(symbol: string): string {
+  const needle = new RegExp(
+    `(create or replace|create)\\s+function\\s+public\\.${symbol}\\s*\\(`,
+    'i',
+  );
   const file = readdirSync(MIGRATIONS)
-    .filter((f) => match.test(f))
+    .filter((f) => f.endsWith('.sql'))
     .sort()
-    .pop();
-  if (!file) throw new Error(`no migration matching ${match}`);
+    .reverse()
+    .find((f) => needle.test(readFileSync(join(MIGRATIONS, f), 'utf8')));
+  if (!file) throw new Error(`no migration defines public.${symbol}`);
+  return readFileSync(join(MIGRATIONS, file), 'utf8');
+}
+
+/** The migration carrying the latest definition of a CHECK constraint or table. */
+function latestMatching(needle: RegExp): string {
+  const file = readdirSync(MIGRATIONS)
+    .filter((f) => f.endsWith('.sql'))
+    .sort()
+    .reverse()
+    .find((f) => needle.test(readFileSync(join(MIGRATIONS, f), 'utf8')));
+  if (!file) throw new Error(`no migration matching ${needle}`);
   return readFileSync(join(MIGRATIONS, file), 'utf8');
 }
 
@@ -34,8 +60,10 @@ function code(sql: string): string {
     .join('\n');
 }
 
-const MODEL = code(latest(/_event_schedule_model\.sql$/));
-const REBUILD = code(latest(/_event_dates_rebuild_and_signals\.sql$/));
+const MODEL = code(latestDefining('event_schedule_dates'));
+const REBUILD = code(latestDefining('event_dates_rebuild_one'));
+const SIGNALS = code(latestDefining('event_schedule_signals'));
+const TABLE = code(latestMatching(/create table if not exists public\.event_dates/));
 
 describe('the expander', () => {
   // to_char(d,'DY') is lc_time-dependent: on a server with a non-English locale it
@@ -65,14 +93,21 @@ describe('the derive job', () => {
     expect(REBUILD).toMatch(/least\(coalesce\(v_event\.end_date/);
   });
 
-  it('regenerates only generated rows, never confirmed ones', () => {
-    // Anchored on the per-event delete specifically. A loose `delete from
-    // event_dates ... provenance = 'generated'` scan is VACUOUS here, because the
-    // orphan sweep further down contains the same phrase and satisfies it after this
-    // filter is removed — mutation-tested, it did exactly that.
-    expect(REBUILD).toMatch(
+  // This assertion INVERTED at part 3b, deliberately. While `confirmed` meant
+  // "corroborated by a feed or a human" it had to survive a rebuild. Once
+  // corroboration became DERIVED — recomputed from the sibling rows on every pass —
+  // a surviving confirmed row would fossilise the moment its sibling was cancelled.
+  // Nothing in event_dates is hand-authored, so everything in it is rebuildable.
+  it('clears every derived row for the event, both provenances', () => {
+    expect(REBUILD).toMatch(/delete from public\.event_dates where event_id = p_event_id;/);
+    expect(REBUILD).not.toMatch(
       /delete from public\.event_dates\s+where event_id = p_event_id and provenance = 'generated'/,
     );
+  });
+
+  it('derives corroboration from the sibling feed rows rather than storing it sticky', () => {
+    expect(REBUILD).toMatch(/sib\.series_key = v_event\.series_key/);
+    expect(REBUILD).toMatch(/then 'confirmed' else 'generated' end/);
   });
 
   it('never lets a generated date displace a confirmed one', () => {
@@ -96,40 +131,40 @@ describe('exposure', () => {
   it('embeds the full parent predicate in the satellite RLS policy', () => {
     // A date row leaks the existence and timing of its event, so it must answer the
     // same question the parent does — both halves, not just one.
-    expect(MODEL).toMatch(/e\.duplicate_of_id is null/);
-    expect(MODEL).toMatch(/not e\.safety_gated or \(select auth\.uid\(\)\) is not null/);
+    expect(TABLE).toMatch(/e\.duplicate_of_id is null/);
+    expect(TABLE).toMatch(/not e\.safety_gated or \(select auth\.uid\(\)\) is not null/);
   });
 
   it('revokes the default-granted write set from the API roles', () => {
     // Supabase stock ALTER DEFAULT PRIVILEGES grants ALL on every new relation.
     // Leaving it is how 20260806180000 and 20260912075359 both happened.
-    expect(MODEL).toMatch(
+    expect(TABLE).toMatch(
       /revoke insert, update, delete, truncate on public\.event_dates\s+from anon, authenticated/,
     );
   });
 
   it('keeps anon SELECT so the derived dates are readable', () => {
-    expect(MODEL).toMatch(/grant select on public\.event_dates to anon/);
+    expect(TABLE).toMatch(/grant select on public\.event_dates to anon/);
   });
 });
 
 describe('the sentinel', () => {
   it('reports schedules_total as the positive control for its own zeroes', () => {
-    expect(REBUILD).toMatch(/'schedules_total'/);
+    expect(SIGNALS).toMatch(/'schedules_total'/);
   });
 
   it('reports probe_ok so an unreachable RPC cannot read as a clean index', () => {
-    expect(REBUILD).toMatch(/'probe_ok'/);
+    expect(SIGNALS).toMatch(/'probe_ok'/);
   });
 
   it('carries all three zero-invariants', () => {
     for (const key of ['stale_rows', 'orphan_generated_rows', 'beyond_horizon']) {
-      expect(REBUILD).toMatch(new RegExp(`'${key}'`));
+      expect(SIGNALS).toMatch(new RegExp(`'${key}'`));
     }
   });
 
   it('detects staleness by comparing the stored hash to the rule, not by a diff', () => {
-    expect(REBUILD).toMatch(
+    expect(SIGNALS).toMatch(
       /source_hash is distinct from public\.event_schedule_hash\(e\.schedule\)/,
     );
   });
@@ -155,4 +190,90 @@ describe('the health script consumes the sentinel', () => {
     const block = health.slice(health.indexOf('event_schedule_signals'));
     expect(block).toMatch(/schedules === 0/);
   });
+});
+
+const INFER = code(latestDefining('infer_event_schedules'));
+const SHAPE = code(latestMatching(/events_schedule_shape check/));
+
+describe('cadence inference (part 3)', () => {
+  // The defect the measurement caught: "same weekday, same clock, >=3 distinct
+  // weeks" LOOKS like a weekly test and is not one. It passes for 155 series of
+  // which only 76 are weekly and 55 are monthly, so inferring weekly across it
+  // generates ~4x too many dates for every monthly community group in the corpus.
+  it('measures cadence from the median gap instead of assuming weekly', () => {
+    expect(INFER).toMatch(/percentile_disc\(0\.5\) within group \(order by gap\)/);
+    expect(INFER).toMatch(/r\.med between 6\.5 and 7\.5/);
+    expect(INFER).toMatch(/r\.med between 27 and 32/);
+  });
+
+  it('stamps every inferred rule so it can never pass as human-authored', () => {
+    // Part 5 keys its never-publish treatment on this stamp.
+    const rules = INFER.match(/'confidence', 'inferred'/g) ?? [];
+    expect(rules.length).toBeGreaterThanOrEqual(3); // weekly, fortnightly, monthly
+  });
+
+  it('records the cadences it cannot express instead of guessing one', () => {
+    expect(INFER).toMatch(/'state', 'not_expressible'/);
+  });
+
+  it('never overwrites a series that already carries a rule', () => {
+    expect(INFER).toMatch(/count\(\*\) filter \(where o\.has_rule\) = 0/);
+  });
+
+  it('derives exceptions from dates the feed never published', () => {
+    expect(INFER).toMatch(/'exceptions', v_exceptions/);
+  });
+});
+
+describe('the expressible cadences', () => {
+  it('permits monthly nth including -1 for the LAST weekday', () => {
+    // ((day-1)/7)+1 calls 30 Sep the 5th Wednesday, which is arithmetic not meaning:
+    // Bi-Gruppe and Polygespraech are last-weekday series and a forward-only nth
+    // generates nothing for them in a four-Wednesday month.
+    expect(SHAPE).toMatch(/nth'\)::int in \(-1, 1, 2, 3, 4\)/);
+    expect(MODEL).toMatch(/v_m_nth = -1 and v_m_bwd = 1/);
+  });
+
+  it('requires an anchor whenever interval_weeks is set', () => {
+    // "Every other Friday" has no phase without one.
+    expect(SHAPE).toMatch(/interval_weeks[\s\S]{0,220}schedule \? 'anchor'/);
+  });
+
+  it('leaves plain weekly unchanged when no interval is given', () => {
+    expect(MODEL).toMatch(/v_interval = 1\s+or\s+\(v_anchor is not null/);
+  });
+});
+
+// Generalised from the miss that produced 20760101100000: part 2 wrote
+// `grant execute ... to service_role` on event_schedule_signals and shipped it, but
+// CREATE FUNCTION grants EXECUTE to PUBLIC by default, so naming a role ADDS a
+// grantee instead of setting the list. Every function here that TOUCHES DATA must
+// revoke before it grants, or the grant line is decoration.
+describe('every data-touching schedule function revokes PUBLIC before granting', () => {
+  // event_schedule_dates and event_schedule_hash are deliberately absent. Both are
+  // pure — every input arrives as an argument, neither reads a table nor writes one,
+  // so PUBLIC execute exposes nothing that the caller did not already supply.
+  // Revoking them would be cargo-cult: the risk this guard exists for is a function
+  // that reads or mutates rows, and listing harmless ones dilutes it.
+  const FUNCTIONS = [
+    'event_dates_rebuild_one',
+    'run_event_dates_rebuild',
+    'event_schedule_signals',
+    'infer_event_schedules',
+  ];
+
+  const ALL_SQL = readdirSync(MIGRATIONS)
+    .filter((f) => f.endsWith('.sql') && /event_schedule|event_dates|infer_event/.test(f))
+    .map((f) => code(readFileSync(join(MIGRATIONS, f), 'utf8')))
+    .join('\n');
+
+  for (const fn of FUNCTIONS) {
+    it(`${fn} is not left executable by PUBLIC`, () => {
+      const re = new RegExp(
+        `revoke (all|execute) on function public\\.${fn}\\([^)]*\\)[^;]*?from[^;]*public`,
+        'i',
+      );
+      expect(re.test(ALL_SQL), `no migration revokes PUBLIC execute on ${fn}`).toBe(true);
+    });
+  }
 });

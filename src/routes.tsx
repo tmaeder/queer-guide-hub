@@ -101,10 +101,8 @@ const AdminImports = lazyRetry(() => import('./pages/admin/AdminImports'));
 const AdminEventQuality = lazyRetry(() => import('./pages/admin/AdminEventQuality'));
 const AdminGroupRequests = lazyRetry(() => import('./pages/admin/AdminGroupRequests'));
 const AdminSearchIntelligence = lazyRetry(() => import('./pages/admin/AdminSearchIntelligence'));
-const AdminRecognition = lazyRetry(() => import('./pages/admin/Recognition'));
 const AdminDesignSystem = lazyRetry(() => import('./pages/admin/DesignSystem'));
 const AdminStyleguide = lazyRetry(() => import('./pages/admin/AdminStyleguide'));
-const Contributors = lazyRetry(() => import('./pages/Contributors'));
 
 // New feature pages
 const Hotels = lazyRetry(() => import('./pages/Hotels'));
@@ -376,8 +374,6 @@ export const AppRoutes = () => {
                 <Route path="/onboarding/welcome" element={<OnboardingWelcome />} />
                 <Route path="/onboarding/search" element={<SearchPersonalization />} />
                 <Route path="/onboarding/venues" element={<VenuePersonalization />} />
-                <Route path="/contributors" element={<Contributors />} />
-                <Route path="/contributors/:year" element={<Contributors />} />
                 <Route path="/brand" element={<BrandGuidelines />} />
                 {/* ── Unified Admin Console ── */}
                 {/* All /admin/* routes wrapped in AdminShell layout with sidebar */}
@@ -528,7 +524,6 @@ export const AppRoutes = () => {
                     element={<Navigate to="/admin/content/redirects" replace />}
                   />
                   <Route path="email-templates" element={<EmailTemplates />} />
-                  <Route path="recognition" element={<AdminRecognition />} />
 
                   {/* Settings -- taxonomy management pages */}
                   <Route path="settings" element={<AdminTags />} />

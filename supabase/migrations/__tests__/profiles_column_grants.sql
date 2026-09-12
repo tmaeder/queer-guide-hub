@@ -117,11 +117,12 @@ begin
   -- presence_visibility in the WHERE and dnd_until in a CASE, neither of which the
   -- client ever selects. An invoker view needs privilege on EVERY column in its body,
   -- so dropping either from the allowlist 42501s the presence dots site-wide.
+  -- contributor_recognitions_public was the second view probed here until
+  -- 20770101100000 dropped the recognition feature (0 rows in its whole life).
   select count(*) into n from public.profile_status_v;
-  select count(*) into n from public.contributor_recognitions_public;
 
   reset role;
-  raise notice 'PASS 4: anon can still count, browse, search and read both invoker views';
+  raise notice 'PASS 4: anon can still count, browse, search and read the invoker view';
 exception when insufficient_privilege then
   reset role;
   raise exception 'FAIL(4): a surface anon legitimately needs was denied: %', sqlerrm;
@@ -192,14 +193,14 @@ begin
     from public.security_invoker_required_views v
     join pg_class c on c.relname = v.view_name
     join pg_namespace n on n.oid = c.relnamespace and n.nspname = 'public'
-   where v.view_name in ('profile_status_v','contributor_recognitions_public',
-                         'intimate_discovery_v','safe_profiles','public_profiles')
+   where v.view_name in ('profile_status_v','intimate_discovery_v',
+                         'safe_profiles','public_profiles')
      and coalesce((select option_value from pg_options_to_table(c.reloptions)
                    where option_name = 'security_invoker'), 'false') not in ('true','on','1');
   if bad is not null then
     raise exception 'FAIL(8): view(s) over profiles lost security_invoker: %', bad;
   end if;
-  raise notice 'PASS 8: all five profiles-derived views keep security_invoker';
+  raise notice 'PASS 8: all four profiles-derived views keep security_invoker';
 end $$;
 
 -- 9: the authenticated allowlist (20510101100000) -----------------------------
