@@ -196,7 +196,7 @@ export function CloudflareDashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
+                  <div className="text-headline font-bold">
                     {analytics.result?.totals?.requests?.all?.toLocaleString() || '0'}
                   </div>
                   <p className="text-sm text-muted-foreground mt-1">
@@ -213,7 +213,7 @@ export function CloudflareDashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
+                  <div className="text-headline font-bold">
                     {((analytics.result?.totals?.bandwidth?.all || 0) / 1024 / 1024 / 1024).toFixed(
                       2,
                     )}{' '}
@@ -239,7 +239,7 @@ export function CloudflareDashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
+                  <div className="text-headline font-bold">
                     {analytics.result?.totals?.uniques?.all?.toLocaleString() || '0'}
                   </div>
                   <p className="text-sm text-muted-foreground mt-1">Last 24 hours</p>
@@ -254,7 +254,7 @@ export function CloudflareDashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
+                  <div className="text-headline font-bold">
                     {analytics.result?.totals?.threats?.all?.toLocaleString() || '0'}
                   </div>
                   <p className="text-sm text-muted-foreground mt-1">Security events</p>

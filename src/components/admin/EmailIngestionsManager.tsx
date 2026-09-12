@@ -182,25 +182,28 @@ export function EmailIngestionsManager() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold">{totalCount}</div>
+            <div className="text-headline font-bold">{totalCount}</div>
             <span className="text-xs text-muted-foreground">Total</span>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-foreground">{completedCount}</div>
+            <div className="text-headline font-bold text-foreground">{completedCount}</div>
             <span className="text-xs text-muted-foreground">Completed</span>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-destructive">{failedCount}</div>
+            <div className="text-headline font-bold text-destructive">{failedCount}</div>
             <span className="text-xs text-muted-foreground">Failed</span>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold" style={{ color: 'hsl(var(--foreground) / 0.55)' }}>
+            <div
+              className="text-headline font-bold"
+              style={{ color: 'hsl(var(--foreground) / 0.55)' }}
+            >
               {processingCount}
             </div>
             <span className="text-xs text-muted-foreground">Processing</span>
