@@ -243,3 +243,37 @@ describe('the expressible cadences', () => {
     expect(MODEL).toMatch(/v_interval = 1\s+or\s+\(v_anchor is not null/);
   });
 });
+
+// Generalised from the miss that produced 20760101100000: part 2 wrote
+// `grant execute ... to service_role` on event_schedule_signals and shipped it, but
+// CREATE FUNCTION grants EXECUTE to PUBLIC by default, so naming a role ADDS a
+// grantee instead of setting the list. Every function here that TOUCHES DATA must
+// revoke before it grants, or the grant line is decoration.
+describe('every data-touching schedule function revokes PUBLIC before granting', () => {
+  // event_schedule_dates and event_schedule_hash are deliberately absent. Both are
+  // pure — every input arrives as an argument, neither reads a table nor writes one,
+  // so PUBLIC execute exposes nothing that the caller did not already supply.
+  // Revoking them would be cargo-cult: the risk this guard exists for is a function
+  // that reads or mutates rows, and listing harmless ones dilutes it.
+  const FUNCTIONS = [
+    'event_dates_rebuild_one',
+    'run_event_dates_rebuild',
+    'event_schedule_signals',
+    'infer_event_schedules',
+  ];
+
+  const ALL_SQL = readdirSync(MIGRATIONS)
+    .filter((f) => f.endsWith('.sql') && /event_schedule|event_dates|infer_event/.test(f))
+    .map((f) => code(readFileSync(join(MIGRATIONS, f), 'utf8')))
+    .join('\n');
+
+  for (const fn of FUNCTIONS) {
+    it(`${fn} is not left executable by PUBLIC`, () => {
+      const re = new RegExp(
+        `revoke (all|execute) on function public\\.${fn}\\([^)]*\\)[^;]*?from[^;]*public`,
+        'i',
+      );
+      expect(re.test(ALL_SQL), `no migration revokes PUBLIC execute on ${fn}`).toBe(true);
+    });
+  }
+});

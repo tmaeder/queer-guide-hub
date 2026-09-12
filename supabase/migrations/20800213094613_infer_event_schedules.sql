@@ -398,7 +398,13 @@ as $$
   );
 $$;
 
-grant execute on function public.event_schedule_signals() to service_role;
+-- CREATE FUNCTION grants EXECUTE to PUBLIC by default, so naming service_role ADDS
+-- a grantee rather than setting the list. CREATE OR REPLACE preserves the grants
+-- 20760101100000 already fixed, but restating the revoke keeps the file honest about
+-- what it leaves behind -- part 2 shipped this exact line without one and needed a
+-- follow-up security migration.
+revoke execute on function public.event_schedule_signals() from public, anon, authenticated;
+grant  execute on function public.event_schedule_signals() to service_role;
 
 -- ---------------------------------------------------------------------------
 -- 4. Schedule it
