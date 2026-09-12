@@ -1,10 +1,23 @@
 // city-agentic-enrich — the queer moat. For thin / low-completeness cities, fetch
 // grounding sources (Wikipedia extract + official site) and extract queer-aware
 // travel fields. Hybrid-by-confidence for NARRATIVE fields (auto-fill empty cols at
-// >=0.8). SAFETY-SENSITIVE fields (lgbt_friendly_rating, editorial_hook) are ALWAYS
-// routed to city_review_queue — never auto-published — and the rating is only queued
-// when backed by citations. safety_notes is composed deterministically elsewhere
-// (compose_safety_note / city safety backfill). LLM-gated: circuit-broken + per-day cap.
+// >=0.8). SAFETY-SENSITIVE fields (lgbt_friendly_rating, editorial_hook,
+// best_time_to_visit) are ALWAYS routed to city_review_queue — never auto-published —
+// and the rating is only queued when backed by citations. safety_notes is composed
+// deterministically elsewhere (compose_safety_note / city safety backfill).
+// LLM-gated: circuit-broken + per-day cap.
+//
+// best_time_to_visit joined the gated set on 2026-09-12 because the voice adoption
+// changed what the model is willing to say. Measured across all 209 cities this
+// composer had ever touched, it returned null 209/209 — conservatism this codebase
+// treats as correct, not as a gap. The first `voice: 'compact'` A/B filled it on 2 of
+// 5 cities, and one of the two was WRONG: it dated the Busan Queer Culture Festival to
+// "June or July" (it is a September/October event; June/July is Seoul's). Chillán's was
+// right. A travel-timing recommendation is the one narrative field that reaches past
+// the grounding sources by construction — the sources say what a city IS, not when to
+// go — so at a 0.8 auto-publish bar it is a fabrication surface. No regex sees this:
+// styleguide_content_drift() scores vocabulary, and the sentence carried no avoid
+// phrase at all. Gate the field, keep the voice.
 //
 // Auth: X-Webhook-Secret (cron) or admin/service-role.
 // Body: { batch_limit?, dry_run?, city_ids?, daily_cap?, skip_gated?, voice? }.
@@ -223,7 +236,6 @@ Deno.serve(async (req: Request) => {
       const update: Record<string, unknown> = {}
       if (highConf) {
         if (ai.description && (!c.description || String(c.description).trim().length < 80)) update.description = ai.description
-        if (ai.best_time_to_visit && !c.best_time_to_visit) update.best_time_to_visit = ai.best_time_to_visit
         if (ai.local_customs && !c.local_customs) update.local_customs = ai.local_customs
       }
       update.enrichment_status = { ...(c.enrichment_status ?? {}), agentic: { at: new Date().toISOString(), confidence, ...ai } }
@@ -242,6 +254,17 @@ Deno.serve(async (req: Request) => {
       // safety_notes is no longer LLM-generated — it is composed deterministically by
       // the SQL compose_safety_note() / city safety backfill (migration 20260608000001).
       if (ai.editorial_hook) gatedProposals.push({ field: 'editorial_hook', value: { value: ai.editorial_hook }, cite: citations.filter(x => x?.field === 'editorial_hook' || x?.field === 'hook') })
+      // Still fill-if-empty: a city that already carries a best_time_to_visit keeps it,
+      // and queueing a proposal against it would invite a reviewer to overwrite curated
+      // text. Deliberately NOT gated on highConf, following editorial_hook — a human
+      // reads it either way and the row carries its own confidence.
+      if (ai.best_time_to_visit && !c.best_time_to_visit) {
+        gatedProposals.push({
+          field: 'best_time_to_visit',
+          value: { value: ai.best_time_to_visit },
+          cite: citations.filter(x => x?.field === 'best_time_to_visit' || x?.field === 'best_time'),
+        })
+      }
 
       if (skipGated) gatedProposals.length = 0
       if (gatedProposals.length) update.needs_attention = true
