@@ -81,8 +81,10 @@ begin
   if not found then raise exception 'merge audit % not found or already undone', p_audit_id; end if;
 
   v_pre_schema := coalesce((r.details->>'schema')::int, 0) < 1;
-  if v_pre_schema and not p_force then
-    raise exception 'merge audit % predates moved-row recording; its reparenting cannot be restored. Re-run with p_force => true to clear duplicate_of_id only, leaving children on the keep row.', p_audit_id;
+  if v_pre_schema then
+    if not p_force then
+      raise exception 'merge audit % predates moved-row recording; its reparenting cannot be restored. Re-run with p_force => true to clear duplicate_of_id only, leaving children on the keep row.', p_audit_id;
+    end if;
   end if;
   v_moved := r.details->'moved';
 
@@ -525,3 +527,12 @@ begin
 
   raise notice 'unmerge_entities replays reparenting for all ten types';
 end $verify$;
+
+-- PostgREST resolves overloads BY ARGUMENT NAME, so a surviving 1-arg form makes
+-- `unmerge_entities({p_audit_id})` ambiguous (42725) instead of picking this one.
+-- 20270822093412 dropped it; re-assert here because this migration is now the latest
+-- definition and the invariant has to travel with it.
+DROP FUNCTION IF EXISTS public.unmerge_entities(uuid);
+
+REVOKE ALL ON FUNCTION public.unmerge_entities(uuid, boolean) FROM public, anon;
+GRANT EXECUTE ON FUNCTION public.unmerge_entities(uuid, boolean) TO authenticated, service_role;

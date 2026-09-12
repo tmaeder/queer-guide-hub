@@ -172,7 +172,22 @@ describe('unmerge_entities replays the reparenting instead of reporting success'
   });
 
   it('refuses a pre-schema audit unless forced', () => {
-    expect(sql()).toContain('v_pre_schema and not p_force');
+    // Nested rather than hoisted into one condition, matching the shape
+    // 20270822093412 established — `eventMergeReversibility.test.ts` pins the inner
+    // `if not p_force then` and now reads THIS migration, since it is the latest
+    // definition of unmerge_entities.
+    expect(sql()).toMatch(/if v_pre_schema then\s*\n\s*if not p_force then/);
+  });
+
+  it('keeps the overload drop and the grants with the definition', () => {
+    // CREATE OR REPLACE preserves the ACL, so losing these is silent. A surviving
+    // 1-arg form makes a named PostgREST call ambiguous (42725).
+    const whole = latestDefinitionOf('unmerge_entities');
+    expect(whole).toMatch(/DROP FUNCTION IF EXISTS public\.unmerge_entities\(uuid\)/i);
+    expect(whole).toMatch(
+      /GRANT EXECUTE ON FUNCTION public\.unmerge_entities\(uuid, boolean\) TO authenticated, service_role/,
+    );
+    expect(whole).not.toMatch(/TO anon/);
   });
 
   it('replays every relation each core records', () => {
