@@ -58,45 +58,13 @@ test.describe('locale prefixing', () => {
     });
   }
 
-  /**
-   * The doubled-locale URLs must hard-404 and advertise NOTHING.
-   *
-   * The `a[href]` sweep above could never have caught this: the fan-out lives
-   * in `link[rel=alternate][hreflang]`, which that scan does not read. The
-   * producer was fixed on 2026-08-16, but `/fr/fr/places` still answered 200
-   * as an indexable SPA shell and emitted an alternate for all 11 locales,
-   * each carrying the stray segment — so one junk URL minted ten more and
-   * crawlers recycled them indefinitely.
-   *
-   * Asserted as a PROPERTY over live locale pairs rather than a frozen URL
-   * list, so adding a locale extends the guard automatically.
-   */
-  for (const [outer, inner] of [
-    ['fr', 'fr'],
-    ['it', 'fr'],
-    ['ko', 'ko'],
-  ] as const) {
-    test(`/${outer}/${inner}/places hard-404s and advertises no alternates`, async ({ request }) => {
-      const res = await request.get(`/${outer}/${inner}/places`, { maxRedirects: 0 });
-      expect(res.status(), `/${outer}/${inner}/places must hard-404, not soft-404 at 200`).toBe(404);
-
-      const html = await res.text();
-      // Nothing may point back at the doubled shape, in any locale.
-      const alternates = [...html.matchAll(/<link[^>]+rel="alternate"[^>]*>/g)].map((m) => m[0]);
-      expect(
-        alternates,
-        `a 404 must not advertise hreflang alternates: ${alternates.join(' ')}`,
-      ).toEqual([]);
-      expect(html).not.toMatch(new RegExp(`/[a-z]{2}/${inner}/places`));
-    });
-  }
-
-  test('positive control: the single-prefix URL still resolves', async ({ request }) => {
-    // Without this, the 404 assertions above would also pass if /places broke
-    // entirely or every locale route started 404-ing.
-    const res = await request.get('/fr/places', { maxRedirects: 0 });
-    expect(res.status()).toBe(200);
-  });
+  // The doubled-locale hard 404 is asserted in
+  // e2e/hreflang-doubled-locale.spec.ts, NOT here. This spec is on the
+  // critical-path list, which runs against `vite preview`
+  // (E2E_BASE_URL=http://localhost:4173) — a static server that does not
+  // execute Pages Functions, so `functions/_middleware.ts` never runs and the
+  // 404 cannot happen. Asserting it here fails for the environment, not for
+  // the code.
 
   test('a localized detail page keeps its breadcrumb links reachable', async ({ page }) => {
     // The detail path is where the bug actually bit: a list page's trail is a
