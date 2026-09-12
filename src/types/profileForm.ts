@@ -15,7 +15,6 @@ export interface PrivacySettings {
   relationships_visibility?: string;
   travel_visibility?: string;
   coming_out_visibility?: string;
-  appear_in_recognition?: boolean;
   /** public | community | private — who sees posts/reviews/photos (default public). */
   contributions_visibility?: string;
   /** public | community | private — who sees friends/groups counts (default community). */
@@ -101,7 +100,6 @@ const DEFAULT_PRIVACY: PrivacySettings = {
   relationships_visibility: 'friends',
   travel_visibility: 'public',
   coming_out_visibility: 'private',
-  appear_in_recognition: false,
   pronouns_visibility: 'public',
   flags_visibility: 'public',
   location_visibility: 'public',

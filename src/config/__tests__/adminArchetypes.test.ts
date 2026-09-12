@@ -112,10 +112,12 @@ describe('admin archetype registry', () => {
     // only integration entry, an F that was never a content type.)
     // (11 -> 12 caveated when /admin/styleguide landed: an H whose fourth tab
     // is a D, recorded rather than filed under its loudest tab.)
+    // (23 -> 22 clean when /admin/recognition was removed 2026-09-12: the
+    // recognition wall it curated held 0 rows for its entire life.)
     const clean = ADMIN_ARCHETYPES.filter((e) => e.archetype && !e.caveat).length;
     const caveated = ADMIN_ARCHETYPES.filter((e) => e.archetype && e.caveat).length;
     const exempt = ADMIN_ARCHETYPES.filter((e) => e.archetype === null).length;
-    expect({ clean, caveated, exempt }).toEqual({ clean: 23, caveated: 12, exempt: 6 });
+    expect({ clean, caveated, exempt }).toEqual({ clean: 22, caveated: 12, exempt: 6 });
     expect(clean + caveated + exempt).toBe(ADMIN_ARCHETYPES.length);
   });
 
