@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/react';
+import { hasAnalyticsConsent } from '@/lib/analyticsConsent';
 
 /**
  * Consent-gated Sentry init.
@@ -11,28 +12,14 @@ import * as Sentry from '@sentry/react';
  * if the banner UI failed to load, and we "fail closed": no consent → no Sentry.
  *
  * We gate on the same `analytics` preference flag as Umami (the cookie dialog
- * groups usage analytics and error diagnostics together).
+ * groups usage analytics and error diagnostics together) via the shared
+ * `src/lib/analyticsConsent.ts`, which is the one implementation of that rule.
+ * Deliberately `hasAnalyticsConsent` and not `analyticsAllowed`: this is crash
+ * diagnostics, and a consenting visitor should keep getting their crashes
+ * reported whether or not they are driving the browser with Playwright.
  */
 
-const CONSENT_STORAGE_KEY = 'queer-guide-cookie-consent';
-const CONSENT_VERSION = '1.0';
-
 let initialized = false;
-
-function hasAnalyticsConsent(): boolean {
-  try {
-    const raw = localStorage.getItem(CONSENT_STORAGE_KEY);
-    if (!raw) return false;
-    const data = JSON.parse(raw) as {
-      preferences?: { analytics?: boolean };
-      version?: string;
-    };
-    if (data.version !== CONSENT_VERSION) return false;
-    return data.preferences?.analytics === true;
-  } catch {
-    return false;
-  }
-}
 
 function initSentry(): void {
   if (initialized) return;

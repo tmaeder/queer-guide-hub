@@ -24,34 +24,16 @@
  * third-party widget ever attempts to inject one.
  */
 
-const CONSENT_STORAGE_KEY = 'queer-guide-cookie-consent';
-const CONSENT_VERSION = '1.0';
+// The consent read lives in `src/lib/analyticsConsent.ts` — one implementation
+// of the rule, imported by this loader, by `src/sentry.ts`, and by every
+// first-party event writer. It has no imports of its own, so this file keeps
+// its "works even when the banner chunk failed to load" property.
+import { hasAnalyticsConsent } from '@/lib/analyticsConsent';
+
 const UMAMI_SCRIPT_ID = 'umami-analytics';
 // Version query busts the year-long edge/browser cache the old /*.js rule
 // applied to this unversioned file. Bump when the tracker script changes.
 const UMAMI_SRC = '/umami.js?v=2';
-
-interface StoredConsent {
-  preferences: {
-    necessary?: boolean;
-    functional?: boolean;
-    analytics?: boolean;
-    marketing?: boolean;
-  };
-  version?: string;
-}
-
-function hasAnalyticsConsent(): boolean {
-  try {
-    const raw = localStorage.getItem(CONSENT_STORAGE_KEY);
-    if (!raw) return false;
-    const data = JSON.parse(raw) as StoredConsent;
-    if (data.version !== CONSENT_VERSION) return false;
-    return data.preferences?.analytics === true;
-  } catch {
-    return false;
-  }
-}
 
 function injectUmami(): void {
   if (document.getElementById(UMAMI_SCRIPT_ID)) return;
@@ -83,9 +65,7 @@ export function installAnalyticsConsentLoader(): void {
   // Live-update path: when the user accepts analytics in the banner,
   // start tracking immediately without a reload.
   window.addEventListener('cookieConsentUpdated', (e: Event) => {
-    const detail = (e as CustomEvent).detail as
-      | { analytics?: boolean }
-      | undefined;
+    const detail = (e as CustomEvent).detail as { analytics?: boolean } | undefined;
     if (detail?.analytics === true) injectUmami();
   });
 }
