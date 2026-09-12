@@ -150,10 +150,21 @@ All workflows accept a `workflow_dispatch` invocation so you can run them on dem
 
 ### Wiring up Search Console reporting
 
-1. Create a Google Cloud service account.
-2. In Search Console → Settings → Users and permissions, grant the service account's email "Full" access on the property.
-3. Add two repository secrets: `GOOGLE_SERVICE_ACCOUNT_KEY` (the full JSON, single line) and `SEARCH_CONSOLE_PROPERTY` (e.g. `sc-domain:queer.guide`).
-4. The next Monday run produces `reports/seo-weekly-YYYY-WW.md`. The workflow has `permissions: contents: write` and commits the report itself.
+**The domain is already verified.** `dig +short TXT queer.guide` returns a `google-site-verification=…` record, so the property exists as a DNS-verified **Domain** property. That fixes the property string exactly — `sc-domain:queer.guide`. A URL-prefix property would be `https://queer.guide/` *with* the trailing slash; they are different properties and are not interchangeable, which is what a 404 from the API means.
+
+1. Google Cloud Console → IAM → **Service Accounts** → create one → **Keys** → Add key → **JSON**. (Enabling the "Google Search Console API" on that project is optional for read access but harmless.)
+2. Search Console → the `queer.guide` **Domain** property → Settings → **Users and permissions** → add the service account's `…@….iam.gserviceaccount.com` address with permission **Full**. *Restricted is not enough* — the API returns 403.
+3. Set both secrets **from the file, never by pasting**:
+   ```
+   gh secret set GOOGLE_SERVICE_ACCOUNT_KEY < key.json
+   gh secret set SEARCH_CONSOLE_PROPERTY --body 'sc-domain:queer.guide'
+   ```
+   Pasting is what flattens the `\n` escapes inside `private_key`, and the resulting failure is an opaque OpenSSL `DECODER routines::unsupported`.
+4. `gh workflow run search-console-report.yml` for an immediate first report instead of waiting for Monday. It writes `reports/seo-weekly-YYYY-WW.md` and commits it itself.
+
+**The report window ends three days ago, deliberately.** Search Console's Performance data lands 2–3 days late, so a window running through *today* spends roughly three of its seven days on days that return nothing — the report stays truthful but silently describes about four days, and week-on-week comparisons run low by a varying amount. `LAG_DAYS` (default 3) shifts the whole window back; `LOOKBACK_DAYS` (default 7) sets its width.
+
+Every first-run failure is named by the script rather than dumped: a 403 tells you which service-account address needs granting, a 404 explains the domain-vs-URL-prefix distinction, a non-JSON secret and an OAuth-client-secret-instead-of-a-service-account-key are each identified, and an unusable PEM points at the paste. **Missing secrets exit 0, not non-zero** — a skip is not a failure, and treating it as one is what kept this workflow permanently red before.
 
 ## Submitting to search engines
 
