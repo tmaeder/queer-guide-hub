@@ -5,7 +5,6 @@ import {
 } from '@/components/ui/select';
 import { SwitchField } from './fields';
 import { PasskeyButton } from '@/components/auth/PasskeyButton';
-import { RecognitionMailingForm } from '@/components/profile/RecognitionMailingForm';
 import type { ProfileFormData } from '@/types/profileForm';
 
 const VISIBILITY_OPTIONS = [
@@ -156,13 +155,6 @@ export function PrivacyTab({ formData, hasPasskey, onPrivacyChange }: PrivacyTab
               checked={ps.birthday_visibility === 'friends'}
               onChange={(v) => onPrivacyChange('birthday_visibility', v ? 'friends' : 'private')}
             />
-            <SwitchField
-              id="appear_in_recognition"
-              label="Appear in annual recognition page"
-              description="If selected by the editorial team, your name may appear on the /contributors/:year page. Default off."
-              checked={!!ps.appear_in_recognition}
-              onChange={(v) => onPrivacyChange('appear_in_recognition', v)}
-            />
           </div>
         </CardContent>
       </Card>
@@ -186,8 +178,6 @@ export function PrivacyTab({ formData, hasPasskey, onPrivacyChange }: PrivacyTab
           </div>
         </CardContent>
       </Card>
-
-      {ps.appear_in_recognition && <RecognitionMailingForm />}
     </div>
   );
 }
