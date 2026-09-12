@@ -268,26 +268,25 @@ describe('city merges are reversible', () => {
   });
 });
 
-describe('the merchant FK that made marketplace unmerge throw', () => {
-  it('is repointed at marketplace_merchants, with the commit-path premise asserted', () => {
-    const files = readdirSync(MIGRATIONS)
-      .filter((f) => f.endsWith('.sql'))
-      .sort();
-    const sql = files
-      .map((f) => stripSqlComments(readFileSync(join(MIGRATIONS, f), 'utf8')))
-      .find(
-        (s) =>
-          /marketplace_listings_merchant_id_fkey/i.test(s) &&
-          /references\s+public\.marketplace_merchants/i.test(s),
-      );
-    expect(sql, 'no migration repoints marketplace_listings_merchant_id_fkey').toBeTruthy();
-    // ON DELETE SET NULL is carried over from the original definition.
-    expect(sql!).toMatch(
-      /references\s+public\.marketplace_merchants\(id\)\s+on\s+delete\s+set\s+null/i,
-    );
-    // The repoint is only safe while no listing can match an affiliate partner
-    // domain, because commit_marketplace_staging_item still reads that table.
-    expect(sql!).toContain('affiliate_partners');
-    expect(sql!).toMatch(/raise\s+exception[\s\S]{0,200}affiliate partner domain/i);
-  });
-});
+/**
+ * The merchant FK is NOT asserted here any more.
+ *
+ * This branch originally carried its own repoint (20810101095000), because
+ * `marketplace_listings_merchant_id_fkey` referenced `affiliate_partners` while
+ * 69,737 of 69,737 rows resolve in `marketplace_merchants`, and that made
+ * `unmerge_entities` throw 23503 on 2,925 of the 2,965 marketplace merges on record.
+ *
+ * PR #3644 — the follow-up this work spawned — landed 20800301100000 first, and it
+ * does the same repoint better: idempotent (already-correct is a notice, not an
+ * abort), refusing to guess if the constraint points at a third table, and fixing
+ * `commit_marketplace_staging_item` to resolve merchants rather than affiliate
+ * partners, which was the actual root cause. Two migrations owning one constraint is
+ * the drift this repo keeps paying for, so the duplicate was deleted rather than
+ * kept "just in case".
+ *
+ * That FK is covered by `marketplaceMerchantLookup.test.ts`, which pins the
+ * idempotence and the refusal. Do not re-add an assertion here: its finder takes the
+ * LATEST migration naming the constraint, so a second one in this branch silently
+ * redirects that test at the wrong file — which is exactly how this collision
+ * surfaced (CI, not review).
+ */
