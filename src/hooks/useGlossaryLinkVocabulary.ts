@@ -45,7 +45,7 @@ type VocabularyRow = {
 };
 
 /**
- * `glossary_link_terms_public` arrives with migration 20510101100000, so it is
+ * `glossary_link_terms_public` arrives with migration 20520101100000, so it is
  * not yet in the generated `src/integrations/supabase/types.ts`. Rather than a
  * blanket `any` — which would also silence a genuine column rename — the three
  * columns this hook reads are declared here. Drop the cast once types are
