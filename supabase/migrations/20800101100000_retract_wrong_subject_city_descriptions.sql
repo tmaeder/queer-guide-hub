@@ -87,7 +87,7 @@ UPDATE public.cities c
               || jsonb_build_object('retracted', jsonb_build_object(
                    'at', now(),
                    'defect', w.defect,
-                   'by', 'migration:20710601100000',
+                   'by', 'migration:20800101100000',
                    'reason', 'grounded in a Wikipedia article about a different subject',
                    'value', c.description
                  )))
@@ -112,7 +112,7 @@ BEGIN
   SELECT count(*) INTO v_snapshots
     FROM public.cities
    WHERE field_provenance -> 'description' -> 'retracted' ->> 'value' IS NOT NULL
-     AND field_provenance -> 'description' -> 'retracted' ->> 'by' = 'migration:20710601100000';
+     AND field_provenance -> 'description' -> 'retracted' ->> 'by' = 'migration:20800101100000';
   IF v_snapshots <> 14 THEN
     RAISE EXCEPTION 'expected 14 preserved description snapshots, found % — the retraction kept no record', v_snapshots;
   END IF;
