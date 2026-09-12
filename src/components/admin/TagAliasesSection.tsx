@@ -147,6 +147,7 @@ export function TagAliasesSection({ tagId }: TagAliasesSectionProps) {
             <Button
               type="button"
               size="sm"
+              aria-label="Add alias"
               onClick={handleAdd}
               disabled={!newAlias.trim() || createAlias.isPending}
             >

@@ -77,7 +77,13 @@ export default function MultiSelectActionBar({
 
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={onDeselect}>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-7 w-7 p-0"
+            aria-label="Deselect all"
+            onClick={onDeselect}
+          >
             <X className="h-3.5 w-3.5" />
           </Button>
         </TooltipTrigger>

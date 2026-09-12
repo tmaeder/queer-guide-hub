@@ -117,7 +117,13 @@ export default function AccessDialog({ pipelineId, pipelineName }: AccessDialogP
         <Tooltip>
           <TooltipTrigger asChild>
             <DialogTrigger asChild>
-              <Button size="sm" variant="ghost" className="h-8 w-8 p-0" disabled={!pipelineId}>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-8 w-8 p-0"
+                aria-label="Manage access"
+                disabled={!pipelineId}
+              >
                 <Users className="h-3.5 w-3.5" />
               </Button>
             </DialogTrigger>
@@ -219,6 +225,7 @@ export default function AccessDialog({ pipelineId, pipelineName }: AccessDialogP
                         size="sm"
                         variant="ghost"
                         className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                        aria-label="Revoke access"
                         onClick={() => revoke.mutate(g.id)}
                         disabled={revoke.isPending}
                       >

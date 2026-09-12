@@ -80,7 +80,13 @@ export default function VersionHistoryDialog({
       <Tooltip>
         <TooltipTrigger asChild>
           <DialogTrigger asChild>
-            <Button size="sm" variant="ghost" className="h-8 w-8 p-0" disabled={!pipelineId}>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-8 w-8 p-0"
+              aria-label="Version history"
+              disabled={!pipelineId}
+            >
               <History className="h-3.5 w-3.5" />
             </Button>
           </DialogTrigger>

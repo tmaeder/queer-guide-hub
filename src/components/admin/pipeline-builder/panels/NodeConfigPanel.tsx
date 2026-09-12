@@ -3,7 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -34,23 +40,32 @@ interface SchemaProperty {
   maximum?: number;
 }
 
-export default function NodeConfigPanel({ node, nodeTypes, onUpdate, onClose }: NodeConfigPanelProps) {
-  const updateConfig = useCallback((key: string, value: unknown) => {
-    if (!node) return;
-    const nd = node.data as Record<string, unknown>;
-    const cfg = (nd.config || {}) as Record<string, unknown>;
-    const newConfig = { ...cfg, [key]: value };
-    onUpdate(node.id, { ...nd, config: newConfig });
-  }, [node, onUpdate]);
+export default function NodeConfigPanel({
+  node,
+  nodeTypes,
+  onUpdate,
+  onClose,
+}: NodeConfigPanelProps) {
+  const updateConfig = useCallback(
+    (key: string, value: unknown) => {
+      if (!node) return;
+      const nd = node.data as Record<string, unknown>;
+      const cfg = (nd.config || {}) as Record<string, unknown>;
+      const newConfig = { ...cfg, [key]: value };
+      onUpdate(node.id, { ...nd, config: newConfig });
+    },
+    [node, onUpdate],
+  );
 
   if (!node) return null;
 
   const nodeData = node.data as Record<string, unknown>;
   const nodeTypeSlug = nodeData.nodeTypeSlug as string;
-  const nodeType = nodeTypes.find(nt => nt.slug === nodeTypeSlug);
+  const nodeType = nodeTypes.find((nt) => nt.slug === nodeTypeSlug);
   const config = (nodeData.config || {}) as Record<string, unknown>;
 
-  const schema = nodeType?.config_schema as { type?: string; properties?: Record<string, SchemaProperty>; required?: string[] } | undefined;
+  const schema = nodeType?.config_schema as
+    { type?: string; properties?: Record<string, SchemaProperty>; required?: string[] } | undefined;
   const properties = schema?.properties || {};
   const requiredFields = schema?.required || [];
 
@@ -58,10 +73,18 @@ export default function NodeConfigPanel({ node, nodeTypes, onUpdate, onClose }: 
     <Card className="w-80 border-l rounded-none h-full">
       <CardHeader className="pb-4 flex flex-row items-center justify-between">
         <div>
-          <CardTitle className="text-sm font-medium">{nodeData.label as string || nodeTypeSlug}</CardTitle>
+          <CardTitle className="text-sm font-medium">
+            {(nodeData.label as string) || nodeTypeSlug}
+          </CardTitle>
           <p className="text-xs text-muted-foreground mt-0.5">{nodeType?.category}</p>
         </div>
-        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={onClose}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-6 w-6"
+          aria-label="Close node config"
+          onClick={onClose}
+        >
           <X className="h-3.5 w-3.5" />
         </Button>
       </CardHeader>
@@ -83,7 +106,9 @@ export default function NodeConfigPanel({ node, nodeTypes, onUpdate, onClose }: 
         {Object.keys(properties).length > 0 && (
           <>
             <Separator />
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Configuration</p>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              Configuration
+            </p>
           </>
         )}
 
@@ -94,7 +119,7 @@ export default function NodeConfigPanel({ node, nodeTypes, onUpdate, onClose }: 
           const label = key
             .replace(/([a-z])([A-Z])/g, '$1 $2')
             .replace(/[_-]/g, ' ')
-            .replace(/\b\w/g, c => c.toUpperCase());
+            .replace(/\b\w/g, (c) => c.toUpperCase());
 
           return (
             <div key={key} className="space-y-1.5">
@@ -110,7 +135,7 @@ export default function NodeConfigPanel({ node, nodeTypes, onUpdate, onClose }: 
               {/* Boolean → Switch */}
               {prop.type === 'boolean' && (
                 <Switch
-                  checked={value as boolean || false}
+                  checked={(value as boolean) || false}
                   onCheckedChange={(checked) => updateConfig(key, checked)}
                 />
               )}
@@ -122,8 +147,10 @@ export default function NodeConfigPanel({ node, nodeTypes, onUpdate, onClose }: 
                     <SelectValue placeholder="Select..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {prop.enum.map(opt => (
-                      <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                    {prop.enum.map((opt) => (
+                      <SelectItem key={opt} value={opt}>
+                        {opt}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -146,7 +173,10 @@ export default function NodeConfigPanel({ node, nodeTypes, onUpdate, onClose }: 
                   value={value !== undefined && value !== null ? Number(value) : ''}
                   onChange={(e) => {
                     const v = e.target.value;
-                    if (v === '') { updateConfig(key, undefined); return; }
+                    if (v === '') {
+                      updateConfig(key, undefined);
+                      return;
+                    }
                     const n = Number(v);
                     if (!Number.isNaN(n)) updateConfig(key, n);
                   }}
@@ -161,7 +191,15 @@ export default function NodeConfigPanel({ node, nodeTypes, onUpdate, onClose }: 
               {prop.type === 'array' && prop.items?.type === 'string' && !prop.items?.enum && (
                 <Input
                   value={Array.isArray(value) ? (value as string[]).join(', ') : ''}
-                  onChange={(e) => updateConfig(key, e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
+                  onChange={(e) =>
+                    updateConfig(
+                      key,
+                      e.target.value
+                        .split(',')
+                        .map((s) => s.trim())
+                        .filter(Boolean),
+                    )
+                  }
                   className="h-8 text-sm"
                   placeholder="Comma-separated values..."
                 />
@@ -170,7 +208,7 @@ export default function NodeConfigPanel({ node, nodeTypes, onUpdate, onClose }: 
               {/* Array of strings with enum → multi-select badges */}
               {prop.type === 'array' && prop.items?.type === 'string' && prop.items?.enum && (
                 <div className="flex flex-wrap gap-1">
-                  {prop.items.enum.map(opt => {
+                  {prop.items.enum.map((opt) => {
                     const selected = Array.isArray(value) && (value as string[]).includes(opt);
                     return (
                       <Badge
@@ -178,9 +216,12 @@ export default function NodeConfigPanel({ node, nodeTypes, onUpdate, onClose }: 
                         variant={selected ? 'default' : 'outline'}
                         className="cursor-pointer text-xs"
                         onClick={() => {
-                          const current = Array.isArray(value) ? [...value as string[]] : [];
+                          const current = Array.isArray(value) ? [...(value as string[])] : [];
                           if (selected) {
-                            updateConfig(key, current.filter(v => v !== opt));
+                            updateConfig(
+                              key,
+                              current.filter((v) => v !== opt),
+                            );
                           } else {
                             updateConfig(key, [...current, opt]);
                           }
@@ -197,7 +238,9 @@ export default function NodeConfigPanel({ node, nodeTypes, onUpdate, onClose }: 
         })}
 
         {Object.keys(properties).length === 0 && (
-          <p className="text-sm text-muted-foreground text-center py-4">No configuration options for this node type</p>
+          <p className="text-sm text-muted-foreground text-center py-4">
+            No configuration options for this node type
+          </p>
         )}
       </CardContent>
     </Card>

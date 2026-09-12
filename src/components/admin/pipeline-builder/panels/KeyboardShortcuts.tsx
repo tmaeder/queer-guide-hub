@@ -2,7 +2,13 @@ import { useState, useEffect } from 'react';
 import { Keyboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 
 const isMac = typeof navigator !== 'undefined' && navigator.platform.includes('Mac');
 const MOD = isMac ? '⌘' : 'Ctrl';
@@ -39,9 +45,7 @@ const SHORTCUTS: { category: string; items: { keys: string[]; desc: string }[] }
   },
   {
     category: 'Help',
-    items: [
-      { keys: ['?'], desc: 'Show this cheat sheet' },
-    ],
+    items: [{ keys: ['?'], desc: 'Show this cheat sheet' }],
   },
 ];
 
@@ -61,7 +65,7 @@ export default function KeyboardShortcuts({ onTrigger }: { onTrigger?: () => voi
       // '?' key (shift+/)
       if (e.key === '?' && !['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName || '')) {
         e.preventDefault();
-        setOpen(o => !o);
+        setOpen((o) => !o);
         onTrigger?.();
       }
     };
@@ -77,6 +81,7 @@ export default function KeyboardShortcuts({ onTrigger }: { onTrigger?: () => voi
             size="sm"
             variant="ghost"
             className="h-7 w-7 p-0"
+            aria-label="Keyboard shortcuts"
             onClick={() => setOpen(true)}
           >
             <Keyboard className="h-3.5 w-3.5" />
@@ -88,17 +93,19 @@ export default function KeyboardShortcuts({ onTrigger }: { onTrigger?: () => voi
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Keyboard Shortcuts</DialogTitle>
-          <DialogDescription>Press <Kbd>?</Kbd> anywhere to toggle this list.</DialogDescription>
+          <DialogDescription>
+            Press <Kbd>?</Kbd> anywhere to toggle this list.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-          {SHORTCUTS.map(group => (
+          {SHORTCUTS.map((group) => (
             <div key={group.category}>
               <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                 {group.category}
               </div>
               <div className="space-y-1.5">
-                {group.items.map(item => (
+                {group.items.map((item) => (
                   <div key={item.desc} className="flex items-center justify-between gap-4 text-sm">
                     <span>{item.desc}</span>
                     <div className="flex gap-1">

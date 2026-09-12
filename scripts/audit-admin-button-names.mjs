@@ -134,6 +134,12 @@ for (const dir of DIRS) {
       const { attrs, body, start } = el;
       if (/aria-label|aria-labelledby|title=/.test(attrs)) continue;
       if (/sr-only/.test(body)) continue;
+      // `asChild` makes Button render AS its child, so a name on that child is
+      // the name on the rendered element. Reported AdminBusinessDetail's
+      // `<Button asChild><Link aria-label=…>` as unnamed until this was added —
+      // a false positive worth naming, because acting on it would have added a
+      // second, conflicting label to the same element.
+      if (/\basChild\b/.test(attrs) && /aria-label|title=/.test(body)) continue;
       if (hasTextChild(body)) continue;
       if (hasExpressionChild(body)) continue; // could be the name — not our call
       if (!hasIconChild(body)) continue; // empty button, a different problem

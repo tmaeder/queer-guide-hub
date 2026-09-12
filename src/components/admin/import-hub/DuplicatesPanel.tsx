@@ -208,7 +208,13 @@ function ExistingDedupSection() {
               {scanMutation.isPending ? 'Scanning...' : 'Scan'}
             </Button>
 
-            <Button variant="outline" size="sm" onClick={() => refetch()} className="flex gap-1.5">
+            <Button
+              variant="outline"
+              size="sm"
+              aria-label="Refresh duplicate pairs"
+              onClick={() => refetch()}
+              className="flex gap-1.5"
+            >
               <RefreshCw size={14} />
             </Button>
           </div>

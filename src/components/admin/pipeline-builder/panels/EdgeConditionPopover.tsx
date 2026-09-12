@@ -21,15 +21,21 @@ interface Props {
   anchorY: number;
 }
 
-export default function EdgeConditionPopover({ edge, onClose, onUpdate, onDelete, anchorX, anchorY }: Props) {
+export default function EdgeConditionPopover({
+  edge,
+  onClose,
+  onUpdate,
+  onDelete,
+  anchorX,
+  anchorY,
+}: Props) {
   const [condition, setCondition] = useState('');
 
   useEffect(() => {
     if (edge) {
       // Legacy edges loaded from the DB may carry condition at the top level instead of data
-      const existing = edge.data?.condition
-        || (edge as AppEdge & { condition?: string }).condition
-        || '';
+      const existing =
+        edge.data?.condition || (edge as AppEdge & { condition?: string }).condition || '';
       // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setCondition(existing);
     }
@@ -49,10 +55,7 @@ export default function EdgeConditionPopover({ edge, onClose, onUpdate, onDelete
   };
 
   return (
-    <div
-      className="fixed z-50"
-      style={{ left: anchorX, top: anchorY }}
-    >
+    <div className="fixed z-50" style={{ left: anchorX, top: anchorY }}>
       <Popover open onOpenChange={(o) => !o && onClose()}>
         <PopoverTrigger asChild>
           <span className="absolute" />
@@ -61,7 +64,13 @@ export default function EdgeConditionPopover({ edge, onClose, onUpdate, onDelete
           <div className="flex items-center gap-2 mb-4">
             <GitBranch className="h-3.5 w-3.5 text-muted-foreground" />
             <span className="text-xs font-semibold">Edge Condition</span>
-            <Button size="icon" variant="ghost" className="h-6 w-6 ml-auto" onClick={onClose}>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-6 w-6 ml-auto"
+              aria-label="Close"
+              onClick={onClose}
+            >
               <X className="h-3 w-3" />
             </Button>
           </div>
@@ -85,7 +94,7 @@ export default function EdgeConditionPopover({ edge, onClose, onUpdate, onDelete
           <div className="mt-2 text-2xs text-muted-foreground">
             <div className="mb-1 font-medium">Examples:</div>
             <div className="flex flex-col gap-0.5">
-              {EXAMPLES.map(ex => (
+              {EXAMPLES.map((ex) => (
                 <button
                   key={ex}
                   onClick={() => setCondition(ex)}
@@ -99,7 +108,9 @@ export default function EdgeConditionPopover({ edge, onClose, onUpdate, onDelete
 
           <div className="mt-2 text-2xs text-muted-foreground">
             <span className="font-medium">Available vars: </span>
-            <span className="font-mono">items_count, items_valid, items_invalid, entity_type, source_name, dry_run</span>
+            <span className="font-mono">
+              items_count, items_valid, items_invalid, entity_type, source_name, dry_run
+            </span>
           </div>
 
           <div className="flex gap-1.5 mt-4">
@@ -116,7 +127,10 @@ export default function EdgeConditionPopover({ edge, onClose, onUpdate, onDelete
               size="sm"
               variant="ghost"
               className="h-7 text-xs text-destructive hover:text-destructive"
-              onClick={() => { onDelete(edge.id); onClose(); }}
+              onClick={() => {
+                onDelete(edge.id);
+                onClose();
+              }}
             >
               Delete edge
             </Button>

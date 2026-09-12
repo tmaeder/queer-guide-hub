@@ -70,6 +70,7 @@ export function TriageList({
               size="sm"
               variant="ghost"
               className="h-6 w-6 p-0"
+              aria-label="Previous page"
               disabled={page <= 1}
               onClick={() => onPageChange(page - 1)}
             >
@@ -82,6 +83,7 @@ export function TriageList({
               size="sm"
               variant="ghost"
               className="h-6 w-6 p-0"
+              aria-label="Next page"
               disabled={page >= totalPages}
               onClick={() => onPageChange(page + 1)}
             >
