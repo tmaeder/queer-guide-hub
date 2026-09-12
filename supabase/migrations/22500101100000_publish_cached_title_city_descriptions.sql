@@ -79,7 +79,7 @@ begin
                        'source', 'wikipedia',
                        'corrected', jsonb_build_object(
                          'at', now(),
-                         'by', 'migration:21050101100100',
+                         'by', 'migration:22500101100000',
                          'reason', 'published description was grounded in the bare-name Wikipedia article; replaced with the article for the row''s own cached wikipedia_title',
                          'title', c.wikipedia_title,
                          'from', c.description)))
@@ -97,7 +97,7 @@ begin
   select count(*) into v_corrected
     from public.cities
    where field_provenance -> 'description' -> 'corrected' ->> 'by'
-         = 'migration:21050101100100';
+         = 'migration:22500101100000';
 
   if v_corrected <> 2 then
     raise exception 'expected 2 corrected city descriptions, found %', v_corrected;

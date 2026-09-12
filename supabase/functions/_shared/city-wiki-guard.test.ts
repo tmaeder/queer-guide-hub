@@ -164,7 +164,7 @@ Deno.test('regionQualifiedTitle builds the retry Wikipedia actually uses', () =>
   )
 })
 
-// The `city-factual-backfill` / `city-corroboration` residue that 21050101100100
+// The `city-factual-backfill` / `city-corroboration` residue that 22500101100000
 // corrects. These two rows were NOT reachable by the 21050101100000 audit — that pass
 // selected agentic-enriched cities with no `wikidata_qid`, and both of these carry a
 // correct QID, a correct cached `wikipedia_title`, and were never agentic-enriched.
@@ -176,7 +176,7 @@ Deno.test('regionQualifiedTitle builds the retry Wikipedia actually uses', () =>
 // This asserts the pair the migration turns on: the text it REMOVES is refused by the
 // seal, and the text it PUBLISHES is adopted by it. A correction that published prose
 // the seal would itself reject would be a defect wearing a fix's clothes.
-Deno.test('the bare-name text 21050101100100 retracts is refused by the seal', () => {
+Deno.test('the bare-name text 22500101100000 retracts is refused by the seal', () => {
   const cambriaWales =
     'Cambria is a name for Wales, being the Latinised form of the Welsh name for the ' +
     'country, Cymru. The term was not in use during the Roman period or the early ' +
@@ -200,7 +200,7 @@ Deno.test('the bare-name text 21050101100100 retracts is refused by the seal', (
   assertEquals(given.reason, 'disambiguation')
 })
 
-Deno.test('the cached-title text 21050101100100 publishes is adopted by the seal', () => {
+Deno.test('the cached-title text 22500101100000 publishes is adopted by the seal', () => {
   const cambria = cityWikiVerdict(
     'Cambria is a coastal town in San Luis Obispo County, California, United States ' +
     'midway between San Francisco and Los Angeles along California State Route 1. ' +
