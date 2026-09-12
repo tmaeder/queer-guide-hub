@@ -245,6 +245,18 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
     ],
   },
 
+  '/podcasts': {
+    h1: 'LGBTQ+ podcasts',
+    paragraphs: [
+      'Queer podcasts from around the world, indexed show by show and episode by episode. History, politics, health, culture, sex and community, in the words of the people making them.',
+      'Episodes stream from each show\u2019s own feed \u2014 nothing is re-hosted, and every show links back to its publisher and its RSS feed so you can subscribe wherever you already listen.',
+    ],
+    links: [
+      { href: '/news', label: 'LGBTQ+ news' },
+      { href: '/tags', label: 'Knowledge & guides' },
+    ],
+  },
+
   // The previous copy claimed "Every listing is checked for queer ownership …
   // no rainbow-washing" against a catalogue where 24 of 2,583 brands (0.93%)
   // carry ownership_tags. What the ingestion pipeline actually verifies is

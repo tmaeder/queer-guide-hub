@@ -34,7 +34,7 @@ const BASE = process.argv[2] ?? process.env.SITEMAP_BASE ?? 'https://queer-guide
 // · places 2,713 · hotels 323 · villages 131 · tags 2,604 · landings 647
 // · landmarks 1 · milestones 2,923 · tag-categories 54.
 const SITEMAPS = [
-  { path: '/sitemap.xml', minEntries: 13, kind: 'index' },
+  { path: '/sitemap.xml', minEntries: 14, kind: 'index' },
   { path: '/sitemap-static.xml', minEntries: 40, kind: 'urlset' },
   { path: '/sitemap-venues.xml', minEntries: 15000, kind: 'urlset' },
   { path: '/sitemap-events.xml', minEntries: 1000, kind: 'urlset', maxAgeDays: 7 },
@@ -44,6 +44,8 @@ const SITEMAPS = [
   // records the 410 handler being removed, and all three sampled slugs return
   // HTTP 200 — so the floor was dead on 24,117 URLs, 39% of the whole corpus.
   { path: '/sitemap-news.xml', minEntries: 10000, kind: 'urlset', maxAgeDays: 7 },
+  // ~255 shows have at least one episode; 150 is the collapse floor.
+  { path: '/sitemap-podcasts.xml', minEntries: 150, kind: 'urlset' },
   { path: '/sitemap-personalities.xml', minEntries: 800, kind: 'urlset' },
   { path: '/sitemap-places.xml', minEntries: 1500, kind: 'urlset' },
   { path: '/sitemap-hotels.xml', minEntries: 200, kind: 'urlset' },

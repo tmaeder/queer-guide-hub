@@ -1766,6 +1766,96 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
 }
 
 // ---------------------------------------------------------------------------
+// §  Podcast episodes: typed correctly, and actually committing
+// ---------------------------------------------------------------------------
+//
+// Two faults ran for months here and neither was hidden for want of data —
+// both were hidden because nothing measured the right quantity.
+//
+//  * 5,729 episodes committed as plain ARTICLES with the audio discarded,
+//    because a redefinition of news_commit_staging_batch dropped three columns
+//    from its INSERT list for three weeks. The RPC was fixed at the time; the
+//    rows it damaged were not, and nothing counted them for the next two months.
+//  * The parser wrote a bare <guid> (`Buzzsprout-19685709`, a Megaphone UUID)
+//    into news_articles.url, pipeline-validate rejected it E_INVALID_URL, and
+//    the episode was destroyed — 323 of 680 podcast rejections in 30 days.
+//
+// The second is why the RATE is reported and not the cron's liveness: 256 of
+// 265 sources reported a SUCCESSFUL fetch within 24h throughout, with
+// consecutive_failures 0 on every one. Fetching worked perfectly; only the
+// commit did not. A "did the job run" check is green in exactly this state.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/news_podcast_signals`, {
+    method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: '{}',
+  })
+  if (!res.ok) {
+    console.warn(`⚠ news_podcast_signals → HTTP ${res.status} (22000101100100 not applied?) — this check measured NOTHING`)
+  } else {
+    const sig = await res.json()
+    let sectionOk = true
+
+    // An ABSENT key is not a zero count. A sentinel deployed with a key missing
+    // would otherwise report the cleanest possible corpus while checking none of it.
+    for (const k of ['stranded_as_article', 'podcast_without_audio', 'episodes_staged_7d', 'episodes_committed_7d']) {
+      if (!(k in sig)) {
+        console.error(`✗ news_podcast_signals is missing the key \`${k}\` — that part of this check measured NOTHING`)
+        FAILED = true; sectionOk = false
+      }
+    }
+
+    const stranded = Number(sig?.stranded_as_article ?? 0)
+    if (stranded > 0) {
+      console.error(`✗ ${stranded} podcast episodes are typed as articles with no audio, while their staging row holds the URL`)
+      console.error('  This is the 2026-06 commit-RPC regression recurring. Zero tolerance, no baseline.')
+      FAILED = true; sectionOk = false
+    }
+
+    const noAudio = Number(sig?.podcast_without_audio ?? 0)
+    if (noAudio > 0) {
+      console.error(`✗ ${noAudio} rows are typed media_type='podcast' but carry no audio_url — unplayable`)
+      FAILED = true; sectionOk = false
+    }
+
+    const badUrl = Number(sig?.invalid_url_rejections_7d ?? 0)
+    if (badUrl > 0) {
+      console.error(`✗ ${badUrl} podcast episodes were rejected E_INVALID_URL in the last 7 days`)
+      console.error("  The URL ladder in source-rss-news/rss-parse.ts does not cover this host's <guid> shape.")
+      FAILED = true; sectionOk = false
+    }
+
+    // The rate, reported as a PAIR. A ratio hides its denominator, and "nothing
+    // was staged" and "nothing committed of what was staged" are different
+    // facts that call for different action.
+    const staged = Number(sig?.episodes_staged_7d ?? 0)
+    const committed = Number(sig?.episodes_committed_7d ?? 0)
+    if (staged > 0) {
+      const pct = Math.round((committed / staged) * 100)
+      const line = `  podcast commit rate: ${committed}/${staged} staged episodes (${pct}%) in the last 7 days`
+      // 40% is a floor, not a target — below the measured healthy rate and well
+      // above the 23% the E_INVALID_URL fault produced. It warns rather than
+      // fails: the news quality gate legitimately rejects some episodes, and
+      // this number moves with the corpus.
+      console.log(pct < 40 ? `${line} — LOW, check pipeline-validate rejection reasons` : line)
+    } else {
+      console.log('  no podcast episodes staged in the last 7 days')
+    }
+
+    const zeroShows = Number(sig?.shows_fetching_with_zero_episodes ?? 0)
+    if (zeroShows > 0) {
+      console.log(`  ${zeroShows} podcast shows fetch successfully but have never committed an episode`)
+    }
+    const noArtwork = Number(sig?.podcast_without_artwork ?? 0)
+    if (noArtwork > 0) {
+      console.log(`  ${noArtwork} podcast episodes still have no artwork (news_podcast_artwork_fill drains this)`)
+    }
+
+    if (sectionOk) {
+      console.log('✓ podcast episodes are typed correctly and committing')
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // §  Inline glossary links in body prose
 // ---------------------------------------------------------------------------
 //

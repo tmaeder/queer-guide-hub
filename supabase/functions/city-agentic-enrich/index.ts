@@ -36,6 +36,7 @@ import { consumeLlmBudget } from '../_shared/llm-budget.ts'
 import { researchEnrichCityFromSources, type CityMoatEnrichment, type VoiceSetting } from '../_shared/ai-enrichment.ts'
 import { fetchPageText } from '../_shared/enrich-harness.ts'
 import { cityNameCandidates } from '../_shared/city-name-normalize.ts'
+import { cityWikiVerdict, regionQualifiedTitle } from '../_shared/city-wiki-guard.ts'
 
 const DEFAULT_BATCH_LIMIT = 5
 const DEFAULT_DAILY_CAP = 120
@@ -190,9 +191,42 @@ Deno.serve(async (req: Request) => {
         wpExtract = await fetchWikipediaExtract(t)
         if (wpExtract) { wpTitle = t; break }
       }
+
+      // The extract must actually be about THIS city. `redirects=1` follows a bare
+      // name wherever it leads, so "Daphne" served the Greek myth and auto-published
+      // it to /city/daphne; a disambiguation page carries a long enough extract to
+      // pass the length check and reads to the model as "no information available".
+      // See _shared/city-wiki-guard.ts for the 14 measured rows.
+      const identity = { name: c.name, region_name: c.region_name, countryName: country }
+      let wpVerdict = cityWikiVerdict(wpExtract, identity)
+      if (!wpVerdict.adopt && wpExtract) {
+        // Retry under Wikipedia's own convention for a shared name. Reachable ONLY
+        // after a refusal, so a city that resolves correctly today never enters this
+        // path — which is why the retry needs no separate false-positive measurement.
+        const qualified = regionQualifiedTitle(identity)
+        if (qualified) {
+          const retry = await fetchWikipediaExtract(qualified)
+          const retryVerdict = cityWikiVerdict(retry, identity)
+          if (retryVerdict.adopt) {
+            wpExtract = retry
+            wpTitle = qualified
+            wpVerdict = retryVerdict
+          }
+        }
+      }
+      const wikiRefused = !!wpExtract && !wpVerdict.adopt
+      if (wikiRefused) {
+        console.log(`[city-agentic-enrich] wiki source refused for ${c.name}: ` +
+          `${wpVerdict.reason}${wpVerdict.detail ? ` — ${wpVerdict.detail}` : ''}`)
+        wpExtract = null
+      }
+
       if (wpExtract) sources.push({ url: `https://en.wikipedia.org/wiki/${encodeURIComponent(wpTitle ?? c.name)}`, text: wpExtract })
       if (c.official_website) { const site = await fetchCityPage(c.official_website); if (site) sources.push({ url: c.official_website, text: site }) }
-      if (c.description && !wpExtract) sources.push({ url: 'existing', text: c.description })
+      // A refused wiki source must NOT fall through to the existing description: that
+      // description was written from the same bad article, so re-feeding it launders
+      // the wrong subject into a fresh run. Prose may not vouch for its own source.
+      if (c.description && !wpExtract && !wikiRefused) sources.push({ url: 'existing', text: c.description })
       if (!sources.length) { skipped++; results.push({ id: c.id, status: 'no_sources' }); await logStep(supabase, c.id, status, started, dryRun, 'no_sources'); continue }
 
       // Destination safety context.
