@@ -101,6 +101,28 @@ async function settle(page: Page) {
   await page.waitForTimeout(1500);
 }
 
+/**
+ * Wait until the page view for the CURRENT navigation has actually been sent,
+ * then clear the counter — so what follows measures only what follows.
+ *
+ * `settle()` alone is a race. Against a local `vite preview` 1.5s is plenty,
+ * but run against production the 300ms tracker delay plus real network latency
+ * can exceed it, and the initial beacon then lands AFTER the reset and is
+ * counted as if the scroll produced it. That is exactly how the scroll test
+ * failed once and passed on rerun against live prod — a flaky guard, which is
+ * worse than none, because people learn to re-run it instead of reading it.
+ */
+async function awaitInitialBeaconThenReset(
+  page: Page,
+  beacons: { all: string[]; reset: () => void },
+) {
+  await expect
+    .poll(() => beacons.all.length, { timeout: 10_000 })
+    .toBeGreaterThan(0);
+  await settle(page);
+  beacons.reset();
+}
+
 test.describe('analytics consent gate', () => {
   test('no stored consent → nothing is tracked and window.umami never exists', async ({ page }) => {
     await presentAsHuman(page);
@@ -187,8 +209,9 @@ test.describe('analytics consent gate', () => {
 
     await page.goto('/travel');
     await waitForAppReady(page);
-    await settle(page);
-    beacons.reset();
+    // Deterministic: wait for THIS navigation's beacon before zeroing, so a
+    // slow network cannot make the page-view land inside the scroll window.
+    await awaitInitialBeaconThenReset(page, beacons);
 
     // Walk the whole page the way a reader does. Every section boundary used
     // to write ?section= and every write used to be counted.
