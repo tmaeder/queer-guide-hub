@@ -8,7 +8,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { resolvePipelineIcon } from '../icon-registry';
 import { isBaseNode, type AppNode } from '../types';
 
@@ -51,6 +51,8 @@ export default function FindNodePalette({ nodes, onSelect }: FindNodePaletteProp
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="p-0 max-w-lg gap-0">
+        {/* Visually hidden — see QuickAddPalette. */}
+        <DialogTitle className="sr-only">Find a node on the canvas</DialogTitle>
         <Command className="rounded-element">
           <CommandInput placeholder="Find node on canvas... (Esc to close)" autoFocus />
           <CommandList className="max-h-[400px]">

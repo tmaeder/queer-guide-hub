@@ -1,7 +1,7 @@
-import { useSearchParams } from 'react-router';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { useTabParam } from '@/components/admin/primitives/useTabParam';
 import { EditorMicroGuide } from '@/components/admin/styleguide/EditorMicroGuide';
 import { RulesTab, TermsTab, ExamplesTab } from '@/components/admin/styleguide/StyleguideTabs';
 import { PublishTab } from '@/components/admin/styleguide/PublishTab';
@@ -23,9 +23,7 @@ import { useStyleguide } from '@/hooks/useStyleguide';
 const TABS = ['rules', 'terms', 'examples', 'publish'] as const;
 
 export default function AdminStyleguide() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const tabParam = searchParams.get('tab');
-  const tab = (TABS as readonly string[]).includes(tabParam ?? '') ? tabParam! : 'rules';
+  const [tab, setTab] = useTabParam(TABS);
 
   const { data, isLoading, error } = useStyleguide(true);
 
@@ -48,10 +46,7 @@ export default function AdminStyleguide() {
       ) : (
         <>
           <EditorMicroGuide />
-          <Tabs
-            value={tab}
-            onValueChange={(next) => setSearchParams({ tab: next }, { replace: true })}
-          >
+          <Tabs value={tab} onValueChange={setTab}>
             <TabsList>
               <TabsTrigger value="rules">Rules ({data?.rules.length ?? 0})</TabsTrigger>
               <TabsTrigger value="terms">Terminology ({data?.terms.length ?? 0})</TabsTrigger>

@@ -28,6 +28,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import { toast } from 'sonner';
 import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
+import {
+  AdminSimpleTable,
+  type AdminSimpleColumn,
+} from '@/components/admin/primitives/AdminSimpleTable';
 
 interface Integration {
   id: string;
@@ -165,6 +169,122 @@ export default function IntegrationsTab() {
 
   const canSave =
     form.name && form.name.length >= 2 && form.webhook_url && form.webhook_url.startsWith('http');
+
+  const columns: AdminSimpleColumn<Integration>[] = [
+    { key: 'name', header: 'Name', cellClassName: 'font-medium', render: (i) => i.name },
+    {
+      key: 'kind',
+      header: 'Type',
+      render: (i) => (
+        <Badge variant="outline" className="text-2xs px-1.5 py-0">
+          {KIND_LABEL[i.kind]}
+        </Badge>
+      ),
+    },
+    {
+      key: 'min_severity',
+      header: 'Min severity',
+      cellClassName: 'text-xs capitalize',
+      render: (i) => i.min_severity,
+    },
+    {
+      key: 'url',
+      header: 'URL',
+      cellClassName: 'text-xs2 font-mono text-muted-foreground truncate max-w-[280px]',
+      render: (i) => (
+        <span title={i.webhook_url}>
+          {i.webhook_url.replace(/^https?:\/\//, '').replace(/\/.*$/, '')}/…
+        </span>
+      ),
+    },
+    {
+      key: 'total_sent',
+      header: 'Sent',
+      cellClassName: 'tabular-nums text-xs',
+      render: (i) => i.total_sent,
+    },
+    {
+      key: 'last_triggered',
+      header: 'Last triggered',
+      cellClassName: 'text-xs2 text-muted-foreground',
+      render: (i) =>
+        i.last_triggered_at ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="flex items-center gap-1 cursor-help">
+                {i.last_error ? (
+                  <XCircle className="h-3 w-3 text-destructive" />
+                ) : (
+                  <CheckCircle2 className="h-3 w-3 text-foreground" />
+                )}
+                {formatDistanceToNow(new Date(i.last_triggered_at), {
+                  addSuffix: true,
+                })}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent className="text-xs max-w-[300px]">
+              {i.last_error ? `Last error: ${i.last_error}` : 'Last send was successful'}
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          '—'
+        ),
+    },
+    {
+      key: 'enabled',
+      header: 'Enabled',
+      render: (i) => (
+        <Switch
+          aria-label={`Enable ${i.name}`}
+          checked={i.enabled}
+          onCheckedChange={(enabled) => toggle.mutate({ id: i.id, enabled })}
+        />
+      ),
+    },
+    {
+      key: 'actions',
+      header: 'Actions',
+      cellClassName: 'flex gap-1',
+      render: (i) => (
+        <>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 w-7 p-0"
+                onClick={() => sendTest.mutate(i)}
+                disabled={sendTest.isPending}
+                // Matches the TooltipContent below. A tooltip supplies
+                // aria-describedby when open — a description, never a name.
+                aria-label="Send test message"
+              >
+                <Send className="h-3.5 w-3.5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="text-xs">Send test message</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                onClick={() => {
+                  if (window.confirm(`Delete integration "${i.name}"?`)) remove.mutate(i.id);
+                }}
+                disabled={remove.isPending}
+                aria-label={`Delete integration ${i.name}`}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="text-xs">Delete</TooltipContent>
+          </Tooltip>
+        </>
+      ),
+    },
+  ];
 
   return (
     <TooltipProvider delayDuration={200}>
@@ -311,117 +431,16 @@ export default function IntegrationsTab() {
               </p>
             </div>
           ) : (
-            <table className="w-full text-sm">
-              <thead className="bg-muted/40">
-                <tr className="border-b border-border">
-                  {[
-                    'Name',
-                    'Type',
-                    'Min severity',
-                    'URL',
-                    'Sent',
-                    'Last triggered',
-                    'Enabled',
-                    'Actions',
-                  ].map((h) => (
-                    <th
-                      key={h}
-                      className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider"
-                    >
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {integrations.map((i) => (
-                  <tr
-                    key={i.id}
-                    className={`border-b border-border/40 hover:bg-muted/30 transition-colors ${!i.enabled ? 'opacity-50' : ''}`}
-                  >
-                    <td className="px-4 py-2 font-medium">{i.name}</td>
-                    <td className="px-4 py-2">
-                      <Badge variant="outline" className="text-2xs px-1.5 py-0">
-                        {KIND_LABEL[i.kind]}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-2 text-xs capitalize">{i.min_severity}</td>
-                    <td
-                      className="px-4 py-2 text-xs2 font-mono text-muted-foreground truncate max-w-[280px]"
-                      title={i.webhook_url}
-                    >
-                      {i.webhook_url.replace(/^https?:\/\//, '').replace(/\/.*$/, '')}/…
-                    </td>
-                    <td className="px-4 py-2 tabular-nums text-xs">{i.total_sent}</td>
-                    <td className="px-4 py-2 text-xs2 text-muted-foreground">
-                      {i.last_triggered_at ? (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span className="flex items-center gap-1 cursor-help">
-                              {i.last_error ? (
-                                <XCircle className="h-3 w-3 text-destructive" />
-                              ) : (
-                                <CheckCircle2 className="h-3 w-3 text-foreground" />
-                              )}
-                              {formatDistanceToNow(new Date(i.last_triggered_at), {
-                                addSuffix: true,
-                              })}
-                            </span>
-                          </TooltipTrigger>
-                          <TooltipContent className="text-xs max-w-[300px]">
-                            {i.last_error
-                              ? `Last error: ${i.last_error}`
-                              : 'Last send was successful'}
-                          </TooltipContent>
-                        </Tooltip>
-                      ) : (
-                        '—'
-                      )}
-                    </td>
-                    <td className="px-4 py-2">
-                      <Switch
-                        aria-label={`Enable ${i.name}`}
-                        checked={i.enabled}
-                        onCheckedChange={(enabled) => toggle.mutate({ id: i.id, enabled })}
-                      />
-                    </td>
-                    <td className="px-4 py-2 flex gap-1">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-7 w-7 p-0"
-                            onClick={() => sendTest.mutate(i)}
-                            disabled={sendTest.isPending}
-                          >
-                            <Send className="h-3.5 w-3.5" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent className="text-xs">Send test message</TooltipContent>
-                      </Tooltip>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                            onClick={() => {
-                              if (window.confirm(`Delete integration "${i.name}"?`))
-                                remove.mutate(i.id);
-                            }}
-                            disabled={remove.isPending}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent className="text-xs">Delete</TooltipContent>
-                      </Tooltip>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <AdminSimpleTable
+              caption="Alert webhook integrations"
+              columns={columns}
+              rows={integrations}
+              rowKey={(i) => i.id}
+              emptyNoun="integrations"
+              rowClassName={(i) =>
+                `border-border/40 hover:bg-muted/30 transition-colors ${!i.enabled ? 'opacity-50' : ''}`
+              }
+            />
           )}
         </div>
       </div>

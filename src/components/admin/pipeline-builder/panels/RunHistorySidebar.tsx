@@ -79,6 +79,7 @@ export default function RunHistorySidebar({
               variant="ghost"
               size="icon"
               className="h-7 w-7"
+              aria-label="Show run history"
               onClick={() => setCollapsed(false)}
             >
               <ChevronLeft className="h-4 w-4" />
@@ -100,7 +101,13 @@ export default function RunHistorySidebar({
           <History className="h-3.5 w-3.5 text-muted-foreground" />
           <span className="font-semibold text-sm">Run History</span>
         </div>
-        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setCollapsed(true)}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-6 w-6"
+          aria-label="Hide run history"
+          onClick={() => setCollapsed(true)}
+        >
           <ChevronRight className="h-3.5 w-3.5" />
         </Button>
       </div>

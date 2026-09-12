@@ -8,6 +8,28 @@ const SheetContext = React.createContext<{
   onOpenChange: (open: boolean) => void;
 }>({ open: false, onOpenChange: () => {} });
 
+/**
+ * Wires `SheetTitle` to `SheetContent`'s `aria-labelledby`.
+ *
+ * This Sheet is hand-rolled (createPortal + context), NOT Radix — so unlike
+ * `DialogTitle`, which wraps `DialogPrimitive.Title` and gets the association for
+ * free, `SheetTitle` was a bare id-less `<h2>`. `SheetContent` declares
+ * `role="dialog"` and `aria-modal="true"` with no name, which is an axe
+ * `aria-dialog-name` violation (serious) — and it applied to all 32 sheets in the
+ * app, including the 25 whose authors HAD added a `SheetTitle` and reasonably
+ * believed that named the dialog.
+ *
+ * The title registers itself rather than `SheetContent` assuming one exists:
+ * pointing `aria-labelledby` at an id that never renders is worse than omitting
+ * it, because assistive tech then resolves the name to nothing while the
+ * attribute looks satisfied. A caller with no visible heading passes `aria-label`
+ * instead, which still wins because it is spread onto the dialog element.
+ */
+const SheetTitleContext = React.createContext<{
+  titleId: string;
+  registerTitle: () => void;
+} | null>(null);
+
 function Sheet({
   children,
   open: controlledOpen,
@@ -99,6 +121,10 @@ const sideClasses: Record<SheetSide, string> = {
 const SheetContent = React.forwardRef<HTMLDivElement, SheetContentProps>(
   ({ className, children, side = 'right', ...props }, ref) => {
     const { open, onOpenChange } = React.useContext(SheetContext);
+    const titleId = React.useId();
+    const [hasTitle, setHasTitle] = React.useState(false);
+    const registerTitle = React.useCallback(() => setHasTitle(true), []);
+    const titleCtx = React.useMemo(() => ({ titleId, registerTitle }), [titleId, registerTitle]);
 
     React.useEffect(() => {
       if (!open) return;
@@ -143,6 +169,9 @@ const SheetContent = React.forwardRef<HTMLDivElement, SheetContentProps>(
           ref={dialogRefCallback}
           role="dialog"
           aria-modal="true"
+          // Only when a SheetTitle actually rendered — see SheetTitleContext.
+          // An explicit aria-label from the caller still wins via {...props}.
+          aria-labelledby={hasTitle ? titleId : undefined}
           tabIndex={-1}
           data-state={open ? 'open' : 'closed'}
           className={cn(
@@ -153,7 +182,7 @@ const SheetContent = React.forwardRef<HTMLDivElement, SheetContentProps>(
           )}
           {...props}
         >
-          {children}
+          <SheetTitleContext.Provider value={titleCtx}>{children}</SheetTitleContext.Provider>
           <button
             type="button"
             aria-label="Close"
@@ -189,11 +218,24 @@ const SheetFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDi
 SheetFooter.displayName = 'SheetFooter';
 
 const SheetTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTMLHeadingElement>>(
-  ({ className, children, ...props }, ref) => (
-    <h2 ref={ref} className={cn('text-lg font-semibold leading-tight', className)} {...props}>
-      {children}
-    </h2>
-  ),
+  ({ className, children, id, ...props }, ref) => {
+    const ctx = React.useContext(SheetTitleContext);
+    React.useEffect(() => {
+      ctx?.registerTitle();
+    }, [ctx]);
+    return (
+      <h2
+        ref={ref}
+        // A caller-supplied id wins; otherwise take the one SheetContent is
+        // pointing aria-labelledby at.
+        id={id ?? ctx?.titleId}
+        className={cn('text-lg font-semibold leading-tight', className)}
+        {...props}
+      >
+        {children}
+      </h2>
+    );
+  },
 );
 SheetTitle.displayName = 'SheetTitle';
 

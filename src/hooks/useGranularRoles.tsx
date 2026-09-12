@@ -16,6 +16,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
+import { computeEffectiveRole } from '@/config/adminRoles';
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -88,13 +89,20 @@ export function useGranularRoles(): GranularRolesReturn {
   }, [user?.id, rolesLoading]);
 
   // Effective role
-  const effectiveRole = useMemo((): GranularRolesReturn['effectiveRole'] => {
-    if (isAdmin) return 'admin';
-    if (isModerator) return 'moderator';
-    if (isEditor || permissions.length > 0) return 'editor';
-    if (user) return 'viewer';
-    return 'none';
-  }, [isAdmin, isModerator, isEditor, permissions, user]);
+  const effectiveRole = useMemo(
+    (): GranularRolesReturn['effectiveRole'] =>
+      // Shared ladder — AdminRouteGuard computes the same thing from the same
+      // function, so the two can no longer drift. This caller is the one that
+      // passes hasGranularPermissions.
+      computeEffectiveRole({
+        isAdmin,
+        isModerator,
+        isEditor,
+        isAuthenticated: Boolean(user),
+        hasGranularPermissions: permissions.length > 0,
+      }),
+    [isAdmin, isModerator, isEditor, permissions, user],
+  );
 
   // Permission check
   const can = useCallback(
@@ -131,9 +139,7 @@ export function useGranularRoles(): GranularRolesReturn {
         case 'cockpit':
           return isModerator || isEditor || permissions.length > 0;
         case 'content':
-          return (
-            isModerator || isEditor || permissions.some((p) => p.permissions.includes('view'))
-          );
+          return isModerator || isEditor || permissions.some((p) => p.permissions.includes('view'));
         case 'import-data':
           return (
             isModerator ||

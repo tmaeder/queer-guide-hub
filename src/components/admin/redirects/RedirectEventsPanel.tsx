@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useRedirects, type RedirectEvent } from '@/hooks/useRedirects';
-import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
-import { Skeleton } from '@/components/ui/skeleton';
+import {
+  AdminSimpleTable,
+  type AdminSimpleColumn,
+} from '@/components/admin/primitives/AdminSimpleTable';
 import { formatDateTime } from '@/lib/format';
 
 /**
@@ -16,6 +18,30 @@ import { formatDateTime } from '@/lib/format';
 interface RedirectEventsPanelProps {
   redirectId: string;
 }
+
+const EVENT_COLUMNS: readonly AdminSimpleColumn<RedirectEvent>[] = [
+  {
+    key: 'when',
+    header: 'When',
+    cellClassName: 'whitespace-nowrap text-muted-foreground',
+    render: (e) => formatDateTime(e.ts),
+  },
+  { key: 'path', header: 'Path', render: (e) => e.path },
+  { key: 'country', header: 'Country', render: (e) => e.country ?? '—' },
+  {
+    key: 'referer',
+    header: 'Referer',
+    cellClassName: 'max-w-60',
+    // The title lived on the <td>; a cell owns no attributes here, so the
+    // truncation and the tooltip move together onto one block child.
+    render: (e) => (
+      <span className="block truncate" title={e.referer ?? undefined}>
+        {e.referer ?? '—'}
+      </span>
+    ),
+  },
+  { key: 'status', header: 'Status', render: (e) => e.status },
+];
 
 export function RedirectEventsPanel({ redirectId }: RedirectEventsPanelProps) {
   const { fetchEvents } = useRedirects();
@@ -38,48 +64,14 @@ export function RedirectEventsPanel({ redirectId }: RedirectEventsPanelProps) {
 
   const events = loaded?.id === redirectId ? loaded.rows : null;
 
-  if (events === null) {
-    return (
-      <div className="flex flex-col gap-2">
-        <Skeleton className="h-8 w-full" />
-        <Skeleton className="h-8 w-full" />
-        <Skeleton className="h-8 w-full" />
-      </div>
-    );
-  }
-
-  if (events.length === 0) {
-    return <AdminEmpty noun="clicks" />;
-  }
-
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-border text-left">
-            <th className="py-2 pr-4 font-semibold">When</th>
-            <th className="py-2 pr-4 font-semibold">Path</th>
-            <th className="py-2 pr-4 font-semibold">Country</th>
-            <th className="py-2 pr-4 font-semibold">Referer</th>
-            <th className="py-2 font-semibold">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {events.map((e) => (
-            <tr key={e.id} className="border-b border-border/50">
-              <td className="py-2 pr-4 whitespace-nowrap text-muted-foreground">
-                {formatDateTime(e.ts)}
-              </td>
-              <td className="py-2 pr-4">{e.path}</td>
-              <td className="py-2 pr-4">{e.country ?? '—'}</td>
-              <td className="py-2 pr-4 max-w-[240px] truncate" title={e.referer ?? undefined}>
-                {e.referer ?? '—'}
-              </td>
-              <td className="py-2">{e.status}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <AdminSimpleTable
+      caption="Redirect hit events"
+      columns={EVENT_COLUMNS}
+      rows={events ?? []}
+      rowKey={(e) => String(e.id)}
+      isLoading={events === null}
+      emptyNoun="clicks"
+    />
   );
 }

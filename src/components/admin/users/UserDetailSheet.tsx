@@ -166,7 +166,13 @@ export function UserDetailSheet({ user, open, onOpenChange, onUserUpdated }: Use
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="right" className="w-full sm:max-w-[520px] p-6 overflow-y-auto">
+        {/* aria-label rather than a SheetTitle: the visible heading is an avatar
+            plus name block, and promoting it to SheetTitle would restyle it. */}
+        <SheetContent
+          side="right"
+          className="w-full sm:max-w-[520px] p-6 overflow-y-auto"
+          aria-label={`User detail: ${displayName}`}
+        >
           <Button
             variant="ghost"
             aria-label="Close"

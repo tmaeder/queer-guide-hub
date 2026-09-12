@@ -227,7 +227,11 @@ export function AdminShell() {
           {/* Sidebar -- drawer on mobile, persistent on desktop */}
           {isMobile ? (
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-              <SheetContent side="left" className="w-[260px] p-0">
+              {/* aria-label, not a SheetTitle: the drawer's whole body IS the
+                  nav, and a visible heading above it would be chrome the desktop
+                  sidebar does not have. Without a name this is a role="dialog"
+                  with nothing to announce. */}
+              <SheetContent side="left" className="w-[260px] p-0" aria-label="Admin navigation">
                 {sidebar}
               </SheetContent>
             </Sheet>

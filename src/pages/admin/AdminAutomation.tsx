@@ -21,7 +21,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
   Sheet,
   SheetContent,
@@ -35,7 +34,7 @@ import { adminAction } from '@/lib/adminAction';
 import { formatNextFire } from '@/lib/nextCronFire';
 import { toast } from 'sonner';
 import { AdminRegistryFrame } from '@/components/admin/frames/AdminRegistryFrame';
-import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
+import { AdminSimpleTable } from '@/components/admin/primitives/AdminSimpleTable';
 
 interface Automation {
   id: string;
@@ -320,146 +319,156 @@ export default function AdminAutomation() {
       {/* Registry */}
       <section>
         <h2 className="text-title font-semibold mb-2">Registered automations</h2>
-        {automationsQ.isLoading ? (
-          <Skeleton className="h-24 w-full" />
-        ) : automationsQ.data?.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No automations registered.</p>
-        ) : (
-          <div className="bg-muted">
-            <table className="w-full text-13">
-              <thead className="bg-muted">
-                <tr className="text-left">
-                  <th className="px-4 py-2 font-semibold">Name</th>
-                  <th className="px-4 py-2 font-semibold">Managed by</th>
-                  <th className="px-4 py-2 font-semibold">Schedule</th>
-                  <th className="px-4 py-2 font-semibold">Next run</th>
-                  <th className="px-4 py-2 font-semibold">Last run</th>
-                  <th className="px-4 py-2 font-semibold">Status</th>
-                  <th className="px-4 py-2 font-semibold text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {automationsQ.data?.map((a) => (
-                  <tr
-                    key={a.id}
-                    className={`border-t border-border cursor-pointer hover:bg-muted/40 ${detailSlug === a.slug ? 'bg-muted/60' : ''}`}
-                    onClick={() => setDetailSlug(a.slug)}
+        <AdminSimpleTable
+          caption="Automation registry"
+          rows={automationsQ.data ?? []}
+          rowKey={(a) => a.id}
+          isLoading={automationsQ.isLoading}
+          emptyNoun="automations"
+          onRowClick={(a) => setDetailSlug(a.slug)}
+          rowClassName={(a) => `hover:bg-muted/40 ${detailSlug === a.slug ? 'bg-muted/60' : ''}`}
+          columns={[
+            {
+              key: 'name',
+              header: 'Name',
+              render: (a) => (
+                <>
+                  <div className="font-semibold">{a.name}</div>
+                  <div className="font-mono text-2xs text-muted-foreground mt-0.5">{a.slug}</div>
+                  {a.description && (
+                    <div className="text-2xs text-muted-foreground mt-0.5">{a.description}</div>
+                  )}
+                </>
+              ),
+            },
+            {
+              key: 'managed_by',
+              header: 'Managed by',
+              render: (a) => (
+                <Badge variant={a.managed_by === 'system' ? 'secondary' : 'outline'}>
+                  {a.managed_by}
+                </Badge>
+              ),
+            },
+            {
+              key: 'schedule',
+              header: 'Schedule',
+              cellClassName: 'font-mono text-2xs',
+              render: (a) => a.schedule ?? '—',
+            },
+            {
+              key: 'next_run',
+              header: 'Next run',
+              cellClassName: 'text-2xs text-muted-foreground tabular-nums',
+              render: (a) => (a.enabled ? formatNextFire(a.schedule) : '—'),
+            },
+            {
+              key: 'last_run',
+              header: 'Last run',
+              render: (a) =>
+                a.last_run_at
+                  ? formatDistanceToNow(new Date(a.last_run_at), { addSuffix: true })
+                  : 'Never',
+            },
+            {
+              key: 'status',
+              header: 'Status',
+              render: (a) =>
+                isAdmin ? (
+                  <Button
+                    variant={a.enabled ? 'outline' : 'secondary'}
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleEnabled(a.slug, !a.enabled);
+                    }}
+                    disabled={busySlug !== null}
+                    className="font-normal h-6 text-2xs"
                   >
-                    <td className="px-4 py-2">
-                      <div className="font-semibold">{a.name}</div>
-                      <div className="font-mono text-2xs text-muted-foreground mt-0.5">
-                        {a.slug}
-                      </div>
-                      {a.description && (
-                        <div className="text-2xs text-muted-foreground mt-0.5">{a.description}</div>
-                      )}
-                    </td>
-                    <td className="px-4 py-2">
-                      <Badge variant={a.managed_by === 'system' ? 'secondary' : 'outline'}>
-                        {a.managed_by}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-2 font-mono text-2xs">{a.schedule ?? '—'}</td>
-                    <td className="px-4 py-2 text-2xs text-muted-foreground tabular-nums">
-                      {a.enabled ? formatNextFire(a.schedule) : '—'}
-                    </td>
-                    <td className="px-4 py-2">
-                      {a.last_run_at
-                        ? formatDistanceToNow(new Date(a.last_run_at), { addSuffix: true })
-                        : 'Never'}
-                    </td>
-                    <td className="px-4 py-2">
-                      {isAdmin ? (
-                        <Button
-                          variant={a.enabled ? 'outline' : 'secondary'}
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleEnabled(a.slug, !a.enabled);
-                          }}
-                          disabled={busySlug !== null}
-                          className="font-normal h-6 text-2xs"
-                        >
-                          {busySlug === `toggle:${a.slug}` ? (
-                            <TrackLoader size={11} className="mr-1" />
-                          ) : null}
-                          {a.enabled
-                            ? 'enabled · click to pause'
-                            : a.last_run_status === 'auto_paused'
-                              ? `auto-paused after ${a.consecutive_failures} errors · click to resume`
-                              : 'paused · click to enable'}
-                        </Button>
-                      ) : a.enabled ? (
-                        <Badge variant="outline" className="font-normal">
-                          enabled
-                        </Badge>
-                      ) : a.last_run_status === 'auto_paused' ? (
-                        <Badge variant="destructive" className="font-normal">
-                          auto-paused
-                        </Badge>
+                    {busySlug === `toggle:${a.slug}` ? (
+                      <TrackLoader size={11} className="mr-1" />
+                    ) : null}
+                    {a.enabled
+                      ? 'enabled · click to pause'
+                      : a.last_run_status === 'auto_paused'
+                        ? `auto-paused after ${a.consecutive_failures} errors · click to resume`
+                        : 'paused · click to enable'}
+                  </Button>
+                ) : a.enabled ? (
+                  <Badge variant="outline" className="font-normal">
+                    enabled
+                  </Badge>
+                ) : a.last_run_status === 'auto_paused' ? (
+                  <Badge variant="destructive" className="font-normal">
+                    auto-paused
+                  </Badge>
+                ) : (
+                  <Badge variant="secondary" className="font-normal">
+                    paused
+                  </Badge>
+                ),
+            },
+            {
+              key: 'actions',
+              header: 'Actions',
+              align: 'right',
+              cellClassName: 'whitespace-nowrap',
+              render: (a) => (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setFilterSlug(filterSlug === a.slug ? null : a.slug);
+                    }}
+                    title="Filter runs to this rule"
+                  >
+                    {filterSlug === a.slug ? 'Clear filter' : 'Filter runs'}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      dryRun(a.slug);
+                    }}
+                    disabled={busySlug !== null}
+                    title="Preview without mutating"
+                    className="ml-2"
+                  >
+                    {busySlug === `dry:${a.slug}` ? (
+                      <TrackLoader size={12} className="mr-1" />
+                    ) : (
+                      <FlaskConical size={12} className="mr-1" />
+                    )}
+                    Dry-run
+                  </Button>
+                  {isAdmin && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        runNow(a.slug);
+                      }}
+                      disabled={busySlug !== null || !a.enabled}
+                      className="ml-2"
+                      title={a.enabled ? 'Run now' : 'Enable to run'}
+                    >
+                      {busySlug === `run:${a.slug}` ? (
+                        <TrackLoader size={12} className="mr-1" />
                       ) : (
-                        <Badge variant="secondary" className="font-normal">
-                          paused
-                        </Badge>
+                        <Play size={12} className="mr-1" />
                       )}
-                    </td>
-                    <td className="px-4 py-2 text-right whitespace-nowrap">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setFilterSlug(filterSlug === a.slug ? null : a.slug);
-                        }}
-                        title="Filter runs to this rule"
-                      >
-                        {filterSlug === a.slug ? 'Clear filter' : 'Filter runs'}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          dryRun(a.slug);
-                        }}
-                        disabled={busySlug !== null}
-                        title="Preview without mutating"
-                        className="ml-2"
-                      >
-                        {busySlug === `dry:${a.slug}` ? (
-                          <TrackLoader size={12} className="mr-1" />
-                        ) : (
-                          <FlaskConical size={12} className="mr-1" />
-                        )}
-                        Dry-run
-                      </Button>
-                      {isAdmin && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            runNow(a.slug);
-                          }}
-                          disabled={busySlug !== null || !a.enabled}
-                          className="ml-2"
-                          title={a.enabled ? 'Run now' : 'Enable to run'}
-                        >
-                          {busySlug === `run:${a.slug}` ? (
-                            <TrackLoader size={12} className="mr-1" />
-                          ) : (
-                            <Play size={12} className="mr-1" />
-                          )}
-                          Run now
-                        </Button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                      Run now
+                    </Button>
+                  )}
+                </>
+              ),
+            },
+          ]}
+        />
       </section>
 
       {/* Recent runs */}
@@ -483,54 +492,62 @@ export default function AdminAutomation() {
             Use "Filter runs" on any automation row above to drill into its history.
           </p>
         )}
-        {runsQ.isLoading ? (
-          <Skeleton className="h-24 w-full" />
-        ) : runsQ.data?.length === 0 ? (
-          <AdminEmpty noun="runs" />
-        ) : (
-          <div className="bg-muted">
-            <table className="w-full text-13">
-              <thead className="bg-muted">
-                <tr className="text-left">
-                  <th className="px-4 py-2 font-semibold w-8" aria-label="Status" />
-                  <th className="px-4 py-2 font-semibold">Automation</th>
-                  <th className="px-4 py-2 font-semibold">Started</th>
-                  <th className="px-4 py-2 font-semibold text-right">Examined</th>
-                  <th className="px-4 py-2 font-semibold text-right">Changed</th>
-                  <th className="px-4 py-2 font-semibold">Notes</th>
-                </tr>
-              </thead>
-              <tbody>
-                {runsQ.data?.map((r) => (
-                  <tr key={r.id} className="border-t border-border">
-                    <td className="px-4 py-2 align-top">
-                      <StatusIcon status={r.status} />
-                    </td>
-                    <td className="px-4 py-2 align-top font-mono text-2xs">{r.automation_slug}</td>
-                    <td className="px-4 py-2 align-top">
-                      {formatDistanceToNow(new Date(r.started_at), { addSuffix: true })}
-                    </td>
-                    <td className="px-4 py-2 align-top text-right tabular-nums">
-                      {r.items_examined}
-                    </td>
-                    <td className="px-4 py-2 align-top text-right tabular-nums font-semibold">
-                      {r.items_changed}
-                    </td>
-                    <td className="px-4 py-2 align-top text-2xs text-muted-foreground">
-                      {r.error ? (
-                        <span className="text-destructive">{r.error}</span>
-                      ) : r.summary?.rule ? (
-                        String(r.summary.rule)
-                      ) : (
-                        '—'
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <AdminSimpleTable
+          caption="Recent automation runs"
+          rows={runsQ.data ?? []}
+          rowKey={(r) => String(r.id)}
+          isLoading={runsQ.isLoading}
+          emptyNoun="runs"
+          skeletonRows={6}
+          columns={[
+            {
+              key: 'status',
+              header: <span className="sr-only">Status</span>,
+              width: 'xs',
+              cellClassName: 'align-top',
+              render: (r) => <StatusIcon status={r.status} />,
+            },
+            {
+              key: 'automation',
+              header: 'Automation',
+              cellClassName: 'align-top font-mono text-2xs',
+              render: (r) => r.automation_slug,
+            },
+            {
+              key: 'started',
+              header: 'Started',
+              cellClassName: 'align-top',
+              render: (r) => formatDistanceToNow(new Date(r.started_at), { addSuffix: true }),
+            },
+            {
+              key: 'examined',
+              header: 'Examined',
+              align: 'right',
+              cellClassName: 'align-top tabular-nums',
+              render: (r) => r.items_examined,
+            },
+            {
+              key: 'changed',
+              header: 'Changed',
+              align: 'right',
+              cellClassName: 'align-top tabular-nums font-semibold',
+              render: (r) => r.items_changed,
+            },
+            {
+              key: 'notes',
+              header: 'Notes',
+              cellClassName: 'align-top text-2xs text-muted-foreground',
+              render: (r) =>
+                r.error ? (
+                  <span className="text-destructive">{r.error}</span>
+                ) : r.summary?.rule ? (
+                  String(r.summary.rule)
+                ) : (
+                  '—'
+                ),
+            },
+          ]}
+        />
       </section>
 
       {/* Detail drawer */}
