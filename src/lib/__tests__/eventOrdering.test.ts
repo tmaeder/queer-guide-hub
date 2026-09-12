@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, it, expect } from 'vitest';
 import { isInProgress, orderUpcoming, type OrderableEvent } from '@/lib/eventOrdering';
 import { endsAtOrAfter } from '@/hooks/useEvents';
@@ -131,6 +133,34 @@ describe('orderUpcoming', () => {
     const before = rows.map((r) => r.title);
     orderUpcoming(rows, NOW);
     expect(rows.map((r) => r.title)).toEqual(before);
+  });
+});
+
+// e2e/events-multiday-overlap.spec.ts proves the PREDICATE works against prod, but
+// it would stay green if useEvents stopped calling it — it asserts the database's
+// behaviour, not the app's. These scan the hook's source so a revert to the
+// containment form fails here rather than silently on the feed.
+describe('useEvents uses the overlap predicate', () => {
+  const src = readFileSync(join(process.cwd(), 'src', 'hooks', 'useEvents.tsx'), 'utf8');
+  // Comments in this file quote the old predicate to explain it; strip them, or the
+  // guard passes on the explanation after the code is gone.
+  const code = src
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .split('\n')
+    .filter((line) => !line.trim().startsWith('//'))
+    .join('\n');
+
+  it('does not filter the upcoming feed by start_date alone', () => {
+    expect(code).not.toMatch(/\.gte\(\s*'start_date'\s*,\s*nowIso\s*\)/);
+  });
+
+  it('does not filter a date window by containment', () => {
+    expect(code).not.toMatch(/\.gte\(\s*'start_date'\s*,\s*filters[.?]*\.?dateRange/);
+  });
+
+  it('calls endsAtOrAfter for both the upcoming feed and the date window', () => {
+    const calls = code.match(/\.or\(\s*endsAtOrAfter\(/g) ?? [];
+    expect(calls.length).toBe(2);
   });
 });
 
