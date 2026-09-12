@@ -181,7 +181,7 @@ export function EventProgrammePanel({ eventId }: { eventId: string }) {
             ))}
           </ul>
         ) : (
-          <AdminEmpty title="No programme children yet." />
+          <AdminEmpty noun="programme children" />
         )}
       </section>
 
@@ -236,7 +236,14 @@ export function EventProgrammePanel({ eventId }: { eventId: string }) {
           ) : (
             !candidates.isLoading && (
               <AdminEmpty
-                title="Nothing to suggest."
+                noun="suggestions"
+                // `filtered` is the difference between "this festival has no
+                // candidates" and "your filter matched none of them" — the search box
+                // above makes the second state reachable, and AdminEmpty exists
+                // precisely because ~41 ad-hoc "No X found" strings never told them
+                // apart.
+                filtered={search.trim().length > 0}
+                onReset={() => setSearch('')}
                 description="Suggestions are same-city events inside this event's dates that are not already attached. An event spanning a single day usually has none."
               />
             )
