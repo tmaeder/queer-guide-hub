@@ -12,8 +12,13 @@
  * secret is configured on two systems, so there is necessarily a window where
  * one side has it and the other does not; rejecting during that window would
  * drop all traffic. Set it on Cloudflare Pages FIRST, then on Supabase.
- * `analytics_hygiene_stats()` reports whether it is armed, so the inert state
- * is visible rather than assumed.
+ *
+ * Nothing can report whether this is armed. The value lives in two env vars on
+ * two platforms, and neither Postgres nor the health check can read either —
+ * so treat the secret as OFF until you have verified both sides by hand. What
+ * IS observable is the effect: `analytics_hygiene_stats()`'s
+ * sessions_null_country_pct_24h goes high the moment anything writes without
+ * going through the proxy, which is the same thing this secret prevents.
  *
  * It lives in `_shared/` rather than inside the function because
  * `umami-analytics/index.ts` builds a service client at module scope — so
