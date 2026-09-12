@@ -241,28 +241,50 @@ begin
   raise notice 'PASS 9: authenticated holds exactly the 38-column allowlist';
 end $$;
 
--- 10: UPDATE/INSERT are deliberately NOT narrowed -----------------------------
--- 20510101100000 narrowed SELECT only. The write set is assembled from
--- updateProfile(updates) with a caller-supplied object and was not enumerable to
--- a standard that justifies a grant change; writes are RLS-bound to the caller's
--- own row, so an over-wide write grant is an integrity question, not disclosure.
--- This asserts that scope explicitly so a future reader does not mistake the
--- narrow SELECT for a narrow table.
+-- 10: the authenticated WRITE allowlist (20540101100000) --------------------
+-- Until that migration `authenticated` could UPDATE all 174 columns on its own
+-- row — measured live: `set verified_identity = true`, `set moderation_status =
+-- 'approved'` and `set verified_email = true` were all ALLOWED. RLS confines
+-- them to the caller's own row, which is what makes it exploitable rather than
+-- harmless: self-verification and self-approval in one PostgREST call.
 do $$
-declare n_update int; n_select int;
+declare
+  expected text[] := array[
+    'first_name','last_name','bio','location','pronouns','pronoun_tags','identity_flags',
+    'phone','website','date_of_birth','age_range','gender_identity','sexual_orientation',
+    'occupation','education','chosen_name','name_pronunciation','coming_out_status',
+    'chosen_family_status','disability_status','neurodivergent_status','romantic_orientation',
+    'relationship_style','current_relationship_status','privacy_settings','user_mode',
+    'avatar_url','avatar_config','avatar_type','avatar_auto_assigned','username',
+    'vibe_emoji','vibe_text','vibe_set_at','vibe_expires_at',
+    'status_emoji','status_text','status_expires_at','availability_tags','dnd_until',
+    'travel_mode','presence_visibility','onboarding_completed_at','interests','languages',
+    'looking_for','dm_push_enabled','preferences','mailbox_address','travel_preferences',
+    'updated_at','user_id'
+  ];
+  escalation text[] := array['verified_identity','moderation_status','verified_email',
+    'verified_phone','is_business','profile_completion_percentage','welcome_email_sent_at',
+    'id','created_at'];
+  priv text; granted text[]; leaked text;
 begin
-  select count(*) into n_update from information_schema.column_privileges
-   where table_schema='public' and table_name='profiles'
-     and grantee='authenticated' and privilege_type='UPDATE';
-  select count(*) into n_select from information_schema.column_privileges
-   where table_schema='public' and table_name='profiles'
-     and grantee='authenticated' and privilege_type='SELECT';
-  if n_update <= n_select then
-    raise exception
-      'FAIL(10): UPDATE (%) is no wider than SELECT (%) — if the write set was narrowed, update this test and say so',
-      n_update, n_select;
-  end if;
-  raise notice 'PASS 10: UPDATE stays wide (%) while SELECT is narrowed (%)', n_update, n_select;
+  foreach priv in array array['UPDATE','INSERT'] loop
+    select array_agg(column_name order by column_name) into granted
+      from information_schema.column_privileges
+     where table_schema='public' and table_name='profiles'
+       and grantee='authenticated' and privilege_type=priv;
+
+    -- Exact set equality: a superset is the escalation this exists to catch, and
+    -- a subset means a write path the editor still uses has been cut off.
+    if granted is distinct from (select array_agg(c order by c) from unnest(expected) c) then
+      raise exception 'FAIL(10): authenticated % allowlist drifted. granted=%', priv, granted;
+    end if;
+
+    select string_agg(e, ', ') into leaked from unnest(escalation) e where e = any(granted);
+    if leaked is not null then
+      raise exception 'FAIL(10): self-escalation column(s) writable via %: %', priv, leaked;
+    end if;
+  end loop;
+  raise notice 'PASS 10: authenticated writes exactly the 52-column allowlist (UPDATE + INSERT)';
 end $$;
 
 rollback;
