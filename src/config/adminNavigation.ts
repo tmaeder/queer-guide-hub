@@ -59,7 +59,6 @@ import {
   Palette,
   SpellCheck,
   Award,
-  Trophy,
   CopyCheck,
   PenLine,
   UserPlus,
@@ -270,16 +269,6 @@ export const adminNavSections: AdminNavSection[] = [
         icon: UserPlus,
         route: '/admin/content/group-requests',
         reviewCountKey: 'review_group_requests',
-        group: 'People',
-      },
-      {
-        // Community content, not a system setting — it was in System only
-        // because nothing else claimed it.
-        id: 'recognition',
-        label: 'Recognition Wall',
-        icon: Trophy,
-        route: '/admin/recognition',
-        adminOnly: true,
         group: 'People',
       },
       // Editorial

@@ -63,11 +63,33 @@ Olfe`, `Sunday Sex`, `Klubnacht`.
 
 ### 1.5 Inference is viable but must not publish
 
-Of 194 live series, **155 pass** a strict test (one weekday, one clock time, ≥3 distinct
+**CORRECTED 2026-09-12 (part 3). The paragraph below said 155 series "pass a strict
+[weekly] test", and that test was not a weekly test.** It checked one weekday, one clock
+time and ≥3 distinct weeks — and never checked the GAP between occurrences. A monthly
+group on the first Tuesday satisfies all three. Measuring the median gap across the same
+155:
+
+| cadence | series |
+|---|---|
+| weekly (7d) | 76 |
+| **monthly (~30d)** | **55** |
+| fortnightly (14d) | 15 |
+| three-weekly / sparser | 9 |
+
+So only 49% are weekly, and inferring weekly across the set would have generated ~4× too
+many dates for every monthly community group in the corpus (`Trans-Treff`, `Bi-Gruppe`,
+`Quinky-Stammtisch`). Cadence is measured, never assumed. With the monthly cohort split by
+nth-weekday consistency the confidently-expressible set is 76 weekly + 48 monthly + 15
+fortnightly = **139 of 155**, and regenerating each rule over its own observed window
+fabricates 41 of 1,137 dates — **96.4% precision**, above the bar in §7.
+
+Of 194 live series, 155 pass that shape test (one weekday, one clock time, ≥3 distinct
 weeks). They carry an *independent* corroborating signal: the German titles name their own
 weekday and it agrees — `Die Montagsspieler` on Mondays, `Sonntagscafé` on Sundays,
-`Dienstags-Club` on Tuesdays, `Jungschwuppen Mittwochsclub` on Wednesdays. That is a second
-signal, not a restatement of the gap analysis.
+`Dienstags-Club` on Tuesdays, `Jungschwuppen Mittwochsclub` on Wednesdays (19 of 155 name a
+weekday; all 19 agree, zero disagreements). That is a second signal, not a restatement of
+the gap analysis — but it corroborates the WEEKDAY, never the cadence, which is why it did
+not catch the error above.
 
 The other 39 (multi-weekday) provably contain **all three kinds**, so structure alone
 cannot classify them:
@@ -326,9 +348,25 @@ what makes the measurement honest before anything is published.
 
 ## 7. Open questions deferred deliberately
 
-- **Precision bar for the review queue** is set from a hand-read sample during step 3, not
-  guessed here. If the sample comes back below ~80% the queue is not built and the panel
-  carries the whole load.
+- **Precision bar for the review queue — RESOLVED in part 3, and the queue is NOT built.**
+  Measured at 96.4% (1,137 generated dates over their own observed windows, 41 never
+  observed), so inference clears the bar comfortably. But the bar was the wrong question:
+  the queue's entire contents would have been the 31 series whose cadence is *not*
+  expressible — a "we could not work this out" pile. This repo has disabled two such
+  queues already (tag relations ~29%, the prose judge ~19%), and a queue that is mostly
+  noise teaches reviewers to rubber-stamp. The expressible 139 need no review because they
+  publish nothing; the other 31 are stamped
+  `enrichment_status.schedule_inference.state='not_expressible'` and become a worklist for
+  the part-4 panel, which is pull-based and cannot rot.
+- **Two cadences the part-2 shape could not express**, both found by measuring rather than
+  by review, both added in part 3a: fortnightly (`interval_weeks` + `anchor`, 15 series)
+  and last-weekday-of-month (`monthly.nth = -1`, 2 series — `((day-1)/7)+1` calls 30 Sep
+  the *fifth* Wednesday, which is arithmetic rather than meaning).
+- **Seasonal breaks are exceptions, but wide ones deserve a look.** 40 of 902 weekly dates
+  were never observed, concentrated in 6 of 75 series — `Heldenbar` sits out five months,
+  `Queerterthur Jugendtreff` ten weeks. Recorded as `exceptions` (which generates the right
+  dates) and counted as `inferred_with_hiatus`, because such a series may really be two
+  seasons and one rule is an approximation.
 - **Cross-source showtime suppression** — the dedup showtime guard keys on `source_slug`
   equality, so two showtimes of one production arriving from *different* feeds are not
   suppressed. Out of scope; recorded because the schedule work will make it more visible.
