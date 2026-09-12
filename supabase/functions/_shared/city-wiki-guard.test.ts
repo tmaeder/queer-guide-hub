@@ -163,3 +163,59 @@ Deno.test('regionQualifiedTitle builds the retry Wikipedia actually uses', () =>
     null,
   )
 })
+
+// The `city-factual-backfill` / `city-corroboration` residue that 22500101100000
+// corrects. These two rows were NOT reachable by the 21050101100000 audit — that pass
+// selected agentic-enriched cities with no `wikidata_qid`, and both of these carry a
+// correct QID, a correct cached `wikipedia_title`, and were never agentic-enriched.
+// They are the same defect through a different producer: the published description
+// came from the BARE name while the correct article sat unpublished in the row's own
+// `field_provenance.description.candidates[0]`, because the filler is fill-if-empty.
+//
+// Both strings below are the REAL leads en.wikipedia.org served on 2026-09-12.
+// This asserts the pair the migration turns on: the text it REMOVES is refused by the
+// seal, and the text it PUBLISHES is adopted by it. A correction that published prose
+// the seal would itself reject would be a defect wearing a fix's clothes.
+Deno.test('the bare-name text 22500101100000 retracts is refused by the seal', () => {
+  const cambriaWales =
+    'Cambria is a name for Wales, being the Latinised form of the Welsh name for the ' +
+    'country, Cymru. The term was not in use during the Roman period or the early ' +
+    'medieval period.'
+  const wales = cityWikiVerdict(cambriaWales, {
+    name: 'Cambria',
+    region_name: 'California',
+    countryName: 'United States',
+  })
+  assertEquals(wales.adopt, false)
+
+  const timonName = 'Timon is a masculine given name and a surname which may refer to:'
+  const given = cityWikiVerdict(timonName, {
+    name: 'Timon',
+    region_name: '13',
+    countryName: 'Brazil',
+  })
+  assertEquals(given.adopt, false)
+  // The given-name page is caught as a disambiguation, not merely as a non-place —
+  // "may refer to:" is the signature, and `13` is an unusable region either way.
+  assertEquals(given.reason, 'disambiguation')
+})
+
+Deno.test('the cached-title text 22500101100000 publishes is adopted by the seal', () => {
+  const cambria = cityWikiVerdict(
+    'Cambria is a coastal town in San Luis Obispo County, California, United States ' +
+    'midway between San Francisco and Los Angeles along California State Route 1. ' +
+    'The name Cambria, chosen in 1869, is the Latin name for Wales.',
+    { name: 'Cambria', region_name: 'California', countryName: 'United States' },
+  )
+  assertEquals(cambria.adopt, true)
+
+  // Note this text MENTIONS Wales — the defect's own explanation is inside the correct
+  // article ("the Latin name for Wales" is why the bare name resolved there). A guard
+  // that keyed on the word rather than on the lead's subject would refuse the fix.
+  const timon = cityWikiVerdict(
+    'Timon is a Brazilian municipality in the State of Maranhão. The population is ' +
+    '174,465 (2022 Census) and the total area is 1765 km2.',
+    { name: 'Timon', region_name: '13', countryName: 'Brazil' },
+  )
+  assertEquals(timon.adopt, true)
+})
