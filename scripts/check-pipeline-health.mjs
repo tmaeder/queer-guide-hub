@@ -2134,6 +2134,80 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
   }
 }
 
+// event_schedule_signals — the schedule -> event_dates derivation.
+//
+// STANDALONE, like event_dup_signals/venue_dup_signals and for the same reason:
+// pipeline_hygiene_stats is a long CREATE OR REPLACE and adding a key there means
+// restating every other one by hand — a merge-collision surface.
+//
+// `schedules_total` IS THE POSITIVE CONTROL and is printed even when everything is
+// zero. Every invariant below is also satisfied by a corpus with no schedules at all
+// and by a derive job that has never run, and those are three different situations.
+// Until part 3 lands a writer, the honest reading of this block is "0 schedules, so
+// nothing to derive" — NOT "the index is healthy".
+//
+// A FAILED PROBE IS REPORTED, NEVER SWALLOWED: an unreachable RPC must not read the
+// same as a clean index.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/event_schedule_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    console.warn(`⚠ event_schedule_signals → HTTP ${res.status} (RPC missing? migration 20750101100100)`)
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else {
+    const sig = (await res.json()) ?? {}
+    if (sig?.probe_ok !== true) {
+      console.error('✗ event_schedule_signals did not report probe_ok — the probe is broken')
+      FAILED = true
+    } else {
+      const schedules = Number(sig.schedules_total ?? 0)
+      const stale = Number(sig.stale_rows ?? 0)
+      const orphan = Number(sig.orphan_generated_rows ?? 0)
+      const beyond = Number(sig.beyond_horizon ?? 0)
+      const noDates = Number(sig.expandable_rules_with_no_dates ?? 0)
+
+      // Zero-invariants. Each is a different failure of the derive chain, so they
+      // are reported separately rather than summed into one number.
+      if (stale > 0) {
+        console.error(`✗ ${stale} event_dates row(s) were built from a rule that has since changed`)
+        console.error('  The derive job is dead or wedged. Run: select public.run_event_dates_rebuild(500);')
+        FAILED = true
+      }
+      if (orphan > 0) {
+        console.error(`✗ ${orphan} generated event_dates row(s) whose event no longer has a schedule`)
+        FAILED = true
+      }
+      if (beyond > 0) {
+        console.error(`✗ ${beyond} event_dates row(s) past the 18-month horizon — the cap leaked`)
+        FAILED = true
+      }
+
+      // Advisory: a rule that claims to repeat but produced nothing is either an
+      // expander bug or a window that has closed. Worth a look, not a red build.
+      if (noDates > 0) {
+        console.warn(`⚠ ${noDates} schedule(s) with weekly/extra entries expanded to no dates`)
+      }
+
+      if (!stale && !orphan && !beyond) {
+        const kinds = Object.entries(sig.schedules_by_kind ?? {})
+          .map(([k, v]) => `${k} ${v}`)
+          .join(', ')
+        console.log(
+          `✓ Event schedules: ${schedules} rule(s)${kinds ? ` (${kinds})` : ''}, ` +
+            `${Number(sig.dates_total ?? 0)} derived date(s) ` +
+            `(${Number(sig.dates_confirmed ?? 0)} confirmed), 0 stale`,
+        )
+        if (schedules === 0) {
+          console.log('  No schedules exist yet — the zeroes above are absence, not health.')
+        }
+      }
+    }
+  }
+}
+
 // The single exit. Reached whether or not anything failed, so the ✗ lines above
 // are the complete list rather than "the first one we tripped over".
 if (FAILED) {
