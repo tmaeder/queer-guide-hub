@@ -22,8 +22,18 @@ export default function PodcastShow() {
   const { data: show, isLoading } = usePodcastShow(slug);
   const { data: episodes, isLoading: episodesLoading } = usePodcastEpisodes(show?.id);
 
+  // Many show names already carry the word ("TransLash Podcast", "Lez Hang Out
+  // | A Lesbian Podcast"), and suffixing unconditionally published
+  // "TransLash Podcast Podcast | Queer Guide" — measured on prod. Add it only
+  // when the name does not already say it.
+  const showTitle = show
+    ? /podcast/i.test(show.name)
+      ? show.name
+      : t('podcasts.showMetaTitle', '{{name}} Podcast', { name: show.name })
+    : undefined;
+
   useMeta({
-    title: show ? t('podcasts.showMetaTitle', '{{name}} Podcast', { name: show.name }) : undefined,
+    title: showTitle,
     description: show?.description ?? undefined,
     ogImage: show?.artwork_url ?? undefined,
     canonicalPath: slug ? `/podcasts/${slug}` : undefined,

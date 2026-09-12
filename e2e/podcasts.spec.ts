@@ -80,15 +80,38 @@ test.describe('@smoke podcasts', () => {
     await page.goto('/podcasts');
     const showHref = await page.locator('a[href*="/podcasts/"]').first().getAttribute('href');
     await page.goto(showHref!);
-    const episodeHref = await page
-      .locator('a[href*="/news/"]')
-      .first()
-      .getAttribute('href');
-    expect(episodeHref, 'a show page produced an episode URL').toBeTruthy();
+    // Walk a few episodes to find one the middleware PRERENDERS.
+    //
+    // The bot body is injected only when the route is indexable
+    // (functions/_middleware.ts: `isBot = indexable && isBotUserAgent(...)`),
+    // and news_articles.seo_indexable is false on a large share of the corpus.
+    // Taking the first episode blindly is a coin flip: measured on prod, the
+    // newest episode of the newest show had seo_indexable=false, so the body
+    // was absent and the JSON-LD was still correct — which is exactly the
+    // shape that makes this look like a regression when it is not.
+    const hrefs = (await page.locator('a[href*="/news/"]').evaluateAll((els) =>
+      els.map((e) => (e as HTMLAnchorElement).getAttribute('href')),
+    )).filter((h): h is string => Boolean(h));
+    expect(hrefs.length, 'a show page produced episode URLs').toBeGreaterThan(0);
 
-    const res = await request.get(episodeHref!, { headers: BOT });
+    let html = '';
+    let episodeHref = '';
+    for (const href of hrefs.slice(0, 12)) {
+      const r = await request.get(href, { headers: BOT });
+      if (r.status() !== 200) continue;
+      const body = await r.text();
+      if (body.includes('data-prerendered="bot-ua"')) {
+        html = body;
+        episodeHref = href;
+        break;
+      }
+    }
+    // Not a silent skip: if no episode on this show is indexable the assertion
+    // below would pass against an empty string, which is the vacuous-pass
+    // shape this whole file is written to avoid.
+    expect(episodeHref, 'no prerendered episode found among the first 12').toBeTruthy();
+    const res = await request.get(episodeHref, { headers: BOT });
     expect(res.status()).toBe(200);
-    const html = await res.text();
 
     const blocks = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
       .map((m) => {
