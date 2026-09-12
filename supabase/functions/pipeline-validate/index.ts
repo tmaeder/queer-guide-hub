@@ -153,8 +153,16 @@ Deno.serve(withErrorReporting('pipeline-validate', async (req) => {
           ?? (dates.start as string | undefined)
           ?? (meta.published_at as string | undefined)
 
-        if (title.length < 6) errors.push('E_TITLE_TOO_SHORT')
-        else if (title.length < 15 && !/\s/.test(title)) errors.push('E_TITLE_NOT_INFORMATIVE')
+        // A podcast episode is not an article and its title is not a headline.
+        // "Ep 396", "S2E4", "#118" are complete, correct episode titles, and the
+        // article-shaped floor rejected 72 of them in a 30-day window, plus 11
+        // more on E_TITLE_NOT_INFORMATIVE — which fires on any sub-15-char title
+        // with no space, i.e. exactly that shape. The floor drops to 2 for
+        // episodes; the placeholder and emoji-only tests still apply, because
+        // those catch a BROKEN title rather than a short one.
+        const isPodcastItem = String(meta.media_type || n.media_type || '') === 'podcast'
+        if (title.length < (isPodcastItem ? 2 : 6)) errors.push('E_TITLE_TOO_SHORT')
+        else if (!isPodcastItem && title.length < 15 && !/\s/.test(title)) errors.push('E_TITLE_NOT_INFORMATIVE')
         else if (/^(unnamed|untitled|test|no title|undefined|null)\b/i.test(title)) errors.push('E_TITLE_PLACEHOLDER')
         else if (/^[\p{Emoji}\p{Emoji_Component}\p{So}\s·༻༺𐫱]+$/u.test(title)) errors.push('E_TITLE_EMOJI_ONLY')
         if (title.length > 500) warnings.push('W_TITLE_TRUNCATED')

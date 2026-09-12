@@ -4,6 +4,7 @@ import { ActiveTripProvider } from '@/hooks/useActiveTrip';
 import { AppProviders } from '@/providers/AppProviders';
 import { BreadcrumbProvider } from '@/contexts/BreadcrumbContext';
 import { LayoutShell } from '@/components/layout/LayoutShell';
+import { AudioPlayerProvider } from '@/hooks/useAudioPlayer';
 import { ScrollManager } from '@/components/routing/ScrollManager';
 import { AppRoutes } from './routes';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -18,9 +19,14 @@ const App = () => (
         <ScrollManager />
         <ActiveTripProvider>
           <BreadcrumbProvider>
-            <LayoutShell>
-              <AppRoutes />
-            </LayoutShell>
+            {/* Inside the router: the mini-bar links to the episode page, so
+                it needs a routing context. AppProviders sits OUTSIDE the
+                router, which is why the audio provider cannot live there. */}
+            <AudioPlayerProvider>
+              <LayoutShell>
+                <AppRoutes />
+              </LayoutShell>
+            </AudioPlayerProvider>
           </BreadcrumbProvider>
         </ActiveTripProvider>
       </BrowserRouter>

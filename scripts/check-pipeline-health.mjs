@@ -590,6 +590,86 @@ if (!hygieneRes.ok) {
   }
 }
 
+// 4d. The other ten dedup types (2026-09-12). 4b and 4c exist because venue and event
+//     each went blind while the nightly sweep reported success — event for eleven days.
+//     The remaining ten had no sentinel at all, so the same failure there is invisible:
+//     marketplace, personality, city, hotel, milestone, organization, news,
+//     queer_village, country, group.
+//
+//     TWO CALLS, deliberately. `dedup_signals_all()` is the CHEAP pass (queue, audit and
+//     drain-rate keys for all twelve, milliseconds) because the expensive part — a
+//     dry-run sweep — measured 34.6s for twelve types and no HTTP call survives that.
+//     `would_merge` there is null with `dry_run_error: 'not probed'`, which is the point:
+//     an unprobed type must never read like a clean one. Types with a real backlog are
+//     then probed individually.
+//
+//     THE NEW GATE IS THE DRAIN RATE, and it is the one the existing two would have
+//     missed. 4b/4c fail on `would_merge > 0 && merges_7d === 0` — an engine with work it
+//     is not doing. The live state on 2026-09-12 was the opposite: arms SATURATED
+//     (would_merge 0 on both), venue queue pinned at its 200/night cap five nights in six,
+//     and `human_decisions_7d` = 0. Both halves of that predicate read zero, so it is
+//     silent while the backlog compounds.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/dedup_signals_all`, {
+    method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: '{}',
+  })
+  if (!res.ok) {
+    // Warn, never pass silently: a missing RPC and a healthy fleet must not look alike.
+    console.warn(`⚠ dedup_signals_all → HTTP ${res.status} (RPC missing? migration 29000101100500)`)
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else {
+    const all = await res.json()
+    const types = Object.keys(all ?? {})
+    if (types.length !== 12) {
+      console.error(`✗ dedup_signals_all returned ${types.length} types, expected 12`)
+      FAILED = true
+    }
+
+    for (const t of types) {
+      const d = all[t] ?? {}
+
+      // A null would_merge with no stated reason is a broken probe, not a clean type.
+      if (d.would_merge === null && !d.dry_run_error) {
+        console.error(`✗ dedup_signals(${t}) reports no would_merge and no reason — the probe is broken`)
+        FAILED = true
+      }
+
+      // Reversibility drift, for every type now — not just venue. A merge stamped with
+      // no schema marker cannot be undone. Anchored to the first stamped merge, so the
+      // rows that legitimately predate the fix (merges_pre_schema_total) are excluded.
+      const unrev = Number(d.merges_unreversible_since_fix ?? 0)
+      if (unrev > 0) {
+        console.error(`✗ ${unrev} ${t} merge(s) recorded with no reversibility data since the fix landed`)
+        console.error(`  The live merge core has drifted from 29000101100000/100200 — those merges cannot be undone.`)
+        FAILED = true
+      }
+
+      // The drain-rate warning. Not a hard fail: a deliberate backlog on a low-value
+      // type is a product choice, and a red build nobody can act on is one people learn
+      // to ignore. It fires only when the queue is BOTH large and genuinely stagnant.
+      const open = Number(d.open_pairs ?? 0)
+      const opened = Number(d.opened_7d ?? 0)
+      const human = Number(d.human_decisions_7d ?? 0)
+      const medianH = Number(d.median_open_pair_hours ?? 0)
+      if (open > 100 && opened > 0 && human === 0 && medianH > 168) {
+        console.warn(
+          `⚠ ${t} dedup queue is not draining: ${open} open, +${opened} queued in 7d, ` +
+          `0 human decisions, median age ${medianH}h`,
+        )
+        console.warn('  A queue that only grows converges on never. Either review it at')
+        console.warn('  /admin/inbox?queue=dedup-review, widen the auto arms, or close the')
+        console.warn('  provably-distinct pairs (run_dedup_close_distinct).')
+      }
+    }
+
+    const summary = types
+      .filter((t) => Number(all[t]?.open_pairs ?? 0) > 0)
+      .map((t) => `${t}=${all[t].open_pairs}`)
+      .join(' ')
+    console.log(`✓ Dedup signals: 12 types, open pairs ${summary || 'none'}`)
+  }
+}
+
 // 5a. Wrong-entity Wikidata links on the glossary (2026-08-29). tag-enrichment-sweep
 //     resolved a tag's QID by fetching the Wikipedia summary of its RAW NAME and
 //     adopting whatever the redirect served — `golden-shower` → Cassia fistula,
@@ -1681,6 +1761,96 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
     }
     if (sectionOk) {
       console.log('✓ no audio/video in news_articles.image_url; seal attached')
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// §  Podcast episodes: typed correctly, and actually committing
+// ---------------------------------------------------------------------------
+//
+// Two faults ran for months here and neither was hidden for want of data —
+// both were hidden because nothing measured the right quantity.
+//
+//  * 5,729 episodes committed as plain ARTICLES with the audio discarded,
+//    because a redefinition of news_commit_staging_batch dropped three columns
+//    from its INSERT list for three weeks. The RPC was fixed at the time; the
+//    rows it damaged were not, and nothing counted them for the next two months.
+//  * The parser wrote a bare <guid> (`Buzzsprout-19685709`, a Megaphone UUID)
+//    into news_articles.url, pipeline-validate rejected it E_INVALID_URL, and
+//    the episode was destroyed — 323 of 680 podcast rejections in 30 days.
+//
+// The second is why the RATE is reported and not the cron's liveness: 256 of
+// 265 sources reported a SUCCESSFUL fetch within 24h throughout, with
+// consecutive_failures 0 on every one. Fetching worked perfectly; only the
+// commit did not. A "did the job run" check is green in exactly this state.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/news_podcast_signals`, {
+    method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: '{}',
+  })
+  if (!res.ok) {
+    console.warn(`⚠ news_podcast_signals → HTTP ${res.status} (22000101100100 not applied?) — this check measured NOTHING`)
+  } else {
+    const sig = await res.json()
+    let sectionOk = true
+
+    // An ABSENT key is not a zero count. A sentinel deployed with a key missing
+    // would otherwise report the cleanest possible corpus while checking none of it.
+    for (const k of ['stranded_as_article', 'podcast_without_audio', 'episodes_staged_7d', 'episodes_committed_7d']) {
+      if (!(k in sig)) {
+        console.error(`✗ news_podcast_signals is missing the key \`${k}\` — that part of this check measured NOTHING`)
+        FAILED = true; sectionOk = false
+      }
+    }
+
+    const stranded = Number(sig?.stranded_as_article ?? 0)
+    if (stranded > 0) {
+      console.error(`✗ ${stranded} podcast episodes are typed as articles with no audio, while their staging row holds the URL`)
+      console.error('  This is the 2026-06 commit-RPC regression recurring. Zero tolerance, no baseline.')
+      FAILED = true; sectionOk = false
+    }
+
+    const noAudio = Number(sig?.podcast_without_audio ?? 0)
+    if (noAudio > 0) {
+      console.error(`✗ ${noAudio} rows are typed media_type='podcast' but carry no audio_url — unplayable`)
+      FAILED = true; sectionOk = false
+    }
+
+    const badUrl = Number(sig?.invalid_url_rejections_7d ?? 0)
+    if (badUrl > 0) {
+      console.error(`✗ ${badUrl} podcast episodes were rejected E_INVALID_URL in the last 7 days`)
+      console.error("  The URL ladder in source-rss-news/rss-parse.ts does not cover this host's <guid> shape.")
+      FAILED = true; sectionOk = false
+    }
+
+    // The rate, reported as a PAIR. A ratio hides its denominator, and "nothing
+    // was staged" and "nothing committed of what was staged" are different
+    // facts that call for different action.
+    const staged = Number(sig?.episodes_staged_7d ?? 0)
+    const committed = Number(sig?.episodes_committed_7d ?? 0)
+    if (staged > 0) {
+      const pct = Math.round((committed / staged) * 100)
+      const line = `  podcast commit rate: ${committed}/${staged} staged episodes (${pct}%) in the last 7 days`
+      // 40% is a floor, not a target — below the measured healthy rate and well
+      // above the 23% the E_INVALID_URL fault produced. It warns rather than
+      // fails: the news quality gate legitimately rejects some episodes, and
+      // this number moves with the corpus.
+      console.log(pct < 40 ? `${line} — LOW, check pipeline-validate rejection reasons` : line)
+    } else {
+      console.log('  no podcast episodes staged in the last 7 days')
+    }
+
+    const zeroShows = Number(sig?.shows_fetching_with_zero_episodes ?? 0)
+    if (zeroShows > 0) {
+      console.log(`  ${zeroShows} podcast shows fetch successfully but have never committed an episode`)
+    }
+    const noArtwork = Number(sig?.podcast_without_artwork ?? 0)
+    if (noArtwork > 0) {
+      console.log(`  ${noArtwork} podcast episodes still have no artwork (news_podcast_artwork_fill drains this)`)
+    }
+
+    if (sectionOk) {
+      console.log('✓ podcast episodes are typed correctly and committing')
     }
   }
 }

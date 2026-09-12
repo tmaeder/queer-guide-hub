@@ -19,9 +19,9 @@ const SHOW_AFTER_PX = 600;
  * opened the feedback dialog instead. e2e caught it only intermittently
  * because the FAB is lazy-mounted: the test passed whenever it clicked first.
  */
-const FAB_BOTTOM_DESKTOP = '1.5rem';
+const FAB_BOTTOM_DESKTOP = 'calc(1.5rem + var(--audio-bar-clearance, 0rem))';
 const FAB_BOTTOM_MOBILE =
-  'calc(max(6rem, var(--map-rail-clearance, 0rem) + 1rem) + env(safe-area-inset-bottom, 0px))';
+  'calc(max(6rem, var(--map-rail-clearance, 0rem) + 1rem) + env(safe-area-inset-bottom, 0px) + var(--audio-bar-clearance, 0rem))';
 /** FAB height (48) + a 12px gap. */
 const FAB_CLEARANCE = '60px';
 
