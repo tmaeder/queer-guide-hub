@@ -89,7 +89,14 @@ test.describe('@smoke podcasts', () => {
     // newest episode of the newest show had seo_indexable=false, so the body
     // was absent and the JSON-LD was still correct — which is exactly the
     // shape that makes this look like a regression when it is not.
-    const hrefs = (await page.locator('a[href*="/news/"]').evaluateAll((els) =>
+    // WAIT BEFORE READING. Episodes arrive from react-query, so evaluateAll on
+    // a freshly-navigated page returns an empty list — the first draft of this
+    // test failed here with 0 hrefs while the sibling test above passed, purely
+    // because that one awaits visibility first. The wait is the precondition,
+    // not decoration.
+    const episodeLocator = page.locator('a[href*="/news/"]');
+    await expect(episodeLocator.first()).toBeVisible(RENDER);
+    const hrefs = (await episodeLocator.evaluateAll((els) =>
       els.map((e) => (e as HTMLAnchorElement).getAttribute('href')),
     )).filter((h): h is string => Boolean(h));
     expect(hrefs.length, 'a show page produced episode URLs').toBeGreaterThan(0);
