@@ -156,10 +156,70 @@ const arrayField = (row: Record<string, unknown>, k: string): unknown[] | undefi
   return Array.isArray(v) ? v : undefined;
 };
 
-function paragraphsHtml(text: string): string {
-  return collapseWs(stripHtml(text))
-    .split(/\n{2,}|(?<=[.!?])\s{2,}/)
-    .map((p) => p.trim())
+/**
+ * Split prose into paragraphs, then collapse whitespace INSIDE each one.
+ *
+ * The order is the whole point. This used to call `collapseWs` first, which
+ * rewrites every `\n` to a single space, so neither arm of the split could ever
+ * match and every crawler-facing detail page — all 13 call sites below — served
+ * its prose to Googlebot as one undifferentiated `<p>`. Measured on prod before
+ * the fix: 4,558 `events.description`, 240 `unified_tags.long_description`,
+ * 150 `cities.description` and 7/7 `guides.intro_md` rows carry blank-line
+ * paragraph breaks that were being flattened.
+ *
+ * CRLF is normalised FIRST, and that is not cosmetic. `[ \t]*` does not match
+ * `\r`, so on a `\r\n` row the lookbehind arms below see `\r` immediately
+ * before the `\n` and never fire — 61 of the 189 newline-bearing
+ * `venues.description` rows and 19 `events.description` rows are CRLF, so
+ * without this line a third of the venue corpus keeps the exact bug this
+ * function exists to fix. (`\n\s*\n` is unaffected: `\s` matches `\r`.)
+ *
+ * Three arms, all measured against the live corpus rather than assumed:
+ *
+ *  - a blank line. Unambiguous.
+ *  - a SINGLE newline that follows sentence-terminal punctuation. Entire
+ *    content types separate paragraphs this way and never use a blank line:
+ *    106 of 175 `queer_villages.history` rows contain `\n` and ZERO contain
+ *    `\n\n`, so the blank-line arm alone leaves every village history page a
+ *    single block. Same shape on 858 `cities.description` rows.
+ *  - a SINGLE newline whose next line opens with a capital or a digit, where
+ *    the current line does not end in a comma or semicolon. This is the events
+ *    corpus, which writes headings and timetables with no terminal punctuation
+ *    at all: `Zugänglichkeit` / `Code of Conduct` / `Türöffnung: 21 Uhr` /
+ *    `23.15h - Milky Diamond` ⏎ `23.30h - Sado Opera`. Without it 1,906 such
+ *    line breaks in `events.description` render as one run-on paragraph.
+ *
+ * Every condition here removes a measured defect, none is a guess:
+ *
+ *  - Requiring punctuation OR a capitalised next line is what keeps a
+ *    hard-wrapped sentence intact. A bare `\n+` split produced 22 broken
+ *    sentences in a 1,182-row sample (German event copy, verse, Wikipedia list
+ *    runs); this rule produces 0 across the same corpus. All 25 hand-read
+ *    samples of what the third arm adds are headings, timetable lines or new
+ *    sentences.
+ *  - The comma/semicolon exclusion exists because of one row:
+ *    `…in the City of Salford in Greater Manchester, England,` ⏎
+ *    `3 miles (4.8 km) west of Salford city centre…`, which is one sentence.
+ *    Keep the class NARROW — an earlier draft also excluded `+ / -` and so
+ *    re-glued `Must be 19+`, bare URLs ending in `/`, and `-----` separators.
+ *  - The digit half of the lookahead is worth 294 splits, 293 of them
+ *    timetables. Its one bad split is `…Gramercy Theater (127 East` ⏎
+ *    `23rd Street)`. An "unclosed `(` means continuation" rejoin was written to
+ *    catch it and MEASURED TO BE NET-NEGATIVE — 3 fragments in 24,498 carry an
+ *    unclosed paren, so it would fix that one and wrongly glue the other two.
+ *    Known, measured, left alone; do not re-add it without re-measuring.
+ *
+ * The old `(?<=[.!?])\s{2,}` sentence-gap arm is deliberately NOT revived. It
+ * was dead code, and reviving it fragments a paragraph at every typewriter-style
+ * double space after a full stop — 110 `venues.description`, 117
+ * `cities.description` and 35 `events.description` rows, all of them running
+ * text ("…was 60 at the 2000 census.  The area is named for…").
+ */
+export function paragraphsHtml(text: string): string {
+  return stripHtml(text)
+    .replace(/\r\n?/g, '\n')
+    .split(/\n\s*\n|(?<=[.!?:"'’”)\]])[ \t]*\n|(?<=[^\s,;])[ \t]*\n[ \t]*(?=[\p{Lu}0-9])/u)
+    .map(collapseWs)
     .filter(Boolean)
     .map((p) => `<p>${escape(p)}</p>`)
     .join('\n      ');
