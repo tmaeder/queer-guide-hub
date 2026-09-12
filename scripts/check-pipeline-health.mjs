@@ -1709,7 +1709,7 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
     method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: '{}',
   })
   if (!res.ok) {
-    console.warn(`⚠ news_podcast_signals → HTTP ${res.status} (20780101100100 not applied?) — this check measured NOTHING`)
+    console.warn(`⚠ news_podcast_signals → HTTP ${res.status} (22000101100100 not applied?) — this check measured NOTHING`)
   } else {
     const sig = await res.json()
     let sectionOk = true
