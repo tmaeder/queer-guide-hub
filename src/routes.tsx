@@ -154,6 +154,8 @@ const CloudflareDashboard = lazyRetry(() =>
 const ProfessionDetail = lazyRetry(() => import('./pages/ProfessionDetail'));
 const News = lazyRetry(() => import('./pages/News'));
 const NewsArchive = lazyRetry(() => import('./pages/NewsArchive'));
+const Podcasts = lazyRetry(() => import('./pages/Podcasts'));
+const PodcastShow = lazyRetry(() => import('./pages/PodcastShow'));
 const NewsDetail = lazyRetry(() => import('./pages/NewsDetail'));
 const NewsStoryDetail = lazyRetry(() => import('./pages/NewsStoryDetail'));
 
@@ -920,6 +922,12 @@ export const AppRoutes = () => {
                   <Route path="cookies" element={<CMSRoutePage slug="cookies" />} />
                   <Route path="dmca" element={<CMSRoutePage slug="dmca" />} />
                   <Route path="news" element={<News />} />
+                  {/* Shows and episodes. An EPISODE keeps its /news/:slug
+                      page — 8,000+ of those URLs are already indexed, so a
+                      second episode space would only fight them for the
+                      canonical. */}
+                  <Route path="podcasts" element={<Podcasts />} />
+                  <Route path="podcasts/:slug" element={<PodcastShow />} />
                   <Route path="news/all" element={<NewsArchive />} />
                   <Route path="news/me" element={<Navigate to="/me/progress" replace />} />
                   <Route path="news/story/:slug" element={<NewsStoryDetail />} />
