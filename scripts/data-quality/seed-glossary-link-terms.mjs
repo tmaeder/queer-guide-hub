@@ -35,7 +35,29 @@
 //      how "Vacuum Pump" came to publish Otto von Guericke's 1650 device).
 //      Every row still needs a human.
 //
-// Review order is `usage_count` descending — the terms a reader actually meets.
+// TWO THINGS THE FIRST REVIEW PASS MEASURED, which this script now reports
+// rather than leaving the next reviewer to rediscover.
+//
+// (1) `usage_count` DESC SURFACES THE LEAST LINKABLE TERMS FIRST. A tag is
+//     high-usage precisely because it is broad: the head of that ordering is
+//     `Queer` (12,549 uses, 248 own-prose hits), `Pride`, `LGBTQ` (726),
+//     `Community` (922) — words this platform uses on nearly every page, where a
+//     link teaches the reader nothing. It is kept as the ordering because it
+//     makes the queue finite and repeatable, NOT because it ranks value.
+//
+// (2) THE TAG NAME IS THE WRONG SURFACE FORM FOR HYPHENATED FACET LABELS.
+//     Measured as-written vs de-hyphenated against own-voice prose:
+//       Gay-Men 0 / 159   Gay-Bar 0 / 84   Outdoor-Seating 0 / 50
+//       Happy-Hour 0 / 32 Human-Rights 1 / 42
+//     Prose writes "gay bar"; the facet label is "Gay-Bar"; the matcher is exact
+//     on the surface form. So a 0 for these means NEVER MATCHES, not safe — and
+//     the failure mode is an inert row that reads as coverage. `spaced_hits`
+//     below makes that visible per row and `suggested_form` names the form that
+//     actually occurs. `Non-Binary` (74 / 0) is the counter-example: this is
+//     per-term, never a rule about hyphens.
+//
+// Review order is `usage_count` descending — see (1) for why that is a
+// tractability device and not a ranking of value.
 //
 // The rule to apply per row is the one the alias incident earned: IS THIS STRING
 // EVER AN ORDINARY ENGLISH WORD, A PLACE, A PERSON, OR AN ACRONYM FOR SOMETHING
@@ -140,7 +162,15 @@ prose as (
 select c.id, c.name, c.slug, coalesce(c.usage_count, 0) as usage_count,
        (select count(*) from prose p
          where p.body ~* ('\\y' || regexp_replace(c.name, '([().*+?\\[\\]{}\\\\^$|])', '\\\\\\1', 'g') || '\\y')
-       ) as collisions
+       ) as collisions,
+       -- The de-hyphenated form. When this is high and collisions is 0, the tag
+       -- NAME is an inert surface form and the spaced one is what prose uses.
+       -- (No backticks in this comment: it lives inside a JS template literal,
+       --  and a backtick here silently terminates the string.)
+       (select count(*) from prose p
+         where c.name like '%-%'
+           and p.body ~* ('\\y' || regexp_replace(replace(c.name,'-',' '), '([().*+?\\[\\]{}\\\\^$|])', '\\\\\\1', 'g') || '\\y')
+       ) as spaced_hits
   from cand c
  order by coalesce(c.usage_count, 0) desc, c.name asc
  limit ${LIMIT * 4};
@@ -185,6 +215,21 @@ async function main() {
       .join(', ')
     console.log(`\n  Worst collisions, NOT proposed: ${worst}`)
   }
+  // An INERT row is not a safe row. If the tag name never occurs in prose but
+  // its de-hyphenated form does, activating the name produces a row that links
+  // nothing while reading as coverage — so name them separately from the
+  // collision vetoes rather than letting them sit in the "clean" pile.
+  const inert = kept.filter((r) => Number(r.collisions) === 0 && Number(r.spaced_hits) > 0)
+  if (inert.length > 0) {
+    console.log(
+      `\n  ${inert.length} proposed term(s) NEVER MATCH as written — prose uses the spaced form:`,
+    )
+    for (const r of inert.slice(0, 15)) {
+      console.log(`    ${r.name}  (0 as written, ${r.spaced_hits} as "${String(r.name).replace(/-/g, ' ')}")`)
+    }
+    console.log('    Activating these as-is yields inert rows. Author the spaced surface form instead.')
+  }
+
   if (rows.length >= LIMIT * 4) {
     console.log(
       `\n  NOTE: the candidate query itself hit its own ${LIMIT * 4}-row read cap — more candidates exist beyond this page.`,
