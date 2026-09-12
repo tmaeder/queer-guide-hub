@@ -1,12 +1,11 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GlossaryLinkedProse, GlossaryLinkedText } from '../GlossaryLinkedText';
-import {
-  GLOSSARY_LINK_FETCH_ENABLED,
-  GlossaryVocabularyProvider,
-} from '@/hooks/useGlossaryLinkVocabulary';
+import { GlossaryVocabularyProvider } from '@/hooks/useGlossaryLinkVocabulary';
 import type { GlossaryLinkTerm } from '@/lib/glossaryLinks';
 
 /**
@@ -122,24 +121,35 @@ describe('GlossaryLinkedText with a vocabulary', () => {
   });
 });
 
-describe('the shipped-off fetch flag', () => {
-  it('makes no request while disabled, and prose still renders', async () => {
-    // The whole reason the flag exists: `glossary_link_terms_public` does not
-    // exist on prod until this PR's migration applies, and a PostgREST 404 is
-    // logged by the browser on every page load — which failed
-    // e2e/trip-creation.spec.ts's `no console errors` assertion, and would have
-    // hit real visitors between merge and the migration applying.
-    expect(GLOSSARY_LINK_FETCH_ENABLED).toBe(false);
+describe('the fetch flag', () => {
+  // The flag legitimately flips — `false` for the round where
+  // `glossary_link_terms_public` did not yet exist on prod (a PostgREST 404 on
+  // every page, which failed e2e/trip-creation.spec.ts's `no console errors`),
+  // `true` once it did. So nothing here pins its VALUE; a test that has to be
+  // edited on every flip is one nobody trusts.
+  //
+  // NO BEHAVIOURAL "was it fetched" TEST HERE, DELIBERATELY — and the first
+  // draft of this file had one that was VACUOUS. It installed a counting
+  // `queryFn` via `client.setQueryDefaults` and asserted zero calls, but
+  // `GlossaryVocabularyProvider` passes its own `queryFn` to `useQuery`, which
+  // overrides the default — so the counter could never increment and the
+  // assertion held no matter what the flag said. Writing it the other way round
+  // (flag on, expect ≥1) is what exposed that. Proving the fetch really fires
+  // needs the supabase client mocked, which tests the mock more than the wiring.
+  it('is the thing `enabled` is wired to, so the flag is load-bearing', () => {
+    // This is the assertion that actually bites: with the flag `true`, deleting
+    // `enabled:` changes no behaviour, so only reading the source can catch the
+    // flag being quietly disconnected and left as decoration.
+    const src = readFileSync(
+      resolve(process.cwd(), 'src/hooks/useGlossaryLinkVocabulary.ts'),
+      'utf8',
+    );
+    expect(src).toContain('enabled: GLOSSARY_LINK_FETCH_ENABLED');
+    expect(src).toMatch(/export const GLOSSARY_LINK_FETCH_ENABLED = (true|false);/);
+  });
 
-    let called = 0;
+  it('never lets the fetch gate body prose being visible', () => {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-    client.setQueryDefaults(['glossary-link-vocabulary'], {
-      queryFn: () => {
-        called += 1;
-        return Promise.resolve([]);
-      },
-    });
-
     render(
       <QueryClientProvider client={client}>
         <MemoryRouter>
@@ -151,38 +161,36 @@ describe('the shipped-off fetch flag', () => {
         </MemoryRouter>
       </QueryClientProvider>,
     );
-
-    await Promise.resolve();
-    expect(called, 'the vocabulary was fetched while the flag is off').toBe(0);
-    // Turning the fetch off costs no behaviour today: the vocabulary ships
-    // empty, so it would have produced no links either way.
     expect(screen.getByText('Ask about PrEP.')).toBeInTheDocument();
   });
 });
 
 describe('GlossaryVocabularyProvider', () => {
-  it('degrades to plain prose when the fetch fails', async () => {
-    // `retry: false` plus a query function that rejects: the provider must
-    // publish an empty vocabulary rather than propagate the error. A failed
-    // vocabulary lookup may never blank a page of body text.
+  // An earlier version of this test installed a REJECTING `queryFn` through
+  // `client.setQueryDefaults` and called itself "degrades when the fetch fails".
+  // It was vacuous for the same reason as the deleted flag test: the provider
+  // passes its own `queryFn`, so the rejecting one never ran and the test only
+  // ever exercised the not-yet-resolved path. Asserting that path HONESTLY is
+  // what it is doing now.
+  it('publishes an empty vocabulary while no data has resolved', () => {
+    // `data` is undefined until (and unless) a fetch resolves, and
+    // `data ?? EMPTY_VOCABULARY` is what stops that reaching the matcher as
+    // undefined. Nothing is seeded here, so this is that path.
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-    client.setQueryDefaults(['glossary-link-vocabulary'], {
-      queryFn: () => Promise.reject(new Error('offline')),
-      retry: false,
-    });
-
     render(
       <QueryClientProvider client={client}>
         <MemoryRouter>
-          <GlossaryVocabularyProvider>
-            <p>
+          <p>
+            <GlossaryVocabularyProvider>
               <GlossaryLinkedText text="Ask about PrEP." />
-            </p>
-          </GlossaryVocabularyProvider>
+            </GlossaryVocabularyProvider>
+          </p>
         </MemoryRouter>
       </QueryClientProvider>,
     );
-
+    // Prose intact, and NOT linked — an unresolved vocabulary must render plain
+    // rather than throw or blank the paragraph.
     expect(screen.getByText('Ask about PrEP.')).toBeInTheDocument();
+    expect(document.querySelector('a[data-glossary-link]')).toBeNull();
   });
 });
