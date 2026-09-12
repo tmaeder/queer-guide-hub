@@ -1952,7 +1952,7 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
   if (!res.ok) {
     // A failed probe must SAY it failed. Falling through to a default would
     // report a clean layer on the strength of never having looked.
-    console.warn(`⚠ analytics_hygiene_stats → HTTP ${res.status} (20610301100500 not applied?)`)
+    console.warn(`⚠ analytics_hygiene_stats → HTTP ${res.status} (20700301100500 not applied?)`)
     console.warn('  This check measured NOTHING — it did not pass.')
   } else {
     const a = await res.json()
@@ -2017,7 +2017,7 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
     const scheduled = Number(a?.retention_jobs_scheduled ?? 0)
     if (scheduled < 2) {
       console.error(`✗ only ${scheduled}/2 analytics retention jobs are in pg_cron`)
-      console.error('  Expected umami_retention and user_events_retention (migration 20610301100100).')
+      console.error('  Expected umami_retention and user_events_retention (migration 20700301100100).')
       FAILED = true; sectionOk = false
     }
     const stale = Number(a?.events_older_than_100d ?? 0)
