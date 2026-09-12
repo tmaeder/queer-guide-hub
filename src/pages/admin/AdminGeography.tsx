@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
+import { AdminSimpleTable } from '@/components/admin/primitives/AdminSimpleTable';
 import {
   Building,
   ChevronDown,
@@ -529,35 +530,20 @@ function DetailPanel({
 function IntegrityTab() {
   const { data, isLoading } = useGeoIntegrityViolations();
 
-  if (isLoading) return <p className="text-13 text-muted-foreground">Checking…</p>;
-  if (!data || data.length === 0) {
-    return (
-      <p className="text-15 text-muted-foreground">
-        No integrity violations. The tree is consistent.
-      </p>
-    );
-  }
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-15">
-        <thead>
-          <tr className="border-b border-border text-left text-2xs uppercase tracking-wide text-muted-foreground">
-            <th className="py-2 pr-4">Violation</th>
-            <th className="py-2 pr-4">Entity</th>
-            <th className="py-2">Name</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((v) => (
-            <tr key={`${v.violation}:${v.entity_id}`} className="border-b border-border/60">
-              <td className="py-2 pr-4">{v.violation}</td>
-              <td className="py-2 pr-4">{v.entity_type}</td>
-              <td className="py-2">{v.entity_name}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <AdminSimpleTable
+      caption="Geo hierarchy integrity violations"
+      rows={data ?? []}
+      rowKey={(v) => `${v.violation}:${v.entity_id}`}
+      isLoading={isLoading}
+      emptyNoun="integrity violations"
+      emptyDescription="The tree is consistent."
+      columns={[
+        { key: 'violation', header: 'Violation', render: (v) => v.violation },
+        { key: 'entity', header: 'Entity', render: (v) => v.entity_type },
+        { key: 'name', header: 'Name', render: (v) => v.entity_name },
+      ]}
+    />
   );
 }
 

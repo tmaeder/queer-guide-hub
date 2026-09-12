@@ -9,7 +9,10 @@ import { untypedFrom } from '@/integrations/supabase/untyped';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { fetchDlqRows, retryDlqItem, type DlqRow } from '@/hooks/usePipelineBuilderTabs';
-import { AdminTableRowSkeleton } from '@/components/admin/primitives/AdminLoading';
+import {
+  AdminSimpleTable,
+  type AdminSimpleColumn,
+} from '@/components/admin/primitives/AdminSimpleTable';
 
 interface SummaryRow {
   source_slug: string | null;
@@ -28,6 +31,43 @@ const statusClass: Record<string, string> = {
   permanent_failed: 'bg-destructive/10 dark:bg-destructive/40 text-destructive',
   resolved: 'bg-muted text-foreground',
 };
+
+const summaryColumns: AdminSimpleColumn<SummaryRow>[] = [
+  {
+    key: 'source',
+    header: 'Source',
+    cellClassName: 'font-mono text-xs',
+    render: (r) => r.source_slug ?? '—',
+  },
+  { key: 'stage', header: 'Stage', cellClassName: 'font-mono text-xs', render: (r) => r.stage },
+  {
+    key: 'status',
+    header: 'Status',
+    render: (r) => (
+      <span
+        className={`inline-block text-2xs px-2 py-0.5 rounded-full ${statusClass[r.status] || 'bg-muted'}`}
+      >
+        {r.status}
+      </span>
+    ),
+  },
+  {
+    key: 'items',
+    header: 'Items',
+    cellClassName: 'tabular-nums font-semibold',
+    render: (r) => r.items,
+  },
+  {
+    key: 'next_retry',
+    header: 'Next retry',
+    cellClassName: 'text-muted-foreground text-xs',
+    render: (r) => (
+      <span title={r.next_retry ? new Date(r.next_retry).toISOString() : ''}>
+        {r.next_retry ? formatDistanceToNow(new Date(r.next_retry), { addSuffix: true }) : '—'}
+      </span>
+    ),
+  },
+];
 
 export default function DLQTab() {
   const qc = useQueryClient();
@@ -108,6 +148,104 @@ export default function DLQTab() {
     </button>
   );
 
+  const itemColumns: AdminSimpleColumn<DlqRow>[] = [
+    {
+      key: 'stage',
+      header: 'Stage',
+      cellClassName: 'font-mono text-xs align-top',
+      render: (r) => r.stage,
+    },
+    {
+      key: 'source',
+      header: 'Source',
+      cellClassName: 'font-mono text-xs align-top',
+      render: (r) => r.source_slug ?? '—',
+    },
+    {
+      key: 'error',
+      header: 'Error',
+      cellClassName: 'align-top max-w-[360px]',
+      render: (r) => (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="font-mono text-xs2 text-destructive truncate cursor-help">
+              {r.error_code && <strong>{r.error_code}: </strong>}
+              {r.error_message ?? '—'}
+            </div>
+          </TooltipTrigger>
+          {r.error_message && (
+            <TooltipContent className="text-xs max-w-[480px] whitespace-pre-wrap">
+              {r.error_message}
+            </TooltipContent>
+          )}
+        </Tooltip>
+      ),
+    },
+    {
+      key: 'attempts',
+      header: 'Attempts',
+      cellClassName: 'tabular-nums text-xs align-top',
+      render: (r) => `${r.attempts}/${r.max_attempts}`,
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      cellClassName: 'align-top',
+      render: (r) => (
+        <span
+          className={`inline-block text-2xs px-2 py-0.5 rounded-full ${statusClass[r.status] || 'bg-muted'}`}
+        >
+          {r.status}
+        </span>
+      ),
+    },
+    {
+      key: 'actions',
+      header: 'Actions',
+      cellClassName: 'align-top flex gap-1',
+      render: (r) => (
+        <>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 w-7 p-0 text-primary"
+                onClick={() => retryNow.mutate(r.id)}
+                disabled={retryNow.isPending}
+                // Matches the TooltipContent below. A tooltip supplies
+                // aria-describedby when open — a description, never a name.
+                aria-label="Retry now"
+              >
+                <RefreshCw className="h-3.5 w-3.5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="text-xs">Retry now</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                onClick={() => {
+                  if (window.confirm('Mark this DLQ item as resolved? It will no longer retry.')) {
+                    resolveItem.mutate(r.id);
+                  }
+                }}
+                disabled={resolveItem.isPending}
+                aria-label="Mark resolved"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="text-xs">Mark resolved</TooltipContent>
+          </Tooltip>
+        </>
+      ),
+    },
+  ];
+
   return (
     <TooltipProvider delayDuration={200}>
       <div className="flex flex-col gap-4">
@@ -147,160 +285,27 @@ export default function DLQTab() {
           <div className="px-4 py-2 border-b border-border text-xs font-semibold text-muted-foreground">
             By source × stage
           </div>
-          <table className="w-full text-sm">
-            <thead className="bg-muted/40">
-              <tr className="border-b border-border">
-                {['Source', 'Stage', 'Status', 'Items', 'Next retry'].map((h) => (
-                  <th
-                    key={h}
-                    className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider"
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {summary.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="p-6 text-center text-muted-foreground text-xs">
-                    DLQ is empty
-                  </td>
-                </tr>
-              ) : (
-                summary.map((r, i) => (
-                  <tr
-                    key={i}
-                    className="border-b border-border/40 hover:bg-muted/30 transition-colors"
-                  >
-                    <td className="px-4 py-2 font-mono text-xs">{r.source_slug ?? '—'}</td>
-                    <td className="px-4 py-2 font-mono text-xs">{r.stage}</td>
-                    <td className="px-4 py-2">
-                      <span
-                        className={`inline-block text-2xs px-2 py-0.5 rounded-full ${statusClass[r.status] || 'bg-muted'}`}
-                      >
-                        {r.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-2 tabular-nums font-semibold">{r.items}</td>
-                    <td
-                      className="px-4 py-2 text-muted-foreground text-xs"
-                      title={r.next_retry ? new Date(r.next_retry).toISOString() : ''}
-                    >
-                      {r.next_retry
-                        ? formatDistanceToNow(new Date(r.next_retry), { addSuffix: true })
-                        : '—'}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+          <AdminSimpleTable
+            caption="Dead-letter queue by source and stage"
+            columns={summaryColumns}
+            rows={summary}
+            rowKey={(_r, i) => String(i)}
+            emptyNoun="DLQ items"
+            rowClassName={() => 'border-border/40 hover:bg-muted/30 transition-colors'}
+          />
         </div>
 
         {/* Item drilldown */}
-        <div className="rounded-element bg-muted overflow-hidden max-h-[500px] overflow-y-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/40 sticky top-0">
-              <tr className="border-b border-border">
-                {['Stage', 'Source', 'Error', 'Attempts', 'Status', 'Actions'].map((h) => (
-                  <th
-                    key={h}
-                    className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider"
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading ? (
-                <AdminTableRowSkeleton columns={6} />
-              ) : rows.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="p-6 text-center text-muted-foreground text-xs">
-                    Nothing in queue
-                  </td>
-                </tr>
-              ) : (
-                rows.map((r) => (
-                  <tr
-                    key={r.id}
-                    className="border-b border-border/40 hover:bg-muted/30 transition-colors"
-                  >
-                    <td className="px-4 py-2 font-mono text-xs align-top">{r.stage}</td>
-                    <td className="px-4 py-2 font-mono text-xs align-top">
-                      {r.source_slug ?? '—'}
-                    </td>
-                    <td className="px-4 py-2 align-top max-w-[360px]">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="font-mono text-xs2 text-destructive truncate cursor-help">
-                            {r.error_code && <strong>{r.error_code}: </strong>}
-                            {r.error_message ?? '—'}
-                          </div>
-                        </TooltipTrigger>
-                        {r.error_message && (
-                          <TooltipContent className="text-xs max-w-[480px] whitespace-pre-wrap">
-                            {r.error_message}
-                          </TooltipContent>
-                        )}
-                      </Tooltip>
-                    </td>
-                    <td className="px-4 py-2 tabular-nums text-xs align-top">
-                      {r.attempts}/{r.max_attempts}
-                    </td>
-                    <td className="px-4 py-2 align-top">
-                      <span
-                        className={`inline-block text-2xs px-2 py-0.5 rounded-full ${statusClass[r.status] || 'bg-muted'}`}
-                      >
-                        {r.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-2 align-top flex gap-1">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-7 w-7 p-0 text-primary"
-                            onClick={() => retryNow.mutate(r.id)}
-                            disabled={retryNow.isPending}
-                          >
-                            <RefreshCw className="h-3.5 w-3.5" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent className="text-xs">Retry now</TooltipContent>
-                      </Tooltip>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                            onClick={() => {
-                              if (
-                                window.confirm(
-                                  'Mark this DLQ item as resolved? It will no longer retry.',
-                                )
-                              ) {
-                                resolveItem.mutate(r.id);
-                              }
-                            }}
-                            disabled={resolveItem.isPending}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent className="text-xs">Mark resolved</TooltipContent>
-                      </Tooltip>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+        <AdminSimpleTable
+          caption="Dead-letter queue messages"
+          className="max-h-[500px] overflow-y-auto"
+          columns={itemColumns}
+          rows={rows}
+          rowKey={(r) => String(r.id)}
+          isLoading={isLoading}
+          emptyNoun="queued items"
+          rowClassName={() => 'border-border/40 hover:bg-muted/30 transition-colors'}
+        />
       </div>
     </TooltipProvider>
   );

@@ -9,7 +9,10 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
-import { AdminTableRowSkeleton } from '@/components/admin/primitives/AdminLoading';
+import {
+  AdminSimpleTable,
+  type AdminSimpleColumn,
+} from '@/components/admin/primitives/AdminSimpleTable';
 
 const IngestionSourcesManager = lazy(() =>
   import('@/components/admin/IngestionSourcesManager').then((m) => ({
@@ -50,6 +53,7 @@ interface ScrapeSource {
 
 type StatusKey = 'healthy' | 'stale' | 'failing' | 'disabled' | 'never';
 type HealthFilter = 'all' | StatusKey;
+type SourceRow = ScrapeSource & { _status: ReturnType<typeof statusFor> };
 
 function statusFor(s: ScrapeSource): {
   key: StatusKey;
@@ -144,6 +148,121 @@ export default function SourcesTab() {
     return { filtered: result, counts };
   }, [sources, search, filter]);
 
+  const columns: AdminSimpleColumn<SourceRow>[] = [
+    {
+      key: 'source',
+      header: 'Source',
+      cellClassName: 'py-2.5 align-top',
+      render: (s) => (
+        <>
+          <div className="font-medium truncate max-w-[240px]" title={s.name}>
+            {s.name}
+          </div>
+          <div className="text-xs2 text-muted-foreground font-mono truncate max-w-[240px]">
+            {s.slug}
+          </div>
+        </>
+      ),
+    },
+    {
+      key: 'target',
+      header: 'Target',
+      cellClassName: 'py-2.5 align-top',
+      render: (s) =>
+        s.target_table ? (
+          <Badge variant="outline" className="text-2xs px-1.5 py-0 font-mono">
+            {s.target_table}
+          </Badge>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        ),
+    },
+    {
+      key: 'health',
+      header: 'Health',
+      cellClassName: 'py-2.5 align-top',
+      render: (s) => {
+        const StIcon = s._status.icon;
+        return (
+          <>
+            <div className={`flex items-center gap-1.5 text-xs ${s._status.className}`}>
+              <StIcon className="h-3 w-3" />
+              {s._status.label}
+            </div>
+            {s.last_error && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="text-2xs text-destructive mt-1 truncate max-w-[280px] cursor-help">
+                    {s.last_error}
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent className="text-xs max-w-[400px] whitespace-pre-wrap">
+                  {s.last_error}
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </>
+        );
+      },
+    },
+    {
+      key: 'last_success',
+      header: 'Last success',
+      cellClassName: 'py-2.5 align-top text-xs2 text-muted-foreground',
+      render: (s) => (
+        <span title={s.last_success_at ? new Date(s.last_success_at).toISOString() : ''}>
+          {s.last_success_at
+            ? formatDistanceToNow(new Date(s.last_success_at), { addSuffix: true })
+            : '—'}
+        </span>
+      ),
+    },
+    {
+      key: 'last_run',
+      header: 'Last run',
+      cellClassName: 'py-2.5 align-top text-xs2 text-muted-foreground',
+      render: (s) => (
+        <span title={s.last_run_at ? new Date(s.last_run_at).toISOString() : ''}>
+          {s.last_run_at ? formatDistanceToNow(new Date(s.last_run_at), { addSuffix: true }) : '—'}
+        </span>
+      ),
+    },
+    {
+      key: 'runs_items',
+      header: 'Runs / Items',
+      cellClassName: 'py-2.5 align-top text-xs tabular-nums',
+      render: (s) => (
+        <>
+          <span className="text-foreground">{s.total_runs}</span>
+          <span className="text-muted-foreground"> / </span>
+          <span className="text-muted-foreground">{s.total_items_fetched}</span>
+        </>
+      ),
+    },
+    {
+      key: 'schedule',
+      header: 'Schedule',
+      cellClassName: 'py-2.5 align-top text-xs2 text-muted-foreground font-mono',
+      render: (s) => s.schedule_cron ?? '—',
+    },
+    {
+      key: 'actions',
+      header: null,
+      cellClassName: 'py-2.5 align-top',
+      render: (s) => (
+        <Button
+          size="sm"
+          variant={s.is_enabled ? 'outline' : 'default'}
+          className="h-7 text-xs"
+          onClick={() => toggle.mutate({ id: s.id, enabled: !s.is_enabled })}
+          disabled={toggle.isPending}
+        >
+          {s.is_enabled ? 'Disable' : 'Enable'}
+        </Button>
+      ),
+    },
+  ];
+
   return (
     <TooltipProvider delayDuration={200}>
       <div className="flex flex-col gap-4">
@@ -211,125 +330,21 @@ export default function SourcesTab() {
             )}
           </div>
 
-          <div className="max-h-[600px] overflow-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/40 sticky top-0 z-10">
-                <tr className="border-b border-border">
-                  {[
-                    'Source',
-                    'Target',
-                    'Health',
-                    'Last success',
-                    'Last run',
-                    'Runs / Items',
-                    'Schedule',
-                    '',
-                  ].map((h, i) => (
-                    <th
-                      key={i}
-                      className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider"
-                    >
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {isLoading ? (
-                  <AdminTableRowSkeleton columns={8} />
-                ) : filtered.length === 0 ? (
-                  <tr>
-                    <td colSpan={8} className="p-6 text-center text-muted-foreground text-xs">
-                      {counts.all === 0 ? 'No sources configured' : 'No sources match filters'}
-                    </td>
-                  </tr>
-                ) : (
-                  filtered.map((s) => {
-                    const StIcon = s._status.icon;
-                    return (
-                      <tr
-                        key={s.id}
-                        className="border-b border-border/40 hover:bg-muted/30 transition-colors"
-                      >
-                        <td className="px-4 py-2.5 align-top">
-                          <div className="font-medium truncate max-w-[240px]" title={s.name}>
-                            {s.name}
-                          </div>
-                          <div className="text-xs2 text-muted-foreground font-mono truncate max-w-[240px]">
-                            {s.slug}
-                          </div>
-                        </td>
-                        <td className="px-4 py-2.5 align-top">
-                          {s.target_table ? (
-                            <Badge variant="outline" className="text-2xs px-1.5 py-0 font-mono">
-                              {s.target_table}
-                            </Badge>
-                          ) : (
-                            <span className="text-muted-foreground">—</span>
-                          )}
-                        </td>
-                        <td className="px-4 py-2.5 align-top">
-                          <div
-                            className={`flex items-center gap-1.5 text-xs ${s._status.className}`}
-                          >
-                            <StIcon className="h-3 w-3" />
-                            {s._status.label}
-                          </div>
-                          {s.last_error && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <div className="text-2xs text-destructive mt-1 truncate max-w-[280px] cursor-help">
-                                  {s.last_error}
-                                </div>
-                              </TooltipTrigger>
-                              <TooltipContent className="text-xs max-w-[400px] whitespace-pre-wrap">
-                                {s.last_error}
-                              </TooltipContent>
-                            </Tooltip>
-                          )}
-                        </td>
-                        <td
-                          className="px-4 py-2.5 align-top text-xs2 text-muted-foreground"
-                          title={s.last_success_at ? new Date(s.last_success_at).toISOString() : ''}
-                        >
-                          {s.last_success_at
-                            ? formatDistanceToNow(new Date(s.last_success_at), { addSuffix: true })
-                            : '—'}
-                        </td>
-                        <td
-                          className="px-4 py-2.5 align-top text-xs2 text-muted-foreground"
-                          title={s.last_run_at ? new Date(s.last_run_at).toISOString() : ''}
-                        >
-                          {s.last_run_at
-                            ? formatDistanceToNow(new Date(s.last_run_at), { addSuffix: true })
-                            : '—'}
-                        </td>
-                        <td className="px-4 py-2.5 align-top text-xs tabular-nums">
-                          <span className="text-foreground">{s.total_runs}</span>
-                          <span className="text-muted-foreground"> / </span>
-                          <span className="text-muted-foreground">{s.total_items_fetched}</span>
-                        </td>
-                        <td className="px-4 py-2.5 align-top text-xs2 text-muted-foreground font-mono">
-                          {s.schedule_cron ?? '—'}
-                        </td>
-                        <td className="px-4 py-2.5 align-top">
-                          <Button
-                            size="sm"
-                            variant={s.is_enabled ? 'outline' : 'default'}
-                            className="h-7 text-xs"
-                            onClick={() => toggle.mutate({ id: s.id, enabled: !s.is_enabled })}
-                            disabled={toggle.isPending}
-                          >
-                            {s.is_enabled ? 'Disable' : 'Enable'}
-                          </Button>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
+          <AdminSimpleTable
+            caption="Ingest sources"
+            className="max-h-[600px] overflow-y-auto"
+            columns={columns}
+            rows={filtered}
+            rowKey={(s) => s.id}
+            isLoading={isLoading}
+            emptyNoun="sources"
+            filtered={counts.all > 0}
+            onResetFilters={() => {
+              setFilter('all');
+              setSearch('');
+            }}
+            rowClassName={() => 'border-border/40 hover:bg-muted/30 transition-colors'}
+          />
 
           {!isLoading && (
             <div className="px-4 py-1.5 border-t border-border text-xs2 text-muted-foreground">

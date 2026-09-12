@@ -1,8 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MapPinned, AlertTriangle, Globe2 } from 'lucide-react';
-import { useGeoAddressGaps } from '@/hooks/useGeoAddressGaps';
+import { useGeoAddressGaps, type GeoAddressEntityGap } from '@/hooks/useGeoAddressGaps';
 import { useGeoHygiene } from '@/hooks/useGeoHygiene';
 import { AdminStat } from '@/components/admin/primitives/AdminStat';
+import {
+  AdminSimpleTable,
+  type AdminSimpleColumn,
+} from '@/components/admin/primitives/AdminSimpleTable';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 
 const ENTITY_ROWS = [
@@ -11,6 +15,44 @@ const ENTITY_ROWS = [
   { key: 'hotels', label: 'Hotels' },
   { key: 'organizations', label: 'Businesses' },
 ] as const;
+
+interface AddressGapRow {
+  key: string;
+  label: string;
+  gap: GeoAddressEntityGap;
+}
+
+const ADDRESS_COLUMNS: readonly AdminSimpleColumn<AddressGapRow>[] = [
+  { key: 'type', header: 'Type', render: (r) => r.label },
+  {
+    key: 'live',
+    header: 'Live',
+    align: 'right',
+    cellClassName: 'tabular-nums',
+    render: (r) => r.gap.live.toLocaleString(),
+  },
+  {
+    key: 'country',
+    header: 'No country',
+    align: 'right',
+    cellClassName: 'tabular-nums',
+    render: (r) => r.gap.missing_country_id.toLocaleString(),
+  },
+  {
+    key: 'state',
+    header: 'No state',
+    align: 'right',
+    cellClassName: 'tabular-nums',
+    render: (r) => r.gap.missing_state.toLocaleString(),
+  },
+  {
+    key: 'postal',
+    header: 'No postal',
+    align: 'right',
+    cellClassName: 'tabular-nums',
+    render: (r) => r.gap.missing_postal.toLocaleString(),
+  },
+];
 
 /**
  * Address completeness: how many live rows still lack country_id / state /
@@ -34,6 +76,13 @@ export function GeoAddressQualityPanel() {
 
   const { queue, cities } = data;
   const parked = queue?.parked ?? 0;
+
+  // A type the RPC did not return is skipped, as the old row map did — a missing
+  // key must not render as a row of zeroes.
+  const addressRows: AddressGapRow[] = ENTITY_ROWS.flatMap(({ key, label }) => {
+    const gap = data[key];
+    return gap ? [{ key, label, gap }] : [];
+  });
 
   // Zero polygons means the containment numbers measure nothing. Rendering them
   // as "0 problems" would be the single most misleading thing this panel could
@@ -59,40 +108,13 @@ export function GeoAddressQualityPanel() {
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        <div className="overflow-x-auto">
-          <table className="w-full text-13">
-            <thead>
-              <tr className="text-2xs uppercase tracking-wide text-muted-foreground">
-                <th className="py-2 text-left font-normal">Type</th>
-                <th className="py-2 text-right font-normal">Live</th>
-                <th className="py-2 text-right font-normal">No country</th>
-                <th className="py-2 text-right font-normal">No state</th>
-                <th className="py-2 text-right font-normal">No postal</th>
-              </tr>
-            </thead>
-            <tbody>
-              {ENTITY_ROWS.map(({ key, label }) => {
-                const row = data[key];
-                if (!row) return null;
-                return (
-                  <tr key={key} className="border-t border-border">
-                    <td className="py-2">{label}</td>
-                    <td className="py-2 text-right tabular-nums">{row.live.toLocaleString()}</td>
-                    <td className="py-2 text-right tabular-nums">
-                      {row.missing_country_id.toLocaleString()}
-                    </td>
-                    <td className="py-2 text-right tabular-nums">
-                      {row.missing_state.toLocaleString()}
-                    </td>
-                    <td className="py-2 text-right tabular-nums">
-                      {row.missing_postal.toLocaleString()}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <AdminSimpleTable
+          caption="Address completeness by entity"
+          columns={ADDRESS_COLUMNS}
+          rows={addressRows}
+          rowKey={(r) => r.key}
+          emptyNoun="entity types"
+        />
 
         <div className="flex flex-wrap gap-2">
           {/* cities.region_name is the upstream source of `state` for every

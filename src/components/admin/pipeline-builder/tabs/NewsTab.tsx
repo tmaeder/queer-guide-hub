@@ -3,6 +3,10 @@ import { untypedFrom } from '@/integrations/supabase/untyped';
 import { Newspaper, AlertCircle, GitMerge } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { NewsQualityPanel } from '@/components/admin/news/NewsQualityPanel';
+import {
+  AdminSimpleTable,
+  type AdminSimpleColumn,
+} from '@/components/admin/primitives/AdminSimpleTable';
 
 // News pipeline observability — sources health, staging, dedup audit.
 
@@ -32,6 +36,76 @@ function StatBlock({
     </div>
   );
 }
+
+type NewsSourceRow = Record<string, unknown>;
+
+const newsSourceColumns: AdminSimpleColumn<NewsSourceRow>[] = [
+  {
+    key: 'source',
+    header: 'Source',
+    cellClassName: 'truncate max-w-[280px]',
+    render: (s) => (
+      <>
+        <span title={String(s.name)}>{String(s.name)}</span>
+        {s.auto_paused ? (
+          <Badge
+            variant="outline"
+            className="border ml-2 text-3xs px-1 py-0 bg-destructive/10 dark:bg-destructive/30 text-destructive border-destructive dark:border-destructive"
+          >
+            paused
+          </Badge>
+        ) : null}
+      </>
+    ),
+  },
+  {
+    key: 'status',
+    header: 'Status',
+    width: 'sm',
+    cellClassName: 'text-xs',
+    render: (s) => {
+      const status = String(s.status ?? '-');
+      const statusColor =
+        status === 'active'
+          ? 'text-foreground'
+          : s.auto_paused || status === 'paused'
+            ? 'text-destructive'
+            : 'text-foreground';
+      return <span className={statusColor}>{status}</span>;
+    },
+  },
+  {
+    key: 'fails',
+    header: 'Fails',
+    align: 'right',
+    width: 'xs',
+    cellClassName: 'font-mono tabular-nums',
+    render: (s) => {
+      const failures = Number(s.consecutive_failures ?? 0);
+      return (
+        <span className={failures > 0 ? 'text-destructive' : 'text-muted-foreground'}>
+          {failures}
+        </span>
+      );
+    },
+  },
+  {
+    key: 'reliability',
+    header: 'Reliability',
+    align: 'right',
+    width: 'sm',
+    cellClassName: 'font-mono tabular-nums',
+    render: (s) => Number(s.reliability_score ?? 0).toFixed(2),
+  },
+  {
+    key: 'avg',
+    header: 'Avg/fetch',
+    align: 'right',
+    width: 'xs',
+    cellClassName: 'font-mono tabular-nums text-muted-foreground',
+    render: (s) => Number(s.avg_articles_per_fetch ?? 0).toFixed(1),
+  },
+];
 
 export default function NewsTab() {
   const { data: sources = [] } = useQuery({
@@ -182,81 +256,15 @@ export default function NewsTab() {
             </Badge>
           )}
         </div>
-        <div className="max-h-[400px] overflow-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/40 sticky top-0">
-              <tr className="border-b border-border">
-                <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">
-                  Source
-                </th>
-                <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[100px]">
-                  Status
-                </th>
-                <th className="text-right px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[80px]">
-                  Fails
-                </th>
-                <th className="text-right px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[100px]">
-                  Reliability
-                </th>
-                <th className="text-right px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[90px]">
-                  Avg/fetch
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {sources.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="p-6 text-center text-muted-foreground text-xs">
-                    No news sources
-                  </td>
-                </tr>
-              ) : (
-                sources.map((s) => {
-                  const status = String(s.status ?? '-');
-                  const failures = Number(s.consecutive_failures ?? 0);
-                  const reliability = Number(s.reliability_score ?? 0);
-                  const avg = Number(s.avg_articles_per_fetch ?? 0);
-                  const statusColor =
-                    status === 'active'
-                      ? 'text-foreground'
-                      : s.auto_paused || status === 'paused'
-                        ? 'text-destructive'
-                        : 'text-foreground';
-                  return (
-                    <tr
-                      key={String(s.id)}
-                      className="border-b border-border/40 hover:bg-muted/30 transition-colors"
-                    >
-                      <td className="px-4 py-2 truncate max-w-[280px]" title={String(s.name)}>
-                        {String(s.name)}
-                        {s.auto_paused ? (
-                          <Badge
-                            variant="outline"
-                            className="border ml-2 text-3xs px-1 py-0 bg-destructive/10 dark:bg-destructive/30 text-destructive border-destructive dark:border-destructive"
-                          >
-                            paused
-                          </Badge>
-                        ) : null}
-                      </td>
-                      <td className={`px-4 py-2 text-xs ${statusColor}`}>{status}</td>
-                      <td
-                        className={`px-4 py-2 text-right font-mono tabular-nums ${failures > 0 ? 'text-destructive' : 'text-muted-foreground'}`}
-                      >
-                        {failures}
-                      </td>
-                      <td className="px-4 py-2 text-right font-mono tabular-nums">
-                        {reliability.toFixed(2)}
-                      </td>
-                      <td className="px-4 py-2 text-right font-mono tabular-nums text-muted-foreground">
-                        {avg.toFixed(1)}
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+        <AdminSimpleTable
+          caption="News sources health"
+          className="max-h-[400px] overflow-y-auto"
+          columns={newsSourceColumns}
+          rows={sources}
+          rowKey={(s) => String(s.id)}
+          emptyNoun="news sources"
+          rowClassName={() => 'border-border/40 hover:bg-muted/30 transition-colors'}
+        />
       </div>
     </div>
   );

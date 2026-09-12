@@ -99,4 +99,66 @@ describe('AdminSimpleTable', () => {
       String(COLUMNS.length),
     );
   });
+
+  describe('onRowClick', () => {
+    it('does not make rows focusable when no handler is given', () => {
+      const { container } = renderTable();
+      for (const tr of container.querySelectorAll('tbody tr')) {
+        expect(tr).not.toHaveAttribute('tabindex');
+      }
+    });
+
+    it('activates on click', () => {
+      const onRowClick = vi.fn();
+      renderTable({ onRowClick });
+      fireEvent.click(screen.getByText('Beta'));
+      expect(onRowClick).toHaveBeenCalledWith(ROWS[1], 1);
+    });
+
+    /**
+     * The reason this prop exists at all. AdminAutomation, MonitorTab and
+     * ErrorsTab each had `<tr onClick>` with no tabIndex, no onKeyDown and no
+     * role — mouse-only, so a keyboard user could not open those detail panes
+     * (WCAG 2.1.1). Centralising it fixes all three.
+     */
+    it('is reachable and activatable by keyboard', () => {
+      const onRowClick = vi.fn();
+      const { container } = renderTable({ onRowClick });
+      const rows = container.querySelectorAll('tbody tr');
+      expect(rows[0]).toHaveAttribute('tabindex', '0');
+
+      fireEvent.keyDown(rows[0], { key: 'Enter' });
+      expect(onRowClick).toHaveBeenCalledWith(ROWS[0], 0);
+
+      fireEvent.keyDown(rows[1], { key: ' ' });
+      expect(onRowClick).toHaveBeenCalledWith(ROWS[1], 1);
+      expect(onRowClick).toHaveBeenCalledTimes(2);
+    });
+
+    it('ignores other keys so normal navigation still works', () => {
+      const onRowClick = vi.fn();
+      const { container } = renderTable({ onRowClick });
+      const row = container.querySelectorAll('tbody tr')[0];
+      for (const key of ['Tab', 'ArrowDown', 'a', 'Escape']) {
+        fireEvent.keyDown(row, { key });
+      }
+      expect(onRowClick).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('emptyContent', () => {
+    it('replaces the default empty state entirely', () => {
+      // AlertsTab's empty state is GOOD NEWS ("All clear"), not an absence.
+      // AdminEmpty would say "No alerts yet." — a copy regression its own named
+      // test caught.
+      renderTable({ rows: [], emptyContent: <span>All clear</span> });
+      expect(screen.getByText('All clear')).toBeInTheDocument();
+      expect(screen.queryByText('No definitions yet.')).toBeNull();
+    });
+
+    it('still defers to the skeleton while loading', () => {
+      renderTable({ rows: [], isLoading: true, emptyContent: <span>All clear</span> });
+      expect(screen.queryByText('All clear')).toBeNull();
+    });
+  });
 });

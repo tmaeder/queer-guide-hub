@@ -14,7 +14,63 @@ import {
   type CoverageTargetRow as CoverageRow,
   type HotelIngestStats as HotelStats,
 } from '@/hooks/usePipelineBuilderTabs';
-import { AdminTableRowSkeleton } from '@/components/admin/primitives/AdminLoading';
+import {
+  AdminSimpleTable,
+  type AdminSimpleColumn,
+} from '@/components/admin/primitives/AdminSimpleTable';
+
+const hotelSourceColumns: AdminSimpleColumn<HotelStats>[] = [
+  { key: 'source', header: 'Source', cellClassName: 'font-medium', render: (s) => s.source },
+  { key: 'staged', header: 'Staged', cellClassName: 'tabular-nums', render: (s) => s.staged },
+  {
+    key: 'validated',
+    header: 'Validated',
+    cellClassName: 'tabular-nums',
+    render: (s) => s.validated,
+  },
+  { key: 'unique', header: 'Unique', cellClassName: 'tabular-nums', render: (s) => s.unique_items },
+  {
+    key: 'dupes',
+    header: 'Dupes',
+    cellClassName: 'tabular-nums',
+    render: (s) => (
+      <span className={s.duplicates ? 'text-foreground' : 'text-muted-foreground'}>
+        {s.duplicates}
+      </span>
+    ),
+  },
+  {
+    key: 'committed',
+    header: 'Committed',
+    cellClassName: 'tabular-nums',
+    render: (s) => (
+      <span className={s.committed ? 'text-foreground font-semibold' : 'text-muted-foreground'}>
+        {s.committed}
+      </span>
+    ),
+  },
+  {
+    key: 'rejected',
+    header: 'Rejected',
+    cellClassName: 'tabular-nums',
+    render: (s) => (
+      <span className={s.rejected ? 'text-destructive' : 'text-muted-foreground'}>
+        {s.rejected}
+      </span>
+    ),
+  },
+  {
+    key: 'review',
+    header: 'Review',
+    cellClassName: 'tabular-nums',
+    render: (s) => (
+      <span className={s.pending_review ? 'text-foreground' : 'text-muted-foreground'}>
+        {s.pending_review}
+      </span>
+    ),
+  },
+  { key: 'slo', header: 'SLO', render: (s) => sloBadge(s) },
+];
 
 function sloBadge(s: HotelStats) {
   const total = s.staged || 1;
@@ -48,6 +104,61 @@ function RatioBar({ actual, expected }: { actual: number; expected: number | nul
     </div>
   );
 }
+
+const coverageColumns: AdminSimpleColumn<CoverageRow>[] = [
+  {
+    key: 'source',
+    header: 'Source',
+    cellClassName: 'font-mono text-xs',
+    render: (r) => r.source_slug,
+  },
+  {
+    key: 'city',
+    header: 'City',
+    render: (r) =>
+      r.city_id ? (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <code className="text-2xs text-muted-foreground">{r.city_id.slice(0, 8)}</code>
+          </TooltipTrigger>
+          <TooltipContent className="text-xs font-mono">{r.city_id}</TooltipContent>
+        </Tooltip>
+      ) : (
+        <span className="text-muted-foreground">—</span>
+      ),
+  },
+  {
+    key: 'type',
+    header: 'Type',
+    cellClassName: 'text-xs',
+    render: (r) => r.accommodation_type ?? '—',
+  },
+  {
+    key: 'coverage',
+    header: 'Coverage',
+    render: (r) => <RatioBar actual={r.actual_count} expected={r.expected_count} />,
+  },
+  {
+    key: 'last_run',
+    header: 'Last run',
+    cellClassName: 'text-muted-foreground text-xs',
+    render: (r) => (
+      <span title={r.last_run_at ? new Date(r.last_run_at).toISOString() : ''}>
+        {r.last_run_at ? formatDistanceToNow(new Date(r.last_run_at), { addSuffix: true }) : '—'}
+      </span>
+    ),
+  },
+  {
+    key: 'enabled',
+    header: 'Enabled',
+    render: (r) =>
+      r.is_enabled ? (
+        <Check className="h-3.5 w-3.5 text-foreground" />
+      ) : (
+        <span className="text-muted-foreground">—</span>
+      ),
+  },
+];
 
 export default function CoverageTab() {
   const qc = useQueryClient();
@@ -125,72 +236,14 @@ export default function CoverageTab() {
             <Hotel className="h-3.5 w-3.5" />
             Hotels / B&Bs by source
           </div>
-          <table className="w-full text-sm">
-            <thead className="bg-muted/40">
-              <tr className="border-b border-border">
-                {[
-                  'Source',
-                  'Staged',
-                  'Validated',
-                  'Unique',
-                  'Dupes',
-                  'Committed',
-                  'Rejected',
-                  'Review',
-                  'SLO',
-                ].map((h) => (
-                  <th
-                    key={h}
-                    className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider"
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {bySource.length === 0 ? (
-                <tr>
-                  <td colSpan={9} className="p-6 text-center text-muted-foreground text-xs">
-                    No hotel/B&B ingestion yet
-                  </td>
-                </tr>
-              ) : (
-                bySource.map((s) => (
-                  <tr
-                    key={s.source}
-                    className="border-b border-border/40 hover:bg-muted/30 transition-colors"
-                  >
-                    <td className="px-4 py-2 font-medium">{s.source}</td>
-                    <td className="px-4 py-2 tabular-nums">{s.staged}</td>
-                    <td className="px-4 py-2 tabular-nums">{s.validated}</td>
-                    <td className="px-4 py-2 tabular-nums">{s.unique_items}</td>
-                    <td
-                      className={`px-4 py-2 tabular-nums ${s.duplicates ? 'text-foreground' : 'text-muted-foreground'}`}
-                    >
-                      {s.duplicates}
-                    </td>
-                    <td
-                      className={`px-4 py-2 tabular-nums ${s.committed ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}
-                    >
-                      {s.committed}
-                    </td>
-                    <td
-                      className={`px-4 py-2 tabular-nums ${s.rejected ? 'text-destructive' : 'text-muted-foreground'}`}
-                    >
-                      {s.rejected}
-                    </td>
-                    <td
-                      className={`px-4 py-2 tabular-nums ${s.pending_review ? 'text-foreground' : 'text-muted-foreground'}`}
-                    >
-                      {s.pending_review}
-                    </td>
-                    <td className="px-4 py-2">{sloBadge(s)}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+          <AdminSimpleTable
+            caption="Hotel and B&B ingestion by source"
+            columns={hotelSourceColumns}
+            rows={bySource}
+            rowKey={(s) => s.source}
+            emptyNoun="hotel/B&B ingestion"
+            rowClassName={() => 'border-border/40 hover:bg-muted/30 transition-colors'}
+          />
         </div>
 
         {/* Coverage targets */}
@@ -202,73 +255,15 @@ export default function CoverageTab() {
               {coverage.length}
             </Badge>
           </div>
-          <table className="w-full text-sm">
-            <thead className="bg-muted/40 sticky top-[37px] z-10">
-              <tr className="border-b border-border">
-                {['Source', 'City', 'Type', 'Coverage', 'Last run', 'Enabled'].map((h) => (
-                  <th
-                    key={h}
-                    className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider"
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {covLoading ? (
-                <AdminTableRowSkeleton columns={6} />
-              ) : coverage.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="p-6 text-center text-muted-foreground text-xs">
-                    No targets configured
-                  </td>
-                </tr>
-              ) : (
-                coverage.map((r) => (
-                  <tr
-                    key={r.id}
-                    className="border-b border-border/40 hover:bg-muted/30 transition-colors"
-                  >
-                    <td className="px-4 py-2 font-mono text-xs">{r.source_slug}</td>
-                    <td className="px-4 py-2">
-                      {r.city_id ? (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <code className="text-2xs text-muted-foreground">
-                              {r.city_id.slice(0, 8)}
-                            </code>
-                          </TooltipTrigger>
-                          <TooltipContent className="text-xs font-mono">{r.city_id}</TooltipContent>
-                        </Tooltip>
-                      ) : (
-                        <span className="text-muted-foreground">—</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-2 text-xs">{r.accommodation_type ?? '—'}</td>
-                    <td className="px-4 py-2">
-                      <RatioBar actual={r.actual_count} expected={r.expected_count} />
-                    </td>
-                    <td
-                      className="px-4 py-2 text-muted-foreground text-xs"
-                      title={r.last_run_at ? new Date(r.last_run_at).toISOString() : ''}
-                    >
-                      {r.last_run_at
-                        ? formatDistanceToNow(new Date(r.last_run_at), { addSuffix: true })
-                        : '—'}
-                    </td>
-                    <td className="px-4 py-2">
-                      {r.is_enabled ? (
-                        <Check className="h-3.5 w-3.5 text-foreground" />
-                      ) : (
-                        <span className="text-muted-foreground">—</span>
-                      )}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+          <AdminSimpleTable
+            caption="Coverage targets"
+            columns={coverageColumns}
+            rows={coverage}
+            rowKey={(r) => String(r.id)}
+            isLoading={covLoading}
+            emptyNoun="targets"
+            rowClassName={() => 'border-border/40 hover:bg-muted/30 transition-colors'}
+          />
         </div>
       </div>
     </TooltipProvider>

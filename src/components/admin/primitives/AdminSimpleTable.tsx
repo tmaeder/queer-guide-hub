@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { KeyboardEvent, ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { AdminEmpty } from './AdminEmpty';
 import { AdminTableRowSkeleton } from './AdminLoading';
@@ -12,10 +12,18 @@ import { AdminTableRowSkeleton } from './AdminLoading';
  *   text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase
  *   tracking-wider w-[130px]
  *
- * `OverviewTab` repeated that string nine times in one `<thead>`. Most of the
- * ~156 arbitrary `[NNpx]` sizing values in the admin tree were those per-column
- * widths, and several of the tables had no loading state and no empty state at
- * all because each author had to remember both by hand.
+ * `OverviewTab` repeated that string nine times in one `<thead>`. Several of the
+ * tables also had no loading state and no empty state at all, because each author
+ * had to remember both by hand.
+ *
+ * **It removes fewer arbitrary sizes than it looks like it should, and the real
+ * number is 16.** The claim first written here was that most of admin's ~156
+ * arbitrary `[NNpx]` values were per-column widths; measured after converting 19
+ * tables, the count went 156 → 140. The rest are a different thing the `width`
+ * token cannot touch: `max-w-[240px]` on truncating text INSIDE a cell,
+ * `TooltipContent max-w-[400px]`, `max-h-[600px]` scroll containers, and
+ * `w-[8px] h-[14px]` on OverviewTab's run-status strip. Governing those is a
+ * separate decision about a sizing scale, not a table concern.
  *
  * **This is deliberately NOT `AdminEntityTable`.** That stack is the sanctioned
  * one and it cannot host these: `AdminTableConfig.tableName` is required and the
@@ -32,9 +40,17 @@ import { AdminTableRowSkeleton } from './AdminLoading';
  * every one of them announced as an unlabelled table. Passing a name is now the
  * only way to render one.
  *
- * Visuals are byte-identical to the markup being replaced, on purpose: this
- * lands across 18 files at once, and a conversion that also restyles cannot be
- * reviewed as behaviour-preserving.
+ * The chrome is taken verbatim from the `pipeline-builder/tabs/*` tables this was
+ * modelled on, so for those 11 files the conversion is visually identical.
+ *
+ * **For the others it NORMALIZES, and that is worth knowing before you convert
+ * one.** `AdminAutomation` and `AdminGeography` had their own header style, so
+ * converting them moved header cells to `font-medium text-muted-foreground
+ * text-xs2 uppercase tracking-wider`, body text from `text-13`/`text-15` to
+ * `text-sm`, and row rules from `border-t`/`border-border/60` to
+ * `border-b border-border last:border-0`. That convergence is the point of the
+ * primitive — but it means a conversion diff is not behaviour-only, and a table
+ * whose current styling is deliberate should keep it rather than be forced here.
  */
 
 /**
@@ -96,6 +112,31 @@ export interface AdminSimpleTableProps<Row> {
   onResetFilters?: () => void;
   rowClassName?: (row: Row, index: number) => string | undefined;
   skeletonRows?: number;
+  /**
+   * Whole-row activation — opens a detail pane or drawer.
+   *
+   * Added because three tables genuinely needed it and stayed unconverted
+   * without it (`AdminAutomation`'s registry, `MonitorTab`'s recent runs,
+   * `ErrorsTab`'s recent errors), not to make anything fit. **All three were
+   * `<tr onClick>` with no `tabIndex`, no `onKeyDown` and no role — mouse-only,
+   * so a keyboard user could not open those panels at all (WCAG 2.1.1).**
+   * Centralising the handler fixes that for every caller instead of asking three
+   * authors to remember it.
+   *
+   * Not `role="button"`: that would strip the row's table semantics. A focusable
+   * row activated by Enter/Space is the affordance here; the selected-row tint
+   * belongs in `rowClassName`.
+   */
+  onRowClick?: (row: Row, index: number) => void;
+  /**
+   * Replaces the whole empty body, for a table whose empty state is a real
+   * message rather than an absence.
+   *
+   * `AlertsTab` is why this exists: empty is GOOD NEWS there, and it renders a
+   * CheckCircle plus "All clear". `AdminEmpty` would say "No alerts yet." with an
+   * Inbox glyph — a copy regression, and its own named test caught it.
+   */
+  emptyContent?: ReactNode;
   /** Wrapper classes. The default supplies the container chrome. */
   className?: string;
 }
@@ -113,6 +154,8 @@ export function AdminSimpleTable<Row>({
   onResetFilters,
   rowClassName,
   skeletonRows = 3,
+  onRowClick,
+  emptyContent,
   className,
 }: AdminSimpleTableProps<Row>) {
   return (
@@ -152,19 +195,38 @@ export function AdminSimpleTable<Row>({
                     inside a dense form — and only block renders the Clear
                     filters button, so the `inline` variant the old table bodies
                     used silently discarded `onReset`. */}
-                <AdminEmpty
-                  noun={emptyNoun}
-                  description={emptyDescription}
-                  filtered={filtered}
-                  onReset={onResetFilters}
-                />
+                {emptyContent ?? (
+                  <AdminEmpty
+                    noun={emptyNoun}
+                    description={emptyDescription}
+                    filtered={filtered}
+                    onReset={onResetFilters}
+                  />
+                )}
               </td>
             </tr>
           ) : (
             rows.map((row, i) => (
               <tr
                 key={rowKey(row, i)}
-                className={cn('border-b border-border last:border-0', rowClassName?.(row, i))}
+                className={cn(
+                  'border-b border-border last:border-0',
+                  onRowClick && 'cursor-pointer',
+                  rowClassName?.(row, i),
+                )}
+                {...(onRowClick
+                  ? {
+                      onClick: () => onRowClick(row, i),
+                      tabIndex: 0,
+                      onKeyDown: (e: KeyboardEvent<HTMLTableRowElement>) => {
+                        if (e.key !== 'Enter' && e.key !== ' ') return;
+                        // Space scrolls the page by default, and the row is the
+                        // activation target here, so consume it.
+                        e.preventDefault();
+                        onRowClick(row, i);
+                      },
+                    }
+                  : {})}
               >
                 {columns.map((col) => (
                   <td
