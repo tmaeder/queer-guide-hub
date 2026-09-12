@@ -193,6 +193,7 @@ describe('the health script consumes the sentinel', () => {
 });
 
 const INFER = code(latestDefining('infer_event_schedules'));
+const SIGNALS_2 = code(latestDefining('event_schedule_signals'));
 const SHAPE = code(latestMatching(/events_schedule_shape check/));
 
 describe('cadence inference (part 3)', () => {
@@ -276,4 +277,37 @@ describe('every data-touching schedule function revokes PUBLIC before granting',
       expect(re.test(ALL_SQL), `no migration revokes PUBLIC execute on ${fn}`).toBe(true);
     });
   }
+});
+
+// The defect: the shape gate lived in the SQL `where`, so a series failing it never
+// entered the loop and could never reach the not_expressible stamp. Measured on prod
+// right after the inference shipped — 38 of 53 unresolved series were invisible, and
+// they are the interesting ones (library opening hours, Fri+Sat drag nights, theatre
+// runs). A panel fed by that worklist would have shown 15 and looked complete.
+describe('the worklist sees every series', () => {
+  const INFER2 = code(latestDefining('infer_event_schedules'));
+
+  it('dispositions the shape gate in the loop rather than filtering on it', () => {
+    // The gate must NOT appear as a row filter any more...
+    expect(INFER2).not.toMatch(/where\s+s\.dows = 1 and s\.clocks = 1 and s\.wks >= 3/);
+    // ...and must appear as branches that produce a reason.
+    expect(INFER2).toMatch(/if r\.dows > 1 then/);
+    expect(INFER2).toMatch(/'multi_weekday'/);
+    expect(INFER2).toMatch(/'cadence_unusable'/);
+  });
+
+  it('records WHY a series could not be expressed, not just that it could not', () => {
+    expect(INFER2).toMatch(/'reason', v_reason/);
+  });
+
+  it('carries a positive control for the worklist itself', () => {
+    // "0 undispositioned" is the invariant; without it a future filter could hide
+    // series again and every other count would still look healthy.
+    // Anchored on the key AND the value expression that follows it. A bare scan for
+    // the quoted key is VACUOUS: the verify block at the bottom of the same migration
+    // references it too, and satisfies the match after the key is renamed out of
+    // jsonb_build_object. Mutation-tested — it did exactly that.
+    expect(SIGNALS_2).toMatch(/'series_undispositioned',\s*\(select count/);
+    expect(SIGNALS_2).toMatch(/'not_expressible_by_reason',\s*\n?\s*coalesce/);
+  });
 });
