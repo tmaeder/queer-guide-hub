@@ -41,6 +41,25 @@ function walk(dir: string, out: string[] = []): string[] {
 const ROUTE_RE = /\/admin\/content\/([a-z][a-z0-9_]*)/g;
 
 /**
+ * Comments are not routes.
+ *
+ * CI caught this the honest way: the guard failed on `e2e/a11y-admin.spec.ts:18`,
+ * which is the docblock EXPLAINING the original defect and therefore quotes
+ * `/admin/content/news` and `/admin/content/marketplace` as prose. A scanner that
+ * reads raw file text cannot tell a route from a sentence about a route — the
+ * same trap this repo hits repeatedly when a mutation lands in a header comment
+ * instead of the statement.
+ *
+ * Blanked rather than deleted so line numbers in the failure message stay true to
+ * the file.
+ */
+function stripComments(src: string): string {
+  return src
+    .replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '))
+    .replace(/(^|[^:])\/\/[^\n]*/g, (m, p1) => p1 + ' '.repeat(m.length - p1.length));
+}
+
+/**
  * Keys that are legitimately not registry entries: real routes served by their
  * own component rather than by the `content/:type` wildcard.
  */
@@ -70,7 +89,7 @@ describe('admin /admin/content/:type route keys', () => {
     const bad: string[] = [];
 
     for (const file of files) {
-      const src = readFileSync(file, 'utf8');
+      const src = stripComments(readFileSync(file, 'utf8'));
       for (const match of src.matchAll(ROUTE_RE)) {
         const key = match[1];
         if (known.has(key) || NON_REGISTRY_ROUTES.has(key)) continue;
@@ -85,6 +104,18 @@ describe('admin /admin/content/:type route keys', () => {
         `The route will NOT 404 — it silently renders the "All Content" list, so a test ` +
         `referencing it passes while never visiting the intended page.\n${bad.join('\n')}`,
     ).toEqual([]);
+  });
+
+  it('ignores a route named in a comment but still catches a live one', () => {
+    // Without this the guard fails on its own explanatory prose, which is how CI
+    // caught it. Asserted directly so the stripper cannot be quietly removed.
+    const sample = [
+      '// see /admin/content/news for the old bug',
+      '/* and /admin/content/marketplace too */',
+      "const r = '/admin/content/bogus_key';",
+    ].join('\n');
+    const found = [...stripComments(sample).matchAll(ROUTE_RE)].map((m) => m[1]);
+    expect(found).toEqual(['bogus_key']);
   });
 
   it('finds the keys it is supposed to be checking (positive control)', () => {
