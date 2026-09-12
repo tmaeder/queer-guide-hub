@@ -5,8 +5,12 @@ import {
   getBreadcrumbsForRoute,
   getAllCountTables,
   resolveItemMinRole,
+  getRouteMinRole,
+  ADMIN_ROUTE_ROLE_OVERRIDES,
 } from '../adminNavigation';
 import { roleAtLeast } from '../adminRoles';
+import { ADMIN_QUEUES } from '../adminQueues';
+import { contentTypeRegistry } from '../contentTypes';
 
 describe('adminNavSections shape', () => {
   it('has cockpit, content, data, system sections', () => {
@@ -153,5 +157,121 @@ describe('getAllCountTables', () => {
     const tableNames = tables.map((t) => t.table);
     expect(tableNames).toContain('venues');
     expect(tableNames).toContain('events');
+  });
+});
+
+describe('getRouteMinRole', () => {
+  it('resolves a plain content route to the Content floor', () => {
+    // Positive control. A suite where everything came back 'admin' would satisfy
+    // every "not reachable by an editor" assertion below while gating nothing
+    // correctly, so the permissive cases have to be pinned too.
+    expect(getRouteMinRole('/admin/content/venues')).toBe('editor');
+    expect(getRouteMinRole('/admin/content/events')).toBe('editor');
+  });
+
+  it('inherits the nearest nav item by longest prefix', () => {
+    expect(getRouteMinRole('/admin/settings')).toBe('moderator');
+    expect(getRouteMinRole('/admin/business/some-uuid')).toBe('admin');
+  });
+
+  it('falls back to the console floor for an unmapped admin route', () => {
+    expect(getRouteMinRole('/admin/nothing-here')).toBe('editor');
+  });
+
+  /**
+   * The regression this block exists for.
+   *
+   * `/admin/settings` is moderator, and its comment claimed that covered "every
+   * /admin/settings/* sub-page, via longest-prefix". Each of those sub-pages is a
+   * <Navigate> to /admin/content/<vocab>, whose longest nav prefix is
+   * /admin/content → editor, so the gate protected the redirect stubs and nothing
+   * behind them. `getRouteMinRole` had no test of any kind.
+   */
+  const VOCABULARIES = [
+    'venue_services',
+    'event_types',
+    'event_amenities',
+    'event_services',
+    'accessibility_attributes',
+    'target_groups',
+    'professions',
+  ] as const;
+
+  it.each(VOCABULARIES)('vocabulary %s is not reachable by an editor', (vocab) => {
+    const min = getRouteMinRole(`/admin/content/${vocab}`);
+    expect(min).toBe('moderator');
+    expect(roleAtLeast('editor', min)).toBe(false);
+    expect(roleAtLeast('moderator', min)).toBe(true);
+  });
+
+  it('gates the Business-console tables at the tier the console itself carries', () => {
+    // /admin/business is adminOnly; these are the raw lists behind its own tabs.
+    for (const t of ['hotels', 'marketplace_brands', 'organizations']) {
+      const min = getRouteMinRole(`/admin/content/${t}`);
+      expect(min).toBe('admin');
+      expect(roleAtLeast('moderator', min)).toBe(false);
+    }
+    expect(getRouteMinRole('/admin/business')).toBe('admin');
+  });
+
+  it('never lets an override LOOSEN a route below its nav-derived floor', () => {
+    // Asserted as a property over the whole table, so a future entry cannot
+    // quietly open a page the nav tree already restricts.
+    for (const [route, override] of Object.entries(ADMIN_ROUTE_ROLE_OVERRIDES)) {
+      expect(roleAtLeast(getRouteMinRole(route), override)).toBe(true);
+    }
+  });
+
+  it('every registry content type resolves at a deliberate tier', () => {
+    // `content/:type` is a wildcard: adding a table to the registry publishes an
+    // admin CRUD page for it whether or not anything links to it. Pinning the
+    // editor-level set means a new type shows up in this diff and forces a
+    // decision rather than defaulting open.
+    const editorLevel = Object.keys(contentTypeRegistry)
+      .filter((key) => getRouteMinRole(`/admin/content/${key}`) === 'editor')
+      .sort();
+    expect(editorLevel).toEqual([
+      'cities',
+      'cms_pages',
+      'community_groups',
+      'countries',
+      'events',
+      'feedback',
+      'guides',
+      'marketplace_listings',
+      'milestones',
+      'news_articles',
+      'personalities',
+      'queer_villages',
+      'unified_tags',
+      'venues',
+    ]);
+  });
+});
+
+describe('nav and queue role agreement', () => {
+  /**
+   * A queue you cannot see must not be a page you can open.
+   *
+   * `adminQueues.minRole` gates whether the cockpit shows the queue row;
+   * `getRouteMinRole` gates whether the page opens. Three disagreed —
+   * /admin/quality, /admin/content/group-requests and /admin/content/liveness
+   * each declared `moderator` on the queue while resolving to `editor` as a
+   * route, so the work was reachable by exactly the users it was hidden from.
+   */
+  it('no queue is stricter than the route it points at', () => {
+    const mismatches = ADMIN_QUEUES.filter((q) => {
+      // Every inbox queue shares the /admin/inbox route; only distinct pages can
+      // disagree with their own gate.
+      if (q.route.startsWith('/admin/inbox')) return false;
+      return !roleAtLeast(getRouteMinRole(q.route), q.minRole);
+    }).map((q) => `${q.route}: queue=${q.minRole} route=${getRouteMinRole(q.route)}`);
+
+    expect(mismatches).toEqual([]);
+  });
+
+  it('checks a non-trivial number of queues (guards a vacuous filter)', () => {
+    const checked = ADMIN_QUEUES.filter((q) => !q.route.startsWith('/admin/inbox'));
+    expect(checked.length).toBeGreaterThanOrEqual(4);
   });
 });

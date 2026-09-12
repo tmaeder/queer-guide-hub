@@ -69,7 +69,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import type { AdminRole } from '@/config/adminRoles';
+import { ROLE_RANK, type AdminRole } from '@/config/adminRoles';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -144,6 +144,11 @@ export const adminNavSections: AdminNavSection[] = [
         label: 'Quality',
         icon: ShieldCheck,
         route: '/admin/quality',
+        // Explicit, matching the `quality` queue in adminQueues.ts, which has
+        // always declared `moderator`. This row inherited Cockpit's `editor`
+        // floor by omission, so the queue was hidden from editors while the page
+        // behind it stayed open to them — asserted by adminNavigation.test.ts.
+        minRole: 'moderator',
       },
       {
         // Sits next to Quality, not under Data: the Quality hub already carries
@@ -270,6 +275,11 @@ export const adminNavSections: AdminNavSection[] = [
         icon: UserPlus,
         route: '/admin/content/group-requests',
         reviewCountKey: 'review_group_requests',
+        // Explicit, matching the `group-requests` queue in adminQueues.ts. Same
+        // omission as the Quality row: the queue said moderator, the nav row took
+        // Content's `editor` floor, so the page was reachable by users the queue
+        // was hidden from.
+        minRole: 'moderator',
         group: 'People',
       },
       {
@@ -361,8 +371,14 @@ export const adminNavSections: AdminNavSection[] = [
         route: '/admin/settings',
         // Explicit, not inherited: this row used to sit in System and take that
         // section's `moderator` floor. Content's floor is `editor`, so without
-        // this the move would silently open taxonomy CRUD (and every
-        // /admin/settings/* sub-page, via longest-prefix) to editors.
+        // this the move would silently open taxonomy CRUD to editors.
+        //
+        // This floor covers THIS route only. It does NOT reach the vocabulary
+        // pages, and the comment here used to claim it did ("every
+        // /admin/settings/* sub-page, via longest-prefix"): each of those
+        // sub-pages is a <Navigate> to /admin/content/<vocab>, whose longest nav
+        // prefix is /admin/content → editor. They are gated by
+        // ADMIN_ROUTE_ROLE_OVERRIDES instead.
         minRole: 'moderator',
         group: 'Taxonomy & Media',
       },
@@ -548,10 +564,62 @@ export function resolveItemMinRole(item: AdminNavItem, section?: AdminNavSection
 }
 
 /**
+ * Role floors for admin routes that have NO nav row of their own.
+ *
+ * **Longest-prefix inheritance only works when an ancestor route is actually in
+ * the nav, and for these it is not.** `/admin/settings` carries
+ * `minRole: 'moderator'` and a comment claiming it also covers "every
+ * /admin/settings/* sub-page, via longest-prefix" — but each of those sub-pages
+ * is a `<Navigate>` to `/admin/content/<vocab>`, whose longest nav prefix is
+ * `/admin/content` → **editor**. The moderator gate protected the redirect stubs
+ * and nothing behind them, so an editor had full vocabulary CRUD.
+ *
+ * The same shape exposed three tables the `adminOnly` Business console owns:
+ * `/admin/business` is admin, while `/admin/content/hotels`,
+ * `/admin/content/marketplace_brands` and `/admin/content/organizations` — the
+ * raw lists for the console's own tabs — resolved to editor.
+ *
+ * These are routes, not nav items, because `content/:type` is a wildcard: the
+ * page exists for every registry key whether or not anything links to it, and
+ * `useContentListController` renders the "All Content" list rather than 404ing
+ * for an unknown one. Gating therefore cannot be derived from the nav tree.
+ *
+ * Guarded by `src/config/__tests__/adminNavigation.test.ts`, which asserts every
+ * reachable registry type resolves above the console floor or is listed here
+ * deliberately.
+ */
+export const ADMIN_ROUTE_ROLE_OVERRIDES: Record<string, AdminRole> = {
+  // Controlled vocabularies — the tier the "Vocabularies" nav row intends.
+  '/admin/content/venue_services': 'moderator',
+  '/admin/content/event_types': 'moderator',
+  '/admin/content/event_amenities': 'moderator',
+  '/admin/content/event_services': 'moderator',
+  '/admin/content/accessibility_attributes': 'moderator',
+  '/admin/content/target_groups': 'moderator',
+  '/admin/content/professions': 'moderator',
+
+  // Business-console tables — the tier /admin/business already carries.
+  '/admin/content/hotels': 'admin',
+  '/admin/content/marketplace_brands': 'admin',
+  '/admin/content/organizations': 'admin',
+
+  // Deep-link-only triage pages, matching their adminQueues.ts definitions.
+  // /admin/quality and /admin/content/group-requests had the same mismatch but
+  // DO have nav rows, so they are fixed on the item instead — an override there
+  // would leave the sidebar advertising a link that then denies you.
+  '/admin/content/liveness': 'moderator',
+};
+
+/**
  * Minimum role to access a pathname, for AdminShell's per-route enforcement.
  * Uses longest-prefix matching so sub-routes (e.g. /admin/settings/venue-services)
  * inherit the tier of their nearest configured nav item (/admin/settings).
  * Unknown admin routes default to 'editor' (the console entry floor).
+ *
+ * `ADMIN_ROUTE_ROLE_OVERRIDES` is combined by taking the **stricter** of the two,
+ * never by replacing the nav-derived answer. An override can then only ever
+ * tighten a route, so adding one cannot accidentally open a page that the nav
+ * tree already restricts — the failure mode this whole table exists to fix.
  */
 export function getRouteMinRole(pathname: string): AdminRole {
   let best: { item: AdminNavItem; section: AdminNavSection; len: number } | null = null;
@@ -564,7 +632,21 @@ export function getRouteMinRole(pathname: string): AdminRole {
       }
     }
   }
-  return best ? resolveItemMinRole(best.item, best.section) : 'editor';
+  const fromNav: AdminRole = best ? resolveItemMinRole(best.item, best.section) : 'editor';
+
+  // Longest matching override, so a future prefix entry behaves like a nav row.
+  let override: AdminRole | undefined;
+  let overrideLen = -1;
+  for (const [route, role] of Object.entries(ADMIN_ROUTE_ROLE_OVERRIDES)) {
+    const matches = pathname === route || pathname.startsWith(route + '/');
+    if (matches && route.length > overrideLen) {
+      override = role;
+      overrideLen = route.length;
+    }
+  }
+
+  if (!override) return fromNav;
+  return ROLE_RANK[override] > ROLE_RANK[fromNav] ? override : fromNav;
 }
 
 /**
