@@ -107,10 +107,15 @@ export const useNews = () => {
         queryBuilder = (queryBuilder as typeof queryBuilder).overlaps('city_ids', filters.cityIds);
       }
       if (filters?.countryIds && filters.countryIds.length > 0) {
-        queryBuilder = (queryBuilder as typeof queryBuilder).overlaps('country_ids', filters.countryIds);
+        queryBuilder = (queryBuilder as typeof queryBuilder).overlaps(
+          'country_ids',
+          filters.countryIds,
+        );
       }
       if (filters?.location?.city_id) {
-        queryBuilder = (queryBuilder as typeof queryBuilder).contains('city_ids', [filters.location.city_id]);
+        queryBuilder = (queryBuilder as typeof queryBuilder).contains('city_ids', [
+          filters.location.city_id,
+        ]);
       }
       if (filters?.location?.country_id) {
         queryBuilder = (queryBuilder as typeof queryBuilder).contains('country_ids', [
@@ -132,13 +137,19 @@ export const useNews = () => {
         queryBuilder = (queryBuilder as typeof queryBuilder).eq('sentiment', filters.sentiment);
       }
       if (typeof filters?.trustScoreMin === 'number' && filters.trustScoreMin > 0) {
-        queryBuilder = (queryBuilder as typeof queryBuilder).gte('trust_score', filters.trustScoreMin);
+        queryBuilder = (queryBuilder as typeof queryBuilder).gte(
+          'trust_score',
+          filters.trustScoreMin,
+        );
       }
       if (filters?.authorNames && filters.authorNames.length > 0) {
         queryBuilder = (queryBuilder as typeof queryBuilder).in('author', filters.authorNames);
       }
       if (filters?.language) {
-        queryBuilder = (queryBuilder as typeof queryBuilder).eq('content_language', filters.language);
+        queryBuilder = (queryBuilder as typeof queryBuilder).eq(
+          'content_language',
+          filters.language,
+        );
       }
       if (filters?.mediaType) {
         queryBuilder = (queryBuilder as typeof queryBuilder).eq('media_type', filters.mediaType);
@@ -157,10 +168,16 @@ export const useNews = () => {
         queryBuilder = (queryBuilder as typeof queryBuilder).eq('is_featured', filters.featured);
       }
       if (filters?.dateRange?.from) {
-        queryBuilder = (queryBuilder as typeof queryBuilder).gte('published_at', filters.dateRange.from);
+        queryBuilder = (queryBuilder as typeof queryBuilder).gte(
+          'published_at',
+          filters.dateRange.from,
+        );
       }
       if (filters?.dateRange?.to) {
-        queryBuilder = (queryBuilder as typeof queryBuilder).lte('published_at', filters.dateRange.to);
+        queryBuilder = (queryBuilder as typeof queryBuilder).lte(
+          'published_at',
+          filters.dateRange.to,
+        );
       }
       if (filters?.tags && filters.tags.length > 0) {
         queryBuilder = (queryBuilder as typeof queryBuilder).overlaps('tags', filters.tags);
@@ -168,10 +185,11 @@ export const useNews = () => {
 
       // Restrict to articles that belong to a multi-article story.
       if (filters?.inStory) {
-        const { data: storyLinks } = await untypedFrom('news_story_articles')
-          .select('article_id, story_id, news_stories!inner(article_count)') as unknown as {
-            data: Array<{ article_id: string; news_stories: { article_count: number } }> | null;
-          };
+        const { data: storyLinks } = (await untypedFrom('news_story_articles').select(
+          'article_id, story_id, news_stories!inner(article_count)',
+        )) as unknown as {
+          data: Array<{ article_id: string; news_stories: { article_count: number } }> | null;
+        };
         const eligibleIds = (storyLinks ?? [])
           .filter((l) => l.news_stories?.article_count >= 2)
           .map((l) => l.article_id);
@@ -246,9 +264,18 @@ export const useNews = () => {
       // Exclude aggregator providers (NewsAPI, GNews, NewsData, TheNewsAPI) so
       // the Source dropdown only contains real publications.
       // is_aggregator was added in migration news_qa_add_category_canonical_and_aggregator.
+      //
+      // Explicit columns, NOT select('*'). anon's table-wide SELECT grant on
+      // news_sources was replaced by a column allowlist (RLS filters ROWS, not
+      // columns, so `*` was serving last_error / reliability_score /
+      // auto_paused_reason / consecutive_failures to every logged-out visitor).
+      // A `*` here now fails 42501 for anon — and Postgres does not name the
+      // offending column in that error, so the breakage looks unrelated.
       const { data, error: fetchError } = await supabase
         .from('news_sources')
-        .select('*')
+        .select(
+          'id, name, slug, description, url, website_url, category, feed_type, artwork_url, is_active, is_aggregator, organization_id, episode_count',
+        )
         .eq('is_active', true)
         .or('is_aggregator.is.null,is_aggregator.eq.false')
         .order('name', { ascending: true });

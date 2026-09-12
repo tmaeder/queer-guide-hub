@@ -4844,5 +4844,42 @@
     "eyebrowUnpublished": "[ES] Editorial standard",
     "title": "[ES] How we write",
     "lede": "[ES] The voice rules, the words we use and the words we do not, and the reasoning behind both. Community editors maintain this page, and the same rules are compiled into the instructions our automated content pipelines run on."
+  },
+  "podcasts": {
+    "metaTitle": "Pódcasts LGBTQ+",
+    "metaDescription": "Pódcasts queer de todo el mundo — historia, política, cultura y comunidad, con episodios nuevos en cuanto se publican.",
+    "eyebrow": "Escuchar",
+    "title": "Pódcasts",
+    "subtitle": "{{shows}} programas, {{episodes}} episodios.",
+    "latest": "Últimos episodios",
+    "allShows": "Todos los programas",
+    "episodes": "Episodios",
+    "episodeCount": "{{count}} episodios",
+    "empty": "Aún no hay programas.",
+    "noEpisodes": "Aún no hay episodios.",
+    "website": "Sitio web",
+    "rssFeed": "Feed RSS",
+    "showMetaTitle": "{{name}} — Pódcast",
+    "notFound": "Programa no encontrado",
+    "notFoundDesc": "Este pódcast no existe o ya no está activo.",
+    "backToHub": "Todos los pódcasts",
+    "onlyToggle": "Solo pódcasts",
+    "badge": "Pódcast",
+    "badgeWithDuration": "Pódcast · {{minutes}} min"
+  },
+  "audio": {
+    "playerLabel": "Reproductor de pódcast",
+    "play": "Reproducir",
+    "pause": "Pausa",
+    "close": "Cerrar el reproductor",
+    "seek": "Buscar",
+    "progress": "{{at}} de {{total}}",
+    "speed": "Velocidad de reproducción, actualmente {{rate}}×",
+    "back15": "Retroceder {{n}} segundos",
+    "forward15": "Avanzar {{n}} segundos",
+    "playEpisode": "Reproducir {{title}}",
+    "pauseEpisode": "Pausar {{title}}",
+    "error": "No se pudo reproducir este episodio. Puede que el servidor del programa esté caído.",
+    "retry": "Reintentar"
   }
 }

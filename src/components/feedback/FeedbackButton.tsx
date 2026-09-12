@@ -191,8 +191,8 @@ export function FeedbackButton() {
               // --map-rail-clearance is published by the map's spotlight rail
               // while one is on screen, so the FAB also clears the rail.
               bottom: isMobile
-                ? 'calc(max(6rem, var(--map-rail-clearance, 0rem) + 1rem) + env(safe-area-inset-bottom, 0px))'
-                : '1.5rem',
+                ? 'calc(max(6rem, var(--map-rail-clearance, 0rem) + 1rem) + env(safe-area-inset-bottom, 0px) + var(--audio-bar-clearance, 0rem))'
+                : 'calc(1.5rem + var(--audio-bar-clearance, 0rem))',
             }}
           >
             <MessageSquarePlus size={22} />

@@ -4852,5 +4852,42 @@
     "eyebrowUnpublished": "[AR] Editorial standard",
     "title": "[AR] How we write",
     "lede": "[AR] The voice rules, the words we use and the words we do not, and the reasoning behind both. Community editors maintain this page, and the same rules are compiled into the instructions our automated content pipelines run on."
+  },
+  "podcasts": {
+    "metaTitle": "بودكاست LGBTQ+",
+    "metaDescription": "بودكاست كويري من أنحاء العالم — تاريخ وسياسة وثقافة ومجتمع، مع حلقات جديدة فور نشرها.",
+    "eyebrow": "استمع",
+    "title": "البودكاست",
+    "subtitle": "{{shows}} برامج، {{episodes}} حلقة.",
+    "latest": "أحدث الحلقات",
+    "allShows": "كل البرامج",
+    "episodes": "الحلقات",
+    "episodeCount": "{{count}} حلقة",
+    "empty": "لا توجد برامج بعد.",
+    "noEpisodes": "لا توجد حلقات بعد.",
+    "website": "الموقع",
+    "rssFeed": "تغذية RSS",
+    "showMetaTitle": "{{name}} — بودكاست",
+    "notFound": "البرنامج غير موجود",
+    "notFoundDesc": "هذا البودكاست غير موجود، أو لم يعد نشطًا.",
+    "backToHub": "كل البودكاست",
+    "onlyToggle": "البودكاست فقط",
+    "badge": "بودكاست",
+    "badgeWithDuration": "بودكاست · {{minutes}} دقيقة"
+  },
+  "audio": {
+    "playerLabel": "مشغّل البودكاست",
+    "play": "تشغيل",
+    "pause": "إيقاف مؤقت",
+    "close": "إغلاق المشغّل",
+    "seek": "تقديم/تأخير",
+    "progress": "{{at}} من {{total}}",
+    "speed": "سرعة التشغيل، حاليًا {{rate}}×",
+    "back15": "رجوع {{n}} ثانية",
+    "forward15": "تقديم {{n}} ثانية",
+    "playEpisode": "تشغيل {{title}}",
+    "pauseEpisode": "إيقاف {{title}} مؤقتًا",
+    "error": "تعذّر تشغيل هذه الحلقة. قد يكون خادم البرنامج متوقفًا.",
+    "retry": "إعادة المحاولة"
   }
 }

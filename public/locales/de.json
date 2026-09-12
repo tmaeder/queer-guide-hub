@@ -4844,5 +4844,42 @@
     "eyebrowUnpublished": "[DE] Editorial standard",
     "title": "[DE] How we write",
     "lede": "[DE] The voice rules, the words we use and the words we do not, and the reasoning behind both. Community editors maintain this page, and the same rules are compiled into the instructions our automated content pipelines run on."
+  },
+  "podcasts": {
+    "metaTitle": "LGBTQ+ Podcasts",
+    "metaDescription": "Queere Podcasts aus aller Welt — Geschichte, Politik, Kultur und Community, mit neuen Folgen sobald sie erscheinen.",
+    "eyebrow": "Hören",
+    "title": "Podcasts",
+    "subtitle": "{{shows}} Sendungen, {{episodes}} Folgen.",
+    "latest": "Neueste Folgen",
+    "allShows": "Alle Sendungen",
+    "episodes": "Folgen",
+    "episodeCount": "{{count}} Folgen",
+    "empty": "Noch keine Sendungen.",
+    "noEpisodes": "Noch keine Folgen.",
+    "website": "Website",
+    "rssFeed": "RSS-Feed",
+    "showMetaTitle": "{{name}} — Podcast",
+    "notFound": "Sendung nicht gefunden",
+    "notFoundDesc": "Diesen Podcast gibt es nicht, oder er ist nicht mehr aktiv.",
+    "backToHub": "Alle Podcasts",
+    "onlyToggle": "Nur Podcasts",
+    "badge": "Podcast",
+    "badgeWithDuration": "Podcast · {{minutes}} Min."
+  },
+  "audio": {
+    "playerLabel": "Podcast-Player",
+    "play": "Abspielen",
+    "pause": "Pause",
+    "close": "Player schließen",
+    "seek": "Springen",
+    "progress": "{{at}} von {{total}}",
+    "speed": "Wiedergabegeschwindigkeit, aktuell {{rate}}×",
+    "back15": "{{n}} Sekunden zurück",
+    "forward15": "{{n}} Sekunden vor",
+    "playEpisode": "{{title}} abspielen",
+    "pauseEpisode": "{{title}} pausieren",
+    "error": "Diese Folge konnte nicht abgespielt werden. Der Server der Sendung ist womöglich nicht erreichbar.",
+    "retry": "Erneut versuchen"
   }
 }

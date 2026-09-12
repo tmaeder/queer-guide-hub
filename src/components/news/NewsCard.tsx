@@ -198,14 +198,17 @@ const NewsCardImpl = ({
   const dek = excerptText ? extractDek(excerptText) : '';
 
   const isPodcast = article.media_type === 'podcast';
+  // Was two hardcoded English strings. They rendered untranslated in all 11
+  // locales, and nothing caught it because neither went through t().
   const podcastLabel = isPodcast
     ? (() => {
         const secs = Number(article.duration_seconds);
         if (Number.isFinite(secs) && secs > 0) {
-          const m = Math.round(secs / 60);
-          return `🎧 Podcast · ${m} min`;
+          return `🎧 ${t('podcasts.badgeWithDuration', 'Podcast · {{minutes}} min', {
+            minutes: Math.round(secs / 60),
+          })}`;
         }
-        return '🎧 Podcast';
+        return `🎧 ${t('podcasts.badge', 'Podcast')}`;
       })()
     : null;
 

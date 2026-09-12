@@ -4878,5 +4878,42 @@
     "eyebrowUnpublished": "[RU] Editorial standard",
     "title": "[RU] How we write",
     "lede": "[RU] The voice rules, the words we use and the words we do not, and the reasoning behind both. Community editors maintain this page, and the same rules are compiled into the instructions our automated content pipelines run on."
+  },
+  "podcasts": {
+    "metaTitle": "ЛГБТК+ подкасты",
+    "metaDescription": "Квир-подкасты со всего мира — история, политика, культура и сообщество, с новыми выпусками сразу после публикации.",
+    "eyebrow": "Слушать",
+    "title": "Подкасты",
+    "subtitle": "{{shows}} шоу, {{episodes}} выпусков.",
+    "latest": "Последние выпуски",
+    "allShows": "Все шоу",
+    "episodes": "Выпуски",
+    "episodeCount": "{{count}} выпусков",
+    "empty": "Пока нет шоу.",
+    "noEpisodes": "Пока нет выпусков.",
+    "website": "Сайт",
+    "rssFeed": "RSS-лента",
+    "showMetaTitle": "{{name}} — подкаст",
+    "notFound": "Шоу не найдено",
+    "notFoundDesc": "Такого подкаста нет, либо он больше не активен.",
+    "backToHub": "Все подкасты",
+    "onlyToggle": "Только подкасты",
+    "badge": "Подкаст",
+    "badgeWithDuration": "Подкаст · {{minutes}} мин"
+  },
+  "audio": {
+    "playerLabel": "Плеер подкастов",
+    "play": "Воспроизвести",
+    "pause": "Пауза",
+    "close": "Закрыть плеер",
+    "seek": "Перемотка",
+    "progress": "{{at}} из {{total}}",
+    "speed": "Скорость воспроизведения, сейчас {{rate}}×",
+    "back15": "Назад на {{n}} секунд",
+    "forward15": "Вперёд на {{n}} секунд",
+    "playEpisode": "Воспроизвести «{{title}}»",
+    "pauseEpisode": "Приостановить «{{title}}»",
+    "error": "Не удалось воспроизвести этот выпуск. Возможно, сервер шоу недоступен.",
+    "retry": "Повторить"
   }
 }

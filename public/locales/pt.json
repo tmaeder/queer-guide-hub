@@ -4844,5 +4844,42 @@
     "eyebrowUnpublished": "[PT] Editorial standard",
     "title": "[PT] How we write",
     "lede": "[PT] The voice rules, the words we use and the words we do not, and the reasoning behind both. Community editors maintain this page, and the same rules are compiled into the instructions our automated content pipelines run on."
+  },
+  "podcasts": {
+    "metaTitle": "Podcasts LGBTQ+",
+    "metaDescription": "Podcasts queer de todo o mundo — história, política, cultura e comunidade, com episódios novos assim que saem.",
+    "eyebrow": "Ouvir",
+    "title": "Podcasts",
+    "subtitle": "{{shows}} programas, {{episodes}} episódios.",
+    "latest": "Episódios mais recentes",
+    "allShows": "Todos os programas",
+    "episodes": "Episódios",
+    "episodeCount": "{{count}} episódios",
+    "empty": "Ainda não há programas.",
+    "noEpisodes": "Ainda não há episódios.",
+    "website": "Site",
+    "rssFeed": "Feed RSS",
+    "showMetaTitle": "{{name}} — Podcast",
+    "notFound": "Programa não encontrado",
+    "notFoundDesc": "Este podcast não existe, ou já não está ativo.",
+    "backToHub": "Todos os podcasts",
+    "onlyToggle": "Apenas podcasts",
+    "badge": "Podcast",
+    "badgeWithDuration": "Podcast · {{minutes}} min"
+  },
+  "audio": {
+    "playerLabel": "Leitor de podcast",
+    "play": "Reproduzir",
+    "pause": "Pausa",
+    "close": "Fechar o leitor",
+    "seek": "Procurar",
+    "progress": "{{at}} de {{total}}",
+    "speed": "Velocidade de reprodução, atualmente {{rate}}×",
+    "back15": "Recuar {{n}} segundos",
+    "forward15": "Avançar {{n}} segundos",
+    "playEpisode": "Reproduzir {{title}}",
+    "pauseEpisode": "Pausar {{title}}",
+    "error": "Não foi possível reproduzir este episódio. O servidor do programa pode estar fora do ar.",
+    "retry": "Tentar de novo"
   }
 }

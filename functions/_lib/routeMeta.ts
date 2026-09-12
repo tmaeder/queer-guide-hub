@@ -160,6 +160,11 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'A daily, ad-free feed of LGBTQ+ news from trusted outlets, deduplicated and tagged by topic.',
   },
+  '/podcasts': {
+    title: 'LGBTQ+ Podcasts | Queer Guide',
+    description:
+      'Queer podcasts from around the world — history, politics, culture and community — with new episodes as they publish.',
+  },
   '/donate': {
     title: 'Support Queer Guide | Donate',
     description:
