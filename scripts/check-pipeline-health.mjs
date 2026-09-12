@@ -1835,7 +1835,23 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
       // above the 23% the E_INVALID_URL fault produced. It warns rather than
       // fails: the news quality gate legitimately rejects some episodes, and
       // this number moves with the corpus.
-      console.log(pct < 40 ? `${line} — LOW, check pipeline-validate rejection reasons` : line)
+      //
+      // THE HINT NAMES BOTH STAGES ON PURPOSE. A first version pointed only at
+      // pipeline-validate, and within hours of the parser fix that was the
+      // wrong half: validate went to 0 rejections while the rate FELL to 1%,
+      // because 4,045 news rows (759 podcasts + 3,286 articles, oldest
+      // 2026-07-14) sit at disposition='pending' having already passed
+      // validate, dedup and auto-approval. Commit runs every hour and looks
+      // healthy at 6-13 rows/hour; the parser fix raised podcast inflow to
+      // ~175/hour, so the shortfall is throughput, not rejection. A low rate
+      // here has two very different causes and the reader needs both.
+      console.log(
+        pct < 40
+          ? `${line} — LOW. Check BOTH: pipeline-validate rejection reasons, and the` +
+            ` disposition='pending' backlog that has already passed validate+dedup` +
+            ` (commit throughput, not rejection).`
+          : line,
+      )
     } else {
       console.log('  no podcast episodes staged in the last 7 days')
     }
