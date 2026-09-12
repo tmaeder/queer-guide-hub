@@ -4842,5 +4842,42 @@
     "eyebrowUnpublished": "[ZH] Editorial standard",
     "title": "[ZH] How we write",
     "lede": "[ZH] The voice rules, the words we use and the words we do not, and the reasoning behind both. Community editors maintain this page, and the same rules are compiled into the instructions our automated content pipelines run on."
+  },
+  "podcasts": {
+    "metaTitle": "LGBTQ+ 播客",
+    "metaDescription": "来自世界各地的酷儿播客。历史、政治、文化与社群，新一集上线即可收听。",
+    "eyebrow": "收听",
+    "title": "播客",
+    "subtitle": "{{shows}} 个节目，{{episodes}} 集。",
+    "latest": "最新单集",
+    "allShows": "全部节目",
+    "episodes": "单集",
+    "episodeCount": "{{count}} 集",
+    "empty": "暂无节目。",
+    "noEpisodes": "暂无单集。",
+    "website": "网站",
+    "rssFeed": "RSS 订阅源",
+    "showMetaTitle": "{{name}}（播客）",
+    "notFound": "未找到该节目",
+    "notFoundDesc": "该播客不存在，或已停止更新。",
+    "backToHub": "全部播客",
+    "onlyToggle": "仅播客",
+    "badge": "播客",
+    "badgeWithDuration": "播客 · {{minutes}} 分钟"
+  },
+  "audio": {
+    "playerLabel": "播客播放器",
+    "play": "播放",
+    "pause": "暂停",
+    "close": "关闭播放器",
+    "seek": "拖动进度",
+    "progress": "{{total}} 中的 {{at}}",
+    "speed": "播放速度，当前 {{rate}}×",
+    "back15": "后退 {{n}} 秒",
+    "forward15": "前进 {{n}} 秒",
+    "playEpisode": "播放 {{title}}",
+    "pauseEpisode": "暂停 {{title}}",
+    "error": "无法播放该单集。节目服务器可能已停止服务。",
+    "retry": "重试"
   }
 }

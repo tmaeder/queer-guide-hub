@@ -780,7 +780,7 @@ async function newsDetail(env: Env, slug: string, pathname: string): Promise<Det
   const rows = await fetchRows(
     env,
     'news_articles',
-    'title,slug,excerpt,author,image_url,published_at,url,publisher_name,updated_at,seo_indexable',
+    'title,slug,excerpt,author,image_url,published_at,url,publisher_name,updated_at,seo_indexable,media_type,audio_url,duration_seconds,source_id',
     // archived_at — fetchRows reads with the service role, so the RLS policy
     // that hides archived articles from every other reader does not apply here
     // and the filter has to be repeated.
@@ -862,6 +862,85 @@ async function newsDetail(env: Env, slug: string, pathname: string): Promise<Det
     isBasedOn: sourceLink,
   };
 
+  // A PODCAST EPISODE IS NOT A NEWS ARTICLE.
+  //
+  // Until now every one of the 8,000+ episode URLs was served to crawlers as a
+  // NewsArticle with no audio anywhere in the document and a "Read the full
+  // article at <publisher>" call to action pointing at a show's homepage. The
+  // type was wrong and the one property that matters — where the audio is —
+  // was absent, so nothing could ever surface these as listenable results.
+  //
+  // The page KEEPS its /news/:slug URL. There is no /podcasts/:show/:episode:
+  // those URLs are already indexed, and a second space would only fight them.
+  const audioUrl = stringField(row, 'audio_url');
+  if (stringField(row, 'media_type') === 'podcast' && audioUrl) {
+    // One extra round trip, taken only on this branch, so the episode can name
+    // the series it belongs to and link the show page.
+    let showName: string | null = null;
+    let showSlug: string | null = null;
+    const sourceId = stringField(row, 'source_id');
+    if (sourceId) {
+      const shows = await fetchRows(
+        env,
+        'news_sources',
+        'name,slug',
+        `id=eq.${encodeURIComponent(sourceId)}`,
+        1,
+      );
+      showName = stringField(shows[0] ?? {}, 'name') ?? null;
+      showSlug = stringField(shows[0] ?? {}, 'slug') ?? null;
+    }
+    const dur = isoDuration(row.duration_seconds as number | null | undefined);
+
+    const episodeBody = `<main data-prerendered="bot-ua">
+    <article>
+      <h1>${escape(title)}</h1>
+      <p>${showName ? `<em>From ${escape(showName)}</em>` : ''}</p>
+      ${excerpt ? paragraphsHtmlLinked(excerpt, glossary) : ''}
+      <p><a href="${escape(audioUrl)}" rel="nofollow noopener">Listen to this episode</a></p>
+      ${showSlug ? `<p><a href="/podcasts/${escape(showSlug)}">All episodes of ${escape(showName ?? 'this show')}</a></p>` : ''}
+    </article>
+    <nav aria-label="Site sections">
+      <ul>
+        <li><a href="/podcasts">All podcasts</a></li>
+        <li><a href="/news">All news</a></li>
+        <li><a href="/tags">Glossary</a></li>
+      </ul>
+    </nav>
+  </main>`;
+
+    const episodeLd: Record<string, unknown> = {
+      '@context': 'https://schema.org',
+      '@type': 'PodcastEpisode',
+      name: title,
+      description: excerpt || undefined,
+      datePublished: stringField(row, 'published_at'),
+      image: image || undefined,
+      url: `${SITE_ORIGIN}${pathname}`,
+      associatedMedia: {
+        '@type': 'AudioObject',
+        contentUrl: audioUrl,
+        encodingFormat: 'audio/mpeg',
+        duration: dur,
+      },
+      timeRequired: dur,
+      partOfSeries: showName
+        ? {
+            '@type': 'PodcastSeries',
+            name: showName,
+            url: showSlug ? `${SITE_ORIGIN}/podcasts/${showSlug}` : undefined,
+          }
+        : undefined,
+    };
+
+    return {
+      meta,
+      body: episodeBody,
+      jsonLd: renderLd(prune(episodeLd)),
+      indexable: row.seo_indexable !== false,
+    };
+  }
+
   // News detail pages are first-class again (the P1.2 410 Gone handler was
   // removed). Index per the row's own quality gate — seo_indexable is set
   // false on low-quality / unverified articles, so respect it.
@@ -870,6 +949,112 @@ async function newsDetail(env: Env, slug: string, pathname: string): Promise<Det
     body,
     jsonLd: renderLd(prune(articleLd)),
     indexable: row.seo_indexable !== false,
+  };
+}
+
+/** Seconds -> ISO-8601 duration. schema.org wants `PT1H2M30S`, not `3750`. */
+function isoDuration(seconds: number | null | undefined): string | undefined {
+  const n = Number(seconds);
+  if (!Number.isFinite(n) || n <= 0) return undefined;
+  const total = Math.round(n);
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const sec = total % 60;
+  return `PT${h ? `${h}H` : ''}${m ? `${m}M` : ''}${sec || (!h && !m) ? `${sec}S` : ''}`;
+}
+
+/**
+ * /podcasts/:slug — a show.
+ *
+ * The show entity is a news_sources row; there is no podcasts table. The body
+ * lists recent episodes as links to their /news/:slug pages, which is the
+ * hub -> detail edge that makes 8,000 episode URLs reachable by a crawler that
+ * does not run JavaScript.
+ */
+async function podcastShowDetail(
+  env: Env,
+  slug: string,
+  pathname: string,
+): Promise<DetailResult | null> {
+  const rows = await fetchRows(
+    env,
+    'news_sources',
+    'id,name,slug,description,url,website_url,artwork_url,episode_count',
+    // is_active repeated here because fetchRows reads with the service role and
+    // the RLS policy that hides inactive sources does not apply to it.
+    `slug=eq.${encodeURIComponent(slug)}&feed_type=eq.podcast&is_active=eq.true`,
+    1,
+  );
+  const row = rows[0] ?? null;
+  if (!row) return null;
+
+  const name = stringField(row, 'name') ?? slug;
+  const description = collapseWs(stripHtml(stringField(row, 'description') ?? ''));
+  const artwork = stringField(row, 'artwork_url');
+  const website = stringField(row, 'website_url');
+  const feed = stringField(row, 'url');
+  const id = stringField(row, 'id');
+
+  const episodes = id
+    ? await fetchRows(
+        env,
+        'news_articles',
+        'title,slug,published_at',
+        `source_id=eq.${encodeURIComponent(id)}&media_type=eq.podcast&duplicate_of_id=is.null&archived_at=is.null&order=published_at.desc`,
+        50,
+      )
+    : [];
+
+  const meta: RouteMeta = {
+    title: truncate(`${name} — Podcast${TITLE_SUFFIX}`, MAX_TITLE),
+    description: truncate(
+      description || `${name} — an LGBTQ+ podcast on Queer Guide.`,
+      MAX_DESC,
+    ),
+    ogImage: safeOgImage(artwork ?? DEFAULT_OG_IMAGE),
+  };
+
+  const items = episodes
+    .filter((e) => typeof e.slug === 'string' && e.slug)
+    .map(
+      (e) =>
+        `<li><a href="/news/${escape(String(e.slug))}">${escape(String(e.title ?? e.slug))}</a></li>`,
+    )
+    .join('');
+
+  const body = `<main data-prerendered="bot-ua">
+    <article>
+      <h1>${escape(name)}</h1>
+      ${description ? `<p>${escape(description)}</p>` : ''}
+      ${website ? `<p><a href="${escape(website)}" rel="nofollow noopener">${escape(name)} website</a></p>` : ''}
+      ${items ? `<h2>Episodes</h2><ul>${items}</ul>` : ''}
+    </article>
+    <nav aria-label="Site sections">
+      <ul>
+        <li><a href="/podcasts">All podcasts</a></li>
+        <li><a href="/news">LGBTQ+ news</a></li>
+      </ul>
+    </nav>
+  </main>`;
+
+  const seriesLd: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'PodcastSeries',
+    name,
+    description: description || undefined,
+    url: `${SITE_ORIGIN}${pathname}`,
+    image: artwork || undefined,
+    webFeed: feed || undefined,
+    sameAs: website || undefined,
+  };
+
+  return {
+    meta,
+    body,
+    jsonLd: renderLd(prune(seriesLd)),
+    // A show with no episodes is a thin page. The same gate is applied by the
+    // hub query and by sitemap-podcasts.xml, and the three must agree.
+    indexable: Number(row.episode_count ?? 0) > 0,
   };
 }
 
@@ -1736,7 +1921,10 @@ async function guideDetail(env: Env, slug: string, pathname: string): Promise<De
 // Dispatch
 
 const DETAIL_ROUTE_RE =
-  /^\/(venues?|events?|news|personalities|personality|city|country|hotels?|villages?|tags?|history|guides)\/([^/?#]+)\/?$/;
+  /^\/(venues?|events?|news|podcasts|personalities|personality|city|country|hotels?|villages?|tags?|history|guides)\/([^/?#]+)\/?$/;
+// `podcasts` is LITERAL, deliberately not `podcasts?`. An optional `s` would
+// silently mint a second `/podcast/:slug` URL space that nothing links to and
+// nothing canonicalises.
 
 // Static SPA sub-routes that share a segment with detail routes
 // (/venues/guides, /events/guides, legacy /venues/leaderboard redirect, …).
@@ -1966,6 +2154,7 @@ export async function resolveDetailRoute(env: Env, pathname: string): Promise<De
     if (kindRaw.startsWith('venue')) return await venueDetail(env, slug, pathname);
     if (kindRaw.startsWith('event')) return await eventDetail(env, slug, pathname);
     if (kindRaw === 'news') return await newsDetail(env, slug, pathname);
+    if (kindRaw === 'podcasts') return await podcastShowDetail(env, slug, pathname);
     if (kindRaw.startsWith('personalit')) return await personalityDetail(env, slug, pathname);
     if (kindRaw === 'city') return await cityDetail(env, slug, pathname);
     if (kindRaw === 'country') return await countryDetail(env, slug, pathname);
