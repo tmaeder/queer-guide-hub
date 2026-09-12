@@ -60,7 +60,7 @@ const STALE_TIME = 24 * 60 * 60_000;
  * An `/api/` Pages Function would NOT fix it — that job serves the build through
  * `vite preview`, which runs no Functions, so the endpoint 404s there too.
  *
- * TO ENABLE: once migration 20520101100000 is applied to prod (check
+ * TO ENABLE: once migration 20600101100000 is applied to prod (check
  * `to_regclass('public.glossary_link_terms_public')`), flip this to `true`. The
  * crawler side needs no flag and works immediately — its fetch is server-side
  * and already fails open to plain prose, so a 404 there is invisible to anyone.
@@ -74,7 +74,7 @@ type VocabularyRow = {
 };
 
 /**
- * `glossary_link_terms_public` arrives with migration 20520101100000, so it is
+ * `glossary_link_terms_public` arrives with migration 20600101100000, so it is
  * not yet in the generated `src/integrations/supabase/types.ts`. Rather than a
  * blanket `any` — which would also silence a genuine column rename — the three
  * columns this hook reads are declared here. Drop the cast once types are

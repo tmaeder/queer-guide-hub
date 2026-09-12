@@ -158,7 +158,7 @@ async function main() {
   )
   if (!present) {
     console.error(
-      'glossary_link_terms does not exist yet — apply migration 20520101100000 first.\n' +
+      'glossary_link_terms does not exist yet — apply migration 20600101100000 first.\n' +
         'Nothing was read or written.',
     )
     process.exit(1)
