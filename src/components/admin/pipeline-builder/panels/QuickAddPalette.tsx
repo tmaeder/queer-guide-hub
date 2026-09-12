@@ -1,5 +1,12 @@
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { resolvePipelineIcon } from '../icon-registry';
 import type { PipelineNodeType } from '../hooks/usePipelineBuilder';
 import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
@@ -20,7 +27,12 @@ const categoryLabels: Record<string, string> = {
   control: 'Control',
 };
 
-export default function QuickAddPalette({ nodeTypes, onAdd, open, onOpenChange }: QuickAddPaletteProps) {
+export default function QuickAddPalette({
+  nodeTypes,
+  onAdd,
+  open,
+  onOpenChange,
+}: QuickAddPaletteProps) {
   const handleSelect = (nt: PipelineNodeType) => {
     onAdd(nt);
     onOpenChange(false);
@@ -33,20 +45,24 @@ export default function QuickAddPalette({ nodeTypes, onAdd, open, onOpenChange }
     grouped[nt.category].push(nt);
   }
   const categoryOrder = ['source', 'processor', 'validator', 'enricher', 'output', 'control'];
-  const orderedCategories = categoryOrder.filter(c => grouped[c]?.length > 0);
+  const orderedCategories = categoryOrder.filter((c) => grouped[c]?.length > 0);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="p-0 max-w-xl gap-0">
+        {/* Visually hidden: a command palette's own input is its label to a
+            sighted user, but the dialog still needs a name or it announces as
+            unlabelled. */}
+        <DialogTitle className="sr-only">Add a pipeline node</DialogTitle>
         <Command className="rounded-element">
           <CommandInput placeholder="Type to search nodes... (Esc to close)" autoFocus />
           <CommandList className="max-h-[400px]">
             <CommandEmpty>
               <AdminEmpty variant="inline" noun="nodes" filtered />
             </CommandEmpty>
-            {orderedCategories.map(cat => (
+            {orderedCategories.map((cat) => (
               <CommandGroup key={cat} heading={categoryLabels[cat] || cat}>
-                {grouped[cat].map(nt => {
+                {grouped[cat].map((nt) => {
                   const Icon = resolvePipelineIcon(nt.icon);
                   return (
                     <CommandItem
@@ -64,7 +80,9 @@ export default function QuickAddPalette({ nodeTypes, onAdd, open, onOpenChange }
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-medium">{nt.display_name}</div>
                         {nt.description && (
-                          <div className="text-xs2 text-muted-foreground truncate">{nt.description}</div>
+                          <div className="text-xs2 text-muted-foreground truncate">
+                            {nt.description}
+                          </div>
                         )}
                       </div>
                     </CommandItem>

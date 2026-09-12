@@ -11,7 +11,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { timeAgo } from '@/utils/timezone';
 
 interface ContextData {
@@ -154,6 +154,9 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
                 className="max-w-[90vw] max-h-[90vh] p-2 bg-black border-none"
                 style={{ width: 'fit-content' }}
               >
+                {/* Visually hidden: the lightbox is only the image, but a
+                    role="dialog" with no name announces as unlabelled. */}
+                <DialogTitle className="sr-only">Page screenshot</DialogTitle>
                 <img
                   src={screenshotUrl}
                   alt="Page screenshot"

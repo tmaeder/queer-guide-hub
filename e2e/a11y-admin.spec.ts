@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { REDUCED_MOTION } from './support/reducedMotion';
+import { ADMIN_ARCHETYPES } from '../src/config/adminArchetypes';
 
 // Route transitions fade opacity 0->1 (LayoutShell motion.div). axe blends that
 // opacity into computed text color, flagging transient mid-fade frames as contrast
@@ -10,26 +11,46 @@ test.use(REDUCED_MOTION);
 
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
-// `content/:type` takes a REGISTRY KEY, and an unknown one does not 404 —
-// useContentListController falls through to loadAllTypes(), so a wrong key
-// silently renders the "All Content" list and the scan passes having never
-// visited the page it names. `news` and `marketplace` were wrong for as long as
-// this spec has existed; the keys are `news_articles` and `marketplace_listings`
-// (src/config/contentTypes/index.ts), so the News and Marketplace lists had
-// never actually been scanned.
-const ADMIN_ROUTES = [
-  '/admin',
+/**
+ * Every non-parameterised admin route, derived from the archetype registry.
+ *
+ * This used to be a hand-written list of 8 of the 41 routes, and two of those 8
+ * were wrong: `/admin/content/news` and `/admin/content/marketplace` are not
+ * registry keys (they are `news_articles` and `marketplace_listings`), and
+ * `content/:type` does not 404 on an unknown key — `useContentListController`
+ * falls through to `loadAllTypes()`. So both silently rendered the "All Content"
+ * list and the scan passed having never visited either page. Effective coverage
+ * was 6 of 41.
+ *
+ * Deriving from `ADMIN_ARCHETYPES` — the same source `admin-route-baseline.spec.ts`
+ * walks — means a new admin route is scanned the day it is registered instead of
+ * whenever someone remembers to extend an array. The content routes are added on
+ * top because the registry describes `content/:type` as one parameterised entry.
+ */
+const ARCHETYPE_ROUTES = ADMIN_ARCHETYPES.filter(
+  (e) => !e.path.includes(':') && e.path !== '*' && e.path !== 'review',
+).map((e) => (e.path === '(index)' ? '/admin' : `/admin/${e.path}`));
+
+/** Representative registry keys — the wildcard route needs concrete ones. */
+const CONTENT_ROUTES = [
   '/admin/content/events',
   '/admin/content/venues',
   '/admin/content/news_articles',
   '/admin/content/marketplace_listings',
-  '/admin/pipelines',
-  '/admin/users',
-  '/admin/settings',
 ];
+
+const ADMIN_ROUTES = [...new Set([...ARCHETYPE_ROUTES, ...CONTENT_ROUTES])];
 
 test.describe('Admin shell — automated a11y', () => {
   test.setTimeout(180_000);
+
+  test('covers the whole registry, not a hand-picked subset', () => {
+    // A derivation that silently returned 2 routes would make every assertion
+    // below pass while scanning almost nothing.
+    expect(ADMIN_ROUTES.length).toBeGreaterThanOrEqual(30);
+    expect(ADMIN_ROUTES).toContain('/admin');
+    expect(ADMIN_ROUTES).toContain('/admin/content/news_articles');
+  });
 
   for (const route of ADMIN_ROUTES) {
     test(`${route} has no serious/critical axe violations`, async ({ page }) => {

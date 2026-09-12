@@ -134,7 +134,14 @@ export function FeedbackDetailDrawer({
         if (!o) onClose();
       }}
     >
-      <SheetContent side="right" className="w-full sm:max-w-[540px] p-0 flex flex-col">
+      {/* aria-label rather than a SheetTitle: the drawer opens straight into the
+          item's own banners and body, so a heading would duplicate what is
+          already the first thing on screen. */}
+      <SheetContent
+        side="right"
+        className="w-full sm:max-w-[540px] p-0 flex flex-col"
+        aria-label="Feedback detail"
+      >
         <div className="flex-1 overflow-y-auto px-6 pt-6 pb-2">
           {/* Banners */}
           {canonical && (
@@ -266,11 +273,19 @@ export function FeedbackDetailDrawer({
                   </span>
                 )}
               </div>
-              <h2 className="font-bold leading-tight" style={{ fontSize: '1.15rem' }}>
-                {item.data.title}
-              </h2>
+              {/* text-title, not an inline fontSize: 1.15rem is off the ladder
+                  entirely, and an inline style is invisible to both the eslint
+                  `text-[` selector and the type-scale source scan — the one shape
+                  of arbitrary sizing that no guard can see. */}
+              <h2 className="text-title font-bold leading-tight">{item.data.title}</h2>
             </div>
-            <Button variant="ghost" size="sm" onClick={onClose} className="p-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="p-1"
+              aria-label="Close feedback detail"
+            >
               <X size={16} />
             </Button>
           </div>

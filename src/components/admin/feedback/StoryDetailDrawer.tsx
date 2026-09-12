@@ -178,7 +178,13 @@ export function StoryDetailDrawer({
 
   return (
     <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
-      <SheetContent side="right" className="w-full md:max-w-[600px] sm:max-w-[600px] p-0">
+      {/* aria-label rather than a SheetTitle: the drawer opens on the story's own
+          eyebrow + title block, so a heading above it would duplicate that. */}
+      <SheetContent
+        side="right"
+        className="w-full md:max-w-[600px] sm:max-w-[600px] p-0"
+        aria-label="Story detail"
+      >
         <div className="p-6 flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <span className="text-xs uppercase tracking-wider text-muted-foreground">
@@ -434,7 +440,12 @@ export function StoryDetailDrawer({
                   </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0"
+                        aria-label="Feedback member actions"
+                      >
                         <MoreHorizontal size={14} />
                       </Button>
                     </DropdownMenuTrigger>
@@ -471,7 +482,12 @@ export function StoryDetailDrawer({
                   </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0"
+                        aria-label="Error member actions"
+                      >
                         <MoreHorizontal size={14} />
                       </Button>
                     </DropdownMenuTrigger>
