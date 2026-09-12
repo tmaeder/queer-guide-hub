@@ -149,10 +149,42 @@ const arrayField = (row: Record<string, unknown>, k: string): unknown[] | undefi
   return Array.isArray(v) ? v : undefined;
 };
 
-function paragraphsHtml(text: string): string {
-  return collapseWs(stripHtml(text))
-    .split(/\n{2,}|(?<=[.!?])\s{2,}/)
-    .map((p) => p.trim())
+/**
+ * Split prose into paragraphs, then collapse whitespace INSIDE each one.
+ *
+ * The order is the whole point. This used to call `collapseWs` first, which
+ * rewrites every `\n` to a single space, so neither arm of the split could ever
+ * match and every crawler-facing detail page — all 13 call sites below — served
+ * its prose to Googlebot as one undifferentiated `<p>`. Measured on prod before
+ * the fix: 4,558 `events.description`, 240 `unified_tags.long_description`,
+ * 150 `cities.description` and 7/7 `guides.intro_md` rows carry blank-line
+ * paragraph breaks that were being flattened.
+ *
+ * Two arms, both measured against the live corpus rather than assumed:
+ *
+ *  - a blank line. Unambiguous.
+ *  - a SINGLE newline that follows sentence-terminal punctuation. Entire
+ *    content types separate paragraphs this way and never use a blank line:
+ *    106 of 175 `queer_villages.history` rows contain `\n` and ZERO contain
+ *    `\n\n`, so the blank-line arm alone leaves every village history page a
+ *    single block. Same shape on 858 `cities.description` rows.
+ *
+ * The punctuation condition is what makes the second arm safe: a bare `\n+`
+ * split cuts real sentences in half (hard-wrapped prose, German event copy,
+ * Wikipedia list runs) — 22 broken splits across a 1,182-row sample, against
+ * 2 for the rule below, and both of those two come from the blank-line arm and
+ * are label/value lines that belong apart anyway.
+ *
+ * The old `(?<=[.!?])\s{2,}` sentence-gap arm is deliberately NOT revived. It
+ * was dead code, and reviving it fragments a paragraph at every typewriter-style
+ * double space after a full stop — 110 `venues.description`, 117
+ * `cities.description` and 35 `events.description` rows, all of them running
+ * text ("…was 60 at the 2000 census.  The area is named for…").
+ */
+export function paragraphsHtml(text: string): string {
+  return stripHtml(text)
+    .split(/\n\s*\n|(?<=[.!?:"'’”)\]])[ \t]*\n/)
+    .map(collapseWs)
     .filter(Boolean)
     .map((p) => `<p>${escape(p)}</p>`)
     .join('\n      ');
