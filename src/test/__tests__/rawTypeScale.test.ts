@@ -42,12 +42,35 @@ const SRC = join(REPO_ROOT, 'src');
  * behind an improvement in the other.
  */
 const BUDGETS = {
-  admin: 59,
+  admin: 26,
   public: 165,
 } as const;
 
+/**
+ * Inline `style={{ fontSize }}` is a SECOND, larger, wholly ungoverned type
+ * scale, and nothing could see it — not the eslint `text-[` selector, not the
+ * class scan above, because it is not a class at all.
+ *
+ * Measured when this was added: **345 sites, 92 admin and 253 public, across 13
+ * distinct values** — 0.55rem, 0.6rem, 0.65rem, 0.68rem, 0.7rem, 0.72rem,
+ * 0.78rem, 0.8rem, 0.85rem, 0.875rem, 0.9em, 13px, 14px. That is more sites than
+ * the class-based scale had, and it is precisely the "arbitrary text-[19px]"
+ * problem the config's own rule message says the type scale replaced — simply
+ * written in a form no selector matches.
+ *
+ * Capped rather than cleared: 345 token decisions is its own pass, and the
+ * public 253 are outside the admin remit. The cap is what stops it growing while
+ * it waits.
+ */
+const INLINE_FONT_SIZE = /fontSize:\s*['"`]/g;
+
 /** `text-lg`, `text-xl`, `text-2xl` … `text-9xl`. Not `text-2xs`/`text-xs2`. */
 const RAW_TYPE_SCALE = /\btext-(lg|xl|[2-9]xl)\b/g;
+
+const INLINE_BUDGETS = {
+  admin: 92,
+  public: 253,
+} as const;
 
 /** Files whose own purpose is to name these classes. */
 const EXEMPT = [
@@ -74,9 +97,19 @@ interface Hit {
   cls: string;
 }
 
-function scan(): { admin: Hit[]; public: Hit[]; filesScanned: number } {
+interface ScanResult {
+  admin: Hit[];
+  public: Hit[];
+  inlineAdmin: Hit[];
+  inlinePublic: Hit[];
+  filesScanned: number;
+}
+
+function scan(): ScanResult {
   const admin: Hit[] = [];
   const pub: Hit[] = [];
+  const inlineAdmin: Hit[] = [];
+  const inlinePublic: Hit[] = [];
   const files = walk(SRC);
 
   for (const full of files) {
@@ -92,8 +125,16 @@ function scan(): { admin: Hit[]; public: Hit[]; filesScanned: number } {
       };
       (isAdmin ? admin : pub).push(hit);
     }
+    for (const m of src.matchAll(INLINE_FONT_SIZE)) {
+      const hit = {
+        file: rel,
+        line: src.slice(0, m.index).split('\n').length,
+        cls: 'style fontSize',
+      };
+      (isAdmin ? inlineAdmin : inlinePublic).push(hit);
+    }
   }
-  return { admin, public: pub, filesScanned: files.length };
+  return { admin, public: pub, inlineAdmin, inlinePublic, filesScanned: files.length };
 }
 
 function report(hits: Hit[], budget: number, tree: string): string {
@@ -114,7 +155,7 @@ function report(hits: Hit[], budget: number, tree: string): string {
 }
 
 describe('raw Tailwind type scale is capped and may only shrink', () => {
-  const { admin, public: pub, filesScanned } = scan();
+  const { admin, public: pub, inlineAdmin, inlinePublic, filesScanned } = scan();
 
   it('scans a non-trivial number of files (a broken walk must not read as clean)', () => {
     expect(filesScanned).toBeGreaterThan(500);
@@ -142,5 +183,27 @@ describe('raw Tailwind type scale is capped and may only shrink', () => {
   it('does not fire on the micro-scale tokens it must leave alone', () => {
     const sample = 'text-2xs text-xs2 text-3xs text-15 text-13 text-headline text-title';
     expect([...sample.matchAll(RAW_TYPE_SCALE)]).toEqual([]);
+  });
+
+  it('admin inline style fontSize stays within budget', () => {
+    expect(
+      inlineAdmin.length,
+      report(inlineAdmin, INLINE_BUDGETS.admin, 'admin inline fontSize'),
+    ).toBeLessThanOrEqual(INLINE_BUDGETS.admin);
+  });
+
+  it('public inline style fontSize stays within budget', () => {
+    expect(
+      inlinePublic.length,
+      report(inlinePublic, INLINE_BUDGETS.public, 'public inline fontSize'),
+    ).toBeLessThanOrEqual(INLINE_BUDGETS.public);
+  });
+
+  it('sees inline fontSize at all (positive control)', () => {
+    // The whole point of this half is that no class-based rule can see it, so a
+    // silently non-matching regex would leave 345 sites ungoverned and green.
+    expect(inlineAdmin.length + inlinePublic.length).toBeGreaterThan(0);
+    const sample = `<p style={{ fontSize: '0.7rem' }}>x</p>`;
+    expect([...sample.matchAll(INLINE_FONT_SIZE)]).toHaveLength(1);
   });
 });
