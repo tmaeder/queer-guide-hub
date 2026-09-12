@@ -50,6 +50,8 @@ interface FunnelSummary {
   window_days: number;
   saves: number;
   trip_adds: number;
+  /** Where trip_adds was counted. Rendered so the number states its own source. */
+  trip_adds_source?: string;
   booking_clicks: number;
   impressions: number;
   save_to_trip_pct: number | null;
@@ -195,8 +197,15 @@ export function GrowthConversionDashboard() {
         <h2 className="text-15 font-semibold">Conversion funnel</h2>
         <div className="grid grid-cols-3 gap-4">
           <Stat label="View → Save" value={pct(viewToSavePct)} sub="site-wide *" />
-          <Stat label="Save → Trip add" value={pct(f?.save_to_trip_pct ?? null)} />
-          <Stat label="Trip → Booking click" value={pct(f?.trip_to_booking_pct ?? null)} />
+          <Stat
+            label="Save → Trip add"
+            value={ratio(f?.save_to_trip_pct ?? null, f?.saves, 'saves')}
+            sub={f?.trip_adds_source ? `trips from ${f.trip_adds_source}` : undefined}
+          />
+          <Stat
+            label="Trip → Booking click"
+            value={ratio(f?.trip_to_booking_pct ?? null, f?.trip_adds, 'trips')}
+          />
         </div>
         <div className="h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
@@ -382,6 +391,22 @@ function buildCohortGrid(rows: CohortRow[]): { offsets: number[]; rows: CohortGr
 
 function pct(v: number | null): string {
   return v == null ? '—' : `${v}%`;
+}
+
+/**
+ * A ratio whose DENOMINATOR is zero is not 0% and not "—" — it is a question
+ * that could not be asked, and it has to say so.
+ *
+ * `save_to_trip_pct` rendered a confident "0%" for months while `trip_adds`
+ * was structurally incapable of being anything else: it counted
+ * user_activity_events rows of a type nothing had ever written. A reader
+ * cannot tell that zero from a real one, which is how it survived on a live
+ * dashboard. Same shape as the funnel's "zero validation errors"
+ * (docs/audits/2026-08-21-signup-consent-gap.md).
+ */
+function ratio(value: number | null, denominator: number | undefined, noun: string): string {
+  if (denominator === 0) return `— no ${noun} in window`;
+  return pct(value);
 }
 
 function Stat({
