@@ -51,6 +51,7 @@ import { CityVenuesTab, CityDistricts, CityEventsTab } from './city-detail/CityV
 import { CityTravelTab } from './city-detail/CityTravelTab';
 import { CityNewsTab } from './city-detail/CityNewsTab';
 import { CityMapTab } from './city-detail/CityMapTab';
+import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
 
 const OUTLINE_ON_INK =
   'border inline-flex items-center gap-2 border-background px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground';
@@ -391,7 +392,7 @@ export default function CityDetail() {
         type="city"
         eyebrow={eyebrowParts.join(' · ')}
         title={city.name}
-        lead={city.editorial_hook || city.description}
+        lead={<GlossaryLinkedText text={city.editorial_hook || city.description} />}
         tags={<GeoCensus type="city" items={census} />}
         action={
           <>
