@@ -46,7 +46,10 @@ const FIELD_ORDER: Record<string, readonly string[]> = {
     'visibility',
     'slug',
   ],
-  milestone: ['year', 'event_date', 'category', 'slug'],
+  // `milestones` has date/date_end, not year/event_date — the names the first draft
+  // guessed. An unknown key here is harmless (it falls through to the alphabetical
+  // tail) but it would silently stop putting the deciding field first.
+  milestone: ['date', 'date_end', 'category', 'slug'],
   organization: ['website_domain', 'city', 'roles', 'slug'],
   hotel: ['address', 'website', 'city', 'slug'],
   marketplace: ['merchant_domain', 'brand', 'price', 'currency', 'external_url', 'slug'],
