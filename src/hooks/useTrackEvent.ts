@@ -1,5 +1,5 @@
 import { useCallback, useRef } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { insertTelemetry } from '@/lib/telemetryInsert';
 import { useAuth } from '@/hooks/useAuth';
 import { analyticsAllowed } from '@/lib/analyticsConsent';
 
@@ -66,18 +66,18 @@ export function useTrackEvent() {
       pendingRef.current.add(dedupeKey);
       setTimeout(() => pendingRef.current.delete(dedupeKey), 2000);
 
-      try {
-        await supabase.from('user_events').insert({
-          user_id: user?.id || null,
-          event_type: eventType,
-          entity_type: entityType || null,
-          entity_id: entityId || null,
-          metadata: metadata || {},
-          session_id: user ? null : getSessionId(),
-        });
-      } catch {
-        // Silent fail — tracking should never block UX
-      }
+      // insertTelemetry inspects the resolved `{ error }`. The `try/catch`
+      // that used to be here caught nothing: PostgREST resolves with an error
+      // object rather than throwing, so a CHECK or RLS rejection vanished
+      // without a trace and the missing rows looked like missing users.
+      await insertTelemetry('user_events', {
+        user_id: user?.id || null,
+        event_type: eventType,
+        entity_type: entityType || null,
+        entity_id: entityId || null,
+        metadata: metadata || {},
+        session_id: user ? null : getSessionId(),
+      });
     },
     [user],
   );

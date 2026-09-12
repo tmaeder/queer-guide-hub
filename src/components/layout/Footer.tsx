@@ -6,6 +6,7 @@ import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { cn } from '@/lib/utils';
 import { INTENT_NAV, INTENT_TRACK, isIntentActive } from '@/config/navigation';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { OPEN_COOKIE_PREFERENCES_EVENT } from '@/lib/analyticsConsent';
 import { Wordmark } from '@/components/brand/Wordmark';
 import { TrackSwatch } from '@/components/transit/TrackSwatch';
 import { PAGE_GUTTER } from '@/components/layout/PageContainer';
@@ -274,6 +275,18 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
               {t(link.labelKey, link.fallback)}
             </LocalizedLink>
           ))}
+          {/* The only way back into the consent dialog. It is rendered by
+              CookieConsentBanner, which stops rendering for good once a choice
+              is stored — so before this existed, a visitor who pressed "Accept
+              All" could not withdraw analytics consent from anywhere in the UI.
+              A button, not a link: it opens a dialog rather than navigating. */}
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent(OPEN_COOKIE_PREFERENCES_EVENT))}
+            className="text-13 text-background/70 underline-offset-4 hover:text-background hover:underline"
+          >
+            {t('footer.cookiePreferences', 'Cookie preferences')}
+          </button>
           {/* Both switchers are shared components built for a PAPER surface:
               they render ghost buttons at `text-foreground`, which on this ink
               plate is ink-on-ink — measured `color: rgb(17,17,17)`, i.e. two

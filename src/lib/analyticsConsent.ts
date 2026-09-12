@@ -23,6 +23,15 @@
  *     version: '1.0', timestamp: ISO }
  */
 
+/**
+ * Window event any surface can dispatch to reopen the cookie preferences
+ * dialog. It lives here rather than in `CookieConsentBanner.tsx` because the
+ * banner is a `lazyOptional` chunk — importing a constant from it would pull
+ * the whole banner into the footer's bundle — and because a component module
+ * may not export non-components (react-refresh).
+ */
+export const OPEN_COOKIE_PREFERENCES_EVENT = 'openCookiePreferences';
+
 export const CONSENT_STORAGE_KEY = 'queer-guide-cookie-consent';
 export const CONSENT_VERSION = '1.0';
 
