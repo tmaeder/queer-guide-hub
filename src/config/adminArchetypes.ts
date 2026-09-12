@@ -335,7 +335,7 @@ function matchDynamic(rest: string): AdminArchetypeEntry | undefined {
   return undefined;
 }
 
-/** `B · RECORD EDITOR — /admin/content/venue/schwuz`, the header's route line. */
+/** `B · RECORD EDITOR — /admin/content/venues/schwuz`, the header's route line. */
 export function getArchetypeRouteLine(pathname: string): string | null {
   const key = getArchetypeForRoute(pathname);
   if (!key) return null;

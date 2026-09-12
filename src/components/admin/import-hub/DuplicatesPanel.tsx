@@ -24,6 +24,7 @@ import {
 import { DuplicatePairCard } from './DuplicatePairCard';
 import { MergeDialog } from './MergeDialog';
 import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
+import { AdminStatTile } from '@/components/admin/primitives/AdminStatTile';
 
 export function DuplicatesPanel() {
   const [subTab, setSubTab] = useState('staging');
@@ -117,26 +118,13 @@ function StagingDedupSection() {
           {/* Results */}
           {batchScan.data && (
             <div className="mt-4 grid grid-cols-4 gap-4">
-              <ResultCard
-                label="Processed"
-                value={batchScan.data.processed}
-                color="hsl(var(--muted-foreground))"
-              />
-              <ResultCard
-                label="Duplicates Found"
-                value={batchScan.data.duplicates_found}
-                color="hsl(var(--destructive))"
-              />
-              <ResultCard
+              <AdminStatTile label="Processed" value={batchScan.data.processed} />
+              <AdminStatTile label="Duplicates Found" value={batchScan.data.duplicates_found} />
+              <AdminStatTile
                 label="Merge Candidates"
                 value={batchScan.data.merge_candidates_found}
-                color="hsl(var(--foreground) / 0.55)"
               />
-              <ResultCard
-                label="Skipped"
-                value={batchScan.data.skipped}
-                color="hsl(var(--muted-foreground))"
-              />
+              <AdminStatTile label="Skipped" value={batchScan.data.skipped} />
             </div>
           )}
         </CardContent>
@@ -395,22 +383,6 @@ function MergeHistorySection() {
           )}
         </CardContent>
       </Card>
-    </div>
-  );
-}
-
-// ==================== Shared Components ====================
-
-function ResultCard({ label, value, color }: { label: string; value: number; color: string }) {
-  return (
-    <div
-      className="p-4 rounded-element text-center"
-      style={{ backgroundColor: `${color}08`, border: `1px solid ${color}20` }}
-    >
-      <p className="text-xl font-bold" style={{ color }}>
-        {value}
-      </p>
-      <span className="text-xs text-muted-foreground">{label}</span>
     </div>
   );
 }

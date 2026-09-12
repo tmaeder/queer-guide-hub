@@ -72,7 +72,7 @@ export default function AdminDuplicates() {
   );
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6">
       {/* mb-0: the parent already spaces children with gap-6. */}
       <AdminArchetypeHeader className="mb-0" title="Duplicates & merge" />
 

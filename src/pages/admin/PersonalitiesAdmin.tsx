@@ -30,13 +30,12 @@ export default function PersonalitiesAdmin() {
   }, [params, openEditor, setParams]);
 
   return (
-    <div className="flex flex-col">
-      <div className="px-4 pt-4">
-        <PersonalityCheckPanel />
-      </div>
-      <div className="px-4 pt-4">
-        <PersonhoodApprovalInfo />
-      </div>
+    /* gap-4, not px-4 pt-4 wrappers: AdminShell's <main> already owns the
+       horizontal gutter, so the old wrappers double-padded these two panels
+       against the list below them. */
+    <div className="flex flex-col gap-4">
+      <PersonalityCheckPanel />
+      <PersonhoodApprovalInfo />
       <ContentListPanel contentTypeId="personalities" />
     </div>
   );

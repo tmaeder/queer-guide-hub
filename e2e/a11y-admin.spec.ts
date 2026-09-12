@@ -10,12 +10,19 @@ test.use(REDUCED_MOTION);
 
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
+// `content/:type` takes a REGISTRY KEY, and an unknown one does not 404 —
+// useContentListController falls through to loadAllTypes(), so a wrong key
+// silently renders the "All Content" list and the scan passes having never
+// visited the page it names. `news` and `marketplace` were wrong for as long as
+// this spec has existed; the keys are `news_articles` and `marketplace_listings`
+// (src/config/contentTypes/index.ts), so the News and Marketplace lists had
+// never actually been scanned.
 const ADMIN_ROUTES = [
   '/admin',
   '/admin/content/events',
   '/admin/content/venues',
-  '/admin/content/news',
-  '/admin/content/marketplace',
+  '/admin/content/news_articles',
+  '/admin/content/marketplace_listings',
   '/admin/pipelines',
   '/admin/users',
   '/admin/settings',
