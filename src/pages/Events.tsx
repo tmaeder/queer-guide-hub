@@ -96,14 +96,10 @@ const Events = () => {
         title: t('pages.events.rsvpUpdated', 'RSVP Updated'),
         description: `You're now marked as ${status} for this event.`,
       });
-      fetchEvents(
-        {},
-        {
-          page: 1,
-          pageSize: PAGE_SIZE,
-          append: false,
-        },
-      ); // Refresh to show updated attendance
+      // Refresh to show updated attendance. Through the filter handler, not a
+      // bare fetchEvents({}) — that reran page 1 UNFILTERED, so RSVPing to an
+      // event dropped the reader's filters and replaced the list.
+      f.handleFiltersChange();
     }
   };
   const handleViewDetails = (event: Event) => {
@@ -270,7 +266,10 @@ const Events = () => {
         </div>
 
         {/* Error State */}
-        {error && !loading && <ErrorState message={error} onRetry={() => fetchEvents()} />}
+        {/* Retry re-runs the CURRENT filter set. A bare `fetchEvents()` here
+            retried with no filters at all, so recovering from an error quietly
+            swapped the reader's filtered list for an unfiltered one. */}
+        {error && !loading && <ErrorState message={error} onRetry={f.handleFiltersChange} />}
 
         {/* Loading State */}
         {loading && (
@@ -280,7 +279,7 @@ const Events = () => {
             ))}
           </div>
         )}
-        {loading && loadingTimedOut && <LoadingTimeout onRetry={() => fetchEvents()} />}
+        {loading && loadingTimedOut && <LoadingTimeout onRetry={f.handleFiltersChange} />}
 
         {/* Empty State */}
         {!loading &&
@@ -396,7 +395,16 @@ const Events = () => {
             onLoadMore={async () => {
               const nextPage = f.page + 1;
               f.setPage(nextPage);
-              await fetchEvents({}, { page: nextPage, pageSize: PAGE_SIZE, append: true });
+              // The filter set is MANDATORY here, not a nicety: `append: true`
+              // means whatever comes back is added to the list on screen. This
+              // passed `{}`, so page 2 was an unfiltered query whose rows were
+              // appended under a filtered page 1 — filter to one city, click
+              // Load more, and events from everywhere appear below the fold.
+              await fetchEvents(f.buildFilters(), {
+                page: nextPage,
+                pageSize: PAGE_SIZE,
+                append: true,
+              });
             }}
           />
         )}
