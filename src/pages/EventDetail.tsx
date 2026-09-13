@@ -19,7 +19,7 @@ import { useTrackEvent } from '@/hooks/useTrackEvent';
 import { useEntityTripStatus } from '@/hooks/useEntityTripStatus';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useSlugRedirect } from '@/hooks/useSlugRedirect';
-import { useMeta } from '@/hooks/useMeta';
+import { useDetailMeta } from '@/hooks/useDetailMeta';
 import { socialSameAs } from '@/lib/social/registry';
 import { toast } from '@/hooks/use-toast';
 import { upsertEventAttendance } from '@/hooks/usePageFetchers';
@@ -49,6 +49,7 @@ import { PageContainer } from '@/components/layout/PageContainer';
 import { SinglePage, StickyRailGroup } from '@/components/transit/SinglePage';
 import { EventProgramme } from '@/components/events/EventProgramme';
 import { useEventProgramme } from '@/hooks/useEventProgramme';
+import { programmeLd } from '@/lib/eventProgrammeLd';
 import { PhotoInset } from '@/components/transit/PhotoInset';
 import { ProvenanceLine } from '@/components/transit/ProvenanceLine';
 import { SingleSectionList, SingleRouteRail } from '@/components/transit/SingleSections';
@@ -109,7 +110,27 @@ export default function EventDetail() {
 
   const cityForMeta = event?.cities?.name ?? event?.city ?? null;
   const eventOgImage = event ? resolveEntityImage('event', event).url : undefined;
-  useMeta({
+
+  // The programme is loaded for BOTH shapes: on an umbrella it is the day-part
+  // list, on a child it is the siblings, because `event_programme` resolves either
+  // id to the same root. Only the section's heading differs.
+  //
+  // It sits ABOVE useDetailMeta because the JSON-LD needs it — the subEvent /
+  // superEvent relation is built from exactly this data, so declaring it costs no
+  // extra query.
+  const { data: programme } = useEventProgramme(event?.id, !!event);
+  const programmeChildren = programme?.children ?? [];
+  const isProgrammeChild = !!event?.parent_event_id;
+  const siblings = isProgrammeChild
+    ? programmeChildren.filter((c) => c.id !== event?.id)
+    : programmeChildren;
+
+  useDetailMeta({
+    // `error` and "resolved with no event" both mean this URL has nothing to
+    // show — a dead/mistyped slug must not publish a self-referential
+    // canonical with no robots tag (the indexable-soft-404 shape).
+    status: isLoading ? 'loading' : error || !event ? 'notFound' : 'ready',
+    notFoundTitle: t('pages.eventDetail.notFoundTitle', 'Event not found'),
     title: event?.title ?? undefined,
     description: event
       ? (event.description?.slice(0, 160) ??
@@ -142,6 +163,7 @@ export default function EventDetail() {
           sameAs: socialSameAs(event.social_links).length
             ? socialSameAs(event.social_links)
             : undefined,
+          ...programmeLd(event.id, programme?.umbrella, programmeChildren),
         }
       : undefined,
   });
@@ -273,17 +295,6 @@ export default function EventDetail() {
   // "has it happened yet" is how a page says Ended in one place and offers
   // tickets in another.
   const isPast = event ? isEventPast(event) : false;
-
-  // The programme is loaded for BOTH shapes: on an umbrella it is the parade /
-  // festival / week list, on a child it is the siblings, because
-  // `event_programme` resolves either id to the same root. Only the section's
-  // heading differs.
-  const { data: programme } = useEventProgramme(event?.id, !!event);
-  const programmeChildren = programme?.children ?? [];
-  const isProgrammeChild = !!event?.parent_event_id;
-  const siblings = isProgrammeChild
-    ? programmeChildren.filter((c) => c.id !== event?.id)
-    : programmeChildren;
 
   // Spec module order for `event`: 01 fact strip, 03 occurrences, 04 access,
   // 08 nested entity, 15 stat line.

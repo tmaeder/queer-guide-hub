@@ -17,7 +17,12 @@ import { useTripSafety, worstCountryOf, type TripSafetyReport } from '@/hooks/us
 import { useRiskVisual } from '@/hooks/useRiskVisual';
 import { TripNewsSection } from './TripNewsSection';
 import { AiSafetyNarrativeCard } from './AiSafetyNarrativeCard';
-import { getScoreLabel, parseSsuSummary, getProtectionStatus } from '@/utils/equalityScore';
+import {
+  EQUALITY_TIER_I18N_KEY,
+  getScoreLabel,
+  parseSsuSummary,
+  getProtectionStatus,
+} from '@/utils/equalityScore';
 import { requiresIt } from '@/lib/rights/transSafety';
 import type { TripPlace, TripDay } from '@/hooks/useTrips';
 import { PerLegSafety } from './PerLegSafety';
@@ -276,7 +281,7 @@ function CountryAccordion({
                 <div className="flex items-center gap-[0.1875rem] flex-wrap">
                   <p className="font-bold text-base">{country.name}</p>
                   <Badge variant="secondary">
-                    {t(`trips.safety.scoreLabel.${scoreLabelToKey(scoreInfo.label)}`, {
+                    {t(`trips.safety.scoreLabel.${EQUALITY_TIER_I18N_KEY[scoreInfo.tier]}`, {
                       defaultValue: scoreInfo.label,
                     })}
                   </Badge>
@@ -396,18 +401,6 @@ function DetailRow({
       </div>
     </div>
   );
-}
-
-function scoreLabelToKey(label: string): string {
-  const map: Record<string, string> = {
-    'Very High': 'veryHigh',
-    High: 'high',
-    Moderate: 'moderate',
-    Low: 'low',
-    'Very Low': 'veryLow',
-    'No Data': 'noData',
-  };
-  return map[label] ?? 'noData';
 }
 
 function tipBucket(score: number | null): 'safe' | 'caution' | 'danger' {

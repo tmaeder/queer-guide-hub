@@ -1,3 +1,4 @@
+import type { CompetitionCategory } from '@/lib/competitionCategories';
 import type { DragOutcome } from '@/lib/dragOutcome';
 
 /**
@@ -52,6 +53,14 @@ export interface Competition {
   slug: string;
   name: string;
   kind: CompetitionKind;
+  /**
+   * Which of the six comparable types this competition belongs to, and
+   * therefore which page it appears on. Distinct from `kind`, which is
+   * structure only: `drag_pageant`, `trans_pageant`, `gay_title` and
+   * `leather_title` are all `kind: 'title'` and are not comparable with each
+   * other. See src/lib/competitionCategories.ts.
+   */
+  category: CompetitionCategory;
   /** What this competition IS, in its own source's words. Identity, not structure. */
   format: string | null;
   network: string | null;
@@ -70,6 +79,9 @@ export interface RosterEntry {
   competition: string;
   competition_slug: string;
   kind: CompetitionKind;
+  /** The competition's category, denormalised onto the entry so a category
+   *  page can filter the roster without joining it back to the overview. */
+  category?: CompetitionCategory;
   format?: string;
   edition: string;
   edition_slug: string;

@@ -1,11 +1,11 @@
 import * as React from 'react';
+// Primitives re-exported unchanged are imported BY NAME rather than aliased off
+// the namespace (`const Select = SelectPrimitive.Root`) — see the note in
+// accordion.tsx. Same value either way; only this form keeps fast refresh.
+import { Root as Select, Group as SelectGroup, Value as SelectValue } from '@radix-ui/react-select';
 import * as SelectPrimitive from '@radix-ui/react-select';
 import { Check, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-const Select = SelectPrimitive.Root;
-const SelectGroup = SelectPrimitive.Group;
-const SelectValue = SelectPrimitive.Value;
 
 const SelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Trigger>,

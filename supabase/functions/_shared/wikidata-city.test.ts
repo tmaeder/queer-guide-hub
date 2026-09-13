@@ -33,6 +33,99 @@ const ent = (id: string, quals?: Statement['qualifiers']): Statement => ({
 })
 const endedAt = (time: string) => ({ P582: [{ snaktype: 'value', datavalue: { value: { time } } }] })
 
+/** A dimensioned quantity, as Wikidata really serialises it. */
+const qtyUnit = (amount: string, unitQid: string, rank: Statement['rank'] = 'normal'): Statement => ({
+  rank,
+  mainsnak: {
+    snaktype: 'value',
+    datavalue: {
+      value: { amount, unit: `http://www.wikidata.org/entity/${unitQid}` },
+      type: 'quantity',
+    },
+  },
+})
+
+// --- units: area and elevation are dimensioned ------------------------------
+//
+// Shapes below were read off the live API on 2026-09-08, not invented:
+// Q90 P2046 = 105.4 Q712226, Q84 P2044 carries a 36 Q3710 (foot) statement, and
+// a square-metre (Q25343) P2046 appears within a 15-city sample.
+
+Deno.test('parseCityFacts converts area from square metres', () => {
+  // Unconverted this is 1,138,110,000 "km2" — the City of Hamilton defect,
+  // roughly seven times the land area of Earth.
+  const out = parseCityFacts({ P2046: [qtyUnit('+1138110000', 'Q25343')] })
+  assertEquals(out.area_km2, 1138.11)
+})
+
+Deno.test('parseCityFacts converts area from square miles', () => {
+  // 100 x 2.589988110336 = 258.9988…, and the column rounds to 2dp.
+  assertEquals(parseCityFacts({ P2046: [qtyUnit('+100', 'Q232291')] }).area_km2, 259)
+})
+
+Deno.test('parseCityFacts converts elevation from feet (real Q84 statement)', () => {
+  assertEquals(parseCityFacts({ P2044: [qtyUnit('+36', 'Q3710')] }).elevation_m, 11)
+})
+
+Deno.test('parseCityFacts passes metric units through unchanged', () => {
+  const out = parseCityFacts({
+    P2046: [qtyUnit('+105.4', 'Q712226')],
+    P2044: [qtyUnit('+48', 'Q11573')],
+  })
+  assertEquals(out.area_km2, 105.4)
+  assertEquals(out.elevation_m, 48)
+})
+
+Deno.test('parseCityFacts writes NOTHING for an unrecognised unit', () => {
+  // The whole point: a bare amount under the km2 label is the defect, so an
+  // unknown scale must yield absence, never the raw number.
+  const out = parseCityFacts({
+    P2046: [qtyUnit('+500', 'Q99999999')],
+    P2044: [qtyUnit('+500', 'Q99999999')],
+  })
+  assertEquals(out.area_km2, undefined)
+  assertEquals(out.elevation_m, undefined)
+})
+
+Deno.test('parseCityFacts writes NOTHING when the unit field is absent', () => {
+  assertEquals(parseCityFacts({ P2046: [qty('+105.4')] }).area_km2, undefined)
+  assertEquals(parseCityFacts({ P2044: [qty('+48')] }).elevation_m, undefined)
+})
+
+Deno.test('parseCityFacts writes NOTHING for a literal dimensionless unit', () => {
+  // Distinct from the case above: real Wikidata serialises dimensionless as the
+  // string "1", not as an absent field. The helper deliberately tells the two
+  // apart, so both branches need a test — an audit found only the absent one
+  // covered, which left the `'1'` branch effectively unexercised.
+  const dimensionless = (amount: string): Statement => ({
+    rank: 'normal',
+    mainsnak: { snaktype: 'value', datavalue: { value: { amount, unit: '1' }, type: 'quantity' } },
+  })
+  assertEquals(parseCityFacts({ P2046: [dimensionless('+105.4')] }).area_km2, undefined)
+  assertEquals(parseCityFacts({ P2044: [dimensionless('+48')] }).elevation_m, undefined)
+})
+
+Deno.test('parseCityFacts converts hectares and kilometres', () => {
+  // Table entries that shipped untested.
+  assertEquals(parseCityFacts({ P2046: [qtyUnit('+10540', 'Q35852')] }).area_km2, 105.4)
+  assertEquals(parseCityFacts({ P2044: [qtyUnit('+2', 'Q828224')] }).elevation_m, 2000)
+})
+
+Deno.test('parseCityFacts still reads population, which carries no unit', () => {
+  // Guards against "fixing" units by routing P1082 through the same path — it
+  // is a count, and requiring a unit there would empty the column.
+  assertEquals(parseCityFacts({ P1082: [qty('+2103778')] }).population, 2103778)
+})
+
+Deno.test('unit conversion respects statement rank', () => {
+  // Q84's preferred elevation is 4 m; a normal-rank 36 ft statement sits beside
+  // it. Rank must be resolved first, then the winner converted.
+  const out = parseCityFacts({
+    P2044: [qtyUnit('+36', 'Q3710'), qtyUnit('+4', 'Q11573', 'preferred')],
+  })
+  assertEquals(out.elevation_m, 4)
+})
+
 // --- rank: the bug this module exists to fix -------------------------------
 
 Deno.test('bestStatement prefers preferred rank over document order (Cape Town population)', () => {

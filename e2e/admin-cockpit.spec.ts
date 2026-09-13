@@ -30,7 +30,23 @@ async function isAuthed(page: Page): Promise<boolean> {
     .catch(() => false);
 }
 
+/**
+ * Read the cockpit's section headings, top to bottom.
+ *
+ * The wait is load-bearing and is NOT a generic "settle" hedge. Every section is
+ * gated on `sections.isVisible(id)`, which resolves through `useGranularRoles`;
+ * while roles are loading `effectiveRole` is not yet an editor, `eligible` is
+ * empty, and AdminDashboard renders ZERO <section> elements. The "Cockpit"
+ * heading is static chrome in AdminPageHeader and paints immediately, so gating
+ * on it and then calling the non-retrying `allInnerTexts()` reads the page in
+ * that pre-roles window and returns [] — which is exactly the `Received: 0` this
+ * spec produced on the nightly. Waiting for a section to exist is the same thing
+ * the sibling right-rail test does (it awaits `expect(jumpTo).toBeVisible()`),
+ * which is why that one passed while this one failed.
+ */
 async function sectionHeadings(page: Page): Promise<string[]> {
+  const sections = page.locator('section[aria-labelledby^="cockpit-"]');
+  await expect(sections.first()).toBeVisible();
   return page.locator('section[aria-labelledby^="cockpit-"] > div > h2').allInnerTexts();
 }
 

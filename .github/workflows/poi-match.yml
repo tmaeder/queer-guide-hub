@@ -65,8 +65,19 @@ jobs:
         run: |
           set -euo pipefail
           # Dispatch inputs go through the environment and are never
-          # interpolated into a run: body — `${{ }}` is substituted before the
-          # shell sees it, so a crafted value would execute.
+          # interpolated into a run: body — a GitHub expression is substituted
+          # before the shell sees it, so a crafted value would execute.
+          #
+          # That sentence used to spell the empty expression token out
+          # literally, and it cost this workflow its whole life: the compiler
+          # reads the entire file, an empty expression is a syntax error, and
+          # the file then failed to COMPILE on every push to every branch —
+          # a red run with no jobs and no log ("log not found"), attributed to
+          # `push` on a workflow that is dispatch-only and never ran. Bisected
+          # against live pushes; the concurrency expression and the action
+          # versions were both suspected first and both cleared.
+          #
+          # Do not write it out again. Say "a GitHub expression" instead.
           case "$GEOFABRIK" in
             *[!a-z0-9/-]*) echo "::error::geofabrik_path must be [a-z0-9/-]"; exit 1 ;;
           esac

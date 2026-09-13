@@ -1,7 +1,7 @@
 import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Clock, BookOpen } from 'lucide-react';
-import { useMeta } from '@/hooks/useMeta';
+import { useDetailMeta } from '@/hooks/useDetailMeta';
 import { useGuide, questPhase, type GuideSection } from '@/hooks/useGuides';
 import { useGuideReadTracker } from '@/hooks/useGuideReadTracker';
 import { GuidePickBlock, GuideComparisonTable } from '@/components/guides/GuidePickBlock';
@@ -11,6 +11,7 @@ import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { GlossaryLinkedProse } from '@/components/tags/GlossaryLinkedText';
 
 function SectionBlock({ section }: { section: GuideSection }) {
   if (!section.body_md) return null;
@@ -44,7 +45,9 @@ const GuideDetail = () => {
   const { data, isLoading, error } = useGuide(slug);
   useGuideReadTracker(data?.guide.id);
 
-  useMeta({
+  useDetailMeta({
+    status: isLoading ? 'loading' : error || !data ? 'notFound' : 'ready',
+    notFoundTitle: t('guides.detail.notFound.title', 'Guide not found.'),
     title: data?.guide?.title ?? t('guides.detail.fallbackTitle', 'Guide'),
     description: data?.guide?.dek ?? undefined,
     canonicalPath: data?.guide ? `/guides/${data.guide.slug}` : undefined,
@@ -155,12 +158,15 @@ const GuideDetail = () => {
       )}
 
       {guide.intro_md && (
-        <PageContainer as="section" flush size="reading" className="mb-16 space-y-6">
-          {guide.intro_md.split(/\n\n+/).map((para, i) => (
-            <p key={i} className="text-body-lg leading-relaxed">
-              {para}
-            </p>
-          ))}
+        <PageContainer as="section" flush size="reading" className="mb-16">
+          {/* One matcher pass over the whole intro, then distributed back into
+              paragraphs — so the link cap and first-mention-only apply to the
+              document rather than to each paragraph. */}
+          <GlossaryLinkedProse
+            text={guide.intro_md}
+            className="space-y-6"
+            paragraphClassName="text-body-lg leading-relaxed"
+          />
         </PageContainer>
       )}
 

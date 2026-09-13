@@ -22,7 +22,7 @@ import type { Page } from '@playwright/test';
  * (3) is the load-bearing one for axe. If it samples before the theme stylesheet
  * applies, it reads fallback greys and reports bogus contrast failures — ratios
  * around 1.0–1.4 that match no real token (the shipped `--muted-foreground` is
- * `0 0% 35%`, roughly 7:1). This is strictly a stronger guarantee than
+ * `0 0% 33%`, roughly 7:1 on paper). This is strictly a stronger guarantee than
  * `networkidle`, which could fire before the stylesheet had applied at all.
  */
 export async function waitForAppReady(page: Page, timeout = 30_000): Promise<void> {
@@ -55,10 +55,14 @@ export async function waitForAppReady(page: Page, timeout = 30_000): Promise<voi
   // banner's "Accept All" button reported at 1.29:1, foreground #ffffff on
   // #e2e2e2 — and again at 4.35:1 on #797979. Neither grey is a token in this
   // system. They are `--foreground` (#0a0a0a) composited over white at ~11% and
-  // ~53% opacity: two frames of the same fade. The banner already honours
-  // prefers-reduced-motion, and the spec already sets `reducedMotion: 'reduce'`,
-  // so the fade was not the issue — the element simply had not settled when axe
-  // read it.
+  // ~53% opacity: two frames of the same fade.
+  //
+  // The banner honours prefers-reduced-motion, and the spec declared
+  // `reducedMotion: 'reduce'`, which is why that fade was ruled out as the
+  // cause at the time. That reasoning was unsound: the declaration emulated
+  // nothing (see support/reducedMotion.ts) — the media query never matched. The
+  // wait below is still what makes the sample deterministic, because a lazy
+  // chunk that has not mounted yet is not a motion problem at all.
   //
   // Waiting for it to settle makes the sample deterministic without excluding
   // the banner from coverage, which is what dismissing it would have cost.

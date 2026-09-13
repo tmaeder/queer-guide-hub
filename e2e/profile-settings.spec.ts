@@ -33,8 +33,14 @@ test.describe('profile settings — inline accordion', () => {
   test('renders the settings hub with accordion section headers', async ({ page }) => {
     await page.goto('/settings');
     await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
+    // Anchored at the start on purpose. An AccordionSection's accessible name is
+    // its title PLUS its summary line, and the Privacy section's summary opens
+    // with "Profile: public · Identity: … · Travel: …" (privacySummary in
+    // Settings.tsx) — so an unanchored /Profile/i matched both "Profile Bio,
+    // location, links" and "Privacy & visibility Profile: public …" and failed
+    // strict mode with two elements, not with a missing one.
     for (const title of ['Profile', 'Privacy & visibility', 'Travel preferences', 'Account']) {
-      await expect(page.getByRole('button', { name: new RegExp(title, 'i') })).toBeVisible();
+      await expect(page.getByRole('button', { name: new RegExp(`^${title}`, 'i') })).toBeVisible();
     }
     // Nothing is expanded on load — collapsed Collapsible content is unmounted.
     await expect(page.locator('#settings-section-privacy')).not.toContainText('Privacy Settings');

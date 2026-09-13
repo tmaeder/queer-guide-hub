@@ -1,5 +1,5 @@
 import { assertEquals } from 'https://deno.land/std@0.168.0/testing/asserts.ts'
-import { cleanText, excerptOf, extractMediaUrl, parseRssItems, stripLoneSurrogates } from './rss-parse.ts'
+import { cleanText, excerptOf, extractChannelImage, extractChannelMeta, extractMediaUrl, parseRssItems, stripLoneSurrogates } from './rss-parse.ts'
 
 // Regression: parseRssItems used to build EVERY item in the feed, and the
 // caller sliced to maxArticles afterwards. Each item runs cleanText (a 4-pass
@@ -167,4 +167,207 @@ Deno.test('excerpt is derived from the same cleaned text as content', () => {
     `<description>&lt;p&gt;${'word '.repeat(200)}&lt;/p&gt;</description></item></channel></rss>`
   const [item] = parseRssItems(xml)
   assertEquals(String(item.excerpt), excerptOf(String(item.content)))
+})
+
+// ── Audio enclosures must never become artwork ─────────────────────────────
+//
+// extractMediaUrl's fallback took the first <enclosure url="..."> with NO type
+// check, so on a podcast item — where the enclosure IS the audio — every
+// episode stored its own .mp3 as its image. Measured on prod 2026-09-08:
+// 5,607 news_articles (5,548 mp3 + 52 m4a + 1 wav + 6 mp4), 2,405 of them
+// seo_indexable and therefore publishing an MP3 as og:image to crawlers.
+
+Deno.test('extractMediaUrl never returns an audio enclosure', () => {
+  const block = '<title>Ep 1</title>' +
+    '<enclosure url="https://www.buzzsprout.com/218346/episodes/17604553-ep-351.mp3" length="42" type="audio/mpeg"/>'
+  assertEquals(extractMediaUrl(block), null)
+})
+
+Deno.test('extractMediaUrl accepts an enclosure that DECLARES an image type', () => {
+  // The point of the fallback: a real image whose URL carries no extension.
+  const block = '<enclosure url="https://cdn.example/asset/9f2c1a?w=1200" type="image/jpeg"/>'
+  assertEquals(extractMediaUrl(block), 'https://cdn.example/asset/9f2c1a?w=1200')
+})
+
+Deno.test('extractMediaUrl rejects a TYPELESS enclosure — absence of a type is not evidence of an image', () => {
+  assertEquals(extractMediaUrl('<enclosure url="https://cdn.example/mystery" length="9"/>'), null)
+})
+
+Deno.test('extractMediaUrl scans ALL enclosures, not just the first', () => {
+  // Matching the first enclosure and then testing it is a different bug with
+  // the same symptom: the image is present but sits behind the audio.
+  const block =
+    '<enclosure url="https://cdn.example/ep.mp3" type="audio/mpeg"/>' +
+    '<enclosure url="https://cdn.example/art" type="image/png"/>'
+  assertEquals(extractMediaUrl(block), 'https://cdn.example/art')
+})
+
+// ── Channel artwork ────────────────────────────────────────────────────────
+
+const CHANNEL_ART = 'https://cdn.example/show-cover.jpg'
+const EPISODE_ART = 'https://cdn.example/episode-cover.jpg'
+
+function podcastFeed(itemInner: string): string {
+  return '<rss><channel><title>Show</title>' +
+    `<itunes:image href="${CHANNEL_ART}"/>` +
+    `<item><title>Ep 1</title><link>https://x/1</link><description>notes</description>${itemInner}</item>` +
+    '</channel></rss>'
+}
+
+const AUDIO = '<enclosure url="https://cdn.example/ep1.mp3" type="audio/mpeg"/>'
+
+Deno.test('extractChannelImage reads the channel header', () => {
+  assertEquals(extractChannelImage(podcastFeed(AUDIO)), CHANNEL_ART)
+})
+
+Deno.test('extractChannelImage does NOT adopt an item-level itunes:image as the show artwork', () => {
+  // The scoping trap: an unscoped regex finds the FIRST episode's art and
+  // stamps it on every other episode — wrong for exactly the feeds that
+  // bother with per-episode artwork.
+  const noChannelArt =
+    '<rss><channel><title>Show</title>' +
+    `<item><title>Ep 1</title><link>https://x/1</link><itunes:image href="${EPISODE_ART}"/></item>` +
+    '</channel></rss>'
+  assertEquals(extractChannelImage(noChannelArt), null)
+})
+
+Deno.test('extractChannelImage ignores RSS <image><url> — that is the site logo, not artwork', () => {
+  const logoOnly =
+    '<rss><channel><title>Show</title><image><url>https://cdn.example/88x31.gif</url></image>' +
+    '<item><title>Ep</title><link>https://x/1</link></item></channel></rss>'
+  assertEquals(extractChannelImage(logoOnly), null)
+})
+
+Deno.test('a podcast episode with no art of its own falls back to the SHOW artwork, never the audio', () => {
+  const [item] = parseRssItems(podcastFeed(AUDIO), true)
+  assertEquals(item.image_url, CHANNEL_ART)
+  assertEquals(item.audio_url, 'https://cdn.example/ep1.mp3')
+})
+
+Deno.test('per-episode art outranks the show artwork', () => {
+  const [item] = parseRssItems(podcastFeed(`${AUDIO}<itunes:image href="${EPISODE_ART}"/>`), true)
+  assertEquals(item.image_url, EPISODE_ART)
+})
+
+Deno.test('a NEWS feed never inherits channel artwork — one logo on every article is worse than none', () => {
+  const [item] = parseRssItems(podcastFeed(''), false)
+  assertEquals(item.image_url, null)
+})
+
+// ── Item URL: a guid is not a URL ────────────────────────────────────────────
+//
+// `<link>` is OPTIONAL on a podcast item, and the two biggest hosts fill the
+// gap with their own primary key. The parser used to take `<guid>` whenever
+// `<link>` was absent, so that key landed in news_articles.url and
+// pipeline-validate rejected the row with E_INVALID_URL — 323 of 680 podcast
+// rejections in a 30-day window, every episode of several ACTIVE shows, every
+// day, while source health stayed green because the FETCH succeeded.
+
+const MEGAPHONE_ITEM = `<rss><channel><title>Attitudes!</title>
+<itunes:image href="https://cdn.example/show.jpg"/>
+<item>
+  <title>Egypt Blocks LuPone Gay Cruise Too</title>
+  <guid isPermaLink="false">f5c534fe-3e17-11f1-810f-3bc0d47f51c8</guid>
+  <description>Show notes for this episode of the programme.</description>
+  <enclosure url="https://traffic.megaphone.fm/SBP3317243526.mp3" type="audio/mpeg"/>
+</item>
+</channel></rss>`
+
+const BUZZSPROUT_ITEM = `<rss><channel><title>Sounds Fake But Okay</title>
+<itunes:image href="https://cdn.example/show.jpg"/>
+<item>
+  <title>Ep 396: Reddit Rabbithole pt. 26</title>
+  <guid>Buzzsprout-19685709</guid>
+  <description>Show notes for this episode of the programme.</description>
+  <enclosure url="https://www.buzzsprout.com/1952385/19685709.mp3" type="audio/mpeg"/>
+</item>
+</channel></rss>`
+
+Deno.test('a Megaphone UUID guid never becomes the episode URL — the audio does', () => {
+  const [item] = parseRssItems(MEGAPHONE_ITEM, true)
+  assertEquals(item.url, 'https://traffic.megaphone.fm/SBP3317243526.mp3')
+  assertEquals(new URL(item.url as string).protocol, 'https:')
+})
+
+Deno.test('a Buzzsprout-NNNN guid never becomes the episode URL — the audio does', () => {
+  const [item] = parseRssItems(BUZZSPROUT_ITEM, true)
+  assertEquals(item.url, 'https://www.buzzsprout.com/1952385/19685709.mp3')
+})
+
+Deno.test('an episode with NO <link> is no longer dropped', () => {
+  // The old guard was `if (!title || !link) continue`. Once the guid stopped
+  // standing in for a link, an unguarded version of this change would have
+  // deleted these items outright instead of rejecting them downstream — a
+  // worse failure, because it leaves nothing to audit.
+  assertEquals(parseRssItems(MEGAPHONE_ITEM, true).length, 1)
+})
+
+Deno.test('a real <link> still wins over the audio enclosure', () => {
+  const withLink = MEGAPHONE_ITEM.replace(
+    '<guid isPermaLink="false">',
+    '<link>https://attitudes.example/ep/241</link><guid isPermaLink="false">',
+  )
+  assertEquals(parseRssItems(withLink, true)[0].url, 'https://attitudes.example/ep/241')
+})
+
+Deno.test('isPermaLink="true" is honoured, but only when the value really is a URL', () => {
+  const realPermalink = BUZZSPROUT_ITEM.replace(
+    '<guid>Buzzsprout-19685709</guid>',
+    '<guid isPermaLink="true">https://sfbo.example/396</guid>',
+  )
+  assertEquals(parseRssItems(realPermalink, true)[0].url, 'https://sfbo.example/396')
+
+  // Some feeds declare isPermaLink="true" over a urn:uuid:. The ATTRIBUTE is a
+  // claim; the parse is the evidence.
+  const lyingPermalink = BUZZSPROUT_ITEM.replace(
+    '<guid>Buzzsprout-19685709</guid>',
+    '<guid isPermaLink="true">urn:uuid:f5c534fe-3e17-11f1-810f</guid>',
+  )
+  assertEquals(parseRssItems(lyingPermalink, true)[0].url, 'https://www.buzzsprout.com/1952385/19685709.mp3')
+})
+
+Deno.test('the NEWS branch is unchanged — a non-URL guid still stages, so its verdict is recorded', () => {
+  // Deliberately NOT "improved". A news feed that has always published a bare
+  // guid keeps reaching pipeline-validate and keeps getting E_INVALID_URL on a
+  // row someone can look at. Silently dropping it here would be a regression
+  // dressed up as a fix.
+  const newsWithGuidOnly = `<rss><channel><item>
+    <title>Council passes equality ordinance</title>
+    <guid>tag:example.com,2026:12345</guid>
+    <description>Body text of the report goes here.</description>
+  </item></channel></rss>`
+  assertEquals(parseRssItems(newsWithGuidOnly, false)[0].url, 'tag:example.com,2026:12345')
+})
+
+// ── Channel metadata ─────────────────────────────────────────────────────────
+
+Deno.test('extractChannelMeta reads blurb and website from the channel header only', () => {
+  const feed = `<rss><channel>
+    <title>Show</title>
+    <link>https://show.example</link>
+    <description>A show about &lt;b&gt;queer&lt;/b&gt; history.</description>
+    <itunes:image href="https://cdn.example/show.jpg"/>
+    <item>
+      <title>Ep 1</title>
+      <link>https://show.example/1</link>
+      <description>Episode-level blurb that must NOT become the show blurb.</description>
+      <enclosure url="https://cdn.example/1.mp3" type="audio/mpeg"/>
+    </item>
+  </channel></rss>`
+  const meta = extractChannelMeta(feed)
+  assertEquals(meta.description, 'A show about queer history.')
+  assertEquals(meta.link, 'https://show.example')
+  assertEquals(meta.image, 'https://cdn.example/show.jpg')
+})
+
+Deno.test('extractChannelMeta returns null for a bare-domain channel link', () => {
+  const feed = '<rss><channel><title>S</title><link>show.example</link>' +
+    '<item><title>E</title><enclosure url="https://c/1.mp3" type="audio/mpeg"/></item></channel></rss>'
+  assertEquals(extractChannelMeta(feed).link, null)
+})
+
+Deno.test('extractChannelImage still behaves exactly as before', () => {
+  const feed = '<rss><channel><itunes:image href="https://cdn.example/show.jpg"/>' +
+    '<item><title>E</title><link>https://x/1</link></item></channel></rss>'
+  assertEquals(extractChannelImage(feed), 'https://cdn.example/show.jpg')
 })

@@ -59,7 +59,64 @@ const EXTRA_PAGES = [
   { title: 'Drag Race Sverige', franchise: 'Drag Race Sverige' },
   { title: 'Drag Race Germany', franchise: 'Drag Race Germany' },
   { title: 'Drag Race Global All Stars', franchise: 'Drag Race Global All Stars' },
+  // Independent drag competition series. These are NOT in
+  // `Category:Drag Race (franchise) seasons`, so discovery cannot find them —
+  // which is why none of their contestants existed as personalities. Measured
+  // before adding: 17 of the 18 King of Drag contestants had no personality row
+  // at all, so the corpus held eighteen drag kings and could not show a single
+  // one of them a profile.
+  //
+  // Everything here still passes through the same auto-publish rule below
+  // (`public` only with a real bio AND an image, otherwise `draft`), so this
+  // widens the review queue rather than publishing anyone unreviewed.
+  ...[1, 2, 3, 4, 5, 6].map((n) => ({
+    title: `The Boulet Brothers' Dragula season ${n}`,
+    franchise: "The Boulet Brothers' Dragula",
+  })),
+  ...[1, 2].map((n) => ({
+    title: `The Boulet Brothers' Dragula: Titans season ${n}`,
+    franchise: "The Boulet Brothers' Dragula: Titans",
+  })),
+  ...[1, 2, 3, 4, 5, 6, 7].map((n) => ({
+    title: `La Más Draga season ${n}`,
+    franchise: 'La Más Draga',
+  })),
+  { title: 'Call Me Mother (season 1)', franchise: 'Call Me Mother' },
+  { title: 'Call Me Mother (season 2)', franchise: 'Call Me Mother' },
+  { title: 'Queen of the Universe season 1', franchise: 'Queen of the Universe' },
+  { title: 'Queen of the Universe season 2', franchise: 'Queen of the Universe' },
+  { title: 'King of Drag', franchise: 'King of Drag' },
+  { title: 'King of Drag Season 2', franchise: 'King of Drag' },
+  { title: 'Drag Den season 1', franchise: 'Drag Den' },
+  { title: 'Drag Den season 2', franchise: 'Drag Den' },
+  { title: 'House of Drag', franchise: 'House of Drag' },
+  { title: 'Drag Latina', franchise: 'Drag Latina' },
+  { title: 'Queen of Drags', franchise: 'Queen of Drags' },
+  { title: 'Love for the Arts', franchise: 'Love for the Arts' },
+  { title: 'Academia de Drags season 1', franchise: 'Academia de Drags' },
 ]
+/**
+ * A contestant's profession is DERIVED FROM THE SHOW, never assumed.
+ *
+ * This script hardcoded `profession: 'drag queen'` for every contestant, which
+ * was harmless while it only ever saw Drag Race. It is not harmless now: the
+ * corpus includes King of Drag, "the first drag competition series to feature
+ * solely drag kings", and stamping 18 drag kings as queens is exactly the error
+ * `20260822223231_drag_king_is_not_a_drag_queen.sql` exists to prevent — that
+ * migration split `drag-king` out as its own profession with its own aliases
+ * precisely so the two are not conflated.
+ *
+ * Both values are slugs from the `professions` vocabulary, which
+ * `normalize_profession_full()` gates on write.
+ */
+const PROFESSION_BY_FRANCHISE = [
+  [/King of Drag/i, 'drag king'],
+]
+function franchiseProfession(franchise) {
+  for (const [re, prof] of PROFESSION_BY_FRANCHISE) if (re.test(franchise)) return prof
+  return 'drag queen'
+}
+
 const COUNTRY_BY_FRANCHISE = [
   [/UK|United Kingdom/i, 'United Kingdom'], [/Canada/i, 'Canada'],
   [/Down Under/i, 'Australia'], [/España|Espana/i, 'Spain'], [/France/i, 'France'],
@@ -358,7 +415,7 @@ async function main() {
     const norm = {
       name: r.stage_name,
       bio,
-      profession: 'drag queen',
+      profession: franchiseProfession(r.franchise),
       lgbti_connection: 'community_member',
       nationality: franchiseCountry(r.franchise),
       birth_place: r.hometown || null,

@@ -53,6 +53,7 @@ import {
   type WeatherDataType,
 } from './CountryDetail.parts';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
 
 const OUTLINE_ON_INK =
   'border inline-flex items-center gap-2 border-background px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground';
@@ -361,7 +362,7 @@ export default function CountryDetail() {
       type="country"
       eyebrow={eyebrowParts.join(' · ')}
       title={country.flag_emoji ? `${country.flag_emoji} ${country.name}` : country.name}
-      lead={country.editorial_hook || country.description}
+      lead={<GlossaryLinkedText text={country.editorial_hook || country.description} />}
       tags={<GeoCensus type="country" items={census} />}
       action={
         <>

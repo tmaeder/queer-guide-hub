@@ -188,6 +188,7 @@ const TABLE_MAP: Record<string, { contentType: string }> = {
 	queer_villages: { contentType: "queer_village" },
 	milestones: { contentType: "milestone" },
 	guides: { contentType: "guide" },
+	organizations: { contentType: "organization" },
 };
 
 export default {
@@ -556,6 +557,11 @@ function composeEmbedText(_table: string, r: TableRow): string {
 	if (typeof r.dek === "string" && r.dek) parts.push(r.dek);
 	if (typeof r.intro_md === "string" && r.intro_md) parts.push(r.intro_md);
 	if (Array.isArray(r.tags)) parts.push("Tags: " + r.tags.join(", "));
+	// organizations: `roles` is what the row IS (venue/publisher/seller/support/hotel/
+	// affiliate_partner/brand/organizer/community). Without it an org embeds as bare
+	// name + description and loses the only signal that distinguishes a venue operator
+	// from a publisher.
+	if (Array.isArray(r.roles) && r.roles.length) parts.push("Roles: " + r.roles.join(", "));
 	if (r.category) parts.push("Category: " + r.category);
 	if (r.event_type) parts.push("Type: " + r.event_type);
 	if (r.profession) parts.push("Profession: " + r.profession);

@@ -17,6 +17,7 @@ import { ink, paper } from '@/lib/mapTokens';
 import { isWebglSupported } from '@/lib/webglSupport';
 import { LAYER_COLORS, type MapMarker } from '@/hooks/useExploreMapData';
 import { renderPopupHTML } from '@/components/map/ExploreMapPopup';
+import { applyWhenStyleReady } from '@/components/map/mapStyleReady';
 import { useMapBoundaryLayers, type BoundaryLayerConfig } from '@/hooks/useMapBoundaryLayers';
 import type { VisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
 import type { PlaceMarkEntity } from '@/hooks/usePlaceMarks';
@@ -195,6 +196,17 @@ export const EntityMap = ({
 
     const map = new maplibregl.Map({
       container: containerRef.current,
+      // Scroll zoom is a CONSTRUCTOR OPTION, not a handler we reach into after
+      // the fact. It used to be `if (!scrollZoom) map.scrollZoom.disable()`,
+      // and that line crashed a real venue page:
+      //   [crash] TypeError @ /venues/:slug —
+      //   `can't access property "disable", t.scrollZoom is undefined`
+      //   (2026-08-31, Firefox 140, /venues/holliday-park-ruins)
+      // MapLibre only ever enables a handler when its option is truthy
+      // (`if (options.interactive && options.scrollZoom) …`), so passing false
+      // leaves it disabled — same behaviour, and no reach into a handler
+      // object whose presence we have measured that we cannot rely on.
+      scrollZoom,
       style: getMapStyle(),
       center,
       zoom,
@@ -207,8 +219,6 @@ export const EntityMap = ({
 
     map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
-
-    if (!scrollZoom) map.scrollZoom.disable();
 
     let loaded = false;
     map.on('load', () => {
@@ -261,163 +271,176 @@ export const EntityMap = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Render markers
+  /**
+   * Render markers.
+   *
+   * Routed through `applyWhenStyleReady`, not `mapReady` alone. `mapReady` is
+   * a React state flag latched once inside `load`; every call below is guarded
+   * by MapLibre's `Style._checkLoaded()`, which throws "Style is not done
+   * loading." as soon as that latched fact stops holding — and because the
+   * throw is inside a `useEffect` body React 18 hands it straight to the error
+   * boundary, taking the whole detail page with it. Not ready means DEFER to
+   * the next `styledata` and apply then; it is never dropped, because a
+   * dropped source is a map with no pins on it.
+   */
   useEffect(() => {
-    const map = mapRef.current;
-    if (!map || !mapReady) return;
+    const instance = mapRef.current;
+    if (!instance || !mapReady) return;
 
-    // Primary markers (larger, with label)
-    if (primary.length > 0) {
-      const primaryGeoJSON: GeoJSON.FeatureCollection = {
-        type: 'FeatureCollection',
-        features: primary.map((m) => ({
-          type: 'Feature' as const,
-          geometry: { type: 'Point' as const, coordinates: [m.lng, m.lat] },
-          properties: {
-            name: m.name,
-            color: m.color ?? LAYER_COLORS[m.type ?? 'venues'],
-          },
-        })),
-      };
+    return applyWhenStyleReady(instance, (map) => {
+      // Primary markers (larger, with label)
+      if (primary.length > 0) {
+        const primaryGeoJSON: GeoJSON.FeatureCollection = {
+          type: 'FeatureCollection',
+          features: primary.map((m) => ({
+            type: 'Feature' as const,
+            geometry: { type: 'Point' as const, coordinates: [m.lng, m.lat] },
+            properties: {
+              name: m.name,
+              color: m.color ?? LAYER_COLORS[m.type ?? 'venues'],
+            },
+          })),
+        };
 
-      const existingPrimary = map.getSource(PRIMARY_MARKER_SOURCE) as GeoJSONSource | undefined;
-      if (existingPrimary) {
-        existingPrimary.setData(primaryGeoJSON);
-      } else {
-        map.addSource(PRIMARY_MARKER_SOURCE, { type: 'geojson', data: primaryGeoJSON });
+        const existingPrimary = map.getSource(PRIMARY_MARKER_SOURCE) as GeoJSONSource | undefined;
+        if (existingPrimary) {
+          existingPrimary.setData(primaryGeoJSON);
+        } else {
+          map.addSource(PRIMARY_MARKER_SOURCE, { type: 'geojson', data: primaryGeoJSON });
 
-        map.addLayer({
-          id: PRIMARY_LAYER,
-          type: 'circle',
-          source: PRIMARY_MARKER_SOURCE,
-          paint: {
-            'circle-radius': 10,
-            'circle-color': ['get', 'color'],
-            'circle-stroke-width': 3,
-            'circle-stroke-color': ink(),
-            'circle-opacity': 0.95,
-          },
-        });
-
-        map.addLayer({
-          id: PRIMARY_LABEL,
-          type: 'symbol',
-          source: PRIMARY_MARKER_SOURCE,
-          layout: {
-            'text-field': ['get', 'name'],
-            'text-size': 13,
-            'text-font': [MAP_FONT_BOLD],
-            'text-offset': [0, 1.8],
-            'text-anchor': 'top',
-          },
-          paint: {
-            'text-color': ink(),
-            'text-halo-color': paper(),
-            'text-halo-width': 2,
-          },
-        });
-      }
-    }
-
-    // Nearby markers (smaller)
-    if (nearby.length > 0) {
-      const nearbyGeoJSON: GeoJSON.FeatureCollection = {
-        type: 'FeatureCollection',
-        features: nearby.map((m) => ({
-          type: 'Feature' as const,
-          geometry: { type: 'Point' as const, coordinates: [m.lng, m.lat] },
-          properties: {
-            id: m.id,
-            name: m.name,
-            subtitle: m.subtitle ?? '',
-            color: m.color ?? LAYER_COLORS[m.type ?? 'venues'],
-            linkTo: m.linkTo ?? '',
-            pointType: m.type ?? 'venues',
-            meta: JSON.stringify(m.meta ?? {}),
-            visited: isVisitedMarker(m) ? 1 : 0,
-          },
-        })),
-      };
-
-      const existingNearby = map.getSource(NEARBY_SOURCE) as GeoJSONSource | undefined;
-      if (existingNearby) {
-        existingNearby.setData(nearbyGeoJSON);
-        if (map.getLayer(NEARBY_LAYER)) {
-          map.setPaintProperty(NEARBY_LAYER, 'circle-opacity', [
-            'case',
-            ['==', ['get', 'visited'], 1],
-            0.3,
-            0.8,
-          ]);
-        }
-      } else {
-        map.addSource(NEARBY_SOURCE, { type: 'geojson', data: nearbyGeoJSON });
-
-        map.addLayer({
-          id: NEARBY_LAYER,
-          type: 'circle',
-          source: NEARBY_SOURCE,
-          paint: {
-            'circle-radius': 6,
-            'circle-color': ['get', 'color'],
-            'circle-stroke-width': 1.5,
-            'circle-stroke-color': ink(),
-            'circle-opacity': ['case', ['==', ['get', 'visited'], 1], 0.3, 0.8],
-          },
-        });
-
-        map.on('mouseenter', NEARBY_LAYER, (e) => {
-          map.getCanvas().style.cursor = 'pointer';
-          const feat = e.features?.[0];
-          const tip = tooltipRef.current;
-          if (feat && tip && (feat.properties as { visited?: number })?.visited === 1) {
-            tip.textContent = '✓ Visited';
-            tip.style.display = 'block';
-          }
-        });
-        map.on('mousemove', NEARBY_LAYER, (e) => {
-          const tip = tooltipRef.current;
-          if (!tip || tip.style.display !== 'block') return;
-          tip.style.left = `${e.point.x + 12}px`;
-          tip.style.top = `${e.point.y + 12}px`;
-        });
-        map.on('mouseleave', NEARBY_LAYER, () => {
-          map.getCanvas().style.cursor = '';
-          if (tooltipRef.current) tooltipRef.current.style.display = 'none';
-        });
-        map.on('click', NEARBY_LAYER, (e) => {
-          const feat = e.features?.[0];
-          if (!feat || feat.geometry.type !== 'Point') return;
-          const props = feat.properties as Record<string, unknown>;
-          let meta: Record<string, unknown> = {};
-          try {
-            meta = JSON.parse(props.meta ?? '{}');
-          } catch {
-            /* ignore */
-          }
-
-          showPopup(map, e.lngLat, {
-            id: props.id,
-            type: props.pointType,
-            lat: (feat.geometry as GeoJSON.Point).coordinates[1],
-            lng: (feat.geometry as GeoJSON.Point).coordinates[0],
-            name: props.name,
-            subtitle: props.subtitle || undefined,
-            color: props.color,
-            linkTo: props.linkTo || undefined,
-            meta,
+          map.addLayer({
+            id: PRIMARY_LAYER,
+            type: 'circle',
+            source: PRIMARY_MARKER_SOURCE,
+            paint: {
+              'circle-radius': 10,
+              'circle-color': ['get', 'color'],
+              'circle-stroke-width': 3,
+              'circle-stroke-color': ink(),
+              'circle-opacity': 0.95,
+            },
           });
-        });
-      }
-    }
 
-    // Fit bounds if we have multiple markers
-    const allMarkers = [...primary, ...nearby];
-    if (allMarkers.length > 1) {
-      const bounds = new maplibregl.LngLatBounds();
-      allMarkers.forEach((m) => bounds.extend([m.lng, m.lat]));
-      map.fitBounds(bounds, { padding: 50, maxZoom: 15, duration: 0 });
-    }
+          map.addLayer({
+            id: PRIMARY_LABEL,
+            type: 'symbol',
+            source: PRIMARY_MARKER_SOURCE,
+            layout: {
+              'text-field': ['get', 'name'],
+              'text-size': 13,
+              'text-font': [MAP_FONT_BOLD],
+              'text-offset': [0, 1.8],
+              'text-anchor': 'top',
+            },
+            paint: {
+              'text-color': ink(),
+              'text-halo-color': paper(),
+              'text-halo-width': 2,
+            },
+          });
+        }
+      }
+
+      // Nearby markers (smaller)
+      if (nearby.length > 0) {
+        const nearbyGeoJSON: GeoJSON.FeatureCollection = {
+          type: 'FeatureCollection',
+          features: nearby.map((m) => ({
+            type: 'Feature' as const,
+            geometry: { type: 'Point' as const, coordinates: [m.lng, m.lat] },
+            properties: {
+              id: m.id,
+              name: m.name,
+              subtitle: m.subtitle ?? '',
+              color: m.color ?? LAYER_COLORS[m.type ?? 'venues'],
+              linkTo: m.linkTo ?? '',
+              pointType: m.type ?? 'venues',
+              meta: JSON.stringify(m.meta ?? {}),
+              visited: isVisitedMarker(m) ? 1 : 0,
+            },
+          })),
+        };
+
+        const existingNearby = map.getSource(NEARBY_SOURCE) as GeoJSONSource | undefined;
+        if (existingNearby) {
+          existingNearby.setData(nearbyGeoJSON);
+          if (map.getLayer(NEARBY_LAYER)) {
+            map.setPaintProperty(NEARBY_LAYER, 'circle-opacity', [
+              'case',
+              ['==', ['get', 'visited'], 1],
+              0.3,
+              0.8,
+            ]);
+          }
+        } else {
+          map.addSource(NEARBY_SOURCE, { type: 'geojson', data: nearbyGeoJSON });
+
+          map.addLayer({
+            id: NEARBY_LAYER,
+            type: 'circle',
+            source: NEARBY_SOURCE,
+            paint: {
+              'circle-radius': 6,
+              'circle-color': ['get', 'color'],
+              'circle-stroke-width': 1.5,
+              'circle-stroke-color': ink(),
+              'circle-opacity': ['case', ['==', ['get', 'visited'], 1], 0.3, 0.8],
+            },
+          });
+
+          map.on('mouseenter', NEARBY_LAYER, (e) => {
+            map.getCanvas().style.cursor = 'pointer';
+            const feat = e.features?.[0];
+            const tip = tooltipRef.current;
+            if (feat && tip && (feat.properties as { visited?: number })?.visited === 1) {
+              tip.textContent = '✓ Visited';
+              tip.style.display = 'block';
+            }
+          });
+          map.on('mousemove', NEARBY_LAYER, (e) => {
+            const tip = tooltipRef.current;
+            if (!tip || tip.style.display !== 'block') return;
+            tip.style.left = `${e.point.x + 12}px`;
+            tip.style.top = `${e.point.y + 12}px`;
+          });
+          map.on('mouseleave', NEARBY_LAYER, () => {
+            map.getCanvas().style.cursor = '';
+            if (tooltipRef.current) tooltipRef.current.style.display = 'none';
+          });
+          map.on('click', NEARBY_LAYER, (e) => {
+            const feat = e.features?.[0];
+            if (!feat || feat.geometry.type !== 'Point') return;
+            const props = feat.properties as Record<string, unknown>;
+            let meta: Record<string, unknown> = {};
+            try {
+              meta = JSON.parse(props.meta ?? '{}');
+            } catch {
+              /* ignore */
+            }
+
+            showPopup(map, e.lngLat, {
+              id: props.id,
+              type: props.pointType,
+              lat: (feat.geometry as GeoJSON.Point).coordinates[1],
+              lng: (feat.geometry as GeoJSON.Point).coordinates[0],
+              name: props.name,
+              subtitle: props.subtitle || undefined,
+              color: props.color,
+              linkTo: props.linkTo || undefined,
+              meta,
+            });
+          });
+        }
+      }
+
+      // Fit bounds if we have multiple markers
+      const allMarkers = [...primary, ...nearby];
+      if (allMarkers.length > 1) {
+        const bounds = new maplibregl.LngLatBounds();
+        allMarkers.forEach((m) => bounds.extend([m.lng, m.lat]));
+        map.fitBounds(bounds, { padding: 50, maxZoom: 15, duration: 0 });
+      }
+    });
   }, [primary, nearby, mapReady, showPopup, isVisitedMarker]);
 
   return (

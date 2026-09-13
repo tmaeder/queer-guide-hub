@@ -36,10 +36,20 @@ const PUBLIC_ROUTE_LIMITS = {
   pdfjs: 500,
   mammoth: 600,
   // After PR replacing `import * as Icons from 'lucide-react'` with an
-  // explicit icon registry, lucide chunk dropped from ~606 KB raw to
-  // ~72 KB raw. Cap set ~40% above current so adding a few icons to the
-  // registry is fine but a regression to the wildcard pattern fails.
-  lucide: 100,
+  // explicit icon registry, the lucide chunk dropped from ~606 KB raw to
+  // ~72 KB raw, and the cap was set at 100 — then ~40% of headroom.
+  //
+  // That headroom is gone and it was not our imports. Measured on one tree,
+  // same source, only the dependency moved: lucide-react 1.34.0 builds a
+  // 97.8 KB chunk and 1.42.0 builds 112.8 KB. So `main` was already sitting
+  // 2% under the cap while the comment above claimed 40%, and the npm-group
+  // bump is what crossed it.
+  //
+  // Raised to 130 (~15% over 112.8) rather than pinned back, because the
+  // thing this guard exists to catch is the wildcard import at ~606 KB, and
+  // 130 still fails that by 4.6x. Re-measure before raising it again: a cap
+  // that only ever moves up stops being a guard.
+  lucide: 130,
 };
 
 // Strings that must never appear in the eagerly-loaded `index-*` chunks.

@@ -13,7 +13,21 @@
 const UPSTREAM =
   'https://xqeacpakadqfxjxjcewc.supabase.co/functions/v1/umami-analytics';
 
-export const onRequestPost: PagesFunction = async ({ request }) => {
+interface TrackEnv {
+  /**
+   * Shared secret proving a beacon came through this proxy rather than being
+   * POSTed straight at the edge function — which is verify_jwt=false and
+   * cannot be otherwise, since an anonymous tracker carries no user JWT.
+   *
+   * Set it HERE FIRST, then on Supabase. The edge function treats an unset
+   * secret as "not armed yet" and keeps accepting traffic, so that ordering
+   * never drops a beacon; the reverse would 403 every real visitor while the
+   * dashboards read it as a traffic collapse.
+   */
+  TRACK_PROXY_SECRET?: string;
+}
+
+export const onRequestPost: PagesFunction<TrackEnv> = async ({ request, env }) => {
   const cf = (request.cf ?? {}) as { country?: string };
 
   const headers: Record<string, string> = {
@@ -23,6 +37,7 @@ export const onRequestPost: PagesFunction = async ({ request }) => {
   const ip = request.headers.get('cf-connecting-ip');
   if (ip) headers['x-qg-ip'] = ip;
   if (cf.country) headers['x-qg-country'] = cf.country;
+  if (env?.TRACK_PROXY_SECRET) headers['x-qg-track-key'] = env.TRACK_PROXY_SECRET;
 
   const upstream = await fetch(UPSTREAM, {
     method: 'POST',

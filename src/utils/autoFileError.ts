@@ -18,7 +18,25 @@ export type AutoFileKind =
   | 'error_boundary'
   | 'window_error'
   | 'unhandled_rejection'
-  | 'not_found';
+  | 'not_found'
+  // A contained degradation: the feature failed and the page survived. Filed
+  // because the two channels a *contained* failure would otherwise use are both
+  // dead in production — `console.*` is stripped by esbuild `drop` and Sentry is
+  // consent-gated and fails closed — so containing a crash would otherwise
+  // delete the only evidence that it happens.
+  | 'degraded';
+
+/**
+ * Word shown in the board title per kind. A Record (not a ternary) so a new
+ * AutoFileKind cannot be added without deciding how it reads to an admin.
+ * `not_found` is absent on purpose — 404 titles carry no error name.
+ */
+const KIND_TITLE_TAG: Record<Exclude<AutoFileKind, 'not_found'>, string> = {
+  error_boundary: 'crash',
+  window_error: 'error',
+  unhandled_rejection: 'error',
+  degraded: 'degraded',
+};
 
 // 2-letter locale prefixes we strip to a placeholder so e.g. /de/x and /fr/x
 // collapse to one fingerprint. Mirrors the app's supported set (super-set is fine).
@@ -114,7 +132,7 @@ export function fileError({ kind, error, routePath, extra }: FileErrorArgs): voi
     const title =
       kind === 'not_found'
         ? `[404] ${template}`
-        : `[${kind === 'error_boundary' ? 'crash' : 'error'}] ${errName} @ ${template}`;
+        : `[${KIND_TITLE_TAG[kind]}] ${errName} @ ${template}`;
     const description = error?.message?.slice(0, 500) || `${errName} on ${template}`;
 
     const payload = {

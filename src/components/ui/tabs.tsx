@@ -1,8 +1,10 @@
 import * as React from 'react';
+// Primitives re-exported unchanged are imported BY NAME rather than aliased off
+// the namespace (`const Tabs = TabsPrimitive.Root`) — see the note in
+// accordion.tsx. Same value either way; only this form keeps fast refresh.
+import { Root as Tabs } from '@radix-ui/react-tabs';
 import * as TabsPrimitive from '@radix-ui/react-tabs';
 import { cn } from '@/lib/utils';
-
-const Tabs = TabsPrimitive.Root;
 
 interface TabsListProps extends React.ComponentPropsWithoutRef<typeof TabsPrimitive.List> {
   /**

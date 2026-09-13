@@ -7,6 +7,7 @@ import { useEffect, useId, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { subscribeSafely } from '@/lib/realtimeSubscribe';
 import type { Tables } from '@/integrations/supabase/types';
 
 export type CommunityPost = Tables<'community_posts'> & {
@@ -306,48 +307,42 @@ export const useCommunityPosts = (userId?: string) => {
     },
   });
 
-  // Set up real-time subscriptions
+  // Set up real-time subscriptions.
+  // `subscribe()` opens the socket synchronously and rethrows whatever the
+  // WebSocket constructor threw, so an unguarded call here takes the whole Feed
+  // route down via the error boundary on any client that cannot open a socket
+  // (measured on prod 2026-09-08/09). Live refresh is a nicety; the Feed renders
+  // from the query cache without it.
   useEffect(() => {
-    const channel = supabase
-      .channel(`community-posts-changes-${instanceId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'community_posts'
-        },
-        () => {
+    return subscribeSafely({
+      context: 'useCommunityPosts',
+      subscribe: () => {
+        const invalidate = () => {
           queryClient.invalidateQueries({ queryKey: ['community-posts'] });
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'post_likes'
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['community-posts'] });
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'post_comments'
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['community-posts'] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+        };
+        return supabase
+          .channel(`community-posts-changes-${instanceId}`)
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'community_posts' },
+            invalidate,
+          )
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'post_likes' },
+            invalidate,
+          )
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'post_comments' },
+            invalidate,
+          )
+          .subscribe();
+      },
+      teardown: (channel) => {
+        supabase.removeChannel(channel);
+      },
+    });
   }, [queryClient, instanceId]);
 
   return {

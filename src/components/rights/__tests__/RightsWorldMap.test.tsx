@@ -179,6 +179,22 @@ vi.mock('@/config/mapStyle', () => ({ getMapStyle: () => ({}) }));
 vi.mock('maplibre-gl', () => {
   class MapMock {
     touchZoomRotate = { disableRotation() {} };
+    /**
+     * This mock fires `load` synchronously (see `on` below), so the map it
+     * stands for is one whose style HAS finished loading — and it now has to
+     * say so, because style mutations are gated on that fact rather than on
+     * the `load` event having fired (`isStyleMutable`, added with the
+     * "Style is not done loading." crash fix).
+     *
+     * Omitting it is not a neutral omission: `isStyleMutable` bails on
+     * `if (!style) return false`, so `addSource` is deferred forever and the
+     * assertions below see zero calls. The mock was modelling a map that
+     * cannot exist — loaded enough to emit `load`, but with no style at all.
+     */
+    style = { _loaded: true };
+    isStyleLoaded() {
+      return true;
+    }
     constructor() {
       mapCalls.instances += 1;
     }

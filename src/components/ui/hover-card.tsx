@@ -1,9 +1,10 @@
 import * as React from 'react';
+// Primitives re-exported unchanged are imported BY NAME rather than aliased off
+// the namespace (`const HoverCard = HoverCardPrimitive.Root`) — see the note in
+// accordion.tsx. Same value either way; only this form keeps fast refresh.
+import { Root as HoverCard, Trigger as HoverCardTrigger } from '@radix-ui/react-hover-card';
 import * as HoverCardPrimitive from '@radix-ui/react-hover-card';
 import { cn } from '@/lib/utils';
-
-const HoverCard = HoverCardPrimitive.Root;
-const HoverCardTrigger = HoverCardPrimitive.Trigger;
 
 const HoverCardContent = React.forwardRef<
   React.ElementRef<typeof HoverCardPrimitive.Content>,

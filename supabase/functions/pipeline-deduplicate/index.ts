@@ -43,7 +43,11 @@ const EMBED_MODEL = '@cf/baai/bge-m3' // 1024-d, must match workers/ingest store
 interface SemRow { entity_id: string; score: number; distance_m: number | null; country: string | null; title?: string | null }
 
 /** Build the deterministic blocker RPC args for a type from normalized_data. */
-function buildDetArgs(type: EntityType, n: Record<string, unknown>, isHotel: boolean): Record<string, unknown> | null {
+// Exported for _tests/dedup-det-args.test.ts. The venue branch's NULL domain is
+// a deliberate safety property rather than an oversight (see the comment on that
+// case), and a property that only exists in a comment is one nobody is told they
+// have broken.
+export function buildDetArgs(type: EntityType, n: Record<string, unknown>, isHotel: boolean): Record<string, unknown> | null {
   const loc = (n.location ?? {}) as Record<string, unknown>
   const c = (n.contacts ?? {}) as Record<string, unknown>
   const meta = (n.metadata ?? {}) as Record<string, unknown>
@@ -78,6 +82,41 @@ function buildDetArgs(type: EntityType, n: Record<string, unknown>, isHotel: boo
       // Portland OR and a name-keyed city-text match is evidence, not proof.
       // p_country drives the country veto that stopped a Berlin "Village" from
       // merging into an Osaka one at score 1.000.
+      //
+      // p_phone_e164 / p_email / p_website_domain are ALWAYS NULL here, because
+      // `contacts` on a venue staging row contains exactly one key — `website`.
+      // Measured 2026-09-10 over 7,962 rows from the last 30 days:
+      // phone_e164 0/7,962, email_lower 0/7,962, website_domain 0/7,962.
+      //
+      // DO NOT "FIX" THAT BY DERIVING A DOMAIN FROM contacts.website.
+      //
+      // It looks like the marketplace contract gap fixed in the same session
+      // (five args read at the top level that live under metadata/urls), and it
+      // is not. It was measured, and restoring it is DESTRUCTIVE:
+      //
+      //   * 4,709 of 7,962 staging rows do carry a real URL, and probing 40 of
+      //     them showed 31 whose domain exists on a live venue and 23 whose best
+      //     score improves — so the signal is genuinely "available".
+      //   * but the RPC scores every hit `domain_proximity` at a FLAT 0.950,
+      //     and venue autoMerge is 0.90. Those 40 rows produced 213 candidates,
+      //     every single one above the auto-merge bar.
+      //   * and venues.website_domain is frequently NOT the venue's own domain:
+      //     facebook.com is on 554 live venues, tinyurl.com 369,
+      //     display-magazin.ch 311, misterbandb.com 311, instagram.com 136.
+      //     3,037 live venues share a domain with at least one other venue.
+      //
+      // So the arm would propose auto-merging 554 unrelated venues whose only
+      // commonality is having a Facebook page. The single protection is
+      // geoGuard(250), and 2,665 live venues sit on 908 SHARED coordinate points
+      // because a missing geocode falls back to a city centroid — so the guard
+      // is porous in exactly the case that matters.
+      //
+      // If this is ever revisited it needs an aggregator/chain denylist (or a
+      // "domain appears on >1 venue" veto) FIRST, and a score below 0.90 —
+      // the same reasoning that pins p_city's text match at 0.88. Phone and
+      // email are a different story: they are absent from venue staging
+      // entirely, so there is nothing to recover, which is honest absence
+      // rather than a contract gap.
       const args: Record<string, unknown> = {
         p_name: String(n.name ?? ''),
         p_phone_e164: (c.phone_e164 as string) ?? null,
@@ -110,16 +149,50 @@ function buildDetArgs(type: EntityType, n: Record<string, unknown>, isHotel: boo
       const code = (n.code ?? meta.code ?? meta.cca2 ?? meta.iso_a2) as string | null
       return { p_name: String(n.name ?? ''), p_code: code ?? null, p_limit: 5 }
     }
-    case 'marketplace':
+    case 'marketplace': {
+      // FIVE of the six identity args were reaching the RPC as NULL, because
+      // pipeline-normalize emits them under `metadata` / `urls` / camelCase
+      // while this read them at top level. Measured on prod 2026-09-10 across
+      // the 708 marketplace rows stuck at dedup_status='merge_candidate':
+      //   source_entity_id  top-level 0/708   — it is `sourceId`
+      //   merchant_domain   top-level 0/708   — 708 in metadata
+      //   brand             top-level 0/708   — 708 in metadata
+      //   external_url      top-level 0/708   — 708 carry a `urls` array
+      //   source_slug       top-level 0/708   — it is `sourceName`
+      //
+      // find_marketplace_duplicate_candidates therefore received only p_title,
+      // which kills four of its five branches (source_entity_id → external_url
+      // → domain+title → brand+title) and leaves the title-trigram fallback.
+      // Everything then fell through to the semantic standalone-review path,
+      // which is why all 708 carry a CONSTANT fused score of 0.919 — that is
+      // the standalone-review value, not a similarity measure (marketplace has
+      // confirmWeight 0.05, so cosine barely moves the fused score at all).
+      //
+      // Same call, same rows, measured with the args restored:
+      //   "A Single Man"          title_trigram 0.75  → despaced_exact 0.95
+      //   "Upgraded Icy Silk …"   title_trigram 0.606 → domain_title   0.923
+      //   "Fourteen Poems: …"     NO CANDIDATES       → domain_title   0.911 ×2
+      // With autoMerge 0.92 the first two now resolve deterministically, while
+      // the ambiguous periodical correctly stays a review item.
+      //
+      // `pick` uses truthiness, NOT ??: pipeline-normalize emits absent fields
+      // as EMPTY STRINGS rather than omitting them, so `a ?? b` returns '' and
+      // the fallback never fires — the same trap the news validator documents.
+      const pick = (...vals: unknown[]): string | null => {
+        for (const v of vals) if (typeof v === 'string' && v.trim()) return v
+        return null
+      }
+      const urls = Array.isArray(n.urls) ? (n.urls as unknown[]) : []
       return {
         p_title: String(n.title ?? n.name ?? ''),
-        p_source_slug: (n.source_slug as string) ?? (n.source_type as string) ?? null,
-        p_source_entity_id: (n.source_entity_id as string) ?? null,
-        p_merchant_domain: (n.merchant_domain as string) ?? null,
-        p_external_url: (n.external_url as string) ?? (n.url as string) ?? null,
-        p_brand: (n.brand as string) ?? null,
+        p_source_slug: pick(n.source_slug, n.source_type, meta.source_slug, n.sourceName),
+        p_source_entity_id: pick(n.source_entity_id, n.sourceId, meta.source_entity_id),
+        p_merchant_domain: pick(n.merchant_domain, meta.merchant_domain, meta.shop_domain),
+        p_external_url: pick(n.external_url, n.url, urls[0]),
+        p_brand: pick(n.brand, meta.brand, meta.brand_name),
         p_limit: 10,
       }
+    }
     case 'organization':
       return {
         p_name: String(n.name ?? n.title ?? ''),
@@ -204,6 +277,7 @@ Deno.serve(withErrorReporting('pipeline-deduplicate', async (req) => {
     const batchSize = body.batch_size || 50
     const dryRun = body.dry_run || false
     const filterEntityType = body.entityType as string | undefined
+    const filterTargetTable = body.targetTable as string | undefined
     // Per-run cap on embeddings (bge-m3 is cheap; circuit breaker bounds outages).
     const embedCap = Math.max(0, body.embed_cap ?? batchSize)
 
@@ -218,6 +292,11 @@ Deno.serve(withErrorReporting('pipeline-deduplicate', async (req) => {
 
     if (pipelineRunId) query = query.eq('pipeline_run_id', pipelineRunId)
     if (filterEntityType) query = query.eq('entity_type', filterEntityType)
+    // See pipeline-validate: entity_type is nullable and unnormalized, so an
+    // entityType filter silently skips whole cohorts. The dispatch below keys on
+    // item.target_table anyway (`const table = item.target_table`) — only the
+    // selector was blind.
+    if (filterTargetTable) query = query.eq('target_table', filterTargetTable)
 
     const { data: items, error } = await query
     if (error) return errorResponse(`load: ${error.message}`, 500, req)
@@ -410,18 +489,34 @@ Deno.serve(withErrorReporting('pipeline-deduplicate', async (req) => {
     // Flush buffered breaker success bookkeeping (one write pair per key).
     for (const b of breakers.values()) await b.flush()
 
+    // `success` must reflect whether anything was PERSISTED, not whether the
+    // handler reached the end. The counters are incremented at CLASSIFICATION
+    // time (persistVerdict calls onUnique/onDup/onFlag before its first write,
+    // then returns early via onHardFail), so a run in which every write failed
+    // still reported success:true with unique:100 — and because
+    // admin_automation_run_begin files an HTTP 200 as a success,
+    // consecutive_failures stayed 0 and auto_pause_threshold could never fire.
+    // That is how news dedup failed 23514 on every item for months in silence.
+    //
+    // It must be a non-2xx STATUS, not merely `success:false` in the body:
+    // admin_automation_reap_runs classifies a run by
+    // `status_code >= 400 OR error_msg IS NOT NULL` and never parses the body,
+    // so a 200 carrying success:false still counts as a successful run and
+    // still resets consecutive_failures.
+    const allFailed = items.length > 0 && hardFailures >= items.length
     return jsonResponse({
-      success: true,
+      success: !allFailed,
+      ...(allFailed ? { error: `every item failed to persist (${hardFailures}/${items.length}) — see logs for the write error` } : {}),
       items: unique + flagged,
       items_total: items.length,
       items_processed: unique + duplicates + flagged,
-      items_succeeded: unique,
+      items_succeeded: Math.max(0, (unique + duplicates + flagged) - hardFailures),
       items_failed: hardFailures,
       unique, duplicates, merge_candidates: flagged,
       circuit_tripped: circuitTripped,
       embedded,
       dry_run: dryRun,
-    }, 200, req)
+    }, allFailed ? 500 : 200, req)
   } catch (error) {
     console.error('pipeline-deduplicate:', error)
     await logPipelineError(supabase, 'pipeline-deduplicate', error, { severity: 'fatal' })
@@ -443,8 +538,29 @@ interface PersistArgs {
   counters: { onUnique: () => void; onDup: () => void; onFlag: () => void; onHardFail: () => void }
 }
 
+// DEDUP_REGISTRY keys are INTERNAL branch selectors; scraper_dedupe_decisions
+// .entity_type is CHECK-constrained to the canonical persistence spellings, and
+// 'news' is not among them (only 'news_article' / 'news_articles' are).
+// pipeline-deduplicate passed the internal key straight through, so EVERY news
+// decision insert failed 23514, persistVerdict took the onHardFail() early
+// return, and dedup_status was never written — measured on prod 2026-09-10:
+// scraper_dedupe_decisions holds 57,463 event / 31,266 venue / 8,654 marketplace
+// rows and ZERO news rows of any spelling, ever, while 77,381 of 90,244 news
+// staging rows sit dedup_status='pending'. content-registry.ts already declares
+// 'news_article' as canonical for exactly this reason.
+//
+// The internal key must NOT be renamed: pipeline-deduplicate branches on
+// `baseType === 'news'` for the fingerprint→url short-circuit, and EntityType is
+// the DEDUP_REGISTRY union. Translate at the persistence boundary instead.
+//
+// 'organization' has the same gap (absent from the CHECK) but is latent —
+// prod holds zero organizations staging rows — and has no canonical alternative
+// to map to, so it needs the constraint widened rather than a mapping here.
+const DECISION_ENTITY_TYPE: Readonly<Record<string, string>> = { news: 'news_article' }
+
 async function persistVerdict(supabase: ReturnType<typeof getServiceClient>, a: PersistArgs): Promise<void> {
   const { item, table, entityType, verdict, pipelineRunId, dryRun, semanticCosine, counters } = a
+  const decisionEntityType = DECISION_ENTITY_TYPE[entityType] ?? entityType
   if (verdict.decision === 'duplicate') counters.onDup()
   else if (verdict.decision === 'merge_candidate') counters.onFlag()
   else counters.onUnique()
@@ -455,7 +571,7 @@ async function persistVerdict(supabase: ReturnType<typeof getServiceClient>, a: 
   const reviewStatus = verdict.decision === 'merge_candidate' ? 'pending_review' : 'auto'
 
   const { error: decisionErr } = await supabase.rpc('record_dedup_decision', {
-    p_entity_type: entityType,
+    p_entity_type: decisionEntityType,
     p_staging_id: item.id,
     p_pipeline_run_id: pipelineRunId ?? null,
     p_match_id: matchId,

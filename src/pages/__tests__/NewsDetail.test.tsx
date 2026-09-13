@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi } from 'vitest';
-import { render } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router';
 
 vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => vi.fn() }));
@@ -26,13 +26,30 @@ vi.mock('@/hooks/useUserNewsReads', () => ({
 
 import NewsDetail from '../NewsDetail';
 
+function renderPage(slug = 'n1') {
+  return render(
+    <MemoryRouter initialEntries={[`/news/${slug}`]}>
+      <Routes><Route path="/news/:slug" element={<NewsDetail />} /></Routes>
+    </MemoryRouter>,
+  );
+}
+
 describe('NewsDetail', () => {
   it('renders without crashing', () => {
-    const { container } = render(
-      <MemoryRouter initialEntries={['/news/n1']}>
-        <Routes><Route path="/news/:slug" element={<NewsDetail />} /></Routes>
-      </MemoryRouter>,
-    );
+    const { container } = renderPage();
     expect(container).toBeTruthy();
+  });
+
+  it('noindexes a missing article instead of leaving the default title indexable', async () => {
+    // `articleTitle`/canonical/jsonLd were all `undefined` on a missing
+    // article and `noIndex` was never set — the default "Queer Guide" title
+    // published with a live self-referential canonical, same soft-404 shape
+    // as TagDetail's fix.
+    renderPage('dead-slug');
+    await waitFor(() => {
+      expect(document.querySelector('meta[name="robots"]')?.getAttribute('content')).toBe(
+        'noindex,nofollow',
+      );
+    });
   });
 });

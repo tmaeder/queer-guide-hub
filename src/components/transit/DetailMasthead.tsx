@@ -1,8 +1,21 @@
 import { RouteBullet } from './RouteBullet';
+import type { Track } from './routeBulletMap';
 
 interface DetailMastheadProps {
   /** search_documents entity type — drives the bullet's letter + track. */
   type: string;
+  /**
+   * Bullet overrides, forwarded straight to `RouteBullet`, for a masthead whose
+   * subject is not an entity type in `ROUTE_BULLET_MAP` — the six competition
+   * categories are the first. Adding them to that map instead would pollute the
+   * `search_documents` entity vocab AND collide with the map layer colours it
+   * also feeds (`mapPalette.test.ts`), which is exactly the reasoning
+   * `RouteBullet` already documents for the policy pages. Omitted = the map
+   * decides, so every existing masthead is untouched.
+   */
+  letter?: string;
+  track?: Track | 'ink';
+  bulletLabel?: string;
   /** Uppercase line above the title, e.g. "Venue · Nightlife track". */
   eyebrow?: string;
   title: string;
@@ -30,6 +43,9 @@ interface DetailMastheadProps {
  */
 export function DetailMasthead({
   type,
+  letter,
+  track,
+  bulletLabel,
   eyebrow,
   title,
   status,
@@ -39,7 +55,7 @@ export function DetailMasthead({
   return (
     <header className={className}>
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        <RouteBullet type={type} size={44} />
+        <RouteBullet type={type} size={44} letter={letter} track={track} label={bulletLabel} />
         {eyebrow && <span className="text-2xs font-bold uppercase tracking-label">{eyebrow}</span>}
         {status && (
           <span className="rounded-element border border-input px-2 py-2 text-2xs font-bold uppercase tracking-label">

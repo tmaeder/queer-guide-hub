@@ -43,7 +43,7 @@ export function CookieConsentProvider({ children }: { children: ReactNode }) {
         console.warn('Invalid cookie consent data:', error);
       }
     }
-    
+
     // Show banner if no valid consent found
     setShowBanner(true);
   }, []);
@@ -58,7 +58,7 @@ export function CookieConsentProvider({ children }: { children: ReactNode }) {
     setPreferences(prefs);
     setHasConsented(true);
     setShowBanner(false);
-    
+
     // Trigger custom event for analytics and other services
     window.dispatchEvent(new CustomEvent('cookieConsentUpdated', { detail: prefs }));
   };
@@ -94,6 +94,14 @@ export function CookieConsentProvider({ children }: { children: ReactNode }) {
     setPreferences(null);
     setHasConsented(false);
     setShowBanner(true);
+    // savePreferences dispatches this; resetConsent did not, so the analytics
+    // loader and Sentry never heard about a withdrawal and kept running for
+    // the rest of the session. Fail-closed shape: every optional category off.
+    window.dispatchEvent(
+      new CustomEvent('cookieConsentUpdated', {
+        detail: { necessary: true, functional: false, analytics: false, marketing: false },
+      }),
+    );
   };
 
   return (

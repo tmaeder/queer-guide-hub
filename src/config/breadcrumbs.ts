@@ -58,7 +58,6 @@ const SEGMENT_SECTIONS: Record<string, { path: string; key: string; fallback: st
   trips: { path: '/trips', key: 'breadcrumb.trips', fallback: 'Trips' },
   help: { path: '/help', key: 'breadcrumb.help', fallback: 'Help' },
   pride: { path: '/pride', key: 'breadcrumb.pride', fallback: 'Pride' },
-  contributors: { path: '/contributors', key: 'breadcrumb.contributors', fallback: 'Contributors' },
   wishlists: { path: '/wishlists', key: 'breadcrumb.wishlists', fallback: 'Wishlists' },
 };
 

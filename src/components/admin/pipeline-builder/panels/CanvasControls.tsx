@@ -76,6 +76,7 @@ export default function CanvasControls({ pipelineName, hasSelection }: CanvasCon
             size="sm"
             variant="ghost"
             className="h-7 w-7 p-0"
+            aria-label="Zoom in"
             onClick={() => zoomIn({ duration: 150 })}
           >
             <ZoomIn className="h-3.5 w-3.5" />
@@ -92,6 +93,7 @@ export default function CanvasControls({ pipelineName, hasSelection }: CanvasCon
             size="sm"
             variant="ghost"
             className="h-7 w-7 p-0"
+            aria-label="Zoom out"
             onClick={() => zoomOut({ duration: 150 })}
           >
             <ZoomOut className="h-3.5 w-3.5" />
@@ -110,7 +112,13 @@ export default function CanvasControls({ pipelineName, hasSelection }: CanvasCon
 
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={handleFitAll}>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-7 w-7 p-0"
+            aria-label="Fit all nodes"
+            onClick={handleFitAll}
+          >
             <Maximize className="h-3.5 w-3.5" />
           </Button>
         </TooltipTrigger>
@@ -125,6 +133,7 @@ export default function CanvasControls({ pipelineName, hasSelection }: CanvasCon
             size="sm"
             variant="ghost"
             className="h-7 w-7 p-0"
+            aria-label="Fit to selection"
             onClick={handleFitSelection}
             disabled={!hasSelection}
           >

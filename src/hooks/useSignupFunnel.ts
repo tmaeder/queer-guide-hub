@@ -1,5 +1,5 @@
 import { useCallback, useRef } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { insertTelemetry } from '@/lib/telemetryInsert';
 
 /**
  * MUST stay in sync with the `signup_funnel_events_event_check` CHECK
@@ -58,18 +58,20 @@ export function useSignupFunnel() {
   const sessionIdRef = useRef<string>(getOrCreateSessionId());
 
   const emit = useCallback(async (event: FunnelEvent, opts: EmitOpts = {}) => {
-    try {
-      await supabase.from('signup_funnel_events').insert({
-        session_id: sessionIdRef.current,
-        event,
-        step: opts.step ?? null,
-        provider: opts.provider ?? null,
-        metadata: opts.metadata ?? {},
-      });
-    } catch (err) {
-      // Never break UX for analytics
-      console.debug('signup funnel emit failed', event, err);
-    }
+    // insertTelemetry inspects the resolved `{ error }` and reports it. The
+    // previous `try { await insert } catch {}` here caught NOTHING: PostgREST
+    // resolves with an error object rather than throwing, which is precisely
+    // how the constraint drift above stayed invisible. Deliberately NOT
+    // consent-gated: this is one row per step of the sign-up form the visitor
+    // is actively filling in, keyed to a session id and never to an account,
+    // and it is what tells us the form is broken.
+    await insertTelemetry('signup_funnel_events', {
+      session_id: sessionIdRef.current,
+      event,
+      step: opts.step ?? null,
+      provider: opts.provider ?? null,
+      metadata: opts.metadata ?? {},
+    });
   }, []);
 
   const reset = useCallback(() => {

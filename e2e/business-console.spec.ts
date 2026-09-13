@@ -51,7 +51,12 @@ test.describe('Business console', () => {
 
   test('role tabs mount their absorbed managers', async ({ page }) => {
     await page.goto('/admin/business?tab=hotels');
-    await expect(page.getByRole('heading', { name: /hotels & bnbs/i })).toBeVisible();
+    // NOT a "Hotels & BnBs" heading: HotelsManager passes `hideHeader` to
+    // AdminEntityTable (which forwards `title={null}`), because AdminBusiness
+    // owns the page's single h1 — that was the point of 60fd5c387, "two routes
+    // that had two h1s". Assert the manager's own toolbar action instead, which
+    // is the same shape as the merchants line below.
+    await expect(page.getByRole('button', { name: /add hotel/i })).toBeVisible();
 
     await page.goto('/admin/business?tab=merchants');
     await expect(page.getByRole('button', { name: /add merchant/i })).toBeVisible();
@@ -80,7 +85,14 @@ test.describe('Business console', () => {
     await expect(page.getByRole('tab', { name: /link review/i })).toHaveCount(0);
 
     // The gate is a card on the hub, counted like every other engine.
-    await expect(page.getByRole('button', { name: /^Business links/ })).toBeVisible();
+    //
+    // The negative lookahead is what keeps this unambiguous: /admin/quality also
+    // carries an accordion trigger named "Business links — adoption", so a bare
+    // /^Business links/ is a strict-mode violation (two matches), not a missing
+    // element. Anchor on the CARD, whose accessible name is the label followed by
+    // its count ("Business links 62 Ambiguous"); matching `.first()` instead
+    // would silently pass whichever of the two happened to come first in the DOM.
+    await expect(page.getByRole('button', { name: /^Business links(?! —)/ })).toBeVisible();
   });
 
   test('a business detail page shows its roles and linked entities', async ({ page }) => {

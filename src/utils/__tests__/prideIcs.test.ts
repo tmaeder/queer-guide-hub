@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { buildPrideIcs } from '../prideIcs';
 import type { PrideCalendarEvent } from '@/hooks/usePrideCalendar';
 
@@ -20,6 +20,10 @@ const sample = (overrides: Partial<PrideCalendarEvent> = {}): PrideCalendarEvent
   description: 'Annual LGBTQ+ pride march in Berlin.',
   pride_subtypes: null,
   ...overrides,
+});
+
+afterEach(() => {
+  vi.useRealTimers();
 });
 
 describe('buildPrideIcs', () => {
@@ -107,6 +111,13 @@ describe('buildPrideIcs — programme children', () => {
   });
 
   it('is unchanged for an umbrella with no programme', () => {
+    // `buildPrideIcs` stamps DTSTAMP from its own `new Date()`, so two calls
+    // that straddle a second boundary differ in a field this assertion does not
+    // care about. Freeze the clock: without it the case fails purely on timing,
+    // which is what it did on CI on 2026-09-10 (1 of 10,558) while passing
+    // locally in both this branch and main.
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-07-01T12:00:00.000Z'));
     const withIndex = buildPrideIcs([sample()], 2026, new Map());
     const without = buildPrideIcs([sample()], 2026);
     expect(withIndex).toBe(without);

@@ -50,7 +50,7 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
   // sees an empty shell. Counts are stated as "over N" on purpose: the corpus
   // grows with every season and an exact figure baked into prose would rot.
   '/competitions': {
-    h1: 'Drag Race seasons and LGBTQ+ title contests',
+    h1: 'Queer competition records, by type',
     paragraphs: [
       'Every season of the Drag Race television franchises and every year of the queer title-contest circuit, in one dataset: over 30 competitions, more than 340 editions and over 1,800 entries covering fifty years of competitive drag and leather title history.',
       'The Drag Race side covers the US series and All Stars alongside the international franchises: UK, Canada, España, France, Down Under, Philippines, Thailand, Italia, Holland, Belgique, México, Brasil, Sverige and Germany. Each season lists its contestant count, episode count, air dates, network, the winner, every runner-up and Miss Congeniality, plus an episode-by-episode placement grid.',
@@ -58,10 +58,101 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
       'Season, contestant and placement data comes from Wikipedia and is published under CC BY-SA.',
     ],
     links: [
-      { href: '/competitions?view=roster', label: 'Everyone who competed' },
-      { href: '/competitions?view=grid', label: 'Episode-by-episode placement grid' },
+      { href: '/competitions/drag-series', label: 'Drag competition series' },
+      { href: '/competitions/drag-kings', label: 'Drag king competitions' },
+      { href: '/competitions/drag-pageants', label: 'Drag pageantry' },
+      { href: '/competitions/trans-pageants', label: 'Transgender pageants' },
+      { href: '/competitions/gay-titles', label: 'Gay titleholder contests' },
+      { href: '/competitions/leather-titles', label: 'Leather and fetish titles' },
       { href: '/personalities', label: 'LGBTQ+ people and performers' },
-      { href: '/events', label: 'Find drag events near you' },
+    ],
+  },
+
+  // The six type pages. Each renders client-side from an RPC, so without an
+  // entry here a crawler sees an empty shell — the same reason the hub above
+  // has one. Counts are "over N" on purpose: an exact figure baked into prose
+  // rots with the next season.
+  '/competitions/drag-series': {
+    h1: 'Drag competition series, season by season',
+    paragraphs: [
+      'Over 30 drag competition television series and more than 110 seasons: the Drag Race franchises (US, All Stars, UK, Canada, Espana, France, Down Under, Philippines, Thailand, Italia, Holland, Belgique, Mexico, Brasil, Sverige, Germany) alongside the independent shows — Dragula, La Mas Draga, Drag Den, Queen of the Universe, House of Drag and others.',
+      'Each season lists its contestant count, episode count, air dates, network, the winner, every runner-up and Miss Congeniality, plus an episode-by-episode placement grid. Seasons with two runners-up show both. Where a queen already has a profile on Queer Guide, her entry links straight to it.',
+      'Season, contestant and placement data comes from Wikipedia and is published under CC BY-SA.',
+    ],
+    links: [
+      { href: '/competitions', label: 'All competition types' },
+      { href: '/competitions/drag-kings', label: 'Drag king competitions' },
+      { href: '/personalities', label: 'LGBTQ+ people and performers' },
+    ],
+  },
+
+  '/competitions/drag-kings': {
+    h1: 'Drag king competitions',
+    paragraphs: [
+      'Competitions for drag kings: King of Drag, the first drag king television series, and the San Francisco Drag King Contest, which has run since 1994 and is decades older than any televised drag competition.',
+      'Drag kings are badly served by the record. Only two king competitions have a Wikipedia article at all, which is why this page is short: it reflects what is documented, not what exists.',
+      'Contestant and placement data comes from Wikipedia and is published under CC BY-SA.',
+    ],
+    links: [
+      { href: '/competitions', label: 'All competition types' },
+      { href: '/competitions/drag-series', label: 'Drag competition series' },
+      { href: '/personalities', label: 'LGBTQ+ people and performers' },
+    ],
+  },
+
+  '/competitions/drag-pageants': {
+    h1: 'Drag pageantry: Miss Gay America and Miss Continental',
+    paragraphs: [
+      'Drag pageantry systems, decided at a single event rather than across a television season. Miss Gay America has run since 1973 and Miss Continental since 1980, both older than any drag competition on television, with close to 100 editions between them.',
+      'Every titleholder is listed by year. Where a performer already has a profile on Queer Guide, her entry links straight to it.',
+      'Titleholder data comes from Wikipedia and is published under CC BY-SA.',
+    ],
+    links: [
+      { href: '/competitions', label: 'All competition types' },
+      { href: '/competitions/trans-pageants', label: 'Transgender pageants' },
+      { href: '/personalities', label: 'LGBTQ+ people and performers' },
+    ],
+  },
+
+  '/competitions/trans-pageants': {
+    h1: 'Transgender beauty pageants',
+    paragraphs: [
+      'Beauty pageants for transgender women: Miss International Queen, which describes itself as the largest in the world, along with Miss T World, Miss Star International and Miss Fabulous Thailand — over 40 editions in total.',
+      'Every titleholder is listed by year with the country she represented. Where a titleholder already has a profile on Queer Guide, her entry links straight to it.',
+      'Titleholder data comes from Wikipedia and is published under CC BY-SA.',
+    ],
+    links: [
+      { href: '/competitions', label: 'All competition types' },
+      { href: '/competitions/drag-pageants', label: 'Drag pageantry' },
+      { href: '/personalities', label: 'LGBTQ+ people and performers' },
+    ],
+  },
+
+  '/competitions/gay-titles': {
+    h1: 'Gay titleholder contests',
+    paragraphs: [
+      'Titleholder contests for gay men, over 40 editions across three contests. Mr Gay World is an international final contested by national delegates; Mr Gay Europe describes itself as a competition about LGBTQIA+ themes rather than a pageant; Mr. Gay India is a national contest.',
+      'Every titleholder is listed by year with the country he represented. Where a titleholder already has a profile on Queer Guide, his entry links straight to it.',
+      'Titleholder data comes from Wikipedia and is published under CC BY-SA.',
+    ],
+    links: [
+      { href: '/competitions', label: 'All competition types' },
+      { href: '/competitions/leather-titles', label: 'Leather and fetish titles' },
+      { href: '/personalities', label: 'LGBTQ+ people and performers' },
+    ],
+  },
+
+  '/competitions/leather-titles': {
+    h1: 'Leather and fetish title contests',
+    paragraphs: [
+      'Leather and fetish title contests, both run as multi-day conventions rather than as pageants: International Mr. Leather, held in Chicago since 1979, and Mister International Rubber. Over 70 editions between them.',
+      'International Mr. Leather calls itself a convention and competition, and it is not a pageant — the weekend is a leather community gathering of which the title contest is one part. Every titleholder is listed by year.',
+      'Titleholder data comes from Wikipedia and is published under CC BY-SA.',
+    ],
+    links: [
+      { href: '/competitions', label: 'All competition types' },
+      { href: '/competitions/gay-titles', label: 'Gay titleholder contests' },
+      { href: '/personalities', label: 'LGBTQ+ people and performers' },
     ],
   },
 
@@ -151,6 +242,18 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
       { href: '/blog', label: 'Long-form essays' },
       { href: '/tags', label: 'Knowledge & guides' },
       { href: '/about', label: 'Editorial standards' },
+    ],
+  },
+
+  '/podcasts': {
+    h1: 'LGBTQ+ podcasts',
+    paragraphs: [
+      'Queer podcasts from around the world, indexed show by show and episode by episode. History, politics, health, culture, sex and community, in the words of the people making them.',
+      'Episodes stream from each show\u2019s own feed \u2014 nothing is re-hosted, and every show links back to its publisher and its RSS feed so you can subscribe wherever you already listen.',
+    ],
+    links: [
+      { href: '/news', label: 'LGBTQ+ news' },
+      { href: '/tags', label: 'Knowledge & guides' },
     ],
   },
 
@@ -300,15 +403,31 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
   // below: public/_redirects 301s /resources to /tags, so no crawler could
   // reach this body and the canonical tag glossary served the generic fallback.
   // Found by routeMeta.contract.test.ts, not by hand.
+  // The copy here described a "resources library" — coming-out guides,
+  // healthcare references, legal explainers, reading lists — because it was
+  // written for '/resources' and only ever RE-KEYED to '/tags' (see the note
+  // above), never rewritten. So the one URL stated three different subjects at
+  // once: <title> "LGBTQ+ Glossary & Tag Index", <h1> "Queer Knowledge Hub —
+  // guides, references, and reading lists", and a description about browsing
+  // terms. It is the glossary; the title and description were the correct two.
+  //
+  // The category links are the real /tags/c/:slug hubs the SPA itself renders,
+  // not decoration: they are the only crawlable path from here into the 2,604
+  // tag pages, which nothing else on the page links to.
   '/tags': {
-    h1: 'Queer Knowledge Hub — guides, references, and reading lists',
+    h1: 'LGBTQ+ glossary — identities, practices, history, community language',
     paragraphs: [
-      'A growing library of practical and historical resources for queer people. Coming-out guides, healthcare references, legal explainers by jurisdiction, glossaries, reading lists, archive pointers, and crisis resources.',
-      "Written and reviewed by queer people. Where we link out, we say what we trust the source for and where its limits are. Where we don't have an answer, we say so.",
+      'A reference for the words queer people actually use: identities and orientations, relationship structures, kink and consent vocabulary, health and legal terms, subcultures, drag and ballroom language, and the historical terms behind them. Each entry is short, plainly written, and says where the term comes from.',
+      'Every term is linked to the venues, events, people and news on Queer Guide that use it, so a definition is also a way into the rest of the site. Terms are grouped into categories you can browse, and clinical entries carry their diagnostic codes where a recognised one exists.',
     ],
     links: [
-      { href: '/help', label: 'Crisis hotlines' },
-      { href: '/news', label: 'News' },
+      { href: '/tags/c/legal-rights', label: 'Legal & rights terms' },
+      { href: '/tags/c/health', label: 'Health terms' },
+      { href: '/tags/c/relationship-structures', label: 'Relationship structures' },
+      { href: '/tags/c/kink-community', label: 'Kink & community' },
+      { href: '/tags/c/drag-performance', label: 'Drag & performance' },
+      { href: '/tags/c/subcultures', label: 'Subcultures' },
+      { href: '/tags/c/figures-icons', label: 'Figures & icons' },
       { href: '/personalities', label: 'Notable LGBTQ+ figures' },
     ],
   },

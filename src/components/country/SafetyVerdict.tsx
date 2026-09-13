@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Skull, ShieldAlert, ShieldQuestion, ArrowDown } from 'lucide-react';
 import { useTripSafety } from '@/hooks/useTripSafety';
 import { useRiskVisual, type OverallRisk } from '@/hooks/useRiskVisual';
-import { getScoreLabel } from '@/utils/equalityScore';
+import { EQUALITY_TIER_I18N_KEY, getScoreLabel } from '@/utils/equalityScore';
 
 interface SafetyVerdictProps {
   countryId: string;
@@ -23,15 +23,6 @@ const VERDICT_DEFAULT: Record<OverallRisk, string> = {
   moderate: 'Mixed',
   high: 'Use caution',
   critical: 'Dangerous',
-};
-
-const SCORE_LABEL_KEY: Record<string, string> = {
-  'Very High': 'veryHigh',
-  High: 'high',
-  Moderate: 'moderate',
-  Low: 'low',
-  'Very Low': 'veryLow',
-  'No Data': 'noData',
 };
 
 /**
@@ -79,7 +70,7 @@ export function SafetyVerdict({
     VERDICT_DEFAULT[effectiveRisk],
   );
   const scoreInfo = getScoreLabel(equalityScore);
-  const tierLabel = t(`trips.safety.scoreLabel.${SCORE_LABEL_KEY[scoreInfo.label] ?? 'noData'}`, {
+  const tierLabel = t(`trips.safety.scoreLabel.${EQUALITY_TIER_I18N_KEY[scoreInfo.tier]}`, {
     defaultValue: scoreInfo.label,
   });
 

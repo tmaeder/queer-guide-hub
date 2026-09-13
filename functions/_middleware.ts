@@ -41,17 +41,19 @@ import {
   isIndexable,
   DEFAULT_OG_IMAGE,
   splitLocale,
+  startsWithLocale,
   localizedUrl,
   SUPPORTED_LOCALES,
   DEFAULT_LOCALE,
 } from './_lib/routeMeta';
-import { homepageJsonLd } from './_lib/jsonLd';
+import { homepageJsonLd, breadcrumbJsonLd } from './_lib/jsonLd';
 import { getBranding, brandStyleTag, brandingMeta, brandFontPreloads } from './_lib/branding';
 import { isBotUserAgent } from './_lib/botUa';
 import { buildBodyHtml, buildNoscriptHtml } from './_lib/routeBody';
+import { buildHubLinksHtml } from './_lib/hubLinks';
 import { isLocaleLocalised, LOCALISED_LOCALES } from './_lib/localisedLocales';
 import { resolveDetailRoute, isDetailPath, resolveSlugRedirect } from './_lib/detail';
-import { resolveLandingRoute } from './_lib/landing';
+import { resolveLandingRoute, isOwnedLandingShape } from './_lib/landing';
 import { bootGuardTag } from './_lib/boot-guard';
 import {
   applySecurityHeaders,
@@ -244,6 +246,31 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   // self-canonical and exposes hreflang alternates to its 10 siblings.
   const { locale, basePath } = splitLocale(pathname);
 
+  // A doubled locale prefix (`/fr/fr/places`, `/it/fr/history`). `splitLocale`
+  // strips one, leaving a basePath that still starts with a locale — not a
+  // real route, but not a detail path either, so the hard-404 below never saw
+  // it and the SPA shell went out at HTTP 200. An indexable 200 then emits an
+  // hreflang alternate per locale, each one re-advertising the stray segment,
+  // so one bad URL minted ten more and crawlers kept recycling them. Verified
+  // on prod: `/fr/fr/places` returned 200 and advertised `/es/fr/places`,
+  // `/it/fr/places`, … with no robots meta.
+  //
+  // This must run BEFORE resolveLandingRoute, or `/fr/fr/pride/2026` resolves
+  // a real landing page off the stripped basePath and publishes it under the
+  // doubled URL. Same treatment as isOwnedLandingShape below, for the same
+  // reason: a soft 404 at 200 is worse than a hard one.
+  if (startsWithLocale(basePath)) {
+    const doubledNotFound = new Response(notFoundHtml(basePath), {
+      status: 404,
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'public, s-maxage=60, max-age=30',
+      },
+    });
+    applySecurityHeaders(doubledNotFound, cspNonce);
+    return doubledNotFound;
+  }
+
   // Phase 3.7: standalone landing pages (/spaces/:tag, /pride/:year,
   // /pride/:year/:city) bypass the SPA shell and return a complete HTML
   // document.
@@ -251,6 +278,23 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   if (landing) {
     applySecurityHeaders(landing, cspNonce);
     return landing;
+  }
+
+  // A /pride/:year/:city (or /region/:slug) URL this module declined — an
+  // out-of-range year, or a city with nothing on it. The SPA has no route for
+  // the two-segment form, so without this it renders its catch-all not-found at
+  // HTTP 200, and Google keeps a soft 404 while it drops a real one. These URLs
+  // were advertised until 2026-09-10, so they will be recrawled.
+  if (isOwnedLandingShape(basePath)) {
+    const landingNotFound = new Response(notFoundHtml(basePath), {
+      status: 404,
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'public, s-maxage=60, max-age=30',
+      },
+    });
+    applySecurityHeaders(landingNotFound, cspNonce);
+    return landingNotFound;
   }
 
   let response = await next();
@@ -449,6 +493,15 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   if (detail?.jsonLd) {
     headInjections.push(detail.jsonLd);
   }
+  // BreadcrumbList for detail pages. Gated on `indexable` because it is a
+  // rich-result signal, and emitting one on a page carrying noindex — a gated
+  // venue's sign-in fallback, a deindexed row — advertises a trail to something
+  // we are deliberately keeping out of the index. Returns '' for any path it
+  // does not recognise, so non-detail routes are unaffected.
+  if (detail && indexable) {
+    const crumbs = breadcrumbJsonLd(basePath, meta.title);
+    if (crumbs) headInjections.push(crumbs);
+  }
 
   // Branding overrides: theme-color metas (last matching tag wins over the
   // static ones in index.html) and the token override style block. The style
@@ -489,10 +542,17 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   }
 
   const isBot = indexable && isBotUserAgent(request.headers.get('user-agent'));
+  let hubLinked = false;
   if (isBot) {
     const bodyHtml =
       detail?.body ?? buildBodyHtml(basePath, { title: meta.title, description: meta.description });
-    rewriter.on('#root', new RootBodyInjector(bodyHtml));
+    // Data-driven content links for the hub pages. Inside the isBot branch on
+    // purpose: this is a Supabase round-trip, and a human page view must not
+    // pay for it. Detail pages already list their own children (cityDetail
+    // links its venues and events), so they are skipped.
+    const hubHtml = detail ? '' : await buildHubLinksHtml(env, basePath);
+    hubLinked = hubHtml.length > 0;
+    rewriter.on('#root', new RootBodyInjector(bodyHtml + hubHtml));
   }
 
   const rewritten = rewriter.transform(response);
@@ -512,6 +572,14 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   // let the edge cache hold for 5 minutes to bound Supabase load.
   if (detail) {
     rewritten.headers.set('Cache-Control', 'public, s-maxage=300, max-age=60');
+  } else if (hubLinked) {
+    // A bot hub response now costs a Supabase round-trip, and crawlers re-hit
+    // hubs far more often than any single detail page. Cache it at the edge to
+    // bound that load. Safe against serving bot HTML to humans because
+    // `Vary: User-Agent` is already appended above for every indexable
+    // response — max-age is deliberately 0 so only the shared edge cache holds
+    // it, never a browser that might later be shown the human variant.
+    rewritten.headers.set('Cache-Control', 'public, s-maxage=600, max-age=0, must-revalidate');
   }
 
   return rewritten;

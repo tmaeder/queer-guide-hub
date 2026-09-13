@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FactGrid, type Fact } from '@/components/transit/FactGrid';
 import { WeatherForecast } from '@/components/weather/WeatherForecast';
+import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
 import type { CityRelation } from './types';
 
 export interface CityOverviewTabProps {
@@ -94,7 +95,9 @@ export function CityOverviewTab({ city, showDescription = true }: CityOverviewTa
        to more height than any single block inside it. */
     <div className="flex flex-col gap-6">
       {showDescription && city.description && (
-        <p className="max-w-reading text-body-lg leading-relaxed">{city.description}</p>
+        <p className="max-w-reading text-body-lg leading-relaxed">
+          <GlossaryLinkedText text={city.description} />
+        </p>
       )}
 
       <FactGrid facts={facts} />

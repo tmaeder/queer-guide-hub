@@ -1,4 +1,5 @@
--- Contract tests for the anon column-level SELECT allowlist on public.profiles.
+-- Contract tests for the column-level SELECT allowlists on public.profiles —
+-- BOTH roles since 20510101100000: anon (21 columns) and authenticated (38).
 -- Run via: psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f profiles_column_grants.sql
 -- (after 20260816120000_profiles_anon_column_grants.sql has been applied).
 --
@@ -116,11 +117,12 @@ begin
   -- presence_visibility in the WHERE and dnd_until in a CASE, neither of which the
   -- client ever selects. An invoker view needs privilege on EVERY column in its body,
   -- so dropping either from the allowlist 42501s the presence dots site-wide.
+  -- contributor_recognitions_public was the second view probed here until
+  -- 20770101100000 dropped the recognition feature (0 rows in its whole life).
   select count(*) into n from public.profile_status_v;
-  select count(*) into n from public.contributor_recognitions_public;
 
   reset role;
-  raise notice 'PASS 4: anon can still count, browse, search and read both invoker views';
+  raise notice 'PASS 4: anon can still count, browse, search and read the invoker view';
 exception when insufficient_privilege then
   reset role;
   raise exception 'FAIL(4): a surface anon legitimately needs was denied: %', sqlerrm;
@@ -191,14 +193,99 @@ begin
     from public.security_invoker_required_views v
     join pg_class c on c.relname = v.view_name
     join pg_namespace n on n.oid = c.relnamespace and n.nspname = 'public'
-   where v.view_name in ('profile_status_v','contributor_recognitions_public',
-                         'intimate_discovery_v','safe_profiles','public_profiles')
+   where v.view_name in ('profile_status_v','intimate_discovery_v',
+                         'safe_profiles','public_profiles')
      and coalesce((select option_value from pg_options_to_table(c.reloptions)
                    where option_name = 'security_invoker'), 'false') not in ('true','on','1');
   if bad is not null then
     raise exception 'FAIL(8): view(s) over profiles lost security_invoker: %', bad;
   end if;
-  raise notice 'PASS 8: all five profiles-derived views keep security_invoker';
+  raise notice 'PASS 8: all four profiles-derived views keep security_invoker';
+end $$;
+
+-- 9: the authenticated allowlist (20510101100000) -----------------------------
+-- Until that migration `authenticated` held all 174 columns, so every signed-in
+-- user could read every OTHER user's email, phone, date_of_birth and
+-- kink_interests. RLS does not help: it filters ROWS. This asserts the live ACL.
+do $$
+declare
+  expected text[] := array[
+    'availability_tags','avatar_url','bio','created_at','display_name','dnd_until','id',
+    'is_business','last_active_at','last_seen_at','location','presence_visibility',
+    'status_emoji','status_expires_at','status_text','travel_mode','user_id','user_mode',
+    'username','verified_identity','website','age_range','education','gender_identity',
+    'has_children','has_pets','interests','occupation','pronouns','relationship_status',
+    'onboarding_completed_at','body_type','height_cm','moderation_status',
+    'privacy_settings','sexual_orientation','social_links','updated_at'
+  ];
+  granted text[];
+  sensitive text[] := array['email','phone','phone_encrypted','date_of_birth',
+    'kink_interests','kink_experience_level','verified_email','verified_phone',
+    'emergency_contact_phone','emergency_contact_phone_encrypted'];
+  leaked text;
+begin
+  select array_agg(column_name order by column_name) into granted
+    from information_schema.column_privileges
+   where table_schema='public' and table_name='profiles'
+     and grantee='authenticated' and privilege_type='SELECT';
+
+  -- Exact set equality, not a subset test: a superset is the leak this exists to catch.
+  if granted is distinct from (select array_agg(c order by c) from unnest(expected) c) then
+    raise exception 'FAIL(9): authenticated SELECT allowlist drifted. granted=%', granted;
+  end if;
+
+  select string_agg(s, ', ') into leaked from unnest(sensitive) s
+   where s = any(granted);
+  if leaked is not null then
+    raise exception 'FAIL(9): sensitive column(s) selectable by authenticated: %', leaked;
+  end if;
+  raise notice 'PASS 9: authenticated holds exactly the 38-column allowlist';
+end $$;
+
+-- 10: the authenticated WRITE allowlist (20540101100000) --------------------
+-- Until that migration `authenticated` could UPDATE all 174 columns on its own
+-- row — measured live: `set verified_identity = true`, `set moderation_status =
+-- 'approved'` and `set verified_email = true` were all ALLOWED. RLS confines
+-- them to the caller's own row, which is what makes it exploitable rather than
+-- harmless: self-verification and self-approval in one PostgREST call.
+do $$
+declare
+  expected text[] := array[
+    'first_name','last_name','bio','location','pronouns','pronoun_tags','identity_flags',
+    'phone','website','date_of_birth','age_range','gender_identity','sexual_orientation',
+    'occupation','education','chosen_name','name_pronunciation','coming_out_status',
+    'chosen_family_status','disability_status','neurodivergent_status','romantic_orientation',
+    'relationship_style','current_relationship_status','privacy_settings','user_mode',
+    'avatar_url','avatar_config','avatar_type','avatar_auto_assigned','username',
+    'vibe_emoji','vibe_text','vibe_set_at','vibe_expires_at',
+    'status_emoji','status_text','status_expires_at','availability_tags','dnd_until',
+    'travel_mode','presence_visibility','onboarding_completed_at','interests','languages',
+    'looking_for','dm_push_enabled','preferences','mailbox_address','travel_preferences',
+    'updated_at','user_id'
+  ];
+  escalation text[] := array['verified_identity','moderation_status','verified_email',
+    'verified_phone','is_business','profile_completion_percentage','welcome_email_sent_at',
+    'id','created_at'];
+  priv text; granted text[]; leaked text;
+begin
+  foreach priv in array array['UPDATE','INSERT'] loop
+    select array_agg(column_name order by column_name) into granted
+      from information_schema.column_privileges
+     where table_schema='public' and table_name='profiles'
+       and grantee='authenticated' and privilege_type=priv;
+
+    -- Exact set equality: a superset is the escalation this exists to catch, and
+    -- a subset means a write path the editor still uses has been cut off.
+    if granted is distinct from (select array_agg(c order by c) from unnest(expected) c) then
+      raise exception 'FAIL(10): authenticated % allowlist drifted. granted=%', priv, granted;
+    end if;
+
+    select string_agg(e, ', ') into leaked from unnest(escalation) e where e = any(granted);
+    if leaked is not null then
+      raise exception 'FAIL(10): self-escalation column(s) writable via %: %', priv, leaked;
+    end if;
+  end loop;
+  raise notice 'PASS 10: authenticated writes exactly the 52-column allowlist (UPDATE + INSERT)';
 end $$;
 
 rollback;

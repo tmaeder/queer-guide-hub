@@ -1,4 +1,5 @@
 import { getCorsHeaders, getServiceClient } from '../_shared/supabase-client.ts';
+import { proxySecretOk } from '../_shared/track-proxy-secret.ts';
 
 const supabase = getServiceClient();
 
@@ -29,6 +30,13 @@ Deno.serve(async (req) => {
 
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  if (!proxySecretOk(req)) {
+    return new Response(JSON.stringify({ success: false, error: 'forbidden' }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 403,
+    });
   }
 
   try {

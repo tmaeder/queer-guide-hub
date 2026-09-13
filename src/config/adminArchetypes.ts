@@ -13,11 +13,16 @@
  * `exempt` with a written reason. A new admin route fails the build until
  * somebody decides which frame it is.
  *
- * The honest score today is **24 of 40 clean, 11 with a stated caveat, 5
+ * The honest score today is **23 of 41 clean, 12 with a stated caveat, 6
  * exemptions with reasons** — recorded rather than rounded up, because a
  * registry that quietly rounds "nearly" to "yes" is worth less than no
- * registry. All 40 routes ARE accounted for; "caveated" means the frame fits
+ * registry. All 41 routes ARE accounted for; "caveated" means the frame fits
  * but the route carries something extra the frame does not describe.
+ *
+ * This prose had drifted from the assertion it describes: it read 24/11/5
+ * while `adminArchetypes.test.ts` asserted 23/11/6, so the Twenty CRM
+ * retirement and an earlier exemption moved the counts without moving the
+ * sentence. The test is the source of truth; this line now matches it.
  *
  * This file is deliberately inert: registering a route changes nothing on its
  * own. `AdminShell` reads it to decide whether a page still needs the legacy
@@ -73,6 +78,31 @@ export type AdminArchetypeEntry = {
    * is precisely the big-bang this design exists to avoid.
    *
    * Flip one flag per migration PR.
+   *
+   * **`adopted` means the HEADER, not the frame — and for many routes the frame
+   * is not adoptable at all.** Measured 2026-09-12: 27 pages render
+   * `AdminArchetypeHeader`, and exactly 3 render any `Admin*Frame`
+   * (`AdminAutomation` → Registry, `AdminEntityTable` → Index, and
+   * `ContentListPanel`, header-only by its own comment). That is not 24 pages of
+   * pending mechanical work. The frames divide in two:
+   *
+   * - **Layout-only**, so adoptable: `AdminRegistryFrame` (title + children),
+   *   `AdminOpsFrame` (all slots optional), `AdminTreeCanvasFrame` (tree +
+   *   canvas), `AdminRecordFrame` (tabRail + children).
+   * - **Content-shape-specific**, so NOT adoptable without redesigning the page:
+   *   `AdminCompareFrame` requires `leftHeader`/`rightHeader`/`rows: CompareRow[]`
+   *   but `/admin/duplicates` is a LIST of pairs, not one side-by-side compare;
+   *   `AdminAnalyticsFrame` requires `chart` AND `rankedList` but `AdminAnalytics`
+   *   is three tabs of stat grids with no chart at all (`BarChart3` there is a
+   *   lucide icon) and no ranked list, and `AdminAffiliate` /`AdminEventQuality` /
+   *   `AdminSearchIntelligence` have the same shape; `AdminInboxFrame` requires
+   *   `list` AND `thread` but `AdminTrash` is Cards with no thread pane, as are
+   *   `AdminLiveness` / `AdminPlacesEditorial` / `AdminGroupRequests`.
+   *
+   * So a route can carry an archetype it can never render. Forcing those pages
+   * into their frame means inventing a chart, a thread pane or a compare pair —
+   * a product decision, not a migration. Either redesign the page deliberately,
+   * or relax the frame's required props; do not contort the content to fit.
    */
   adopted?: true;
 };
@@ -216,7 +246,6 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
   { path: 'inbox', archetype: 'F', title: 'Inbox' },
   { path: 'postfach', archetype: 'F', title: 'Mailbox', adopted: true },
   { path: 'content/group-requests', archetype: 'F', title: 'Group requests', adopted: true },
-  { path: 'content/twenty-crm', archetype: 'F', title: 'CRM', adopted: true },
   { path: 'content/liveness', archetype: 'F', title: 'Liveness', adopted: true },
   { path: 'places-editorial', archetype: 'F', title: 'Places editorial', adopted: true },
   {
@@ -242,7 +271,6 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
 
   // ── H · Registry ──────────────────────────────────────────────────────
   { path: 'automation', archetype: 'H', title: 'Automations', adopted: true },
-  { path: 'recognition', archetype: 'H', title: 'Recognition', adopted: true },
   {
     path: 'email-templates',
     archetype: 'H',
@@ -259,6 +287,18 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
       'Genuinely ambiguous E vs H. Filed as H: QUALITY_GATES are named rules, the pending count ' +
       'is the fired-count, and the link-to-queue takes the toggle slot. E would demand a chart ' +
       'this page has no data for.',
+  },
+  {
+    path: 'styleguide',
+    archetype: 'H',
+    title: 'Styleguide & Voice',
+    caveat:
+      'Rules, terminology and examples are all H — named rules carrying an is_active toggle, ' +
+      'which is the frame verbatim. The fourth tab is not: Publish is a compiled-prompt preview ' +
+      'plus a version history, which is D. Recorded rather than filed under its loudest tab, ' +
+      'because three quarters of a page matching a frame is what `subFrames` and this field ' +
+      'exist to say out loud.',
+    subFrames: ['D'],
   },
   {
     path: 'trash',
@@ -319,7 +359,7 @@ function matchDynamic(rest: string): AdminArchetypeEntry | undefined {
   return undefined;
 }
 
-/** `B · RECORD EDITOR — /admin/content/venue/schwuz`, the header's route line. */
+/** `B · RECORD EDITOR — /admin/content/venues/schwuz`, the header's route line. */
 export function getArchetypeRouteLine(pathname: string): string | null {
   const key = getArchetypeForRoute(pathname);
   if (!key) return null;

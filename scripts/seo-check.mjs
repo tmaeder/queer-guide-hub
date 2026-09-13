@@ -45,10 +45,81 @@ const TITLE_MAX = 60;
 const DESC_MIN = 70;
 const DESC_MAX = 160;
 
+// Detail pages are sampled from the live sitemaps rather than listed here, so
+// this can never pin a slug that later 404s. One URL per type; the FIRST <loc>
+// in each sitemap, so the sample is deterministic and CI stays stable.
+//
+// Until 2026-09-10 this script checked ONLY the static routes above — 15 URLs
+// out of the 61,718 the sitemaps publish, i.e. no coverage at all of the entire
+// detail surface where essentially all of the content lives.
+const DETAIL_SITEMAPS = [
+  'sitemap-venues.xml',
+  'sitemap-news.xml',
+  'sitemap-tags.xml',
+  'sitemap-personalities.xml',
+  'sitemap-events.xml',
+  'sitemap-places.xml',
+  'sitemap-hotels.xml',
+  'sitemap-milestones.xml',
+];
+
+// Detail titles are NOT held to TITLE_MIN. A short entity name is legitimate —
+// "Eunuch | Queer Guide" is 20 chars and correct for that tag — so applying the
+// hub bound here would fail by construction on real pages. The upper bound is
+// still enforced, because a truncated title is a real defect either way.
+const DETAIL_TITLE_MAX = 60;
+const DETAIL_DESC_MAX = 160;
+
+// scripts/sitemap-freshness.mjs defaults to pages.dev because Cloudflare bot
+// management blocks GitHub Actions egress (datacenter ASN) on the custom domain.
+// This script runs green against queer.guide today, so BASE is tried first and
+// the mirror is a fallback — but discovery FAILS THE RUN if both are
+// unreachable rather than skipping. A detail check that can silently sample
+// nothing is precisely the vacuous guard this change exists to remove.
+const MIRROR_BASE = 'https://queer-guide.pages.dev';
+
 const pick = (html, re) => {
   const m = re.exec(html);
   return m ? m[1].trim() : null;
 };
+
+// Title/description bounds must be measured on the RENDERED text, not on the raw
+// attribute. `functions/_lib/detail.ts` truncates to MAX_DESC and only then
+// HTML-escapes, so every `"` becomes `&quot;` and adds 5 raw characters — a
+// description that is a correct 153 rendered chars can read as 163 raw. The
+// first version of the detail check measured raw and reported
+// /city/salinas-us-fre8j as over-length; it is not, and "fixing" the truncation
+// would have shortened correct descriptions to satisfy a broken ruler.
+//
+// Note DOMParser is NOT a Node global, so htmlToText() below silently falls
+// through to its angle-bracket fallback under CI and never decodes anything.
+// This does the decoding explicitly instead.
+const NAMED_ENTITIES = {
+  amp: '&',
+  lt: '<',
+  gt: '>',
+  quot: '"',
+  apos: "'",
+  nbsp: ' ',
+  mdash: '—',
+  ndash: '–',
+  hellip: '…',
+  rsquo: '’',
+  lsquo: '‘',
+  ldquo: '“',
+  rdquo: '”',
+};
+
+const decodeEntities = (s) =>
+  String(s ?? '')
+    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+    .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(Number(d)))
+    .replace(/&([a-z]+);/gi, (m, name) => {
+      const v = NAMED_ENTITIES[name.toLowerCase()];
+      return v === undefined ? m : v;
+    })
+    // &amp;quot; style double-encoding resolves on the second pass.
+    .replace(/&amp;/g, '&');
 
 const BOT_UA =
   'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)';
@@ -61,11 +132,12 @@ async function check(path) {
   ]);
   const html = await humanRes.text();
   const botHtml = await botRes.text();
-  const title = pick(html, /<title[^>]*>([\s\S]*?)<\/title>/i);
+  const rawTitle = pick(html, /<title[^>]*>([\s\S]*?)<\/title>/i);
+  const title = rawTitle === null ? null : decodeEntities(rawTitle);
   // Backreference on the opening quote so apostrophes inside double-quoted
   // content don't truncate the match (e.g. "who's behind it").
   const descMatch = /<meta\s+name=["']description["']\s+content=(["'])([\s\S]*?)\1/i.exec(html);
-  const description = descMatch ? descMatch[2].trim() : null;
+  const description = descMatch ? decodeEntities(descMatch[2].trim()) : null;
   const canonical = pick(html, /<link\s+rel=["']canonical["']\s+href=["']([^"']*)["']/i);
   const ogImage = pick(html, /<meta\s+property=["']og:image["']\s+content=["']([^"']*)["']/i);
   const hasJsonLd = /application\/ld\+json/.test(html);
@@ -96,6 +168,88 @@ const pass = (msg) => {
   console.log(`  ok ${msg}`);
   return 0;
 };
+
+// Returns the PATH of the first <loc> in a sitemap, not the absolute URL: the
+// generators hardcode ORIGIN as queer.guide, so a preview/mirror run must
+// re-point the path at its own BASE or it would silently audit production.
+async function firstLocPath(base, file) {
+  const res = await fetch(`${base.replace(/\/$/, '')}/${file}`, {
+    headers: { 'User-Agent': 'queer-guide-seo-check/1' },
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const xml = await res.text();
+  const m = /<loc>\s*([^<\s]+)\s*<\/loc>/i.exec(xml);
+  if (!m) return null; // valid but empty sitemap — not an error here
+  try {
+    return new URL(m[1]).pathname;
+  } catch {
+    return null;
+  }
+}
+
+async function discoverDetailRoutes() {
+  for (const origin of [BASE, MIRROR_BASE]) {
+    const found = [];
+    let reachable = true;
+    for (const file of DETAIL_SITEMAPS) {
+      try {
+        const p = await firstLocPath(origin, file);
+        if (p) found.push({ file, path: p });
+      } catch {
+        reachable = false;
+        break;
+      }
+    }
+    if (reachable) {
+      if (origin !== BASE) console.log(`  (detail slugs discovered via ${origin})`);
+      return found;
+    }
+  }
+  return null; // both origins unreachable — caller fails the run
+}
+
+function checkDetail(r) {
+  let failures = 0;
+  console.log(`\n${r.path}  [detail]`);
+
+  if (r.status !== 200) return fail(`HTTP ${r.status}`, r.url);
+  pass(`HTTP 200`);
+
+  if (!r.title) failures += fail('missing <title>');
+  else if (r.title.length > DETAIL_TITLE_MAX)
+    failures += fail(`title ${r.title.length} chars (max ${DETAIL_TITLE_MAX}): "${r.title}"`);
+  else pass(`title (${r.title.length}): "${r.title}"`);
+
+  if (!r.description) failures += fail('missing <meta name="description">');
+  else if (r.description.length > DETAIL_DESC_MAX)
+    failures += fail(`description ${r.description.length} chars (max ${DETAIL_DESC_MAX})`);
+  else pass(`description (${r.description.length})`);
+
+  if (!r.canonical) failures += fail('missing <link rel="canonical">');
+  else {
+    const canonPath = (() => {
+      try {
+        return new URL(r.canonical).pathname;
+      } catch {
+        return r.canonical;
+      }
+    })();
+    if (canonPath !== r.path) failures += fail(`canonical path "${canonPath}" != "${r.path}"`);
+    else pass(`canonical: ${r.canonical}`);
+  }
+
+  // A detail page with no structured data is the whole reason the middleware
+  // reads the row at all — if this regresses, the per-type JSON-LD builder in
+  // functions/_lib/detail.ts stopped resolving.
+  if (!r.hasJsonLd) failures += fail('missing JSON-LD');
+  else pass('JSON-LD present');
+
+  if (r.botStatus !== 200) failures += fail(`bot HTTP ${r.botStatus}`);
+  else if (!r.botH1) failures += fail('bot UA: missing <h1> in initial HTML');
+  else pass(`bot <h1>: "${r.botH1}"`);
+
+  return failures;
+}
 
 async function main() {
   console.log(`SEO check against ${BASE}\n`);
@@ -175,12 +329,49 @@ async function main() {
     for (const t of duplicates) failures += fail(`duplicate title: "${t}"`);
   }
 
+  // ---- Detail-page sample -------------------------------------------------
+  // Kept in its own pass with its own assertions: detail titles are shorter than
+  // the hub bounds allow (see DETAIL_TITLE_MAX) and detail pages carry no
+  // og:image requirement, so folding them into the loop above would produce
+  // failures that are correct by the hub rules and wrong by the detail rules.
+  console.log('\n--- detail pages (sampled from live sitemaps) ---');
+  let sampledDetail = 0;
+  const detailRoutes = await discoverDetailRoutes();
+
+  if (detailRoutes === null) {
+    console.log('');
+    failures += fail(
+      `could not reach the sitemaps on ${BASE} or ${MIRROR_BASE} to discover detail routes`,
+    );
+  } else if (detailRoutes.length === 0) {
+    console.log('');
+    failures += fail('sitemaps reachable but published no detail URLs to sample');
+  } else {
+    const detailResults = [];
+    for (const { path } of detailRoutes) {
+      try {
+        detailResults.push(await check(path));
+      } catch (err) {
+        console.error(`  X ${path} - fetch failed: ${err.message}`);
+        failures += 1;
+      }
+    }
+    for (const r of detailResults) failures += checkDetail(r);
+    console.log(`\n  sampled ${detailResults.length} detail routes`);
+    sampledDetail = detailResults.length;
+  }
+
+  // Report both counts. Saying "all 15 routes" while a second pass also ran is
+  // how a check comes to look narrower (or wider) than it is.
+  const total = results.length + sampledDetail;
   console.log('');
   if (failures === 0) {
-    console.log(`PASS - all ${results.length} routes`);
+    console.log(`PASS - ${results.length} static + ${sampledDetail} detail = ${total} routes`);
     process.exit(0);
   } else {
-    console.error(`FAIL - ${failures} failure(s) across ${results.length} routes`);
+    console.error(
+      `FAIL - ${failures} failure(s) across ${results.length} static + ${sampledDetail} detail routes`,
+    );
     process.exit(1);
   }
 }

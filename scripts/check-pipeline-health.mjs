@@ -5,6 +5,8 @@
  * Exit 1 if any enabled pipeline only failed (no completions) in last 24h.
  */
 
+import { classifyParkedQueue } from './lib/geo-address-queue.mjs'
+
 const BASE = process.env.SUPABASE_URL
 const KEY  = process.env.SUPABASE_SERVICE_ROLE_KEY
 
@@ -297,6 +299,63 @@ if (!hygieneRes.ok) {
   }
 }
 
+// Dead gaycities S3 image urls (2026-09-09). The gaycities-featured-images-
+// production.s3.amazonaws.com bucket lost its public-read policy and 403s
+// for every key, so a url pointing at it renders Chrome's torn-page glyph
+// rather than the on-brand fallback. `dead_gaycities_image_signals()` is a
+// STANDALONE RPC (not a pipeline_hygiene_stats key) for the same reason
+// event_dup_signals/venue_dup_signals are standalone below: that function is
+// a ~150-line CREATE OR REPLACE and adding a key means restating every other
+// one by hand — a merge-collision surface.
+//
+// THIS BLOCK IS TOP LEVEL ON PURPOSE. It was first written inside the
+// pipeline_hygiene_stats else-block, and that fetch only WARNS when it fails —
+// so an outage of an UNRELATED rpc silently skipped this check entirely. That
+// is the same "nobody looked reads as clean" failure this block's own probe
+// guard exists to prevent, one level up. Do not nest it again.
+//
+// WARN while the count falls, FAIL only when it is non-zero with nothing
+// draining it — a hard fail on any non-zero count would red every open PR
+// for the duration of the drain (migration 20370601100000 arms and proves
+// one batch; scripts/data-quality/strip-dead-gaycities-images.mjs drains
+// the rest out-of-band).
+//
+// A FAILED PROBE IS REPORTED, NEVER SWALLOWED: an unreachable RPC must not
+// read the same as a clean corpus.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/dead_gaycities_image_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    console.warn(`⚠ dead_gaycities_image_signals → HTTP ${res.status} (RPC missing? migration 20370601100000)`)
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else {
+    const sig = (await res.json()) ?? {}
+    const remaining = Number(sig?.remaining ?? -1)
+    if (remaining < 0) {
+      console.error('✗ dead_gaycities_image_signals returned no `remaining` — the probe is broken')
+      FAILED = true
+    } else if (remaining > 0) {
+      console.warn(`⚠ ${remaining} events still hold a dead gaycities S3 image url`)
+      console.warn('  Drain with: node scripts/data-quality/strip-dead-gaycities-images.mjs')
+      console.warn('  The producer is sealed in scraper/src/sources/gaycities/lib.ts (DEAD_IMAGE_HOSTS),')
+      console.warn('  so this should fall to 0 and stay there. If it is RISING, that filter was bypassed.')
+    } else {
+      console.log('✓ Dead gaycities image urls: 0')
+    }
+    // These three are 0 today. Non-zero means a NEW producer reached a
+    // surface the events repair never covered, which is worth a hard look.
+    const spread = ['events_logo_url', 'venues_images', 'venues_logo_url']
+      .filter((k) => Number(sig?.[k] ?? 0) > 0)
+    if (spread.length) {
+      console.error(`✗ dead gaycities urls appeared on ${spread.join(', ')} — a new producer, not the known cohort`)
+      FAILED = true
+    }
+  }
+}
+
 // 4b. Event dedup health (2027-05-02). There was no check here at all: the dedup
 //     section above is city-only, so the event auto arms matched ZERO pairs for
 //     eleven days — nightly sweep green, consecutive_failures=0, 645 merges then
@@ -528,6 +587,86 @@ if (!hygieneRes.ok) {
       `✓ Venue dup signals: would_merge=${wouldMerge}, would_queue=${vn.would_queue}, ` +
       `merges_7d=${merges7}, open=${openPairs} (median ${medianH}h, oldest ${oldestH}h)`,
     )
+  }
+}
+
+// 4d. The other ten dedup types (2026-09-12). 4b and 4c exist because venue and event
+//     each went blind while the nightly sweep reported success — event for eleven days.
+//     The remaining ten had no sentinel at all, so the same failure there is invisible:
+//     marketplace, personality, city, hotel, milestone, organization, news,
+//     queer_village, country, group.
+//
+//     TWO CALLS, deliberately. `dedup_signals_all()` is the CHEAP pass (queue, audit and
+//     drain-rate keys for all twelve, milliseconds) because the expensive part — a
+//     dry-run sweep — measured 34.6s for twelve types and no HTTP call survives that.
+//     `would_merge` there is null with `dry_run_error: 'not probed'`, which is the point:
+//     an unprobed type must never read like a clean one. Types with a real backlog are
+//     then probed individually.
+//
+//     THE NEW GATE IS THE DRAIN RATE, and it is the one the existing two would have
+//     missed. 4b/4c fail on `would_merge > 0 && merges_7d === 0` — an engine with work it
+//     is not doing. The live state on 2026-09-12 was the opposite: arms SATURATED
+//     (would_merge 0 on both), venue queue pinned at its 200/night cap five nights in six,
+//     and `human_decisions_7d` = 0. Both halves of that predicate read zero, so it is
+//     silent while the backlog compounds.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/dedup_signals_all`, {
+    method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: '{}',
+  })
+  if (!res.ok) {
+    // Warn, never pass silently: a missing RPC and a healthy fleet must not look alike.
+    console.warn(`⚠ dedup_signals_all → HTTP ${res.status} (RPC missing? migration 29000101100500)`)
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else {
+    const all = await res.json()
+    const types = Object.keys(all ?? {})
+    if (types.length !== 12) {
+      console.error(`✗ dedup_signals_all returned ${types.length} types, expected 12`)
+      FAILED = true
+    }
+
+    for (const t of types) {
+      const d = all[t] ?? {}
+
+      // A null would_merge with no stated reason is a broken probe, not a clean type.
+      if (d.would_merge === null && !d.dry_run_error) {
+        console.error(`✗ dedup_signals(${t}) reports no would_merge and no reason — the probe is broken`)
+        FAILED = true
+      }
+
+      // Reversibility drift, for every type now — not just venue. A merge stamped with
+      // no schema marker cannot be undone. Anchored to the first stamped merge, so the
+      // rows that legitimately predate the fix (merges_pre_schema_total) are excluded.
+      const unrev = Number(d.merges_unreversible_since_fix ?? 0)
+      if (unrev > 0) {
+        console.error(`✗ ${unrev} ${t} merge(s) recorded with no reversibility data since the fix landed`)
+        console.error(`  The live merge core has drifted from 29000101100000/100200 — those merges cannot be undone.`)
+        FAILED = true
+      }
+
+      // The drain-rate warning. Not a hard fail: a deliberate backlog on a low-value
+      // type is a product choice, and a red build nobody can act on is one people learn
+      // to ignore. It fires only when the queue is BOTH large and genuinely stagnant.
+      const open = Number(d.open_pairs ?? 0)
+      const opened = Number(d.opened_7d ?? 0)
+      const human = Number(d.human_decisions_7d ?? 0)
+      const medianH = Number(d.median_open_pair_hours ?? 0)
+      if (open > 100 && opened > 0 && human === 0 && medianH > 168) {
+        console.warn(
+          `⚠ ${t} dedup queue is not draining: ${open} open, +${opened} queued in 7d, ` +
+          `0 human decisions, median age ${medianH}h`,
+        )
+        console.warn('  A queue that only grows converges on never. Either review it at')
+        console.warn('  /admin/inbox?queue=dedup-review, widen the auto arms, or close the')
+        console.warn('  provably-distinct pairs (run_dedup_close_distinct).')
+      }
+    }
+
+    const summary = types
+      .filter((t) => Number(all[t]?.open_pairs ?? 0) > 0)
+      .map((t) => `${t}=${all[t].open_pairs}`)
+      .join(' ')
+    console.log(`✓ Dedup signals: 12 types, open pairs ${summary || 'none'}`)
   }
 }
 
@@ -787,7 +926,16 @@ reindexDrain: {
     // fail path but it still gets named on every run, so "retired" cannot
     // quietly become "invisible". Anything claiming retirement has to say so in
     // its own description, which is a migration-reviewed change.
-    const RETIRED_RE = /\[RETIRED\b/i
+    // `[COMPLETED` counts too. A batched backfill whose work is finished is the
+    // second legitimate reason to be off, and it is NOT a false disable: the
+    // job succeeded, cleared its queue, and was switched off on purpose —
+    // which is precisely the shape this rule fires on. marketplace_affiliate_-
+    // backfill carried an accurate `[COMPLETED 2026-07-04: 6.5k fake copies
+    // cleared, remaining=0]` and still hard-failed CI, because the regex only
+    // knew one word. Re-verified 2026-09-10: its fake affiliate_url copies are
+    // still at zero. Both markers stay on the WARN path, so a finished backfill
+    // is still named on every run and cannot become invisible.
+    const RETIRED_RE = /\[(RETIRED|COMPLETED)\b/i
     const retired = suspects.filter((a) => RETIRED_RE.test(a.description ?? ''))
     const live = suspects.filter((a) => !retired.includes(a))
     // Recovered but still switched off — the row's own columns say "healthy".
@@ -798,7 +946,7 @@ reindexDrain: {
 
     if (retired.length) {
       console.warn(
-        `⚠ ${retired.length} automation(s) auto-paused then deliberately retired (expected to stay off): ` +
+        `⚠ ${retired.length} automation(s) auto-paused then deliberately retired or completed (expected to stay off): ` +
           retired.map((a) => a.slug).join(', '),
       )
     }
@@ -1370,10 +1518,44 @@ const GEO_BASELINE = {
       }
 
       const q = geo.address_queue ?? {}
-      if ((q.parked ?? 0) > 0) {
-        console.error(`✗ ${q.parked} geo_address_queue rows parked at 4 failed attempts — inspect geo_address_queue.last_error`)
-        FAILED = true
+
+      // A parked row is not automatically a failure, and treating it as one made
+      // this workflow permanently red.
+      //
+      // `attempts >= 4` is reached two ways. The drain's catch branch stamps the
+      // exception message after exhausting its backoff — a real failure. The
+      // terminal branch stamps `no_postal_for_coordinates` when Photon ANSWERED
+      // and reported that no postcode exists for those coordinates; those rows can
+      // never drain, and parking rather than deleting them is the deliberate fix
+      // for a delete/re-enqueue loop (see migration 20360901100100). Measured
+      // 2026-09-09: 2,537 parked, ALL 2,537 terminal, zero transient — so the old
+      // `parked > 0` rule could not go green by any amount of correct work, and it
+      // buried a real wrong-entity regression underneath it for six days.
+      //
+      // The split is computed in Postgres by geo_address_queue_parked() and
+      // classified by scripts/lib/geo-address-queue.mjs, unit-tested in both
+      // directions. Transient still fails at ONE row — no threshold, no baseline.
+      {
+        let parked = null
+        const pr = await fetch(`${BASE}/rest/v1/rpc/geo_address_queue_parked`, {
+          method: 'POST',
+          headers: { ...headers, 'Content-Type': 'application/json' },
+          body: '{}',
+        })
+        if (pr.ok) parked = await pr.json()
+        else console.error(`✗ geo_address_queue_parked → HTTP ${pr.status} (is migration 20360901100100 applied?)`)
+
+        const verdict = classifyParkedQueue(parked)
+        if (verdict.level === 'fail') {
+          console.error(`✗ ${verdict.message}`)
+          FAILED = true
+        } else if (verdict.level === 'warn') {
+          console.warn(`⚠ ${verdict.message}`)
+        } else {
+          console.log(`✓ ${verdict.message}`)
+        }
       }
+
       if ((q.depth ?? 0) > GEO_BASELINE.queue_depth_warn) {
         console.warn(`⚠ geo_address_queue depth ${q.depth} (oldest ${q.oldest_hours}h) — the */5 drain moves 25 rows a run`)
       }
@@ -1382,6 +1564,751 @@ const GEO_BASELINE = {
       const integrityTotal = Object.values(integrity).reduce((a, b) => a + b, 0)
       if (integrityTotal > 0) {
         console.warn(`⚠ ${integrityTotal} geo_integrity_violations (city_id's country vs the row's own country_id): ${JSON.stringify(integrity)}`)
+      }
+    }
+  }
+}
+
+// 11b. Physically impossible city scalars (2026-09-08)
+//
+// Before this, `area_km2` and `elevation_m` had no validator branch anywhere in
+// the pipeline and population was checked only for `isFinite && >= 0`. There was
+// also no validate-stage sentinel of any kind — nothing in this file read
+// ai_validation_status or the warning distribution. Measured on prod the day
+// this was written: 181 impossible areas, 1 impossible elevation, 4 cities more
+// populous than their own country, 35 impossible densities. El Reno held an area
+// of 8,300,000,226 km2.
+//
+// The producer was a unit bug: parseCityFacts read a Wikidata quantity's
+// `.amount` and ignored its `.unit`, so a P2046 stated in square metres landed
+// under the km2 label — a factor of 1e6, which is exactly Calgary's 825,290,000
+// against its real 825.29. Fixed at the source; 20360201100100 retracted what
+// had already been written.
+//
+// ZERO TOLERANCE ON THE HARD BOUNDS, ADVISORY ON DENSITY.
+//
+// The three hard bounds are single-column and unambiguous, so any count is a new
+// defect from a producer that stopped checking.
+//
+// Density is NOT ratcheted, and that is a correction rather than a softening. A
+// shrinking baseline was the first design and it was unshippable: the repair
+// nulled 181 areas, and `bad_dens` requires `a > 0`, so every one of those rows
+// left the density population BY CONSTRUCTION. As city-factual-backfill refills
+// them — which this same section's advisory line says it expects — each becomes
+// eligible for the density arm for the first time, and a commune-sized area
+// landing beside a metro-sized population is the Paris shape, which is already
+// counted. The number is therefore designed to RISE, a ratchet forbids exactly
+// that, and the "baselines may only shrink" rule would have left no legal
+// response but hand-writing another migration. Density is a human backlog; it is
+// reported with its trend and never fails the build.
+const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Context, not a gate.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/city_scalar_defects`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  // A 404 is "the migration has not landed yet" — legitimate while db push is in
+  // flight, and the geo section above treats it the same way. Anything else is a
+  // BROKEN probe: a 500 from a bad plan, a revoked grant, a statement timeout on
+  // the full cities scan. Collapsing both into a warning fails open on exactly
+  // the cases where the gate is most needed, which is what the message below
+  // claims not to do.
+  if (res.status === 404) {
+    console.warn(`⚠ city_scalar_defects → HTTP 404 — city scalar sentinel NOT DEPLOYED (migration 20360201100000). This is absence of a check, not absence of defects.`)
+  } else if (!res.ok) {
+    console.error(`✗ city_scalar_defects → HTTP ${res.status} — the gate could not run. Absence of a check is not absence of defects; failing rather than warning so a broken probe cannot read as a clean corpus.`)
+    FAILED = true
+  } else {
+    const d = await res.json()
+
+    // Shape check — NOT a positive control, and it was mislabelled as one until
+    // an audit called that out. It proves the probe returns the right KEYS; it
+    // proves nothing about whether the gate reports non-zero on a real defect.
+    // The mislabel was the worse half: it reads as satisfied, so the next reader
+    // would not add the real thing. The actual positive control lives in
+    // src/lib/__tests__/cityScalarBounds.test.ts, which feeds the section
+    // fixtures with known-bad counts and asserts it fails.
+    //
+    // What this does catch: PostgREST returns whatever the function returns, so a
+    // renamed or dropped key arrives as `undefined` and every `?? 0` below would
+    // report a clean corpus having measured nothing. An ABSENT key and a ZERO
+    // count must not look alike — the accessibility_contradictions rule.
+    const REQUIRED = [
+      'area_impossible',
+      'elevation_impossible',
+      'population_exceeds_country',
+      'density_impossible',
+      'retracted_pending_refill',
+    ]
+    const missing = REQUIRED.filter((k) => d?.[k] === undefined)
+    if (missing.length) {
+      console.error(`✗ city_scalar_defects is missing ${missing.join(', ')} — the gate cannot report what it does not return, so this is a broken probe, not a clean corpus`)
+      FAILED = true
+    } else {
+      // Hard bounds: no baseline, no floor. Each is a single column that is
+      // wrong on its own terms, so one row is a regression.
+      const hard = [
+        ['area_impossible', 'area <= 0 or > 200,000 km2'],
+        ['elevation_impossible', 'elevation < -500 m or > 5,300 m'],
+        ['population_exceeds_country', 'city more populous than its own country'],
+      ]
+      let hardTotal = 0
+      for (const [key, label] of hard) {
+        hardTotal += d[key]
+        if (d[key] > 0) {
+          const sample = JSON.stringify((d.samples ?? {})[key.split('_')[0]] ?? [])
+          // Name the producer that actually writes these. The defect this gate
+          // was built for came from city-factual-backfill, which UPDATEs `cities`
+          // directly; `pipeline-validate` never sees that path and an engineer
+          // sent to inspect the validate stage would find nothing wrong there.
+          console.error(`✗ ${d[key]} cities: ${label}. Bounds live in _shared/city-scalar-bounds.ts. Check city-factual-backfill (direct writes to cities, the usual source) before pipeline-validate (staging path only). Samples: ${sample}`)
+          FAILED = true
+        }
+      }
+      if (hardTotal === 0) console.log('✓ No physically impossible city area/elevation/population')
+
+      // Advisory only — see the comment on CITY_SCALAR_DENSITY_REPORTED for why
+      // this must not gate. Reported with its direction so a real jump is still
+      // visible to a human reading the log.
+      const dens = d.density_impossible
+      const delta = dens - CITY_SCALAR_DENSITY_REPORTED
+      const trend = delta === 0 ? 'unchanged' : delta > 0 ? `up ${delta}` : `down ${-delta}`
+      console.log(`  Density defects: ${dens} (${trend} vs the 2026-09-08 reading of ${CITY_SCALAR_DENSITY_REPORTED}) — advisory, human backlog. Expected to rise as retracted areas refill.`)
+
+      // Advisory. These were emptied by the repair and refill on the affected
+      // city's next city-factual-backfill visit, now that the unit conversion is
+      // correct. The number should fall on its own; a flat line across runs means
+      // the refill path is dead, which the retraction itself would otherwise hide.
+      if (d.retracted_pending_refill > 0) {
+        console.log(`  ${d.retracted_pending_refill} retracted city areas awaiting refill by city-factual-backfill (expected to fall; a flat line means the refill path stopped)`)
+      }
+    }
+  }
+}
+
+// ── Audio/video stored in news_articles.image_url (2026-09-08) ────────────
+//
+// source-rss-news's extractMediaUrl took the first <enclosure url="..."> with
+// no type check, and on a podcast item the enclosure IS the audio — 5,607 rows,
+// 2,405 of them seo_indexable and therefore serving an MP3 as og:image.
+//
+// Standalone RPC rather than a key on pipeline_hygiene_stats(): adding one
+// there means restating that function's whole body, which is a merge-collision
+// surface (same reason event_dup_signals/venue_dup_signals are separate).
+//
+// Zero-tolerance, no baseline and no floor. news_articles_zz_reject_non_image_url
+// makes this state unreachable through INSERT and UPDATE, so a non-zero count is
+// never drift — it is a writer that got around the trigger.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/news_image_signals`, {
+    method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: '{}',
+  })
+  if (!res.ok) {
+    // A failed probe must SAY it failed. Falling through to a default would
+    // report a clean corpus on the strength of never having looked — the same
+    // shape as the `last_error` 42703 that hid an open circuit breaker for days.
+    console.warn(`⚠ news_image_signals → HTTP ${res.status} (20361118143700 not applied?) — this check measured NOTHING`)
+  } else {
+    const sig = await res.json()
+    const bad = Number(sig?.articles ?? 0)
+    const badLinks = Number(sig?.registry_links ?? 0)
+    // Local, not the global FAILED: this section's ✓ must not be suppressed by
+    // an unrelated failure in an earlier one.
+    let sectionOk = true
+
+    // The seal being ATTACHED is checked separately from the count, because an
+    // absent trigger and a clean corpus produce the same zero.
+    if (sig?.trigger_attached === false) {
+      console.error('✗ news_articles_zz_reject_non_image_url is NOT attached — image_url is unsealed')
+      console.error('  A zero count below therefore proves nothing about future writes.')
+      FAILED = true; sectionOk = false
+    }
+    if (bad > 0) {
+      console.error(`✗ ${bad} news_articles store audio/video in image_url (renders a broken image; also feeds og:image)`)
+      console.error('  The BEFORE trigger makes this unreachable, so a writer bypassed it —')
+      console.error('  check source-* enclosure parsing, pipeline-normalize, and news_commit_staging_batch.')
+      FAILED = true; sectionOk = false
+    }
+    if (badLinks > 0) {
+      console.error(`✗ ${badLinks} image_asset_links point at non-image assets (registry renders independently of news_articles.image_url)`)
+      FAILED = true; sectionOk = false
+    }
+    // search_documents keeps its OWN copy of image_url and is what a result card
+    // renders. It self-heals through search_reindex_drain rather than being
+    // repaired directly (verified on prod: 20 sampled rows went 20 → 0 through
+    // one drain), so a non-zero count here is normally just lag.
+    //
+    // The failure worth catching is a DESYNC, not lag: articles clean, queue
+    // empty, and search still serving audio. That is the shape where repairing
+    // one surface hides another — `articles` reports a clean zero while every
+    // search result still shows a broken image.
+    const sd = Number(sig?.search_documents ?? 0)
+    const queue = Number(sig?.reindex_queue_depth ?? 0)
+    if (sd > 0 && bad === 0 && queue === 0) {
+      console.error(`✗ ${sd} search_documents hold audio/video in image_url while news_articles is clean and the reindex queue is empty`)
+      console.error('  Not drain lag — the index disagrees with its source. Re-enqueue the affected rows.')
+      FAILED = true; sectionOk = false
+    } else if (sd > 0) {
+      console.log(`  ${sd} search_documents still carry a non-image image_url (queue depth ${queue}; expected to drain)`)
+    }
+    // Advisory: drains as news_sources.artwork_url fills. Never reaches zero —
+    // a show that publishes no <itunes:image> has no artwork to inherit — so
+    // this warns and never fails.
+    const noArt = Number(sig?.podcast_without_image ?? 0)
+    if (noArt > 0) {
+      console.log(`  ${noArt} podcast episodes still have no artwork (news_podcast_artwork_fill drains this as shows are re-fetched)`)
+    }
+    if (sectionOk) {
+      console.log('✓ no audio/video in news_articles.image_url; seal attached')
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// §  Podcast episodes: typed correctly, and actually committing
+// ---------------------------------------------------------------------------
+//
+// Two faults ran for months here and neither was hidden for want of data —
+// both were hidden because nothing measured the right quantity.
+//
+//  * 5,729 episodes committed as plain ARTICLES with the audio discarded,
+//    because a redefinition of news_commit_staging_batch dropped three columns
+//    from its INSERT list for three weeks. The RPC was fixed at the time; the
+//    rows it damaged were not, and nothing counted them for the next two months.
+//  * The parser wrote a bare <guid> (`Buzzsprout-19685709`, a Megaphone UUID)
+//    into news_articles.url, pipeline-validate rejected it E_INVALID_URL, and
+//    the episode was destroyed — 323 of 680 podcast rejections in 30 days.
+//
+// The second is why the RATE is reported and not the cron's liveness: 256 of
+// 265 sources reported a SUCCESSFUL fetch within 24h throughout, with
+// consecutive_failures 0 on every one. Fetching worked perfectly; only the
+// commit did not. A "did the job run" check is green in exactly this state.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/news_podcast_signals`, {
+    method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: '{}',
+  })
+  if (!res.ok) {
+    console.warn(`⚠ news_podcast_signals → HTTP ${res.status} (22000101100100 not applied?) — this check measured NOTHING`)
+  } else {
+    const sig = await res.json()
+    let sectionOk = true
+
+    // An ABSENT key is not a zero count. A sentinel deployed with a key missing
+    // would otherwise report the cleanest possible corpus while checking none of it.
+    for (const k of ['stranded_as_article', 'podcast_without_audio', 'episodes_staged_7d', 'episodes_committed_7d']) {
+      if (!(k in sig)) {
+        console.error(`✗ news_podcast_signals is missing the key \`${k}\` — that part of this check measured NOTHING`)
+        FAILED = true; sectionOk = false
+      }
+    }
+
+    const stranded = Number(sig?.stranded_as_article ?? 0)
+    if (stranded > 0) {
+      console.error(`✗ ${stranded} podcast episodes are typed as articles with no audio, while their staging row holds the URL`)
+      console.error('  This is the 2026-06 commit-RPC regression recurring. Zero tolerance, no baseline.')
+      FAILED = true; sectionOk = false
+    }
+
+    const noAudio = Number(sig?.podcast_without_audio ?? 0)
+    if (noAudio > 0) {
+      console.error(`✗ ${noAudio} rows are typed media_type='podcast' but carry no audio_url — unplayable`)
+      FAILED = true; sectionOk = false
+    }
+
+    const badUrl = Number(sig?.invalid_url_rejections_7d ?? 0)
+    if (badUrl > 0) {
+      console.error(`✗ ${badUrl} podcast episodes were rejected E_INVALID_URL in the last 7 days`)
+      console.error("  The URL ladder in source-rss-news/rss-parse.ts does not cover this host's <guid> shape.")
+      FAILED = true; sectionOk = false
+    }
+
+    // The rate, reported as a PAIR. A ratio hides its denominator, and "nothing
+    // was staged" and "nothing committed of what was staged" are different
+    // facts that call for different action.
+    const staged = Number(sig?.episodes_staged_7d ?? 0)
+    const committed = Number(sig?.episodes_committed_7d ?? 0)
+    if (staged > 0) {
+      const pct = Math.round((committed / staged) * 100)
+      const line = `  podcast commit rate: ${committed}/${staged} staged episodes (${pct}%) in the last 7 days`
+      // 40% is a floor, not a target — below the measured healthy rate and well
+      // above the 23% the E_INVALID_URL fault produced. It warns rather than
+      // fails: the news quality gate legitimately rejects some episodes, and
+      // this number moves with the corpus.
+      //
+      // THE HINT NAMES BOTH STAGES ON PURPOSE. A first version pointed only at
+      // pipeline-validate, and within hours of the parser fix that was the
+      // wrong half: validate went to 0 rejections while the rate FELL to 1%,
+      // because 4,045 news rows (759 podcasts + 3,286 articles, oldest
+      // 2026-07-14) sit at disposition='pending' having already passed
+      // validate, dedup and auto-approval. Commit runs every hour and looks
+      // healthy at 6-13 rows/hour; the parser fix raised podcast inflow to
+      // ~175/hour, so the shortfall is throughput, not rejection. A low rate
+      // here has two very different causes and the reader needs both.
+      console.log(
+        pct < 40
+          ? `${line} — LOW. Check BOTH: pipeline-validate rejection reasons, and the` +
+            ` disposition='pending' backlog that has already passed validate+dedup` +
+            ` (commit throughput, not rejection).`
+          : line,
+      )
+    } else {
+      console.log('  no podcast episodes staged in the last 7 days')
+    }
+
+    const zeroShows = Number(sig?.shows_fetching_with_zero_episodes ?? 0)
+    if (zeroShows > 0) {
+      console.log(`  ${zeroShows} podcast shows fetch successfully but have never committed an episode`)
+    }
+    const noArtwork = Number(sig?.podcast_without_artwork ?? 0)
+    if (noArtwork > 0) {
+      console.log(`  ${noArtwork} podcast episodes still have no artwork (news_podcast_artwork_fill drains this)`)
+    }
+
+    if (sectionOk) {
+      console.log('✓ podcast episodes are typed correctly and committing')
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// §  Inline glossary links in body prose
+// ---------------------------------------------------------------------------
+//
+// `glossary_link_terms` is the human-reviewed vocabulary of surface forms that
+// may become links inside body text. Nothing about it is safe by default:
+// matching every active tag name against 800 city descriptions linked the tag
+// literally named `A` on 747 of them, and put the ADULT tags `Middle`, `Public`
+// and `Offering` into ordinary travel copy. Same defect class as the alias
+// auto-tagging incident ('culture' → Crops on 2,609 articles).
+//
+// Standalone RPC rather than a key on tag_hygiene_stats(), for the reason the
+// news/venue/event signals are separate: restating that body to add a counter is
+// a merge-collision surface.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/glossary_link_signals`, {
+    method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: '{}',
+  })
+  if (!res.ok) {
+    // A failed probe must SAY it failed rather than fall through to a default —
+    // the shape that hid an open circuit breaker for days behind a 42703.
+    console.warn(`⚠ glossary_link_signals → HTTP ${res.status} (20600101100100 not applied?) — this check measured NOTHING`)
+  } else {
+    const sig = await res.json()
+    let sectionOk = true
+
+    // Checked separately from every count below: a dropped view and a clean
+    // corpus both make the violations zero.
+    if (sig?.view_present === false) {
+      console.error('✗ glossary_link_terms_public is MISSING — every renderer reads it, so all inline links are silently off')
+      FAILED = true; sectionOk = false
+    }
+
+    const zeroInvariants = [
+      ['dead_link_terms', 'active terms point at a deprecated/merged/deleted tag — dead links in body prose'],
+      ['adult_or_gated_terms', 'active terms are adult or anon-gated — an inline link has no affirmation step'],
+      ['definitionless_terms', 'active terms point at an entry with no definition'],
+      ['short_surface_forms', 'active terms are shorter than 3 characters (the tag named "A" matched 93% of city descriptions)'],
+      ['reasonless_rejections', 'rejected terms carry no reason, so the next reviewer re-litigates them'],
+    ]
+    for (const [key, why] of zeroInvariants) {
+      if (!(key in (sig ?? {}))) {
+        console.warn(`⚠ glossary_link_signals has no '${key}' key — that check measured NOTHING`)
+        continue
+      }
+      const n = Number(sig[key] ?? 0)
+      if (n > 0) {
+        console.error(`✗ ${n} ${why}`)
+        FAILED = true; sectionOk = false
+      }
+    }
+
+    // Advisory: a deindexed target still reads fine for a human, it just passes
+    // no crawl equity — which is half the reason this feature exists.
+    const deindexed = Number(sig?.deindexed_terms ?? 0)
+    if (deindexed > 0) {
+      console.log(`  ${deindexed} active terms point at a deindexed entry (link works for readers, passes no crawl equity)`)
+    }
+
+    // Coverage is reported, never failed on: the vocabulary ships EMPTY by
+    // design and grows only as a human reviews candidates. Stating the numbers
+    // is what stops "0 violations" reading as "the feature is live".
+    const active = Number(sig?.terms_active ?? 0)
+    const candidates = Number(sig?.terms_candidate ?? 0)
+    if (active === 0) {
+      console.log(`  glossary link vocabulary is EMPTY — no prose links anywhere yet (${candidates} candidates awaiting review)`)
+    } else {
+      console.log(`  ${active} active link terms, ${candidates} candidates awaiting review`)
+    }
+
+    if (sectionOk) console.log('✓ glossary link vocabulary clean (no dead, adult, gated or definitionless terms)')
+  }
+}
+
+// ---------------------------------------------------------------------------
+// §  Styleguide & Tone of Voice
+// ---------------------------------------------------------------------------
+//
+// Two halves, because the two ways this subsystem fails live in different
+// places.
+//
+// DATABASE half: styleguide_signals() checks the PUBLISHED PROMPT ITSELF, not
+// row counts. That distinction is the whole reason it exists — the `()` and
+// `-> ""` artifacts that shipped in v1.0.0 survived twenty green structural
+// tests, every one of which parsed the migration source and none of which
+// looked at the compiled output.
+//
+// REPO half: adoption. The system's entire value is that pipelines read the
+// published voice instead of each restating a private one, and on the day it
+// shipped exactly zero edge functions imported `voice-style.ts`. Nothing in the
+// database can see that — it is a fact about the source tree — so it is counted
+// here. The precedent for why this matters is the Village Truth Engine, whose
+// relink batch shipped with no cron and no registry row and sat dead long
+// enough that 21 of 47,815 events carried a village.
+{
+  console.log('')
+  console.log('§ Styleguide & voice')
+
+  const res = await fetch(`${BASE}/rest/v1/rpc/styleguide_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+
+  if (!res.ok) {
+    console.warn(`⚠ styleguide_signals → HTTP ${res.status} (RPC missing? migration 20460318142900)`)
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else {
+    const sg = (await res.json()) ?? {}
+
+    // NULL, not zero. "Nothing is published" and "a styleguide with no rules"
+    // must not look the same here: the first means every pipeline is silently
+    // on its compiled-in fallback.
+    if (sg.active_version == null) {
+      console.error('✗ no styleguide version is published — every consumer is on its fallback copy')
+      FAILED = true
+    } else {
+      // Zero-invariants. Each is backed by a CHECK constraint, so a non-zero
+      // value means the constraint was dropped, not that one row slipped past.
+      const zeroChecks = [
+        ['binding_rules_without_reason', 'MUST/NEVER rule(s) state no reason'],
+        ['rules_with_unknown_scope',     'rule(s) carry an applies_to value outside the vocabulary'],
+        ['empty_wrapper_artifacts',      'empty-wrapper artifact(s) in the published prompt (strip_fence lost STRICT?)'],
+      ]
+      for (const [key, label] of zeroChecks) {
+        const n = Number(sg[key] ?? 0)
+        if (n > 0) {
+          console.error(`✗ ${n} ${label}`)
+          FAILED = true
+        }
+      }
+
+      // The fence is what separates editor data from the fixed frame. Anything
+      // other than exactly one pair means a row escaped its block, or the
+      // compiler changed shape and every injection guarantee is void.
+      const begin = Number(sg.fence_begin_count ?? 0)
+      const end = Number(sg.fence_end_count ?? 0)
+      if (begin !== 1 || end !== 1) {
+        console.error(`✗ published prompt fence is not exactly one pair (BEGIN ${begin}, END ${end})`)
+        FAILED = true
+      }
+      if (sg.has_non_negotiables === false) {
+        console.error('✗ the published prompt has lost its non-negotiables')
+        FAILED = true
+      }
+
+      // Advisory. A draft in progress is normal; a draft in progress for a
+      // fortnight means the standard people read is not the one the pipelines
+      // run on, which is the problem this system was built to end.
+      if (sg.unpublished_drift === true) {
+        console.log(`  editorial rows differ from published v${sg.active_version} — unpublished changes are pending`)
+      }
+
+      console.log(
+        `✓ styleguide v${sg.active_version}: ${sg.active_rules} rules, ${sg.active_terms} terms, ` +
+        `${sg.active_examples} examples (${sg.versions_kept} versions, ${sg.audit_rows} audit rows)`,
+      )
+    }
+  }
+
+  // Adoption — a source-tree fact, so it is measured from the source tree.
+  const { readdirSync, readFileSync, statSync } = await import('node:fs')
+  const { join } = await import('node:path')
+  const FN_ROOT = 'supabase/functions'
+  let consumers = []
+  try {
+    for (const dir of readdirSync(FN_ROOT)) {
+      const full = join(FN_ROOT, dir)
+      if (!statSync(full).isDirectory()) continue
+      // Underscore dirs are not deployable functions — the deploy workflow
+      // skips them for the same reason. Without this, `_shared` counts itself:
+      // voice-style.test.ts imports the module it tests, which would let this
+      // check report adoption while no pipeline had actually adopted anything.
+      if (dir.startsWith('_')) continue
+      for (const file of readdirSync(full)) {
+        if (!file.endsWith('.ts')) continue
+        const body = readFileSync(join(full, file), 'utf8')
+        // The import, not the word: a mention in a comment is not adoption.
+        if (/from\s+['"][^'"]*voice-style\.ts['"]/.test(body)) {
+          consumers.push(dir)
+          break
+        }
+      }
+    }
+  } catch {
+    console.warn('⚠ could not read supabase/functions — adoption not measured (this is not a pass)')
+    consumers = null
+  }
+
+  if (consumers !== null) {
+    if (consumers.length === 0) {
+      console.error('✗ nothing imports _shared/voice-style.ts — the styleguide is published but no pipeline reads it')
+      console.error('  A voice standard no generator consumes is documentation, not a standard.')
+      console.error('  Adoption order: docs/architecture/styleguide-voice-system.md')
+      FAILED = true
+    } else {
+      console.log(`✓ ${consumers.length} edge function(s) consume the published voice: ${[...new Set(consumers)].sort().join(', ')}`)
+    }
+  }
+
+  // CORPUS half: does the content we publish agree with the standard we publish?
+  // Advisory on the counts, hard on a broken probe. A backlog of known editorial
+  // debt is depth, not a regression — the same split the embedding drain uses
+  // (warn on depth, fail on liveness). But an empty corpus, a vocabulary that
+  // failed to load and a genuinely clean corpus all return the same reassuring
+  // zero, so rows_scanned and phrases_active are checked separately.
+  {
+    const res = await fetch(`${BASE}/rest/v1/rpc/styleguide_content_drift`, {
+      method: 'POST',
+      headers: { ...headers, 'Content-Type': 'application/json' },
+      body: '{}',
+    })
+
+    if (!res.ok) {
+      console.warn(`⚠ styleguide_content_drift → HTTP ${res.status} (RPC missing? migration 20470922084700)`)
+      console.warn('  This check measured NOTHING — it did not pass.')
+    } else {
+      const d = (await res.json()) ?? {}
+      const scanned = Number(d.rows_scanned ?? 0)
+      const phrases = Number(d.phrases_active ?? 0)
+
+      if (scanned === 0 || phrases === 0) {
+        console.error(`✗ content-drift probe is broken: scanned ${scanned} rows against ${phrases} phrases`)
+        console.error('  A probe that looked at nothing must never be read as a clean corpus.')
+        FAILED = true
+      } else {
+        const total = Number(d.total_flagged ?? 0)
+        const surfaces = Object.entries(d.by_surface ?? {}).sort((a, b) => b[1] - a[1])
+        const top = Object.entries(d.by_phrase ?? {}).sort((a, b) => b[1] - a[1]).slice(0, 5)
+        console.log(
+          `  voice drift: ${total} of ${scanned} own-voice rows match an avoid phrase (${phrases} phrases active)`,
+        )
+        if (surfaces.length) {
+          console.log(`    by surface: ${surfaces.map(([k, v]) => `${k} ${v}`).join(', ')}`)
+        }
+        if (top.length) {
+          console.log(`    most common: ${top.map(([k, v]) => `"${k}" ${v}`).join(', ')}`)
+        }
+      }
+    }
+  }
+}
+
+// ── Analytics hygiene (2026-09-12) ────────────────────────────────────────
+//
+// The whole analytics layer ran wrong for months with nothing watching it: an
+// ungated React tracker carried 98.9% of all sessions past a consent gate the
+// Cookie policy promised, every page view was recorded twice, a client-side
+// scroll-spy loop produced 59% of all traffic, and there was no retention of
+// any kind on a 1,248 MB schema inside a 14 GB database.
+//
+// sessions_null_country_pct_24h is the check that would have caught the first
+// of those on day one. `country` is attached ONLY by functions/api/track.ts,
+// which only runs because public/umami.js was injected, which only happens
+// after explicit consent — so a high null rate means a writer found its way
+// around the gate again. Baseline before the fix: 99.9%.
+//
+// Standalone RPC rather than a key on pipeline_hygiene_stats(): adding one
+// there means restating that function's whole body, which is a merge-collision
+// surface (same reason news_image_signals and venue_dup_signals are separate).
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/analytics_hygiene_stats`, {
+    method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: '{}',
+  })
+  if (!res.ok) {
+    // A failed probe must SAY it failed. Falling through to a default would
+    // report a clean layer on the strength of never having looked.
+    console.warn(`⚠ analytics_hygiene_stats → HTTP ${res.status} (20700301100500 not applied?)`)
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else {
+    const a = await res.json()
+    let sectionOk = true
+
+    if (a?.probe_ok !== true) {
+      console.error('✗ analytics_hygiene_stats did not report probe_ok — the sentinel itself is broken')
+      FAILED = true; sectionOk = false
+    }
+
+    // Consent. The single most important number in this section.
+    //
+    // Threshold, not zero: real visitors behind privacy proxies and some
+    // corporate egress arrive without a usable cf.country, so a small null
+    // share is normal. 20% is far above that and far below the 99.9% a
+    // bypassed gate produces — the two states are not close together, which is
+    // what makes a threshold safe here.
+    const nullPct = a?.sessions_null_country_pct_24h
+    const sessions = Number(a?.sessions_24h ?? 0)
+    if (sessions === 0) {
+      // Not a pass: zero sessions in 24h on a live site is itself a finding,
+      // and it makes every percentage below undefined.
+      console.warn('⚠ no umami sessions in the last 24h — the consent check has nothing to measure')
+    } else if (nullPct == null) {
+      console.error('✗ sessions_null_country_pct_24h is null with sessions present — the sentinel is miscomputing')
+      FAILED = true; sectionOk = false
+    } else if (Number(nullPct) > 20) {
+      console.error(`✗ ${nullPct}% of umami sessions in 24h have no country (${a.sessions_null_country_24h}/${sessions})`)
+      console.error('  country is attached only by the consent-gated /api/track path, so this means a')
+      console.error('  writer is reaching umami-analytics directly. Check for a re-added tracker')
+      console.error('  component or a direct supabase.functions.invoke (eslint: no-ungated-analytics).')
+      FAILED = true; sectionOk = false
+    }
+
+    // One page view, one row.
+    const dupes = Number(a?.duplicate_pageview_groups_24h ?? 0)
+    if (dupes > 0) {
+      console.error(`✗ ${dupes} page views recorded more than once in the same second (24h)`)
+      console.error('  A second emitter is live — either another history patch or a parallel tracker.')
+      FAILED = true; sectionOk = false
+    }
+
+    // A reader does not view one page 50 times a day.
+    const bursts = Number(a?.burst_sessions_24h ?? 0)
+    if (bursts > 0) {
+      console.error(`✗ ${bursts} sessions emitted 50+ page views in 24h — a client-side loop or an automated client`)
+      console.error('  Previously: the editorial scroll-spy writing ?section= on a 300ms debounce.')
+      FAILED = true; sectionOk = false
+    }
+
+    // Preview aliases and localhost are not traffic.
+    const foreignHosts = Number(a?.foreign_hostname_sessions_24h ?? 0)
+    if (foreignHosts > 0) {
+      console.error(`✗ ${foreignHosts} sessions in 24h came from a hostname that is not the live site`)
+      console.error('  track_umami_event refuses these, so something is writing past it.')
+      FAILED = true; sectionOk = false
+    }
+
+    // Retention REGISTERED is not retention RUNNING. Both are checked, because
+    // a scheduled job that never deletes anything is the failure this repo has
+    // hit repeatedly.
+    const scheduled = Number(a?.retention_jobs_scheduled ?? 0)
+    if (scheduled < 2) {
+      console.error(`✗ only ${scheduled}/2 analytics retention jobs are in pg_cron`)
+      console.error('  Expected umami_retention and user_events_retention (migration 20700301100100).')
+      FAILED = true; sectionOk = false
+    }
+    const stale = Number(a?.events_older_than_100d ?? 0)
+    if (scheduled >= 2 && stale > 100000) {
+      // 100 days against a 90-day window leaves room for the batch cap to catch
+      // up; a six-figure residue means it is not catching up at all.
+      console.error(`✗ ${stale} umami events are older than 100 days despite a 90-day retention job`)
+      console.error('  The job is scheduled but not keeping up — raise p_limit or check its run history.')
+      FAILED = true; sectionOk = false
+    }
+
+    // Silence is not health. A telemetry table with no rows in 24h is a dead
+    // writer or a rejected row, and both look exactly like "nobody visited"
+    // (docs/audits/2026-08-21-signup-consent-gap.md).
+    for (const [key, label] of [
+      ['page_views_24h', 'umami page views'],
+      ['user_events_24h', 'user_events'],
+      ['search_queries_24h', 'search_queries'],
+    ]) {
+      if (Number(a?.[key] ?? 0) === 0) {
+        console.error(`✗ zero ${label} in the last 24h — a writer is dead or its rows are being rejected`)
+        console.error('  A zero here is not a measurement until the row is proven writable.')
+        FAILED = true; sectionOk = false
+      }
+    }
+
+    if (sectionOk) {
+      const mb = Math.round(Number(a?.website_event_bytes ?? 0) / 1048576)
+      console.log(
+        `✓ analytics hygiene: ${sessions} sessions/24h, ${nullPct}% without country, ` +
+        `0 duplicates, 0 bursts, ${a.website_event_rows} events (${mb} MB)`,
+      )
+    }
+  }
+}
+
+// event_schedule_signals — the schedule -> event_dates derivation.
+//
+// STANDALONE, like event_dup_signals/venue_dup_signals and for the same reason:
+// pipeline_hygiene_stats is a long CREATE OR REPLACE and adding a key there means
+// restating every other one by hand — a merge-collision surface.
+//
+// `schedules_total` IS THE POSITIVE CONTROL and is printed even when everything is
+// zero. Every invariant below is also satisfied by a corpus with no schedules at all
+// and by a derive job that has never run, and those are three different situations.
+// Until part 3 lands a writer, the honest reading of this block is "0 schedules, so
+// nothing to derive" — NOT "the index is healthy".
+//
+// A FAILED PROBE IS REPORTED, NEVER SWALLOWED: an unreachable RPC must not read the
+// same as a clean index.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/event_schedule_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    console.warn(`⚠ event_schedule_signals → HTTP ${res.status} (RPC missing? migration 20750101100100)`)
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else {
+    const sig = (await res.json()) ?? {}
+    if (sig?.probe_ok !== true) {
+      console.error('✗ event_schedule_signals did not report probe_ok — the probe is broken')
+      FAILED = true
+    } else {
+      const schedules = Number(sig.schedules_total ?? 0)
+      const stale = Number(sig.stale_rows ?? 0)
+      const orphan = Number(sig.orphan_generated_rows ?? 0)
+      const beyond = Number(sig.beyond_horizon ?? 0)
+      const noDates = Number(sig.expandable_rules_with_no_dates ?? 0)
+
+      // Zero-invariants. Each is a different failure of the derive chain, so they
+      // are reported separately rather than summed into one number.
+      if (stale > 0) {
+        console.error(`✗ ${stale} event_dates row(s) were built from a rule that has since changed`)
+        console.error('  The derive job is dead or wedged. Run: select public.run_event_dates_rebuild(500);')
+        FAILED = true
+      }
+      if (orphan > 0) {
+        console.error(`✗ ${orphan} generated event_dates row(s) whose event no longer has a schedule`)
+        FAILED = true
+      }
+      if (beyond > 0) {
+        console.error(`✗ ${beyond} event_dates row(s) past the 18-month horizon — the cap leaked`)
+        FAILED = true
+      }
+
+      // Advisory: a rule that claims to repeat but produced nothing is either an
+      // expander bug or a window that has closed. Worth a look, not a red build.
+      if (noDates > 0) {
+        console.warn(`⚠ ${noDates} schedule(s) with weekly/extra entries expanded to no dates`)
+      }
+
+      if (!stale && !orphan && !beyond) {
+        const kinds = Object.entries(sig.schedules_by_kind ?? {})
+          .map(([k, v]) => `${k} ${v}`)
+          .join(', ')
+        console.log(
+          `✓ Event schedules: ${schedules} rule(s)${kinds ? ` (${kinds})` : ''}, ` +
+            `${Number(sig.dates_total ?? 0)} derived date(s) ` +
+            `(${Number(sig.dates_confirmed ?? 0)} confirmed), 0 stale`,
+        )
+        if (schedules === 0) {
+          console.log('  No schedules exist yet — the zeroes above are absence, not health.')
+        }
       }
     }
   }

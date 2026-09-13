@@ -34,6 +34,7 @@ Deno.serve(withErrorReporting('pipeline-validate', async (req) => {
     const body = await req.json().catch(() => ({}))
     const pipelineRunId = body.pipeline_run_id as string | undefined
     const entityType    = body.entityType as string
+    const targetTable   = body.targetTable as string | undefined
     const batchSize     = body.batch_size || 50
     const dryRun        = body.dry_run || false
     const warnReview    = body.warn_review_threshold ?? 3  // >N warnings → review
@@ -42,12 +43,42 @@ Deno.serve(withErrorReporting('pipeline-validate', async (req) => {
       .from('ingestion_staging')
       .select('id, normalized_data, entity_type, target_table')
       .eq('ai_validation_status', 'pending')
+      // A dispositioned row is FINISHED — committed, rejected, or errored — and
+      // re-validating it changes nothing. Without this filter the work list is
+      // overwhelmingly dead rows, and because the order is FIFO on created_at
+      // they sort AHEAD of the real backlog. Measured for news on 2026-09-11:
+      //
+      //   rejected  27,928   oldest 2026-05-24
+      //   inserted  20,750   oldest 2026-05-24
+      //   pending    3,084   oldest 2026-07-14   <- the only actual work
+      //   updated/committed/error 440
+      //
+      // 3,084 of 52,202 rows — 5.9%. At 300/run the drain would spend ~6.8 days
+      // re-validating already-published and already-rejected rows before
+      // touching the first genuinely-pending one, while reporting 300 processed
+      // and items_failed 0 every hour. The July rows had not been touched since
+      // 2026-09-04 despite being the oldest pending work.
+      //
+      // pipeline-deduplicate has carried this same filter all along; validate
+      // simply never got it.
+      .eq('disposition', 'pending')
       .not('normalized_data', 'is', null)
       .order('created_at', { ascending: true })
       .limit(batchSize)
 
     if (pipelineRunId) query = query.eq('pipeline_run_id', pipelineRunId)
     if (entityType)    query = query.eq('entity_type', entityType)
+    // entity_type is unnormalized AND nullable, so it cannot address a cohort:
+    // news staging rows carry 'news_article' (2,658), NULL (1,858) or 'news'
+    // (349), and `.eq()` never matches NULL — the 1,858 are unreachable by any
+    // entityType value, and the 41 NULL event rows are invisible to the
+    // ev-drain-validate cron that exists to drain them. target_table is NOT NULL
+    // on every staging row and is what pipeline_hygiene_stats partitions by.
+    // The body below already resolves the branch from target_table when
+    // entity_type is absent (`item.entity_type || entityType`), and
+    // pipeline-commit already takes this same param — only the two selectors
+    // were blind.
+    if (targetTable)   query = query.eq('target_table', targetTable)
 
     const { data: items, error } = await query
     if (error) return errorResponse(`load: ${error.message}`, 500, req)
@@ -122,8 +153,16 @@ Deno.serve(withErrorReporting('pipeline-validate', async (req) => {
           ?? (dates.start as string | undefined)
           ?? (meta.published_at as string | undefined)
 
-        if (title.length < 6) errors.push('E_TITLE_TOO_SHORT')
-        else if (title.length < 15 && !/\s/.test(title)) errors.push('E_TITLE_NOT_INFORMATIVE')
+        // A podcast episode is not an article and its title is not a headline.
+        // "Ep 396", "S2E4", "#118" are complete, correct episode titles, and the
+        // article-shaped floor rejected 72 of them in a 30-day window, plus 11
+        // more on E_TITLE_NOT_INFORMATIVE — which fires on any sub-15-char title
+        // with no space, i.e. exactly that shape. The floor drops to 2 for
+        // episodes; the placeholder and emoji-only tests still apply, because
+        // those catch a BROKEN title rather than a short one.
+        const isPodcastItem = String(meta.media_type || n.media_type || '') === 'podcast'
+        if (title.length < (isPodcastItem ? 2 : 6)) errors.push('E_TITLE_TOO_SHORT')
+        else if (!isPodcastItem && title.length < 15 && !/\s/.test(title)) errors.push('E_TITLE_NOT_INFORMATIVE')
         else if (/^(unnamed|untitled|test|no title|undefined|null)\b/i.test(title)) errors.push('E_TITLE_PLACEHOLDER')
         else if (/^[\p{Emoji}\p{Emoji_Component}\p{So}\s·༻༺𐫱]+$/u.test(title)) errors.push('E_TITLE_EMOJI_ONLY')
         if (title.length > 500) warnings.push('W_TITLE_TRUNCATED')

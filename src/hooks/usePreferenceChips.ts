@@ -81,11 +81,8 @@ async function fetchPrefs(): Promise<PrefsData | null> {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return null;
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('interests, travel_preferences')
-    .eq('user_id', user.id)
-    .maybeSingle();
+  // travel_preferences is outside the `authenticated` column allowlist on `profiles`.
+  const { data, error } = await supabase.rpc('get_my_profile').maybeSingle();
   if (error) throw error;
   const row = (data ?? {}) as { interests?: unknown; travel_preferences?: unknown };
   return {

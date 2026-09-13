@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { useMeta } from '@/hooks/useMeta';
+import { useDetailMeta } from '@/hooks/useDetailMeta';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { MarketplaceMasthead } from '@/components/marketplace/MarketplaceMasthead';
 import { DeadEndTrack } from '@/components/transit/DeadEndTrack';
@@ -26,7 +26,9 @@ export default function MarketplaceMerchant() {
     if (orgSlug) navigate(`/organizations/${orgSlug}`, { replace: true });
   }, [orgSlug, navigate]);
 
-  useMeta({
+  useDetailMeta({
+    status: cleanDomain ? 'ready' : 'notFound',
+    notFoundTitle: 'No such merchant.',
     title: cleanDomain ? `${cleanDomain} — Marketplace` : 'Merchant',
     description: `All listings from ${cleanDomain} on Queer Guide.`,
     canonicalPath: cleanDomain ? `/marketplace/merchants/${cleanDomain}` : undefined,

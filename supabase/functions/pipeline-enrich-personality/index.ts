@@ -10,7 +10,7 @@
 
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
-import { resolveByNameAndProfession, readClaim as claimValue } from '../_shared/wikidata-resolve.ts'
+import { resolveByNameAndProfession, readClaim as claimValue, readTimeClaim } from '../_shared/wikidata-resolve.ts'
 
 const WD_EXT: Record<string, string> = {
   P345: 'imdb_id',
@@ -77,11 +77,20 @@ Deno.serve(withErrorReporting('pipeline-enrich-personality', async (req) => {
           const ent = match.entity
           patch.wikidata_qid = match.qid
           if (!n.description && match.description) patch.description = match.description
-          const birth = claimValue(ent, 'P569')
-          const death = claimValue(ent, 'P570')
+          // P569/P570 MUST go through readTimeClaim, never readClaim. A Wikidata
+          // time snak is always zero-padded to a full date, so "20th century"
+          // (precision 7) serialises as "+1901-00-00T00:00:00Z" — and the
+          // formatDate() this replaced rewrote those "00"s to "01", publishing
+          // "Born 1 January 1901" for people whose birth date Wikidata records
+          // as unknown. Measured live: Zebra Katz (Q16205945) is precision 7,
+          // and 13 personalities carried 1901-01-01, 10 carried 1970-01-01
+          // (decade "1970s") and 2 carried 1900-01-01 (decade "1900s").
+          // #2508 converted the other four P569 readers and missed this one.
+          const birth = readTimeClaim(ent, 'P569')
+          const death = readTimeClaim(ent, 'P570')
           const image = claimValue(ent, 'P18')
-          if (!n.birth_date && birth) patch.birth_date = formatDate(birth)
-          if (!n.death_date && death) patch.death_date = formatDate(death)
+          if (!n.birth_date && birth) patch.birth_date = birth.date
+          if (!n.death_date && death) patch.death_date = death.date
           if (!n.image_url && image) patch.image_url = `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(image)}`
           for (const [prop, key] of Object.entries(WD_EXT)) {
             const v = claimValue(ent, prop)
@@ -131,11 +140,7 @@ Deno.serve(withErrorReporting('pipeline-enrich-personality', async (req) => {
   }
 }))
 
-function formatDate(v: string | null): string | null {
-  if (!v) return null
-  const m = v.match(/^\+?(-?\d{4})-(\d{2})-(\d{2})/)
-  if (!m || m[1].startsWith('-')) return null
-  const mm = m[2] === '00' ? '01' : m[2]
-  const dd = m[3] === '00' ? '01' : m[3]
-  return `${m[1].padStart(4, '0')}-${mm}-${dd}`
-}
+// formatDate() lived here and padded a Wikidata "00" month/day to "01", which
+// is what manufactured the 1901-01-01 / 1970-01-01 / 1900-01-01 birth dates.
+// readTimeClaim does the padding only at year precision or finer and refuses
+// anything coarser outright — do not reintroduce a local date formatter.

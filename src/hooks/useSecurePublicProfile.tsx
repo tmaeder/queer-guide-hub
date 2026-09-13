@@ -46,13 +46,12 @@ export function useSecurePublicProfile(targetUserId?: string) {
       setLoading(true);
       setError(null);
 
-      // If viewing own profile, get full data
+      // If viewing own profile, get full data via the SECURITY DEFINER self-read —
+      // `authenticated` holds only a narrow column allowlist on `profiles`. Other users
+      // already go through get_public_profile_safe below, which applies the four-tier
+      // visibility model.
       if (user?.id === userId) {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('user_id', userId)
-          .maybeSingle();
+        const { data, error } = await supabase.rpc('get_my_profile').maybeSingle();
 
         if (error) {
           console.error('Error fetching own profile:', error);
