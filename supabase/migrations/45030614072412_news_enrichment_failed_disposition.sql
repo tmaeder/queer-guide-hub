@@ -41,7 +41,7 @@
 --
 -- They go back to `enrichment_status='pending'` so the driver picks them up
 -- again. The 51 podcast episodes among them will be answered for free by
--- run_podcast_deterministic_verdict (45000101100000) rather than re-entering
+-- run_podcast_deterministic_verdict (45030614072311) rather than re-entering
 -- the LLM queue; the ~128 articles do re-enter it.
 --
 -- The attempt is STAMPED rather than silently reset. Without a counter a row
@@ -72,7 +72,7 @@ BEGIN
      SET disposition = 'rejected',
          processed_at = now(),
          error_message = coalesce(error_message,'')
-           || ' | dispositioned 45000101100100: content-less stub, unpublishable'
+           || ' | dispositioned 45030614072412: content-less stub, unpublishable'
    WHERE target_table = 'news_articles'
      AND disposition = 'pending'
      AND enrichment_status = 'failed'
