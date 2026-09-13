@@ -670,7 +670,7 @@ async function eventDetail(env: Env, slug: string, pathname: string): Promise<De
   const rows = await fetchRows(
     env,
     'events',
-    'title,slug,description,address,city,state,country,postal_code,start_date,end_date,latitude,longitude,images,ticket_url,organizer_name,venue_name,price_min,price_max,is_free,event_type,timezone,updated_at,safety_gated,status,seo_indexable,cities(slug,seo_indexable,duplicate_of_id,shell_status)',
+    'id,parent_event_id,title,slug,description,address,city,state,country,postal_code,start_date,end_date,latitude,longitude,images,ticket_url,organizer_name,venue_name,price_min,price_max,is_free,event_type,timezone,updated_at,safety_gated,status,seo_indexable,cities(slug,seo_indexable,duplicate_of_id,shell_status)',
     // status=neq.cancelled is the archive gate — the existence engine writes
     // 'cancelled' to archive an event, and sitemap-events.xml.ts already
     // excludes it, but this renderer did not, so an archived event kept a fully
@@ -767,10 +767,79 @@ async function eventDetail(env: Env, slug: string, pathname: string): Promise<De
         : undefined,
   };
 
+  // A festival and its day-parts published four competing indexable Event
+  // documents with nothing declaring the relation, so a crawler had no way to
+  // tell an umbrella from its own programme. schema.org has had subEvent and
+  // superEvent all along and the data has existed since parent_event_id shipped.
+  //
+  // Exactly ONE extra query, on an indexed column (events_parent_event_id_idx),
+  // and only the arm this row needs: a child already knows its parent id from
+  // its own row, an umbrella has to look its children up. `p_limit` is capped
+  // because subEvent is a hint for a crawler, not a sitemap — the day-part pages
+  // are in sitemap-events.xml on their own account.
+  await attachProgrammeLd(env, row, eventLd);
+
   // seo_indexable was in neither the select nor this return, so an event page
   // was indexable whatever the column said. The stale comment further down this
   // file claiming eventDetail "already" honoured it was simply wrong.
   return { meta, body, jsonLd: renderLd(prune(eventLd)), indexable: row.seo_indexable !== false };
+}
+
+/**
+ * Declare the programme relation on an event's JSON-LD.
+ *
+ * Mirrors `programmeLd()` in `src/lib/eventProgrammeLd.ts`, which the SPA uses —
+ * `functions/` and `src/` do not share a module graph, so the two are kept in step
+ * by `src/lib/__tests__/eventProgrammeLd.test.ts` rather than by an import.
+ */
+async function attachProgrammeLd(
+  env: Env,
+  row: Record<string, unknown>,
+  eventLd: Record<string, unknown>,
+): Promise<void> {
+  const parentId = stringField(row, 'parent_event_id');
+  const selfId = stringField(row, 'id');
+
+  if (parentId) {
+    const parents = await fetchRows(
+      env,
+      'events',
+      'title,slug',
+      `id=eq.${encodeURIComponent(parentId)}&duplicate_of_id=is.null&status=neq.cancelled&safety_gated=is.false`,
+      1,
+    );
+    const parent = parents[0];
+    if (parent) {
+      eventLd.superEvent = {
+        '@type': 'Event',
+        name: stringField(parent, 'title'),
+        url: `${SITE_ORIGIN}/events/${stringField(parent, 'slug')}`,
+      };
+    }
+    return;
+  }
+
+  if (!selfId) return;
+
+  // safety_gated=is.false is not decoration: a gated child must not be named in a
+  // public document. gatedDetailResult() already withholds the child's own page,
+  // and listing its title and url here would hand a crawler exactly what that gate
+  // exists to withhold.
+  const children = await fetchRows(
+    env,
+    'events',
+    'title,slug,start_date',
+    `parent_event_id=eq.${encodeURIComponent(selfId)}&duplicate_of_id=is.null&status=neq.cancelled&safety_gated=is.false&order=start_date.asc`,
+    25,
+  );
+  if (children.length === 0) return;
+
+  eventLd.subEvent = children.map((c) => ({
+    '@type': 'Event',
+    name: stringField(c, 'title'),
+    url: `${SITE_ORIGIN}/events/${stringField(c, 'slug')}`,
+    startDate: stringField(c, 'start_date'),
+  }));
 }
 
 // News articles
