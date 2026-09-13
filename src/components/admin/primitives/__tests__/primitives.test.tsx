@@ -183,4 +183,72 @@ describe('useTabParam', () => {
     expect(search).toContain('from=%2Fadmin');
     expect(search).toContain('q=berlin');
   });
+
+  /**
+   * The boundary the original tests never crossed.
+   *
+   * Every case above calls `setTab(t)` with `t` drawn from TABS, so the setter is
+   * only ever exercised against the narrow union. In production its only caller
+   * is Radix's `onValueChange: (value: string) => void`, and a setter typed
+   * `(next: T[number]) => void` is NOT assignable to that — which is why this
+   * hook had zero consumers while passing all of its own tests.
+   */
+  it('is assignable to a (value: string) => void handler, as Radix Tabs requires', () => {
+    function RadixShapedHarness() {
+      const [tab, setTab] = useTabParam(TABS);
+      // The assignment IS the assertion: this line fails to compile if the
+      // setter is narrowed back to the tuple. Typed explicitly rather than
+      // inferred so widening the handler cannot silently satisfy it.
+      const onValueChange: (value: string) => void = setTab;
+      return (
+        <div>
+          <span data-testid="tab">{tab}</span>
+          <button type="button" onClick={() => onValueChange('revenue')}>
+            radix-revenue
+          </button>
+          <button type="button" onClick={() => onValueChange('not-a-tab')}>
+            radix-bogus
+          </button>
+        </div>
+      );
+    }
+    render(
+      <MemoryRouter initialEntries={['/x']}>
+        <Routes>
+          <Route path="/x" element={<RadixShapedHarness />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+    fireEvent.click(screen.getByText('radix-revenue'));
+    expect(screen.getByTestId('tab').textContent).toBe('revenue');
+  });
+
+  it('ignores a value that is not a known tab instead of writing it to the URL', () => {
+    function BogusHarness() {
+      const [tab, setTab] = useTabParam(TABS);
+      const location = useLocation();
+      const onValueChange: (value: string) => void = setTab;
+      return (
+        <div>
+          <span data-testid="tab">{tab}</span>
+          <span data-testid="search">{location.search}</span>
+          <button type="button" onClick={() => onValueChange('not-a-tab')}>
+            bogus
+          </button>
+        </div>
+      );
+    }
+    render(
+      <MemoryRouter initialEntries={['/x?tab=revenue']}>
+        <Routes>
+          <Route path="/x" element={<BogusHarness />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+    fireEvent.click(screen.getByText('bogus'));
+    // Unchanged: the widened setter validates, so an unknown value cannot reach
+    // the URL the way a cast at the call site would have allowed.
+    expect(screen.getByTestId('tab').textContent).toBe('revenue');
+    expect(screen.getByTestId('search').textContent).toBe('?tab=revenue');
+  });
 });

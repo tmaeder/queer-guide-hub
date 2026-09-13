@@ -35,8 +35,10 @@ import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import RunCompareDialog from '../panels/RunCompareDialog';
 import { AdminStatTile } from '@/components/admin/primitives/AdminStatTile';
-import { AdminTableRowSkeleton } from '@/components/admin/primitives/AdminLoading';
-import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
+import {
+  AdminSimpleTable,
+  type AdminSimpleColumn,
+} from '@/components/admin/primitives/AdminSimpleTable';
 
 type StatusFilter = 'all' | 'running' | 'completed' | 'failed';
 type TypeFilter = 'all' | 'pipeline' | 'workflow';
@@ -124,6 +126,142 @@ function totalsFor(sources: Array<[string, Agg]>) {
   );
 }
 
+const runColumns: AdminSimpleColumn<UnifiedRun>[] = [
+  {
+    key: 'name',
+    header: 'Name',
+    cellClassName: 'font-medium truncate max-w-[200px]',
+    render: (run) => <span title={run.name}>{run.name}</span>,
+  },
+  {
+    key: 'type',
+    header: 'Type',
+    render: (run) => (
+      <Badge variant="outline" className="text-2xs px-1.5 py-0">
+        {run.type}
+      </Badge>
+    ),
+  },
+  {
+    key: 'status',
+    header: 'Status',
+    render: (run) => {
+      const Icon = statusIcon[run.status] || Clock;
+      return (
+        <span
+          className={`inline-flex items-center gap-1 text-2xs px-2 py-0.5 rounded-full ${statusClass[run.status] || 'bg-muted'}`}
+        >
+          <Icon className={`h-2.5 w-2.5 ${run.status === 'running' ? 'animate-spin' : ''}`} />
+          {run.status}
+        </span>
+      );
+    },
+  },
+  {
+    key: 'items',
+    header: 'Items',
+    cellClassName: 'tabular-nums text-xs',
+    render: (run) => (
+      <>
+        <span className="text-foreground font-semibold">{run.items_succeeded}</span>
+        <span className="text-muted-foreground">/{run.items_processed}</span>
+        {run.items_failed > 0 && <span className="text-destructive ml-1">·{run.items_failed}</span>}
+      </>
+    ),
+  },
+  {
+    key: 'duration',
+    header: 'Duration',
+    cellClassName: 'text-muted-foreground font-mono tabular-nums text-xs',
+    render: (run) => formatDuration(run.duration_ms, run.status),
+  },
+  {
+    key: 'started',
+    header: 'Started',
+    cellClassName: 'text-muted-foreground text-xs',
+    render: (run) => (
+      <span title={run.started_at ? new Date(run.started_at).toISOString() : ''}>
+        {run.started_at ? formatDistanceToNow(new Date(run.started_at), { addSuffix: true }) : '—'}
+      </span>
+    ),
+  },
+];
+
+type IngestRow = [string, Agg];
+
+const ingestColumns: AdminSimpleColumn<IngestRow>[] = [
+  { key: 'source', header: 'Source', cellClassName: 'font-medium', render: ([src]) => src },
+  { key: 'staged', header: 'Staged', cellClassName: 'tabular-nums', render: ([, v]) => v.staged },
+  {
+    key: 'validated',
+    header: 'Validated',
+    cellClassName: 'tabular-nums',
+    render: ([, v]) => v.validated,
+  },
+  {
+    key: 'unique',
+    header: 'Unique',
+    cellClassName: 'tabular-nums',
+    render: ([, v]) => v.unique_items,
+  },
+  {
+    key: 'dupe',
+    header: 'Dupe',
+    cellClassName: 'tabular-nums',
+    render: ([, v]) => (
+      <span className={v.duplicates ? 'text-foreground' : 'text-muted-foreground'}>
+        {v.duplicates}
+      </span>
+    ),
+  },
+  {
+    key: 'merge',
+    header: 'Merge?',
+    cellClassName: 'tabular-nums',
+    render: ([, v]) => (
+      <span className={v.merge_candidates ? 'text-foreground' : 'text-muted-foreground'}>
+        {v.merge_candidates}
+      </span>
+    ),
+  },
+  {
+    key: 'committed',
+    header: 'Committed',
+    cellClassName: 'tabular-nums',
+    render: ([, v]) => (
+      <span className={v.inserted ? 'text-foreground font-semibold' : 'text-muted-foreground'}>
+        {v.inserted}
+      </span>
+    ),
+  },
+  {
+    key: 'updated',
+    header: 'Updated',
+    cellClassName: 'tabular-nums',
+    render: ([, v]) => v.updated,
+  },
+  {
+    key: 'review',
+    header: 'Review',
+    cellClassName: 'tabular-nums',
+    render: ([, v]) => (
+      <span className={v.pending_review ? 'text-foreground' : 'text-muted-foreground'}>
+        {v.pending_review}
+      </span>
+    ),
+  },
+  {
+    key: 'rejected',
+    header: 'Rejected',
+    cellClassName: 'tabular-nums',
+    render: ([, v]) => (
+      <span className={v.rejected ? 'text-destructive' : 'text-muted-foreground'}>
+        {v.rejected}
+      </span>
+    ),
+  },
+];
+
 function IngestTable({
   label,
   sources,
@@ -156,80 +294,16 @@ function IngestTable({
           <span className="ml-2 text-2xs">last 14d</span>
         </div>
       </div>
-      <div className="max-h-56 overflow-y-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-muted/40 sticky top-0">
-            <tr className="border-b border-border">
-              {[
-                'Source',
-                'Staged',
-                'Validated',
-                'Unique',
-                'Dupe',
-                'Merge?',
-                'Committed',
-                'Updated',
-                'Review',
-                'Rejected',
-              ].map((h) => (
-                <th
-                  key={h}
-                  className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider"
-                >
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {sources.length === 0 ? (
-              <tr>
-                <td colSpan={10} className="p-6 text-center text-muted-foreground text-xs">
-                  No {label.toLowerCase()} ingest activity
-                </td>
-              </tr>
-            ) : (
-              sources.map(([src, v]) => (
-                <tr
-                  key={src}
-                  className="border-b border-border/40 hover:bg-muted/30 transition-colors"
-                >
-                  <td className="px-4 py-2 font-medium">{src}</td>
-                  <td className="px-4 py-2 tabular-nums">{v.staged}</td>
-                  <td className="px-4 py-2 tabular-nums">{v.validated}</td>
-                  <td className="px-4 py-2 tabular-nums">{v.unique_items}</td>
-                  <td
-                    className={`px-4 py-2 tabular-nums ${v.duplicates ? 'text-foreground' : 'text-muted-foreground'}`}
-                  >
-                    {v.duplicates}
-                  </td>
-                  <td
-                    className={`px-4 py-2 tabular-nums ${v.merge_candidates ? 'text-foreground' : 'text-muted-foreground'}`}
-                  >
-                    {v.merge_candidates}
-                  </td>
-                  <td
-                    className={`px-4 py-2 tabular-nums ${v.inserted ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}
-                  >
-                    {v.inserted}
-                  </td>
-                  <td className="px-4 py-2 tabular-nums">{v.updated}</td>
-                  <td
-                    className={`px-4 py-2 tabular-nums ${v.pending_review ? 'text-foreground' : 'text-muted-foreground'}`}
-                  >
-                    {v.pending_review}
-                  </td>
-                  <td
-                    className={`px-4 py-2 tabular-nums ${v.rejected ? 'text-destructive' : 'text-muted-foreground'}`}
-                  >
-                    {v.rejected}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      <AdminSimpleTable
+        caption={`${label} ingest by source`}
+        stickyHeader
+        className="max-h-56 overflow-y-auto"
+        columns={ingestColumns}
+        rows={sources}
+        rowKey={([src]) => src}
+        emptyNoun={`${label.toLowerCase()} ingest activity`}
+        rowClassName={() => 'border-border/40 hover:bg-muted/30 transition-colors'}
+      />
     </div>
   );
 }
@@ -505,93 +579,23 @@ export default function MonitorTab() {
                 ))}
               </div>
             </div>
-            <div className="max-h-[500px] overflow-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-muted/40 sticky top-0">
-                  <tr className="border-b border-border">
-                    {['Name', 'Type', 'Status', 'Items', 'Duration', 'Started'].map((h) => (
-                      <th
-                        key={h}
-                        className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider"
-                      >
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {isLoading ? (
-                    <AdminTableRowSkeleton columns={6} />
-                  ) : filteredRuns.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="p-6 text-center text-muted-foreground text-xs">
-                        <AdminEmpty
-                          variant="inline"
-                          noun="runs"
-                          filtered={allRuns.length > 0}
-                          className="text-xs"
-                        />
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredRuns.map((run) => {
-                      const Icon = statusIcon[run.status] || Clock;
-                      return (
-                        <tr
-                          key={run.id}
-                          onClick={() => setSelectedRun(run)}
-                          className={`border-b border-border/40 cursor-pointer transition-colors ${
-                            selectedRun?.id === run.id ? 'bg-primary/10' : 'hover:bg-muted/30'
-                          }`}
-                        >
-                          <td
-                            className="px-4 py-2 font-medium truncate max-w-[200px]"
-                            title={run.name}
-                          >
-                            {run.name}
-                          </td>
-                          <td className="px-4 py-2">
-                            <Badge variant="outline" className="text-2xs px-1.5 py-0">
-                              {run.type}
-                            </Badge>
-                          </td>
-                          <td className="px-4 py-2">
-                            <span
-                              className={`inline-flex items-center gap-1 text-2xs px-2 py-0.5 rounded-full ${statusClass[run.status] || 'bg-muted'}`}
-                            >
-                              <Icon
-                                className={`h-2.5 w-2.5 ${run.status === 'running' ? 'animate-spin' : ''}`}
-                              />
-                              {run.status}
-                            </span>
-                          </td>
-                          <td className="px-4 py-2 tabular-nums text-xs">
-                            <span className="text-foreground font-semibold">
-                              {run.items_succeeded}
-                            </span>
-                            <span className="text-muted-foreground">/{run.items_processed}</span>
-                            {run.items_failed > 0 && (
-                              <span className="text-destructive ml-1">·{run.items_failed}</span>
-                            )}
-                          </td>
-                          <td className="px-4 py-2 text-muted-foreground font-mono tabular-nums text-xs">
-                            {formatDuration(run.duration_ms, run.status)}
-                          </td>
-                          <td
-                            className="px-4 py-2 text-muted-foreground text-xs"
-                            title={run.started_at ? new Date(run.started_at).toISOString() : ''}
-                          >
-                            {run.started_at
-                              ? formatDistanceToNow(new Date(run.started_at), { addSuffix: true })
-                              : '—'}
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
+            <AdminSimpleTable
+              caption="Recent pipeline and workflow runs"
+              stickyHeader
+              className="max-h-[500px] overflow-auto"
+              columns={runColumns}
+              rows={filteredRuns}
+              rowKey={(run) => run.id}
+              isLoading={isLoading}
+              emptyNoun="runs"
+              filtered={allRuns.length > 0}
+              onRowClick={(run) => setSelectedRun(run)}
+              rowClassName={(run) =>
+                `border-border/40 transition-colors ${
+                  selectedRun?.id === run.id ? 'bg-primary/10' : 'hover:bg-muted/30'
+                }`
+              }
+            />
             {!isLoading && (
               <div className="px-4 py-1.5 border-t border-border text-xs2 text-muted-foreground">
                 Showing {filteredRuns.length} of {allRuns.length} runs

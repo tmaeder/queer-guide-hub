@@ -46,12 +46,23 @@ const AXIS_LABEL: Record<VisibilityAxis, string> = {
 function ScoreBar({ score }: { score: number }) {
   const pct = Math.round(score * 100);
   const label = scoreLabel(score);
-  const color = label === 'high' ? 'hsl(var(--foreground))' : label === 'medium' ? 'hsl(var(--foreground) / 0.55)' : 'hsl(var(--destructive))';
+  const color =
+    label === 'high'
+      ? 'hsl(var(--foreground))'
+      : label === 'medium'
+        ? 'hsl(var(--foreground) / 0.55)'
+        : 'hsl(var(--destructive))';
   return (
     <div className="min-w-[80px]">
       <div className="flex items-center gap-2">
-        <div className="flex-1 h-1.5 rounded-badge" style={{ backgroundColor: 'hsl(var(--foreground) / 0.06)' }}>
-          <div className="h-full rounded-badge" style={{ width: `${pct}%`, backgroundColor: color }} />
+        <div
+          className="flex-1 h-1.5 rounded-badge"
+          style={{ backgroundColor: 'hsl(var(--foreground) / 0.06)' }}
+        >
+          <div
+            className="h-full rounded-badge"
+            style={{ width: `${pct}%`, backgroundColor: color }}
+          />
         </div>
         <span className="text-xs min-w-[36px] text-right">{pct}%</span>
       </div>
@@ -113,10 +124,9 @@ export function IngestionQualityTab() {
     setError(null);
     setResult(null);
     setDrift(null);
-    const res = await callSearchIntelligence(
-      `visibility/${entityType}/${entityId}/recompute`,
-      { method: 'POST' },
-    );
+    const res = await callSearchIntelligence(`visibility/${entityType}/${entityId}/recompute`, {
+      method: 'POST',
+    });
     if (!res.success) {
       setError(res.error);
       setBusy(false);
@@ -220,7 +230,7 @@ export function IngestionQualityTab() {
         <CardContent>
           <div className="flex items-start justify-between gap-4 mb-2">
             <div>
-              <h6 className="text-lg font-semibold">Coverage — worst-scored entities</h6>
+              <h2 className="text-title font-semibold">Coverage — worst-scored entities</h2>
               <p className="text-sm text-muted-foreground">
                 Least findable entities by visibility score. Click one to inspect. A nightly job
                 scores the backlog; trigger a batch to score more now.
@@ -279,7 +289,7 @@ export function IngestionQualityTab() {
 
       <Card>
         <CardContent>
-          <h6 className="text-lg font-semibold mb-2">Search Visibility Score</h6>
+          <h2 className="text-title font-semibold mb-2">Search Visibility Score</h2>
           <p className="text-sm text-muted-foreground mb-4">
             Inspects an entity's tag completeness, geo, image quality, dates, text, synonym
             coverage, and query history. Returns a 0..1 score with axis breakdown and concrete
@@ -312,9 +322,7 @@ export function IngestionQualityTab() {
               {busy ? 'Computing…' : 'Recompute'}
             </Button>
           </div>
-          {error && (
-            <p className="text-destructive mt-4">{error}</p>
-          )}
+          {error && <p className="text-destructive mt-4">{error}</p>}
         </CardContent>
       </Card>
 
@@ -325,10 +333,15 @@ export function IngestionQualityTab() {
               <div className="flex flex-col md:flex-row gap-6 md:items-center">
                 <div className="min-w-[160px]">
                   <span className="text-xs text-muted-foreground block">Total score</span>
-                  <h3 className="text-3xl" style={{ fontFeatureSettings: '"tnum"' }}>
+                  {/* A <p>, not an <h3>: this is a stat FIGURE, and a heading
+                      that contains only a number puts a meaningless entry in the
+                      document outline that screen-reader heading navigation then
+                      has to step through. text-headline is the house stat figure
+                      (AdminStatTile renders the same). */}
+                  <p className="text-headline tabular-nums">
                     {Math.round(result.score * 100)}
-                    <span className="text-lg text-muted-foreground">/100</span>
-                  </h3>
+                    <span className="text-title text-muted-foreground">/100</span>
+                  </p>
                   <Badge
                     variant={
                       scoreLabel(result.score) === 'high'
@@ -343,13 +356,11 @@ export function IngestionQualityTab() {
                 </div>
                 <div className="flex-1">
                   <span className="text-xs text-muted-foreground block">Computed at</span>
-                  <p className="text-sm">
-                    {new Date(result.computed_at).toLocaleString()}
-                  </p>
+                  <p className="text-sm">{new Date(result.computed_at).toLocaleString()}</p>
                   {drift != null && drift > 0.01 && (
                     <span className="text-xs" style={{ color: 'hsl(var(--warning))' }}>
-                      score drift detected: stored {result.score.toFixed(3)} vs.
-                      sum-of-axes {(result.score - drift).toFixed(3)}
+                      score drift detected: stored {result.score.toFixed(3)} vs. sum-of-axes{' '}
+                      {(result.score - drift).toFixed(3)}
                     </span>
                   )}
                 </div>
@@ -359,15 +370,13 @@ export function IngestionQualityTab() {
 
           <Card>
             <CardContent>
-              <h6 className="text-lg font-semibold mb-2">Axis breakdown</h6>
+              <h2 className="text-title font-semibold mb-2">Axis breakdown</h2>
               <div className="flex flex-col gap-4">
                 {VISIBILITY_AXES.map((axis) => {
                   const a = result.breakdown[axis];
                   return (
                     <div key={axis} className="flex gap-4">
-                      <span className="text-sm font-medium min-w-[100px]">
-                        {AXIS_LABEL[axis]}
-                      </span>
+                      <span className="text-sm font-medium min-w-[100px]">{AXIS_LABEL[axis]}</span>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-4">
                           <ScoreBar score={a.score} />
@@ -391,7 +400,7 @@ export function IngestionQualityTab() {
           {result.suggestions.length > 0 && (
             <Card>
               <CardContent>
-                <h6 className="text-lg font-semibold mb-2">Suggestions</h6>
+                <h2 className="text-title font-semibold mb-2">Suggestions</h2>
                 <ul className="m-0 pl-6 list-disc">
                   {result.suggestions.map((s, i) => (
                     <li key={i}>
