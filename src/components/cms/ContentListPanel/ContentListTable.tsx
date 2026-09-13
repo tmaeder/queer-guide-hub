@@ -3,7 +3,16 @@
  * sortable headers, skeleton rows, empty state, and per-row cells.
  */
 
-import { Plus, Edit, ArrowUp, ArrowDown, ArrowUpDown, Inbox, X } from 'lucide-react';
+import {
+  Plus,
+  Edit,
+  ArrowUp,
+  ArrowDown,
+  ArrowUpDown,
+  Inbox,
+  X,
+  SquareArrowOutUpRight,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -262,6 +271,7 @@ function renderColumnValue(
 // ── Main table component ────────────────────────────────────────────
 
 import { RowLifecycleActions } from './RowLifecycleActions';
+import { livePath } from '@/lib/cmsLinks';
 import { isArchived } from '@/hooks/useEntityLifecycle';
 
 export interface ContentListTableProps {
@@ -576,6 +586,35 @@ export function ContentListTable({
                             onDone={() => onRefresh?.()}
                           />
                         )}
+
+                        {/* The list is where an editor decides what to work
+                            on, so it is where "what does this look like on the
+                            site" belongs. Rendered only when the row actually
+                            has a public page — an unsaved/unpublishable row and
+                            a type with no page at all both resolve to null. */}
+                        {(() => {
+                          const href = livePath(item.contentType, item.raw ?? {});
+                          if (!href) return null;
+                          return (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 w-7 p-0"
+                                  aria-label="View live"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    window.open(href, '_blank', 'noopener');
+                                  }}
+                                >
+                                  <SquareArrowOutUpRight size={15} />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>View live</TooltipContent>
+                            </Tooltip>
+                          );
+                        })()}
 
                         <Tooltip>
                           <TooltipTrigger asChild>
