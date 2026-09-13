@@ -13,9 +13,19 @@ export interface FeedbackCategory {
 // differentiation now comes from the icon (Bug / Lightbulb / Sparkles / BookOpen).
 export const feedbackCategories: FeedbackCategory[] = [
   { value: 'bug', label: 'Bug', icon: Bug, color: 'hsl(var(--foreground))' },
-  { value: 'idea', label: 'Idea', icon: Lightbulb, color: 'hsl(var(--foreground) / 0.7)' },
-  { value: 'improvement', label: 'Improvement', icon: Sparkles, color: 'hsl(var(--foreground) / 0.55)' },
-  { value: 'content-idea', label: 'Content Idea', icon: BookOpen, color: 'hsl(var(--foreground) / 0.4)' },
+  { value: 'idea', label: 'Idea', icon: Lightbulb, color: 'hsl(var(--muted-foreground))' },
+  {
+    value: 'improvement',
+    label: 'Improvement',
+    icon: Sparkles,
+    color: 'hsl(var(--muted-foreground))',
+  },
+  {
+    value: 'content-idea',
+    label: 'Content Idea',
+    icon: BookOpen,
+    color: 'hsl(var(--muted-foreground))',
+  },
 ];
 
 /** Lookup by value — returns the category or a default */

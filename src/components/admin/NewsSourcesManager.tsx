@@ -420,7 +420,7 @@ export function NewsSourcesManager() {
                             {source.source_type === 'rss' || source.url?.includes('feed') ? (
                               <Rss
                                 className="h-4 w-4"
-                                style={{ color: 'hsl(var(--foreground) / 0.55)' }}
+                                style={{ color: 'hsl(var(--muted-foreground))' }}
                               />
                             ) : (
                               <Globe className="h-4 w-4 text-muted-foreground" />

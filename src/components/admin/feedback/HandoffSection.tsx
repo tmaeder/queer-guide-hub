@@ -33,7 +33,7 @@ interface Props {
 
 const STATUS_META: Record<HandoffStatus, { label: string; color: string; icon: typeof Circle }> = {
   sent: { label: 'Handed off', color: 'hsl(var(--muted-foreground))', icon: ArrowRight },
-  in_progress: { label: 'Working', color: 'hsl(var(--foreground) / 0.55)', icon: Loader },
+  in_progress: { label: 'Working', color: 'hsl(var(--muted-foreground))', icon: Loader },
   resolved: { label: 'Resolved', color: 'hsl(var(--foreground))', icon: Check },
   failed: { label: 'Failed', color: 'hsl(var(--destructive))', icon: X },
 };
@@ -116,8 +116,7 @@ export function HandoffSection({ handoffs, prompt, onRecord, onUpdateStatus, isR
         {sorted.length === 0 ? (
           <span className="block py-2 px-4 bg-muted rounded-element text-xs2 text-muted-foreground">
             <AdminEmpty variant="inline" noun="handoffs" className="inline text-xs2" /> Click{' '}
-            <strong>Copy prompt for Claude</strong> to send this ticket to
-            Claude Code.
+            <strong>Copy prompt for Claude</strong> to send this ticket to Claude Code.
           </span>
         ) : (
           <div className="flex flex-col gap-1">
