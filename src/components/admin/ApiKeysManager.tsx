@@ -480,12 +480,17 @@ export const ApiKeysManager = () => {
                         <Badge variant={key.is_active ? 'default' : 'secondary'}>
                           {key.is_active ? 'Active' : 'Inactive'}
                         </Badge>
-                        <Button variant="outline" size="sm" onClick={() => startEdit(key)}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          aria-label="Edit API key"
+                          onClick={() => startEdit(key)}
+                        >
                           <Edit size={14} />
                         </Button>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button variant="outline" size="sm">
+                            <Button variant="outline" size="sm" aria-label="Delete API key">
                               <Trash2 size={14} />
                             </Button>
                           </AlertDialogTrigger>

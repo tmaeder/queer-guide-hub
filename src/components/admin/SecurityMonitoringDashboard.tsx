@@ -125,7 +125,7 @@ export function SecurityMonitoringDashboard() {
             </div>
             <div>
               <p className="text-sm font-medium">Total Security Events</p>
-              <p className="text-2xl font-bold">{recentEvents.length}</p>
+              <p className="text-headline font-bold">{recentEvents.length}</p>
               <p className="text-xs text-muted-foreground">Last 50 events</p>
             </div>
           </div>
@@ -141,7 +141,7 @@ export function SecurityMonitoringDashboard() {
             </div>
             <div>
               <p className="text-sm font-medium">Failed Login Attempts</p>
-              <p className="text-2xl font-bold">{systemStats?.totalFailedLogins || 0}</p>
+              <p className="text-headline font-bold">{systemStats?.totalFailedLogins || 0}</p>
               <p className="text-xs text-muted-foreground">Total recorded</p>
             </div>
           </div>
@@ -157,7 +157,9 @@ export function SecurityMonitoringDashboard() {
             </div>
             <div>
               <p className="text-sm font-medium">CAPTCHA Verifications</p>
-              <p className="text-2xl font-bold">{systemStats?.totalCaptchaVerifications || 0}</p>
+              <p className="text-headline font-bold">
+                {systemStats?.totalCaptchaVerifications || 0}
+              </p>
               <p className="text-xs text-muted-foreground">Total completed</p>
             </div>
           </div>

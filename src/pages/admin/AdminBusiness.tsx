@@ -102,7 +102,12 @@ export default function AdminBusiness() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="px-6 pt-6">
+      {/* No padding: AdminShell's <main> is the ONE owner of admin page spacing
+          and already applies the gutter. The px-6 wrappers that used to sit on
+          this block and on each tab body were compensating for an AdminEntityTable
+          `p-6` that no longer exists, which had left the Hotels tab misaligned
+          against the other four. */}
+      <div>
         {/* No eyebrow: the route line is derived from the registry. */}
         <AdminArchetypeHeader
           title="Business"
@@ -135,17 +140,13 @@ export default function AdminBusiness() {
         </Tabs>
       </div>
 
-      {/* HotelsManager brings its own AdminEntityTable page shell (incl. p-6). */}
+      {/* HotelsManager brings its own AdminEntityTable page shell. */}
       {tab === 'hotels' && <HotelsManager />}
 
-      {tab === 'merchants' && (
-        <div className="px-6 pb-6">
-          <MerchantsManager />
-        </div>
-      )}
+      {tab === 'merchants' && <MerchantsManager />}
 
       {tab === 'brands' && (
-        <div className="px-6 pb-6">
+        <div>
           <div className="mb-4 flex justify-end">
             <Button variant="outline" size="sm" asChild>
               <Link to="/admin/content/marketplace_brands">Brand registry (raw list)</Link>
@@ -155,15 +156,10 @@ export default function AdminBusiness() {
         </div>
       )}
 
-      {/* AffiliatePartnersManager is embedded — the console owns the padding. */}
-      {tab === 'partners' && (
-        <div className="px-6 pb-6">
-          <AffiliatePartnersManager embedded />
-        </div>
-      )}
+      {tab === 'partners' && <AffiliatePartnersManager embedded />}
 
       {tab === 'directory' && (
-        <div className="flex flex-col gap-4 px-6 pb-6">
+        <div className="flex flex-col gap-4">
           <div className="flex flex-wrap items-center gap-2">
             <Input
               value={q}

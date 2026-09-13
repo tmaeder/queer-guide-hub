@@ -269,6 +269,7 @@ export default function TemplateLibrary({
                     size="sm"
                     variant="ghost"
                     className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                    aria-label="Delete template"
                     onClick={() => {
                       if (confirm(`Delete template "${t.name}"?`)) deleteMutation.mutate(t.id);
                     }}
