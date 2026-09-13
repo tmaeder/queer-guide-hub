@@ -76,8 +76,8 @@ export const ChatGPTConnection = () => {
                 </>
               ) : usingFallback ? (
                 <>
-                  <AlertTriangle size={20} style={{ color: 'hsl(var(--foreground) / 0.55)' }} />
-                  <span style={{ color: 'hsl(var(--foreground) / 0.55)' }} className="font-medium">
+                  <AlertTriangle size={20} style={{ color: 'hsl(var(--muted-foreground))' }} />
+                  <span style={{ color: 'hsl(var(--muted-foreground))' }} className="font-medium">
                     Using API Key Fallback
                   </span>
                   <Badge variant="secondary">ENV: OPENAI_API_KEY</Badge>

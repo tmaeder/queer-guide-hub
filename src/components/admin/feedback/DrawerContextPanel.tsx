@@ -223,7 +223,7 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
               style={{ gap: 4, paddingTop: 4, paddingBottom: 4 }}
             >
               {networkOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-              <Wifi size={12} style={{ color: 'hsl(var(--foreground) / 0.55)' }} />
+              <Wifi size={12} style={{ color: 'hsl(var(--muted-foreground))' }} />
               <span className="text-xs font-semibold">
                 Network failures ({ctx.network_failures.length})
               </span>
@@ -242,10 +242,7 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
                 {ctx.network_failures.map((nf, i) => (
                   <div key={i} className="mb-1">
                     <span className="block" style={{ fontSize: '0.65rem' }}>
-                      <span
-                        style={{ color: 'hsl(var(--foreground) / 0.55)' }}
-                        className="font-bold"
-                      >
+                      <span style={{ color: 'hsl(var(--muted-foreground))' }} className="font-bold">
                         {nf.status}
                       </span>{' '}
                       {nf.method} {nf.url}
