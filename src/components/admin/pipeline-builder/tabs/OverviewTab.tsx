@@ -214,7 +214,7 @@ export default function OverviewTab() {
           <GitBranch className="h-3.5 w-3.5" />
           <span>
             Dedup decisions →{' '}
-            <Link to="/admin/inbox?queue=duplicates" className="underline text-foreground">
+            <Link to="/admin/inbox?queue=dedup-review" className="underline text-foreground">
               inbox
             </Link>{' '}
             · power tool →{' '}

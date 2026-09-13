@@ -49,10 +49,45 @@ describe('hub crawl links — safety gate', () => {
     });
   }
 
-  it('every hub filter gates on seo_indexable', () => {
-    const filters = filterLiterals(hubLinksSrc);
-    expect(filters.length).toBeGreaterThanOrEqual(7);
-    for (const f of filters) expect(f).toContain('seo_indexable=eq.true');
+  // What "indexable" MEANS, per table. Most entities carry a literal
+  // seo_indexable column and the gate is that column. `news_sources` does not:
+  // a podcast SHOW is indexable exactly when it has episodes, which is the same
+  // predicate podcastShowDetail returns as its `indexable` and the same one
+  // sitemap-podcasts.xml uses. Giving it a seo_indexable column would be a
+  // second copy of episode_count>0 that can drift from the first.
+  //
+  // Stated as a MAP rather than a default, for the same reason GATED above is
+  // stated explicitly: a new hub table with no entry FAILS, so its indexability
+  // rule is a review question instead of a silent omission.
+  const INDEXABLE_GATE: Record<string, string> = {
+    venues: 'seo_indexable=eq.true',
+    events: 'seo_indexable=eq.true',
+    cities: 'seo_indexable=eq.true',
+    countries: 'seo_indexable=eq.true',
+    personalities: 'seo_indexable=eq.true',
+    hotels: 'seo_indexable=eq.true',
+    unified_tags: 'seo_indexable=eq.true',
+    milestones: 'seo_indexable=eq.true',
+    queer_villages: 'seo_indexable=eq.true',
+    geo_places: 'seo_indexable=eq.true',
+    guides: 'seo_indexable=eq.true',
+    marketplace_listings: 'seo_indexable=eq.true',
+    marketplace_brands: 'seo_indexable=eq.true',
+    organizations: 'seo_indexable=eq.true',
+    news_articles: 'seo_indexable=eq.true',
+    news_sources: 'episode_count=gt.0',
+  };
+
+  it("every hub filter carries its table's indexability gate", () => {
+    const specs = [
+      ...hubLinksSrc.matchAll(/table: '([^']+)',[\s\S]{0,700}?filter:\s*\n?\s*'([^']+)'/g),
+    ];
+    expect(specs.length).toBeGreaterThanOrEqual(7);
+    for (const [, table, filter] of specs) {
+      const gate = INDEXABLE_GATE[table];
+      expect(gate, `no indexability gate declared for hub table '${table}'`).toBeTruthy();
+      expect(filter, `${table} hub filter is missing its indexability gate`).toContain(gate);
+    }
   });
 
   it('every order carries a deterministic tiebreaker', () => {
@@ -75,6 +110,7 @@ describe('hub crawl links — safety gate', () => {
       ['venues', 'functions/sitemap-venues.xml.ts'],
       ['personalities', 'functions/sitemap-personalities.xml.ts'],
       ['hotels', 'functions/sitemap-hotels.xml.ts'],
+      ['news_sources', 'functions/sitemap-podcasts.xml.ts'],
     ];
     for (const [table, file] of pairs) {
       const at = hubLinksSrc.indexOf(`table: '${table}'`);

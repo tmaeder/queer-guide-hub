@@ -11,9 +11,17 @@ interface ActionBarProps {
     cannedSlug?: string,
   ) => void;
   isLoading: boolean;
+  /**
+   * Actions to render but refuse. Used by dedup-review's namesake gate: approve is
+   * withheld until the reviewer confirms, while reject and skip stay live — the
+   * whole point of the flag is that "these are two different people" should be the
+   * easy answer, and disabling the entire bar would make it the hardest.
+   */
+  disabledActions?: ReadonlyArray<'approve' | 'reject' | 'skip' | 'flag'>;
 }
 
-export function ActionBar({ onAction, isLoading }: ActionBarProps) {
+export function ActionBar({ onAction, isLoading, disabledActions = [] }: ActionBarProps) {
+  const blocked = (a: 'approve' | 'reject' | 'skip' | 'flag') => disabledActions.includes(a);
   const [notes, setNotes] = useState('');
   const [cannedSlug, setCannedSlug] = useState('');
 
@@ -34,7 +42,7 @@ export function ActionBar({ onAction, isLoading }: ActionBarProps) {
         <Button
           size="sm"
           onClick={() => handleAction('approve')}
-          disabled={isLoading}
+          disabled={isLoading || blocked('approve')}
           className="h-7 text-xs"
         >
           <Check className="h-3.5 w-3.5 mr-1" />
@@ -45,7 +53,7 @@ export function ActionBar({ onAction, isLoading }: ActionBarProps) {
           size="sm"
           variant="outline"
           onClick={() => handleAction('reject')}
-          disabled={isLoading}
+          disabled={isLoading || blocked('reject')}
           className="h-7 text-xs bg-card text-foreground hover:bg-foreground hover:text-background rounded-element shadow-soft"
         >
           <X className="h-3.5 w-3.5 mr-1" />
@@ -55,7 +63,7 @@ export function ActionBar({ onAction, isLoading }: ActionBarProps) {
           size="sm"
           variant="outline"
           onClick={() => handleAction('skip')}
-          disabled={isLoading}
+          disabled={isLoading || blocked('skip')}
           className="h-7 text-xs"
         >
           <SkipForward className="h-3.5 w-3.5 mr-1" />
@@ -65,7 +73,7 @@ export function ActionBar({ onAction, isLoading }: ActionBarProps) {
           size="sm"
           variant="outline"
           onClick={() => handleAction('flag')}
-          disabled={isLoading}
+          disabled={isLoading || blocked('flag')}
           className="h-7 text-xs"
         >
           <Flag className="h-3.5 w-3.5 mr-1" />

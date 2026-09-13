@@ -43,7 +43,23 @@ export function parseRssItems(
     if (textBytes >= maxTextBytes) break
     const block = match[1]
     const title = extractTag(block, 'title')
-    const link = extractTag(block, 'link') || extractTag(block, 'guid')
+    // `<guid>` is a fallback, NOT an alias for `<link>`. In podcast RSS the item
+    // `<link>` is optional, and the big hosts put a bare identifier in the guid —
+    // Megaphone a UUID (`f5c534fe-3e17-11f1-…`), Buzzsprout `Buzzsprout-19685709`.
+    // Taking it unconditionally wrote that string into news_articles.url, and
+    // pipeline-validate then rejected the row with E_INVALID_URL: 323 of 680
+    // podcast rejections in a 30-day window, every episode of several ACTIVE
+    // shows (Attitudes!, Sounds Fake But Okay, The Sheridan Tapes), daily, while
+    // every source-health signal stayed green because the FETCH succeeded.
+    //
+    // `webLink` is the http(s)-validated answer. `rawLink` preserves the OLD
+    // behaviour verbatim for the news branch — a news feed that has always
+    // published a non-URL guid still stages and still gets its E_INVALID_URL
+    // verdict recorded, rather than being silently dropped here with no row to
+    // audit. Only the podcast branch, which has a guaranteed better answer,
+    // changes.
+    const rawLink = extractTag(block, 'link') || extractTag(block, 'guid')
+    const webLink = firstHttpUrl(extractTag(block, 'link'), extractPermalinkGuid(block))
     // Prefer rich show notes for podcasts so the episode satisfies the
     // non-empty-content guard downstream (get_news_front / useNews).
     const desc = extractTag(block, 'content:encoded') || extractTag(block, 'itunes:summary') || extractTag(block, 'description')
@@ -54,12 +70,18 @@ export function parseRssItems(
     const authorRaw = extractTag(block, 'dc:creator') || extractTag(block, 'itunes:author') || extractTag(block, 'author')
     const author = authorRaw ? stripLoneSurrogates(authorRaw) : authorRaw
 
-    if (!title || !link) continue
+    if (!title) continue
+    if (!isPodcast && !rawLink) continue
 
     if (isPodcast) {
       const audioUrl = extractAudioEnclosure(block)
       // An episode with no audio is not a podcast item — skip it.
       if (!audioUrl) continue
+      // The enclosure is the last resort AND the honest one: an episode's
+      // canonical resource IS its audio. It is never null here (the guard
+      // above returned), so a podcast item can no longer be dropped for
+      // lacking a `<link>` — which is the normal shape of a podcast feed.
+      const link = webLink ?? audioUrl
       // Per-episode art first, then a typed image enclosure, then the show's own
       // artwork. Most shows declare artwork at CHANNEL level only, so before the
       // channel fallback existed the vast majority of episodes reached
@@ -83,7 +105,7 @@ export function parseRssItems(
       textBytes += (desc || '').length
       items.push({
         title: cleanText(title), content: cleaned,
-        url: link.trim(), image_url: extractMediaUrl(block), author,
+        url: (webLink ?? rawLink!).trim(), image_url: extractMediaUrl(block), author,
         published_at: pubDate, excerpt: excerptOf(cleaned),
       })
     }
@@ -97,6 +119,34 @@ function decodeUrlEntities(url: string): string {
   // Single pass so a decoded `&` can't be re-scanned and double-unescaped
   // (e.g. `&amp;#38;` must stay `&#38;`, not collapse to `&`).
   return url.replace(/&(?:amp|#38|#x26);/gi, '&')
+}
+
+// `<guid isPermaLink="true">` is the ONLY guid the RSS spec says is a URL.
+// The attribute defaults to true when absent, but in practice the hosts that
+// omit `<link>` also omit the attribute and ship a bare id, so requiring it
+// explicitly is what separates "the feed claims this is a URL" from "the feed
+// gave us its primary key". firstHttpUrl re-checks either way — the attribute
+// alone is not trusted, because some feeds declare `isPermaLink="true"` over
+// a `urn:uuid:` value.
+export function extractPermalinkGuid(block: string): string | null {
+  const m = /<guid\b[^>]*\bisPermaLink="true"[^>]*>([\s\S]*?)<\/guid>/i.exec(block)
+  return m ? m[1] : null
+}
+
+// First candidate that really parses as http(s). Anything else — a bare UUID,
+// `Buzzsprout-19685709`, a `urn:uuid:`, a `tag:` URI, a bare domain with no
+// scheme — is not a URL and must not reach news_articles.url.
+export function firstHttpUrl(...candidates: (string | null | undefined)[]): string | null {
+  for (const c of candidates) {
+    if (!c) continue
+    const s = decodeUrlEntities(c.trim())
+    if (!s) continue
+    try {
+      const u = new URL(s)
+      if (u.protocol === 'http:' || u.protocol === 'https:') return s
+    } catch { /* not a URL — try the next candidate */ }
+  }
+  return null
 }
 
 // Audio enclosure: <enclosure url="..." type="audio/mpeg" .../>. Match the
@@ -179,9 +229,33 @@ export function extractMediaUrl(block: string): string | null {
 // (historically an 88x31 banner); publishing that as an article hero is a
 // different wrong answer, not a better one.
 export function extractChannelImage(xml: string): string | null {
+  return extractChannelMeta(xml).image
+}
+
+/**
+ * Everything the channel header says about the SHOW, read in one pass over the
+ * same pre-<item> slice extractChannelImage has always used — the scoping is
+ * the load-bearing part and the reason this is not three loose regexes.
+ *
+ * `description` is the show's blurb, `link` its website (NOT the feed URL,
+ * which we already hold as news_sources.url). Both feed the public show page.
+ */
+export function extractChannelMeta(xml: string): {
+  image: string | null
+  description: string | null
+  link: string | null
+} {
   const head = xml.split(/<item[\s>]/i)[0]
   const itunes = /<itunes:image[^>]+href="([^"]+)"/i.exec(head)
-  return itunes ? decodeUrlEntities(itunes[1]) : null
+  const desc = extractTag(head, 'itunes:summary') || extractTag(head, 'description')
+  const cleanedDesc = desc ? cleanText(desc).trim() : ''
+  return {
+    image: itunes ? decodeUrlEntities(itunes[1]) : null,
+    description: cleanedDesc || null,
+    // Same http(s) discipline as the item URL above: a channel `<link>` is
+    // routinely a bare domain or missing entirely.
+    link: firstHttpUrl(extractTag(head, 'link')),
+  }
 }
 
 export function cleanText(s: string): string {
