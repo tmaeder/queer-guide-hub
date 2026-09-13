@@ -57,13 +57,18 @@ export function RevisionHistorySheet({
   onReverted,
 }: RevisionHistorySheetProps) {
   const config = getContentType(contentType);
+  // Hoisted rather than read inside the callback: with `config?.tableName` in
+  // the dep list, React Compiler infers the dependency as the whole `config`
+  // object — less specific than the source deps — and skips optimizing this
+  // component entirely rather than risk changing when the value recomputes.
+  const tableName = config?.tableName;
   const { revisions, loading, error, load, revertFields } = useContentRevisions();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [reverting, setReverting] = useState<string | null>(null);
 
   const refresh = useCallback(() => {
-    if (config?.tableName && contentId) void load(config.tableName, contentId);
-  }, [config?.tableName, contentId, load]);
+    if (tableName && contentId) void load(tableName, contentId);
+  }, [tableName, contentId, load]);
 
   useEffect(() => {
     if (open) refresh();
