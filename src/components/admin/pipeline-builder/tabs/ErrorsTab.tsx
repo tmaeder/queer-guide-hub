@@ -5,7 +5,10 @@ import { untypedFrom } from '@/integrations/supabase/untyped';
 import { AlertTriangle, AlertCircle, Info, Bug, Search, CheckCircle2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { AdminTableRowSkeleton } from '@/components/admin/primitives/AdminLoading';
+import {
+  AdminSimpleTable,
+  type AdminSimpleColumn,
+} from '@/components/admin/primitives/AdminSimpleTable';
 
 interface ErrorRow {
   id: number;
@@ -56,6 +59,44 @@ const sevConfig: Record<
     badgeClass: 'border bg-muted text-foreground border-foreground/40',
   },
 };
+
+const errorColumns: AdminSimpleColumn<ErrorRow>[] = [
+  {
+    key: 'when',
+    header: 'When',
+    cellClassName: 'text-muted-foreground text-xs2 whitespace-nowrap align-top',
+    render: (e) => (
+      <span title={new Date(e.created_at).toISOString()}>
+        {formatDistanceToNow(new Date(e.created_at), { addSuffix: true })}
+      </span>
+    ),
+  },
+  {
+    key: 'function',
+    header: 'Function',
+    cellClassName: 'font-mono text-xs2 align-top truncate max-w-[160px]',
+    render: (e) => <span title={e.function_name}>{e.function_name}</span>,
+  },
+  {
+    key: 'severity',
+    header: 'Severity',
+    cellClassName: 'align-top',
+    render: (e) => {
+      const sc = sevConfig[e.severity as Severity] ?? sevConfig.info;
+      return (
+        <Badge variant="outline" className={`text-3xs px-1.5 py-0 ${sc.badgeClass}`}>
+          {e.severity}
+        </Badge>
+      );
+    },
+  },
+  {
+    key: 'message',
+    header: 'Message',
+    cellClassName: 'align-top max-w-[400px] truncate text-xs',
+    render: (e) => e.message,
+  },
+];
 
 export default function ErrorsTab() {
   const [selected, setSelected] = useState<ErrorRow | null>(null);
@@ -196,68 +237,22 @@ export default function ErrorsTab() {
 
         <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] min-h-[300px]">
           <div className="max-h-[480px] overflow-auto border-r border-border">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/40 sticky top-0">
-                <tr className="border-b border-border">
-                  {['When', 'Function', 'Severity', 'Message'].map((h) => (
-                    <th
-                      key={h}
-                      className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider"
-                    >
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {isLoading ? (
-                  <AdminTableRowSkeleton columns={4} />
-                ) : filtered.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className="p-6 text-center text-muted-foreground text-xs">
-                      {errors.length === 0 ? 'No errors' : 'No errors match search'}
-                    </td>
-                  </tr>
-                ) : (
-                  filtered.map((e) => {
-                    const sc = sevConfig[e.severity as Severity] ?? sevConfig.info;
-                    return (
-                      <tr
-                        key={e.id}
-                        onClick={() => setSelected(e)}
-                        className={`border-b border-border/40 cursor-pointer transition-colors ${
-                          selected?.id === e.id ? 'bg-primary/10' : 'hover:bg-muted/30'
-                        }`}
-                      >
-                        <td
-                          className="px-4 py-2 text-muted-foreground text-xs2 whitespace-nowrap align-top"
-                          title={new Date(e.created_at).toISOString()}
-                        >
-                          {formatDistanceToNow(new Date(e.created_at), { addSuffix: true })}
-                        </td>
-                        <td
-                          className="px-4 py-2 font-mono text-xs2 align-top truncate max-w-[160px]"
-                          title={e.function_name}
-                        >
-                          {e.function_name}
-                        </td>
-                        <td className="px-4 py-2 align-top">
-                          <Badge
-                            variant="outline"
-                            className={`text-3xs px-1.5 py-0 ${sc.badgeClass}`}
-                          >
-                            {e.severity}
-                          </Badge>
-                        </td>
-                        <td className="px-4 py-2 align-top max-w-[400px] truncate text-xs">
-                          {e.message}
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
+            <AdminSimpleTable
+              caption="Recent pipeline errors"
+              stickyHeader
+              columns={errorColumns}
+              rows={filtered}
+              rowKey={(e) => String(e.id)}
+              isLoading={isLoading}
+              emptyNoun="errors"
+              filtered={errors.length > 0}
+              onRowClick={(e) => setSelected(e)}
+              rowClassName={(e) =>
+                `border-border/40 transition-colors ${
+                  selected?.id === e.id ? 'bg-primary/10' : 'hover:bg-muted/30'
+                }`
+              }
+            />
           </div>
 
           {/* Detail pane */}

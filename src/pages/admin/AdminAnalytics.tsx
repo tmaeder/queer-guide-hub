@@ -108,7 +108,7 @@ export default function AdminAnalytics() {
                     <Users size={16} className="text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <p className="text-xl font-bold">{stats.totalUsers.toLocaleString()}</p>
+                    <p className="text-headline font-bold">{stats.totalUsers.toLocaleString()}</p>
                     <p className="text-xs text-muted-foreground">Registered community members</p>
                   </CardContent>
                 </Card>
@@ -119,7 +119,7 @@ export default function AdminAnalytics() {
                     <Calendar size={16} className="text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <p className="text-xl font-bold">{stats.totalEvents.toLocaleString()}</p>
+                    <p className="text-headline font-bold">{stats.totalEvents.toLocaleString()}</p>
                     <p className="text-xs text-muted-foreground">Community events</p>
                   </CardContent>
                 </Card>
@@ -130,7 +130,7 @@ export default function AdminAnalytics() {
                     <Building size={16} className="text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <p className="text-xl font-bold">{stats.totalVenues.toLocaleString()}</p>
+                    <p className="text-headline font-bold">{stats.totalVenues.toLocaleString()}</p>
                     <p className="text-xs text-muted-foreground">Queer-friendly locations</p>
                   </CardContent>
                 </Card>
@@ -141,7 +141,7 @@ export default function AdminAnalytics() {
                     <Users size={16} className="text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <p className="text-xl font-bold">{stats.totalGroups.toLocaleString()}</p>
+                    <p className="text-headline font-bold">{stats.totalGroups.toLocaleString()}</p>
                     <p className="text-xs text-muted-foreground">Active community groups</p>
                   </CardContent>
                 </Card>
@@ -154,7 +154,9 @@ export default function AdminAnalytics() {
                     <Star size={16} className="text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <p className="text-xl font-bold">{stats.marketplaceItems.toLocaleString()}</p>
+                    <p className="text-headline font-bold">
+                      {stats.marketplaceItems.toLocaleString()}
+                    </p>
                     <p className="text-xs text-muted-foreground">Products & services listed</p>
                   </CardContent>
                 </Card>
@@ -165,7 +167,7 @@ export default function AdminAnalytics() {
                     <MessageSquare size={16} className="text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <p className="text-xl font-bold">{stats.newsArticles.toLocaleString()}</p>
+                    <p className="text-headline font-bold">{stats.newsArticles.toLocaleString()}</p>
                     <p className="text-xs text-muted-foreground">Community news & updates</p>
                   </CardContent>
                 </Card>
@@ -176,7 +178,9 @@ export default function AdminAnalytics() {
                     <TrendingUp size={16} className="text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <p className="text-xl font-bold">{stats.totalEngagement.toLocaleString()}</p>
+                    <p className="text-headline font-bold">
+                      {stats.totalEngagement.toLocaleString()}
+                    </p>
                     <p className="text-xs text-muted-foreground">Combined platform activity</p>
                   </CardContent>
                 </Card>

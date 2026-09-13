@@ -427,6 +427,15 @@ export default tseslint.config(
           message:
             'Strict 8 pt grid (UI audit P8). Use even-step Tailwind utility (-4, -6, -8, -10, -12, -14, -16) or the explicit .5 micro-spacing (-0.5, -1.5, -2.5, -3.5) for icon-level offsets. Admin was previously exempt from this rule (no-restricted-syntax overrides wholesale per file) — closed 2026-07-07.',
         },
+        {
+          // Present in the public block since it was written, absent here — the
+          // same wholesale-replace asymmetry that dropped the public hex selector
+          // in #2049, one block over. Admin has 0 occurrences today, so this
+          // costs nothing and closes the hole before it is used, not after.
+          selector: 'Literal[value=/\\btext-\\[/]',
+          message:
+            'Arbitrary text class — use the semantic type scale (text-3xs/2xs/xs2/13/15/body-lg/title/headline/display/hero) and color tokens (text-foreground / text-muted-foreground / text-destructive).',
+        },
       ],
     },
   },
@@ -510,6 +519,11 @@ export default tseslint.config(
       'src/components/security/**',
       'src/pages/Admin*.tsx',
       'src/pages/admin/**',
+      // src/pages/admin-redirects/** is in the ADMIN block's `files` but was
+      // missing here, so this public block matched it last and shadowed the
+      // admin ruleset wholesale — which meant the admin block's side-variant
+      // radius selector (rounded-t-lg) never applied there.
+      'src/pages/admin-*/**',
       // Same functional-color allowlist as the hex rule above — these
       // files legitimately encode data with categorical palettes.
       'src/theme/**',

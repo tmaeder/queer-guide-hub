@@ -453,6 +453,7 @@ export default function PipelineToolbar(p: Props) {
               size="sm"
               variant={p.logDrawerOpen ? 'default' : 'ghost'}
               className="h-8 w-8 p-0"
+              aria-label="Toggle log stream"
               onClick={() => p.setLogDrawerOpen((o) => !o)}
             >
               <Terminal className="h-3.5 w-3.5" />
