@@ -61,13 +61,45 @@
 -- exactly that, which is the same wall the 2026-08 pass hit when it recorded
 -- `blocked_name_collision_in_target`. The two are NOT the same problem:
 --
---   * Concord (CZ -> US) collides with "Concord " at 43.207,-71.537. Ours is at
---     35.410,-80.585. Those are Concord NEW HAMPSHIRE and Concord NORTH
---     CAROLINA -- two real, different US cities 1,164 km apart that normalize to
---     the same name in the same country. This is the documented limit of the
---     schema (one row per (name, country)), not a defect to code around. Moving
---     it needs a disambiguating rename, which is an identity change and its own
---     decision. Left as-is, still flagged.
+--   * Concord (CZ -> US) collides with "Concord " at 43.207,-71.537.
+--
+--     A first draft of this comment said the two were Concord NEW HAMPSHIRE and
+--     Concord NORTH CAROLINA, 1,164 km apart, and that a disambiguating rename
+--     would let both exist. THAT IS WRONG and is recorded here so nobody acts on
+--     it. BOTH rows carry field_provenance enriched from the SAME Wikipedia
+--     article -- Concord, North Carolina: identical coordinate candidate
+--     35.410,-80.585, identical image Downtown_Concord_NC_5.jpg, identical
+--     description "Cabarrus County, North Carolina", identical website
+--     concordnc.gov, population 94130, area 159.98, founded 1796. The twin
+--     STORES 43.207,-71.537 with no provenance entry for that value, so its
+--     stored coordinates contradict its own recorded candidates, and the MHT/PSM
+--     airports that make it look like New Hampshire were derived FROM those
+--     stored coordinates, not independently. Its one personality gives
+--     birth_place "Concord (CA, US)" -- California, a third place.
+--
+--     Both shells were enriched by looking up the bare name "Concord", which
+--     returns the most populous Concord. That is the namesake chimera this
+--     codebase documents for /city/daphne resolving to the Greek nymph, so for
+--     THIS row the coordinates are not independent evidence of anything and the
+--     polygon verdict must not be acted on. Neither row's identity is
+--     established; renaming either one would invent a fact. Left as-is, still
+--     flagged, and the dedup pair reopened with this evidence.
+--
+--     The collision guard therefore does double duty: measured, NONE of the 25
+--     repaired rows has a same-name twin anywhere in the corpus, so excluding the
+--     colliding rows also excludes exactly the rows whose bare-name enrichment
+--     cannot be trusted. A same-name twin IS the signal that a name lookup was
+--     ambiguous.
+--
+-- COORDINATE PROVENANCE, since the above makes it load-bearing: all 25 repaired
+-- rows have field_provenance.coords sourced from wikipedia, so the coordinates
+-- alone would inherit whatever the name lookup resolved to. What makes them
+-- trustworthy here is that each article's own prose names the country and agrees
+-- with the polygon in 25 of 25 -- Bussum "in the Gooi region" of the Netherlands,
+-- Jena "the second largest city in Thuringia", Neuhausen "/Erzgeb." in Saxony,
+-- Norton "in the Mid Suffolk district", Oskemen "in eastern Kazakhstan", Palmdale
+-- "in northern Los Angeles County" -- combined with the zero-twin measurement
+-- above. Read the description before adding a row to this list.
 --
 --   * Lyss (IT -> CH) collides with "Lyss" at 47.081,7.294 while ours is at
 --     47.067,7.300 -- 1.6 km apart, i.e. the SAME TOWN. That is a duplicate, not
@@ -76,12 +108,16 @@
 -- WHICH TURNED OUT TO BE A CLASS, NOT ONE ROW. Asking the general question --
 -- does a contradicting row have a same-name twin in the country its coordinates
 -- point at? -- returns four pairs, and the DISTANCE BETWEEN THE TWO ROWS splits
--- them perfectly: Martigny 0.5 km, Lyss 1.6 km, Les Trois-Ilets 2.8 km are each
--- one town stored twice, while Concord is 1,164 km, i.e. New Hampshire and North
--- Carolina. So the first three are queued for merge review by the loop below
--- (deriving the pairs rather than naming them, so the rule is re-checkable) and
--- Concord is left alone. The nightly sweep can never propose any of them: its
--- city arm blocks on country, and by construction these pairs disagree on it.
+-- them: Martigny 0.5 km, Lyss 1.6 km, Les Trois-Ilets 2.8 km are each one town
+-- stored twice, so all three are queued for merge review by the loop below
+-- (deriving the pairs rather than naming them, so the rule is re-checkable).
+-- The fourth is Concord at 1,164 km, and it is NOT queued -- but read the
+-- Concord note above before concluding that distance proves the two are
+-- different places. It does not: the 1,164 km is measured against a stored
+-- coordinate that the row's own provenance contradicts. Concord is excluded here
+-- because its identity is UNKNOWN, not because it is known to be two cities.
+-- The nightly sweep can never propose any of these pairs: its city arm blocks on
+-- country, and by construction they disagree on it.
 --
 -- OTHER EXCLUSIONS:
 --   * El Aaiun (EH -> MA) and Thebes (ES -> EG) are `shell_status='ghost'`, so
