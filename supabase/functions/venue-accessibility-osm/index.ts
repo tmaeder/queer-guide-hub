@@ -59,6 +59,7 @@ import {
 } from '../_shared/overpass.ts'
 import { decideField, VENUE_FIELDS } from '../_shared/venue-consensus.ts'
 import { resolveContradictions } from '../_shared/accessibility-vocab.ts'
+import { loadReviewQueueGuard } from '../_shared/review-queue-guard.ts'
 import {
   osmPhone,
   osmVenueCategory,
@@ -296,7 +297,7 @@ Deno.serve(async (req: Request) => {
   const filledByField: Record<string, number> = {}
   const disagreedByField: Record<string, number> = {}
   const results: Array<Record<string, unknown>> = []
-  let queued = 0, queueSkipped = 0, queueErrors = 0
+  let queued = 0, queueSkipped = 0, queueRejected = 0, queueErrors = 0
 
   // Venues already awaiting a human on this field, read ONCE per run.
   //
@@ -309,29 +310,20 @@ Deno.serve(async (req: Request) => {
   // A failed read must not be indistinguishable from "nothing is queued" — that is the
   // same defect one layer down — so the set stays NULL rather than becoming an empty Set
   // and uq_erq_open decides instead.
-  let alreadyQueued: Set<string> | null = null
-  let queuePrecheckFailed = false
-  {
-    const { data: openRows, error: openErr } = await supabase
-      .from('venue_review_queue')
-      .select('venue_id')
-      .eq('status', 'open')
-      .eq('field', GATED_FIELD)
-      .in('venue_id', venues.map((v) => v.id))
-    if (openErr) {
-      queuePrecheckFailed = true
-      console.warn(`open-queue precheck failed: ${openErr.message}`)
-    } else {
-      alreadyQueued = new Set((openRows ?? []).map((r) => String(r.venue_id)))
-    }
-  }
+  const guard = await loadReviewQueueGuard(supabase, {
+    view: 'venue_review_queue',
+    idColumn: 'venue_id',
+    fields: [GATED_FIELD],
+    ids: venues.map((v) => v.id),
+  })
 
   // queue_* keys are omitted when zero so their presence carries meaning.
   const queueSummary = () => ({
     ...(queued ? { queued } : {}),
     ...(queueSkipped ? { queue_skipped: queueSkipped } : {}),
+    ...(queueRejected ? { queue_rejected_before: queueRejected } : {}),
     ...(queueErrors ? { queue_errors: queueErrors } : {}),
-    ...(queuePrecheckFailed ? { queue_precheck_failed: true } : {}),
+    ...(guard.precheckFailed ? { queue_precheck_failed: true } : {}),
   })
 
   for (const v of venues) {
@@ -545,13 +537,19 @@ Deno.serve(async (req: Request) => {
       // stamp below, so the evidence that two sources disagree about a door survives
       // independently of whether this particular row was written.
       if (hasConflict) {
-        if (alreadyQueued?.has(v.id)) {
+        const proposal = { value: [...winner].sort(), osm: osmSlugs, existing, dropped: conflict.dropped }
+        const block = guard.blocked(v.id, GATED_FIELD, proposal)
+        if (block === 'open') {
           queueSkipped++
+        } else if (block === 'rejected') {
+          // Already refused with this exact resolution and nothing about the venue
+          // changed. The conflict is still flagged on the venue and stamped below.
+          queueRejected++
         } else {
           const { error: insErr } = await supabase.from('venue_review_queue').insert({
             venue_id: v.id,
             field: GATED_FIELD,
-            proposed_value: { value: [...winner].sort(), osm: osmSlugs, existing, dropped: conflict.dropped },
+            proposed_value: proposal,
             citations: [{
               source: 'openstreetmap',
               quote: `${pick.element.type}/${pick.element.id}`,
@@ -563,7 +561,7 @@ Deno.serve(async (req: Request) => {
           })
           if (!insErr) {
             queued++
-            alreadyQueued?.add(v.id)
+            guard.markQueued(v.id, GATED_FIELD)
           } else if (insErr.code === '23505') {
             // uq_erq_open refused a second open row — the database enforcing the
             // invariant the pre-select could not see. Same outcome as a skip, not a fault.

@@ -3,6 +3,7 @@ import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { researchEnrichVillageFromSources } from '../_shared/ai-enrichment.ts'
 import { serveEnrichment } from '../_shared/enrichment-driver.ts'
+import { loadReviewQueueGuard, type ReviewQueueGuard } from '../_shared/review-queue-guard.ts'
 
 // Pipeline Enrich (Queer Village).
 //  - default (staging) mode: Wikipedia description + Wikidata + image enrichment of
@@ -38,7 +39,7 @@ async function fetchWikipediaExtract(query: string): Promise<{ url: string; text
 const GATED_FIELDS = ['history', 'description', 'editorial_hook', 'notable_landmarks'] as const
 type GatedField = (typeof GATED_FIELDS)[number]
 
-type QueueOutcome = 'queued' | 'skipped' | 'error'
+type QueueOutcome = 'queued' | 'skipped' | 'rejected' | 'error'
 
 /** Queue one proposal, skip-if-open. NEVER deletes: a proposal leaves this queue only by
  *  being approved or rejected.
@@ -61,10 +62,11 @@ async function queueReview(
   value: unknown,
   citations: unknown,
   confidence: number | null,
-  alreadyQueued: Set<string> | null,
+  guard: ReviewQueueGuard,
 ): Promise<QueueOutcome> {
-  const key = `${villageId}:${field}`
-  if (alreadyQueued?.has(key)) return 'skipped'
+  const block = guard.blocked(villageId, field, { value })
+  if (block === 'open') return 'skipped'
+  if (block === 'rejected') return 'rejected'
 
   const { error } = await supabase.from('village_review_queue').insert({
     village_id: villageId, field,
@@ -74,7 +76,7 @@ async function queueReview(
   if (!error) {
     // So a second proposal for the same (village, field) in this run cannot double-insert,
     // which the pre-select alone would not catch.
-    alreadyQueued?.add(key)
+    guard.markQueued(villageId, field)
     return 'queued'
   }
   // 23505 = uq_erq_open refused a second open row: the database enforcing the same
@@ -92,28 +94,18 @@ async function agenticEnrichVillages(
   if (error) throw new Error(`villages_due_for_refresh: ${error.message}`)
   const villages = (due ?? []) as { id: string; name: string; slug: string }[]
   let queued = 0, autoApplied = 0, skipped = 0, errored = 0
-  let queueSkipped = 0, queueErrors = 0
+  let queueSkipped = 0, queueRejected = 0, queueErrors = 0
 
   // Fields already awaiting a human, read ONCE per run rather than once per village.
   // A failed read must not be indistinguishable from "nothing is queued" — that is the
   // defect this fix removes, one layer down — so the set stays NULL rather than becoming
   // an empty Set, `?.has()` is false everywhere, and uq_erq_open decides instead.
-  let alreadyQueued: Set<string> | null = null
-  let queuePrecheckFailed = false
-  if (villages.length) {
-    const { data: openRows, error: openErr } = await supabase
-      .from('village_review_queue')
-      .select('village_id, field')
-      .eq('status', 'open')
-      .in('field', [...GATED_FIELDS])
-      .in('village_id', villages.map((v) => v.id))
-    if (openErr) {
-      queuePrecheckFailed = true
-      console.warn(`open-queue precheck failed: ${openErr.message}`)
-    } else {
-      alreadyQueued = new Set((openRows ?? []).map((r) => `${r.village_id}:${r.field}`))
-    }
-  }
+  const guard = await loadReviewQueueGuard(supabase, {
+    view: 'village_review_queue',
+    idColumn: 'village_id',
+    fields: GATED_FIELDS,
+    ids: villages.map((v) => v.id),
+  })
 
   for (const v of villages) {
     try {
@@ -153,19 +145,20 @@ async function agenticEnrichVillages(
       const tally = (r: QueueOutcome) => {
         if (r === 'queued') queued++
         else if (r === 'skipped') queueSkipped++
+        else if (r === 'rejected') queueRejected++
         else queueErrors++
         touched = true
       }
 
       // Narrative overwrites → always review-gated.
       if (enrich.history && enrich.history.trim().length > 80) {
-        tally(await queueReview(supabase, v.id, 'history', enrich.history.trim(), cites, conf, alreadyQueued))
+        tally(await queueReview(supabase, v.id, 'history', enrich.history.trim(), cites, conf, guard))
       }
       if (enrich.description && enrich.description.trim().length > 20) {
-        tally(await queueReview(supabase, v.id, 'description', enrich.description.trim(), cites, conf, alreadyQueued))
+        tally(await queueReview(supabase, v.id, 'description', enrich.description.trim(), cites, conf, guard))
       }
       if (enrich.editorial_hook && enrich.editorial_hook.trim().length > 0) {
-        tally(await queueReview(supabase, v.id, 'editorial_hook', enrich.editorial_hook.trim().slice(0, 120), cites, conf, alreadyQueued))
+        tally(await queueReview(supabase, v.id, 'editorial_hook', enrich.editorial_hook.trim().slice(0, 120), cites, conf, guard))
       }
 
       // notable_landmarks: auto-fill ONLY if currently empty and confidence high.
@@ -179,7 +172,7 @@ async function agenticEnrichVillages(
           }).eq('id', v.id)
           autoApplied++; touched = true
         } else {
-          tally(await queueReview(supabase, v.id, 'notable_landmarks', proposedLandmarks.slice(0, 12), cites, conf, alreadyQueued))
+          tally(await queueReview(supabase, v.id, 'notable_landmarks', proposedLandmarks.slice(0, 12), cites, conf, guard))
         }
       }
 
@@ -200,8 +193,9 @@ async function agenticEnrichVillages(
   return {
     mode: 'agentic', examined: villages.length, queued, auto_applied: autoApplied, skipped, errored,
     ...(queueSkipped ? { queue_skipped: queueSkipped } : {}),
+    ...(queueRejected ? { queue_rejected_before: queueRejected } : {}),
     ...(queueErrors ? { queue_errors: queueErrors } : {}),
-    ...(queuePrecheckFailed ? { queue_precheck_failed: true } : {}),
+    ...(guard.precheckFailed ? { queue_precheck_failed: true } : {}),
   }
 }
 

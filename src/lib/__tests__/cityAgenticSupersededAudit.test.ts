@@ -100,6 +100,43 @@ describe('city-agentic-enrich records the proposal it supersedes', () => {
     expect(audit).toMatch(/\.\.\.\(supersededUnreadable\.length \?/);
   });
 
+  it('refuses to re-offer a proposal that was already REJECTED, unchanged', () => {
+    // This composer KEEPS its delete-then-insert — overwriting an OPEN row is the design,
+    // which is why the outgoing value is audited rather than preserved. So only the
+    // rejected half of the guard applies here. `uq_erq_open` cannot express it: it covers
+    // status='open' only, so a rejected row blocks nothing and the same refused proposal
+    // is re-offered on the next pass, hourly.
+    const block = writeBlock.slice(writeBlock.indexOf('guard.blocked(c.id, g.field, g.value)'));
+    expect(writeBlock).toMatch(/guard\.blocked\(c\.id, g\.field, g\.value\) === 'rejected'/);
+    expect(block.slice(0, 200)).toMatch(/queueRejected\+\+/);
+    expect(block.slice(0, 200)).toMatch(/continue/);
+    // The skip must precede the delete, or the refused proposal is destroyed and rewritten
+    // before anyone notices it was refused.
+    const guardIdx = writeBlock.indexOf('guard.blocked(c.id');
+    const delIdx = writeBlock.indexOf(".from('city_review_queue').delete()");
+    expect(guardIdx).toBeGreaterThan(-1);
+    expect(guardIdx).toBeLessThan(delIdx);
+  });
+
+  it('loads the guard over this run, scoped to the fields it gates', () => {
+    const block = city.slice(city.indexOf('loadReviewQueueGuard(supabase'));
+    expect(block.slice(0, 300)).toMatch(/view: 'city_review_queue'/);
+    expect(block.slice(0, 300)).toMatch(/idColumn: 'city_id'/);
+    expect(block.slice(0, 300)).toMatch(/fields: CITY_GATED_FIELDS/);
+    expect(city).toMatch(
+      /const CITY_GATED_FIELDS = \['lgbt_friendly_rating', 'editorial_hook', 'best_time_to_visit'\] as const/,
+    );
+  });
+
+  it('surfaces the rejection counter and a failed pre-check', () => {
+    expect(city).toMatch(
+      /\.\.\.\(queueRejected \? \{ queue_rejected_before: queueRejected \} : \{\}\)/,
+    );
+    expect(city).toMatch(
+      /\.\.\.\(guard\.precheckFailed \? \{ queue_precheck_failed: true \} : \{\}\)/,
+    );
+  });
+
   it('captures nothing on a dry run', () => {
     // The capture lives inside the !dryRun block with every other write, so a dry run
     // stays read-only and supersedes nothing.

@@ -32,6 +32,7 @@ import {
   type AttributeKind,
 } from '../_shared/marketplace-normalize.ts'
 import { extractMarketplaceTagsFromText } from '../_shared/ai-enrichment.ts'
+import { loadReviewQueueGuard } from '../_shared/review-queue-guard.ts'
 
 const STEP = 'marketplace-tag-backfill'
 const AUTO_APPLY_CONFIDENCE = 0.8
@@ -139,7 +140,7 @@ Deno.serve(async (req: Request) => {
   }
 
   let retyped = 0, attrsAdded = 0, gated = 0, relevanceUpdated = 0
-  let queued = 0, queueSkipped = 0, queueErrors = 0
+  let queued = 0, queueSkipped = 0, queueRejected = 0, queueErrors = 0
   const results: Array<Record<string, unknown>> = []
 
   // Listings already awaiting a decision on this field, read ONCE per run.
@@ -153,22 +154,12 @@ Deno.serve(async (req: Request) => {
   // A failed read must not be indistinguishable from "nothing is queued" — that is the
   // same defect one layer down — so the set stays NULL rather than becoming an empty Set
   // and uq_erq_open decides instead.
-  let alreadyQueued: Set<string> | null = null
-  let queuePrecheckFailed = false
-  if (listings.length) {
-    const { data: openRows, error: openErr } = await supabase
-      .from('marketplace_review_queue')
-      .select('listing_id')
-      .eq('status', 'open')
-      .eq('field', GATED_FIELD)
-      .in('listing_id', listings.map((l) => l.id))
-    if (openErr) {
-      queuePrecheckFailed = true
-      console.warn(`open-queue precheck failed: ${openErr.message}`)
-    } else {
-      alreadyQueued = new Set((openRows ?? []).map((r) => String(r.listing_id)))
-    }
-  }
+  const guard = await loadReviewQueueGuard(supabase, {
+    view: 'marketplace_review_queue',
+    idColumn: 'listing_id',
+    fields: [GATED_FIELD],
+    ids: listings.map((l) => l.id),
+  })
 
   // queue_* keys are omitted when zero so their presence carries meaning. This function
   // writes no admin_automation_runs row of its own — the cron posts through
@@ -177,8 +168,9 @@ Deno.serve(async (req: Request) => {
   const queueSummary = () => ({
     ...(queued ? { queued } : {}),
     ...(queueSkipped ? { queue_skipped: queueSkipped } : {}),
+    ...(queueRejected ? { queue_rejected_before: queueRejected } : {}),
     ...(queueErrors ? { queue_errors: queueErrors } : {}),
-    ...(queuePrecheckFailed ? { queue_precheck_failed: true } : {}),
+    ...(guard.precheckFailed ? { queue_precheck_failed: true } : {}),
   })
 
   for (const l of listings) {
@@ -302,7 +294,12 @@ Deno.serve(async (req: Request) => {
         // is always a content-rating DOWNGRADE, so leaving it pending keeps the listing at
         // its current, stricter rating rather than re-opening the question.
         for (const g of gatedProposals) {
-          if (alreadyQueued?.has(l.id)) { queueSkipped++; continue }
+          // `rejected` is the treadmill stop: this exact proposal was already refused,
+          // and nothing about the listing changed, so re-offering it just burns another
+          // review cycle. A CHANGED proposal is not suppressed.
+          const block = guard.blocked(l.id, GATED_FIELD, g.value)
+          if (block === 'open') { queueSkipped++; continue }
+          if (block === 'rejected') { queueRejected++; continue }
           const { error: insErr } = await supabase.from('marketplace_review_queue').insert({
             listing_id: l.id, field: GATED_FIELD, proposed_value: g.value,
             citations: g.cite, confidence: g.confidence, model: g.model, status: 'open',
@@ -313,7 +310,7 @@ Deno.serve(async (req: Request) => {
             // requires the tier-1/2 candidate to be null), so this array holds at most one
             // entry today. Recording the insert anyway means a future second proposal
             // cannot double-insert instead of being recognised as a duplicate.
-            alreadyQueued?.add(l.id)
+            guard.markQueued(l.id, GATED_FIELD)
           } else if (insErr.code === '23505') {
             // uq_erq_open refused a second open row: the database enforcing the invariant
             // the pre-select could not see. Same outcome as a skip, not a fault.

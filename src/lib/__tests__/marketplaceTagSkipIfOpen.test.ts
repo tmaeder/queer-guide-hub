@@ -3,23 +3,18 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * `marketplace-tag-backfill` (cron `marketplace_tag_backfill` `45 4 * * *`) review-gates
- * every content-rating DOWNGRADE — wrong-SFW is the harmful direction, so a
- * reclassification that lowers a listing's rating never auto-applies.
+ * `marketplace-tag-backfill` (cron `45 4 * * *`) gates every content-rating DOWNGRADE.
+ * It used to delete-then-insert with an UNSCOPED delete (no `.eq('field')`), and it is
+ * where the rejection treadmill was measured: 126 listings rejected more than once,
+ * every repeat a byte-identical re-proposal, all decided by auto-triage with
+ * `reviewer_id IS NULL`.
  *
- * It used to write those proposals by DELETEing and re-INSERTing, and its delete was ALSO
- * UNSCOPED: it matched on (listing_id, status='open') with no `.eq('field', …)`, so it
- * removed every open row for the listing whatever field it belonged to. That half is
- * latent rather than active — measured 2026-09-13, `subcategory` is the only field this
- * queue has ever held (1,431 of 1,431 rows) — but it is a defect waiting for the first
- * writer that queues a second field on a listing.
+ * Idempotency comes from `_shared/review-queue-guard.ts`, whose behaviour (canonical
+ * value comparison against jsonb's reordered keys, NULL-not-empty on a failed read,
+ * scoping) is unit-tested there against a fake client. Asserted HERE: that this function
+ * delegates to it and handles every verdict — which testing the helper cannot show.
  *
- * The fix is the skip-if-open pattern its siblings use, scoped to the one gated field.
- * `uq_erq_open` — a PARTIAL unique index on (entity_type, entity_id, field) WHERE
- * status='open' — backs it in the database, which PostgREST cannot reach with ON CONFLICT.
- *
- * Asserted against COMMENT-STRIPPED source: this file's own comments quote the old
- * unscoped-delete shape verbatim, which would make several assertions vacuous otherwise.
+ * Comment-stripped: this file's comments quote the old delete-then-insert shape.
  */
 
 function stripComments(src: string): string {
@@ -37,101 +32,56 @@ const fn = stripComments(
   ),
 );
 
-describe('marketplace-tag-backfill never destroys a pending proposal', () => {
+describe('marketplace-tag-backfill never destroys or re-offers a refused proposal', () => {
   it('deletes nothing, anywhere', () => {
-    // Two defects in one statement: the delete-then-insert, and its missing field scope.
-    // Removing the delete closes both. The function has no other, so this is exact.
     expect(fn).not.toMatch(/\.delete\(\)/);
   });
 
-  it('reads the open rows ONCE, before the per-listing loop', () => {
-    const select = fn.indexOf(".select('listing_id')");
-    const loop = fn.indexOf('for (const l of listings)');
-    expect(select).toBeGreaterThan(-1);
-    expect(loop).toBeGreaterThan(-1);
-    expect(select).toBeLessThan(loop);
+  it('loads the shared guard once, scoped to this queue and the ONE gated field', () => {
+    const block = fn.slice(fn.indexOf('loadReviewQueueGuard(supabase'));
+    expect(block.slice(0, 300)).toMatch(/view: 'marketplace_review_queue'/);
+    expect(block.slice(0, 300)).toMatch(/idColumn: 'listing_id'/);
+    // Field scope is the half the old unscoped delete was missing.
+    expect(block.slice(0, 300)).toMatch(/fields: \[GATED_FIELD\]/);
+    expect(block.slice(0, 300)).toMatch(/ids: listings\.map\(\(l\) => l\.id\)/);
   });
 
-  it('scopes the pre-select to open rows OF THIS FIELD for this run only', () => {
-    // The field scope is the half the old delete was missing, so it is asserted here
-    // rather than assumed from the insert.
-    const block = fn.slice(
-      fn.indexOf('let alreadyQueued'),
-      fn.indexOf('for (const l of listings)'),
-    );
-    expect(block).toMatch(/\.eq\('status', 'open'\)/);
-    expect(block).toMatch(/\.eq\('field', GATED_FIELD\)/);
-    expect(block).toMatch(/\.in\('listing_id', listings\.map\(/);
-  });
-
-  it('names the gated field once, so the pre-select and the insert cannot drift', () => {
+  it('names the gated field once, so the guard and the insert cannot drift', () => {
     expect(fn).toMatch(/const GATED_FIELD = 'subcategory'/);
     expect(fn).toMatch(/field: GATED_FIELD/);
-    // A literal in the insert would let the two sides disagree silently.
     expect(fn).not.toMatch(/field: 'subcategory'/);
   });
 
-  it('skips a listing that is already queued, before touching the database', () => {
-    const block = fn.slice(fn.indexOf('for (const g of gatedProposals)'));
-    expect(block.slice(0, 300)).toMatch(
-      /if \(alreadyQueued\?\.has\(l\.id\)\) \{ queueSkipped\+\+; continue \}/,
-    );
-    const guard = block.indexOf('alreadyQueued?.has(l.id)');
-    const insert = block.indexOf("from('marketplace_review_queue').insert(");
-    expect(guard).toBeGreaterThan(-1);
-    expect(insert).toBeGreaterThan(-1);
-    expect(guard).toBeLessThan(insert);
+  it('blocks a prior rejection distinctly from an open row, using the VALUE', () => {
+    expect(fn).toMatch(/guard\.blocked\(l\.id, GATED_FIELD, g\.value\)/);
+    expect(fn).toMatch(/if \(block === 'open'\) \{ queueSkipped\+\+; continue \}/);
+    expect(fn).toMatch(/if \(block === 'rejected'\) \{ queueRejected\+\+; continue \}/);
   });
 
-  it('records a failed pre-select instead of reading it as an empty queue', () => {
-    const errBranch = fn.slice(fn.indexOf('if (openErr)'));
-    expect(fn).toMatch(/if \(openErr\)/);
-    expect(errBranch.slice(0, 300)).toMatch(/queuePrecheckFailed = true/);
-    // The set stays NULL rather than becoming an empty Set, so `?.has()` is false
-    // everywhere and uq_erq_open decides instead of a wrong local answer.
-    const okBranch = errBranch.slice(errBranch.indexOf('} else {'));
-    expect(okBranch.slice(0, 200)).toMatch(/alreadyQueued = new Set\(/);
-  });
-
-  it('does not swallow the insert result', () => {
+  it('marks an inserted row, classifies 23505 as a skip, and does not swallow errors', () => {
+    const ok = fn.slice(fn.indexOf('if (!insErr)'));
+    expect(ok.slice(0, 400)).toMatch(/guard\.markQueued\(l\.id, GATED_FIELD\)/);
+    expect(ok).toMatch(/insErr\.code === '23505'/);
     const ins = fn.slice(fn.indexOf("from('marketplace_review_queue').insert("));
     expect(ins.slice(0, 400)).not.toMatch(/\.then\(/);
-    expect(fn).toMatch(
-      /const \{ error: insErr \} = await supabase\.from\('marketplace_review_queue'\)\.insert\(/,
-    );
-  });
-
-  it('treats a unique-index refusal as a skip and any other error as an error', () => {
-    const branch = fn.slice(fn.indexOf('if (!insErr)'));
-    expect(branch).toMatch(/insErr\.code === '23505'/);
-    const skip = branch.slice(branch.indexOf("insErr.code === '23505'"));
-    expect(skip.slice(0, 200)).toMatch(/queueSkipped\+\+/);
-    const other = skip.slice(skip.indexOf('} else {'));
-    expect(other.slice(0, 300)).toMatch(/queueErrors\+\+/);
-  });
-
-  it('adds an inserted listing to the set, so one run cannot double-insert', () => {
-    const ok = fn.slice(fn.indexOf('if (!insErr)'));
-    expect(ok.slice(0, 400)).toMatch(/alreadyQueued\?\.add\(l\.id\)/);
   });
 
   it('reports the counters on BOTH return paths, including the circuit-open exit', () => {
-    // This function writes no admin_automation_runs row of its own — the cron posts
-    // through automation_http_post, which files the RESPONSE BODY against the run — so a
-    // return that drops the counters loses them entirely. The circuit-open exit is a real
-    // early return from inside the loop, not a theoretical one.
+    // No admin_automation_runs row of its own — the cron posts through
+    // automation_http_post, which files the RESPONSE BODY against the run — so a return
+    // that drops the counters loses them entirely.
     const returns = fn.match(/\.\.\.queueSummary\(\)/g) ?? [];
     expect(returns.length).toBe(2);
-    const circuit = fn.slice(fn.indexOf('circuit_open: true'));
-    expect(fn.slice(0, fn.indexOf('circuit_open: true'))).toMatch(/\.\.\.queueSummary\(\)/);
-    expect(circuit.length).toBeGreaterThan(0);
+    const circuitLines = fn.split('\n').filter((l) => l.includes('circuit_open: true'));
+    expect(circuitLines.length).toBe(1);
+    for (const line of circuitLines) expect(line).toMatch(/\.\.\.queueSummary\(\)/);
   });
 
-  it('omits the queue counters when zero, so their presence carries meaning', () => {
+  it('surfaces the counters, omitted when zero', () => {
     const summary = fn.slice(fn.indexOf('const queueSummary'));
-    expect(summary.slice(0, 400)).toMatch(/\.\.\.\(queued \? \{ queued \} : \{\}\)/);
-    expect(summary.slice(0, 400)).toMatch(/\.\.\.\(queueSkipped \?/);
-    expect(summary.slice(0, 400)).toMatch(/\.\.\.\(queueErrors \?/);
-    expect(summary.slice(0, 400)).toMatch(/\.\.\.\(queuePrecheckFailed \?/);
+    expect(summary.slice(0, 500)).toMatch(/\.\.\.\(queued \? \{ queued \} : \{\}\)/);
+    expect(summary.slice(0, 500)).toMatch(/\.\.\.\(queueSkipped \?/);
+    expect(summary.slice(0, 500)).toMatch(/\.\.\.\(queueRejected \? \{ queue_rejected_before/);
+    expect(summary.slice(0, 500)).toMatch(/\.\.\.\(guard\.precheckFailed \?/);
   });
 });

@@ -21,6 +21,7 @@ import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
 import { loadAmenityVocabulary, normalizeVenueAmenities, type AmenityVocab } from '../_shared/amenity-normalize.ts'
 import { extractVenueAmenitiesFromText } from '../_shared/ai-enrichment.ts'
+import { loadReviewQueueGuard } from '../_shared/review-queue-guard.ts'
 
 const STEP = 'amenity-truth-backfill'                  // enrichment_log step (hyphen)
 const AUTOMATION_SLUG = 'amenity_truth_backfill'        // admin_automations slug (underscore)
@@ -184,7 +185,7 @@ Deno.serve(async (req: Request) => {
   const amenitySlugs = [...vocab.amenity]
   const accessibilitySlugs = [...vocab.accessibility]
 
-  let cleaned = 0, filled = 0, gated = 0, queued = 0, queueSkipped = 0, queueErrors = 0
+  let cleaned = 0, filled = 0, gated = 0, queued = 0, queueSkipped = 0, queueRejected = 0, queueErrors = 0
   const results: Array<Record<string, unknown>> = []
 
   // Fields already awaiting a human. `uq_erq_open` is a PARTIAL unique index on
@@ -200,25 +201,12 @@ Deno.serve(async (req: Request) => {
   //
   // One query per run, not per venue. Read even on a dry run, so a dry run reports the
   // same queued/skipped split a real run would produce.
-  let alreadyQueued: Set<string> | null = null
-  let queuePrecheckFailed = false
-  if (wantLlm) {
-    const { data: openRows, error: openErr } = await supabase
-      .from('venue_review_queue')
-      .select('venue_id, field')
-      .eq('status', 'open')
-      .in('field', [...GATED_FIELDS])
-      .in('venue_id', venues.map((v) => v.id))
-    if (openErr) {
-      // A failed read must not read as "nothing is queued" — that is the defect this
-      // fix removes, one layer down. Recorded, and the insert below then relies on
-      // uq_erq_open to refuse the duplicate, which leaves the existing row intact.
-      queuePrecheckFailed = true
-      console.warn(`open-queue precheck failed: ${openErr.message}`)
-    } else {
-      alreadyQueued = new Set((openRows ?? []).map((r) => `${r.venue_id}:${r.field}`))
-    }
-  }
+  const guard = await loadReviewQueueGuard(supabase, {
+    view: 'venue_review_queue',
+    idColumn: 'venue_id',
+    fields: GATED_FIELDS,
+    ids: wantLlm ? venues.map((v) => v.id) : [],
+  })
 
   for (const v of venues) {
     const started = Date.now()
@@ -285,9 +273,12 @@ Deno.serve(async (req: Request) => {
       }
 
       // Classified BEFORE the write branch so a dry run reports the same split.
-      const toQueue = gatedProposals.filter((g) => !alreadyQueued?.has(`${v.id}:${g.field}`))
-      const alreadyOpen = gatedProposals.filter((g) => alreadyQueued?.has(`${v.id}:${g.field}`))
+      const verdicts = gatedProposals.map((g) => ({ g, block: guard.blocked(v.id, g.field, g.value) }))
+      const toQueue = verdicts.filter((x) => x.block === null).map((x) => x.g)
+      const alreadyOpen = verdicts.filter((x) => x.block === 'open').map((x) => x.g)
+      const alreadyRejected = verdicts.filter((x) => x.block === 'rejected').map((x) => x.g)
       queueSkipped += alreadyOpen.length
+      queueRejected += alreadyRejected.length
 
       const droppedCount = ex.dropped.length
       const amenitiesChanged = JSON.stringify(nextAmenities) !== JSON.stringify((v.amenities ?? []).slice().sort())
@@ -324,7 +315,7 @@ Deno.serve(async (req: Request) => {
             queued++
             // So a second proposal for the same (venue, field) in this run cannot
             // double-insert, which the pre-select alone would not catch.
-            alreadyQueued?.add(`${v.id}:${g.field}`)
+            guard.markQueued(v.id, g.field)
           } else if (insErr.code === '23505') {
             // uq_erq_open refused a second open row: the database enforcing the same
             // invariant the pre-select could not see. Same outcome as a skip, not a fault.
@@ -354,6 +345,7 @@ Deno.serve(async (req: Request) => {
         dropped: droppedCount, gated: gatedProposals.map(g => g.field), accessibility_changed: accessibilityChanged,
         ...(toQueue.length ? { queued: toQueue.map(g => g.field) } : {}),
         ...(alreadyOpen.length ? { already_open: alreadyOpen.map(g => g.field) } : {}),
+        ...(alreadyRejected.length ? { already_rejected: alreadyRejected.map(g => g.field) } : {}),
       })
     } catch (e) {
       status = 'failed'
@@ -367,8 +359,9 @@ Deno.serve(async (req: Request) => {
   const queueSummary = {
     ...(queued ? { queued } : {}),
     ...(queueSkipped ? { queue_skipped: queueSkipped } : {}),
+    ...(queueRejected ? { queue_rejected_before: queueRejected } : {}),
     ...(queueErrors ? { queue_errors: queueErrors } : {}),
-    ...(queuePrecheckFailed ? { queue_precheck_failed: true } : {}),
+    ...(guard.precheckFailed ? { queue_precheck_failed: true } : {}),
   }
 
   if (!dryRun && !venueIds?.length) {

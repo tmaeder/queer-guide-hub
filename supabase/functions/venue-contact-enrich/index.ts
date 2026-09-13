@@ -21,6 +21,7 @@ import { htmlToText, normalizeUrl, countDoneToday } from '../_shared/enrich-harn
 import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
 import { determineAction } from '../_shared/confidence-scoring.ts'
 import { hasMxRecords } from '../_shared/email-validate.ts'
+import { loadReviewQueueGuard } from '../_shared/review-queue-guard.ts'
 
 // The fields this function review-gates. Used to scope the open-queue pre-select; other
 // writers queue other fields on the same venues and are none of our business.
@@ -168,7 +169,7 @@ Deno.serve(async (req: Request) => {
   if (!venues.length) return jsonResponse({ items_processed: 0, message: 'no venues due for contact crawl' }, 200, req)
 
   let applied = 0, queued = 0, skipped = 0
-  let queueWritten = 0, queueSkipped = 0, queueErrors = 0
+  let queueWritten = 0, queueSkipped = 0, queueRejected = 0, queueErrors = 0
   const results: Array<Record<string, unknown>> = []
 
   // Fields already awaiting a human, read ONCE per run. Replaces a delete-then-insert:
@@ -179,22 +180,12 @@ Deno.serve(async (req: Request) => {
   //
   // A failed read must not be indistinguishable from "nothing is queued"; the set stays
   // NULL rather than becoming an empty Set, and uq_erq_open decides instead.
-  let alreadyQueued: Set<string> | null = null
-  let queuePrecheckFailed = false
-  {
-    const { data: openRows, error: openErr } = await supabase
-      .from('venue_review_queue')
-      .select('venue_id, field')
-      .eq('status', 'open')
-      .in('field', [...GATED_FIELDS])
-      .in('venue_id', venues.map((v) => v.id))
-    if (openErr) {
-      queuePrecheckFailed = true
-      console.warn(`open-queue precheck failed: ${openErr.message}`)
-    } else {
-      alreadyQueued = new Set((openRows ?? []).map((r) => `${r.venue_id}:${r.field}`))
-    }
-  }
+  const guard = await loadReviewQueueGuard(supabase, {
+    view: 'venue_review_queue',
+    idColumn: 'venue_id',
+    fields: GATED_FIELDS,
+    ids: venues.map((v) => v.id),
+  })
 
   // queue_* keys are omitted when zero so their presence carries meaning. These are
   // ROW-level counts and are deliberately separate from `queued`, which stays a VENUE
@@ -202,8 +193,9 @@ Deno.serve(async (req: Request) => {
   const queueSummary = () => ({
     ...(queueWritten ? { queue_written: queueWritten } : {}),
     ...(queueSkipped ? { queue_skipped: queueSkipped } : {}),
+    ...(queueRejected ? { queue_rejected_before: queueRejected } : {}),
     ...(queueErrors ? { queue_errors: queueErrors } : {}),
-    ...(queuePrecheckFailed ? { queue_precheck_failed: true } : {}),
+    ...(guard.precheckFailed ? { queue_precheck_failed: true } : {}),
   })
 
   for (const v of venues) {
@@ -345,17 +337,19 @@ Deno.serve(async (req: Request) => {
       // approved or rejected. An insert error is classified rather than thrown — it used
       // to propagate to the per-venue catch and abandon this venue's remaining fields.
       for (const p of toQueue) {
-        const key = `${v.id}:${p.field}`
-        if (alreadyQueued?.has(key)) { queueSkipped++; continue }
+        const proposal = { value: p.value, source_url: p.url }
+        const block = guard.blocked(v.id, p.field, proposal)
+        if (block === 'open') { queueSkipped++; continue }
+        if (block === 'rejected') { queueRejected++; continue }
         const { error: insErr } = await supabase.from('venue_review_queue').insert({
           venue_id: v.id, field: p.field,
-          proposed_value: { value: p.value, source_url: p.url },
+          proposed_value: proposal,
           citations: [{ source: p.url }],
           confidence: p.confidence, model: p.model ?? null, status: 'open',
         })
         if (!insErr) {
           queueWritten++
-          alreadyQueued?.add(key)
+          guard.markQueued(v.id, p.field)
         } else if (insErr.code === '23505') {
           // uq_erq_open refused a second open row — the database enforcing the invariant
           // the pre-select could not see. Same outcome as a skip, not a fault.

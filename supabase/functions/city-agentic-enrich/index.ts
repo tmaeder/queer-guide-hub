@@ -37,6 +37,11 @@ import { researchEnrichCityFromSources, type CityMoatEnrichment, type VoiceSetti
 import { fetchPageText } from '../_shared/enrich-harness.ts'
 import { cityNameCandidates } from '../_shared/city-name-normalize.ts'
 import { cityWikiVerdict, regionQualifiedTitle } from '../_shared/city-wiki-guard.ts'
+import { loadReviewQueueGuard } from '../_shared/review-queue-guard.ts'
+
+// The fields this composer review-gates. `safety_notes` is deliberately absent — it is
+// composed deterministically by compose_safety_note() and is not an LLM proposal.
+const CITY_GATED_FIELDS = ['lgbt_friendly_rating', 'editorial_hook', 'best_time_to_visit'] as const
 
 const DEFAULT_BATCH_LIMIT = 5
 const DEFAULT_DAILY_CAP = 120
@@ -168,7 +173,19 @@ Deno.serve(async (req: Request) => {
   if (error) return jsonResponse({ error: error.message, success: false }, 500, req)
   if (!cities?.length) return jsonResponse({ enriched: 0, message: 'no thin cities to enrich' }, 200, req)
 
-  let enriched = 0, gated = 0, skipped = 0
+  let enriched = 0, gated = 0, skipped = 0, queueRejected = 0
+
+  // This composer KEEPS its delete-then-insert — it legitimately re-proposes as its
+  // grounding sources change, which is why the outgoing value is audited rather than
+  // preserved. So only the REJECTED half of the guard applies here: overwriting an OPEN
+  // row is the design, but re-offering a proposal a human already refused, unchanged, is
+  // the treadmill. `uq_erq_open` cannot express that — it covers `status='open'` only.
+  const guard = await loadReviewQueueGuard(supabase, {
+    view: 'city_review_queue',
+    idColumn: 'city_id',
+    fields: CITY_GATED_FIELDS,
+    ids: cities.map((c) => c.id),
+  })
   const results: Array<Record<string, unknown>> = []
 
   for (const c of cities) {
@@ -347,6 +364,12 @@ Deno.serve(async (req: Request) => {
             })
           }
 
+          if (guard.blocked(c.id, g.field, g.value) === 'rejected') {
+            // Refused before, unchanged since. Do not delete, do not re-insert.
+            queueRejected++
+            continue
+          }
+
           await supabase.from('city_review_queue').delete().eq('city_id', c.id).eq('field', g.field).eq('status', 'open')
           await supabase.from('city_review_queue').insert({
             city_id: c.id, field: g.field, proposed_value: g.value,
@@ -408,7 +431,12 @@ Deno.serve(async (req: Request) => {
     await logStep(supabase, c.id, status, started, dryRun, failReason)
   }
 
-  return jsonResponse({ enriched, gated, skipped, skip_gated: skipGated, dry_run: dryRun, voice, results }, 200, req)
+  return jsonResponse({
+    enriched, gated, skipped,
+    ...(queueRejected ? { queue_rejected_before: queueRejected } : {}),
+    ...(guard.precheckFailed ? { queue_precheck_failed: true } : {}),
+    skip_gated: skipGated, dry_run: dryRun, voice, results,
+  }, 200, req)
 })
 
 /**
