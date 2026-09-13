@@ -9,6 +9,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
+import {
+  AdminSimpleTable,
+  type AdminSimpleColumn,
+} from '@/components/admin/primitives/AdminSimpleTable';
 
 interface CoverageRow {
   source_name: string;
@@ -65,6 +69,121 @@ function SectionHeader({
   );
 }
 
+const coverageColumns: AdminSimpleColumn<CoverageRow>[] = [
+  {
+    key: 'source',
+    header: 'Source',
+    cellClassName: 'px-2 py-1.5 font-mono text-xs',
+    render: (c) => c.source_name,
+  },
+  {
+    key: 'type',
+    header: 'Type',
+    cellClassName: 'px-2 py-1.5 text-xs capitalize',
+    render: (c) => c.entity_type,
+  },
+  {
+    key: 'parsed',
+    header: 'Parsed',
+    cellClassName: 'px-2 py-1.5 tabular-nums',
+    render: (c) => c.entities_parsed,
+  },
+  {
+    key: 'started',
+    header: 'Started',
+    cellClassName: 'px-2 py-1.5 text-muted-foreground text-xs2',
+    render: (c) => (
+      <span title={new Date(c.started_at).toISOString()}>
+        {formatDistanceToNow(new Date(c.started_at), { addSuffix: true })}
+      </span>
+    ),
+  },
+  {
+    key: 'geo',
+    header: 'Geo',
+    cellClassName: 'px-2 py-1.5',
+    render: (c) => <PctCell v={c.pct_geo} />,
+  },
+  {
+    key: 'phone',
+    header: 'Phone',
+    cellClassName: 'px-2 py-1.5',
+    render: (c) => <PctCell v={c.pct_phone} />,
+  },
+  {
+    key: 'website',
+    header: 'Website',
+    cellClassName: 'px-2 py-1.5',
+    render: (c) => <PctCell v={c.pct_website} />,
+  },
+  {
+    key: 'images',
+    header: 'Images',
+    cellClassName: 'px-2 py-1.5',
+    render: (c) => <PctCell v={c.pct_images} />,
+  },
+  {
+    key: 'tags',
+    header: 'Tags',
+    cellClassName: 'px-2 py-1.5',
+    render: (c) => <PctCell v={c.pct_tags} />,
+  },
+  {
+    key: 'address',
+    header: 'Address',
+    cellClassName: 'px-2 py-1.5',
+    render: (c) => <PctCell v={c.pct_address} />,
+  },
+  {
+    key: 'desc',
+    header: 'Desc',
+    cellClassName: 'px-2 py-1.5',
+    render: (c) => <PctCell v={c.pct_description} />,
+  },
+];
+
+const qualityColumns: AdminSimpleColumn<QualityRow>[] = [
+  {
+    key: 'entity',
+    header: 'Entity',
+    cellClassName: 'py-1.5 capitalize',
+    render: (q) => q.entity_type,
+  },
+  {
+    key: 'source',
+    header: 'Source',
+    cellClassName: 'py-1.5 font-mono text-xs',
+    render: (q) => q.source_name,
+  },
+  { key: 'n', header: 'N', cellClassName: 'py-1.5 tabular-nums', render: (q) => q.n },
+  {
+    key: 'min',
+    header: 'min',
+    cellClassName: 'py-1.5 tabular-nums text-muted-foreground',
+    render: (q) => q.score_min,
+  },
+  { key: 'p25', header: 'p25', cellClassName: 'py-1.5 tabular-nums', render: (q) => q.score_p25 },
+  {
+    key: 'p50',
+    header: 'p50',
+    cellClassName: 'py-1.5 tabular-nums font-semibold',
+    render: (q) => q.score_p50,
+  },
+  { key: 'p75', header: 'p75', cellClassName: 'py-1.5 tabular-nums', render: (q) => q.score_p75 },
+  {
+    key: 'max',
+    header: 'max',
+    cellClassName: 'py-1.5 tabular-nums text-muted-foreground',
+    render: (q) => q.score_max,
+  },
+  {
+    key: 'avg',
+    header: 'avg',
+    cellClassName: 'py-1.5 tabular-nums font-mono',
+    render: (q) => q.score_avg.toFixed(1),
+  },
+];
+
 export default function ScraperHealthTab() {
   const qc = useQueryClient();
 
@@ -107,6 +226,50 @@ export default function ScraperHealthTab() {
 
   const totalOrphans = orphans.reduce((s, o) => s + o.orphan_count, 0);
 
+  const orphanColumns: AdminSimpleColumn<OrphanRow>[] = [
+    {
+      key: 'entity_type',
+      header: 'Entity type',
+      cellClassName: 'capitalize',
+      render: (o) => o.entity_type,
+    },
+    {
+      key: 'orphans',
+      header: 'Orphans',
+      cellClassName: 'tabular-nums font-semibold',
+      render: (o) => (
+        <span className={o.orphan_count > 0 ? 'text-destructive' : 'text-muted-foreground'}>
+          {o.orphan_count}
+        </span>
+      ),
+    },
+    {
+      key: 'action',
+      header: 'Action',
+      render: (o) =>
+        o.orphan_count > 0 && (
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-7 text-xs text-muted-foreground hover:text-destructive"
+            onClick={() => {
+              if (window.confirm(`Prune ${o.orphan_count} orphan ${o.entity_type} mappings?`)) {
+                prune.mutate(o.entity_type);
+              }
+            }}
+            disabled={prune.isPending}
+          >
+            {prune.isPending && prune.variables === o.entity_type ? (
+              <TrackLoader size={12} className="mr-1" />
+            ) : (
+              <Trash2 className="h-3 w-3 mr-1" />
+            )}
+            Prune
+          </Button>
+        ),
+    },
+  ];
+
   return (
     <div className="flex flex-col gap-6">
       {/* Orphans */}
@@ -133,62 +296,14 @@ export default function ScraperHealthTab() {
             </span>
           </div>
         ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-muted/40">
-              <tr className="border-b border-border">
-                <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">
-                  Entity type
-                </th>
-                <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">
-                  Orphans
-                </th>
-                <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">
-                  Action
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {orphans.map((o) => (
-                <tr
-                  key={o.entity_type}
-                  className="border-b border-border/40 hover:bg-muted/30 transition-colors"
-                >
-                  <td className="px-4 py-2 capitalize">{o.entity_type}</td>
-                  <td
-                    className={`px-4 py-2 tabular-nums font-semibold ${o.orphan_count > 0 ? 'text-destructive' : 'text-muted-foreground'}`}
-                  >
-                    {o.orphan_count}
-                  </td>
-                  <td className="px-4 py-2">
-                    {o.orphan_count > 0 && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-7 text-xs text-muted-foreground hover:text-destructive"
-                        onClick={() => {
-                          if (
-                            window.confirm(
-                              `Prune ${o.orphan_count} orphan ${o.entity_type} mappings?`,
-                            )
-                          ) {
-                            prune.mutate(o.entity_type);
-                          }
-                        }}
-                        disabled={prune.isPending}
-                      >
-                        {prune.isPending && prune.variables === o.entity_type ? (
-                          <TrackLoader size={12} className="mr-1" />
-                        ) : (
-                          <Trash2 className="h-3 w-3 mr-1" />
-                        )}
-                        Prune
-                      </Button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <AdminSimpleTable
+            caption="Orphan entity mappings"
+            columns={orphanColumns}
+            rows={orphans}
+            rowKey={(o) => o.entity_type}
+            emptyNoun="orphan mappings"
+            rowClassName={() => 'border-border/40 hover:bg-muted/30 transition-colors'}
+          />
         )}
       </div>
 
@@ -205,71 +320,15 @@ export default function ScraperHealthTab() {
               className="p-6 text-center text-xs"
             />
           ) : (
-            <table className="w-full text-sm">
-              <thead className="bg-muted/40 sticky top-0">
-                <tr className="border-b border-border">
-                  {[
-                    'Source',
-                    'Type',
-                    'Parsed',
-                    'Started',
-                    'Geo',
-                    'Phone',
-                    'Website',
-                    'Images',
-                    'Tags',
-                    'Address',
-                    'Desc',
-                  ].map((h) => (
-                    <th
-                      key={h}
-                      className="text-left px-2 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider"
-                    >
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {coverage.map((c, i) => (
-                  <tr
-                    key={i}
-                    className="border-b border-border/40 hover:bg-muted/30 transition-colors"
-                  >
-                    <td className="px-2 py-1.5 font-mono text-xs">{c.source_name}</td>
-                    <td className="px-2 py-1.5 text-xs capitalize">{c.entity_type}</td>
-                    <td className="px-2 py-1.5 tabular-nums">{c.entities_parsed}</td>
-                    <td
-                      className="px-2 py-1.5 text-muted-foreground text-xs2"
-                      title={new Date(c.started_at).toISOString()}
-                    >
-                      {formatDistanceToNow(new Date(c.started_at), { addSuffix: true })}
-                    </td>
-                    <td className="px-2 py-1.5">
-                      <PctCell v={c.pct_geo} />
-                    </td>
-                    <td className="px-2 py-1.5">
-                      <PctCell v={c.pct_phone} />
-                    </td>
-                    <td className="px-2 py-1.5">
-                      <PctCell v={c.pct_website} />
-                    </td>
-                    <td className="px-2 py-1.5">
-                      <PctCell v={c.pct_images} />
-                    </td>
-                    <td className="px-2 py-1.5">
-                      <PctCell v={c.pct_tags} />
-                    </td>
-                    <td className="px-2 py-1.5">
-                      <PctCell v={c.pct_address} />
-                    </td>
-                    <td className="px-2 py-1.5">
-                      <PctCell v={c.pct_description} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <AdminSimpleTable
+              caption="Field coverage per recent scraper run"
+              stickyHeader
+              columns={coverageColumns}
+              rows={coverage}
+              rowKey={(_c, i) => String(i)}
+              emptyNoun="completed runs"
+              rowClassName={() => 'border-border/40 hover:bg-muted/30 transition-colors'}
+            />
           )}
         </div>
       </div>
@@ -289,42 +348,15 @@ export default function ScraperHealthTab() {
           {quality.length === 0 ? (
             <AdminEmpty variant="inline" noun="scored items" className="p-6 text-center text-xs" />
           ) : (
-            <table className="w-full text-sm">
-              <thead className="bg-muted/40 sticky top-0">
-                <tr className="border-b border-border">
-                  {['Entity', 'Source', 'N', 'min', 'p25', 'p50', 'p75', 'max', 'avg'].map((h) => (
-                    <th
-                      key={h}
-                      className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider"
-                    >
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {quality.map((q, i) => (
-                  <tr
-                    key={i}
-                    className="border-b border-border/40 hover:bg-muted/30 transition-colors"
-                  >
-                    <td className="px-4 py-1.5 capitalize">{q.entity_type}</td>
-                    <td className="px-4 py-1.5 font-mono text-xs">{q.source_name}</td>
-                    <td className="px-4 py-1.5 tabular-nums">{q.n}</td>
-                    <td className="px-4 py-1.5 tabular-nums text-muted-foreground">
-                      {q.score_min}
-                    </td>
-                    <td className="px-4 py-1.5 tabular-nums">{q.score_p25}</td>
-                    <td className="px-4 py-1.5 tabular-nums font-semibold">{q.score_p50}</td>
-                    <td className="px-4 py-1.5 tabular-nums">{q.score_p75}</td>
-                    <td className="px-4 py-1.5 tabular-nums text-muted-foreground">
-                      {q.score_max}
-                    </td>
-                    <td className="px-4 py-1.5 tabular-nums font-mono">{q.score_avg.toFixed(1)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <AdminSimpleTable
+              caption="Quality score distribution by source and entity type"
+              stickyHeader
+              columns={qualityColumns}
+              rows={quality}
+              rowKey={(_q, i) => String(i)}
+              emptyNoun="scored items"
+              rowClassName={() => 'border-border/40 hover:bg-muted/30 transition-colors'}
+            />
           )}
         </div>
       </div>

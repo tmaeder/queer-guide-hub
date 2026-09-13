@@ -39,7 +39,13 @@ export const ChatGPTConnection = () => {
               scraping.
             </CardDescription>
           </div>
-          <Button variant="ghost" size="sm" onClick={refresh} disabled={loading}>
+          <Button
+            variant="ghost"
+            size="sm"
+            aria-label="Refresh connection status"
+            onClick={refresh}
+            disabled={loading}
+          >
             <RefreshCw
               size={16}
               style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }}

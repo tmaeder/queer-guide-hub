@@ -352,7 +352,10 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
               if (!open) setActiveId(null);
             }}
           >
-            <SheetContent side="right" className="w-full sm:max-w-lg p-0">
+            {/* aria-label, not a SheetTitle: this is the mobile presentation of
+                the detail panel, which carries its own heading and is also used
+                un-sheeted in the desktop two-pane layout below. */}
+            <SheetContent side="right" className="w-full sm:max-w-lg p-0" aria-label="Item detail">
               {detailPanel}
             </SheetContent>
           </Sheet>

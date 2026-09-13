@@ -207,7 +207,7 @@ export function NewsSourcesManager() {
       {/* Header with stats */}
       <div className="flex items-center justify-between">
         <div>
-          <h6 className="font-semibold text-lg">News Sources Management</h6>
+          <h2 className="font-semibold text-title">News Sources Management</h2>
           <p className="text-sm text-muted-foreground">
             Manage RSS feeds and API sources for automated news import
           </p>
@@ -366,25 +366,25 @@ export function NewsSourcesManager() {
       <div className="grid grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold">{sources.length}</div>
+            <div className="text-headline font-bold">{sources.length}</div>
             <span className="text-xs text-muted-foreground">Total Sources</span>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-foreground">{activeSourcesCount}</div>
+            <div className="text-headline font-bold text-foreground">{activeSourcesCount}</div>
             <span className="text-xs text-muted-foreground">Active</span>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold">{rssSourcesCount}</div>
+            <div className="text-headline font-bold">{rssSourcesCount}</div>
             <span className="text-xs text-muted-foreground">RSS Feeds</span>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold">{apiSourcesCount}</div>
+            <div className="text-headline font-bold">{apiSourcesCount}</div>
             <span className="text-xs text-muted-foreground">API Sources</span>
           </CardContent>
         </Card>
