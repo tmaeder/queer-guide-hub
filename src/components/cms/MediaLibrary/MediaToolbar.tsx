@@ -131,6 +131,8 @@ export function MediaToolbar(props: MediaToolbarProps) {
         <div className="flex gap-1 items-center">
           <div className="flex bg-muted">
             <Button
+              aria-label="Grid view"
+              aria-pressed={viewMode === 'grid'}
               variant={viewMode === 'grid' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => onViewModeChange('grid')}
@@ -138,6 +140,8 @@ export function MediaToolbar(props: MediaToolbarProps) {
               <Grid size={14} />
             </Button>
             <Button
+              aria-label="List view"
+              aria-pressed={viewMode === 'list'}
               variant={viewMode === 'list' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => onViewModeChange('list')}
@@ -152,7 +156,7 @@ export function MediaToolbar(props: MediaToolbarProps) {
             {bulkMode ? 'Exit Bulk' : 'Bulk'}
           </Button>
 
-          <Button variant="ghost" size="sm" onClick={onRefresh}>
+          <Button variant="ghost" size="sm" onClick={onRefresh} aria-label="Refresh media">
             <RefreshCw size={14} />
           </Button>
         </div>

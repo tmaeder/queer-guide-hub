@@ -221,7 +221,13 @@ export default function MediaPickerDialog({
       <DialogContent className="max-w-5xl w-full p-0 flex flex-col" style={{ height: '80vh' }}>
         <DialogHeader className="flex flex-row items-center justify-between pb-1 px-6 pt-4 space-y-0">
           <DialogTitle className="text-lg">Select Media</DialogTitle>
-          <Button onClick={onClose} variant="ghost" size="sm" className="h-7 w-7 p-0">
+          <Button
+            onClick={onClose}
+            variant="ghost"
+            size="sm"
+            className="h-7 w-7 p-0"
+            aria-label="Close"
+          >
             <X size={20} />
           </Button>
         </DialogHeader>

@@ -356,6 +356,71 @@ if (!hygieneRes.ok) {
   }
 }
 
+// 4a-bis. Staging rows the DAG structurally cannot see (2026-09-13).
+//
+//     A row inserted into ingestion_staging outside a DAG run carries
+//     pipeline_run_id IS NULL, and validate/deduplicate/review-gate/commit all
+//     filter `.eq('pipeline_run_id', <run>)` when the executor passes one.
+//     `.eq()` never matches NULL, so those four stages are blind to it;
+//     quality-score is the lone stage without the filter. Measured: 929
+//     personality rows sat pending for 24 days with ZERO ingestion_events while
+//     the nightly personality-ingestion DAG reported completed /
+//     items_succeeded=979 every night.
+//
+//     stale_pending_by_entity SAW those 929 the whole time and could not
+//     surface them: the thresholds above fail at 5,000 for one entity or 10,000
+//     total and warn at 3,500 — a bar the news backlog keeps permanently lit, so
+//     the nightly warning carried no actionable signal. Same shape as the 14
+//     stranded_human_approved rows that hid under that floor for 40 days.
+//
+//     So this measures a STRUCTURAL property, not a depth: are there stale
+//     orphans, and has ANY of them advanced a stage in 24h? A backlog with a
+//     working dual-mode drain is throughput and only warns; a backlog with no
+//     consumer at all is the bug and hard-fails. The evidence is
+//     ingestion_events, NOT ingestion_staging.updated_at — the 2026-09-13
+//     visibility repair touched all 929 rows, so updated_at reads "recently
+//     touched" for a cohort nothing has ever processed.
+//
+//     Not folded into stale_pending_by_entity's thresholds, and top level on
+//     purpose (see the gaycities block above — nesting a check inside another
+//     probe's else-block lets an unrelated outage skip it silently).
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/staging_orphan_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    console.warn(`⚠ staging_orphan_signals → HTTP ${res.status} (RPC missing? migration 50000101100000)`)
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else {
+    const sig = (await res.json()) ?? {}
+    // An absent key must never read as a clean corpus.
+    if (sig?.probe_ok !== true || !Array.isArray(sig?.unconsumed_targets)) {
+      console.error('✗ staging_orphan_signals returned no probe_ok/unconsumed_targets — the probe is broken')
+      FAILED = true
+    } else {
+      const counts = sig.orphan_rows_by_target ?? {}
+      const ages = sig.oldest_orphan_days ?? {}
+      if (sig.unconsumed_targets.length > 0) {
+        const detail = sig.unconsumed_targets
+          .map((t) => `${t}=${counts[t] ?? '?'} rows, oldest ${ages[t] ?? '?'}d`)
+          .join('; ')
+        console.error(`✗ Staging orphans with NO consumer: ${detail}`)
+        console.error('  These rows have pipeline_run_id IS NULL, so the DAG cannot see them, AND')
+        console.error('  not one advanced a stage in 24h — no dual-mode drain is running for them.')
+        console.error('  Fix: register+enable <entity>_drain_{validate,dedup,review,commit} the way')
+        console.error('  ev_drain_*/vn_drain_*/mp_drain_* already are. Do NOT raise a depth threshold.')
+        FAILED = true
+      } else if (Object.keys(counts).length > 0) {
+        console.warn(`⚠ Staging orphans draining: ${JSON.stringify(counts)} (a drain IS advancing them)`)
+      } else {
+        console.log('✓ Staging orphans with no consumer: 0')
+      }
+    }
+  }
+}
+
 // 4b. Event dedup health (2027-05-02). There was no check here at all: the dedup
 //     section above is city-only, so the event auto arms matched ZERO pairs for
 //     eleven days — nightly sweep green, consecutive_failures=0, 645 merges then
@@ -1867,6 +1932,79 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
 
     if (sectionOk) {
       console.log('✓ podcast episodes are typed correctly and committing')
+    }
+  }
+}
+
+// ── News quality verdicts overwritten out of band (2026-09-13) ─────────────
+//
+// 88 news staging rows carried quality_status='passed' while auto_publish was
+// false and auto_publish_blocked_reasons was non-empty. evaluatePublishGate
+// returns 'passed' only on an EMPTY reasons list, and apply_enrichment is the
+// only function in the database that can write enriched_data, so the value came
+// from outside the pipeline — an ad-hoc service-role UPDATE, which flipped the
+// commit gate open and published 87 off-topic PubMed/Nature abstracts.
+//
+// STAGING ONLY. On news_articles the same shape is legitimate: it is what
+// batch_approve_safe_news writes when a human approves despite the reasons, and
+// there are 5,930 such rows. A zero-invariant on the article column would fire
+// on every one of them.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/news_quality_verdict_signals`, {
+    method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: '{}',
+  })
+  if (!res.ok) {
+    // An absent sentinel and a clean corpus both produce silence. Say which.
+    console.warn(`⚠ news_quality_verdict_signals → HTTP ${res.status} (41000101100000 not applied?) — this check measured NOTHING`)
+  } else {
+    const sig = await res.json()
+    let sectionOk = true
+
+    // Positive control before either count: zero rows scanned, or an audit that
+    // no longer records this stage, makes both invariants trivially satisfied.
+    const scanned = Number(sig?.rows_scanned ?? 0)
+    const withAudit = Number(sig?.with_gate_audit ?? 0)
+    if (scanned === 0) {
+      console.error('✗ news_quality_verdict_signals scanned 0 staging rows — the invariants below are vacuous')
+      FAILED = true; sectionOk = false
+    } else if (withAudit === 0) {
+      console.error('✗ no news staging row has a quality-enhance audit verdict — the comparison has no left-hand side')
+      console.error('  Check that apply_enrichment still writes enrichment_audit with stage=\'quality-enhance\'.')
+      FAILED = true; sectionOk = false
+    } else if (Number(sig?.claiming_gate ?? 0) === 0) {
+      // Both invariants only look at rows claiming the LLM gate's own
+      // quality_pipeline_version, so that a DECLARED deterministic verdict
+      // (podcast-deterministic.v1) is not reported as an out-of-band flip. If
+      // nothing claims the gate's version any more, they are scoped to the empty
+      // set and would report a clean zero forever.
+      console.error("✗ no news staging row claims quality_pipeline_version 'news-quality.2026.04.27.0' — both invariants are scoped to nothing")
+      console.error('  The gate version was probably bumped; update the sentinel to match.')
+      FAILED = true; sectionOk = false
+    }
+
+    const overwritten = Number(sig?.verdict_overwritten ?? 0)
+    if (overwritten > 0) {
+      console.error(`✗ ${overwritten} news staging rows carry a quality_status the gate never issued (disagrees with enrichment_audit)`)
+      console.error('  Only apply_enrichment can write enriched_data, so this is a writer outside the pipeline.')
+      console.error('  A flip to \'passed\' opens the commit gate: these rows publish without a verdict.')
+      FAILED = true; sectionOk = false
+    }
+    const contradictory = Number(sig?.passed_with_blocked_reasons ?? 0)
+    if (contradictory > 0) {
+      console.error(`✗ ${contradictory} news staging rows say quality_status='passed' while carrying auto_publish_blocked_reasons`)
+      console.error('  evaluatePublishGate returns \'passed\' only when blockedReasons is empty — self-contradictory by construction.')
+      FAILED = true; sectionOk = false
+    }
+
+    // Advisory: the staging row outlived its audit rows (ingestion_staging_retention
+    // is 90 days and cascades), or predates stage-level auditing. Unverifiable,
+    // not wrong — and it bounds how far back the two invariants can see.
+    const blind = Number(sig?.unverifiable_no_audit ?? 0)
+    if (blind > 0) {
+      console.log(`  ${blind} news staging rows have no quality-enhance audit row (aged out under 90-day retention) — outside this check's reach`)
+    }
+    if (sectionOk) {
+      console.log(`✓ news quality verdicts agree with enrichment_audit (${withAudit}/${scanned} verifiable)`)
     }
   }
 }
