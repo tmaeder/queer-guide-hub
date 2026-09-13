@@ -38,6 +38,22 @@ All of it works. `parent_event_id` is set on **8 of 48,000 live events**. `festi
 `active/cancelled/postponed/completed`). Dead two independent ways. A second 5-arg
 overload exists, so a PostgREST call resolving by argument name is ambiguous (42725).
 
+**CORRECTED 2026-09-13 (step 8). "`expand_event_recurrence` has never run" (§1.4) is
+wrong.** `expand-event-recurrences` is an ENABLED pg_cron job firing nightly at 03:15
+with a matching enabled `admin_automations` row. It runs, calls
+`expand_all_recurring_events(365)`, finds nothing, returns. "Never ran" and "runs nightly
+and no-ops" are indistinguishable from the row counts and are opposite facts. Retired in
+`40010518132600` — registry row disabled first, then a guarded unschedule.
+
+**The table drops were REFUSED, and the reader census is why.** `event_occurrences` is
+referenced by five live functions including `_event_merge_core` and `unmerge_entities` —
+the reversible-merge path for events — so a DROP takes event merging down to remove a
+0-row table. `festivals` is embedded in `EVENT_SELECT_FIELDS` and searched live by the
+submit form's picker (`useFestivalSearch`); EventDetail.parts.tsx documents an incident
+where a bad embed in that select 400'd the whole event query and every event page
+rendered no `<h1>`. Both tables are 0 rows and cost nothing to keep. Encoded as guards in
+`eventScheduleModel.test.ts` so the drop cannot be reattempted without reading this.
+
 ### 1.3 "Recurring" names three unrelated things, and the two live signals never co-occur
 
 Measured: `is_recurring AND series_key IS NOT NULL` → **0 rows**.
