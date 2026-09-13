@@ -1,6 +1,6 @@
 {
   "project": "tsconfig.app.json",
-  "total": 801,
+  "total": 794,
   "files": {
     "src/assets/intimate/pictograms.tsx": {
       "TS2503": 2
@@ -578,9 +578,8 @@
       "TS2345": 1
     },
     "src/hooks/useCMSEditor.tsx": {
-      "TS2339": 1,
-      "TS2345": 8,
-      "TS2353": 3,
+      "TS2345": 6,
+      "TS2353": 1,
       "TS2554": 1
     },
     "src/hooks/useCMSMedia.tsx": {
@@ -683,7 +682,6 @@
       "TS2345": 2
     },
     "src/hooks/useInlineSave.ts": {
-      "TS2322": 2,
       "TS2345": 1,
       "TS6133": 1
     },

@@ -136,4 +136,22 @@ describe('RevisionHistorySheet', () => {
     fireEvent.click(screen.getByRole('button', { name: /Created/ }));
     await waitFor(() => expect(screen.queryByRole('button', { name: /Revert/ })).toBeNull());
   });
+
+  it('drops the per-field buttons when a write touched many columns', async () => {
+    // A bulk backfill can change a dozen columns at once; a wall of buttons is
+    // not a choice, it is a search problem. "Revert all" still stands.
+    const wide = Array.from({ length: 12 }, (_, i) => `col_${i}`);
+    revisionsRef.current = [
+      {
+        ...machineUpdate,
+        changed_fields: wide,
+        before: Object.fromEntries(wide.map((f) => [f, 'a'])),
+        after: Object.fromEntries(wide.map((f) => [f, 'b'])),
+      },
+    ];
+    renderSheet();
+    fireEvent.click(screen.getByRole('button', { name: /Updated/ }));
+    expect(await screen.findByRole('button', { name: /Revert all 12 field/ })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^col_0$/ })).toBeNull();
+  });
 });

@@ -16,6 +16,7 @@ import type {
   EntityDescriptor,
   EntityDescriptorResult,
 } from '@/components/entity/entityDescriptor';
+import { AdminEditButton } from '@/components/admin/AdminEditButton';
 
 /** Milestone adapter → normalised `EntityDescriptor` (text-first single scroll). */
 export function useMilestoneDescriptor(slug: string | undefined): EntityDescriptorResult {
@@ -30,7 +31,19 @@ export function useMilestoneDescriptor(slug: string | undefined): EntityDescript
       id: milestone.id,
       slug: milestone.slug,
       title: milestone.title,
-      hero: <MilestoneHero milestone={milestone} />,
+      hero: (
+        <>
+          <MilestoneHero milestone={milestone} />
+          <div className="mb-6">
+            <AdminEditButton
+              contentType="milestones"
+              contentId={milestone.id}
+              contentName={milestone.title}
+              currentData={milestone as unknown as Record<string, unknown>}
+            />
+          </div>
+        </>
+      ),
       sections: [
         {
           id: 'story',

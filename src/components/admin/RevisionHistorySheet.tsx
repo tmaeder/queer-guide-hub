@@ -30,6 +30,9 @@ interface RevisionHistorySheetProps {
   onReverted?: () => void;
 }
 
+/** Above this, only "Revert all" is offered — see the note at the call site. */
+const PER_FIELD_BUTTON_LIMIT = 8;
+
 const OP_LABEL: Record<ContentRevision['op'], string> = {
   I: 'Created',
   U: 'Updated',
@@ -225,7 +228,11 @@ function RevisionRow({
                 <RotateCcw size={14} className="mr-1.5" />
                 Revert all {revision.changed_fields.length} field(s)
               </Button>
+              {/* Per-field buttons only while they are still scannable. A bulk
+                  backfill can touch a dozen columns at once, and a wall of
+                  buttons is not a choice, it is a search problem. */}
               {revision.changed_fields.length > 1 &&
+                revision.changed_fields.length <= PER_FIELD_BUTTON_LIMIT &&
                 revision.changed_fields.map((f) => (
                   <Button
                     key={f}

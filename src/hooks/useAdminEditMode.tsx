@@ -52,18 +52,24 @@ export function AdminEditModeProvider({ children }: { children: ReactNode }) {
   const { canManageContent, loading } = useAdminRoles();
   const isAdmin = !loading && canManageContent();
   const [altHeld, setAltHeld] = useState(false);
-  const [pinned, setPinnedState] = useState(false);
 
-  // Restore the pin once the role is known. Reading before that would be
-  // reading on behalf of someone who may not be an admin at all.
-  useEffect(() => {
-    if (!isAdmin) return;
+  // Read once, lazily, rather than from an effect. An effect would setState
+  // synchronously on mount — a cascading render for a value that is knowable
+  // before the first one.
+  //
+  // It is deliberately NOT gated on `isAdmin` here: the role is not known at
+  // first render, and gating the READ would mean an effect again. The gate
+  // that matters is on the exposed value below, which is re-applied on every
+  // read and therefore also covers a role revoked mid-session — the case a
+  // mount-time guard cannot see.
+  const [pinned, setPinnedState] = useState(() => {
     try {
-      setPinnedState(sessionStorage.getItem(PIN_KEY) === '1');
+      return sessionStorage.getItem(PIN_KEY) === '1';
     } catch {
       /* private window / blocked storage — default off */
+      return false;
     }
-  }, [isAdmin]);
+  });
 
   const setPinned = useCallback((next: boolean) => {
     setPinnedState(next);
