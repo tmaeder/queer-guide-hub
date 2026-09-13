@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-// Guards `22500101100000_publish_cached_title_city_descriptions.sql`, which corrects the
+// Guards `40000101100000_publish_cached_title_city_descriptions.sql`, which corrects the
 // two city descriptions that were grounded in the BARE Wikipedia name and never replaced
 // by the correct article the row had already fetched.
 //
@@ -12,7 +12,7 @@ import { describe, expect, it } from 'vitest';
 // asserted here is the migration's own structure — the properties whose removal would
 // leave a file that still applies cleanly and still reports success.
 
-const MIGRATION = '22500101100000_publish_cached_title_city_descriptions.sql';
+const MIGRATION = '40000101100000_publish_cached_title_city_descriptions.sql';
 
 const raw = readFileSync(join(process.cwd(), 'supabase/migrations', MIGRATION), 'utf8');
 
@@ -56,7 +56,7 @@ describe('the cached-title city description correction', () => {
     // The value written and the value the postcondition counts are the load-bearing
     // pair: if they disagree, the postcondition reports 0 corrections after already
     // having rewritten the descriptions.
-    const stamps = sql.match(/migration:22500101100000/g) ?? [];
+    const stamps = sql.match(/migration:40000101100000/g) ?? [];
     expect(stamps.length).toBe(2);
   });
 
@@ -102,12 +102,21 @@ describe('the cached-title city description correction', () => {
     // takes every later migration in the same push with it, so a version below the
     // ceiling is repo-blocking rather than merely this PR's problem.
     //
-    // This file has been renumbered once already: it shipped as 21050101100100 to sit
-    // beside its applied sibling 21050101100000, and #3646 then applied
-    // 22000101100000/100100/100200 — a 2099 -> 2200 jump — which put it below the
-    // ceiling. The ceiling moved 2070 -> 2075 -> 2080 -> 2099 -> 2200 in one day, so
-    // NO FIXED HEADROOM SURVIVES THIS REPO and this assertion is a floor, not a proof
-    // of safety: re-read the live ceiling before merging, never this constant.
-    expect(MIGRATION > '22000101100200_').toBe(true);
+    // This file has been renumbered TWICE, and the sequence is the point. It shipped as
+    // 21050101100100 to sit beside its applied sibling 21050101100000; #3646 applied
+    // 22000101100000/100100/100200 (a 2099 -> 2200 jump) which put it below the ceiling,
+    // so it moved to 22500101100000; then #3645/#3649-#3654 applied 2900, 3000, 3001 and
+    // 3500 overnight and it was below again.
+    //
+    // Ceiling, in order: 2070 -> 2075 -> 2080 -> 2099 -> 2200 -> 2900 -> 3000 -> 3500.
+    // A one-year gap was overtaken, then five years, then fifty, then five hundred.
+    // NO FIXED HEADROOM SURVIVES THIS REPO. This assertion is a floor recording what was
+    // true at authoring time — it is NOT proof the file is still above the ceiling.
+    // Re-read the live applied ceiling before merging; never trust this constant.
+    //
+    // The versions are pure ordering tokens (VERSION_RE accepts any 14 digits, no date
+    // validation), which is why they can escalate like this at no cost to correctness —
+    // and why the escalation is a coordination problem, not a numbering one.
+    expect(MIGRATION > '35000101100000_').toBe(true);
   });
 });
