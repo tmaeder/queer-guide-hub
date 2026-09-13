@@ -211,6 +211,7 @@ export function MediaUploadZone() {
                 </Button>
               )}
               <Button
+                aria-label="Collapse upload panel"
                 variant="ghost"
                 size="sm"
                 onClick={() => {
