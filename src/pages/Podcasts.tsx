@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Headphones } from 'lucide-react';
 import { useMeta } from '@/hooks/useMeta';
@@ -27,6 +28,15 @@ export default function Podcasts() {
 
   const showCount = shows?.length ?? 0;
   const episodeTotal = (shows ?? []).reduce((n, s) => n + (s.episode_count ?? 0), 0);
+
+  // source_id -> show, so the latest strip can attribute an episode without a
+  // second query: the hub already holds every show.
+  //
+  // Without it the mini-bar and the OS lock screen said "Queer Guide" where the
+  // show name belongs — measured on prod, mediaSession.metadata.artist read
+  // "Queer Guide" for a TransLash episode. The show page never had this problem
+  // because it passes its own name; only the cross-show strip did.
+  const showsById = useMemo(() => new Map((shows ?? []).map((s) => [s.id, s])), [shows]);
 
   useMeta({
     title: t('podcasts.metaTitle', 'LGBTQ+ Podcasts'),
@@ -61,9 +71,17 @@ export default function Podcasts() {
             {t('podcasts.latest', 'Latest episodes')}
           </h2>
           <ul className="flex flex-col gap-2">
-            {latest.map((ep) => (
-              <EpisodeRow key={ep.id} episode={ep} />
-            ))}
+            {latest.map((ep) => {
+              const show = ep.source_id ? showsById.get(ep.source_id) : undefined;
+              return (
+                <EpisodeRow
+                  key={ep.id}
+                  episode={ep}
+                  showName={show?.name ?? null}
+                  artwork={show?.artwork_url ?? null}
+                />
+              );
+            })}
           </ul>
         </section>
       )}

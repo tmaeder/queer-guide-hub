@@ -80,15 +80,45 @@ test.describe('@smoke podcasts', () => {
     await page.goto('/podcasts');
     const showHref = await page.locator('a[href*="/podcasts/"]').first().getAttribute('href');
     await page.goto(showHref!);
-    const episodeHref = await page
-      .locator('a[href*="/news/"]')
-      .first()
-      .getAttribute('href');
-    expect(episodeHref, 'a show page produced an episode URL').toBeTruthy();
+    // Walk a few episodes to find one the middleware PRERENDERS.
+    //
+    // The bot body is injected only when the route is indexable
+    // (functions/_middleware.ts: `isBot = indexable && isBotUserAgent(...)`),
+    // and news_articles.seo_indexable is false on a large share of the corpus.
+    // Taking the first episode blindly is a coin flip: measured on prod, the
+    // newest episode of the newest show had seo_indexable=false, so the body
+    // was absent and the JSON-LD was still correct — which is exactly the
+    // shape that makes this look like a regression when it is not.
+    // WAIT BEFORE READING. Episodes arrive from react-query, so evaluateAll on
+    // a freshly-navigated page returns an empty list — the first draft of this
+    // test failed here with 0 hrefs while the sibling test above passed, purely
+    // because that one awaits visibility first. The wait is the precondition,
+    // not decoration.
+    const episodeLocator = page.locator('a[href*="/news/"]');
+    await expect(episodeLocator.first()).toBeVisible(RENDER);
+    const hrefs = (await episodeLocator.evaluateAll((els) =>
+      els.map((e) => (e as HTMLAnchorElement).getAttribute('href')),
+    )).filter((h): h is string => Boolean(h));
+    expect(hrefs.length, 'a show page produced episode URLs').toBeGreaterThan(0);
 
-    const res = await request.get(episodeHref!, { headers: BOT });
+    let html = '';
+    let episodeHref = '';
+    for (const href of hrefs.slice(0, 12)) {
+      const r = await request.get(href, { headers: BOT });
+      if (r.status() !== 200) continue;
+      const body = await r.text();
+      if (body.includes('data-prerendered="bot-ua"')) {
+        html = body;
+        episodeHref = href;
+        break;
+      }
+    }
+    // Not a silent skip: if no episode on this show is indexable the assertion
+    // below would pass against an empty string, which is the vacuous-pass
+    // shape this whole file is written to avoid.
+    expect(episodeHref, 'no prerendered episode found among the first 12').toBeTruthy();
+    const res = await request.get(episodeHref, { headers: BOT });
     expect(res.status()).toBe(200);
-    const html = await res.text();
 
     const blocks = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
       .map((m) => {
@@ -160,6 +190,11 @@ test.describe('@smoke podcasts', () => {
     const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
     // hubLinks caps at 80 links, so without this sitemap a quarter of the shows
     // would have no crawl path at all.
+    //
+    // This floor is also the only thing that catches a missing column GRANT:
+    // fetchRows falls back to the anon key, a denied column returns 42501, and
+    // the generator then emits a well-formed urlset with nothing in it. Status
+    // and content-type both look perfect.
     expect(locs.length, 'show URLs in the sitemap').toBeGreaterThanOrEqual(100);
     expect(locs.every((l) => l.includes('/podcasts/'))).toBe(true);
 
@@ -190,6 +225,47 @@ test.describe('@smoke podcasts', () => {
       headers: { apikey: key!, Authorization: `Bearer ${key}` },
     });
     expect(ok.status(), 'anon can still read the public columns').toBe(200);
-    expect(res.status(), 'anon cannot read last_error').toBe(403);
+    // Measured on prod: PostgREST answers a missing COLUMN privilege with 401
+    // here, not the 403 the profiles allowlist produces. Accept either — the
+    // assertion is "denied", and pinning the exact code makes this spec a
+    // guard against PostgREST's error mapping rather than against the grant.
+    expect([401, 403], 'anon cannot read last_error').toContain(res.status());
+  });
+
+  test('every column the public surfaces select is actually granted to anon', async ({
+    request,
+  }) => {
+    // THE FAILURE THIS EXISTS FOR. Narrowing the grant broke
+    // sitemap-podcasts.xml, which selects `slug,updated_at`:
+    // functions/_lib/sitemap.ts prefers the service-role key and FALLS BACK to
+    // anon, so in production it drew `42501 permission denied for table
+    // news_sources` and emitted a well-formed, completely empty urlset. HTTP
+    // 200, valid XML, zero <loc> — nothing about the symptom points at a grant.
+    //
+    // Asserting the SELECTS rather than the grant list is what makes this
+    // survive: a future column added to any of these queries fails here.
+    const base = process.env.VITE_SUPABASE_URL;
+    const key = process.env.VITE_SUPABASE_ANON_KEY;
+    test.skip(!base || !key, 'needs VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY');
+
+    const selects = [
+      // functions/sitemap-podcasts.xml.ts
+      'slug,updated_at',
+      // functions/_lib/detail.ts — podcastShowDetail
+      'id,name,slug,description,url,website_url,artwork_url,episode_count',
+      // src/hooks/usePodcasts.ts
+      'id,name,slug,description,website_url,url,artwork_url,episode_count',
+      // src/hooks/useNews.tsx — fetchSources
+      'id,name,slug,description,url,website_url,category,feed_type,artwork_url,is_active,is_aggregator,organization_id,episode_count',
+      // src/hooks/usePageFetchers.ts — fetchNewsSourceById
+      'name,url',
+    ];
+    for (const sel of selects) {
+      const r = await request.get(
+        `${base}/rest/v1/news_sources?select=${encodeURIComponent(sel)}&limit=1`,
+        { headers: { apikey: key!, Authorization: `Bearer ${key}` } },
+      );
+      expect(r.status(), `anon cannot read: ${sel}`).toBe(200);
+    }
   });
 });

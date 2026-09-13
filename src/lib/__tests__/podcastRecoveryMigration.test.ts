@@ -140,9 +140,15 @@ describe('the health check', () => {
   it('warns on a low commit rate rather than failing', () => {
     // The news quality gate legitimately rejects some episodes and the number
     // moves with the corpus, so this is a floor, not a target.
-    const rate = section.slice(section.indexOf('const staged'));
-    expect(rate.slice(0, 900)).toMatch(/pct < 40/);
-    expect(rate.slice(0, 900)).not.toMatch(/FAILED = true/);
+    //
+    // Scoped to the rate block by its real boundaries, not by a character
+    // count. The first version sliced a fixed 900 chars from `const staged`,
+    // and simply LENGTHENING a comment inside the block pushed an unrelated
+    // `FAILED = true` from the next section into the window — a false failure
+    // with nothing wrong in the code under test.
+    const rate = section.slice(section.indexOf('const staged'), section.indexOf('const zeroShows'));
+    expect(rate).toMatch(/pct < 40/);
+    expect(rate).not.toMatch(/FAILED = true/);
   });
 });
 

@@ -17,6 +17,7 @@ import {
   type VenueMeta,
   type FuzzyCluster,
   type DedupType,
+  type UnmergeOutcome,
 } from '@/hooks/useVenueDuplicates';
 import { TagMergeReviewQueue } from '@/components/admin/TagMergeReviewQueue';
 import { VocabMerge } from '@/components/admin/VocabMerge';
@@ -41,6 +42,34 @@ type DupView = 'exact' | 'fuzzy';
 
 const clusterKey = (c: Cluster) => `${c.normalized_title}|${c.city ?? ''}`;
 const hasImage = (m?: VenueMeta) => Array.isArray(m?.images) && (m!.images as unknown[]).length > 0;
+
+/**
+ * Say what the undo actually did.
+ *
+ * Until 29000101100100 only two of the twelve types could put reparented children
+ * back; the other ten cleared `duplicate_of_id` and left every child on the survivor
+ * while `unmerge_entities` returned `{"undone": true}`. This screen printed "Merge
+ * undone" on that, under a header promising every merge is reversible. A merge that
+ * predates moved-row recording still cannot be fully undone — it now says so instead
+ * of claiming success.
+ */
+function reportUndo(outcomes: UnmergeOutcome[]) {
+  const partial = outcomes.filter((o) => o.reparentingRestored === false).length;
+  const unknown = outcomes.filter((o) => o.reparentingRestored === null).length;
+  if (partial > 0) {
+    toast.warning(
+      `Duplicate flag cleared, but ${partial} merge${partial === 1 ? '' : 's'} predate${partial === 1 ? 's' : ''} moved-row recording — their reparented content stays on the surviving record.`,
+    );
+    return;
+  }
+  if (unknown > 0) {
+    toast.success('Merge undone', {
+      description: 'This merge type does not report whether reparented content was restored.',
+    });
+    return;
+  }
+  toast.success('Merge undone — reparented content restored');
+}
 
 /** Suggest the canonical: highest quality_score, then featured, then oldest. */
 function suggestKeep(members: ClusterMember[], meta: Map<string, VenueMeta>): string {
@@ -76,13 +105,17 @@ export default function AdminDuplicates() {
       {/* mb-0: the parent already spaces children with gap-6. */}
       <AdminArchetypeHeader className="mb-0" title="Duplicates & merge" />
 
-      {/* Kept, not dropped with the subtitle slot: "every merge is
-        reversible" is the sentence that makes this destructive-looking
-        screen safe to use. Orientation copy can go; a reversibility
-        guarantee cannot. */}
+      {/* The reversibility guarantee is the sentence that makes this
+        destructive-looking screen safe to use, so it stays — but it has to be
+        TRUE. Until 29000101100100 it was false for ten of the twelve types,
+        which cleared duplicate_of_id and left every reparented child on the
+        survivor while the Undo toast said "Merge undone". Merges made before
+        that migration still cannot be fully undone; the undo now says so per
+        merge rather than the page claiming it for all of them. */}
       <p className="m-0 max-w-reading text-13 leading-relaxed text-muted-foreground">
         Pick the canonical record and merge the rest — duplicates are hidden, their URLs redirect,
-        and every merge is reversible.
+        and new merges are reversible. Undoing a merge made before reparenting was recorded clears
+        the duplicate flag but leaves its content on the surviving record, and will tell you so.
       </p>
 
       <div className="rounded-container bg-muted flex flex-wrap items-center gap-2 p-4 text-15">
@@ -174,8 +207,9 @@ function ContentDuplicates({
             label: 'Undo',
             onClick: async () => {
               try {
-                for (const id of audits) await unmergeEntity(type.key, id);
-                toast.success('Merge undone');
+                const outcomes: UnmergeOutcome[] = [];
+                for (const id of audits) outcomes.push(await unmergeEntity(type.key, id));
+                reportUndo(outcomes);
                 refresh();
               } catch (e) {
                 toast.error(`Undo failed: ${(e as Error).message}`);
@@ -343,8 +377,12 @@ function FuzzyDuplicates({ type }: { type: DedupType }) {
           ? {
               label: 'Undo',
               onClick: async () => {
-                await unmergeEntity(type.key, auditId);
-                refresh();
+                try {
+                  reportUndo([await unmergeEntity(type.key, auditId)]);
+                  refresh();
+                } catch (e) {
+                  toast.error(`Undo failed: ${(e as Error).message}`);
+                }
               },
             }
           : undefined,

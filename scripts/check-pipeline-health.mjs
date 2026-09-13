@@ -590,6 +590,86 @@ if (!hygieneRes.ok) {
   }
 }
 
+// 4d. The other ten dedup types (2026-09-12). 4b and 4c exist because venue and event
+//     each went blind while the nightly sweep reported success — event for eleven days.
+//     The remaining ten had no sentinel at all, so the same failure there is invisible:
+//     marketplace, personality, city, hotel, milestone, organization, news,
+//     queer_village, country, group.
+//
+//     TWO CALLS, deliberately. `dedup_signals_all()` is the CHEAP pass (queue, audit and
+//     drain-rate keys for all twelve, milliseconds) because the expensive part — a
+//     dry-run sweep — measured 34.6s for twelve types and no HTTP call survives that.
+//     `would_merge` there is null with `dry_run_error: 'not probed'`, which is the point:
+//     an unprobed type must never read like a clean one. Types with a real backlog are
+//     then probed individually.
+//
+//     THE NEW GATE IS THE DRAIN RATE, and it is the one the existing two would have
+//     missed. 4b/4c fail on `would_merge > 0 && merges_7d === 0` — an engine with work it
+//     is not doing. The live state on 2026-09-12 was the opposite: arms SATURATED
+//     (would_merge 0 on both), venue queue pinned at its 200/night cap five nights in six,
+//     and `human_decisions_7d` = 0. Both halves of that predicate read zero, so it is
+//     silent while the backlog compounds.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/dedup_signals_all`, {
+    method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: '{}',
+  })
+  if (!res.ok) {
+    // Warn, never pass silently: a missing RPC and a healthy fleet must not look alike.
+    console.warn(`⚠ dedup_signals_all → HTTP ${res.status} (RPC missing? migration 29000101100500)`)
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else {
+    const all = await res.json()
+    const types = Object.keys(all ?? {})
+    if (types.length !== 12) {
+      console.error(`✗ dedup_signals_all returned ${types.length} types, expected 12`)
+      FAILED = true
+    }
+
+    for (const t of types) {
+      const d = all[t] ?? {}
+
+      // A null would_merge with no stated reason is a broken probe, not a clean type.
+      if (d.would_merge === null && !d.dry_run_error) {
+        console.error(`✗ dedup_signals(${t}) reports no would_merge and no reason — the probe is broken`)
+        FAILED = true
+      }
+
+      // Reversibility drift, for every type now — not just venue. A merge stamped with
+      // no schema marker cannot be undone. Anchored to the first stamped merge, so the
+      // rows that legitimately predate the fix (merges_pre_schema_total) are excluded.
+      const unrev = Number(d.merges_unreversible_since_fix ?? 0)
+      if (unrev > 0) {
+        console.error(`✗ ${unrev} ${t} merge(s) recorded with no reversibility data since the fix landed`)
+        console.error(`  The live merge core has drifted from 29000101100000/100200 — those merges cannot be undone.`)
+        FAILED = true
+      }
+
+      // The drain-rate warning. Not a hard fail: a deliberate backlog on a low-value
+      // type is a product choice, and a red build nobody can act on is one people learn
+      // to ignore. It fires only when the queue is BOTH large and genuinely stagnant.
+      const open = Number(d.open_pairs ?? 0)
+      const opened = Number(d.opened_7d ?? 0)
+      const human = Number(d.human_decisions_7d ?? 0)
+      const medianH = Number(d.median_open_pair_hours ?? 0)
+      if (open > 100 && opened > 0 && human === 0 && medianH > 168) {
+        console.warn(
+          `⚠ ${t} dedup queue is not draining: ${open} open, +${opened} queued in 7d, ` +
+          `0 human decisions, median age ${medianH}h`,
+        )
+        console.warn('  A queue that only grows converges on never. Either review it at')
+        console.warn('  /admin/inbox?queue=dedup-review, widen the auto arms, or close the')
+        console.warn('  provably-distinct pairs (run_dedup_close_distinct).')
+      }
+    }
+
+    const summary = types
+      .filter((t) => Number(all[t]?.open_pairs ?? 0) > 0)
+      .map((t) => `${t}=${all[t].open_pairs}`)
+      .join(' ')
+    console.log(`✓ Dedup signals: 12 types, open pairs ${summary || 'none'}`)
+  }
+}
+
 // 5a. Wrong-entity Wikidata links on the glossary (2026-08-29). tag-enrichment-sweep
 //     resolved a tag's QID by fetching the Wikipedia summary of its RAW NAME and
 //     adopting whatever the redirect served — `golden-shower` → Cassia fistula,
@@ -1755,7 +1835,23 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
       // above the 23% the E_INVALID_URL fault produced. It warns rather than
       // fails: the news quality gate legitimately rejects some episodes, and
       // this number moves with the corpus.
-      console.log(pct < 40 ? `${line} — LOW, check pipeline-validate rejection reasons` : line)
+      //
+      // THE HINT NAMES BOTH STAGES ON PURPOSE. A first version pointed only at
+      // pipeline-validate, and within hours of the parser fix that was the
+      // wrong half: validate went to 0 rejections while the rate FELL to 1%,
+      // because 4,045 news rows (759 podcasts + 3,286 articles, oldest
+      // 2026-07-14) sit at disposition='pending' having already passed
+      // validate, dedup and auto-approval. Commit runs every hour and looks
+      // healthy at 6-13 rows/hour; the parser fix raised podcast inflow to
+      // ~175/hour, so the shortfall is throughput, not rejection. A low rate
+      // here has two very different causes and the reader needs both.
+      console.log(
+        pct < 40
+          ? `${line} — LOW. Check BOTH: pipeline-validate rejection reasons, and the` +
+            ` disposition='pending' backlog that has already passed validate+dedup` +
+            ` (commit throughput, not rejection).`
+          : line,
+      )
     } else {
       console.log('  no podcast episodes staged in the last 7 days')
     }
