@@ -356,6 +356,71 @@ if (!hygieneRes.ok) {
   }
 }
 
+// 4a-bis. Staging rows the DAG structurally cannot see (2026-09-13).
+//
+//     A row inserted into ingestion_staging outside a DAG run carries
+//     pipeline_run_id IS NULL, and validate/deduplicate/review-gate/commit all
+//     filter `.eq('pipeline_run_id', <run>)` when the executor passes one.
+//     `.eq()` never matches NULL, so those four stages are blind to it;
+//     quality-score is the lone stage without the filter. Measured: 929
+//     personality rows sat pending for 24 days with ZERO ingestion_events while
+//     the nightly personality-ingestion DAG reported completed /
+//     items_succeeded=979 every night.
+//
+//     stale_pending_by_entity SAW those 929 the whole time and could not
+//     surface them: the thresholds above fail at 5,000 for one entity or 10,000
+//     total and warn at 3,500 — a bar the news backlog keeps permanently lit, so
+//     the nightly warning carried no actionable signal. Same shape as the 14
+//     stranded_human_approved rows that hid under that floor for 40 days.
+//
+//     So this measures a STRUCTURAL property, not a depth: are there stale
+//     orphans, and has ANY of them advanced a stage in 24h? A backlog with a
+//     working dual-mode drain is throughput and only warns; a backlog with no
+//     consumer at all is the bug and hard-fails. The evidence is
+//     ingestion_events, NOT ingestion_staging.updated_at — the 2026-09-13
+//     visibility repair touched all 929 rows, so updated_at reads "recently
+//     touched" for a cohort nothing has ever processed.
+//
+//     Not folded into stale_pending_by_entity's thresholds, and top level on
+//     purpose (see the gaycities block above — nesting a check inside another
+//     probe's else-block lets an unrelated outage skip it silently).
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/staging_orphan_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    console.warn(`⚠ staging_orphan_signals → HTTP ${res.status} (RPC missing? migration 50000101100000)`)
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else {
+    const sig = (await res.json()) ?? {}
+    // An absent key must never read as a clean corpus.
+    if (sig?.probe_ok !== true || !Array.isArray(sig?.unconsumed_targets)) {
+      console.error('✗ staging_orphan_signals returned no probe_ok/unconsumed_targets — the probe is broken')
+      FAILED = true
+    } else {
+      const counts = sig.orphan_rows_by_target ?? {}
+      const ages = sig.oldest_orphan_days ?? {}
+      if (sig.unconsumed_targets.length > 0) {
+        const detail = sig.unconsumed_targets
+          .map((t) => `${t}=${counts[t] ?? '?'} rows, oldest ${ages[t] ?? '?'}d`)
+          .join('; ')
+        console.error(`✗ Staging orphans with NO consumer: ${detail}`)
+        console.error('  These rows have pipeline_run_id IS NULL, so the DAG cannot see them, AND')
+        console.error('  not one advanced a stage in 24h — no dual-mode drain is running for them.')
+        console.error('  Fix: register+enable <entity>_drain_{validate,dedup,review,commit} the way')
+        console.error('  ev_drain_*/vn_drain_*/mp_drain_* already are. Do NOT raise a depth threshold.')
+        FAILED = true
+      } else if (Object.keys(counts).length > 0) {
+        console.warn(`⚠ Staging orphans draining: ${JSON.stringify(counts)} (a drain IS advancing them)`)
+      } else {
+        console.log('✓ Staging orphans with no consumer: 0')
+      }
+    }
+  }
+}
+
 // 4b. Event dedup health (2027-05-02). There was no check here at all: the dedup
 //     section above is city-only, so the event auto arms matched ZERO pairs for
 //     eleven days — nightly sweep green, consecutive_failures=0, 645 merges then
