@@ -68,6 +68,11 @@ import {
 
 const STEP = 'venue-accessibility-osm'
 const AUTOMATION_SLUG = 'venue_accessibility_osm'
+
+// The only field this function review-gates. `amenity-truth-backfill` gates the SAME
+// field, so the pre-select below is what keeps the two jobs from overwriting each other.
+// Named rather than inlined so the pre-select, the insert and the skip key cannot drift.
+const GATED_FIELD = 'accessibility_attributes'
 const UA = 'QueerGuideBot/1.0 (https://queer.guide; contact@queer.guide)'
 const DEFAULT_RADIUS_M = 60
 // A single hung mirror must never be able to consume the whole budget. Measured
@@ -291,6 +296,43 @@ Deno.serve(async (req: Request) => {
   const filledByField: Record<string, number> = {}
   const disagreedByField: Record<string, number> = {}
   const results: Array<Record<string, unknown>> = []
+  let queued = 0, queueSkipped = 0, queueErrors = 0
+
+  // Venues already awaiting a human on this field, read ONCE per run.
+  //
+  // This replaced a delete-then-insert, and here that shape reached ACROSS FUNCTIONS:
+  // `amenity-truth-backfill` gates the same `accessibility_attributes` field and holds
+  // ~747 open proposals on it, so every conflict this job found would have deleted one of
+  // them. A gated accessibility proposal has no provenance row of its own, so the queue
+  // row is the only copy — deleting it destroys the other job's pending work outright.
+  //
+  // A failed read must not be indistinguishable from "nothing is queued" — that is the
+  // same defect one layer down — so the set stays NULL rather than becoming an empty Set
+  // and uq_erq_open decides instead.
+  let alreadyQueued: Set<string> | null = null
+  let queuePrecheckFailed = false
+  {
+    const { data: openRows, error: openErr } = await supabase
+      .from('venue_review_queue')
+      .select('venue_id')
+      .eq('status', 'open')
+      .eq('field', GATED_FIELD)
+      .in('venue_id', venues.map((v) => v.id))
+    if (openErr) {
+      queuePrecheckFailed = true
+      console.warn(`open-queue precheck failed: ${openErr.message}`)
+    } else {
+      alreadyQueued = new Set((openRows ?? []).map((r) => String(r.venue_id)))
+    }
+  }
+
+  // queue_* keys are omitted when zero so their presence carries meaning.
+  const queueSummary = () => ({
+    ...(queued ? { queued } : {}),
+    ...(queueSkipped ? { queue_skipped: queueSkipped } : {}),
+    ...(queueErrors ? { queue_errors: queueErrors } : {}),
+    ...(queuePrecheckFailed ? { queue_precheck_failed: true } : {}),
+  })
 
   for (const v of venues) {
     if (Date.now() > deadline) break
@@ -331,8 +373,8 @@ Deno.serve(async (req: Request) => {
       }
     } catch (e) {
       if (e instanceof CircuitOpenError) {
-        await recordRun(supabase, runStarted, { processed: results.length, circuit_open: true, probe, status: 'error' })
-        return jsonResponse({ processed: results.length, circuit_open: true, results }, 200, req)
+        await recordRun(supabase, runStarted, { processed: results.length, circuit_open: true, ...queueSummary(), probe, status: 'error' })
+        return jsonResponse({ processed: results.length, circuit_open: true, ...queueSummary(), results }, 200, req)
       }
       verdict = 'error'
     }
@@ -497,22 +539,42 @@ Deno.serve(async (req: Request) => {
         observed_at: new Date().toISOString(),
       }, { onConflict: 'venue_id,field,source' }).then(() => {}, () => {})
 
+      // Skip-if-open. Nothing here deletes: a proposal leaves this queue only by being
+      // approved or rejected. The conflict itself is never lost when we skip — it is
+      // already stamped on the venue (`needs_attention` above) and on the enrichment
+      // stamp below, so the evidence that two sources disagree about a door survives
+      // independently of whether this particular row was written.
       if (hasConflict) {
-        await supabase.from('venue_review_queue').delete()
-          .eq('venue_id', v.id).eq('field', 'accessibility_attributes').eq('status', 'open')
-        await supabase.from('venue_review_queue').insert({
-          venue_id: v.id,
-          field: 'accessibility_attributes',
-          proposed_value: { value: [...winner].sort(), osm: osmSlugs, existing, dropped: conflict.dropped },
-          citations: [{
-            source: 'openstreetmap',
-            quote: `${pick.element.type}/${pick.element.id}`,
-            url: `https://www.openstreetmap.org/${pick.element.type}/${pick.element.id}`,
-          }],
-          confidence: decision.confidence,
-          model: 'osm',
-          status: 'open',
-        }).then(() => {}, () => {})
+        if (alreadyQueued?.has(v.id)) {
+          queueSkipped++
+        } else {
+          const { error: insErr } = await supabase.from('venue_review_queue').insert({
+            venue_id: v.id,
+            field: GATED_FIELD,
+            proposed_value: { value: [...winner].sort(), osm: osmSlugs, existing, dropped: conflict.dropped },
+            citations: [{
+              source: 'openstreetmap',
+              quote: `${pick.element.type}/${pick.element.id}`,
+              url: `https://www.openstreetmap.org/${pick.element.type}/${pick.element.id}`,
+            }],
+            confidence: decision.confidence,
+            model: 'osm',
+            status: 'open',
+          })
+          if (!insErr) {
+            queued++
+            alreadyQueued?.add(v.id)
+          } else if (insErr.code === '23505') {
+            // uq_erq_open refused a second open row — the database enforcing the
+            // invariant the pre-select could not see. Same outcome as a skip, not a fault.
+            queueSkipped++
+          } else {
+            // Previously `.then(() => {}, () => {})` swallowed this, so a duplicate, a
+            // genuine write failure and a success were the same silence.
+            queueErrors++
+            console.warn(`venue_review_queue insert ${v.id}: ${insErr.message}`)
+          }
+        }
       }
 
       await stamp(supabase, v.id, {
@@ -545,6 +607,7 @@ Deno.serve(async (req: Request) => {
     fields_filled: fieldsFilled,
     filled_by_field: filledByField,
     disagreed_by_field: disagreedByField,
+    ...queueSummary(),
     probe,
   }
   if (!dryRun && !venueIds?.length) {
@@ -553,7 +616,7 @@ Deno.serve(async (req: Request) => {
   return jsonResponse({
     processed: probed, matched, applied, conflicted, unknown,
     fields_filled: fieldsFilled, filled_by_field: filledByField,
-    disagreed_by_field: disagreedByField,
+    disagreed_by_field: disagreedByField, ...queueSummary(),
     dry_run: dryRun, endpoints: probe, results,
   }, 200, req)
 })
