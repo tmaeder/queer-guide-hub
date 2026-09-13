@@ -82,6 +82,13 @@ COMMENT ON TABLE public.content_versioned_tables IS
 -- ── The log ─────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.content_revisions (
   id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  -- Ordering is `seq`, never `created_at`. `now()` is TRANSACTION time, so
+  -- every revision written by one statement or one migration shares a
+  -- timestamp — measured, not assumed — and "newest first" over a tie is
+  -- whatever order the planner felt like. A history list that reorders itself
+  -- between reads is worse than no history. `created_at` stays, because when
+  -- the change happened is what a reader wants to see.
+  seq            bigint GENERATED ALWAYS AS IDENTITY,
   source_table   text NOT NULL,
   source_id      uuid NOT NULL,
   op             char(1) NOT NULL CHECK (op IN ('I', 'U', 'D')),
@@ -107,7 +114,7 @@ COMMENT ON COLUMN public.content_revisions.actor_kind IS
 
 -- The only access pattern that matters: one record's history, newest first.
 CREATE INDEX IF NOT EXISTS content_revisions_entity_idx
-  ON public.content_revisions (source_table, source_id, created_at DESC);
+  ON public.content_revisions (source_table, source_id, seq DESC);
 -- Retention scans by kind and age; a human revision is never pruned.
 CREATE INDEX IF NOT EXISTS content_revisions_prune_idx
   ON public.content_revisions (created_at)
@@ -267,10 +274,36 @@ UPDATE public.content_versioned_tables
    SET ignore_columns = '{}'::text[]
  WHERE table_name = 'community_submissions';
 
+-- Generated and identity columns are DERIVED. Recording them stores the same
+-- information twice, and no revert can ever write one back — so they would
+-- appear in every delta and then in every revert result as "not_writable".
+-- Not a hypothetical: measured on prod, marketplace_listings has FIVE
+-- (title_normalized, subcategory_slug, boutique_score, brand_key,
+-- content_rating) and it is the highest-volume table in the registry at ~2,780
+-- rows/day; cities and personalities have one each.
+--
+-- Read from the catalog rather than hand-listed, so this cannot be wrong about
+-- today's schema. A generated column added LATER is not picked up here, which
+-- is what content_revision_signals() reports on.
+UPDATE public.content_versioned_tables t
+   SET ignore_columns = (
+     SELECT coalesce(array_agg(DISTINCT c), '{}'::text[])
+       FROM (
+         SELECT unnest(t.ignore_columns) AS c
+         UNION
+         SELECT a.attname
+           FROM pg_attribute a
+          WHERE a.attrelid = ('public.' || quote_ident(t.table_name))::regclass
+            AND a.attnum > 0 AND NOT a.attisdropped
+            AND (a.attgenerated <> '' OR a.attidentity <> '')
+       ) s
+   );
+
 DO $verify$
 DECLARE
   v_missing text;
   v_bad     text;
+  v_gen     integer;
 BEGIN
   -- Every registered table must exist and carry an `id` column, because that
   -- is what source_id records and what the revert RPC keys on.
@@ -295,6 +328,20 @@ BEGIN
   -- would skip the measured rollout this design depends on.
   IF EXISTS (SELECT 1 FROM public.content_versioned_tables WHERE enabled) THEN
     RAISE EXCEPTION 'no table may be enabled by this migration';
+  END IF;
+
+  -- Positive control on the derived ignore lists: assert the count rather than
+  -- trusting the UPDATE above ran. A silently-empty result here would mean
+  -- every marketplace delta carries five redundant derived columns.
+  SELECT count(*) INTO v_gen
+    FROM public.content_versioned_tables t
+    JOIN pg_attribute a
+      ON a.attrelid = ('public.' || quote_ident(t.table_name))::regclass
+     AND a.attnum > 0 AND NOT a.attisdropped
+     AND (a.attgenerated <> '' OR a.attidentity <> '')
+   WHERE NOT (a.attname = ANY (t.ignore_columns));
+  IF v_gen > 0 THEN
+    RAISE EXCEPTION '% generated/identity columns are not in an ignore list', v_gen;
   END IF;
 END $verify$;
 
