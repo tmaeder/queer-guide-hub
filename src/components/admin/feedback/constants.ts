@@ -2,10 +2,10 @@ import { Zap, AlertCircle, ArrowUpCircle, Minus } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 export const kanbanColumns = [
-  { id: 'new', label: 'New', color: 'hsl(var(--foreground) / 0.55)' },
+  { id: 'new', label: 'New', color: 'hsl(var(--muted-foreground))' },
   { id: 'under_review', label: 'Under Review', color: 'hsl(var(--muted-foreground))' },
-  { id: 'planned', label: 'Planned', color: 'hsl(var(--foreground) / 0.55)' },
-  { id: 'in_progress', label: 'In Progress', color: 'hsl(var(--foreground) / 0.55)' },
+  { id: 'planned', label: 'Planned', color: 'hsl(var(--muted-foreground))' },
+  { id: 'in_progress', label: 'In Progress', color: 'hsl(var(--muted-foreground))' },
   { id: 'done', label: 'Done', color: 'hsl(var(--foreground))' },
 ] as const;
 
@@ -23,9 +23,21 @@ export interface PriorityMeta {
 
 export const priorities: PriorityMeta[] = [
   { value: 0, short: 'P0', label: 'Critical', color: 'hsl(var(--destructive))', icon: Zap },
-  { value: 1, short: 'P1', label: 'High', color: 'hsl(var(--foreground) / 0.55)', icon: AlertCircle },
+  {
+    value: 1,
+    short: 'P1',
+    label: 'High',
+    color: 'hsl(var(--muted-foreground))',
+    icon: AlertCircle,
+  },
   { value: 2, short: 'P2', label: 'Normal', color: 'hsl(var(--muted-foreground))', icon: Minus },
-  { value: 3, short: 'P3', label: 'Low', color: 'hsl(var(--muted-foreground))', icon: ArrowUpCircle },
+  {
+    value: 3,
+    short: 'P3',
+    label: 'Low',
+    color: 'hsl(var(--muted-foreground))',
+    icon: ArrowUpCircle,
+  },
 ];
 
 export const priorityMap: Record<number, PriorityMeta> = Object.fromEntries(
@@ -40,9 +52,9 @@ export function priorityFor(v: number | null | undefined): PriorityMeta {
 // tracks the admin's progress on the root-cause fix independently of the
 // individual submission statuses.
 export const storyColumns = [
-  { id: 'open', label: 'Open', color: 'hsl(var(--foreground) / 0.55)' },
-  { id: 'planned', label: 'Planned', color: 'hsl(var(--foreground) / 0.55)' },
-  { id: 'in_progress', label: 'In Progress', color: 'hsl(var(--foreground) / 0.55)' },
+  { id: 'open', label: 'Open', color: 'hsl(var(--muted-foreground))' },
+  { id: 'planned', label: 'Planned', color: 'hsl(var(--muted-foreground))' },
+  { id: 'in_progress', label: 'In Progress', color: 'hsl(var(--muted-foreground))' },
   { id: 'resolved', label: 'Resolved', color: 'hsl(var(--foreground))' },
 ] as const;
 

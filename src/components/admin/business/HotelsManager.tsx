@@ -310,7 +310,7 @@ export function HotelsManager() {
             <Badge
               style={{
                 backgroundColor: 'hsl(var(--muted))',
-                color: 'hsl(var(--foreground) / 0.7)',
+                color: 'hsl(var(--muted-foreground))',
               }}
             >
               <Star size={12} className="mr-1" />
