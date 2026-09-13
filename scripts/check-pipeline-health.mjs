@@ -1936,6 +1936,79 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
   }
 }
 
+// ── News quality verdicts overwritten out of band (2026-09-13) ─────────────
+//
+// 88 news staging rows carried quality_status='passed' while auto_publish was
+// false and auto_publish_blocked_reasons was non-empty. evaluatePublishGate
+// returns 'passed' only on an EMPTY reasons list, and apply_enrichment is the
+// only function in the database that can write enriched_data, so the value came
+// from outside the pipeline — an ad-hoc service-role UPDATE, which flipped the
+// commit gate open and published 87 off-topic PubMed/Nature abstracts.
+//
+// STAGING ONLY. On news_articles the same shape is legitimate: it is what
+// batch_approve_safe_news writes when a human approves despite the reasons, and
+// there are 5,930 such rows. A zero-invariant on the article column would fire
+// on every one of them.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/news_quality_verdict_signals`, {
+    method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: '{}',
+  })
+  if (!res.ok) {
+    // An absent sentinel and a clean corpus both produce silence. Say which.
+    console.warn(`⚠ news_quality_verdict_signals → HTTP ${res.status} (41000101100000 not applied?) — this check measured NOTHING`)
+  } else {
+    const sig = await res.json()
+    let sectionOk = true
+
+    // Positive control before either count: zero rows scanned, or an audit that
+    // no longer records this stage, makes both invariants trivially satisfied.
+    const scanned = Number(sig?.rows_scanned ?? 0)
+    const withAudit = Number(sig?.with_gate_audit ?? 0)
+    if (scanned === 0) {
+      console.error('✗ news_quality_verdict_signals scanned 0 staging rows — the invariants below are vacuous')
+      FAILED = true; sectionOk = false
+    } else if (withAudit === 0) {
+      console.error('✗ no news staging row has a quality-enhance audit verdict — the comparison has no left-hand side')
+      console.error('  Check that apply_enrichment still writes enrichment_audit with stage=\'quality-enhance\'.')
+      FAILED = true; sectionOk = false
+    } else if (Number(sig?.claiming_gate ?? 0) === 0) {
+      // Both invariants only look at rows claiming the LLM gate's own
+      // quality_pipeline_version, so that a DECLARED deterministic verdict
+      // (podcast-deterministic.v1) is not reported as an out-of-band flip. If
+      // nothing claims the gate's version any more, they are scoped to the empty
+      // set and would report a clean zero forever.
+      console.error("✗ no news staging row claims quality_pipeline_version 'news-quality.2026.04.27.0' — both invariants are scoped to nothing")
+      console.error('  The gate version was probably bumped; update the sentinel to match.')
+      FAILED = true; sectionOk = false
+    }
+
+    const overwritten = Number(sig?.verdict_overwritten ?? 0)
+    if (overwritten > 0) {
+      console.error(`✗ ${overwritten} news staging rows carry a quality_status the gate never issued (disagrees with enrichment_audit)`)
+      console.error('  Only apply_enrichment can write enriched_data, so this is a writer outside the pipeline.')
+      console.error('  A flip to \'passed\' opens the commit gate: these rows publish without a verdict.')
+      FAILED = true; sectionOk = false
+    }
+    const contradictory = Number(sig?.passed_with_blocked_reasons ?? 0)
+    if (contradictory > 0) {
+      console.error(`✗ ${contradictory} news staging rows say quality_status='passed' while carrying auto_publish_blocked_reasons`)
+      console.error('  evaluatePublishGate returns \'passed\' only when blockedReasons is empty — self-contradictory by construction.')
+      FAILED = true; sectionOk = false
+    }
+
+    // Advisory: the staging row outlived its audit rows (ingestion_staging_retention
+    // is 90 days and cascades), or predates stage-level auditing. Unverifiable,
+    // not wrong — and it bounds how far back the two invariants can see.
+    const blind = Number(sig?.unverifiable_no_audit ?? 0)
+    if (blind > 0) {
+      console.log(`  ${blind} news staging rows have no quality-enhance audit row (aged out under 90-day retention) — outside this check's reach`)
+    }
+    if (sectionOk) {
+      console.log(`✓ news quality verdicts agree with enrichment_audit (${withAudit}/${scanned} verifiable)`)
+    }
+  }
+}
+
 // ---------------------------------------------------------------------------
 // §  Inline glossary links in body prose
 // ---------------------------------------------------------------------------
