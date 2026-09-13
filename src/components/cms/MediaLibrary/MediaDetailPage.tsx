@@ -167,6 +167,8 @@ export function MediaDetailPage() {
             </Button>
 
             <Button
+              aria-label="Star this asset"
+              aria-pressed={!!detail.starred}
               variant="ghost"
               size="sm"
               onClick={() => mutations.toggleStar.mutate(detail as UnifiedMediaItem)}
@@ -448,6 +450,7 @@ export function MediaDetailPage() {
                   <span className="flex items-center gap-1 font-mono text-xs">
                     {detail.phash.slice(0, 16)}
                     <Button
+                      aria-label="Copy perceptual hash"
                       variant="ghost"
                       size="sm"
                       onClick={() => copyToClipboard(detail.phash!)}
@@ -463,6 +466,7 @@ export function MediaDetailPage() {
                   <span className="flex items-center gap-1 font-mono text-xs">
                     {detail.content_hash.slice(0, 16)}
                     <Button
+                      aria-label="Copy content hash"
                       variant="ghost"
                       size="sm"
                       onClick={() => copyToClipboard(detail.content_hash!)}
@@ -477,7 +481,12 @@ export function MediaDetailPage() {
                   <span className="text-muted-foreground">URL</span>
                   <span className="flex items-center gap-1 font-mono text-xs max-w-md truncate">
                     {detail.url}
-                    <Button variant="ghost" size="sm" onClick={() => copyToClipboard(detail.url!)}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard(detail.url!)}
+                      aria-label="Copy asset URL"
+                    >
                       <Copy size={12} />
                     </Button>
                   </span>
