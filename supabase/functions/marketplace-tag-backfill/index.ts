@@ -32,10 +32,16 @@ import {
   type AttributeKind,
 } from '../_shared/marketplace-normalize.ts'
 import { extractMarketplaceTagsFromText } from '../_shared/ai-enrichment.ts'
+import { loadReviewQueueGuard } from '../_shared/review-queue-guard.ts'
 
 const STEP = 'marketplace-tag-backfill'
 const AUTO_APPLY_CONFIDENCE = 0.8
 const TIER2_APPLY_CONFIDENCE = 0.7
+
+// The only field this function review-gates, and the only one this queue has ever held.
+// Named rather than inlined so the pre-select, the insert and the skip key cannot drift
+// apart — the unscoped delete this replaced is what that drift looks like.
+const GATED_FIELD = 'subcategory'
 
 const DEPARTMENT_SLUGS = [
   'sex_toys', 'anal_toys', 'cock_rings_and_stretchers', 'pumps_and_enlargement', 'chastity',
@@ -134,7 +140,38 @@ Deno.serve(async (req: Request) => {
   }
 
   let retyped = 0, attrsAdded = 0, gated = 0, relevanceUpdated = 0
+  let queued = 0, queueSkipped = 0, queueRejected = 0, queueErrors = 0
   const results: Array<Record<string, unknown>> = []
+
+  // Listings already awaiting a decision on this field, read ONCE per run.
+  //
+  // This replaces a delete-then-insert whose delete was ALSO unscoped — it matched on
+  // (listing_id, status='open') with no `.eq('field', …)`, so it removed every open row
+  // for the listing whatever field it belonged to. That is latent rather than active
+  // (measured: `subcategory` is the only field this queue has ever held, 1,431 of 1,431
+  // rows) but it is a defect waiting for the first writer that queues a second field.
+  //
+  // A failed read must not be indistinguishable from "nothing is queued" — that is the
+  // same defect one layer down — so the set stays NULL rather than becoming an empty Set
+  // and uq_erq_open decides instead.
+  const guard = await loadReviewQueueGuard(supabase, {
+    view: 'marketplace_review_queue',
+    idColumn: 'listing_id',
+    fields: [GATED_FIELD],
+    ids: listings.map((l) => l.id),
+  })
+
+  // queue_* keys are omitted when zero so their presence carries meaning. This function
+  // writes no admin_automation_runs row of its own — the cron posts through
+  // automation_http_post, which files the RESPONSE BODY against the run — so the response
+  // is the only place these counters can surface.
+  const queueSummary = () => ({
+    ...(queued ? { queued } : {}),
+    ...(queueSkipped ? { queue_skipped: queueSkipped } : {}),
+    ...(queueRejected ? { queue_rejected_before: queueRejected } : {}),
+    ...(queueErrors ? { queue_errors: queueErrors } : {}),
+    ...(guard.precheckFailed ? { queue_precheck_failed: true } : {}),
+  })
 
   for (const l of listings) {
     const started = Date.now()
@@ -200,7 +237,7 @@ Deno.serve(async (req: Request) => {
             }))
         } catch (e) {
           if (e instanceof CircuitOpenError) {
-            return jsonResponse({ processed: results.length, retyped, attrs_added: attrsAdded, gated, circuit_open: true, results }, 200, req)
+            return jsonResponse({ processed: results.length, retyped, attrs_added: attrsAdded, gated, ...queueSummary(), circuit_open: true, results }, 200, req)
           }
           throw e
         }
@@ -249,13 +286,41 @@ Deno.serve(async (req: Request) => {
           if (!aErr) attrsAdded += assignments.length
         }
 
-        // Review-gate rating downgrades (one open row per listing — replace).
+        // Review-gate rating downgrades, skip-if-open. Nothing here deletes: a proposal
+        // leaves this queue only by being approved or rejected.
+        //
+        // If our evidence changed while a row is open, the OPEN row wins until someone
+        // acts on it. That is the safe direction for this particular gate — the proposal
+        // is always a content-rating DOWNGRADE, so leaving it pending keeps the listing at
+        // its current, stricter rating rather than re-opening the question.
         for (const g of gatedProposals) {
-          await supabase.from('marketplace_review_queue').delete().eq('listing_id', l.id).eq('status', 'open')
-          await supabase.from('marketplace_review_queue').insert({
-            listing_id: l.id, field: 'subcategory', proposed_value: g.value,
+          // `rejected` is the treadmill stop: this exact proposal was already refused,
+          // and nothing about the listing changed, so re-offering it just burns another
+          // review cycle. A CHANGED proposal is not suppressed.
+          const block = guard.blocked(l.id, GATED_FIELD, g.value)
+          if (block === 'open') { queueSkipped++; continue }
+          if (block === 'rejected') { queueRejected++; continue }
+          const { error: insErr } = await supabase.from('marketplace_review_queue').insert({
+            listing_id: l.id, field: GATED_FIELD, proposed_value: g.value,
             citations: g.cite, confidence: g.confidence, model: g.model, status: 'open',
-          }).then(() => {}, () => {})
+          })
+          if (!insErr) {
+            queued++
+            // Tiers 1/2 and tier 3 are mutually exclusive by construction (`thinDept`
+            // requires the tier-1/2 candidate to be null), so this array holds at most one
+            // entry today. Recording the insert anyway means a future second proposal
+            // cannot double-insert instead of being recognised as a duplicate.
+            guard.markQueued(l.id, GATED_FIELD)
+          } else if (insErr.code === '23505') {
+            // uq_erq_open refused a second open row: the database enforcing the invariant
+            // the pre-select could not see. Same outcome as a skip, not a fault.
+            queueSkipped++
+          } else {
+            // Previously `.then(() => {}, () => {})` swallowed this, so a duplicate, a
+            // genuine write failure and a success were the same silence.
+            queueErrors++
+            console.warn(`marketplace_review_queue insert ${l.id}: ${insErr.message}`)
+          }
         }
       } else if (assignments.length) {
         attrsAdded += assignments.length
@@ -283,6 +348,6 @@ Deno.serve(async (req: Request) => {
 
   return jsonResponse({
     processed: listings.length, retyped, attrs_added: attrsAdded, gated,
-    relevance_updated: relevanceUpdated, dry_run: dryRun, sources, results,
+    relevance_updated: relevanceUpdated, ...queueSummary(), dry_run: dryRun, sources, results,
   }, 200, req)
 })

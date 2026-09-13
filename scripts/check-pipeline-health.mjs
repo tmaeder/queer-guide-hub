@@ -356,6 +356,71 @@ if (!hygieneRes.ok) {
   }
 }
 
+// 4a-bis. Staging rows the DAG structurally cannot see (2026-09-13).
+//
+//     A row inserted into ingestion_staging outside a DAG run carries
+//     pipeline_run_id IS NULL, and validate/deduplicate/review-gate/commit all
+//     filter `.eq('pipeline_run_id', <run>)` when the executor passes one.
+//     `.eq()` never matches NULL, so those four stages are blind to it;
+//     quality-score is the lone stage without the filter. Measured: 929
+//     personality rows sat pending for 24 days with ZERO ingestion_events while
+//     the nightly personality-ingestion DAG reported completed /
+//     items_succeeded=979 every night.
+//
+//     stale_pending_by_entity SAW those 929 the whole time and could not
+//     surface them: the thresholds above fail at 5,000 for one entity or 10,000
+//     total and warn at 3,500 — a bar the news backlog keeps permanently lit, so
+//     the nightly warning carried no actionable signal. Same shape as the 14
+//     stranded_human_approved rows that hid under that floor for 40 days.
+//
+//     So this measures a STRUCTURAL property, not a depth: are there stale
+//     orphans, and has ANY of them advanced a stage in 24h? A backlog with a
+//     working dual-mode drain is throughput and only warns; a backlog with no
+//     consumer at all is the bug and hard-fails. The evidence is
+//     ingestion_events, NOT ingestion_staging.updated_at — the 2026-09-13
+//     visibility repair touched all 929 rows, so updated_at reads "recently
+//     touched" for a cohort nothing has ever processed.
+//
+//     Not folded into stale_pending_by_entity's thresholds, and top level on
+//     purpose (see the gaycities block above — nesting a check inside another
+//     probe's else-block lets an unrelated outage skip it silently).
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/staging_orphan_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    console.warn(`⚠ staging_orphan_signals → HTTP ${res.status} (RPC missing? migration 50000101100000)`)
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else {
+    const sig = (await res.json()) ?? {}
+    // An absent key must never read as a clean corpus.
+    if (sig?.probe_ok !== true || !Array.isArray(sig?.unconsumed_targets)) {
+      console.error('✗ staging_orphan_signals returned no probe_ok/unconsumed_targets — the probe is broken')
+      FAILED = true
+    } else {
+      const counts = sig.orphan_rows_by_target ?? {}
+      const ages = sig.oldest_orphan_days ?? {}
+      if (sig.unconsumed_targets.length > 0) {
+        const detail = sig.unconsumed_targets
+          .map((t) => `${t}=${counts[t] ?? '?'} rows, oldest ${ages[t] ?? '?'}d`)
+          .join('; ')
+        console.error(`✗ Staging orphans with NO consumer: ${detail}`)
+        console.error('  These rows have pipeline_run_id IS NULL, so the DAG cannot see them, AND')
+        console.error('  not one advanced a stage in 24h — no dual-mode drain is running for them.')
+        console.error('  Fix: register+enable <entity>_drain_{validate,dedup,review,commit} the way')
+        console.error('  ev_drain_*/vn_drain_*/mp_drain_* already are. Do NOT raise a depth threshold.')
+        FAILED = true
+      } else if (Object.keys(counts).length > 0) {
+        console.warn(`⚠ Staging orphans draining: ${JSON.stringify(counts)} (a drain IS advancing them)`)
+      } else {
+        console.log('✓ Staging orphans with no consumer: 0')
+      }
+    }
+  }
+}
+
 // 4b. Event dedup health (2027-05-02). There was no check here at all: the dedup
 //     section above is city-only, so the event auto arms matched ZERO pairs for
 //     eleven days — nightly sweep green, consecutive_failures=0, 645 merges then
@@ -486,6 +551,65 @@ if (!hygieneRes.ok) {
         )
       }
       if (rows.length === 0) console.log('✓ No city contradicts its own content\'s country')
+    }
+  }
+}
+
+// 4b-bis. The same question asked of the COORDINATES rather than the content
+//     (2026-09-13). The check above derives a city's true country from its events,
+//     so a row with no events can never contradict itself — and that is precisely
+//     the cohort that was wrong: 27 content-less `personality-birth-place` /
+//     `*-city-match` shells, one of which filed Concord, North Carolina under the
+//     Czech Republic with a Europe/Prague timezone. `geo_boundaries` holds 258
+//     country polygons and can adjudicate a row with no children at all.
+//
+//     ONLY `conflict_%` VERDICTS ARE ACTIONABLE. The raw "polygon disagrees" test
+//     reports 50 rows of which 23 are false positives, and every one of the six
+//     `seo_indexable` ones is a false positive: dependent territories with no
+//     polygon of their own (Réunion, Martinique) and border-precision artifacts
+//     (Gibraltar 0.4 km, Podčetrtek 0.7, Siebengewald 1.3, Niagara Falls 0.1).
+//     Those land as `abstain_%` and must never be "fixed" — the function's own
+//     comment says so. Reporting them here would train the reader to ignore it.
+//
+//     WARN, not fail: the three known survivors (Concord, and the Lyss / Martigny
+//     same-town pairs) are recorded decisions that cannot be repaired by moving a
+//     country — `uk_cities_country_name_active` forbids it — so hard-failing would
+//     be permanently red on a state a human already dispositioned.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/city_country_polygon_conflicts`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ p_min_km: 50 }),
+  })
+  if (!res.ok) {
+    console.warn(`⚠ city_country_polygon_conflicts → HTTP ${res.status} (RPC missing? migration 50000501100000)`)
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else {
+    const rows = (await res.json()) ?? []
+    if (!Array.isArray(rows)) {
+      console.error('✗ city_country_polygon_conflicts returned a non-array — the probe is broken')
+      FAILED = true
+    } else {
+      const actionable = rows.filter((r) => String(r.verdict ?? '').startsWith('conflict'))
+      const abstained = rows.filter((r) => String(r.verdict ?? '').startsWith('abstain'))
+      // A detector that abstains on nothing has been widened into the sweep this
+      // exists to prevent. Absence of abstentions is a fault, not a clean corpus.
+      if (rows.length > 0 && abstained.length === 0) {
+        console.error('✗ city_country_polygon_conflicts reported no abstentions at all —')
+        console.error('  the dependent-territory / border guards are not firing. Do NOT act on its output.')
+        FAILED = true
+      }
+      for (const r of actionable) {
+        console.warn(
+          `⚠ ${r.city_name} (${r.city_slug}) filed ${r.stored_code}, coordinates fall in ` +
+          `${r.polygon_code}, ${r.km_to_stored} km from ${r.stored_code} [${r.verdict}]`,
+        )
+      }
+      if (actionable.length === 0) {
+        console.log(`✓ No city coordinate contradicts its country (${abstained.length} abstentions preserved)`)
+      } else {
+        console.warn(`  ${actionable.length} actionable; repair via apply_city_country_repair, never a bare UPDATE`)
+      }
     }
   }
 }
@@ -1836,20 +1960,26 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
       // fails: the news quality gate legitimately rejects some episodes, and
       // this number moves with the corpus.
       //
-      // THE HINT NAMES BOTH STAGES ON PURPOSE. A first version pointed only at
-      // pipeline-validate, and within hours of the parser fix that was the
-      // wrong half: validate went to 0 rejections while the rate FELL to 1%,
-      // because 4,045 news rows (759 podcasts + 3,286 articles, oldest
-      // 2026-07-14) sit at disposition='pending' having already passed
-      // validate, dedup and auto-approval. Commit runs every hour and looks
-      // healthy at 6-13 rows/hour; the parser fix raised podcast inflow to
-      // ~175/hour, so the shortfall is throughput, not rejection. A low rate
-      // here has two very different causes and the reader needs both.
+      // THE HINT HAS BEEN WRONG TWICE AND THIS IS THE MEASURED ANSWER.
+      //
+      // v1 said "check pipeline-validate rejection reasons". Within hours of
+      // the parser fix that was the wrong half: validate went to 0 rejections
+      // while the rate FELL to 1%.
+      //
+      // v2 said the backlog was commit throughput. Also wrong — the rows were
+      // never commit-eligible. `news_commit_staging_batch` requires a quality
+      // verdict (the 20260902 gate), and the backlog had none: 2,103
+      // content-less stubs, 1,500 already judged 'rejected'/'review', and the
+      // rest simply unjudged. Commit was doing exactly what it should.
+      //
+      // The real ceiling is the VERDICT stage. pipeline-enrich-news runs hourly
+      // at batch_size 20 = 480/day, against podcast inflow of ~4,200/day.
+      // news_enrichment_signals() below is the check that actually sees this.
       console.log(
         pct < 40
-          ? `${line} — LOW. Check BOTH: pipeline-validate rejection reasons, and the` +
-            ` disposition='pending' backlog that has already passed validate+dedup` +
-            ` (commit throughput, not rejection).`
+          ? `${line} — LOW. The usual cause is the VERDICT stage, not commit:` +
+            ` see the enrichment section below (awaiting_verdict / oldest).` +
+            ` Rule out pipeline-validate rejections second.`
           : line,
       )
     } else {
@@ -1940,6 +2070,93 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
     }
     if (sectionOk) {
       console.log(`✓ news quality verdicts agree with enrichment_audit (${withAudit}/${scanned} verifiable)`)
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// §  News enrichment: the verdict stage, which is where news rows actually die
+// ---------------------------------------------------------------------------
+//
+// A news row cannot commit without a quality verdict — news_commit_staging_batch
+// has required one since 20260902, because 346 UNJUDGED articles had published
+// indexable and nothing revisited them. That gate is correct.
+//
+// The verdict comes from pipeline-enrich-news, and it starved for four months
+// with EVERY EXISTING SIGNAL GREEN: the cron ran every hour on schedule, every
+// circuit breaker was closed with failure_count 0, llm_budget showed headroom
+// (159 of 600 spent), and `disposition='pending'` reads as "in flight".
+// pipeline_hygiene_stats().stale_pending_by_entity warns at 3,500 rows per
+// target_table and this sat at ~2,300 — UNDER the floor, for months.
+//
+// Nothing was broken. The stage ran 480 times a day against ~4,200 rows of
+// inflow, and nothing anywhere compared those two numbers. So this section
+// compares them, and reports the AGE of the head of the queue — because a deep
+// queue that drains in hours is a legitimate import and a shallow one that
+// never drains is not, and depth alone cannot tell them apart.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/news_enrichment_signals`, {
+    method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: '{}',
+  })
+  if (!res.ok) {
+    console.warn(`⚠ news_enrichment_signals → HTTP ${res.status} (50000301100200 not applied?) — this check measured NOTHING`)
+  } else {
+    const sig = await res.json()
+    let sectionOk = true
+
+    for (const k of ['staged_24h', 'verdicts_24h', 'awaiting_verdict', 'oldest_awaiting_verdict_hours']) {
+      if (!(k in sig)) {
+        console.error(`✗ news_enrichment_signals is missing the key \`${k}\` — that part of this check measured NOTHING`)
+        FAILED = true; sectionOk = false
+      }
+    }
+
+    // AGE, not depth. 72h is three full days at the head of the queue: well
+    // past any legitimate import, and far short of the four months this ran.
+    const oldestH = Number(sig?.oldest_awaiting_verdict_hours ?? 0)
+    const awaiting = Number(sig?.awaiting_verdict ?? 0)
+    if (oldestH > 72 && awaiting > 0) {
+      console.error(`✗ the oldest news row awaiting a quality verdict is ${oldestH}h old (${awaiting} waiting)`)
+      console.error('  Without a verdict a row can never commit. Check pipeline-enrich-news throughput vs inflow.')
+      FAILED = true; sectionOk = false
+    }
+
+    // CAPACITY vs INFLOW, as a pair. This is the comparison nothing was making.
+    const staged = Number(sig?.staged_24h ?? 0)
+    const verdicts = Number(sig?.verdicts_24h ?? 0)
+    if (staged > 0) {
+      const line = `  verdict capacity: ${verdicts} verdicts / ${staged} rows staged in 24h`
+      console.log(verdicts < staged / 2
+        ? `${line} — the verdict stage is running at under half of inflow; the queue grows`
+        : line)
+    }
+
+    // A failed enrichment is terminal by default — nothing re-examines it, so
+    // a row with real content parked here is lost, not queued.
+    const failedWithContent = Number(sig?.failed_with_content ?? 0)
+    if (failedWithContent > 0) {
+      console.log(`  ${failedWithContent} rows with real content are parked at enrichment_status='failed' (terminal; nothing retries them)`)
+    }
+
+    // An error message is a record of the past, not a property of the row:
+    // news_fulltext_backfill fills content in AFTER a "content-less" failure.
+    const staleLabel = Number(sig?.stale_failure_label ?? 0)
+    if (staleLabel > 0) {
+      console.error(`✗ ${staleLabel} rows are labelled "content-less stub" but now carry real content`)
+      console.error('  news_fulltext_backfill healed them after the failure and nothing re-queued them.')
+      FAILED = true; sectionOk = false
+    }
+
+    // Podcasts have a deterministic verdict path and should never queue here.
+    const podcastsWaiting = Number(sig?.podcasts_awaiting_verdict ?? 0)
+    if (podcastsWaiting > 200) {
+      console.error(`✗ ${podcastsWaiting} podcast episodes are awaiting a quality verdict`)
+      console.error('  run_podcast_deterministic_verdict should clear these without an LLM — is its cron running?')
+      FAILED = true; sectionOk = false
+    }
+
+    if (sectionOk) {
+      console.log('✓ news rows are getting quality verdicts and the queue is draining')
     }
   }
 }
