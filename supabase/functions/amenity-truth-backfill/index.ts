@@ -26,6 +26,13 @@ const STEP = 'amenity-truth-backfill'                  // enrichment_log step (h
 const AUTOMATION_SLUG = 'amenity_truth_backfill'        // admin_automations slug (underscore)
 const AUTO_APPLY_CONFIDENCE = 0.8
 
+// The fields this function ever review-gates. Used to scope the open-queue pre-select
+// below; other writers queue other fields on the same venues and are none of our
+// business. A field added to the gated set but not to this list degrades safely — the
+// pre-select misses it, the insert is refused by uq_erq_open, and the existing open row
+// survives — but it is then counted as a skip rather than recognised as one.
+const GATED_FIELDS = ['accessibility_attributes', 'accessibility_notes'] as const
+
 type Source = 'extract' | 'places' | 'llm'
 
 // Google Places v1 boolean field -> { kind, slug }. The wheelchair booleans live
@@ -177,8 +184,41 @@ Deno.serve(async (req: Request) => {
   const amenitySlugs = [...vocab.amenity]
   const accessibilitySlugs = [...vocab.accessibility]
 
-  let cleaned = 0, filled = 0, gated = 0
+  let cleaned = 0, filled = 0, gated = 0, queued = 0, queueSkipped = 0, queueErrors = 0
   const results: Array<Record<string, unknown>> = []
+
+  // Fields already awaiting a human. `uq_erq_open` is a PARTIAL unique index on
+  // (entity_type, entity_id, field) WHERE status='open', which ON CONFLICT inference
+  // cannot target from PostgREST — so idempotency is enforced here instead, which also
+  // saves re-proposing a venue someone is already reviewing. Rejected and approved rows
+  // are not 'open', so they are never re-suggested.
+  //
+  // This replaces a delete-then-insert: the old shape destroyed the open row and wrote a
+  // fresh one on every visit, so the exact text a reviewer was reading vanished with no
+  // tombstone in the queue and no copy anywhere else — a gated proposal gets NO
+  // `venue_field_provenance` row, so the queue row is its only copy.
+  //
+  // One query per run, not per venue. Read even on a dry run, so a dry run reports the
+  // same queued/skipped split a real run would produce.
+  let alreadyQueued: Set<string> | null = null
+  let queuePrecheckFailed = false
+  if (wantLlm) {
+    const { data: openRows, error: openErr } = await supabase
+      .from('venue_review_queue')
+      .select('venue_id, field')
+      .eq('status', 'open')
+      .in('field', [...GATED_FIELDS])
+      .in('venue_id', venues.map((v) => v.id))
+    if (openErr) {
+      // A failed read must not read as "nothing is queued" — that is the defect this
+      // fix removes, one layer down. Recorded, and the insert below then relies on
+      // uq_erq_open to refuse the duplicate, which leaves the existing row intact.
+      queuePrecheckFailed = true
+      console.warn(`open-queue precheck failed: ${openErr.message}`)
+    } else {
+      alreadyQueued = new Set((openRows ?? []).map((r) => `${r.venue_id}:${r.field}`))
+    }
+  }
 
   for (const v of venues) {
     const started = Date.now()
@@ -244,6 +284,11 @@ Deno.serve(async (req: Request) => {
         }
       }
 
+      // Classified BEFORE the write branch so a dry run reports the same split.
+      const toQueue = gatedProposals.filter((g) => !alreadyQueued?.has(`${v.id}:${g.field}`))
+      const alreadyOpen = gatedProposals.filter((g) => alreadyQueued?.has(`${v.id}:${g.field}`))
+      queueSkipped += alreadyOpen.length
+
       const droppedCount = ex.dropped.length
       const amenitiesChanged = JSON.stringify(nextAmenities) !== JSON.stringify((v.amenities ?? []).slice().sort())
       const accessibilityChanged = JSON.stringify(nextAccessibility) !== JSON.stringify((v.accessibility_attributes ?? []).slice().sort())
@@ -267,13 +312,29 @@ Deno.serve(async (req: Request) => {
           }, { onConflict: 'venue_id,field,source' }).then(() => {}, () => {})
         }
 
-        // Review-gate LLM accessibility (delete-then-insert the single open row per field).
-        for (const g of gatedProposals) {
-          await supabase.from('venue_review_queue').delete().eq('venue_id', v.id).eq('field', g.field).eq('status', 'open')
-          await supabase.from('venue_review_queue').insert({
+        // Review-gate LLM accessibility. Skip-if-open: never touch a row a human may be
+        // reading. Nothing here deletes — a proposal leaves the queue only by being
+        // approved or rejected.
+        for (const g of toQueue) {
+          const { error: insErr } = await supabase.from('venue_review_queue').insert({
             venue_id: v.id, field: g.field, proposed_value: g.value,
             citations: g.cite, confidence: g.confidence, model: 'llm', status: 'open',
-          }).then(() => {}, () => {})
+          })
+          if (!insErr) {
+            queued++
+            // So a second proposal for the same (venue, field) in this run cannot
+            // double-insert, which the pre-select alone would not catch.
+            alreadyQueued?.add(`${v.id}:${g.field}`)
+          } else if (insErr.code === '23505') {
+            // uq_erq_open refused a second open row: the database enforcing the same
+            // invariant the pre-select could not see. Same outcome as a skip, not a fault.
+            queueSkipped++
+          } else {
+            // Previously `.then(() => {}, () => {})` swallowed this, so a genuine write
+            // failure and a successful queue were indistinguishable.
+            queueErrors++
+            console.warn(`venue_review_queue insert ${v.id}/${g.field}: ${insErr.message}`)
+          }
         }
 
         // Quality signal (bounded — one row per processed venue).
@@ -288,7 +349,12 @@ Deno.serve(async (req: Request) => {
       if (droppedCount > 0 || amenitiesChanged) cleaned++
       if (amenitiesChanged && nextAmenities.length > (v.amenities?.length ?? 0)) filled++
       if (gatedProposals.length) gated++
-      results.push({ id: v.id, name: v.name, amenities: nextAmenities.length, accessibility: nextAccessibility.length, dropped: droppedCount, gated: gatedProposals.map(g => g.field), accessibility_changed: accessibilityChanged })
+      results.push({
+        id: v.id, name: v.name, amenities: nextAmenities.length, accessibility: nextAccessibility.length,
+        dropped: droppedCount, gated: gatedProposals.map(g => g.field), accessibility_changed: accessibilityChanged,
+        ...(toQueue.length ? { queued: toQueue.map(g => g.field) } : {}),
+        ...(alreadyOpen.length ? { already_open: alreadyOpen.map(g => g.field) } : {}),
+      })
     } catch (e) {
       status = 'failed'
       results.push({ id: v.id, status: 'error', error: e instanceof Error ? e.message : String(e) })
@@ -296,10 +362,19 @@ Deno.serve(async (req: Request) => {
     await logStep(supabase, v.id, status, started, dryRun)
   }
 
-  if (!dryRun && !venueIds?.length) {
-    await recordRun(supabase, runStarted, { processed: venues.length, cleaned, filled, gated, sources, only_fillable: onlyFillable })
+  // queue_* keys are omitted when zero so their presence carries meaning, matching how
+  // the run summary already treats circuit_open.
+  const queueSummary = {
+    ...(queued ? { queued } : {}),
+    ...(queueSkipped ? { queue_skipped: queueSkipped } : {}),
+    ...(queueErrors ? { queue_errors: queueErrors } : {}),
+    ...(queuePrecheckFailed ? { queue_precheck_failed: true } : {}),
   }
-  return jsonResponse({ processed: venues.length, cleaned, filled, gated, dry_run: dryRun, sources, results }, 200, req)
+
+  if (!dryRun && !venueIds?.length) {
+    await recordRun(supabase, runStarted, { processed: venues.length, cleaned, filled, gated, ...queueSummary, sources, only_fillable: onlyFillable })
+  }
+  return jsonResponse({ processed: venues.length, cleaned, filled, gated, ...queueSummary, dry_run: dryRun, sources, results }, 200, req)
 })
 
 /** Write a run summary to admin_automation_runs so the admin panel can see real
