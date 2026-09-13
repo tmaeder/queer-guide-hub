@@ -165,6 +165,8 @@ export function MediaGrid(props: MediaGridProps) {
               {/* Hover overlay with star */}
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-between p-2">
                 <Button
+                  aria-label="Star this asset"
+                  aria-pressed={!!item.starred}
                   variant="ghost"
                   size="sm"
                   className="h-6 w-6 p-0"
@@ -261,6 +263,8 @@ export function MediaGrid(props: MediaGridProps) {
             )}
             {getOptimizationIcon(item.optimization_status)}
             <Button
+              aria-label="Star this asset"
+              aria-pressed={!!item.starred}
               variant="ghost"
               size="sm"
               className="h-6 w-6 p-0"

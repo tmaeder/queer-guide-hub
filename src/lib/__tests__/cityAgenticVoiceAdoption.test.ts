@@ -113,7 +113,19 @@ describe('city-agentic-enrich — the rollout lever', () => {
   });
 
   it('reports which arm ran in the response envelope', () => {
-    expect(city).toMatch(/jsonResponse\(\{[^}]*voice,/);
+    // Scoped to the FINAL envelope's own object, the sibling idiom above. This was
+    // `jsonResponse\(\{[^}]*voice,` — a proximity match that forbids ANY `}` before
+    // the key, so it broke the moment the envelope gained a conditional spread
+    // (`...(queueRejected ? { … } : {})`) while still reporting the arm correctly.
+    // A check that encodes one PHRASING of a condition fails on a rewrite that
+    // preserves the CONDITION; encode the condition.
+    const start = city.lastIndexOf('return jsonResponse({');
+    expect(start, 'the final response envelope moved or was renamed').toBeGreaterThan(-1);
+    const end = city.indexOf('}, 200, req)', start);
+    expect(end, 'could not find the end of the response envelope').toBeGreaterThan(start);
+    // Not `[\s\S]*?voice,` over the whole file: that reaches the `voice_profile: …
+    // ?? voice,` in the results push and stays green with the key deleted.
+    expect(city.slice(start, end)).toMatch(/(^|[\s,{])voice,/);
   });
 });
 

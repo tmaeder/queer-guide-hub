@@ -276,7 +276,16 @@ Deno.serve(async (req) => {
   // (entity_type, entity_id, field) WHERE status='open', which ON CONFLICT
   // inference cannot target from PostgREST — so idempotency is enforced here
   // instead, which also saves re-probing a profile someone is already
-  // reviewing. Rejected rows are not 'open', so they are never re-suggested.
+  // reviewing.
+  //
+  // This used to end "Rejected rows are not 'open', so they are never re-suggested."
+  // That is exactly BACKWARDS: `uq_erq_open` covers `status='open'` only, so a rejected
+  // row blocks nothing and the same proposal IS re-suggested on the next run. That is the
+  // treadmill `_shared/review-queue-guard.ts` was written to stop (marketplace: 126
+  // listings rejected more than once). This function is not wired to the guard yet — it
+  // reads the BASE table with an `entity_type` filter rather than a compat view, and it
+  // aborts the whole run on a failed read rather than degrading — and it has recorded
+  // ZERO rejections, so there is nothing here to churn yet. Wire it when either changes.
   const { data: openRows, error: openErr } = await supabase
     .from('entity_review_queue')
     .select('entity_id, field')
