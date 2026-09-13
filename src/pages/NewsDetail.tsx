@@ -4,6 +4,7 @@ import { useParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useSlugRedirect } from '@/hooks/useSlugRedirect';
 import { PodcastPlayer } from '@/components/news/PodcastPlayer';
+import { podcastEpisodeJsonLd } from '@/lib/podcastJsonLd';
 import { MilestonesForEntity } from '@/components/discovery/MilestonesForEntity';
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -119,26 +120,44 @@ export default function NewsDetail() {
     // this is falsy, which was silently un-gating seo_indexable=false rows on
     // the JS render pass. See newsArticleNoIndex for the polarity rule.
     noIndex: article ? newsArticleNoIndex(article.seo_indexable) : undefined,
+    // A podcast episode is not a NewsArticle. Emitting one with no audio in it
+    // meant nothing could ever surface these 8,000+ URLs as listenable.
     jsonLd: article
-      ? {
-          '@context': 'https://schema.org',
-          '@type': 'NewsArticle',
-          headline: articleTitle,
-          image: article.image_url ? [article.image_url] : undefined,
-          datePublished: article.published_at || undefined,
-          author: article.author
-            ? { '@type': 'Person', name: cleanAuthor(article.author) }
-            : undefined,
-          publisher: {
-            '@type': 'Organization',
-            name: 'Queer Guide',
-            logo: { '@type': 'ImageObject', url: 'https://queer.guide/icons/icon-192.png' },
-          },
-          mainEntityOfPage: {
-            '@type': 'WebPage',
-            '@id': `https://queer.guide/news/${slug}`,
-          },
-        }
+      ? article.media_type === 'podcast' && article.audio_url
+        ? podcastEpisodeJsonLd({
+            title: articleTitle ?? '',
+            // The route param, not a column: NewsArticleFull is the shape
+            // fetchNewsArticleBySlugOrId returns and does not carry `slug`.
+            slug: slug ?? '',
+            excerpt: article.excerpt,
+            imageUrl: article.image_url,
+            publishedAt: article.published_at,
+            audioUrl: article.audio_url,
+            // `sourceName` is destructured ~170 lines below this call. For a
+            // podcast the publisher IS the show, and the crawler path
+            // (functions/_lib/detail.ts) does the real news_sources lookup —
+            // this is the JS-render copy, which only needs a name.
+            showName: article.publisher_name,
+          })
+        : {
+            '@context': 'https://schema.org',
+            '@type': 'NewsArticle',
+            headline: articleTitle,
+            image: article.image_url ? [article.image_url] : undefined,
+            datePublished: article.published_at || undefined,
+            author: article.author
+              ? { '@type': 'Person', name: cleanAuthor(article.author) }
+              : undefined,
+            publisher: {
+              '@type': 'Organization',
+              name: 'Queer Guide',
+              logo: { '@type': 'ImageObject', url: 'https://queer.guide/icons/icon-192.png' },
+            },
+            mainEntityOfPage: {
+              '@type': 'WebPage',
+              '@id': `https://queer.guide/news/${slug}`,
+            },
+          }
       : undefined,
   });
 
@@ -149,7 +168,7 @@ export default function NewsDetail() {
     }
 
     let cancelled = false;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external data (slug-driven fetch); documented exemption from the eslint.config.js staged-ratchet plan.
+
     setLoading(true);
     setData(null);
 
@@ -513,9 +532,13 @@ export default function NewsDetail() {
           {article.media_type === 'podcast' && article.audio_url && (
             <div className="max-w-[68ch]">
               <PodcastPlayer
+                articleId={article.id}
                 audioUrl={article.audio_url}
                 title={cleanTitle(article.title)}
                 durationSeconds={article.duration_seconds}
+                showName={sourceName ?? null}
+                artwork={article.image_url ?? null}
+                href={slug ? `/news/${slug}` : null}
               />
             </div>
           )}

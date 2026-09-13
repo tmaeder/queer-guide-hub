@@ -14,7 +14,20 @@ import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { DatePickerWithRange } from '@/components/ui/date-range-picker';
 import { MultiCombobox, type MultiComboboxOption } from '@/components/events/MultiCombobox';
-import { X, Filter, MapPin, Calendar, Building, Globe, Map, TrendingUp, Tag, Languages, Headphones, SmilePlus } from 'lucide-react';
+import {
+  X,
+  Filter,
+  MapPin,
+  Calendar,
+  Building,
+  Globe,
+  Map,
+  TrendingUp,
+  Tag,
+  Languages,
+  Headphones,
+  SmilePlus,
+} from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 import type { DateRange } from 'react-day-picker';
 import { useToast } from '@/hooks/use-toast';
@@ -87,7 +100,7 @@ export const NewsFilters = ({
   categories = [],
 }: NewsFiltersProps) => {
   const { toast } = useToast();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [source, setSource] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedLanguage, setSelectedLanguage] = useState<string>('');
@@ -421,11 +434,10 @@ export const NewsFilters = ({
         <div className="flex items-center justify-between">
           <span className="flex items-center gap-2 text-sm font-medium">
             <Headphones size={16} />
-            Podcasts only
+            {t('podcasts.onlyToggle', 'Podcasts only')}
           </span>
           <Switch checked={podcastsOnly} onCheckedChange={handlePodcastsToggle} />
         </div>
-
 
         {/* Sentiment */}
         <div className="flex flex-col gap-2">
@@ -455,7 +467,9 @@ export const NewsFilters = ({
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">Min credibility</span>
-            <span className="text-xs text-muted-foreground">{trustScoreMin > 0 ? `≥${trustScoreMin}` : 'Any'}</span>
+            <span className="text-xs text-muted-foreground">
+              {trustScoreMin > 0 ? `≥${trustScoreMin}` : 'Any'}
+            </span>
           </div>
           <Slider
             min={0}
@@ -468,7 +482,6 @@ export const NewsFilters = ({
             }}
           />
         </div>
-
 
         {/* Category Filter */}
         {categories.length > 0 && (
@@ -534,7 +547,6 @@ export const NewsFilters = ({
             <p className="text-xs text-muted-foreground">Showing news relevant to your location</p>
           )}
         </div>
-
 
         {/* Countries Filter */}
         <div className="flex flex-col gap-4">
@@ -616,7 +628,6 @@ export const NewsFilters = ({
           )}
         </div>
 
-
         {/* Source Filter */}
         {sources.length > 0 && (
           <div className="flex flex-col gap-4">
@@ -662,24 +673,30 @@ export const NewsFilters = ({
             <span className="text-sm font-medium">Published Date</span>
           </div>
           <div className="flex flex-wrap gap-1">
-            {([['', 'Any'], ['today', 'Today'], ['week', 'Week'], ['month', 'Month'], ['year', 'Year']] as [string, string][]).map(
-              ([val, label]) => (
-                <Badge
-                  key={val || 'any'}
-                  variant={dateRange === val && !customDateRange ? 'default' : 'outline'}
-                  style={{ fontSize: '0.7rem', cursor: 'pointer' }}
-                  onClick={() => {
-                    const newVal = val;
-                    setDateRange(newVal);
-                    setCustomDateRange(undefined);
-                    setShowCustomDate(false);
-                    emitFilters({ dateRange: newVal, customDateRange: undefined });
-                  }}
-                >
-                  {label}
-                </Badge>
-              ),
-            )}
+            {(
+              [
+                ['', 'Any'],
+                ['today', 'Today'],
+                ['week', 'Week'],
+                ['month', 'Month'],
+                ['year', 'Year'],
+              ] as [string, string][]
+            ).map(([val, label]) => (
+              <Badge
+                key={val || 'any'}
+                variant={dateRange === val && !customDateRange ? 'default' : 'outline'}
+                style={{ fontSize: '0.7rem', cursor: 'pointer' }}
+                onClick={() => {
+                  const newVal = val;
+                  setDateRange(newVal);
+                  setCustomDateRange(undefined);
+                  setShowCustomDate(false);
+                  emitFilters({ dateRange: newVal, customDateRange: undefined });
+                }}
+              >
+                {label}
+              </Badge>
+            ))}
             <Badge
               variant={showCustomDate || customDateRange ? 'default' : 'outline'}
               style={{ fontSize: '0.7rem', cursor: 'pointer' }}

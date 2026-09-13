@@ -203,19 +203,42 @@ export async function mergeEntityPair(
   return (data as { audit_id?: string } | null)?.audit_id;
 }
 
+/**
+ * What an unmerge actually achieved.
+ *
+ * `reparentingRestored: false` means the flag was cleared but every child stayed on
+ * the survivor — the merge predates moved-row recording and cannot be fully undone.
+ * That case used to be indistinguishable from a real undo: every branch of
+ * `unmerge_entities` returned `{"undone": true}`, nine of ten returned
+ * `reparenting_restored: null`, and the console reported success regardless.
+ *
+ * `null` now means only "this RPC does not report it" (an older deployed function),
+ * never "not applicable".
+ */
+export type UnmergeOutcome = { undone: boolean; reparentingRestored: boolean | null };
+
+function readUnmergeOutcome(data: unknown): UnmergeOutcome {
+  const row = (data ?? {}) as { undone?: boolean; reparenting_restored?: boolean | null };
+  return {
+    undone: row.undone !== false,
+    reparentingRestored: row.reparenting_restored ?? null,
+  };
+}
+
 /** Reverse a merge by audit id for ANY dedup-enabled content type. */
-export async function unmergeEntity(typeKey: string, auditId: string): Promise<void> {
+export async function unmergeEntity(typeKey: string, auditId: string): Promise<UnmergeOutcome> {
   const cfg = dedupCfg(typeKey);
   if (cfg?.mergePath === 'venue') {
-    const { error } = await supabase.rpc('unmerge_venues', { p_audit_id: auditId });
+    const { data, error } = await supabase.rpc('unmerge_venues', { p_audit_id: auditId });
     if (error) throw error;
-    return;
+    return readUnmergeOutcome(data);
   }
   if (cfg?.mergePath === 'city') {
-    const { error } = await untypedRpc('unmerge_cities', { p_audit_id: auditId });
+    const { data, error } = await untypedRpc('unmerge_cities', { p_audit_id: auditId });
     if (error) throw error;
-    return;
+    return readUnmergeOutcome(data);
   }
-  const { error } = await untypedRpc('unmerge_entities', { p_audit_id: auditId });
+  const { data, error } = await untypedRpc('unmerge_entities', { p_audit_id: auditId });
   if (error) throw error;
+  return readUnmergeOutcome(data);
 }

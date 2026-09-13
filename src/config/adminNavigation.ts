@@ -59,7 +59,6 @@ import {
   Palette,
   SpellCheck,
   Award,
-  Trophy,
   CopyCheck,
   PenLine,
   UserPlus,
@@ -280,16 +279,6 @@ export const adminNavSections: AdminNavSection[] = [
         // Content's `editor` floor, so the page was reachable by users the queue
         // was hidden from.
         minRole: 'moderator',
-        group: 'People',
-      },
-      {
-        // Community content, not a system setting — it was in System only
-        // because nothing else claimed it.
-        id: 'recognition',
-        label: 'Recognition Wall',
-        icon: Trophy,
-        route: '/admin/recognition',
-        adminOnly: true,
         group: 'People',
       },
       // Editorial

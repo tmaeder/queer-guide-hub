@@ -91,7 +91,16 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
   }, [items, activeId]);
 
   const handleAction = useCallback(
-    (action: 'approve' | 'reject' | 'skip' | 'flag', notes?: string, cannedSlug?: string) => {
+    (
+      action: 'approve' | 'reject' | 'skip' | 'flag',
+      notes?: string,
+      cannedSlug?: string,
+      // Queue-specific extras. `triage_action` has accepted `p_payload` since
+      // 20260801050000 and `useTriageAction` has always had the parameter, but this
+      // handler dropped it — which is why dedup-review's canonical flip (`keep_id`)
+      // was reachable from SQL and from the hook and from no button anywhere.
+      payload?: Record<string, unknown>,
+    ) => {
       if (!activeItem) return;
 
       if (action === 'skip') {
@@ -106,6 +115,7 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
           action,
           notes,
           cannedSlug,
+          payload,
         },
         {
           onSuccess: () => {

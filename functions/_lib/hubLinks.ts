@@ -87,6 +87,19 @@ const HUBS: Record<string, HubSpec[]> = {
       heading: 'LGBTQ+ venues on Queer Guide',
     },
   ],
+  '/podcasts': [
+    {
+      table: 'news_sources',
+      labelColumn: 'name',
+      prefix: '/podcasts/',
+      // Copied verbatim from functions/sitemap-podcasts.xml.ts, per this file's
+      // rule that a hub's gate and its sitemap's gate are the same literal.
+      filter: 'slug=not.is.null&feed_type=eq.podcast&is_active=eq.true&episode_count=gt.0',
+      order: 'episode_count.desc.nullslast,slug.asc',
+      limit: 80,
+      heading: 'LGBTQ+ podcasts on Queer Guide',
+    },
+  ],
   '/events': [
     {
       table: 'events',

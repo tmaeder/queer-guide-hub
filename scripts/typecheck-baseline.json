@@ -1,6 +1,6 @@
 {
   "project": "tsconfig.app.json",
-  "total": 823,
+  "total": 822,
   "files": {
     "src/assets/intimate/pictograms.tsx": {
       "TS2503": 2
@@ -632,7 +632,6 @@
     },
     "src/hooks/useEventFilters.ts": {
       "TS2322": 1,
-      "TS2345": 1,
       "TS2367": 1
     },
     "src/hooks/useEventSocialSignals.ts": {

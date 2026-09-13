@@ -35,7 +35,6 @@ const legalLinks = [
   { href: '/terms', labelKey: 'footer.terms', fallback: 'Terms' },
   { href: '/legal', labelKey: 'footer.legalLink', fallback: 'Legal' },
   { href: '/accessibility', labelKey: 'header.legal.accessibility', fallback: 'Accessibility' },
-  { href: '/contributors', labelKey: 'footer.contributors', fallback: 'Contributors' },
   { href: '/about', labelKey: 'footer.about', fallback: 'About' },
   { href: '/contact', labelKey: 'footer.contact', fallback: 'Contact' },
   { href: '/donate', labelKey: 'footer.supportUs', fallback: 'Support Us' },

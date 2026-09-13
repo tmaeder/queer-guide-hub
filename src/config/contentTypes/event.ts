@@ -1,5 +1,7 @@
+import { createElement } from 'react';
 import { Calendar } from 'lucide-react';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
+import { EventProgrammePanel } from '@/components/admin/events/EventProgrammePanel';
 import { validateEvent } from '@/utils/contentValidation';
 import { EVENT_TYPE_OPTIONS } from '@/lib/eventTypes';
 
@@ -293,6 +295,19 @@ export const eventContentType: ContentTypeConfig = {
     },
   },
   merge: { column: 'duplicate_of_id', label: 'Merged' },
-  lifecycle: { type: 'event', archive: { column: 'status', value: 'cancelled', label: 'Cancelled' } },
+  lifecycle: {
+    type: 'event',
+    archive: { column: 'status', value: 'cancelled', label: 'Cancelled' },
+  },
   publicPath: (row) => (row.slug ? `/events/${row.slug}` : null),
+  // `parent_event_id` is deliberately NOT a field: attaching a child is a search over
+  // other events, not a uuid an editor types. It lives in a panel, the same extension
+  // point guide picks and sections use.
+  extraPanels: [
+    {
+      id: 'programme',
+      label: 'Programme',
+      render: (contentId: string) => createElement(EventProgrammePanel, { eventId: contentId }),
+    },
+  ],
 };

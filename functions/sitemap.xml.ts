@@ -25,6 +25,7 @@ export const onRequest: PagesFunction<Env> = async () => {
     { loc: `${ORIGIN}/sitemap-static.xml`, lastmod },
     { loc: `${ORIGIN}/sitemap-landings.xml`, lastmod },
     { loc: `${ORIGIN}/sitemap-news.xml`, lastmod },
+    { loc: `${ORIGIN}/sitemap-podcasts.xml`, lastmod },
     { loc: `${ORIGIN}/sitemap-events.xml`, lastmod },
     { loc: `${ORIGIN}/sitemap-venues.xml`, lastmod },
     { loc: `${ORIGIN}/sitemap-hotels.xml`, lastmod },

@@ -271,7 +271,6 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
 
   // ── H · Registry ──────────────────────────────────────────────────────
   { path: 'automation', archetype: 'H', title: 'Automations', adopted: true },
-  { path: 'recognition', archetype: 'H', title: 'Recognition', adopted: true },
   {
     path: 'email-templates',
     archetype: 'H',
