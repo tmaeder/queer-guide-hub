@@ -332,7 +332,7 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
             </SelectItem>
             <SelectItem value="private">
               <div className="flex items-center gap-2">
-                <EyeOff size={14} style={{ color: 'hsl(var(--foreground) / 0.55)' }} />
+                <EyeOff size={14} style={{ color: 'hsl(var(--muted-foreground))' }} />
                 <span>Private</span>
               </div>
             </SelectItem>
