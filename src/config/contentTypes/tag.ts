@@ -111,4 +111,12 @@ export const unifiedTagsContentType: ContentTypeConfig = {
       render: (contentId: string) => createElement(TagMedicalCodesSection, { tagId: contentId }),
     },
   ],
+  // The route param is named `tagName`, but TagDetail lowercases it and
+  // `fetchTagWithCategories` resolves it against `slug` (name is only a
+  // fallback for old links), so the canonical URL is the slug. A non-active
+  // tag has no page at all — that query filters `status = 'active'`.
+  publicPath: (row) =>
+    row.slug && row.status === 'active'
+      ? `/tags/${encodeURIComponent(String(row.slug).toLowerCase())}`
+      : null,
 };
