@@ -3,7 +3,12 @@ import { useNavigate } from 'react-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { useToast } from '@/hooks/use-toast';
-import { roleAtLeast, type AdminRole, type EffectiveRole } from '@/config/adminRoles';
+import {
+  computeEffectiveRole,
+  roleAtLeast,
+  type AdminRole,
+  type EffectiveRole,
+} from '@/config/adminRoles';
 
 interface AdminRouteGuardProps {
   children: React.ReactNode;
@@ -23,15 +28,14 @@ export function AdminRouteGuard({
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const effectiveRole: EffectiveRole = isAdmin
-    ? 'admin'
-    : isModerator
-      ? 'moderator'
-      : isEditor
-        ? 'editor'
-        : user
-          ? 'viewer'
-          : 'none';
+  // Shared ladder, not a local copy — see computeEffectiveRole's docblock for
+  // why `hasGranularPermissions` is false here and what that costs.
+  const effectiveRole: EffectiveRole = computeEffectiveRole({
+    isAdmin,
+    isModerator,
+    isEditor,
+    isAuthenticated: Boolean(user),
+  });
 
   // Once we've validated access we keep rendering children even if a
   // background refresh re-flips loading flags (e.g. Supabase fires
@@ -66,22 +70,12 @@ export function AdminRouteGuard({
       navigate(fallbackPath);
       return;
     }
-  }, [
-    user,
-    effectiveRole,
-    authLoading,
-    rolesLoading,
-    requiredRole,
-    fallbackPath,
-    navigate,
-    toast,
-  ]);
+  }, [user, effectiveRole, authLoading, rolesLoading, requiredRole, fallbackPath, navigate, toast]);
 
   const hasPermission = roleAtLeast(effectiveRole, requiredRole);
   const stillResolving = authLoading || rolesLoading;
   const accessGranted = !!user && hasPermission;
 
-   
   if (accessGranted && !stillResolving) {
     // eslint-disable-next-line react-hooks/refs -- see above.
     hasValidatedRef.current = true;

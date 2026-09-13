@@ -16,6 +16,10 @@ import {
   AnalyticsZeroResult,
 } from '@/hooks/useSearchIntelligence';
 import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
+import {
+  AdminSimpleTable,
+  type AdminSimpleColumn,
+} from '@/components/admin/primitives/AdminSimpleTable';
 
 const RANGES: Array<{ value: string; label: string }> = [
   { value: '24h', label: 'Last 24h' },
@@ -24,6 +28,56 @@ const RANGES: Array<{ value: string; label: string }> = [
 ];
 
 const tnum = { fontFeatureSettings: '"tnum"' } as const;
+
+// The numeric cells carried their `style` on the <td>; a cell owns no style prop
+// here, so tabular figures and the over-budget colour move onto a span.
+const TOP_QUERY_COLUMNS: readonly AdminSimpleColumn<AnalyticsTopQuery>[] = [
+  {
+    key: 'query',
+    header: 'Query',
+    cellClassName: 'font-medium',
+    render: (q) => q.query_normalized,
+  },
+  {
+    key: 'n',
+    header: 'Count',
+    align: 'right',
+    render: (q) => <span style={tnum}>{q.n}</span>,
+  },
+  {
+    key: 'avg_results',
+    header: 'Avg results',
+    align: 'right',
+    render: (q) => <span style={tnum}>{q.avg_results}</span>,
+  },
+  {
+    key: 'avg_ms',
+    header: 'Avg ms',
+    align: 'right',
+    render: (q) => (
+      <span style={{ ...tnum, color: q.avg_ms > 1000 ? 'hsl(var(--destructive))' : undefined }}>
+        {q.avg_ms}
+      </span>
+    ),
+  },
+  {
+    key: 'zero_n',
+    header: 'Zero',
+    align: 'right',
+    render: (q) => (
+      <span style={{ ...tnum, color: q.zero_n > 0 ? 'hsl(var(--destructive))' : undefined }}>
+        {q.zero_n}
+      </span>
+    ),
+  },
+  {
+    key: 'lang',
+    header: 'Lang',
+    align: 'center',
+    cellClassName: 'text-xs uppercase text-muted-foreground',
+    render: (q) => q.lang,
+  },
+];
 
 function Kpi({
   label,
@@ -117,7 +171,11 @@ export function AnalyticsTab({ onAddSynonym }: { onAddSynonym?: (term: string) =
 
       {summary && (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          <Kpi label="Searches" value={String(summary.total)} sub={`${summary.distinct_q} distinct`} />
+          <Kpi
+            label="Searches"
+            value={String(summary.total)}
+            sub={`${summary.distinct_q} distinct`}
+          />
           <Kpi
             label="Zero-result"
             value={`${summary.zero_pct}%`}
@@ -130,7 +188,11 @@ export function AnalyticsTab({ onAddSynonym }: { onAddSynonym?: (term: string) =
             sub={summary.p50_ms != null ? `p50 ${summary.p50_ms}ms` : undefined}
             tone={summary.p95_ms != null && summary.p95_ms > 1000 ? 'warn' : undefined}
           />
-          <Kpi label="Rewritten" value={`${summary.rewrite_pct}%`} sub={`${summary.rewritten} via synonyms`} />
+          <Kpi
+            label="Rewritten"
+            value={`${summary.rewrite_pct}%`}
+            sub={`${summary.rewritten} via synonyms`}
+          />
           <Kpi label="CTR" value={`${summary.ctr_pct}%`} sub={`${summary.clicked} clicks logged`} />
           <Kpi
             label="Top language"
@@ -163,11 +225,18 @@ export function AnalyticsTab({ onAddSynonym }: { onAddSynonym?: (term: string) =
                       {z.lang}
                     </Badge>
                   )}
-                  <span className="text-xs text-muted-foreground min-w-[60px] text-right" style={tnum}>
+                  <span
+                    className="text-xs text-muted-foreground min-w-[60px] text-right"
+                    style={tnum}
+                  >
                     {z.n}×
                   </span>
                   {onAddSynonym && (
-                    <Button variant="outline" size="sm" onClick={() => onAddSynonym(z.query_normalized)}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onAddSynonym(z.query_normalized)}
+                    >
                       Add synonym
                     </Button>
                   )}
@@ -181,48 +250,15 @@ export function AnalyticsTab({ onAddSynonym }: { onAddSynonym?: (term: string) =
       <Card>
         <CardContent>
           <h6 className="text-lg font-semibold mb-4">Top queries</h6>
-          {busy && !top.length ? (
-            <AdminTextSkeleton lines={2} />
-          ) : top.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No queries in this window.</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left text-muted-foreground">
-                    <th className="font-medium py-2">Query</th>
-                    <th className="font-medium py-2 text-right">Count</th>
-                    <th className="font-medium py-2 text-right">Avg results</th>
-                    <th className="font-medium py-2 text-right">Avg ms</th>
-                    <th className="font-medium py-2 text-right">Zero</th>
-                    <th className="font-medium py-2 text-center">Lang</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y" style={{ borderColor: 'hsl(var(--border))' }}>
-                  {top.map((q) => (
-                    <tr key={q.query_normalized}>
-                      <td className="py-2 font-medium">{q.query_normalized}</td>
-                      <td className="py-2 text-right" style={tnum}>{q.n}</td>
-                      <td className="py-2 text-right" style={tnum}>{q.avg_results}</td>
-                      <td
-                        className="py-2 text-right"
-                        style={{ ...tnum, color: q.avg_ms > 1000 ? 'hsl(var(--destructive))' : undefined }}
-                      >
-                        {q.avg_ms}
-                      </td>
-                      <td
-                        className="py-2 text-right"
-                        style={{ ...tnum, color: q.zero_n > 0 ? 'hsl(var(--destructive))' : undefined }}
-                      >
-                        {q.zero_n}
-                      </td>
-                      <td className="py-2 text-center text-xs uppercase text-muted-foreground">{q.lang}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+          <AdminSimpleTable
+            caption="Top search queries"
+            columns={TOP_QUERY_COLUMNS}
+            rows={top}
+            rowKey={(q) => q.query_normalized}
+            isLoading={busy && !top.length}
+            emptyNoun="queries"
+            emptyDescription="Nothing in this window."
+          />
         </CardContent>
       </Card>
     </div>
