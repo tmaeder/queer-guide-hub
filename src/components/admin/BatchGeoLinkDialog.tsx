@@ -148,7 +148,7 @@ export default function BatchGeoLinkDialog({ onComplete }: BatchGeoLinkDialogPro
                 ].map((item) => (
                   <div key={item.label} className="flex items-center gap-1">
                     {item.count > 0 ? (
-                      <AlertCircle size={12} style={{ color: 'hsl(var(--foreground) / 0.55)' }} />
+                      <AlertCircle size={12} style={{ color: 'hsl(var(--muted-foreground))' }} />
                     ) : (
                       <CheckCircle size={12} className="text-foreground" />
                     )}
@@ -242,7 +242,7 @@ export default function BatchGeoLinkDialog({ onComplete }: BatchGeoLinkDialogPro
                   </span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <AlertCircle size={14} style={{ color: 'hsl(var(--foreground) / 0.55)' }} />
+                  <AlertCircle size={14} style={{ color: 'hsl(var(--muted-foreground))' }} />
                   <span className="text-sm">
                     <strong>{totals.partial}</strong> partial
                   </span>
