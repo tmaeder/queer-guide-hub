@@ -37,6 +37,11 @@ import { researchEnrichCityFromSources, type CityMoatEnrichment, type VoiceSetti
 import { fetchPageText } from '../_shared/enrich-harness.ts'
 import { cityNameCandidates } from '../_shared/city-name-normalize.ts'
 import { cityWikiVerdict, regionQualifiedTitle } from '../_shared/city-wiki-guard.ts'
+import { loadReviewQueueGuard } from '../_shared/review-queue-guard.ts'
+
+// The fields this composer review-gates. `safety_notes` is deliberately absent — it is
+// composed deterministically by compose_safety_note() and is not an LLM proposal.
+const CITY_GATED_FIELDS = ['lgbt_friendly_rating', 'editorial_hook', 'best_time_to_visit'] as const
 
 const DEFAULT_BATCH_LIMIT = 5
 const DEFAULT_DAILY_CAP = 120
@@ -168,7 +173,19 @@ Deno.serve(async (req: Request) => {
   if (error) return jsonResponse({ error: error.message, success: false }, 500, req)
   if (!cities?.length) return jsonResponse({ enriched: 0, message: 'no thin cities to enrich' }, 200, req)
 
-  let enriched = 0, gated = 0, skipped = 0
+  let enriched = 0, gated = 0, skipped = 0, queueRejected = 0
+
+  // This composer KEEPS its delete-then-insert — it legitimately re-proposes as its
+  // grounding sources change, which is why the outgoing value is audited rather than
+  // preserved. So only the REJECTED half of the guard applies here: overwriting an OPEN
+  // row is the design, but re-offering a proposal a human already refused, unchanged, is
+  // the treadmill. `uq_erq_open` cannot express that — it covers `status='open'` only.
+  const guard = await loadReviewQueueGuard(supabase, {
+    view: 'city_review_queue',
+    idColumn: 'city_id',
+    fields: CITY_GATED_FIELDS,
+    ids: cities.map((c) => c.id),
+  })
   const results: Array<Record<string, unknown>> = []
 
   for (const c of cities) {
@@ -305,7 +322,54 @@ Deno.serve(async (req: Request) => {
 
       if (!dryRun) {
         await supabase.from('cities').update(update).eq('id', c.id)
+
+        // A re-visit DELETEs the open row and INSERTs a new one, so the proposal a
+        // reviewer read is destroyed with no trace: `city_consensus_audit` records the
+        // field names and citations of each run but never the proposed VALUE, and the
+        // queue keeps no tombstone. Measured on Haapsalu, which is re-enriched roughly
+        // every nine hours: a wrong `best_time_to_visit` naming a spring film festival
+        // as a summer one was read, reported, and gone before anyone could act on it —
+        // unreconstructable afterwards, because nothing anywhere had kept the text.
+        //
+        // That is the "human decisions silently discarded" failure one step earlier: the
+        // PROPOSAL is discarded rather than the decision, so no queue-depth sentinel can
+        // see it either. Capture the outgoing value BEFORE the delete.
+        const superseded: Record<string, unknown>[] = []
+        const supersededUnreadable: string[] = []
+
         for (const g of gatedProposals) {
+          // `uq_erq_open (entity_type, entity_id, field) WHERE status='open'` guarantees
+          // at most one match, so maybeSingle is exact; more than one would surface as an
+          // error rather than silently taking the first.
+          const { data: prior, error: priorErr } = await supabase
+            .from('city_review_queue')
+            .select('id, proposed_value, confidence, created_at')
+            .eq('city_id', c.id).eq('field', g.field).eq('status', 'open')
+            .maybeSingle()
+
+          if (priorErr) {
+            // Never let a failed read be indistinguishable from "nothing was replaced" —
+            // absence of evidence must not be recorded as evidence of absence.
+            supersededUnreadable.push(g.field)
+          } else if (prior && JSON.stringify(prior.proposed_value) !== JSON.stringify(g.value)) {
+            // Only a CHANGED proposal supersedes anything. This composer re-publishes
+            // byte-identical text routinely, and recording that every nine hours would
+            // bury the real replacements in noise.
+            superseded.push({
+              field: g.field,
+              previous_value: prior.proposed_value,
+              previous_confidence: prior.confidence ?? null,
+              proposed_at: prior.created_at ?? null,
+              queue_id: prior.id ?? null,
+            })
+          }
+
+          if (guard.blocked(c.id, g.field, g.value) === 'rejected') {
+            // Refused before, unchanged since. Do not delete, do not re-insert.
+            queueRejected++
+            continue
+          }
+
           await supabase.from('city_review_queue').delete().eq('city_id', c.id).eq('field', g.field).eq('status', 'open')
           await supabase.from('city_review_queue').insert({
             city_id: c.id, field: g.field, proposed_value: g.value,
@@ -320,7 +384,17 @@ Deno.serve(async (req: Request) => {
         await supabase.from('city_consensus_audit').insert({
           city_id: c.id, field: queued.join(','), winning_source: 'llm', confidence,
           action: queued.length ? 'review_gated' : 'auto_commit',
-          details: { auto_fields: Object.keys(update).filter(k => !['enrichment_status', 'last_refreshed_at', 'needs_attention'].includes(k)), gated_fields: queued, citations },
+          details: {
+            auto_fields: Object.keys(update).filter(k => !['enrichment_status', 'last_refreshed_at', 'needs_attention'].includes(k)),
+            gated_fields: queued,
+            citations,
+            // Both keys are omitted when empty: a run that replaced nothing should not
+            // add an empty array to every audit row. Their ABSENCE therefore means "no
+            // open proposal was overwritten", which is only true because a failed read
+            // lands in `superseded_unreadable` instead of vanishing.
+            ...(superseded.length ? { superseded } : {}),
+            ...(supersededUnreadable.length ? { superseded_unreadable: supersededUnreadable } : {}),
+          },
         }).then(() => {}, () => {})
       }
 
@@ -357,7 +431,12 @@ Deno.serve(async (req: Request) => {
     await logStep(supabase, c.id, status, started, dryRun, failReason)
   }
 
-  return jsonResponse({ enriched, gated, skipped, skip_gated: skipGated, dry_run: dryRun, voice, results }, 200, req)
+  return jsonResponse({
+    enriched, gated, skipped,
+    ...(queueRejected ? { queue_rejected_before: queueRejected } : {}),
+    ...(guard.precheckFailed ? { queue_precheck_failed: true } : {}),
+    skip_gated: skipGated, dry_run: dryRun, voice, results,
+  }, 200, req)
 })
 
 /**

@@ -6,7 +6,7 @@ import { parseQualityDecision, QUALITY_PIPELINE_VERSION, type QualityDecision } 
 import { QUALITY_SYSTEM_PROMPT, buildQualityUserPrompt } from '../_shared/news-quality/prompts.ts'
 import { resolveEntities } from '../_shared/news-quality/entity-link.ts'
 import { evaluatePublishGate } from '../_shared/news-quality/decision.ts'
-import { probeImage } from '../_shared/news-quality/image-check.ts'
+import { probeImage, resolveStagedImageUrl } from '../_shared/news-quality/image-check.ts'
 import { findReplacementImage } from '../_shared/news-quality/image-replace.ts'
 import { hashImageUrl } from '../_shared/news-quality/image-hash.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
@@ -150,7 +150,10 @@ Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
         // requiring pipeline-sanitize-news to have run (defensive).
         const sani = sanitizeArticle({ title, content })
 
-        const imageUrl = String(n.image_url ?? n.imageUrl ?? '') || undefined
+        // Resolve through the same chain news_commit_staging_batch uses. Reading
+        // n.image_url alone missed every podcast and most articles, so the probe
+        // reported `no_image` and the Pexels replacement overwrote real artwork.
+        const imageUrl = resolveStagedImageUrl(n)
         const imageProbe = imageUrl
           ? await probeImage(imageUrl, AbortSignal.timeout(8000))
           : { url: '', ok: false, reason: 'no_image' }
