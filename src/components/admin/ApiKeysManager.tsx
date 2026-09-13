@@ -72,7 +72,7 @@ const getStatusIcon = (status: string) => {
     case 'missing':
       return <XCircle size={18} className="text-destructive" />;
     case 'error':
-      return <AlertTriangle size={18} style={{ color: 'hsl(var(--foreground) / 0.55)' }} />;
+      return <AlertTriangle size={18} style={{ color: 'hsl(var(--muted-foreground))' }} />;
     default:
       return <Key size={18} className="text-muted-foreground" />;
   }
@@ -346,11 +346,11 @@ export const ApiKeysManager = () => {
               >
                 <div
                   className="text-2xl font-semibold"
-                  style={{ color: 'hsl(var(--foreground) / 0.55)' }}
+                  style={{ color: 'hsl(var(--muted-foreground))' }}
                 >
                   {errorCount}
                 </div>
-                <div className="text-sm" style={{ color: 'hsl(var(--foreground) / 0.55)' }}>
+                <div className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
                   Errors
                 </div>
               </div>
@@ -402,7 +402,7 @@ export const ApiKeysManager = () => {
                           {rk.status === 'error' && rk.hint && (
                             <p
                               className="text-xs"
-                              style={{ color: 'hsl(var(--foreground) / 0.55)' }}
+                              style={{ color: 'hsl(var(--muted-foreground))' }}
                             >
                               {rk.hint}
                             </p>
@@ -480,12 +480,17 @@ export const ApiKeysManager = () => {
                         <Badge variant={key.is_active ? 'default' : 'secondary'}>
                           {key.is_active ? 'Active' : 'Inactive'}
                         </Badge>
-                        <Button variant="outline" size="sm" onClick={() => startEdit(key)}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          aria-label="Edit API key"
+                          onClick={() => startEdit(key)}
+                        >
                           <Edit size={14} />
                         </Button>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button variant="outline" size="sm">
+                            <Button variant="outline" size="sm" aria-label="Delete API key">
                               <Trash2 size={14} />
                             </Button>
                           </AlertDialogTrigger>

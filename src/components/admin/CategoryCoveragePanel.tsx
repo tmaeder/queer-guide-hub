@@ -2,12 +2,58 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tags, AlertTriangle } from 'lucide-react';
 import { useCategoryCoverage } from '@/hooks/useCategoryCoverage';
 import { AdminStat } from '@/components/admin/primitives/AdminStat';
+import {
+  AdminSimpleTable,
+  type AdminSimpleColumn,
+} from '@/components/admin/primitives/AdminSimpleTable';
 
 const JOB_LABELS: Record<string, string> = {
   venue_category_reclassify: 'Venue category',
   event_type_reclassify: 'Event type',
   venue_nonvenue_flag: 'Non-venue flag',
 };
+
+interface CoverageRow {
+  key: string;
+  label: string;
+  total: number;
+  uncategorised: number;
+  uncategorised_pct: number;
+  /** Venues count unexamined rows; events count the mislabelled `concert` bucket. */
+  unexamined: number;
+}
+
+const COVERAGE_COLUMNS: readonly AdminSimpleColumn<CoverageRow>[] = [
+  { key: 'type', header: 'Type', render: (r) => r.label },
+  {
+    key: 'live',
+    header: 'Live',
+    align: 'right',
+    cellClassName: 'tabular-nums',
+    render: (r) => r.total.toLocaleString(),
+  },
+  {
+    key: 'uncategorised',
+    header: 'Uncategorised',
+    align: 'right',
+    cellClassName: 'tabular-nums',
+    render: (r) => r.uncategorised.toLocaleString(),
+  },
+  {
+    key: 'share',
+    header: 'Share',
+    align: 'right',
+    cellClassName: 'tabular-nums',
+    render: (r) => `${r.uncategorised_pct}%`,
+  },
+  {
+    key: 'unexamined',
+    header: 'Not yet examined',
+    align: 'right',
+    cellClassName: 'tabular-nums',
+    render: (r) => r.unexamined.toLocaleString(),
+  },
+];
 
 /**
  * Coverage for the two browse axes: venues.category and events.event_type.
@@ -26,6 +72,25 @@ export function CategoryCoveragePanel() {
   const { venues, events, last_runs: runs } = data;
   const stalled = Object.entries(runs ?? {}).filter(([, r]) => !r.enabled || r.status === 'failed');
 
+  const coverageRows: CoverageRow[] = [
+    {
+      key: 'venues',
+      label: 'Venues',
+      total: venues.total,
+      uncategorised: venues.uncategorised,
+      uncategorised_pct: venues.uncategorised_pct ?? 0,
+      unexamined: venues.unexamined,
+    },
+    {
+      key: 'events',
+      label: 'Events',
+      total: events.total,
+      uncategorised: events.uncategorised,
+      uncategorised_pct: events.uncategorised_pct ?? 0,
+      unexamined: events.unexamined_concert,
+    },
+  ];
+
   return (
     <Card className="mb-6">
       <CardHeader className="pb-2">
@@ -35,43 +100,13 @@ export function CategoryCoveragePanel() {
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        <div className="overflow-x-auto">
-          <table className="w-full text-13">
-            <thead>
-              <tr className="text-2xs uppercase tracking-wide text-muted-foreground">
-                <th className="py-2 text-left font-normal">Type</th>
-                <th className="py-2 text-right font-normal">Live</th>
-                <th className="py-2 text-right font-normal">Uncategorised</th>
-                <th className="py-2 text-right font-normal">Share</th>
-                <th className="py-2 text-right font-normal">Not yet examined</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr className="border-t border-border">
-                <td className="py-2">Venues</td>
-                <td className="py-2 text-right tabular-nums">{venues.total.toLocaleString()}</td>
-                <td className="py-2 text-right tabular-nums">
-                  {venues.uncategorised.toLocaleString()}
-                </td>
-                <td className="py-2 text-right tabular-nums">{venues.uncategorised_pct ?? 0}%</td>
-                <td className="py-2 text-right tabular-nums">
-                  {venues.unexamined.toLocaleString()}
-                </td>
-              </tr>
-              <tr className="border-t border-border">
-                <td className="py-2">Events</td>
-                <td className="py-2 text-right tabular-nums">{events.total.toLocaleString()}</td>
-                <td className="py-2 text-right tabular-nums">
-                  {events.uncategorised.toLocaleString()}
-                </td>
-                <td className="py-2 text-right tabular-nums">{events.uncategorised_pct ?? 0}%</td>
-                <td className="py-2 text-right tabular-nums">
-                  {events.unexamined_concert.toLocaleString()}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <AdminSimpleTable
+          caption="Category coverage by entity"
+          columns={COVERAGE_COLUMNS}
+          rows={coverageRows}
+          rowKey={(r) => r.key}
+          emptyNoun="entity types"
+        />
 
         <div className="flex flex-wrap gap-2">
           <AdminStat label="Venue categories auto-applied" value={venues.auto_applied} />

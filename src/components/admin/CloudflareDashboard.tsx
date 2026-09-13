@@ -196,7 +196,7 @@ export function CloudflareDashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
+                  <div className="text-headline font-bold">
                     {analytics.result?.totals?.requests?.all?.toLocaleString() || '0'}
                   </div>
                   <p className="text-sm text-muted-foreground mt-1">
@@ -213,7 +213,7 @@ export function CloudflareDashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
+                  <div className="text-headline font-bold">
                     {((analytics.result?.totals?.bandwidth?.all || 0) / 1024 / 1024 / 1024).toFixed(
                       2,
                     )}{' '}
@@ -239,7 +239,7 @@ export function CloudflareDashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
+                  <div className="text-headline font-bold">
                     {analytics.result?.totals?.uniques?.all?.toLocaleString() || '0'}
                   </div>
                   <p className="text-sm text-muted-foreground mt-1">Last 24 hours</p>
@@ -254,7 +254,7 @@ export function CloudflareDashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
+                  <div className="text-headline font-bold">
                     {analytics.result?.totals?.threats?.all?.toLocaleString() || '0'}
                   </div>
                   <p className="text-sm text-muted-foreground mt-1">Security events</p>
@@ -464,17 +464,17 @@ export function CloudflareDashboard() {
                     >
                       <h5
                         className="font-medium mb-2"
-                        style={{ color: 'hsl(var(--foreground) / 0.7)' }}
+                        style={{ color: 'hsl(var(--muted-foreground))' }}
                       >
                         Setup Required
                       </h5>
-                      <p className="text-sm mb-4" style={{ color: 'hsl(var(--foreground) / 0.7)' }}>
+                      <p className="text-sm mb-4" style={{ color: 'hsl(var(--muted-foreground))' }}>
                         To use the Cloudflare dashboard, configure the following Supabase secrets:
                       </p>
                       <ol
                         className="text-sm flex flex-col gap-1"
                         style={{
-                          color: 'hsl(var(--foreground) / 0.7)',
+                          color: 'hsl(var(--muted-foreground))',
                           listStyleType: 'decimal',
                           listStylePosition: 'inside',
                         }}

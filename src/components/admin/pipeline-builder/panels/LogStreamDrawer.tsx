@@ -169,6 +169,7 @@ export default function LogStreamDrawer({ pipelineRunId, onClose }: LogStreamDra
               size="sm"
               variant="ghost"
               className="h-7 w-7 p-0"
+              aria-label={paused ? 'Resume auto-refresh' : 'Pause auto-refresh'}
               onClick={() => setPaused((p) => !p)}
             >
               {paused ? <Play className="h-3.5 w-3.5" /> : <Pause className="h-3.5 w-3.5" />}
@@ -184,6 +185,7 @@ export default function LogStreamDrawer({ pipelineRunId, onClose }: LogStreamDra
               size="sm"
               variant="ghost"
               className="h-7 w-7 p-0"
+              aria-label="Scroll to latest"
               onClick={() => {
                 if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
               }}
@@ -195,7 +197,13 @@ export default function LogStreamDrawer({ pipelineRunId, onClose }: LogStreamDra
         </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={onClose}>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 w-7 p-0"
+              aria-label="Close log stream"
+              onClick={onClose}
+            >
               <X className="h-3.5 w-3.5" />
             </Button>
           </TooltipTrigger>

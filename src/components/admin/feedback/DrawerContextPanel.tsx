@@ -11,7 +11,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { timeAgo } from '@/utils/timezone';
 
 interface ContextData {
@@ -154,6 +154,9 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
                 className="max-w-[90vw] max-h-[90vh] p-2 bg-black border-none"
                 style={{ width: 'fit-content' }}
               >
+                {/* Visually hidden: the lightbox is only the image, but a
+                    role="dialog" with no name announces as unlabelled. */}
+                <DialogTitle className="sr-only">Page screenshot</DialogTitle>
                 <img
                   src={screenshotUrl}
                   alt="Page screenshot"
@@ -220,7 +223,7 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
               style={{ gap: 4, paddingTop: 4, paddingBottom: 4 }}
             >
               {networkOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-              <Wifi size={12} style={{ color: 'hsl(var(--foreground) / 0.55)' }} />
+              <Wifi size={12} style={{ color: 'hsl(var(--muted-foreground))' }} />
               <span className="text-xs font-semibold">
                 Network failures ({ctx.network_failures.length})
               </span>
@@ -239,10 +242,7 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
                 {ctx.network_failures.map((nf, i) => (
                   <div key={i} className="mb-1">
                     <span className="block" style={{ fontSize: '0.65rem' }}>
-                      <span
-                        style={{ color: 'hsl(var(--foreground) / 0.55)' }}
-                        className="font-bold"
-                      >
+                      <span style={{ color: 'hsl(var(--muted-foreground))' }} className="font-bold">
                         {nf.status}
                       </span>{' '}
                       {nf.method} {nf.url}

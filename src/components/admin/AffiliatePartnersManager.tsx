@@ -221,10 +221,20 @@ export function AffiliatePartnersManager({
                   </p>
                 )}
               </div>
-              <Button size="sm" variant="ghost" onClick={() => openEdit(p)}>
+              <Button
+                size="sm"
+                variant="ghost"
+                aria-label="Edit partner"
+                onClick={() => openEdit(p)}
+              >
                 <Edit2 className="w-4 h-4" />
               </Button>
-              <Button size="sm" variant="ghost" onClick={() => handleDelete(p.id, p.partner_name)}>
+              <Button
+                size="sm"
+                variant="ghost"
+                aria-label="Delete partner"
+                onClick={() => handleDelete(p.id, p.partner_name)}
+              >
                 <Trash2 className="w-4 h-4 text-destructive" />
               </Button>
             </div>

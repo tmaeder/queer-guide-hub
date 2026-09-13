@@ -53,6 +53,9 @@ jobs:
           # a reconstruction from parsed statements. A shallow clone would hide
           # every such branch and silently downgrade to the lossy path.
           fetch-depth: 0
+          # Push as the PAT's identity when one exists, so the branch push and
+          # the PR are attributed to a real user. See the token note below.
+          token: ${{ secrets.DRIFT_RECOVERY_PAT || secrets.GITHUB_TOKEN }}
 
       - uses: actions/setup-node@v4
         with:
@@ -91,10 +94,35 @@ jobs:
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
+      # WHY THIS NEEDS A PAT, and what happens without one.
+      #
+      # GitHub does not start workflow runs for events caused by the built-in
+      # GITHUB_TOKEN — a recursion guard, not a misconfiguration. So a PR this
+      # job opens with GITHUB_TOKEN arrives with NONE of the required contexts
+      # reporting, and a required check that never reports reads as pending
+      # forever: auto-merge can never fire and the PR sits there.
+      #
+      # Measured 2026-09-13 on #3677, the first PR this workflow ever managed to
+      # open: 12 required contexts, 0 reporting. Enabling "Allow GitHub Actions
+      # to create and approve pull requests" (which was the previous blocker)
+      # fixed opening the PR and exposed this immediately underneath it.
+      #
+      # DRIFT_RECOVERY_PAT should be a fine-grained PAT on this repo with
+      # Contents: read/write and Pull requests: read/write. With it, the push
+      # and the PR are attributed to a real identity and CI runs normally.
+      #
+      # The fallback is deliberately LOUD, not silent. Without the PAT this job
+      # still recovers the files and opens the PR — losing that would be worse —
+      # but it emits a ::warning:: saying the PR's CI will not run and telling
+      # the next human the exact unblock (`gh pr close N && gh pr reopen N`
+      # under a user token, then re-arm auto-merge, which closing clears).
+      # A drift recovery that looks finished but cannot merge is the failure
+      # this whole workflow exists to prevent, one layer up.
       - name: Open recovery PR
         if: steps.recover.outputs.changed == 'true'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.DRIFT_RECOVERY_PAT || secrets.GITHUB_TOKEN }}
+          HAVE_PAT: ${{ secrets.DRIFT_RECOVERY_PAT != '' }}
         run: |
           set -euo pipefail
           # Same reason as the gate above: these files are untracked, so
@@ -120,9 +148,14 @@ jobs:
           git commit -F /tmp/commit-msg.txt
           git push -u origin "$branch"
 
-          gh pr create \
+          url=$(gh pr create \
             --title "fix(migrations): recover $n migration(s) applied to prod with no repo file" \
-            --body-file .github/migration-drift-recovery/pr-body.md
+            --body-file .github/migration-drift-recovery/pr-body.md)
+          echo "Opened $url"
+
+          if [ "${HAVE_PAT}" != "true" ]; then
+            echo "::warning::Opened with GITHUB_TOKEN, so this PR's CI will NOT run and it can never auto-merge (required checks stay pending forever). Unblock: 'gh pr close <n> && gh pr reopen <n>' under a user token, then re-arm auto-merge (closing clears it). Durable fix: add a DRIFT_RECOVERY_PAT repo secret (fine-grained, Contents + Pull requests read/write)."
+          fi
 
       - name: Report versions that could not be recovered
         if: always() && steps.recover.outputs.rc == '1'

@@ -311,3 +311,43 @@ describe('the worklist sees every series', () => {
     expect(SIGNALS_2).toMatch(/'not_expressible_by_reason',\s*\n?\s*coalesce/);
   });
 });
+
+// Step 8 was "drop event_occurrences and festivals". The reader census stopped it,
+// and these encode WHY so the next person does not rediscover it the hard way.
+describe('the dead-table drop that was refused', () => {
+  const ALL_MIGRATIONS = readdirSync(MIGRATIONS)
+    .filter((f) => f.endsWith('.sql'))
+    .map((f) => code(readFileSync(join(MIGRATIONS, f), 'utf8')))
+    .join('\n');
+
+  it('retires the cron through the registry, never a bare unschedule', () => {
+    // sync_automations_to_cron recreates any enabled row whose job is missing, so
+    // cron.unschedule alone is undone by the next reconciler pass.
+    const retire = ALL_MIGRATIONS.slice(
+      ALL_MIGRATIONS.indexOf("slug = 'expand_event_recurrences'") - 600,
+    );
+    expect(retire).toMatch(/update admin_automations[\s\S]{0,400}?set enabled = false/i);
+    expect(retire).toMatch(/cron\.unschedule\('expand-event-recurrences'\)/);
+  });
+
+  it('does not delete the registry row', () => {
+    // A deleted row makes the live job "unregistered", which the reconciler reports
+    // and deliberately never auto-kills.
+    expect(ALL_MIGRATIONS).not.toMatch(
+      /delete from admin_automations[^;]*expand_event_recurrences/i,
+    );
+  });
+
+  it('never drops event_occurrences — five live functions read it', () => {
+    // _event_merge_core and unmerge_entities among them: the reversible-merge path
+    // for events. A DROP takes event merging down to remove a 0-row table.
+    expect(ALL_MIGRATIONS).not.toMatch(/drop table[^;]*\bevent_occurrences\b/i);
+  });
+
+  it('never drops festivals while the frontend still embeds it', () => {
+    // EVENT_SELECT_FIELDS embeds `festivals:festival_id(id, name)`; a bad embed there
+    // 400s the whole event query and every event page renders no <h1>. The picker in
+    // useFestivalSearch queries the table live too.
+    expect(ALL_MIGRATIONS).not.toMatch(/drop table[^;]*\bfestivals\b/i);
+  });
+});
