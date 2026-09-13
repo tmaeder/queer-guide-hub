@@ -4,7 +4,7 @@
 -- This cron (hourly, :30) is the ONLY caller of pipeline-quality-enhance that
 -- posts no pipeline_run_id, so it is the only path by which a staging row that
 -- missed its DAG run is ever re-judged. At batch_size 15 the 854-row cohort that
--- 40500101100000 re-offers would take ~57 hours to drain, and because the
+-- 50000201100000 re-offers would take ~57 hours to drain, and because the
 -- selector is oldest-first that cohort (from 2026-05-24) sorts AHEAD of current
 -- inflow (2026-09-12) — every new article and podcast queues behind it for two
 -- and a half days. 60 brings it to ~14 hours.
