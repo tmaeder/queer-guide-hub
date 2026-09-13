@@ -120,32 +120,52 @@ test('collapsing is actually happening, and releases when dates are requested', 
   ).toBeGreaterThan(browse.total);
 });
 
-test('a multi-day festival shows once but every day-part page still resolves', async ({
+test('grouping costs the reader no page — every day-part URL still resolves', async ({
   request,
   page,
 }) => {
-  const { rows } = await searchEvents(request, { p_search: 'lila', p_limit: 100 });
+  // DERIVED, never a named festival. This test used to search for "lila" and assert
+  // it was in the feed; lila ended on 13 September and the assertion started failing
+  // that morning — correctly, since an ended festival SHOULD leave the upcoming feed.
+  // The product was right and the test was wrong, which is the whole hazard of
+  // pinning a spec to one row's dates.
+  //
+  // The feed half is not restated here either: the test above already asserts no
+  // programme child appears, as a property over the whole feed rather than one
+  // example.
+  //
+  // What is unique to this test, and time-independent, is that grouping is not
+  // merging: nothing was deleted, so every original URL has to keep working —
+  // including an umbrella whose dates have passed.
+  const res = await request.get(
+    `${SUPABASE_URL}/rest/v1/events` +
+      `?select=slug,title,parent_event_id` +
+      `&parent_event_id=not.is.null&duplicate_of_id=is.null&status=neq.cancelled` +
+      `&safety_gated=is.false&limit=6`,
+    { headers: { apikey: ANON_KEY!, Authorization: `Bearer ${ANON_KEY!}` } },
+  );
+  expect(res.ok(), `events REST -> HTTP ${res.status()}`).toBeTruthy();
+  const children = (await res.json()) as Array<{
+    slug: string;
+    title: string;
+    parent_event_id: string;
+  }>;
 
-  const lila = rows.filter((r) => /lila/i.test(r.title));
-  expect(lila.length, 'the lila festival is not in the feed at all').toBeGreaterThan(0);
+  // Positive control: "every URL resolves" is trivially true of an empty list, and
+  // this corpus has had programme children since the linker first ran.
+  expect(children.length, 'no programme children exist at all — nothing was checked').toBeGreaterThan(
+    0,
+  );
 
-  // The umbrella may appear; its three day-parts must not.
-  const dayParts = lila.filter((r) => /donnerstag|freitag|samstag/i.test(r.title));
-  expect(
-    dayParts.map((r) => r.slug),
-    'festival day-parts are published as separate cards again',
-  ).toEqual([]);
+  const parentIds = [...new Set(children.map((c) => c.parent_event_id))];
+  const parentsRes = await request.get(
+    `${SUPABASE_URL}/rest/v1/events?select=slug&id=in.(${parentIds.join(',')})`,
+    { headers: { apikey: ANON_KEY!, Authorization: `Bearer ${ANON_KEY!}` } },
+  );
+  const parents = (await parentsRes.json()) as Array<{ slug: string }>;
 
-  // Grouping must not cost the reader a page. Nothing was merged or deleted here,
-  // so every original URL has to keep working — that is the whole difference
-  // between grouping and merging.
-  for (const slug of [
-    'lila-queer-festival',
-    'lila-26-queer-festival-donnerstag',
-    'lila-26-queer-festival-freitag',
-    'lila-26-queer-festival-samstag',
-  ]) {
-    const res = await page.request.get(`/events/${slug}`);
-    expect(res.status(), `/events/${slug} should still resolve`).toBe(200);
+  for (const slug of [...parents.map((p) => p.slug), ...children.map((c) => c.slug)]) {
+    const pageRes = await page.request.get(`/events/${slug}`);
+    expect(pageRes.status(), `/events/${slug} should still resolve`).toBe(200);
   }
 });

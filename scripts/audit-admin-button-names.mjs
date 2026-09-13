@@ -29,7 +29,36 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 const ROOT = join(import.meta.dirname, '..');
-const DIRS = ['src/components/admin', 'src/pages/admin'];
+
+/**
+ * Every tree mounted under the `/admin` route subtree — DERIVED from
+ * `src/routes.tsx`, not guessed.
+ *
+ * The first version of this script scanned `src/components/admin` +
+ * `src/pages/admin` and reported a clean 0/0 while `e2e/a11y-admin.spec.ts` was
+ * still failing `button-name` on nine routes. The reason is that admin routes
+ * mount components from outside those two trees: `routes.tsx:422` is
+ * `<Route path="media" element={<MediaLibrary />} />`, and MediaLibrary lives in
+ * `src/components/cms`. A scope that does not match what the routes render
+ * reports "no violations" for a surface it never opened.
+ *
+ * Measured by resolving all 42 `element={<X />}` mounts inside the admin subtree
+ * (routes.tsx lines 381-630) back through their `lazyRetry(() => import(...))`
+ * declarations: 32 land in `pages/admin`, 2 in `components/admin`, and 4 in
+ * `components/cms` — AuditLog, ContentListPanel, MediaLibrary and
+ * MediaLibrary/MediaDetailPage.
+ *
+ * `src/components/ui` is deliberately excluded despite 746 imports: those are the
+ * shadcn primitives, shared with every public page, and a missing name there is a
+ * CALL-SITE defect, which is what this script already reports. Adding them would
+ * report the primitive instead of the caller.
+ *
+ * `src/pages/Index` is NOT in scope and is the trap to avoid re-introducing: a
+ * line-range scan of routes.tsx picks it up because the admin block closes at 630
+ * and `<Route index element={<Index />} />` sits at 635. It is the public
+ * homepage. Bound the block, do not eyeball the window.
+ */
+const DIRS = ['src/components/admin', 'src/pages/admin', 'src/components/cms'];
 
 function walk(dir, out = []) {
   for (const entry of readdirSync(dir)) {
@@ -86,9 +115,10 @@ function elements(src, tag) {
       const nextClose = src.indexOf(close, j);
       nestedOpen.lastIndex = j;
       const nextOpenMatch = nestedOpen.exec(src);
-      const nextOpen = nextOpenMatch && nextOpenMatch.index < (nextClose === -1 ? Infinity : nextClose)
-        ? nextOpenMatch.index
-        : -1;
+      const nextOpen =
+        nextOpenMatch && nextOpenMatch.index < (nextClose === -1 ? Infinity : nextClose)
+          ? nextOpenMatch.index
+          : -1;
       if (nextClose === -1) break;
       if (nextOpen !== -1 && nextOpen < nextClose) {
         level++;
@@ -161,5 +191,7 @@ if (process.argv.includes('--json')) {
     `\nInside a Radix Tooltip (aria-describedby is a DESCRIPTION, never a name): ${results.tooltipOnly.length}`,
   );
   for (const r of results.tooltipOnly) console.log(`  ${r.file}:${r.line}`);
-  console.log(`\nTotal needing an aria-label: ${results.unnamed.length + results.tooltipOnly.length}`);
+  console.log(
+    `\nTotal needing an aria-label: ${results.unnamed.length + results.tooltipOnly.length}`,
+  );
 }

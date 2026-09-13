@@ -3,6 +3,7 @@ import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { researchEnrichVillageFromSources } from '../_shared/ai-enrichment.ts'
 import { serveEnrichment } from '../_shared/enrichment-driver.ts'
+import { loadReviewQueueGuard, type ReviewQueueGuard } from '../_shared/review-queue-guard.ts'
 
 // Pipeline Enrich (Queer Village).
 //  - default (staging) mode: Wikipedia description + Wikidata + image enrichment of
@@ -30,22 +31,59 @@ async function fetchWikipediaExtract(query: string): Promise<{ url: string; text
   } catch { return null }
 }
 
-// Replace the single open proposal for (village, field), satisfying uq_village_review_queue_open.
+// The fields this function review-gates. Used to scope the open-queue pre-select below;
+// other writers queue other fields and are none of our business. A field added to the
+// gated set but not to this list degrades safely — the pre-select misses it, the insert
+// is refused by uq_erq_open, and the existing open row survives — but it is then counted
+// as a skip rather than recognised as one.
+const GATED_FIELDS = ['history', 'description', 'editorial_hook', 'notable_landmarks'] as const
+type GatedField = (typeof GATED_FIELDS)[number]
+
+type QueueOutcome = 'queued' | 'skipped' | 'rejected' | 'error'
+
+/** Queue one proposal, skip-if-open. NEVER deletes: a proposal leaves this queue only by
+ *  being approved or rejected.
+ *
+ *  This replaced a delete-then-insert. That shape destroyed the open row and wrote a fresh
+ *  one on every visit, so the exact text a reviewer was reading vanished with no tombstone
+ *  in the queue and no copy anywhere else — a village proposal gets no provenance row, and
+ *  `village_quality_signals` records only a BOOLEAN (`queued: touched`), not the field name
+ *  and not the value, so the queue row is the only copy that has ever existed.
+ *
+ *  Its old comment claimed the delete satisfied `uq_village_review_queue_open`. That index
+ *  is real but sits on `village_review_queue_legacy`, the pre-fold table this code no
+ *  longer writes to; the live constraint is `uq_erq_open` on `entity_review_queue`, a
+ *  PARTIAL unique index that PostgREST cannot target with ON CONFLICT — which is why
+ *  idempotency is enforced here instead. */
 async function queueReview(
   supabase: ReturnType<typeof getServiceClient>,
   villageId: string,
-  field: 'history' | 'description' | 'editorial_hook' | 'notable_landmarks',
+  field: GatedField,
   value: unknown,
   citations: unknown,
   confidence: number | null,
-) {
-  await supabase.from('village_review_queue')
-    .delete().eq('village_id', villageId).eq('field', field).eq('status', 'open')
-  await supabase.from('village_review_queue').insert({
+  guard: ReviewQueueGuard,
+): Promise<QueueOutcome> {
+  const block = guard.blocked(villageId, field, { value })
+  if (block === 'open') return 'skipped'
+  if (block === 'rejected') return 'rejected'
+
+  const { error } = await supabase.from('village_review_queue').insert({
     village_id: villageId, field,
     proposed_value: { value }, citations: citations ?? [],
     confidence, model: 'llm', status: 'open',
   })
+  if (!error) {
+    // So a second proposal for the same (village, field) in this run cannot double-insert,
+    // which the pre-select alone would not catch.
+    guard.markQueued(villageId, field)
+    return 'queued'
+  }
+  // 23505 = uq_erq_open refused a second open row: the database enforcing the same
+  // invariant the pre-select could not see. Same outcome as a skip, not a fault.
+  if (error.code === '23505') return 'skipped'
+  console.warn(`village_review_queue insert ${villageId}/${field}: ${error.message}`)
+  return 'error'
 }
 
 async function agenticEnrichVillages(
@@ -56,6 +94,18 @@ async function agenticEnrichVillages(
   if (error) throw new Error(`villages_due_for_refresh: ${error.message}`)
   const villages = (due ?? []) as { id: string; name: string; slug: string }[]
   let queued = 0, autoApplied = 0, skipped = 0, errored = 0
+  let queueSkipped = 0, queueRejected = 0, queueErrors = 0
+
+  // Fields already awaiting a human, read ONCE per run rather than once per village.
+  // A failed read must not be indistinguishable from "nothing is queued" — that is the
+  // defect this fix removes, one layer down — so the set stays NULL rather than becoming
+  // an empty Set, `?.has()` is false everywhere, and uq_erq_open decides instead.
+  const guard = await loadReviewQueueGuard(supabase, {
+    view: 'village_review_queue',
+    idColumn: 'village_id',
+    fields: GATED_FIELDS,
+    ids: villages.map((v) => v.id),
+  })
 
   for (const v of villages) {
     try {
@@ -88,15 +138,27 @@ async function agenticEnrichVillages(
       const cites = enrich.citations ?? []
       let touched = false
 
+      // `touched` stays true for a skip and for an error: it means the model produced
+      // something actionable, which is what separates this village from the `skipped++`
+      // case below ("nothing came back"). Whether that proposal was WRITTEN is carried by
+      // the queue counters instead, so the two questions stop sharing one flag.
+      const tally = (r: QueueOutcome) => {
+        if (r === 'queued') queued++
+        else if (r === 'skipped') queueSkipped++
+        else if (r === 'rejected') queueRejected++
+        else queueErrors++
+        touched = true
+      }
+
       // Narrative overwrites → always review-gated.
       if (enrich.history && enrich.history.trim().length > 80) {
-        await queueReview(supabase, v.id, 'history', enrich.history.trim(), cites, conf); queued++; touched = true
+        tally(await queueReview(supabase, v.id, 'history', enrich.history.trim(), cites, conf, guard))
       }
       if (enrich.description && enrich.description.trim().length > 20) {
-        await queueReview(supabase, v.id, 'description', enrich.description.trim(), cites, conf); queued++; touched = true
+        tally(await queueReview(supabase, v.id, 'description', enrich.description.trim(), cites, conf, guard))
       }
       if (enrich.editorial_hook && enrich.editorial_hook.trim().length > 0) {
-        await queueReview(supabase, v.id, 'editorial_hook', enrich.editorial_hook.trim().slice(0, 120), cites, conf); queued++; touched = true
+        tally(await queueReview(supabase, v.id, 'editorial_hook', enrich.editorial_hook.trim().slice(0, 120), cites, conf, guard))
       }
 
       // notable_landmarks: auto-fill ONLY if currently empty and confidence high.
@@ -110,7 +172,7 @@ async function agenticEnrichVillages(
           }).eq('id', v.id)
           autoApplied++; touched = true
         } else {
-          await queueReview(supabase, v.id, 'notable_landmarks', proposedLandmarks.slice(0, 12), cites, conf); queued++; touched = true
+          tally(await queueReview(supabase, v.id, 'notable_landmarks', proposedLandmarks.slice(0, 12), cites, conf, guard))
         }
       }
 
@@ -127,7 +189,14 @@ async function agenticEnrichVillages(
       console.warn(`agentic-enrich village ${v.id}: ${e instanceof CircuitOpenError ? `circuit_open:${e.apiName}` : (e as Error).message}`)
     }
   }
-  return { mode: 'agentic', examined: villages.length, queued, auto_applied: autoApplied, skipped, errored }
+  // queue_* keys are omitted when zero so their presence carries meaning.
+  return {
+    mode: 'agentic', examined: villages.length, queued, auto_applied: autoApplied, skipped, errored,
+    ...(queueSkipped ? { queue_skipped: queueSkipped } : {}),
+    ...(queueRejected ? { queue_rejected_before: queueRejected } : {}),
+    ...(queueErrors ? { queue_errors: queueErrors } : {}),
+    ...(guard.precheckFailed ? { queue_precheck_failed: true } : {}),
+  }
 }
 
 async function fetchWikipediaSummary(query: string): Promise<{ extract: string; thumbnail?: string } | null> {
