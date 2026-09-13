@@ -1,6 +1,6 @@
 {
   "project": "tsconfig.app.json",
-  "total": 822,
+  "total": 801,
   "files": {
     "src/assets/intimate/pictograms.tsx": {
       "TS2503": 2
@@ -101,12 +101,11 @@
     },
     "src/components/admin/pipeline-builder/tabs/MonitorTab.tsx": {
       "TS18046": 1,
-      "TS2322": 7,
+      "TS2322": 1,
       "TS2339": 1,
-      "TS2345": 3,
-      "TS2365": 4,
-      "TS2538": 2,
-      "TS2769": 3
+      "TS2345": 1,
+      "TS2365": 3,
+      "TS2769": 1
     },
     "src/components/admin/review/ReviewBulkBar.tsx": {
       "TS6133": 1
@@ -589,11 +588,6 @@
       "TS2345": 2,
       "TS2353": 4
     },
-    "src/hooks/useCMSRevisions.tsx": {
-      "TS2339": 2,
-      "TS2345": 4,
-      "TS2353": 1
-    },
     "src/hooks/useCMSWorkflow.tsx": {
       "TS2345": 1,
       "TS2353": 2
@@ -617,9 +611,6 @@
     },
     "src/hooks/useCurrency.tsx": {
       "TS2345": 1
-    },
-    "src/hooks/useDedupReview.ts": {
-      "TS2322": 1
     },
     "src/hooks/useDirectory.tsx": {
       "TS2345": 1
