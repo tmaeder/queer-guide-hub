@@ -86,12 +86,7 @@ export function ImageField({ field, value, onChange, error, disabled }: FieldPro
               {imgError ? 'Failed to load image' : 'No image set'}
             </span>
             {!disabled && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setPickerOpen(true)}
-              >
+              <Button type="button" variant="outline" size="sm" onClick={() => setPickerOpen(true)}>
                 <FolderOpen className="w-4 h-4 mr-1" />
                 Browse Media
               </Button>
@@ -114,6 +109,7 @@ export function ImageField({ field, value, onChange, error, disabled }: FieldPro
           />
           {!disabled && (
             <Button
+              aria-label="Choose image"
               type="button"
               variant="outline"
               size="sm"
@@ -125,6 +121,7 @@ export function ImageField({ field, value, onChange, error, disabled }: FieldPro
           )}
           {!disabled && imageUrl && (
             <Button
+              aria-label="Clear image"
               type="button"
               variant="ghost"
               size="sm"
