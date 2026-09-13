@@ -399,6 +399,7 @@ export function EditorHeader({
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
+                aria-label="Close editor"
                 variant="ghost"
                 size="sm"
                 onClick={handleClose}
