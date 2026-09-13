@@ -12,7 +12,10 @@ import {
   ackDataOpsAlert,
   type DataOpsAlert as Alert,
 } from '@/hooks/usePipelineBuilderTabs';
-import { AdminTableRowSkeleton } from '@/components/admin/primitives/AdminLoading';
+import {
+  AdminSimpleTable,
+  type AdminSimpleColumn,
+} from '@/components/admin/primitives/AdminSimpleTable';
 
 type Filter = 'open' | 'all';
 
@@ -68,6 +71,81 @@ export default function AlertsTab() {
     }),
     [alerts],
   );
+
+  const alertColumns: AdminSimpleColumn<Alert>[] = [
+    {
+      key: 'kind',
+      header: 'Kind',
+      cellClassName: 'align-top font-medium',
+      render: (a) => KIND_LABEL[a.alert_kind] ?? a.alert_kind,
+    },
+    {
+      key: 'severity',
+      header: 'Severity',
+      cellClassName: 'align-top',
+      render: (a) => (
+        <span
+          className={`inline-block text-2xs px-2 py-0.5 rounded-full font-medium ${severityClass[a.severity] || 'bg-muted'}`}
+        >
+          {a.severity}
+        </span>
+      ),
+    },
+    {
+      key: 'source',
+      header: 'Source',
+      cellClassName: 'align-top font-mono text-xs',
+      render: (a) => a.source_slug ?? <span className="text-muted-foreground">—</span>,
+    },
+    {
+      key: 'detail',
+      header: 'Detail',
+      cellClassName: 'align-top max-w-[380px]',
+      render: (a) => (
+        <div className="text-xs2 font-mono space-x-4 break-words">
+          {Object.entries(a.detail).map(([k, v]) => (
+            <span key={k}>
+              <span className="text-muted-foreground">{k}:</span>{' '}
+              <span className="text-foreground">{String(v)}</span>
+            </span>
+          ))}
+        </div>
+      ),
+    },
+    {
+      key: 'created',
+      header: 'Created',
+      cellClassName: 'align-top text-xs text-muted-foreground',
+      render: (a) => (
+        <span title={new Date(a.created_at).toISOString()}>
+          {formatDistanceToNow(new Date(a.created_at), { addSuffix: true })}
+        </span>
+      ),
+    },
+    {
+      key: 'action',
+      header: 'Action',
+      cellClassName: 'align-top',
+      render: (a) =>
+        a.acked_at ? (
+          <span className="inline-flex items-center gap-1 text-xs2 text-foreground">
+            <CheckCircle className="h-3 w-3" />
+            acked
+          </span>
+        ) : (
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-7 px-2 text-xs text-primary"
+            onClick={() => ack.mutate(a.id)}
+            disabled={ack.isPending}
+          >
+            <CheckCircle className="h-3.5 w-3.5 mr-1" />
+            Ack
+          </Button>
+        ),
+    },
+  ];
 
   const FilterButton = ({ value, label }: { value: Filter; label: string }) => (
     <button
@@ -138,89 +216,27 @@ export default function AlertsTab() {
       </div>
 
       {/* Alerts table */}
-      <div className="rounded-element bg-muted overflow-hidden max-h-[600px] overflow-y-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-muted/40 sticky top-0">
-            <tr className="border-b border-border">
-              {['Kind', 'Severity', 'Source', 'Detail', 'Created', 'Action'].map((h) => (
-                <th
-                  key={h}
-                  className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider"
-                >
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
-              <AdminTableRowSkeleton columns={6} />
-            ) : alerts.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="p-6 text-center text-foreground text-sm font-medium">
-                  <CheckCircle className="h-5 w-5 inline mr-1" />
-                  All clear
-                </td>
-              </tr>
-            ) : (
-              alerts.map((a) => (
-                <tr
-                  key={a.id}
-                  className={`border-b border-border/40 hover:bg-muted/30 transition-colors ${a.acked_at ? 'opacity-60' : ''}`}
-                >
-                  <td className="px-4 py-2.5 align-top font-medium">
-                    {KIND_LABEL[a.alert_kind] ?? a.alert_kind}
-                  </td>
-                  <td className="px-4 py-2.5 align-top">
-                    <span
-                      className={`inline-block text-2xs px-2 py-0.5 rounded-full font-medium ${severityClass[a.severity] || 'bg-muted'}`}
-                    >
-                      {a.severity}
-                    </span>
-                  </td>
-                  <td className="px-4 py-2.5 align-top font-mono text-xs">
-                    {a.source_slug ?? <span className="text-muted-foreground">—</span>}
-                  </td>
-                  <td className="px-4 py-2.5 align-top max-w-[380px]">
-                    <div className="text-xs2 font-mono space-x-4 break-words">
-                      {Object.entries(a.detail).map(([k, v]) => (
-                        <span key={k}>
-                          <span className="text-muted-foreground">{k}:</span>{' '}
-                          <span className="text-foreground">{String(v)}</span>
-                        </span>
-                      ))}
-                    </div>
-                  </td>
-                  <td
-                    className="px-4 py-2.5 align-top text-xs text-muted-foreground"
-                    title={new Date(a.created_at).toISOString()}
-                  >
-                    {formatDistanceToNow(new Date(a.created_at), { addSuffix: true })}
-                  </td>
-                  <td className="px-4 py-2.5 align-top">
-                    {a.acked_at ? (
-                      <span className="inline-flex items-center gap-1 text-xs2 text-foreground">
-                        <CheckCircle className="h-3 w-3" />
-                        acked
-                      </span>
-                    ) : (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-7 px-2 text-xs text-primary"
-                        onClick={() => ack.mutate(a.id)}
-                        disabled={ack.isPending}
-                      >
-                        <CheckCircle className="h-3.5 w-3.5 mr-1" />
-                        Ack
-                      </Button>
-                    )}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+      <div className="rounded-element bg-muted overflow-hidden">
+        <AdminSimpleTable
+          caption="Data ops alerts"
+          stickyHeader
+          className="max-h-[600px] overflow-y-auto"
+          columns={alertColumns}
+          rows={alerts}
+          rowKey={(a) => String(a.id)}
+          isLoading={isLoading}
+          skeletonRows={3}
+          emptyNoun="alerts"
+          emptyContent={
+            <div className="p-6 text-center text-foreground text-sm font-medium">
+              <CheckCircle className="h-5 w-5 inline mr-1" />
+              All clear
+            </div>
+          }
+          rowClassName={(a) =>
+            `border-border/40 hover:bg-muted/30 transition-colors ${a.acked_at ? 'opacity-60' : ''}`
+          }
+        />
       </div>
     </div>
   );

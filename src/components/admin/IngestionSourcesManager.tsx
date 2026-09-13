@@ -86,7 +86,7 @@ export const IngestionSourcesManager = () => {
           <CardContent>
             <div className="flex items-center justify-center gap-2 mb-1">
               <Zap size={20} className="text-muted-foreground" />
-              <span className="text-2xl font-bold">{sources.length}</span>
+              <span className="text-headline font-bold">{sources.length}</span>
             </div>
             <p className="text-xs text-muted-foreground">Total Sources</p>
           </CardContent>
@@ -95,7 +95,7 @@ export const IngestionSourcesManager = () => {
           <CardContent>
             <div className="flex items-center justify-center gap-2 mb-1">
               <CheckCircle size={20} className="text-foreground" />
-              <span className="text-2xl font-bold">{enabledCount}</span>
+              <span className="text-headline font-bold">{enabledCount}</span>
             </div>
             <p className="text-xs text-muted-foreground">Enabled</p>
           </CardContent>
@@ -104,7 +104,7 @@ export const IngestionSourcesManager = () => {
           <CardContent>
             <div className="flex items-center justify-center gap-2 mb-1">
               <AlertTriangle size={20} className="text-destructive" />
-              <span className="text-2xl font-bold">{errorCount}</span>
+              <span className="text-headline font-bold">{errorCount}</span>
             </div>
             <p className="text-xs text-muted-foreground">Errors</p>
           </CardContent>
@@ -113,7 +113,7 @@ export const IngestionSourcesManager = () => {
           <CardContent>
             <div className="flex items-center justify-center gap-2 mb-1">
               <Database size={20} className="text-foreground" />
-              <span className="text-2xl font-bold">
+              <span className="text-headline font-bold">
                 {sources.reduce((sum, s) => sum + (s.total_items_fetched || 0), 0).toLocaleString()}
               </span>
             </div>
