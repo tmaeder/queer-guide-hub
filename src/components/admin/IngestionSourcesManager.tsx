@@ -185,7 +185,7 @@ export const IngestionSourcesManager = () => {
                         {source.requires_api_key && (
                           <div
                             className="flex items-center gap-1"
-                            style={{ color: 'hsl(var(--foreground) / 0.55)' }}
+                            style={{ color: 'hsl(var(--muted-foreground))' }}
                           >
                             <Key size={12} />
                             {source.requires_api_key}

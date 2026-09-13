@@ -31,7 +31,7 @@ const STATUS_CONFIG: Record<
   { label: string; color: string; variant: 'default' | 'secondary' | 'destructive' }
 > = {
   approved: { label: 'Approved', color: 'hsl(var(--foreground))', variant: 'default' },
-  suspended: { label: 'Suspended', color: 'hsl(var(--foreground) / 0.55)', variant: 'secondary' },
+  suspended: { label: 'Suspended', color: 'hsl(var(--muted-foreground))', variant: 'secondary' },
   banned: { label: 'Banned', color: 'hsl(var(--destructive))', variant: 'destructive' },
 };
 
@@ -129,7 +129,7 @@ export function UserModerationActions({
               display: 'flex',
               alignItems: 'center',
               gap: 6,
-              color: 'hsl(var(--foreground) / 0.55)',
+              color: 'hsl(var(--muted-foreground))',
             }}
           >
             <ShieldAlert size={14} />

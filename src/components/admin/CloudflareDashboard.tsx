@@ -464,17 +464,17 @@ export function CloudflareDashboard() {
                     >
                       <h5
                         className="font-medium mb-2"
-                        style={{ color: 'hsl(var(--foreground) / 0.7)' }}
+                        style={{ color: 'hsl(var(--muted-foreground))' }}
                       >
                         Setup Required
                       </h5>
-                      <p className="text-sm mb-4" style={{ color: 'hsl(var(--foreground) / 0.7)' }}>
+                      <p className="text-sm mb-4" style={{ color: 'hsl(var(--muted-foreground))' }}>
                         To use the Cloudflare dashboard, configure the following Supabase secrets:
                       </p>
                       <ol
                         className="text-sm flex flex-col gap-1"
                         style={{
-                          color: 'hsl(var(--foreground) / 0.7)',
+                          color: 'hsl(var(--muted-foreground))',
                           listStyleType: 'decimal',
                           listStylePosition: 'inside',
                         }}
