@@ -1,39 +1,37 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { TransitIcon } from '@/components/transit/TransitIcon';
-import type { TransitIconName } from '@/components/transit/transitIconPaths';
-import {
-  groupProgramme,
-  hasProgramme,
-  laneSpan,
-  byDay,
-  type ProgrammeChild,
-  type ProgrammeLane,
-} from '@/utils/prideProgramme';
+import { byDay, laneSpan, type ProgrammeChild } from '@/utils/prideProgramme';
+import { byType, isParade, shouldOfferTypeToggle } from '@/utils/eventProgrammeView';
+import { EVENT_TYPE_OPTIONS } from '@/lib/eventTypes';
 
 /**
- * The programme of a Pride edition, rendered as three lanes: parade, festival,
- * Pride Week.
+ * The programme of a multi-day event, as a timetable.
  *
- * COLOUR: one accent for the whole section. The three lanes are told apart by a
- * `TransitIcon` glyph plus a text label, NOT by three track colours — "one
- * accent per context" is the house rule, and colour may never be the only cue
- * (WCAG 1.4.1). The pink station dot marks the lane heading and takes the ink
- * ring every track-coloured mark takes.
+ * WHY THIS IS NO LONGER THREE PRIDE LANES. The lanes (parade / festival / "Pride
+ * Week") keyed on `pride_subtypes`, which is NULL on every child in the corpus, so
+ * every child fell through to the `week` lane — and this component renders for ANY
+ * umbrella, so a Madrid New Year's Eve party was published under a heading reading
+ * "Pride Week". Measured 8 of 8. Renaming the lane would not have fixed it; the
+ * vocabulary belongs to Pride and the page does not.
+ *
+ * Day is the primary axis: a festival's children are a timetable before they are a
+ * taxonomy. A parade is pinned above it, because "which day must I be there" is the
+ * one question a parade line exists to answer — that is the single genuinely
+ * Pride-shaped thing worth keeping.
+ *
+ * COLOUR: one accent for the whole section. Groups are told apart by a `TransitIcon`
+ * glyph plus a text label, NOT by colour — colour may never be the only cue
+ * (WCAG 1.4.1). The pink station dot marks a heading and takes the ink ring every
+ * track-coloured mark takes.
  *
  * LINKS: each row's link is an absolutely-positioned sibling of the row content,
- * never an anchor wrapping it — a row carries its own ticket link, and nesting
- * one interactive element in another is invalid HTML (axe `nested-interactive`).
+ * never an anchor wrapping it — a row carries its own ticket link, and nesting one
+ * interactive element in another is invalid HTML (axe `nested-interactive`).
  */
-
-const LANE_ICON: Record<ProgrammeLane, TransitIconName> = {
-  parade: 'march',
-  festival: 'events',
-  week: 'hours',
-};
 
 function fmtDay(iso: string): string {
   const d = new Date(iso);
@@ -43,9 +41,8 @@ function fmtDay(iso: string): string {
 function fmtTime(iso: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '';
-  // Midnight is what an all-day import looks like after normalisation, not a
-  // real start time — printing "00:00" would invent a precision the row has not
-  // got.
+  // Midnight is what an all-day import looks like after normalisation, not a real
+  // start time — printing "00:00" would invent a precision the row has not got.
   if (d.getHours() === 0 && d.getMinutes() === 0) return '';
   return format(d, 'HH:mm');
 }
@@ -56,6 +53,11 @@ function fmtSpan(children: readonly ProgrammeChild[]): string {
   const [start, end] = span;
   const sameDay = format(start, 'yyyy-MM-dd') === format(end, 'yyyy-MM-dd');
   return sameDay ? format(start, 'd MMM') : `${format(start, 'd MMM')} – ${format(end, 'd MMM')}`;
+}
+
+/** Human label for an `event_type` slug, from the vocabulary the admin form uses. */
+function typeLabel(slug: string): string {
+  return EVENT_TYPE_OPTIONS.find((o) => o.value === slug)?.label ?? slug;
 }
 
 function ProgrammeRow({ child }: { child: ProgrammeChild }) {
@@ -88,76 +90,110 @@ function ProgrammeRow({ child }: { child: ProgrammeChild }) {
   );
 }
 
-function Lane({
-  lane,
-  entries,
+function Group({
+  id,
   title,
+  span,
+  entries,
 }: {
-  lane: ProgrammeLane;
-  entries: ProgrammeChild[];
+  id: string;
   title: string;
+  span?: string;
+  entries: ProgrammeChild[];
 }) {
-  const span = fmtSpan(entries);
-  // Only the week lane earns day headings: parade is one entry by definition and
-  // a festival's own rows already read as consecutive days.
-  const days = lane === 'week' ? byDay(entries) : null;
-
   if (entries.length === 0) return null;
-
   return (
-    <section aria-labelledby={`programme-${lane}`} className="mb-8 last:mb-0">
+    <section aria-labelledby={`programme-${id}`} className="mb-8 last:mb-0">
       <div className="mb-4 flex items-center gap-4">
         <span
           aria-hidden
           className="size-3 shrink-0 rounded-full border border-track-ring bg-track-pink"
         />
-        <TransitIcon name={LANE_ICON[lane]} size={20} className="shrink-0 text-foreground" />
-        <h3 id={`programme-${lane}`} className="text-title font-bold">
+        <h3 id={`programme-${id}`} className="text-title font-bold">
           {title}
         </h3>
         {span && <span className="text-13 text-muted-foreground">{span}</span>}
       </div>
-
-      {days ? (
-        days.map(([day, entries]) => (
-          <div key={day} className="mb-4 last:mb-0">
-            <p className="mb-1 text-2xs uppercase tracking-wider text-muted-foreground">
-              {fmtDay(entries[0].start_date)}
-            </p>
-            <ul className="list-none p-0">
-              {entries.map((c) => (
-                <ProgrammeRow key={c.id} child={c} />
-              ))}
-            </ul>
-          </div>
-        ))
-      ) : (
-        <ul className="list-none p-0">
-          {entries.map((c) => (
-            <ProgrammeRow key={c.id} child={c} />
-          ))}
-        </ul>
-      )}
-
+      <ul className="list-none p-0">
+        {entries.map((c) => (
+          <ProgrammeRow key={c.id} child={c} />
+        ))}
+      </ul>
     </section>
   );
 }
 
 export function EventProgramme({ entries }: { entries: ProgrammeChild[] }) {
   const { t } = useTranslation();
-  const lanes = useMemo(() => groupProgramme(entries), [entries]);
+  const [axis, setAxis] = useState<'day' | 'type'>('day');
 
-  if (!hasProgramme(lanes)) return null;
+  const parades = useMemo(() => entries.filter(isParade), [entries]);
+  // A pinned parade is not repeated in the timetable below; it is the same event and
+  // showing it twice reads as two.
+  const rest = useMemo(() => entries.filter((c) => !isParade(c)), [entries]);
+
+  const days = useMemo(() => byDay(rest), [rest]);
+  const types = useMemo(() => byType(rest), [rest]);
+  const offerToggle = useMemo(() => shouldOfferTypeToggle(rest), [rest]);
+  const view = offerToggle ? axis : 'day';
+
+  if (entries.length === 0) return null;
 
   return (
     <div>
-      <Lane lane="parade" entries={lanes.parade} title={t('events.programme.parade', 'Parade')} />
-      <Lane
-        lane="festival"
-        entries={lanes.festival}
-        title={t('events.programme.festival', 'Festival')}
-      />
-      <Lane lane="week" entries={lanes.week} title={t('events.programme.week', 'Pride Week')} />
+      {parades.length > 0 && (
+        <section aria-labelledby="programme-parade" className="mb-8">
+          <div className="mb-4 flex items-center gap-4">
+            <TransitIcon name="march" size={20} className="shrink-0 text-foreground" />
+            <h3 id="programme-parade" className="text-title font-bold">
+              {t('events.programme.parade', 'Parade')}
+            </h3>
+            <span className="text-13 text-muted-foreground">{fmtSpan(parades)}</span>
+          </div>
+          <ul className="list-none p-0">
+            {parades.map((c) => (
+              <ProgrammeRow key={c.id} child={c} />
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {offerToggle && (
+        <div className="mb-6 flex items-center gap-2">
+          <TransitIcon name="hours" size={16} className="shrink-0 text-muted-foreground" />
+          {(['day', 'type'] as const).map((option) => (
+            <button
+              key={option}
+              type="button"
+              onClick={() => setAxis(option)}
+              aria-pressed={axis === option}
+              className={
+                axis === option
+                  ? 'rounded-badge border border-track-ring bg-track-pink px-2 py-0.5 text-2xs font-bold uppercase tracking-wider text-foreground'
+                  : 'rounded-badge px-2 py-0.5 text-2xs uppercase tracking-wider text-muted-foreground'
+              }
+            >
+              {option === 'day'
+                ? t('events.programme.byDay', 'By day')
+                : t('events.programme.byType', 'By type')}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {view === 'day'
+        ? days.map(([day, group]) => (
+            <Group key={day} id={day} title={fmtDay(group[0].start_date)} entries={group} />
+          ))
+        : types.map(([type, group]) => (
+            <Group
+              key={type}
+              id={type}
+              title={typeLabel(type)}
+              span={fmtSpan(group)}
+              entries={group}
+            />
+          ))}
     </div>
   );
 }
