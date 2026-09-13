@@ -1,4 +1,5 @@
 import { assertEquals } from 'https://deno.land/std@0.224.0/assert/mod.ts'
+import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { canonicalJson, loadReviewQueueGuard } from './review-queue-guard.ts'
 
 // A minimal stand-in for the PostgREST builder chain the guard uses:
@@ -32,8 +33,10 @@ function fakeClient(
       }
       return builder
     },
-    // deno-lint-ignore no-explicit-any
-  } as any
+    // The fake implements only the four builder methods the guard calls, so it is not a
+    // structural SupabaseClient. `unknown` narrows through without `any`, which keeps the
+    // cast from silently accepting a fake that has drifted into a different shape.
+  } as unknown as SupabaseClient
 }
 
 const OPTS = {
