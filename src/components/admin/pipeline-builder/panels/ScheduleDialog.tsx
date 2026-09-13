@@ -1,8 +1,16 @@
 import { useState, useEffect } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Calendar} from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import { Calendar } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogTrigger,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { untypedFrom } from '@/integrations/supabase/untyped';
@@ -27,7 +35,9 @@ export default function ScheduleDialog({ pipelineId, currentSchedule }: Schedule
   const save = useMutation({
     mutationFn: async () => {
       if (!pipelineId) throw new Error('No pipeline selected');
-      const { error } = await untypedFrom('pipeline_definitions').update({ schedule }).eq('id', pipelineId);
+      const { error } = await untypedFrom('pipeline_definitions')
+        .update({ schedule })
+        .eq('id', pipelineId);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -44,7 +54,13 @@ export default function ScheduleDialog({ pipelineId, currentSchedule }: Schedule
       <Tooltip>
         <TooltipTrigger asChild>
           <DialogTrigger asChild>
-            <Button size="sm" variant="ghost" className="h-8 w-8 p-0" disabled={!pipelineId}>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-8 w-8 p-0"
+              aria-label="Edit schedule"
+              disabled={!pipelineId}
+            >
               <Calendar className="h-3.5 w-3.5" />
             </Button>
           </DialogTrigger>
@@ -68,11 +84,15 @@ export default function ScheduleDialog({ pipelineId, currentSchedule }: Schedule
         </div>
 
         <DialogFooter>
-          <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
           <Button size="sm" onClick={() => save.mutate()} disabled={save.isPending || !pipelineId}>
-            {save.isPending
-              ? <TrackLoader size={14} className="mr-1.5" />
-              : <Calendar className="h-3.5 w-3.5 mr-1.5" />}
+            {save.isPending ? (
+              <TrackLoader size={14} className="mr-1.5" />
+            ) : (
+              <Calendar className="h-3.5 w-3.5 mr-1.5" />
+            )}
             Save schedule
           </Button>
         </DialogFooter>

@@ -27,8 +27,10 @@ import {
   useCircuitBreakers,
   type UnifiedPipelineRow,
 } from '../hooks/usePipelineHistory';
-import { AdminTableRowSkeleton } from '@/components/admin/primitives/AdminLoading';
-import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
+import {
+  AdminSimpleTable,
+  type AdminSimpleColumn,
+} from '@/components/admin/primitives/AdminSimpleTable';
 
 type Filter = 'all' | 'pipelines' | 'workflows' | 'failing' | 'disabled';
 
@@ -176,6 +178,154 @@ export default function OverviewTab() {
     </button>
   );
 
+  const columns: AdminSimpleColumn<UnifiedPipelineRow>[] = [
+    {
+      key: 'kind',
+      header: 'Kind',
+      width: 'xs',
+      cellClassName: 'py-2.5 align-top',
+      render: (row) => (
+        <Badge variant="outline" className="text-2xs px-1.5 py-0 gap-1">
+          {row.kind === 'pipeline' ? (
+            <GitBranch className="h-2.5 w-2.5" />
+          ) : (
+            <Workflow className="h-2.5 w-2.5" />
+          )}
+          {row.kind}
+        </Badge>
+      ),
+    },
+    {
+      key: 'name',
+      header: 'Name',
+      cellClassName: 'py-2.5 align-top',
+      render: (row) => (
+        <>
+          <button
+            onClick={() => openRow(row)}
+            className="text-primary font-medium hover:underline text-left"
+          >
+            {row.display_name || row.name}
+          </button>
+          {row.is_template && (
+            <Badge variant="outline" className="ml-2 text-3xs px-1 py-0">
+              Template
+            </Badge>
+          )}
+          <div
+            className="text-xs2 text-muted-foreground font-mono truncate max-w-[320px]"
+            title={row.name}
+          >
+            {row.name}
+          </div>
+        </>
+      ),
+    },
+    {
+      key: 'schedule',
+      header: 'Schedule',
+      width: 'md',
+      cellClassName: 'py-2.5 align-top text-xs text-muted-foreground',
+      render: (row) => <span title={row.schedule || 'manual'}>{humanSchedule(row.schedule)}</span>,
+    },
+    {
+      key: 'last_run',
+      header: 'Last run',
+      width: 'sm',
+      cellClassName: 'py-2.5 align-top text-xs text-muted-foreground',
+      render: (row) => (
+        <span title={row.last_run_at ? new Date(row.last_run_at).toISOString() : ''}>
+          {row.last_run_at
+            ? formatDistanceToNow(new Date(row.last_run_at), { addSuffix: true })
+            : '—'}
+        </span>
+      ),
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      width: 'sm',
+      cellClassName: 'py-2.5 align-top',
+      render: (row) =>
+        row.last_run_status ? (
+          <Badge
+            variant="outline"
+            className={`text-2xs px-2 py-0 ${statusClass[row.last_run_status] || ''}`}
+          >
+            {row.last_run_status}
+          </Badge>
+        ) : (
+          <span className="text-xs2 text-muted-foreground">never</span>
+        ),
+    },
+    {
+      key: 'last_10',
+      header: 'Last 10',
+      width: 'lg',
+      cellClassName: 'py-2.5 align-top',
+      render: (row) => (
+        <div className="flex flex-col gap-1">
+          <StatusDots statuses={row.recent_statuses} />
+          <span className="text-2xs text-muted-foreground">
+            {row.recent_total_count > 0
+              ? `${row.recent_success_count}/${row.recent_total_count} ok`
+              : 'no runs'}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: 'items',
+      header: 'Items',
+      width: 'sm',
+      cellClassName: 'py-2.5 align-top text-xs tabular-nums',
+      render: (row) =>
+        row.last_items_total != null && row.last_items_total > 0 ? (
+          <>
+            <span className="text-foreground font-semibold">{row.last_items_succeeded ?? 0}</span>
+            <span className="text-muted-foreground">/{row.last_items_total}</span>
+          </>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        ),
+    },
+    {
+      key: 'enabled',
+      header: 'Enabled',
+      width: 'xs',
+      cellClassName: 'py-2.5 align-top',
+      render: (row) => (
+        <Switch
+          aria-label={`Enable ${row.display_name || row.name}`}
+          checked={row.is_enabled}
+          onCheckedChange={(enabled) => toggleEnabled.mutate({ row, enabled })}
+        />
+      ),
+    },
+    {
+      key: 'actions',
+      header: null,
+      width: 'sm',
+      cellClassName: 'py-2.5 align-top',
+      render: (row) => (
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-7 text-xs"
+          disabled={runNow.isPending || !row.is_enabled}
+          onClick={() => runNow.mutate(row)}
+        >
+          {runNow.isPending && runNow.variables?.id === row.id ? (
+            <TrackLoader size={12} className="mr-1" />
+          ) : (
+            <Play className="h-3 w-3 mr-1" />
+          )}
+          Run
+        </Button>
+      ),
+    },
+  ];
+
   return (
     <TooltipProvider delayDuration={200}>
       <div className="flex flex-col gap-6">
@@ -249,161 +399,20 @@ export default function OverviewTab() {
 
         {/* Table */}
         <div className="rounded-element bg-muted overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/40">
-              <tr className="border-b border-border">
-                <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[90px]">
-                  Kind
-                </th>
-                <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[130px]">
-                  Schedule
-                </th>
-                <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[110px]">
-                  Last run
-                </th>
-                <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[100px]">
-                  Status
-                </th>
-                <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[160px]">
-                  Last 10
-                </th>
-                <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[110px]">
-                  Items
-                </th>
-                <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[80px]">
-                  Enabled
-                </th>
-                <th className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[100px]" />
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading ? (
-                <AdminTableRowSkeleton columns={9} />
-              ) : filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={9} className="p-6 text-center text-muted-foreground text-xs">
-                    <AdminEmpty
-                      variant="inline"
-                      noun="definitions"
-                      filtered={(rows?.length ?? 0) > 0}
-                      className="text-xs"
-                    />
-                  </td>
-                </tr>
-              ) : (
-                filtered.map((row) => (
-                  <tr
-                    key={`${row.kind}-${row.id}`}
-                    className="border-b border-border/40 hover:bg-muted/30 transition-colors"
-                  >
-                    <td className="px-4 py-2.5 align-top">
-                      <Badge variant="outline" className="text-2xs px-1.5 py-0 gap-1">
-                        {row.kind === 'pipeline' ? (
-                          <GitBranch className="h-2.5 w-2.5" />
-                        ) : (
-                          <Workflow className="h-2.5 w-2.5" />
-                        )}
-                        {row.kind}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-2.5 align-top">
-                      <button
-                        onClick={() => openRow(row)}
-                        className="text-primary font-medium hover:underline text-left"
-                      >
-                        {row.display_name || row.name}
-                      </button>
-                      {row.is_template && (
-                        <Badge variant="outline" className="ml-2 text-3xs px-1 py-0">
-                          Template
-                        </Badge>
-                      )}
-                      <div
-                        className="text-xs2 text-muted-foreground font-mono truncate max-w-[320px]"
-                        title={row.name}
-                      >
-                        {row.name}
-                      </div>
-                    </td>
-                    <td
-                      className="px-4 py-2.5 align-top text-xs text-muted-foreground"
-                      title={row.schedule || 'manual'}
-                    >
-                      {humanSchedule(row.schedule)}
-                    </td>
-                    <td
-                      className="px-4 py-2.5 align-top text-xs text-muted-foreground"
-                      title={row.last_run_at ? new Date(row.last_run_at).toISOString() : ''}
-                    >
-                      {row.last_run_at
-                        ? formatDistanceToNow(new Date(row.last_run_at), { addSuffix: true })
-                        : '—'}
-                    </td>
-                    <td className="px-4 py-2.5 align-top">
-                      {row.last_run_status ? (
-                        <Badge
-                          variant="outline"
-                          className={`text-2xs px-2 py-0 ${statusClass[row.last_run_status] || ''}`}
-                        >
-                          {row.last_run_status}
-                        </Badge>
-                      ) : (
-                        <span className="text-xs2 text-muted-foreground">never</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-2.5 align-top">
-                      <div className="flex flex-col gap-1">
-                        <StatusDots statuses={row.recent_statuses} />
-                        <span className="text-2xs text-muted-foreground">
-                          {row.recent_total_count > 0
-                            ? `${row.recent_success_count}/${row.recent_total_count} ok`
-                            : 'no runs'}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-2.5 align-top text-xs tabular-nums">
-                      {row.last_items_total != null && row.last_items_total > 0 ? (
-                        <>
-                          <span className="text-foreground font-semibold">
-                            {row.last_items_succeeded ?? 0}
-                          </span>
-                          <span className="text-muted-foreground">/{row.last_items_total}</span>
-                        </>
-                      ) : (
-                        <span className="text-muted-foreground">—</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-2.5 align-top">
-                      <Switch
-                        aria-label={`Enable ${row.display_name || row.name}`}
-                        checked={row.is_enabled}
-                        onCheckedChange={(enabled) => toggleEnabled.mutate({ row, enabled })}
-                      />
-                    </td>
-                    <td className="px-4 py-2.5 align-top">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-7 text-xs"
-                        disabled={runNow.isPending || !row.is_enabled}
-                        onClick={() => runNow.mutate(row)}
-                      >
-                        {runNow.isPending && runNow.variables?.id === row.id ? (
-                          <TrackLoader size={12} className="mr-1" />
-                        ) : (
-                          <Play className="h-3 w-3 mr-1" />
-                        )}
-                        Run
-                      </Button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+          <AdminSimpleTable
+            caption="Pipeline and workflow definitions"
+            columns={columns}
+            rows={filtered}
+            rowKey={(row) => `${row.kind}-${row.id}`}
+            isLoading={isLoading}
+            emptyNoun="definitions"
+            filtered={(rows?.length ?? 0) > 0}
+            onResetFilters={() => {
+              setFilter('all');
+              setSearch('');
+            }}
+            rowClassName={() => 'border-border/40 hover:bg-muted/30 transition-colors'}
+          />
           {!isLoading && rows && (
             <div className="px-4 py-1.5 border-t border-border text-xs2 text-muted-foreground">
               Showing {filtered.length} of {rows.length} definitions

@@ -17,12 +17,17 @@ import {
   useFeedbackDailyVolume,
   useFeedbackSlaStats,
   type DailyVolumeRow,
+  type SlaStatRow,
 } from '@/hooks/useFeedbackAnalytics';
 import { feedbackCategoryMap, feedbackCategories } from '@/config/feedbackCategories';
 import { monoChartPalette } from '@/lib/chartPalette';
 import { kanbanColumns, priorityFor } from '../constants';
 import type { FeedbackSubmission } from '../types';
 import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
+import {
+  AdminSimpleTable,
+  type AdminSimpleColumn,
+} from '@/components/admin/primitives/AdminSimpleTable';
 
 interface Props {
   items: FeedbackSubmission[];
@@ -58,6 +63,29 @@ function buildVolumeSeries(rows: DailyVolumeRow[], days = 90) {
 
   return Array.from(byDay.entries()).map(([day, counts]) => ({ day, ...counts }));
 }
+
+const slaColumns: AdminSimpleColumn<SlaStatRow>[] = [
+  {
+    key: 'category',
+    header: 'Category',
+    render: (row) => {
+      const cat = feedbackCategoryMap[row.category];
+      return (
+        <>
+          <span
+            className="inline-block w-2 h-2 rounded-full mr-2"
+            style={{ backgroundColor: cat?.color || 'hsl(var(--muted-foreground))' }}
+          />
+          {cat?.label || row.category}
+        </>
+      );
+    },
+  },
+  { key: 'priority', header: 'Priority', render: (row) => priorityFor(row.priority).short },
+  { key: 'resolved', header: 'Resolved', render: (row) => row.resolved_n },
+  { key: 'median', header: 'Median', render: (row) => formatDuration(row.median_seconds) },
+  { key: 'p95', header: 'p95', render: (row) => formatDuration(row.p95_seconds) },
+];
 
 export function AnalyticsTab({ items, voteCounts }: Props) {
   const { data: daily = [], isLoading: dailyLoading } = useFeedbackDailyVolume();
@@ -140,42 +168,13 @@ export function AnalyticsTab({ items, voteCounts }: Props) {
 
       <div className="rounded-element bg-muted p-4 col-span-1 md:col-auto">
         <p className="text-sm font-bold mb-2">Time to resolve (90d, resolved items only)</p>
-        {sla.length === 0 ? (
-          <AdminEmpty variant="inline" noun="resolved items" className="text-xs" />
-        ) : (
-          <table className="w-full border-collapse [&_th]:text-left [&_th]:text-xs [&_th]:py-1 [&_th]:px-1.5 [&_th]:border-b [&_th]:font-semibold [&_td]:text-left [&_td]:text-xs [&_td]:py-1 [&_td]:px-1.5">
-            <thead>
-              <tr>
-                <th>Category</th>
-                <th>Priority</th>
-                <th>Resolved</th>
-                <th>Median</th>
-                <th>p95</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sla.map((row, i) => {
-                const cat = feedbackCategoryMap[row.category];
-                const p = priorityFor(row.priority);
-                return (
-                  <tr key={`${row.category}-${row.priority}-${i}`}>
-                    <td>
-                      <span
-                        className="inline-block w-2 h-2 rounded-full mr-2"
-                        style={{ backgroundColor: cat?.color || 'hsl(var(--muted-foreground))' }}
-                      />
-                      {cat?.label || row.category}
-                    </td>
-                    <td>{p.short}</td>
-                    <td>{row.resolved_n}</td>
-                    <td>{formatDuration(row.median_seconds)}</td>
-                    <td>{formatDuration(row.p95_seconds)}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        )}
+        <AdminSimpleTable
+          caption="Time to resolve by category and priority"
+          columns={slaColumns}
+          rows={sla}
+          rowKey={(row, i) => `${row.category}-${row.priority}-${i}`}
+          emptyNoun="resolved items"
+        />
       </div>
 
       <div className="rounded-element bg-muted p-4">
