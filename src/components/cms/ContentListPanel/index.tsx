@@ -258,6 +258,7 @@ function ContentListPanelBody(props: ContentListPanelProps) {
           />
           {c.search && (
             <Button
+              aria-label="Clear search"
               variant="ghost"
               size="sm"
               className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-0"

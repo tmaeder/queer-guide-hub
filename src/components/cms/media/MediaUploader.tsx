@@ -106,7 +106,13 @@ export default function MediaUploader({ onUploaded, bucket, accept }: MediaUploa
           </div>
 
           {!uploading && (
-            <Button variant="ghost" size="sm" onClick={handleClearPreview} className="h-7 w-7 p-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleClearPreview}
+              className="h-7 w-7 p-0"
+              aria-label="Clear preview"
+            >
               <X size={16} />
             </Button>
           )}
