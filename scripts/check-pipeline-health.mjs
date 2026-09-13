@@ -517,7 +517,7 @@ if (!hygieneRes.ok) {
     body: JSON.stringify({ p_min_km: 50 }),
   })
   if (!res.ok) {
-    console.warn(`⚠ city_country_polygon_conflicts → HTTP ${res.status} (RPC missing? migration 45000101100000)`)
+    console.warn(`⚠ city_country_polygon_conflicts → HTTP ${res.status} (RPC missing? migration 50000501100000)`)
     console.warn('  This check measured NOTHING — it did not pass.')
   } else {
     const rows = (await res.json()) ?? []

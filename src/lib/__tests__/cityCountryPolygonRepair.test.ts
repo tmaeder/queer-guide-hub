@@ -3,7 +3,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards the polygon-based city/country repair (45000101100000).
+ * Guards the polygon-based city/country repair (50000501100000).
  *
  * The defect being prevented is not "a wrong country" -- it is a SWEEP that
  * looks correct and corrupts the rows that matter. The raw test
