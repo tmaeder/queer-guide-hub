@@ -173,6 +173,41 @@ Ingest carries nothing structural — `NormalizedItem` has no parent/schedule fi
 public SubmitForm *does* collect `recurrence_rule` and `festival_id`;
 `commit_event_staging_item` drops both.
 
+**CORRECTED 2026-09-13, when step 6 went to build this and measured first. Two of those
+three sentences are wrong, and the conclusion they support does not hold.**
+
+**(a) `commit_event_staging_item` was never in the submit path.** `useSubmission`
+inserts the whole form object into `community_submissions.data` (jsonb) — not
+`ingestion_staging` — so nothing is dropped at submit time and the recurrence rule is
+preserved verbatim. That commit RPC belongs to the *feed* pipeline, which no submission
+touches. The named function is innocent.
+
+**(b) Nobody has ever used the recurrence widget.** Measured on prod: 66 event
+submissions (57 `processing`, 5 `rejected`, 4 `approved`) and **0 carry a
+`recurrence_rule`**. The loss this section implies is latent, not active — which
+inverts its priority.
+
+**(c) The real gap is one layer on, and it is not about recurrence.** Nothing promotes
+an approved event submission into `events` at all. `submission-action` sets
+`status='approved'` and writes audit rows; no edge function, no trigger and no SQL
+function inserts into `events` from `community_submissions` — the only migration naming
+both is the baseline, whose function is `auto_escalate_stale_feedback`, feedback only.
+Of the 4 approved submissions 3 have no matching event, and one of those,
+`Karte anzeigen` ("show map"), is scrape junk rather than a real submission. Honest
+size: **2 genuine approved submissions that never became events**, plus 57 never
+dispositioned.
+
+**Step 6 is therefore NOT BUILT, deliberately.** Adding `schedule` to `NormalizedItem`
+would be speculative — there is no producer. ICS exists in this repo as **export only**
+(`calendar-export`, `trip-ical`, `ical-generator`, `calendar-feed`), so no `RRULE` ever
+arrives; no `source-*` emits a cadence; and the one surface that can express one never
+has. The field costs one line to add later, alongside a real producer to test it
+against.
+
+What remains open is a **promotion path** for community submissions — a feature, not a
+contract fix, needing an admin surface this session cannot verify (no admin credentials,
+so every admin e2e skips). Recorded rather than half-built.
+
 ---
 
 ## 2. Design
