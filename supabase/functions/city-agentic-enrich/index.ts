@@ -305,7 +305,48 @@ Deno.serve(async (req: Request) => {
 
       if (!dryRun) {
         await supabase.from('cities').update(update).eq('id', c.id)
+
+        // A re-visit DELETEs the open row and INSERTs a new one, so the proposal a
+        // reviewer read is destroyed with no trace: `city_consensus_audit` records the
+        // field names and citations of each run but never the proposed VALUE, and the
+        // queue keeps no tombstone. Measured on Haapsalu, which is re-enriched roughly
+        // every nine hours: a wrong `best_time_to_visit` naming a spring film festival
+        // as a summer one was read, reported, and gone before anyone could act on it —
+        // unreconstructable afterwards, because nothing anywhere had kept the text.
+        //
+        // That is the "human decisions silently discarded" failure one step earlier: the
+        // PROPOSAL is discarded rather than the decision, so no queue-depth sentinel can
+        // see it either. Capture the outgoing value BEFORE the delete.
+        const superseded: Record<string, unknown>[] = []
+        const supersededUnreadable: string[] = []
+
         for (const g of gatedProposals) {
+          // `uq_erq_open (entity_type, entity_id, field) WHERE status='open'` guarantees
+          // at most one match, so maybeSingle is exact; more than one would surface as an
+          // error rather than silently taking the first.
+          const { data: prior, error: priorErr } = await supabase
+            .from('city_review_queue')
+            .select('id, proposed_value, confidence, created_at')
+            .eq('city_id', c.id).eq('field', g.field).eq('status', 'open')
+            .maybeSingle()
+
+          if (priorErr) {
+            // Never let a failed read be indistinguishable from "nothing was replaced" —
+            // absence of evidence must not be recorded as evidence of absence.
+            supersededUnreadable.push(g.field)
+          } else if (prior && JSON.stringify(prior.proposed_value) !== JSON.stringify(g.value)) {
+            // Only a CHANGED proposal supersedes anything. This composer re-publishes
+            // byte-identical text routinely, and recording that every nine hours would
+            // bury the real replacements in noise.
+            superseded.push({
+              field: g.field,
+              previous_value: prior.proposed_value,
+              previous_confidence: prior.confidence ?? null,
+              proposed_at: prior.created_at ?? null,
+              queue_id: prior.id ?? null,
+            })
+          }
+
           await supabase.from('city_review_queue').delete().eq('city_id', c.id).eq('field', g.field).eq('status', 'open')
           await supabase.from('city_review_queue').insert({
             city_id: c.id, field: g.field, proposed_value: g.value,
@@ -320,7 +361,17 @@ Deno.serve(async (req: Request) => {
         await supabase.from('city_consensus_audit').insert({
           city_id: c.id, field: queued.join(','), winning_source: 'llm', confidence,
           action: queued.length ? 'review_gated' : 'auto_commit',
-          details: { auto_fields: Object.keys(update).filter(k => !['enrichment_status', 'last_refreshed_at', 'needs_attention'].includes(k)), gated_fields: queued, citations },
+          details: {
+            auto_fields: Object.keys(update).filter(k => !['enrichment_status', 'last_refreshed_at', 'needs_attention'].includes(k)),
+            gated_fields: queued,
+            citations,
+            // Both keys are omitted when empty: a run that replaced nothing should not
+            // add an empty array to every audit row. Their ABSENCE therefore means "no
+            // open proposal was overwritten", which is only true because a failed read
+            // lands in `superseded_unreadable` instead of vanishing.
+            ...(superseded.length ? { superseded } : {}),
+            ...(supersededUnreadable.length ? { superseded_unreadable: supersededUnreadable } : {}),
+          },
         }).then(() => {}, () => {})
       }
 
