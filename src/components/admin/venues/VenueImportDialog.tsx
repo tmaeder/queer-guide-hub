@@ -1,9 +1,21 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -42,7 +54,7 @@ const DEFAULT_SEARCH_TERMS = {
     'lesbian bar',
     'queer friendly restaurant',
     'pride friendly cafe',
-    'LGBTQ community center'
+    'LGBTQ community center',
   ],
   'google-places': [
     'LGBTQ friendly bar',
@@ -50,7 +62,7 @@ const DEFAULT_SEARCH_TERMS = {
     'lesbian bar',
     'queer friendly restaurant',
     'pride friendly cafe',
-    'LGBTQ community center'
+    'LGBTQ community center',
   ],
   tomtom: [
     'LGBTQ friendly',
@@ -58,15 +70,9 @@ const DEFAULT_SEARCH_TERMS = {
     'lesbian bar',
     'queer restaurant',
     'pride cafe',
-    'LGBTQ center'
+    'LGBTQ center',
   ],
-  tripadvisor: [
-    'LGBTQ friendly',
-    'gay bar',
-    'lesbian bar',
-    'queer restaurant',
-    'pride cafe'
-  ]
+  tripadvisor: ['LGBTQ friendly', 'gay bar', 'lesbian bar', 'queer restaurant', 'pride cafe'],
 };
 
 const DEFAULT_LOCATIONS = [
@@ -79,22 +85,22 @@ const DEFAULT_LOCATIONS = [
   'Amsterdam, Netherlands',
   'Toronto, Canada',
   'Sydney, Australia',
-  'Paris, France'
+  'Paris, France',
 ];
 
 const CATEGORIES = {
   foursquare: ['Gay Bar', 'LGBTQ Organization', 'Restaurant', 'Cafe', 'Community Center'],
   'google-places': ['bar', 'restaurant', 'cafe', 'community_center', 'lgbtq_organization'],
   tomtom: ['Entertainment', 'Restaurant', 'Community', 'Shopping', 'Health'],
-  tripadvisor: ['Bars & Clubs', 'Restaurants', 'Attractions', 'Shopping', 'Spas & Wellness']
+  tripadvisor: ['Bars & Clubs', 'Restaurants', 'Attractions', 'Shopping', 'Spas & Wellness'],
 };
 
-export function VenueImportDialog({ 
-  open, 
-  onOpenChange, 
-  provider, 
-  onImport, 
-  isImporting 
+export function VenueImportDialog({
+  open,
+  onOpenChange,
+  provider,
+  onImport,
+  isImporting,
 }: VenueImportDialogProps) {
   const [config, setConfig] = useState<ImportConfig>({
     locations: ['New York, NY'],
@@ -105,7 +111,7 @@ export function VenueImportDialog({
     includeImages: true,
     includeReviews: false,
     isReimport: false,
-    filters: {}
+    filters: {},
   });
 
   const [newLocation, setNewLocation] = useState('');
@@ -113,52 +119,52 @@ export function VenueImportDialog({
 
   const addLocation = () => {
     if (newLocation.trim() && !config.locations.includes(newLocation.trim())) {
-      setConfig(prev => ({
+      setConfig((prev) => ({
         ...prev,
-        locations: [...prev.locations, newLocation.trim()]
+        locations: [...prev.locations, newLocation.trim()],
       }));
       setNewLocation('');
     }
   };
 
   const removeLocation = (location: string) => {
-    setConfig(prev => ({
+    setConfig((prev) => ({
       ...prev,
-      locations: prev.locations.filter(l => l !== location)
+      locations: prev.locations.filter((l) => l !== location),
     }));
   };
 
   const addSearchTerm = () => {
     if (newSearchTerm.trim() && !config.searchTerms.includes(newSearchTerm.trim())) {
-      setConfig(prev => ({
+      setConfig((prev) => ({
         ...prev,
-        searchTerms: [...prev.searchTerms, newSearchTerm.trim()]
+        searchTerms: [...prev.searchTerms, newSearchTerm.trim()],
       }));
       setNewSearchTerm('');
     }
   };
 
   const removeSearchTerm = (term: string) => {
-    setConfig(prev => ({
+    setConfig((prev) => ({
       ...prev,
-      searchTerms: prev.searchTerms.filter(t => t !== term)
+      searchTerms: prev.searchTerms.filter((t) => t !== term),
     }));
   };
 
   const addDefaultLocation = (location: string) => {
     if (!config.locations.includes(location)) {
-      setConfig(prev => ({
+      setConfig((prev) => ({
         ...prev,
-        locations: [...prev.locations, location]
+        locations: [...prev.locations, location],
       }));
     }
   };
 
   const addDefaultSearchTerm = (term: string) => {
     if (!config.searchTerms.includes(term)) {
-      setConfig(prev => ({
+      setConfig((prev) => ({
         ...prev,
-        searchTerms: [...prev.searchTerms, term]
+        searchTerms: [...prev.searchTerms, term],
       }));
     }
   };
@@ -169,21 +175,31 @@ export function VenueImportDialog({
 
   const getProviderIcon = () => {
     switch (provider) {
-      case 'foursquare': return '🏢';
-      case 'google-places': return '🗺️';
-      case 'tomtom': return '🛣️';
-      case 'tripadvisor': return '✈️';
-      default: return '📍';
+      case 'foursquare':
+        return '🏢';
+      case 'google-places':
+        return '🗺️';
+      case 'tomtom':
+        return '🛣️';
+      case 'tripadvisor':
+        return '✈️';
+      default:
+        return '📍';
     }
   };
 
   const getProviderName = () => {
     switch (provider) {
-      case 'foursquare': return 'Foursquare';
-      case 'google-places': return 'Google Places';
-      case 'tomtom': return 'TomTom';
-      case 'tripadvisor': return 'TripAdvisor';
-      default: return provider;
+      case 'foursquare':
+        return 'Foursquare';
+      case 'google-places':
+        return 'Google Places';
+      case 'tomtom':
+        return 'TomTom';
+      case 'tripadvisor':
+        return 'TripAdvisor';
+      default:
+        return provider;
     }
   };
 
@@ -196,7 +212,8 @@ export function VenueImportDialog({
             Import from {getProviderName()}
           </DialogTitle>
           <DialogDescription>
-            Configure import settings to fetch venues from {getProviderName()} with customizable search terms and locations.
+            Configure import settings to fetch venues from {getProviderName()} with customizable
+            search terms and locations.
           </DialogDescription>
         </DialogHeader>
 
@@ -214,9 +231,7 @@ export function VenueImportDialog({
                   <MapPin size={16} />
                   Locations
                 </CardTitle>
-                <CardDescription>
-                  Select cities and regions to search for venues
-                </CardDescription>
+                <CardDescription>Select cities and regions to search for venues</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
@@ -226,7 +241,7 @@ export function VenueImportDialog({
                       <Button
                         variant="ghost"
                         size="sm"
-
+                        aria-label={`Remove location ${location}`}
                         onClick={() => removeLocation(location)}
                       >
                         <X size={12} />
@@ -242,7 +257,11 @@ export function VenueImportDialog({
                     onChange={(e) => setNewLocation(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && addLocation()}
                   />
-                  <Button onClick={addLocation} disabled={!newLocation.trim()}>
+                  <Button
+                    aria-label="Add location"
+                    onClick={addLocation}
+                    disabled={!newLocation.trim()}
+                  >
                     <Plus size={16} />
                   </Button>
                 </div>
@@ -250,8 +269,7 @@ export function VenueImportDialog({
                 <div className="flex flex-col gap-2">
                   <Label>Quick Add Popular Locations:</Label>
                   <div className="flex flex-wrap gap-2">
-                    {DEFAULT_LOCATIONS
-                      .filter(loc => !config.locations.includes(loc))
+                    {DEFAULT_LOCATIONS.filter((loc) => !config.locations.includes(loc))
                       .slice(0, 5)
                       .map((location) => (
                         <Button
@@ -278,11 +296,13 @@ export function VenueImportDialog({
                   <div className="flex flex-col gap-2">
                     <Label htmlFor="limit">Venues per Location (Optional)</Label>
                     <Select
-                      value={config.limit?.toString() || "default"}
-                      onValueChange={(value) => setConfig(prev => ({
-                        ...prev,
-                        limit: value === "default" ? undefined : parseInt(value)
-                      }))}
+                      value={config.limit?.toString() || 'default'}
+                      onValueChange={(value) =>
+                        setConfig((prev) => ({
+                          ...prev,
+                          limit: value === 'default' ? undefined : parseInt(value),
+                        }))
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="No limit" />
@@ -300,11 +320,13 @@ export function VenueImportDialog({
                   <div className="flex flex-col gap-2">
                     <Label htmlFor="radius">Search Radius (Optional)</Label>
                     <Select
-                      value={config.radius?.toString() || "default"}
-                      onValueChange={(value) => setConfig(prev => ({
-                        ...prev,
-                        radius: value === "default" ? undefined : parseInt(value)
-                      }))}
+                      value={config.radius?.toString() || 'default'}
+                      onValueChange={(value) =>
+                        setConfig((prev) => ({
+                          ...prev,
+                          radius: value === 'default' ? undefined : parseInt(value),
+                        }))
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="No radius" />
@@ -331,7 +353,7 @@ export function VenueImportDialog({
                       id="reimport"
                       checked={config.isReimport}
                       onCheckedChange={(checked) =>
-                        setConfig(prev => ({ ...prev, isReimport: checked as boolean }))
+                        setConfig((prev) => ({ ...prev, isReimport: checked as boolean }))
                       }
                     />
                     <Label htmlFor="reimport">Update existing venues</Label>
@@ -342,7 +364,7 @@ export function VenueImportDialog({
                       id="images"
                       checked={config.includeImages}
                       onCheckedChange={(checked) =>
-                        setConfig(prev => ({ ...prev, includeImages: checked as boolean }))
+                        setConfig((prev) => ({ ...prev, includeImages: checked as boolean }))
                       }
                     />
                     <Label htmlFor="images">Include images</Label>
@@ -353,7 +375,7 @@ export function VenueImportDialog({
                       id="reviews"
                       checked={config.includeReviews}
                       onCheckedChange={(checked) =>
-                        setConfig(prev => ({ ...prev, includeReviews: checked as boolean }))
+                        setConfig((prev) => ({ ...prev, includeReviews: checked as boolean }))
                       }
                     />
                     <Label htmlFor="reviews">Include review data</Label>
@@ -382,7 +404,7 @@ export function VenueImportDialog({
                       <Button
                         variant="ghost"
                         size="sm"
-
+                        aria-label={`Remove search term ${term}`}
                         onClick={() => removeSearchTerm(term)}
                       >
                         <X size={12} />
@@ -398,7 +420,11 @@ export function VenueImportDialog({
                     onChange={(e) => setNewSearchTerm(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && addSearchTerm()}
                   />
-                  <Button onClick={addSearchTerm} disabled={!newSearchTerm.trim()}>
+                  <Button
+                    aria-label="Add search term"
+                    onClick={addSearchTerm}
+                    disabled={!newSearchTerm.trim()}
+                  >
                     <Plus size={16} />
                   </Button>
                 </div>
@@ -407,7 +433,7 @@ export function VenueImportDialog({
                   <Label>Popular LGBTQ+ Search Terms:</Label>
                   <div className="flex flex-wrap gap-2">
                     {DEFAULT_SEARCH_TERMS[provider]
-                      .filter(term => !config.searchTerms.includes(term))
+                      .filter((term) => !config.searchTerms.includes(term))
                       .map((term) => (
                         <Button
                           key={term}
@@ -428,9 +454,7 @@ export function VenueImportDialog({
               <Card>
                 <CardHeader>
                   <CardTitle>Categories</CardTitle>
-                  <CardDescription>
-                    Filter results by specific venue categories
-                  </CardDescription>
+                  <CardDescription>Filter results by specific venue categories</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -441,21 +465,19 @@ export function VenueImportDialog({
                           checked={config.categories.includes(category)}
                           onCheckedChange={(checked) => {
                             if (checked) {
-                              setConfig(prev => ({
+                              setConfig((prev) => ({
                                 ...prev,
-                                categories: [...prev.categories, category]
+                                categories: [...prev.categories, category],
                               }));
                             } else {
-                              setConfig(prev => ({
+                              setConfig((prev) => ({
                                 ...prev,
-                                categories: prev.categories.filter(c => c !== category)
+                                categories: prev.categories.filter((c) => c !== category),
                               }));
                             }
                           }}
                         />
-                        <Label htmlFor={`category-${category}`}>
-                          {category}
-                        </Label>
+                        <Label htmlFor={`category-${category}`}>{category}</Label>
                       </div>
                     ))}
                   </div>
@@ -481,10 +503,13 @@ export function VenueImportDialog({
                     <Label htmlFor="minRating">Minimum Rating</Label>
                     <Select
                       value={config.filters.minRating?.toString() || ''}
-                      onValueChange={(value) => 
-                        setConfig(prev => ({
+                      onValueChange={(value) =>
+                        setConfig((prev) => ({
                           ...prev,
-                          filters: { ...prev.filters, minRating: value ? parseFloat(value) : undefined }
+                          filters: {
+                            ...prev.filters,
+                            minRating: value ? parseFloat(value) : undefined,
+                          },
                         }))
                       }
                     >
@@ -507,9 +532,9 @@ export function VenueImportDialog({
                         id="openNow"
                         checked={config.filters.openNow || false}
                         onCheckedChange={(checked) =>
-                          setConfig(prev => ({
+                          setConfig((prev) => ({
                             ...prev,
-                            filters: { ...prev.filters, openNow: checked as boolean }
+                            filters: { ...prev.filters, openNow: checked as boolean },
                           }))
                         }
                       />
@@ -526,7 +551,8 @@ export function VenueImportDialog({
 
         <div className="flex justify-between">
           <div className="text-sm text-muted-foreground">
-            This will search {config.locations.length} location(s) with {config.searchTerms.length} search term(s)
+            This will search {config.locations.length} location(s) with {config.searchTerms.length}{' '}
+            search term(s)
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>

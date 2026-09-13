@@ -78,6 +78,31 @@ export type AdminArchetypeEntry = {
    * is precisely the big-bang this design exists to avoid.
    *
    * Flip one flag per migration PR.
+   *
+   * **`adopted` means the HEADER, not the frame — and for many routes the frame
+   * is not adoptable at all.** Measured 2026-09-12: 27 pages render
+   * `AdminArchetypeHeader`, and exactly 3 render any `Admin*Frame`
+   * (`AdminAutomation` → Registry, `AdminEntityTable` → Index, and
+   * `ContentListPanel`, header-only by its own comment). That is not 24 pages of
+   * pending mechanical work. The frames divide in two:
+   *
+   * - **Layout-only**, so adoptable: `AdminRegistryFrame` (title + children),
+   *   `AdminOpsFrame` (all slots optional), `AdminTreeCanvasFrame` (tree +
+   *   canvas), `AdminRecordFrame` (tabRail + children).
+   * - **Content-shape-specific**, so NOT adoptable without redesigning the page:
+   *   `AdminCompareFrame` requires `leftHeader`/`rightHeader`/`rows: CompareRow[]`
+   *   but `/admin/duplicates` is a LIST of pairs, not one side-by-side compare;
+   *   `AdminAnalyticsFrame` requires `chart` AND `rankedList` but `AdminAnalytics`
+   *   is three tabs of stat grids with no chart at all (`BarChart3` there is a
+   *   lucide icon) and no ranked list, and `AdminAffiliate` /`AdminEventQuality` /
+   *   `AdminSearchIntelligence` have the same shape; `AdminInboxFrame` requires
+   *   `list` AND `thread` but `AdminTrash` is Cards with no thread pane, as are
+   *   `AdminLiveness` / `AdminPlacesEditorial` / `AdminGroupRequests`.
+   *
+   * So a route can carry an archetype it can never render. Forcing those pages
+   * into their frame means inventing a chart, a thread pane or a compare pair —
+   * a product decision, not a migration. Either redesign the page deliberately,
+   * or relax the frame's required props; do not contort the content to fit.
    */
   adopted?: true;
 };
@@ -334,7 +359,7 @@ function matchDynamic(rest: string): AdminArchetypeEntry | undefined {
   return undefined;
 }
 
-/** `B · RECORD EDITOR — /admin/content/venue/schwuz`, the header's route line. */
+/** `B · RECORD EDITOR — /admin/content/venues/schwuz`, the header's route line. */
 export function getArchetypeRouteLine(pathname: string): string | null {
   const key = getArchetypeForRoute(pathname);
   if (!key) return null;
