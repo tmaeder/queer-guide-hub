@@ -140,8 +140,10 @@ describe('amenity-truth-backfill never destroys a pending proposal', () => {
   });
 
   it('gates the pre-select on the source that can produce a proposal', () => {
-    // Gated proposals come only from the LLM source; the routine cron runs
-    // sources:['extract'] and must not pay for a query that can never matter.
+    // Gated proposals come only from the LLM source, so an extract-only run must not
+    // pay for a query that can never matter. (The live cron does pass 'llm' — measured
+    // 2026-09-13, `0 */3 * * *` — but the function's own default sources are
+    // ['extract'], and operators run it that way too.)
     const block = fn.slice(fn.indexOf('let alreadyQueued'));
     expect(block.slice(0, 200)).toMatch(/if \(wantLlm\)/);
   });
