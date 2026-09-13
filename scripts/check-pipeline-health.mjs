@@ -555,6 +555,65 @@ if (!hygieneRes.ok) {
   }
 }
 
+// 4b-bis. The same question asked of the COORDINATES rather than the content
+//     (2026-09-13). The check above derives a city's true country from its events,
+//     so a row with no events can never contradict itself — and that is precisely
+//     the cohort that was wrong: 27 content-less `personality-birth-place` /
+//     `*-city-match` shells, one of which filed Concord, North Carolina under the
+//     Czech Republic with a Europe/Prague timezone. `geo_boundaries` holds 258
+//     country polygons and can adjudicate a row with no children at all.
+//
+//     ONLY `conflict_%` VERDICTS ARE ACTIONABLE. The raw "polygon disagrees" test
+//     reports 50 rows of which 23 are false positives, and every one of the six
+//     `seo_indexable` ones is a false positive: dependent territories with no
+//     polygon of their own (Réunion, Martinique) and border-precision artifacts
+//     (Gibraltar 0.4 km, Podčetrtek 0.7, Siebengewald 1.3, Niagara Falls 0.1).
+//     Those land as `abstain_%` and must never be "fixed" — the function's own
+//     comment says so. Reporting them here would train the reader to ignore it.
+//
+//     WARN, not fail: the three known survivors (Concord, and the Lyss / Martigny
+//     same-town pairs) are recorded decisions that cannot be repaired by moving a
+//     country — `uk_cities_country_name_active` forbids it — so hard-failing would
+//     be permanently red on a state a human already dispositioned.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/city_country_polygon_conflicts`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ p_min_km: 50 }),
+  })
+  if (!res.ok) {
+    console.warn(`⚠ city_country_polygon_conflicts → HTTP ${res.status} (RPC missing? migration 50000501100000)`)
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else {
+    const rows = (await res.json()) ?? []
+    if (!Array.isArray(rows)) {
+      console.error('✗ city_country_polygon_conflicts returned a non-array — the probe is broken')
+      FAILED = true
+    } else {
+      const actionable = rows.filter((r) => String(r.verdict ?? '').startsWith('conflict'))
+      const abstained = rows.filter((r) => String(r.verdict ?? '').startsWith('abstain'))
+      // A detector that abstains on nothing has been widened into the sweep this
+      // exists to prevent. Absence of abstentions is a fault, not a clean corpus.
+      if (rows.length > 0 && abstained.length === 0) {
+        console.error('✗ city_country_polygon_conflicts reported no abstentions at all —')
+        console.error('  the dependent-territory / border guards are not firing. Do NOT act on its output.')
+        FAILED = true
+      }
+      for (const r of actionable) {
+        console.warn(
+          `⚠ ${r.city_name} (${r.city_slug}) filed ${r.stored_code}, coordinates fall in ` +
+          `${r.polygon_code}, ${r.km_to_stored} km from ${r.stored_code} [${r.verdict}]`,
+        )
+      }
+      if (actionable.length === 0) {
+        console.log(`✓ No city coordinate contradicts its country (${abstained.length} abstentions preserved)`)
+      } else {
+        console.warn(`  ${actionable.length} actionable; repair via apply_city_country_repair, never a bare UPDATE`)
+      }
+    }
+  }
+}
+
 // 4c. Venue dedup health (2026-09-06). Same omission as 4b, one entity later: the
 //     dedup section covered city and event and nothing else, so the VENUE auto arms
 //     matched zero of 483 candidate pairs while dedup_truth_sweep reported success
