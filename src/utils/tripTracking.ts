@@ -11,6 +11,7 @@
  */
 
 import { supabase } from '@/integrations/supabase/client';
+import { insertTelemetry } from '@/lib/telemetryInsert';
 
 type TripEventName =
   // Trip lifecycle
@@ -78,15 +79,21 @@ export async function recordSuggestionImpression(input: ImpressionInput): Promis
     const { data: auth } = await supabase.auth.getUser();
     if (!auth?.user) return;
 
-    trackTripEvent(`${input.type === 'packing_product' ? 'packing' : 'reservation'}_suggestion_impression`, {
-      trip_id: input.tripId,
-      type: input.type,
-      partner_id: input.partnerId ?? null,
-      listing_id: input.listingId ?? null,
-      rank: input.rankPosition ?? null,
-    });
+    trackTripEvent(
+      `${input.type === 'packing_product' ? 'packing' : 'reservation'}_suggestion_impression`,
+      {
+        trip_id: input.tripId,
+        type: input.type,
+        partner_id: input.partnerId ?? null,
+        listing_id: input.listingId ?? null,
+        rank: input.rankPosition ?? null,
+      },
+    );
 
-    await supabase.from('trip_suggestion_impressions').insert({
+    // insertTelemetry inspects the resolved `{ error }` — the catch below
+    // never saw an insert rejection, because PostgREST resolves with an error
+    // object instead of throwing.
+    await insertTelemetry('trip_suggestion_impressions', {
       trip_id: input.tripId,
       user_id: auth.user.id,
       suggestion_type: input.type,
@@ -120,7 +127,9 @@ export async function recordSuggestionClick(input: ClickInput): Promise<void> {
     const { data: auth } = await supabase.auth.getUser();
 
     trackTripEvent(
-      input.type === 'packing_product' ? 'packing_suggestion_buy_click' : 'reservation_suggestion_click',
+      input.type === 'packing_product'
+        ? 'packing_suggestion_buy_click'
+        : 'reservation_suggestion_click',
       {
         trip_id: input.tripId,
         type: input.type,
@@ -135,7 +144,7 @@ export async function recordSuggestionClick(input: ClickInput): Promise<void> {
       vertical: input.type,
     });
 
-    await supabase.from('trip_booking_clicks').insert({
+    await insertTelemetry('trip_booking_clicks', {
       trip_id: input.tripId,
       user_id: auth?.user?.id ?? null,
       provider: input.provider,

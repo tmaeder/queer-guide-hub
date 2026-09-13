@@ -7,7 +7,6 @@ import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
 import { TripContextBar } from '@/components/trips/TripContextBar';
 import { RecoveryRedirect } from '@/components/auth/RecoveryRedirect';
 import { BreadcrumbBar } from '@/components/breadcrumbs/BreadcrumbBar';
-import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker';
 import { useGlobalPresence } from '@/hooks/useConversationPresence';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { lazyOptional } from '@/utils/lazyRetry';
@@ -49,10 +48,26 @@ const InstallBanner = lazyOptional(() =>
  * `pb-24` clearance). Each block is gated in place rather than early-returning
  * a different tree, so `{children}` keeps its index in the children array and
  * React reconciles the route subtree instead of remounting it as the pathname
- * flips. Two things stay mounted on admin deliberately: AnalyticsTracker
- * (renders null; gating it would silently drop admin pageviews) and
- * CookieConsentBanner (analytics does not consent-gate itself, so a first-time
- * visitor landing straight on /admin must still get the prompt).
+ * flips. CookieConsentBanner stays mounted on admin deliberately: a first-time
+ * visitor landing straight on /admin must still get the consent prompt.
+ *
+ * There is no page-view tracker component here any more, and there must not be
+ * one again. `AnalyticsTracker` used to be mounted at this level and was
+ * justified in this very comment with "gating it would silently drop admin
+ * pageviews" — but it reached `supabase.functions.invoke('umami-analytics')`
+ * directly, past `analyticsLoader.ts`, so it tracked every visitor regardless
+ * of consent or Do Not Track while the Cookie policy said analytics loads
+ * "only with your consent". Measured on prod 2026-09-12 it carried 98.9% of
+ * all sessions, and reproduced in a browser: one visit to /travel with six
+ * scroll steps emitted 22 beacons — 11 through the consent-gated path and 11
+ * through this one, a perfect duplicate of every page view.
+ *
+ * Page views are now the job of `public/umami.js` alone, injected by
+ * `src/utils/analyticsLoader.ts` only after explicit consent. Custom events go
+ * through `window.umami.track` (see `src/utils/travelAnalytics.ts`), a global
+ * that exists only when that script was injected — so the gate cannot be
+ * bypassed by forgetting to check it. `eslint-rules/no-ungated-analytics.js`
+ * enforces both halves.
  */
 export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
   const { pathname } = useLocation();
@@ -102,7 +117,6 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
           swatches for judging, and texture behind a swatch defeats the one
           thing that surface exists to do. */}
       <div aria-hidden="true" className="fixed inset-0 z-0 pointer-events-none bg-background" />
-      <AnalyticsTracker />
       {/* Outside the !isAdmin branch on purpose: a recovery link can land on
           any path, including an admin one, and must still reach the reset
           page. */}

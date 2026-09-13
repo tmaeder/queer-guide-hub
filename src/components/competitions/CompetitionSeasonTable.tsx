@@ -132,6 +132,34 @@ export function CompetitionSeasonTable({ competitions }: { competitions: Competi
     [competitions],
   );
 
+  /**
+   * A column is shown only where this category can populate it. A title contest
+   * is decided in one night, so `Episodes` and `Miss Congeniality` were columns
+   * of nothing but em dashes on three of the six pages — the table is shared,
+   * and it used to render every column for every type.
+   *
+   * Derived from the DATA, never from a hardcoded list of categories: if a
+   * title contest ever gains episodes, or a series drops Miss Congeniality, the
+   * table follows without an edit here.
+   *
+   * Computed over ALL rows for the category, deliberately NOT the filtered
+   * ones. Keying off the visible subset would make columns appear and vanish as
+   * someone types in the filter, which reads as the table breaking.
+   */
+  const columns = useMemo(
+    () => ({
+      episodes: rows.some((r) => r.episodes != null),
+      missCongeniality: rows.some((r) => r.missCongeniality.length > 0),
+      firstAired: rows.some((r) => r.firstAired != null),
+      /* A one-night contest ends the day it starts, so `lastAired` earns its
+       * column only where it says something `firstAired` does not. Measured:
+       * every dated gay-title and trans-pageant edition has last === first,
+       * and leather titles and drag pageants carry no date at all. */
+      lastAired: rows.some((r) => r.lastAired != null && r.lastAired !== r.firstAired),
+    }),
+    [rows],
+  );
+
   const formats = useMemo(() => {
     const out = new Map<string, number>();
     for (const r of rows) {
@@ -239,7 +267,7 @@ export function CompetitionSeasonTable({ competitions }: { competitions: Competi
         <caption className="sr-only">
           {t(
             'competitions.table.caption',
-            'One row per season or edition, with its entrants, air dates and results.',
+            'One row per season or edition, with its entrants and results.',
           )}
         </caption>
         <TableHeader>
@@ -263,28 +291,36 @@ export function CompetitionSeasonTable({ competitions }: { competitions: Competi
               onSort={onSort}
               align="right"
             />
-            <SortHeader
-              label={t('competitions.table.episodes', 'Episodes')}
-              columnKey="episodes"
-              sort={sort}
-              onSort={onSort}
-              align="right"
-            />
-            <SortHeader
-              label={t('competitions.table.firstAired', 'First aired')}
-              columnKey="first"
-              sort={sort}
-              onSort={onSort}
-            />
-            <SortHeader
-              label={t('competitions.table.lastAired', 'Last aired')}
-              columnKey="last"
-              sort={sort}
-              onSort={onSort}
-            />
+            {columns.episodes && (
+              <SortHeader
+                label={t('competitions.table.episodes', 'Episodes')}
+                columnKey="episodes"
+                sort={sort}
+                onSort={onSort}
+                align="right"
+              />
+            )}
+            {columns.firstAired && (
+              <SortHeader
+                label={t('competitions.table.firstAired', 'First aired')}
+                columnKey="first"
+                sort={sort}
+                onSort={onSort}
+              />
+            )}
+            {columns.lastAired && (
+              <SortHeader
+                label={t('competitions.table.lastAired', 'Last aired')}
+                columnKey="last"
+                sort={sort}
+                onSort={onSort}
+              />
+            )}
             <TableHead>{t('competitions.table.winners', 'Winner(s)')}</TableHead>
             <TableHead>{t('competitions.table.runnersUp', 'Runner(s)-up')}</TableHead>
-            <TableHead>{t('competitions.table.missCongeniality', 'Miss Congeniality')}</TableHead>
+            {columns.missCongeniality && (
+              <TableHead>{t('competitions.table.missCongeniality', 'Miss Congeniality')}</TableHead>
+            )}
             <TableHead>{t('competitions.table.outlet', 'Network / organizer')}</TableHead>
           </TableRow>
         </TableHeader>
@@ -294,16 +330,22 @@ export function CompetitionSeasonTable({ competitions }: { competitions: Competi
               <TableCell className="font-medium">{r.competition}</TableCell>
               <TableCell>{r.title}</TableCell>
               <TableCell className="text-right tabular-nums">{r.entrants}</TableCell>
-              <TableCell className="text-right tabular-nums">{r.episodes ?? '—'}</TableCell>
-              <TableCell className="whitespace-nowrap tabular-nums text-muted-foreground">
-                {formatAired(r.firstAired, locale)}
-              </TableCell>
-              <TableCell className="whitespace-nowrap tabular-nums text-muted-foreground">
-                {formatAired(r.lastAired, locale)}
-              </TableCell>
+              {columns.episodes && (
+                <TableCell className="text-right tabular-nums">{r.episodes ?? '—'}</TableCell>
+              )}
+              {columns.firstAired && (
+                <TableCell className="whitespace-nowrap tabular-nums text-muted-foreground">
+                  {formatAired(r.firstAired, locale)}
+                </TableCell>
+              )}
+              {columns.lastAired && (
+                <TableCell className="whitespace-nowrap tabular-nums text-muted-foreground">
+                  {formatAired(r.lastAired, locale)}
+                </TableCell>
+              )}
               <TableCell>{formatList(r.winners)}</TableCell>
               <TableCell>{formatList(r.runnersUp)}</TableCell>
-              <TableCell>{formatList(r.missCongeniality)}</TableCell>
+              {columns.missCongeniality && <TableCell>{formatList(r.missCongeniality)}</TableCell>}
               <TableCell className="text-muted-foreground">{r.outlet ?? '—'}</TableCell>
             </TableRow>
           ))}

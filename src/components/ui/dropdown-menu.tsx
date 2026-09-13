@@ -1,14 +1,19 @@
 import * as React from 'react';
+// Primitives re-exported unchanged are imported BY NAME rather than aliased off
+// the namespace (`const DropdownMenu = DropdownMenuPrimitive.Root`) — see the
+// note in accordion.tsx. Same value either way; only this form keeps fast
+// refresh.
+import {
+  Root as DropdownMenu,
+  Trigger as DropdownMenuTrigger,
+  Group as DropdownMenuGroup,
+  Portal as DropdownMenuPortal,
+  Sub as DropdownMenuSub,
+  RadioGroup as DropdownMenuRadioGroup,
+} from '@radix-ui/react-dropdown-menu';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import { Check, ChevronRight, Circle } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-const DropdownMenu = DropdownMenuPrimitive.Root;
-const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
-const DropdownMenuGroup = DropdownMenuPrimitive.Group;
-const DropdownMenuPortal = DropdownMenuPrimitive.Portal;
-const DropdownMenuSub = DropdownMenuPrimitive.Sub;
-const DropdownMenuRadioGroup = DropdownMenuPrimitive.RadioGroup;
 
 const DropdownMenuSubTrigger = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.SubTrigger>,

@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
-import { tierFor, type EqualityTier } from '@/utils/citiesFilter';
-import { getScoreRingColor } from '@/utils/equalityScore';
+import { tierFor } from '@/utils/citiesFilter';
+import { EQUALITY_TIER_LABEL, getScoreRingColor } from '@/utils/equalityScore';
 
 interface EqualityChipProps {
   score: number | null | undefined;
@@ -27,15 +27,6 @@ interface EqualityChipProps {
   variant?: 'plate' | 'ink';
 }
 
-const TIER_LABEL: Record<EqualityTier, string> = {
-  'very-high': 'Very High',
-  high: 'High',
-  moderate: 'Moderate',
-  low: 'Low',
-  'very-low': 'Very Low',
-  unknown: 'No data',
-};
-
 /**
  * Compact equality chip for list rows. Monochrome plate; the only chromatic
  * element is a 6px tier dot using the allowlisted equality-scores functional
@@ -56,12 +47,12 @@ export function EqualityChip({
   variant = 'plate',
 }: EqualityChipProps) {
   const tier = tierFor(score);
-  const label = showLabel || score == null ? TIER_LABEL[tier] : `${Math.round(score)}`;
+  const label = showLabel || score == null ? EQUALITY_TIER_LABEL[tier] : `${Math.round(score)}`;
   const dotColor = getScoreRingColor(score);
   const ariaLabel =
     score == null
       ? `Equality score unknown`
-      : `Equality score ${Math.round(score)}, ${TIER_LABEL[tier]}`;
+      : `Equality score ${Math.round(score)}, ${EQUALITY_TIER_LABEL[tier]}`;
 
   if (variant === 'ink') {
     return (
@@ -78,7 +69,7 @@ export function EqualityChip({
             card without needing a second colour rule. */}
         {score != null && !showLabel && (
           <span aria-hidden className="text-2xs uppercase tracking-label opacity-70">
-            {TIER_LABEL[tier]}
+            {EQUALITY_TIER_LABEL[tier]}
           </span>
         )}
       </span>
@@ -103,5 +94,3 @@ export function EqualityChip({
     </span>
   );
 }
-
-export { TIER_LABEL };

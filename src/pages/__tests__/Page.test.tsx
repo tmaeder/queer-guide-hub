@@ -33,6 +33,10 @@ function metaContent(name: string) {
   return document.querySelector(`meta[name="${name}"]`)?.getAttribute('content');
 }
 
+function robotsContent() {
+  return metaContent('robots');
+}
+
 beforeEach(() => useCMSPageMock.mockReset());
 
 describe('Page (CMS renderer)', () => {
@@ -106,5 +110,16 @@ describe('Page SEO meta', () => {
     mockPage({ title: 'About', body_html: '<p>x</p>' });
     renderAt('about', '/de');
     expect(canonicalHref()).toBe('https://queer.guide/p/about');
+  });
+
+  it('noindexes a missing /p/ page instead of publishing an empty-titled indexable page', () => {
+    // `useMeta` used to be called with `page?.meta_title || page?.title || ''`
+    // — all undefined on a dead slug — with no `noIndex` at all: an empty
+    // title falls back to the default "Queer Guide" title with a live
+    // canonical and no robots tag, the same soft-404 shape as TagDetail.
+    useCMSPageMock.mockReturnValue({ data: { page: null, notFound: true }, isLoading: false });
+    renderAt('missing');
+    expect(robotsContent()).toBe('noindex,nofollow');
+    expect(document.title).toBe('Page Not Found | Queer Guide');
   });
 });

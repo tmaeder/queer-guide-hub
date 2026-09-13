@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { waitForAppReady } from './support/appReady';
+import { REDUCED_MOTION } from './support/reducedMotion';
 
 /**
  * /help earns its own a11y spec.
@@ -17,7 +18,7 @@ import { waitForAppReady } from './support/appReady';
  * If anything on this page overflows, it overflows there.
  */
 
-test.use({ reducedMotion: 'reduce' });
+test.use(REDUCED_MOTION);
 
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 

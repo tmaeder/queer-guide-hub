@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { REDUCED_MOTION } from './support/reducedMotion';
 
 /**
  * Nested interactive content (`<a>` or `<button>` inside an `<a>`) is invalid
@@ -18,7 +19,7 @@ import { test, expect } from '@playwright/test';
  */
 
 // Route transitions fade opacity 0->1; settle the DOM before querying.
-test.use({ reducedMotion: 'reduce' });
+test.use(REDUCED_MOTION);
 
 const NESTED_SELECTOR = 'a a, a button, a [role="button"]';
 

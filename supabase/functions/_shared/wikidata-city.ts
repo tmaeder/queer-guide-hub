@@ -52,6 +52,65 @@ function asQid(v: unknown): string | undefined {
   const id = typeof v === 'object' && v !== null ? (v as { id?: string }).id : undefined
   return typeof id === 'string' && /^Q[1-9][0-9]*$/.test(id) ? id : undefined
 }
+/**
+ * The unit QID of a Wikidata quantity. Quantities carry
+ * `unit: "http://www.wikidata.org/entity/Q712226"`, or the literal string `"1"`
+ * for a dimensionless number.
+ *
+ * Returns `'1'` for dimensionless and `undefined` when there is no unit field at
+ * all — the two are NOT the same and the caller must be able to tell them apart.
+ */
+function unitQidOf(v: unknown): string | undefined {
+  const u = typeof v === 'object' && v !== null ? (v as { unit?: string }).unit : undefined
+  if (typeof u !== 'string' || !u) return undefined
+  if (u === '1') return '1'
+  const m = /\/(Q[1-9][0-9]*)$/.exec(u)
+  return m ? m[1] : undefined
+}
+
+/**
+ * Unit conversion for the two dimensioned city scalars.
+ *
+ * WHY THIS EXISTS. `asNumber` reads `.amount` and ignores `.unit`, so whatever
+ * the statement was measured in got stored under the column's own label. That is
+ * not hypothetical: sampling 15 cities on 2026-09-08 found **P2046 stated in
+ * Q25343 (square metre)** and **P2044 stated in Q3710 (foot)** in the wild. An
+ * unconverted square-metre area is wrong by 1,000,000x — the magnitude class of
+ * `City of Hamilton`, stored at 1,138,110,000 km2, roughly seven times the land
+ * area of Earth.
+ *
+ * Every QID below was resolved against the live label API rather than recalled.
+ * That check earned its keep: `Q2489629`, reached for as "are", is a Dutch
+ * cyclist.
+ *
+ * UNRECOGNISED MEANS NULL, NEVER THE RAW NUMBER. A unit we cannot convert is a
+ * measurement in an unknown scale; publishing the bare amount under the km2/m
+ * label is precisely the defect this table exists to stop. Dimensionless (`'1'`)
+ * is rejected for the same reason — for these two properties Wikidata states a
+ * real unit, so a bare number is a malformed statement, not an implied default.
+ */
+const AREA_TO_KM2: Record<string, number> = {
+  Q712226: 1,              // square kilometre
+  Q25343: 1e-6,            // square metre
+  Q232291: 2.589988110336, // square mile
+  Q35852: 0.01,            // hectare
+}
+const ELEVATION_TO_M: Record<string, number> = {
+  Q11573: 1,         // metre
+  Q3710: 0.3048,     // foot
+  Q828224: 1000,     // kilometre
+  Q253276: 1609.344, // mile
+}
+
+/** Amount x unit factor, or undefined when the unit is absent or unrecognised. */
+function convertQuantity(v: unknown, table: Record<string, number>): number | undefined {
+  const amount = asNumber(v)
+  if (amount == null) return undefined
+  const unit = unitQidOf(v)
+  if (!unit) return undefined
+  const factor = table[unit]
+  return factor == null ? undefined : amount * factor
+}
 function asString(v: unknown): string | undefined {
   return typeof v === 'string' && v.trim() ? v.trim() : undefined
 }
@@ -181,9 +240,15 @@ export function parseCityFacts(claims: Claims): CityWdFacts {
     refs: { sister_cities: [], local_language: [], mayor: [], climate_type: [], economy_sectors: [] },
   }
 
+  // P1082 is a count, not a measurement — it carries no unit and stays on `num`.
   const pop = num('P1082'); if (pop != null) out.population = Math.round(pop)
-  const area = num('P2046'); if (area != null) out.area_km2 = Math.round(area * 100) / 100
-  const elev = num('P2044'); if (elev != null) out.elevation_m = Math.round(elev)
+
+  // P2046/P2044 are dimensioned. Read the unit and convert, or write nothing —
+  // see AREA_TO_KM2 above for why the raw amount is never an acceptable fallback.
+  const area = convertQuantity(valueOf(bestStatement(claims.P2046)?.mainsnak), AREA_TO_KM2)
+  if (area != null) out.area_km2 = Math.round(area * 100) / 100
+  const elev = convertQuantity(valueOf(bestStatement(claims.P2044)?.mainsnak), ELEVATION_TO_M)
+  if (elev != null) out.elevation_m = Math.round(elev)
 
   const inception = asTime(valueOf(bestStatement(claims.P571)?.mainsnak))
   if (inception) {

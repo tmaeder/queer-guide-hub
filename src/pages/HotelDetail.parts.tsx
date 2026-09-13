@@ -28,6 +28,7 @@ import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
 import { buildPlaceChain } from '@/config/breadcrumbs';
 import type { TFunction } from 'i18next';
 import type { ReactNode } from 'react';
+import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
 
 type Hotel = Database['public']['Tables']['hotels']['Row'];
 export type HotelWithRelations = Hotel & {
@@ -237,7 +238,9 @@ export function HotelOverview({
                 fieldOverride={{ type: 'textarea' }}
                 as="div"
               >
-                <p className="whitespace-pre-wrap">{hotel.description}</p>
+                <p className="whitespace-pre-wrap">
+                  <GlossaryLinkedText text={hotel.description} />
+                </p>
               </Editable>
             </CardContent>
           </Card>
@@ -248,7 +251,9 @@ export function HotelOverview({
               <CardTitle>{t('pages.hotelDetail.safetyNotes', 'Safety Notes')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm">{hotel.queer_safety_notes}</p>
+              <p className="text-sm">
+                <GlossaryLinkedText text={hotel.queer_safety_notes} />
+              </p>
             </CardContent>
           </Card>
         )}

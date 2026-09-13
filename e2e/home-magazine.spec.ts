@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { REDUCED_MOTION } from './support/reducedMotion';
 
 /**
  * Homepage "magazine front page" (PR #2055), rebuilt on the subway-map system
@@ -13,7 +14,7 @@ import { test, expect, type Page } from '@playwright/test';
  * progressively before asserting on them. Content assertions stay resilient
  * to rotating data: they check section chrome and shape, not today's rows.
  */
-test.use({ reducedMotion: 'reduce' });
+test.use(REDUCED_MOTION);
 
 const DESKTOP = { width: 1280, height: 900 };
 const MOBILE = { width: 390, height: 844 };
@@ -21,8 +22,13 @@ const MOBILE = { width: 390, height: 844 };
 async function dismissCookieBanner(page: Page) {
   const banner = page.getByRole('region', { name: /cookie settings/i });
   if (!(await banner.isVisible().catch(() => false))) return;
-  await banner.getByRole('button', { name: /necessary only|accept all/i }).first().click();
-  await expect(banner).toBeHidden().catch(() => {});
+  await banner
+    .getByRole('button', { name: /necessary only|accept all/i })
+    .first()
+    .click();
+  await expect(banner)
+    .toBeHidden()
+    .catch(() => {});
 }
 
 async function gotoHome(page: Page, viewport: { width: number; height: number }) {

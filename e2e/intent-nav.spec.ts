@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { REDUCED_MOTION } from './support/reducedMotion';
 
 /**
  * Intent Router navigation.
@@ -19,7 +20,7 @@ import { test, expect } from '@playwright/test';
  *  5. Crisis-adjacent intents stay animation-free.
  */
 
-test.use({ reducedMotion: 'reduce' });
+test.use(REDUCED_MOTION);
 
 const INTENTS = [
   { label: 'Going out', href: '/going-out' },

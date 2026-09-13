@@ -26,9 +26,6 @@ vi.mock('@/components/breadcrumbs/BreadcrumbBar', () => ({
 }));
 vi.mock('@/components/trips/TripContextBar', () => ({ TripContextBar: () => null }));
 vi.mock('@/components/auth/EmailVerifyBanner', () => ({ EmailVerifyBanner: () => null }));
-vi.mock('@/components/analytics/AnalyticsTracker', () => ({
-  AnalyticsTracker: () => <span data-testid="analytics" />,
-}));
 
 import { LayoutShell } from '@/components/layout/LayoutShell';
 
@@ -62,9 +59,21 @@ describe('LayoutShell', () => {
     },
   );
 
-  it('keeps analytics mounted on admin — gating it would silently drop pageviews', () => {
-    renderAt('/admin');
-    expect(screen.getByTestId('analytics')).toBeTruthy();
+  // This used to assert the opposite — "keeps analytics mounted on admin,
+  // gating it would silently drop pageviews" — which encoded the consent
+  // bypass as the intended behaviour. The tracker it mounted reached the
+  // ingest edge function directly, past analyticsLoader's consent gate, and
+  // carried 98.9% of all tracking (prod, 2026-09-12). Page views now come from
+  // public/umami.js alone, which is injected only after explicit consent.
+  it('mounts no page-view tracker of its own, on admin or anywhere else', () => {
+    for (const path of ['/admin', '/', '/travel']) {
+      const { unmount } = renderAt(path);
+      // Positive control: the tree really did render, so a null tracker is an
+      // absence and not an empty render.
+      expect(screen.getByText('route content')).toBeTruthy();
+      expect(screen.queryByTestId('analytics')).toBeNull();
+      unmount();
+    }
   });
 
   it('does not treat a route merely prefixed with /admin as the console', () => {

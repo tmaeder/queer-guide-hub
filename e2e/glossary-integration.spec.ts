@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { REDUCED_MOTION } from './support/reducedMotion';
 
 /**
  * Glossary integration — the tags wiki surfaced across the product
@@ -10,7 +11,7 @@ import { test, expect } from '@playwright/test';
  * working as the corpus moves.
  */
 
-test.use({ reducedMotion: 'reduce' });
+test.use(REDUCED_MOTION);
 
 test.describe('glossary in navigation', () => {
   test.skip(({ isMobile }) => !!isMobile, 'desktop chrome');

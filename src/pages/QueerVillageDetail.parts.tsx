@@ -15,6 +15,7 @@ import { useVisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
 import type { ReactNode } from 'react';
 import type { TFunction } from 'i18next';
 import type { Database } from '@/integrations/supabase/types';
+import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 type Event = Database['public']['Tables']['events']['Row'];
@@ -165,7 +166,7 @@ export function VillageAbout({
           as="div"
         >
           <p className="max-w-reading whitespace-pre-line text-body-lg leading-relaxed">
-            {village.history}
+            <GlossaryLinkedText text={village.history} />
           </p>
         </Editable>
       )}

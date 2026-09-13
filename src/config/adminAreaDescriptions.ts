@@ -60,7 +60,6 @@ export const ADMIN_AREA_DESCRIPTIONS: Record<string, string> = {
   '/admin/affiliates': 'Affiliate partners. Manage merchant links and payouts.',
   '/admin/content/redirects': 'URL redirect rules.',
   '/admin/email-templates': 'Transactional email templates.',
-  '/admin/recognition': 'Contributor recognition wall.',
   '/admin/audit': 'Audit log. Who changed what, across the admin.',
   '/admin/settings': 'Taxonomy settings. Categories, amenities, services, and attributes.',
 };

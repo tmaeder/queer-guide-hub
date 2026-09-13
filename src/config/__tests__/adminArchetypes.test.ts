@@ -104,14 +104,20 @@ describe('admin archetype registry', () => {
 
   it('records the honest coverage rather than rounding it up', () => {
     // The design document says "every route resolves to one of eight". The
-    // measured answer is 24 clean / 11 caveated / 6 exempt, and this pins that
+    // measured answer is 23 clean / 11 caveated / 6 exempt, and this pins that
     // shape so a future change has to move the number deliberately. A registry
     // that lets "nearly" drift into "yes" is worth less than no registry.
     // (10 -> 11 caveated when /admin/trash landed: an F with no thread pane.)
+    // (24 -> 23 clean when Twenty CRM was retired 2026-09-10: the registry's
+    // only integration entry, an F that was never a content type.)
+    // (11 -> 12 caveated when /admin/styleguide landed: an H whose fourth tab
+    // is a D, recorded rather than filed under its loudest tab.)
+    // (23 -> 22 clean when /admin/recognition was removed 2026-09-12: the
+    // recognition wall it curated held 0 rows for its entire life.)
     const clean = ADMIN_ARCHETYPES.filter((e) => e.archetype && !e.caveat).length;
     const caveated = ADMIN_ARCHETYPES.filter((e) => e.archetype && e.caveat).length;
     const exempt = ADMIN_ARCHETYPES.filter((e) => e.archetype === null).length;
-    expect({ clean, caveated, exempt }).toEqual({ clean: 24, caveated: 11, exempt: 6 });
+    expect({ clean, caveated, exempt }).toEqual({ clean: 22, caveated: 12, exempt: 6 });
     expect(clean + caveated + exempt).toBe(ADMIN_ARCHETYPES.length);
   });
 

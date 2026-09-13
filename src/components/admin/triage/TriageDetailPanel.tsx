@@ -1,18 +1,26 @@
+import { useState } from 'react';
 import { Link } from 'react-router';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {Clock, User, Zap } from 'lucide-react';
+import { Clock, ShieldAlert, User, Zap } from 'lucide-react';
 import { EntityPreviewCard } from './EntityPreviewCard';
 import { StagingPreview } from './StagingPreview';
 import { FieldDiffView, computeFieldDiffs } from './FieldDiffView';
 import { ActionBar } from './ActionBar';
+import { DedupPairCompare } from './DedupPairCompare';
 import type { TriageItem } from '@/hooks/useUnifiedTriageQueue';
 import { useEntityData, useStagingData } from '@/hooks/useTriageDetail';
 
 interface TriageDetailPanelProps {
   item: TriageItem;
-  onAction: (action: 'approve' | 'reject' | 'skip' | 'flag', notes?: string, cannedSlug?: string) => void;
+  onAction: (
+    action: 'approve' | 'reject' | 'skip' | 'flag',
+    notes?: string,
+    cannedSlug?: string,
+    /** Queue-specific extras — dedup-review uses `{ keep_id }` for the canonical flip. */
+    payload?: Record<string, unknown>,
+  ) => void;
   isActionLoading: boolean;
 }
 
@@ -38,9 +46,19 @@ const EXTERNAL_CONSOLE: Record<string, { route: string; label: string }> = {
 
 /** Keys to hide from meta display — internal or already shown in header */
 const META_HIDDEN_KEYS = new Set([
-  'id', 'entity_id', 'entity_table', 'queue_type', 'content_type',
-  'title', 'subtitle', 'status', 'created_at', 'updated_at',
-  'normalized_data', 'raw_data', 'source_data',
+  'id',
+  'entity_id',
+  'entity_table',
+  'queue_type',
+  'content_type',
+  'title',
+  'subtitle',
+  'status',
+  'created_at',
+  'updated_at',
+  'normalized_data',
+  'raw_data',
+  'source_data',
 ]);
 
 function formatMetaValue(value: unknown): string {
@@ -54,7 +72,11 @@ function formatMetaValue(value: unknown): string {
   }
   if (typeof value === 'string') {
     if (/^[A-Z][A-Z_-]+$/.test(value)) {
-      return value.replace(/_/g, ' ').replace(/-/g, ' ').toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+      return value
+        .replace(/_/g, ' ')
+        .replace(/-/g, ' ')
+        .toLowerCase()
+        .replace(/\b\w/g, (c) => c.toUpperCase());
     }
     return value;
   }
@@ -63,9 +85,7 @@ function formatMetaValue(value: unknown): string {
 }
 
 function formatMetaKey(key: string): string {
-  return key
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+  return key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function humanize(raw: string): string {
@@ -81,24 +101,82 @@ export function TriageDetailPanel({ item, onAction, isActionLoading }: TriageDet
   const { data: stagingData } = useStagingData(item);
   const externalConsole = EXTERNAL_CONSOLE[item.queue_type];
 
-  const diffs = item.has_diff && entityData && stagingData
-    ? computeFieldDiffs(
-        entityData as Record<string, unknown>,
-        (stagingData as Record<string, unknown>)?.normalized_data as Record<string, unknown> ?? null,
-      )
-    : [];
+  const isDedup = item.queue_type === 'dedup-review';
+  const meta = (item.meta ?? null) as Record<string, unknown> | null;
+  const originalKeepId = typeof meta?.keep_id === 'string' ? meta.keep_id : null;
 
+  // Namesake: `triage_src_dedup_review` has emitted this for personalities since the
+  // queue existed and no component ever read it. Two different people with one name
+  // merged together is an outing risk, so it gets an explicit confirm.
+  const namesake = Boolean((item.risk_flags as { namesake?: boolean } | null)?.namesake);
+
+  // Per-pair state, reset when the queue advances. The panel is reused in place, so
+  // without the reset the previous pair's canonical choice and namesake confirmation
+  // would carry silently onto the next one — and on the namesake flag that means the
+  // confirm gate is already satisfied for a pair nobody looked at.
+  //
+  // Adjusted DURING RENDER rather than in an effect (react-hooks/set-state-in-effect):
+  // an effect here would render the new pair once with the old pair's answers before
+  // correcting itself.
+  const [perPair, setPerPair] = useState({
+    id: item.id,
+    keepId: originalKeepId,
+    namesakeConfirmed: false,
+  });
+  if (perPair.id !== item.id) {
+    setPerPair({ id: item.id, keepId: originalKeepId, namesakeConfirmed: false });
+  }
+  const keepId = perPair.id === item.id ? perPair.keepId : originalKeepId;
+  const namesakeConfirmed = perPair.id === item.id ? perPair.namesakeConfirmed : false;
+  const setKeepId = (v: string) => setPerPair((p) => ({ ...p, keepId: v }));
+  const setNamesakeConfirmed = (v: boolean) => setPerPair((p) => ({ ...p, namesakeConfirmed: v }));
+
+  // The canonical flip. `triage_action` has taken `p_payload.keep_id` since
+  // 20260801050000 and `useUnifiedTriageQueue` has carried a payload slot all along,
+  // but `TriageView.handleAction` never passed one — so choosing which row survives was
+  // reachable from SQL and from the hook, and from nowhere a reviewer could click.
+  const handleAction = (
+    action: 'approve' | 'reject' | 'skip' | 'flag',
+    notes?: string,
+    cannedSlug?: string,
+  ) => {
+    if (isDedup && action === 'approve' && keepId && keepId !== originalKeepId) {
+      onAction(action, notes, cannedSlug, { keep_id: keepId });
+      return;
+    }
+    onAction(action, notes, cannedSlug);
+  };
+
+  const diffs =
+    item.has_diff && entityData && stagingData
+      ? computeFieldDiffs(
+          entityData as Record<string, unknown>,
+          ((stagingData as Record<string, unknown>)?.normalized_data as Record<string, unknown>) ??
+            null,
+        )
+      : [];
+
+  // `keep`/`drop` are objects, so the generic Context list rendered them through
+  // JSON.stringify — the same blob EntityPreviewCard's fallback was already dumping
+  // above it. The compare table shows them properly now; what stays here is the
+  // sweep's own decision record (match_type, distance, auto_eligible), which the
+  // table does not carry.
   const metaEntries = item.meta
     ? Object.entries(item.meta).filter(
-        ([k, v]) => !META_HIDDEN_KEYS.has(k) && v !== null && v !== undefined && v !== '',
+        ([k, v]) =>
+          !META_HIDDEN_KEYS.has(k) &&
+          !(isDedup && ['keep', 'drop', 'keep_id', 'drop_id', 'reason'].includes(k)) &&
+          v !== null &&
+          v !== undefined &&
+          v !== '',
       )
     : [];
 
   // Venue Truth Engine: per-field consensus confidence + contributing sources.
-  const enriched = (stagingData as Record<string, unknown>)?.enriched_data as Record<string, unknown> | undefined;
+  const enriched = (stagingData as Record<string, unknown>)?.enriched_data as
+    Record<string, unknown> | undefined;
   const consensus = enriched?.consensus as
-    | { sources?: string[]; gated?: boolean; closure?: string | null }
-    | undefined;
+    { sources?: string[]; gated?: boolean; closure?: string | null } | undefined;
   const fieldConfidence = (enriched?.field_confidence as Record<string, number> | undefined) ?? {};
   const confidenceRows = Object.entries(fieldConfidence).sort((a, b) => a[1] - b[1]);
 
@@ -153,8 +231,42 @@ export function TriageDetailPanel({ item, onAction, isActionLoading }: TriageDet
           <>
             {item.queue_type === 'staging' && stagingData ? (
               <StagingPreview item={item} staging={stagingData as Record<string, unknown>} />
+            ) : isDedup ? (
+              <div className="px-4 pt-4">
+                <DedupPairCompare
+                  entityType={item.content_type}
+                  meta={meta}
+                  keepId={keepId}
+                  onFlip={setKeepId}
+                  flipped={Boolean(keepId && keepId !== originalKeepId)}
+                />
+              </div>
             ) : (
               <EntityPreviewCard item={item} entityData={entityData ?? null} />
+            )}
+
+            {isDedup && namesake && (
+              <div className="border-t px-4 py-4">
+                <div className="flex items-start gap-2">
+                  <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+                  <div className="min-w-0 space-y-2">
+                    <p className="text-13">
+                      <span className="font-bold">Namesake risk.</span> Two people can share a name.
+                      Merging distinct people into one profile is an outing risk and the merge moves
+                      their relationship graph, which no undo can fully rebuild. Check the Wikidata
+                      id and the dates before approving.
+                    </p>
+                    <label className="flex items-center gap-2 text-13">
+                      <input
+                        type="checkbox"
+                        checked={namesakeConfirmed}
+                        onChange={(e) => setNamesakeConfirmed(e.target.checked)}
+                      />
+                      I have confirmed these are the same person
+                    </label>
+                  </div>
+                </div>
+              </div>
             )}
 
             {diffs.length > 0 && (
@@ -193,11 +305,16 @@ export function TriageDetailPanel({ item, onAction, isActionLoading }: TriageDet
                   {confidenceRows.length > 0 && (
                     <div className="divide-y">
                       {confidenceRows.map(([field, conf]) => (
-                        <div key={field} className="flex items-baseline justify-between gap-4 py-1 text-xs">
+                        <div
+                          key={field}
+                          className="flex items-baseline justify-between gap-4 py-1 text-xs"
+                        >
                           <span className="text-muted-foreground text-2xs uppercase tracking-wider">
                             {formatMetaKey(field)}
                           </span>
-                          <span className={`tabular-nums ${conf < 0.7 ? 'text-muted-foreground' : 'font-medium'}`}>
+                          <span
+                            className={`tabular-nums ${conf < 0.7 ? 'text-muted-foreground' : 'font-medium'}`}
+                          >
                             {Math.round(conf * 100)}%
                           </span>
                         </div>
@@ -220,9 +337,7 @@ export function TriageDetailPanel({ item, onAction, isActionLoading }: TriageDet
                       <span className="text-muted-foreground shrink-0 w-32 text-2xs uppercase tracking-wider">
                         {formatMetaKey(key)}
                       </span>
-                      <span className="min-w-0 break-words">
-                        {formatMetaValue(value)}
-                      </span>
+                      <span className="min-w-0 break-words">{formatMetaValue(value)}</span>
                     </div>
                   ))}
                 </div>
@@ -242,8 +357,22 @@ export function TriageDetailPanel({ item, onAction, isActionLoading }: TriageDet
             <Link to={externalConsole.route}>{externalConsole.label} →</Link>
           </Button>
         </div>
+      ) : isDedup && namesake && !namesakeConfirmed ? (
+        // The gate is on APPROVE only — reject and skip must stay available, or the
+        // reviewer cannot clear a pair they have decided is two different people,
+        // which is the outcome this flag exists to make easy.
+        <div className="border-t">
+          <p className="px-4 pt-4 text-13 text-muted-foreground">
+            Confirm the namesake check above to enable approving this merge.
+          </p>
+          <ActionBar
+            onAction={handleAction}
+            isLoading={isActionLoading}
+            disabledActions={['approve']}
+          />
+        </div>
       ) : (
-        <ActionBar onAction={onAction} isLoading={isActionLoading} />
+        <ActionBar onAction={handleAction} isLoading={isActionLoading} />
       )}
     </div>
   );

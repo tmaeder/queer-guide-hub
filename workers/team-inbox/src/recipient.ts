@@ -8,7 +8,7 @@
  * Pure + side-effect-free so it can be unit-tested without the worker runtime.
  */
 
-/** The team inboxes we sync into Twenty. Extend here + add a CF routing rule. */
+/** The publicly-published team inboxes. Extend here + add a CF routing rule. */
 export const TEAM_LOCAL_PARTS = ['contact', 'support', 'legal', 'press'] as const;
 
 export type TeamLocalPart = (typeof TEAM_LOCAL_PARTS)[number];

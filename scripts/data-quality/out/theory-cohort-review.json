@@ -1,0 +1,2995 @@
+{
+  "candidates": [
+    {
+      "slug": "anatomy",
+      "qid": "Q514",
+      "label": "anatomy",
+      "desc": "study of the internal structure of organisms and their parts",
+      "classes": "Q28598684 branch of biology; Q11862829 academic discipline; Q420 biology",
+      "matched": "Q11862829 academic discipline",
+      "decision": "reject",
+      "decisionReason": "False positive of the class filter: Q514 is classed \"academic discipline\" because anatomy IS a discipline, but the tag is body vocabulary on a queer glossary, not a scholarship entry."
+    },
+    {
+      "slug": "anti-feminism",
+      "qid": "Q575220",
+      "label": "antifeminism",
+      "desc": "umbrella term for opposition to or criticism of feminism",
+      "classes": "Q12909644 political ideology; Q7257 ideology",
+      "matched": "Q12909644 political ideology; Q7257 ideology",
+      "decision": "reject",
+      "decisionReason": "Prose is serviceable but generic and evaluative, and the term is outside the theory/scholarship vocabulary these eleven articles define. Out of scope for this pass rather than wrong."
+    },
+    {
+      "slug": "asexual-studies",
+      "qid": "Q110512905",
+      "label": "asexual studies",
+      "desc": "academic discipline that studies asexuality and asexual people",
+      "classes": "Q11862829 academic discipline; Q1047113 field of study; Q2267705 field of study; Q849359 interdisciplinarity; Q98929208 queer studies",
+      "matched": "Q11862829 academic discipline; Q1047113 field of study; Q2267705 field of study; Q98929208 queer studies",
+      "decision": "accept",
+      "decisionReason": "Real interdisciplinary field (Q110512905, class: academic discipline + field of study). Prose is complete, accurate and in scope. Files under Theory & Scholarship."
+    },
+    {
+      "slug": "behavior-therapy",
+      "qid": "Q1147152",
+      "label": "cognitive behavioral therapy",
+      "desc": "psychotherapeutic approach that addresses dysfunctional emotions, beha",
+      "classes": "Q11862829 academic discipline; Q130699387 type of psychotherapy; Q179661 therapy; Q16262180 behavior therapy; Q183257 psychotherapy; Q199906 clinical psychology; Q538904 applied psychology; Q3919817 behavioral sciences; Q2354820 evidence-based practice; Q147638 cognitive science",
+      "matched": "Q11862829 academic discipline",
+      "decision": "reject",
+      "decisionReason": "Stored QID Q1147152 resolves to \"cognitive behavioral therapy\" \u2014 narrower than the tag name, and a clinical term rather than theory."
+    },
+    {
+      "slug": "behavioral-psychology",
+      "qid": "Q3919817",
+      "label": "behavioral sciences",
+      "desc": "exploration of the cognitive processes within organisms and the behavi",
+      "classes": "Q2465832 branch of science; Q11862829 academic discipline; Q33122512 social sciences and humanities",
+      "matched": "Q11862829 academic discipline",
+      "decision": "reject",
+      "decisionReason": "Stored QID Q3919817 resolves to \"behavioral sciences\" \u2014 name/entity mismatch, and not queer-glossary vocabulary."
+    },
+    {
+      "slug": "ecofeminism",
+      "qid": "Q294949",
+      "label": "ecofeminism",
+      "desc": "approach to feminism influenced by ecologist movement",
+      "classes": "Q49773 social movement; Q7252 feminism",
+      "matched": "Q49773 social movement",
+      "decision": "accept",
+      "decisionReason": "Real feminist current (Q294949, social movement). Prose complete and accurate. Pairs with queer-ecology, which is also being revived."
+    },
+    {
+      "slug": "gender-inequality",
+      "qid": "Q2891097",
+      "label": "gender inequality",
+      "desc": "idea and situation that women and men are not treated as equal",
+      "classes": "Q5431887 social inequality; Q602884 social phenomenon; Q169207 discrimination",
+      "matched": "Q602884 social phenomenon",
+      "decision": "reject",
+      "decisionReason": "General sociology, not queer-glossary vocabulary. Out of scope."
+    },
+    {
+      "slug": "gender-performativity",
+      "qid": "Q3656582",
+      "label": "gender performativity",
+      "desc": "term used by feminist philosopher Judith Butler",
+      "classes": "Q4810748 feminist theory; Q3627138 performativity",
+      "matched": "Q4810748 feminist theory",
+      "decision": "accept",
+      "decisionReason": "Already handled in the scoped REVIVE list of queer-theory-corpus.mjs."
+    },
+    {
+      "slug": "gender-theory",
+      "qid": "Q1662673",
+      "label": "gender studies",
+      "desc": "interdisciplinary academic field devoted to analysing gender identity ",
+      "classes": "Q1665984 interdisciplinary science; Q11862829 academic discipline; Q1143546 cultural studies; Q21201 sociology",
+      "matched": "Q11862829 academic discipline; Q1143546 cultural studies",
+      "decision": "accept-clear-qid",
+      "decisionReason": "Term is real and the prose is good. But the stored QID Q1662673 is \"gender studies\", a DIFFERENT subject, and it fails titleAgrees() in tag-wiki-guard.ts: normalised \"gendertheory\" vs \"genderstudies\" shares only a 6-char prefix (ratio 0.46, needs >=0.6) and scores 0.54 on levenshtein (needs >=0.75). Revived with wikidata_id set to NULL rather than a near-miss."
+    },
+    {
+      "slug": "homonormativity",
+      "qid": "Q5770369",
+      "label": "homonormativity",
+      "desc": "assimilation of heteronormative ideals and institutions by gays and le",
+      "classes": "Q205665 social norm",
+      "matched": "Q205665 social norm",
+      "decision": "accept",
+      "decisionReason": "Already handled in the scoped REVIVE list."
+    },
+    {
+      "slug": "homophile",
+      "qid": "Q5891541",
+      "label": "homophile",
+      "desc": "archaic term for homosexual",
+      "classes": "Q49773 social movement",
+      "matched": "Q49773 social movement",
+      "decision": "accept",
+      "decisionReason": "Q5891541, social movement. Historically accurate prose about the mid-20th-century movement term. Genuinely valuable pre-Stonewall vocabulary. Files under History & Rights, not Theory."
+    },
+    {
+      "slug": "hyperfemininity",
+      "qid": "Q17633620",
+      "label": "hyperfemininity",
+      "desc": "essentialist femininity",
+      "classes": "Q7257 ideology; Q4135218 gender stereotype; Q48264 gender identity; Q2672163 gender role",
+      "matched": "Q7257 ideology",
+      "decision": "reject",
+      "decisionReason": "A descriptor of presentation, not a theory or field. Out of scope for this pass."
+    },
+    {
+      "slug": "performative-allyship",
+      "qid": "Q96398821",
+      "label": "performative activism",
+      "desc": "activism done to increase one's social capital rather than because of ",
+      "classes": "Q602884 social phenomenon; Q5895486 virtue signalling; Q203764 activism",
+      "matched": "Q602884 social phenomenon",
+      "decision": "reject",
+      "decisionReason": "PROSE IS BROKEN. The stored description reads \"refers to when someone , such as the BIPOC ... for reasons other than genuinely caring\" \u2014 words are missing and the sentence is incoherent. Reviving it would publish garbage. Only reading the prose catches this; the Wikidata class matched cleanly."
+    },
+    {
+      "slug": "philosophy",
+      "qid": "Q5891",
+      "label": "philosophy",
+      "desc": "study of questions concerning being, thought, knowledge, and conduct f",
+      "classes": "Q11862829 academic discipline; Q4671286 academic major; Q2465832 branch of science; Q627436 field of work; Q483394 genre; Q105948247 knowledge system",
+      "matched": "Q11862829 academic discipline; Q4671286 academic major; Q627436 field of work",
+      "decision": "reject",
+      "decisionReason": "Q5891, the whole discipline. Not queer-glossary vocabulary."
+    },
+    {
+      "slug": "psychological-theory",
+      "qid": "Q20679883",
+      "label": "psychological theory",
+      "desc": "theory to explain psychological phenomena",
+      "classes": "Q17737 theory",
+      "matched": "Q17737 theory",
+      "decision": "reject",
+      "decisionReason": "Generic container term with no queer-specific content."
+    },
+    {
+      "slug": "publisher",
+      "qid": "Q3972943",
+      "label": "publishing",
+      "desc": "process of production and dissemination of literature, music, or infor",
+      "classes": "Q268592 industry; Q8187769 economic activity; Q7406919 service; Q189533 academic degree; Q11862829 academic discipline; Q1047113 field of study; Q1914636 activity; Q11024 communication; Q80083 humanities",
+      "matched": "Q11862829 academic discipline; Q1047113 field of study",
+      "decision": "reject",
+      "decisionReason": "Q3972943 is \"publishing\", a process; the tag is \"publisher\", a role. Entity mismatch and out of scope either way."
+    },
+    {
+      "slug": "queer-musicology",
+      "qid": "Q110257133",
+      "label": "queer musicology",
+      "desc": "field dedicated to the study of sexual and gender diversity as it rela",
+      "classes": "Q11862829 academic discipline; Q2267705 field of study; Q1047113 field of study; Q164204 musicology",
+      "matched": "Q11862829 academic discipline; Q2267705 field of study; Q1047113 field of study",
+      "decision": "accept",
+      "decisionReason": "Q110257133, explicitly \"academic discipline / field of study\" studying sexual and gender diversity in music. Prose complete and in scope."
+    },
+    {
+      "slug": "queer-theory",
+      "qid": "Q658022",
+      "label": "queer theory",
+      "desc": "a field of post-structuralist critical theory",
+      "classes": "Q17737 theory; Q849359 interdisciplinarity; Q301751 critical sociology; Q1791882 culture theory",
+      "matched": "Q17737 theory; Q1791882 culture theory",
+      "decision": "accept",
+      "decisionReason": "Already handled in the scoped REVIVE list, behind the queerness alias/QID repairs."
+    },
+    {
+      "slug": "sex-positivity",
+      "qid": "Q77033868",
+      "label": "sex positivity",
+      "desc": "attitude towards human sexuality that regards all consensual sexual ac",
+      "classes": "Q622645 attitude; Q7257 ideology",
+      "matched": "Q7257 ideology",
+      "decision": "accept",
+      "decisionReason": "Q77033868, ideology. Complete, non-evaluative prose. Core sexual-culture vocabulary; files under Sex & Kink, not Theory."
+    },
+    {
+      "slug": "terf",
+      "qid": "Q55961209",
+      "label": "TERF",
+      "desc": "acronym of trans-exclusionary radical feminism",
+      "classes": "Q101244 acronym; Q49773 social movement; Q2914207 radical feminism; Q18211652 transmisogyny; Q120599946 anti-transgender activism",
+      "matched": "Q49773 social movement",
+      "decision": "reject",
+      "decisionReason": "Two rows (terf, trans-exclusionary-radical-feminist) share QID Q55961209, so reviving both would put a duplicate identifier on two active tags. More importantly, publishing a term that names an anti-trans movement on a trans-inclusive glossary is an editorial framing decision, not a data-quality one. Left deprecated deliberately, not overlooked."
+    },
+    {
+      "slug": "trans-exclusionary-radical-feminist",
+      "qid": "Q55961209",
+      "label": "TERF",
+      "desc": "acronym of trans-exclusionary radical feminism",
+      "classes": "Q101244 acronym; Q49773 social movement; Q2914207 radical feminism; Q18211652 transmisogyny; Q120599946 anti-transgender activism",
+      "matched": "Q49773 social movement",
+      "decision": "reject",
+      "decisionReason": "Duplicate of `terf` on the same QID Q55961209. See that row."
+    },
+    {
+      "slug": "transmedicalism",
+      "qid": "Q85810482",
+      "label": "transmedicalism",
+      "desc": "idea that gender dysphoria is what defines being transgender (transsex",
+      "classes": "Q49773 social movement; Q34394 belief",
+      "matched": "Q49773 social movement",
+      "decision": "reject",
+      "decisionReason": "PROSE IS TRUNCATED. The stored description ends mid-sentence: \"often associated with the belief that gender dysphoria is\". Length 268 is the full stored value, so this is not display truncation. Same class of defect as performative-allyship and invisible to any classifier."
+    }
+  ],
+  "rejected": [
+    {
+      "slug": "accessibility-features",
+      "qid": "Q137122757",
+      "label": "Contemporary Indian Temple architecture style",
+      "desc": "This style reflects modern interpretations of traditional Indian templ",
+      "classes": "Q32880 architectural style",
+      "matched": ""
+    },
+    {
+      "slug": "accessible-transportation",
+      "qid": "Q133838181",
+      "label": "accessible transportation",
+      "desc": "aspect of disability and transportation",
+      "classes": "Q555097 accessibility; Q7590 transport",
+      "matched": ""
+    },
+    {
+      "slug": "actorfic",
+      "qid": "Q120434407",
+      "label": "actorfic",
+      "desc": "type of fanfiction that focuses on, incorporates, or details the relat",
+      "classes": "Q108465955 fiction genre; Q7301162 real person fiction",
+      "matched": ""
+    },
+    {
+      "slug": "acyclovir",
+      "qid": "Q147101",
+      "label": "aciclovir",
+      "desc": "antiviral drug",
+      "classes": "Q113145171 type of chemical entity; Q2689559 nucleoside analogue",
+      "matched": ""
+    },
+    {
+      "slug": "advocacy-campaign",
+      "qid": "Q4686870",
+      "label": "Advocacy Campaign Team for Mining",
+      "desc": "",
+      "classes": "",
+      "matched": ""
+    },
+    {
+      "slug": "advocacy-groups",
+      "qid": "Q17672276",
+      "label": "Advocacy groups complain about 4parents.gov sex-ed website",
+      "desc": "Wikinews article",
+      "classes": "Q17633526 Wikinews article",
+      "matched": ""
+    },
+    {
+      "slug": "agoraphobia",
+      "qid": "Q174589",
+      "label": "agoraphobia",
+      "desc": "phobic disorder involving the specific anxiety about being in a place ",
+      "classes": "Q112193867 type of disease; Q544006 anxiety disorder; Q175854 phobia",
+      "matched": ""
+    },
+    {
+      "slug": "allonormativity",
+      "qid": "Q60755604",
+      "label": "acephobia",
+      "desc": "hatred, irrational fear, or mistreatment of asexual people",
+      "classes": "Q135956094 LGBTQ-related non-medical phobias; Q169207 discrimination",
+      "matched": ""
+    },
+    {
+      "slug": "allosexuality",
+      "qid": "Q64737936",
+      "label": "allosexuality",
+      "desc": "sexual orientation where someone experiences sexual attraction and doe",
+      "classes": "Q17888 sexual orientation; Q154136 human sexuality",
+      "matched": ""
+    },
+    {
+      "slug": "ambiguous-genitalia",
+      "qid": "Q111693701",
+      "label": "ambiguous genitalia",
+      "desc": "birth variation in which the outer genitals do not have the typical ap",
+      "classes": "Q4620674 sex organ",
+      "matched": ""
+    },
+    {
+      "slug": "anafranil",
+      "qid": "Q47521047",
+      "label": "Anafranil",
+      "desc": "pharmaceutical product",
+      "classes": "Q28885102 pharmaceutical product",
+      "matched": ""
+    },
+    {
+      "slug": "anal-cancer-screening",
+      "qid": "Q64677700",
+      "label": "Anal Cancer Screening Study",
+      "desc": "clinical trial",
+      "classes": "Q30612 clinical trial",
+      "matched": ""
+    },
+    {
+      "slug": "anorchia",
+      "qid": "Q567694",
+      "label": "anorchia",
+      "desc": "condition where one is born without testes",
+      "classes": "Q112193867 type of disease; Q130487634 intersex condition; Q7705854 testicular disease; Q55789112 male infertility due to gonadal dysgenesis; Q55787629 46,XY disorder of gonadal development; Q395266 gonadal agenesis",
+      "matched": ""
+    },
+    {
+      "slug": "anti-discrimination-laws",
+      "qid": "Q4774349",
+      "label": "anti-discrimination laws in Brazil",
+      "desc": "",
+      "classes": "Q74817647 aspect in a geographic region; Q221810 anti-discrimination law",
+      "matched": ""
+    },
+    {
+      "slug": "antibiotic-resistance",
+      "qid": "Q380775",
+      "label": "antibiotic resistance",
+      "desc": "resistance of bacteria to drugs directed against them",
+      "classes": "Q21698220 antimicrobial resistance; Q64924127 bacterial drug resistance; Q14818070 response to antibiotic",
+      "matched": ""
+    },
+    {
+      "slug": "antibiotic-treatment",
+      "qid": "Q65347252",
+      "label": "Antibiotic Treatment Trial for Small Intestinal Bacterial Overgrowth",
+      "desc": "clinical trial",
+      "classes": "Q30612 clinical trial",
+      "matched": ""
+    },
+    {
+      "slug": "antiretroviral-therapy-art",
+      "qid": "Q63334302",
+      "label": "Antiretroviral Therapy (ART) Alone or With Delayed Chemo Versus ART With Immediate Chemo for Limited AIDS-related Kaposi's Sarcoma",
+      "desc": "clinical trial",
+      "classes": "Q30612 clinical trial",
+      "matched": ""
+    },
+    {
+      "slug": "antiviral-treatment",
+      "qid": "Q112288965",
+      "label": "Antiviral treatment causes a unique mutational signature in cancers of transplantation recipients",
+      "desc": "publication published on 07 September 2021",
+      "classes": "Q732577 publication",
+      "matched": ""
+    },
+    {
+      "slug": "anus",
+      "qid": "Q26235245",
+      "label": "Anus",
+      "desc": "village in Sarmi Regency, Papua, Indonesia",
+      "classes": "Q12488913 kampung of Papua",
+      "matched": ""
+    },
+    {
+      "slug": "apadravya",
+      "qid": "Q617276",
+      "label": "apadravya",
+      "desc": "male genital piercing",
+      "classes": "Q28845749 type of piercing; Q3382701 male genital piercing",
+      "matched": ""
+    },
+    {
+      "slug": "armpit",
+      "qid": "Q499",
+      "label": "armpit",
+      "desc": "area of the body beneath the joint between arm and torso",
+      "classes": "Q112826905 class of anatomical entity; Q103843042 organism subdivision type; Q66515135 subdivision of pectoral girdle; Q112826975 particular anatomical entity; Q66557748 surface proper of axilla",
+      "matched": ""
+    },
+    {
+      "slug": "arnsberg",
+      "qid": "Q3912",
+      "label": "Arnsberg",
+      "desc": "town in North Rhine-Westphalia, Germany",
+      "classes": "Q1548518 large district town; Q707813 Hanseatic city; Q42744322 urban municipality in Germany",
+      "matched": ""
+    },
+    {
+      "slug": "asylum",
+      "qid": "Q210999",
+      "label": "psychiatric hospital",
+      "desc": "hospital treating serious mental disorders",
+      "classes": "Q1391390 specialist hospital; Q131871808 mental health facilities; Q16917 hospital; Q41176 building",
+      "matched": ""
+    },
+    {
+      "slug": "azithromycin",
+      "qid": "Q165399",
+      "label": "azithromycin",
+      "desc": "chemical compound",
+      "classes": "Q113145171 type of chemical entity; Q422687 macrolides; Q70702 alkaloid",
+      "matched": ""
+    },
+    {
+      "slug": "bacterial-infections",
+      "qid": "Q727028",
+      "label": "bacterial infectious disease",
+      "desc": "disease caused by bacteria",
+      "classes": "Q112193867 type of disease; Q55286823 bacterial infection and mycosis; Q18123741 infectious disease",
+      "matched": ""
+    },
+    {
+      "slug": "banjee",
+      "qid": "Q4855835",
+      "label": "Banjee",
+      "desc": "term for someone \"from the hood\"",
+      "classes": "Q151885 concept",
+      "matched": ""
+    },
+    {
+      "slug": "bayot",
+      "qid": "Q35019",
+      "label": "Bayot",
+      "desc": "language",
+      "classes": "Q34770 language; Q1288568 modern language; Q1708174 Bak",
+      "matched": ""
+    },
+    {
+      "slug": "belonging",
+      "qid": "Q6498684",
+      "label": "ownership",
+      "desc": "legal concept; relationship between a legal person and property confer",
+      "classes": "Q2135465 legal term or legal concept; Q930933 relation; Q1146011 exclusive right",
+      "matched": ""
+    },
+    {
+      "slug": "bi-erasure",
+      "qid": "Q2916372",
+      "label": "bisexual erasure",
+      "desc": "social tendency to ignore, falsify, or re-explain evidence of bisexual",
+      "classes": "Q169207 discrimination",
+      "matched": ""
+    },
+    {
+      "slug": "big-boobs",
+      "qid": "Q17379843",
+      "label": "big bust pornography",
+      "desc": "genre of pornography focusing on women with large breasts",
+      "classes": "Q49148153 pornography genre; Q291 pornography",
+      "matched": ""
+    },
+    {
+      "slug": "binary",
+      "qid": "Q50053",
+      "label": "binary star",
+      "desc": "star system consisting of two stars rotating around a common center of",
+      "classes": "Q17444909 astronomical object type; Q595871 star system; Q978297 binary system; Q13890 double star",
+      "matched": ""
+    },
+    {
+      "slug": "bio-queen",
+      "qid": "Q5438405",
+      "label": "faux queen",
+      "desc": "female performance artist",
+      "classes": "Q28640 profession; Q10774753 performance artist",
+      "matched": ""
+    },
+    {
+      "slug": "biological-determinism",
+      "qid": "Q252962",
+      "label": "biological determinism",
+      "desc": "research paradigm in behavioural genetics",
+      "classes": "Q59115 philosophy of science",
+      "matched": ""
+    },
+    {
+      "slug": "birth-control-pill",
+      "qid": "Q3344800",
+      "label": "oral contraceptive",
+      "desc": "medication taken by mouth for the purpose of birth control",
+      "classes": "Q56256173 class of chemical entities with similar applications or functions; Q25473183 contraceptive; Q50429932 female contraceptive agent",
+      "matched": ""
+    },
+    {
+      "slug": "bisexual-invisibility",
+      "qid": "Q2916372",
+      "label": "bisexual erasure",
+      "desc": "social tendency to ignore, falsify, or re-explain evidence of bisexual",
+      "classes": "Q169207 discrimination",
+      "matched": ""
+    },
+    {
+      "slug": "bisexual-movement",
+      "qid": "Q123851282",
+      "label": "bisexual movement",
+      "desc": "",
+      "classes": "Q4612907 LGBTQ movements",
+      "matched": ""
+    },
+    {
+      "slug": "bissu",
+      "qid": "Q108430779",
+      "label": "gender in Bugis society",
+      "desc": "gender system in Bugis society",
+      "classes": "Q3036574 gender system; Q48277 gender",
+      "matched": ""
+    },
+    {
+      "slug": "black-trans-lives-matter",
+      "qid": "Q125657954",
+      "label": "Black Trans Lives Matter",
+      "desc": "social movement for the defense of black trans people",
+      "classes": "Q123531451 black movement; Q4612907 LGBTQ movements",
+      "matched": ""
+    },
+    {
+      "slug": "body-adornment",
+      "qid": "Q107196743",
+      "label": "body adornment",
+      "desc": "decoration or alteration of the human body for aesthetic or cultural p",
+      "classes": "Q4470686 decoration",
+      "matched": ""
+    },
+    {
+      "slug": "bothies",
+      "qid": "Q17827899",
+      "label": "Glenmorvern Cottage, Bothies",
+      "desc": "architectural structure in Highland, Scotland, UK",
+      "classes": "Q39425 bothy",
+      "matched": ""
+    },
+    {
+      "slug": "boytoy",
+      "qid": "Q21862836",
+      "label": "Boytoy",
+      "desc": "",
+      "classes": "Q8102 slang",
+      "matched": ""
+    },
+    {
+      "slug": "breast-cancer-screening",
+      "qid": "Q17011492",
+      "label": "breast cancer screening",
+      "desc": "medical screening of asymptomatic, healthy women for breast cancer",
+      "classes": "Q3044843 cancer screening",
+      "matched": ""
+    },
+    {
+      "slug": "bremelanotide",
+      "qid": "Q415353",
+      "label": "bremelanotide",
+      "desc": "chemical compound",
+      "classes": "Q113145171 type of chemical entity; Q11173 chemical compound",
+      "matched": ""
+    },
+    {
+      "slug": "camp-queen",
+      "qid": "Q95918073",
+      "label": "Camp Queen Elizabeth",
+      "desc": "YMCA summer camp",
+      "classes": "Q876852 summer camp program",
+      "matched": ""
+    },
+    {
+      "slug": "cancer-screening",
+      "qid": "Q3044843",
+      "label": "cancer screening",
+      "desc": "medical examination that aims to detect cancer before symptoms appear,",
+      "classes": "Q2671652 medical test; Q1163564 screening",
+      "matched": ""
+    },
+    {
+      "slug": "candidiasis",
+      "qid": "Q273510",
+      "label": "candidiasis",
+      "desc": "fungal infection due to any species of yeasts in the genus Candida or ",
+      "classes": "Q112193867 type of disease; Q18555090 opportunistic mycosis",
+      "matched": ""
+    },
+    {
+      "slug": "caverject",
+      "qid": "Q579348",
+      "label": "alprostadil",
+      "desc": "chemical compound",
+      "classes": "Q113145171 type of chemical entity; Q209717 prostaglandins",
+      "matched": ""
+    },
+    {
+      "slug": "ceftriaxone",
+      "qid": "Q421713",
+      "label": "ceftriaxone",
+      "desc": "chemical compound",
+      "classes": "Q113145171 type of chemical entity; Q271021 cephalosporin antibiotic",
+      "matched": ""
+    },
+    {
+      "slug": "chemicals",
+      "qid": "Q79529",
+      "label": "chemical substance",
+      "desc": "matter of constant composition best characterized by the entities (mol",
+      "classes": "Q43460564 chemical entity; Q10683158 substance",
+      "matched": ""
+    },
+    {
+      "slug": "child-labor",
+      "qid": "Q192571",
+      "label": "child labour",
+      "desc": "exploitation of children through any form of work",
+      "classes": "Q656365 employment; Q13440398 workforce; Q268378 work",
+      "matched": ""
+    },
+    {
+      "slug": "christopher-street-day",
+      "qid": "Q6630631",
+      "label": "Christopher Street Day",
+      "desc": "LGBTQ Celebration, Remembrance, and Protest Day in Europe",
+      "classes": "Q51404 Pride parade",
+      "matched": ""
+    },
+    {
+      "slug": "chromosomes",
+      "qid": "Q37748",
+      "label": "chromosome",
+      "desc": "DNA molecule containing genetic material of a cell",
+      "classes": "Q22326185 intracellular non-membrane-bounded organelle",
+      "matched": ""
+    },
+    {
+      "slug": "circumcised",
+      "qid": "Q83345",
+      "label": "circumcision",
+      "desc": "removal of the human foreskin",
+      "classes": "Q1886589 ablation; Q3309852 genital modification; Q796194 medical procedure; Q23009442 removal",
+      "matched": ""
+    },
+    {
+      "slug": "cishet",
+      "qid": "Q116278268",
+      "label": "cisgender heterosexual",
+      "desc": "",
+      "classes": "Q110541178 heterosexual; Q1093205 cisgender",
+      "matched": ""
+    },
+    {
+      "slug": "civil-and-political-rights",
+      "qid": "Q191600",
+      "label": "civil and political rights",
+      "desc": "rights preventing the infringement of personal freedom by other social",
+      "classes": "Q780687 rights; Q8458 human rights",
+      "matched": ""
+    },
+    {
+      "slug": "clitoral-hood-piercing",
+      "qid": "Q498292",
+      "label": "clitoral hood piercing",
+      "desc": "type of body piercing",
+      "classes": "Q28845749 type of piercing; Q106427013 female genital piercing",
+      "matched": ""
+    },
+    {
+      "slug": "clitoris",
+      "qid": "Q873072",
+      "label": "clitoris",
+      "desc": "erectile organ with internal and external anatomy, part of the vulva",
+      "classes": "Q112826905 class of anatomical entity; Q103812529 organ type; Q4620674 sex organ; Q66515784 subdivision of urogenital part of female perineum; Q112826975 particular anatomical entity",
+      "matched": ""
+    },
+    {
+      "slug": "clock",
+      "qid": "Q376",
+      "label": "clock",
+      "desc": "instrument that measures the passage of time",
+      "classes": "Q96251598 type of object; Q11019 machine; Q4198689 metrological mechanism; Q42622779 timepiece; Q115923123 decorative object",
+      "matched": ""
+    },
+    {
+      "slug": "clomiphene-citrate",
+      "qid": "Q72461111",
+      "label": "Clomifene citrate",
+      "desc": "chemical compound",
+      "classes": "Q113145171 type of chemical entity; Q526360 stilbenoid; Q1146640 citrate",
+      "matched": ""
+    },
+    {
+      "slug": "closeted",
+      "qid": "Q2574320",
+      "label": "closeted",
+      "desc": "keeping silent about one's sexual orientation or gender identity",
+      "classes": "Q9332 behavior",
+      "matched": ""
+    },
+    {
+      "slug": "clotrimazole",
+      "qid": "Q413546",
+      "label": "clotrimazole",
+      "desc": "chemical compound",
+      "classes": "Q113145171 type of chemical entity; Q419639 azole",
+      "matched": ""
+    },
+    {
+      "slug": "coercion",
+      "qid": "Q325980",
+      "label": "coercion",
+      "desc": "practice of forcing another party to act in an involuntary manner by u",
+      "classes": "Q694324 misdemeanor; Q130583773 type of crime; Q1914636 activity; Q83267 crime; Q191797 aggression; Q5467425 force; Q29017603 control",
+      "matched": ""
+    },
+    {
+      "slug": "competitive-dance",
+      "qid": "Q1415387",
+      "label": "competitive dance",
+      "desc": "sport where dancing is judged",
+      "classes": "Q31629 type of sport; Q107357104 type of dance; Q11639 dance; Q13406554 sports competition",
+      "matched": ""
+    },
+    {
+      "slug": "compulsive-sexual-behaviour-disorder",
+      "qid": "Q5958573",
+      "label": "compulsive sexual behaviour disorder",
+      "desc": "psychiatric disorder characterised by intense preoccupation with sexua",
+      "classes": "Q12135 mental disorder; Q267907 hypersexuality; Q1201835 impulse control disorder; Q1137463 sexual dysfunction; Q266332 compulsive behavior",
+      "matched": ""
+    },
+    {
+      "slug": "copper-iud",
+      "qid": "Q16274676",
+      "label": "copper IUD",
+      "desc": "copper intrauterine device used for birth control and emergency contra",
+      "classes": "Q35456 WHO essential medicines; Q899868 intrauterine device; Q741027 emergency contraception",
+      "matched": ""
+    },
+    {
+      "slug": "cosmetic-surgery",
+      "qid": "Q3675172",
+      "label": "cosmetic surgery",
+      "desc": "",
+      "classes": "Q182442 plastic surgery; Q3332453 aesthetic medicine",
+      "matched": ""
+    },
+    {
+      "slug": "criminalization",
+      "qid": "Q1761413",
+      "label": "criminalization",
+      "desc": "process of categorising acts as crimes",
+      "classes": "Q2135465 legal term or legal concept; Q3249551 process",
+      "matched": ""
+    },
+    {
+      "slug": "crossdresser",
+      "qid": "Q9304839",
+      "label": "cross-dresser",
+      "desc": "performance artist occupation",
+      "classes": "Q12737077 occupation; Q10774753 performance artist",
+      "matched": ""
+    },
+    {
+      "slug": "cunty",
+      "qid": "Q19344638",
+      "label": "Cunty of Alba Real de Tajo",
+      "desc": "1690-1837",
+      "classes": "Q58001476 condado",
+      "matched": ""
+    },
+    {
+      "slug": "darunavir",
+      "qid": "Q3765251",
+      "label": "darunavir",
+      "desc": "chemical compound",
+      "classes": "Q113145171 type of chemical entity; Q126612859 2-epi-Darunavir",
+      "matched": ""
+    },
+    {
+      "slug": "deadname",
+      "qid": "Q97107245",
+      "label": "deadnaming",
+      "desc": "use of former name of a transgender or non-binary person without their",
+      "classes": "Q27949697 Wikibase reason for deprecated rank; Q25488743 naming",
+      "matched": ""
+    },
+    {
+      "slug": "death-penalty",
+      "qid": "Q8454",
+      "label": "capital punishment",
+      "desc": "legal process whereby a person is put to death by the state as a punis",
+      "classes": "Q2438541 manner of death; Q3966286 execution; Q1763090 sentence; Q1931388 cause of death; Q149086 homicide; Q186361 punishment; Q855919 unnatural death",
+      "matched": ""
+    },
+    {
+      "slug": "dehydration",
+      "qid": "Q194290",
+      "label": "dehydration",
+      "desc": "deficit of total body water",
+      "classes": "Q639907 medical finding; Q2057971 health problem; Q1441305 clinical sign; Q1931388 cause of death; Q130753312 symptom type; Q102187407 nutrition, metabolism, and development symptom; Q67518978 occurrent",
+      "matched": ""
+    },
+    {
+      "slug": "dental-dam",
+      "qid": "Q1630725",
+      "label": "dental dam",
+      "desc": "a thin, rectangular sheet used in dentistry to isolate the operative s",
+      "classes": "Q1799072 method; Q73498608 dental equipment",
+      "matched": ""
+    },
+    {
+      "slug": "deprivation",
+      "qid": "Q1191925",
+      "label": "deprivation",
+      "desc": "the lack or denial of something considered to be a necessity",
+      "classes": "Q151885 concept; Q19829125 absence",
+      "matched": ""
+    },
+    {
+      "slug": "digital-activism",
+      "qid": "Q1147114",
+      "label": "Internet activism",
+      "desc": "use of electronic communication technologies for various forms of acti",
+      "classes": "Q203764 activism",
+      "matched": ""
+    },
+    {
+      "slug": "disability-advocate",
+      "qid": "Q61857538",
+      "label": "disability rights activist",
+      "desc": "activist or advocate for the civil rights of people with disabilities",
+      "classes": "Q12737077 occupation; Q1476215 human rights defender",
+      "matched": ""
+    },
+    {
+      "slug": "disability-awareness",
+      "qid": "Q118121002",
+      "label": "disability awareness",
+      "desc": "subconcept of disability discrimination",
+      "classes": "Q912512 equal opportunity",
+      "matched": ""
+    },
+    {
+      "slug": "disability-employment",
+      "qid": "Q10857250",
+      "label": "employment of disabled people",
+      "desc": "workforce accessibility",
+      "classes": "Q67218467 employing; Q656365 employment",
+      "matched": ""
+    },
+    {
+      "slug": "disidentification",
+      "qid": "Q5252408",
+      "label": "deidentification",
+      "desc": "psychological process",
+      "classes": "Q12047513 mental process",
+      "matched": ""
+    },
+    {
+      "slug": "diversity-and-inclusion",
+      "qid": "Q136951702",
+      "label": "",
+      "desc": "",
+      "classes": "Q1980247 chapter",
+      "matched": ""
+    },
+    {
+      "slug": "double-anal",
+      "qid": "Q62016427",
+      "label": "double anal penetration",
+      "desc": "when an anus is being penetrated by two penises",
+      "classes": "Q8394 sex position; Q63781172 anal intercourse; Q137806785 double penetration; Q12375652 M/M/F threesome",
+      "matched": ""
+    },
+    {
+      "slug": "drag-ball",
+      "qid": "Q1638401",
+      "label": "drag ball",
+      "desc": "cross-dressing and homosexuality events",
+      "classes": "Q478515 ball",
+      "matched": ""
+    },
+    {
+      "slug": "drag-pageant",
+      "qid": "Q5304824",
+      "label": "drag pageantry",
+      "desc": "beauty pageants for female impersonators, drag performers and trans wo",
+      "classes": "Q2658935 beauty contest",
+      "matched": ""
+    },
+    {
+      "slug": "drug-addiction",
+      "qid": "Q3378593",
+      "label": "substance dependence",
+      "desc": "need for a drug, whose discontinuation results in withdrawal symptoms",
+      "classes": "Q112193867 type of disease; Q182413 non-controlled substance abuse",
+      "matched": ""
+    },
+    {
+      "slug": "drug-policy-reform",
+      "qid": "Q5308916",
+      "label": "drug policy reform",
+      "desc": "proposed changes to laws and regulations",
+      "classes": "Q900406 reform",
+      "matched": ""
+    },
+    {
+      "slug": "dunking",
+      "qid": "Q4204228",
+      "label": "dunking",
+      "desc": "trial ordeal, punishment, and torture method",
+      "classes": "Q132781 torture; Q305 corporal punishment",
+      "matched": ""
+    },
+    {
+      "slug": "egg",
+      "qid": "Q9384",
+      "label": "testicle",
+      "desc": "internal organ used in the male reproductive system",
+      "classes": "Q103812529 organ type; Q112826905 class of anatomical entity; Q213456 gonad; Q28846466 lobular organ; Q25553355 male organ; Q112826975 particular anatomical entity",
+      "matched": ""
+    },
+    {
+      "slug": "ejaculatory-duct",
+      "qid": "Q1063420",
+      "label": "ejaculatory duct",
+      "desc": "male anatomical structures",
+      "classes": "Q112826905 class of anatomical entity; Q2256181 duct; Q112826975 particular anatomical entity",
+      "matched": ""
+    },
+    {
+      "slug": "electoral-campaign",
+      "qid": "Q11642595",
+      "label": "election campaign",
+      "desc": "political campaign to win an election",
+      "classes": "Q847301 political campaign",
+      "matched": ""
+    },
+    {
+      "slug": "employment-equality",
+      "qid": "Q100399476",
+      "label": "Employment Equality Act, 1998",
+      "desc": "Act of the Oireachtas No. 21 of 1998",
+      "classes": "Q91586285 Act of the Oireachtas",
+      "matched": ""
+    },
+    {
+      "slug": "endocarditis",
+      "qid": "Q82504",
+      "label": "endocarditis",
+      "desc": "endocardium disease characterized by inflammation of the endocardium o",
+      "classes": "Q112193867 type of disease; Q112965645 symptom or sign; Q18553499 endocardium disease; Q1729125 pancarditis; Q102186826 cardiovascular system symptom",
+      "matched": ""
+    },
+    {
+      "slug": "enforced-disappearance",
+      "qid": "Q1288449",
+      "label": "enforced disappearance",
+      "desc": "unlawful secret disappearance",
+      "classes": "Q3030513 disappearance; Q173462 crime against humanity",
+      "matched": ""
+    },
+    {
+      "slug": "equal-protection-clause",
+      "qid": "Q1137223",
+      "label": "Equal Protection Clause",
+      "desc": "guarantee of law protecting all persons equally in the United States",
+      "classes": "Q52000089 clause of the United States Constitution",
+      "matched": ""
+    },
+    {
+      "slug": "erectile-tissue",
+      "qid": "Q664698",
+      "label": "erectile tissue",
+      "desc": "tissue that becomes erect when filled with blood",
+      "classes": "Q112826905 class of anatomical entity; Q40397 tissue; Q112826975 particular anatomical entity",
+      "matched": ""
+    },
+    {
+      "slug": "europride",
+      "qid": "Q1255251",
+      "label": "EuroPride",
+      "desc": "annual pan-European parade that celebrates LGBT+ people",
+      "classes": "Q51404 Pride parade; Q15275719 recurring event; Q51406 LGBTQ pride",
+      "matched": ""
+    },
+    {
+      "slug": "exploration",
+      "qid": "Q6502154",
+      "label": "exploration",
+      "desc": "act of searching or traveling around a terrain for the purpose of disc",
+      "classes": "Q61509 travel; Q116967296 exploration",
+      "matched": ""
+    },
+    {
+      "slug": "eyebrow-piercing",
+      "qid": "Q2167949",
+      "label": "eyebrow piercing",
+      "desc": "subdermal form of facial body adornment",
+      "classes": "Q28845749 type of piercing; Q21484314 facial piercing",
+      "matched": ""
+    },
+    {
+      "slug": "facefucking",
+      "qid": "Q2998028",
+      "label": "irrumatio",
+      "desc": "type of oral sex where the penis is thrust into the throat",
+      "classes": "Q608 human sexual behavior; Q2122 oral sex; Q137806372 penetrative sex; Q5873 sexual intercourse",
+      "matched": ""
+    },
+    {
+      "slug": "fair-wages",
+      "qid": "Q113168796",
+      "label": "Fair Wages and Salaries Commission",
+      "desc": "ghana, Fair Wages and Salaries Commission",
+      "classes": "Q327333 government agency",
+      "matched": ""
+    },
+    {
+      "slug": "fallopian-tubes",
+      "qid": "Q1233836",
+      "label": "fallopian tube",
+      "desc": "part of the female reproductive organs",
+      "classes": "Q103812529 organ type; Q112826905 class of anatomical entity; Q63492082 subdivision of oviduct; Q66545296 organ with organ cavity; Q112826975 particular anatomical entity",
+      "matched": ""
+    },
+    {
+      "slug": "famciclovir",
+      "qid": "Q420186",
+      "label": "famciclovir",
+      "desc": "chemical compound",
+      "classes": "Q113145171 type of chemical entity; Q2689559 nucleoside analogue",
+      "matched": ""
+    },
+    {
+      "slug": "farting",
+      "qid": "Q160184",
+      "label": "flatulence",
+      "desc": "bodily function of expelling intestinal gas out of the anus",
+      "classes": "Q112965645 symptom or sign; Q185557 excretion; Q54926352 digestive sign",
+      "matched": ""
+    },
+    {
+      "slug": "faux-queen",
+      "qid": "Q5438405",
+      "label": "faux queen",
+      "desc": "female performance artist",
+      "classes": "Q28640 profession; Q10774753 performance artist",
+      "matched": ""
+    },
+    {
+      "slug": "female-reproductive-organs",
+      "qid": "Q2192288",
+      "label": "vulva",
+      "desc": "external genital organs of the female mammal",
+      "classes": "Q112826905 class of anatomical entity; Q66511876 pudendum; Q4620674 sex organ; Q25553420 female organ; Q112826975 particular anatomical entity",
+      "matched": ""
+    },
+    {
+      "slug": "film-director",
+      "qid": "Q2526255",
+      "label": "film director",
+      "desc": "person who controls the artistic and dramatic aspects of a film produc",
+      "classes": "Q28640 profession; Q4220920 filmmaking occupation; Q3455803 director; Q3391743 visual artist; Q3406858 film professional; Q17291399 film crew member",
+      "matched": ""
+    },
+    {
+      "slug": "financial-compensation",
+      "qid": "Q5449697",
+      "label": "financial compensation",
+      "desc": "act of providing a person with things of economic value",
+      "classes": "Q21127747 compensation",
+      "matched": ""
+    },
+    {
+      "slug": "fluconazole",
+      "qid": "Q411478",
+      "label": "fluconazole",
+      "desc": "chemical compound",
+      "classes": "Q113145171 type of chemical entity; Q903341 triazoles; Q57301865 fluorobenzene; Q2832212 tertiary alcohol",
+      "matched": ""
+    },
+    {
+      "slug": "follow-up-care",
+      "qid": "Q64662042",
+      "label": "Follow-Up Care With or Without CEA Assessments in Patients Who Have Undergone Surgery for Stage II or Stage III Colorectal Cancer",
+      "desc": "clinical trial",
+      "classes": "Q30612 clinical trial",
+      "matched": ""
+    },
+    {
+      "slug": "folsom-street-fair",
+      "qid": "Q570043",
+      "label": "Folsom Street Fair",
+      "desc": "annual BDSM and leather subculture street fair in San Francisco, Calif",
+      "classes": "Q7623004 street fair",
+      "matched": ""
+    },
+    {
+      "slug": "forced-migration",
+      "qid": "Q837556",
+      "label": "forced displacement",
+      "desc": "involuntary or coerced movement of a person or persons away from their",
+      "classes": "Q15589476 population transfer; Q11376059 human rights violation",
+      "matched": ""
+    },
+    {
+      "slug": "foreskin",
+      "qid": "Q673203",
+      "label": "foreskin",
+      "desc": "retractable fold of skin which covers and protects the glans of the pe",
+      "classes": "Q112826905 class of anatomical entity; Q42120949 prepuce; Q66515782 subdivision of urogenital part of male perineum; Q43022214 gendered anatomical structure; Q112826975 particular anatomical entity",
+      "matched": ""
+    },
+    {
+      "slug": "foster-family",
+      "qid": "Q20729778",
+      "label": "foster family",
+      "desc": "family that fosters unrelated individuals",
+      "classes": "Q11666901 nominal kinship; Q66363776 family structure; Q720069 nuclear family; Q8436 family",
+      "matched": ""
+    },
+    {
+      "slug": "freedom-from-discrimination",
+      "qid": "Q5500699",
+      "label": "Freedom from discrimination",
+      "desc": "",
+      "classes": "Q2979 liberty",
+      "matched": ""
+    },
+    {
+      "slug": "freedom-of-assembly",
+      "qid": "Q162254",
+      "label": "freedom of assembly",
+      "desc": "right to form social or political groups and hold meetings",
+      "classes": "Q29556 civil liberties",
+      "matched": ""
+    },
+    {
+      "slug": "gagged",
+      "qid": "Q27997137",
+      "label": "Gagged",
+      "desc": "extended play by Violet Chachki",
+      "classes": "Q169930 extended play",
+      "matched": ""
+    },
+    {
+      "slug": "gaydar",
+      "qid": "Q40246",
+      "label": "Gaydar",
+      "desc": "colloquialism referring to the intuitive ability of a person to assess",
+      "classes": "Q2537421 LGBTQ slang",
+      "matched": ""
+    },
+    {
+      "slug": "gender-affirming-hormone-therapy",
+      "qid": "Q5903802",
+      "label": "gender-affirming hormone therapy",
+      "desc": "hormone therapy to align a person's physical characteristics with thei",
+      "classes": "Q3354346 hormone replacement therapy; Q15748953 gender-affirmative care",
+      "matched": ""
+    },
+    {
+      "slug": "gender-binary",
+      "qid": "Q5530970",
+      "label": "gender binary",
+      "desc": "classification of sex and gender into two distinct, opposite and disco",
+      "classes": "Q10361123 dichotomy; Q131841 idea",
+      "matched": ""
+    },
+    {
+      "slug": "gender-confirmation-surgery",
+      "qid": "Q1053501",
+      "label": "gender-affirming surgery",
+      "desc": "surgical procedures to alter sexual characteristics to match identifie",
+      "classes": "Q4131496 reconstructive surgery; Q73523825 urogenital surgery; Q15748953 gender-affirmative care; Q1085588 transitioning",
+      "matched": ""
+    },
+    {
+      "slug": "gender-diversity",
+      "qid": "Q1501335",
+      "label": "gender diversity",
+      "desc": "equitable or fair representation of people of different genders",
+      "classes": "Q151885 concept; Q1230584 diversity",
+      "matched": ""
+    },
+    {
+      "slug": "gender-equity",
+      "qid": "Q98047682",
+      "label": "gender equity",
+      "desc": "view that gender should not limit opportunity",
+      "classes": "Q7551100 social equity; Q113453 gender equality",
+      "matched": ""
+    },
+    {
+      "slug": "gender-euphoria",
+      "qid": "Q106688046",
+      "label": "gender euphoria",
+      "desc": "satisfaction, enjoyment, or relief felt by trans people when they feel",
+      "classes": "Q203994 euphoria",
+      "matched": ""
+    },
+    {
+      "slug": "gender-expansive",
+      "qid": "Q116280368",
+      "label": "gender expansive",
+      "desc": "",
+      "classes": "Q15404978 gender expression; Q48264 gender identity; Q189125 transgender; Q48270 non-binary",
+      "matched": ""
+    },
+    {
+      "slug": "gender-identities",
+      "qid": "Q48264",
+      "label": "gender identity",
+      "desc": "person's private sense of, and subjective experience of, their own gen",
+      "classes": "Q844569 identity; Q48277 gender; Q2254571 personal identity",
+      "matched": ""
+    },
+    {
+      "slug": "gender-incongruence",
+      "qid": "Q1049021",
+      "label": "gender dysphoria",
+      "desc": "mental distress resulting from mismatch between gender identity and ge",
+      "classes": "Q112193867 type of disease; Q205555 feeling; Q1814820 suffering pressure; Q290620 dysphoria; Q108268872 incongruence",
+      "matched": ""
+    },
+    {
+      "slug": "gender-policing",
+      "qid": "Q5531002",
+      "label": "gender policing",
+      "desc": "the enforcement of normative gender expressions",
+      "classes": "Q3482410 group behaviour",
+      "matched": ""
+    },
+    {
+      "slug": "gender-presentation",
+      "qid": "Q15404978",
+      "label": "gender expression",
+      "desc": "external manifestation of gender identity and how it is percieved",
+      "classes": "Q3769299 human behavior",
+      "matched": ""
+    },
+    {
+      "slug": "gender-variant",
+      "qid": "Q69990794",
+      "label": "non-binary person",
+      "desc": "someone with a non-binary gender identity",
+      "classes": "Q937228 property; Q844569 identity; Q16334295 group of humans; Q11894636 gender minority; Q116920433 LGBTQ person",
+      "matched": ""
+    },
+    {
+      "slug": "genetic-mosaicism",
+      "qid": "Q755077",
+      "label": "mosaicism",
+      "desc": "presence of two or more populations of cells with different genotypes ",
+      "classes": "Q64732777 biological phenomenon",
+      "matched": ""
+    },
+    {
+      "slug": "glitterbomb",
+      "qid": "Q4339234",
+      "label": "glitter bombing",
+      "desc": "act of protest involving glitter",
+      "classes": "Q32602941 protest tactic; Q931092 practical joke",
+      "matched": ""
+    },
+    {
+      "slug": "golden-handcuffs",
+      "qid": "Q5580021",
+      "label": "golden handcuffs",
+      "desc": "large financial benefits for employee retention",
+      "classes": "Q3456103 compensation and benefits",
+      "matched": ""
+    },
+    {
+      "slug": "gray-asexual",
+      "qid": "Q8354594",
+      "label": "gray asexuality",
+      "desc": "spectrum between asexuality and allosexuality",
+      "classes": "Q17888 sexual orientation; Q724351 asexuality",
+      "matched": ""
+    },
+    {
+      "slug": "grey-a",
+      "qid": "Q8354594",
+      "label": "gray asexuality",
+      "desc": "spectrum between asexuality and allosexuality",
+      "classes": "Q17888 sexual orientation; Q724351 asexuality",
+      "matched": ""
+    },
+    {
+      "slug": "greyromantic",
+      "qid": "Q96188036",
+      "label": "greyromantic",
+      "desc": "experiencing romantic attraction rarely or only under certain circumst",
+      "classes": "Q4688879 romantic orientation; Q8354594 gray asexuality",
+      "matched": ""
+    },
+    {
+      "slug": "guiche-piercing",
+      "qid": "Q1435504",
+      "label": "guiche piercing",
+      "desc": "body piercing through the perineum",
+      "classes": "Q28845749 type of piercing; Q3382701 male genital piercing",
+      "matched": ""
+    },
+    {
+      "slug": "gynosexual",
+      "qid": "Q1558475",
+      "label": "gynephilia",
+      "desc": "sexual, romantic, queer- & platonic, sensual and another attraction to",
+      "classes": "Q17888 sexual orientation; Q1242529 philia; Q7069444 androphilia and gynephilia; Q2275640 sexual preference",
+      "matched": ""
+    },
+    {
+      "slug": "habeas-corpus",
+      "qid": "Q220596",
+      "label": "habeas corpus",
+      "desc": "court action challenging unlawful detention",
+      "classes": "Q2608811 general principles of French law; Q3062294 Latin phrase",
+      "matched": ""
+    },
+    {
+      "slug": "he-him",
+      "qid": "Q1196074",
+      "label": "he",
+      "desc": "masculine third-person, singular personal pronoun in English",
+      "classes": "Q28531230 third-person pronoun",
+      "matched": ""
+    },
+    {
+      "slug": "health-advocacy",
+      "qid": "Q16149213",
+      "label": "health activism",
+      "desc": "social movement that promotes health and access to health care",
+      "classes": "Q2509280 advocacy; Q203764 activism",
+      "matched": ""
+    },
+    {
+      "slug": "heaux",
+      "qid": "Q2085022",
+      "label": "H\u00e9aux de Br\u00e9hat lighthouse",
+      "desc": "lighthouse in C\u00f4tes-d'Armor, France",
+      "classes": "Q39715 lighthouse",
+      "matched": ""
+    },
+    {
+      "slug": "helix-piercing",
+      "qid": "Q1432515",
+      "label": "helix piercing",
+      "desc": "",
+      "classes": "Q2016754 ear piercing",
+      "matched": ""
+    },
+    {
+      "slug": "heritability",
+      "qid": "Q1503548",
+      "label": "heritability",
+      "desc": "estimation of effect of genetic variation on phenotypic variation of a",
+      "classes": "Q47103999 type of statistic; Q55919789 tendency; Q186290 correlation",
+      "matched": ""
+    },
+    {
+      "slug": "herpes",
+      "qid": "Q7476596",
+      "label": "genital herpes",
+      "desc": "infection by herpes simplex virus (HSV) of the genitals",
+      "classes": "Q112193867 type of disease; Q6473911 herpes simplex; Q54931661 reproductive tract infection; Q54959539 viral sexually transmitted disease; Q6742925 male reproductive system disease",
+      "matched": ""
+    },
+    {
+      "slug": "heterosexism",
+      "qid": "Q49809",
+      "label": "heterosexism",
+      "desc": "system of biases and discrimination in favor of opposite-sex relations",
+      "classes": "Q138347986 sexual inequality",
+      "matched": ""
+    },
+    {
+      "slug": "heterosexuality",
+      "qid": "Q1035954",
+      "label": "heterosexuality",
+      "desc": "romantic and/or sexual attraction or behavior between people of differ",
+      "classes": "Q17888 sexual orientation; Q1632385 monosexuality; Q118798436 cross-sex intimacy",
+      "matched": ""
+    },
+    {
+      "slug": "hiv-aids-prevention",
+      "qid": "Q7242372",
+      "label": "prevention of HIV/AIDS",
+      "desc": "prevent and minimize the occurrence of HIV and AIDS",
+      "classes": "Q12737077 occupation; Q1773974 preventive medicine; Q54806757 prevention of sexually transmitted diseases",
+      "matched": ""
+    },
+    {
+      "slug": "homonationalism",
+      "qid": "Q22809895",
+      "label": "homonationalism",
+      "desc": "acceptance of sexual diversity as a symbol of belonging and national p",
+      "classes": "Q131669649 sexual nationalism",
+      "matched": ""
+    },
+    {
+      "slug": "hormonal-changes",
+      "qid": "Q65473103",
+      "label": "Hormonal Changes in Early Pregnancy",
+      "desc": "clinical trial",
+      "classes": "Q30612 clinical trial",
+      "matched": ""
+    },
+    {
+      "slug": "hpv-vaccination",
+      "qid": "Q137212640",
+      "label": "HPV vaccination in Japan",
+      "desc": "HPV Vaccination program in Japan",
+      "classes": "Q74817647 aspect in a geographic region",
+      "matched": ""
+    },
+    {
+      "slug": "human-rights-defender",
+      "qid": "Q1476215",
+      "label": "human rights defender",
+      "desc": "person who acts to protect human rights",
+      "classes": "Q12737077 occupation; Q11499147 political activist",
+      "matched": ""
+    },
+    {
+      "slug": "hunty",
+      "qid": "Q21948396",
+      "label": "Huntys Dam",
+      "desc": "dam in South Australia, Australia",
+      "classes": "Q12323 dam",
+      "matched": ""
+    },
+    {
+      "slug": "hypermasculinity",
+      "qid": "Q5958297",
+      "label": "Hypermasculinity",
+      "desc": "Exaggeration of male stereotypical behaviour",
+      "classes": "",
+      "matched": ""
+    },
+    {
+      "slug": "immigration-detention",
+      "qid": "Q106947316",
+      "label": "immigration detention",
+      "desc": "",
+      "classes": "Q1071447 detention",
+      "matched": ""
+    },
+    {
+      "slug": "impaired-driving",
+      "qid": "Q250062",
+      "label": "driving under the influence of a drug",
+      "desc": "driving a vehicle while the driver is under the influence of a drug th",
+      "classes": "Q999646 driving; Q63484572 abstract dangerous crime; Q657433 moving violation; Q18455120 road traffic offence; Q694324 misdemeanor",
+      "matched": ""
+    },
+    {
+      "slug": "inclusive-language",
+      "qid": "Q65088698",
+      "label": "inclusive language",
+      "desc": "a writing approach avoids prejudiced or biased terms",
+      "classes": "Q3149923 social inclusion; Q1047050 usage",
+      "matched": ""
+    },
+    {
+      "slug": "inclusive-leadership",
+      "qid": "Q136224706",
+      "label": "",
+      "desc": "book 2014",
+      "classes": "Q3331189 version, edition or translation",
+      "matched": ""
+    },
+    {
+      "slug": "indigenous-identity",
+      "qid": "Q135716848",
+      "label": "Indigenous identity fraud",
+      "desc": "practice of incorrectly claim Indigenous identity",
+      "classes": "",
+      "matched": ""
+    },
+    {
+      "slug": "informed-choice",
+      "qid": "Q113942684",
+      "label": "Informed Choice - Compass",
+      "desc": "clinical trial",
+      "classes": "Q30612 clinical trial",
+      "matched": ""
+    },
+    {
+      "slug": "interdependence",
+      "qid": "Q1665970",
+      "label": "interdependence",
+      "desc": "interdependence as part of human social relations",
+      "classes": "Q853725 social relation",
+      "matched": ""
+    },
+    {
+      "slug": "intergender",
+      "qid": "Q11713472",
+      "label": "intergender",
+      "desc": "a gender experience tied to one's intersex variation",
+      "classes": "Q48264 gender identity; Q48270 non-binary",
+      "matched": ""
+    },
+    {
+      "slug": "intersex-health",
+      "qid": "Q129904161",
+      "label": "Intersex healthcare",
+      "desc": "Healthcare needs and challenges for intersex people. This can include ",
+      "classes": "Q31207 health care",
+      "matched": ""
+    },
+    {
+      "slug": "intersex-medical-interventions",
+      "qid": "Q17004012",
+      "label": "intersex surgery",
+      "desc": "surgery performed to modify atypical or ambiguous genitalia in order t",
+      "classes": "Q5533233 genital reconstructive surgery; Q3309852 genital modification",
+      "matched": ""
+    },
+    {
+      "slug": "intersex-pride",
+      "qid": "Q17053858",
+      "label": "intersex flag",
+      "desc": "yellow flag with a purple circle used by the intersex community",
+      "classes": "Q69506823 flag design; Q7242811 pride flag",
+      "matched": ""
+    },
+    {
+      "slug": "intersexuality",
+      "qid": "Q1097630",
+      "label": "intersex",
+      "desc": "atypical congenital variations of sex characteristics",
+      "classes": "Q290 biological sex; Q48264 gender identity; Q115870510 LGBTQ+ identity; Q30893917 non-binary sex",
+      "matched": ""
+    },
+    {
+      "slug": "inverts",
+      "qid": "Q134465698",
+      "label": "invert",
+      "desc": "outdated, historical term used for LGBTQ+ people",
+      "classes": "Q1969448 term",
+      "matched": ""
+    },
+    {
+      "slug": "isolated-17-20-lyase-deficiency",
+      "qid": "Q6085879",
+      "label": "isolated 17,20-lyase deficiency",
+      "desc": "medical condition",
+      "classes": "Q929833 rare disease; Q5282521 disorder of sex development; Q130487634 intersex condition; Q366868 congenital adrenal hyperplasia",
+      "matched": ""
+    },
+    {
+      "slug": "jacobs-syndrome",
+      "qid": "Q267602",
+      "label": "XYY syndrome",
+      "desc": "genetic condition in which a male has an extra Y chromosome",
+      "classes": "Q112193867 type of disease; Q130487634 intersex condition; Q7458487 sex chromosome disorder; Q55786719 Y chromosome number anomaly",
+      "matched": ""
+    },
+    {
+      "slug": "jerking-off",
+      "qid": "Q8396",
+      "label": "masturbation",
+      "desc": "sexual stimulation of one's own genitals",
+      "classes": "Q782623 autoeroticism; Q608 human sexual behavior; Q22269530 single-organism process; Q23807917 non-reproductive sexual behavior in animals",
+      "matched": ""
+    },
+    {
+      "slug": "kaiser",
+      "qid": "Q138340",
+      "label": "kaiser",
+      "desc": "German word for \"Emperor\"",
+      "classes": "Q480319 title of authority; Q39018 emperor",
+      "matched": ""
+    },
+    {
+      "slug": "karyotype",
+      "qid": "Q189967",
+      "label": "karyotype",
+      "desc": "display of chromosome in a cell following certain configuration",
+      "classes": "Q478798 image",
+      "matched": ""
+    },
+    {
+      "slug": "katoey",
+      "qid": "Q746411",
+      "label": "kathoey",
+      "desc": "term in Thai culture usually refering to a transgender woman or an eff",
+      "classes": "Q48264 gender identity; Q1969448 term",
+      "matched": ""
+    },
+    {
+      "slug": "kinnar",
+      "qid": "Q660882",
+      "label": "hijra",
+      "desc": "third gender of South Asian cultures",
+      "classes": "Q48264 gender identity; Q48270 non-binary",
+      "matched": ""
+    },
+    {
+      "slug": "klinefelter-syndrome",
+      "qid": "Q207133",
+      "label": "Klinefelter's syndrome",
+      "desc": "human chromosomal condition",
+      "classes": "Q112193867 type of disease; Q7458487 sex chromosome disorder; Q55786715 X chromosome number anomaly with male phenotype; Q55789112 male infertility due to gonadal dysgenesis; Q54943934 sex chromosome disorder of sex development; Q55785627 chromosomal anomaly with epilepsy as a major feature; Q21082526 chromosomal duplication syndrome; Q130487634 intersex condition",
+      "matched": ""
+    },
+    {
+      "slug": "kundalini",
+      "qid": "Q625498",
+      "label": "Kundalini",
+      "desc": "distinct feeling of electric current running along the spine",
+      "classes": "Q180720 chakra; Q23847174 religious concept",
+      "matched": ""
+    },
+    {
+      "slug": "kyleena",
+      "qid": "Q47521749",
+      "label": "Kyleena",
+      "desc": "pharmaceutical product",
+      "classes": "Q28885102 pharmaceutical product",
+      "matched": ""
+    },
+    {
+      "slug": "latinx",
+      "qid": "Q30324002",
+      "label": "Latinx",
+      "desc": "gender-neutral neologism for Latino and Latina",
+      "classes": "Q1404524 gender-neutral language; Q130989 neologism; Q4064170 americanism",
+      "matched": ""
+    },
+    {
+      "slug": "lavender-scare",
+      "qid": "Q2896360",
+      "label": "lavender scare",
+      "desc": "witchhunt and mass firings of homosexuals in the 1950s by the US gover",
+      "classes": "Q2914277 moral panic; Q169207 discrimination",
+      "matched": ""
+    },
+    {
+      "slug": "leadership",
+      "qid": "Q484275",
+      "label": "leadership",
+      "desc": "ability or activity of an individual or organization to guide other in",
+      "classes": "Q1347367 aptitude; Q2393196 personality trait; Q15910354 soft skills; Q1914636 activity",
+      "matched": ""
+    },
+    {
+      "slug": "learning",
+      "qid": "Q133500",
+      "label": "learning",
+      "desc": "process of acquiring new knowledge",
+      "classes": "Q9332 behavior; Q116505632 type of process; Q14819853 learning or memory; Q11398090 creation",
+      "matched": ""
+    },
+    {
+      "slug": "legal-gender",
+      "qid": "Q10541505",
+      "label": "legal gender",
+      "desc": "one's sex or gender which is recognized by law",
+      "classes": "Q1207505 quality; Q18382802 sex or gender",
+      "matched": ""
+    },
+    {
+      "slug": "legal-identity",
+      "qid": "Q666791",
+      "label": "legal name",
+      "desc": "name that identifies a person for legal, administrative and other offi",
+      "classes": "Q1071027 full name; Q202444 given name; Q11938905 official name",
+      "matched": ""
+    },
+    {
+      "slug": "legal-process",
+      "qid": "Q85776190",
+      "label": "legal process",
+      "desc": "any formal notice or writ by a court obtaining jurisdiction over a per",
+      "classes": "Q2135465 legal term or legal concept; Q24902509 human activity; Q1001059 writ; Q2305441 social process",
+      "matched": ""
+    },
+    {
+      "slug": "legal-protection",
+      "qid": "Q2135614",
+      "label": "legal rights protection",
+      "desc": "right to obtain a decision on a matter before independent courts withi",
+      "classes": "Q2135465 legal term or legal concept; Q191600 civil and political rights",
+      "matched": ""
+    },
+    {
+      "slug": "lesbian-rights",
+      "qid": "Q17625913",
+      "label": "LGBTQ rights",
+      "desc": "civil rights of LGBTQ people",
+      "classes": "Q780687 rights; Q8458 human rights; Q1369260 minority rights",
+      "matched": ""
+    },
+    {
+      "slug": "lesbophobia",
+      "qid": "Q1742659",
+      "label": "lesbophobia",
+      "desc": "fear, hatred or discrimination against lesbians",
+      "classes": "Q169207 discrimination; Q33487 homophobia; Q308857 misogyny",
+      "matched": ""
+    },
+    {
+      "slug": "lesbro",
+      "qid": "Q31085922",
+      "label": "lesbro",
+      "desc": "",
+      "classes": "Q2537421 LGBTQ slang",
+      "matched": ""
+    },
+    {
+      "slug": "levonorgestrel",
+      "qid": "Q416950",
+      "label": "levonorgestrel",
+      "desc": "pharmaceutical drug",
+      "classes": "Q113145171 type of chemical entity; Q11320751 progesterone congener; Q177911 steroid; Q7051185 norgestrel",
+      "matched": ""
+    },
+    {
+      "slug": "lgbtq-identity",
+      "qid": "Q115870510",
+      "label": "LGBTQ+ identity",
+      "desc": "identity term of a LGBTQ+ person",
+      "classes": "Q844569 identity; Q1165905 sexual identity; Q48264 gender identity",
+      "matched": ""
+    },
+    {
+      "slug": "lgbtqia-health",
+      "qid": "Q3271861",
+      "label": "LGBTQ health",
+      "desc": "healthcare for people identified as LGBT",
+      "classes": "Q31207 health care",
+      "matched": ""
+    },
+    {
+      "slug": "librettist",
+      "qid": "Q131084",
+      "label": "libretto",
+      "desc": "text used in an extended musical work such as an opera or musical",
+      "classes": "Q223393 literary genre; Q234460 text; Q3691017 script; Q7725634 literary work",
+      "matched": ""
+    },
+    {
+      "slug": "lip-sync",
+      "qid": "Q6556133",
+      "label": "lip sync",
+      "desc": "matching a speaking or singing person's lip movements to an audio reco",
+      "classes": "Q2695280 technique; Q720448 audio-to-video synchronization; Q1058791 synchronization",
+      "matched": ""
+    },
+    {
+      "slug": "long-acting-cabotegravir",
+      "qid": "Q63573184",
+      "label": "Long-Acting Cabotegravir Plus VRC01LS for Viral Suppression in Adults Living With HIV-1",
+      "desc": "clinical trial",
+      "classes": "Q30612 clinical trial",
+      "matched": ""
+    },
+    {
+      "slug": "magazines",
+      "qid": "Q41298",
+      "label": "magazine",
+      "desc": "publication that is typically distributed at a regular interval",
+      "classes": "Q39725049 type of publication; Q121132955 type of mass media; Q1002697 periodical; Q340169 communications media; Q11033 mass media; Q119648442 print-native publication; Q47461344 written work",
+      "matched": ""
+    },
+    {
+      "slug": "male-femininity",
+      "qid": "Q473652",
+      "label": "effeminacy",
+      "desc": "manifestation of traits in a boy or man that are more often associated",
+      "classes": "Q15404978 gender expression; Q4135211 gender non-conformity; Q866081 femininity; Q17633620 hyperfemininity",
+      "matched": ""
+    },
+    {
+      "slug": "mammogram",
+      "qid": "Q324634",
+      "label": "mammography",
+      "desc": "process of using low-energy X-rays to examine the human breast for dia",
+      "classes": "Q55215251 medical test type; Q10659067 roentgenology; Q931309 medical imaging; Q22905905 breast imaging",
+      "matched": ""
+    },
+    {
+      "slug": "masculine-of-center",
+      "qid": "Q118904274",
+      "label": "Masculine of center",
+      "desc": "gender expression & identity terminolgy",
+      "classes": "",
+      "matched": ""
+    },
+    {
+      "slug": "maternity-protection",
+      "qid": "Q6786643",
+      "label": "Maternity Protection Act, 1994",
+      "desc": "Act of the Oireachtas No. 34 of 1994",
+      "classes": "Q91586285 Act of the Oireachtas",
+      "matched": ""
+    },
+    {
+      "slug": "media-analysis",
+      "qid": "Q46967109",
+      "label": "media analysis",
+      "desc": "analysis of creative works including but not limited to textual media",
+      "classes": "Q217602 analysis",
+      "matched": ""
+    },
+    {
+      "slug": "medical-monitoring",
+      "qid": "Q1421432",
+      "label": "health monitoring",
+      "desc": "observation of a disease, condition or one or several medical paramete",
+      "classes": "Q3555250 disease surveillance; Q2143522 monitoring",
+      "matched": ""
+    },
+    {
+      "slug": "mental-illness",
+      "qid": "Q12135",
+      "label": "mental disorder",
+      "desc": "distressing thought or behavior pattern",
+      "classes": "Q112193867 type of disease; Q140421694 type of disorder; Q12136 disease; Q140408816 disorder",
+      "matched": ""
+    },
+    {
+      "slug": "mental-wellbeing",
+      "qid": "Q317309",
+      "label": "mental health",
+      "desc": "level of psychological well-being",
+      "classes": "Q3968640 mental state; Q1207505 quality; Q1403186 health psychology; Q12147 health",
+      "matched": ""
+    },
+    {
+      "slug": "metronidazole",
+      "qid": "Q169569",
+      "label": "metronidazole",
+      "desc": "chemical compound",
+      "classes": "Q113145171 type of chemical entity; Q56440659 nitroimidazole",
+      "matched": ""
+    },
+    {
+      "slug": "microdermal",
+      "qid": "Q2078409",
+      "label": "Microdermal implants",
+      "desc": "",
+      "classes": "Q890057 body modification",
+      "matched": ""
+    },
+    {
+      "slug": "miscarriage",
+      "qid": "Q28693",
+      "label": "miscarriage",
+      "desc": "natural death of an embryo or fetus before it is able to survive indep",
+      "classes": "Q112193867 type of disease; Q112965645 symptom or sign; Q96649463 pregnancy with abortive outcome; Q102186786 reproductive system symptom; Q2916477 complications of pregnancy",
+      "matched": ""
+    },
+    {
+      "slug": "misogynoir",
+      "qid": "Q17007178",
+      "label": "Misogynoir",
+      "desc": "discrimination and oppression affecting black women in which race and ",
+      "classes": "Q308857 misogyny; Q21071541 anti-black sentiment",
+      "matched": ""
+    },
+    {
+      "slug": "monroe-piercing",
+      "qid": "Q2989552",
+      "label": "Monroe piercing",
+      "desc": "body piercing of the upper lip area",
+      "classes": "Q1817077 lip piercing",
+      "matched": ""
+    },
+    {
+      "slug": "mons-pubis",
+      "qid": "Q11722446",
+      "label": "mons pubis",
+      "desc": "rounded mass of fatty tissue found over the pubic symphysis",
+      "classes": "Q112826905 class of anatomical entity; Q66515802 subdivision of pelvis; Q112826975 particular anatomical entity",
+      "matched": ""
+    },
+    {
+      "slug": "morning-after-pill",
+      "qid": "Q11701498",
+      "label": "morning-after pill",
+      "desc": "drug intended to disrupt or delay ovulation or fertilization after sex",
+      "classes": "Q3344800 oral contraceptive; Q741027 emergency contraception",
+      "matched": ""
+    },
+    {
+      "slug": "mudra",
+      "qid": "Q208030",
+      "label": "mudra",
+      "desc": "symbolic gestures in Hinduism, Jainism and Buddhism",
+      "classes": "Q23847174 religious concept; Q466797 asana; Q16639010 hand gesture",
+      "matched": ""
+    },
+    {
+      "slug": "ngos",
+      "qid": "Q11788357",
+      "label": "NGOS",
+      "desc": "Polish grenade",
+      "classes": "Q42314054 ammunition model; Q1520392 rifle grenade",
+      "matched": ""
+    },
+    {
+      "slug": "nipple-piercing",
+      "qid": "Q383576",
+      "label": "nipple piercing",
+      "desc": "body piercing, centered usually at the base of the nipple",
+      "classes": "Q28845749 type of piercing; Q157943 body piercing",
+      "matched": ""
+    },
+    {
+      "slug": "no-homo",
+      "qid": "Q10601509",
+      "label": "no homo",
+      "desc": "slang phrase",
+      "classes": "Q12355361 redewendung; Q8102 slang",
+      "matched": ""
+    },
+    {
+      "slug": "non-governmental-organizations",
+      "qid": "Q7048923",
+      "label": "Non-governmental organizations in Ratanakiri Province",
+      "desc": "",
+      "classes": "",
+      "matched": ""
+    },
+    {
+      "slug": "nonviolent-resistance",
+      "qid": "Q754479",
+      "label": "nonviolent resistance",
+      "desc": "practice of achieving goals through nonviolent methods",
+      "classes": "Q2695280 technique; Q21168880 resistance",
+      "matched": ""
+    },
+    {
+      "slug": "nuvaring",
+      "qid": "Q7070620",
+      "label": "NuvaRing",
+      "desc": "combined hormonal contraceptive vaginal ring manufactured by Merck",
+      "classes": "Q7292449 hormonal contraception; Q28885102 pharmaceutical product; Q1927779 vaginal ring",
+      "matched": ""
+    },
+    {
+      "slug": "official-records",
+      "qid": "Q107364231",
+      "label": "government records",
+      "desc": "records made or received by an agency of government and maintained in ",
+      "classes": "Q49848 document",
+      "matched": ""
+    },
+    {
+      "slug": "opioid-agonist-therapy",
+      "qid": "Q105319940",
+      "label": "opioid agonist therapy",
+      "desc": "treatment for opioid use disorder involving prescribed opioid agonists",
+      "classes": "Q1260022 substance abuse treatment",
+      "matched": ""
+    },
+    {
+      "slug": "othering",
+      "qid": "Q1433373",
+      "label": "other",
+      "desc": "philosophical, psychological and anthropological concept that refers t",
+      "classes": "Q151885 concept; Q9332 behavior; Q2515874 behavior",
+      "matched": ""
+    },
+    {
+      "slug": "ovaries",
+      "qid": "Q29718350",
+      "label": "ova",
+      "desc": "protein-coding gene in the species Drosophila melanogaster",
+      "classes": "Q7187 gene",
+      "matched": ""
+    },
+    {
+      "slug": "pansexuality",
+      "qid": "Q271534",
+      "label": "pansexuality",
+      "desc": "sexual or romantic attraction to people regardless of gender",
+      "classes": "Q17888 sexual orientation; Q339014 non-heterosexuality; Q106589379 plurisexuality; Q50810374 ambiphilia",
+      "matched": ""
+    },
+    {
+      "slug": "pap-smear",
+      "qid": "Q942976",
+      "label": "Pap test",
+      "desc": "screening test used to detect potentially pre-cancerous and cancerous ",
+      "classes": "Q1762591 periodic health examination; Q333482 swab sample; Q5065348 cervical screening",
+      "matched": ""
+    },
+    {
+      "slug": "paraphilias",
+      "qid": "Q178059",
+      "label": "paraphilia",
+      "desc": "experience of intense sexual arousal to atypical objects, situations, ",
+      "classes": "Q112193867 type of disease; Q7256482 psychosexual disorder",
+      "matched": ""
+    },
+    {
+      "slug": "partner-notification",
+      "qid": "Q17145385",
+      "label": "Partner notification",
+      "desc": "practice of notifying sexual partners of a person who has been newly d",
+      "classes": "",
+      "matched": ""
+    },
+    {
+      "slug": "peer-education",
+      "qid": "Q303446",
+      "label": "cooperative learning",
+      "desc": "educational approach",
+      "classes": "Q1799072 method; Q130609847 learning approach; Q133500 learning",
+      "matched": ""
+    },
+    {
+      "slug": "perineum",
+      "qid": "Q105499",
+      "label": "perineum",
+      "desc": "region of the body including the perineal body and surrounding structu",
+      "classes": "Q103843042 organism subdivision type; Q112826905 class of anatomical entity; Q12812139 specialized term; Q66600683 subdivision of trunk proper; Q112826975 particular anatomical entity",
+      "matched": ""
+    },
+    {
+      "slug": "pharmacotherapy",
+      "qid": "Q701216",
+      "label": "pharmacotherapy",
+      "desc": "medical treatment using approved pharmaceutical products",
+      "classes": "Q130705900 type of medical treatment; Q179661 therapy",
+      "matched": ""
+    },
+    {
+      "slug": "piercing",
+      "qid": "Q157943",
+      "label": "body piercing",
+      "desc": "opening in the body created by an act or practice of body piercing, fo",
+      "classes": "Q20204151 hole",
+      "matched": ""
+    },
+    {
+      "slug": "pink-dollar",
+      "qid": "Q2742173",
+      "label": "pink money",
+      "desc": "purchasing power of the LGBTI community",
+      "classes": "Q271969 purchasing power",
+      "matched": ""
+    },
+    {
+      "slug": "plastic-surgery",
+      "qid": "Q182442",
+      "label": "plastic surgery",
+      "desc": "medical specialty concerned with the altering or restoration of form a",
+      "classes": "Q930752 medical specialty; Q40821 surgery; Q890057 body modification",
+      "matched": ""
+    },
+    {
+      "slug": "political-mobilization",
+      "qid": "Q7210348",
+      "label": "Political mobilization",
+      "desc": "",
+      "classes": "",
+      "matched": ""
+    },
+    {
+      "slug": "political-rights",
+      "qid": "Q3709056",
+      "label": "political rights",
+      "desc": "rights of citizens to participate, directly or indirectly, in the esta",
+      "classes": "Q7748 law; Q42138 citizenship",
+      "matched": ""
+    },
+    {
+      "slug": "polyamorous",
+      "qid": "Q272026",
+      "label": "polyamory",
+      "desc": "intimate relationships between more than two persons with the consent ",
+      "classes": "Q32090 lifestyle; Q130324710 type of relation; Q3436958 non-monogamy",
+      "matched": ""
+    },
+    {
+      "slug": "positive",
+      "qid": "Q3482678",
+      "label": "positive",
+      "desc": "degree of comparison of adjectives and adverbs",
+      "classes": "Q123964806 degree of comparison",
+      "matched": ""
+    },
+    {
+      "slug": "post-exposure-prophylaxis",
+      "qid": "Q1361206",
+      "label": "post-exposure prophylaxis",
+      "desc": "preventive medical treatment started after exposure to a pathogen to p",
+      "classes": "",
+      "matched": ""
+    },
+    {
+      "slug": "pre-exposure-prophylaxis",
+      "qid": "Q7239230",
+      "label": "pre-exposure prophylaxis against HIV",
+      "desc": "use of drugs to prevent HIV infection in people who have not yet been ",
+      "classes": "Q12140 medication; Q123585871 pre-exposure prophylaxis; Q1773974 preventive medicine",
+      "matched": ""
+    },
+    {
+      "slug": "presumption-of-innocence",
+      "qid": "Q275462",
+      "label": "presumption of innocence",
+      "desc": "legal principle that one is presumed innocent until proven guilty",
+      "classes": "Q2608811 general principles of French law; Q780687 rights; Q3235216 rebuttable presumption",
+      "matched": ""
+    },
+    {
+      "slug": "pride-marches",
+      "qid": "Q10325209",
+      "label": "pride parades in Portugal",
+      "desc": "",
+      "classes": "Q51404 Pride parade",
+      "matched": ""
+    },
+    {
+      "slug": "privacy-protection",
+      "qid": "Q20921526",
+      "label": "protection of privacy",
+      "desc": "",
+      "classes": "Q22674784 human rights protection",
+      "matched": ""
+    },
+    {
+      "slug": "privacy-rights",
+      "qid": "Q108561034",
+      "label": "Privacy Rights, School Choice, and the Ninth Amendment",
+      "desc": "",
+      "classes": "Q191067 article",
+      "matched": ""
+    },
+    {
+      "slug": "progestins",
+      "qid": "Q50430133",
+      "label": "progestins",
+      "desc": "compounds that interact with progesterone receptors with effects simil",
+      "classes": "Q11364 hormone",
+      "matched": ""
+    },
+    {
+      "slug": "progestogens",
+      "qid": "Q50430133",
+      "label": "progestins",
+      "desc": "compounds that interact with progesterone receptors with effects simil",
+      "classes": "Q11364 hormone",
+      "matched": ""
+    },
+    {
+      "slug": "prolapse",
+      "qid": "Q2112703",
+      "label": "prolapse",
+      "desc": "protrusion of an organ in into a natural or artificial orifice",
+      "classes": "Q12136 disease; Q54973585 anatomical pathological condition",
+      "matched": ""
+    },
+    {
+      "slug": "prostate-gland",
+      "qid": "Q9625",
+      "label": "prostate",
+      "desc": "gland of the male reproductive system in most mammals",
+      "classes": "Q103812529 organ type; Q112826905 class of anatomical entity; Q12229458 male accessory sex gland; Q28846466 lobular organ; Q112826975 particular anatomical entity",
+      "matched": ""
+    },
+    {
+      "slug": "protest-movements",
+      "qid": "Q273120",
+      "label": "protest",
+      "desc": "a public act of objection, disapproval or dissent against political ad",
+      "classes": "Q108586636 form of event; Q140451665 event; Q1914636 activity; Q180684 conflict; Q628523 message; Q130260549 demonstration or protest",
+      "matched": ""
+    },
+    {
+      "slug": "psychedelic-assisted-therapy",
+      "qid": "Q137900404",
+      "label": "Psychedelic-assisted therapy for mental health: Policy considerations",
+      "desc": "report published in 2025",
+      "classes": "Q134706631 POSTBrief",
+      "matched": ""
+    },
+    {
+      "slug": "psychedelic-therapy",
+      "qid": "Q1760918",
+      "label": "psychedelic therapy",
+      "desc": "medical treatment using altered states of consciousness to treat menta",
+      "classes": "Q130699387 type of psychotherapy; Q183257 psychotherapy",
+      "matched": ""
+    },
+    {
+      "slug": "public-sex",
+      "qid": "Q2576697",
+      "label": "public sex",
+      "desc": "sexual activity that takes place in a public place or in a private pla",
+      "classes": "Q608 human sexual behavior",
+      "matched": ""
+    },
+    {
+      "slug": "punching",
+      "qid": "Q1973927",
+      "label": "punch",
+      "desc": "striking blow with the closed fist",
+      "classes": "Q1297428 strike; Q124490 violence",
+      "matched": ""
+    },
+    {
+      "slug": "queer-baiting",
+      "qid": "Q18389913",
+      "label": "queerbaiting",
+      "desc": "trope in fiction and entertainment where the creators hint at but do n",
+      "classes": "Q20200811 pinkwashing",
+      "matched": ""
+    },
+    {
+      "slug": "queer-cinema",
+      "qid": "Q136311441",
+      "label": "queer cinema",
+      "desc": "film genre",
+      "classes": "Q20442589 LGBTQ-related film",
+      "matched": ""
+    },
+    {
+      "slug": "queer-erasure",
+      "qid": "Q56282687",
+      "label": "queer erasure",
+      "desc": "cultural practice of removing LGBTQ+ groups or people from record, or ",
+      "classes": "Q169207 discrimination",
+      "matched": ""
+    },
+    {
+      "slug": "queer-identity",
+      "qid": "Q115870510",
+      "label": "LGBTQ+ identity",
+      "desc": "identity term of a LGBTQ+ person",
+      "classes": "Q844569 identity; Q1165905 sexual identity; Q48264 gender identity",
+      "matched": ""
+    },
+    {
+      "slug": "queer-literature",
+      "qid": "Q18211073",
+      "label": "LGBT literature",
+      "desc": "literary genre",
+      "classes": "Q223393 literary genre; Q3139891 LGBT-related literature",
+      "matched": ""
+    },
+    {
+      "slug": "queer-pedagogy",
+      "qid": "Q7271162",
+      "label": "Queer pedagogy",
+      "desc": "",
+      "classes": "",
+      "matched": ""
+    },
+    {
+      "slug": "queer-representation",
+      "qid": "Q93605402",
+      "label": "Vito Russo test",
+      "desc": "LGBTQIA+ representation test in a narrative work",
+      "classes": "Q102179937 representation test",
+      "matched": ""
+    },
+    {
+      "slug": "queer-visibility",
+      "qid": "Q108121103",
+      "label": "Queer Visibility in Post-socialist Cultures",
+      "desc": "",
+      "classes": "Q3331189 version, edition or translation",
+      "matched": ""
+    },
+    {
+      "slug": "queer-youth",
+      "qid": "Q109607093",
+      "label": "gay youth literature",
+      "desc": "literary genre",
+      "classes": "Q223393 literary genre; Q3139891 LGBT-related literature",
+      "matched": ""
+    },
+    {
+      "slug": "queercore",
+      "qid": "Q930995",
+      "label": "queercore",
+      "desc": "music genre",
+      "classes": "Q188451 music genre; Q3071 punk rock",
+      "matched": ""
+    },
+    {
+      "slug": "queerphobia",
+      "qid": "Q135955837",
+      "label": "queerphobia",
+      "desc": "antagonism or disgust directed toward queerness as an identity or quee",
+      "classes": "Q135956094 LGBTQ-related non-medical phobias; Q13631330 aversion; Q169207 discrimination; Q179742 prejudice; Q10331920 monosexism",
+      "matched": ""
+    },
+    {
+      "slug": "queerplatonic",
+      "qid": "Q209041",
+      "label": "platonic love",
+      "desc": "non-romantic love",
+      "classes": "Q223642 interpersonal relationship; Q316 love; Q491 friendship",
+      "matched": ""
+    },
+    {
+      "slug": "racial-discrimination",
+      "qid": "Q12332701",
+      "label": "racial discrimination",
+      "desc": "discrimination against individuals on the basis of their skin color, o",
+      "classes": "Q169207 discrimination; Q12142141 political activity",
+      "matched": ""
+    },
+    {
+      "slug": "reasonable-accommodation",
+      "qid": "Q751097",
+      "label": "reasonable accommodation",
+      "desc": "change to usual system, especially to benefit a person with a disabili",
+      "classes": "Q2101619 political slogan; Q2135465 legal term or legal concept; Q98178108 accommodation",
+      "matched": ""
+    },
+    {
+      "slug": "refugee-status",
+      "qid": "Q7307655",
+      "label": "Refugee Status Appeals Authority",
+      "desc": "appeal body of New Zealand",
+      "classes": "",
+      "matched": ""
+    },
+    {
+      "slug": "religious-diversity",
+      "qid": "Q130281002",
+      "label": "religious diversity",
+      "desc": "degree of perceived or actual difference in religious identity and beh",
+      "classes": "Q1230584 diversity",
+      "matched": ""
+    },
+    {
+      "slug": "reproductive-system",
+      "qid": "Q7895",
+      "label": "reproductive system",
+      "desc": "system of organs within an organism which work together for the purpos",
+      "classes": "Q104027169 anatomical system type; Q112826905 class of anatomical entity; Q188193 organ system; Q112826975 particular anatomical entity",
+      "matched": ""
+    },
+    {
+      "slug": "reproductive-technology",
+      "qid": "Q7314318",
+      "label": "reproductive technology",
+      "desc": "uses of technology in human and animal reproduction",
+      "classes": "Q11016 technology",
+      "matched": ""
+    },
+    {
+      "slug": "resettlement",
+      "qid": "Q15589476",
+      "label": "population transfer",
+      "desc": "movement of a large group of people from one region to another",
+      "classes": "Q177626 human migration",
+      "matched": ""
+    },
+    {
+      "slug": "right-to-a-fair-trial",
+      "qid": "Q1757432",
+      "label": "right to a fair trial",
+      "desc": "civil and human right",
+      "classes": "Q8458 human rights",
+      "matched": ""
+    },
+    {
+      "slug": "right-to-food",
+      "qid": "Q25616",
+      "label": "right to food",
+      "desc": "human right protecting the right of people to feed themselves in digni",
+      "classes": "Q8458 human rights; Q3242046 economic, social and cultural rights",
+      "matched": ""
+    },
+    {
+      "slug": "right-to-health",
+      "qid": "Q2919435",
+      "label": "right to health",
+      "desc": "human right described in the Universal Declaration of Human Rights and",
+      "classes": "Q3242046 economic, social and cultural rights",
+      "matched": ""
+    },
+    {
+      "slug": "right-to-housing",
+      "qid": "Q1849028",
+      "label": "right to housing",
+      "desc": "economic and social right",
+      "classes": "Q3242046 economic, social and cultural rights; Q4774377 anti-homelessness legislation",
+      "matched": ""
+    },
+    {
+      "slug": "right-to-life",
+      "qid": "Q25822",
+      "label": "right to life",
+      "desc": "the principal human right, on which all others are based, and which ev",
+      "classes": "Q780687 rights",
+      "matched": ""
+    },
+    {
+      "slug": "right-to-own-property",
+      "qid": "Q11917765",
+      "label": "right to property",
+      "desc": "the human right to own property",
+      "classes": "Q780687 rights; Q2386606 subjective right; Q889137 legal capacity",
+      "matched": ""
+    },
+    {
+      "slug": "right-to-work",
+      "qid": "Q514404",
+      "label": "right to work",
+      "desc": "concept that newly hired employees may violate closed shop agreements ",
+      "classes": "Q3242046 economic, social and cultural rights",
+      "matched": ""
+    },
+    {
+      "slug": "riot-grrrl",
+      "qid": "Q677542",
+      "label": "riot grrrl",
+      "desc": "underground feminist punk rock movement; music genre",
+      "classes": "Q264965 subculture; Q188451 music genre; Q12020884 musical movement; Q3071 punk rock",
+      "matched": ""
+    },
+    {
+      "slug": "risk-taking",
+      "qid": "Q2267623",
+      "label": "risk-taking",
+      "desc": "undertaking a task involving a challenge without certainty of success,",
+      "classes": "Q24902509 human activity; Q9332 behavior",
+      "matched": ""
+    },
+    {
+      "slug": "romantic-attraction",
+      "qid": "Q97154434",
+      "label": "romantic attraction",
+      "desc": "form of attraction associated with romantic love",
+      "classes": "Q2632514 interpersonal attraction",
+      "matched": ""
+    },
+    {
+      "slug": "safe-third-country",
+      "qid": "Q108998605",
+      "label": "Safe third country",
+      "desc": "Concept in immigration law",
+      "classes": "",
+      "matched": ""
+    },
+    {
+      "slug": "screenwriter",
+      "qid": "Q28389",
+      "label": "screenwriter",
+      "desc": "writer who writes for films, TV shows, comics and games",
+      "classes": "Q4220920 filmmaking occupation; Q482980 author",
+      "matched": ""
+    },
+    {
+      "slug": "scrotum",
+      "qid": "Q174471",
+      "label": "scrotum",
+      "desc": "anatomical male reproductive structure that consists of a suspended sa",
+      "classes": "Q113551758 sex-specific solitary organism subdivision type; Q112826905 class of anatomical entity; Q712378 organ; Q43022214 gendered anatomical structure; Q66515782 subdivision of urogenital part of male perineum; Q112826975 particular anatomical entity",
+      "matched": ""
+    },
+    {
+      "slug": "section-28",
+      "qid": "Q65965898",
+      "label": "Section 28",
+      "desc": "survey section within a township",
+      "classes": "",
+      "matched": ""
+    },
+    {
+      "slug": "self-acceptance",
+      "qid": "Q2267564",
+      "label": "self-acceptance",
+      "desc": "acceptance of self",
+      "classes": "Q424543 acceptance",
+      "matched": ""
+    },
+    {
+      "slug": "self-efficacy",
+      "qid": "Q1153659",
+      "label": "self-efficacy",
+      "desc": "individual's belief about their own ability to perform a task",
+      "classes": "Q96634632 psychology concept; Q1296024 effectiveness",
+      "matched": ""
+    },
+    {
+      "slug": "semen",
+      "qid": "Q7887443",
+      "label": "Semen",
+      "desc": "district in Kediri Regency, East Java Province, Indonesia",
+      "classes": "Q3700011 kecamatan",
+      "matched": ""
+    },
+    {
+      "slug": "septum",
+      "qid": "Q30104011",
+      "label": "cardiac septum",
+      "desc": "structural wall within the heart that separates the right and left sid",
+      "classes": "Q112826905 class of anatomical entity; Q66589322 septum of organ",
+      "matched": ""
+    },
+    {
+      "slug": "sex-chromosome-anomaly",
+      "qid": "Q54971630",
+      "label": "sex chromosome aberration",
+      "desc": "abnormal number or structure of the sex chromosomes",
+      "classes": "Q112193867 type of disease; Q744962 chromosome abnormality; Q55788864 developmental defect during embryogenesis",
+      "matched": ""
+    },
+    {
+      "slug": "sex-worker",
+      "qid": "Q852857",
+      "label": "sex worker",
+      "desc": "person who provides sexual services from their body as an occupation",
+      "classes": "Q12737077 occupation; Q66715835 service industry worker",
+      "matched": ""
+    },
+    {
+      "slug": "sexual-activity",
+      "qid": "Q608",
+      "label": "human sexual behavior",
+      "desc": "manner in which humans engage sexually",
+      "classes": "Q107289510 interpersonal activity; Q1190058 physical intimacy; Q2431958 animal sexual behaviour; Q106803732 conduct; Q24902509 human activity",
+      "matched": ""
+    },
+    {
+      "slug": "sexual-autonomy",
+      "qid": "Q126101464",
+      "label": "sexual autonomy",
+      "desc": "",
+      "classes": "",
+      "matched": ""
+    },
+    {
+      "slug": "sexual-behavior",
+      "qid": "Q608",
+      "label": "human sexual behavior",
+      "desc": "manner in which humans engage sexually",
+      "classes": "Q107289510 interpersonal activity; Q1190058 physical intimacy; Q2431958 animal sexual behaviour; Q106803732 conduct; Q24902509 human activity",
+      "matched": ""
+    },
+    {
+      "slug": "sexual-differentiation",
+      "qid": "Q9076644",
+      "label": "sexual differentiation",
+      "desc": "the development of sexual characteristics in an organism",
+      "classes": "",
+      "matched": ""
+    },
+    {
+      "slug": "sexual-dysfunction",
+      "qid": "Q1137463",
+      "label": "sexual dysfunction",
+      "desc": "difficulty experienced by humans during any stage of normal sexual act",
+      "classes": "Q112193867 type of disease; Q7256482 psychosexual disorder",
+      "matched": ""
+    },
+    {
+      "slug": "sexual-fluidity",
+      "qid": "Q19810527",
+      "label": "sexual fluidity",
+      "desc": "changes in sexuality or sexual identity",
+      "classes": "Q17888 sexual orientation; Q1165905 sexual identity",
+      "matched": ""
+    },
+    {
+      "slug": "sexual-health-counseling",
+      "qid": "Q87076283",
+      "label": "Sexual Health Counseling Intervention During Radiation Therapy in Improving Quality of Life for Women With Gynecologic Cancer",
+      "desc": "clinical trial",
+      "classes": "Q30612 clinical trial",
+      "matched": ""
+    },
+    {
+      "slug": "sexual-preference",
+      "qid": "Q2275640",
+      "label": "sexual preference",
+      "desc": "form of preference",
+      "classes": "Q908656 preference",
+      "matched": ""
+    },
+    {
+      "slug": "sexually-transmitted-infection",
+      "qid": "Q12198",
+      "label": "sexually transmitted infection",
+      "desc": "infection transmitted through human sexual behavior",
+      "classes": "Q1662340 mode of transmission; Q18123741 infectious disease; Q131345497 pandemic and epidemic-prone diseases",
+      "matched": ""
+    },
+    {
+      "slug": "she-her",
+      "qid": "Q1270787",
+      "label": "she",
+      "desc": "third-person feminine singular personal pronoun",
+      "classes": "Q28531230 third-person pronoun; Q5378616 English personal pronoun",
+      "matched": ""
+    },
+    {
+      "slug": "smoking",
+      "qid": "Q662860",
+      "label": "smoking",
+      "desc": "breathing in smoke after burning a substance and inhaling, done in ord",
+      "classes": "Q251777 custom; Q110207349 psychoactive drug use",
+      "matched": ""
+    },
+    {
+      "slug": "social-movement",
+      "qid": "Q49773",
+      "label": "social movement",
+      "desc": "loosely organized effort by a large group of people to achieve a parti",
+      "classes": "Q110401282 type of world view; Q16334295 group of humans; Q3533467 group action; Q2305441 social process; Q2548752 collective behavior; Q1510761 social change; Q24902509 human activity",
+      "matched": ""
+    },
+    {
+      "slug": "soft-butch",
+      "qid": "Q1567197",
+      "label": "soft butch",
+      "desc": "lesbian slang term",
+      "classes": "Q15404978 gender expression; Q6649 lesbianism",
+      "matched": ""
+    },
+    {
+      "slug": "sperm",
+      "qid": "Q17145",
+      "label": "sperm",
+      "desc": "male reproductive cells",
+      "classes": "Q189118 cell type; Q7868 cell; Q211050 gamete",
+      "matched": ""
+    },
+    {
+      "slug": "statelessness",
+      "qid": "Q223050",
+      "label": "statelessness",
+      "desc": "status of a person who is not a citizen/national of any country",
+      "classes": "Q214339 role; Q42138 citizenship; Q231002 nationality",
+      "matched": ""
+    },
+    {
+      "slug": "stendra",
+      "qid": "Q47522151",
+      "label": "Stendra",
+      "desc": "pharmaceutical product",
+      "classes": "Q28885102 pharmaceutical product",
+      "matched": ""
+    },
+    {
+      "slug": "sterilization",
+      "qid": "Q324503",
+      "label": "sterilisation",
+      "desc": "medical technique that intentionally leave a person unable to reproduc",
+      "classes": "Q796194 medical procedure",
+      "matched": ""
+    },
+    {
+      "slug": "stolperstein-strafverfolgung",
+      "qid": "Q314003",
+      "label": "Stolpersteine Project",
+      "desc": "project created by Gunter Demnig for honoring victims of Nazism",
+      "classes": "Q21076217 art project; Q136703445 LGBT memorial; Q20011797 Holocaust memorial; Q860861 sculpture",
+      "matched": ""
+    },
+    {
+      "slug": "stone-butch",
+      "qid": "Q1567201",
+      "label": "stone butch",
+      "desc": "Lesbian that doesn't like her genitals touched during sex",
+      "classes": "Q30072520 butch; Q15404978 gender expression",
+      "matched": ""
+    },
+    {
+      "slug": "straight-acting",
+      "qid": "Q979368",
+      "label": "straight-acting",
+      "desc": "same gender-attracted person who does not exhibit the appearance or ma",
+      "classes": "Q9332 behavior; Q17884 LGBTQ",
+      "matched": ""
+    },
+    {
+      "slug": "strategic-litigation",
+      "qid": "Q27925662",
+      "label": "strategic litigation",
+      "desc": "practice of bringing lawsuits intended to effect societal change",
+      "classes": "",
+      "matched": ""
+    },
+    {
+      "slug": "substance-use",
+      "qid": "Q7632070",
+      "label": "substance use disorder",
+      "desc": "mental disorder involving the abuse or dependence on a substance that ",
+      "classes": "Q112193867 type of disease; Q4134457 substance-related disorder",
+      "matched": ""
+    },
+    {
+      "slug": "supervised-injection-site",
+      "qid": "Q1259963",
+      "label": "supervised injection site",
+      "desc": "medical facility",
+      "classes": "Q1458711 harm reduction; Q13226383 facility",
+      "matched": ""
+    },
+    {
+      "slug": "survival-sex",
+      "qid": "Q7647213",
+      "label": "survival sex",
+      "desc": "act of engaging in prostitution for an extreme need",
+      "classes": "Q36633 prostitution",
+      "matched": ""
+    },
+    {
+      "slug": "symptomatic-treatment",
+      "qid": "Q621558",
+      "label": "symptomatic treatment",
+      "desc": "medical treatment that only affects a condition's symptoms",
+      "classes": "Q130705900 type of medical treatment; Q179661 therapy; Q11447297 ",
+      "matched": ""
+    },
+    {
+      "slug": "temporary-protection",
+      "qid": "Q111910607",
+      "label": "Temporary protection",
+      "desc": "",
+      "classes": "Q7748 law",
+      "matched": ""
+    },
+    {
+      "slug": "testes",
+      "qid": "Q9384",
+      "label": "testicle",
+      "desc": "internal organ used in the male reproductive system",
+      "classes": "Q103812529 organ type; Q112826905 class of anatomical entity; Q213456 gonad; Q28846466 lobular organ; Q25553355 male organ; Q112826975 particular anatomical entity",
+      "matched": ""
+    },
+    {
+      "slug": "testosterone-cypionate",
+      "qid": "Q27108401",
+      "label": "testosterone cypionate",
+      "desc": "chemical compound",
+      "classes": "Q113145171 type of chemical entity; Q177911 steroid",
+      "matched": ""
+    },
+    {
+      "slug": "they-them",
+      "qid": "Q3437264",
+      "label": "singular they",
+      "desc": "gender-neutral English pronoun",
+      "classes": "Q1189745 gender-neutral pronoun; Q5378616 English personal pronoun",
+      "matched": ""
+    },
+    {
+      "slug": "tibolone",
+      "qid": "Q413805",
+      "label": "tibolone",
+      "desc": "chemical compound",
+      "classes": "Q113145171 type of chemical entity; Q15843633 STEAR; Q76605311 norpregnenes",
+      "matched": ""
+    },
+    {
+      "slug": "tinidazole",
+      "qid": "Q1321320",
+      "label": "tinidazole",
+      "desc": "chemical compound",
+      "classes": "Q113145171 type of chemical entity; Q425059 5-nitroimidazole",
+      "matched": ""
+    },
+    {
+      "slug": "top-and-bottom",
+      "qid": "Q2253019",
+      "label": "gay sex roles",
+      "desc": "sexual roles",
+      "classes": "Q2537421 LGBTQ slang; Q17015701 gay sexual practices",
+      "matched": ""
+    },
+    {
+      "slug": "toxic-masculinity",
+      "qid": "Q28439795",
+      "label": "toxic masculinity",
+      "desc": "cultural norms associated with men that are harmful to society and to ",
+      "classes": "Q1969448 term; Q33104129 sociological concept",
+      "matched": ""
+    },
+    {
+      "slug": "tranny",
+      "qid": "Q2254610",
+      "label": "Middlesbrough Transporter Bridge",
+      "desc": "transporter bridge in northeast England",
+      "classes": "Q12042110 steel bridge; Q506412 transporter bridge",
+      "matched": ""
+    },
+    {
+      "slug": "trans-rights",
+      "qid": "Q6517455",
+      "label": "transgender rights",
+      "desc": "legal recognition of civil and human rights for transgender people",
+      "classes": "Q780687 rights; Q17625913 LGBTQ rights",
+      "matched": ""
+    },
+    {
+      "slug": "transfemme",
+      "qid": "Q27679684",
+      "label": "transfeminine",
+      "desc": "gender of individuals who were assigned male at birth but identify on ",
+      "classes": "Q48277 gender; Q48264 gender identity; Q189125 transgender",
+      "matched": ""
+    },
+    {
+      "slug": "transition",
+      "qid": "Q98775214",
+      "label": "Transition",
+      "desc": "Little, Brown paperback edition",
+      "classes": "Q3331189 version, edition or translation",
+      "matched": ""
+    },
+    {
+      "slug": "transmisogyny",
+      "qid": "Q18211652",
+      "label": "transmisogyny",
+      "desc": "intersection of transphobia and misogyny",
+      "classes": "Q135451450 intersectional discrimination; Q308857 misogyny; Q59677 transphobia",
+      "matched": ""
+    },
+    {
+      "slug": "trauma-informed-care",
+      "qid": "Q115828599",
+      "label": "trauma-informed care",
+      "desc": "therapeutic framework",
+      "classes": "Q179661 therapy",
+      "matched": ""
+    },
+    {
+      "slug": "treatment",
+      "qid": "Q32945461",
+      "label": "taxonomic treatment",
+      "desc": "description in biological classification",
+      "classes": "Q1200750 description",
+      "matched": ""
+    },
+    {
+      "slug": "ulipristal-acetate",
+      "qid": "Q975059",
+      "label": "ulipristal acetate",
+      "desc": "chemical compound",
+      "classes": "Q113145171 type of chemical entity; Q741027 emergency contraception; Q3344800 oral contraceptive",
+      "matched": ""
+    },
+    {
+      "slug": "uncircumcised",
+      "qid": "Q110256843",
+      "label": "uncircumcised man",
+      "desc": "man whose the foreskin of the penis has not been removed",
+      "classes": "Q8441 man",
+      "matched": ""
+    },
+    {
+      "slug": "unconscious-bias",
+      "qid": "Q6007314",
+      "label": "implicit stereotypes",
+      "desc": "unreflected, mistaken attributions to and descriptions of social group",
+      "classes": "Q167172 stereotype",
+      "matched": ""
+    },
+    {
+      "slug": "universal-design",
+      "qid": "Q781118",
+      "label": "universal design",
+      "desc": "design of buildings, products or environments to make them accessible ",
+      "classes": "Q82604 design",
+      "matched": ""
+    },
+    {
+      "slug": "vagina",
+      "qid": "Q5880",
+      "label": "vagina",
+      "desc": "part of the female genital tract",
+      "classes": "Q103812529 organ type; Q112826905 class of anatomical entity; Q4620674 sex organ; Q63492082 subdivision of oviduct; Q66545296 organ with organ cavity; Q112826975 particular anatomical entity",
+      "matched": ""
+    },
+    {
+      "slug": "valacyclovir",
+      "qid": "Q418594",
+      "label": "valacyclovir",
+      "desc": "chemical compound",
+      "classes": "Q113145171 type of chemical entity; Q2689559 nucleoside analogue",
+      "matched": ""
+    },
+    {
+      "slug": "vaping",
+      "qid": "Q27186512",
+      "label": "vaping",
+      "desc": "practice of inhaling and exhaling the vapor produced by an electronic ",
+      "classes": "Q110207349 psychoactive drug use",
+      "matched": ""
+    },
+    {
+      "slug": "vyleesi",
+      "qid": "Q64826648",
+      "label": "Vyleesi",
+      "desc": "pharmaceutical product",
+      "classes": "Q28885102 pharmaceutical product",
+      "matched": ""
+    },
+    {
+      "slug": "whistleblower-protection",
+      "qid": "Q116875264",
+      "label": "whistleblower protection",
+      "desc": "",
+      "classes": "Q2135614 legal rights protection; Q2251595 protection",
+      "matched": ""
+    },
+    {
+      "slug": "white-night-riots",
+      "qid": "Q2916092",
+      "label": "White Night riots",
+      "desc": "series of riots in San Francisco, California",
+      "classes": "Q125506609 LGBT+ protest",
+      "matched": ""
+    },
+    {
+      "slug": "winkte",
+      "qid": "Q8025501",
+      "label": "winkte",
+      "desc": "men with feminine behavior in Lakota culture",
+      "classes": "Q48264 gender identity",
+      "matched": ""
+    },
+    {
+      "slug": "women-in-stem",
+      "qid": "Q6693003",
+      "label": "women in STEM fields",
+      "desc": "female participants in science, technology, engineering, and mathemati",
+      "classes": "Q107243694 female topic; Q16334295 group of humans",
+      "matched": ""
+    },
+    {
+      "slug": "xulane",
+      "qid": "Q48828824",
+      "label": "Xulane",
+      "desc": "pharmaceutical product",
+      "classes": "Q28885102 pharmaceutical product",
+      "matched": ""
+    },
+    {
+      "slug": "yogyakarta-principles",
+      "qid": "Q51431",
+      "label": "Yogyakarta Principles",
+      "desc": "set of principles relating to sexual orientation and gender identity i",
+      "classes": "Q211364 principle; Q1414472 international human rights instrument",
+      "matched": ""
+    },
+    {
+      "slug": "youth-activism",
+      "qid": "Q8059283",
+      "label": "youth activism",
+      "desc": "Youth engagement in community organizing for social change",
+      "classes": "Q1914636 activity; Q16334295 group of humans; Q203764 activism",
+      "matched": ""
+    },
+    {
+      "slug": "zero-tolerance-policy",
+      "qid": "Q1156955",
+      "label": "zero tolerance",
+      "desc": "policy with no discretion for leniency",
+      "classes": "Q1156854 policy",
+      "matched": ""
+    },
+    {
+      "slug": "zoloft",
+      "qid": "Q47522126",
+      "label": "Zoloft",
+      "desc": "pharmaceutical product",
+      "classes": "Q28885102 pharmaceutical product",
+      "matched": ""
+    }
+  ],
+  "note": "Hand-read complete. 367 deprecated prose-bearing rows with a QID and no human decision -> 22 matched a theory/field/concept Wikidata class -> 6 NEW revivals accepted, 3 already in the scoped list, 13 rejected. TWO rejections (performative-allyship, transmedicalism) were caught ONLY by reading the stored prose, which is broken/truncated in both \u2014 no class-based rule can see that. Two more (terf pair) were rejected as an editorial decision rather than a data one.",
+  "counts": {
+    "cohort": 367,
+    "classMatched": 22,
+    "decided": 22,
+    "acceptNew": 6,
+    "acceptAlreadyScoped": 3,
+    "rejected": 13
+  }
+}

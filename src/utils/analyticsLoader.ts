@@ -24,33 +24,30 @@
  * third-party widget ever attempts to inject one.
  */
 
-const CONSENT_STORAGE_KEY = 'queer-guide-cookie-consent';
-const CONSENT_VERSION = '1.0';
+// The consent read lives in `src/lib/analyticsConsent.ts` — one implementation
+// of the rule, imported by this loader, by `src/sentry.ts`, and by every
+// first-party event writer. It has no imports of its own, so this file keeps
+// its "works even when the banner chunk failed to load" property.
+import { hasAnalyticsConsent } from '@/lib/analyticsConsent';
+
 const UMAMI_SCRIPT_ID = 'umami-analytics';
 // Version query busts the year-long edge/browser cache the old /*.js rule
 // applied to this unversioned file. Bump when the tracker script changes.
-const UMAMI_SRC = '/umami.js?v=2';
+const UMAMI_SRC = '/umami.js?v=3';
 
-interface StoredConsent {
-  preferences: {
-    necessary?: boolean;
-    functional?: boolean;
-    analytics?: boolean;
-    marketing?: boolean;
-  };
-  version?: string;
-}
-
-function hasAnalyticsConsent(): boolean {
-  try {
-    const raw = localStorage.getItem(CONSENT_STORAGE_KEY);
-    if (!raw) return false;
-    const data = JSON.parse(raw) as StoredConsent;
-    if (data.version !== CONSENT_VERSION) return false;
-    return data.preferences?.analytics === true;
-  } catch {
-    return false;
-  }
+/**
+ * Withdrawal has to actually stop tracking, not merely stop it after a reload.
+ * The loader previously handled `analytics === true` only, so a visitor who
+ * turned analytics off kept being tracked for the rest of the session — the
+ * one moment they had explicitly asked us not to.
+ */
+function removeUmami(): void {
+  document.getElementById(UMAMI_SCRIPT_ID)?.remove();
+  // The script's history patch and its `track` closure survive the tag being
+  // removed, so dropping the global is what actually silences it: every
+  // remaining emitter (travelAnalytics, tripTracking) goes through
+  // `window.umami.track` and no-ops once it is gone.
+  delete (window as { umami?: unknown }).umami;
 }
 
 function injectUmami(): void {
@@ -80,12 +77,11 @@ export function installAnalyticsConsentLoader(): void {
     }
   }
 
-  // Live-update path: when the user accepts analytics in the banner,
-  // start tracking immediately without a reload.
+  // Live-update path, both directions: start tracking the moment the user
+  // opts in, and STOP the moment they opt out — without a reload either way.
   window.addEventListener('cookieConsentUpdated', (e: Event) => {
-    const detail = (e as CustomEvent).detail as
-      | { analytics?: boolean }
-      | undefined;
+    const detail = (e as CustomEvent).detail as { analytics?: boolean } | undefined;
     if (detail?.analytics === true) injectUmami();
+    else removeUmami();
   });
 }

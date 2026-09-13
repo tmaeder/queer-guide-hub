@@ -1,9 +1,13 @@
 import * as React from 'react';
+// Primitives that are re-exported unchanged are imported BY NAME rather than
+// aliased off the namespace (`const Accordion = AccordionPrimitive.Root`). Both
+// forms export the same value, but only the import form tells react-refresh the
+// value originates in another module; the alias reads to the rule as a
+// non-component export and costs the whole file fast refresh.
+import { Root as Accordion } from '@radix-ui/react-accordion';
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-const Accordion = AccordionPrimitive.Root;
 
 const AccordionItem = React.forwardRef<
   React.ElementRef<typeof AccordionPrimitive.Item>,

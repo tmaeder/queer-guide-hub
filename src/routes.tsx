@@ -41,11 +41,13 @@ const GoingOut = lazyRetry(() => import('./pages/intent/GoingOut'));
 const RightsIntent = lazyRetry(() => import('./pages/intent/Rights'));
 const RightsSources = lazyRetry(() => import('./pages/rights/RightsSources'));
 const TransRights = lazyRetry(() => import('./pages/rights/TransRights'));
+const Styleguide = lazyRetry(() => import('./pages/Styleguide'));
 const TagsIndex = lazyRetry(() => import('./pages/TagsIndex'));
 const TagDetail = lazyRetry(() => import('./pages/TagDetail'));
 const SubstanceInteractionsPage = lazyRetry(() => import('./pages/SubstanceInteractionsPage'));
 const StiGuidePage = lazyRetry(() => import('./pages/StiGuidePage'));
 const Competitions = lazyRetry(() => import('./pages/Competitions'));
+const CompetitionCategoryPage = lazyRetry(() => import('./pages/CompetitionCategoryPage'));
 const ConnectionsExplorer = lazyRetry(() => import('./pages/explore/ConnectionsExplorer'));
 const Personalities = lazyRetry(() => import('./pages/Personalities'));
 const PersonalityDetail = lazyRetry(() => import('./pages/PersonalityDetail'));
@@ -91,7 +93,6 @@ const AdminLiveness = lazyRetry(() => import('./pages/admin/AdminLiveness'));
 const QualityHub = lazyRetry(() => import('./pages/admin/QualityHub'));
 const AdminTrash = lazyRetry(() => import('./pages/admin/AdminTrash'));
 const ContentGraph = lazyRetry(() => import('./pages/admin/ContentGraph'));
-const AdminTwentyCrm = lazyRetry(() => import('./pages/admin/AdminTwentyCrm'));
 const EmailTemplates = lazyRetry(() => import('./pages/admin/EmailTemplates'));
 const AdminPlacesEditorial = lazyRetry(() => import('./pages/admin/AdminPlacesEditorial'));
 const AdminPipelines = lazyRetry(() => import('./pages/admin/AdminPipelines'));
@@ -100,9 +101,8 @@ const AdminImports = lazyRetry(() => import('./pages/admin/AdminImports'));
 const AdminEventQuality = lazyRetry(() => import('./pages/admin/AdminEventQuality'));
 const AdminGroupRequests = lazyRetry(() => import('./pages/admin/AdminGroupRequests'));
 const AdminSearchIntelligence = lazyRetry(() => import('./pages/admin/AdminSearchIntelligence'));
-const AdminRecognition = lazyRetry(() => import('./pages/admin/Recognition'));
 const AdminDesignSystem = lazyRetry(() => import('./pages/admin/DesignSystem'));
-const Contributors = lazyRetry(() => import('./pages/Contributors'));
+const AdminStyleguide = lazyRetry(() => import('./pages/admin/AdminStyleguide'));
 
 // New feature pages
 const Hotels = lazyRetry(() => import('./pages/Hotels'));
@@ -154,6 +154,8 @@ const CloudflareDashboard = lazyRetry(() =>
 const ProfessionDetail = lazyRetry(() => import('./pages/ProfessionDetail'));
 const News = lazyRetry(() => import('./pages/News'));
 const NewsArchive = lazyRetry(() => import('./pages/NewsArchive'));
+const Podcasts = lazyRetry(() => import('./pages/Podcasts'));
+const PodcastShow = lazyRetry(() => import('./pages/PodcastShow'));
 const NewsDetail = lazyRetry(() => import('./pages/NewsDetail'));
 const NewsStoryDetail = lazyRetry(() => import('./pages/NewsStoryDetail'));
 
@@ -372,8 +374,6 @@ export const AppRoutes = () => {
                 <Route path="/onboarding/welcome" element={<OnboardingWelcome />} />
                 <Route path="/onboarding/search" element={<SearchPersonalization />} />
                 <Route path="/onboarding/venues" element={<VenuePersonalization />} />
-                <Route path="/contributors" element={<Contributors />} />
-                <Route path="/contributors/:year" element={<Contributors />} />
                 <Route path="/brand" element={<BrandGuidelines />} />
                 {/* ── Unified Admin Console ── */}
                 {/* All /admin/* routes wrapped in AdminShell layout with sidebar */}
@@ -457,6 +457,7 @@ export const AppRoutes = () => {
                   <Route path="audit" element={<AuditLog />} />
                   <Route path="search-intelligence" element={<AdminSearchIntelligence />} />
                   <Route path="design" element={<AdminDesignSystem />} />
+                  <Route path="styleguide" element={<AdminStyleguide />} />
                   <Route path="links" element={<Navigate to="/admin/automation" replace />} />
                   <Route
                     path="affiliates"
@@ -500,7 +501,6 @@ export const AppRoutes = () => {
                     path="content/marketplace-quality"
                     element={<Navigate to="/admin/quality" replace />}
                   />
-                  <Route path="content/twenty-crm" element={<AdminTwentyCrm />} />
                   <Route
                     path="content/village-quality"
                     element={<Navigate to="/admin/quality" replace />}
@@ -524,7 +524,6 @@ export const AppRoutes = () => {
                     element={<Navigate to="/admin/content/redirects" replace />}
                   />
                   <Route path="email-templates" element={<EmailTemplates />} />
-                  <Route path="recognition" element={<AdminRecognition />} />
 
                   {/* Settings -- taxonomy management pages */}
                   <Route path="settings" element={<AdminTags />} />
@@ -743,6 +742,7 @@ export const AppRoutes = () => {
                          ties with the `/:locale/Y` branch and LocaleRouter
                          renders NotFound for an unknown "locale". */}
                   <Route path="going-out" element={<GoingOut />} />
+                  <Route path="styleguide" element={<Styleguide />} />
                   <Route path="rights" element={<RightsIntent />} />
                   {/* Static second segment — scores 24 and beats /:locale/<static>
                       at 17 unconditionally. A param here would tie at 17 and
@@ -817,12 +817,40 @@ export const AppRoutes = () => {
                   <Route path="users" element={<LocalizedRedirect to="/community/members" />} />
                   <Route path="personalities" element={<Personalities />} />
                   <Route path="personalities/:slug" element={<PersonalityDetail />} />
-                  {/* ONE static segment. The four views are a `?view=` query
-                      param, NOT `competitions/:view` — a param in the second
-                      position ties with `/:locale/<X>` at rank 17 and resolves
-                      into LocaleRouter's unknown-locale → NotFound branch. See
-                      the routing notes at the top of this Route tree. */}
+                  {/* /competitions is a HUB; each comparable type has its own
+                      page. The six sub-routes below are STATIC two-segment
+                      paths, never `competitions/:category` — a param in the
+                      second position ties with `/:locale/<X>` at rank 17 and
+                      resolves into LocaleRouter's unknown-locale → NotFound
+                      branch. Views within a page stay a `?view=` query param
+                      for the same reason. Slugs mirror
+                      src/lib/competitionCategories.ts and are asserted against
+                      it by competitionRoutes.test.ts. */}
                   <Route path="competitions" element={<Competitions />} />
+                  <Route
+                    path="competitions/drag-series"
+                    element={<CompetitionCategoryPage category="drag_series" />}
+                  />
+                  <Route
+                    path="competitions/drag-kings"
+                    element={<CompetitionCategoryPage category="drag_king" />}
+                  />
+                  <Route
+                    path="competitions/drag-pageants"
+                    element={<CompetitionCategoryPage category="drag_pageant" />}
+                  />
+                  <Route
+                    path="competitions/trans-pageants"
+                    element={<CompetitionCategoryPage category="trans_pageant" />}
+                  />
+                  <Route
+                    path="competitions/gay-titles"
+                    element={<CompetitionCategoryPage category="gay_title" />}
+                  />
+                  <Route
+                    path="competitions/leather-titles"
+                    element={<CompetitionCategoryPage category="leather_title" />}
+                  />
                   {/* Legacy URL schemes still crawled — alias to canonical routes. */}
                   <Route
                     path="personality/:slug"
@@ -894,6 +922,12 @@ export const AppRoutes = () => {
                   <Route path="cookies" element={<CMSRoutePage slug="cookies" />} />
                   <Route path="dmca" element={<CMSRoutePage slug="dmca" />} />
                   <Route path="news" element={<News />} />
+                  {/* Shows and episodes. An EPISODE keeps its /news/:slug
+                      page — 8,000+ of those URLs are already indexed, so a
+                      second episode space would only fight them for the
+                      canonical. */}
+                  <Route path="podcasts" element={<Podcasts />} />
+                  <Route path="podcasts/:slug" element={<PodcastShow />} />
                   <Route path="news/all" element={<NewsArchive />} />
                   <Route path="news/me" element={<Navigate to="/me/progress" replace />} />
                   <Route path="news/story/:slug" element={<NewsStoryDetail />} />

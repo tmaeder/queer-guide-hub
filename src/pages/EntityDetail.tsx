@@ -5,7 +5,7 @@ import type { TFunction } from 'i18next';
 import { ArrowLeft } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
-import { useMeta } from '@/hooks/useMeta';
+import { useDetailMeta } from '@/hooks/useDetailMeta';
 import { useTrackView } from '@/hooks/useTrackView';
 import { useTrackEvent } from '@/hooks/useTrackEvent';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
@@ -40,6 +40,7 @@ function MilestoneEntityDetail() {
       slug={slug}
       result={result}
       notFoundNode={<MilestoneNotFound t={t} />}
+      notFoundTitle={t('pages.entityDetail.milestoneNotFoundTitle', 'Milestone not found')}
     />
   );
 }
@@ -54,6 +55,7 @@ function VenueEntityDetail() {
       slug={slug}
       result={result}
       notFoundNode={<VenueNotFound slug={slug} t={t} />}
+      notFoundTitle={t('pages.venueDetail.notFoundTitle', 'Venue not found')}
     />
   );
 }
@@ -68,6 +70,7 @@ function OrgEntityDetail() {
       slug={slug}
       result={result}
       notFoundNode={<OrgNotFound t={t} />}
+      notFoundTitle={t('pages.entityDetail.orgNotFoundTitle', 'Organization not found')}
     />
   );
 }
@@ -77,11 +80,13 @@ function EntityDetailView({
   slug,
   result,
   notFoundNode,
+  notFoundTitle,
 }: {
   source: EntitySource;
   slug: string | undefined;
   result: EntityDescriptorResult;
   notFoundNode: ReactNode;
+  notFoundTitle: string;
 }) {
   const { descriptor, isLoading, error, notFound } = result;
   const { track } = useTrackEvent();
@@ -98,7 +103,16 @@ function EntityDetailView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [redirectSlug, navigate]);
 
-  useMeta(descriptor?.meta ?? {});
+  useDetailMeta({
+    // The single owner of this page's robots tag: `descriptor?.meta` carries
+    // no `noIndex` of its own, so without this branch a dead slug would clear
+    // whatever `NotFoundMeta` (rendered deeper, inside `notFoundNode`) had just
+    // set — child effects commit before a parent's, so the parent's `useMeta`
+    // call running last would win and strip the noindex right back off.
+    status: isLoading ? 'loading' : notFound ? 'notFound' : 'ready',
+    notFoundTitle,
+    ...(descriptor?.meta ?? {}),
+  });
   useTrackView((descriptor?.trackView ?? { type: source }) as Parameters<typeof useTrackView>[0]);
 
   useEffect(() => {

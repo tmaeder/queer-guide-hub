@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
-import { LifeBuoy, Newspaper, ShoppingBag, Building2 } from 'lucide-react';
+import { LifeBuoy, Megaphone, Newspaper, ShoppingBag, Building2 } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, CardContent } from '@/components/ui/card';
@@ -13,6 +13,7 @@ import { PageContainer } from '@/components/layout/PageContainer';
 
 const ROLE_LABEL: Partial<Record<OrgRole, string>> = {
   support: 'Support organization',
+  advocacy: 'Advocacy group',
   publisher: 'News outlet',
   seller: 'Shop',
   venue: 'Physical venue',
@@ -21,12 +22,22 @@ const ROLE_LABEL: Partial<Record<OrgRole, string>> = {
 const TABS: { id: string; label: string; role?: OrgRole }[] = [
   { id: 'all', label: 'All' },
   { id: 'support', label: 'Support', role: 'support' },
+  // Advocacy is deliberately its own tab and not folded into Support: a reader
+  // looking for help must not be handed a lobbying group or a dissolved one.
+  { id: 'advocacy', label: 'Advocacy', role: 'advocacy' },
   { id: 'publisher', label: 'News outlets', role: 'publisher' },
   { id: 'seller', label: 'Shops', role: 'seller' },
 ];
 
+/** `2011-04-01` / `2011` -> `2011`. Wikidata gives a full date; only the year is honest. */
+function lifespanYear(value: string | null): string | null {
+  const m = value?.match(/^(\d{4})/);
+  return m ? m[1] : null;
+}
+
 function OrgCard({ org }: { org: OrgListItem }) {
   const blurb = org.editorial_hook || org.description;
+  const dissolved = lifespanYear(org.dissolved_at);
   return (
     <LocalizedLink to={`/organizations/${org.slug}`}>
       <Card className="h-full transition-colors hover:bg-muted">
@@ -59,6 +70,10 @@ function OrgCard({ org }: { org: OrgListItem }) {
                 </Badge>
               ) : null,
             )}
+            {/* A dissolved organization must say so on the card. Without this it
+                reads as a body you can still contact — the reason dissolved rows
+                are deranked in search rather than presented as live. */}
+            {dissolved && <Badge variant="outline">Dissolved {dissolved}</Badge>}
           </div>
         </CardContent>
       </Card>
@@ -75,7 +90,7 @@ export default function Organizations() {
   useMeta({
     title: 'Organizations — Queer Guide',
     description:
-      'LGBTQ+ support organizations, news outlets, and shops — profiles, locations, and how to reach them.',
+      'LGBTQ+ support organizations, advocacy groups, news outlets, and shops — profiles, locations, and how to reach them.',
     canonicalPath: '/organizations',
   });
   useBreadcrumbs([{ label: 'Organizations' }]);
@@ -99,7 +114,7 @@ export default function Organizations() {
     <PageContainer>
       <PageHeader
         title="Organizations"
-        subtitle="Support organizations, news outlets, and shops in the LGBTQ+ community."
+        subtitle="Support organizations, advocacy groups, news outlets, and shops in the LGBTQ+ community."
       />
 
       <div className="mb-6 flex flex-wrap gap-2">
@@ -107,11 +122,13 @@ export default function Organizations() {
           const Icon =
             tab.id === 'support'
               ? LifeBuoy
-              : tab.id === 'publisher'
-                ? Newspaper
-                : tab.id === 'seller'
-                  ? ShoppingBag
-                  : null;
+              : tab.id === 'advocacy'
+                ? Megaphone
+                : tab.id === 'publisher'
+                  ? Newspaper
+                  : tab.id === 'seller'
+                    ? ShoppingBag
+                    : null;
           return (
             <button
               key={tab.id}

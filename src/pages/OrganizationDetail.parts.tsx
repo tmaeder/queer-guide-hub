@@ -17,13 +17,18 @@ import { tagHref } from '@/lib/searchRoutes';
 import { useOrganizationArticles, type Organization, type OrgRole } from '@/hooks/useOrganization';
 
 export function roleLabel(role: OrgRole, t: TFunction): string {
-  const map: Record<OrgRole, string> = {
+  // Partial on purpose: `roles` also carries spine-internal values (brand,
+  // hotel, affiliate_partner) that describe how an organization links to a typed
+  // table rather than anything a reader needs told. The `?? role` fallback
+  // renders those as-is instead of blanking the badge.
+  const map: Partial<Record<OrgRole, string>> = {
     publisher: t('pages.entityDetail.rolePublisher', 'News outlet'),
     seller: t('pages.entityDetail.roleSeller', 'Shop'),
     venue: t('pages.entityDetail.roleVenue', 'Physical venue'),
     organizer: t('pages.entityDetail.roleOrganizer', 'Organizer'),
     community: t('pages.entityDetail.roleCommunity', 'Community'),
     support: t('pages.entityDetail.roleSupport', 'Support organization'),
+    advocacy: t('pages.entityDetail.roleAdvocacy', 'Advocacy group'),
   };
   return map[role] ?? role;
 }

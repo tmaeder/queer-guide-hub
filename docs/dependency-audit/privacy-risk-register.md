@@ -20,8 +20,44 @@ _Threat model: vendors can be breached, subpoenaed, or change terms unilaterally
 | 9 | **GitHub — feedback content to US** | 2 | 2 | 3 | 3 | 4 | **14** | **Harden** (strip submitter identifiers) |
 | 10 | Ingestion sources (read-only fetch) | 1 | 4 | 1 | 1 | 3 | **10** | **Accept** (no user PII egress) |
 | 11 | Vectorize (planned) — embeddings of public content, CF global | 2 | 4 | 3 | 3 | 4 | **16** | **Accept w/ note** (public catalog content; document region) |
+| 12 | **First-party behavioural analytics kept in our own DB** (`user_events`, `umami.*`) | 3 | 5 | 0 | 3 | 1 | **12** | **Harden** (consent-gate every writer, 90-day retention, erase on account deletion) |
+| 13 | Other first-party event tables (`signup_funnel_events`, `search_queries`, `trip_suggestion_impressions`, `trip_booking_clicks`, `affiliate_clicks`) | 2 | 3 | 0 | 3 | 1 | **9** | **Harden** (disclose, retention, erasure) |
 
 ## Detail on top risks
+
+### 12 & 13 — Our own analytics were the undisclosed part (added 2026-09-12)
+
+The register was written as a VENDOR register, so it scored every flow that
+leaves the building and none that stays in it. That left the largest
+behavioural dataset we hold entirely unlisted, and it is not small: measured
+2026-09-12, `umami.website_event` held 3.07M rows and `public.user_events`
+335,810 — the latter carrying `user_id`, `entity_type` and `entity_id`, i.e. a
+per-person trail through venues, events and the intimate features. On this
+platform that trail is itself sensitive regardless of where it is stored.
+
+Egress scores 0 and jurisdiction 1 (Supabase, EU) — which is exactly why it was
+easy to overlook and exactly why it still belongs here. The risk is not
+transfer; it is **volume, retention and the absence of a lawful basis we had
+told users we were relying on**:
+
+- `user_events` had NO consent gate, was not named in the Privacy or Cookie
+  policy, and was not erased on account deletion.
+- The Umami page-view pipeline had a careful consent gate that a second,
+  ungated React tracker walked straight past — it carried 98.9% of sessions.
+- Neither table had any retention. Nothing in the whole analytics layer did.
+
+**Decision: Harden, not Replace.** Keeping this data first-party is the right
+architecture; the gap was that first-party was treated as self-evidently safe.
+Fixed by consent-gating every writer, 90-day retention on both tables
+(`umami_retention`, `user_events_retention`), explicit erasure in
+`_delete_user_data_core`, and disclosure in the Privacy and Cookie policies.
+
+**Honest residue:** rows keyed only by an anonymous `session_id` — most of
+`signup_funnel_events`, and every `user_events` row from a signed-out visitor —
+cannot be attributed to a person on an erasure request. Retention is the only
+mechanism for those, and saying so is better than implying a deletion we cannot
+perform.
+
 
 ### 1 & 2 — Sensitive inference leaving EU
 - **Risk:** user-identifiable trip prompts / free-text submissions and content processed on US (OpenAI) or

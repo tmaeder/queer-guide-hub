@@ -482,6 +482,119 @@ one `wbgetentities`. `?relink=1` bypasses it — needed because **a wrong QID is
 Politeness for Nominatim is a hardcoded sleep (`SLEEP_MS = NOMINATIM_URL ? 50 : 1100`), not a
 limiter. OSM's usage policy requires this; do not parallelise around it.
 
+> **WolframAlpha is REJECTED, on licence, and this is the third time it has been proposed.**
+> Measured 2026-09-08. The blocker is not HTTP, cost or quality — it is that the API forbids the one
+> operation every path in this document performs:
+>
+> > *"Unless part of a written agreement to the contrary, Your API Client is prohibited from caching
+> > Wolfram|Alpha content."*
+> > *"…access, cache, store, retain or in any way compile any copies or portion of any Wolfram|Alpha
+> > content by any means other than as indicated in Your API Client"*
+>
+> and on termination requires a licensee to *"delete all API Results in Your possession or control
+> (including, without limitation, from Your servers)."* Enrichment means writing an answer into a
+> column; validation means storing a verdict derived from one. Both are the prohibited operation, so
+> there is no "read-only" framing that escapes it. Two further blockers, each independently
+> sufficient: the free tier is **2,000 calls/month non-commercial only** and this platform takes
+> payments, runs affiliate links and a marketplace; and commercial display requires *"Computed by
+> Wolfram|Alpha"*, a link back and the Input Interpretation pod — a live embed contract, not a feed.
+> Same class as Equaldex (§5 Phase 2) and DrugsData (§5 Phase 3): **the blocker is external and
+> legal.** Do not spend another session on the integration.
+>
+> It also fails §2.4 on its own terms. Wolfram's only input is free text and it resolves ambiguity
+> itself, returning `<assumption>` alternatives — the exact shape of "resolve an entity by name
+> alone" that attached 116 events to the wrong Portland.
+>
+> **Prior art, with its ambiguity intact:** `enrich-wolfram` ran once on 2026-04-07 against 15 health
+> tags and all 15 rows in `unified_tags.scientific_data` read
+> `{"reason":"no_wa_response","source":"none"}`. The function returns 500 without a key, so a key was
+> present — but an *invalid* key and a genuine no-answer are indistinguishable in that record. **Do
+> not cite 0/15 as a quality measurement**; that is the logo.dev trap, where a dead token was read as
+> "not indexed" for weeks. The licence is the finding. The 0/15 is a footnote.
+>
+> Two pieces of residue are load-bearing and must not be "cleaned up": `countries.wolfram_enriched_at`
+> is the round-robin cursor in `pipeline-enrich-country-stats` (`index.ts:95,146`), and
+> `unified_tags.scientific_data` is rendered on `/tags/:slug` via `extractFacts`. The cron was retired
+> twice — `20260806160000` unscheduled it and `sync_automations_to_cron()` branch (d) put it straight
+> back; `20260813100000` disabled the registry row, which is what actually held.
+>
+> **What the idea was reaching for was real, and is closed without an external source.** The gap was
+> never coverage — it was that nothing checked the arithmetic. See §3.4b.
+
+### 3.4b Numeric plausibility — the check that did not exist
+
+Added 2026-09-08. `area_km2` and `elevation_m` had **no validator branch anywhere in the pipeline**,
+population was checked only for `isFinite && >= 0`, and no section of `check-pipeline-health.mjs`
+read the validate stage at all. Measured on prod:
+
+| Defect | Count | Worst |
+|---|---|---|
+| area ≤ 0 or > 200,000 km² | 181 | El Reno, 8,300,000,226 km² |
+| elevation < −500 m or > 5,300 m | 1 | Maui, 10,023 m — above Everest |
+| city population > its own country's | 4 | Norfolk, US, 343,000,000 |
+| density > 50,000 /km² | 35 | Paris, 113,852 |
+
+**The producer was a unit bug, and Calgary names it:** stored 825,290,000 for a city of 825.29 km²,
+i.e. **square metres under the km² label**. `parseCityFacts` read a Wikidata quantity's `.amount` and
+ignored its `.unit`; both `Q25343` (square metre) on P2046 and `Q3710` (foot) on P2044 occur in a
+15-city sample of the live API. It now converts through an explicit table or **writes nothing** — an
+unrecognised unit is a measurement in an unknown scale, and the bare amount is exactly the defect.
+
+> **THE PRODUCER IS `city-factual-backfill`, NOT THE VALIDATOR, and the first version of this work
+> got that wrong.** It added bounds to `validateCityNormalized` and called that "sealing the
+> producer". `validateCityNormalized` has exactly one caller — `pipeline-validate` — which only ever
+> reads `ingestion_staging`. Every one of the 181 bad areas was written by `city-factual-backfill`,
+> which `UPDATE`s `cities` directly and touches no validator at all. A guard there would have stopped
+> none of them. The plausibility check now sits on **both** paths: `plausibleCityScalar` in
+> `_shared/city-scalar-bounds.ts` is called by the backfill before `addCandidate` (so an impossible
+> value never becomes provenance either) and the same bounds back the staging validator. **Before
+> claiming a producer is sealed, grep for the callers of the function you added the guard to.**
+>
+> **The validator bounds are WARNINGS, never errors.** `pipeline-validate` turns any `errors` entry
+> into `ai_validation_status='rejected'`, and `trg_staging_human_approval_clears_validation` promotes
+> only `pending` and `needs_review` — a hard rejection is the one state an admin can never override.
+> As errors these bounds would have discarded the whole staged entity, coordinates and legal payload
+> included, because one number was wrong. Same class as a lone `W_NO_COORDS` stranding 14 events for
+> 40 days. A bad number invalidates the number, not the row.
+
+**Nothing overwrote these values — fill-if-empty protected them.** For **234 cities** the engine
+fetched the correct population, recorded it in `field_provenance.population.candidates`, found the
+column non-empty and correctly declined; Paris still carries Wikidata's 2,103,778 in provenance
+beside 12,000,000 in the column. A wrong *seed* value is permanent by design, and `applyRankFix`
+cannot help because it fires only where provenance proves we wrote the current value. **This is why
+no new source would have fixed it: the right answer had already been fetched and stored.**
+
+Repair `20360201100100` **retracts to NULL, never recomputes.** 58% of the impossible areas are a
+clean factor of 10⁶, which makes "just divide" tempting and wrong — the other 42% would acquire a
+*plausible* wrong number, which is never looked at again (El Reno becomes 8,300 km² for a city of
+~44). A NULL is also self-healing: the unit fix is upstream and the backfill is fill-if-empty, so an
+emptied column refills correctly on that city's next visit. Retracted values are preserved under
+`field_provenance.<col>.retracted`.
+
+**Density is reported, never retracted** — 33 rows survive and that is the intended end state. A
+density defect does not say *which* column is wrong, so blanking one on a rule would destroy a
+correct value about half the time. **It is also deliberately not ratcheted:** the repair nulled 181
+areas and `bad_dens` requires `a > 0`, so those rows left the density population *by construction*
+and re-enter it as the backfill refills them. The number is designed to RISE; a shrinking baseline
+would red the build with no legal response. Density is advisory, reported with its trend.
+
+The repair does **not** set `needs_attention`. It reads like the right flag and is the wrong one:
+`run_city_trust_recompute` subtracts 0.15 for it — a 15-point trust penalty for retracting a field
+`compute_city_completeness` never reads — and `approve_city_review`/`reject_city_review` clear it
+unconditionally once no other open review remains, so an unrelated approval would erase it with no
+record. The durable record is `field_provenance.<col>.retracted` plus the sentinel.
+
+Gate: `city_scalar_defects()` + §11b of `check-pipeline-health.mjs` — zero tolerance on the three
+single-column bounds, advisory on density, an **absent-key check** (a renamed key would otherwise
+arrive as `undefined` and report a clean corpus having measured nothing), and a **404-vs-5xx split**
+so a broken probe fails instead of warning. `retracted_pending_refill` excludes `qid_conflict` rows,
+which the backfill skips and which therefore can never refill — counting them would permanently
+falsify the key's own stated meaning. Bounds live in **one** module, `_shared/city-scalar-bounds.ts`,
+imported by both writers and drift-tested against the SQL by
+`src/lib/__tests__/cityScalarBounds.test.ts` — which reads the **comment-stripped function body**,
+because its first version asserted `sql.includes('-500')` against the whole file and the migration
+header says "-500 m" in prose, so deleting the predicate left it green.
+
 ### 3.5 Conflict resolution — the shipped mechanism
 
 `_shared/venue-consensus.ts`. **Venues are the only entity with a real truth engine**; every other
@@ -927,6 +1040,11 @@ recommendation survives — but the *reason* for the dosage half changed, and th
 > duration conflated inside one sentence. EUDA, DrugsData and UNODC carry no dosage, onset, duration
 > or half-life at all. Structuring this would mean *generating* numbers by extraction from frozen
 > prose and publishing them as harm-reduction guidance. **Do not.**
+>
+> **And not from WolframAlpha either**, which is where this reaches next because it does hold
+> pharmacological scalars. Its licence forbids storing any result — see the rejection in §3.4. A
+> harm-reduction number that may not be persisted, and that arrives with no per-fact citation, fails
+> both this section's sourcing bar and its safety bar.
 
 **Adulteration is a real build, and the source is EUDA TEDI.** Four static CSVs plus a zip
 (`tedi25-table-{1..4}_en.csv`), catalogue date **16.07.2026**, **CC BY 4.0** — the legal notice

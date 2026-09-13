@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { COMPETITION_CATEGORIES } from '../src/lib/competitionCategories';
 
 /**
  * /competitions — the Drag Race and title-contest spine.
@@ -10,12 +11,16 @@ import { test, expect, type Page } from '@playwright/test';
  * / `competition_grid`, so a plain GET cannot see any of it — every assertion
  * below waits for the React render.
  *
- * THE FLOORS ARE DELIBERATELY BELOW THE MEASURED NUMBERS. At the time of
- * writing prod holds 33 competitions, 348 editions and 1,814 entries. The floors
- * exist to catch a re-scrape or a migration that *destroys* rows, not to pin an
- * exact count that a new season would break. Where a fact cannot grow — the US
- * main series had exactly two Miss Congeniality winners in season 16 — it is
- * asserted exactly.
+ * EACH TYPE HAS ITS OWN PAGE, so the data-bearing tests land on
+ * /competitions/<slug> and the totals they read are ONE CATEGORY's, not the
+ * corpus. /competitions itself is a hub with no table.
+ *
+ * THE FLOORS ARE DELIBERATELY BELOW THE MEASURED NUMBERS. drag-series held
+ * 33 competitions / 114 editions / 1,327 entries / 751 linked on 2026-09-07.
+ * The floors exist to catch a re-scrape or a migration that *destroys* rows,
+ * not to pin an exact count that a new season would break. Where a fact cannot
+ * grow — the US main series had exactly two Miss Congeniality winners in season
+ * 16 — it is asserted exactly.
  */
 
 const RENDER = { timeout: 25_000 };
@@ -46,14 +51,35 @@ async function corpusIsLive(page: Page): Promise<boolean> {
   // ten seconds to settle; a naive "did the error appear in 6s" probe returns
   // "live" while the query is still retrying and every later assertion then
   // fails against an empty page instead of skipping.
-  const totals = page.locator('main').getByText(/competitions ·.*editions ·.*entries/);
+  // Found by data-testid, never by copy: this probe matched the old run-on
+  // middot sentence, and when the redesign replaced it with stat stations the
+  // regex silently stopped matching. Nothing failed fast — every data test sat
+  // out its 45s timeout, three attempts each, and Critical paths hit its
+  // 20-minute job budget four times running.
+  const totals = page.getByTestId('competition-totals');
   const failed = page.locator('main').getByText(/could not be loaded/i);
   await expect(totals.or(failed).first()).toBeVisible({ timeout: 45_000 });
-  return totals.isVisible();
+  if (!(await totals.isVisible())) return false;
+
+  // A totals line reading ZERO is not a live corpus, and this probe used to
+  // call it one. `Critical paths` builds THIS branch against the LIVE backend,
+  // so while a category migration is pending the RPC omits `category`, every
+  // row groups under undefined, and the page renders a perfectly visible
+  // "0 competitions · 0 editions · 0 entries". The old probe saw the line, said
+  // live, and the floors below then failed with `Received: 0` — a spec that can
+  // only pass after the merge it is blocking, which is a deadlock, not a guard.
+  //
+  // Zero therefore means "not deployed yet" and SKIPS. That is safe only
+  // because it is loud where it matters: the nightly run hits production, where
+  // this corpus is present, so a skip there is a REGRESSION and not a pending
+  // migration — see the header. Everything unconditional in this file (routes,
+  // crawler body, client shell) still runs either way.
+  const text = await totals.first().innerText(RENDER);
+  return [...text.matchAll(/([\d,]+)/g)].some((m) => Number(m[1].replace(/,/g, '')) > 0);
 }
 
-async function gotoView(page: Page, view: string) {
-  await page.goto(`/competitions?view=${view}`);
+async function gotoView(page: Page, view: string, slug = 'drag-series') {
+  await page.goto(`/competitions/${slug}?view=${view}`);
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible(RENDER);
 }
 
@@ -71,19 +97,24 @@ function search(page: Page) {
 async function requireCorpus(page: Page) {
   test.skip(
     !(await corpusIsLive(page)),
-    'competition corpus not deployed yet (migration 20360101100100 pending) — see the header of this file',
+    "competition corpus not live for this category (migration 20360101101200 adds 'category' to the RPCs) — see the header of this file",
   );
 }
 
 /** The totals line the page prints about itself, parsed rather than assumed. */
 async function readTotals(page: Page) {
-  const text = await page
-    .locator('main')
-    .getByText(/competitions ·.*editions ·.*entries/)
-    .first()
-    .innerText(RENDER);
-  const nums = [...text.matchAll(/([\d,]+)/g)].map((m) => Number(m[1].replace(/,/g, '')));
-  return { competitions: nums[0], editions: nums[1], entries: nums[2], linked: nums[3] };
+  // Read per stat, not by position in one string — the stations can be
+  // reordered without silently shifting every number one slot.
+  const read = async (key: string) => {
+    const text = await page.locator(`[data-stat="${key}"] dd`).first().innerText(RENDER);
+    return Number(text.replace(/[^\d]/g, ''));
+  };
+  return {
+    competitions: await read('competitions'),
+    editions: await read('editions'),
+    entries: await read('entrants'),
+    linked: await read('linked'),
+  };
 }
 
 test.describe('@smoke competitions', () => {
@@ -92,13 +123,20 @@ test.describe('@smoke competitions', () => {
     await requireCorpus(page);
 
     const totals = await readTotals(page);
+    // Floors sit deliberately BELOW the measured drag-series numbers
+    // (33 / 114 / 1,327 / 751 on 2026-09-07). They exist to catch a sync that
+    // DESTROYS rows, not to pin a count that ordinary growth breaks. Note these
+    // are one CATEGORY's totals, not the corpus: this page is /drag-series.
     expect(totals.competitions, 'competitions').toBeGreaterThanOrEqual(25);
-    expect(totals.editions, 'editions').toBeGreaterThanOrEqual(300);
-    expect(totals.entries, 'entries').toBeGreaterThanOrEqual(1500);
+    expect(totals.editions, 'editions').toBeGreaterThanOrEqual(90);
+    expect(totals.entries, 'entries').toBeGreaterThanOrEqual(900);
 
     // The whole point of the feature is the join to the encyclopedia. If this
     // collapses, the seed's personality-link UPDATE silently stopped matching.
-    expect(totals.linked, 'entries linked to a personality').toBeGreaterThanOrEqual(500);
+    // Measured 751 of 1,327 here. The other categories are near zero (gay_title
+    // 1, drag_king 0), so this assertion belongs on the series page and nowhere
+    // else — it would be a false alarm anywhere it was copied to.
+    expect(totals.linked, 'entries linked to a personality').toBeGreaterThanOrEqual(400);
     expect(totals.linked).toBeLessThanOrEqual(totals.entries);
 
     // A real table, not a div grid — screen readers depend on it.
@@ -107,43 +145,63 @@ test.describe('@smoke competitions', () => {
     expect(rows, 'season table rows').toBeGreaterThan(10);
   });
 
-  test('carries both the series and the independent title contests', async ({ page }) => {
-    await gotoView(page, 'seasons');
-    await requireCorpus(page);
-
-    // The table WINDOWS to 25 rows behind a "Show all N" button, and rows are
-    // ordered by competition name — so NEITHER side of the corpus is on screen
-    // unfiltered ("Canada's Drag Race" through "Drag Race España" is all you
-    // get). Both halves must be reached through the filter. Asserting against
-    // the unfiltered body is how this test first failed on production, twice:
-    // once for the title contest and again for the franchise.
-    for (const [term, why] of [
-      ["RuPaul's Drag Race", 'the flagship TV franchise'],
-      ['International Mr. Leather', 'an independent title contest, not just the TV franchises'],
-    ] as const) {
-      await search(page).fill(term);
+  test('the hub offers one page per type and never mixes them', async ({ page }) => {
+    // THE POINT OF THE FEATURE. These three were once rows in one sortable
+    // table, where sorting by "entrants" or "first aired" ranked a leather
+    // convention against a television season. Comparison is only meaningful
+    // within a type, so the guard is that each type's page carries its OWN
+    // corpus and NOT the others'.
+    await page.goto('/competitions');
+    for (const slug of [
+      'drag-series',
+      'drag-kings',
+      'drag-pageants',
+      'trans-pageants',
+      'gay-titles',
+      'leather-titles',
+    ]) {
       await expect(
-        page.locator('main').getByText(term).first(),
-        `${why} must be reachable`,
+        page.locator(`main a[href$="/competitions/${slug}"]`).first(),
+        `hub must link ${slug}`,
       ).toBeVisible(RENDER);
     }
 
+    // Positive control FIRST: if the corpus is absent, "IML is not on the drag
+    // series page" passes on an empty table and proves nothing.
+    await gotoView(page, 'seasons', 'leather-titles');
+    await requireCorpus(page);
+    await expect(
+      page.locator('main').getByText('International Mr. Leather').first(),
+      'IML must appear on the leather page',
+    ).toBeVisible(RENDER);
+
+    // ...and must NOT appear on the series page, at any filter.
+    await gotoView(page, 'seasons', 'drag-series');
+    await requireCorpus(page);
+    await search(page).fill('International Mr');
+    await expect(
+      page.locator('main tbody tr'),
+      'a leather title must not be listed among the TV series',
+    ).toHaveCount(0);
+
+    // The flagship is the mirror control: present where it belongs.
+    await search(page).fill("RuPaul's Drag Race");
+    await expect(page.locator('main tbody tr').first()).toBeVisible(RENDER);
+  });
+
+  test('never calls a leather title a pageant', async ({ page }) => {
     // International Mr. Leather calls itself "a multi-day convention and
     // competition". It was briefly filed under a `pageant` bucket invented to
-    // mean "not Drag Race"; this asserts the page never describes it that way
-    // again. The word is legitimate elsewhere (Miss Gay America is "a national
-    // pageant for female impersonators") — it is wrong HERE.
-    await search(page).fill('International Mr. Leather');
-    // Scoped to the RESULT ROW, not all of <main>. Scanning the whole page also
-    // reads the intro paragraph and the filter chips, so this assertion failed
-    // in CI on prose rather than on data — the assertion has to look at the
-    // thing it is about.
+    // mean "not Drag Race". The word is legitimate elsewhere (Miss Gay America
+    // is "a national pageant for female impersonators") — it is wrong HERE.
+    await gotoView(page, 'seasons', 'leather-titles');
+    await requireCorpus(page);
+    // Scoped to the RESULT ROW, not all of <main>: scanning the whole page also
+    // reads the intro and the filter chips, so this assertion once failed in CI
+    // on prose rather than on data.
     const imlRow = page.locator('main tbody tr', { hasText: 'International Mr' }).first();
     await expect(imlRow).toBeVisible(RENDER);
-    expect(
-      await imlRow.innerText(),
-      'IML must not be labelled a pageant',
-    ).not.toMatch(/pageant/i);
+    expect(await imlRow.innerText(), 'IML must not be labelled a pageant').not.toMatch(/pageant/i);
   });
 
   test('renders every runner-up, not just the first', async ({ page }) => {
@@ -170,9 +228,9 @@ test.describe('@smoke competitions', () => {
 
     // Every rendered personality link must point at a real slug, never an empty
     // or "undefined" one — a null slug is supposed to render as plain text.
-    const hrefs = await page.locator('main a[href*="/personalities/"]').evaluateAll((as) =>
-      as.map((a) => (a as HTMLAnchorElement).getAttribute('href') ?? ''),
-    );
+    const hrefs = await page
+      .locator('main a[href*="/personalities/"]')
+      .evaluateAll((as) => as.map((a) => (a as HTMLAnchorElement).getAttribute('href') ?? ''));
     expect(hrefs.length).toBeGreaterThan(0);
     for (const href of hrefs) {
       expect(href, 'synthesised personality link').not.toMatch(
@@ -184,7 +242,7 @@ test.describe('@smoke competitions', () => {
   test('the placement grid is a labelled table whose cells are never colour-only', async ({
     page,
   }) => {
-    await page.goto('/competitions?view=grid&edition=rupauls-drag-race-season-18');
+    await page.goto('/competitions/drag-series?view=grid&edition=rupauls-drag-race-season-18');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible(RENDER);
     await requireCorpus(page);
 
@@ -224,7 +282,7 @@ test.describe('@smoke competitions', () => {
   });
 
   test('the legend names every state the grid can show', async ({ page }) => {
-    await page.goto('/competitions?view=grid&edition=rupauls-drag-race-season-18');
+    await page.goto('/competitions/drag-series?view=grid&edition=rupauls-drag-race-season-18');
     await requireCorpus(page);
     await expect(page.locator('main table').first()).toBeVisible(RENDER);
     const body = await page.locator('main').innerText(RENDER);
@@ -238,7 +296,7 @@ test.describe('@smoke competitions', () => {
 
   test('the page body never scrolls sideways, at phone width', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('/competitions?view=grid&edition=rupauls-drag-race-season-18');
+    await page.goto('/competitions/drag-series?view=grid&edition=rupauls-drag-race-season-18');
     await requireCorpus(page);
     await expect(page.locator('main table').first()).toBeVisible(RENDER);
 
@@ -265,7 +323,47 @@ test.describe('@smoke competitions', () => {
     });
     expect(res.status()).toBe(200);
     const html = await res.text();
-    expect(html).toMatch(/Drag Race seasons and LGBTQ\+ title contests/);
-    expect(html).toMatch(/International Mr\.? Leather/);
+
+    // Assert the PROPERTY, not the wording. This test pinned the hub's exact h1
+    // and went red on production the moment that copy was rewritten — a spec
+    // that fails on a rename it should not care about, while a genuinely empty
+    // body would look identical to a passing one. What must hold is that the
+    // hub routes a crawler onward to all six types.
+    for (const c of COMPETITION_CATEGORIES) {
+      expect(html, `hub crawler body must link ${c.slug}`).toContain(`/competitions/${c.slug}`);
+    }
+
+    // ...and that each type page serves its OWN prose rather than the generic
+    // shell. The discriminator is calibrated against the shell itself: an
+    // unrouted path under /competitions is fetched once, and every real type
+    // must answer with a DIFFERENT h1.
+    //
+    // This is not the obvious check, and the obvious check was vacuous. First
+    // draft asserted status 200, an h1 over ten characters and a body over
+    // 2,000 bytes. Measured against a bogus slug, the SPA shell answers 200
+    // with 28,603 bytes and `<h1>Queer Guide</h1>` — eleven characters — so all
+    // three passed for a page with no routeBody entry whatsoever. A page that
+    // is invisible to search would have gone green.
+    //
+    // Calibrating against the live control instead of a literal means the guard
+    // survives a rewrite of the shell copy, and the list is derived from the
+    // source of truth, so a seventh type is covered the day it is added.
+    const h1of = (html: string) => html.match(/<h1[^>]*>([^<]+)<\/h1>/)?.[1]?.trim() ?? '';
+    const control = await request.get('/competitions/not-a-real-type', {
+      headers: { 'User-Agent': 'Googlebot/2.1 (+http://www.google.com/bot.html)' },
+    });
+    const shellH1 = h1of(await control.text());
+    expect(shellH1, 'control must yield a shell h1 to calibrate against').not.toBe('');
+
+    for (const c of COMPETITION_CATEGORIES) {
+      const res2 = await request.get(`/competitions/${c.slug}`, {
+        headers: { 'User-Agent': 'Googlebot/2.1 (+http://www.google.com/bot.html)' },
+      });
+      expect(res2.status(), `${c.slug} crawler status`).toBe(200);
+      const body = await res2.text();
+      expect(h1of(body), `${c.slug} served the generic shell, not its own body`).not.toBe(shellH1);
+      // Every type body links back to the hub; a shell does not.
+      expect(body, `${c.slug} body must link the hub`).toContain('/competitions"');
+    }
   });
 });

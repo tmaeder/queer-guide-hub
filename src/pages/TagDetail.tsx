@@ -66,6 +66,7 @@ import { FollowTagButton } from '@/components/tags/FollowTagButton';
 import { TagAliasesDisplay } from '@/components/tags/TagAliasesDisplay';
 import { TagSafetyCallout } from '@/components/tags/TagSafetyCallout';
 import { TagWikiContent } from '@/components/tags/TagWikiContent';
+import { GlossaryLinkedProse, GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
 import { TagInterchange } from '@/components/tags/TagInterchange';
 import { SubstanceInteractions } from '@/components/tags/SubstanceInteractions';
 import { TagDiagnosticCodes } from '@/components/tags/TagDiagnosticCodes';
@@ -551,18 +552,22 @@ export default function TagDetail() {
       {(tag.description || tag.long_description) && (
         <section id="about">
           {tag.description && (
-            <p className="max-w-reading text-body-lg leading-relaxed">{tag.description}</p>
+            <p className="max-w-reading text-body-lg leading-relaxed">
+              {/* `currentSlug` is what stops a definition linking to itself —
+                  the rule InfographicTermChip established for figures. */}
+              <GlossaryLinkedText text={tag.description} currentSlug={tag.slug} />
+            </p>
           )}
           {wiki ? (
             <div className="mt-6">
-              <TagWikiContent html={wiki.htmlWithIds} />
+              <TagWikiContent html={wiki.htmlWithIds} currentSlug={tag.slug} />
             </div>
           ) : tag.long_description ? (
-            <div className="qg-cms-body mt-6">
-              {tag.long_description
-                .split(/\n{2,}/)
-                .map((para, i) => para.trim() && <p key={i}>{para.trim()}</p>)}
-            </div>
+            <GlossaryLinkedProse
+              text={tag.long_description}
+              currentSlug={tag.slug}
+              className="qg-cms-body mt-6"
+            />
           ) : null}
         </section>
       )}
@@ -763,7 +768,7 @@ export default function TagDetail() {
         status={
           ENTITY_KIND_LABELS[(tag as { entity_kind?: string }).entity_kind ?? ''] ?? undefined
         }
-        lead={tag.description}
+        lead={<GlossaryLinkedText text={tag.description} currentSlug={tag.slug} />}
         tags={<TagAliasesDisplay tagId={tag.id} />}
         action={<FollowTagButton tagId={tag.id} tagName={tag.name} tagSlug={tag.slug} />}
         body={body}

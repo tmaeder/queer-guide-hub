@@ -4,7 +4,7 @@ import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_
 import { writeToStaging } from '../_shared/source-adapter.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
-import { parseRssItems, cleanText, excerptOf, stripLoneSurrogates } from './rss-parse.ts'
+import { parseRssItems, extractChannelMeta, cleanText, excerptOf, stripLoneSurrogates } from './rss-parse.ts'
 import {
   isWikinewsHost,
   parseWikinewsCategoryUrl,
@@ -166,6 +166,7 @@ const rssNewsAdapter: SourceAdapter = {
         await supabase.from('news_sources').update(claim).eq('id', source.id)
 
         let articles: Record<string, unknown>[] = []
+        let channelMeta: { image: string | null; description: string | null; link: string | null } | null = null
         const apiName = detectApiName(source.url)
 
         if (isWikinewsHost(source.url)) {
@@ -186,6 +187,7 @@ const rssNewsAdapter: SourceAdapter = {
           const rss = await fetchFromRss(source.url, source.feed_type === 'podcast', maxArticles)
           articles = rss.items
           bytesParsed += rss.bytes
+          channelMeta = rss.channelMeta
         }
 
         for (let i = 0; i < Math.min(articles.length, maxArticles); i++) {
@@ -220,7 +222,7 @@ const rssNewsAdapter: SourceAdapter = {
           console.warn(`Source ${source.name} returned 0 items (empty streak: ${empties})`)
           await supabase.from('news_sources').update(update).eq('id', source.id)
         } else {
-          await supabase.from('news_sources').update({
+          const ok: Record<string, unknown> = {
             status: 'active',
             last_fetched_at: new Date().toISOString(),
             last_successful_fetch: new Date().toISOString(),
@@ -228,7 +230,16 @@ const rssNewsAdapter: SourceAdapter = {
             consecutive_failures: 0,
             consecutive_empty_fetches: 0,
             backoff_until: null,
-          }).eq('id', source.id)
+          }
+          // Refresh on success, but NEVER clobber a stored value with null: a
+          // feed that transiently omits its channel header would otherwise
+          // erase the artwork every episode of that show falls back to. The
+          // same rule covers the show blurb and website that the public
+          // /podcasts/:slug page renders.
+          if (channelMeta?.image) ok.artwork_url = channelMeta.image
+          if (channelMeta?.description) ok.description = channelMeta.description
+          if (channelMeta?.link) ok.website_url = channelMeta.link
+          await supabase.from('news_sources').update(ok).eq('id', source.id)
         }
       } catch (e) {
         // Failure: exponential backoff (5min * 2^n, capped at 24h),
@@ -429,7 +440,11 @@ async function fetchFromRss(
   feedUrl: string,
   isPodcast = false,
   maxItems = Number.POSITIVE_INFINITY,
-): Promise<{ items: Record<string, unknown>[]; bytes: number }> {
+): Promise<{
+  items: Record<string, unknown>[]
+  bytes: number
+  channelMeta: { image: string | null; description: string | null; link: string | null } | null
+}> {
   // Throw on failure so the caller's catch can register the failure
   // (consecutive_failures + backoff_until). Returning [] silently would
   // mask flapping feeds and never trip auto-pause.
@@ -464,7 +479,16 @@ async function fetchFromRss(
     // Report the parsed size so the caller can enforce a per-RUN byte budget.
     // The per-feed cap alone cannot bound a run: 30 feeds each just under the
     // cap is still ~120 MB of parsing.
-    return { items: parseRssItems(xml, isPodcast, maxItems), bytes: xml.length }
+    //
+    // The channel header describes the SHOW, so it is cached on the
+    // news_sources row rather than re-derived per article: artwork_url is what
+    // the backfill for already-stored episodes reads, description/website_url
+    // are what the public show page renders.
+    return {
+      items: parseRssItems(xml, isPodcast, maxItems),
+      bytes: xml.length,
+      channelMeta: isPodcast ? extractChannelMeta(xml) : null,
+    }
   } finally {
     clearTimeout(timeout)
   }

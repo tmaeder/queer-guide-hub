@@ -32,4 +32,23 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add reports/
           git commit -m "chore(seo): weekly Search Console report"
-          git push
+          # Rebase-and-retry rather than a bare `git push`. main merges roughly
+          # every 15-20 minutes in this repo, so the window between checkout and
+          # push is wide enough to lose regularly — and losing means the report
+          # was generated, the run went red, and the data was thrown away. The
+          # report only ever ADDS a file under reports/, so a rebase cannot
+          # conflict with anyone.
+          for attempt in 1 2 3 4 5; do
+            if git push; then
+              echo "pushed on attempt $attempt"
+              exit 0
+            fi
+            echo "push rejected (attempt $attempt) — rebasing onto the new main"
+            git pull --rebase --autostash origin "${GITHUB_REF_NAME}" || {
+              echo "::error::rebase failed; not retrying blindly"
+              exit 1
+            }
+            sleep $((attempt * 5))
+          done
+          echo "::error title=Search Console report::generated the report but could not push it after 5 attempts"
+          exit 1

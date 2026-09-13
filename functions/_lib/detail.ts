@@ -9,6 +9,13 @@
  * middleware falls back to the slug-derived static fallback in routeMeta.ts.
  */
 import { fetchRows, type Env } from './sitemap';
+import {
+  glossaryHref,
+  segmentGlossaryText,
+  type FindGlossaryLinksOptions,
+  type GlossaryLinkTerm,
+} from '../../src/lib/glossaryLinks';
+import { getGlossaryVocabulary } from './glossaryVocabulary';
 import { SITE_ORIGIN, DEFAULT_OG_IMAGE, type RouteMeta } from './routeMeta';
 import { safeOgImage } from './safeOgImage';
 import { categoryLabel, categoryLabelTitle } from './categoryLabels';
@@ -149,12 +156,253 @@ const arrayField = (row: Record<string, unknown>, k: string): unknown[] | undefi
   return Array.isArray(v) ? v : undefined;
 };
 
-function paragraphsHtml(text: string): string {
-  return collapseWs(stripHtml(text))
-    .split(/\n{2,}|(?<=[.!?])\s{2,}/)
-    .map((p) => p.trim())
-    .filter(Boolean)
+/**
+ * Split prose into paragraphs, then collapse whitespace INSIDE each one.
+ *
+ * The order is the whole point. This used to call `collapseWs` first, which
+ * rewrites every `\n` to a single space, so neither arm of the split could ever
+ * match and every crawler-facing detail page — all 13 call sites below — served
+ * its prose to Googlebot as one undifferentiated `<p>`. Measured on prod before
+ * the fix: 4,558 `events.description`, 240 `unified_tags.long_description`,
+ * 150 `cities.description` and 7/7 `guides.intro_md` rows carry blank-line
+ * paragraph breaks that were being flattened.
+ *
+ * CRLF is normalised FIRST, and that is not cosmetic. `[ \t]*` does not match
+ * `\r`, so on a `\r\n` row the lookbehind arms below see `\r` immediately
+ * before the `\n` and never fire — 61 of the 189 newline-bearing
+ * `venues.description` rows and 19 `events.description` rows are CRLF, so
+ * without this line a third of the venue corpus keeps the exact bug this
+ * function exists to fix. (`\n\s*\n` is unaffected: `\s` matches `\r`.)
+ *
+ * Three arms, all measured against the live corpus rather than assumed:
+ *
+ *  - a blank line. Unambiguous.
+ *  - a SINGLE newline that follows sentence-terminal punctuation. Entire
+ *    content types separate paragraphs this way and never use a blank line:
+ *    106 of 175 `queer_villages.history` rows contain `\n` and ZERO contain
+ *    `\n\n`, so the blank-line arm alone leaves every village history page a
+ *    single block. Same shape on 858 `cities.description` rows.
+ *  - a SINGLE newline whose next line opens with a capital or a digit, where
+ *    the current line does not end in a comma or semicolon. This is the events
+ *    corpus, which writes headings and timetables with no terminal punctuation
+ *    at all: `Zugänglichkeit` / `Code of Conduct` / `Türöffnung: 21 Uhr` /
+ *    `23.15h - Milky Diamond` ⏎ `23.30h - Sado Opera`. Without it 1,906 such
+ *    line breaks in `events.description` render as one run-on paragraph.
+ *
+ * Every condition here removes a measured defect, none is a guess:
+ *
+ *  - Requiring punctuation OR a capitalised next line is what keeps a
+ *    hard-wrapped sentence intact. A bare `\n+` split produced 22 broken
+ *    sentences in a 1,182-row sample (German event copy, verse, Wikipedia list
+ *    runs); this rule produces 0 across the same corpus. All 25 hand-read
+ *    samples of what the third arm adds are headings, timetable lines or new
+ *    sentences.
+ *  - The comma/semicolon exclusion exists because of one row:
+ *    `…in the City of Salford in Greater Manchester, England,` ⏎
+ *    `3 miles (4.8 km) west of Salford city centre…`, which is one sentence.
+ *    Keep the class NARROW — an earlier draft also excluded `+ / -` and so
+ *    re-glued `Must be 19+`, bare URLs ending in `/`, and `-----` separators.
+ *  - The digit half of the lookahead is worth 294 splits, 293 of them
+ *    timetables. Its one bad split is `…Gramercy Theater (127 East` ⏎
+ *    `23rd Street)`. An "unclosed `(` means continuation" rejoin was written to
+ *    catch it and MEASURED TO BE NET-NEGATIVE — 3 fragments in 24,498 carry an
+ *    unclosed paren, so it would fix that one and wrongly glue the other two.
+ *    Known, measured, left alone; do not re-add it without re-measuring.
+ *
+ * The old `(?<=[.!?])\s{2,}` sentence-gap arm is deliberately NOT revived. It
+ * was dead code, and reviving it fragments a paragraph at every typewriter-style
+ * double space after a full stop — 110 `venues.description`, 117
+ * `cities.description` and 35 `events.description` rows, all of them running
+ * text ("…was 60 at the 2000 census.  The area is named for…").
+ *
+ * ONE splitter, because the copy is exactly what went wrong. `paragraphsHtmlLinked`
+ * below shipped with an older `collapseWs(...)`-then-split body; when the fix
+ * above landed the two auto-merged with NO conflict, and since all 13 call sites
+ * render through the linked variant, the everything-in-one-`<p>` bug would have
+ * come straight back under a green diff. Both now share `splitParagraphs`.
+ *
+ * Each returned paragraph is already whitespace-collapsed, so no `\n` survives
+ * inside one — `paragraphsHtmlLinked` relies on that to rejoin them safely.
+ */
+function splitParagraphs(text: string): string[] {
+  return stripHtml(text)
+    .replace(/\r\n?/g, '\n')
+    .split(/\n\s*\n|(?<=[.!?:"'’”)\]])[ \t]*\n|(?<=[^\s,;])[ \t]*\n[ \t]*(?=[\p{Lu}0-9])/u)
+    .map(collapseWs)
+    .filter(Boolean);
+}
+
+export function paragraphsHtml(text: string): string {
+  return splitParagraphs(text)
     .map((p) => `<p>${escape(p)}</p>`)
+    .join('\n      ');
+}
+
+/**
+ * `paragraphsHtml`, with the glossary terms the prose mentions turned into
+ * links to `/tags/:slug`.
+ *
+ * WHY THE LINKS ARE NOT SIMPLY STORED IN THE PROSE COLUMN: this function's
+ * sibling above is the reason. `stripHtml` would delete any `<a>` a migration
+ * wrote into the column and `escape` would neutralise whatever survived, so a
+ * stored anchor is invisible to exactly the audience it was written for. The
+ * vocabulary is read at render time instead, which also means a term that is
+ * later merged, deprecated or un-reviewed stops linking rather than rotting
+ * into a dead anchor — `unified_tags` keeps 5,802 deprecated and 144 merged
+ * rows at their old slugs.
+ *
+ * The escaping contract is unchanged and load-bearing: source text is ONLY ever
+ * emitted through `escape()`, and the `href` is built from the vocabulary's own
+ * slug, never from anything in the document. No source text can become markup.
+ *
+ * `docs/SEO.md`'s cloaking rule requires this set to be a subset of what a
+ * human sees, which is why the span decisions come from the same
+ * `src/lib/glossaryLinks.ts` the SPA uses rather than a second implementation.
+ *
+ * PARAGRAPHS COME FROM `splitParagraphs`, the same splitter `paragraphsHtml`
+ * uses — never a second copy of that regex. Every call site renders through this
+ * function, so a stale copy here silently reverts the paragraph fix for all 13
+ * of them, which is exactly what a no-conflict auto-merge nearly shipped.
+ *
+ * The matcher then runs ONCE over the whole document (paragraphs rejoined by a
+ * blank line) rather than per paragraph, so first-mention-only and the
+ * per-document cap mean what they say instead of being multiplied by the
+ * paragraph count. Rejoining is unambiguous because `splitParagraphs` has
+ * already collapsed whitespace inside each paragraph, so the only `\n` in the
+ * joined string are the ones added here.
+ */
+export function paragraphsHtmlLinked(
+  text: string,
+  vocabulary: readonly GlossaryLinkTerm[],
+  options: FindGlossaryLinksOptions = {},
+): string {
+  if (vocabulary.length === 0) return paragraphsHtml(text);
+
+  const paras = splitParagraphs(text);
+  if (paras.length === 0) return '';
+  const segments = segmentGlossaryText(paras.join('\n\n'), vocabulary, options);
+
+  const paragraphs: string[][] = [[]];
+  const push = (html: string) => paragraphs[paragraphs.length - 1].push(html);
+
+  for (const segment of segments) {
+    if (segment.kind === 'link') {
+      // `data-glossary-link` mirrors the SPA's attribute and is what lets a test
+      // tell an INLINE prose link from the nav and rail links on the same page —
+      // without it "no bad inline link" is indistinguishable from "no inline
+      // links at all".
+      push(
+        `<a href="${escape(glossaryHref(segment.slug))}" data-glossary-link="${escape(segment.slug)}">${escape(segment.text)}</a>`,
+      );
+      continue;
+    }
+    // Only the joins above can produce a blank line here, so this splits on
+    // exactly the paragraph boundaries `splitParagraphs` already decided.
+    const parts = segment.text.split('\n\n');
+    parts.forEach((part, i) => {
+      if (i > 0) paragraphs.push([]);
+      if (part) push(escape(part));
+    });
+  }
+
+  return paragraphs
+    .map((parts) => parts.join('').trim())
+    .filter(Boolean)
+    .map((body) => `<p>${body}</p>`)
+    .join('\n      ');
+}
+
+/**
+ * The content carrying a tag, as crawlable links, for the tag page's bot body.
+ *
+ * `cityDetail` has listed its venues and events since 20260910 — the "two-hop
+ * payoff" docs/SEO.md names — while `tagDetail` listed nothing at all, so the
+ * glossary was a leaf in the crawl graph. The SPA equivalent, `TagLinkedContent`
+ * over `get_tag_linked_content`, has rendered real anchors for months; this is
+ * the same relationships served to a crawler that does not run JS. Per the
+ * cloaking rule the bot set must be a SUBSET of the human one, which is why
+ * this covers three of that component's four types and never more.
+ *
+ * EVERY visibility predicate below is mandatory and none is a duplicate of an
+ * RLS policy: `fetchRows` authenticates with the service role, which bypasses
+ * RLS entirely. The gates are copied verbatim from the sitemap generators so
+ * the two cannot disagree about what is publishable — dropping
+ * `safety_gated=eq.false` alone would publish venues in criminalising countries
+ * to anonymous crawlers.
+ */
+async function tagLinkedContentHtml(env: Env, tagId: string, tagName: string): Promise<string> {
+  // `unified_tag_assignments` is polymorphic — no FK per type — so PostgREST
+  // embedding is not available and each type costs an id lookup plus a gated
+  // fetch. Assignment ids are over-fetched because the gates below reject some.
+  const ASSIGNMENT_FETCH = 60;
+  const RENDER_LIMIT = 10;
+  const today = new Date().toISOString().slice(0, 10);
+
+  const idsFor = async (entityType: string): Promise<string[]> => {
+    const rows = await fetchRows(
+      env,
+      'unified_tag_assignments',
+      'entity_id',
+      `tag_id=eq.${tagId}&entity_type=eq.${entityType}`,
+      ASSIGNMENT_FETCH,
+    ).catch(() => []);
+    return rows.map((r) => stringField(r, 'entity_id')).filter((v): v is string => Boolean(v));
+  };
+
+  const gated = async (
+    entityType: string,
+    table: string,
+    select: string,
+    filter: string,
+  ): Promise<Record<string, unknown>[]> => {
+    const ids = await idsFor(entityType);
+    if (ids.length === 0) return [];
+    return fetchRows(env, table, select, `id=in.(${ids.join(',')})&${filter}`, RENDER_LIMIT).catch(
+      () => [],
+    );
+  };
+
+  const [venues, events, news] = await Promise.all([
+    gated(
+      'venues',
+      'venues',
+      'name,slug',
+      'slug=not.is.null&seo_indexable=eq.true&safety_gated=eq.false&duplicate_of_id=is.null',
+    ),
+    gated(
+      'event',
+      'events',
+      'title,slug,start_date',
+      `slug=not.is.null&seo_indexable=eq.true&status=neq.cancelled&start_date=gte.${today}&safety_gated=eq.false&duplicate_of_id=is.null&order=start_date.asc`,
+    ),
+    gated(
+      'news',
+      'news_articles',
+      'title,slug',
+      'slug=not.is.null&seo_indexable=eq.true&duplicate_of_id=is.null&content=not.is.null&archived_at=is.null',
+    ),
+  ]);
+
+  const list = (
+    rows: Record<string, unknown>[],
+    prefix: string,
+    titleKey: string,
+    heading: string,
+  ): string => {
+    const items = rows
+      .map((r) => ({ title: stringField(r, titleKey), slug: stringField(r, 'slug') }))
+      .filter((r) => r.title && r.slug)
+      .map((r) => `<li><a href="${prefix}${escape(r.slug!)}">${escape(r.title!)}</a></li>`)
+      .join('\n        ');
+    return items ? `<section><h2>${escape(heading)}</h2><ul>\n        ${items}\n      </ul></section>` : '';
+  };
+
+  return [
+    list(venues, '/venues/', 'name', `Places tagged ${tagName}`),
+    list(events, '/events/', 'title', `Upcoming events tagged ${tagName}`),
+    list(news, '/news/', 'title', `Reporting tagged ${tagName}`),
+  ]
+    .filter(Boolean)
     .join('\n      ');
 }
 
@@ -163,7 +411,96 @@ async function fetchOne(env: Env, table: string, slugCol: string, slug: string, 
   return rows[0] ?? null;
 }
 
-const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+// A `slugify` helper lived here, and its only caller shape was building a city
+// link out of the free-text `city` column. It is DELETED rather than kept for
+// reuse: it is the footgun this change exists to remove, and the next person
+// needing "a slug from a name" would reach for it and reintroduce `z-rich`.
+// Resolve a slug through the row's FK — publishableCitySlug below — never by
+// transforming a display name.
+
+/**
+ * The linked city's OWN slug, or null. Never derived from the city's name.
+ *
+ * `slugify` here is `toLowerCase().replace(/[^a-z0-9]+/g,'-')` — no
+ * transliteration, no trim — so "Zürich" becomes `z-rich` and
+ * "Wilmington (Long Beach)" becomes `wilmington-long-beach-`. Measured
+ * 2026-09-10 on the crawler bodies of the three types that emit a city link:
+ *
+ *   venues  9,293 of 23,077 (40.3%) linked to a slug no city row has
+ *   events    517 of  2,972 (17.4%)
+ *   hotels     80 of    323 (24.8%)
+ *
+ * …plus 636 venues that linked to a city which EXISTS BUT IS THE WRONG PLACE:
+ * every venue in Victoria, BC pointed at Victoria, SEYCHELLES, and Grad Hvar
+ * (Croatia) at a French commune. That is the same-name-city collision class
+ * recorded in CLAUDE.md, reached through a link instead of a resolver — and it
+ * is worse than a 404, because a wrong-but-live link looks correct to everyone.
+ *
+ * Returning null (no link at all) is the deliberate answer for the ~2,500 rows
+ * with no usable city_id. A missing link costs a crawl path; a wrong one sends
+ * a reader to another country.
+ */
+export function publishableCitySlug(row: Record<string, unknown>): string | null {
+  const c = (row.cities ?? null) as Record<string, unknown> | null;
+  if (!c) return null;
+  if (typeof c.slug !== 'string' || c.slug.length === 0) return null;
+  if (c.seo_indexable !== true) return null;
+  if (c.duplicate_of_id != null) return null;
+  if (c.shell_status === 'ghost' || c.shell_status === 'merged') return null;
+  return c.slug;
+}
+
+/** The `<li>` city link for a crawler nav, or '' when there is no safe target. */
+export function cityLinkItem(row: Record<string, unknown>, cityText: string | null | undefined): string {
+  const slug = publishableCitySlug(row);
+  if (!slug) return '';
+  return `<li><a href="/city/${encodeURIComponent(slug)}">More in ${escape(cityText ?? slug)}</a></li>`;
+}
+
+/**
+ * Opening hours for the crawler body, or null.
+ *
+ * Reads `hours.display` and NOTHING else. Measured 2026-09-10: 609 of the
+ * 23,664 publishable venues carry hours, and all 609 share one shape —
+ * `{display, open_now, popular, regular}` — where `display` is already a human
+ * string ("Mon-Thu 11:00-23:00; Fri-Sat 11:00-24:00; Sun 11:00-23:00").
+ *
+ * The first version of this function walked `monday`..`sunday` keys. ZERO rows
+ * have such a key, so it was dead code that rendered nothing on every page —
+ * and it looked like it worked, because the section simply never appeared.
+ *
+ * `open_now` is deliberately ignored: it is a boolean frozen at scrape time, so
+ * publishing it would state "open now" to a reader at an arbitrary later moment.
+ * `regular`/`popular` are ignored too — they encode close as "+0000" for
+ * after-midnight, which reads as a real time and is not one.
+ *
+ * Coverage is 2.6% of venues. Small, but it is real data already fetched and
+ * previously discarded; it is not a fix for the 11,302 empty descriptions.
+ */
+export function formatHoursForCrawler(raw: unknown): string | null {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  const display = (raw as Record<string, unknown>).display;
+  if (typeof display !== 'string') return null;
+  const text = display.trim();
+  if (!text || text.length > 300) return null;
+  return text.endsWith('.') ? text : `${text}.`;
+}
+
+/**
+ * " · Rated 4.2 from 2 sources." or '' — derived from the rating columns that
+ * are already fetched for the JSON-LD aggregateRating, so this states nothing
+ * the structured data does not already claim.
+ */
+function aggregateRatingSentence(row: Record<string, unknown>): string {
+  const ratings = [
+    numField(row, 'foursquare_rating'),
+    numField(row, 'tripadvisor_rating'),
+    numField(row, 'tomtom_rating'),
+  ].filter((n): n is number => n !== undefined);
+  if (ratings.length === 0) return '';
+  const avg = ratings.reduce((a, b) => a + b, 0) / ratings.length;
+  return ` · Rated ${avg.toFixed(1)} from ${ratings.length} source${ratings.length === 1 ? '' : 's'}.`;
+}
 
 // Venues
 
@@ -175,7 +512,17 @@ async function venueDetail(env: Env, slug: string, pathname: string): Promise<De
   const rows = await fetchRows(
     env,
     'venues',
-    'name,slug,description,address,city,state,country,postal_code,latitude,longitude,phone,website,images,category,venue_subtype,foursquare_rating,tripadvisor_rating,tomtom_rating,hours,updated_at,safety_gated,review_status,seo_indexable',
+    // cities(...) is embedded so the city LINK can use the city's real slug.
+    // The body used to link `/places/${slugify(city_text)}`, and slugify here is
+    // `toLowerCase().replace(/[^a-z0-9]+/g,'-')` — no transliteration, no trim —
+    // so "Zürich" became `z-rich` and "Wilmington (Long Beach)" became
+    // `wilmington-long-beach-`. Measured 2026-09-10 across the 23,077 indexable
+    // venues carrying a city: 9,293 (40.3%) linked to a slug no city row has,
+    // and a further 636 linked to a city that EXISTS BUT IS THE WRONG PLACE —
+    // every venue in Victoria, BC pointed at Victoria, SEYCHELLES, and Grad Hvar
+    // (Croatia) at a French commune. That is the same-name-city collision class
+    // recorded in CLAUDE.md, reached through a link rather than a resolver.
+    'name,slug,description,address,city,state,country,postal_code,latitude,longitude,phone,website,images,category,venue_subtype,foursquare_rating,tripadvisor_rating,tomtom_rating,hours,updated_at,safety_gated,review_status,seo_indexable,cities(slug,seo_indexable,duplicate_of_id,shell_status)',
     // review_status=neq.archived: fetchRows runs with the service role, so the
     // SPA's own archived filter (usePageFetchers → notFound) never applies here;
     // without it every soft-archived venue kept serving full meta + JSON-LD to
@@ -219,16 +566,29 @@ async function venueDetail(env: Env, slug: string, pathname: string): Promise<De
   };
   void label;
 
+  // Facts we already hold and were throwing away. `hours` was in the select list
+  // and rendered nowhere, while 11,506 of 24,236 live venues (47%) have an empty
+  // description — which is why the crawler body for one of those measured 64
+  // characters end to end: name, city, nav. These lines are derived from
+  // structured columns, never generated prose.
+  const factLine = [labelTitle, city ? `in ${city}` : null, country && country !== city ? country : null]
+    .filter(Boolean)
+    .join(' ');
+  const hoursText = formatHoursForCrawler(row.hours);
+
+  const glossary = await getGlossaryVocabulary(env);
   const body = `<main data-prerendered="bot-ua">
     <article>
       <h1>${escape(name)}</h1>
       ${address || city ? `<p><strong>${escape([address, city, country].filter(Boolean).join(', '))}</strong></p>` : ''}
-      ${description ? paragraphsHtml(description) : ''}
+      ${factLine ? `<p>${escape(factLine)}${aggregateRatingSentence(row)}</p>` : ''}
+      ${description ? paragraphsHtmlLinked(description, glossary) : ''}
+      ${hoursText ? `<section><h2>Opening hours</h2><p>${escape(hoursText)}</p></section>` : ''}
     </article>
     <nav aria-label="Site sections">
       <ul>
         <li><a href="/venues">All venues</a></li>
-        ${city ? `<li><a href="/places/${escape(slugify(city))}">More in ${escape(city)}</a></li>` : ''}
+        ${cityLinkItem(row, city)}
         <li><a href="/events">Events</a></li>
       </ul>
     </nav>
@@ -310,7 +670,7 @@ async function eventDetail(env: Env, slug: string, pathname: string): Promise<De
   const rows = await fetchRows(
     env,
     'events',
-    'title,slug,description,address,city,state,country,postal_code,start_date,end_date,latitude,longitude,images,ticket_url,organizer_name,venue_name,price_min,price_max,is_free,event_type,timezone,updated_at,safety_gated,status,seo_indexable',
+    'id,parent_event_id,title,slug,description,address,city,state,country,postal_code,start_date,end_date,latitude,longitude,images,ticket_url,organizer_name,venue_name,price_min,price_max,is_free,event_type,timezone,updated_at,safety_gated,status,seo_indexable,cities(slug,seo_indexable,duplicate_of_id,shell_status)',
     // status=neq.cancelled is the archive gate — the existence engine writes
     // 'cancelled' to archive an event, and sitemap-events.xml.ts already
     // excludes it, but this renderer did not, so an archived event kept a fully
@@ -342,17 +702,18 @@ async function eventDetail(env: Env, slug: string, pathname: string): Promise<De
     ogImage: safeOgImage((arrayField(row, 'images')?.[0] as string) ?? DEFAULT_OG_IMAGE),
   };
 
+  const glossary = await getGlossaryVocabulary(env);
   const body = `<main data-prerendered="bot-ua">
     <article>
       <h1>${escape(title)}</h1>
       ${startDate ? `<p><strong>When:</strong> <time datetime="${escape(startDate)}">${escape(startDate.slice(0, 10))}</time>${endDate ? ` – <time datetime="${escape(endDate)}">${escape(endDate.slice(0, 10))}</time>` : ''}</p>` : ''}
       ${city ? `<p><strong>Where:</strong> ${escape([stringField(row, 'venue_name'), stringField(row, 'address'), city, country].filter(Boolean).join(', '))}</p>` : ''}
-      ${description ? paragraphsHtml(description) : ''}
+      ${description ? paragraphsHtmlLinked(description, glossary) : ''}
     </article>
     <nav aria-label="Site sections">
       <ul>
         <li><a href="/events">All events</a></li>
-        ${city ? `<li><a href="/places/${escape(slugify(city))}">More in ${escape(city)}</a></li>` : ''}
+        ${cityLinkItem(row, city)}
         <li><a href="/venues">Venues</a></li>
       </ul>
     </nav>
@@ -406,10 +767,79 @@ async function eventDetail(env: Env, slug: string, pathname: string): Promise<De
         : undefined,
   };
 
+  // A festival and its day-parts published four competing indexable Event
+  // documents with nothing declaring the relation, so a crawler had no way to
+  // tell an umbrella from its own programme. schema.org has had subEvent and
+  // superEvent all along and the data has existed since parent_event_id shipped.
+  //
+  // Exactly ONE extra query, on an indexed column (events_parent_event_id_idx),
+  // and only the arm this row needs: a child already knows its parent id from
+  // its own row, an umbrella has to look its children up. `p_limit` is capped
+  // because subEvent is a hint for a crawler, not a sitemap — the day-part pages
+  // are in sitemap-events.xml on their own account.
+  await attachProgrammeLd(env, row, eventLd);
+
   // seo_indexable was in neither the select nor this return, so an event page
   // was indexable whatever the column said. The stale comment further down this
   // file claiming eventDetail "already" honoured it was simply wrong.
   return { meta, body, jsonLd: renderLd(prune(eventLd)), indexable: row.seo_indexable !== false };
+}
+
+/**
+ * Declare the programme relation on an event's JSON-LD.
+ *
+ * Mirrors `programmeLd()` in `src/lib/eventProgrammeLd.ts`, which the SPA uses —
+ * `functions/` and `src/` do not share a module graph, so the two are kept in step
+ * by `src/lib/__tests__/eventProgrammeLd.test.ts` rather than by an import.
+ */
+async function attachProgrammeLd(
+  env: Env,
+  row: Record<string, unknown>,
+  eventLd: Record<string, unknown>,
+): Promise<void> {
+  const parentId = stringField(row, 'parent_event_id');
+  const selfId = stringField(row, 'id');
+
+  if (parentId) {
+    const parents = await fetchRows(
+      env,
+      'events',
+      'title,slug',
+      `id=eq.${encodeURIComponent(parentId)}&duplicate_of_id=is.null&status=neq.cancelled&safety_gated=is.false`,
+      1,
+    );
+    const parent = parents[0];
+    if (parent) {
+      eventLd.superEvent = {
+        '@type': 'Event',
+        name: stringField(parent, 'title'),
+        url: `${SITE_ORIGIN}/events/${stringField(parent, 'slug')}`,
+      };
+    }
+    return;
+  }
+
+  if (!selfId) return;
+
+  // safety_gated=is.false is not decoration: a gated child must not be named in a
+  // public document. gatedDetailResult() already withholds the child's own page,
+  // and listing its title and url here would hand a crawler exactly what that gate
+  // exists to withhold.
+  const children = await fetchRows(
+    env,
+    'events',
+    'title,slug,start_date',
+    `parent_event_id=eq.${encodeURIComponent(selfId)}&duplicate_of_id=is.null&status=neq.cancelled&safety_gated=is.false&order=start_date.asc`,
+    25,
+  );
+  if (children.length === 0) return;
+
+  eventLd.subEvent = children.map((c) => ({
+    '@type': 'Event',
+    name: stringField(c, 'title'),
+    url: `${SITE_ORIGIN}/events/${stringField(c, 'slug')}`,
+    startDate: stringField(c, 'start_date'),
+  }));
 }
 
 // News articles
@@ -419,7 +849,7 @@ async function newsDetail(env: Env, slug: string, pathname: string): Promise<Det
   const rows = await fetchRows(
     env,
     'news_articles',
-    'title,slug,excerpt,author,image_url,published_at,url,publisher_name,updated_at,seo_indexable',
+    'title,slug,excerpt,author,image_url,published_at,url,publisher_name,updated_at,seo_indexable,media_type,audio_url,duration_seconds,source_id',
     // archived_at — fetchRows reads with the service role, so the RLS policy
     // that hides archived articles from every other reader does not apply here
     // and the filter has to be repeated.
@@ -445,11 +875,12 @@ async function newsDetail(env: Env, slug: string, pathname: string): Promise<Det
   };
 
   const sourceLink = stringField(row, 'url');
+  const glossary = await getGlossaryVocabulary(env);
   const body = `<main data-prerendered="bot-ua">
     <article>
       <h1>${escape(title)}</h1>
       <p>${author ? `<em>By ${escape(author)}</em>` : ''}${author && publisher ? ' · ' : ''}${publisher ? `Published on ${escape(publisher)}` : ''}</p>
-      ${excerpt ? `<p>${escape(excerpt)}</p>` : ''}
+      ${excerpt ? paragraphsHtmlLinked(excerpt, glossary) : ''}
       ${sourceLink ? `<p><a href="${escape(sourceLink)}" rel="nofollow noopener">Read the full article at ${escape(publisher ?? 'the source')}</a></p>` : ''}
     </article>
     <nav aria-label="Site sections">
@@ -469,21 +900,115 @@ async function newsDetail(env: Env, slug: string, pathname: string): Promise<Det
     datePublished: stringField(row, 'published_at'),
     dateModified: stringField(row, 'updated_at') ?? stringField(row, 'published_at'),
     author: author ? { '@type': 'Person', name: author } : undefined,
-    publisher: publisher
-      ? {
-          '@type': 'Organization',
-          name: publisher,
-          logo: {
-            '@type': 'ImageObject',
-            url: `${SITE_ORIGIN}/icons/icon-192.png`,
-          },
-        }
-      : undefined,
+    // `publisher` is the organization publishing THIS page, which is Queer
+    // Guide — so it takes Queer Guide's name and Queer Guide's logo.
+    //
+    // Until 2026-09-10 this emitted `news_articles.publisher_name` (the
+    // ORIGINATING outlet) paired with Queer Guide's own icon as that outlet's
+    // logo, e.g. `{"name":"Variety","logo":{"url":".../icons/icon-192.png"}}`
+    // — a false claim about a third party, served on up to 24,117 URLs, in the
+    // one property Google reads as a NewsArticle trust signal. The column is
+    // also not always an organization at all: the top values include
+    // "Google News LGBT Rights", "NewsData.io" and "Reddit LGBT", which are
+    // feeds, so no logo could ever have been correct for them.
+    //
+    // The originating outlet is still credited, in the property that actually
+    // means it. `sourceOrganization` carries no logo because we do not hold
+    // theirs — omitting it is honest, inventing one is how this started.
+    publisher: {
+      '@type': 'Organization',
+      name: 'Queer Guide',
+      url: SITE_ORIGIN,
+      logo: {
+        '@type': 'ImageObject',
+        url: `${SITE_ORIGIN}/icons/icon-192.png`,
+      },
+    },
+    sourceOrganization: publisher ? { '@type': 'Organization', name: publisher } : undefined,
     image: image ? [image] : undefined,
     mainEntityOfPage: { '@type': 'WebPage', '@id': `${SITE_ORIGIN}${pathname}` },
     url: `${SITE_ORIGIN}${pathname}`,
     isBasedOn: sourceLink,
   };
+
+  // A PODCAST EPISODE IS NOT A NEWS ARTICLE.
+  //
+  // Until now every one of the 8,000+ episode URLs was served to crawlers as a
+  // NewsArticle with no audio anywhere in the document and a "Read the full
+  // article at <publisher>" call to action pointing at a show's homepage. The
+  // type was wrong and the one property that matters — where the audio is —
+  // was absent, so nothing could ever surface these as listenable results.
+  //
+  // The page KEEPS its /news/:slug URL. There is no /podcasts/:show/:episode:
+  // those URLs are already indexed, and a second space would only fight them.
+  const audioUrl = stringField(row, 'audio_url');
+  if (stringField(row, 'media_type') === 'podcast' && audioUrl) {
+    // One extra round trip, taken only on this branch, so the episode can name
+    // the series it belongs to and link the show page.
+    let showName: string | null = null;
+    let showSlug: string | null = null;
+    const sourceId = stringField(row, 'source_id');
+    if (sourceId) {
+      const shows = await fetchRows(
+        env,
+        'news_sources',
+        'name,slug',
+        `id=eq.${encodeURIComponent(sourceId)}`,
+        1,
+      );
+      showName = stringField(shows[0] ?? {}, 'name') ?? null;
+      showSlug = stringField(shows[0] ?? {}, 'slug') ?? null;
+    }
+    const dur = isoDuration(row.duration_seconds as number | null | undefined);
+
+    const episodeBody = `<main data-prerendered="bot-ua">
+    <article>
+      <h1>${escape(title)}</h1>
+      <p>${showName ? `<em>From ${escape(showName)}</em>` : ''}</p>
+      ${excerpt ? paragraphsHtmlLinked(excerpt, glossary) : ''}
+      <p><a href="${escape(audioUrl)}" rel="nofollow noopener">Listen to this episode</a></p>
+      ${showSlug ? `<p><a href="/podcasts/${escape(showSlug)}">All episodes of ${escape(showName ?? 'this show')}</a></p>` : ''}
+    </article>
+    <nav aria-label="Site sections">
+      <ul>
+        <li><a href="/podcasts">All podcasts</a></li>
+        <li><a href="/news">All news</a></li>
+        <li><a href="/tags">Glossary</a></li>
+      </ul>
+    </nav>
+  </main>`;
+
+    const episodeLd: Record<string, unknown> = {
+      '@context': 'https://schema.org',
+      '@type': 'PodcastEpisode',
+      name: title,
+      description: excerpt || undefined,
+      datePublished: stringField(row, 'published_at'),
+      image: image || undefined,
+      url: `${SITE_ORIGIN}${pathname}`,
+      associatedMedia: {
+        '@type': 'AudioObject',
+        contentUrl: audioUrl,
+        encodingFormat: 'audio/mpeg',
+        duration: dur,
+      },
+      timeRequired: dur,
+      partOfSeries: showName
+        ? {
+            '@type': 'PodcastSeries',
+            name: showName,
+            url: showSlug ? `${SITE_ORIGIN}/podcasts/${showSlug}` : undefined,
+          }
+        : undefined,
+    };
+
+    return {
+      meta,
+      body: episodeBody,
+      jsonLd: renderLd(prune(episodeLd)),
+      indexable: row.seo_indexable !== false,
+    };
+  }
 
   // News detail pages are first-class again (the P1.2 410 Gone handler was
   // removed). Index per the row's own quality gate — seo_indexable is set
@@ -493,6 +1018,112 @@ async function newsDetail(env: Env, slug: string, pathname: string): Promise<Det
     body,
     jsonLd: renderLd(prune(articleLd)),
     indexable: row.seo_indexable !== false,
+  };
+}
+
+/** Seconds -> ISO-8601 duration. schema.org wants `PT1H2M30S`, not `3750`. */
+function isoDuration(seconds: number | null | undefined): string | undefined {
+  const n = Number(seconds);
+  if (!Number.isFinite(n) || n <= 0) return undefined;
+  const total = Math.round(n);
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const sec = total % 60;
+  return `PT${h ? `${h}H` : ''}${m ? `${m}M` : ''}${sec || (!h && !m) ? `${sec}S` : ''}`;
+}
+
+/**
+ * /podcasts/:slug — a show.
+ *
+ * The show entity is a news_sources row; there is no podcasts table. The body
+ * lists recent episodes as links to their /news/:slug pages, which is the
+ * hub -> detail edge that makes 8,000 episode URLs reachable by a crawler that
+ * does not run JavaScript.
+ */
+async function podcastShowDetail(
+  env: Env,
+  slug: string,
+  pathname: string,
+): Promise<DetailResult | null> {
+  const rows = await fetchRows(
+    env,
+    'news_sources',
+    'id,name,slug,description,url,website_url,artwork_url,episode_count',
+    // is_active repeated here because fetchRows reads with the service role and
+    // the RLS policy that hides inactive sources does not apply to it.
+    `slug=eq.${encodeURIComponent(slug)}&feed_type=eq.podcast&is_active=eq.true`,
+    1,
+  );
+  const row = rows[0] ?? null;
+  if (!row) return null;
+
+  const name = stringField(row, 'name') ?? slug;
+  const description = collapseWs(stripHtml(stringField(row, 'description') ?? ''));
+  const artwork = stringField(row, 'artwork_url');
+  const website = stringField(row, 'website_url');
+  const feed = stringField(row, 'url');
+  const id = stringField(row, 'id');
+
+  const episodes = id
+    ? await fetchRows(
+        env,
+        'news_articles',
+        'title,slug,published_at',
+        `source_id=eq.${encodeURIComponent(id)}&media_type=eq.podcast&duplicate_of_id=is.null&archived_at=is.null&order=published_at.desc`,
+        50,
+      )
+    : [];
+
+  const meta: RouteMeta = {
+    title: truncate(`${name} — Podcast${TITLE_SUFFIX}`, MAX_TITLE),
+    description: truncate(
+      description || `${name} — an LGBTQ+ podcast on Queer Guide.`,
+      MAX_DESC,
+    ),
+    ogImage: safeOgImage(artwork ?? DEFAULT_OG_IMAGE),
+  };
+
+  const items = episodes
+    .filter((e) => typeof e.slug === 'string' && e.slug)
+    .map(
+      (e) =>
+        `<li><a href="/news/${escape(String(e.slug))}">${escape(String(e.title ?? e.slug))}</a></li>`,
+    )
+    .join('');
+
+  const body = `<main data-prerendered="bot-ua">
+    <article>
+      <h1>${escape(name)}</h1>
+      ${description ? `<p>${escape(description)}</p>` : ''}
+      ${website ? `<p><a href="${escape(website)}" rel="nofollow noopener">${escape(name)} website</a></p>` : ''}
+      ${items ? `<h2>Episodes</h2><ul>${items}</ul>` : ''}
+    </article>
+    <nav aria-label="Site sections">
+      <ul>
+        <li><a href="/podcasts">All podcasts</a></li>
+        <li><a href="/news">LGBTQ+ news</a></li>
+      </ul>
+    </nav>
+  </main>`;
+
+  const seriesLd: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'PodcastSeries',
+    name,
+    description: description || undefined,
+    url: `${SITE_ORIGIN}${pathname}`,
+    image: artwork || undefined,
+    webFeed: feed || undefined,
+    sameAs: website || undefined,
+  };
+
+  return {
+    meta,
+    body,
+    jsonLd: renderLd(prune(seriesLd)),
+    // A show with no episodes is a thin page. The same gate is applied by the
+    // hub query and by sitemap-podcasts.xml, and the three must agree.
+    indexable: Number(row.episode_count ?? 0) > 0,
   };
 }
 
@@ -542,13 +1173,14 @@ async function personalityDetail(
     ogImage: safeOgImage(image ?? DEFAULT_OG_IMAGE),
   };
 
+  const glossary = await getGlossaryVocabulary(env);
   const body = `<main data-prerendered="bot-ua">
     <article>
       <h1>${escape(name)}</h1>
       ${profession ? `<p><strong>${escape(profession)}</strong></p>` : ''}
       ${birthDate || deathDate ? `<p>${birthDate ? escape(birthDate.slice(0, 10)) : '?'} – ${deathDate ? escape(deathDate.slice(0, 10)) : row.is_living === true ? 'present' : '?'}</p>` : ''}
-      ${description ? paragraphsHtml(description) : ''}
-      ${bio && bio !== description ? paragraphsHtml(bio) : ''}
+      ${description ? paragraphsHtmlLinked(description, glossary) : ''}
+      ${bio && bio !== description ? paragraphsHtmlLinked(bio, glossary) : ''}
     </article>
     <nav aria-label="Site sections">
       <ul>
@@ -677,10 +1309,11 @@ async function cityDetail(env: Env, slug: string, pathname: string): Promise<Det
     })
     .join('\n        ');
 
+  const glossary = await getGlossaryVocabulary(env);
   const body = `<main data-prerendered="bot-ua">
     <article>
       <h1>LGBTQ+ guide to ${escape(name)}</h1>
-      ${description ? paragraphsHtml(description) : `<p>${escape(name)} is part of the global queer life Queer Guide tracks. Below are the venues, events and travel tips we have on file for ${escape(name)}.</p>`}
+      ${description ? paragraphsHtmlLinked(description, glossary) : `<p>${escape(name)} is part of the global queer life Queer Guide tracks. Below are the venues, events and travel tips we have on file for ${escape(name)}.</p>`}
       ${venues.length ? `<section><h2>Top LGBTQ+ venues in ${escape(name)}</h2><ul>\n        ${venuesList}\n      </ul></section>` : ''}
       ${events.length ? `<section><h2>Upcoming LGBTQ+ events in ${escape(name)}</h2><ul>\n        ${eventsList}\n      </ul></section>` : ''}
       <section><h2>Plan your trip</h2><p>Check the <a href="/travel">country safety guide</a> before you go, and browse <a href="/hotels">queer-friendly hotels</a> and <a href="/villages">queer villages</a> for a place to stay.</p></section>
@@ -768,12 +1401,13 @@ async function countryDetail(
     ogImage: safeOgImage(image ?? DEFAULT_OG_IMAGE),
   };
 
+  const glossary = await getGlossaryVocabulary(env);
   const body = `<main data-prerendered="bot-ua">
     <article>
       <h1>LGBTQ+ guide to ${escape(name)}</h1>
       ${capital ? `<p><strong>Capital:</strong> ${escape(capital)}</p>` : ''}
       ${unions ? `<p><strong>Same-sex unions:</strong> ${escape(unions)}</p>` : ''}
-      ${description ? paragraphsHtml(description) : `<p>Country profile, legal status and travel notes for ${escape(name)}.</p>`}
+      ${description ? paragraphsHtmlLinked(description, glossary) : `<p>Country profile, legal status and travel notes for ${escape(name)}.</p>`}
       <section><h2>Plan your trip</h2><p>Read the <a href="/travel">global travel safety guide</a>, browse <a href="/places">cities and queer villages</a>, and check <a href="/help">crisis hotlines</a> before you go.</p></section>
     </article>
     <nav aria-label="Site sections">
@@ -808,7 +1442,7 @@ async function hotelDetail(env: Env, slug: string, pathname: string): Promise<De
   const rows = await fetchRows(
     env,
     'hotels',
-    'name,slug,description,address,city,country,latitude,longitude,images,hotel_type,star_rating,price_range,amenities,booking_url,phone,website,queer_safety_notes,lgbtq_friendly,updated_at,seo_indexable',
+    'name,slug,description,address,city,country,latitude,longitude,images,hotel_type,star_rating,price_range,amenities,booking_url,phone,website,queer_safety_notes,lgbtq_friendly,updated_at,seo_indexable,cities(slug,seo_indexable,duplicate_of_id,shell_status)',
     // archived_at — service-role read, RLS does not apply. See newsDetail.
     `slug=eq.${encodeURIComponent(slug)}&duplicate_of_id=is.null&archived_at=is.null`,
     1,
@@ -831,17 +1465,18 @@ async function hotelDetail(env: Env, slug: string, pathname: string): Promise<De
     ogImage: safeOgImage((arrayField(row, 'images')?.[0] as string) ?? DEFAULT_OG_IMAGE),
   };
 
+  const glossary = await getGlossaryVocabulary(env);
   const body = `<main data-prerendered="bot-ua">
     <article>
       <h1>${escape(name)}</h1>
       ${city ? `<p><strong>${escape([stringField(row, 'address'), city, country].filter(Boolean).join(', '))}</strong></p>` : ''}
-      ${description ? paragraphsHtml(description) : ''}
-      ${safetyNotes ? `<section><h2>Queer safety notes</h2>${paragraphsHtml(safetyNotes)}</section>` : ''}
+      ${description ? paragraphsHtmlLinked(description, glossary) : ''}
+      ${safetyNotes ? `<section><h2>Queer safety notes</h2>${paragraphsHtmlLinked(safetyNotes, glossary)}</section>` : ''}
     </article>
     <nav aria-label="Site sections">
       <ul>
         <li><a href="/hotels">All hotels</a></li>
-        ${city ? `<li><a href="/city/${escape(slugify(city))}">More in ${escape(city)}</a></li>` : ''}
+        ${cityLinkItem(row, city)}
         <li><a href="/travel">Travel</a></li>
       </ul>
     </nav>
@@ -932,11 +1567,12 @@ async function villageDetail(
     .map((l) => `<li>${escape(l)}</li>`)
     .join('\n        ');
 
+  const glossary = await getGlossaryVocabulary(env);
   const body = `<main data-prerendered="bot-ua">
     <article>
       <h1>${escape(name)}</h1>
-      ${description ? paragraphsHtml(description) : ''}
-      ${history ? `<section><h2>History</h2>${paragraphsHtml(history)}</section>` : ''}
+      ${description ? paragraphsHtmlLinked(description, glossary) : ''}
+      ${history ? `<section><h2>History</h2>${paragraphsHtmlLinked(history, glossary)}</section>` : ''}
       ${landmarksList ? `<section><h2>Notable landmarks</h2><ul>\n        ${landmarksList}\n      </ul></section>` : ''}
     </article>
     <nav aria-label="Site sections">
@@ -1113,11 +1749,17 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
     ogImage: safeOgImage(DEFAULT_OG_IMAGE),
   };
 
+  const [glossary, linkedContent] = await Promise.all([
+    getGlossaryVocabulary(env),
+    // Best-effort: a failed content lookup must leave the definition page
+    // intact, not blank it.
+    tagId ? tagLinkedContentHtml(env, tagId, name).catch(() => '') : Promise.resolve(''),
+  ]);
   const body = `<main data-prerendered="bot-ua">
     <article>
       <h1>${escape(name)}</h1>
       ${category ? `<p><strong>Category:</strong> ${escape(category)}</p>` : ''}
-      ${article ? paragraphsHtml(article) : `<p>Browse content tagged ${escape(name)} on Queer Guide.</p>`}
+      ${article ? paragraphsHtmlLinked(article, glossary, { currentSlug: slug }) : `<p>Browse content tagged ${escape(name)} on Queer Guide.</p>`}
       ${
         citations.length
           ? `<section><h2>Source of law</h2><ul>${citations
@@ -1144,6 +1786,7 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
               .join('')}</ul></section>`
           : ''
       }
+      ${linkedContent}
       ${stringField(row, 'wikipedia_url') ? `<p><a href="${escape(stringField(row, 'wikipedia_url')!)}" rel="noopener">Read more on Wikipedia</a></p>` : ''}
     </article>
     <nav aria-label="Site sections">
@@ -1240,11 +1883,12 @@ async function milestoneDetail(
     ogImage: safeOgImage(image ?? DEFAULT_OG_IMAGE),
   };
 
+  const glossary = await getGlossaryVocabulary(env);
   const body = `<main data-prerendered="bot-ua">
     <article>
       <h1>${escape(title)}</h1>
       <p><strong>${escape(precision === 'year' ? year : date)}</strong>${place ? ` — ${escape(place)}` : ''}</p>
-      ${description ? paragraphsHtml(description) : ''}
+      ${description ? paragraphsHtmlLinked(description, glossary) : ''}
       ${sources.length ? `<h2>Sources</h2><ul>${sources.map((sRow) => `<li>${typeof sRow.url === 'string' ? `<a href="${escape(sRow.url)}" rel="nofollow noopener">${escape(String(sRow.label ?? sRow.url))}</a>` : escape(String(sRow.label ?? ''))}</li>`).join('')}</ul>` : ''}
     </article>
     <nav aria-label="Site sections">
@@ -1311,11 +1955,12 @@ async function guideDetail(env: Env, slug: string, pathname: string): Promise<De
     ogImage: safeOgImage(hero && /^https?:\/\//.test(hero) ? hero : DEFAULT_OG_IMAGE),
   };
 
+  const glossary = await getGlossaryVocabulary(env);
   const body = `<main data-prerendered="bot-ua">
     <article>
       <h1>${escape(title)}</h1>
       ${dek ? `<p><em>${escape(dek)}</em></p>` : ''}
-      ${intro ? paragraphsHtml(intro) : ''}
+      ${intro ? paragraphsHtmlLinked(intro, glossary) : ''}
       ${picks ? `<p>${picks} picks in this ${escape(formatLabel.toLowerCase())}.</p>` : ''}
     </article>
     <nav aria-label="Site sections">
@@ -1345,7 +1990,10 @@ async function guideDetail(env: Env, slug: string, pathname: string): Promise<De
 // Dispatch
 
 const DETAIL_ROUTE_RE =
-  /^\/(venues?|events?|news|personalities|personality|city|country|hotels?|villages?|tags?|history|guides)\/([^/?#]+)\/?$/;
+  /^\/(venues?|events?|news|podcasts|personalities|personality|city|country|hotels?|villages?|tags?|history|guides)\/([^/?#]+)\/?$/;
+// `podcasts` is LITERAL, deliberately not `podcasts?`. An optional `s` would
+// silently mint a second `/podcast/:slug` URL space that nothing links to and
+// nothing canonicalises.
 
 // Static SPA sub-routes that share a segment with detail routes
 // (/venues/guides, /events/guides, legacy /venues/leaderboard redirect, …).
@@ -1575,6 +2223,7 @@ export async function resolveDetailRoute(env: Env, pathname: string): Promise<De
     if (kindRaw.startsWith('venue')) return await venueDetail(env, slug, pathname);
     if (kindRaw.startsWith('event')) return await eventDetail(env, slug, pathname);
     if (kindRaw === 'news') return await newsDetail(env, slug, pathname);
+    if (kindRaw === 'podcasts') return await podcastShowDetail(env, slug, pathname);
     if (kindRaw.startsWith('personalit')) return await personalityDetail(env, slug, pathname);
     if (kindRaw === 'city') return await cityDetail(env, slug, pathname);
     if (kindRaw === 'country') return await countryDetail(env, slug, pathname);

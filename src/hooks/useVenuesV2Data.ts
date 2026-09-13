@@ -145,11 +145,8 @@ export function useDiscoveryProfile() {
     }
     let cancelled = false;
     (async () => {
-      const { data: row } = await supabase
-        .from('profiles')
-        .select('discovery_profile')
-        .eq('user_id', user.id)
-        .maybeSingle();
+      // discovery_profile is outside the `authenticated` column allowlist on `profiles`.
+      const { data: row } = await supabase.rpc('get_my_profile').maybeSingle();
       if (cancelled) return;
       setData(((row as { discovery_profile?: unknown } | null)?.discovery_profile as typeof data) ?? null);
       setLoading(false);

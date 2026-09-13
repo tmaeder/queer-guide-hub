@@ -126,6 +126,25 @@ test.describe('/rights/trans', () => {
     // the only thing broken was what a screen reader was told about it.
     const map = page.locator('[role="img"][aria-label*="legal gender recognition"]');
     await expect(map).toBeVisible({ timeout: SETTLE });
+    // POLL the label, don't read it once — the same fix `rights-safety.spec.ts`
+    // already carries for the /rights choropleth, never applied here.
+    //
+    // The container renders and is VISIBLE on the first paint, while the tally
+    // comes from a 231 KB boundary fetch to an external worker. Until that
+    // resolves the map says exactly that — "no countries measured yet" — rather
+    // than inventing counts it does not have (`buildMapAriaLabel`), which is
+    // correct behaviour and must stay. So a single read straight after
+    // `toBeVisible` races the fetch and turns "not here YET" into a hard
+    // failure: measured in run 34268515957, this failed on all three retries
+    // with `World map: legal gender recognition. no countries measured yet.`
+    // while the page itself was fine.
+    //
+    // Waiting is not weakening: both original assertions survive verbatim
+    // below, on the SETTLED value, so a tally that is genuinely empty or
+    // missing its surgery count still fails — it just takes SETTLE to say so.
+    await expect
+      .poll(async () => (await map.getAttribute('aria-label')) ?? '', { timeout: SETTLE })
+      .toMatch(/\d+\s+surgery required first/i);
     const label = (await map.getAttribute('aria-label')) ?? '';
     expect(label).not.toMatch(/no countries measured yet/i);
     expect(label).toMatch(/\d+\s+surgery required first/i);

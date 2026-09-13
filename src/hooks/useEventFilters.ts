@@ -82,7 +82,22 @@ export function useEventFilters(
     [events],
   );
 
-  const handleFiltersChange = async () => {
+  /**
+   * The current filter state, in the shape `fetchEvents` wants it.
+   *
+   * It exists so every query for this list is built from ONE place. The
+   * construction used to be inline in `handleFiltersChange`, which always
+   * fetches page 1 and replaces the list — so the page's other call sites had
+   * nothing to reuse and passed `{}` instead. /events' "Load more" fetched an
+   * UNFILTERED page 2 and APPENDED it to a filtered list (filter to one city,
+   * click Load more, events from everywhere arrive underneath), and both retry
+   * buttons silently replaced the filtered list with an unfiltered one.
+   *
+   * Deliberately not memoized: it is called imperatively from event handlers
+   * and never passed to a dependency array, so a `useCallback` here could only
+   * add a stale-closure failure mode.
+   */
+  const buildFilters = () => {
     const dateRange =
       startDate && endDate
         ? {
@@ -90,7 +105,7 @@ export function useEventFilters(
             end: endDate.toISOString(),
           }
         : undefined;
-    const filters = {
+    return {
       search: search || undefined,
       cities: cities.length > 0 ? cities : undefined,
       eventTypes: eventTypes.length > 0 ? eventTypes : undefined,
@@ -100,12 +115,20 @@ export function useEventFilters(
       languages: languages.length > 0 ? languages : undefined,
       ageRestriction: ageRestriction || undefined,
       dateRange,
-      nearMe: nearMe ? userLocation : undefined,
+      // `&& userLocation`, not `nearMe ? userLocation : undefined`: the toggle
+      // can be on before geolocation resolves, and that shape typed the field
+      // `{lat,lng} | null | undefined` against a `{lat,lng} | undefined`
+      // parameter. Both readers test truthiness, so this is the same query.
+      nearMe: nearMe && userLocation ? userLocation : undefined,
       includePast: showPast || undefined,
       featured: featuredOnly || undefined,
       isFree: isFree || undefined,
       sort,
     };
+  };
+
+  const handleFiltersChange = async () => {
+    const filters = buildFilters();
     setPage(1);
     bumpList();
     await fetchEvents(filters, {
@@ -553,6 +576,7 @@ export function useEventFilters(
     hasActiveFilters,
     sheetFilterCount,
     // handlers
+    buildFilters,
     handleFiltersChange,
     handlePresetSelect,
     clearFilters,

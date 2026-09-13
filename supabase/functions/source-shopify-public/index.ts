@@ -4,6 +4,7 @@ import { writeToStaging, skippedResponse } from '../_shared/source-adapter.ts'
 import { extractMerchantDomain, normalizeCurrency } from '../_shared/marketplace-pipeline-utils.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
+import { stripProductHtml } from '../_shared/product-html.ts'
 
 // ============================================================
 // source-shopify-public — ingest any Shopify storefront via its PUBLIC
@@ -225,7 +226,9 @@ function makeAdapter(shopDomain: string, sourceSlug: string, currency = 'EUR', o
       return {
         entityType: 'marketplace', sourceId: raw.sourceId, sourceName: sourceSlug,
         name: p.title,
-        description: String(p.body_html || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim(),
+        // A tag-only strip keeps <style>/<script> CONTENTS and splits words glued
+        // by inline tags — see _shared/product-html.ts.
+        description: stripProductHtml(p.body_html),
         urls: [externalUrl], images, tags,
         metadata: {
           source_slug: sourceSlug, shop_domain: shopDomain, product_id: String(p.id),

@@ -16,6 +16,7 @@
 // Optional:
 //   REPORT_DIR (default: "reports")
 //   LOOKBACK_DAYS (default: 7)
+//   LAG_DAYS (default: 3) — see below
 //
 // Exits 0 on success AND when credentials are missing (a skip is not a
 // failure — GitHub treats any non-zero exit as red, which kept the weekly
@@ -28,6 +29,7 @@ const KEY = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
 const PROPERTY = process.env.SEARCH_CONSOLE_PROPERTY;
 const REPORT_DIR = process.env.REPORT_DIR ?? 'reports';
 const LOOKBACK_DAYS = Number(process.env.LOOKBACK_DAYS ?? 7);
+const LAG_DAYS = Number(process.env.LAG_DAYS ?? 3);
 
 if (!KEY || !PROPERTY) {
   console.error('Search Console reporting skipped: GOOGLE_SERVICE_ACCOUNT_KEY or SEARCH_CONSOLE_PROPERTY not set.');
@@ -35,9 +37,19 @@ if (!KEY || !PROPERTY) {
   process.exit(0);
 }
 
+// The window ENDS at today - LAG_DAYS, not at today.
+//
+// Search Console's Performance data lands 2-3 days late. Querying through
+// today therefore spends roughly three of a seven-day window on days that
+// return nothing, so a "7 day" report silently described about four days and
+// every week-on-week comparison ran low by a variable amount. The failure is
+// invisible in the output — the numbers are real, just short — which is why it
+// is worth being explicit about rather than leaving to be noticed.
 const TODAY = new Date();
-const END = TODAY.toISOString().slice(0, 10);
-const startDate = new Date(TODAY);
+const endDate = new Date(TODAY);
+endDate.setDate(endDate.getDate() - LAG_DAYS);
+const END = endDate.toISOString().slice(0, 10);
+const startDate = new Date(endDate);
 startDate.setDate(startDate.getDate() - LOOKBACK_DAYS);
 const START = startDate.toISOString().slice(0, 10);
 
@@ -50,6 +62,10 @@ const isoWeek = (d) => {
   const week = 1 + Math.round((diff - 3 + ((firstThursday.getUTCDay() + 6) % 7)) / 7);
   return { year: target.getUTCFullYear(), week };
 };
+
+// Captured from the key once parsed, so the 403 message can name the exact
+// address that needs granting instead of telling the reader to go find it.
+let SERVICE_ACCOUNT_EMAIL = null;
 
 const b64url = (buf) =>
   Buffer.from(buf).toString('base64').replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_');
@@ -65,7 +81,20 @@ async function getAccessToken(serviceAccount) {
     exp: now + 3600,
   };
   const unsigned = `${b64url(JSON.stringify(header))}.${b64url(JSON.stringify(claim))}`;
-  const sig = createSign('RSA-SHA256').update(unsigned).sign(serviceAccount.private_key);
+  let sig;
+  try {
+    sig = createSign('RSA-SHA256').update(unsigned).sign(serviceAccount.private_key);
+  } catch (err) {
+    // Node reports a mangled PEM as `DECODER routines::unsupported`, which says
+    // nothing about which secret is wrong. The realistic cause is a private_key
+    // whose \n escapes were flattened by a shell or a copy-paste.
+    throw new Error(
+      `Could not sign the JWT with the supplied private_key (${err.message}).\n` +
+        `The key is present but not a usable PEM. Almost always this is a private_key whose\n` +
+        `newline escapes were lost — set the secret straight from the file, never by pasting:\n` +
+        `  gh secret set GOOGLE_SERVICE_ACCOUNT_KEY < key.json`,
+    );
+  }
   const jwt = `${unsigned}.${b64url(sig)}`;
 
   const res = await fetch('https://oauth2.googleapis.com/token', {
@@ -88,12 +117,57 @@ async function querySearchAnalytics(token, body) {
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
-  if (!res.ok) throw new Error(`Search Analytics query failed: ${res.status} ${await res.text()}`);
+  if (!res.ok) {
+    const body = await res.text();
+    // The two failures that actually happen on a first run, named instead of
+    // dumped. Both are one-line fixes in a console, and a raw API body sends
+    // the reader to the wrong place: a 403 here reads like a broken key when
+    // the key is fine and the grant is missing.
+    if (res.status === 403) {
+      throw new Error(
+        `Search Analytics 403 for "${PROPERTY}".\n` +
+          `The credentials are valid but the service account is not authorised on this property.\n` +
+          `Fix: Search Console -> that property -> Settings -> Users and permissions -> add\n` +
+          `  ${SERVICE_ACCOUNT_EMAIL ?? '<the service account email>'}\n` +
+          `with permission "Full" (Restricted is not enough for the API).\n` +
+          `API said: ${body}`,
+      );
+    }
+    if (res.status === 404) {
+      throw new Error(
+        `Search Analytics 404 for "${PROPERTY}".\n` +
+          `The property string does not match a property this account can see. A DNS-verified\n` +
+          `domain property is addressed as "sc-domain:queer.guide"; a URL-prefix property is the\n` +
+          `full origin WITH the trailing slash, e.g. "https://queer.guide/". They are different\n` +
+          `properties and are not interchangeable.\n` +
+          `API said: ${body}`,
+      );
+    }
+    throw new Error(`Search Analytics query failed: ${res.status} ${body}`);
+  }
   return res.json();
 }
 
 async function main() {
-  const sa = JSON.parse(KEY);
+  let sa;
+  try {
+    sa = JSON.parse(KEY);
+  } catch {
+    // A truncated or shell-mangled key is otherwise a bare SyntaxError with no
+    // hint about which secret is at fault.
+    throw new Error(
+      'GOOGLE_SERVICE_ACCOUNT_KEY is not valid JSON. Set it from the file directly ' +
+        '(`gh secret set GOOGLE_SERVICE_ACCOUNT_KEY < key.json`) rather than pasting it.',
+    );
+  }
+  if (!sa.client_email || !sa.private_key) {
+    throw new Error(
+      'GOOGLE_SERVICE_ACCOUNT_KEY parsed but has no client_email/private_key — ' +
+        'that is an OAuth client secret, not a service-account key. Download the key ' +
+        'from the service account itself (IAM -> Service Accounts -> Keys -> Add key -> JSON).',
+    );
+  }
+  SERVICE_ACCOUNT_EMAIL = sa.client_email;
   const token = await getAccessToken(sa);
 
   const [byQuery, byPage, totals] = await Promise.all([

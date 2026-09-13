@@ -131,6 +131,13 @@ export function useMapInstance({
       attributionControl: false,
       // Embedded above page content → let the page scroll; zoom needs a modifier.
       cooperativeGestures,
+      // A CONSTRUCTOR OPTION, never `map.scrollZoom.disable()` afterwards.
+      // That reach-in shape crashed a production venue page — `can't access
+      // property "disable", t.scrollZoom is undefined` (2026-08-31, Firefox
+      // 140) — and MapLibre only enables a handler when its option is truthy,
+      // so `false` here is exactly the same end state with nothing to
+      // dereference.
+      scrollZoom: !linkToFullMap,
     });
     // mapRef is published inside `load` (below), NOT here. Layer effects gate
     // on `!mapRef.current`, and publishing early would let them call
@@ -185,8 +192,6 @@ export function useMapInstance({
         }
       }
     });
-
-    if (linkToFullMap) map.scrollZoom.disable();
 
     map.on('load', () => {
       mapRef.current = map;

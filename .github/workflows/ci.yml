@@ -77,6 +77,13 @@ jobs:
       - name: Upload coverage report
         if: always()
         uses: actions/upload-artifact@v7
+        # Non-blocking: storing a diagnostic report must not fail a job whose
+        # assertions already passed. See the long note in a11y.yml — GitHub's
+        # artifact service returned a persistent 403 on FinalizeArtifact on
+        # 2026-09-08 and turned green test runs into red required checks.
+        # Deliverable artifacts (dist, dist-static, extension zips, generated
+        # baselines) are deliberately NOT given this treatment.
+        continue-on-error: true
         with:
           name: coverage-report
           path: |

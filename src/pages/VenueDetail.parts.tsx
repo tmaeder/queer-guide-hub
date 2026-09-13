@@ -31,6 +31,7 @@ import type { TFunction } from 'i18next';
 import type { useVenueSocialSignals } from '@/hooks/useVenueSocialSignals';
 import type { Database } from '@/integrations/supabase/types';
 import { fetchVenueWithReviews } from '@/hooks/usePageFetchers';
+import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 export type VenueReview = Database['public']['Tables']['venue_reviews']['Row'] & {
@@ -377,7 +378,7 @@ export function VenueAbout({
       as="div"
     >
       <p className="max-w-reading whitespace-pre-wrap text-body-lg leading-relaxed">
-        {venue.description}
+        <GlossaryLinkedText text={venue.description} />
       </p>
     </Editable>
   );

@@ -1,12 +1,18 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { waitForAppReady } from './support/appReady';
+import { REDUCED_MOTION, assertReducedMotion } from './support/reducedMotion';
 
-// Route transitions fade opacity 0->1 (LayoutShell motion.div). axe blends that
-// opacity into computed text color, flagging transient mid-fade frames as contrast
-// failures. Emulate reduced motion (LayoutShell skips the fade) so axe analyzes the
+// Content fades opacity 0->1 (route transition, lazy images, skeleton pulse).
+// axe blends that opacity into computed text color, flagging transient mid-fade
+// frames as contrast failures. Emulate reduced motion so axe analyzes the
 // settled DOM - the same render real reduced-motion users get.
-test.use({ reducedMotion: 'reduce' });
+//
+// This MUST go through REDUCED_MOTION: `test.use({ reducedMotion: 'reduce' })`
+// silently emulates nothing in Playwright 1.62 (see support/reducedMotion.ts),
+// which is exactly how /venues came to fail on contrast ratios computed from
+// half-faded text.
+test.use(REDUCED_MOTION);
 
 // P2-2 — axe-playwright sweep across major public routes.
 // /events and /admin already have their own a11y specs.
@@ -47,6 +53,7 @@ test.describe('Public routes — automated a11y', () => {
       // resolved before it samples — see waitForAppReady for why this is not
       // 'networkidle'.
       await waitForAppReady(page);
+      await assertReducedMotion(page);
 
       const results = await new AxeBuilder({ page })
         .exclude('footer')

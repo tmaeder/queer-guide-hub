@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { neutralizeVisitorGeo } from './support/visitorGeo';
 
 /**
  * Page-layout standard (see docs/design-system/README.md §Page layout).
@@ -301,7 +302,21 @@ const MAX_SCREENS_TO_CONTENT = 1.25;
  *
  *  The empty-state skip below (`firstTop !== null`) is what should have fired.
  *  It cannot while a link belonging to some other route's content still
- *  matches, so the fix belongs in the selector, not in the skip. */
+ *  matches, so the fix belongs in the selector, not in the skip.
+ *
+ *  THAT FIX WAS NOT SUFFICIENT and the same failure returned on 2026-09-10 at
+ *  1129px / 1.34 screens — the same shape, two pixels off. Scoping the selector
+ *  to the route does not help when the stray link is ON the route: in the
+ *  /events empty state the first `main a[href*="/events/"]` is an editorial
+ *  recommendation ("Atlanta Pride 2026") sitting below the "0 events near
+ *  Dulles Town Center" notice. No selector can tell that link apart from a
+ *  result card, because it IS a link to an event, on /events, inside <main>.
+ *
+ *  So the environment is removed instead of described: `neutralizeVisitorGeo`
+ *  stops the runner's own location from deciding whether these routes render
+ *  results. Measured on prod the same day — /events first content 1129px with
+ *  the runner's geo, 616px without it, everything else held constant. The
+ *  budget below is untouched. */
 const CARD_LINK_SELECTORS: Record<string, string> = {
   '/cities': 'main a[href*="/city/"]',
   '/events': 'main a[href*="/events/"]',
@@ -318,6 +333,8 @@ test.describe('page layout — mobile density', () => {
       const cardSelector = CARD_LINK_SELECTORS[route];
       expect(cardSelector, `${route} has no entry in CARD_LINK_SELECTORS`).toBeTruthy();
       await page.setViewportSize({ width: 390, height: 844 });
+      // BEFORE the goto — the auto-init that applies it runs once, on mount.
+      await neutralizeVisitorGeo(page);
       await page.goto(route);
       await page.waitForLoadState('domcontentloaded');
       // Wait for the CARD to exist rather than sleeping a fixed interval. These

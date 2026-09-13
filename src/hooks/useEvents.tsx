@@ -4,9 +4,28 @@ import type { Database } from '@/integrations/supabase/types';
 import { calculateDistanceKm } from '@/utils/calculateDistance';
 import { queryWithRetry } from '@/utils/fetchWithRetry';
 import { dedupeEvents } from '@/utils/eventDedup';
+import { orderUpcoming } from '@/lib/eventOrdering';
 
 type Event = Database['public']['Tables']['events']['Row'];
 type EventInsert = Database['public']['Tables']['events']['Insert'];
+
+/**
+ * PostgREST spelling of `COALESCE(end_date, start_date) >= iso`, the predicate
+ * `search_events` uses for both "is this still on" and the lower bound of a date
+ * window (20320201100300:53-60).
+ *
+ * `coalesce` is not expressible in a PostgREST filter, so the null case is
+ * written out: a row with an end date is judged on it, a row without one falls
+ * back to its start. Both arms are required — testing `end_date` alone silently
+ * drops the 22,840 events that have none, which is the larger half of the table.
+ *
+ * Passed to `.or()`. Repeated `.or()` calls on one query are ANDed by PostgREST,
+ * so this composes with the city and featured branches rather than replacing
+ * them.
+ */
+export function endsAtOrAfter(iso: string): string {
+  return `end_date.gte.${iso},and(end_date.is.null,start_date.gte.${iso})`;
+}
 
 /**
  * @param autoFetch  run the initial list query on mount
@@ -224,7 +243,13 @@ export function useEvents(autoFetch: boolean = true, opts?: { skipDatasetTotal?:
           if (filters?.includePast) {
             query = query.lte('start_date', nowIso);
           } else {
-            query = query.gte('start_date', nowIso);
+            // An event that has STARTED but not ENDED is upcoming to a reader —
+            // a four-day festival on its second day is the most relevant row on
+            // the page, and `gte('start_date', now)` dropped it. `search_events`
+            // has always used `COALESCE(end_date, start_date) >= now()` here
+            // (20320201100300:53-54); this path did not, so the same filter
+            // returned different sets depending on which branch it took.
+            query = query.or(endsAtOrAfter(nowIso));
           }
 
           if (filters?.eventTypes?.length) {
@@ -279,9 +304,15 @@ export function useEvents(autoFetch: boolean = true, opts?: { skipDatasetTotal?:
           }
 
           if (filters?.dateRange) {
+            // OVERLAP, not containment. A festival running 1-7 July must appear
+            // for a 3-5 July filter; `gte('start_date', from)` excluded it
+            // because it started before the window. Mirrors search_events
+            // (20320201100300:59-60) so the two paths agree — any city / type /
+            // tag / sort filter forces this branch, which is the normal case
+            // from /events, so the divergence was the one users actually hit.
             query = query
-              .gte('start_date', filters.dateRange.start)
-              .lte('start_date', filters.dateRange.end);
+              .lte('start_date', filters.dateRange.end)
+              .or(endsAtOrAfter(filters.dateRange.start));
           }
 
           if (filters?.tags && filters.tags.length > 0) {
@@ -340,6 +371,14 @@ export function useEvents(autoFetch: boolean = true, opts?: { skipDatasetTotal?:
         // "International Mr Leather" + "Internationaler Herr Leder" share venue
         // + day but slip past duplicate_of_id linking.
         let eventsData = dedupeEvents((data as Event[]) || []);
+
+        // Now that the query admits in-progress events, `start_date ASC` ranks
+        // them by how long ago they began — see src/lib/eventOrdering.ts. Only
+        // the default ascending feed; the other sorts order by something else.
+        const defaultSort = !filters?.sort || filters.sort === 'date-asc';
+        if (!filters?.includePast && defaultSort) {
+          eventsData = orderUpcoming(eventsData, Date.now());
+        }
 
         // Attach public attendee counts via SECURITY DEFINER RPC.
         // event_attendees has restricted SELECT (own rows only); the RPC

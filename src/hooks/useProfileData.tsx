@@ -12,13 +12,11 @@ export function useProfileData() {
     queries: [
       {
         queryKey: queryKeys.profiles(user?.id),
+        // Own row, all columns. `authenticated` holds only a narrow column allowlist on
+        // `profiles`, so this goes through the SECURITY DEFINER self-read.
         queryFn: async () => {
           if (!user?.id) return null;
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('user_id', user.id)
-            .single();
+          const { data, error } = await supabase.rpc('get_my_profile').maybeSingle();
           if (error) throw error;
           return data;
         },
