@@ -67,13 +67,31 @@ const SCRIPT_SRC_HOSTS = [
 // beacon is an external script under script-src hosts, not an inline hash.)
 //
 // Root cause traced 2026-06-10: the stubs (GTM-5KHP3NFH, "first-party mode"
-// Google tag) are injected at the Cloudflare ZONE layer by the
+// Google tag) were injected at the Cloudflare ZONE layer by the
 // "Google tag gateway" setting (API: zones/{id}/settings/google_tag_gateway),
-// AFTER this middleware runs — browser UAs only, so curl never sees them.
-// They reach the page at document lines 2-3 and the nonce CSP blocks them,
-// which is the two console errors on every page. Code-side this is working
-// as designed; the permanent fix is turning OFF "Google tag gateway" in the
-// CF dashboard for the queer.guide zone. Do NOT add the hashes here.
+// AFTER this middleware runs — browser UAs only, so curl never saw them. They
+// reached the page at document lines 2-3, the nonce CSP blocked them, and that
+// was the two console errors on every page.
+//
+// RESOLVED — and the paragraph above used to end "the permanent fix is turning
+// OFF Google tag gateway in the CF dashboard", which is now a stale instruction
+// pointing at a setting that is already off. Re-measured 2026-09-13 in a REAL
+// browser against live prod, on fresh uncached documents (`cf-cache-status:
+// DYNAMIC`, no `age`) for `/` and `/venues`: no `googletagmanager`, no
+// `clarity.ms`, `window.gtag`/`dataLayer`/`clarity` all undefined, and no CSP
+// violation in the console. The gateway is off.
+//
+// HOW TO RE-CHECK, because curl cannot answer this: the injection is
+// browser-UA gated, so `curl -H 'User-Agent: Mozilla/…'` returning zero hits
+// proves nothing — only a real browser does. Load the page and evaluate
+// `/googletagmanager|GTM-[A-Z0-9]{6,}/.test(document.documentElement.outerHTML)`.
+// Note that a CSP-BLOCKED script is still present in the DOM, so absence from
+// the DOM means not injected, not merely not executed.
+//
+// The list stays empty regardless of the gateway's state: these hashes are
+// third-party analytics this project does not run, and allow-listing them
+// would re-enable that chain the moment the setting is flipped back on.
+// Do NOT add the hashes here.
 const CF_PAGES_INLINE_SCRIPT_HASHES: string[] = [];
 
 const FRAME_SRC = [

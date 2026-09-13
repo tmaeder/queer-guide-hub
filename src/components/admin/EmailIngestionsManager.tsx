@@ -202,7 +202,7 @@ export function EmailIngestionsManager() {
           <CardContent className="p-4">
             <div
               className="text-headline font-bold"
-              style={{ color: 'hsl(var(--foreground) / 0.55)' }}
+              style={{ color: 'hsl(var(--muted-foreground))' }}
             >
               {processingCount}
             </div>
