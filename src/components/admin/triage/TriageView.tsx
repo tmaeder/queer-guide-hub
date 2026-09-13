@@ -22,6 +22,7 @@ import {
   useHighConfCount,
   useBulkApproveHighConf,
   type TriageFilters,
+  type TriageItem,
 } from '@/hooks/useUnifiedTriageQueue';
 import { useReviewCounts } from '@/hooks/useReviewCounts';
 import { ReviewBulkBar } from '@/components/admin/review/ReviewBulkBar';
@@ -164,13 +165,49 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
   const [focusOpen, setFocusOpen] = useState(false);
   const [confirmHighConf, setConfirmHighConf] = useState(false);
 
+  /**
+   * A namesake merge can never be a bulk decision.
+   *
+   * `TriageDetailPanel` gates approving a personality dedup pair behind an explicit
+   * "these are the same person" confirmation, because two different people merged
+   * into one profile is an outing risk and `_personality_merge_core` repoints the
+   * relationship graph — which no undo fully rebuilds, since it DROPS self-loops and
+   * already-existing edges rather than moving them.
+   *
+   * That gate protected the one-at-a-time path and nothing else: select-all →
+   * Approve went straight to `triage_action`, which has no such check, so the button
+   * beside the gate bypassed it for all 46 open personality pairs at once.
+   *
+   * `approve_dedup_review_batch` already refuses personalities in its own WHERE for
+   * exactly this reason; the bulk path does not route through it, so the rule has to
+   * be restated here. Reject and skip stay available — "these are two different
+   * people" must remain the easy answer.
+   */
+  const isNamesakePair = (i: TriageItem) =>
+    i.queue_type === 'dedup-review' && i.content_type === 'personality';
+
   const runBulk = useCallback(
     async (targets: typeof items, action: 'approve' | 'reject') => {
       if (targets.length === 0) return;
+
+      const held = action === 'approve' ? targets.filter(isNamesakePair) : [];
+      const actionable = action === 'approve' ? targets.filter((i) => !isNamesakePair(i)) : targets;
+
+      if (held.length > 0 && actionable.length === 0) {
+        toast.warning(
+          `${held.length} namesake pair${held.length === 1 ? '' : 's'} held back — approve these one at a time.`,
+          {
+            description:
+              'Merging two different people is an outing risk and the relationship graph cannot be fully rebuilt.',
+          },
+        );
+        return;
+      }
+
       setBulkLoading(true);
       let ok = 0;
       let fail = 0;
-      for (const item of targets) {
+      for (const item of actionable) {
         try {
           await triageAction.mutateAsync({
             itemId: item.id,
@@ -185,7 +222,14 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
       setBulkLoading(false);
       setSelectedIds(new Set());
       setActiveId(null);
-      toast.success(`${action}d ${ok} item${ok !== 1 ? 's' : ''}${fail ? `, ${fail} failed` : ''}`);
+      toast.success(
+        `${action}d ${ok} item${ok !== 1 ? 's' : ''}${fail ? `, ${fail} failed` : ''}`,
+        held.length > 0
+          ? {
+              description: `${held.length} namesake pair${held.length === 1 ? '' : 's'} held back — approve those individually.`,
+            }
+          : undefined,
+      );
     },
     [triageAction],
   );
