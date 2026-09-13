@@ -39,7 +39,13 @@ export const ChatGPTConnection = () => {
               scraping.
             </CardDescription>
           </div>
-          <Button variant="ghost" size="sm" onClick={refresh} disabled={loading}>
+          <Button
+            variant="ghost"
+            size="sm"
+            aria-label="Refresh connection status"
+            onClick={refresh}
+            disabled={loading}
+          >
             <RefreshCw
               size={16}
               style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }}
@@ -70,8 +76,8 @@ export const ChatGPTConnection = () => {
                 </>
               ) : usingFallback ? (
                 <>
-                  <AlertTriangle size={20} style={{ color: 'hsl(var(--foreground) / 0.55)' }} />
-                  <span style={{ color: 'hsl(var(--foreground) / 0.55)' }} className="font-medium">
+                  <AlertTriangle size={20} style={{ color: 'hsl(var(--muted-foreground))' }} />
+                  <span style={{ color: 'hsl(var(--muted-foreground))' }} className="font-medium">
                     Using API Key Fallback
                   </span>
                   <Badge variant="secondary">ENV: OPENAI_API_KEY</Badge>

@@ -38,6 +38,22 @@ All of it works. `parent_event_id` is set on **8 of 48,000 live events**. `festi
 `active/cancelled/postponed/completed`). Dead two independent ways. A second 5-arg
 overload exists, so a PostgREST call resolving by argument name is ambiguous (42725).
 
+**CORRECTED 2026-09-13 (step 8). "`expand_event_recurrence` has never run" (§1.4) is
+wrong.** `expand-event-recurrences` is an ENABLED pg_cron job firing nightly at 03:15
+with a matching enabled `admin_automations` row. It runs, calls
+`expand_all_recurring_events(365)`, finds nothing, returns. "Never ran" and "runs nightly
+and no-ops" are indistinguishable from the row counts and are opposite facts. Retired in
+`40010518132600` — registry row disabled first, then a guarded unschedule.
+
+**The table drops were REFUSED, and the reader census is why.** `event_occurrences` is
+referenced by five live functions including `_event_merge_core` and `unmerge_entities` —
+the reversible-merge path for events — so a DROP takes event merging down to remove a
+0-row table. `festivals` is embedded in `EVENT_SELECT_FIELDS` and searched live by the
+submit form's picker (`useFestivalSearch`); EventDetail.parts.tsx documents an incident
+where a bad embed in that select 400'd the whole event query and every event page
+rendered no `<h1>`. Both tables are 0 rows and cost nothing to keep. Encoded as guards in
+`eventScheduleModel.test.ts` so the drop cannot be reattempted without reading this.
+
 ### 1.3 "Recurring" names three unrelated things, and the two live signals never co-occur
 
 Measured: `is_recurring AND series_key IS NOT NULL` → **0 rows**.
@@ -310,6 +326,38 @@ measured at 0.96s. Live check: queue depth **0**, drain healthy, last run 30s pr
 48k events → 48k queue rows → ~48 min at the drain's 1000/min. **2,000 per batch**, drain
 depth watched between batches, stop if it stops returning to zero. Batches, not one
 statement — a timeout is a full rollback.
+
+**NOT RUN — measured 2026-09-13 and it is a NO-OP. The batching plan above is sound and
+was never needed.**
+
+The sweep exists because `infer_event_schedules` filters `status='active'`, and §1.7
+observes that the ~36.5k-row archive is invisible to a job with that filter. That is true
+of `event_programme_link`, which keys on title tokens. It is **not** true of the schedule
+inference, which keys on `series_key`:
+
+| | rows |
+|---|---|
+| live events | 48,009 |
+| `status='active'` | 2,831 |
+| archived | 45,178 |
+| carrying a `series_key` | 1,872 |
+| **archived AND carrying a `series_key`** | **0** |
+| archived with a future start | 0 |
+
+Per series: **184 series, 184 with at least one active row, 0 archive-only.** So the
+`status='active'` filter excludes exactly nothing, and widening it would add zero series
+and zero rules. It also means no series is seen through a truncated history — a cadence
+inferred from the active rows is inferred from all of them.
+
+**The non-no-op version was considered and rejected.** Making the archive reachable means
+first grouping 45,178 Wayback rows into series, which is a different and much larger job —
+and every one of those events is past (0 archived-but-future). A cadence rule on an ended
+series earns a reader nothing, while the expander would generate FUTURE dates for it
+unless `until` were set on every row, which is precisely the fabrication the zero-tolerance
+guard in §5 exists to catch. The risk is real and the payoff is zero.
+
+If the archive is ever grouped, the rule to keep is that `until` must be stamped from the
+series' own last observed date before any rule is written.
 
 ---
 

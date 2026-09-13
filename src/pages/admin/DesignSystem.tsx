@@ -1,6 +1,6 @@
-import { useSearchParams } from 'react-router';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { useTabParam } from '@/components/admin/primitives/useTabParam';
 import { useDesignSettings } from '@/components/admin/design/useDesignSettings';
 import { DraftStatusBar } from '@/components/admin/design/DraftStatusBar';
 import { TokensTab } from '@/components/admin/design/TokensTab';
@@ -14,9 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 const TABS = ['tokens', 'assets', 'seo', 'email', 'presets', 'audit'] as const;
 
 export default function DesignSystem() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const tabParam = searchParams.get('tab');
-  const tab = (TABS as readonly string[]).includes(tabParam ?? '') ? tabParam! : 'tokens';
+  const [tab, setTab] = useTabParam(TABS);
   const controller = useDesignSettings();
 
   return (
@@ -37,10 +35,7 @@ export default function DesignSystem() {
       ) : (
         <>
           <DraftStatusBar controller={controller} />
-          <Tabs
-            value={tab}
-            onValueChange={(next) => setSearchParams({ tab: next }, { replace: true })}
-          >
+          <Tabs value={tab} onValueChange={setTab}>
             <TabsList>
               <TabsTrigger value="tokens">Tokens</TabsTrigger>
               <TabsTrigger value="assets">Brand assets</TabsTrigger>

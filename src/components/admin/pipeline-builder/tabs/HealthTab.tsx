@@ -12,6 +12,10 @@ import {
   usePipelineDefinitionsList,
 } from '../hooks/usePipelineHistory';
 import { untypedFrom, untypedSupabase } from '@/integrations/supabase/untyped';
+import {
+  AdminSimpleTable,
+  type AdminSimpleColumn,
+} from '@/components/admin/primitives/AdminSimpleTable';
 
 const DuplicatesPanel = lazy(() =>
   import('@/components/admin/import-hub/DuplicatesPanel').then((m) => ({
@@ -55,6 +59,50 @@ function SectionCard({
     </div>
   );
 }
+
+type DefinitionRow = { kind: 'pipeline' | 'workflow'; def: Record<string, unknown> };
+
+const definitionColumns: AdminSimpleColumn<DefinitionRow>[] = [
+  {
+    key: 'name',
+    header: 'Name',
+    cellClassName: 'font-medium',
+    render: ({ def }) => (def.display_name || def.name) as string,
+  },
+  {
+    key: 'type',
+    header: 'Type',
+    render: ({ kind }) => (
+      <Badge variant="outline" className="text-2xs px-1.5 py-0 gap-1">
+        {kind === 'pipeline' ? (
+          <GitBranch className="h-2.5 w-2.5" />
+        ) : (
+          <Workflow className="h-2.5 w-2.5" />
+        )}{' '}
+        {kind}
+      </Badge>
+    ),
+  },
+  {
+    key: 'schedule',
+    header: 'Schedule',
+    cellClassName: 'text-muted-foreground font-mono text-xs',
+    render: ({ def }) => (def.schedule as string) || 'Manual',
+  },
+  {
+    key: 'enabled',
+    header: 'Enabled',
+    render: ({ def }) => (
+      <span
+        className={`inline-block text-2xs font-semibold px-2 py-0.5 rounded-full ${
+          def.is_enabled ? 'bg-muted text-foreground' : 'bg-muted text-muted-foreground'
+        }`}
+      >
+        {def.is_enabled ? 'ON' : 'OFF'}
+      </span>
+    ),
+  },
+];
 
 export default function HealthTab() {
   const { data: circuitBreakers = [] } = useCircuitBreakers();
@@ -184,6 +232,17 @@ export default function HealthTab() {
       return Object.entries(counts).map(([stage, c]) => ({ stage, ...c }));
     },
   });
+
+  const definitionRows: DefinitionRow[] = [
+    ...(pipelineDefs ?? []).map((def: Record<string, unknown>) => ({
+      kind: 'pipeline' as const,
+      def,
+    })),
+    ...(workflowDefs ?? []).map((def: Record<string, unknown>) => ({
+      kind: 'workflow' as const,
+      def,
+    })),
+  ];
 
   return (
     <TooltipProvider delayDuration={200}>
@@ -473,82 +532,16 @@ export default function HealthTab() {
               <Zap className="h-3.5 w-3.5 mr-1.5" /> Open Builder
             </Button>
           </div>
-          <div className="max-h-[400px] overflow-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/40 sticky top-0">
-                <tr className="border-b border-border">
-                  {['Name', 'Type', 'Schedule', 'Enabled'].map((h) => (
-                    <th
-                      key={h}
-                      className="text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider"
-                    >
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {pipelineDefs?.map((def: Record<string, unknown>) => (
-                  <tr
-                    key={def.id as string}
-                    className="border-b border-border/40 hover:bg-muted/30 transition-colors"
-                  >
-                    <td className="px-4 py-2 font-medium">
-                      {(def.display_name || def.name) as string}
-                    </td>
-                    <td className="px-4 py-2">
-                      <Badge variant="outline" className="text-2xs px-1.5 py-0 gap-1">
-                        <GitBranch className="h-2.5 w-2.5" /> pipeline
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-2 text-muted-foreground font-mono text-xs">
-                      {(def.schedule as string) || 'Manual'}
-                    </td>
-                    <td className="px-4 py-2">
-                      <span
-                        className={`inline-block text-2xs font-semibold px-2 py-0.5 rounded-full ${
-                          def.is_enabled
-                            ? 'bg-muted text-foreground'
-                            : 'bg-muted text-muted-foreground'
-                        }`}
-                      >
-                        {def.is_enabled ? 'ON' : 'OFF'}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-                {workflowDefs?.map((def: Record<string, unknown>) => (
-                  <tr
-                    key={def.id as string}
-                    className="border-b border-border/40 hover:bg-muted/30 transition-colors"
-                  >
-                    <td className="px-4 py-2 font-medium">
-                      {(def.display_name || def.name) as string}
-                    </td>
-                    <td className="px-4 py-2">
-                      <Badge variant="outline" className="text-2xs px-1.5 py-0 gap-1">
-                        <Workflow className="h-2.5 w-2.5" /> workflow
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-2 text-muted-foreground font-mono text-xs">
-                      {(def.schedule as string) || 'Manual'}
-                    </td>
-                    <td className="px-4 py-2">
-                      <span
-                        className={`inline-block text-2xs font-semibold px-2 py-0.5 rounded-full ${
-                          def.is_enabled
-                            ? 'bg-muted text-foreground'
-                            : 'bg-muted text-muted-foreground'
-                        }`}
-                      >
-                        {def.is_enabled ? 'ON' : 'OFF'}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <AdminSimpleTable
+            caption="All pipeline and workflow definitions"
+            stickyHeader
+            className="max-h-[400px] overflow-y-auto"
+            columns={definitionColumns}
+            rows={definitionRows}
+            rowKey={(row) => `${row.kind}-${row.def.id as string}`}
+            emptyNoun="definitions"
+            rowClassName={() => 'border-border/40 hover:bg-muted/30 transition-colors'}
+          />
         </div>
       </div>
     </TooltipProvider>
