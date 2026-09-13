@@ -1836,20 +1836,26 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
       // fails: the news quality gate legitimately rejects some episodes, and
       // this number moves with the corpus.
       //
-      // THE HINT NAMES BOTH STAGES ON PURPOSE. A first version pointed only at
-      // pipeline-validate, and within hours of the parser fix that was the
-      // wrong half: validate went to 0 rejections while the rate FELL to 1%,
-      // because 4,045 news rows (759 podcasts + 3,286 articles, oldest
-      // 2026-07-14) sit at disposition='pending' having already passed
-      // validate, dedup and auto-approval. Commit runs every hour and looks
-      // healthy at 6-13 rows/hour; the parser fix raised podcast inflow to
-      // ~175/hour, so the shortfall is throughput, not rejection. A low rate
-      // here has two very different causes and the reader needs both.
+      // THE HINT HAS BEEN WRONG TWICE AND THIS IS THE MEASURED ANSWER.
+      //
+      // v1 said "check pipeline-validate rejection reasons". Within hours of
+      // the parser fix that was the wrong half: validate went to 0 rejections
+      // while the rate FELL to 1%.
+      //
+      // v2 said the backlog was commit throughput. Also wrong — the rows were
+      // never commit-eligible. `news_commit_staging_batch` requires a quality
+      // verdict (the 20260902 gate), and the backlog had none: 2,103
+      // content-less stubs, 1,500 already judged 'rejected'/'review', and the
+      // rest simply unjudged. Commit was doing exactly what it should.
+      //
+      // The real ceiling is the VERDICT stage. pipeline-enrich-news runs hourly
+      // at batch_size 20 = 480/day, against podcast inflow of ~4,200/day.
+      // news_enrichment_signals() below is the check that actually sees this.
       console.log(
         pct < 40
-          ? `${line} — LOW. Check BOTH: pipeline-validate rejection reasons, and the` +
-            ` disposition='pending' backlog that has already passed validate+dedup` +
-            ` (commit throughput, not rejection).`
+          ? `${line} — LOW. The usual cause is the VERDICT stage, not commit:` +
+            ` see the enrichment section below (awaiting_verdict / oldest).` +
+            ` Rule out pipeline-validate rejections second.`
           : line,
       )
     } else {
@@ -1867,6 +1873,93 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
 
     if (sectionOk) {
       console.log('✓ podcast episodes are typed correctly and committing')
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// §  News enrichment: the verdict stage, which is where news rows actually die
+// ---------------------------------------------------------------------------
+//
+// A news row cannot commit without a quality verdict — news_commit_staging_batch
+// has required one since 20260902, because 346 UNJUDGED articles had published
+// indexable and nothing revisited them. That gate is correct.
+//
+// The verdict comes from pipeline-enrich-news, and it starved for four months
+// with EVERY EXISTING SIGNAL GREEN: the cron ran every hour on schedule, every
+// circuit breaker was closed with failure_count 0, llm_budget showed headroom
+// (159 of 600 spent), and `disposition='pending'` reads as "in flight".
+// pipeline_hygiene_stats().stale_pending_by_entity warns at 3,500 rows per
+// target_table and this sat at ~2,300 — UNDER the floor, for months.
+//
+// Nothing was broken. The stage ran 480 times a day against ~4,200 rows of
+// inflow, and nothing anywhere compared those two numbers. So this section
+// compares them, and reports the AGE of the head of the queue — because a deep
+// queue that drains in hours is a legitimate import and a shallow one that
+// never drains is not, and depth alone cannot tell them apart.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/news_enrichment_signals`, {
+    method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: '{}',
+  })
+  if (!res.ok) {
+    console.warn(`⚠ news_enrichment_signals → HTTP ${res.status} (45000101100200 not applied?) — this check measured NOTHING`)
+  } else {
+    const sig = await res.json()
+    let sectionOk = true
+
+    for (const k of ['staged_24h', 'verdicts_24h', 'awaiting_verdict', 'oldest_awaiting_verdict_hours']) {
+      if (!(k in sig)) {
+        console.error(`✗ news_enrichment_signals is missing the key \`${k}\` — that part of this check measured NOTHING`)
+        FAILED = true; sectionOk = false
+      }
+    }
+
+    // AGE, not depth. 72h is three full days at the head of the queue: well
+    // past any legitimate import, and far short of the four months this ran.
+    const oldestH = Number(sig?.oldest_awaiting_verdict_hours ?? 0)
+    const awaiting = Number(sig?.awaiting_verdict ?? 0)
+    if (oldestH > 72 && awaiting > 0) {
+      console.error(`✗ the oldest news row awaiting a quality verdict is ${oldestH}h old (${awaiting} waiting)`)
+      console.error('  Without a verdict a row can never commit. Check pipeline-enrich-news throughput vs inflow.')
+      FAILED = true; sectionOk = false
+    }
+
+    // CAPACITY vs INFLOW, as a pair. This is the comparison nothing was making.
+    const staged = Number(sig?.staged_24h ?? 0)
+    const verdicts = Number(sig?.verdicts_24h ?? 0)
+    if (staged > 0) {
+      const line = `  verdict capacity: ${verdicts} verdicts / ${staged} rows staged in 24h`
+      console.log(verdicts < staged / 2
+        ? `${line} — the verdict stage is running at under half of inflow; the queue grows`
+        : line)
+    }
+
+    // A failed enrichment is terminal by default — nothing re-examines it, so
+    // a row with real content parked here is lost, not queued.
+    const failedWithContent = Number(sig?.failed_with_content ?? 0)
+    if (failedWithContent > 0) {
+      console.log(`  ${failedWithContent} rows with real content are parked at enrichment_status='failed' (terminal; nothing retries them)`)
+    }
+
+    // An error message is a record of the past, not a property of the row:
+    // news_fulltext_backfill fills content in AFTER a "content-less" failure.
+    const staleLabel = Number(sig?.stale_failure_label ?? 0)
+    if (staleLabel > 0) {
+      console.error(`✗ ${staleLabel} rows are labelled "content-less stub" but now carry real content`)
+      console.error('  news_fulltext_backfill healed them after the failure and nothing re-queued them.')
+      FAILED = true; sectionOk = false
+    }
+
+    // Podcasts have a deterministic verdict path and should never queue here.
+    const podcastsWaiting = Number(sig?.podcasts_awaiting_verdict ?? 0)
+    if (podcastsWaiting > 200) {
+      console.error(`✗ ${podcastsWaiting} podcast episodes are awaiting a quality verdict`)
+      console.error('  run_podcast_deterministic_verdict should clear these without an LLM — is its cron running?')
+      FAILED = true; sectionOk = false
+    }
+
+    if (sectionOk) {
+      console.log('✓ news rows are getting quality verdicts and the queue is draining')
     }
   }
 }
