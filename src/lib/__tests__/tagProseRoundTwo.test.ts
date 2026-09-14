@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards 50800101100000 — round two of the disowned-prose backlog that
+ * Guards 51500101143000 — round two of the disowned-prose backlog that
  * `tag_disowned_prose_signals()` counts (360 before 50700101100200, 352 after).
  *
  * Two groups under two DIFFERENT rules, and the separation is the point:
@@ -35,7 +35,7 @@ import { join } from 'node:path';
  */
 
 const MIGRATIONS = join(process.cwd(), 'supabase', 'migrations');
-const FILE = '50800101100000_tag_prose_wrong_subject_round_two.sql';
+const FILE = '51500101143000_tag_prose_wrong_subject_round_two.sql';
 
 /** Line comments only; this file uses no block comments. */
 const sql = readFileSync(join(MIGRATIONS, FILE), 'utf8')

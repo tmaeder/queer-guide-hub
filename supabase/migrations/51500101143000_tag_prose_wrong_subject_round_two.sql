@@ -97,7 +97,7 @@
 
 begin;
 
-select set_config('app.actor', 'migration:50800101100000', true);
+select set_config('app.actor', 'migration:51500101143000', true);
 
 -- ── Group A ────────────────────────────────────────────────────────────────
 
