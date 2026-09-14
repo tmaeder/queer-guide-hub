@@ -257,7 +257,20 @@ BEGIN
     RAISE EXCEPTION 'the unreachable-entity guard is missing';
   END IF;
 
-  -- Positive controls: each guard must have live work, or it is untested prose.
+  -- Live-backlog counts are REPORTED, never asserted. The first draft raised on
+  -- each of these being zero, reasoning that a guard with no work is untested
+  -- prose. That is a PRECONDITION about the world, not a postcondition about
+  -- what this file achieves, and it is self-defeating here: the closer shipped
+  -- in 50200101100100 runs every 5 minutes and exists to drain exactly the
+  -- unreachable population v_unr counts. It did — 282 rows closed between that
+  -- migration applying and this one being reached — so this block aborted the
+  -- push BECAUSE its sibling worked. v_at is worse still: zero at the threshold
+  -- is the SUCCESS state of this whole change, so that assertion guaranteed a
+  -- failure the moment the drain caught up.
+  --
+  -- What actually protects the guards is structural and stays hard above: the
+  -- function body must contain both branches. A migration cannot promise the
+  -- queue holds rows to exercise them.
   SELECT count(*) INTO v_at FROM public.entity_review_queue WHERE status='open' AND confidence >= 0.90;
 
   SELECT count(*) INTO v_unr
@@ -274,13 +287,13 @@ BEGIN
      AND (co.name IS NULL OR coalesce(q.proposed_value #>> '{}','') NOT ILIKE '%'||co.name||'%');
 
   IF v_at = 0 THEN
-    RAISE EXCEPTION 'nothing at the threshold — re-measure, this job would be a no-op';
+    RAISE NOTICE 'autoapprove: nothing at the threshold — already drained, this pass is a no-op';
   END IF;
   IF v_unr = 0 THEN
-    RAISE EXCEPTION 'unreachable guard has no live work — it cannot be trusted untested';
+    RAISE NOTICE 'autoapprove: unreachable guard has no live work right now (closer already drained it)';
   END IF;
   IF v_wrg = 0 THEN
-    RAISE EXCEPTION 'wrong-country guard has no live work — it cannot be trusted untested';
+    RAISE NOTICE 'autoapprove: wrong-country guard has no live work right now';
   END IF;
 
   RAISE NOTICE 'autoapprove: % rows at >=0.90, of which % unreachable and % wrong-country are rejected not published',
