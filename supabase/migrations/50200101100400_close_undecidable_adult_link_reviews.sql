@@ -217,7 +217,7 @@ VALUES (
   jsonb_build_object('type','rpc','fn','run_close_undecidable_adult_link_reviews',
                      'command','SELECT public.run_close_undecidable_adult_link_reviews();',
                      'jobname','close_undecidable_adult_link_reviews'),
-  '45 6 * * *', 3)
+  '*/5 * * * *', 3)
 ON CONFLICT (slug) DO UPDATE
   SET name=EXCLUDED.name, description=EXCLUDED.description,
       action=EXCLUDED.action, schedule=EXCLUDED.schedule;
@@ -225,7 +225,7 @@ ON CONFLICT (slug) DO UPDATE
 SELECT cron.unschedule('close_undecidable_adult_link_reviews')
  WHERE EXISTS (SELECT 1 FROM cron.job WHERE jobname='close_undecidable_adult_link_reviews');
 
-SELECT cron.schedule('close_undecidable_adult_link_reviews', '45 6 * * *',
+SELECT cron.schedule('close_undecidable_adult_link_reviews', '*/5 * * * *',
                      'SELECT public.run_close_undecidable_adult_link_reviews();');
 
 -- ── Postcondition ───────────────────────────────────────────────────────────

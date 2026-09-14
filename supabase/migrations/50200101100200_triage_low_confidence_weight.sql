@@ -189,7 +189,12 @@ $function$;
 -- checked to prove the other queues were not disturbed.
 DO $verify$
 DECLARE
-  v_src       text := pg_get_functiondef('public.get_unified_triage_queue(text[],text[],text,text,integer,integer)'::regprocedure);
+  -- Comment-stripped, for the reason 50200101100000 records: pg_get_functiondef
+  -- returns the body WITH its comments, so a prose mention of the column would
+  -- satisfy these two assertions while the actual term was gone — the vacuous
+  -- pass that is the mirror of that migration's false abort.
+  v_raw       text := pg_get_functiondef('public.get_unified_triage_queue(text[],text[],text,text,integer,integer)'::regprocedure);
+  v_src       text := regexp_replace(v_raw, '--[^' || chr(10) || ']*', '', 'g');
   v_flipped   int;
   v_unchanged int;
 BEGIN
