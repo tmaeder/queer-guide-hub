@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards 51800101120000 — the disowned-prose TAIL.
+ * Guards 60000301100100 — the disowned-prose TAIL.
 
  * SCOPE NOTE, and it is the reason several numbers here read "9" where an
  * earlier version of this file read "25": the pass identified a 25-row seam,
@@ -44,7 +44,7 @@ import { join } from 'node:path';
 
 const MIGRATION = join(
   process.cwd(),
-  'supabase/migrations/51800101120000_tag_prose_disowned_tail.sql',
+  'supabase/migrations/60000301100100_tag_prose_disowned_tail.sql',
 );
 const sql = readFileSync(MIGRATION, 'utf8');
 
@@ -72,7 +72,7 @@ const GROUP_C = ['doe', 'fae', 'flock', 'handler', 'minion', 'tickler', 'whipper
  *  51700101143000 and are covered by the postcondition, not by an UPDATE. */
 const GROUP_C_HERE = ['fae', 'flock', 'cunt'];
 
-describe('51800101120000 — disowned prose, the tail', () => {
+describe('60000301100100 — disowned prose, the tail', () => {
   it('repairs exactly the 9 rows still carrying the defect', () => {
     const slugs = [...statements.matchAll(/where slug = '([a-z-]+)'/g)].map((m) => m[1]);
     expect(new Set(slugs).size).toBe(9);

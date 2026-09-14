@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards 51800101110000 — round five of the disowned-prose backlog.
+ * Guards 60000301100000 — round five of the disowned-prose backlog.
 
  * SCOPE NOTE: this pass identified nine rows. 51700101143000 (a concurrent
  * session) repaired `awareness` and `dyke` — by the same rule, from the same
@@ -54,7 +54,7 @@ import { join } from 'node:path';
 
 const MIGRATION = join(
   process.cwd(),
-  'supabase/migrations/51800101110000_tag_prose_wrong_subject_round_five.sql',
+  'supabase/migrations/60000301100000_tag_prose_wrong_subject_round_five.sql',
 );
 
 const sql = readFileSync(MIGRATION, 'utf8');
@@ -92,7 +92,7 @@ const setClauses = statements
   .map((chunk) => chunk.slice(0, chunk.indexOf('where slug')))
   .join('\n');
 
-describe('51800101110000 — glossary prose round five', () => {
+describe('60000301100000 — glossary prose round five', () => {
   it('repairs exactly the seven rows still carrying the defect', () => {
     const slugs = [...statements.matchAll(/where slug = '([a-z-]+)'/g)].map((m) => m[1]);
     expect(new Set(slugs)).toEqual(
