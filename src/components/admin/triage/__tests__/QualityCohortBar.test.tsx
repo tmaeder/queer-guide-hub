@@ -155,6 +155,31 @@ describe('QualityCohortBar', () => {
     ).toBeInTheDocument();
   });
 
+  /**
+   * WCAG 2.5.8. axe failed the sibling checkbox on this route at 16px
+   * (`target-size`, serious), so the gate is live here. Asserted on the MERGED
+   * class string rather than on the source, because tailwind-merge keeping a
+   * competing height would leave stylesheet order to decide while a
+   * `toContain('min-h-6')` check stayed green.
+   */
+  it('gives every cohort chip a 24px target', () => {
+    render(
+      <QualityCohortBar
+        cohorts={[cohort(), cohort({ field: 'safety_notes', entity_type: 'city' })]}
+        isLoading={false}
+        filters={filters}
+        onFiltersChange={vi.fn()}
+      />,
+    );
+    const chips = screen.getAllByRole('button');
+    expect(chips.length).toBe(2);
+    for (const chip of chips) {
+      expect(chip.className).toContain('min-h-6');
+      expect(chip.className).not.toMatch(/\bmin-h-0\b/);
+      expect(chip.className).not.toMatch(/\bh-4\b/);
+    }
+  });
+
   it('does not mark a cohort with no gated rows', () => {
     render(
       <QualityCohortBar

@@ -83,7 +83,14 @@ export function QualityCohortBar({
                   : undefined
               }
               className={cn(
-                'inline-flex items-center gap-1.5 rounded-badge border px-2 py-1',
+                // min-h-6 is WCAG 2.5.8 (24px target), and it is EXPLICIT rather
+                // than left to the computed box. `text-2xs` (14px line-height) +
+                // `py-1` (8px) + 1px borders lands on exactly 24 — it passes, but
+                // only just, and any later change to the type scale or the padding
+                // silently drops it under the bar. axe measured the sibling
+                // checkbox at 16px and failed it `target-size` (serious) on this
+                // very route, so the gate is live here.
+                'inline-flex items-center gap-1.5 rounded-badge border px-2 py-1 min-h-6',
                 'text-2xs transition-colors',
                 isActive
                   ? 'bg-foreground text-background border-foreground'
