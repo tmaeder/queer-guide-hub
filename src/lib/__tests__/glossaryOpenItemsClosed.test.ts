@@ -3,8 +3,8 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const MIGRATIONS = join(process.cwd(), 'supabase', 'migrations');
-const FACET = '51700101160000_hiv_aids_topic_facet.sql';
-const SWEEP = '51700101160100_styleguide_drift_vibrant_sweep.sql';
+const FACET = '60000101160000_hiv_aids_topic_facet.sql';
+const SWEEP = '60000101160100_styleguide_drift_vibrant_sweep.sql';
 
 /**
  * Comment-stripped. Both files carry long headers that quote the very strings
@@ -32,13 +32,13 @@ const verifyBlockOf = (file: string): string => {
   return sql.slice(start);
 };
 
-describe('51700101160000 — hiv-aids stays a facet', () => {
+describe('60000101160000 — hiv-aids stays a facet', () => {
   const apply = applyBlockOf(FACET);
   const verify = verifyBlockOf(FACET);
 
   it('declares an actor', () => {
     expect(apply).toContain(
-      "set_config('app.actor', 'migration:51700101160000_hiv_aids_topic_facet', true)",
+      "set_config('app.actor', 'migration:60000101160000_hiv_aids_topic_facet', true)",
     );
   });
 
@@ -82,13 +82,13 @@ describe('51700101160000 — hiv-aids stays a facet', () => {
   });
 });
 
-describe('51700101160100 — vibrant sweep', () => {
+describe('60000101160100 — vibrant sweep', () => {
   const apply = applyBlockOf(SWEEP);
   const verify = verifyBlockOf(SWEEP);
 
   it('declares an actor', () => {
     expect(apply).toContain(
-      "set_config('app.actor', 'migration:51700101160100_styleguide_drift_vibrant_sweep', true)",
+      "set_config('app.actor', 'migration:60000101160100_styleguide_drift_vibrant_sweep', true)",
     );
   });
 
