@@ -243,7 +243,14 @@ END; $function$;
 -- so the placeholder control is the load-bearing half.
 DO $verify$
 DECLARE
-  v_src   text := pg_get_functiondef('public.run_city_safety_backfill(integer,boolean)'::regprocedure);
+  -- pg_get_functiondef returns the body INCLUDING its comments, and this
+  -- function's own comment explains why 'placeholder' is not excluded. Testing
+  -- the raw definition therefore reads the PROSE, not the predicate: the first
+  -- push of this migration aborted on its own explanatory sentence while the
+  -- SQL underneath was correct. Assert against comment-stripped source, the
+  -- same discipline the guard tests in src/lib/__tests__ already use.
+  v_raw   text := pg_get_functiondef('public.run_city_safety_backfill(integer,boolean)'::regprocedure);
+  v_src   text := regexp_replace(v_raw, '--[^' || chr(10) || ']*', '', 'g');
   v_ghost int;
   v_place int;
 BEGIN
