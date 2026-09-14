@@ -7,6 +7,19 @@ import { MemoryRouter } from 'react-router';
 
 const counts = vi.fn(() => ({ data: { review_org_links: 50, quality_city: 2 } }));
 
+// The status card fetches through react-query; these tests render without a
+// QueryClientProvider on purpose (they are about routing and the header), so
+// the hook is mocked rather than the page being wrapped. Same treatment
+// useReviewQueueCohorts needed when the cohort bar landed in TriageView.
+const useReviewAutomationStatus = vi.hoisted(() =>
+  vi.fn(() => ({
+    data: undefined,
+    isLoading: true,
+    isError: false,
+  })),
+);
+vi.mock('@/hooks/useReviewAutomationStatus', () => ({ useReviewAutomationStatus }));
+
 vi.mock('@/hooks/useAdminCounts', () => ({
   useAdminCounts: () => counts(),
 }));

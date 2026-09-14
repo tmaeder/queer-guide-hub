@@ -6,18 +6,20 @@
 
 import { useState, useEffect } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { ChevronDown, FileText, Clock } from 'lucide-react';
+import { ChevronDown, FileText, Clock, History } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { WorkflowPanel } from './WorkflowPanel';
 import { SEOPanel } from './SEOPanel';
 import { QualityPanel } from './QualityPanel';
 import { PersonalityNotesPanel } from './PersonalityNotesPanel';
 import { PersonalityAttachmentsPanel } from './PersonalityAttachmentsPanel';
-import { useCMSRevisions } from '@/hooks/useCMSRevisions';
+import { useContentRevisions, type ContentRevision } from '@/hooks/useContentRevisions';
+import { RevisionHistorySheet } from '@/components/admin/RevisionHistorySheet';
 import { useCMSMedia } from '@/hooks/useCMSMedia';
 import { getContentType } from '@/config/contentTypeRegistry';
-import type { CMSContentMetadata, CMSRevision, CMSMediaAttachment } from '@/types/cms';
+import type { CMSContentMetadata, CMSMediaAttachment } from '@/types/cms';
 import { cn } from '@/lib/utils';
 
 interface EditorSidebarProps {
@@ -95,8 +97,11 @@ export function EditorSidebar({
     attachments: false,
   });
 
-  // Revisions hook
-  const { revisions, loading: revisionsLoading, loadRevisions } = useCMSRevisions();
+  // Revisions. Reads `content_revisions` — the trigger-written trail — so the
+  // sidebar and the sheet reachable from a public page show the same history
+  // rather than two different ideas of it.
+  const { revisions, loading: revisionsLoading, load: loadRevisions } = useContentRevisions();
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   // Media hook
   const { loading: mediaLoading, getAttachments } = useCMSMedia();
@@ -229,41 +234,63 @@ export function EditorSidebar({
           </div>
         ) : revisions.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            No revisions yet. Changes will be tracked after the first save.
+            No revisions recorded for this record yet.
           </p>
         ) : (
-          <div className="flex flex-col gap-1.5 max-h-64 overflow-auto">
-            {revisions.map((rev) => (
-              <RevisionEntry key={rev.id} revision={rev} />
-            ))}
+          <div className="flex flex-col gap-1.5">
+            <div className="max-h-64 overflow-auto flex flex-col gap-1.5">
+              {revisions.slice(0, 8).map((rev) => (
+                <RevisionEntry key={rev.id} revision={rev} />
+              ))}
+            </div>
+            {/* The diff and the per-field revert live in the sheet, which is
+                the same component the public page opens — one history surface,
+                not two that drift. */}
+            <Button variant="outline" size="sm" onClick={() => setHistoryOpen(true)}>
+              <History size={14} className="mr-1.5" />
+              Compare and revert
+            </Button>
           </div>
         )}
       </Panel>
+      {itemId && config && (
+        <RevisionHistorySheet
+          open={historyOpen}
+          onOpenChange={setHistoryOpen}
+          contentType={contentType}
+          contentId={itemId}
+        />
+      )}
     </div>
   );
 }
 
 // ── Revision Entry ─────────────────────────────────────────────────
 
-function RevisionEntry({ revision }: { revision: CMSRevision }) {
+function RevisionEntry({ revision }: { revision: ContentRevision }) {
   const date = formatRevisionDate(revision.created_at);
-  const authorName = revision.author?.display_name || revision.author?.email || 'System';
+  // Most rows in this corpus are machine writes, so "who" is the first thing
+  // worth reading, not a footnote.
+  const authorName =
+    revision.actor_kind === 'human'
+      ? (revision.author?.display_name ?? revision.author?.email ?? 'Admin')
+      : (revision.actor ?? 'Automated');
 
   return (
     <div className="flex items-start gap-2 p-2 rounded-element hover:bg-muted/40 transition-colors">
-      <div className="flex items-center justify-center flex-shrink-0 mt-0.5 rounded-full bg-muted w-7 h-7">
+      <div className="flex items-center justify-center flex-shrink-0 mt-0.5 rounded-full bg-muted w-8 h-8">
         <Clock className="text-muted-foreground" size={14} />
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
-          <span className="text-xs font-semibold">#{revision.revision_number}</span>
+          <span className="text-xs font-semibold">
+            {revision.op === 'I' ? 'Created' : revision.op === 'D' ? 'Deleted' : 'Updated'}
+          </span>
           <span className="text-xs text-muted-foreground">{date}</span>
         </div>
-        {revision.change_summary && (
-          <p className="text-xs text-muted-foreground block overflow-hidden text-ellipsis whitespace-nowrap">
-            {revision.change_summary}
-          </p>
-        )}
+        <p className="text-xs text-muted-foreground block overflow-hidden text-ellipsis whitespace-nowrap">
+          {revision.changed_fields.join(', ')}
+        </p>
         <p className="text-muted-foreground" style={{ fontSize: '0.65rem' }}>
           by {authorName}
         </p>

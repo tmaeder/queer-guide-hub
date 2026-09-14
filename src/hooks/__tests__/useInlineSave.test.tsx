@@ -68,7 +68,9 @@ describe('useInlineSave', () => {
 
   it('rejects value exceeding maxLength', async () => {
     const { result } = renderHook(() => useInlineSave('venues', 'v1'));
-    const res = await act(async () => result.current.save({ field: NAME_FIELD, value: 'too-long' }));
+    const res = await act(async () =>
+      result.current.save({ field: NAME_FIELD, value: 'too-long' }),
+    );
     expect(res.success).toBe(false);
     expect(toastErrorSpy).toHaveBeenCalledWith(expect.stringContaining('at most 5'));
     expect(fromMock).not.toHaveBeenCalled();
@@ -84,12 +86,8 @@ describe('useInlineSave', () => {
     expect(fromMock).not.toHaveBeenCalled();
   });
 
-  it('saves a valid value and writes audit log', async () => {
-    fromMock.mockImplementation((table: string) => {
-      if (table === 'admin_edit_log') return chain({ id: 'log1' });
-      // venues: fetch before, then update returns after
-      return chain({ id: 'v1', name: 'Hello' });
-    });
+  it('saves a valid value', async () => {
+    fromMock.mockImplementation(() => chain({ id: 'v1', name: 'Hello' }));
 
     const { result } = renderHook(() => useInlineSave('venues', 'v1'));
     const res = await act(async () => result.current.save({ field: NAME_FIELD, value: 'Hello' }));
@@ -97,15 +95,39 @@ describe('useInlineSave', () => {
     expect(res.success).toBe(true);
     expect(toastSuccessSpy).toHaveBeenCalledWith(expect.stringContaining('Saved'));
     expect(fromMock).toHaveBeenCalledWith('venues');
-    expect(fromMock).toHaveBeenCalledWith('admin_edit_log');
+  });
+
+  it('writes NO audit row from the client', async () => {
+    // This assertion used to be its opposite, and that is the point.
+    // `admin_edit_log` held 0 rows for its entire life — RLS enabled, a
+    // SELECT-only policy, no INSERT policy — so every insert was denied and
+    // swallowed by a bare `catch {}`. The mock made the old test green while
+    // production recorded nothing: the test verified the CALL, never the
+    // EFFECT. The trail is a database trigger now.
+    fromMock.mockImplementation(() => chain({ id: 'v1', name: 'Hello' }));
+
+    const { result } = renderHook(() => useInlineSave('venues', 'v1'));
+    await act(async () => result.current.save({ field: NAME_FIELD, value: 'Hello' }));
+
+    expect(fromMock).not.toHaveBeenCalledWith('admin_edit_log');
+    expect(fromMock).not.toHaveBeenCalledWith('content_revisions');
+  });
+
+  it('does not re-read the row before writing it', async () => {
+    // The pre-save SELECT existed only to fill that audit row, so it was a
+    // round-trip per save for a write that never happened.
+    fromMock.mockImplementation(() => chain({ id: 'v1', name: 'Hello' }));
+
+    const { result } = renderHook(() => useInlineSave('venues', 'v1'));
+    await act(async () => result.current.save({ field: NAME_FIELD, value: 'Hello' }));
+
+    expect(fromMock.mock.calls.filter((c) => c[0] === 'venues')).toHaveLength(1);
   });
 
   it('detects silent trigger nulling and surfaces an error', async () => {
-    fromMock.mockImplementation((table: string) => {
-      if (table === 'admin_edit_log') return chain({ id: 'log1' });
-      // After-update returns null in name field — simulating trigger
-      return chain({ id: 'v1', name: null });
-    });
+    // After-update returns null in the name field — simulating a trigger
+    // that silently blanked the value.
+    fromMock.mockImplementation(() => chain({ id: 'v1', name: null }));
 
     const { result } = renderHook(() => useInlineSave('venues', 'v1'));
     const res = await act(async () => result.current.save({ field: NAME_FIELD, value: 'Hello' }));
