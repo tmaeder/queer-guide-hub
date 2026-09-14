@@ -113,11 +113,14 @@ $fn$;
 revoke all on function public.tag_disowned_prose_signals() from public, anon, authenticated;
 grant execute on function public.tag_disowned_prose_signals() to service_role;
 
+-- COMMENT ON ... IS takes a string LITERAL, not an expression: `||` here is a
+-- syntax error (42601), which is what aborted db push on main and took every
+-- migration queued behind this one with it. One literal, as every other
+-- COMMENT ON in this corpus is written -- including this file's own sibling
+-- 50400101100300. The text is the four fragments joined exactly as `||`
+-- would have joined them, so the stored comment is unchanged.
 comment on function public.tag_disowned_prose_signals() is
-  'Active tags still publishing the prose a now-disowned Wikidata entity produced. '
-  || 'Complements tag_wikidata_repair_regressions(), which watches the identifier rather than the text. '
-  || 'An upper bound on the defect, not a count of it: a hand-read sample of 24 on 2026-09-14 was ~45% '
-  || 'genuinely wrong. Ratchet, not a zero-invariant — warn on the count, fail on growth.';
+  'Active tags still publishing the prose a now-disowned Wikidata entity produced. Complements tag_wikidata_repair_regressions(), which watches the identifier rather than the text. An upper bound on the defect, not a count of it: a hand-read sample of 24 on 2026-09-14 was ~45% genuinely wrong. Ratchet, not a zero-invariant — warn on the count, fail on growth.';
 
 do $verify$
 declare
