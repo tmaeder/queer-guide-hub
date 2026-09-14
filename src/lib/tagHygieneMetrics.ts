@@ -144,15 +144,13 @@ export const HYGIENE_METRICS: HygieneMetric[] = [
   {
     key: 'slug_diacritic_lossy',
     label: 'Slugs that lost a diacritic',
-    // NOT `zero` since 2026-09-14, and its baseline is 3, not 0 — same shape as
-    // name_mojibake below. 50900101100100 (#3705) demoted three mojibake person
-    // rows from status 'merged' to 'deprecated', and this counter excludes only
-    // 'merged', so they moved into it. They cannot be repaired: the correctly
-    // transliterated slugs already exist as separate rows, so rewriting them
-    // collides. All three are deprecated, deindexed and unused, so nothing
-    // renders them. Painting a permanently-red figure on the panel trains
-    // admins to ignore red.
-    hint: 'A slug the canonical slugifier would not produce, on a non-ASCII name — "Bühne" stored as b-hne. Excludes merged rows, whose slug IS their redirect trail. Three deprecated rows are accepted (see the baseline note); a FOURTH is a new defect. Deliberately NOT the unqualified drift predicate, which matches 115 rows of which 106 are intentional mat-/news-/occ- namespace prefixes.',
+    // `zero` again since 2026-09-14. It was briefly dropped when #3705 withdrew
+    // three twin-named dedupe merges and this counter, which excludes only
+    // 'merged', went 0 -> 3. The repair that looked unavailable was restoring
+    // the merge (20260914175649), not transliterating -- which really would
+    // collide with the correctly-spelled twin. Live reads 0.
+    zero: true,
+    hint: 'A slug the canonical slugifier would not produce, on a non-ASCII name — "Bühne" stored as b-hne. Excludes merged rows, whose slug IS their redirect trail. Deliberately NOT the unqualified drift predicate, which matches 115 rows of which 106 are intentional mat-/news-/occ- namespace prefixes.',
   },
   {
     key: 'name_mojibake',
