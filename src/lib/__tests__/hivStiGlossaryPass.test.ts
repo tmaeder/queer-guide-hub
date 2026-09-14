@@ -40,6 +40,7 @@ const CORRECTIONS = '50400101100000_hiv_sti_glossary_corrections.sql';
 const REVIVALS = '50400101100100_hiv_sti_vocabulary_revivals.sql';
 const STYLEGUIDE = '50400101100200_unaids_terminology_into_styleguide.sql';
 const SENTINEL = '50400101100300_tag_merge_graph_signals.sql';
+const AIDS = '50400101100400_aids_defines_hiv_correction.sql';
 
 /** Line comments only; these files use no block comments. */
 const statementsOf = (file: string): string =>
@@ -378,5 +379,80 @@ describe('HIV/STI pass — 50400101100300 the merge-graph sentinel', () => {
     // wording, because the per-key warn inside the loop also says
     // "measured NOTHING" and satisfies a bare match with this branch deleted.
     expect(section).toMatch(/50400101100300 not applied\?[\s\S]{0,80}measured NOTHING/);
+  });
+});
+
+describe('HIV/STI pass — 50400101100400 the AIDS page defined HIV', () => {
+  it('is CONTENT-guarded, so a human who fixes it first keeps their work', () => {
+    const apply = applyBlockOf(AIDS);
+    // Both UPDATEs fire only while the row still carries the defect's signature.
+    expect(apply).toMatch(
+      /where slug = 'aids'[\s\S]{0,120}description like 'The human immunodeficiency virus \(HIV\) is a retrovirus%'/,
+    );
+    expect(apply).toMatch(
+      /where slug = 'hiv-aids-crisis'[\s\S]{0,120}description like 'AIDS is caused by a human immunodeficiency virus%'/,
+    );
+  });
+
+  it('replaces rather than retracts — the row is live and rendering to 106 uses', () => {
+    const apply = applyBlockOf(AIDS);
+    const aidsUpdate = apply.slice(
+      apply.indexOf('update public.unified_tags set'),
+      apply.indexOf("where slug = 'aids'"),
+    );
+    expect(aidsUpdate).toMatch(/description\s*=\s*\n?'AIDS \(acquired immunodeficiency syndrome\)/);
+    expect(aidsUpdate).not.toMatch(/=\s*null/);
+  });
+
+  it('touches only the WRONG field on the crisis row', () => {
+    const apply = applyBlockOf(AIDS);
+    // Anchored on the STATEMENT, never on a comment: applyBlockOf strips
+    // comments, so a comment anchor yields indexOf === -1 and slices the last
+    // character, which matches nothing and passes every `not.toMatch`.
+    const crisisWhere = apply.indexOf("where slug = 'hiv-aids-crisis'");
+    expect(crisisWhere).toBeGreaterThan(0);
+    const crisis = apply.slice(
+      apply.lastIndexOf('update public.unified_tags set', crisisWhere),
+      crisisWhere,
+    );
+    expect(crisis.length).toBeGreaterThan(40);
+    expect(crisis).toMatch(/set\s*\n?\s*description =/);
+    expect(crisis).not.toMatch(/short_description\s*=/);
+    expect(crisis).not.toMatch(/long_description\s*=/);
+    expect(crisis).not.toMatch(/wikipedia_url\s*=/);
+  });
+
+  it('checks BOTH prose fields for the defect, not just the one read first', () => {
+    const verify = verifyBlockOf(AIDS);
+    const block = verify.slice(0, verify.indexOf('still opens by defining HIV'));
+    expect(block).toMatch(/coalesce\(description, ''\) like 'The human immunodeficiency virus/);
+    expect(block).toMatch(
+      /coalesce\(long_description, ''\) like 'The human immunodeficiency virus/,
+    );
+  });
+
+  it('proves the replacement teaches the distinction, not merely that it changed', () => {
+    const verify = verifyBlockOf(AIDS);
+    expect(verify).toMatch(/like '%CD4 count%'/);
+    expect(verify).toMatch(/like '%200 cells%'/);
+    expect(verify).toMatch(/like '%most advanced stage%'/);
+  });
+
+  it('proves the HIV row keeps the virus definition it is entitled to', () => {
+    expect(verifyBlockOf(AIDS)).toMatch(
+      /slug = 'hiv' and status = 'active' and coalesce\(long_description, ''\) <> ''/,
+    );
+  });
+
+  it('refuses to leave either corrected row with an empty field', () => {
+    expect(verifyBlockOf(AIDS)).toMatch(
+      /coalesce\(description, ''\) = '' or coalesce\(long_description, ''\) = ''/,
+    );
+  });
+
+  it('declares its own actor, so tag_change_log keeps the prior text', () => {
+    expect(statementsOf(AIDS)).toMatch(
+      /set_config\('app\.actor', 'migration:aids-defines-hiv-correction', true\)/,
+    );
   });
 });
