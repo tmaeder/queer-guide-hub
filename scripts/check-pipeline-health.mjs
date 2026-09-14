@@ -2236,6 +2236,99 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
 }
 
 // ---------------------------------------------------------------------------
+// §  Tag category representations
+// ---------------------------------------------------------------------------
+//
+// A tag states its category in THREE places and each reader surface reads a
+// DIFFERENT one: `/tags/:slug` renders the is_primary JUNCTION, the search
+// facet renders the denormalised TEXT, and `category_id` is the lever that
+// drives both. Nothing checked category_id -> JUNCTION, which is the only
+// direction that blanks the breadcrumb on the page.
+//
+// That is how 195 active tags ended up categorised in site search and showing
+// no category at all on their own page, while `tag_hygiene_stats()` read
+// clean: its `uncategorized_active` counts `category_id IS NULL` (the
+// representation the page does not render, reading 10) and its
+// `denorm_category_missing` checks the opposite direction. Same shape as the
+// sentinel once hardcoded to `slug=eq.search_reindex_drain`.
+//
+// The cause was the producer, not the data: both sync triggers were
+// UPDATE-only, so a tag INSERTed with `category_id` set minted no junction
+// row — and a control probe on prod showed it got no TEXT and `is_adult=false`
+// either, i.e. a new kink-category tag was created UN-GATED. Hence
+// `insert_trigger_sealed` is checked structurally: a zero gap count the day
+// after someone re-creates a trigger without INSERT is not health.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/tag_category_signals`, {
+    method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: '{}',
+  })
+  if (!res.ok) {
+    // A failed probe must SAY it failed rather than fall through to a default.
+    console.warn(`⚠ tag_category_signals → HTTP ${res.status} (50700101100100 not applied?) — this check measured NOTHING`)
+  } else {
+    const sig = await res.json()
+    let sectionOk = true
+
+    // Denominator before any violation count: zero violations across zero tags
+    // is a broken probe, not a clean glossary.
+    const active = Number(sig?.active_tags ?? 0)
+    if (active === 0) {
+      console.warn('⚠ tag_category_signals reports ZERO active tags — the probe is measuring nothing, not passing')
+      sectionOk = false
+    }
+
+    const zeroInvariants = [
+      ['category_id_without_junction', 'active tag(s) carry a category_id with no primary junction row — /tags/:slug shows NO category while search shows one'],
+      ['junction_disagrees_with_category_id', 'active tag(s) whose primary junction contradicts category_id — the page and the lever disagree'],
+      ['junction_without_category_id', 'active tag(s) have a primary junction but a NULL category_id — the lever cannot move the page'],
+    ]
+    for (const [key, why] of zeroInvariants) {
+      if (!(key in (sig ?? {}))) {
+        console.warn(`⚠ tag_category_signals has no '${key}' key — that check measured NOTHING`)
+        sectionOk = false
+        continue
+      }
+      const n = Number(sig[key] ?? 0)
+      if (n > 0) {
+        console.error(`✗ ${n} ${why}`)
+        FAILED = true; sectionOk = false
+      }
+    }
+
+    // Structural. Without the INSERT arm the gap regrows at the rate new tags
+    // are minted, and new adult-category tags are created un-gated.
+    if (!('insert_trigger_sealed' in (sig ?? {}))) {
+      console.warn("⚠ tag_category_signals has no 'insert_trigger_sealed' key — the producer seal measured NOTHING")
+      sectionOk = false
+    } else if (sig.insert_trigger_sealed !== true) {
+      console.error('✗ a tag category sync trigger does not fire on INSERT — the junction gap will regrow silently')
+      FAILED = true; sectionOk = false
+    }
+
+    // ADVISORY, non-zero by design (22 rows). Adult vocabulary filed under a
+    // non-adult category, where the hand-set is_adult flag is CORRECT and
+    // `unified_tags_recompute_is_adult()` — which derives from the category
+    // alone and knows nothing of an override — would destroy it on the next
+    // junction write. Printed WITH the slugs so a NEW one is distinguishable
+    // from the known cohort rather than hidden in a count. Gating would ship
+    // red on arrival, the cry-wolf shape already removed from the dedup rule.
+    const ov = Number(sig?.is_adult_override ?? 0)
+    if (ov > 0) {
+      const ex = Array.isArray(sig?.is_adult_override_examples) ? sig.is_adult_override_examples : []
+      console.log(`  ${ov} tag(s) carry an is_adult flag the category-only derivation would overwrite (gating is correct; the rule has no override)`)
+      if (ex.length) console.log(`      ${ex.join(', ')}`)
+    }
+
+    const uncat = Number(sig?.uncategorized_active_nonfacet ?? 0)
+    if (uncat > 0) {
+      console.log(`  ${uncat} active non-facet tag(s) have no category in any representation`)
+    }
+
+    if (sectionOk) console.log(`✓ tag category representations agree (${active} active tags, producer sealed on INSERT)`)
+  }
+}
+
+// ---------------------------------------------------------------------------
 // §  Tag merge graph
 // ---------------------------------------------------------------------------
 //
