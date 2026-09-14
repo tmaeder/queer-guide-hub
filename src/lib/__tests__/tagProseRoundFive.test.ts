@@ -3,7 +3,14 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards 51600101110000 — round five of the disowned-prose backlog.
+ * Guards 51800101110000 — round five of the disowned-prose backlog.
+
+ * SCOPE NOTE: this pass identified nine rows. 51700101143000 (a concurrent
+ * session) repaired `awareness` and `dyke` — by the same rule, from the same
+ * evidence — while this migration sat in review, so their UPDATEs were DELETED
+ * rather than left to no-op. The POSTCONDITIONS still cover all nine and the
+ * tests below still assert that: they were written against the WRONG text
+ * rather than this file's own writes, so they guard both sessions' rows.
  *
  * NINE rows in THREE classes, and the test asserts the classes stay LABELLED,
  * because the whole risk of a mixed-class migration is that a later reader
@@ -47,7 +54,7 @@ import { join } from 'node:path';
 
 const MIGRATION = join(
   process.cwd(),
-  'supabase/migrations/51600101110000_tag_prose_wrong_subject_round_five.sql',
+  'supabase/migrations/51800101110000_tag_prose_wrong_subject_round_five.sql',
 );
 
 const sql = readFileSync(MIGRATION, 'utf8');
@@ -85,15 +92,13 @@ const setClauses = statements
   .map((chunk) => chunk.slice(0, chunk.indexOf('where slug')))
   .join('\n');
 
-describe('51600101110000 — glossary prose round five', () => {
-  it('repairs exactly the nine rows, and no others', () => {
+describe('51800101110000 — glossary prose round five', () => {
+  it('repairs exactly the seven rows still carrying the defect', () => {
     const slugs = [...statements.matchAll(/where slug = '([a-z-]+)'/g)].map((m) => m[1]);
     expect(new Set(slugs)).toEqual(
       new Set([
         'identity',
         'solidarity',
-        'awareness',
-        'dyke',
         'man',
         'old-theatre',
         'pride-events',
@@ -101,7 +106,17 @@ describe('51600101110000 — glossary prose round five', () => {
         'workplace-equality',
       ]),
     );
-    expect(statements.match(/^update public\.unified_tags/gm)).toHaveLength(9);
+    expect(statements.match(/^update public\.unified_tags/gm)).toHaveLength(7);
+    // awareness and dyke were repaired by 51700101143000. This is the assertion
+    // that fails if someone "restores" the deleted UPDATEs.
+    expect(slugs).not.toContain('awareness');
+    expect(slugs).not.toContain('dyke');
+  });
+
+  it('records that a concurrent session took two of the nine', () => {
+    expect(sql).toMatch(/51700101143000/);
+    expect(sql).toMatch(/DELETED rather than left to no-op/i);
+    expect(sql).toMatch(/hard on postconditions/i);
   });
 
   it('never writes `description`', () => {
@@ -109,10 +124,9 @@ describe('51600101110000 — glossary prose round five', () => {
   });
 
   it('guards every UPDATE on the defect it is removing', () => {
-    expect(statements.match(/and long_description i?like/g)).toHaveLength(9);
-    expect(statements.match(/and status = 'active'/g)).toHaveLength(9);
+    expect(statements.match(/and long_description i?like/g)).toHaveLength(7);
+    expect(statements.match(/and status = 'active'/g)).toHaveLength(7);
     expect(statements).toContain("like '%Polish trade union federation Solidarity%'");
-    expect(statements).toContain("like 'The term ''Dyke'' can refer to a family name%'");
     expect(statements).toContain("like 'A man is an adult human being who identifies as male%'");
     expect(statements).toContain(
       "like 'The Old Theatre is a historic theatre located in Stamford%'",
@@ -124,15 +138,15 @@ describe('51600101110000 — glossary prose round five', () => {
     expect(statements).not.toMatch(/short_description\s*=\s*null/);
   });
 
-  it('replaces a summary only on the three rows whose summary is itself wrong', () => {
-    // identity ("Concept of self and group affiliation"), awareness ("Awareness
-    // of facts and information") and old-theatre ("Historic theatre in
-    // Stamford") state the wrong subject in the LEAD line. solidarity, dyke and
-    // man have correct summaries -- man's is the evidence the body contradicted
-    // -- and Group C's summaries were never in question.
-    expect(statements.match(/short_description\s*=/g)).toHaveLength(3);
+  it('replaces a summary only on the two rows whose summary is itself wrong', () => {
+    // identity ("Concept of self and group affiliation") and old-theatre
+    // ("Historic theatre in Stamford") state the wrong subject in the LEAD
+    // line. solidarity and man have correct summaries -- man's is the evidence
+    // its body contradicted -- and Group C's summaries were never in question.
+    // (awareness was the third such row and is repaired by 51700101143000.)
+    expect(statements.match(/short_description\s*=/g)).toHaveLength(2);
     expect(statements).toContain(
-      "short_description = 'Raising public consciousness about an issue.'",
+      "short_description = 'Who a person understands themselves to be — including gender and orientation.'",
     );
     expect(statements).toContain(
       "short_description = 'A historic theatre still in use as a venue.'",
@@ -163,9 +177,8 @@ describe('51600101110000 — glossary prose round five', () => {
       'Identity, on this platform, means the parts of how someone understands themselves',
     );
     expect(statements).toContain('Solidarity is support that costs the giver something');
-    expect(statements).toContain('Awareness, in this context, is organised attention');
     expect(statements).toContain(
-      'Dyke is a reclaimed word for a masculine or gender-nonconforming lesbian',
+      'An old theatre used as a venue is a surviving playhouse or music hall',
     );
     // man is the NARROWING fix: trans men named first-class, not as a caveat.
     expect(statements).toContain('That includes trans men and cis men');
@@ -175,7 +188,7 @@ describe('51600101110000 — glossary prose round five', () => {
     expect(statements).toContain("set_config('app.actor', 'admin:tag-prose-round-five', true)");
     expect(statements).not.toMatch(/'system:/);
     expect(sql).toMatch(/LOAD-BEARING/);
-    expect(sql).toMatch(/human_reviewed = true/);
+    expect(sql).toMatch(/human_reviewed/);
     // and that this is the opposite of round four, so neither is copied blindly
     expect(sql).toMatch(/51500101160000|round four/i);
   });
@@ -203,7 +216,7 @@ describe('51600101110000 — glossary prose round five', () => {
       "raise exception 'round five: % wrong-subject row(s) still publish the disowned prose'",
     );
     expect(verify).not.toContain('Identity, on this platform');
-    expect(verify).not.toContain('Dyke is a reclaimed word');
+    expect(verify).not.toContain('Solidarity is support that costs the giver something');
   });
 
   it('checks the source-citing register across ALL nine rows, not just Group C', () => {

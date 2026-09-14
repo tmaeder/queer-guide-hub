@@ -3,7 +3,19 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards 51600101120000 — the disowned-prose TAIL, 25 rows.
+ * Guards 51800101120000 — the disowned-prose TAIL.
+
+ * SCOPE NOTE, and it is the reason several numbers here read "9" where an
+ * earlier version of this file read "25": the pass identified a 25-row seam,
+ * and 51700101143000 (a concurrent session) repaired 16 of them — by the same
+ * rule, from the same evidence — while this migration sat in review. Those 16
+ * UPDATEs were DELETED rather than left to no-op, because a file claiming 25
+ * rows and changing 9 misreports itself, and rewriting correct prose is the
+ * LLM rewrite both auto-apply paths were retired for.
+ *
+ * The POSTCONDITIONS still cover the whole 25-row seam and the tests below
+ * still assert that, deliberately: they were written against the WRONG text
+ * rather than this file's own writes, so they now guard both sessions' rows.
  *
  * TWO THINGS THIS FILE EXISTS TO PRESERVE, both of which a later reader could
  * easily undo:
@@ -32,7 +44,7 @@ import { join } from 'node:path';
 
 const MIGRATION = join(
   process.cwd(),
-  'supabase/migrations/51600101120000_tag_prose_disowned_tail.sql',
+  'supabase/migrations/51800101120000_tag_prose_disowned_tail.sql',
 );
 const sql = readFileSync(MIGRATION, 'utf8');
 
@@ -54,34 +66,60 @@ const setClauses = statements
   .map((c) => (c.includes('where slug') ? c.slice(0, c.indexOf('where slug')) : c))
   .join('\n');
 
+/** The full Group C invariant, asserted in the migration's postcondition. */
 const GROUP_C = ['doe', 'fae', 'flock', 'handler', 'minion', 'tickler', 'whipper', 'vixen', 'cunt'];
+/** The three of them this migration still writes; the other six were nulled by
+ *  51700101143000 and are covered by the postcondition, not by an UPDATE. */
+const GROUP_C_HERE = ['fae', 'flock', 'cunt'];
 
-describe('51600101120000 — disowned prose, the tail', () => {
-  it('repairs exactly the 25 rows', () => {
+describe('51800101120000 — disowned prose, the tail', () => {
+  it('repairs exactly the 9 rows still carrying the defect', () => {
     const slugs = [...statements.matchAll(/where slug = '([a-z-]+)'/g)].map((m) => m[1]);
-    expect(new Set(slugs).size).toBe(25);
-    expect(statements.match(/^update public\.unified_tags/gm)).toHaveLength(25);
+    expect(new Set(slugs).size).toBe(9);
+    expect(statements.match(/^update public\.unified_tags/gm)).toHaveLength(9);
     for (const s of [
-      'collar',
-      'humbler',
       'gainer',
-      'bottom',
-      'babyboy',
       'toy',
       'possum',
       'monsieur',
+      'triad',
+      'masc',
+      'fae',
+      'flock',
+      'cunt',
+    ]) {
+      expect(slugs).toContain(s);
+    }
+    // The 16 repaired by 51700101143000 must NOT be rewritten here. This is the
+    // assertion that fails if someone "restores" the deleted UPDATEs.
+    for (const s of [
+      'collar',
+      'humbler',
+      'bottom',
+      'babyboy',
+      'doe',
+      'handler',
+      'minion',
+      'tickler',
+      'whipper',
+      'vixen',
       'domme',
       'fister',
       'sissy',
       'servant',
       'knife-play',
       'business-suits',
-      'masc',
-      'triad',
-      ...GROUP_C,
     ]) {
-      expect(slugs).toContain(s);
+      expect(slugs, `${s} was repaired by 51700101143000 and must not be rewritten`).not.toContain(
+        s,
+      );
     }
+  });
+
+  it('records that a concurrent session took 16 of the seam', () => {
+    expect(sql).toMatch(/51700101143000/);
+    expect(sql).toMatch(/DELETED rather than left to no-op/i);
+    expect(sql).toMatch(/soft-on-preconditions|soft on preconditions/i);
   });
 
   it('never writes `description` — it is the evidence on every row here', () => {
@@ -89,16 +127,17 @@ describe('51600101120000 — disowned prose, the tail', () => {
   });
 
   it('guards every UPDATE on the defect it is removing', () => {
-    expect(statements.match(/and status = 'active'/g)).toHaveLength(25);
+    expect(statements.match(/and status = 'active'/g)).toHaveLength(9);
     const guards = statements.match(/and (short_description = '|long_description like ')/g);
-    expect(guards).toHaveLength(25);
+    expect(guards).toHaveLength(9);
   });
 
   it('Group C nulls the body and mints nothing', () => {
-    // Each of the nine sets a summary the row's own description supports AND
-    // nulls the body. If a later edit gives any of them a body, the migration's
-    // own postcondition fails too -- both layers are asserted.
-    for (const s of GROUP_C) {
+    // fae/flock/cunt are the three of Group C still standing; the other six were
+    // nulled by 51700101143000. Each sets a summary the row's own description
+    // supports AND nulls the body. If a later edit gives any of the NINE a body,
+    // the migration's own postcondition fails too -- both layers are asserted.
+    for (const s of GROUP_C_HERE) {
       const stmt = statements
         .split(/^update public\.unified_tags/m)
         .find((c) => c.includes(`where slug = '${s}'`));
@@ -106,22 +145,29 @@ describe('51600101120000 — disowned prose, the tail', () => {
       expect(stmt).toMatch(/long_description = null/);
       expect(stmt).toMatch(/short_description = '/);
     }
-    expect(verify).toContain(
-      "'doe','fae','flock','handler','minion','tickler','whipper','vixen','cunt'",
-    );
+    // The postcondition must cover ALL NINE, not just the three written here:
+    // six were nulled by 51700101143000 and the invariant is the same for both.
+    //
+    // SCOPED to the Group C check. An unscoped `verify.toContain(...)` is
+    // VACUOUS: `v_seam` happens to list the same nine slugs on one line, so it
+    // satisfies the assertion while the postcondition's own list is short a
+    // slug. Measured — that mutation SURVIVED before this slice was added.
+    const upToRaise = verify.slice(0, verify.indexOf('gained a body'));
+    const groupC = upToRaise.slice(upToRaise.lastIndexOf('select count(*)'));
+    expect(groupC).toContain(GROUP_C.map((g) => `'${g}'`).join(','));
     expect(verify).toMatch(/long_description is not null/);
     expect(verify).toMatch(/raise exception 'tail: % Group C row\(s\) gained a body/);
   });
 
-  it('only Group C nulls a body — the other sixteen replace prose', () => {
-    expect(statements.match(/long_description = null/g)).toHaveLength(GROUP_C.length);
+  it('only Group C nulls a body — the rest replace prose', () => {
+    expect(statements.match(/long_description = null/g)).toHaveLength(GROUP_C_HERE.length);
   });
 
   it('repairs the half-repaired rows on the field that was LEFT', () => {
     // collar/humbler/gainer: summary only, because description and body are
     // already correct hand-written prose. Touching their bodies would be the
     // bulk rewrite this repo retired.
-    for (const s of ['collar', 'humbler', 'gainer']) {
+    for (const s of ['gainer']) {
       const stmt = statements
         .split(/^update public\.unified_tags/m)
         .find((c) => c.includes(`where slug = '${s}'`));
@@ -129,7 +175,7 @@ describe('51600101120000 — disowned prose, the tail', () => {
       expect(stmt).not.toMatch(/long_description/);
     }
     // bottom/babyboy/toy/possum/monsieur: body only, summary already correct.
-    for (const s of ['bottom', 'babyboy', 'toy', 'possum', 'monsieur']) {
+    for (const s of ['toy', 'possum', 'monsieur', 'triad']) {
       const stmt = statements
         .split(/^update public\.unified_tags/m)
         .find((c) => c.includes(`where slug = '${s}'`));
@@ -147,17 +193,17 @@ describe('51600101120000 — disowned prose, the tail', () => {
   });
 
   it('carries the sense each row’s own evidence establishes', () => {
-    expect(setClauses).toContain('Bottoming is receiving');
+    expect(setClauses).toContain('Possum is a pet-play persona');
     expect(setClauses).toContain(
-      'A domme is a woman or feminine person who takes the dominant role',
+      'Monsieur is a French honorific used to address a masculine dominant',
     );
-    expect(setClauses).toContain('Knife play uses a blade for sensation');
+    expect(setClauses).toContain('A triad is a relationship between three people');
     // masc is the sharpest row: the body published biological sex on a page
     // whose own description says "regardless of gender identity".
     expect(setClauses).toContain('it says nothing about their gender identity or their body');
     expect(setClauses).not.toMatch(/produces sperm/);
-    // sissy must separate the role from trans identity rather than conflate them
-    expect(setClauses).toContain('not the same as being a trans woman');
+    // triad must not close on the 1988 studio album it used to
+    expect(setClauses).not.toMatch(/studio album/);
   });
 
   it('declares the actor, and records that it is load-bearing', () => {
@@ -171,11 +217,11 @@ describe('51600101120000 — disowned prose, the tail', () => {
     expect(verify).toContain("'Family name or surname'");
     expect(verify).toContain("long_description like 'Domme is a commune in the Dordogne%'");
     expect(verify).toMatch(/raise exception 'tail: % row\(s\) still publish the disowned prose/);
-    expect(verify).not.toContain('Bottoming is receiving');
-    expect(verify).not.toContain('A domme is a woman or feminine person');
+    expect(verify).not.toContain('Possum is a pet-play persona');
+    expect(verify).not.toContain('A triad is a relationship between three people');
   });
 
-  it('asserts the thin-page gate, because nine bodies are nulled', () => {
+  it('asserts the thin-page gate, because three bodies are nulled here', () => {
     expect(verify).toMatch(/not tag_has_prose\(description, short_description\)/);
     expect(verify).toMatch(/raise exception 'tail: % row\(s\) fell below the thin-page gate/);
   });

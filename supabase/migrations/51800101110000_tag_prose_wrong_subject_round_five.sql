@@ -1,8 +1,25 @@
--- Glossary prose round five: nine rows in THREE classes, labelled rather than blended.
+-- Glossary prose round five: seven rows in THREE classes, labelled rather than blended.
 --
 -- Continues 50700101100200 / 51500101143000 / 51500101144000 / 51500101152700 /
 -- 51500101160000 down the backlog tag_disowned_prose_signals() counts
 -- (sd_surviving 323, ld_surviving 264, indexable_surviving 294 when authored).
+--
+-- ── TWO OF THE NINE WERE REPAIRED UNDER THIS FILE WHILE IT SAT IN REVIEW ───
+-- 51700101143000_tag_prose_namesake_artifacts (a concurrent session, merged
+-- and APPLIED to prod while this branch was open) repaired `awareness` and
+-- `dyke` by the same rule, from the same evidence, to prose that is correct.
+-- Their UPDATEs are DELETED here rather than left to no-op: they are
+-- content-guarded and so would have been harmless at run time, but a file that
+-- claims nine rows and changes seven misreports itself to the next reader, and
+-- re-writing correct prose is the LLM rewrite both auto-apply paths were
+-- retired for.
+--
+-- The POSTCONDITIONS still cover all NINE and are deliberately not narrowed.
+-- They were already written against the WRONG text rather than against this
+-- file's own writes -- "so a better fix written by someone else also satisfies
+-- it" -- so they now assert the whole nine-row seam is clean, ours and theirs
+-- together, and would catch a regression in either. Soft on preconditions,
+-- hard on postconditions, doing exactly the work it exists for.
 --
 -- ROUND FOUR SAID THE HEAD OF THIS BACKLOG WAS WORKED OUT, AND THIS PASS BOTH
 -- CONFIRMS AND QUALIFIES THAT. Confirms: the very top is genuinely clean, and
@@ -148,22 +165,6 @@ In queer organising it is the reason Pride has carried banners for causes that a
 where slug = 'solidarity' and status = 'active'
   and long_description like '%Polish trade union federation Solidarity%';
 
-update public.unified_tags set
-  short_description = 'Raising public consciousness about an issue.',
-  long_description =
-'Awareness, in this context, is organised attention: a day, a week, a campaign or a ribbon that exists to move something from unspoken to discussable.
-
-It is worth being clear about what it does and does not achieve. Awareness work changes what people are willing to say and ask about, which is the precondition for most other change — and it is not itself a policy, a service or a budget. A campaign that raises awareness of a condition while the clinic that treats it stays unfunded has done the first half of the job.'
-where slug = 'awareness' and status = 'active'
-  and long_description like 'Awareness refers to the mental possession of information or skills%';
-
-update public.unified_tags set long_description =
-'Dyke is a reclaimed word for a masculine or gender-nonconforming lesbian, taken back from use as a slur and now carried with pride by many of the people it was aimed at — in Dyke Marches, in bar names, in how people introduce themselves.
-
-Reclamation is not universal and it is not transferable. Plenty of lesbians do not use it for themselves, and the word lands very differently depending on who is saying it: inside the community it is ordinary, from outside it can still be an insult.'
-where slug = 'dyke' and status = 'active'
-  and long_description like 'The term ''Dyke'' can refer to a family name%';
-
 update public.unified_tags set long_description =
 'A man is a person with a masculine gender identity. That includes trans men and cis men, and the word does not belong more to one than the other.
 
@@ -288,5 +289,5 @@ begin
     raise notice 'round five: deliberately untouched (a filing question, or the generic-sense cohort whose own description AGREES with its body): %', v_note;
   end if;
 
-  raise notice 'round five: 9 rows in 3 classes. Round four''s "the head is worked out" held for the top twenty and NOT as a general claim -- re-reading the whole surviving list rather than the usage head found identity at 541 uses. A hit rate measured over one ordering does not transfer to another.';
+  raise notice 'round five: 7 rows in 3 classes (awareness and dyke were repaired by 51700101143000 while this file sat in review, so their UPDATEs were deleted rather than left to no-op; the postconditions still cover all nine). Round four''s "the head is worked out" held for the top twenty and NOT as a general claim -- re-reading the whole surviving list rather than the usage head found identity at 541 uses. A hit rate measured over one ordering does not transfer to another.';
 end $verify$;
