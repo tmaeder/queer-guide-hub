@@ -3168,6 +3168,69 @@ const DISOWNED_PROSE_CEILING = 380
   }
 }
 
+// ---------------------------------------------------------------------------
+// §  Geographic dedup: never suggest merging two differently-named places
+// ---------------------------------------------------------------------------
+//
+//     Measured on 2026-09-14, `run_dedup_truth_sweep('city','dry_run')` returned
+//     `{would_merge: 0, would_queue: 118}` and ALL 118 came from one arm,
+//     `geo_only_2km`, which paired rows whose names DIFFER on distance alone. So
+//     100% of the city engine's output was a proposal to merge two different
+//     places: Ueberlingen <-> Wernigerode (Lake Constance vs the Harz) at "0 m",
+//     Pirna <-> Baden-Baden at 265 m, Garden Grove California <-> Egham England
+//     at 580 m. The metre readings are the placeholder-coordinate signature, not
+//     proximity — a missing geocode falls back to a shared centroid.
+//
+//     ZERO-TOLERANCE, NO BASELINE, unlike the disowned-prose ratchet above. This
+//     is not a backlog to work down: a single different-name pair sitting open is
+//     one an admin can approve, and approving it destroys a real city. The engine
+//     side is asserted too, because an empty queue proves nothing while an arm
+//     that generates such pairs is still installed.
+//
+//     The qualifier form ("Berlin" vs "Berlin, Germany") is the SAME name
+//     carrying a qualifier and is excluded — that is a legitimate duplicate and
+//     the engine now merges it on the base row's Wikidata id.
+//
+//     A MISSING RPC HARD-FAILS: the function answers probe_ok=false on its own
+//     failures, so a non-2xx means an unapplied migration or a revoked grant, and
+//     an unreadable engine must never read as a clean one.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/geo_dedup_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    const detail = (await res.text()).slice(0, 200)
+    console.error(`✗ geo_dedup_signals → HTTP ${res.status} (migration 51000101100300 not applied? PGRST202 = the function does not exist) ${detail}`)
+    FAILED = true
+  } else {
+    const g = (await res.json()) ?? {}
+    if (g.probe_ok !== true) {
+      console.error('✗ geo_dedup_signals did not report probe_ok — the dedup engine could not be dry-run, so the counts below measure nothing')
+      FAILED = true
+    } else {
+      const diff = Number(g.open_diff_name_pairs ?? 0)
+      if (diff > 0) {
+        console.error(`✗ ${diff} open city dedup pairs name two DIFFERENT places (of ${g.open_city_pairs} open)`)
+        console.error('  A geographic merge may only be proposed from an identical name key, a qualifier of it, or a shared Wikidata id.')
+        FAILED = true
+      }
+      if (g.proximity_arm_retired !== true) {
+        console.error('✗ the geo_only_2km proximity arm is installed again — it pairs differently-named places on distance alone')
+        FAILED = true
+      }
+      if (g.real_source_arms !== true) {
+        console.error('✗ the real-source geographic arms (qid_exact / name_qualifier / name_exact_iso) are not installed')
+        FAILED = true
+      }
+      if (diff === 0 && g.proximity_arm_retired === true && g.real_source_arms === true) {
+        console.log(`✓ geographic dedup is name- and gazetteer-based (${g.open_city_pairs} open pairs, 0 naming different places; city dry run would_merge=${g.city_would_merge} would_queue=${g.city_would_queue})`)
+      }
+    }
+  }
+}
+
 // The single exit. Reached whether or not anything failed, so the ✗ lines above
 // are the complete list rather than "the first one we tripped over".
 if (FAILED) {
