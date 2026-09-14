@@ -2236,6 +2236,76 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
 }
 
 // ---------------------------------------------------------------------------
+// §  Tag merge graph
+// ---------------------------------------------------------------------------
+//
+// A merge mints a redirect from the loser's slug to the winner's page, so a
+// winner that is not ACTIVE is a redirect to a page that does not render.
+// Nothing checked this until 50400101100300: tag_hygiene_stats() has
+// redirect_to_non_canonical (which reads the redirect TABLE, not the merge
+// graph) and merged_but_not_status_merged (which reads the LOSER's status,
+// never the target's).
+//
+// It was found by following ONE term. `hpv` was a merge target that had itself
+// been deprecated, so every HPV row in the glossary resolved to a page that
+// does not render — on a platform where HPV is the cause of almost all anal
+// cancer. Measured at the time: 8 merges pointed at a deprecated row and 5 at
+// another merged row.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/tag_merge_graph_signals`, {
+    method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: '{}',
+  })
+  if (!res.ok) {
+    // A failed probe must SAY it failed rather than fall through to a default.
+    console.warn(`⚠ tag_merge_graph_signals → HTTP ${res.status} (50400101100300 not applied?) — this check measured NOTHING`)
+  } else {
+    const sig = await res.json()
+    let sectionOk = true
+
+    // Reported before any violation count: four zeroes because the corpus holds
+    // no merges at all must never read as a clean merge graph.
+    const total = Number(sig?.merges_total ?? 0)
+    if (total === 0) {
+      console.warn('⚠ tag_merge_graph_signals reports ZERO merges — the probe is measuring nothing, not passing')
+      sectionOk = false
+    }
+
+    // Structural. A chain, a dangling uuid and a self-redirect are never
+    // correct, and 50400101100100 drove all three to zero.
+    const zeroInvariants = [
+      ['target_merged', 'merge(s) point at another MERGED row — a redirect to a redirect'],
+      ['target_missing', 'merge(s) point at a row that no longer exists — a dangling uuid'],
+      ['self_merged', 'row(s) are merged into themselves'],
+    ]
+    for (const [key, why] of zeroInvariants) {
+      if (!(key in (sig ?? {}))) {
+        console.warn(`⚠ tag_merge_graph_signals has no '${key}' key — that check measured NOTHING`)
+        continue
+      }
+      const n = Number(sig[key] ?? 0)
+      if (n > 0) {
+        console.error(`✗ ${n} ${why}`)
+        FAILED = true; sectionOk = false
+      }
+    }
+
+    // ADVISORY, and non-zero by design. Six targets are deprecated rows that
+    // each need their own editorial decision, named in 50400101100100's header.
+    // Gating here would ship red on arrival — the cry-wolf shape already removed
+    // once from the dedup backlog rule — so it prints, with the pairs, so a NEW
+    // one is distinguishable from the six known ones rather than hidden in a count.
+    const dep = Number(sig?.target_deprecated ?? 0)
+    if (dep > 0) {
+      const ex = Array.isArray(sig?.deprecated_examples) ? sig.deprecated_examples : []
+      console.log(`  ${dep} merge(s) point at a DEPRECATED row (redirect renders nothing until the target is revived or repointed)`)
+      for (const pair of ex) console.log(`      ${pair}`)
+    }
+
+    if (sectionOk) console.log(`✓ tag merge graph clean (${total} merges, no chains, dangling or self-merges)`)
+  }
+}
+
+// ---------------------------------------------------------------------------
 // §  Styleguide & Tone of Voice
 // ---------------------------------------------------------------------------
 //
