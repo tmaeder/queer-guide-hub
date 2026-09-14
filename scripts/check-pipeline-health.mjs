@@ -2111,14 +2111,29 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
       }
     }
 
-    // AGE, not depth. 72h is three full days at the head of the queue: well
-    // past any legitimate import, and far short of the four months this ran.
+    // AGE **AND** INABILITY TO DRAIN. Age alone was the first version of this
+    // check and it cried wolf on its own first run: a queue clearing at
+    // 700/hour still reports a 2,969-hour oldest row until the last May
+    // straggler goes, so it would have failed CI permanently on a pipeline
+    // that had just been fixed. A check that is always red is one people
+    // learn to scroll past — the same lesson as the dedup backlog, where
+    // keying on the OLDEST open pair fired on every correct deploy.
+    //
+    // The real fault is a queue that CANNOT clear, so the age only counts when
+    // there is more than a day of work backed up behind it. Measured at the
+    // moment of writing: awaiting 488 against 2,514 verdicts/24h — drains in
+    // hours, correctly silent. During the starvation it was ~2,300 against
+    // 480/day, which trips both halves.
     const oldestH = Number(sig?.oldest_awaiting_verdict_hours ?? 0)
     const awaiting = Number(sig?.awaiting_verdict ?? 0)
-    if (oldestH > 72 && awaiting > 0) {
-      console.error(`✗ the oldest news row awaiting a quality verdict is ${oldestH}h old (${awaiting} waiting)`)
+    const verdicts24h = Number(sig?.verdicts_24h ?? 0)
+    if (oldestH > 72 && awaiting > verdicts24h) {
+      console.error(`✗ ${awaiting} news rows await a quality verdict (oldest ${oldestH}h) against only ${verdicts24h} verdicts in 24h`)
+      console.error('  More than a day of work queued behind an old head: the queue cannot clear.')
       console.error('  Without a verdict a row can never commit. Check pipeline-enrich-news throughput vs inflow.')
       FAILED = true; sectionOk = false
+    } else if (oldestH > 72) {
+      console.log(`  oldest row awaiting a verdict is ${oldestH}h (${awaiting} waiting, ${verdicts24h} verdicts/24h — draining)`)
     }
 
     // CAPACITY vs INFLOW, as a pair. This is the comparison nothing was making.
@@ -2591,8 +2606,20 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
   if (!res.ok) {
     // A failed probe must SAY it failed. Falling through to a default would
     // report a clean layer on the strength of never having looked.
-    console.warn(`⚠ analytics_hygiene_stats → HTTP ${res.status} (20700301100500 not applied?)`)
+    console.warn(`⚠ analytics_hygiene_stats → HTTP ${res.status}`)
     console.warn('  This check measured NOTHING — it did not pass.')
+    // The first cause this ever had was NOT a missing migration, and the hint
+    // that used to sit here ("20700301100500 not applied?") cost a session:
+    // the migration was applied and the function was healthy — it just took
+    // 10.3s against the 8s statement_timeout `service_role` inherits from
+    // `authenticator`, so PostgREST cancelled it and answered 500. Check the
+    // timing before the deployment (60000101100000 added the index that fixed it).
+    if (res.status >= 500) {
+      console.warn('  A 500 here is usually a TIMEOUT, not a missing function: service_role')
+      console.warn('  inherits statement_timeout=8s. Time it directly —')
+      console.warn('    explain analyze select public.analytics_hygiene_stats();')
+      console.warn('  — before concluding the migration is missing.')
+    }
   } else {
     const a = await res.json()
     let sectionOk = true
