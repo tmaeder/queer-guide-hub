@@ -68,7 +68,7 @@
 -- ACTOR is declared: `log_unified_tag_change()` RAISEs when a `system:%` actor
 -- modifies a human_reviewed row.
 
-select set_config('app.actor', 'migration:51700101100000_hiv_aids_topic_facet', true);
+select set_config('app.actor', 'migration:51700101160000_hiv_aids_topic_facet', true);
 
 update public.unified_tags set
   description = 'Coverage of HIV and AIDS together — reporting, research, treatment access, activism and commemoration. HIV is the virus and AIDS is the stage it reaches untreated; this tag groups material that concerns both, while the two have their own entries.'

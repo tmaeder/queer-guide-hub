@@ -71,7 +71,7 @@
 -- `21050101100000` recorded, where `create_missing` creates only the LAST path
 -- element and silently writes nothing when the parent key is absent.
 
-select set_config('app.actor', 'migration:51700101100100_styleguide_drift_vibrant_sweep', true);
+select set_config('app.actor', 'migration:51700101160100_styleguide_drift_vibrant_sweep', true);
 
 with target as (
   select c.id,
@@ -101,7 +101,7 @@ update public.cities c set
                 'styleguide_corrected',
                 jsonb_build_object(
                   'from', t.before_txt,
-                  'by',   'migration:51700101100100_styleguide_drift_vibrant_sweep',
+                  'by',   'migration:51700101160100_styleguide_drift_vibrant_sweep',
                   'at',   now(),
                   'rule', 'removed the banned intensifier "vibrant" where deletion needs no article or clause repair')))
 from target t
@@ -119,7 +119,7 @@ BEGIN
   -- Positive count: rows that carry the correction stamp.
   SELECT count(*) INTO v_fixed FROM public.cities
    WHERE field_provenance -> 'description' -> 'styleguide_corrected' ->> 'by'
-         = 'migration:51700101100100_styleguide_drift_vibrant_sweep';
+         = 'migration:51700101160100_styleguide_drift_vibrant_sweep';
   IF v_fixed < 100 THEN
     RAISE EXCEPTION 'expected ~198 corrected city descriptions, found % — the patterns did not match', v_fixed;
   END IF;
