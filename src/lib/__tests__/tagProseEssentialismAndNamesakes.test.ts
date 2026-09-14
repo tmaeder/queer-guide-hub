@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Guards `51800101152000`, round six of the disowned-prose backlog.
+ * Guards `61000101174500`, round six of the disowned-prose backlog.
  *
  * Three groups, and the assertions differ because the justifications differ:
  *
@@ -23,7 +23,7 @@ import { describe, expect, it } from 'vitest';
 
 const FILE = join(
   process.cwd(),
-  'supabase/migrations/51800101152000_tag_prose_essentialism_and_namesakes.sql',
+  'supabase/migrations/61000101174500_tag_prose_essentialism_and_namesakes.sql',
 );
 
 const sql = readFileSync(FILE, 'utf8');
@@ -47,7 +47,7 @@ describe('essentialism and namesakes migration', () => {
   const code = statements();
 
   it('declares an actor, which the audit trigger requires', () => {
-    expect(code).toMatch(/set_config\(\s*'app\.actor'\s*,\s*'migration:51800101152000'/);
+    expect(code).toMatch(/set_config\(\s*'app\.actor'\s*,\s*'migration:61000101174500'/);
   });
 
   it('never writes description', () => {
