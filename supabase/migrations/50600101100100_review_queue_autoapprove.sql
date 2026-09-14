@@ -257,7 +257,33 @@ BEGIN
     RAISE EXCEPTION 'the unreachable-entity guard is missing';
   END IF;
 
-  -- Positive controls: each guard must have live work, or it is untested prose.
+  -- Positive controls. The intent -- a guard with no live work is untested prose
+  -- -- is right, and the counts are still measured and REPORTED below. What they
+  -- may not do is RAISE, and this migration is the proof: it aborted `db push`
+  -- on main at 15:09 on 2026-09-14 with
+  --
+  --   ERROR: unreachable guard has no live work — it cannot be trusted untested
+  --
+  -- and took five other migrations down with it (50600101100200/300 and the
+  -- three 50700101100* glossary ones), because `db push` applies in version
+  -- order and stops at the first failure. Nothing was wrong with the function
+  -- this block verifies; what changed is the DATA.
+  --
+  -- Measured on prod when the push failed: v_at = 1191 and v_wrg = 3, but
+  -- v_unr = 0. The cohort that arm demands proof against is open, >=0.90
+  -- review rows on cities that are ghost/merged/duplicate -- which is exactly
+  -- what `run_review_queue_close_unactionable` (cron 06:35) exists to close.
+  -- So a nightly job legitimately emptied it between authoring and CI applying
+  -- this file. A positive control anchored to a cohort another job is designed
+  -- to drain cannot hold, and a verify block that depends on live data has an
+  -- expiry date the author cannot see.
+  --
+  -- This is the rule this repo already records: soft on preconditions, HARD on
+  -- postconditions -- RAISE only on the state the file exists to reach. The
+  -- structural checks above stay exceptions because they read
+  -- pg_get_functiondef and are deterministic: they assert what this migration
+  -- CREATES. These three read the corpus and assert what someone else's cron
+  -- leaves behind.
   SELECT count(*) INTO v_at FROM public.entity_review_queue WHERE status='open' AND confidence >= 0.90;
 
   SELECT count(*) INTO v_unr
@@ -273,14 +299,16 @@ BEGIN
      AND q.entity_type='city' AND q.field='safety_notes'
      AND (co.name IS NULL OR coalesce(q.proposed_value #>> '{}','') NOT ILIKE '%'||co.name||'%');
 
+  -- These three REPORT; they do not abort. (Softened after this migration
+  -- blocked `db push` on main — see the note at the top of this block.)
   IF v_at = 0 THEN
-    RAISE EXCEPTION 'nothing at the threshold — re-measure, this job would be a no-op';
+    RAISE NOTICE 'nothing at the threshold right now — this job would currently be a no-op';
   END IF;
   IF v_unr = 0 THEN
-    RAISE EXCEPTION 'unreachable guard has no live work — it cannot be trusted untested';
+    RAISE NOTICE 'unreachable guard has no live work right now (the nightly closer drains exactly this cohort)';
   END IF;
   IF v_wrg = 0 THEN
-    RAISE EXCEPTION 'wrong-country guard has no live work — it cannot be trusted untested';
+    RAISE NOTICE 'wrong-country guard has no live work right now';
   END IF;
 
   RAISE NOTICE 'autoapprove: % rows at >=0.90, of which % unreachable and % wrong-country are rejected not published',

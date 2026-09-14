@@ -99,13 +99,16 @@ describe('wrong-subject prose on live glossary pages', () => {
       // the bare column assignment only.
       expect(stmt).not.toMatch(/(^|[\s,])description\s*=/m);
     }
-    expect(sql).toMatch(/raise exception '[^']*description\(s\) changed/);
+    // `description` drift REPORTS rather than aborts: this file never writes it,
+    // so a difference means someone else edited it, and aborting `db push` on
+    // main for that would block every migration queued behind this one.
+    expect(sql).toMatch(/raise notice '[^']*description\(s\) differ/);
   });
 
   it('leaves man.long_description alone and asserts it survived', () => {
     const stmt = stmtFor('man');
     expect(stmt).not.toMatch(/long_description\s*=/);
-    expect(sql).toMatch(/man\.long_description was modified/);
+    expect(sql).toMatch(/raise notice '[^']*man\.long_description differs/);
     expect(sql).toMatch(
       /long_description like 'A man is an adult human being who identifies as male%'/,
     );
@@ -129,14 +132,22 @@ describe('wrong-subject prose on live glossary pages', () => {
       const i = sql.indexOf(`slug='${slug}'`);
       expect(i).toBeGreaterThan(-1);
       expect(sql.slice(i, i + 200)).toContain(text);
+      // Reported, not raised.
+      expect(sql.slice(i, i + 600)).toMatch(/raise notice/);
+      expect(sql.slice(i, i + 600)).not.toMatch(/raise exception/);
     });
   });
 
-  it('asserts the reached state positively, not the number of updates', () => {
-    // Every statement is content-guarded and legitimately no-ops on a re-run,
-    // so counting updated rows proves nothing.
-    expect(sql).toMatch(/raise exception '[^']*did not reach the corrected short_description/);
+  it("asserts the DEFECT IS GONE, not that this file's exact prose is present", () => {
+    // Two properties at once. Counting updated rows proves nothing (every
+    // statement is content-guarded and no-ops on a re-run), AND pinning the
+    // assertion to this file's exact wording would abort `db push` on main if a
+    // human writes better prose first — the repo-wide blast radius. Asserting
+    // the wrong text is absent is satisfied by this fix and by a better one.
+    expect(sql).toMatch(/raise exception '[^']*wrong-subject short_description\(s\) still live/);
     expect(sql).toMatch(/raise exception '[^']*wrong-subject long_description\(s\) still live/);
+    // The old shape must not come back.
+    expect(sql).not.toMatch(/did not reach the corrected short_description/);
   });
 
   it('replaces rather than retracts — no NULLed prose on these live rows', () => {
