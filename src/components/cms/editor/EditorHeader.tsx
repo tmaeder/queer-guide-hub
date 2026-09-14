@@ -15,6 +15,7 @@ import {
   ThumbsUp,
   ThumbsDown,
   FileText,
+  SquareArrowOutUpRight,
 } from 'lucide-react';
 import type { ContentTypeConfig, EditorState } from '@/types/cms';
 import { Button } from '@/components/ui/button';
@@ -27,6 +28,9 @@ import { SaveButton } from './SaveButton';
 import { PreviewPanel } from './PreviewPanel';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+import { livePath as resolveLivePath } from '@/lib/cmsLinks';
+import { useCurrentLocale } from '@/hooks/useLocalizedNavigate';
+import { DEFAULT_LOCALE } from '@/i18n/languages';
 
 interface EditorHeaderProps {
   contentType: ContentTypeConfig;
@@ -74,6 +78,12 @@ export function EditorHeader({
   const titleInputRef = useRef<HTMLInputElement>(null);
 
   const [previewOpen, setPreviewOpen] = useState(false);
+
+  // The admin shell has no locale segment, so this is the default locale —
+  // which is the right place to land when checking a record's live page.
+  const locale = useCurrentLocale();
+  const basePath = resolveLivePath(contentType.id, state.data);
+  const livePath = basePath ? `${locale === DEFAULT_LOCALE ? '' : `/${locale}`}${basePath}` : null;
 
   // Request-changes reasons popover (cockpit mode)
   const [reasonOpen, setReasonOpen] = useState(false);
@@ -369,6 +379,28 @@ export function EditorHeader({
             </TooltipTrigger>
             <TooltipContent>Preview content</TooltipContent>
           </Tooltip>
+
+          {/* The other half of the switcher. Preview iframes the page inside
+              the editor; this leaves for the real thing. Hidden rather than
+              disabled when there is no public page — a type with no page at
+              all (a vocabulary term) and an unsaved row are both "nothing to
+              go to", and a permanently greyed button explains neither. */}
+          {livePath && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.open(livePath, '_blank', 'noopener')}
+                  className="hidden sm:inline-flex font-medium normal-case text-muted-foreground"
+                >
+                  <SquareArrowOutUpRight className="h-4 w-4 mr-1" />
+                  View live
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Open the public page in a new tab</TooltipContent>
+            </Tooltip>
+          )}
 
           <Tooltip>
             <TooltipTrigger asChild>

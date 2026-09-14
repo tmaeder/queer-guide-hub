@@ -5,17 +5,42 @@ import { describe, it, expect, vi } from 'vitest';
 import { render } from '@testing-library/react';
 
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'u1' } }) }));
-vi.mock('@/hooks/useCMSWorkflow', () => ({ useCMSWorkflow: () => ({ metadata: null, loading: false, transition: vi.fn(), setReviewLevel: vi.fn() }) }));
-vi.mock('@/hooks/useCMSMedia', () => ({ useCMSMedia: () => ({ getAttachments: vi.fn().mockResolvedValue([]), attachMedia: vi.fn(), detachMedia: vi.fn() }) }));
-vi.mock('@/hooks/useCMSRevisions', () => ({ useCMSRevisions: () => ({ revisions: [], loading: false, loadRevisions: vi.fn() }) }));
+vi.mock('@/hooks/useCMSWorkflow', () => ({
+  useCMSWorkflow: () => ({
+    metadata: null,
+    loading: false,
+    transition: vi.fn(),
+    setReviewLevel: vi.fn(),
+  }),
+}));
+vi.mock('@/hooks/useCMSMedia', () => ({
+  useCMSMedia: () => ({
+    getAttachments: vi.fn().mockResolvedValue([]),
+    attachMedia: vi.fn(),
+    detachMedia: vi.fn(),
+  }),
+}));
+vi.mock('@/hooks/useContentRevisions', () => ({
+  useContentRevisions: () => ({
+    revisions: [],
+    loading: false,
+    load: vi.fn(),
+    revertFields: vi.fn(),
+  }),
+  revisionDiffs: () => [],
+}));
 vi.mock('@/components/cms/media/MediaPickerDialog', () => ({ default: () => null }));
 vi.mock('../EditorSidebar', () => ({ EditorSidebar: () => null }));
 vi.mock('@/hooks/useCMSEditor', () => ({
   useCMSEditor: () => ({
     state: { data: {}, dirty: false, itemId: null, errors: {}, saving: false, loading: false },
-    contentType: null, loading: false,
-    onChange: vi.fn(), onSave: vi.fn(), onReset: vi.fn(),
-    metadata: null, onUpdateMetadata: vi.fn(),
+    contentType: null,
+    loading: false,
+    onChange: vi.fn(),
+    onSave: vi.fn(),
+    onReset: vi.fn(),
+    metadata: null,
+    onUpdateMetadata: vi.fn(),
   }),
 }));
 

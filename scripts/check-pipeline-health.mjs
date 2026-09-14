@@ -2604,6 +2604,101 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
   }
 }
 
+// 15. The content revision trail (2026-09-13).
+//
+//     Versioning existed twice before this and neither instance worked, which is
+//     the whole reason this section exists. `admin_edit_log`: 0 rows in its
+//     entire life, because RLS was enabled with a SELECT-only policy and the
+//     client swallowed the denial in a bare catch. `cms_revisions`: 28 rows over
+//     seven months across 4 of 26 content types, max revision_number 1 on every
+//     one of them. Nothing anywhere said so, for months.
+//
+//     So the thing to check is not "are there revisions" — it is "is the trail
+//     ATTACHED". An unattached trigger and a quiet week both produce zero, and
+//     that is exactly the accessibility_contradictions lesson: a check that
+//     reports one number for both reads a dead trail as a clean one.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/content_revision_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    console.warn(`⚠ content_revision_signals → HTTP ${res.status} (RPC missing? migration 50010101100200)`)
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else {
+    const cr = (await res.json()) ?? {}
+
+    // A broken probe is not a clean trail. Absent keys must say so rather than
+    // coercing to a reassuring zero.
+    if (cr.triggers_attached === null || cr.triggers_attached === undefined) {
+      console.error('✗ content_revision_signals returned no triggers_attached — the probe is broken')
+      FAILED = true
+    } else {
+      const enabled = Number(cr.enabled ?? 0)
+      const attached = Number(cr.triggers_attached ?? 0)
+      const orphaned = cr.enabled_without_trigger ?? []
+      const pgDisabled = cr.trigger_disabled_in_pg ?? []
+      const rev24 = Number(cr.revisions_24h ?? 0)
+
+      // The hard fail: the registry says this table is versioned and no trigger
+      // is attached, so every write to it is going unrecorded right now.
+      if (orphaned.length > 0) {
+        console.error(`✗ ${orphaned.length} table(s) enabled for versioning with NO trigger attached: ${orphaned.join(', ')}`)
+        console.error('  Writes to these are going unrecorded. Either attach the trigger or set')
+        console.error('  content_versioned_tables.enabled = false — an enabled row with no trigger is a lie.')
+        FAILED = true
+      }
+
+      // ALTER TABLE ... DISABLE TRIGGER is the emergency stop. It is not the
+      // documented kill switch (that is the `enabled` column, which takes no
+      // lock), so finding one disabled in pg means someone reached past it.
+      if (pgDisabled.length > 0) {
+        console.error(`✗ revision trigger disabled in Postgres on: ${pgDisabled.join(', ')}`)
+        console.error('  The kill switch is content_versioned_tables.enabled, which needs no table lock.')
+        console.error('  A trigger disabled via ALTER TABLE is invisible to the registry.')
+        FAILED = true
+      }
+
+      // A generated column added AFTER the table was registered. It is derived,
+      // so it will appear in every delta and can never be reverted.
+      const genLoose = Number(cr.generated_not_ignored ?? 0)
+      if (genLoose > 0) {
+        console.error(`✗ ${genLoose} generated/identity column(s) are not in any ignore_columns list`)
+        console.error('  They are derived, so they bloat every delta and no revert can write them back.')
+        console.error('  Append them to content_versioned_tables.ignore_columns for that table.')
+        FAILED = true
+      }
+
+      // Retention. If the prune cron stops, the disk argument this design rests
+      // on (delta + a horizon on machine revisions) stops holding.
+      if (attached > 0 && cr.prune_cron_scheduled === false) {
+        console.error('✗ content_revision_prune is not scheduled while the trail is live')
+        console.error('  Machine revisions accumulate at ~5k/day with no horizon.')
+        FAILED = true
+      }
+      const oldestSystem = Number(cr.oldest_system_days ?? 0)
+      if (oldestSystem > 120) {
+        console.warn(`⚠ Oldest machine revision is ${oldestSystem}d old (horizon is 90d) — prune is behind`)
+      }
+
+      // Volume is DESCRIBED, never failed on. A quiet day is legitimate; the
+      // attachment checks above are what catch a dead trail.
+      const kinds = Object.entries(cr.by_kind_24h ?? {})
+        .map(([k, v]) => `${k} ${v}`)
+        .join(', ')
+      const mb = (Number(cr.bytes ?? 0) / 1048576).toFixed(1)
+      console.log(
+        `✓ Content revisions: ${attached}/${enabled} trigger(s) attached, ` +
+          `${rev24} revision(s) in 24h${kinds ? ` (${kinds})` : ''}, ${mb} MB`,
+      )
+      if (attached === 0) {
+        console.log('  No table is versioned yet — the zeroes above are absence, not health.')
+      }
+    }
+  }
+}
+
 // The single exit. Reached whether or not anything failed, so the ✗ lines above
 // are the complete list rather than "the first one we tripped over".
 if (FAILED) {

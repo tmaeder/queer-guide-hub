@@ -289,9 +289,12 @@ export function useCMSEditor({
           );
           if (rpcError) throw rpcError;
 
-          const row = (Array.isArray(rpcData) ? rpcData[0] : rpcData) as
-            | { city_id?: string; id?: string; action?: string; reason?: string }
-            | null;
+          const row = (Array.isArray(rpcData) ? rpcData[0] : rpcData) as {
+            city_id?: string;
+            id?: string;
+            action?: string;
+            reason?: string;
+          } | null;
           const resolvedId = row?.city_id ?? row?.id ?? null;
 
           if (!row || row.action === 'refused' || !resolvedId) {
@@ -342,8 +345,7 @@ export function useCMSEditor({
         for (const [key, submitted] of Object.entries(saveData)) {
           if (key === 'updated_at' || key === 'created_by') continue;
           const server = serverRow[key];
-          const wasNonEmpty =
-            submitted !== null && submitted !== undefined && submitted !== '';
+          const wasNonEmpty = submitted !== null && submitted !== undefined && submitted !== '';
           const isNullOnServer = server === null || server === undefined;
           if (wasNonEmpty && isNullOnServer) {
             droppedFields.push(key);
@@ -351,13 +353,19 @@ export function useCMSEditor({
         }
       }
 
-      // Bookkeeping (metadata upsert, revision snapshot, audit log) is
-      // fire-and-forget: each call swallows its own errors and none of it
-      // should sit between the user and the "Saved" state.
+      // Metadata upsert is fire-and-forget: it swallows its own errors and
+      // should not sit between the user and the "Saved" state.
+      //
+      // Revisions and the audit row used to be written here too, and both were
+      // measurably not working. `cms_revisions` held 28 rows across seven
+      // months and four content types with max(revision_number) = 1, because a
+      // client-side read-then-increment against a UNIQUE index turns a race
+      // into a swallowed 23505; and it snapshotted the client's form state
+      // rather than the row the server stored. The trail is now written by a
+      // database trigger, which also sees the ~5,400 machine writes a day this
+      // path could never have known about.
       if (savedId) {
         const bookkeepingId = savedId;
-        const snapshotData = state.data;
-        const snapshotOriginal = state.originalData;
         void (async () => {
           if (!metadata) {
             const { data: newMeta } = await supabase
@@ -380,16 +388,13 @@ export function useCMSEditor({
 
             if (newMeta) setMetadata(newMeta as unknown as CMSContentMetadata);
           }
-          await createRevision(config.tableName, bookkeepingId, snapshotData, snapshotOriginal);
-          await writeAuditLog(config.tableName, bookkeepingId, itemId ? 'update' : 'create', user.id);
         })();
       }
 
       // Update server timestamp from the row we got back, falling back
       // to what we sent if the select didn't return updated_at.
       const serverUpdatedAtNext =
-        (serverRow?.updated_at as string | undefined) ??
-        (saveData.updated_at as string);
+        (serverRow?.updated_at as string | undefined) ?? (saveData.updated_at as string);
       serverUpdatedAt.current = serverUpdatedAtNext;
 
       // Reconcile UI with what the database actually stored. If a BEFORE
@@ -519,77 +524,4 @@ export function useCMSEditor({
     metadata,
     updateMetadata,
   };
-}
-
-// ── Internal helpers ───────────────────────────────────────────────
-
-async function createRevision(
-  sourceTable: string,
-  sourceId: string,
-  currentData: Record<string, unknown>,
-  previousData: Record<string, unknown>,
-) {
-  try {
-    // Get next revision number
-    const { data: lastRevision } = await supabase
-      .from('cms_revisions' as 'venues')
-      .select('revision_number')
-      .eq('source_table', sourceTable)
-      .eq('source_id', sourceId)
-      .order('revision_number', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    const nextNumber = (lastRevision?.revision_number ?? 0) + 1;
-
-    // Compute changes
-    const changes: Record<string, { old: unknown; new: unknown }> = {};
-    for (const key of Object.keys(currentData)) {
-      if (JSON.stringify(currentData[key]) !== JSON.stringify(previousData[key])) {
-        changes[key] = { old: previousData[key], new: currentData[key] };
-      }
-    }
-
-    const changedFields = Object.keys(changes);
-    const summary =
-      changedFields.length > 0
-        ? `Updated ${changedFields.slice(0, 3).join(', ')}${changedFields.length > 3 ? ` and ${changedFields.length - 3} more` : ''}`
-        : 'No changes';
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    await supabase.from('cms_revisions' as 'venues').insert({
-      source_table: sourceTable,
-      source_id: sourceId,
-      revision_number: nextNumber,
-      snapshot: currentData,
-      changes,
-      change_summary: summary,
-      created_by: user?.id,
-    });
-  } catch (error) {
-    console.error('Error creating revision:', error);
-  }
-}
-
-async function writeAuditLog(
-  sourceTable: string,
-  sourceId: string,
-  action: string,
-  actorId: string,
-) {
-  // supabase-js does not throw on non-2xx responses; check {error} explicitly
-  // so we fail quietly without spamming the console for known RLS denials.
-  const { error } = await supabase.from('cms_audit_log' as 'venues').insert({
-    source_table: sourceTable,
-    source_id: sourceId,
-    action,
-    actor_id: actorId,
-    timestamp: new Date().toISOString(),
-  });
-  if (error) {
-    console.warn('cms_audit_log insert skipped:', error.message);
-  }
 }

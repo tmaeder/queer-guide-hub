@@ -22,8 +22,13 @@ interface SaveResult {
  * - Preflights the `sanitize_website_field` Postgres trigger so a URL
  *   on the blocklist fails loudly in the UI instead of silently NULL.
  * - Writes directly to the source table (RLS gates the admin role).
- * - Best-effort insert to `admin_edit_log` for audit. Audit failure does
- *   not surface to the user — the row write is the source of truth.
+ *
+ * The audit trail is NOT written here. This used to insert into
+ * `admin_edit_log` inside a bare `catch {}`, and that table held 0 rows for
+ * its entire life: RLS was enabled with a SELECT-only policy and no INSERT
+ * policy, so every write was denied and the denial swallowed. The alt-click
+ * inline edit — the path an admin actually uses on a public page — recorded
+ * nothing, and nothing said so. A database trigger writes the trail now.
  */
 export function useInlineSave(contentType: string, recordId: string) {
   const [saving, setSaving] = useState(false);
@@ -57,12 +62,10 @@ export function useInlineSave(contentType: string, recordId: string) {
       setSaving(true);
       try {
         const table = config.tableName as 'venues';
-        const { data: before } = await supabase
-          .from(table)
-          .select('*')
-          .eq('id', recordId)
-          .maybeSingle();
-
+        // No pre-save SELECT: it existed only to fill the audit row that was
+        // never actually written, so it was a round-trip per keystroke-save
+        // for nothing. The trigger captures the before-image server-side,
+        // where it cannot race with a concurrent write.
         const { data: after, error } = await supabase
           .from(table)
           .update({ [field.name]: normalized })
@@ -79,32 +82,11 @@ export function useInlineSave(contentType: string, recordId: string) {
         // should already catch this for URL fields, but other BEFORE
         // triggers may also null things).
         const persisted = (after as Record<string, unknown> | null)?.[field.name];
-        if (
-          normalized != null &&
-          normalized !== '' &&
-          (persisted == null || persisted === '')
-        ) {
+        if (normalized != null && normalized !== '' && (persisted == null || persisted === '')) {
           toast.error(
             'Server rejected the value silently (a trigger nulled it). Check format / blocklist.',
           );
           return { success: false, error: 'Silent server rejection' };
-        }
-
-        // Audit (best-effort)
-        try {
-          const { data: auth } = await supabase.auth.getUser();
-          if (auth.user) {
-            await supabase.from('admin_edit_log').insert({
-              content_type: contentType,
-              content_id: recordId,
-              editor_id: auth.user.id,
-              before_data: (before ?? {}) as Record<string, unknown>,
-              after_data: (after ?? {}) as Record<string, unknown>,
-              changed_fields: [field.name],
-            });
-          }
-        } catch {
-          /* swallow audit errors */
         }
 
         toast.success(`Saved ${field.label}`);

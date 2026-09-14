@@ -63,6 +63,7 @@ import { TagDetailWithGate } from '@/components/age-gate/TagDetailWithGate';
 import { GatedDetailFallback } from '@/components/safety/GatedDetailFallback';
 import { useGatedEntityExists } from '@/hooks/useGatedEntityExists';
 import { FollowTagButton } from '@/components/tags/FollowTagButton';
+import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { TagAliasesDisplay } from '@/components/tags/TagAliasesDisplay';
 import { TagSafetyCallout } from '@/components/tags/TagSafetyCallout';
 import { TagWikiContent } from '@/components/tags/TagWikiContent';
@@ -770,7 +771,17 @@ export default function TagDetail() {
         }
         lead={<GlossaryLinkedText text={tag.description} currentSlug={tag.slug} />}
         tags={<TagAliasesDisplay tagId={tag.id} />}
-        action={<FollowTagButton tagId={tag.id} tagName={tag.name} tagSlug={tag.slug} />}
+        action={
+          <div className="flex items-center gap-2">
+            <FollowTagButton tagId={tag.id} tagName={tag.name} tagSlug={tag.slug} />
+            <AdminEditButton
+              contentType="unified_tags"
+              contentId={tag.id}
+              contentName={tag.name}
+              currentData={tag as unknown as Record<string, unknown>}
+            />
+          </div>
+        }
         body={body}
         rail={rail}
         footer={footer}
