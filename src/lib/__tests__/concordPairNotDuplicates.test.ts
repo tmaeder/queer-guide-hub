@@ -22,7 +22,7 @@ const FILE = join(
   process.cwd(),
   'supabase',
   'migrations',
-  '51700101150000_concord_pair_not_duplicates.sql',
+  '60000201100000_concord_pair_not_duplicates.sql',
 );
 
 function statements(): string {
