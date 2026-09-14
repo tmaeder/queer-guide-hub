@@ -3012,6 +3012,69 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
   }
 }
 
+// § Prose left behind by a disowned Wikidata entity
+//
+//     The second half of the wrong-entity failure. tag_wikidata_repair_regressions()
+//     above watches the IDENTIFIER coming back; nothing watched the TEXT the
+//     identifier produced, which is how `suspension` kept serving a definition of
+//     an administrative account ban for ten days after a human correctly diagnosed
+//     it and nulled the QID, and how `spotter` kept the prose of a 2018 video game
+//     after 20261008100000 disowned it.
+//
+//     RATCHET, NOT A ZERO-INVARIANT. The backlog can only be worked down by hand,
+//     so the count WARNS and only GROWTH fails. Growth means a producer is writing
+//     new prose from a disowned entity — a live regression rather than a backlog —
+//     and that is worth stopping a build for. A rule that fired on every run from
+//     the day it shipped would be scrolled past, which is the same reasoning that
+//     put the dedup backlog rule on the median age rather than the oldest.
+//
+//     The ceiling is deliberately ABOVE the measured baseline. 364 rows on
+//     2026-09-14; 50500101100000 repairs 26 by hand, 11 of which are in this
+//     cohort, so the expected value on the next run is ~353. 380 leaves headroom
+//     for concurrent glossary work without letting a real regression through.
+//
+//     A MISSING RPC HARD-FAILS. The function catches its own exceptions and
+//     answers probe_ok=false, so a non-2xx here means an unapplied migration or a
+//     revoked grant — and an unreadable corpus must never read as a clean one.
+const DISOWNED_PROSE_CEILING = 380
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/tag_disowned_prose_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    const detail = (await res.text()).slice(0, 200)
+    console.error(`✗ tag_disowned_prose_signals → HTTP ${res.status} (migration 50500101100300 not applied? PGRST202 = the function does not exist) ${detail}`)
+    FAILED = true
+  } else {
+    const dp = (await res.json()) ?? {}
+    if (dp.probe_ok !== true) {
+      console.error(`✗ tag_disowned_prose_signals did not report probe_ok — the probe is broken${dp.error ? `: ${dp.error}` : ''}`)
+      FAILED = true
+    } else if (Number(dp.audit_rows ?? 0) === 0) {
+      // An empty audit table and a cleaned corpus both yield zero surviving
+      // rows. Distinguishing them is the whole reason this key is reported.
+      console.error('✗ tag_disowned_prose_signals: the repair audit is empty, so the zeroes below measure nothing')
+      FAILED = true
+    } else {
+      const sd = Number(dp.sd_surviving ?? 0)
+      const ld = Number(dp.ld_surviving ?? 0)
+      const idx = Number(dp.indexable_surviving ?? 0)
+      if (sd > DISOWNED_PROSE_CEILING) {
+        console.error(`✗ tag_disowned_prose_signals: ${sd} rows still carry prose from a disowned entity, above the ${DISOWNED_PROSE_CEILING} ceiling`)
+        console.error('  This number is supposed to fall. Growth means something is WRITING prose from an entity a repair already rejected.')
+        FAILED = true
+      } else if (sd > 0) {
+        console.warn(`⚠ ${sd} active tags still carry the short_description a disowned Wikidata entity produced (${ld} long_description, ${idx} indexable)`)
+        console.warn('  An upper bound, not a defect count — a hand-read sample of 24 was ~45% genuinely wrong. Worked down by hand.')
+      } else {
+        console.log('✓ no active tag carries prose from a disowned Wikidata entity')
+      }
+    }
+  }
+}
+
 // The single exit. Reached whether or not anything failed, so the ✗ lines above
 // are the complete list rather than "the first one we tripped over".
 if (FAILED) {
