@@ -162,10 +162,33 @@ describe('the health check', () => {
     expect(section).toMatch(/is missing the key/);
   });
 
-  it('hard-fails on a stale queue head', () => {
-    const age = section.slice(section.indexOf('const oldestH'), section.indexOf('const staged'));
+  it('hard-fails on a stale queue head ONLY when the queue cannot drain', () => {
+    // The first version of this check keyed on age alone and cried wolf on its
+    // own first run: a queue clearing at ~700/hour still reports a 2,969-hour
+    // oldest row until the last straggler goes, so it failed CI permanently on
+    // a pipeline that had just been fixed. A check that is always red is one
+    // people scroll past — the dedup backlog learned the same lesson when it
+    // keyed on the OLDEST open pair and fired on every correct deploy.
+    const age = section.slice(
+      section.indexOf('const oldestH'),
+      section.indexOf('const staleLabel'),
+    );
     expect(age).toMatch(/oldestH > 72/);
     expect(age).toMatch(/FAILED = true/);
+    // The drain gate is the half that stops the false alarm. Asserted on the
+    // CONDITION, not merely on the identifier existing somewhere in the slice.
+    expect(age).toMatch(/oldestH > 72 && awaiting > verdicts24h/);
+  });
+
+  it('still says something when the head is old but draining', () => {
+    // Silence and health are not the same report. An old head on a draining
+    // queue is worth one line of context, or the next reader re-derives it.
+    const age = section.slice(
+      section.indexOf('const oldestH'),
+      section.indexOf('const staleLabel'),
+    );
+    expect(age).toMatch(/else if \(oldestH > 72\)/);
+    expect(age).toMatch(/draining/);
   });
 
   it('hard-fails on a stale failure label', () => {
@@ -179,11 +202,49 @@ describe('the health check', () => {
   it('reports capacity vs inflow as a pair, and only warns on it', () => {
     // "nothing arrived" and "nothing was judged" call for opposite responses,
     // so the denominator stays visible and this line does not fail the build.
+    // Anchored on `const staged`, NOT on `const verdicts` — the latter also
+    // matches `const verdicts24h` in the age block above, so the slice began
+    // too early and swallowed that block's `FAILED = true`, making this
+    // assertion report a failure the capacity line does not contain.
     const cap = section.slice(
-      section.indexOf('const verdicts'),
+      section.indexOf('const staged'),
       section.indexOf('const failedWithContent'),
     );
     expect(cap).toMatch(/verdicts < staged \/ 2/);
     expect(cap).not.toMatch(/FAILED = true/);
+  });
+});
+
+describe('the enrichment driver skip branch', () => {
+  const ts = readFileSync(
+    join(__dirname, '../../../supabase/functions/_shared/enrichment-driver.ts'),
+    'utf8',
+  );
+  // Comments in this file quote the trap verbatim; they must never satisfy an
+  // assertion about the code that fixes it.
+  const code = ts
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .split('\n')
+    .filter((l) => !l.trimStart().startsWith('//'))
+    .join('\n');
+
+  const branch = code.slice(code.indexOf("outcome === 'skip'"), code.indexOf('if (dryRun)'));
+
+  it('writes a terminal status instead of returning silently', () => {
+    // The selector is ORDER BY created_at ASC. A row left `pending` that the
+    // adopter can never enrich is re-selected every batch, holding a slot at
+    // the HEAD of the queue forever. The no-data branch one level down already
+    // carries this fix and its comment; this branch did not.
+    expect(branch).toMatch(/apply_enrichment/);
+    expect(branch).toMatch(/p_status: 'failed'/);
+  });
+
+  it('names why the row was dropped rather than reusing a generic label', () => {
+    expect(branch).toMatch(/enrich_skipped_missing_required_fields/);
+  });
+
+  it('does not write during a dry run', () => {
+    // A dry run that stamps rows failed is not a dry run.
+    expect(branch).toMatch(/if \(!dryRun\)/);
   });
 });

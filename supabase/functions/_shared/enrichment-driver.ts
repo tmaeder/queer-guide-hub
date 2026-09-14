@@ -204,6 +204,33 @@ export function serveEnrichment(config: EnrichmentDriverConfig) {
         const outcome = await config.enrichItem(supabase, item, n, breaker)
         if (outcome === 'skip') {
           skipped++
+          // SAME TRAP AS THE no-data BRANCH BELOW, which the comment there
+          // already describes: returning without writing a status leaves the
+          // row `enrichment_status='pending'`, and the selector above is
+          // ORDERED BY created_at ASC. A row the adopter can never enrich is
+          // therefore re-selected every single batch, consuming a slot at the
+          // HEAD of the queue forever and starving everything behind it.
+          //
+          // That branch was fixed and this one was not. Mark it failed so it
+          // leaves the work list — an adopter returns 'skip' only when the row
+          // lacks the minimum fields (no title/name), which no future pass can
+          // supply. Latent at the time of writing (measured: 0 of 430
+          // enrichment-pending news rows lack a title) — fixed because the
+          // cost of it becoming true is a silently frozen pipeline, which is
+          // exactly what this file already carries a fix for one branch down.
+          if (!dryRun) {
+            const { error: skipStatusErr } = await supabase.rpc('apply_enrichment', {
+              p_staging_id: item.id,
+              p_status: 'failed',
+              p_enriched_data: null,
+              p_error: 'enrich_skipped_missing_required_fields',
+              p_duration_ms: 0,
+              p_merged_normalized: null,
+            })
+            if (skipStatusErr) {
+              console.error(`apply_enrichment (skip) ${item.id}: ${skipStatusErr.message}`)
+            }
+          }
           return
         }
 
