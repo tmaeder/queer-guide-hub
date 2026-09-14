@@ -84,12 +84,17 @@ async function getAccessToken(serviceAccount) {
   let sig;
   try {
     sig = createSign('RSA-SHA256').update(unsigned).sign(serviceAccount.private_key);
-  } catch (err) {
+  } catch {
     // Node reports a mangled PEM as `DECODER routines::unsupported`, which says
     // nothing about which secret is wrong. The realistic cause is a private_key
     // whose \n escapes were flattened by a shell or a copy-paste.
+    //
+    // The original error is DISCARDED rather than interpolated: it is the one value
+    // in this script derived from the key material, and the top-level handler prints
+    // whatever it is given straight into a public CI log (CodeQL js/clear-text-logging,
+    // alert 1001). It carried no diagnostic value anyway — see the line above.
     throw new Error(
-      `Could not sign the JWT with the supplied private_key (${err.message}).\n` +
+      `Could not sign the JWT with the supplied private_key.\n` +
         `The key is present but not a usable PEM. Almost always this is a private_key whose\n` +
         `newline escapes were lost — set the secret straight from the file, never by pasting:\n` +
         `  gh secret set GOOGLE_SERVICE_ACCOUNT_KEY < key.json`,

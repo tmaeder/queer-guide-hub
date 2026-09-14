@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode, type RefObject } from 'react';
+import { scheduleSentence, type EventSchedule } from '@/lib/eventScheduleSentence';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { format } from 'date-fns';
@@ -453,6 +454,24 @@ export function EventFactStrip({
   setShowEventTz: (fn: (prev: boolean) => boolean) => void;
 }) {
   const ageRestriction = event.age_restriction;
+
+  // `events.schedule` carries 141 rules on prod and until now NOTHING rendered
+  // them — a weekly class showed a single date and read as a one-off.
+  //
+  // "(from past dates)" is words, not a badge: 139 of the 141 are inferred from
+  // observed dates and never confirmed by anyone, and presenting that identically
+  // to an organiser-stated time would overstate what we know. Plain text also needs
+  // no styling to survive every context, and colour may never be the only cue.
+  // Read through a narrow cast: `events.schedule` shipped in the schedule-model
+  // migration but `src/integrations/supabase/types.ts` has not been regenerated
+  // since, so the generated Row type does not know the column yet. Regenerating
+  // that file is a wholesale rewrite whose diff would swamp this change and
+  // collide with the other sessions working in this repo today — worth doing, but
+  // as its own commit, not smuggled in here.
+  const schedule = scheduleSentence(
+    (event as unknown as { schedule?: EventSchedule | null }).schedule,
+  );
+
   // Spec module 01 — the bordered fact strip, shared with every other single.
   // The timezone toggle survives the move as a node in the Time cell: an event
   // read from another country is ambiguous without it, and dropping an
@@ -464,6 +483,14 @@ export function EventFactStrip({
           label: 'Date',
           value: formatEventDate(event.start_date, event.end_date),
         },
+        ...(schedule
+          ? [
+              {
+                label: 'Schedule',
+                value: schedule.inferred ? `${schedule.text} (from past dates)` : schedule.text,
+              },
+            ]
+          : []),
         {
           label: 'Time',
           value: event.timezone ? (

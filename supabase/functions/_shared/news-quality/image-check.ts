@@ -18,6 +18,57 @@ export interface ImageProbe {
 const MIN_BYTES = 4_000 // < 4KB is almost certainly a tracking pixel or 1x1 placeholder
 const MIN_DIM = 200
 
+/**
+ * Resolve the image a staged news row already carries.
+ *
+ * MIRRORS news_commit_staging_batch, which resolves the published image as
+ *
+ *   coalesce(enriched.image_url, normalized.image_url,
+ *            normalized.images[0], metadata.image_url)
+ *
+ * and is correct. The caller was reading `normalized.image_url` alone — a field
+ * pipeline-normalize only ever sets on the PERSONALITY branch, never for news,
+ * where it writes `images[]` and the source adapter writes `metadata.image_url`.
+ *
+ * Measured on prod 2026-09-13 over 30 days: top-level image_url is present on
+ * 0 of 3,107 podcast rows and 511 of 10,023 articles, while an image is
+ * reachable via images[0]/metadata on 5,118 rows the old read missed entirely.
+ * The probe therefore reported `no_image`, the Pexels replacement fired, and the
+ * stock URL was written to enriched.image_url — which the commit RPC prefers
+ * over the real artwork it would otherwise have found. A queer audio drama was
+ * published with a stock photo of a concrete cross.
+ *
+ * `enriched.image_url` is deliberately NOT an input: it is the replacement this
+ * pipeline is about to decide on, so feeding it back in would make a previous
+ * run's stock photo suppress the real image forever.
+ *
+ * Keep the order in step with the RPC — the two must agree, or the image we
+ * probe and judge is not the image that gets published.
+ */
+export function resolveStagedImageUrl(
+  normalized: Record<string, unknown> | null | undefined,
+): string | undefined {
+  const n = normalized ?? {}
+  const meta = (n.metadata ?? {}) as Record<string, unknown>
+  const images = Array.isArray(n.images) ? n.images : []
+
+  const candidates: unknown[] = [
+    n.image_url,
+    n.imageUrl,
+    images[0],
+    meta.image_url,
+  ]
+
+  for (const c of candidates) {
+    if (typeof c !== 'string') continue
+    const url = c.trim()
+    // Scheme-checked for the same reason pipeline-normalize checks it: a relative
+    // path or a `data:` blob is not something probeImage can HEAD.
+    if (/^https?:\/\//i.test(url)) return url
+  }
+  return undefined
+}
+
 async function readDimensions(buf: Uint8Array, mime: string): Promise<{ w: number; h: number } | null> {
   try {
     if (mime.includes('png') && buf.length >= 24) {

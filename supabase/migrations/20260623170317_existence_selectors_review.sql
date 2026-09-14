@@ -74,11 +74,6 @@ BEGIN
 END; $function$;
 
 -- ---------- selectors (collectors call these) ----------
-  UPDATE public.entity_existence_audit SET reverted_at=now(), reverted_by=p_actor WHERE id=v_aid;
-  INSERT INTO public.entity_existence_signals (entity_type, entity_id, signal_kind, verdict, weight, source, details)
-  VALUES (p_entity_type, p_entity_id, 'admin', 'alive', 1.0, 'existence_reopen', jsonb_build_object('actor', p_actor));
-  RETURN true;
-END; $function$;
 
 CREATE OR REPLACE FUNCTION public.venues_due_for_existence_check(p_limit int DEFAULT 50)
  RETURNS TABLE(id uuid, website text, latitude numeric, longitude numeric, check_reason text)
@@ -161,9 +156,6 @@ $function$;
 
 -- ---------- admin review / reopen ----------
 CREATE OR REPLACE FUNCTION public.existence_approve_archive(p_audit_id bigint)
- RETURNS jsonb
- LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public','pg_temp'
-CREATE OR REPLACE FUNCTION public.existence_approve_archive(p_audit_id bigint)
  RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public','pg_temp'
 AS $function$
 DECLARE v_type text; v_id uuid; v_sig jsonb; v_actor uuid := auth.uid();
@@ -180,8 +172,6 @@ BEGIN
 END; $function$;
 
 CREATE OR REPLACE FUNCTION public.existence_reject_archive(p_audit_id bigint, p_reason text DEFAULT 'admin_says_alive')
- RETURNS jsonb
- LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public','pg_temp'
  RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public','pg_temp'
 AS $function$
 DECLARE v_type text; v_id uuid; v_actor uuid := auth.uid();
@@ -202,8 +192,6 @@ BEGIN
 END; $function$;
 
 CREATE OR REPLACE FUNCTION public.existence_reopen(p_entity_type text, p_entity_id uuid)
- RETURNS jsonb
- LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public','pg_temp'
  RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public','pg_temp'
 AS $function$
 DECLARE v_ok boolean; v_actor uuid := auth.uid();
@@ -215,10 +203,6 @@ END; $function$;
 
 -- Batch-approve only the GUARDED-but-2-strong flags (the engine withheld them for
 -- safety, not because the evidence is weak). Single-signal flags stay human-gated.
-CREATE OR REPLACE FUNCTION public.batch_approve_safe_existence(
-  p_entity_type text, p_limit int DEFAULT 100, p_dry_run boolean DEFAULT false
-) RETURNS jsonb
- LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public','pg_temp'
 CREATE OR REPLACE FUNCTION public.batch_approve_safe_existence(
   p_entity_type text, p_limit int DEFAULT 100, p_dry_run boolean DEFAULT false
 ) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public','pg_temp'
@@ -252,4 +236,3 @@ GRANT EXECUTE ON FUNCTION public.existence_approve_archive(bigint) TO authentica
 GRANT EXECUTE ON FUNCTION public.existence_reject_archive(bigint, text) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.existence_reopen(text, uuid) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.batch_approve_safe_existence(text, int, boolean) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.batch_approve_safe_existence(text, int, boolean) TO authenticated;;

@@ -1,5 +1,5 @@
 import { assertEquals, assert, assertFalse } from 'https://deno.land/std@0.168.0/testing/asserts.ts'
-import { evaluatePublishGate } from './decision.ts'
+import { evaluatePublishGate, extractionIsEmpty } from './decision.ts'
 import type { QualityDecision } from './schema.ts'
 
 function baseDecision(overrides: Partial<QualityDecision> = {}): QualityDecision {
@@ -63,6 +63,65 @@ Deno.test('satire goes to review even when otherwise clean', () => {
   })
   assertEquals(r.status, 'review')
   assert(r.blockedReasons.includes('satire'))
+})
+
+// --- empty extraction is not a verdict -------------------------------------
+// The shape parseQualityDecision produces when the model returns a valid JSON
+// object containing nothing: every field defaults, which is byte-identical to a
+// confident "clearly irrelevant" and was being rejected as one.
+const blankExtraction = (overrides: Partial<QualityDecision> = {}) =>
+  baseDecision({
+    isRelevant: false, relevanceScore: 0, qualityScoreAfter: 0,
+    title: '', excerpt: '', cleanedBody: '', confidence: 0,
+    ...overrides,
+  })
+
+Deno.test('empty extraction goes to review, never rejected', () => {
+  const r = evaluatePublishGate({
+    decision: blankExtraction(),
+    criticalPaywall: false, truncated: false, hasEntityReviewItems: false, imageProbeOk: true,
+  })
+  assertEquals(r.status, 'review')
+  assertFalse(r.autoPublish)
+  assert(r.blockedReasons.includes('empty_extraction'))
+})
+
+Deno.test('empty extraction outranks the critical-paywall rejection too', () => {
+  // Both outright-reject branches must sit below the emptiness check, or a
+  // blank record on a paywalled source is still rejected without a verdict.
+  const r = evaluatePublishGate({
+    decision: blankExtraction(),
+    criticalPaywall: true, truncated: true, hasEntityReviewItems: false, imageProbeOk: false,
+  })
+  assertEquals(r.status, 'review')
+  assert(r.blockedReasons.includes('empty_extraction'))
+})
+
+Deno.test('a stated confidence makes it a verdict — rejection stands', () => {
+  const r = evaluatePublishGate({
+    decision: blankExtraction({ confidence: 0.9 }),
+    criticalPaywall: false, truncated: false, hasEntityReviewItems: false, imageProbeOk: true,
+  })
+  assertEquals(r.status, 'rejected')
+  assertFalse(r.blockedReasons.includes('empty_extraction'))
+})
+
+Deno.test('any extracted text makes it a verdict — rejection stands', () => {
+  for (const field of ['title', 'excerpt', 'cleanedBody'] as const) {
+    const r = evaluatePublishGate({
+      decision: blankExtraction({ [field]: 'something the model actually read' }),
+      criticalPaywall: false, truncated: false, hasEntityReviewItems: false, imageProbeOk: true,
+    })
+    assertEquals(r.status, 'rejected', `${field} present must not be treated as empty`)
+  }
+})
+
+Deno.test('whitespace-only text is still empty', () => {
+  assert(extractionIsEmpty(blankExtraction({ title: '   ', cleanedBody: '\n\t' })))
+})
+
+Deno.test('a clean passing article is never read as an empty extraction', () => {
+  assertFalse(extractionIsEmpty(baseDecision()))
 })
 
 Deno.test('pending entity reviews block auto-publish', () => {
