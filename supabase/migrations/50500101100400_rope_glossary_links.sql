@@ -141,8 +141,8 @@ begin
       ('nerve-compression', 'rope-marks'),
       ('safety-shears',     'suspension'),
       ('safety-shears',     'mummification'),
-      ('hardpoint',         'suspension'),
-      ('hardpoint',         'partial-suspension'),
+      ('hard-point',         'suspension'),
+      ('hard-point',         'partial-suspension'),
       -- Technique. Siblings, deliberately NOT broader.
       ('single-column-tie', 'double-column-tie'),
       ('chest-harness',     'hip-harness'),
@@ -199,7 +199,7 @@ begin
     from public.tag_relations r
     join public.unified_tags s on s.id = r.source_tag_id
    where s.slug in ('box-tie','partial-suspension','newaza','semenawa','kitten-play','day-collar',
-                    'nerve-compression','safety-shears','hardpoint','single-column-tie',
+                    'nerve-compression','safety-shears','hard-point','single-column-tie',
                     'chest-harness','futomomo','kikkou','jute','topspace')
      and r.review_status not in ('approved','rejected');
   if v_n > 0 then
@@ -222,7 +222,7 @@ begin
       ('related','nerve-compression','box-tie'),('related','nerve-compression','chest-harness'),
       ('related','nerve-compression','suspension'),('related','nerve-compression','rope-marks'),
       ('related','safety-shears','suspension'),('related','safety-shears','mummification'),
-      ('related','hardpoint','suspension'),('related','hardpoint','partial-suspension'),
+      ('related','hard-point','suspension'),('related','hard-point','partial-suspension'),
       ('related','single-column-tie','double-column-tie'),('related','chest-harness','hip-harness'),
       ('related','futomomo','partial-suspension'),('related','kikkou','karada'),
       ('related','jute','hemp-rope'),('related','newaza','suspension'),
