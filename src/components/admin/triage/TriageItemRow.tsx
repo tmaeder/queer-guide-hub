@@ -142,11 +142,18 @@ export function TriageItemRow({
           real <button> brings Enter AND Space for free, where the old div
           handled only Enter. Last child so it paints over the text; the
           Checkbox above opts out with z-10. */}
+      {/* min-h-0 is load-bearing, not tidying: `@layer base` in index.css gives
+          every <button> min-height:44px, and min-height beats the height an
+          `inset-0` box resolves to. A row shorter than 44px would leave this
+          overlay hanging past its own row and swallowing clicks on the next
+          one. Today's rows are ~58px so it does not bite — which is exactly
+          what would make the regression baffling later. The utilities layer
+          wins over base, the same opt-out the Checkbox primitive uses. */}
       <button
         type="button"
         onClick={onSelect}
         aria-label={`Open ${item.title}`}
-        className="absolute inset-0 cursor-pointer"
+        className="absolute inset-0 min-h-0 cursor-pointer"
       />
     </div>
   );

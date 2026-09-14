@@ -106,6 +106,10 @@ describe('TriageItemRow', () => {
     const overlay = screen.getByRole('button', { name: 'Open Pending venue' });
     expect(overlay.className).toContain('absolute');
     expect(overlay.className).toContain('inset-0');
+    // index.css `@layer base` sets min-height:44px on every <button>, which
+    // beats the height inset-0 resolves to. Without min-h-0 a row shorter than
+    // 44px leaves the overlay hanging into the next row, stealing its clicks.
+    expect(overlay.className).toContain('min-h-0');
     expect(container.firstElementChild?.className).toContain('relative');
     expect(container.firstElementChild?.lastElementChild).toBe(overlay);
   });
