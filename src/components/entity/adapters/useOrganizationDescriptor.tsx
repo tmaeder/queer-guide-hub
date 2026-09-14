@@ -40,7 +40,7 @@ export function useOrganizationDescriptor(slug: string | undefined): EntityDescr
       hero: (
         <>
           <OrgHero org={org} />
-          <div className="mb-6">
+          <div className="mb-6 flex justify-end">
             <AdminEditButton
               contentType="organizations"
               contentId={org.id}
