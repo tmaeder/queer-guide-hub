@@ -197,6 +197,29 @@ jobs:
             echo "::warning::Migration version check could not verify against remote history (exit $rc)."
           fi
 
+      # SYNTAX. The two checks around this one only ever look at 14-digit
+      # VERSIONS, so a migration that is not valid SQL sails past both. On
+      # 2026-09-14 one did: `50500101100300` ended `COMMENT ON ... IS 'a' || 'b'`,
+      # and COMMENT ON takes a LITERAL, so it is a 42601. `db push` stops at the
+      # first failing file and takes every migration queued behind it, which
+      # broke main for four and a half hours across four deploy runs. A parse
+      # error is unreachable at runtime, so no test that executes logic can find
+      # it, and nothing else in this repo parses SQL.
+      #
+      # libpg-query is Postgres's own parser pinned to 17.x — the server version
+      # this project runs — so the grammar here cannot drift from the grammar
+      # db push will meet. Version comes from package.json so there is one pin.
+      #
+      # Scope is honest and narrow: this catches top-level syntax only. It does
+      # NOT see inside a plpgsql body (the outer grammar treats $$...$$ as an
+      # opaque literal) and it catches nothing semantic — the `hard-point`
+      # postcondition failure the same day would still get through. One layer.
+      - name: Check migrations are valid SQL
+        run: |
+          npm i --no-save --no-audit --no-fund \
+            "libpg-query@$(node -p "require('./package.json').devDependencies['libpg-query']")"
+          node scripts/check-migration-sql.mjs
+
       # Remote-only versions: a migration applied to prod (MCP apply_migration or
       # raw Management-API SQL) with no committed file makes `supabase db push`
       # skip EVERYTHING — merged migrations silently never apply and nothing goes

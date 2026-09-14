@@ -130,6 +130,34 @@ function ContentListPanelBody(props: ContentListPanelProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [v.loading, v.views, props.contentTypeId]);
 
+  // Deep link: `?edit=<id>` opens the record editor for this type on mount and
+  // strips the param, so refresh/back does not reopen it.
+  //
+  // This used to live in PersonalitiesAdmin, for personalities only, which is
+  // why `cmsEditPath` can now be honest for every registry type: there is no
+  // `/admin/content/:type/:id` route — the editor is a modal owned by
+  // AdminShell — so a URL that opens a record has to be a query param here.
+  //
+  // Guarded on a resolved type: on the "All content" list there is no type to
+  // open the editor against, and a bare id would be meaningless.
+  const editHandledRef = useRef(false);
+  const editTypeId = props.contentTypeId ?? type;
+  useEffect(() => {
+    if (editHandledRef.current) return;
+    const id = searchParams.get('edit');
+    if (!id || !editTypeId) return;
+    editHandledRef.current = true;
+    c.onEdit(editTypeId, id);
+    setSearchParams(
+      (p) => {
+        p.delete('edit');
+        return p;
+      },
+      { replace: true },
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- one-shot on mount; c.onEdit is stable per type
+  }, [editTypeId, searchParams, setSearchParams]);
+
   const typeColor = c.config?.color || 'hsl(var(--muted-foreground))';
   const Icon = c.config?.icon;
   // The controller can return undefined (no type selected); the views model
