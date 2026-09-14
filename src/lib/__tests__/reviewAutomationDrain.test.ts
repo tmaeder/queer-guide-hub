@@ -45,10 +45,22 @@ function verifyOf(filename: string): string {
   return cut === -1 ? '' : raw.slice(cut);
 }
 
+/**
+ * Locate a migration by name, and REFUSE an ambiguous match.
+ *
+ * `.find()` silently returns the first hit in readdir order, so once another
+ * migration's name contains one of these needles the assertions would move to
+ * a file they were never written about and keep passing. main gains migrations
+ * continuously — it added seven mid-branch on this very change — so the
+ * ambiguity is a matter of time, not a hypothetical.
+ */
 function findMigration(needle: string): string {
-  const hit = readdirSync(MIGRATIONS).find((f) => f.includes(needle));
-  if (!hit) throw new Error(`no migration matching ${needle}`);
-  return hit;
+  const hits = readdirSync(MIGRATIONS).filter((f) => f.includes(needle));
+  if (hits.length === 0) throw new Error(`no migration matching ${needle}`);
+  if (hits.length > 1) {
+    throw new Error(`ambiguous migration needle ${needle}: ${hits.join(', ')}`);
+  }
+  return hits[0];
 }
 
 describe('staging reconciler — bookkeeping, never a disposition decision', () => {
