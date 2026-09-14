@@ -2699,6 +2699,162 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
   }
 }
 
+// 16. The review queue — the RATE, not the depth (2026-09-14).
+//
+//     `entity_review_queue` reached 3,997 open rows behind five human decisions
+//     in sixty days and NOTHING said so. pipeline_hygiene_stats watches
+//     staging, not review; get_admin_counts reports the depth as a number on a
+//     card, where a queue being worked and a queue being abandoned are the same
+//     rising figure; and every producer's automation row was green, because
+//     filling the queue IS their job.
+//
+//     So depth is DESCRIBED and never failed on — a deep queue is a corpus
+//     fact a human decides about. What hard-fails is what the automation in
+//     50020101100100 guarantees: the closer is registered, is not
+//     auto-paused-then-recovered, and is holding unactionable rows near zero.
+//     A broken mechanism is an error; an awkward corpus is a warning, because a
+//     check that fires on every run is one people learn to scroll past.
+//
+//     STANDALONE, like content_revision_signals/venue_dup_signals and for the
+//     same reason: pipeline_hygiene_stats is a long CREATE OR REPLACE and a new
+//     key there means restating every other one by hand — a merge-collision
+//     surface.
+//
+//     A MISSING RPC HARD-FAILS HERE, unlike the 404 carve-out in §11b. The
+//     function catches its own exceptions and answers probe_ok=false, so the
+//     only ways a non-2xx reaches this branch are an unapplied migration or a
+//     revoked grant — and an unreadable queue must never read as an empty one.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/review_queue_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    const detail = (await res.text()).slice(0, 200)
+    console.error(`✗ review_queue_signals → HTTP ${res.status} (migration 50020101100300 not applied? PGRST202 = the function does not exist) ${detail}`)
+    console.error('  The review queue could not be read at all. Absence of a check is not absence of a backlog.')
+    FAILED = true
+  } else {
+    const rq = (await res.json()) ?? {}
+    if (rq.probe_ok !== true) {
+      console.error(`✗ review_queue_signals did not report probe_ok — the probe is broken${rq.error ? `: ${rq.error}` : ''}`)
+      FAILED = true
+    } else {
+      // An ABSENT key and a ZERO count must not look alike — the
+      // accessibility_contradictions rule. Every threshold below coerces with
+      // `?? 0`, so a renamed or dropped key would arrive as `undefined` and
+      // report a clean queue having measured nothing.
+      const REQUIRED = [
+        'open_total',
+        'open_by_cohort',
+        'human_decisions_30d',
+        'machine_decisions_30d',
+        'last_human_decision_at',
+        'open_age_days_median',
+        'risk_blocked_open',
+        'unactionable_open',
+        'unregistered_field_open',
+        'closer',
+      ]
+      const missing = REQUIRED.filter((k) => rq?.[k] === undefined)
+      if (missing.length) {
+        console.error(`✗ review_queue_signals is missing ${missing.join(', ')} — the gate cannot report what it does not return, so this is a broken probe, not a clean queue`)
+        FAILED = true
+      } else {
+        const openTotal = Number(rq.open_total ?? 0)
+        const humans = Number(rq.human_decisions_30d ?? 0)
+        const machines = Number(rq.machine_decisions_30d ?? 0)
+        const medianAge = Number(rq.open_age_days_median ?? 0)
+        const riskBlocked = Number(rq.risk_blocked_open ?? 0)
+        const unactionable = Number(rq.unactionable_open ?? 0)
+        const unregistered = Number(rq.unregistered_field_open ?? 0)
+        const closer = rq.closer ?? {}
+
+        // The closer's own health. Auto-paused-then-recovered is the one-way
+        // door of §6b: the pause deletes its own evidence, so from the row
+        // alone a transient blip and a deliberate retirement read identically.
+        // The probe computes that shape; this just reports it.
+        if (closer.registered === undefined) {
+          console.error('✗ review_queue_signals returned a closer with no `registered` key — the probe is broken')
+          FAILED = true
+        } else if (closer.registered === false) {
+          console.error('✗ review_queue_close_unactionable has no admin_automations row — the closer is unregistered')
+          console.error('  Nothing drains the unactionable rows, and pg_cron cannot be reconciled from a registry that does not describe it.')
+          console.error('  Re-apply migration 50020101100100, which is the only scheduler for this job.')
+          FAILED = true
+        } else if (closer.falsely_paused === true) {
+          console.error(`✗ review_queue_close_unactionable was auto-paused, then RECOVERED, and never re-enabled (last run ${closer.last_run_at ?? 'never'})`)
+          console.error('  Its last recorded run SUCCEEDED — the pause was a transient blip, not a decision.')
+          console.error('  Restore: UPDATE admin_automations SET enabled=true WHERE slug=\'review_queue_close_unactionable\';')
+          FAILED = true
+        }
+
+        // Un-approvable no matter who looks: approve_entity_review raises
+        // 'unsupported review field' when no active registry row describes the
+        // field, so these rows can only ever be rejected. One is a producer
+        // queueing a field nobody registered — a bug, not a backlog.
+        if (unregistered > 0) {
+          console.error(`✗ ${unregistered} open review row(s) name a field with no active review_field_registry entry`)
+          console.error('  approve_entity_review raises `unsupported review field` on these — no reviewer can apply them.')
+          console.error('  Register the field, or close the rows; a queue that collects undecidable work is how decisions get discarded.')
+          FAILED = true
+        }
+
+        // The closer runs nightly at 06:35 and caps at 500 rows. A steady state
+        // above that allowance means it is not running, or its predicate stopped
+        // matching the rows it was written for.
+        if (unactionable > 600) {
+          console.error(`✗ ${unactionable} open review row(s) sit on entities with no readers (merged/ghost/closed/archived) — the closer caps at 500/night`)
+          console.error('  Above that allowance it is not running or its predicate no longer matches.')
+          console.error('  Check: SELECT public.run_review_queue_close_unactionable(500);')
+          FAILED = true
+        }
+
+        // WARNINGS — the corpus, where a human decides what is acceptable.
+        //
+        // Zero human decisions is the headline and is deliberately NOT an
+        // error: a genuinely quiet fortnight is legitimate. It is paired with
+        // the depth so the two are read together — zero decisions against 40
+        // open rows is a quiet week, zero against 3,997 is an abandoned queue.
+        if (humans === 0 && openTotal > 500) {
+          console.warn(`⚠ ${openTotal} open review row(s) and ZERO human decisions in 30 days (last human decision: ${rq.last_human_decision_at ?? 'never'})`)
+          console.warn('  Machine decisions in the same window: ' + machines + '. A decision count is not evidence of human review — reviewer_id is.')
+        }
+        if (medianAge > 60) {
+          console.warn(`⚠ Median open review row is ${medianAge}d old — the queue is rotting, not merely deep`)
+        }
+        // Advisory. These rows raise 42501 from approve_entity_review unless the
+        // caller passes p_confirm, so they are the one number that measures a
+        // reviewer's ability to finish the work at all. The invariant that the
+        // UI sends the flag is asserted in the frontend tests, which is where it
+        // can be observed; here it is context.
+        if (riskBlocked > 0) {
+          console.warn(`⚠ ${riskBlocked} open review row(s) are risk-gated — approving them needs the confirm flag`)
+        }
+
+        console.log(
+          `✓ Review queue: ${openTotal} open (median ${medianAge}d), ` +
+            `${humans} human / ${machines} machine decision(s) in 30d, ` +
+            `${riskBlocked} risk-gated, ${unactionable} unactionable`,
+        )
+        // The cohorts are printed rather than warned on. A ⚠ that fires on every
+        // run is noise; the shape of the backlog is what a reader needs to act,
+        // and "which fields" is the first question a depth number provokes.
+        const cohorts = Object.entries(rq.open_by_cohort ?? {})
+          .sort((a, b) => Number(b[1]) - Number(a[1]))
+          .slice(0, 3)
+          .map(([k, v]) => `${k} ${v}`)
+          .join(', ')
+        if (cohorts) console.log(`  largest cohorts: ${cohorts}`)
+        if (openTotal === 0) {
+          console.log('  The queue is empty — the zeroes above are absence, not a worked queue.')
+        }
+      }
+    }
+  }
+}
+
 // The single exit. Reached whether or not anything failed, so the ✗ lines above
 // are the complete list rather than "the first one we tripped over".
 if (FAILED) {

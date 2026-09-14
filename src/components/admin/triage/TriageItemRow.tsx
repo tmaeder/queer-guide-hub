@@ -1,6 +1,8 @@
 import { Badge } from '@/components/ui/badge';
+import { ShieldAlert } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
+import { splitQualityTitle, fieldBadgeLabel } from '@/lib/qualityQueue';
 import type { TriageItem } from '@/hooks/useUnifiedTriageQueue';
 
 const QUEUE_LABELS: Record<string, string> = {
@@ -13,6 +15,16 @@ const QUEUE_LABELS: Record<string, string> = {
   duplicates: 'Dedup',
   'news-quality': 'News QA',
   'entity-links': 'Link',
+  // The five quality keys were missing, so every one of the ~4,000 quality
+  // rows fell through to humanize() and rendered "Quality Personality" — the
+  // queue name repeated on every row, which is the one thing it cannot help a
+  // reviewer distinguish. The entity is already on the content badge, so the
+  // queue badge says only what kind of queue this is.
+  'quality-city': 'Quality',
+  'quality-venue': 'Quality',
+  'quality-village': 'Quality',
+  'quality-personality': 'Quality',
+  'quality-marketplace': 'Quality',
 };
 
 const CONTENT_TYPE_LABELS: Record<string, string> = {
@@ -68,6 +80,10 @@ export function TriageItemRow({
   onToggleCheck,
 }: TriageItemRowProps) {
   const conf = confidenceLabel(item.confidence_score);
+  const { name, field } = splitQualityTitle(item.title, item.meta?.field);
+  const requiresConfirm = Boolean(
+    (item.risk_flags as { confirm_may_be_required?: boolean } | undefined)?.confirm_may_be_required,
+  );
   const contentLabel = CONTENT_TYPE_LABELS[item.content_type] ?? humanize(item.content_type);
 
   return (
@@ -95,7 +111,7 @@ export function TriageItemRow({
 
       <div className="min-w-0 flex-1 space-y-0.5">
         {/* Title row */}
-        <p className={cn('text-sm truncate', isActive && 'font-medium')}>{item.title}</p>
+        <p className={cn('text-sm truncate', isActive && 'font-medium')}>{name}</p>
 
         {/* Meta row */}
         <div className="flex items-center gap-1.5 flex-wrap">
@@ -111,6 +127,32 @@ export function TriageItemRow({
           >
             {contentLabel}
           </Badge>
+          {field && (
+            <Badge
+              variant="outline"
+              className="shrink-0 text-2xs font-normal normal-case px-1.5 py-0 h-4"
+            >
+              {fieldBadgeLabel(field)}
+            </Badge>
+          )}
+          {/*
+            The safety gate, surfaced on the LIST and not only in the detail
+            panel. `confirm_may_be_required` has been emitted by
+            triage_src_quality_city since that view existed and no component
+            ever read it — the same way `namesake` sat unread on the dedup
+            rows. A reviewer scanning the list should see which rows will ask
+            them to take responsibility for an outing-safety claim before they
+            open one.
+          */}
+          {requiresConfirm && (
+            <Badge
+              variant="outline"
+              className="shrink-0 text-2xs font-normal normal-case px-1.5 py-0 h-4 gap-0.5"
+            >
+              <ShieldAlert className="h-2.5 w-2.5" aria-hidden="true" />
+              confirm
+            </Badge>
+          )}
           {item.has_diff && (
             <Badge variant="outline" className="shrink-0 text-2xs px-1 py-0 h-4">
               diff

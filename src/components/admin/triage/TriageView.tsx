@@ -25,8 +25,10 @@ import {
   type TriageItem,
 } from '@/hooks/useUnifiedTriageQueue';
 import { useReviewCounts } from '@/hooks/useReviewCounts';
+import { useReviewQueueCohorts } from '@/hooks/useReviewQueueCohorts';
 import { ReviewBulkBar } from '@/components/admin/review/ReviewBulkBar';
 import { TriageFilterBar } from './TriageFilterBar';
+import { QualityCohortBar } from './QualityCohortBar';
 import { TriageList } from './TriageList';
 import { TriageDetailPanel } from './TriageDetailPanel';
 import { TriageFocusMode } from './TriageFocusMode';
@@ -57,6 +59,14 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
 
   const { data, isLoading, error } = useUnifiedTriageQueue(filters);
   const { data: counts } = useReviewCounts();
+
+  // Quality is in scope when nothing is filtered (the whole inbox) or when at
+  // least one quality key is selected. Deliberately `some`, not `every`: the
+  // cohort bar's own chips pin a SINGLE quality key, so an `every` test would
+  // hide the bar the moment a reviewer used it.
+  const qualityInScope =
+    !filters.queueTypes || filters.queueTypes.some((k) => k.startsWith('quality-'));
+  const { data: cohorts, isLoading: cohortsLoading } = useReviewQueueCohorts(qualityInScope);
   const triageAction = useTriageAction();
 
   const items = useMemo(() => data?.items ?? [], [data]);
@@ -101,6 +111,12 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
       // handler dropped it — which is why dedup-review's canonical flip (`keep_id`)
       // was reachable from SQL and from the hook and from no button anywhere.
       payload?: Record<string, unknown>,
+      // Outing-safety confirmation, forwarded to triage_action's p_confirm.
+      // Set only by TriageDetailPanel, only on approve, and only after the
+      // reviewer ticks the box — see the gate there. Without it,
+      // approve_entity_review raises 42501 for every risk-gated row, which is
+      // what made 347 proposals un-approvable from this screen.
+      confirm?: boolean,
     ) => {
       if (!activeItem) return;
 
@@ -117,6 +133,7 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
           notes,
           cannedSlug,
           payload,
+          confirm,
         },
         {
           onSuccess: () => {
@@ -385,6 +402,19 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
 
       {/* Filters */}
       <TriageFilterBar filters={filters} counts={counts} onFiltersChange={updateFilters} />
+      {/*
+        Only while Quality is in scope. The bar answers "which pile should I
+        work" and that question is meaningless across the whole inbox, where
+        the queue chips already answer it.
+      */}
+      {qualityInScope && (
+        <QualityCohortBar
+          cohorts={cohorts}
+          isLoading={cohortsLoading}
+          filters={filters}
+          onFiltersChange={updateFilters}
+        />
+      )}
 
       {/* Split pane — use simple flex layout instead of resizable panels */}
       {isMobile ? (
