@@ -1,7 +1,18 @@
 import { Badge } from '@/components/ui/badge';
-import { Image as ImageIcon, File, Video, FileText, Zap, Clock, AlertTriangle, CheckCircle, Globe } from 'lucide-react';
+import {
+  Image as ImageIcon,
+  File,
+  Video,
+  FileText,
+  Zap,
+  Clock,
+  AlertTriangle,
+  CheckCircle,
+  Globe,
+} from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import type { UnifiedMediaItem, OptimizationStatus } from './types';
+import { cmsEditPath, cmsListPath } from '@/lib/cmsLinks';
 
 export const getFileType = (filename: string): string => {
   const ext = filename.split('.').pop()?.toLowerCase();
@@ -65,10 +76,18 @@ export const getOptimizationStatusBadge = (status: OptimizationStatus | undefine
         </Badge>
       );
     case 'skipped':
-      return <Badge variant="outline" style={s}>Skipped</Badge>;
+      return (
+        <Badge variant="outline" style={s}>
+          Skipped
+        </Badge>
+      );
     case 'not_optimized':
     default:
-      return <Badge variant="outline" style={s}>Unoptimized</Badge>;
+      return (
+        <Badge variant="outline" style={s}>
+          Unoptimized
+        </Badge>
+      );
   }
 };
 
@@ -107,22 +126,37 @@ export const getThumbnailUrl = (item: UnifiedMediaItem) => {
 };
 
 export const entityTypeLabel = (et: string) =>
-  et.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  et.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
-export const entityAdminPath = (entityType: string, entityId: string) => {
-  // Entity management lives in the unified content browser (/admin/content/:type);
-  // the editor is modal-launched there, so we link to the per-type list route.
-  const contentSlug: Record<string, string> = {
-    venue: 'venues',
-    event: 'events',
-    news_article: 'news_articles',
-    personality: 'personalities',
-    marketplace_listing: 'marketplace_listings',
-    city: 'cities',
-    country: 'countries',
-    queer_village: 'queer_villages',
-  };
-  const slug = contentSlug[entityType];
-  if (!slug) return `/admin/${entityType}/${entityId}`;
-  return `/admin/content/${slug}`;
+/**
+ * `image_asset_links.entity_type` is singular; the content registry is keyed
+ * by table name. This map is that translation and nothing else — the path
+ * itself comes from `cmsLinks`.
+ */
+const MEDIA_ENTITY_REGISTRY_KEY: Record<string, string> = {
+  venue: 'venues',
+  event: 'events',
+  news_article: 'news_articles',
+  personality: 'personalities',
+  marketplace_listing: 'marketplace_listings',
+  city: 'cities',
+  country: 'countries',
+  queer_village: 'queer_villages',
+};
+
+/**
+ * Admin path for a linked entity, or null when we cannot name one.
+ *
+ * This used to link to the per-type LIST, because at the time the record
+ * editor could only be opened from inside the list. `?edit=` is generic now,
+ * so it links to the record itself.
+ *
+ * The old fallback for an unmapped type was `/admin/<entityType>/<id>`, a
+ * route that does not exist — a dead link the caller could not tell from a
+ * live one. It returns null instead, and the caller renders plain text.
+ */
+export const entityAdminPath = (entityType: string, entityId: string): string | null => {
+  const key = MEDIA_ENTITY_REGISTRY_KEY[entityType];
+  if (!key) return null;
+  return cmsEditPath(key, entityId) ?? cmsListPath(key);
 };
