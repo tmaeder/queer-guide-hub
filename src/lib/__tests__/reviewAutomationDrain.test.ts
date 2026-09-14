@@ -130,10 +130,24 @@ describe('auto-approve — operator policy, with the two measured guards intact'
     expect(sql).toMatch(/v_errors\s*:?=\s*v_errors\s*\+\s*1/);
   });
 
-  it('requires live work for BOTH guards, so neither ships untested', () => {
+  it('proves BOTH guards structurally, and never on live backlog', () => {
+    // This test used to require the verify block to RAISE when either guard had
+    // no rows to act on. That asserted a precondition about the world, and it
+    // was self-defeating: the closer in 50200101100100 runs every 5 minutes to
+    // drain exactly the unreachable population, so it emptied that set and the
+    // migration aborted the production push BECAUSE its sibling worked.
+    //
+    // What can honestly be asserted is that the guards EXIST in the function
+    // body — that survives a drained queue, which is the steady state this
+    // whole change is trying to reach.
     const verify = verifyOf(findMigration('review_queue_autoapprove'));
-    expect(verify).toContain('unreachable guard has no live work');
-    expect(verify).toContain('wrong-country guard has no live work');
+    expect(verify).toContain('the unreachable-entity guard is missing');
+    expect(verify).toContain('the wrong-country guard is missing');
+
+    // And the backlog counts must be reported, never raised on. A regression to
+    // `RAISE EXCEPTION` here re-arms the abort that broke the deploy.
+    expect(verify).not.toMatch(/RAISE EXCEPTION[^;]*has no live work/);
+    expect(verify).toMatch(/RAISE NOTICE[^;]*unreachable guard has no live work/);
   });
 });
 
