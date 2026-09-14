@@ -154,29 +154,33 @@ update unified_tags
 do $verify$
 declare
   v_bad int;
-  v_desc_changed int;
+  v_note int;
 begin
-  -- Positive assertion of the REACHED state. Counting updated rows proves
-  -- nothing on a re-run, because every statement above is content-guarded and
-  -- legitimately no-ops once applied.
+  -- SOFT ON PRECONDITIONS, HARD ON POSTCONDITIONS -- and the postcondition is
+  -- that THE DEFECT IS GONE, not that this file's exact prose is present.
+  --
+  -- The distinction is load-bearing. Asserting "row X now reads <my text>"
+  -- aborts if a human writes BETTER prose between authoring and CI applying
+  -- this, and `db push` aborting on main blocks every migration queued behind
+  -- it -- the repo-wide blast radius 20360401100100 records from two
+  -- individually-correct changes, and the shape that left 20810101100100
+  -- half-applied. Asserting "row X no longer carries <the wrong text>" is
+  -- satisfied by this file's fix AND by anyone else's better one.
   select count(*) into v_bad
     from unified_tags
    where status = 'active'
-     and (
-       (slug = 'news-pride' and short_description <> 'Pride marches, festivals and celebrations.')
-    or (slug = 'workshop'   and short_description <> 'A hands-on session where a group learns a skill together.')
-    or (slug = 'support'    and short_description <> 'Practical and emotional help people give each other.')
-    or (slug = 'dating'     and short_description <> 'Meeting people with romantic or sexual intent.')
-    or (slug = 'romance'    and short_description <> 'Romantic love and the feelings and gestures around it.')
-    or (slug = 'keeper'     and short_description <> 'A role built on guarding and caring for someone.')
-    or (slug = 'bull'       and short_description <> 'The dominant third man in a cuckold dynamic.')
-    or (slug = 'man'        and short_description <> 'A masculine gender identity, held by trans and cis men alike.')
-     );
+     and ((slug = 'news-pride' and short_description = 'Emotion of self-worth and accomplishment')
+       or (slug = 'workshop'   and short_description = 'Space for artists to work')
+       or (slug = 'support'    and short_description = 'Surface for painting or drawing')
+       or (slug = 'dating'     and short_description = 'Attributing a date to an object or event')
+       or (slug = 'romance'    and short_description = 'Films about romantic love and relationships')
+       or (slug = 'keeper'     and short_description = 'Goalkeeper in various team sports')
+       or (slug = 'bull'       and short_description = 'Adult male cattle')
+       or (slug = 'man'        and short_description = 'An adult human male.'));
   if v_bad <> 0 then
-    raise exception '% of the eight rows did not reach the corrected short_description', v_bad;
+    raise exception '% wrong-subject short_description(s) still live', v_bad;
   end if;
 
-  -- None of the wrong-subject bodies may survive.
   select count(*) into v_bad
     from unified_tags
    where status = 'active'
@@ -190,17 +194,23 @@ begin
     raise exception '% wrong-subject long_description(s) still live', v_bad;
   end if;
 
-  -- `man` keeps its body: rewriting correct prose is the retired LLM rewrite.
+  -- Everything below REPORTS. Each concerns state this migration does not
+  -- control, so a legitimate concurrent edit must not abort the push.
+
+  -- `man` keeps its body here. If someone has since rewritten it that is fine
+  -- and is not this file's business -- the point is only that THIS file did
+  -- not, which the guard test asserts against the SQL statically.
   if not exists (
     select 1 from unified_tags
      where slug = 'man' and status = 'active'
        and long_description like 'A man is an adult human being who identifies as male%'
   ) then
-    raise exception 'man.long_description was modified; it is correct and must be left alone';
+    raise notice 'man.long_description differs from the value this migration left alone (someone else edited it; not an error)';
   end if;
 
-  -- `description` is the evidence for every repair above and must be intact.
-  select count(*) into v_desc_changed
+  -- `description` is the evidence for every repair above. This file never
+  -- writes it; a drift here means someone else did.
+  select count(*) into v_note
     from unified_tags
    where status = 'active'
      and ((slug = 'news-pride' and description is distinct from 'Pride events and celebrations')
@@ -211,19 +221,20 @@ begin
        or (slug = 'keeper'     and description is distinct from 'Guardian or caretaker')
        or (slug = 'bull'       and description is distinct from 'Dominant male in cuckold scenarios')
        or (slug = 'man'        and description is distinct from 'A masculine gender identity that may or may not align with male sex assigned at birth.'));
-  if v_desc_changed <> 0 then
-    raise exception '% description(s) changed; this migration must only touch short/long', v_desc_changed;
+  if v_note <> 0 then
+    raise notice '% description(s) differ from what this migration read as evidence (edited elsewhere; not an error)', v_note;
   end if;
 
-  -- The rows deliberately NOT touched must still be untouched, so a later pass
-  -- can tell "left by decision" from "already fixed".
+  -- The rows deliberately NOT repaired. Reported so a later pass can tell
+  -- "left by decision" from "already fixed" -- never raised, because someone
+  -- legitimately fixing `lion` must not break `db push` for the whole repo.
   if not exists (select 1 from unified_tags where slug='lion' and status='active'
                    and short_description = 'Large cat species') then
-    raise exception 'lion was modified; its sense cannot be established from the row';
+    raise notice 'lion no longer carries its zoology short_description (fixed elsewhere; it was left alone here because its sense cannot be established from the row)';
   end if;
   if not exists (select 1 from unified_tags where slug='gym' and status='active'
                    and short_description = 'Sport with exercises for balance, strength, and flexibility') then
-    raise exception 'gym was modified; its description is NULL so a fix would be authoring';
+    raise notice 'gym no longer carries the gymnastics short_description (fixed elsewhere; it was left alone here because its description is NULL)';
   end if;
 end
 $verify$;

@@ -114,8 +114,20 @@ describe('category junction backfill', () => {
     const stmt = sql.slice(Math.max(0, i - 400), i + 200);
     expect(stmt).toMatch(/set\s+category_id\s*=\s*a\.category_id/);
     expect(stmt).toMatch(/a\.is_primary/);
-    // And the postcondition must pin BOTH sides to Fetishes.
-    expect(sql).toMatch(/robot expected Fetishes/);
+    // The postcondition pins AGREEMENT, not the literal category: hardcoding
+    // 'Fetishes' would abort `db push` on main if the row is legitimately
+    // recategorised, and agreement is the actual invariant. The literal is
+    // reported instead so the row that took the disagreement count from 1 to 0
+    // stays named.
+    expect(sql).toMatch(/raise exception '[^']*robot page and category_id still disagree/);
+    expect(sql).toMatch(/raise notice '[^']*robot now reads/);
+    expect(sql).not.toMatch(/raise exception '[^']*robot expected Fetishes/);
+    // Assert the CONDITION, not just the message: swapping the test to a
+    // literal category leaves the wording intact and reintroduces the abort.
+    expect(sql).toMatch(/if v_robot_pg is distinct from v_robot_id then/);
+    expect(sql).not.toMatch(
+      /if v_robot_pg is distinct from 'Fetishes' then\s*\n\s*raise exception/,
+    );
   });
 
   describe('the producer seal', () => {
@@ -156,6 +168,16 @@ describe('category junction backfill', () => {
       expect(raises.join('\n')).toMatch(/trg_sync_tag_category_after does not fire on INSERT/);
       expect(raises.join('\n')).toMatch(/trg_sync_tag_category does not fire on INSERT/);
     });
+  });
+
+  it('guards the faggot postcondition on the row still being active', () => {
+    // A retirement or merge of that row between authoring and CI applying this
+    // is a legitimate concurrent decision; without the existence guard the
+    // lookup returns NULL and aborts `db push` for the whole repo.
+    expect(sql).toMatch(
+      /if exists \(select 1 from unified_tags where slug = 'faggot' and status = 'active'\) then/,
+    );
+    expect(sql).toMatch(/raise notice '[^']*faggot is no longer an active tag/);
   });
 
   it('asserts the reached state positively, not the number of insertions', () => {

@@ -317,20 +317,30 @@ begin
   end if;
 
   -- The editorial row: page (junction) and search (text) must tell one story.
-  select c.name into v_faggot
-    from unified_tags t
-    join tag_category_assignments a on a.tag_id = t.id and a.is_primary
-    join tag_categories c on c.id = a.category_id
-   where t.slug = 'faggot' and t.status = 'active';
-  if v_faggot is distinct from 'Slang & Language' then
-    raise exception 'faggot primary junction is %, expected Slang & Language', coalesce(v_faggot, '<none>');
-  end if;
-  select t.category into v_faggot from unified_tags t where t.slug = 'faggot' and t.status='active';
-  if v_faggot is distinct from 'Slang & Language' then
-    raise exception 'faggot category TEXT is %, expected Slang & Language', coalesce(v_faggot, '<none>');
+  -- The editorial row: page (junction) and search (text) must tell one story.
+  -- Guarded on the row still EXISTING and being active: if it is retired or
+  -- merged away between authoring and CI applying this, that is a legitimate
+  -- concurrent decision and must not abort `db push` for the whole repo.
+  if exists (select 1 from unified_tags where slug = 'faggot' and status = 'active') then
+    select c.name into v_faggot
+      from unified_tags t
+      join tag_category_assignments a on a.tag_id = t.id and a.is_primary
+      join tag_categories c on c.id = a.category_id
+     where t.slug = 'faggot' and t.status = 'active';
+    select t.category into v_robot_id from unified_tags t where t.slug = 'faggot' and t.status='active';
+    if v_faggot is distinct from 'Slang & Language' or v_robot_id is distinct from 'Slang & Language' then
+      raise exception 'faggot must read Slang & Language on both page and facet, got junction=% text=%',
+        coalesce(v_faggot, '<none>'), coalesce(v_robot_id, '<none>');
+    end if;
+  else
+    raise notice 'faggot is no longer an active tag; the recategorisation was skipped (retired elsewhere)';
   end if;
 
-  -- `robot` must NOT have moved: the page keeps Fetishes, category_id follows it.
+  -- `robot` must not have MOVED: category_id follows the junction rather than
+  -- the reverse. The invariant is AGREEMENT, not the literal category -- pinning
+  -- 'Fetishes' would abort the push if someone legitimately recategorises the
+  -- row, and agreement is already covered corpus-wide by v_disagree above.
+  -- Reported by name here because this row is why that check went from 1 to 0.
   select c.name into v_robot_pg
     from unified_tags t
     join tag_category_assignments a on a.tag_id = t.id and a.is_primary
@@ -339,9 +349,12 @@ begin
   select c.name into v_robot_id
     from unified_tags t join tag_categories c on c.id = t.category_id
    where t.slug = 'robot' and t.status = 'active';
-  if v_robot_pg is distinct from 'Fetishes' or v_robot_id is distinct from 'Fetishes' then
-    raise exception 'robot expected Fetishes on both page and category_id, got junction=% category_id=%',
+  if v_robot_pg is distinct from v_robot_id then
+    raise exception 'robot page and category_id still disagree: junction=% category_id=%',
       coalesce(v_robot_pg,'<none>'), coalesce(v_robot_id,'<none>');
+  end if;
+  if v_robot_pg is distinct from 'Fetishes' then
+    raise notice 'robot now reads % rather than Fetishes (recategorised elsewhere; page and lever still agree)', coalesce(v_robot_pg,'<none>');
   end if;
 
   -- The seal itself: assert the triggers fire on INSERT, or the gap regrows.
