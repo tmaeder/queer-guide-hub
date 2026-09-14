@@ -8,6 +8,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { TriageView } from '@/components/admin/triage/TriageView';
+import { AutomationStatusCard } from '@/components/admin/AutomationStatusCard';
 import { useRegisterAdminCommandAction } from '@/components/admin/command-palette/useAdminCommandActions';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
@@ -78,7 +79,14 @@ export default function AdminInbox() {
             push the list below the fold. */}
         <h1 className="text-headline font-bold leading-tight">Inbox</h1>
         <p className="text-13 text-muted-foreground mt-1">
-          Everything that needs you, across queues. Sorted by priority. Press{' '}
+          {/* This line used to read "Everything that needs you, across queues",
+              and that was the problem rather than the framing: measured on
+              prod, 575 of 1,319 staging rows had already been committed or
+              rejected by the pipeline, and 1,409 of 3,997 review rows are
+              above the auto-approval threshold. The card below splits the two
+              so the number here is not read as a backlog that never moves. */}
+          Work across queues, sorted by priority. The card below separates what the nightly jobs
+          clear from what is yours. Press{' '}
           <kbd className="px-1 border border-border bg-muted text-2xs">J</kbd>/
           <kbd className="px-1 border border-border bg-muted text-2xs">K</kbd> to navigate,{' '}
           <kbd className="px-1 border border-border bg-muted text-2xs">A</kbd> approve,{' '}
@@ -86,6 +94,9 @@ export default function AdminInbox() {
           <kbd className="px-1 border border-border bg-muted text-2xs">?</kbd> for all shortcuts.
         </p>
       </header>
+      <div className="px-4 pt-4">
+        <AutomationStatusCard />
+      </div>
       <div className="flex-1 min-h-0">
         <TriageView initialQueueType={initialQueue} />
       </div>

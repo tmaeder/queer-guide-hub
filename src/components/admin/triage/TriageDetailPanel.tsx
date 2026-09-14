@@ -20,6 +20,13 @@ interface TriageDetailPanelProps {
     cannedSlug?: string,
     /** Queue-specific extras — dedup-review uses `{ keep_id }` for the canonical flip. */
     payload?: Record<string, unknown>,
+    /**
+     * Outing-safety confirmation, forwarded to triage_action's `p_confirm`.
+     * Separate from `payload` because it is not queue-specific data: it is a
+     * statement that a human read a safety claim and takes responsibility for
+     * publishing it, and `approve_entity_review` consults it directly.
+     */
+    confirm?: boolean,
   ) => void;
   isActionLoading: boolean;
 }
@@ -110,6 +117,18 @@ export function TriageDetailPanel({ item, onAction, isActionLoading }: TriageDet
   // merged together is an outing risk, so it gets an explicit confirm.
   const namesake = Boolean((item.risk_flags as { namesake?: boolean } | null)?.namesake);
 
+  // Outing-safety confirm. `approve_entity_review` raises 42501 —
+  // "high-risk destination: <field> approval requires explicit confirmation" —
+  // whenever `_review_risk_blocked` holds and the caller did not pass
+  // p_confirm. `triage_action` has forwarded that flag since it was written
+  // and `useTriageAction` has always had the parameter, but NO component ever
+  // set it, so every risk-gated quality row was un-approvable from the inbox
+  // by anyone: 347 rows on prod, 346 of them criminalizing-destination safety
+  // notes, i.e. precisely the highest-stakes content in the queue.
+  const requiresConfirm = Boolean(
+    (item.risk_flags as { confirm_may_be_required?: boolean } | null)?.confirm_may_be_required,
+  );
+
   // Per-pair state, reset when the queue advances. The panel is reused in place, so
   // without the reset the previous pair's canonical choice and namesake confirmation
   // would carry silently onto the next one — and on the namesake flag that means the
@@ -122,14 +141,25 @@ export function TriageDetailPanel({ item, onAction, isActionLoading }: TriageDet
     id: item.id,
     keepId: originalKeepId,
     namesakeConfirmed: false,
+    safetyConfirmed: false,
   });
   if (perPair.id !== item.id) {
-    setPerPair({ id: item.id, keepId: originalKeepId, namesakeConfirmed: false });
+    setPerPair({
+      id: item.id,
+      keepId: originalKeepId,
+      namesakeConfirmed: false,
+      safetyConfirmed: false,
+    });
   }
   const keepId = perPair.id === item.id ? perPair.keepId : originalKeepId;
   const namesakeConfirmed = perPair.id === item.id ? perPair.namesakeConfirmed : false;
+  // Carried in the same reset-on-advance object as the namesake flag and for
+  // the identical reason: the panel is reused in place, so a confirmation that
+  // survived the advance would already be satisfied for a row nobody read.
+  const safetyConfirmed = perPair.id === item.id ? perPair.safetyConfirmed : false;
   const setKeepId = (v: string) => setPerPair((p) => ({ ...p, keepId: v }));
   const setNamesakeConfirmed = (v: boolean) => setPerPair((p) => ({ ...p, namesakeConfirmed: v }));
+  const setSafetyConfirmed = (v: boolean) => setPerPair((p) => ({ ...p, safetyConfirmed: v }));
 
   // The canonical flip. `triage_action` has taken `p_payload.keep_id` since
   // 20260801050000 and `useUnifiedTriageQueue` has carried a payload slot all along,
@@ -140,11 +170,17 @@ export function TriageDetailPanel({ item, onAction, isActionLoading }: TriageDet
     notes?: string,
     cannedSlug?: string,
   ) => {
+    // Only ever sent on APPROVE. p_confirm is a statement that a human read a
+    // safety claim and takes responsibility for publishing it; a rejection
+    // publishes nothing, so attaching it there would record a confirmation
+    // nobody made.
+    const confirm = action === 'approve' && requiresConfirm && safetyConfirmed ? true : undefined;
+
     if (isDedup && action === 'approve' && keepId && keepId !== originalKeepId) {
-      onAction(action, notes, cannedSlug, { keep_id: keepId });
+      onAction(action, notes, cannedSlug, { keep_id: keepId }, confirm);
       return;
     }
-    onAction(action, notes, cannedSlug);
+    onAction(action, notes, cannedSlug, undefined, confirm);
   };
 
   const diffs =
@@ -269,6 +305,32 @@ export function TriageDetailPanel({ item, onAction, isActionLoading }: TriageDet
               </div>
             )}
 
+            {requiresConfirm && (
+              <div className="border-t px-4 py-4">
+                <div className="flex items-start gap-2">
+                  <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+                  <div className="min-w-0 space-y-2">
+                    <p className="text-13">
+                      <span className="font-bold">Outing-safety gate.</span> This destination may
+                      criminalise LGBTQ+ people. A note that understates the law reaches a traveller
+                      as reassurance, so it can never publish on a machine&rsquo;s confidence alone
+                      — read the proposed text against the country&rsquo;s actual legal status
+                      before approving.
+                    </p>
+                    <label className="flex items-start gap-2 text-13">
+                      <input
+                        type="checkbox"
+                        className="mt-0.5"
+                        checked={safetyConfirmed}
+                        onChange={(e) => setSafetyConfirmed(e.target.checked)}
+                      />
+                      <span>I have read this note and confirm it should publish</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {diffs.length > 0 && (
               <div className="border-t">
                 <p className="px-4 py-1.5 text-2xs font-medium text-muted-foreground uppercase tracking-wider bg-muted/50">
@@ -357,13 +419,16 @@ export function TriageDetailPanel({ item, onAction, isActionLoading }: TriageDet
             <Link to={externalConsole.route}>{externalConsole.label} →</Link>
           </Button>
         </div>
-      ) : isDedup && namesake && !namesakeConfirmed ? (
+      ) : (isDedup && namesake && !namesakeConfirmed) || (requiresConfirm && !safetyConfirmed) ? (
         // The gate is on APPROVE only — reject and skip must stay available, or the
         // reviewer cannot clear a pair they have decided is two different people,
-        // which is the outcome this flag exists to make easy.
+        // which is the outcome this flag exists to make easy. The same holds for a
+        // safety note: "this claim should not publish" must be the easy answer.
         <div className="border-t">
           <p className="px-4 pt-4 text-13 text-muted-foreground">
-            Confirm the namesake check above to enable approving this merge.
+            {isDedup
+              ? 'Confirm the namesake check above to enable approving this merge.'
+              : 'Confirm the safety check above to enable publishing this note.'}
           </p>
           <ActionBar
             onAction={handleAction}

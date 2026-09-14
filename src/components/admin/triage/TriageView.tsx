@@ -22,10 +22,13 @@ import {
   useHighConfCount,
   useBulkApproveHighConf,
   type TriageFilters,
+  type TriageItem,
 } from '@/hooks/useUnifiedTriageQueue';
 import { useReviewCounts } from '@/hooks/useReviewCounts';
+import { useReviewQueueCohorts } from '@/hooks/useReviewQueueCohorts';
 import { ReviewBulkBar } from '@/components/admin/review/ReviewBulkBar';
 import { TriageFilterBar } from './TriageFilterBar';
+import { QualityCohortBar } from './QualityCohortBar';
 import { TriageList } from './TriageList';
 import { TriageDetailPanel } from './TriageDetailPanel';
 import { TriageFocusMode } from './TriageFocusMode';
@@ -56,6 +59,14 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
 
   const { data, isLoading, error } = useUnifiedTriageQueue(filters);
   const { data: counts } = useReviewCounts();
+
+  // Quality is in scope when nothing is filtered (the whole inbox) or when at
+  // least one quality key is selected. Deliberately `some`, not `every`: the
+  // cohort bar's own chips pin a SINGLE quality key, so an `every` test would
+  // hide the bar the moment a reviewer used it.
+  const qualityInScope =
+    !filters.queueTypes || filters.queueTypes.some((k) => k.startsWith('quality-'));
+  const { data: cohorts, isLoading: cohortsLoading } = useReviewQueueCohorts(qualityInScope);
   const triageAction = useTriageAction();
 
   const items = useMemo(() => data?.items ?? [], [data]);
@@ -100,6 +111,12 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
       // handler dropped it — which is why dedup-review's canonical flip (`keep_id`)
       // was reachable from SQL and from the hook and from no button anywhere.
       payload?: Record<string, unknown>,
+      // Outing-safety confirmation, forwarded to triage_action's p_confirm.
+      // Set only by TriageDetailPanel, only on approve, and only after the
+      // reviewer ticks the box — see the gate there. Without it,
+      // approve_entity_review raises 42501 for every risk-gated row, which is
+      // what made 347 proposals un-approvable from this screen.
+      confirm?: boolean,
     ) => {
       if (!activeItem) return;
 
@@ -116,6 +133,7 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
           notes,
           cannedSlug,
           payload,
+          confirm,
         },
         {
           onSuccess: () => {
@@ -164,13 +182,49 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
   const [focusOpen, setFocusOpen] = useState(false);
   const [confirmHighConf, setConfirmHighConf] = useState(false);
 
+  /**
+   * A namesake merge can never be a bulk decision.
+   *
+   * `TriageDetailPanel` gates approving a personality dedup pair behind an explicit
+   * "these are the same person" confirmation, because two different people merged
+   * into one profile is an outing risk and `_personality_merge_core` repoints the
+   * relationship graph — which no undo fully rebuilds, since it DROPS self-loops and
+   * already-existing edges rather than moving them.
+   *
+   * That gate protected the one-at-a-time path and nothing else: select-all →
+   * Approve went straight to `triage_action`, which has no such check, so the button
+   * beside the gate bypassed it for all 46 open personality pairs at once.
+   *
+   * `approve_dedup_review_batch` already refuses personalities in its own WHERE for
+   * exactly this reason; the bulk path does not route through it, so the rule has to
+   * be restated here. Reject and skip stay available — "these are two different
+   * people" must remain the easy answer.
+   */
+  const isNamesakePair = (i: TriageItem) =>
+    i.queue_type === 'dedup-review' && i.content_type === 'personality';
+
   const runBulk = useCallback(
     async (targets: typeof items, action: 'approve' | 'reject') => {
       if (targets.length === 0) return;
+
+      const held = action === 'approve' ? targets.filter(isNamesakePair) : [];
+      const actionable = action === 'approve' ? targets.filter((i) => !isNamesakePair(i)) : targets;
+
+      if (held.length > 0 && actionable.length === 0) {
+        toast.warning(
+          `${held.length} namesake pair${held.length === 1 ? '' : 's'} held back — approve these one at a time.`,
+          {
+            description:
+              'Merging two different people is an outing risk and the relationship graph cannot be fully rebuilt.',
+          },
+        );
+        return;
+      }
+
       setBulkLoading(true);
       let ok = 0;
       let fail = 0;
-      for (const item of targets) {
+      for (const item of actionable) {
         try {
           await triageAction.mutateAsync({
             itemId: item.id,
@@ -185,7 +239,14 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
       setBulkLoading(false);
       setSelectedIds(new Set());
       setActiveId(null);
-      toast.success(`${action}d ${ok} item${ok !== 1 ? 's' : ''}${fail ? `, ${fail} failed` : ''}`);
+      toast.success(
+        `${action}d ${ok} item${ok !== 1 ? 's' : ''}${fail ? `, ${fail} failed` : ''}`,
+        held.length > 0
+          ? {
+              description: `${held.length} namesake pair${held.length === 1 ? '' : 's'} held back — approve those individually.`,
+            }
+          : undefined,
+      );
     },
     [triageAction],
   );
@@ -341,6 +402,19 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
 
       {/* Filters */}
       <TriageFilterBar filters={filters} counts={counts} onFiltersChange={updateFilters} />
+      {/*
+        Only while Quality is in scope. The bar answers "which pile should I
+        work" and that question is meaningless across the whole inbox, where
+        the queue chips already answer it.
+      */}
+      {qualityInScope && (
+        <QualityCohortBar
+          cohorts={cohorts}
+          isLoading={cohortsLoading}
+          filters={filters}
+          onFiltersChange={updateFilters}
+        />
+      )}
 
       {/* Split pane — use simple flex layout instead of resizable panels */}
       {isMobile ? (

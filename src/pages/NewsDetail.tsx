@@ -47,6 +47,7 @@ import { ContentLangBadge } from '@/components/i18n/ContentLangBadge';
 import { ReadingProgressBar } from '@/components/news/editorial/ReadingProgressBar';
 import { useAdminEditMode } from '@/hooks/useAdminEditMode';
 import { EditorsPickToggle } from '@/components/admin/news/EditorsPickToggle';
+import { AdminEditButton } from '@/components/admin/AdminEditButton';
 
 import {
   loadNewsDetail,
@@ -81,7 +82,7 @@ export default function NewsDetail() {
   const [loading, setLoading] = useState(true);
   const [dbCategories, setDbCategories] = useState<DbCategory[]>([]);
   const { markRead } = useUserNewsReads();
-  const { isAdmin, altHeld } = useAdminEditMode();
+  const { isAdmin, editMode } = useAdminEditMode();
   const isMobile = useIsMobile();
 
   const article = data?.article ?? null;
@@ -461,6 +462,15 @@ export default function NewsDetail() {
           )}
           <FavoriteButton itemId={article.id} type="news" />
           <ReportButton contentType="news_article" contentId={article.id} />
+          {/* `news_articles` — the registry key (the table), not the singular
+              `news_article` the ReportButton above uses for its own taxonomy. */}
+          <AdminEditButton
+            contentType="news_articles"
+            contentId={article.id}
+            contentName={articleTitle}
+            currentData={article as unknown as Record<string, unknown>}
+            onSaved={() => window.location.reload()}
+          />
           <Button variant="outline" size="sm" onClick={handleShare}>
             <Share2 size={16} className="mr-1.5" />
             {t('newsDetail.share', 'Share')}
@@ -497,7 +507,7 @@ export default function NewsDetail() {
           {/* "Why this matters" — admin-curated, shown to everyone when populated.
               The empty authoring placeholder stays hidden during normal browsing;
               admins reveal it by holding Alt (#1812). */}
-          {(article.editorial_note || altHeld) && (
+          {(article.editorial_note || editMode) && (
             <aside
               aria-label={t('newsDetail.whyThisMatters', 'Why this matters')}
               className="border-l border-border-hairline py-2 pl-6"
