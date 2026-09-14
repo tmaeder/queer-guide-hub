@@ -39,6 +39,7 @@ const MIGRATIONS = join(process.cwd(), 'supabase', 'migrations');
 const CORRECTIONS = '50400101100000_hiv_sti_glossary_corrections.sql';
 const REVIVALS = '50400101100100_hiv_sti_vocabulary_revivals.sql';
 const STYLEGUIDE = '50400101100200_unaids_terminology_into_styleguide.sql';
+const SENTINEL = '50400101100300_tag_merge_graph_signals.sql';
 
 /** Line comments only; these files use no block comments. */
 const statementsOf = (file: string): string =>
@@ -304,5 +305,78 @@ describe('HIV/STI pass — 50400101100200 UNAIDS terminology', () => {
     expect(verifyBlockOf(STYLEGUIDE)).toMatch(
       /'living-with-hiv','hiv-negative','people-who-use-drugs','sex-worker','condomless','u-equals-u'/,
     );
+  });
+});
+
+describe('HIV/STI pass — 50400101100300 the merge-graph sentinel', () => {
+  it('is a STANDALONE function, not a key restated onto tag_hygiene_stats()', () => {
+    const sql = statementsOf(SENTINEL);
+    expect(sql).toMatch(/create or replace function public\.tag_merge_graph_signals\(\)/);
+    expect(sql).not.toMatch(/create or replace function public\.tag_hygiene_stats/);
+  });
+
+  it('reports coverage, so four zeroes from an empty corpus cannot read as clean', () => {
+    const sql = applyBlockOf(SENTINEL);
+    const shape = sql.slice(sql.indexOf('jsonb_build_object'), sql.indexOf('comment on function'));
+    expect(shape).toMatch(/'merges_total',\s*\(select count\(\*\) from m\)/);
+  });
+
+  it('separates the structural zero-invariants from the editorial one', () => {
+    // Scoped to the jsonb_build_object, NOT the whole file: every one of these
+    // keys is also named in this migration's own verify block, so an unscoped
+    // toContain passes with the key deleted from the function that reports it.
+    const sql = applyBlockOf(SENTINEL);
+    const shape = sql.slice(sql.indexOf('jsonb_build_object'), sql.indexOf('comment on function'));
+    expect(shape.length).toBeGreaterThan(200);
+    for (const key of ['target_merged', 'target_missing', 'self_merged', 'target_deprecated']) {
+      expect(shape).toContain(`'${key}'`);
+    }
+    // Collapsing them into one number would make the gate red on arrival.
+    expect(sql).not.toMatch(/'merge_target_not_active'/);
+  });
+
+  it('names the residue instead of only counting it', () => {
+    expect(statementsOf(SENTINEL)).toMatch(/'deprecated_examples'/);
+  });
+
+  it('is service_role only — a DEFINER aggregate granted to authenticated is granted to everyone', () => {
+    const sql = statementsOf(SENTINEL);
+    expect(sql).toMatch(/revoke all on function public\.tag_merge_graph_signals\(\) from public/);
+    expect(sql).toMatch(
+      /grant execute on function public\.tag_merge_graph_signals\(\) to service_role/,
+    );
+    expect(sql).not.toMatch(/to authenticated/);
+  });
+
+  it('exercises itself at deploy time rather than first running in CI on real drift', () => {
+    const verify = verifyBlockOf(SENTINEL);
+    expect(verify).toMatch(/select public\.tag_merge_graph_signals\(\) into v/);
+    expect(verify).toMatch(/merges_total.*disagrees with a direct count/s);
+  });
+
+  it('the health script gates the structural keys and only warns on the editorial one', () => {
+    const js = readFileSync(join(process.cwd(), 'scripts', 'check-pipeline-health.mjs'), 'utf8');
+    const i = js.indexOf('tag_merge_graph_signals');
+    expect(i).toBeGreaterThan(0);
+    const section = js.slice(i, i + 3600);
+    // The structural keys are listed as zero-invariants and that loop is the
+    // one that sets FAILED. Scoped to the span between the array and the
+    // advisory branch, so it cannot be satisfied by some later `FAILED = true`.
+    const structural = section.slice(
+      section.indexOf('const zeroInvariants'),
+      section.indexOf('target_deprecated ?? 0'),
+    );
+    expect(structural).toContain("'target_merged'");
+    expect(structural).toContain("'target_missing'");
+    expect(structural).toContain("'self_merged'");
+    expect(structural).toMatch(/FAILED = true/);
+    // editorial -> console.log, never FAILED
+    const dep = section.slice(section.indexOf('target_deprecated ?? 0'));
+    expect(dep.slice(0, 600)).toMatch(/console\.log/);
+    expect(dep.slice(0, 600)).not.toMatch(/FAILED = true/);
+    // A failed probe must say so — and asserted on the PROBE branch's own
+    // wording, because the per-key warn inside the loop also says
+    // "measured NOTHING" and satisfies a bare match with this branch deleted.
+    expect(section).toMatch(/50400101100300 not applied\?[\s\S]{0,80}measured NOTHING/);
   });
 });

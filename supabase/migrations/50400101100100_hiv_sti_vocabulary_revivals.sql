@@ -54,8 +54,11 @@
 -- is deprecated or itself merged is a redirect to a page that does not render.
 -- Measured corpus-wide: of 289 merges, **8 point at a deprecated row and 5 at
 -- another merged row**. This was found by following ONE term — `hpv` — which is
--- why the invariant is added as a reported signal rather than left to the next
--- person who trips over it.
+-- the argument for a standing counter rather than another hand-audit. The
+-- counter is NOT in this file: it is `tag_merge_graph_signals()`, added by
+-- 50400101100300, because restating `tag_hygiene_stats()`'s 210-line body to
+-- add a key is a merge-collision surface (the reason `glossary_link_signals`
+-- and the news/venue/event signals are all separate functions).
 --
 -- Seven are repaired here. The five merged->merged chains are collapsed to
 -- their terminal target, which is mechanical and safe because every one of them
@@ -70,10 +73,11 @@
 -- needs an editorial decision on a row outside this pass's subject:
 -- `fluctuating/evolving`, `sensation-stimulation-devices`, `projector`, and the
 -- three mojibake person slugs `jan-mikolasek`, `kirsten-plotz`, `preistrager`
--- (all three targets carry no body at all). The new signal is therefore
--- ADVISORY, alongside `unreviewed_typed_alias` and the other queue depths, and
--- not a gate: a hard check that is red the day it ships is the cry-wolf shape
--- this repo already removed once from the dedup backlog rule.
+-- (all three targets carry no body at all). So the counter splits: the
+-- STRUCTURAL keys (a chain, a dangling uuid, a self-merge) gate at zero because
+-- this file drives them there, while `target_deprecated` only WARNS and prints
+-- the six pairs. A hard check that is red the day it ships is the cry-wolf
+-- shape this repo already removed once from the dedup backlog rule.
 --
 -- NOT REVIVED, each measured rather than assumed:
 --   serosorting      already an APPROVED alias of the active `seroadaptation`.
