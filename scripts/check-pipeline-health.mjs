@@ -2797,7 +2797,7 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
 //
 //     So depth is DESCRIBED and never failed on — a deep queue is a corpus
 //     fact a human decides about. What hard-fails is what the automation in
-//     50020101100100 guarantees: the closer is registered, is not
+//     50200101100100 guarantees: the closer is registered, is not
 //     auto-paused-then-recovered, and is holding unactionable rows near zero.
 //     A broken mechanism is an error; an awkward corpus is a warning, because a
 //     check that fires on every run is one people learn to scroll past.
@@ -2819,7 +2819,7 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
   })
   if (!res.ok) {
     const detail = (await res.text()).slice(0, 200)
-    console.error(`✗ review_queue_signals → HTTP ${res.status} (migration 50020101100300 not applied? PGRST202 = the function does not exist) ${detail}`)
+    console.error(`✗ review_queue_signals → HTTP ${res.status} (migration 50200101100300 not applied? PGRST202 = the function does not exist) ${detail}`)
     console.error('  The review queue could not be read at all. Absence of a check is not absence of a backlog.')
     FAILED = true
   } else {
@@ -2868,7 +2868,7 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
         } else if (closer.registered === false) {
           console.error('✗ review_queue_close_unactionable has no admin_automations row — the closer is unregistered')
           console.error('  Nothing drains the unactionable rows, and pg_cron cannot be reconciled from a registry that does not describe it.')
-          console.error('  Re-apply migration 50020101100100, which is the only scheduler for this job.')
+          console.error('  Re-apply migration 50200101100100, which is the only scheduler for this job.')
           FAILED = true
         } else if (closer.falsely_paused === true) {
           console.error(`✗ review_queue_close_unactionable was auto-paused, then RECOVERED, and never re-enabled (last run ${closer.last_run_at ?? 'never'})`)
