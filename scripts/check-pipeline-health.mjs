@@ -2591,8 +2591,20 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
   if (!res.ok) {
     // A failed probe must SAY it failed. Falling through to a default would
     // report a clean layer on the strength of never having looked.
-    console.warn(`⚠ analytics_hygiene_stats → HTTP ${res.status} (20700301100500 not applied?)`)
+    console.warn(`⚠ analytics_hygiene_stats → HTTP ${res.status}`)
     console.warn('  This check measured NOTHING — it did not pass.')
+    // The first cause this ever had was NOT a missing migration, and the hint
+    // that used to sit here ("20700301100500 not applied?") cost a session:
+    // the migration was applied and the function was healthy — it just took
+    // 10.3s against the 8s statement_timeout `service_role` inherits from
+    // `authenticator`, so PostgREST cancelled it and answered 500. Check the
+    // timing before the deployment (60000101100000 added the index that fixed it).
+    if (res.status >= 500) {
+      console.warn('  A 500 here is usually a TIMEOUT, not a missing function: service_role')
+      console.warn('  inherits statement_timeout=8s. Time it directly —')
+      console.warn('    explain analyze select public.analytics_hygiene_stats();')
+      console.warn('  — before concluding the migration is missing.')
+    }
   } else {
     const a = await res.json()
     let sectionOk = true
