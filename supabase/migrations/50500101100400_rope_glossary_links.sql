@@ -1,7 +1,7 @@
 -- Link the rope vocabulary together, and reject three broader links that are
 -- wrong in the DISOWNED entity's sense rather than the tag's.
 --
--- The seven-glossary comparison (50200101100500-100700) added 16 rope terms and
+-- The seven-glossary comparison (50500101100000-100700) added 16 rope terms and
 -- revived 13, and every one of them landed as an island: `nerve-compression`
 -- is the thing a reader needs while looking at `box-tie`, and nothing connected
 -- them. This file is the "add links" half.
@@ -45,7 +45,7 @@
 --   suspension -> punishment      the QID was Q87406427, "account suspension",
 --                                 and a suspension IS a punishment in that
 --                                 sense. The tag is rope suspension. Same root
---                                 cause as the account-ban prose 50200101100500
+--                                 cause as the account-ban prose 50500101100000
 --                                 replaces — and the prose fix alone would have
 --                                 left this standing, which is the point.
 --   aftercare -> recreational     the QID was "after-school activity", which is

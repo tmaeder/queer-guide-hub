@@ -4,7 +4,7 @@
 --
 -- SOURCE: the term LISTS from rebornropes.com's A-Z rope glossary, its "A is
 -- for" page and its positions page, plus the four general kink glossaries
--- compared in 50200101100500. Not one word of prose below is copied — the
+-- compared in 50500101100000. Not one word of prose below is copied — the
 -- lists were used only as a signal for what is absent.
 --
 -- WHAT THE COMPARISON ACTUALLY FOUND. The general kink vocabulary is in good
@@ -251,7 +251,7 @@ That is the reason it is worth naming. A top deep in it can miss a bottom''s col
 
     insert into public.tag_sources (tag_id, source_type, claim_summary, is_public)
     select t.id, 'editorial:general-knowledge',
-           'Definition written by hand for migration 50200101100700 (rope technique vocabulary).',
+           'Definition written by hand for migration 50500101100200 (rope technique vocabulary).',
            false
       from public.unified_tags t
      where t.slug = r.slug

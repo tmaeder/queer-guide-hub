@@ -3029,7 +3029,7 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
 //     put the dedup backlog rule on the median age rather than the oldest.
 //
 //     The ceiling is deliberately ABOVE the measured baseline. 364 rows on
-//     2026-09-14; 50200101100500 repairs 26 by hand, 11 of which are in this
+//     2026-09-14; 50500101100000 repairs 26 by hand, 11 of which are in this
 //     cohort, so the expected value on the next run is ~353. 380 leaves headroom
 //     for concurrent glossary work without letting a real regression through.
 //
@@ -3045,7 +3045,7 @@ const DISOWNED_PROSE_CEILING = 380
   })
   if (!res.ok) {
     const detail = (await res.text()).slice(0, 200)
-    console.error(`✗ tag_disowned_prose_signals → HTTP ${res.status} (migration 50200101100800 not applied? PGRST202 = the function does not exist) ${detail}`)
+    console.error(`✗ tag_disowned_prose_signals → HTTP ${res.status} (migration 50500101100300 not applied? PGRST202 = the function does not exist) ${detail}`)
     FAILED = true
   } else {
     const dp = (await res.json()) ?? {}

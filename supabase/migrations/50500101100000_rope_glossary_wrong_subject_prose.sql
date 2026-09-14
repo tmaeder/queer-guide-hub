@@ -79,7 +79,7 @@
 -- seo_indexable. A hand-read sample of 24 came back 11 clearly wrong, 3
 -- borderline, 10 fine — so roughly 45%, about 165 rows, and this migration
 -- repairs only the 26 that were read. The rest is unexamined, not clean.
--- 50200101100700 adds the sentinel that keeps the number visible.
+-- 50500101100200 adds the sentinel that keeps the number visible.
 --
 -- REPLACE, DO NOT RETRACT. Every row here is ACTIVE and rendering, so nulling
 -- the column would leave a live page thinner instead of correct — the rule
@@ -401,7 +401,7 @@ $mig$;
 -- comparison does not re-derive it from scratch.
 insert into public.tag_sources (tag_id, source_type, claim_summary, is_public)
 select t.id, 'editorial:general-knowledge',
-       'Wrong-subject prose repair, migration 50200101100500. The row''s own `description` was correct; '
+       'Wrong-subject prose repair, migration 50500101100000. The row''s own `description` was correct; '
        || 'short_description/long_description described a different subject, written by the 2026-04-27 '
        || 'enrichment sweep from a wrong or name-only Wikidata lookup. Prose replaced rather than retracted '
        || 'because the row is active and rendering. Wrong identifiers nulled, never repointed.',
@@ -414,4 +414,4 @@ select t.id, 'editorial:general-knowledge',
                   'possum','babyboy','toy')
    and not exists (select 1 from public.tag_sources s
                     where s.tag_id = t.id
-                      and s.claim_summary like '%migration 50200101100500%');
+                      and s.claim_summary like '%migration 50500101100000%');

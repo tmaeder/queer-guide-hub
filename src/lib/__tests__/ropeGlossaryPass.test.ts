@@ -7,26 +7,26 @@ import { join } from 'node:path';
  * (rebornropes.com A-Z + "A is for" + positions, skillfullybound.com,
  * fetbomb.com, naturallynaughty.shop Kinkipedia, lioness.io).
  *
- *   50200101100500  corrects rows that are LIVE and rendering. Every one has a
+ *   50500101100000  corrects rows that are LIVE and rendering. Every one has a
  *                   CORRECT `description` and a short/long description about a
  *                   different subject — /tags/suspension served a correct
  *                   definition of rope suspension followed by four sentences
  *                   about website account bans. These assertions exist to stop
  *                   those overwrites from ever becoming unconditional.
  *
- *   50200101100600  revives thirteen terms the 2026-06-05 orphan audit killed.
+ *   50500101100100  revives thirteen terms the 2026-06-05 orphan audit killed.
  *                   Eight carried the generic or wrong sense in their PUBLISHED
  *                   prose, so the load-bearing property is that the prose is
  *                   fixed BEFORE the revive — a blanket revive would have
  *                   published business negotiation on the consent term.
  *
- *   50200101100700  creates sixteen rows. The junction must be written
+ *   50500101100200  creates sixteen rows. The junction must be written
  *                   explicitly, because neither category trigger fires on
  *                   INSERT and is_adult derives from the junction.
  *
- *   50200101100800  the sentinel for the prose a disowned entity left behind.
+ *   50500101100300  the sentinel for the prose a disowned entity left behind.
  *
- *   50200101100900  links the vocabulary together, and tombstones three
+ *   50500101100400  links the vocabulary together, and tombstones three
  *                   `broader` edges that are wrong in the DISOWNED entity's
  *                   sense rather than the tag's.
  *
@@ -38,11 +38,11 @@ import { join } from 'node:path';
 
 const MIGRATIONS = join(process.cwd(), 'supabase', 'migrations');
 
-const PROSE = '50200101100500_rope_glossary_wrong_subject_prose.sql';
-const REVIVE = '50200101100600_revive_core_kink_vocabulary.sql';
-const VOCAB = '50200101100700_rope_technique_vocabulary.sql';
-const SENTINEL = '50200101100800_tag_disowned_prose_signals.sql';
-const LINKS = '50200101100900_rope_glossary_links.sql';
+const PROSE = '50500101100000_rope_glossary_wrong_subject_prose.sql';
+const REVIVE = '50500101100100_revive_core_kink_vocabulary.sql';
+const VOCAB = '50500101100200_rope_technique_vocabulary.sql';
+const SENTINEL = '50500101100300_tag_disowned_prose_signals.sql';
+const LINKS = '50500101100400_rope_glossary_links.sql';
 
 /** Line comments only; these files use no block comments. */
 const statementsOf = (file: string): string =>
@@ -130,7 +130,7 @@ describe('wrong-subject prose on live rows', () => {
 
   it('records why each row was overwritten', () => {
     expect(sql).toMatch(/insert into public\.tag_sources/);
-    expect(sql).toMatch(/migration 50200101100500/);
+    expect(sql).toMatch(/migration 50500101100000/);
   });
 });
 

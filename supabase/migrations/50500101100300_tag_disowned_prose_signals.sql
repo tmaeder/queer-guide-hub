@@ -7,7 +7,7 @@
 --                   a repair removed comes back on the same row.
 --   the PROSE       nothing watches this. 20360401100300 recorded the rule for
 --                   `queerness` — NULLING THE IDENTIFIER DOES NOT UNPUBLISH THE
---                   PROSE IT PRODUCED — and 50200101100500 found it again on a
+--                   PROSE IT PRODUCED — and 50500101100000 found it again on a
 --                   third entity class: `suspension` was hand-diagnosed on
 --                   2026-09-04 with the reason "Rope suspension. The QID is an
 --                   administrative account ban", its QID was nulled, and the
@@ -137,7 +137,7 @@ begin
   end if;
 
   -- A positive control. If this returns zero on deploy the join is wrong, not
-  -- the corpus clean: 50200101100500 repaired 26 rows by hand and left the rest
+  -- the corpus clean: 50500101100000 repaired 26 rows by hand and left the rest
   -- of the cohort standing, so a zero here means the probe is not measuring
   -- what it claims to.
   if (v->>'audit_rows')::int = 0 then

@@ -1,7 +1,7 @@
 -- Revive thirteen core kink terms the 2026-06-05 orphan audit deprecated, and
 -- fix the wrong-sense prose on eight of them BEFORE they go back.
 --
--- SOURCE: the same seven-glossary comparison as 50200101100500. Every one of
+-- SOURCE: the same seven-glossary comparison as 50500101100000. Every one of
 -- these thirteen appears in several of those glossaries as basic vocabulary,
 -- and every one is DEPRECATED here with no active row holding the concept.
 --
@@ -232,7 +232,7 @@ Anything inserted needs a flared base or a retrievable handle: the rectum draws 
     deprecated_at       = null,
     deprecation_reason  = null,
     seo_indexable       = false,
-    seo_deindex_reason  = 'migration:50200101100600-unpublished-revive',
+    seo_deindex_reason  = 'migration:50500101100100-unpublished-revive',
     human_reviewed      = true,
     verification_status = 'reviewed',
     last_verified_at    = now()
@@ -298,7 +298,7 @@ $mig$;
 
 insert into public.tag_sources (tag_id, source_type, claim_summary, is_public)
 select t.id, 'editorial:general-knowledge',
-       'Revived by migration 50200101100600 from the 2026-06-05 orphan audit, which deprecated glossary '
+       'Revived by migration 50500101100100 from the 2026-06-05 orphan audit, which deprecated glossary '
        || 'terms for having no entity assignments — a premise already recorded as false for definitions. '
        || 'Left unpublished (active, seo_indexable=false): the gap being closed is site search. Where the '
        || 'published prose described the generic or wrong sense it was rewritten by hand before the revive.',
@@ -308,4 +308,4 @@ select t.id, 'editorial:general-knowledge',
                   'predicament-bondage','play-piercing','mummification','hemp-rope','anal-play',
                   'pvc','g-spot')
    and not exists (select 1 from public.tag_sources s
-                    where s.tag_id = t.id and s.claim_summary like '%migration 50200101100600%');
+                    where s.tag_id = t.id and s.claim_summary like '%migration 50500101100100%');
