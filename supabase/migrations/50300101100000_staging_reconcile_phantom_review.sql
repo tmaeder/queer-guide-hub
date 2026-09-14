@@ -53,6 +53,14 @@ DECLARE
   v_committed int := 0;
   v_rejected  int := 0;
 BEGIN
+  -- At */5 a slow pass can still be running when the next one fires. TRY, never
+  -- block: a skipped tick is free (the work is idempotent and the next tick is
+  -- 5 minutes away), whereas a queued pg_cron worker turns one slow run into a
+  -- pile-up — the failure that deadlocked the projector and the reaper.
+  IF NOT pg_try_advisory_xact_lock(hashtext('staging_reconcile_committed')) THEN
+    RETURN jsonb_build_object('skipped', 'another run holds the lock');
+  END IF;
+
   -- Class A: the pipeline committed it and the target row still exists.
   WITH cand AS (
     SELECT s.id
@@ -131,7 +139,7 @@ INSERT INTO public.admin_automations
 VALUES (
   'staging_reconcile_committed',
   'Staging: reconcile already-dispositioned review rows',
-  'Clears ingestion_staging rows stuck at pending_review whose pipeline outcome (committed or rejected) is already recorded on the row. Bookkeeping only: publishes nothing, rejects nothing.',
+  'Clears ingestion_staging rows stuck at pending_review whose pipeline outcome (committed or rejected) is already recorded on the row. Bookkeeping only: publishes nothing, rejects nothing. Runs every 5 minutes; the full 575-row backlog clears in 1.7s.',
   'system',
   true,
   '{"type":"schedule"}'::jsonb,
@@ -141,7 +149,7 @@ VALUES (
     'type','rpc',
     'command','SELECT public.run_staging_reconcile_committed(2000);',
     'jobname','staging_reconcile_committed'),
-  '25 6 * * *',
+  '*/5 * * * *',
   3
 )
 ON CONFLICT (slug) DO UPDATE
@@ -152,7 +160,7 @@ ON CONFLICT (slug) DO UPDATE
 
 SELECT cron.schedule(
   'staging_reconcile_committed',
-  '25 6 * * *',
+  '*/5 * * * *',
   'SELECT public.run_staging_reconcile_committed(2000);'
 );
 

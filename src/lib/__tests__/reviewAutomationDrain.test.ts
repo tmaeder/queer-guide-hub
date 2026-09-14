@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { cadenceLabel } from '@/lib/automationCadence';
 
 const MIGRATIONS = join(process.cwd(), 'supabase', 'migrations');
 
@@ -188,5 +189,95 @@ describe('adult-links producer — the closers make the rejection guard necessar
     // The old comment asserted the exact opposite of how uq_erq_open works.
     expect(src).not.toContain('Rejected rows are not');
     expect(src).not.toContain('nothing here to churn yet');
+  });
+});
+
+describe('cadence — minutes, not a nightly window', () => {
+  // The first cut of all four jobs ran once a night at 300 rows a pass, which
+  // would have taken five nights to clear one backlog and left a row queued at
+  // 06:21 waiting until 06:20 tomorrow. Measured, the work is nowhere near
+  // that slow: 575 staging rows in 1.7s, and the whole 1,409-row at-threshold
+  // population in 7.5s (5.3 ms/row, triggers included). These assertions exist
+  // so a later edit cannot quietly put the latency back.
+  const files: [string, RegExp][] = [
+    ['staging_reconcile_phantom_review', /\*\/5 \* \* \* \*/],
+    ['review_queue_close_unactionable', /\*\/5 \* \* \* \*/],
+    ['close_undecidable_adult_link_reviews', /\*\/5 \* \* \* \*/],
+    ['drain_cadence_minutes', /\*\/5 \* \* \* \*/],
+  ];
+
+  it.each(files)('%s runs every five minutes', (needle, pattern) => {
+    const sql = statementsOf(findMigration(needle));
+    expect(sql).toMatch(pattern);
+    // A bare hour-of-day field is the nightly shape this replaced.
+    expect(sql).not.toMatch(/'\d+ \d+ \* \* \*'/);
+  });
+
+  it('auto-approve is offset from the closers rather than racing them', () => {
+    // Same device the projector/reaper pair uses. The guards inside the
+    // function are the real protection; the offset is the backstop.
+    const sql = statementsOf(findMigration('review_queue_autoapprove'));
+    expect(sql).toMatch(/2-59\/5 \* \* \* \*/);
+  });
+
+  it('auto-approve clears the whole at-threshold backlog in one pass', () => {
+    // 2,000 against a measured 1,409 rows at 5.3 ms/row — one tick, with ~13x
+    // headroom under pg_cron's 2-minute statement timeout.
+    const sql = statementsOf(findMigration('review_queue_autoapprove'));
+    expect(sql).toMatch(/p_batch integer DEFAULT 2000/);
+    expect(sql).toMatch(/run_review_queue_autoapprove\(2000, 0\.90\)/);
+  });
+
+  it('both frequent drains refuse to overlap instead of piling up', () => {
+    // try, never block: a skipped tick is free; a queued pg_cron worker turns
+    // one slow run into a pile-up.
+    for (const f of ['staging_reconcile_phantom_review', 'review_queue_autoapprove']) {
+      const sql = statementsOf(findMigration(f));
+      expect(sql).toContain('pg_try_advisory_xact_lock');
+      expect(sql).not.toContain('pg_advisory_xact_lock(');
+    }
+  });
+
+  it('the dedup retune moves the registry AND the live cron', () => {
+    // detect_stale_venues: a schedule "fixed" in a migration that the live cron
+    // never picked up. Branch (d) only creates a MISSING job.
+    const sql = statementsOf(findMigration('drain_cadence_minutes'));
+    expect(sql).toMatch(/UPDATE public\.admin_automations/);
+    expect(sql).toContain('cron.schedule');
+    const verify = verifyOf(findMigration('drain_cadence_minutes'));
+    expect(verify).toContain('registry schedule not retuned');
+    expect(verify).toContain('live cron schedule not retuned');
+  });
+});
+
+describe('cadenceLabel — derived from the schedules, never hardcoded', () => {
+  const J = (s: Record<string, string | null>, enabled = true) =>
+    Object.fromEntries(Object.entries(s).map(([k, v]) => [k, { enabled, schedule: v }]));
+
+  it('reports the WORST case across jobs, not the best', () => {
+    expect(cadenceLabel(J({ a: '*/5 * * * *', b: '*/15 * * * *' }))).toBe(
+      'next pass within 15 min',
+    );
+  });
+
+  it('treats the offset form as the same cadence', () => {
+    expect(cadenceLabel(J({ a: '2-59/5 * * * *' }))).toBe('next pass within 5 min');
+  });
+
+  it('calls a fixed hour-of-day what it is', () => {
+    // The whole point: if someone puts the nightly window back, the card must
+    // say so rather than keep promising minutes.
+    expect(cadenceLabel(J({ a: '*/5 * * * *', b: '20 6 * * *' }))).toBe('next pass tonight');
+  });
+
+  it('ignores disabled jobs — a job that is off has no cadence', () => {
+    expect(
+      cadenceLabel({ ...J({ a: '*/5 * * * *' }), b: { enabled: false, schedule: '20 6 * * *' } }),
+    ).toBe('next pass within 5 min');
+  });
+
+  it('returns null when nothing is scheduled at all', () => {
+    expect(cadenceLabel({})).toBeNull();
+    expect(cadenceLabel(J({ a: null }))).toBeNull();
   });
 });

@@ -2,6 +2,7 @@ import { AlertTriangle, Bot, User } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { useReviewAutomationStatus } from '@/hooks/useReviewAutomationStatus';
+import { cadenceLabel } from '@/lib/automationCadence';
 
 /** Jobs this card reports on, with the plain-language claim each one backs. */
 const JOBS: { slug: string; label: string }[] = [
@@ -58,6 +59,7 @@ export function AutomationStatusCard() {
   const { review_queue: rq, staging, dedup, jobs } = data;
   const machine = rq.auto_applies + rq.auto_closes + staging.auto_reconciles;
   const human = rq.needs_human + staging.needs_human + dedup.open;
+  const cadence = cadenceLabel(jobs);
   const offJobs = JOBS.filter((j) => jobs?.[j.slug] && jobs[j.slug].enabled === false);
   const missing = JOBS.filter((j) => !jobs?.[j.slug]);
 
@@ -69,7 +71,7 @@ export function AutomationStatusCard() {
             <Bot className="size-4 shrink-0 mt-0.5" aria-hidden="true" />
             <Figure
               value={machine}
-              label="Cleared without you"
+              label={cadence ? `Cleared without you — ${cadence}` : 'Cleared without you'}
               hint={`${rq.auto_applies.toLocaleString()} applied · ${rq.auto_closes.toLocaleString()} closed unread · ${staging.auto_reconciles.toLocaleString()} already done, status stale`}
             />
           </div>

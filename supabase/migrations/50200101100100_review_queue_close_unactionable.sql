@@ -206,7 +206,7 @@ VALUES (
   jsonb_build_object('type','rpc','fn','run_review_queue_close_unactionable',
                      'command','SELECT public.run_review_queue_close_unactionable();',
                      'jobname','review_queue_close_unactionable'),
-  '35 6 * * *', 3)
+  '*/5 * * * *', 3)
 ON CONFLICT (slug) DO UPDATE
   SET name=EXCLUDED.name, description=EXCLUDED.description,
       action=EXCLUDED.action, schedule=EXCLUDED.schedule;
@@ -214,7 +214,7 @@ ON CONFLICT (slug) DO UPDATE
 SELECT cron.unschedule('review_queue_close_unactionable')
  WHERE EXISTS (SELECT 1 FROM cron.job WHERE jobname='review_queue_close_unactionable');
 
-SELECT cron.schedule('review_queue_close_unactionable', '35 6 * * *',
+SELECT cron.schedule('review_queue_close_unactionable', '*/5 * * * *',
                      'SELECT public.run_review_queue_close_unactionable();');
 
 -- ── Postcondition ───────────────────────────────────────────────────────────

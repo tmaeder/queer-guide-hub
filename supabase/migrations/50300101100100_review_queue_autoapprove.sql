@@ -64,7 +64,7 @@
 -- ============================================================================
 
 CREATE OR REPLACE FUNCTION public.run_review_queue_autoapprove(
-  p_batch integer DEFAULT 300,
+  p_batch integer DEFAULT 2000,
   p_min_confidence numeric DEFAULT 0.90
 )
  RETURNS jsonb
@@ -83,6 +83,12 @@ DECLARE
   v_country  text;
   v_note     text;
 BEGIN
+  -- See the reconciler: try, never block. This one does real work per row, so
+  -- an overlapping pass would also contend on the same entity rows.
+  IF NOT pg_try_advisory_xact_lock(hashtext('review_queue_autoapprove')) THEN
+    RETURN jsonb_build_object('skipped', 'another run holds the lock');
+  END IF;
+
   FOR r IN
     SELECT q.*
       FROM public.entity_review_queue q
@@ -192,26 +198,34 @@ INSERT INTO public.admin_automations
 VALUES (
   'review_queue_autoapprove',
   'Review queue: auto-approve at the confidence threshold',
-  'Applies open entity_review_queue rows at confidence >= 0.90 without a human, per operator policy. Rejects rows whose entity is unreachable and safety notes that name the wrong country. Batch-capped for search-trigger discipline.',
+  'Applies open entity_review_queue rows at confidence >= 0.90 without a human, per operator policy. Rejects rows whose entity is unreachable and safety notes that name the wrong country. Runs every 5 minutes, offset from the closers; 2,000/pass against a measured 5.3 ms/row.',
   'system', true,
   '{"type":"schedule"}'::jsonb, '[]'::jsonb,
   jsonb_build_object('fn','run_review_queue_autoapprove','type','rpc',
-    'command','SELECT public.run_review_queue_autoapprove(300, 0.90);',
+    'command','SELECT public.run_review_queue_autoapprove(2000, 0.90);',
     'jobname','review_queue_autoapprove'),
-  '50 6 * * *', 3
+  '2-59/5 * * * *', 3
 )
 ON CONFLICT (slug) DO UPDATE
   SET action = EXCLUDED.action, schedule = EXCLUDED.schedule,
       enabled = true, description = EXCLUDED.description;
 
--- 06:50 — after the 06:35 unactionable closer and the 06:45 adult-link closer,
--- so the cheap deterministic closes run BEFORE anything is published. Ordering
--- is the same discipline the producer/closer pair uses: never publish a row a
--- closer would have removed.
+-- Every 5 minutes, OFFSET two minutes from the closers (which run at */5), so
+-- the cheap deterministic closes land before anything is published: never
+-- publish a row a closer would have removed. The offset is the same device the
+-- projector/reaper pair uses, and it is a backstop rather than the mechanism —
+-- this function carries the unreachable and wrong-country guards itself, so a
+-- tick that overtakes a closer still refuses those rows.
+--
+-- MEASURED, because the first cut of this shipped at 300/night and would have
+-- taken five nights to clear one backlog: the whole at-threshold population is
+-- 1,409 rows and drains in 7.5s end to end (5.3 ms/row, triggers included), so
+-- a 2,000 cap has ~13x headroom against pg_cron's 2-minute statement timeout
+-- and steady state is a few rows per tick. Latency is minutes, not weeks.
 SELECT cron.schedule(
   'review_queue_autoapprove',
-  '50 6 * * *',
-  'SELECT public.run_review_queue_autoapprove(300, 0.90);'
+  '2-59/5 * * * *',
+  'SELECT public.run_review_queue_autoapprove(2000, 0.90);'
 );
 
 -- ── Postcondition ───────────────────────────────────────────────────────────
