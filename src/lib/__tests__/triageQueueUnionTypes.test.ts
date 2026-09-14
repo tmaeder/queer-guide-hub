@@ -36,7 +36,7 @@ const MIGRATION = join(
   ROOT,
   'supabase',
   'migrations',
-  '50010101100400_triage_editorial_view_text_types.sql',
+  '20260914084603_triage_editorial_view_text_types.sql',
 );
 const HEALTH = join(ROOT, 'scripts', 'check-pipeline-health.mjs');
 

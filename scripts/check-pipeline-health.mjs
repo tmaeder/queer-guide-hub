@@ -2732,7 +2732,7 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
   if (!res.ok) {
     // A failed probe must SAY it failed rather than fall through to a default —
     // the same shape as the `last_error` 42703 that hid an open circuit breaker.
-    console.warn(`⚠ triage_queue_signals → HTTP ${res.status} (50010101100400 not applied?) — this check measured NOTHING`)
+    console.warn(`⚠ triage_queue_signals → HTTP ${res.status} (20260914084603 not applied?) — this check measured NOTHING`)
   } else {
     const tq = await res.json()
     let sectionOk = true

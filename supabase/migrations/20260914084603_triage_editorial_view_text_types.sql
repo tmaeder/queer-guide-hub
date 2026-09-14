@@ -1,3 +1,20 @@
+-- VERSION NOTE: this file is numbered 20260914084603, which sorts BELOW the
+-- repo's other recent migrations (the 5001* block). That is deliberate and must
+-- not be "corrected". The inbox was fully down, so this was applied live via MCP
+-- apply_migration, which stamps supabase_migrations.schema_migrations with its
+-- OWN call timestamp — 20260914084603 — not with the filename you intended. The
+-- repo file must therefore carry that exact version, or `db push` has an applied
+-- version with no file and the drift monitor fails every PR in the repo until
+-- someone reconciles it. `db push` matches by version and SKIPS an already-
+-- applied one, and check-migration-versions.mjs exempts a version present in
+-- remote history from its "must sort above the ceiling" rule for that reason.
+--
+-- The trap that cost a CI round here: `select version, name from
+-- schema_migrations order by version desc limit 10` did NOT show this row,
+-- because 20260914084603 sorts below the 2026092* block and fell off the limit.
+-- That read like "no history row was recorded". Query the version you expect BY
+-- NAME, never by taking the head of a descending list.
+
 -- ───────────────────────────────────────────────────────────────────────────
 -- The admin inbox has been dead, and the queue that killed it was EMPTY
 -- ───────────────────────────────────────────────────────────────────────────
