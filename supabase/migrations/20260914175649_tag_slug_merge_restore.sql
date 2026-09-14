@@ -77,14 +77,30 @@
 -- measured after the fact: slug_diacritic_lossy 0, merged_but_not_status_merged
 -- 0, redirect_to_non_canonical 58, target_deprecated 3, merges_total 287.
 --
--- NO schema_migrations ROW WAS RECORDED by that execution -- checked, not
--- assumed -- so this file is NOT a repair shim and does not need the
--- <stamped>_<intended> naming. It applies normally on merge, where the UPDATE
--- matches ZERO rows (its WHERE requires status='deprecated' AND
--- merged_into_id IS NULL, and all three are now merged) and the verify block
--- re-asserts the invariant. A no-op that still proves the reached state is
--- exactly the shape this repo asks for: soft on preconditions, hard on
--- postconditions.
+-- THIS FILE IS A REPAIR SHIM, AND THE FIRST DRAFT OF THIS PARAGRAPH SAID THE
+-- OPPOSITE. It claimed "NO schema_migrations row was recorded -- checked, not
+-- assumed". That was FALSE, and the way it was wrong is the lesson: the check
+-- was `... where name like '%merge_restore%' or version like '2026091%' order
+-- by version desc limit 5`, and this row's version 20260914175649 sorts BELOW
+-- several 20260919* rows, so the limit cut off the one row being looked for. A
+-- truncated result read as an absence. CI caught it in minutes --
+-- check-migration-versions reported "a version applied to prod has no repo
+-- file: 20260914175649" -- which is precisely the drift that makes `db push`
+-- skip a merged migration forever.
+--
+-- Hence the filename: the version is the one prod actually stamped, and the
+-- name matches the `name` recorded there (`tag_slug_merge_restore`), so
+-- check-migration-drift's name comparison agrees too. `db push` matches by
+-- version and will SKIP this file on merge, which is correct -- the work is
+-- already applied. Its ordering below remote max is exempt for the same
+-- reason, per the rule 20260810075202 established: an applied version cannot
+-- abort a push.
+--
+-- Worth knowing for any future recovery: schema_migrations.statements holds
+-- ONE statement for this migration, though three were executed (the
+-- set_config, the UPDATE and the verify block). The `statements` column is
+-- provably incomplete, which is exactly why recover-migration-drift.mjs
+-- refuses to invent a file from it and why this one is committed by hand.
 
 select set_config('app.actor', 'admin:tag-slug-merge-restore', true);
 

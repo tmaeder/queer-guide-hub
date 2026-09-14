@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards 51500101145000 — restoring three twin-named dedupe merges that
+ * Guards 20260914175649 (applied to prod ahead of merge; see the file header) — restoring three twin-named dedupe merges that
  * 50900101100100 withdrew as collateral, taking the documented zero-invariant
  * `tag_hygiene_stats().slug_diacritic_lossy` from 0 to 3 and failing
  * `Critical data-quality gates` on every open PR in the repo.
@@ -37,7 +37,7 @@ import { join } from 'node:path';
  */
 
 const MIGRATIONS = join(process.cwd(), 'supabase', 'migrations');
-const FILE = '51500101145000_tag_slug_merge_restore.sql';
+const FILE = '20260914175649_tag_slug_merge_restore.sql';
 
 const raw = readFileSync(join(MIGRATIONS, FILE), 'utf8');
 
@@ -51,7 +51,7 @@ const verify = sql.slice(sql.indexOf('do $verify$'));
 
 const SLUGS = ['jan-mikol-ek', 'kirsten-pl-tz', 'preistr-ger'];
 
-describe('51500101145000 — restore the twin-named dedupe merges', () => {
+describe('20260914175649 — restore the twin-named dedupe merges', () => {
   it('restores exactly the three lossy-slug rows', () => {
     for (const slug of SLUGS) expect(statements).toContain(`'${slug}'`);
     expect(statements.match(/update public\.unified_tags/g) ?? []).toHaveLength(1);
