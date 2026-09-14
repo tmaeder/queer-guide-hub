@@ -63,9 +63,16 @@ const isoWeek = (d) => {
   return { year: target.getUTCFullYear(), week };
 };
 
-// Captured from the key once parsed, so the 403 message can name the exact
-// address that needs granting instead of telling the reader to go find it.
-let SERVICE_ACCOUNT_EMAIL = null;
+// This used to hold `sa.client_email`, captured once the key was parsed, so the
+// 403 message could name the exact address that needs granting. It is gone
+// because THIS REPOSITORY IS PUBLIC and the top-level handler prints a thrown
+// Error straight into a world-readable Actions log: the value is parsed out of
+// GOOGLE_SERVICE_ACCOUNT_KEY, so it is key-derived data leaving the process
+// (CodeQL js/clear-text-logging, alert 1001 — this was the second path; the
+// first was the signing catch above). The email is an identifier rather than a
+// credential, which is why the loss is only convenience, and whoever reads that
+// message is the person who set the secret and therefore has the key file the
+// address is printed from.
 
 const b64url = (buf) =>
   Buffer.from(buf).toString('base64').replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_');
@@ -133,7 +140,7 @@ async function querySearchAnalytics(token, body) {
         `Search Analytics 403 for "${PROPERTY}".\n` +
           `The credentials are valid but the service account is not authorised on this property.\n` +
           `Fix: Search Console -> that property -> Settings -> Users and permissions -> add\n` +
-          `  ${SERVICE_ACCOUNT_EMAIL ?? '<the service account email>'}\n` +
+          `  the "client_email" field of the key JSON you set as GOOGLE_SERVICE_ACCOUNT_KEY\n` +
           `with permission "Full" (Restricted is not enough for the API).\n` +
           `API said: ${body}`,
       );
@@ -172,7 +179,6 @@ async function main() {
         'from the service account itself (IAM -> Service Accounts -> Keys -> Add key -> JSON).',
     );
   }
-  SERVICE_ACCOUNT_EMAIL = sa.client_email;
   const token = await getAccessToken(sa);
 
   const [byQuery, byPage, totals] = await Promise.all([
