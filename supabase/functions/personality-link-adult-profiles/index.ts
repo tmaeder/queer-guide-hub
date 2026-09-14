@@ -27,6 +27,7 @@ import {
 } from '../_shared/supabase-client.ts'
 import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
 import { checkCircuit, recordFailure, recordSuccess } from '../_shared/circuit-breaker.ts'
+import { loadReviewQueueGuard } from '../_shared/review-queue-guard.ts'
 import {
   BREAKER,
   DEFAULT_PLATFORMS,
@@ -272,34 +273,31 @@ Deno.serve(async (req) => {
     ]),
   )
 
-  // Fields already awaiting a human. `uq_erq_open` is a PARTIAL index on
-  // (entity_type, entity_id, field) WHERE status='open', which ON CONFLICT
-  // inference cannot target from PostgREST — so idempotency is enforced here
-  // instead, which also saves re-probing a profile someone is already
-  // reviewing.
+  // Fields already awaiting a human, AND values a human already rejected.
   //
-  // This used to end "Rejected rows are not 'open', so they are never re-suggested."
-  // That is exactly BACKWARDS: `uq_erq_open` covers `status='open'` only, so a rejected
-  // row blocks nothing and the same proposal IS re-suggested on the next run. That is the
-  // treadmill `_shared/review-queue-guard.ts` was written to stop (marketplace: 126
-  // listings rejected more than once). This function is not wired to the guard yet — it
-  // reads the BASE table with an `entity_type` filter rather than a compat view, and it
-  // aborts the whole run on a failed read rather than degrading — and it has recorded
-  // ZERO rejections, so there is nothing here to churn yet. Wire it when either changes.
-  const { data: openRows, error: openErr } = await supabase
-    .from('entity_review_queue')
-    .select('entity_id, field')
-    .eq('entity_type', 'personality')
-    .eq('status', 'open')
-    .in('entity_id', due.map((d) => d.id))
-  if (openErr) {
-    await report('error', 0, 0, {}, openErr.message)
-    return jsonResponse({ success: false, error: openErr.message }, 500, req)
-  }
-  const alreadyQueued = new Set(
-    (openRows ?? []).map((r) => `${r.entity_id}:${r.field}`),
-  )
-
+  // `uq_erq_open` is a PARTIAL index on (entity_type, entity_id, field) WHERE
+  // status='open', which ON CONFLICT inference cannot target from PostgREST —
+  // so idempotency is enforced here, which also saves re-probing a profile
+  // someone is already reviewing.
+  //
+  // The rejected half is NEW and is now load-bearing. This function used to
+  // say "it has recorded ZERO rejections, so there is nothing here to churn
+  // yet. Wire it when either changes." That changed: run_review_queue_close_
+  // unactionable and run_close_undecidable_adult_link_reviews reject rows in
+  // exactly this cohort, so without the guard every closed row is re-proposed
+  // on the next pass — the treadmill that had marketplace rejecting 126
+  // listings more than once, and it would now be driven by our own closers.
+  //
+  // Value equality is the key, not the field: measured across every repeat
+  // rejection on record (126 groups, 273 rows) ALL 126 re-proposed a
+  // byte-identical value and NONE differed, so a changed proposal still
+  // reaches a human while a pure repeat does not.
+  const guard = await loadReviewQueueGuard(supabase, {
+    view: 'personality_review_queue',
+    idColumn: 'personality_id',
+    fields: active.map((p) => `social_links.${p}`),
+    ids: due.map((d) => d.id),
+  })
   // Wikidata P106 for the batch, resolved ONCE. A row whose own encyclopedic
   // source documents it as a pornographic actor is corroborated by that
   // source, not threatened by it — see ADULT_OCCUPATION_QIDS. Fails closed.
@@ -317,6 +315,14 @@ Deno.serve(async (req) => {
     queued: 0,
     missed: 0,
     retired: 0,
+    /** Proposals suppressed because the identical value was already rejected. */
+    queue_skipped: 0,
+    /**
+     * 1 when the guard's pre-read failed. Reported rather than swallowed: a
+     * failed read is NOT evidence that nothing is queued, and treating it as
+     * such is the defect one layer down.
+     */
+    queue_precheck_failed: guard.precheckFailed ? 1 : 0,
     by_platform: {} as Record<string, { linked: number; queued: number; missed: number }>,
     samples: [] as Array<Record<string, unknown>>,
   }
@@ -344,7 +350,7 @@ Deno.serve(async (req) => {
     for (const platform of active) {
       if (!row.missing.includes(platform)) continue
       if (st.social[platform]) continue
-      if (alreadyQueued.has(`${row.id}:social_links.${platform}`)) continue
+      if (guard.blocked(row.id, `social_links.${platform}`, undefined) === 'open') continue
 
       const probe = await probeProfile(platform, row.name, fetcher)
       await sleep(POLITE_DELAY_MS)
@@ -402,11 +408,21 @@ Deno.serve(async (req) => {
       }
 
       // review
+      // Asked AFTER the probe because the rejected arm compares the VALUE, and
+      // the url is not known until the platform answers.
+      const proposed = { value: probe.url }
+      if (guard.blocked(row.id, `social_links.${platform}`, proposed) === 'rejected') {
+        adultLinks[platform] = { state: 'rejected_before', url: probe.url, reason: decision.reason, at: now }
+        summary.queue_skipped++
+        changed = true
+        continue
+      }
+      guard.markQueued(row.id, `social_links.${platform}`)
       queueRows.push({
         entity_type: 'personality',
         entity_id: row.id,
         field: `social_links.${platform}`,
-        proposed_value: { value: probe.url },
+        proposed_value: proposed,
         citations: [probe.url],
         confidence: decision.confidence,
         model: `adult-profile-probe:${decision.reason}`,
@@ -450,6 +466,11 @@ Deno.serve(async (req) => {
     queued: summary.queued,
     missed: summary.missed,
     retired: summary.retired,
+    // Omitted when zero, so their presence in a run summary carries meaning:
+    // a visible queue_skipped means the closers and the producer are now
+    // interacting, and queue_precheck_failed means the guard could not look.
+    ...(summary.queue_skipped ? { queue_skipped: summary.queue_skipped } : {}),
+    ...(summary.queue_precheck_failed ? { queue_precheck_failed: summary.queue_precheck_failed } : {}),
     by_platform: summary.by_platform,
   })
 

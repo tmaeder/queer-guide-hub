@@ -13,6 +13,22 @@ vi.mock('@/components/admin/triage/TriageView', () => ({
   ),
 }));
 
+// The status card fetches through react-query; these tests render without a
+// QueryClientProvider on purpose (they are about routing and the header), so
+// the hook is mocked rather than the page being wrapped. Same treatment
+// useReviewQueueCohorts needed when the cohort bar landed in TriageView.
+const useReviewAutomationStatus = vi.hoisted(() =>
+  // Typed loosely on purpose: the default return is the loading shape, and
+  // individual tests override it with a full payload. Inferring from the
+  // default would pin `data` to undefined and reject those overrides.
+  vi.fn<() => { data: unknown; isLoading: boolean; isError: boolean }>(() => ({
+    data: undefined,
+    isLoading: true,
+    isError: false,
+  })),
+);
+vi.mock('@/hooks/useReviewAutomationStatus', () => ({ useReviewAutomationStatus }));
+
 vi.mock('@/components/admin/command-palette/useAdminCommandActions', () => ({
   useRegisterAdminCommandAction: (action: { id: string }) => registerAction(action),
 }));
@@ -57,5 +73,23 @@ describe('AdminInbox', () => {
   it('sets the document title', () => {
     renderAt('/admin/inbox');
     expect(document.title).toMatch(/Inbox.*Admin.*Queer Guide/);
+  });
+});
+
+describe('AdminInbox — automation status', () => {
+  it('mounts the card, so the header number is read beside the machine/human split', () => {
+    useReviewAutomationStatus.mockReturnValueOnce({
+      data: {
+        review_queue: { open: 3997, auto_applies: 1192, auto_closes: 217, needs_human: 2588 },
+        staging: { pending: 1319, auto_reconciles: 575, needs_human: 744 },
+        dedup: { open: 1378 },
+        jobs: {},
+        generated_at: '2026-09-14T12:00:00Z',
+      },
+      isLoading: false,
+      isError: false,
+    });
+    renderAt('/admin/inbox');
+    expect(screen.getByText('Cleared without you')).toBeInTheDocument();
   });
 });

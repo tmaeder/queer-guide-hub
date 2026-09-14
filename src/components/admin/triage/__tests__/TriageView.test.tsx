@@ -13,6 +13,12 @@ vi.mock('@/hooks/useUnifiedTriageQueue', () => ({
   useBulkApproveHighConf: () => ({ mutate: vi.fn(), isPending: false }),
 }));
 vi.mock('@/hooks/useReviewCounts', () => ({ useReviewCounts: () => ({ data: {} }) }));
+// The cohort bar's own data source. Mocked to empty so these suites keep
+// testing what they are about; QualityCohortBar returns null on an empty list,
+// so the tree is unchanged. Its behaviour is covered by its own suite.
+vi.mock('@/hooks/useReviewQueueCohorts', () => ({
+  useReviewQueueCohorts: () => ({ data: [], isLoading: false }),
+}));
 vi.mock('@/components/admin/review/ReviewBulkBar', () => ({ ReviewBulkBar: () => null }));
 vi.mock('../TriageFilterBar', () => ({ TriageFilterBar: () => null }));
 vi.mock('../TriageList', () => ({ TriageList: () => null }));
