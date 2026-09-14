@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards 51500101180000 — the disowned-prose TAIL, 25 rows.
+ * Guards 51600101120000 — the disowned-prose TAIL, 25 rows.
  *
  * TWO THINGS THIS FILE EXISTS TO PRESERVE, both of which a later reader could
  * easily undo:
@@ -32,7 +32,7 @@ import { join } from 'node:path';
 
 const MIGRATION = join(
   process.cwd(),
-  'supabase/migrations/51500101180000_tag_prose_disowned_tail.sql',
+  'supabase/migrations/51600101120000_tag_prose_disowned_tail.sql',
 );
 const sql = readFileSync(MIGRATION, 'utf8');
 
@@ -56,7 +56,7 @@ const setClauses = statements
 
 const GROUP_C = ['doe', 'fae', 'flock', 'handler', 'minion', 'tickler', 'whipper', 'vixen', 'cunt'];
 
-describe('51500101180000 — disowned prose, the tail', () => {
+describe('51600101120000 — disowned prose, the tail', () => {
   it('repairs exactly the 25 rows', () => {
     const slugs = [...statements.matchAll(/where slug = '([a-z-]+)'/g)].map((m) => m[1]);
     expect(new Set(slugs).size).toBe(25);
