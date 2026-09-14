@@ -152,7 +152,7 @@
 
 begin;
 
-select set_config('app.actor', 'migration:51500101174500', true);
+select set_config('app.actor', 'migration:51700101143000', true);
 
 -- ── A. SAFETY: child prose on an adult roleplay row ────────────────────────
 

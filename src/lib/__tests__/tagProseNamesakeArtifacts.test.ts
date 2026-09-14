@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Guards `51500101174500`, which repairs 50 glossary pages whose prose is about
+ * Guards `51700101143000`, which repairs 50 glossary pages whose prose is about
  * a categorically different KIND of thing than the tag — a French commune, a
  * constellation, a Java web server, a rail operation, a surname.
  *
@@ -26,7 +26,7 @@ import { describe, expect, it } from 'vitest';
 
 const FILE = join(
   process.cwd(),
-  'supabase/migrations/51500101174500_tag_prose_namesake_artifacts.sql',
+  'supabase/migrations/51700101143000_tag_prose_namesake_artifacts.sql',
 );
 
 const sql = readFileSync(FILE, 'utf8');
@@ -53,7 +53,7 @@ describe('namesake artifacts migration', () => {
   it('declares an actor, which the audit trigger requires', () => {
     // 48 of the 50 rows are human_reviewed, and log_unified_tag_change()
     // RAISEs when a `system:%` actor modifies one. Verified live.
-    expect(code).toMatch(/set_config\(\s*'app\.actor'\s*,\s*'migration:51500101174500'/);
+    expect(code).toMatch(/set_config\(\s*'app\.actor'\s*,\s*'migration:51700101143000'/);
   });
 
   it('never writes description', () => {
