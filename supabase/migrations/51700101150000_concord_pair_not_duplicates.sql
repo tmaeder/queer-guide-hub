@@ -110,7 +110,7 @@ begin
              'value', v_nh,
              'source','wikipedia:Concord, New Hampshire',
              'corrected', jsonb_build_object(
-               'by','migration:51700101100000',
+               'by','migration:51700101150000',
                'at', now(),
                'from', c.description,
                'why','row published Concord, North Carolina; identity resolved to Q28249'))))
@@ -137,7 +137,7 @@ begin
          field_provenance = coalesce(c.field_provenance,'{}'::jsonb) || jsonb_build_object(
            'description', coalesce(c.field_provenance->'description','{}'::jsonb) || jsonb_build_object(
              'retracted', jsonb_build_object(
-               'by','migration:51700101100000',
+               'by','migration:51700101150000',
                'at', now(),
                'from', c.description,
                'why','Concord, North Carolina facts on a shell whose identity is unrecoverable')))
@@ -158,7 +158,7 @@ begin
                       || 'birth_place, and its CZ country came from that person''s nationality, not '
                       || 'from any place. Both rows had been overwritten with Concord, North '
                       || 'Carolina facts by a bare-name lookup; that contamination is retracted in '
-                      || 'migration 51700101100000. Re-open only on a real identity for the drop row.'
+                      || 'migration 51700101150000. Re-open only on a real identity for the drop row.'
    where q.id = v_queue
      and q.status = 'open';
   get diagnostics v_closed = row_count;
