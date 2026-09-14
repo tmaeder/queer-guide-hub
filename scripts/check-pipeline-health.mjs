@@ -3231,6 +3231,60 @@ const DISOWNED_PROSE_CEILING = 380
   }
 }
 
+// §18 — the news quality drain must be able to REACH its own queue.
+//
+//     The fault this exists for is not depth. `news_verdict_geo_backfill` (*/10)
+//     posts enqueue+run and books a successful run either way; on 2026-09-14 it
+//     had been doing that against an enqueue selector that returned ZERO rows
+//     corpus-wide while 782 items showed in /admin/inbox and 346 of them had
+//     never been judged at all. last_run_status said 'success' throughout.
+//
+//     So the gate is unjudged_unreachable: rows in review with no verdict that
+//     the selector will not offer and that are not in flight. Depth
+//     (judged_in_review) is a genuine human queue and NEVER gates.
+//
+//     A MISSING RPC HARD-FAILS. The function answers probe_ok=false on its own
+//     failures, so a non-2xx means an unapplied migration or a revoked grant —
+//     and a drain nobody can measure must never read as a healthy one.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/news_quality_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    const detail = (await res.text()).slice(0, 200)
+    console.error(`✗ news_quality_signals → HTTP ${res.status} (migration 51600101100100 not applied? PGRST202 = the function does not exist) ${detail}`)
+    FAILED = true
+  } else {
+    const q = (await res.json()) ?? {}
+    if (q.probe_ok !== true) {
+      console.error(`✗ news_quality_signals did not report probe_ok — the drain could not be measured: ${q.error ?? '(no error given)'}`)
+      FAILED = true
+    } else {
+      const unreachable = Number(q.unjudged_unreachable ?? 0)
+      if (unreachable > 0) {
+        console.error(`✗ ${unreachable} news articles sit in the review queue with NO verdict and cannot be re-judged`)
+        console.error(`  (${q.unjudged_in_review} unjudged in review, ${q.eligible_now} eligible for the drain, attempt_epoch=${q.attempt_epoch ?? 'UNSET'})`)
+        console.error('  A human is being asked to decide something no machine ever looked at. Either the cause of the')
+        console.error('  failures was ours — move news_quality_settings.attempt_epoch and say why — or disposition the rows.')
+        FAILED = true
+      }
+      if (Number(q.review_rows_in_search ?? 0) > 0) {
+        console.error(`✗ ${q.review_rows_in_search} news rows awaiting quality review are live in search_documents`)
+        FAILED = true
+      }
+      if (unreachable === 0) {
+        const stale = Number(q.stale_image_block ?? 0)
+        console.log(`✓ news quality drain is reachable (${q.unjudged_in_review} unjudged, ${q.eligible_now} eligible, ${q.judged_in_review} judged awaiting a human)`)
+        if (stale > 0) {
+          console.log(`  note: ${stale} rows are blocked on 'image_unusable' whose image_url is now NULL — a stated reason that outlived what it described`)
+        }
+      }
+    }
+  }
+}
+
 // The single exit. Reached whether or not anything failed, so the ✗ lines above
 // are the complete list rather than "the first one we tripped over".
 if (FAILED) {
