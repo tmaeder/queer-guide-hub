@@ -200,14 +200,22 @@ describe('tag_hygiene_stats language sentinels', () => {
     const baseline = JSON.parse(
       readFileSync(join(process.cwd(), 'scripts', 'tag-hygiene-baseline.json'), 'utf8'),
     );
-    // Three are true zero-invariants. name_mojibake is NOT: prod carries one
+    // Two are true zero-invariants. name_mojibake is NOT: prod carries one
     // merged row (M-FFFD-Llerian) whose NAME holds a U+FFFD, and nothing in
     // this branch repairs it — its "corrected" slug would still be garbage, and
     // it is merged, so nothing renders it. Baselining it at 0 would hard-fail
     // the gate the moment the sentinel migration applied. The accepted level is
     // the measured one; a SECOND mojibake row is the regression worth catching.
+    //
+    // slug_diacritic_lossy stopped being a zero-invariant on 2026-09-14 for the
+    // same reason, one entity later: 50900101100100 (#3705) demoted three
+    // mojibake person rows 'merged' -> 'deprecated', and this counter excludes
+    // only 'merged'. They cannot be repaired — the correctly transliterated
+    // slugs already exist as separate rows, so rewriting them collides. The
+    // accepted level is the measured one; a FOURTH row is the regression worth
+    // catching, and the number may still only shrink.
     const expected: Record<string, number> = {
-      slug_diacritic_lossy: 0,
+      slug_diacritic_lossy: 3,
       name_mojibake: 1,
       name_contains_hashtag: 0,
       non_latin_name: 0,
