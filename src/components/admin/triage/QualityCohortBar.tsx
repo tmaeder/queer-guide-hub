@@ -83,14 +83,17 @@ export function QualityCohortBar({
                   : undefined
               }
               className={cn(
-                // min-h-6 is WCAG 2.5.8 (24px target), and it is EXPLICIT rather
-                // than left to the computed box. `text-2xs` (14px line-height) +
-                // `py-1` (8px) + 1px borders lands on exactly 24 — it passes, but
-                // only just, and any later change to the type scale or the padding
-                // silently drops it under the bar. axe measured the sibling
-                // checkbox at 16px and failed it `target-size` (serious) on this
-                // very route, so the gate is live here.
-                'inline-flex items-center gap-1.5 rounded-badge border px-2 py-1 min-h-6',
+                // `rounded-badge` is load-bearing, not cosmetic: index.css gives
+                // `button.rounded-badge` a `min-height: 24px` in @layer base,
+                // which is what satisfies WCAG 2.5.8 here. Every <button> gets
+                // 44px from that same layer, and the chip rule is the documented
+                // opt-down for pills — so the 24px comes from the class, NOT from
+                // this element's padding. axe measured the sibling row checkbox at
+                // 16px and failed it `target-size` (serious) on this very route,
+                // so the gate is live. Do not add a per-chip `min-h-*`: no other
+                // chip in the repo carries one, and it would fight the base rule
+                // the system centralises this in.
+                'inline-flex items-center gap-1.5 rounded-badge border px-2 py-1',
                 'text-2xs transition-colors',
                 isActive
                   ? 'bg-foreground text-background border-foreground'

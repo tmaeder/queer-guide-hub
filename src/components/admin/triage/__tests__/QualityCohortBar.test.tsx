@@ -156,11 +156,17 @@ describe('QualityCohortBar', () => {
   });
 
   /**
-   * WCAG 2.5.8. axe failed the sibling checkbox on this route at 16px
-   * (`target-size`, serious), so the gate is live here. Asserted on the MERGED
-   * class string rather than on the source, because tailwind-merge keeping a
-   * competing height would leave stylesheet order to decide while a
-   * `toContain('min-h-6')` check stayed green.
+   * WCAG 2.5.8. axe failed the sibling row checkbox on this route at 16px
+   * (`target-size`, serious), so the gate is live here.
+   *
+   * What earns the 24px is `rounded-badge`: index.css gives
+   * `button.rounded-badge` a `min-height: 24px` in @layer base, the documented
+   * opt-down from the 44px every <button> otherwise inherits there. So the
+   * assertion pins that class, not a per-chip `min-h-*` — the first draft of
+   * this test added `min-h-6` and asserted it, which was redundant with the
+   * base rule and described the size as coming from the element's own padding.
+   * `min-h-0` is asserted absent because it is the documented escape hatch from
+   * the same rule and would silently drop the chip under the bar.
    */
   it('gives every cohort chip a 24px target', () => {
     render(
@@ -174,7 +180,7 @@ describe('QualityCohortBar', () => {
     const chips = screen.getAllByRole('button');
     expect(chips.length).toBe(2);
     for (const chip of chips) {
-      expect(chip.className).toContain('min-h-6');
+      expect(chip.className).toContain('rounded-badge');
       expect(chip.className).not.toMatch(/\bmin-h-0\b/);
       expect(chip.className).not.toMatch(/\bh-4\b/);
     }
