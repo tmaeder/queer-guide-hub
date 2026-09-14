@@ -2699,6 +2699,93 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
   }
 }
 
+// ---------------------------------------------------------------------------
+// §  The unified triage inbox actually loads
+// ---------------------------------------------------------------------------
+//
+// get_unified_triage_queue() UNION ALLs `SELECT *` over every ACTIVE
+// triage_sources view (17 of them). That makes the inbox an ALL-OR-NOTHING
+// surface: one view whose column types, count or order disagrees with the rest
+// is a PLAN-time failure, and the admin sees a dead page rather than a missing
+// queue.
+//
+// That is not theoretical. triage_src_editorial emitted the raw enum types of
+// editorial_drafts (editorial_entity_type, editorial_draft_status) where the
+// other sixteen views emit text, and `UNION types text and
+// editorial_entity_type cannot be matched` was the entire inbox from
+// 20260801050000 until it was found by hand. Two properties made it survive:
+//
+//   * THE OFFENDING VIEW WAS EMPTY (0 pending editorial_drafts). A plan-time
+//     failure does not care, so a view with nothing in it hid 7,525 real items.
+//     No queue-depth, row-count or freshness check can see this.
+//   * IT ONLY FAILS UNFILTERED. The RPC narrows the union to the requested
+//     queue types, so every ?queue=<one> deep link kept working.
+//
+// So the probe has to be the union itself. triage_queue_signals() builds it
+// from triage_sources exactly as the RPC does — it cannot measure a different
+// set than the inbox serves — and RUNS it, which also catches a dropped column,
+// a reordered SELECT list and a registered view that no longer exists.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/triage_queue_signals`, {
+    method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: '{}',
+  })
+  if (!res.ok) {
+    // A failed probe must SAY it failed rather than fall through to a default —
+    // the same shape as the `last_error` 42703 that hid an open circuit breaker.
+    console.warn(`⚠ triage_queue_signals → HTTP ${res.status} (50010101100400 not applied?) — this check measured NOTHING`)
+  } else {
+    const tq = await res.json()
+    let sectionOk = true
+
+    // `probe_ok` absent means an older function shape, not a healthy inbox.
+    if (typeof tq?.probe_ok !== 'boolean') {
+      console.error('✗ triage_queue_signals returned no `probe_ok` — the probe is broken, not the inbox healthy')
+      FAILED = true; sectionOk = false
+    } else if (tq.probe_ok !== true) {
+      console.error(`✗ The unified triage inbox does not load: ${tq.union_error ?? 'no error reported'}`)
+      console.error('  /admin/inbox is dead for every queue, not just the offending one.')
+      const drift = Array.isArray(tq.type_drift) ? tq.type_drift : []
+      for (const d of drift) {
+        console.error(`  ${d.view}.${d.column} is ${d.type}; its sibling views use ${d.siblings_use}`)
+      }
+      if (drift.length === 0) {
+        console.error('  No column-type drift — check for a view with a different column count or order.')
+      }
+      FAILED = true; sectionOk = false
+    }
+
+    // A registered view that no longer exists fails `SELECT * FROM public.<gone>`
+    // at parse time, i.e. the same inbox-wide outage by a different route.
+    const missing = Array.isArray(tq?.views_missing) ? tq.views_missing : []
+    if (missing.length > 0) {
+      console.error(`✗ triage_sources registers view(s) that do not exist: ${missing.join(', ')}`)
+      console.error('  Deactivate the registry row or restore the view — the union names it either way.')
+      FAILED = true; sectionOk = false
+    }
+
+    // Type drift with a passing probe is still a bug worth naming: the types
+    // happen to unify today (text vs varchar) and the next one may not.
+    const drift = Array.isArray(tq?.type_drift) ? tq.type_drift : []
+    if (tq?.probe_ok === true && drift.length > 0) {
+      console.warn(`⚠ ${drift.length} triage source column(s) disagree with their siblings but still unify:`)
+      for (const d of drift) console.warn(`  ${d.view}.${d.column} is ${d.type}, siblings use ${d.siblings_use}`)
+    }
+
+    // Zero active sources makes every assertion above vacuous — the union would
+    // be NULL and the RPC returns an empty page rather than raising.
+    const active = Number(tq?.views_active ?? 0)
+    if (active === 0) {
+      console.error('✗ No ACTIVE triage_sources rows — the inbox is empty by configuration, and this check measured nothing')
+      FAILED = true; sectionOk = false
+    }
+
+    if (sectionOk) {
+      // Depth is DESCRIBED, never failed on: a drained inbox is the goal.
+      console.log(`✓ Triage inbox loads: ${tq.rows ?? 0} item(s) across ${active} source view(s)`)
+    }
+  }
+}
+
 // The single exit. Reached whether or not anything failed, so the ✗ lines above
 // are the complete list rather than "the first one we tripped over".
 if (FAILED) {
