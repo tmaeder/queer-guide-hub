@@ -26,6 +26,10 @@ import { join } from 'node:path';
  *
  *   50200101100800  the sentinel for the prose a disowned entity left behind.
  *
+ *   50200101100900  links the vocabulary together, and tombstones three
+ *                   `broader` edges that are wrong in the DISOWNED entity's
+ *                   sense rather than the tag's.
+ *
  * Assertions run against COMMENT-STRIPPED SQL. Every header quotes the
  * statements it describes almost verbatim, so a bare toContain over the whole
  * file passes with the real statement deleted — the vacuous-assertion class
@@ -38,6 +42,7 @@ const PROSE = '50200101100500_rope_glossary_wrong_subject_prose.sql';
 const REVIVE = '50200101100600_revive_core_kink_vocabulary.sql';
 const VOCAB = '50200101100700_rope_technique_vocabulary.sql';
 const SENTINEL = '50200101100800_tag_disowned_prose_signals.sql';
+const LINKS = '50200101100900_rope_glossary_links.sql';
 
 /** Line comments only; these files use no block comments. */
 const statementsOf = (file: string): string =>
@@ -348,5 +353,97 @@ describe('the health-check wiring', () => {
   it('treats an empty repair audit as a failure, not a clean corpus', () => {
     const block = js.slice(js.indexOf('const DISOWNED_PROSE_CEILING'));
     expect(block).toMatch(/the repair audit is empty, so the zeroes below measure nothing/);
+  });
+});
+
+describe('the curated link layer', () => {
+  const sql = statementsOf(LINKS);
+
+  it('tombstones the three wrong broader edges rather than deleting them', () => {
+    // tag_relations has a UNIQUE key on (source, target, relation_type), so a
+    // row left at 'rejected' is what stops the verifier re-proposing the edge.
+    // A DELETE would let it come straight back.
+    expect(sql).toMatch(/set review_status = 'rejected'/);
+    expect(sql).not.toMatch(/delete\s+from\s+public\.tag_relations/i);
+    for (const pair of [
+      "'suspension','punishment'",
+      "'aftercare','recreational'",
+      "'vers','genre-poetry'",
+    ]) {
+      expect(sql).toContain(pair);
+    }
+  });
+
+  it('only tombstones an edge that is still displaying', () => {
+    // Re-running must be a no-op, and a human who already dispositioned one of
+    // these must not be overridden.
+    const i = sql.indexOf("set review_status = 'rejected'");
+    expect(sql.slice(i, i + 600)).toMatch(/r\.review_status in \('auto','approved'\)/);
+  });
+
+  it('asserts the tombstones survive as well as stop displaying', () => {
+    expect(sql).toMatch(/wrong broader link\(s\) still display/);
+    expect(sql).toMatch(/expected 3 tombstones, found %/);
+  });
+
+  it('writes every relation as approved, because related displays approved-only', () => {
+    // get_tag_ontology shows `related` at review_status='approved' ONLY, so an
+    // `auto` row would be stored and never rendered.
+    const inserts = sql.slice(sql.indexOf('insert into public.tag_relations'));
+    expect(inserts).toMatch(/'broader', 1\.000, 'approved'/);
+    expect(inserts).toMatch(/'related', 1\.000, 'approved'/);
+    expect(inserts).not.toMatch(/'related', [\d.]+, 'auto'/);
+    expect(sql).toMatch(/row\(s\) would never display/);
+  });
+
+  it('lets an existing row win, including a rejected tombstone', () => {
+    // A migration that can silently un-reject someone's decision is the wrong
+    // shape even when no such row exists today.
+    const inserts = sql.slice(sql.indexOf('insert into public.tag_relations'));
+    const conflicts = inserts.match(
+      /on conflict \(source_tag_id, target_tag_id, relation_type\) do nothing/g,
+    );
+    expect(conflicts).toHaveLength(2);
+  });
+
+  it('asserts the links EXIST rather than counting insertions', () => {
+    // `on conflict do nothing` is idempotent, so the inserts can add nothing
+    // and still succeed — a re-run adds 0, and a join that matched zero rows
+    // looks identical. Only an end-state assertion distinguishes them. This is
+    // the gap the dry run exposed: the first run reported 20 of 22 added.
+    expect(sql).toMatch(/of 22 curated link\(s\) are missing/);
+    const i = sql.indexOf('of 22 curated link(s) are missing');
+    const guard = sql.slice(Math.max(0, i - 2000), i);
+    expect(guard).toMatch(/where not exists \(/);
+    expect(guard).toMatch(/a\.slug = v\.lhs and b\.slug = v\.rhs and r\.relation_type = v\.kind/);
+  });
+
+  it('only asserts broader where it is genuinely "is a kind of"', () => {
+    // The LLM relation verifier was measured at ~29% on `broader` and disabled
+    // for asserting siblings as parent/child. jute/hemp-rope and
+    // chest-harness/hip-harness are siblings and must be `related`.
+    const broader = sql.slice(
+      sql.indexOf("'broader', 1.000, 'approved'"),
+      sql.indexOf("'related', 1.000, 'approved'"),
+    );
+    expect(broader).not.toMatch(/'jute',\s*'hemp-rope'/);
+    expect(broader).not.toMatch(/'chest-harness',\s*'hip-harness'/);
+    expect(broader).not.toMatch(/'topspace',\s*'subspace'/);
+    // …and those pairs are present on the related side instead.
+    const related = sql.slice(sql.indexOf("'related', 1.000, 'approved'"));
+    expect(related).toMatch(/'jute',\s*'hemp-rope'/);
+    expect(related).toMatch(/'chest-harness',\s*'hip-harness'/);
+    expect(related).toMatch(/'topspace',\s*'subspace'/);
+  });
+
+  it('never links a tag to itself', () => {
+    expect(sql).toMatch(/source_tag_id = target_tag_id/);
+    expect(sql).toMatch(/self-referential relation\(s\)/);
+  });
+
+  it('skips a link whose endpoint is not active rather than failing', () => {
+    const inserts = sql.slice(sql.indexOf('insert into public.tag_relations'));
+    expect(inserts).toMatch(/c\.status = 'active'/);
+    expect(inserts).toMatch(/p\.status = 'active'/);
   });
 });
