@@ -113,7 +113,7 @@ begin
                'by','migration:60000201100000',
                'at', now(),
                'from', c.description,
-               'why','row published Concord, North Carolina; identity resolved to Q28249'))))
+               'why','row published Concord, North Carolina; identity resolved to Q28249')))
    where c.id = v_keep
      and c.wikidata_qid is null
      and c.description ilike '%Cabarrus County, North Carolina%';
