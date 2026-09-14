@@ -87,26 +87,32 @@ export function TriageItemRow({
   const contentLabel = CONTENT_TYPE_LABELS[item.content_type] ?? humanize(item.content_type);
 
   return (
+    // The row is a plain container with an overlay button as its LAST child —
+    // the "overlay siblings, never wrappers" rule this repo applies to cards.
+    // It used to be `role="button" tabIndex={0}` wrapping the Checkbox, which
+    // is axe `nested-interactive` (serious, WCAG 4.1.2): a button may not have
+    // focusable descendants. The a11y suite could not see it, because until the
+    // triage UNION was fixed /admin/inbox rendered an error banner and this
+    // component never mounted in CI.
     <div
-      role="button"
-      tabIndex={0}
-      onClick={onSelect}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter') onSelect();
-      }}
       className={cn(
-        'flex items-start gap-2.5 px-4 py-2.5 border-b cursor-pointer transition-colors',
+        'relative flex items-start gap-2.5 px-4 py-2.5 border-b cursor-pointer transition-colors',
         isActive
           ? 'bg-foreground/[0.06] border-l border-l-foreground'
           : 'hover:bg-muted/50 border-l border-l-transparent',
         isSelected && !isActive && 'bg-muted/30',
       )}
     >
+      {/* h-6 w-6 (24px) rather than the primitive's 16px: this checkbox stands
+          alone, so WCAG 2.5.8 target size cannot come from a surrounding label
+          row the way the primitive's comment assumes. z-10 keeps it ABOVE the
+          overlay below, which otherwise swallows the click. */}
       <Checkbox
         checked={isSelected}
         onCheckedChange={() => onToggleCheck()}
         onClick={(e) => e.stopPropagation()}
-        className="shrink-0 mt-0.5"
+        aria-label={`Select ${item.title}`}
+        className="relative z-10 shrink-0 mt-0.5 h-6 w-6"
       />
 
       <div className="min-w-0 flex-1 space-y-0.5">
@@ -173,6 +179,24 @@ export function TriageItemRow({
         </span>
         {conf && <span className={cn('text-2xs tabular-nums', conf.className)}>{conf.text}</span>}
       </div>
+
+      {/* Covers the whole row, so a click anywhere still opens the item — and a
+          real <button> brings Enter AND Space for free, where the old div
+          handled only Enter. Last child so it paints over the text; the
+          Checkbox above opts out with z-10. */}
+      {/* min-h-0 is load-bearing, not tidying: `@layer base` in index.css gives
+          every <button> min-height:44px, and min-height beats the height an
+          `inset-0` box resolves to. A row shorter than 44px would leave this
+          overlay hanging past its own row and swallowing clicks on the next
+          one. Today's rows are ~58px so it does not bite — which is exactly
+          what would make the regression baffling later. The utilities layer
+          wins over base, the same opt-out the Checkbox primitive uses. */}
+      <button
+        type="button"
+        onClick={onSelect}
+        aria-label={`Open ${item.title}`}
+        className="absolute inset-0 min-h-0 cursor-pointer"
+      />
     </div>
   );
 }
