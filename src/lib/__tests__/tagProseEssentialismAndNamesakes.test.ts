@@ -74,10 +74,21 @@ describe('essentialism and namesakes migration', () => {
       expect(u, slug).toMatch(/long_description\s*=\s*null/);
     }
     // ...and hard-fails while any of them survives.
-    expect(code).toMatch(/slug in \('masc','girl','boy'\)\s*\n\s*and long_description is not null/);
+    expect(code).toMatch(/slug in \('masc','girl','boy'\)/);
     expect(code).toMatch(
       /raise exception '% identity row\(s\) still publish the essentialist body'/,
     );
+  });
+
+  it('asserts the essentialist DEFECT is gone, not that this file nulled the body', () => {
+    // 60000301100100 (#3716) repairs `masc` too, and better: it writes a real
+    // body where this file nulls one. It sorts below this file, so it applies
+    // first and this file's UPDATE no-ops. A bare `long_description is not
+    // null` check would then RAISE on somebody else's better fix and abort
+    // db push on main — which is why the check is keyed on the defect text.
+    const guard = code.slice(code.indexOf("slug in ('masc','girl','boy')"));
+    expect(guard.slice(0, 400)).toMatch(/In biological terms/);
+    expect(guard.slice(0, 400)).toMatch(/A boy is a male human being in the early stages of life/);
   });
 
   it('keeps reporting on the sibling rows its wording was mirrored from', () => {

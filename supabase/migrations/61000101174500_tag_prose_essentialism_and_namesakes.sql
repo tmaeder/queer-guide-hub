@@ -340,9 +340,23 @@ begin
   -- HARD, and the reason part A is not a matter of taste: the gamete-
   -- essentialism prose styleguide_terms rates `never` must be gone from the
   -- three identity rows.
+  --
+  -- THIS ASSERTS THE DEFECT IS GONE, NOT THAT THIS FILE'S FIX IS THE ONE
+  -- PRESENT, and the difference is not theoretical — it was caught before
+  -- merge. 60000301100100 (#3716, merged while this was open) repairs `masc`
+  -- too, and repairs it BETTER: where this file nulls the body, that one
+  -- writes a real one ("Masc describes a masculine gender presentation — ...
+  -- it says nothing about their gender identity or their body"). It sorts
+  -- below this file, so it applies first, this file's content-guarded UPDATE
+  -- correctly no-ops — and an `is not null` check here would then have RAISEd
+  -- on somebody else's better fix, aborting `db push` on main and taking every
+  -- migration queued behind it. The repo-wide blast radius 20360401100100
+  -- records, from two individually-correct changes.
   select count(*) into v_bad from unified_tags
    where status = 'active' and slug in ('masc','girl','boy')
-     and long_description is not null;
+     and long_description is not null
+     and (long_description like '%In biological terms%'
+       or long_description like 'A boy is a male human being in the early stages of life%');
   if v_bad <> 0 then
     raise exception '% identity row(s) still publish the essentialist body', v_bad;
   end if;
