@@ -4,9 +4,6 @@
 -- list. All admin-gated, SECURITY DEFINER.
 
 CREATE OR REPLACE FUNCTION public.existence_overview()
- RETURNS jsonb
- LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path TO 'public','pg_temp'
-CREATE OR REPLACE FUNCTION public.existence_overview()
  RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path TO 'public','pg_temp'
 AS $function$
 DECLARE v jsonb;
@@ -101,4 +98,3 @@ GRANT EXECUTE ON FUNCTION public.existence_overview() TO authenticated;
 GRANT EXECUTE ON FUNCTION public.existence_review_queue(text, int) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.existence_recent_archives(text, int) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.existence_blind_spots(text, int) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.existence_blind_spots(text, int) TO authenticated;;

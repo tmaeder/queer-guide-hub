@@ -56,7 +56,6 @@ SELECT cron.schedule('existence_signals_purge', '15 5 * * *',
   'SELECT public.run_existence_signals_purge();');
 
 -- Ensure event_auto_archive cron exists + points at the wrapper, with storm guard.
-DO $$
 DO $outer$
 DECLARE jid bigint;
 BEGIN
@@ -74,7 +73,6 @@ BEGIN
   IF jid IS NOT NULL THEN
     PERFORM cron.alter_job(jid, schedule := '10 5 * * *');
   END IF;
-END $$;
 
 -- Edge-function collectors (deep body-read probe + OSM corroborator). Gated by the
 -- shared X-Webhook-Secret: the POST is unauthorized (effectively paused) until the
@@ -101,4 +99,3 @@ SELECT cron.schedule('existence_external_osm', '40 2 * * *', $cron$
       'X-Webhook-Secret', (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name='existence_webhook_secret')),
     body := '{"batch_limit":30}'::jsonb);
 $cron$);
-$cron$);;

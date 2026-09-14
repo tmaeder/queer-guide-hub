@@ -73,7 +73,7 @@ describe('migrations parse with the Postgres grammar', () => {
     expect(files.length).toBeGreaterThanOrEqual(MIN_CORPUS);
   });
 
-  it('parses every migration except the recorded pre-existing six', async () => {
+  it('parses every migration in the corpus', async () => {
     const files = readdirSync(MIGRATIONS).filter((f) => f.endsWith('.sql'));
     const broken: string[] = [];
 
@@ -88,7 +88,17 @@ describe('migrations parse with the Postgres grammar', () => {
     ).toEqual([]);
   });
 
-  it('keeps the allowlist honest — every entry must still genuinely fail', async () => {
+  it('needs no exemptions at all', () => {
+    // The six original entries were repaired on 2026-09-14, so the corpus is
+    // clean with an empty allowlist. This is asserted separately from the sweep
+    // above because that sweep SKIPS allowlisted files: re-adding an entry would
+    // keep it green while quietly shrinking what is actually checked.
+    expect([...KNOWN_UNPARSEABLE]).toEqual([]);
+  });
+
+  it('keeps the allowlist honest — any entry must still genuinely fail', async () => {
+    // Vacuous while the set is empty, and kept for exactly that reason: it is
+    // what stops a future entry from outliving the defect it was added for.
     // The list may only SHRINK. An entry whose file now parses is a stale
     // exemption, and a stale exemption is a place a real new defect can hide.
     const stale: string[] = [];
