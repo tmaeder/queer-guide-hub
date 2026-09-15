@@ -555,6 +555,65 @@ if (!hygieneRes.ok) {
   }
 }
 
+// 4b-bis. The same question asked of the COORDINATES rather than the content
+//     (2026-09-13). The check above derives a city's true country from its events,
+//     so a row with no events can never contradict itself — and that is precisely
+//     the cohort that was wrong: 27 content-less `personality-birth-place` /
+//     `*-city-match` shells, one of which filed Concord, North Carolina under the
+//     Czech Republic with a Europe/Prague timezone. `geo_boundaries` holds 258
+//     country polygons and can adjudicate a row with no children at all.
+//
+//     ONLY `conflict_%` VERDICTS ARE ACTIONABLE. The raw "polygon disagrees" test
+//     reports 50 rows of which 23 are false positives, and every one of the six
+//     `seo_indexable` ones is a false positive: dependent territories with no
+//     polygon of their own (Réunion, Martinique) and border-precision artifacts
+//     (Gibraltar 0.4 km, Podčetrtek 0.7, Siebengewald 1.3, Niagara Falls 0.1).
+//     Those land as `abstain_%` and must never be "fixed" — the function's own
+//     comment says so. Reporting them here would train the reader to ignore it.
+//
+//     WARN, not fail: the three known survivors (Concord, and the Lyss / Martigny
+//     same-town pairs) are recorded decisions that cannot be repaired by moving a
+//     country — `uk_cities_country_name_active` forbids it — so hard-failing would
+//     be permanently red on a state a human already dispositioned.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/city_country_polygon_conflicts`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ p_min_km: 50 }),
+  })
+  if (!res.ok) {
+    console.warn(`⚠ city_country_polygon_conflicts → HTTP ${res.status} (RPC missing? migration 50000501100000)`)
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else {
+    const rows = (await res.json()) ?? []
+    if (!Array.isArray(rows)) {
+      console.error('✗ city_country_polygon_conflicts returned a non-array — the probe is broken')
+      FAILED = true
+    } else {
+      const actionable = rows.filter((r) => String(r.verdict ?? '').startsWith('conflict'))
+      const abstained = rows.filter((r) => String(r.verdict ?? '').startsWith('abstain'))
+      // A detector that abstains on nothing has been widened into the sweep this
+      // exists to prevent. Absence of abstentions is a fault, not a clean corpus.
+      if (rows.length > 0 && abstained.length === 0) {
+        console.error('✗ city_country_polygon_conflicts reported no abstentions at all —')
+        console.error('  the dependent-territory / border guards are not firing. Do NOT act on its output.')
+        FAILED = true
+      }
+      for (const r of actionable) {
+        console.warn(
+          `⚠ ${r.city_name} (${r.city_slug}) filed ${r.stored_code}, coordinates fall in ` +
+          `${r.polygon_code}, ${r.km_to_stored} km from ${r.stored_code} [${r.verdict}]`,
+        )
+      }
+      if (actionable.length === 0) {
+        console.log(`✓ No city coordinate contradicts its country (${abstained.length} abstentions preserved)`)
+      } else {
+        console.warn(`  ${actionable.length} actionable; repair via apply_city_country_repair, never a bare UPDATE`)
+      }
+    }
+  }
+}
+
 // 4c. Venue dedup health (2026-09-06). Same omission as 4b, one entity later: the
 //     dedup section covered city and event and nothing else, so the VENUE auto arms
 //     matched zero of 483 candidate pairs while dedup_truth_sweep reported success
@@ -1901,20 +1960,26 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
       // fails: the news quality gate legitimately rejects some episodes, and
       // this number moves with the corpus.
       //
-      // THE HINT NAMES BOTH STAGES ON PURPOSE. A first version pointed only at
-      // pipeline-validate, and within hours of the parser fix that was the
-      // wrong half: validate went to 0 rejections while the rate FELL to 1%,
-      // because 4,045 news rows (759 podcasts + 3,286 articles, oldest
-      // 2026-07-14) sit at disposition='pending' having already passed
-      // validate, dedup and auto-approval. Commit runs every hour and looks
-      // healthy at 6-13 rows/hour; the parser fix raised podcast inflow to
-      // ~175/hour, so the shortfall is throughput, not rejection. A low rate
-      // here has two very different causes and the reader needs both.
+      // THE HINT HAS BEEN WRONG TWICE AND THIS IS THE MEASURED ANSWER.
+      //
+      // v1 said "check pipeline-validate rejection reasons". Within hours of
+      // the parser fix that was the wrong half: validate went to 0 rejections
+      // while the rate FELL to 1%.
+      //
+      // v2 said the backlog was commit throughput. Also wrong — the rows were
+      // never commit-eligible. `news_commit_staging_batch` requires a quality
+      // verdict (the 20260902 gate), and the backlog had none: 2,103
+      // content-less stubs, 1,500 already judged 'rejected'/'review', and the
+      // rest simply unjudged. Commit was doing exactly what it should.
+      //
+      // The real ceiling is the VERDICT stage. pipeline-enrich-news runs hourly
+      // at batch_size 20 = 480/day, against podcast inflow of ~4,200/day.
+      // news_enrichment_signals() below is the check that actually sees this.
       console.log(
         pct < 40
-          ? `${line} — LOW. Check BOTH: pipeline-validate rejection reasons, and the` +
-            ` disposition='pending' backlog that has already passed validate+dedup` +
-            ` (commit throughput, not rejection).`
+          ? `${line} — LOW. The usual cause is the VERDICT stage, not commit:` +
+            ` see the enrichment section below (awaiting_verdict / oldest).` +
+            ` Rule out pipeline-validate rejections second.`
           : line,
       )
     } else {
@@ -2010,6 +2075,108 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
 }
 
 // ---------------------------------------------------------------------------
+// §  News enrichment: the verdict stage, which is where news rows actually die
+// ---------------------------------------------------------------------------
+//
+// A news row cannot commit without a quality verdict — news_commit_staging_batch
+// has required one since 20260902, because 346 UNJUDGED articles had published
+// indexable and nothing revisited them. That gate is correct.
+//
+// The verdict comes from pipeline-enrich-news, and it starved for four months
+// with EVERY EXISTING SIGNAL GREEN: the cron ran every hour on schedule, every
+// circuit breaker was closed with failure_count 0, llm_budget showed headroom
+// (159 of 600 spent), and `disposition='pending'` reads as "in flight".
+// pipeline_hygiene_stats().stale_pending_by_entity warns at 3,500 rows per
+// target_table and this sat at ~2,300 — UNDER the floor, for months.
+//
+// Nothing was broken. The stage ran 480 times a day against ~4,200 rows of
+// inflow, and nothing anywhere compared those two numbers. So this section
+// compares them, and reports the AGE of the head of the queue — because a deep
+// queue that drains in hours is a legitimate import and a shallow one that
+// never drains is not, and depth alone cannot tell them apart.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/news_enrichment_signals`, {
+    method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: '{}',
+  })
+  if (!res.ok) {
+    console.warn(`⚠ news_enrichment_signals → HTTP ${res.status} (50000301100200 not applied?) — this check measured NOTHING`)
+  } else {
+    const sig = await res.json()
+    let sectionOk = true
+
+    for (const k of ['staged_24h', 'verdicts_24h', 'awaiting_verdict', 'oldest_awaiting_verdict_hours']) {
+      if (!(k in sig)) {
+        console.error(`✗ news_enrichment_signals is missing the key \`${k}\` — that part of this check measured NOTHING`)
+        FAILED = true; sectionOk = false
+      }
+    }
+
+    // AGE **AND** INABILITY TO DRAIN. Age alone was the first version of this
+    // check and it cried wolf on its own first run: a queue clearing at
+    // 700/hour still reports a 2,969-hour oldest row until the last May
+    // straggler goes, so it would have failed CI permanently on a pipeline
+    // that had just been fixed. A check that is always red is one people
+    // learn to scroll past — the same lesson as the dedup backlog, where
+    // keying on the OLDEST open pair fired on every correct deploy.
+    //
+    // The real fault is a queue that CANNOT clear, so the age only counts when
+    // there is more than a day of work backed up behind it. Measured at the
+    // moment of writing: awaiting 488 against 2,514 verdicts/24h — drains in
+    // hours, correctly silent. During the starvation it was ~2,300 against
+    // 480/day, which trips both halves.
+    const oldestH = Number(sig?.oldest_awaiting_verdict_hours ?? 0)
+    const awaiting = Number(sig?.awaiting_verdict ?? 0)
+    const verdicts24h = Number(sig?.verdicts_24h ?? 0)
+    if (oldestH > 72 && awaiting > verdicts24h) {
+      console.error(`✗ ${awaiting} news rows await a quality verdict (oldest ${oldestH}h) against only ${verdicts24h} verdicts in 24h`)
+      console.error('  More than a day of work queued behind an old head: the queue cannot clear.')
+      console.error('  Without a verdict a row can never commit. Check pipeline-enrich-news throughput vs inflow.')
+      FAILED = true; sectionOk = false
+    } else if (oldestH > 72) {
+      console.log(`  oldest row awaiting a verdict is ${oldestH}h (${awaiting} waiting, ${verdicts24h} verdicts/24h — draining)`)
+    }
+
+    // CAPACITY vs INFLOW, as a pair. This is the comparison nothing was making.
+    const staged = Number(sig?.staged_24h ?? 0)
+    const verdicts = Number(sig?.verdicts_24h ?? 0)
+    if (staged > 0) {
+      const line = `  verdict capacity: ${verdicts} verdicts / ${staged} rows staged in 24h`
+      console.log(verdicts < staged / 2
+        ? `${line} — the verdict stage is running at under half of inflow; the queue grows`
+        : line)
+    }
+
+    // A failed enrichment is terminal by default — nothing re-examines it, so
+    // a row with real content parked here is lost, not queued.
+    const failedWithContent = Number(sig?.failed_with_content ?? 0)
+    if (failedWithContent > 0) {
+      console.log(`  ${failedWithContent} rows with real content are parked at enrichment_status='failed' (terminal; nothing retries them)`)
+    }
+
+    // An error message is a record of the past, not a property of the row:
+    // news_fulltext_backfill fills content in AFTER a "content-less" failure.
+    const staleLabel = Number(sig?.stale_failure_label ?? 0)
+    if (staleLabel > 0) {
+      console.error(`✗ ${staleLabel} rows are labelled "content-less stub" but now carry real content`)
+      console.error('  news_fulltext_backfill healed them after the failure and nothing re-queued them.')
+      FAILED = true; sectionOk = false
+    }
+
+    // Podcasts have a deterministic verdict path and should never queue here.
+    const podcastsWaiting = Number(sig?.podcasts_awaiting_verdict ?? 0)
+    if (podcastsWaiting > 200) {
+      console.error(`✗ ${podcastsWaiting} podcast episodes are awaiting a quality verdict`)
+      console.error('  run_podcast_deterministic_verdict should clear these without an LLM — is its cron running?')
+      FAILED = true; sectionOk = false
+    }
+
+    if (sectionOk) {
+      console.log('✓ news rows are getting quality verdicts and the queue is draining')
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // §  Inline glossary links in body prose
 // ---------------------------------------------------------------------------
 //
@@ -2080,6 +2247,169 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
     }
 
     if (sectionOk) console.log('✓ glossary link vocabulary clean (no dead, adult, gated or definitionless terms)')
+  }
+}
+
+// ---------------------------------------------------------------------------
+// §  Tag category representations
+// ---------------------------------------------------------------------------
+//
+// A tag states its category in THREE places and each reader surface reads a
+// DIFFERENT one: `/tags/:slug` renders the is_primary JUNCTION, the search
+// facet renders the denormalised TEXT, and `category_id` is the lever that
+// drives both. Nothing checked category_id -> JUNCTION, which is the only
+// direction that blanks the breadcrumb on the page.
+//
+// That is how 195 active tags ended up categorised in site search and showing
+// no category at all on their own page, while `tag_hygiene_stats()` read
+// clean: its `uncategorized_active` counts `category_id IS NULL` (the
+// representation the page does not render, reading 10) and its
+// `denorm_category_missing` checks the opposite direction. Same shape as the
+// sentinel once hardcoded to `slug=eq.search_reindex_drain`.
+//
+// The cause was the producer, not the data: both sync triggers were
+// UPDATE-only, so a tag INSERTed with `category_id` set minted no junction
+// row — and a control probe on prod showed it got no TEXT and `is_adult=false`
+// either, i.e. a new kink-category tag was created UN-GATED. Hence
+// `insert_trigger_sealed` is checked structurally: a zero gap count the day
+// after someone re-creates a trigger without INSERT is not health.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/tag_category_signals`, {
+    method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: '{}',
+  })
+  if (!res.ok) {
+    // A failed probe must SAY it failed rather than fall through to a default.
+    console.warn(`⚠ tag_category_signals → HTTP ${res.status} (50700101100100 not applied?) — this check measured NOTHING`)
+  } else {
+    const sig = await res.json()
+    let sectionOk = true
+
+    // Denominator before any violation count: zero violations across zero tags
+    // is a broken probe, not a clean glossary.
+    const active = Number(sig?.active_tags ?? 0)
+    if (active === 0) {
+      console.warn('⚠ tag_category_signals reports ZERO active tags — the probe is measuring nothing, not passing')
+      sectionOk = false
+    }
+
+    const zeroInvariants = [
+      ['category_id_without_junction', 'active tag(s) carry a category_id with no primary junction row — /tags/:slug shows NO category while search shows one'],
+      ['junction_disagrees_with_category_id', 'active tag(s) whose primary junction contradicts category_id — the page and the lever disagree'],
+      ['junction_without_category_id', 'active tag(s) have a primary junction but a NULL category_id — the lever cannot move the page'],
+    ]
+    for (const [key, why] of zeroInvariants) {
+      if (!(key in (sig ?? {}))) {
+        console.warn(`⚠ tag_category_signals has no '${key}' key — that check measured NOTHING`)
+        sectionOk = false
+        continue
+      }
+      const n = Number(sig[key] ?? 0)
+      if (n > 0) {
+        console.error(`✗ ${n} ${why}`)
+        FAILED = true; sectionOk = false
+      }
+    }
+
+    // Structural. Without the INSERT arm the gap regrows at the rate new tags
+    // are minted, and new adult-category tags are created un-gated.
+    if (!('insert_trigger_sealed' in (sig ?? {}))) {
+      console.warn("⚠ tag_category_signals has no 'insert_trigger_sealed' key — the producer seal measured NOTHING")
+      sectionOk = false
+    } else if (sig.insert_trigger_sealed !== true) {
+      console.error('✗ a tag category sync trigger does not fire on INSERT — the junction gap will regrow silently')
+      FAILED = true; sectionOk = false
+    }
+
+    // ADVISORY, non-zero by design (22 rows). Adult vocabulary filed under a
+    // non-adult category, where the hand-set is_adult flag is CORRECT and
+    // `unified_tags_recompute_is_adult()` — which derives from the category
+    // alone and knows nothing of an override — would destroy it on the next
+    // junction write. Printed WITH the slugs so a NEW one is distinguishable
+    // from the known cohort rather than hidden in a count. Gating would ship
+    // red on arrival, the cry-wolf shape already removed from the dedup rule.
+    const ov = Number(sig?.is_adult_override ?? 0)
+    if (ov > 0) {
+      const ex = Array.isArray(sig?.is_adult_override_examples) ? sig.is_adult_override_examples : []
+      console.log(`  ${ov} tag(s) carry an is_adult flag the category-only derivation would overwrite (gating is correct; the rule has no override)`)
+      if (ex.length) console.log(`      ${ex.join(', ')}`)
+    }
+
+    const uncat = Number(sig?.uncategorized_active_nonfacet ?? 0)
+    if (uncat > 0) {
+      console.log(`  ${uncat} active non-facet tag(s) have no category in any representation`)
+    }
+
+    if (sectionOk) console.log(`✓ tag category representations agree (${active} active tags, producer sealed on INSERT)`)
+  }
+}
+
+// ---------------------------------------------------------------------------
+// §  Tag merge graph
+// ---------------------------------------------------------------------------
+//
+// A merge mints a redirect from the loser's slug to the winner's page, so a
+// winner that is not ACTIVE is a redirect to a page that does not render.
+// Nothing checked this until 50400101100300: tag_hygiene_stats() has
+// redirect_to_non_canonical (which reads the redirect TABLE, not the merge
+// graph) and merged_but_not_status_merged (which reads the LOSER's status,
+// never the target's).
+//
+// It was found by following ONE term. `hpv` was a merge target that had itself
+// been deprecated, so every HPV row in the glossary resolved to a page that
+// does not render — on a platform where HPV is the cause of almost all anal
+// cancer. Measured at the time: 8 merges pointed at a deprecated row and 5 at
+// another merged row.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/tag_merge_graph_signals`, {
+    method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: '{}',
+  })
+  if (!res.ok) {
+    // A failed probe must SAY it failed rather than fall through to a default.
+    console.warn(`⚠ tag_merge_graph_signals → HTTP ${res.status} (50400101100300 not applied?) — this check measured NOTHING`)
+  } else {
+    const sig = await res.json()
+    let sectionOk = true
+
+    // Reported before any violation count: four zeroes because the corpus holds
+    // no merges at all must never read as a clean merge graph.
+    const total = Number(sig?.merges_total ?? 0)
+    if (total === 0) {
+      console.warn('⚠ tag_merge_graph_signals reports ZERO merges — the probe is measuring nothing, not passing')
+      sectionOk = false
+    }
+
+    // Structural. A chain, a dangling uuid and a self-redirect are never
+    // correct, and 50400101100100 drove all three to zero.
+    const zeroInvariants = [
+      ['target_merged', 'merge(s) point at another MERGED row — a redirect to a redirect'],
+      ['target_missing', 'merge(s) point at a row that no longer exists — a dangling uuid'],
+      ['self_merged', 'row(s) are merged into themselves'],
+    ]
+    for (const [key, why] of zeroInvariants) {
+      if (!(key in (sig ?? {}))) {
+        console.warn(`⚠ tag_merge_graph_signals has no '${key}' key — that check measured NOTHING`)
+        continue
+      }
+      const n = Number(sig[key] ?? 0)
+      if (n > 0) {
+        console.error(`✗ ${n} ${why}`)
+        FAILED = true; sectionOk = false
+      }
+    }
+
+    // ADVISORY, and non-zero by design. Six targets are deprecated rows that
+    // each need their own editorial decision, named in 50400101100100's header.
+    // Gating here would ship red on arrival — the cry-wolf shape already removed
+    // once from the dedup backlog rule — so it prints, with the pairs, so a NEW
+    // one is distinguishable from the six known ones rather than hidden in a count.
+    const dep = Number(sig?.target_deprecated ?? 0)
+    if (dep > 0) {
+      const ex = Array.isArray(sig?.deprecated_examples) ? sig.deprecated_examples : []
+      console.log(`  ${dep} merge(s) point at a DEPRECATED row (redirect renders nothing until the target is revived or repointed)`)
+      for (const pair of ex) console.log(`      ${pair}`)
+    }
+
+    if (sectionOk) console.log(`✓ tag merge graph clean (${total} merges, no chains, dangling or self-merges)`)
   }
 }
 
@@ -2276,8 +2606,20 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
   if (!res.ok) {
     // A failed probe must SAY it failed. Falling through to a default would
     // report a clean layer on the strength of never having looked.
-    console.warn(`⚠ analytics_hygiene_stats → HTTP ${res.status} (20700301100500 not applied?)`)
+    console.warn(`⚠ analytics_hygiene_stats → HTTP ${res.status}`)
     console.warn('  This check measured NOTHING — it did not pass.')
+    // The first cause this ever had was NOT a missing migration, and the hint
+    // that used to sit here ("20700301100500 not applied?") cost a session:
+    // the migration was applied and the function was healthy — it just took
+    // 10.3s against the 8s statement_timeout `service_role` inherits from
+    // `authenticator`, so PostgREST cancelled it and answered 500. Check the
+    // timing before the deployment (60000101100000 added the index that fixed it).
+    if (res.status >= 500) {
+      console.warn('  A 500 here is usually a TIMEOUT, not a missing function: service_role')
+      console.warn('  inherits statement_timeout=8s. Time it directly —')
+      console.warn('    explain analyze select public.analytics_hygiene_stats();')
+      console.warn('  — before concluding the migration is missing.')
+    }
   } else {
     const a = await res.json()
     let sectionOk = true
@@ -2446,6 +2788,524 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
         )
         if (schedules === 0) {
           console.log('  No schedules exist yet — the zeroes above are absence, not health.')
+        }
+      }
+    }
+  }
+}
+
+// 15. The content revision trail (2026-09-13).
+//
+//     Versioning existed twice before this and neither instance worked, which is
+//     the whole reason this section exists. `admin_edit_log`: 0 rows in its
+//     entire life, because RLS was enabled with a SELECT-only policy and the
+//     client swallowed the denial in a bare catch. `cms_revisions`: 28 rows over
+//     seven months across 4 of 26 content types, max revision_number 1 on every
+//     one of them. Nothing anywhere said so, for months.
+//
+//     So the thing to check is not "are there revisions" — it is "is the trail
+//     ATTACHED". An unattached trigger and a quiet week both produce zero, and
+//     that is exactly the accessibility_contradictions lesson: a check that
+//     reports one number for both reads a dead trail as a clean one.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/content_revision_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    console.warn(`⚠ content_revision_signals → HTTP ${res.status} (RPC missing? migration 50010101100200)`)
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else {
+    const cr = (await res.json()) ?? {}
+
+    // A broken probe is not a clean trail. Absent keys must say so rather than
+    // coercing to a reassuring zero.
+    if (cr.triggers_attached === null || cr.triggers_attached === undefined) {
+      console.error('✗ content_revision_signals returned no triggers_attached — the probe is broken')
+      FAILED = true
+    } else {
+      const enabled = Number(cr.enabled ?? 0)
+      const attached = Number(cr.triggers_attached ?? 0)
+      const orphaned = cr.enabled_without_trigger ?? []
+      const pgDisabled = cr.trigger_disabled_in_pg ?? []
+      const rev24 = Number(cr.revisions_24h ?? 0)
+
+      // The hard fail: the registry says this table is versioned and no trigger
+      // is attached, so every write to it is going unrecorded right now.
+      if (orphaned.length > 0) {
+        console.error(`✗ ${orphaned.length} table(s) enabled for versioning with NO trigger attached: ${orphaned.join(', ')}`)
+        console.error('  Writes to these are going unrecorded. Either attach the trigger or set')
+        console.error('  content_versioned_tables.enabled = false — an enabled row with no trigger is a lie.')
+        FAILED = true
+      }
+
+      // ALTER TABLE ... DISABLE TRIGGER is the emergency stop. It is not the
+      // documented kill switch (that is the `enabled` column, which takes no
+      // lock), so finding one disabled in pg means someone reached past it.
+      if (pgDisabled.length > 0) {
+        console.error(`✗ revision trigger disabled in Postgres on: ${pgDisabled.join(', ')}`)
+        console.error('  The kill switch is content_versioned_tables.enabled, which needs no table lock.')
+        console.error('  A trigger disabled via ALTER TABLE is invisible to the registry.')
+        FAILED = true
+      }
+
+      // A generated column added AFTER the table was registered. It is derived,
+      // so it will appear in every delta and can never be reverted.
+      const genLoose = Number(cr.generated_not_ignored ?? 0)
+      if (genLoose > 0) {
+        console.error(`✗ ${genLoose} generated/identity column(s) are not in any ignore_columns list`)
+        console.error('  They are derived, so they bloat every delta and no revert can write them back.')
+        console.error('  Append them to content_versioned_tables.ignore_columns for that table.')
+        FAILED = true
+      }
+
+      // Retention. If the prune cron stops, the disk argument this design rests
+      // on (delta + a horizon on machine revisions) stops holding.
+      if (attached > 0 && cr.prune_cron_scheduled === false) {
+        console.error('✗ content_revision_prune is not scheduled while the trail is live')
+        console.error('  Machine revisions accumulate at ~5k/day with no horizon.')
+        FAILED = true
+      }
+      const oldestSystem = Number(cr.oldest_system_days ?? 0)
+      if (oldestSystem > 120) {
+        console.warn(`⚠ Oldest machine revision is ${oldestSystem}d old (horizon is 90d) — prune is behind`)
+      }
+
+      // Volume is DESCRIBED, never failed on. A quiet day is legitimate; the
+      // attachment checks above are what catch a dead trail.
+      const kinds = Object.entries(cr.by_kind_24h ?? {})
+        .map(([k, v]) => `${k} ${v}`)
+        .join(', ')
+      const mb = (Number(cr.bytes ?? 0) / 1048576).toFixed(1)
+      console.log(
+        `✓ Content revisions: ${attached}/${enabled} trigger(s) attached, ` +
+          `${rev24} revision(s) in 24h${kinds ? ` (${kinds})` : ''}, ${mb} MB`,
+      )
+      if (attached === 0) {
+        console.log('  No table is versioned yet — the zeroes above are absence, not health.')
+      }
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// §  The unified triage inbox actually loads
+// ---------------------------------------------------------------------------
+//
+// get_unified_triage_queue() UNION ALLs `SELECT *` over every ACTIVE
+// triage_sources view (17 of them). That makes the inbox an ALL-OR-NOTHING
+// surface: one view whose column types, count or order disagrees with the rest
+// is a PLAN-time failure, and the admin sees a dead page rather than a missing
+// queue.
+//
+// That is not theoretical. triage_src_editorial emitted the raw enum types of
+// editorial_drafts (editorial_entity_type, editorial_draft_status) where the
+// other sixteen views emit text, and `UNION types text and
+// editorial_entity_type cannot be matched` was the entire inbox from
+// 20260801050000 until it was found by hand. Two properties made it survive:
+//
+//   * THE OFFENDING VIEW WAS EMPTY (0 pending editorial_drafts). A plan-time
+//     failure does not care, so a view with nothing in it hid 7,525 real items.
+//     No queue-depth, row-count or freshness check can see this.
+//   * IT ONLY FAILS UNFILTERED. The RPC narrows the union to the requested
+//     queue types, so every ?queue=<one> deep link kept working.
+//
+// So the probe has to be the union itself. triage_queue_signals() builds it
+// from triage_sources exactly as the RPC does — it cannot measure a different
+// set than the inbox serves — and RUNS it, which also catches a dropped column,
+// a reordered SELECT list and a registered view that no longer exists.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/triage_queue_signals`, {
+    method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: '{}',
+  })
+  if (!res.ok) {
+    // A failed probe must SAY it failed rather than fall through to a default —
+    // the same shape as the `last_error` 42703 that hid an open circuit breaker.
+    console.warn(`⚠ triage_queue_signals → HTTP ${res.status} (20260914084603 not applied?) — this check measured NOTHING`)
+  } else {
+    const tq = await res.json()
+    let sectionOk = true
+
+    // `probe_ok` absent means an older function shape, not a healthy inbox.
+    if (typeof tq?.probe_ok !== 'boolean') {
+      console.error('✗ triage_queue_signals returned no `probe_ok` — the probe is broken, not the inbox healthy')
+      FAILED = true; sectionOk = false
+    } else if (tq.probe_ok !== true) {
+      console.error(`✗ The unified triage inbox does not load: ${tq.union_error ?? 'no error reported'}`)
+      console.error('  /admin/inbox is dead for every queue, not just the offending one.')
+      const drift = Array.isArray(tq.type_drift) ? tq.type_drift : []
+      for (const d of drift) {
+        console.error(`  ${d.view}.${d.column} is ${d.type}; its sibling views use ${d.siblings_use}`)
+      }
+      if (drift.length === 0) {
+        console.error('  No column-type drift — check for a view with a different column count or order.')
+      }
+      FAILED = true; sectionOk = false
+    }
+
+    // A registered view that no longer exists fails `SELECT * FROM public.<gone>`
+    // at parse time, i.e. the same inbox-wide outage by a different route.
+    const missing = Array.isArray(tq?.views_missing) ? tq.views_missing : []
+    if (missing.length > 0) {
+      console.error(`✗ triage_sources registers view(s) that do not exist: ${missing.join(', ')}`)
+      console.error('  Deactivate the registry row or restore the view — the union names it either way.')
+      FAILED = true; sectionOk = false
+    }
+
+    // Type drift with a passing probe is still a bug worth naming: the types
+    // happen to unify today (text vs varchar) and the next one may not.
+    const drift = Array.isArray(tq?.type_drift) ? tq.type_drift : []
+    if (tq?.probe_ok === true && drift.length > 0) {
+      console.warn(`⚠ ${drift.length} triage source column(s) disagree with their siblings but still unify:`)
+      for (const d of drift) console.warn(`  ${d.view}.${d.column} is ${d.type}, siblings use ${d.siblings_use}`)
+    }
+
+    // Zero active sources makes every assertion above vacuous — the union would
+    // be NULL and the RPC returns an empty page rather than raising.
+    const active = Number(tq?.views_active ?? 0)
+    if (active === 0) {
+      console.error('✗ No ACTIVE triage_sources rows — the inbox is empty by configuration, and this check measured nothing')
+      FAILED = true; sectionOk = false
+    }
+
+    if (sectionOk) {
+      // Depth is DESCRIBED, never failed on: a drained inbox is the goal.
+      console.log(`✓ Triage inbox loads: ${tq.rows ?? 0} item(s) across ${active} source view(s)`)
+    }
+  }
+}
+
+// 16. The review queue — the RATE, not the depth (2026-09-14).
+//
+//     `entity_review_queue` reached 3,997 open rows behind five human decisions
+//     in sixty days and NOTHING said so. pipeline_hygiene_stats watches
+//     staging, not review; get_admin_counts reports the depth as a number on a
+//     card, where a queue being worked and a queue being abandoned are the same
+//     rising figure; and every producer's automation row was green, because
+//     filling the queue IS their job.
+//
+//     So depth is DESCRIBED and never failed on — a deep queue is a corpus
+//     fact a human decides about. What hard-fails is what the automation in
+//     50200101100100 guarantees: the closer is registered, is not
+//     auto-paused-then-recovered, and is holding unactionable rows near zero.
+//     A broken mechanism is an error; an awkward corpus is a warning, because a
+//     check that fires on every run is one people learn to scroll past.
+//
+//     STANDALONE, like content_revision_signals/venue_dup_signals and for the
+//     same reason: pipeline_hygiene_stats is a long CREATE OR REPLACE and a new
+//     key there means restating every other one by hand — a merge-collision
+//     surface.
+//
+//     A MISSING RPC HARD-FAILS HERE, unlike the 404 carve-out in §11b. The
+//     function catches its own exceptions and answers probe_ok=false, so the
+//     only ways a non-2xx reaches this branch are an unapplied migration or a
+//     revoked grant — and an unreadable queue must never read as an empty one.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/review_queue_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    const detail = (await res.text()).slice(0, 200)
+    console.error(`✗ review_queue_signals → HTTP ${res.status} (migration 50200101100300 not applied? PGRST202 = the function does not exist) ${detail}`)
+    console.error('  The review queue could not be read at all. Absence of a check is not absence of a backlog.')
+    FAILED = true
+  } else {
+    const rq = (await res.json()) ?? {}
+    if (rq.probe_ok !== true) {
+      console.error(`✗ review_queue_signals did not report probe_ok — the probe is broken${rq.error ? `: ${rq.error}` : ''}`)
+      FAILED = true
+    } else {
+      // An ABSENT key and a ZERO count must not look alike — the
+      // accessibility_contradictions rule. Every threshold below coerces with
+      // `?? 0`, so a renamed or dropped key would arrive as `undefined` and
+      // report a clean queue having measured nothing.
+      const REQUIRED = [
+        'open_total',
+        'open_by_cohort',
+        'human_decisions_30d',
+        'machine_decisions_30d',
+        'last_human_decision_at',
+        'open_age_days_median',
+        'risk_blocked_open',
+        'unactionable_open',
+        'unregistered_field_open',
+        'closer',
+      ]
+      const missing = REQUIRED.filter((k) => rq?.[k] === undefined)
+      if (missing.length) {
+        console.error(`✗ review_queue_signals is missing ${missing.join(', ')} — the gate cannot report what it does not return, so this is a broken probe, not a clean queue`)
+        FAILED = true
+      } else {
+        const openTotal = Number(rq.open_total ?? 0)
+        const humans = Number(rq.human_decisions_30d ?? 0)
+        const machines = Number(rq.machine_decisions_30d ?? 0)
+        const medianAge = Number(rq.open_age_days_median ?? 0)
+        const riskBlocked = Number(rq.risk_blocked_open ?? 0)
+        const unactionable = Number(rq.unactionable_open ?? 0)
+        const unregistered = Number(rq.unregistered_field_open ?? 0)
+        const closer = rq.closer ?? {}
+
+        // The closer's own health. Auto-paused-then-recovered is the one-way
+        // door of §6b: the pause deletes its own evidence, so from the row
+        // alone a transient blip and a deliberate retirement read identically.
+        // The probe computes that shape; this just reports it.
+        if (closer.registered === undefined) {
+          console.error('✗ review_queue_signals returned a closer with no `registered` key — the probe is broken')
+          FAILED = true
+        } else if (closer.registered === false) {
+          console.error('✗ review_queue_close_unactionable has no admin_automations row — the closer is unregistered')
+          console.error('  Nothing drains the unactionable rows, and pg_cron cannot be reconciled from a registry that does not describe it.')
+          console.error('  Re-apply migration 50200101100100, which is the only scheduler for this job.')
+          FAILED = true
+        } else if (closer.falsely_paused === true) {
+          console.error(`✗ review_queue_close_unactionable was auto-paused, then RECOVERED, and never re-enabled (last run ${closer.last_run_at ?? 'never'})`)
+          console.error('  Its last recorded run SUCCEEDED — the pause was a transient blip, not a decision.')
+          console.error('  Restore: UPDATE admin_automations SET enabled=true WHERE slug=\'review_queue_close_unactionable\';')
+          FAILED = true
+        }
+
+        // Un-approvable no matter who looks: approve_entity_review raises
+        // 'unsupported review field' when no active registry row describes the
+        // field, so these rows can only ever be rejected. One is a producer
+        // queueing a field nobody registered — a bug, not a backlog.
+        if (unregistered > 0) {
+          console.error(`✗ ${unregistered} open review row(s) name a field with no active review_field_registry entry`)
+          console.error('  approve_entity_review raises `unsupported review field` on these — no reviewer can apply them.')
+          console.error('  Register the field, or close the rows; a queue that collects undecidable work is how decisions get discarded.')
+          FAILED = true
+        }
+
+        // The closer runs nightly at 06:35 and caps at 500 rows. A steady state
+        // above that allowance means it is not running, or its predicate stopped
+        // matching the rows it was written for.
+        if (unactionable > 600) {
+          console.error(`✗ ${unactionable} open review row(s) sit on entities with no readers (merged/ghost/closed/archived) — the closer caps at 500/night`)
+          console.error('  Above that allowance it is not running or its predicate no longer matches.')
+          console.error('  Check: SELECT public.run_review_queue_close_unactionable(500);')
+          FAILED = true
+        }
+
+        // WARNINGS — the corpus, where a human decides what is acceptable.
+        //
+        // Zero human decisions is the headline and is deliberately NOT an
+        // error: a genuinely quiet fortnight is legitimate. It is paired with
+        // the depth so the two are read together — zero decisions against 40
+        // open rows is a quiet week, zero against 3,997 is an abandoned queue.
+        if (humans === 0 && openTotal > 500) {
+          console.warn(`⚠ ${openTotal} open review row(s) and ZERO human decisions in 30 days (last human decision: ${rq.last_human_decision_at ?? 'never'})`)
+          console.warn('  Machine decisions in the same window: ' + machines + '. A decision count is not evidence of human review — reviewer_id is.')
+        }
+        if (medianAge > 60) {
+          console.warn(`⚠ Median open review row is ${medianAge}d old — the queue is rotting, not merely deep`)
+        }
+        // Advisory. These rows raise 42501 from approve_entity_review unless the
+        // caller passes p_confirm, so they are the one number that measures a
+        // reviewer's ability to finish the work at all. The invariant that the
+        // UI sends the flag is asserted in the frontend tests, which is where it
+        // can be observed; here it is context.
+        if (riskBlocked > 0) {
+          console.warn(`⚠ ${riskBlocked} open review row(s) are risk-gated — approving them needs the confirm flag`)
+        }
+
+        console.log(
+          `✓ Review queue: ${openTotal} open (median ${medianAge}d), ` +
+            `${humans} human / ${machines} machine decision(s) in 30d, ` +
+            `${riskBlocked} risk-gated, ${unactionable} unactionable`,
+        )
+        // The cohorts are printed rather than warned on. A ⚠ that fires on every
+        // run is noise; the shape of the backlog is what a reader needs to act,
+        // and "which fields" is the first question a depth number provokes.
+        const cohorts = Object.entries(rq.open_by_cohort ?? {})
+          .sort((a, b) => Number(b[1]) - Number(a[1]))
+          .slice(0, 3)
+          .map(([k, v]) => `${k} ${v}`)
+          .join(', ')
+        if (cohorts) console.log(`  largest cohorts: ${cohorts}`)
+        if (openTotal === 0) {
+          console.log('  The queue is empty — the zeroes above are absence, not a worked queue.')
+        }
+      }
+    }
+  }
+}
+
+// § Prose left behind by a disowned Wikidata entity
+//
+//     The second half of the wrong-entity failure. tag_wikidata_repair_regressions()
+//     above watches the IDENTIFIER coming back; nothing watched the TEXT the
+//     identifier produced, which is how `suspension` kept serving a definition of
+//     an administrative account ban for ten days after a human correctly diagnosed
+//     it and nulled the QID, and how `spotter` kept the prose of a 2018 video game
+//     after 20261008100000 disowned it.
+//
+//     RATCHET, NOT A ZERO-INVARIANT. The backlog can only be worked down by hand,
+//     so the count WARNS and only GROWTH fails. Growth means a producer is writing
+//     new prose from a disowned entity — a live regression rather than a backlog —
+//     and that is worth stopping a build for. A rule that fired on every run from
+//     the day it shipped would be scrolled past, which is the same reasoning that
+//     put the dedup backlog rule on the median age rather than the oldest.
+//
+//     The ceiling is deliberately ABOVE the measured baseline. 364 rows on
+//     2026-09-14; 50500101100000 repairs 26 by hand, 11 of which are in this
+//     cohort, so the expected value on the next run is ~353. 380 leaves headroom
+//     for concurrent glossary work without letting a real regression through.
+//
+//     A MISSING RPC HARD-FAILS. The function catches its own exceptions and
+//     answers probe_ok=false, so a non-2xx here means an unapplied migration or a
+//     revoked grant — and an unreadable corpus must never read as a clean one.
+const DISOWNED_PROSE_CEILING = 380
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/tag_disowned_prose_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    const detail = (await res.text()).slice(0, 200)
+    console.error(`✗ tag_disowned_prose_signals → HTTP ${res.status} (migration 50500101100300 not applied? PGRST202 = the function does not exist) ${detail}`)
+    FAILED = true
+  } else {
+    const dp = (await res.json()) ?? {}
+    if (dp.probe_ok !== true) {
+      console.error(`✗ tag_disowned_prose_signals did not report probe_ok — the probe is broken${dp.error ? `: ${dp.error}` : ''}`)
+      FAILED = true
+    } else if (Number(dp.audit_rows ?? 0) === 0) {
+      // An empty audit table and a cleaned corpus both yield zero surviving
+      // rows. Distinguishing them is the whole reason this key is reported.
+      console.error('✗ tag_disowned_prose_signals: the repair audit is empty, so the zeroes below measure nothing')
+      FAILED = true
+    } else {
+      const sd = Number(dp.sd_surviving ?? 0)
+      const ld = Number(dp.ld_surviving ?? 0)
+      const idx = Number(dp.indexable_surviving ?? 0)
+      if (sd > DISOWNED_PROSE_CEILING) {
+        console.error(`✗ tag_disowned_prose_signals: ${sd} rows still carry prose from a disowned entity, above the ${DISOWNED_PROSE_CEILING} ceiling`)
+        console.error('  This number is supposed to fall. Growth means something is WRITING prose from an entity a repair already rejected.')
+        FAILED = true
+      } else if (sd > 0) {
+        console.warn(`⚠ ${sd} active tags still carry the short_description a disowned Wikidata entity produced (${ld} long_description, ${idx} indexable)`)
+        console.warn('  An upper bound, not a defect count — a hand-read sample of 24 was ~45% genuinely wrong. Worked down by hand.')
+      } else {
+        console.log('✓ no active tag carries prose from a disowned Wikidata entity')
+      }
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// §  Geographic dedup: never suggest merging two differently-named places
+// ---------------------------------------------------------------------------
+//
+//     Measured on 2026-09-14, `run_dedup_truth_sweep('city','dry_run')` returned
+//     `{would_merge: 0, would_queue: 118}` and ALL 118 came from one arm,
+//     `geo_only_2km`, which paired rows whose names DIFFER on distance alone. So
+//     100% of the city engine's output was a proposal to merge two different
+//     places: Ueberlingen <-> Wernigerode (Lake Constance vs the Harz) at "0 m",
+//     Pirna <-> Baden-Baden at 265 m, Garden Grove California <-> Egham England
+//     at 580 m. The metre readings are the placeholder-coordinate signature, not
+//     proximity — a missing geocode falls back to a shared centroid.
+//
+//     ZERO-TOLERANCE, NO BASELINE, unlike the disowned-prose ratchet above. This
+//     is not a backlog to work down: a single different-name pair sitting open is
+//     one an admin can approve, and approving it destroys a real city. The engine
+//     side is asserted too, because an empty queue proves nothing while an arm
+//     that generates such pairs is still installed.
+//
+//     The qualifier form ("Berlin" vs "Berlin, Germany") is the SAME name
+//     carrying a qualifier and is excluded — that is a legitimate duplicate and
+//     the engine now merges it on the base row's Wikidata id.
+//
+//     A MISSING RPC HARD-FAILS: the function answers probe_ok=false on its own
+//     failures, so a non-2xx means an unapplied migration or a revoked grant, and
+//     an unreadable engine must never read as a clean one.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/geo_dedup_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    const detail = (await res.text()).slice(0, 200)
+    console.error(`✗ geo_dedup_signals → HTTP ${res.status} (migration 51000101100300 not applied? PGRST202 = the function does not exist) ${detail}`)
+    FAILED = true
+  } else {
+    const g = (await res.json()) ?? {}
+    if (g.probe_ok !== true) {
+      console.error('✗ geo_dedup_signals did not report probe_ok — the dedup engine could not be dry-run, so the counts below measure nothing')
+      FAILED = true
+    } else {
+      const diff = Number(g.open_diff_name_pairs ?? 0)
+      if (diff > 0) {
+        console.error(`✗ ${diff} open city dedup pairs name two DIFFERENT places (of ${g.open_city_pairs} open)`)
+        console.error('  A geographic merge may only be proposed from an identical name key, a qualifier of it, or a shared Wikidata id.')
+        FAILED = true
+      }
+      if (g.proximity_arm_retired !== true) {
+        console.error('✗ the geo_only_2km proximity arm is installed again — it pairs differently-named places on distance alone')
+        FAILED = true
+      }
+      if (g.real_source_arms !== true) {
+        console.error('✗ the real-source geographic arms (qid_exact / name_qualifier / name_exact_iso) are not installed')
+        FAILED = true
+      }
+      if (diff === 0 && g.proximity_arm_retired === true && g.real_source_arms === true) {
+        console.log(`✓ geographic dedup is name- and gazetteer-based (${g.open_city_pairs} open pairs, 0 naming different places; city dry run would_merge=${g.city_would_merge} would_queue=${g.city_would_queue})`)
+      }
+    }
+  }
+}
+
+// §18 — the news quality drain must be able to REACH its own queue.
+//
+//     The fault this exists for is not depth. `news_verdict_geo_backfill` (*/10)
+//     posts enqueue+run and books a successful run either way; on 2026-09-14 it
+//     had been doing that against an enqueue selector that returned ZERO rows
+//     corpus-wide while 782 items showed in /admin/inbox and 346 of them had
+//     never been judged at all. last_run_status said 'success' throughout.
+//
+//     So the gate is unjudged_unreachable: rows in review with no verdict that
+//     the selector will not offer and that are not in flight. Depth
+//     (judged_in_review) is a genuine human queue and NEVER gates.
+//
+//     A MISSING RPC HARD-FAILS. The function answers probe_ok=false on its own
+//     failures, so a non-2xx means an unapplied migration or a revoked grant —
+//     and a drain nobody can measure must never read as a healthy one.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/news_quality_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    const detail = (await res.text()).slice(0, 200)
+    console.error(`✗ news_quality_signals → HTTP ${res.status} (migration 61000301100100 not applied? PGRST202 = the function does not exist) ${detail}`)
+    FAILED = true
+  } else {
+    const q = (await res.json()) ?? {}
+    if (q.probe_ok !== true) {
+      console.error(`✗ news_quality_signals did not report probe_ok — the drain could not be measured: ${q.error ?? '(no error given)'}`)
+      FAILED = true
+    } else {
+      const unreachable = Number(q.unjudged_unreachable ?? 0)
+      if (unreachable > 0) {
+        console.error(`✗ ${unreachable} news articles sit in the review queue with NO verdict and cannot be re-judged`)
+        console.error(`  (${q.unjudged_in_review} unjudged in review, ${q.eligible_now} eligible for the drain, attempt_epoch=${q.attempt_epoch ?? 'UNSET'})`)
+        console.error('  A human is being asked to decide something no machine ever looked at. Either the cause of the')
+        console.error('  failures was ours — move news_quality_settings.attempt_epoch and say why — or disposition the rows.')
+        FAILED = true
+      }
+      if (Number(q.review_rows_in_search ?? 0) > 0) {
+        console.error(`✗ ${q.review_rows_in_search} news rows awaiting quality review are live in search_documents`)
+        FAILED = true
+      }
+      if (unreachable === 0) {
+        const stale = Number(q.stale_image_block ?? 0)
+        console.log(`✓ news quality drain is reachable (${q.unjudged_in_review} unjudged, ${q.eligible_now} eligible, ${q.judged_in_review} judged awaiting a human)`)
+        if (stale > 0) {
+          console.log(`  note: ${stale} rows are blocked on 'image_unusable' whose image_url is now NULL — a stated reason that outlived what it described`)
         }
       }
     }
