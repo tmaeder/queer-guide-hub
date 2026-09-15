@@ -330,12 +330,22 @@ export function MediaDetailPage() {
                 {detail.entity_links.map((link, i) => (
                   <TableRow key={`${link.entity_type}-${link.entity_id}-${link.role}-${i}`}>
                     <TableCell>
-                      <Link
-                        to={entityAdminPath(link.entity_type, link.entity_id)}
-                        className="text-foreground underline hover:text-foreground/80"
-                      >
-                        {link.entity_name || link.entity_id.slice(0, 8)}
-                      </Link>
+                      {(() => {
+                        const href = entityAdminPath(link.entity_type, link.entity_id);
+                        const label = link.entity_name || link.entity_id.slice(0, 8);
+                        // An unmapped entity type has no admin route. Plain
+                        // text beats a link that 404s.
+                        return href ? (
+                          <Link
+                            to={href}
+                            className="text-foreground underline hover:text-foreground/80"
+                          >
+                            {label}
+                          </Link>
+                        ) : (
+                          <span className="text-muted-foreground">{label}</span>
+                        );
+                      })()}
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className="text-2xs">

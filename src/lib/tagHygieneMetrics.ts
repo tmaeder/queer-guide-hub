@@ -144,6 +144,11 @@ export const HYGIENE_METRICS: HygieneMetric[] = [
   {
     key: 'slug_diacritic_lossy',
     label: 'Slugs that lost a diacritic',
+    // `zero` again since 2026-09-14. It was briefly dropped when #3705 withdrew
+    // three twin-named dedupe merges and this counter, which excludes only
+    // 'merged', went 0 -> 3. The repair that looked unavailable was restoring
+    // the merge (20260914175649), not transliterating -- which really would
+    // collide with the correctly-spelled twin. Live reads 0.
     zero: true,
     hint: 'A slug the canonical slugifier would not produce, on a non-ASCII name — "Bühne" stored as b-hne. Excludes merged rows, whose slug IS their redirect trail. Deliberately NOT the unqualified drift predicate, which matches 115 rows of which 106 are intentional mat-/news-/occ- namespace prefixes.',
   },
