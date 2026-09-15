@@ -30,7 +30,7 @@ import {
 } from '@/components/personalities/PersonalityCard';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { PersonalitiesFiltersBar } from '@/components/personalities/PersonalitiesFiltersBar';
-import { StickyLetterBar } from '@/components/personalities/StickyLetterBar';
+import { StickyLetterBar } from '@/components/ui/StickyLetterBar';
 import { FeaturedPersonalityRail } from '@/components/personalities/FeaturedPersonalityRail';
 import { EditorialEntries } from '@/components/personalities/EditorialEntries';
 import { EraLine } from '@/components/personalities/EraLine';
