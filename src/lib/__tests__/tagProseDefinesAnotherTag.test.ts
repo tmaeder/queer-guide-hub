@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards 83000101100000 — rows that publish the definition of a DIFFERENT live tag.
+ * Guards 84000101100000 — rows that publish the definition of a DIFFERENT live tag.
  *
  * WHAT THIS FILE EXISTS TO PRESERVE, each of which a later reader could undo
  * without noticing:
@@ -61,7 +61,7 @@ import { join } from 'node:path';
 
 const MIGRATION = join(
   process.cwd(),
-  'supabase/migrations/83000101100000_tag_prose_defines_another_tag.sql',
+  'supabase/migrations/84000101100000_tag_prose_defines_another_tag.sql',
 );
 const sql = readFileSync(MIGRATION, 'utf8');
 
@@ -112,7 +112,7 @@ const DUPLICATE_COHORT = [
   'core-bdsm',
 ];
 
-describe('83000101100000 — the row defines another live tag', () => {
+describe('84000101100000 — the row defines another live tag', () => {
   it('declares an attributed actor, load-bearing on eight human_reviewed rows', () => {
     expect(statements).toMatch(
       /set_config\(\s*'app\.actor'\s*,\s*'admin:tag-prose-defines-another-tag'\s*,\s*true\s*\)/,

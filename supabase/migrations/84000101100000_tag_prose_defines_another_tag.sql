@@ -135,16 +135,29 @@
 -- narrowed to its own writes is what turns the sixth into a db push abort on main
 -- that blocks every migration queued behind it.
 
--- RENUMBERED ONCE, 82000101100000 -> 83000101100000, and the reason is the point:
--- a concurrent session applied `tag_prose_body_side_seam` at that exact version
--- while this file was being written -- a SIXTH session working this same backlog.
--- The two do not overlap: all nine rows here were re-read live immediately before
--- committing and every one still carried its defect, so nothing had to be cut
--- down. That check is `git diff --name-only origin/main -- supabase/migrations/`
--- plus a read of the actual rows, and it is the one that finds a collision; the
--- version clash itself was found by re-reading max(version) from
--- schema_migrations immediately before committing, because the number chosen at
--- authoring time is stale by then.
+-- RENUMBERED TWICE, 82000101100000 -> 83000101100000 -> 84000101100000, and the
+-- two moves have DIFFERENT causes, which is the part worth keeping.
+--
+-- The first was a collision: a concurrent session applied `tag_prose_body_side_seam`
+-- at 82000101100000 while this file was being written -- a SIXTH session working
+-- this same backlog. The two do not overlap, established by re-reading all nine
+-- rows live rather than by reading the diff; every one still carried its defect,
+-- so nothing had to be cut down.
+--
+-- The second was NOT a collision and NOT another session on this backlog:
+-- `83000101143000_tag_name_function_words` (#3751) repairs tag NAMES through
+-- normalize_tag_name() and touches no prose at all, but it applied while this PR
+-- sat in review and its version sorts ABOVE 83000101100000. `db push` aborts on
+-- the first file sorting below the remote max(version) and takes every migration
+-- queued behind it, so an unrelated PR merging anywhere in the repo can force a
+-- renumber here. **The ceiling is a property of the repository, not of this
+-- backlog** -- re-read max(version) from schema_migrations immediately before
+-- every push, not once at authoring time, and expect it to have moved even when
+-- nobody else is working on your table.
+--
+-- The version lives in the filename and in TWO places in the guard test (the
+-- MIGRATION path constant and the describe() title); grep the old number and
+-- expect zero hits before pushing.
 
 select set_config('app.actor', 'admin:tag-prose-defines-another-tag', true);
 
