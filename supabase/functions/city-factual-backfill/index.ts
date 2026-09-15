@@ -27,7 +27,7 @@ import { safeErrCode } from '../_shared/safe-error.ts'
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
 import { cityNameCandidates } from '../_shared/city-name-normalize.ts'
 import { plausibleCityScalar } from '../_shared/city-scalar-bounds.ts'
-import { cityClassVerdict, isCityRefreshScope } from '../_shared/city-class-guard.ts'
+import { cityClassVerdict, cityCoordVerdict, isCityRefreshScope } from '../_shared/city-class-guard.ts'
 import {
   airportQuery, applyLabels, capitalQuery, parseCityFacts, parseCityNames, pickAirports,
   pickCapitals, pickUniversities, resolveLabels, sparqlUrl, universityQuery,
@@ -408,6 +408,11 @@ async function runLinkPhase(
   // `classUndetermined` is a failure to read one, and the two must stay apart:
   // only the former counts an attempt toward the terminal sentinel.
   let classRefused = 0, classUndetermined = 0
+  // Coordinate corroboration. `coordRefused` is a decision about the CANDIDATE
+  // (a namesake in the wrong place); `coordUnchecked` records that this arm
+  // could say nothing, so a corpus drifting toward coordless rows is visible
+  // rather than silently unguarded.
+  let coordRefused = 0, coordUnchecked = 0
   // Distinct P31 labels the whitelist did not recognise, reported verbatim so a
   // systematic gap in the vocabulary shows up as a rising, namable number.
   const unrecognisedClasses = new Set<string>()
@@ -498,7 +503,35 @@ async function runLinkPhase(
           }
           const cls = cityClassVerdict(p31Labels)
 
-          if (cls.verdict === 'settlement') {
+          // --- 1c. Coordinate corroboration. The class gate answers "is this a
+          // settlement"; a NAMESAKE passes it cleanly because the namesake IS a
+          // settlement. The first live qid_gap dry run adopted Q2545992 (Long
+          // Island, a city in KANSAS) for the New York island row and Q1184769
+          // (Indiana, a PENNSYLVANIA borough) for the US-state row, the latter
+          // filling that borough's population, area and elevation. Both are
+          // permanent and both re-derive weekly, so geography gets a veto.
+          // P625 rides in the claims already fetched -- no extra request.
+          const p625 = (ent.claims.P625 ?? [])
+            .filter((st) => st.rank !== 'deprecated' && st.mainsnak?.snaktype === 'value')
+            .map((st) => st.mainsnak?.datavalue?.value as
+              { latitude?: number; longitude?: number } | undefined)
+            .find((v) => v && Number.isFinite(Number(v.latitude)) && Number.isFinite(Number(v.longitude)))
+          const geo = cityCoordVerdict(
+            c.latitude == null ? null : Number(c.latitude),
+            c.longitude == null ? null : Number(c.longitude),
+            p625 ? Number(p625.latitude) : null,
+            p625 ? Number(p625.longitude) : null,
+          )
+
+          if (cls.verdict === 'settlement' && geo.verdict === 'disagree') {
+            // A decision about the candidate, not a failure to read one, so it
+            // counts toward the terminal sentinel exactly as a class refusal does.
+            qid = null
+            coordRefused++
+            bumpMiss(state, 'wikidata_link', 'coords')
+            missReason ??= `refused_coords:${geo.distanceKm}km`.slice(0, 200)
+          } else if (cls.verdict === 'settlement') {
+            if (geo.verdict === 'unchecked') coordUnchecked++
             facts = parseCityFacts(ent.claims)
             enwikiTitle = ent.enwikiTitle ?? enwikiTitle
             markResolved(state, 'wikidata_link', 'wikidata', qid)
@@ -759,6 +792,8 @@ async function runLinkPhase(
     aliases_written: aliasesWritten,
     class_refused: classRefused,
     class_undetermined: classUndetermined,
+    coord_refused: coordRefused,
+    coord_unchecked: coordUnchecked,
     unrecognised_classes: [...unrecognisedClasses].slice(0, 20),
     implausible_scalars_rejected: implausibleScalars.length,
     implausible_scalars: implausibleScalars.slice(0, 20),
