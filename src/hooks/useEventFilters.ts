@@ -8,7 +8,12 @@ import { useSearchParams } from 'react-router';
 import { useDebounce } from '@/hooks/useDebounce';
 import { getPresetDateRange, type EventPresetId } from '@/components/events/PresetChips';
 import { dedupeCitiesByNormalized } from '@/utils/dateRange';
-import { parseFilterState, serializeFilterState, type EventSort } from '@/utils/eventsQueryString';
+import {
+  hasAnyFilter,
+  parseFilterState,
+  serializeFilterState,
+  type EventSort,
+} from '@/utils/eventsQueryString';
 import type { useEvents } from '@/hooks/useEvents';
 
 type EventsApi = ReturnType<typeof useEvents>;
@@ -31,22 +36,50 @@ export function useEventFilters(
   const { t } = useTranslation();
   const { toast } = useToast();
 
+  // Full filter-state URL sync (shareable, refreshable, bookmarkable).
+  // Declared FIRST so the query string can seed the state below.
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  /**
+   * The URL is parsed during state INITIALISATION, not in a mount effect.
+   *
+   * It used to be hydrated by a `useEffect(..., [])` declared after the
+   * mount-fetch effect, which meant the first query went out with default (or
+   * geo-derived) filters and the URL's filters only reached the data layer one
+   * commit later, as a second query. `fetchEvents` applies whichever response
+   * resolves last, and the unfiltered one is the slower of the two — it counts
+   * the whole upcoming corpus and pays a second round-trip for attendee counts
+   * on its full page of rows, where a narrow city+date query often returns
+   * nothing and skips that round-trip. So the stale unfiltered response landed
+   * last and overwrote the correct results: chips right, cards wrong, on every
+   * shared or bookmarked filter link.
+   *
+   * A lazy initialiser runs once, on the first render, before any effect — so
+   * there is exactly one mount fetch and it already carries the URL.
+   */
+  const [initialFilters] = useState(() => parseFilterState(searchParams));
+  const urlRequestedFilters = useMemo(() => hasAnyFilter(initialFilters), [initialFilters]);
+
   const [showFilters, setShowFilters] = useState(false);
-  const [viewMode, setViewMode] = useState<'grid' | 'timeline' | 'map'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'timeline' | 'map'>(initialFilters.view);
 
   // Filter states
-  const [search, setSearch] = useState('');
-  const [cities, setCities] = useState<string[]>([]);
-  const [eventTypes, setEventTypes] = useState<string[]>([]);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [startDate, setStartDate] = useState<Date | undefined>();
-  const [endDate, setEndDate] = useState<Date | undefined>();
-  const [nearMe, setNearMe] = useState(false);
-  const [showPast, setShowPast] = useState(false);
-  const [isFree, setIsFree] = useState(false);
-  const [featuredOnly, setFeaturedOnly] = useState(false);
+  const [search, setSearch] = useState(initialFilters.q);
+  const [cities, setCities] = useState<string[]>(initialFilters.cities);
+  const [eventTypes, setEventTypes] = useState<string[]>(initialFilters.types);
+  const [selectedTags, setSelectedTags] = useState<string[]>(initialFilters.tags);
+  const [startDate, setStartDate] = useState<Date | undefined>(() =>
+    initialFilters.from ? new Date(initialFilters.from) : undefined,
+  );
+  const [endDate, setEndDate] = useState<Date | undefined>(() =>
+    initialFilters.to ? new Date(initialFilters.to) : undefined,
+  );
+  const [nearMe, setNearMe] = useState(initialFilters.nearMe);
+  const [showPast, setShowPast] = useState(initialFilters.showPast);
+  const [isFree, setIsFree] = useState(initialFilters.isFree);
+  const [featuredOnly, setFeaturedOnly] = useState(initialFilters.featured);
   const [activePreset, setActivePreset] = useState<EventPresetId | null>(null);
-  const [sort, setSort] = useState<EventSort>('date-asc');
+  const [sort, setSort] = useState<EventSort>(initialFilters.sort);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [autoLocationLabel, setAutoLocationLabel] = useState<string | null>(null);
   const { location: visitorLocation } = useVisitorLocation();
@@ -62,10 +95,15 @@ export function useEventFilters(
   const [listGeneration, setListGeneration] = useState(0);
   const bumpList = useCallback(() => setListGeneration((n) => n + 1), []);
   // New filter dimensions (Phase B.2 + B.4)
-  const [accessibilityAttrs, setAccessibilityAttrs] = useState<string[]>([]);
+  const [accessibilityAttrs, setAccessibilityAttrs] = useState<string[]>(
+    initialFilters.accessibility,
+  );
+  // Not seeded from the URL: `serializeFilterState` has no key for target
+  // groups, so this dimension is not shareable at all. Pre-existing gap, left
+  // as-is — adding a key is a URL-schema change, not part of this fix.
   const [targetGroupsFilter, setTargetGroupsFilter] = useState<string[]>([]);
-  const [languages, setLanguages] = useState<string[]>([]);
-  const [ageRestriction, setAgeRestriction] = useState<string>('');
+  const [languages, setLanguages] = useState<string[]>(initialFilters.languages);
+  const [ageRestriction, setAgeRestriction] = useState<string>(initialFilters.ageRestriction);
   const { accessibilityAttributes: accAttrOptions } = useAccessibilityAttributes();
   const { targetGroups: tgOptions } = useTargetGroups();
 
@@ -334,17 +372,23 @@ export function useEventFilters(
   useEffect(() => {
     if (autoInitDone.current) return;
     autoInitDone.current = true;
-    setPage(1);
-    bumpList();
     const cityName = visitorLocation?.city;
-    if (cityName) {
+    // Geo defaulting is for a BARE /events only. A link that named any filter
+    // has already said what it wants; scoping it to the reader's own city on
+    // top of that silently changes the result set the sender shared.
+    if (!urlRequestedFilters && cityName) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
+      setPage(1);
+      bumpList();
       setCities([cityName]);
       setAutoLocationLabel(cityName);
       fetchEvents({ cities: [cityName] }, { page: 1, pageSize: PAGE_SIZE, append: false });
-    } else {
-      fetchEvents({}, { page: 1, pageSize: PAGE_SIZE, append: false });
+      return;
     }
+    // Every filter dimension is already in state (seeded from the query string
+    // at first render), so this single fetch carries the URL. With no URL
+    // filters it is the plain unfiltered browse it always was.
+    handleFiltersChange();
     // run once on mount; visitorLocation may not yet be available but that is fine — user can still see all events
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -427,8 +471,9 @@ export function useEventFilters(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch]);
 
-  // Full filter-state URL sync (shareable, refreshable, bookmarkable).
-  const [searchParams, setSearchParams] = useSearchParams();
+  // Write the current filter state back to the query string. On first render
+  // this re-serialises what we just parsed, so it is a no-op or a pure
+  // normalisation — it can no longer wipe the incoming URL before it is read.
   useEffect(() => {
     const next = serializeFilterState({
       q: debouncedSearch,
@@ -470,27 +515,9 @@ export function useEventFilters(
     viewMode,
   ]);
 
-  // Hydrate filters from URL on first mount.
-  useEffect(() => {
-    const parsed = parseFilterState(searchParams);
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-    if (parsed.cities.length) setCities(parsed.cities);
-    if (parsed.q) setSearch(parsed.q);
-    if (parsed.types.length) setEventTypes(parsed.types);
-    if (parsed.tags.length) setSelectedTags(parsed.tags);
-    if (parsed.accessibility.length) setAccessibilityAttrs(parsed.accessibility);
-    if (parsed.languages.length) setLanguages(parsed.languages);
-    if (parsed.ageRestriction) setAgeRestriction(parsed.ageRestriction);
-    if (parsed.from) setStartDate(new Date(parsed.from));
-    if (parsed.to) setEndDate(new Date(parsed.to));
-    if (parsed.nearMe) setNearMe(true);
-    if (parsed.showPast) setShowPast(true);
-    if (parsed.isFree) setIsFree(true);
-    if (parsed.featured) setFeaturedOnly(true);
-    if (parsed.sort !== 'date-asc') setSort(parsed.sort);
-    if (parsed.view !== 'grid') setViewMode(parsed.view);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // (The mount-time URL hydration effect that used to live here is gone: every
+  // dimension it set is now a lazy `useState` initialiser above, which runs
+  // before the mount fetch instead of after it.)
 
   // Timeline viewport → date-range refetch (debounced). Only active when
   // the timeline view is selected so we don't interfere with grid/map.
