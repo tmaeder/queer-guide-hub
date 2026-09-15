@@ -16,6 +16,7 @@ import { buildLegalLine } from '@/lib/rights/legalLine';
 import { SafetyVerdict } from '@/components/country/SafetyVerdict';
 import { CountryFactSheet } from '@/components/country/CountryFactSheet';
 import { CountryStatsBand } from '@/components/country/CountryStatsBand';
+import { CountryMap } from '@/components/geo/CountryMap';
 import { GeoCensus } from '@/components/geo/GeoCensus';
 import { GeoPhotoInset } from '@/components/geo/GeoPhotoInset';
 import { GeoSafetyBanner } from '@/components/geo/GeoSafetyBlock';
@@ -415,16 +416,23 @@ export default function CountryDetail() {
               className="max-w-reading text-body-lg leading-relaxed"
             />
           )}
+          {/* The map takes the second column and the photograph moves below it.
+              A silhouette exists for 237 countries and a usable photograph for
+              far fewer, so the deterministic artifact owns the stable slot —
+              which also closes a standing bug: unlike CityDetail's, this grid
+              never collapsed to `contents`, so every country without a photo
+              rendered a half-width fact sheet beside a dead column. */}
           <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
             <CountryFactSheet country={country} weatherNow={weatherNow} />
-            <GeoPhotoInset
-              src={resolveEntityImage('country', country).url}
-              alt={country.name}
-              fallbackKey={country.id}
-              priority
-              caption={country.capital ?? null}
-            />
+            <CountryMap code={country.code} name={country.name} />
           </div>
+          <GeoPhotoInset
+            src={resolveEntityImage('country', country).url}
+            alt={country.name}
+            fallbackKey={country.id}
+            priority
+            caption={country.capital ?? null}
+          />
           <GeoRouteRail
             sections={sections}
             activeId={activeId}
