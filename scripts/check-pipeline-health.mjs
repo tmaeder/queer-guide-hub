@@ -814,7 +814,7 @@ if (!hygieneRes.ok) {
   })
   if (!res.ok) {
     // A failed probe must SAY so rather than fall through to a reassuring default.
-    console.warn(`⚠ place_merge_name_signals → HTTP ${res.status} (75000101100000 not applied?) — this check measured NOTHING`)
+    console.warn(`⚠ place_merge_name_signals → HTTP ${res.status} (78000101100000 not applied?) — this check measured NOTHING`)
   } else {
     const sig = await res.json()
     let sectionOk = true

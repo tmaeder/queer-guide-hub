@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-// Guards `75000101100000_place_merge_name_corroboration.sql`, which turns "dedup of
+// Guards `78000101100000_place_merge_name_corroboration.sql`, which turns "dedup of
 // countries, cities and villages must rest on real geographical sources and names, and
 // must never suggest merging two different places" into a checked invariant.
 //
@@ -14,7 +14,7 @@ import { describe, expect, it } from 'vitest';
 // place. So corroboration is four arms, and arm 3 (a shared wikidata_qid) is what makes
 // Tokyo/東京 defensible while Hamburg/Hamburg-Altona stays uncorroborated.
 
-const MIGRATION = '75000101100000_place_merge_name_corroboration.sql';
+const MIGRATION = '78000101100000_place_merge_name_corroboration.sql';
 const raw = readFileSync(join(process.cwd(), 'supabase/migrations', MIGRATION), 'utf8');
 
 // Every assertion runs against comment-stripped SQL. This file's header names the arms,
