@@ -101,7 +101,7 @@
 
 begin;
 
-select set_config('app.actor', 'migration:79500101143000_tag_name_function_words', true);
+select set_config('app.actor', 'migration:81000101143000_tag_name_function_words', true);
 
 -- The per-run ladder, extracted so it has exactly one definition.
 create or replace function public.tag_name_cap_run(p_run text, p_ordinal int, p_total int)
