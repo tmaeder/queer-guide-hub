@@ -45,7 +45,10 @@ export const DEFAULT_FILTER_STATE: EventsFilterState = {
 
 function splitCsv(v: string | null): string[] {
   if (!v) return [];
-  return v.split(',').map((s) => s.trim()).filter(Boolean);
+  return v
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
 }
 
 function joinCsv(arr: string[]): string | undefined {
@@ -53,7 +56,13 @@ function joinCsv(arr: string[]): string | undefined {
 }
 
 function isSort(v: string | null): v is EventSort {
-  return v === 'date-asc' || v === 'date-desc' || v === 'distance' || v === 'popularity' || v === 'recent';
+  return (
+    v === 'date-asc' ||
+    v === 'date-desc' ||
+    v === 'distance' ||
+    v === 'popularity' ||
+    v === 'recent'
+  );
 }
 
 export function parseFilterState(params: URLSearchParams): EventsFilterState {
@@ -83,6 +92,35 @@ export function parseFilterState(params: URLSearchParams): EventsFilterState {
     sort: isSort(sort) ? sort : 'date-asc',
     view: view === 'timeline' || view === 'map' ? view : 'grid',
   };
+}
+
+/**
+ * Did the link ask for a specific SET of events?
+ *
+ * Deliberately ignores `sort` and `view`: those choose how a result set is
+ * presented, not which events are in it, so `?view=map` on its own is still a
+ * bare browse and keeps the visitor's geo-city default. Anything listed here
+ * suppresses that default — a link that names a date window has already said
+ * what it wants, and silently adding "…and only near wherever you are" answers
+ * a question the sender never asked.
+ */
+export function hasAnyFilter(state: EventsFilterState): boolean {
+  return Boolean(
+    state.q ||
+    state.cities.length ||
+    state.types.length ||
+    state.tags.length ||
+    state.accessibility.length ||
+    state.languages.length ||
+    state.ageRestriction ||
+    state.organizerId ||
+    state.from ||
+    state.to ||
+    state.nearMe ||
+    state.showPast ||
+    state.isFree ||
+    state.featured,
+  );
 }
 
 export function serializeFilterState(state: EventsFilterState): URLSearchParams {
