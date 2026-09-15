@@ -3281,7 +3281,7 @@ const DISOWNED_PROSE_CEILING = 380
   })
   if (!res.ok) {
     const detail = (await res.text()).slice(0, 200)
-    console.error(`✗ news_quality_signals → HTTP ${res.status} (migration 60100101100100 not applied? PGRST202 = the function does not exist) ${detail}`)
+    console.error(`✗ news_quality_signals → HTTP ${res.status} (migration 61000301100100 not applied? PGRST202 = the function does not exist) ${detail}`)
     FAILED = true
   } else {
     const q = (await res.json()) ?? {}

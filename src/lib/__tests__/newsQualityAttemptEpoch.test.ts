@@ -3,8 +3,8 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const MIGRATIONS = join(process.cwd(), 'supabase', 'migrations');
-const EPOCH = '60100101100000_news_quality_attempt_epoch.sql';
-const SIGNALS = '60100101100100_news_quality_signals.sql';
+const EPOCH = '61000301100000_news_quality_attempt_epoch.sql';
+const SIGNALS = '61000301100100_news_quality_signals.sql';
 const HEALTH = join(process.cwd(), 'scripts', 'check-pipeline-health.mjs');
 
 /**

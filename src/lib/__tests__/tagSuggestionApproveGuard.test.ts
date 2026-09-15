@@ -6,7 +6,7 @@ const FILE = join(
   process.cwd(),
   'supabase',
   'migrations',
-  '60100101100200_tag_suggestion_approve_guard.sql',
+  '61000301100200_tag_suggestion_approve_guard.sql',
 );
 
 /** Comment-stripped: this header quotes the identifiers the guards look for. */
