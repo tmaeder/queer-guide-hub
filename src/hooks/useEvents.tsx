@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
 import { calculateDistanceKm } from '@/utils/calculateDistance';
@@ -37,6 +37,18 @@ export function endsAtOrAfter(iso: string): string {
  */
 export function useEvents(autoFetch: boolean = true, opts?: { skipDatasetTotal?: boolean }) {
   const skipDatasetTotal = opts?.skipDatasetTotal ?? false;
+  /**
+   * Monotonic id of the most recently ISSUED request. Every publish is gated on
+   * still holding it, so the list reflects the newest request rather than the
+   * newest response.
+   *
+   * `fetchEvents` takes an AbortSignal, but it is optional and no caller on
+   * /events passes one, so cancellation cannot be relied on to order writes.
+   * This is the backstop that holds regardless of caller discipline — and it is
+   * needed because the inversion is systematic, not a rare interleaving: a
+   * broad query is slower than the narrow one that supersedes it.
+   */
+  const requestSeqRef = useRef(0);
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(autoFetch);
   const [error, setError] = useState<string | null>(null);
@@ -112,6 +124,9 @@ export function useEvents(autoFetch: boolean = true, opts?: { skipDatasetTotal?:
     ) => {
       const signal = options?.signal;
       if (signal?.aborted) return { fetched: 0, total: null as number | null };
+      const seq = ++requestSeqRef.current;
+      /** Has a later request been issued while we were awaiting? */
+      const superseded = () => seq !== requestSeqRef.current;
       let fetchedCount = 0;
       let resolvedTotal: number | null = null;
       try {
@@ -421,6 +436,11 @@ export function useEvents(autoFetch: boolean = true, opts?: { skipDatasetTotal?:
             );
         }
 
+        // Last gate before publishing: every await above is behind us, so a
+        // newer request having been issued means this result is stale and must
+        // not repaint the list (nor move `hasMore`, which describes it).
+        if (superseded()) return { fetched: 0, total: null as number | null };
+
         if (options?.append) {
           setEvents((prev) => {
             const merged = [...prev, ...eventsData];
@@ -444,10 +464,13 @@ export function useEvents(autoFetch: boolean = true, opts?: { skipDatasetTotal?:
           setHasMore(false);
         }
       } catch (err) {
-        if (signal?.aborted) return { fetched: 0, total: null as number | null };
+        if (signal?.aborted || superseded()) return { fetched: 0, total: null as number | null };
         setError(err instanceof Error ? err.message : 'Failed to fetch events');
       } finally {
-        if (!signal?.aborted) setLoading(false);
+        // A superseded request must not clear `loading` either — the spinner
+        // belongs to the request still running, and dropping it early reads as
+        // "finished" over results that are about to change.
+        if (!signal?.aborted && !superseded()) setLoading(false);
       }
       // `resolvedTotal`, not the `totalCount` state. The state read is what
       // react-hooks/exhaustive-deps flagged here, and adding it to the dep array

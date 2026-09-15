@@ -6,7 +6,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Slider } from '@/components/ui/slider';
 import { isAdminRoute, isMapRoute } from '@/lib/locale';
 import { useMotionTokens } from '@/lib/motion';
-import { useAudioPlayerOptional, formatTime, SKIP_SECONDS } from '@/hooks/useAudioPlayer';
+import { useAudioPlayerOptional, formatTime, SKIP_SECONDS } from '@/hooks/audioPlayerContext';
 import { cn } from '@/lib/utils';
 
 /**

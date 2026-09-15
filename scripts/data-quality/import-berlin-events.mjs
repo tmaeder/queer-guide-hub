@@ -463,10 +463,13 @@ function siegPayloads() {
       urls: [r.url],
       images: d.image ? [d.image] : [],
       location: berlinLocation({ address: clean(d.venueAddress) }),
+      // The source's own section rail is NOT a tag. `siegessaeule-<rail>` was
+      // stamped here and landed on 2,860 events as a tag naming a foreign
+      // magazine's site navigation (removed in 81000101100000). The rail is
+      // kept below in `metadata.category`, which is where provenance belongs.
       tags: [
         'lgbtq',
         'berlin',
-        `siegessaeule-${r.category}`,
         ...(adult ? ADULT_TAGS : []),
         ...(d.hashtags ?? []).map((h) => h.toLowerCase()),
       ].slice(0, 20),
@@ -1079,7 +1082,10 @@ async function phaseVenues() {
       // queer venue — Friedrichstadt-Palast and Grips Theater are mainstream
       // houses. The queer signal belongs on the event, and asserting it on the
       // venue would be a claim this import cannot support.
-      tags: ['berlin', ...Object.keys(v.rails).map((r) => `siegessaeule-${r}`)].slice(0, 20),
+      // Nor tagged with the source's section rails — that names siegessaeule.de's
+      // site navigation, not the venue (removed in 81000101100000). `metadata.rails`
+      // below keeps the rail membership without publishing it as vocabulary.
+      tags: ['berlin'],
       metadata: { url: v.url, source: 'siegessaeule', rails: v.rails, event_count: v.events },
     });
     if ((i + 1) % 25 === 0) console.log(`[venues] geocoded ${i + 1}/${todo.length}`);
