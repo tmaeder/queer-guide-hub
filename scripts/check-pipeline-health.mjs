@@ -794,6 +794,83 @@ if (!hygieneRes.ok) {
   }
 }
 
+// 4b. Place dedup corroboration (2026-09-15). The requirement is that dedup of
+//     countries, cities and villages rests on real geographical sources and names,
+//     and never suggests merging two different PLACES. The engine satisfies it
+//     structurally today -- both city candidate generators are name-identity-bound
+//     -- but an emergent zero is indistinguishable from a blind engine, which is the
+//     lesson `would_merge: 0` has already taught this repo twice, so it is checked.
+//
+//     The literal rule ("same name") would condemn correct data: 146 of the 160
+//     string-differing city merges are the exonym and official-name class
+//     (Kapstadt/Cape Town, Venedig/Venice), which are one real place. Corroboration
+//     is therefore name identity, a comma qualifier, a SHARED WIKIDATA ID, or same
+//     country within 10 km.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/place_merge_name_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    // A failed probe must SAY so rather than fall through to a reassuring default.
+    console.warn(`⚠ place_merge_name_signals → HTTP ${res.status} (78000101100000 not applied?) — this check measured NOTHING`)
+  } else {
+    const sig = await res.json()
+    let sectionOk = true
+
+    // Reported before any violation count: zero merges means the probe is
+    // measuring nothing, not that the merge graph is clean.
+    const total = Number(sig?.merges_total ?? 0)
+    if (total === 0) {
+      console.warn('⚠ place_merge_name_signals reports ZERO merges — the probe is measuring nothing, not passing')
+      sectionOk = false
+    }
+
+    // ZERO-INVARIANT. A queued pair IS a suggestion to a human, and suggesting a
+    // merge of two different places is the thing the requirement forbids.
+    if (!('suggested_uncorroborated' in (sig ?? {}))) {
+      console.warn('⚠ place_merge_name_signals has no suggested_uncorroborated key — that check measured NOTHING')
+      sectionOk = false
+    } else {
+      const sugg = Number(sig.suggested_uncorroborated ?? 0)
+      if (sugg > 0) {
+        const ex = Array.isArray(sig?.suggested_examples) ? sig.suggested_examples : []
+        console.error(`✗ ${sugg} open place dedup suggestion(s) pair two places with nothing corroborating them:`)
+        for (const pair of ex.slice(0, 10)) console.error(`    ${pair}`)
+        console.error('  A queued pair is a suggestion. Neither name identity, a comma qualifier,')
+        console.error('  a shared wikidata_qid nor <10 km in one country links these rows.')
+        FAILED = true
+        sectionOk = false
+      }
+    }
+
+    // ADVISORY, and non-zero by design: 12 merges on record are uncorroborated and
+    // each needs its own decision (district merges this codebase deliberately does
+    // not reverse, plus correct-but-unverifiable rows with no coordinates and no
+    // QID). Gating at the baseline would ship red on arrival — the cry-wolf shape
+    // already removed once from the dedup backlog rule — so it prints the pairs and
+    // fails only on GROWTH, which means a NEW uncorroborated merge was made.
+    const BASELINE_UNCORROBORATED = 12
+    const unc = Number(sig?.merged_uncorroborated ?? 0)
+    if (unc > BASELINE_UNCORROBORATED) {
+      const ex = Array.isArray(sig?.merged_examples) ? sig.merged_examples : []
+      console.error(`✗ uncorroborated place merges grew ${BASELINE_UNCORROBORATED} → ${unc} — a new merge joined two places on no evidence:`)
+      for (const pair of ex.slice(0, 20)) console.error(`    ${pair}`)
+      FAILED = true
+      sectionOk = false
+    } else if (unc > 0) {
+      console.log(`  ${unc} merge(s) on record are uncorroborated (baseline ${BASELINE_UNCORROBORATED}, each a known decision)`)
+    }
+
+    if (sectionOk) {
+      console.log(
+        `✓ Place dedup corroboration clean (${total} merges, ${sig?.queue_rows_scanned ?? 0} open place pairs scanned, 0 uncorroborated suggestions)`,
+      )
+    }
+  }
+}
+
 // 5a. Wrong-entity Wikidata links on the glossary (2026-08-29). tag-enrichment-sweep
 //     resolved a tag's QID by fetching the Wikipedia summary of its RAW NAME and
 //     adopting whatever the redirect served — `golden-shower` → Cassia fistula,
