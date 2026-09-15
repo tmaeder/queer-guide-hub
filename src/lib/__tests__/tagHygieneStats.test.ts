@@ -387,3 +387,70 @@ describe('tag_hygiene_stats() facet-page sentinel', () => {
     expect(body).toMatch(/seo_deindex_reason\s*:=\s*'facet'/i);
   });
 });
+
+/**
+ * One pass per hot table (2026-09-15).
+ *
+ * The 2026-08-24 split above fixed the `event_tag_strings_unresolved` OR and
+ * the function crept back to 20-40% of the 8s PostgREST ceiling anyway. On
+ * 2026-09-14 it spent 8.3s and failed PR #3719 with 57014, on a diff it has
+ * nothing to do with; it passed on re-run, and three other PRs called the same
+ * function against the same database inside 40 seconds and passed.
+ *
+ * The arm that was looked at was not the cause. Measured on prod by BUFFERS
+ * rather than wall time — a warm block is a shared_buffers hit, so warm
+ * milliseconds hide physical I/O and are what pointed at the wrong arm:
+ *
+ *     totals.assignments            153,102 blk   <- index-only scan
+ *     assignment_to_non_active_tag  153,102 blk   <- the SAME scan again
+ *     event_tag_pairs_unlinked       76,631 blk
+ *     events_with_tags_unlinked      62,288 blk
+ *     event_tag_strings_unresolved   18,005 blk
+ *     TOTAL                         494,997 blk / 1,718 ms warm
+ *
+ * Two thirds is `unified_tag_assignments`, not `events`. Three shared CTEs took
+ * it to 57,585 blocks (8.6x): `events` 3 scans -> 1, `unified_tag_assignments`
+ * 5 -> 2. Output verified byte-identical against the old body in ONE snapshot.
+ *
+ * The migration's own `do $verify$` block asserts this, but only for the
+ * migration that carries it. `create or replace` overwrites the whole body, so
+ * the NEXT migration to restate this function — and several have — would
+ * silently reinstate five scans and pass its own postconditions. This is the
+ * layer that notices. Same reason the OR-split above is a test and not a
+ * comment.
+ */
+describe('tag_hygiene_stats() reads each hot table once', () => {
+  /** The function body only: the header prose and the verify block name these
+   *  same tables, and a whole-file scan is satisfied by either. */
+  const body = (() => {
+    const at = sql.search(/create\s+(or\s+replace\s+)?function\s+public\.tag_hygiene_stats\s*\(/i);
+    const end = sql.indexOf('$function$;', at);
+    expect(end, 'the function body is not $function$-quoted').toBeGreaterThan(at);
+    return sql.slice(at, end).replace(/^\s*--.*$/gm, '');
+  })();
+
+  it('declares the three shared CTEs', () => {
+    for (const cte of ['uta_rollup', 'ev_assign', 'ev']) {
+      expect(body, `the ${cte} CTE is gone`).toMatch(
+        new RegExp(`\\b${cte}\\s+as\\s+materialized\\s*\\(`, 'i'),
+      );
+    }
+  });
+
+  it('reads unified_tag_assignments exactly twice and events exactly once', () => {
+    // Two, not one: uta_rollup aggregates the whole table to a single row while
+    // ev_assign keeps 90k rows of the entity_type='event' slice — different
+    // shapes, and that table is only 3,597 blocks, so a second seq scan is
+    // cheap. A THIRD is a counter that went back to scanning for itself.
+    expect((body.match(/from\s+unified_tag_assignments\b/gi) ?? []).length).toBe(2);
+    expect((body.match(/from\s+events\b/gi) ?? []).length).toBe(1);
+  });
+
+  it('folds the three whole-table counters into one rollup', () => {
+    // These are the two that ran the identical 153,102-block index-only scan,
+    // plus the third counter that also reads the whole table.
+    for (const key of ['assignments', 'assignment_to_non_active_tag', 'nonclean_entity_type']) {
+      expect(body).toMatch(new RegExp(`'${key}',\\s*\\(select\\s+\\w+\\s+from\\s+uta_rollup\\)`, 'i'));
+    }
+  });
+});
