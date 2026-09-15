@@ -1,14 +1,13 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { AudioMiniBar } from '@/components/audio/AudioMiniBar';
+import {
+  AudioPlayerContext,
+  RATES,
+  SKIP_SECONDS,
+  type AudioError,
+  type AudioPlayerValue,
+  type AudioTrack,
+} from '@/hooks/audioPlayerContext';
 
 /**
  * The one audio element in the application.
@@ -26,45 +25,6 @@ import { AudioMiniBar } from '@/components/audio/AudioMiniBar';
  * The element is rendered here, never by a consumer. That is the guarantee that
  * two players can never fight over the same output.
  */
-
-export interface AudioTrack {
-  /** news_articles.id — the key playback position is stored under. */
-  id: string;
-  title: string;
-  audioUrl: string;
-  /** From the feed (itunes:duration); used until the media reports its own. */
-  durationSeconds?: number | null;
-  /** Show name, for the mini-bar line and the OS lock screen. */
-  showName?: string | null;
-  artwork?: string | null;
-  /** Where the mini-bar's title links to. */
-  href?: string | null;
-}
-
-type AudioError = 'network' | 'decode' | 'unsupported' | 'aborted' | null;
-
-interface AudioPlayerValue {
-  current: AudioTrack | null;
-  playing: boolean;
-  position: number;
-  duration: number;
-  rate: number;
-  error: AudioError;
-  /** Load and play a track. Re-calling with the loaded track toggles instead. */
-  play: (track: AudioTrack) => void;
-  toggle: () => void;
-  seek: (seconds: number) => void;
-  /** Relative jump; negative goes back. */
-  skip: (delta: number) => void;
-  cycleRate: () => void;
-  stop: () => void;
-  isCurrent: (id: string) => boolean;
-}
-
-const AudioPlayerContext = createContext<AudioPlayerValue | null>(null);
-
-export const SKIP_SECONDS = 15;
-export const RATES = [1, 1.25, 1.5, 1.75, 2, 0.75] as const;
 
 const PROGRESS_KEY = 'qg.audio.progress';
 const RATE_KEY = 'qg.audio.rate';
@@ -406,28 +366,4 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
       <AudioMiniBar />
     </AudioPlayerContext.Provider>
   );
-}
-
-export function useAudioPlayer(): AudioPlayerValue {
-  const ctx = useContext(AudioPlayerContext);
-  if (!ctx) throw new Error('useAudioPlayer must be used inside <AudioPlayerProvider>');
-  return ctx;
-}
-
-/**
- * Non-throwing variant for components that may render outside the provider
- * (unit tests, the admin shell). Returns null instead of exploding.
- */
-export function useAudioPlayerOptional(): AudioPlayerValue | null {
-  return useContext(AudioPlayerContext);
-}
-
-export function formatTime(seconds: number): string {
-  if (!Number.isFinite(seconds) || seconds < 0) return '0:00';
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = Math.floor(seconds % 60);
-  return h > 0
-    ? `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
-    : `${m}:${s.toString().padStart(2, '0')}`;
 }
