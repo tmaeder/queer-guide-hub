@@ -78,18 +78,26 @@ export default function NewsDetail() {
   const { t, i18n } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const navigate = useLocalizedNavigate();
-  const [data, setData] = useState<NewsDetailData | null>(null);
-  const [loading, setLoading] = useState(true);
+  // The fetch result is tagged with the slug it belongs to, so `loading` is
+  // derived rather than reset by a synchronous setState inside the effect
+  // (which cascades a second render on every navigation).
+  const [loaded, setLoaded] = useState<{ slug: string; data: NewsDetailData | null } | null>(null);
   const [dbCategories, setDbCategories] = useState<DbCategory[]>([]);
   const { markRead } = useUserNewsReads();
   const { isAdmin, editMode } = useAdminEditMode();
   const isMobile = useIsMobile();
 
+  const loading = !slug || loaded?.slug !== slug;
+  const data = loaded && loaded.slug === slug ? loaded.data : null;
   const article = data?.article ?? null;
 
   // Patch a single article field in place after an inline admin edit.
   const patchArticle = (patch: Partial<NewsArticleFull>) =>
-    setData((prev) => (prev ? { ...prev, article: { ...prev.article, ...patch } } : prev));
+    setLoaded((prev) =>
+      prev?.data
+        ? { ...prev, data: { ...prev.data, article: { ...prev.data.article, ...patch } } }
+        : prev,
+    );
 
   // Mark the article as read once we have its id (drives streak + challenge progress).
   useEffect(() => {
@@ -170,9 +178,6 @@ export default function NewsDetail() {
 
     let cancelled = false;
 
-    setLoading(true);
-    setData(null);
-
     fetchNewsCategories<DbCategory>().then((cats) => {
       if (!cancelled) setDbCategories(cats);
     });
@@ -180,7 +185,7 @@ export default function NewsDetail() {
     loadNewsDetail(slug)
       .then((result) => {
         if (cancelled) return;
-        setData(result);
+        setLoaded({ slug, data: result });
         if (result) {
           // Increment views (RPC, fire-and-forget).
           supabase.rpc('increment_article_views', { article_id: result.article.id }).then(() => {});
@@ -188,10 +193,7 @@ export default function NewsDetail() {
       })
       .catch((err) => {
         console.error('Error fetching article:', err);
-        if (!cancelled) setData(null);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) setLoaded({ slug, data: null });
       });
 
     return () => {

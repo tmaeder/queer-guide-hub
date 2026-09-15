@@ -1,7 +1,7 @@
 import { Play, Pause, Headphones } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Slider } from '@/components/ui/slider';
-import { useAudioPlayer, formatTime } from '@/hooks/useAudioPlayer';
+import { useAudioPlayer, formatTime } from '@/hooks/audioPlayerContext';
 
 interface PodcastPlayerProps {
   /** news_articles.id — the key playback position is remembered under. */
