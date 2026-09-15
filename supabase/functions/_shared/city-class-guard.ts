@@ -149,21 +149,128 @@ export function cityClassVerdict(
   if (p31Labels.length === 0) {
     return { verdict: 'refused', reason: 'no_class', label: null }
   }
-  // The override runs over EVERY label before any whitelist match, so an entity
-  // carrying both `megacity` and `federal entity of Mexico` refuses.
+  // The override is evaluated PER LABEL, and a label that carries both a
+  // settlement word and a disqualifier is merely not EVIDENCE — it does not
+  // veto a different label that is clean.
+  //
+  // This started life as a blanket veto running over every label before any
+  // whitelist match, and the first live dry run (2026-09-15, scope=qid_gap)
+  // showed what that costs: Wikidata spells China's city classes
+  // `prefecture-level city of China` and `sub-province-level division`, so
+  // `\bprefecture\b` and `\bprovince\b` refused Shijiazhuang, Nanning and
+  // Hangzhou — every one of which ALSO carries a bare `big city` or `city`.
+  // The same veto refuses Berlin, Hamburg, Vienna and Singapore, which carry
+  // `city` beside `federal state of Germany` / `city-state`; CLAUDE.md's
+  // capital-scope work already settled that a city-state IS a city.
+  //
+  // A blanket veto is not merely a missed link either: the caller counts a
+  // refusal toward the terminal `data_unavailable` sentinel, so three nights
+  // of false refusals write a real city off permanently.
+  //
+  // What the override still does is the job it was built for — an entity whose
+  // ONLY settlement evidence is qualified away (`city-state` alone, a country
+  // whose sole class mentions a capital) never reaches the adopt branch.
+  let overriddenSettlement: { label: string; re: RegExp } | null = null
   for (const label of p31Labels) {
-    for (const re of OVERRIDE_REFUSE_PATTERNS) {
-      if (re.test(label)) {
-        return { verdict: 'refused', reason: `override:${re.source}`, label }
-      }
+    const isSettlement = SETTLEMENT_PATTERNS.some((re) => re.test(label))
+    const override = OVERRIDE_REFUSE_PATTERNS.find((re) => re.test(label))
+    if (isSettlement && !override) {
+      return { verdict: 'settlement', reason: null, label }
+    }
+    if (isSettlement && override && !overriddenSettlement) {
+      overriddenSettlement = { label, re: override }
+    }
+  }
+  // Nothing was clean evidence. Report the most specific cause available, so a
+  // vocabulary gap still shows up as a namable label rather than as silence.
+  if (overriddenSettlement) {
+    return {
+      verdict: 'refused',
+      reason: `override:${overriddenSettlement.re.source}`,
+      label: overriddenSettlement.label,
     }
   }
   for (const label of p31Labels) {
-    if (SETTLEMENT_PATTERNS.some((re) => re.test(label))) {
-      return { verdict: 'settlement', reason: null, label }
+    const override = OVERRIDE_REFUSE_PATTERNS.find((re) => re.test(label))
+    if (override) {
+      return { verdict: 'refused', reason: `override:${override.source}`, label }
     }
   }
   return { verdict: 'refused', reason: 'unrecognised', label: p31Labels[0] }
+}
+
+/**
+ * How far a candidate entity may sit from the row it claims to identify.
+ *
+ * MEASURED, not chosen. The first live `qid_gap` dry run adopted ten QIDs; the
+ * eight correct ones sit 0.0-9.5 km from the row's own stored coordinates
+ * (London 0.0, Paris 0.0, Ahmedabad 0.9, Khartoum 2.9, Mexico City 8.8,
+ * Saint Petersburg 8.9, Ho Chi Minh City 9.5) and the two wrong ones sit
+ * 584.3 km and 2216.1 km away. The bound sits in that gap with 10x headroom
+ * over the largest correct distance and 5.8x margin under the smallest wrong
+ * one, the same discipline as the 2% luminance floor and the 250 km timezone
+ * cap recorded in CLAUDE.md.
+ */
+export const CITY_COORD_MAX_KM = 100
+
+export type CityCoordVerdict =
+  /** Both sides carry coordinates and they agree. */
+  | 'agree'
+  /** Both sides carry coordinates and they do not. The candidate is a namesake. */
+  | 'disagree'
+  /** One side has no coordinates, so this arm says nothing either way. */
+  | 'unchecked'
+
+export interface CityCoordOutcome {
+  verdict: CityCoordVerdict
+  /** Great-circle distance in km, or null when unchecked. */
+  distanceKm: number | null
+}
+
+/**
+ * Corroborate a resolved entity against the row's own coordinates.
+ *
+ * WHY THIS EXISTS SEPARATELY FROM THE CLASS GATE. The class gate answers "is
+ * this entity a settlement", and a namesake passes it cleanly because the
+ * namesake IS a settlement. The same dry run adopted `Q2545992` — Long Island,
+ * a city in KANSAS, population ~120 — for the New York island row, and
+ * `Q1184769` — Indiana, a borough in PENNSYLVANIA — for the US-state row,
+ * which would then have written that borough's population, area and elevation
+ * onto it. No class vocabulary can refuse those; only geography can.
+ *
+ * This is the rule CLAUDE.md already states for `run_event_city_link` and the
+ * news linker, one entity later: never resolve by name alone when the
+ * reference table cannot represent the ambiguity — require a second,
+ * independent signal, and block when it disagrees.
+ *
+ * FAILS OPEN when either side lacks coordinates, and the caller COUNTS that
+ * rather than swallowing it. Refusing coordless rows would gut a sweep whose
+ * whole purpose is a cohort that has never resolved; measured, all 60 rows of
+ * the live batch carry coordinates, so failing open costs almost nothing here
+ * while a rising `coord_unchecked` count stays visible if that ever changes.
+ */
+export function cityCoordVerdict(
+  rowLat: number | null | undefined,
+  rowLng: number | null | undefined,
+  candLat: number | null | undefined,
+  candLng: number | null | undefined,
+): CityCoordOutcome {
+  const ok = (n: unknown): n is number => typeof n === 'number' && Number.isFinite(n)
+  if (!ok(rowLat) || !ok(rowLng) || !ok(candLat) || !ok(candLng)) {
+    return { verdict: 'unchecked', distanceKm: null }
+  }
+  const R = 6371
+  const toRad = (d: number) => (d * Math.PI) / 180
+  const dLat = toRad(candLat - rowLat)
+  const dLng = toRad(candLng - rowLng)
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(rowLat)) * Math.cos(toRad(candLat)) * Math.sin(dLng / 2) ** 2
+  const km = 2 * R * Math.asin(Math.min(1, Math.sqrt(h)))
+  return {
+    verdict: km <= CITY_COORD_MAX_KM ? 'agree' : 'disagree',
+    distanceKm: Math.round(km * 10) / 10,
+  }
 }
 
 /**
