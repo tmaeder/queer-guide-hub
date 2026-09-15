@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const MIGRATIONS = join(process.cwd(), 'supabase', 'migrations');
-const FILE = '81000101143000_tag_name_function_words.sql';
+const FILE = '83000101143000_tag_name_function_words.sql';
 
 /**
  * Comment-stripped. The header quotes every string the guards look for — the
@@ -34,10 +34,10 @@ const verifyBlockOf = (file: string): string => {
 const apply = applyBlockOf(FILE);
 const verify = verifyBlockOf(FILE);
 
-describe('81000101143000 — the ladder', () => {
+describe('83000101143000 — the ladder', () => {
   it('declares an actor (66 affected rows are human_reviewed)', () => {
     expect(apply).toContain(
-      "set_config('app.actor', 'migration:81000101143000_tag_name_function_words', true)",
+      "set_config('app.actor', 'migration:83000101143000_tag_name_function_words', true)",
     );
   });
 
@@ -79,7 +79,7 @@ describe('81000101143000 — the ladder', () => {
   });
 });
 
-describe('81000101143000 — last-run protection', () => {
+describe('83000101143000 — last-run protection', () => {
   it('counts runs in a pre-pass before emitting any', () => {
     // Without the count, p_total is unknown and the last run cannot be
     // protected — Hepatitis A would become Hepatitis a.
@@ -106,7 +106,7 @@ describe('81000101143000 — last-run protection', () => {
   });
 });
 
-describe('81000101143000 — the repair', () => {
+describe('83000101143000 — the repair', () => {
   it('re-normalises through the function rather than a frozen list', () => {
     expect(apply).toMatch(/set name = public\.normalize_tag_name\(u\.name\)/i);
   });
@@ -124,7 +124,7 @@ describe('81000101143000 — the repair', () => {
   });
 });
 
-describe('81000101143000 — postconditions', () => {
+describe('83000101143000 — postconditions', () => {
   it('counts the REACHED state positively', () => {
     // Counting rows in a bad state returns zero for a slug that has gone
     // missing from the corpus entirely.
