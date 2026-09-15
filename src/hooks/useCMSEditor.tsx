@@ -430,7 +430,7 @@ export function useCMSEditor({
       }));
       return false;
     }
-  }, [config, state.data, state.originalData, itemId, user, metadata]);
+  }, [config, state.data, itemId, user, metadata]);
 
   // ── Reset ──────────────────────────────────────────────────────
 
