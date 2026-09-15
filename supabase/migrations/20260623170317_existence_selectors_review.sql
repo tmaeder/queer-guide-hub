@@ -80,14 +80,6 @@ CREATE OR REPLACE FUNCTION public.venues_due_for_existence_check(p_limit int DEF
  LANGUAGE sql STABLE SECURITY DEFINER SET search_path TO 'public','pg_temp'
 AS $function$
   WITH last_chk AS (
-    SELECT entity_id, max(observed_at) seen,
-           bool_or(verdict IN ('dead','dying')) has_dead
-    FROM public.entity_existence_signals WHERE entity_type='venue' GROUP BY entity_id
-  )
-  SELECT v.id, v.website, v.latitude, v.longitude,
-    CASE WHEN lc.entity_id IS NULL THEN 'never_checked'
-         WHEN lc.has_dead THEN 'dead_signal'
-         ELSE 'oldest' END
     SELECT entity_id, max(observed_at) seen, bool_or(verdict IN ('dead','dying')) has_dead
     FROM public.entity_existence_signals WHERE entity_type='venue' GROUP BY entity_id
   )
@@ -106,17 +98,6 @@ CREATE OR REPLACE FUNCTION public.events_due_for_existence_check(p_limit int DEF
  LANGUAGE sql STABLE SECURITY DEFINER SET search_path TO 'public','pg_temp'
 AS $function$
   WITH last_chk AS (
-    SELECT entity_id, max(observed_at) seen,
-           bool_or(verdict IN ('dead','dying')) has_dead
-    FROM public.entity_existence_signals WHERE entity_type='event' GROUP BY entity_id
-  )
-  SELECT e.id, e.website,
-    CASE WHEN lc.entity_id IS NULL THEN 'never_checked'
-         WHEN lc.has_dead THEN 'dead_signal' ELSE 'oldest' END
-  FROM public.events e
-  LEFT JOIN last_chk lc ON lc.entity_id=e.id
-  WHERE e.duplicate_of_id IS NULL AND e.status NOT IN ('cancelled','completed')
-    AND e.website IS NOT NULL
     SELECT entity_id, max(observed_at) seen, bool_or(verdict IN ('dead','dying')) has_dead
     FROM public.entity_existence_signals WHERE entity_type='event' GROUP BY entity_id
   )
@@ -134,13 +115,6 @@ CREATE OR REPLACE FUNCTION public.marketplace_due_for_existence_check(p_limit in
  LANGUAGE sql STABLE SECURITY DEFINER SET search_path TO 'public','pg_temp'
 AS $function$
   WITH last_chk AS (
-    SELECT entity_id, max(observed_at) seen,
-           bool_or(verdict IN ('dead','dying')) has_dead
-    FROM public.entity_existence_signals WHERE entity_type='marketplace' GROUP BY entity_id
-  )
-  SELECT m.id, coalesce(m.external_url, m.affiliate_url),
-    CASE WHEN lc.entity_id IS NULL THEN 'never_checked'
-         WHEN lc.has_dead THEN 'dead_signal' ELSE 'oldest' END
     SELECT entity_id, max(observed_at) seen, bool_or(verdict IN ('dead','dying')) has_dead
     FROM public.entity_existence_signals WHERE entity_type='marketplace' GROUP BY entity_id
   )
