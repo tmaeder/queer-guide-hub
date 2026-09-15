@@ -37,6 +37,7 @@ import { useTranslation } from 'react-i18next';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { fetchTagWithCategories, type TagLegalSourceRow } from '@/hooks/usePageFetchers';
+import { placeTagRedirect } from '@/lib/placeTagRedirects';
 import { TagLegalSource } from '@/components/tags/TagLegalSource';
 import { TagClinicalSource } from '@/components/tags/TagClinicalSource';
 import { buildTagJsonLd } from '@/lib/tags/tagJsonLd';
@@ -154,13 +155,29 @@ export default function TagDetail() {
     }
   }, [decoded, slug, navigate]);
 
+  // Place-name tags leave /tags entirely: this slug names a city, country or district that
+  // already has its own entity, so the tag page was a second page about the same place. See
+  // src/lib/placeTagRedirects.ts for why `tag_slug_redirects` cannot carry this.
+  //
+  // A hard load never reaches React — public/_redirects answers it with a real 301, which is the
+  // version crawlers and link equity need (verified live: a Function-routed path still gets the
+  // static redirect). This covers the two cases those rules cannot see: client-side navigation
+  // inside the SPA, and the /:lang/-prefixed paths, which `useLocalizedNavigate` re-prefixes.
+  //
+  // It runs BEFORE the query rather than after it: firing on the result would fetch a tag we are
+  // about to leave, and would flash its page first.
+  const placeRedirect = placeTagRedirect(slug);
+  useEffect(() => {
+    if (placeRedirect) navigate(placeRedirect, { replace: true });
+  }, [placeRedirect, navigate]);
+
   const {
     data: tag,
     isLoading,
     isError,
   } = useQuery({
     queryKey: ['tag-detail', slug],
-    enabled: !!slug,
+    enabled: !!slug && !placeRedirect,
     staleTime: 5 * 60 * 1000,
     queryFn: async () => ((await fetchTagWithCategories(slug)) as CentralizedTag | null) ?? null,
   });
