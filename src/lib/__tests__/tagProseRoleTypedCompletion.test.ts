@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards 74000101100000 — the role-typed seam, completed.
+ * Guards 74500101100000 — the role-typed seam, completed.
  *
  * WHAT THIS FILE EXISTS TO PRESERVE, each of which a later reader could undo
  * without noticing:
@@ -41,7 +41,7 @@ import { join } from 'node:path';
 
 const MIGRATION = join(
   process.cwd(),
-  'supabase/migrations/74000101100000_tag_prose_role_typed_seam_completion.sql',
+  'supabase/migrations/74500101100000_tag_prose_role_typed_seam_completion.sql',
 );
 const sql = readFileSync(MIGRATION, 'utf8');
 
@@ -119,7 +119,7 @@ const DISOWNED = [
   'Person who hunts wildlife or feral animals',
 ];
 
-describe('74000101100000 — the role-typed seam, completed', () => {
+describe('74500101100000 — the role-typed seam, completed', () => {
   it('writes exactly the 20 rows it claims, and only those', () => {
     const slugs = [...statements.matchAll(/where slug = '([a-z-]+)'/g)].map((m) => m[1]);
     expect(statements.match(/^update public\.unified_tags/gm)).toHaveLength(20);
