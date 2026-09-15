@@ -2606,8 +2606,20 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
   if (!res.ok) {
     // A failed probe must SAY it failed. Falling through to a default would
     // report a clean layer on the strength of never having looked.
-    console.warn(`⚠ analytics_hygiene_stats → HTTP ${res.status} (20700301100500 not applied?)`)
+    console.warn(`⚠ analytics_hygiene_stats → HTTP ${res.status}`)
     console.warn('  This check measured NOTHING — it did not pass.')
+    // The first cause this ever had was NOT a missing migration, and the hint
+    // that used to sit here ("20700301100500 not applied?") cost a session:
+    // the migration was applied and the function was healthy — it just took
+    // 10.3s against the 8s statement_timeout `service_role` inherits from
+    // `authenticator`, so PostgREST cancelled it and answered 500. Check the
+    // timing before the deployment (60000101100000 added the index that fixed it).
+    if (res.status >= 500) {
+      console.warn('  A 500 here is usually a TIMEOUT, not a missing function: service_role')
+      console.warn('  inherits statement_timeout=8s. Time it directly —')
+      console.warn('    explain analyze select public.analytics_hygiene_stats();')
+      console.warn('  — before concluding the migration is missing.')
+    }
   } else {
     const a = await res.json()
     let sectionOk = true
@@ -3241,6 +3253,60 @@ const DISOWNED_PROSE_CEILING = 380
       }
       if (diff === 0 && g.proximity_arm_retired === true && g.real_source_arms === true) {
         console.log(`✓ geographic dedup is name- and gazetteer-based (${g.open_city_pairs} open pairs, 0 naming different places; city dry run would_merge=${g.city_would_merge} would_queue=${g.city_would_queue})`)
+      }
+    }
+  }
+}
+
+// §18 — the news quality drain must be able to REACH its own queue.
+//
+//     The fault this exists for is not depth. `news_verdict_geo_backfill` (*/10)
+//     posts enqueue+run and books a successful run either way; on 2026-09-14 it
+//     had been doing that against an enqueue selector that returned ZERO rows
+//     corpus-wide while 782 items showed in /admin/inbox and 346 of them had
+//     never been judged at all. last_run_status said 'success' throughout.
+//
+//     So the gate is unjudged_unreachable: rows in review with no verdict that
+//     the selector will not offer and that are not in flight. Depth
+//     (judged_in_review) is a genuine human queue and NEVER gates.
+//
+//     A MISSING RPC HARD-FAILS. The function answers probe_ok=false on its own
+//     failures, so a non-2xx means an unapplied migration or a revoked grant —
+//     and a drain nobody can measure must never read as a healthy one.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/news_quality_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    const detail = (await res.text()).slice(0, 200)
+    console.error(`✗ news_quality_signals → HTTP ${res.status} (migration 61000301100100 not applied? PGRST202 = the function does not exist) ${detail}`)
+    FAILED = true
+  } else {
+    const q = (await res.json()) ?? {}
+    if (q.probe_ok !== true) {
+      console.error(`✗ news_quality_signals did not report probe_ok — the drain could not be measured: ${q.error ?? '(no error given)'}`)
+      FAILED = true
+    } else {
+      const unreachable = Number(q.unjudged_unreachable ?? 0)
+      if (unreachable > 0) {
+        console.error(`✗ ${unreachable} news articles sit in the review queue with NO verdict and cannot be re-judged`)
+        console.error(`  (${q.unjudged_in_review} unjudged in review, ${q.eligible_now} eligible for the drain, attempt_epoch=${q.attempt_epoch ?? 'UNSET'})`)
+        console.error('  A human is being asked to decide something no machine ever looked at. Either the cause of the')
+        console.error('  failures was ours — move news_quality_settings.attempt_epoch and say why — or disposition the rows.')
+        FAILED = true
+      }
+      if (Number(q.review_rows_in_search ?? 0) > 0) {
+        console.error(`✗ ${q.review_rows_in_search} news rows awaiting quality review are live in search_documents`)
+        FAILED = true
+      }
+      if (unreachable === 0) {
+        const stale = Number(q.stale_image_block ?? 0)
+        console.log(`✓ news quality drain is reachable (${q.unjudged_in_review} unjudged, ${q.eligible_now} eligible, ${q.judged_in_review} judged awaiting a human)`)
+        if (stale > 0) {
+          console.log(`  note: ${stale} rows are blocked on 'image_unusable' whose image_url is now NULL — a stated reason that outlived what it described`)
+        }
       }
     }
   }
