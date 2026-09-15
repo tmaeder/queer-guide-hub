@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards 80000101100000 — round fifteen, the BODY-SIDE SEAM.
+ * Guards 81000101100000 — round fifteen, the BODY-SIDE SEAM.
  *
  * Rounds two to fourteen were all summary-first: every one of them SELECTED on
  * `short_description` and touched the body only as a consequence. This pass is
@@ -39,7 +39,7 @@ import { join } from 'node:path';
 
 const MIGRATION = join(
   process.cwd(),
-  'supabase/migrations/80000101100000_tag_prose_body_side_seam.sql',
+  'supabase/migrations/81000101100000_tag_prose_body_side_seam.sql',
 );
 const sql = readFileSync(MIGRATION, 'utf8');
 
@@ -123,7 +123,7 @@ function setClauseFor(slug: string): string {
   return stmt.slice(0, stmt.indexOf(' where '));
 }
 
-describe('80000101100000 — round fifteen, the body-side seam', () => {
+describe('81000101100000 — round fifteen, the body-side seam', () => {
   it('never writes description, which is the evidence every repair rests on', () => {
     for (const slug of ALL_15) {
       expect(setClauseFor(slug), `${slug} writes description`).not.toMatch(
@@ -250,7 +250,7 @@ describe('80000101100000 — round fifteen, the body-side seam', () => {
 
   it('records the honest metric forecast rather than the flattering one', () => {
     expect(prose).toMatch(/THE METRIC MOVES BY ONE, NOT FIFTEEN/);
-    expect(prose).toMatch(/ld_surviving` 151 -> 150/);
+    expect(prose).toMatch(/ld_surviving` 147 -> 146/);
   });
 
   it('states the new axis and that every earlier round selected on the summary', () => {

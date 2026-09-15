@@ -101,14 +101,34 @@
 -- than the flattering one. Replaying the sentinel's own CTE over these 15 slugs
 -- returns exactly two rows, and only `nantaimori` currently counts as
 -- surviving. Its summary is untouched here and its body is nulled, so
--- `ld_surviving` 151 -> 150, `sd_surviving` stays at 167, and
--- `indexable_surviving` stays at 159 (`nantaimori` is not indexable). The other
+-- `ld_surviving` 147 -> 146, `sd_surviving` stays at 167, and
+-- `indexable_surviving` stays at 158 (`nantaimori` is not indexable). The other
 -- 14 were never dispositioned by the 2026-08-29 repair and the sentinel is
 -- structurally blind to them.
 --
 -- The 22 `tag_sources` rows citing the seven disowned entities are left in
 -- place and named as residue rather than swept: all 22 are `is_public = false`,
 -- measured, so none of them renders anywhere.
+--
+-- A SIXTH CONCURRENT COLLISION ON THIS TABLE, and this one was a pure VERSION
+-- collision rather than a content one. `80000101100000_tag_prose_body_seam`
+-- (#3749) is another session working THIS SAME body-side axis, and it merged
+-- first while this PR sat in review -- two independent passes inventing the
+-- same ordering within the hour. It took the exact version this file had
+-- chosen, so merging as-is would have died on
+-- `duplicate key value violates unique constraint "schema_migrations_pkey"`
+-- and taken every migration queued behind it, which is the repo-wide blast
+-- radius rather than one red PR. Found by
+-- `git diff --name-only HEAD origin/main -- supabase/migrations/`, the
+-- one-command check; nothing in CI compares two branches' chosen versions.
+-- Confirmed by EXACT predicate before renumbering: `80000101100000` is applied
+-- under the name `tag_prose_body_seam`, not this file's.
+-- The ROWS are disjoint -- their five (`honorifics`, `mademoiselle`,
+-- `sensory-play`, `stone-top`, `electro-top`) share nothing with these fifteen,
+-- re-checked live -- so nothing is cut here, only renumbered. What did move is
+-- the sentinel baseline: their pass took `ld_surviving` 151 -> 147 and
+-- `indexable_surviving` 159 -> 158, so the forecast below is stated against the
+-- corpus as it is NOW rather than as it was when this file was written.
 --
 -- Actor declaration IS load-bearing: 13 of the 15 rows are
 -- `human_reviewed = true`, and `log_unified_tag_change()` RAISEs
