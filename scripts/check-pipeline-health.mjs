@@ -2111,14 +2111,29 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
       }
     }
 
-    // AGE, not depth. 72h is three full days at the head of the queue: well
-    // past any legitimate import, and far short of the four months this ran.
+    // AGE **AND** INABILITY TO DRAIN. Age alone was the first version of this
+    // check and it cried wolf on its own first run: a queue clearing at
+    // 700/hour still reports a 2,969-hour oldest row until the last May
+    // straggler goes, so it would have failed CI permanently on a pipeline
+    // that had just been fixed. A check that is always red is one people
+    // learn to scroll past — the same lesson as the dedup backlog, where
+    // keying on the OLDEST open pair fired on every correct deploy.
+    //
+    // The real fault is a queue that CANNOT clear, so the age only counts when
+    // there is more than a day of work backed up behind it. Measured at the
+    // moment of writing: awaiting 488 against 2,514 verdicts/24h — drains in
+    // hours, correctly silent. During the starvation it was ~2,300 against
+    // 480/day, which trips both halves.
     const oldestH = Number(sig?.oldest_awaiting_verdict_hours ?? 0)
     const awaiting = Number(sig?.awaiting_verdict ?? 0)
-    if (oldestH > 72 && awaiting > 0) {
-      console.error(`✗ the oldest news row awaiting a quality verdict is ${oldestH}h old (${awaiting} waiting)`)
+    const verdicts24h = Number(sig?.verdicts_24h ?? 0)
+    if (oldestH > 72 && awaiting > verdicts24h) {
+      console.error(`✗ ${awaiting} news rows await a quality verdict (oldest ${oldestH}h) against only ${verdicts24h} verdicts in 24h`)
+      console.error('  More than a day of work queued behind an old head: the queue cannot clear.')
       console.error('  Without a verdict a row can never commit. Check pipeline-enrich-news throughput vs inflow.')
       FAILED = true; sectionOk = false
+    } else if (oldestH > 72) {
+      console.log(`  oldest row awaiting a verdict is ${oldestH}h (${awaiting} waiting, ${verdicts24h} verdicts/24h — draining)`)
     }
 
     // CAPACITY vs INFLOW, as a pair. This is the comparison nothing was making.
@@ -2591,8 +2606,20 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
   if (!res.ok) {
     // A failed probe must SAY it failed. Falling through to a default would
     // report a clean layer on the strength of never having looked.
-    console.warn(`⚠ analytics_hygiene_stats → HTTP ${res.status} (20700301100500 not applied?)`)
+    console.warn(`⚠ analytics_hygiene_stats → HTTP ${res.status}`)
     console.warn('  This check measured NOTHING — it did not pass.')
+    // The first cause this ever had was NOT a missing migration, and the hint
+    // that used to sit here ("20700301100500 not applied?") cost a session:
+    // the migration was applied and the function was healthy — it just took
+    // 10.3s against the 8s statement_timeout `service_role` inherits from
+    // `authenticator`, so PostgREST cancelled it and answered 500. Check the
+    // timing before the deployment (60000101100000 added the index that fixed it).
+    if (res.status >= 500) {
+      console.warn('  A 500 here is usually a TIMEOUT, not a missing function: service_role')
+      console.warn('  inherits statement_timeout=8s. Time it directly —')
+      console.warn('    explain analyze select public.analytics_hygiene_stats();')
+      console.warn('  — before concluding the migration is missing.')
+    }
   } else {
     const a = await res.json()
     let sectionOk = true
@@ -3163,6 +3190,123 @@ const DISOWNED_PROSE_CEILING = 380
         console.warn('  An upper bound, not a defect count — a hand-read sample of 24 was ~45% genuinely wrong. Worked down by hand.')
       } else {
         console.log('✓ no active tag carries prose from a disowned Wikidata entity')
+      }
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// §  Geographic dedup: never suggest merging two differently-named places
+// ---------------------------------------------------------------------------
+//
+//     Measured on 2026-09-14, `run_dedup_truth_sweep('city','dry_run')` returned
+//     `{would_merge: 0, would_queue: 118}` and ALL 118 came from one arm,
+//     `geo_only_2km`, which paired rows whose names DIFFER on distance alone. So
+//     100% of the city engine's output was a proposal to merge two different
+//     places: Ueberlingen <-> Wernigerode (Lake Constance vs the Harz) at "0 m",
+//     Pirna <-> Baden-Baden at 265 m, Garden Grove California <-> Egham England
+//     at 580 m. The metre readings are the placeholder-coordinate signature, not
+//     proximity — a missing geocode falls back to a shared centroid.
+//
+//     ZERO-TOLERANCE, NO BASELINE, unlike the disowned-prose ratchet above. This
+//     is not a backlog to work down: a single different-name pair sitting open is
+//     one an admin can approve, and approving it destroys a real city. The engine
+//     side is asserted too, because an empty queue proves nothing while an arm
+//     that generates such pairs is still installed.
+//
+//     The qualifier form ("Berlin" vs "Berlin, Germany") is the SAME name
+//     carrying a qualifier and is excluded — that is a legitimate duplicate and
+//     the engine now merges it on the base row's Wikidata id.
+//
+//     A MISSING RPC HARD-FAILS: the function answers probe_ok=false on its own
+//     failures, so a non-2xx means an unapplied migration or a revoked grant, and
+//     an unreadable engine must never read as a clean one.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/geo_dedup_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    const detail = (await res.text()).slice(0, 200)
+    console.error(`✗ geo_dedup_signals → HTTP ${res.status} (migration 51000101100300 not applied? PGRST202 = the function does not exist) ${detail}`)
+    FAILED = true
+  } else {
+    const g = (await res.json()) ?? {}
+    if (g.probe_ok !== true) {
+      console.error('✗ geo_dedup_signals did not report probe_ok — the dedup engine could not be dry-run, so the counts below measure nothing')
+      FAILED = true
+    } else {
+      const diff = Number(g.open_diff_name_pairs ?? 0)
+      if (diff > 0) {
+        console.error(`✗ ${diff} open city dedup pairs name two DIFFERENT places (of ${g.open_city_pairs} open)`)
+        console.error('  A geographic merge may only be proposed from an identical name key, a qualifier of it, or a shared Wikidata id.')
+        FAILED = true
+      }
+      if (g.proximity_arm_retired !== true) {
+        console.error('✗ the geo_only_2km proximity arm is installed again — it pairs differently-named places on distance alone')
+        FAILED = true
+      }
+      if (g.real_source_arms !== true) {
+        console.error('✗ the real-source geographic arms (qid_exact / name_qualifier / name_exact_iso) are not installed')
+        FAILED = true
+      }
+      if (diff === 0 && g.proximity_arm_retired === true && g.real_source_arms === true) {
+        console.log(`✓ geographic dedup is name- and gazetteer-based (${g.open_city_pairs} open pairs, 0 naming different places; city dry run would_merge=${g.city_would_merge} would_queue=${g.city_would_queue})`)
+      }
+    }
+  }
+}
+
+// §18 — the news quality drain must be able to REACH its own queue.
+//
+//     The fault this exists for is not depth. `news_verdict_geo_backfill` (*/10)
+//     posts enqueue+run and books a successful run either way; on 2026-09-14 it
+//     had been doing that against an enqueue selector that returned ZERO rows
+//     corpus-wide while 782 items showed in /admin/inbox and 346 of them had
+//     never been judged at all. last_run_status said 'success' throughout.
+//
+//     So the gate is unjudged_unreachable: rows in review with no verdict that
+//     the selector will not offer and that are not in flight. Depth
+//     (judged_in_review) is a genuine human queue and NEVER gates.
+//
+//     A MISSING RPC HARD-FAILS. The function answers probe_ok=false on its own
+//     failures, so a non-2xx means an unapplied migration or a revoked grant —
+//     and a drain nobody can measure must never read as a healthy one.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/news_quality_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    const detail = (await res.text()).slice(0, 200)
+    console.error(`✗ news_quality_signals → HTTP ${res.status} (migration 61000301100100 not applied? PGRST202 = the function does not exist) ${detail}`)
+    FAILED = true
+  } else {
+    const q = (await res.json()) ?? {}
+    if (q.probe_ok !== true) {
+      console.error(`✗ news_quality_signals did not report probe_ok — the drain could not be measured: ${q.error ?? '(no error given)'}`)
+      FAILED = true
+    } else {
+      const unreachable = Number(q.unjudged_unreachable ?? 0)
+      if (unreachable > 0) {
+        console.error(`✗ ${unreachable} news articles sit in the review queue with NO verdict and cannot be re-judged`)
+        console.error(`  (${q.unjudged_in_review} unjudged in review, ${q.eligible_now} eligible for the drain, attempt_epoch=${q.attempt_epoch ?? 'UNSET'})`)
+        console.error('  A human is being asked to decide something no machine ever looked at. Either the cause of the')
+        console.error('  failures was ours — move news_quality_settings.attempt_epoch and say why — or disposition the rows.')
+        FAILED = true
+      }
+      if (Number(q.review_rows_in_search ?? 0) > 0) {
+        console.error(`✗ ${q.review_rows_in_search} news rows awaiting quality review are live in search_documents`)
+        FAILED = true
+      }
+      if (unreachable === 0) {
+        const stale = Number(q.stale_image_block ?? 0)
+        console.log(`✓ news quality drain is reachable (${q.unjudged_in_review} unjudged, ${q.eligible_now} eligible, ${q.judged_in_review} judged awaiting a human)`)
+        if (stale > 0) {
+          console.log(`  note: ${stale} rows are blocked on 'image_unusable' whose image_url is now NULL — a stated reason that outlived what it described`)
+        }
       }
     }
   }

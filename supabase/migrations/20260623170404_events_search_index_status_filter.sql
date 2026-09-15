@@ -84,4 +84,3 @@ BEGIN
     EXIT WHEN v_batch = 0;
   END LOOP;
 END $$;
-END $$;;

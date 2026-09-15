@@ -44,28 +44,40 @@
  *
  * So this is one layer, not the answer. It is the layer that was free.
  *
- * ── THE ALLOWLIST, AND WHY IT MAY ONLY SHRINK ──────────────────────────────
- * The first corpus sweep found SIX already-applied files that do not parse.
- * They are not false positives — they are genuinely invalid SQL that only ever
- * worked because what `db push` actually applied differed from what is
- * committed (for 20260623170404, `schema_migrations.statements` ends at
- * `END $$;` while the file carries a further duplicated `END $$;;` that never
- * ran). They matter for any rebuild-from-migrations, not for prod today.
+ * ── THE ALLOWLIST, NOW EMPTY, AND WHY IT MAY ONLY SHRINK ───────────────────
+ * The first corpus sweep found SIX already-applied files that did not parse.
+ * All six are REPAIRED (2026-09-14) and the allowlist is empty; it stays as the
+ * mechanism, so a future entry is a deliberate, reviewable act and the count can
+ * only ever go back to zero. A file listed here that starts parsing is a hard
+ * FAILURE telling you to delete its entry, so the list can never rot into a
+ * place where new defects hide. Same discipline as KNOWN_NAME_MISMATCHES.
  *
- * They are NOT repaired here. Five of six are corrupted mid-file — one carries
- * 19 `$function$` tags, an odd number, so a function body is unterminated
- * somewhere in the middle — and the only record of what really ran is
- * `statements`, which is provably incomplete for these rows (20260623170404
- * records ONE statement for a file with at least two) and which strips trailing
- * semicolons besides. Reconstructing from that would invent content, which is
- * exactly what `recover-migration-drift.mjs` refuses to do on the grounds that
- * a plausible file at the right version is worse than a missing one. Each needs
- * a human reading it against the live schema.
+ * WHAT THEY ACTUALLY WERE — and the first reading of it here was wrong. This
+ * header used to say they were "corrupted mid-file" and could not be repaired
+ * without inventing content. Five of the six were in fact ONE mechanical
+ * corruption repeated: a block of text spliced in twice, where the duplicate
+ * carries a header split across lines (` RETURNS jsonb` / ` LANGUAGE plpgsql`)
+ * and the survivor has the same header joined onto one line. The repair is pure
+ * DELETION of the duplicate — +0/-25 lines across the four `2026062317*` files,
+ * and 22 of the 25 removed lines were verified to still have an identical twin
+ * in the file. Nothing was reconstructed.
  *
- * The allowlist therefore records them so the count cannot GROW, and a file
- * that starts parsing is a hard FAILURE telling you to delete its entry — so
- * the list self-cleans and can never rot into a place where new defects hide.
- * Same discipline as KNOWN_NAME_MISMATCHES in check-migration-drift.mjs.
+ * The other two needed a decision rather than a deletion, and both are recorded
+ * in the files themselves: `20260511000000` ended with two `CREATE POLICY IF NOT
+ * EXISTS` statements, a clause PostgreSQL has never had, so they never executed
+ * and prod carries no such policies; `20261028120000` had been deliberately
+ * emptied to a no-op and the emptying was left half-done, stranding ~70 lines of
+ * plpgsql after the block that replaced their opener.
+ *
+ * TWO THINGS THE RECORD SETTLED THAT READING COULD NOT. `schema_migrations
+ * .statements` is a partial record for these rows (the CLI's splitter gives up
+ * on unbalanced dollar-quoting and stores one truncated statement), so it cannot
+ * rebuild a file — but it is still authoritative about WHICH of two candidate
+ * forms ran. In `20260623170823` the file carried both a `DO $$`/`END $$;` pair
+ * and a `DO $outer$`/`END $outer$;` pair around one block; the applied statement
+ * contains the `$outer$` pair and does not contain `DO $$` at all, which is the
+ * opposite of what the surrounding comment placement suggested. Ask the record,
+ * not the layout.
  */
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -79,12 +91,8 @@ const MIGRATIONS = join(process.cwd(), 'supabase', 'migrations');
  * Do not add to this list to get a build green — fix the file instead.
  */
 export const KNOWN_UNPARSEABLE = new Set([
-  '20260511000000_add_image_optimization_columns.sql',
-  '20260623170317_existence_selectors_review.sql',
-  '20260623170404_events_search_index_status_filter.sql',
-  '20260623170508_existence_admin_rpcs.sql',
-  '20260623170823_existence_automations_cron.sql',
-  '20261028120000_practice_refile_search_facet_resync.sql',
+  // Empty by design. All six original entries were repaired on 2026-09-14.
+  // Do not add to this list to get a build green — fix the file instead.
 ]);
 
 /**
@@ -174,7 +182,11 @@ async function main() {
 
   console.log(
     `Parsed ${scope} migration(s) with the Postgres 17 grammar — all valid` +
-      (baseRef ? '.' : ` (${KNOWN_UNPARSEABLE.size} pre-existing exempt).`),
+      (baseRef
+        ? '.'
+        : KNOWN_UNPARSEABLE.size
+          ? ` (${KNOWN_UNPARSEABLE.size} pre-existing exempt).`
+          : ' — no exemptions.'),
   );
 }
 
