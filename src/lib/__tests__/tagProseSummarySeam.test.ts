@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards 62000201100000 — the SUMMARY seam of the disowned-prose backlog.
+ * Guards 64000101100000 — the SUMMARY seam of the disowned-prose backlog.
  *
  * WHAT THIS FILE EXISTS TO PRESERVE, each of which a later reader could undo
  * without noticing:
@@ -15,7 +15,7 @@ import { join } from 'node:path';
  *    would still pass. Note `short_description` contains the substring
  *    `description`, so the assertion has to be anchored on the word boundary.
  *
- * 2. NO BODY IS WRITTEN OR REMOVED. Fourteen of the fifteen rows already have
+ * 2. NO BODY IS WRITTEN OR REMOVED. Fourteen of the fifteen seam rows have
  *    `long_description IS NULL`; the fifteenth (`masturbating`) has a correct
  *    body. Minting a body from a one-line description is the guess this whole
  *    class came from (the `queen` / `steer` rule), and silently nulling the one
@@ -44,7 +44,7 @@ import { join } from 'node:path';
 
 const MIGRATION = join(
   process.cwd(),
-  'supabase/migrations/62000201100000_tag_prose_summary_seam.sql',
+  'supabase/migrations/64000101100000_tag_prose_summary_seam.sql',
 );
 const sql = readFileSync(MIGRATION, 'utf8');
 
@@ -87,15 +87,16 @@ const GROUP_A = [
   'sword-play',
   'mama-bear',
 ];
-const GROUP_B = [
-  'medical-play',
-  'vetted',
-  'slutface',
-  'fluffing',
-  'shallowing',
-  'foot-play',
-  'masturbating',
-];
+const GROUP_B = ['medical-play', 'slutface', 'fluffing', 'shallowing', 'foot-play'];
+
+/** The two seam rows a concurrent session (63000101171500, PR #3733) merged
+ *  first. Their UPDATEs are deleted here rather than left to no-op, so this
+ *  file does not claim rows it no longer writes — but they stay in SEAM,
+ *  because the postconditions still cover the whole fifteen and must keep
+ *  doing so: narrowing them to what this file writes is what turns a rival
+ *  repair into a `db push` abort on main. */
+const CEDED = ['vetted', 'masturbating'];
+const SEAM = [...GROUP_A, ...GROUP_B, ...CEDED];
 
 /** The exact strings the seam exists to remove. */
 const DISOWNED = [
@@ -116,11 +117,24 @@ const DISOWNED = [
   'Masturbation discussion',
 ];
 
-describe('62000201100000 — the disowned summary seam', () => {
-  it('repairs exactly the 15 rows, and only those', () => {
+describe('64000101100000 — the disowned summary seam', () => {
+  it('writes exactly the 13 rows it still claims, and only those', () => {
     const slugs = [...statements.matchAll(/where slug = '([a-z-]+)'/g)].map((m) => m[1]);
-    expect(statements.match(/^update public\.unified_tags/gm)).toHaveLength(15);
+    expect(statements.match(/^update public\.unified_tags/gm)).toHaveLength(13);
     expect(new Set(slugs)).toEqual(new Set([...GROUP_A, ...GROUP_B]));
+  });
+
+  it('writes nothing for the rows ceded to the concurrent session', () => {
+    // Leaving a guarded no-op behind would be harmless at run time and would
+    // still misreport the file's scope to the next reader.
+    for (const s of CEDED) expect(statements).not.toContain(`where slug = '${s}'`);
+  });
+
+  it('still covers the whole 15-row seam in its postconditions', () => {
+    // The seam is fifteen rows whoever repaired them. A postcondition narrowed
+    // to this file's own writes stops catching a regression in the other half.
+    for (const s of CEDED) expect(verify).toContain(s);
+    expect(SEAM).toHaveLength(15);
   });
 
   it('never writes description — the evidence the repair rests on', () => {
@@ -139,7 +153,7 @@ describe('62000201100000 — the disowned summary seam', () => {
   it('guards every UPDATE on the defect still being present', () => {
     // Soft on preconditions: a human who fixes a row first keeps their work.
     const guards = [...statements.matchAll(/where slug = '[a-z-]+' and short_description = /g)];
-    expect(guards).toHaveLength(15);
+    expect(guards).toHaveLength(13);
   });
 
   it('keeps group B free of any chosen sense', () => {

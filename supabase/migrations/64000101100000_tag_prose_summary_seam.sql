@@ -1,5 +1,28 @@
--- Round eight of the disowned-prose backlog: 15 rows whose BODY is already gone
--- or already correct, and whose SUMMARY is still the disowned entity's.
+-- Round eight of the disowned-prose backlog: a 15-row SUMMARY seam, of which
+-- this file writes 13. The rows' bodies are already gone or already correct;
+-- what still published the disowned entity's text is the summary.
+--
+-- TWO ROWS WERE CEDED TO A CONCURRENT SESSION, and that is why 15 and 13 are
+-- both correct numbers here. 63000101171500_tag_prose_half_repaired_and_self_citation
+-- (PR #3733) worked the same backlog at the same time, also calling itself
+-- round eight, and it MERGED FIRST -- repairing `vetted` and `masturbating`,
+-- two of this seam's fifteen. Their UPDATEs are DELETED rather than left to
+-- no-op: both are content-guarded and would have matched nothing, which is
+-- harmless at run time, but a file that claims fifteen rows and changes
+-- thirteen misreports itself to the next reader, and re-writing prose that is
+-- already correct is the LLM rewrite both auto-apply paths were retired for.
+-- The fifth such collision on this table (20360401100100, 60000301100000,
+-- 60000301100100, 51500101145000); the standing lesson is unchanged and was
+-- what made this cost a diff rather than the queue -- run
+--   git diff --name-only HEAD origin/main -- supabase/migrations/
+-- before updating a branch, and re-read the live rows before merging.
+--
+-- THE POSTCONDITIONS ARE DELIBERATELY NOT NARROWED TO THIRTEEN. They assert
+-- the WRONG TEXT IS GONE across all FIFTEEN slugs and that all fifteen carry a
+-- usable summary, so this file still covers the whole seam -- ours and theirs
+-- together -- and would catch a regression in either session's rows. Narrowing
+-- them to what this file happens to write is what turns a concurrent repair
+-- into a `db push` abort on main, which takes every migration queued behind it.
 --
 -- Same rule as 51500101143000 / 51700101143000 / 61000101174500 / 62000101163000,
 -- unchanged: repair ONLY where the row's own `description` establishes the
@@ -59,7 +82,9 @@
 --                          `darkroom` shape: both senses exist, the row states
 --                          which one it is.
 --
--- B. THE SUMMARY STATES NOTHING A READER CAN USE (7 rows). Not a wrong
+-- B. THE SUMMARY STATES NOTHING A READER CAN USE (7 rows in the seam, 5 of
+--    them written here -- `vetted` and `masturbating` went to 63000101171500).
+--    Not a wrong
 --    subject -- a tautology or a placeholder, which is the disowned entity's
 --    residue in its emptiest form: `medical-play` "medical play" and `vetted`
 --    "Vetted" define the term with the term (the `hardpoint` / `impaired-driving`
@@ -76,11 +101,13 @@
 -- NO BODY IS WRITTEN OR REMOVED BY THIS FILE. Fourteen of the fifteen already
 -- have `long_description IS NULL` and stay that way; `masturbating` is the one
 -- with a body, it is correct ("self-stimulation ... used deliberately in
--- edging, orgasm control and mutual scenes"), and it is untouched. Minting a
--- body from a one-line description is the guess this whole class came from.
+-- edging, orgasm control and mutual scenes"), and it is untouched -- by this
+-- file and by 63000101171500, which writes only `short_description` and was
+-- read rather than taken on trust. The postcondition below still asserts it.
+-- Minting a body from a one-line description is the guess this class came from.
 --
 -- THE ACTOR DECLARATION IS LOAD-BEARING HERE, and that was verified live on
--- this corpus rather than assumed: all 15 rows are `human_reviewed`, and the
+-- this corpus rather than assumed: all 15 seam rows are `human_reviewed`, and the
 -- undeclared UPDATE returns
 --   human_reviewed tag <uuid> cannot be modified by system:trigger
 -- Round four's tranche was the opposite case (all rows `human_reviewed=false`,
@@ -160,10 +187,6 @@ update public.unified_tags
  where slug = 'medical-play' and short_description = 'medical play';
 
 update public.unified_tags
-   set short_description = 'Approved by an organization to attend its events.'
- where slug = 'vetted' and short_description = 'Vetted';
-
-update public.unified_tags
    set short_description = 'A visibly sexual look: heavy makeup, a dazed or messy appearance, or both.'
  where slug = 'slutface' and short_description = 'A term with complex connotations';
 
@@ -178,10 +201,6 @@ update public.unified_tags
 update public.unified_tags
    set short_description = 'Play involving the feet, from kink and worship to service or plain fun.'
  where slug = 'foot-play' and short_description = 'Refers to foot-related activities';
-
-update public.unified_tags
-   set short_description = 'Stimulating your own genitals for pleasure, alone or with company.'
- where slug = 'masturbating' and short_description = 'Masturbation discussion';
 
 do $verify$
 declare
@@ -230,14 +249,16 @@ begin
     raise exception 'summary seam: % row(s) fell below the thin-page gate', v_bad;
   end if;
 
-  -- HARD: `masturbating` is the one row here with a body, it was already
-  -- correct, and this file must not have touched it.
+  -- HARD: `masturbating` is the one row in this seam with a body, it was
+  -- already correct, and neither this file nor 63000101171500 may have
+  -- removed it -- that file writes only `short_description`, checked, not
+  -- assumed.
   select count(*) into v_bad from public.unified_tags
    where slug = 'masturbating' and coalesce(long_description,'') = '';
   if v_bad > 0 then
     raise exception 'summary seam: masturbating lost its body';
   end if;
 
-  raise notice 'summary seam: 15 rows, 8 wrong-subject summaries and 7 empty ones';
+  raise notice 'summary seam: 13 rows written (8 wrong-subject, 5 empty); 15-row seam clean, vetted and masturbating carried by 63000101171500';
 end
 $verify$;
