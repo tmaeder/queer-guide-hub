@@ -43,7 +43,7 @@ export function Editable({
   as = 'span',
   className,
 }: EditableProps) {
-  const { isAdmin, altHeld } = useAdminEditMode();
+  const { isAdmin, editMode } = useAdminEditMode();
   const [editing, setEditing] = useState(false);
   const { save, saving } = useInlineSave(contentType, recordId);
 
@@ -84,12 +84,15 @@ export function Editable({
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
       if (!adminActive) return;
-      if (requireAltClick && !e.altKey) return;
+      // Alt-click still works on its own. The pin is the discoverable
+      // equivalent: with edit mode on, a plain click opens the editor, which
+      // is why the affordance is drawn at the same time.
+      if (requireAltClick && !e.altKey && !editMode) return;
       e.preventDefault();
       e.stopPropagation();
       setEditing(true);
     },
-    [adminActive, requireAltClick],
+    [adminActive, requireAltClick, editMode],
   );
 
   const onConfirm = useCallback(
@@ -125,7 +128,7 @@ export function Editable({
     );
   }
 
-  const showAffordance = requireAltClick ? altHeld : adminActive;
+  const showAffordance = requireAltClick ? editMode : adminActive;
   const affordanceClass = showAffordance
     ? 'outline outline-1 outline-dashed outline-foreground/40 cursor-pointer rounded-element'
     : '';
@@ -135,7 +138,7 @@ export function Editable({
       onClick={handleClick}
       title={
         showAffordance
-          ? `${requireAltClick ? 'Alt-click' : 'Click'} to edit · ${fieldConfig.label}`
+          ? `${requireAltClick && !editMode ? 'Alt-click' : 'Click'} to edit · ${fieldConfig.label}`
           : undefined
       }
       className={[className, affordanceClass].filter(Boolean).join(' ')}
