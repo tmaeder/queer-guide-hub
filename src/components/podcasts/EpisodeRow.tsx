@@ -3,7 +3,7 @@ import { Play, Pause } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { cleanTitle } from '@/utils/htmlDecode';
-import { useAudioPlayer } from '@/hooks/useAudioPlayer';
+import { useAudioPlayer } from '@/hooks/audioPlayerContext';
 import type { PodcastEpisode } from '@/hooks/usePodcasts';
 
 interface EpisodeRowProps {
