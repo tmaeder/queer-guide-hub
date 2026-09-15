@@ -12,6 +12,7 @@ import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { GlossaryLinkedProse } from '@/components/tags/GlossaryLinkedText';
+import { AdminEditButton } from '@/components/admin/AdminEditButton';
 
 function SectionBlock({ section }: { section: GuideSection }) {
   if (!section.body_md) return null;
@@ -147,6 +148,14 @@ const GuideDetail = () => {
         {guide.dek && (
           <p className="italic text-body-lg text-muted-foreground max-w-2xl">{guide.dek}</p>
         )}
+        <div className="mt-6">
+          <AdminEditButton
+            contentType="guides"
+            contentId={guide.id}
+            contentName={guide.title}
+            currentData={guide as unknown as Record<string, unknown>}
+          />
+        </div>
       </PageContainer>
 
       {hero && (

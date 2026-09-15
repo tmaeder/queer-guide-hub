@@ -42,6 +42,7 @@ import { useTranslation } from 'react-i18next';
 import { Editable } from '@/components/admin/inline/Editable';
 import { GroupCollections } from '@/components/groups/GroupCollections';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { AdminEditButton } from '@/components/admin/AdminEditButton';
 
 export default function GroupDetail() {
   const { groupId } = useParams<{ groupId: string }>();
@@ -279,6 +280,14 @@ export default function GroupDetail() {
                     Manage Group
                   </Button>
                 )}
+
+                <AdminEditButton
+                  contentType="community_groups"
+                  contentId={group.id}
+                  contentName={group.name}
+                  currentData={group as unknown as Record<string, unknown>}
+                  size="default"
+                />
               </div>
             </div>
           </div>
