@@ -27,6 +27,7 @@ import { safeErrCode } from '../_shared/safe-error.ts'
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
 import { cityNameCandidates } from '../_shared/city-name-normalize.ts'
 import { plausibleCityScalar } from '../_shared/city-scalar-bounds.ts'
+import { cityClassVerdict, isCityRefreshScope } from '../_shared/city-class-guard.ts'
 import {
   airportQuery, applyLabels, capitalQuery, parseCityFacts, parseCityNames, pickAirports,
   pickCapitals, pickUniversities, resolveLabels, sparqlUrl, universityQuery,
@@ -346,8 +347,15 @@ Deno.serve(async (req: Request) => {
   const phase = body.phase === 'sparql' ? 'sparql' : 'link'
   const batchLimit = Math.min(MAX_BATCH_LIMIT, Math.max(1, body.batch_limit ?? DEFAULT_BATCH_LIMIT))
   const dryRun = body.dry_run ?? false
-  const scope = ['content_first', 'content_only', 'all'].includes(body.scope ?? '')
-    ? body.scope! : 'content_first'
+  // The accepted set is the selector's own, via CITY_REFRESH_SCOPES. It was
+  // ['content_first','content_only','all'] here, so the two scopes that exist
+  // ONLY to be driven by a cron -- 'qid_gap' and 'alias_gap' -- were silently
+  // rewritten to 'content_first'. Both crons posted, got a 200 and booked
+  // last_run_status='success' while re-working a list another job already
+  // works. An unknown scope still falls back rather than 400ing, because the
+  // caller is a cron and a typo must not take the sweep down; the drift test is
+  // what makes a typo visible.
+  const scope = isCityRefreshScope(body.scope) ? body.scope : 'content_first'
 
   let ids: string[]
   if (body.city_ids?.length) {
@@ -372,13 +380,17 @@ Deno.serve(async (req: Request) => {
 
   return phase === 'sparql'
     ? await runSparqlPhase(supabase, req, rows, dryRun, batchLimit)
-    : await runLinkPhase(supabase, req, rows, dryRun, body.relink ?? false)
+    : await runLinkPhase(supabase, req, rows, dryRun, body.relink ?? false, scope)
 })
 
 // ------------------------------------------------------------------ phase: link
 
 async function runLinkPhase(
   supabase: Db, req: Request, rows: CityRow[], dryRun: boolean, relink: boolean,
+  // Reported back in the run body. The scope this phase actually worked was
+  // unobservable from outside, which is why two crons could spend their whole
+  // life on the wrong list while reporting success.
+  scope: string,
 ): Promise<Response> {
   // Country + region names power the suspect-name heuristic: "Indonesien" and
   // "Baskenland" are filed as cities but are not places this engine can enrich.
@@ -392,6 +404,13 @@ async function runLinkPhase(
 
   const labelCache = new Map<string, string>()
   let processed = 0, updated = 0, skipped = 0, failed = 0, aliasesWritten = 0
+  // Class-gate tallies. `classRefused` is a decision about the entity;
+  // `classUndetermined` is a failure to read one, and the two must stay apart:
+  // only the former counts an attempt toward the terminal sentinel.
+  let classRefused = 0, classUndetermined = 0
+  // Distinct P31 labels the whitelist did not recognise, reported verbatim so a
+  // systematic gap in the vocabulary shows up as a rising, namable number.
+  const unrecognisedClasses = new Set<string>()
   const results: Array<Record<string, unknown>> = []
   // Values Wikidata offered that are physically impossible, refused before they
   // could be written. Reported per run rather than dropped: a systematic upstream
@@ -451,18 +470,65 @@ async function runLinkPhase(
           bumpMiss(state, 'wikidata_link', 'wikidata')
           missReason ??= 'wikidata_entity_missing'
         } else {
-          facts = parseCityFacts(ent.claims)
-          enwikiTitle = ent.enwikiTitle ?? enwikiTitle
-          markResolved(state, 'wikidata_link', 'wikidata', qid)
-          if (c.wikidata_qid !== qid) update.wikidata_qid = qid
-          if (enwikiTitle && c.wikipedia_title !== enwikiTitle) update.wikipedia_title = enwikiTitle
-          // Names ride in the same response. Written immediately rather than
-          // batched with `update`: they go to a different table, they are
-          // fill-only, and they must survive a later failure in this city's own
-          // column write -- an alias is useful to the NEXT city that gets
-          // created, not to this row.
-          if (!dryRun && ent.names.length > 0) {
-            aliasesWritten += await writeCityAliases(supabase, c.id, c.name, ent.names)
+          // --- 1b. Class gate. Nothing below may run for an entity that is not
+          // a settlement: parseCityFacts would copy Illinois's population and
+          // coordinates onto the row, and enwikiTitle would send step 3 to
+          // fetch and publish a US state's Wikipedia lead as a city
+          // description. Both are permanent and both re-derive weekly, so the
+          // adoption happens INSIDE the settlement branch or not at all.
+          const p31Qids = (ent.claims.P31 ?? [])
+            .filter((st) => st.rank !== 'deprecated' && st.mainsnak?.snaktype === 'value')
+            .map((st) => (st.mainsnak?.datavalue?.value as { id?: string } | undefined)?.id)
+            .filter((q): q is string => Boolean(q))
+          let p31Labels: string[] | null = null
+          try {
+            const m = await withCircuitBreaker(
+              supabase, 'wikidata.api', () => resolveLabels(wdFetch, p31Qids, labelCache),
+            )
+            p31Labels = p31Qids.map((q) => m.get(q) ?? '').filter(Boolean)
+            // Read fine, but no class carries an English label. That is not the
+            // same as "no P31" and must not report as it: refuse on an
+            // unnameable class and say so.
+            if (p31Qids.length > 0 && p31Labels.length === 0) {
+              p31Labels = ['(class has no English label)']
+            }
+          } catch {
+            // Breaker open or transport failure. Stays null -> 'undetermined'.
+            p31Labels = null
+          }
+          const cls = cityClassVerdict(p31Labels)
+
+          if (cls.verdict === 'settlement') {
+            facts = parseCityFacts(ent.claims)
+            enwikiTitle = ent.enwikiTitle ?? enwikiTitle
+            markResolved(state, 'wikidata_link', 'wikidata', qid)
+            if (c.wikidata_qid !== qid) update.wikidata_qid = qid
+            if (enwikiTitle && c.wikipedia_title !== enwikiTitle) update.wikipedia_title = enwikiTitle
+            // Names ride in the same response. Written immediately rather than
+            // batched with `update`: they go to a different table, they are
+            // fill-only, and they must survive a later failure in this city's
+            // own column write -- an alias is useful to the NEXT city that gets
+            // created, not to this row.
+            if (!dryRun && ent.names.length > 0) {
+              aliasesWritten += await writeCityAliases(supabase, c.id, c.name, ent.names)
+            }
+          } else if (cls.verdict === 'refused') {
+            // A decision about the entity, so it counts toward the terminal
+            // sentinel: three of these and the row leaves the work list instead
+            // of being re-offered forever.
+            qid = null
+            classRefused++
+            if (cls.reason === 'unrecognised' && cls.label) unrecognisedClasses.add(cls.label)
+            bumpMiss(state, 'wikidata_link', 'class')
+            missReason ??= `refused_class:${cls.reason}${cls.label ? `:${cls.label}` : ''}`.slice(0, 200)
+          } else {
+            // Undetermined: we could not READ the class. Deliberately does NOT
+            // bumpMiss. Counting a Wikidata outage as evidence about the row is
+            // how 6,498 venues were stamped logo_fetched_at while the token was
+            // dead and written off permanently.
+            qid = null
+            classUndetermined++
+            missReason ??= 'class_unreadable'
           }
         }
       }
@@ -689,7 +755,11 @@ async function runLinkPhase(
 
   return jsonResponse({
     phase: 'link', processed, updated, skipped, failed,
+    scope,
     aliases_written: aliasesWritten,
+    class_refused: classRefused,
+    class_undetermined: classUndetermined,
+    unrecognised_classes: [...unrecognisedClasses].slice(0, 20),
     implausible_scalars_rejected: implausibleScalars.length,
     implausible_scalars: implausibleScalars.slice(0, 20),
     dry_run: dryRun, results,
