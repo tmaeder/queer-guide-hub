@@ -34,7 +34,7 @@ export function useMilestoneDescriptor(slug: string | undefined): EntityDescript
       hero: (
         <>
           <MilestoneHero milestone={milestone} />
-          <div className="mb-6">
+          <div className="mb-6 flex justify-end">
             <AdminEditButton
               contentType="milestones"
               contentId={milestone.id}

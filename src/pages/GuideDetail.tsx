@@ -148,7 +148,7 @@ const GuideDetail = () => {
         {guide.dek && (
           <p className="italic text-body-lg text-muted-foreground max-w-2xl">{guide.dek}</p>
         )}
-        <div className="mt-6">
+        <div className="mt-6 flex justify-end">
           <AdminEditButton
             contentType="guides"
             contentId={guide.id}

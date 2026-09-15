@@ -231,7 +231,8 @@ function RevisionRow({
                 onClick={() => onRevert(revision, revision.changed_fields)}
               >
                 <RotateCcw size={14} className="mr-1.5" />
-                Revert all {revision.changed_fields.length} field(s)
+                Revert all {revision.changed_fields.length}{' '}
+                {revision.changed_fields.length === 1 ? 'field' : 'fields'}
               </Button>
               {/* Per-field buttons only while they are still scannable. A bulk
                   backfill can touch a dozen columns at once, and a wall of
