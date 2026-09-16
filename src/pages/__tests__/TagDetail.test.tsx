@@ -35,8 +35,9 @@ vi.mock('@/integrations/supabase/untyped', () => ({
 }));
 
 let tagRow: Record<string, unknown> | null = null;
+const fetchTagWithCategories = vi.fn(() => Promise.resolve(tagRow));
 vi.mock('@/hooks/usePageFetchers', () => ({
-  fetchTagWithCategories: () => Promise.resolve(tagRow),
+  fetchTagWithCategories: () => fetchTagWithCategories(),
 }));
 
 let usage: Record<string, number> | null = null;
@@ -145,6 +146,7 @@ const renderWithTrail = () =>
 beforeEach(() => {
   useMeta.mockClear();
   gatedRpc.mockClear();
+  fetchTagWithCategories.mockClear();
   gatedSlugs = [];
   authUser = null;
   tagReferences = [];
@@ -215,6 +217,28 @@ describe('TagDetail — SEO', () => {
 });
 
 describe('TagDetail — page', () => {
+  it('redirects a place tag without rendering a false 404 or probing the gate', async () => {
+    tagRow = null;
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+    render(
+      <QueryClientProvider client={qc}>
+        <MemoryRouter initialEntries={['/tags/kreuzberg']}>
+          <SafeModeProvider>
+            <Routes>
+              <Route path="/tags/:tagName" element={<TagDetail />} />
+              <Route path="/villages/:slug" element={<div data-testid="village-route" />} />
+            </Routes>
+          </SafeModeProvider>
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+
+    expect(screen.queryByTestId('tag-not-found')).not.toBeInTheDocument();
+    expect(await screen.findByTestId('village-route')).toBeInTheDocument();
+    expect(fetchTagWithCategories).not.toHaveBeenCalled();
+    expect(gatedRpc).not.toHaveBeenCalled();
+  });
+
   it('renders the term in the masthead, with its entity_kind as the status chip', async () => {
     tagRow = { ...BASE, entity_kind: 'practice' };
     renderPage();
