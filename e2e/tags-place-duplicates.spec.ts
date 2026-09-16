@@ -45,6 +45,10 @@ const DUPLICATES: Array<{ slug: string; geo: string; bucket: string }> = [
   { slug: 'japan', geo: '/country/japan', bucket: 'A country' },
   { slug: 'australia', geo: '/country/australia', bucket: 'A country' },
   { slug: 'friedrichshain', geo: '/villages/friedrichshain', bucket: 'Berlin district' },
+  // San Francisco sits after Cloudflare Pages' 100-rule `_redirects` boundary
+  // and pins the middleware fallback. Brighton pins a same-name resolution.
+  { slug: 'san-francisco', geo: '/city/san-francisco', bucket: 'late city rule' },
+  { slug: 'brighton', geo: '/city/brighton', bucket: 'same-name city resolution' },
 ];
 
 // The controls are the whole value of this file. "Place tags are deindexed" also passes on a
@@ -62,23 +66,6 @@ const MUST_STAY_INDEXABLE: Array<{ slug: string; why: string }> = [
   {
     slug: 'pennsylvania',
     why: 'bucket E — same shape as california.',
-  },
-  {
-    slug: 'san-francisco',
-    why:
-      'bucket D — matches San Francisco US (665 venues) AND San Francisco AR (0). ' +
-      'Ambiguous same-name matches are deliberately excluded pending review; deindexing ' +
-      'them was NOT authorised by the audit.',
-  },
-  {
-    slug: 'brighton',
-    why:
-      'bucket D — matches Brighton GB (182 venues) AND Brighton CA (1). Listed as a ' +
-      'bucket-C duplicate in the first draft of this spec and caught by prod: the ' +
-      'migration correctly refused it, the spec was wrong. A second ambiguous control ' +
-      'alongside san-francisco, because the two differ in shape — SF has a 665-vs-0 split ' +
-      'that a content-mass rule resolves easily, Brighton is 182-vs-1 and still excluded, ' +
-      'so this pins that the exclusion is on AMBIGUITY, not on the size of the gap.',
   },
   {
     slug: 'travel',

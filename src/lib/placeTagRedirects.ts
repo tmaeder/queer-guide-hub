@@ -13,10 +13,10 @@
  * (functions/_lib/detail.ts), so a tag can only ever redirect to another tag. This is the same
  * shape as `src/lib/mergedVillageRedirects.ts` and exists for the same reason.
  *
- * `public/_redirects` holds the identical pairs as edge 301s and is what serves a cold inbound
- * link — verified live: a Function-routed path still gets the static redirect. This map covers
- * what those rules cannot see: the `/:lang/`-prefixed paths and client-side navigation inside the
- * SPA. `src/lib/__tests__/placeTagRedirects.test.ts` keeps the two in step.
+ * `public/_redirects` holds the identical pairs and serves the first 100 edge rules directly.
+ * Cloudflare silently ignores later entries for this project, so `functions/_middleware.ts`
+ * consumes this same map as the cold-request fallback. The map also covers `/:lang/` paths and
+ * client-side navigation inside the SPA. Tests keep all three surfaces in step.
  *
  * The tags themselves are NOT deleted, merged or deprecated: `unified_tag_assignments`,
  * `usage_count` and the denormalized `events.tags`/`venues.tags` arrays all keep working, so

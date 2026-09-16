@@ -44,6 +44,13 @@ const VALID_STATUSES = new Set([200, 301, 302, 303, 307, 308]);
 // Cloudflare caps these at 100 per project; rules past the cap are dropped.
 const MAX_DYNAMIC_RULES = 100;
 
+// Production measurement on this Pages project (2026-09-16): rule 100
+// (/tags/kolkata) returned its 301, while rule 101 (/tags/kreuzberg) and every
+// later rule returned the SPA shell at 200. Wrangler uploaded the file without
+// a warning. Later exact place-tag rules are safe only because middleware uses
+// the shared canonical map; no other rule may sit beyond this boundary.
+const MAX_EFFECTIVE_REDIRECT_RULES = 100;
+
 // _routes.json limits, mirrored from wrangler's validateRoutes().
 const ROUTES_SPEC_VERSION = 1;
 const MAX_ROUTES_RULES = 100;
@@ -71,6 +78,7 @@ if (existsSync(NOT_FOUND_PAGE)) {
 
 const lines = readFileSync(REDIRECTS, 'utf8').split('\n');
 let dynamicCount = 0;
+const redirectRules = [];
 
 lines.forEach((raw, i) => {
   const lineNo = i + 1;
@@ -84,6 +92,7 @@ lines.forEach((raw, i) => {
   }
 
   const status = statusRaw ? Number(statusRaw) : 302;
+  redirectRules.push({ from, to, status, lineNo, line });
   if (/[*:]/.test(from)) dynamicCount += 1;
 
   if (!VALID_STATUSES.has(status)) {
@@ -197,6 +206,29 @@ if (dynamicCount > MAX_DYNAMIC_RULES) {
   );
 }
 
+const rulesBeyondProjectLimit = redirectRules.slice(MAX_EFFECTIVE_REDIRECT_RULES);
+const unsupportedLateRules = rulesBeyondProjectLimit.filter(
+  ({ from }) => !/^\/tags\/[a-z0-9-]+$/.test(from),
+);
+if (unsupportedLateRules.length) {
+  for (const rule of unsupportedLateRules) {
+    errors.push(
+      `${REDIRECTS}:${rule.lineNo} — rule ${rule.from} is after this Pages project's measured ` +
+        `${MAX_EFFECTIVE_REDIRECT_RULES}-rule boundary and has no middleware fallback. Move it ` +
+        `before the place-tag block or implement an edge fallback.`,
+    );
+  }
+}
+if (rulesBeyondProjectLimit.length) {
+  const middlewareSource = readFileSync('functions/_middleware.ts', 'utf8');
+  if (!middlewareSource.includes('placeTagEdgeLocation(basePath, locale, DEFAULT_LOCALE')) {
+    errors.push(
+      `${REDIRECTS} has ${rulesBeyondProjectLimit.length} place-tag rule(s) beyond the measured ` +
+        `${MAX_EFFECTIVE_REDIRECT_RULES}-rule boundary, but the shared middleware fallback is missing.`,
+    );
+  }
+}
+
 // -------------------------------------------------------------- _routes.json
 
 let routeRuleCount = 0;
@@ -308,6 +340,6 @@ if (errors.length) {
 }
 
 console.log(
-  `Pages routing OK (_redirects: ${dynamicCount} dynamic rules, no catch-all; ` +
+  `Pages routing OK (_redirects: ${redirectRules.length} total / ${dynamicCount} dynamic rules, no catch-all; ` +
     `_routes.json: ${routeRuleCount} rule(s); no 404.html, so Pages' built-in SPA fallback serves index.html).`,
 );

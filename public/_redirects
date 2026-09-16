@@ -78,6 +78,17 @@
 /villages/west-hollywood   /city/west-hollywood   301
 /villages/wilton-manors    /city/wilton-manors    301
 
+# These reader-critical legacy routes MUST stay before the large place-tag
+# block. This Pages project applies only the first 100 `_redirects` entries;
+# later place-tag rules have a middleware fallback, while these routes do not.
+# /help is the canonical crisis hub; /help-hotlines is its legacy URL.
+/help-hotlines   /help          301
+
+# /shop was a subset of /marketplace. Localized paths redirect in the router;
+# keeping the splat here preserves old product-adjacent links.
+/shop            /marketplace   301
+/shop/*          /marketplace   301
+
 # Place-name tags that name a city, country or Berlin district we already publish as its own
 # entity. /tags/<slug> was a second page about the same place, serving encyclopaedic geography
 # under a glossary category; 20270501180000 + 81000101100000 deindexed them, and these send the
@@ -244,25 +255,6 @@
 /tags/west-hollywood       /city/west-hollywood                301
 /tags/wustrow              /city/wustrow-lower-saxony          301
 /tags/zurich               /city/zuerich                       301
-
-# /help is the canonical crisis hub; /help-hotlines is the legacy URL and
-# was never a React Router route, so it rendered the SPA 404 — on the one
-# page where that is least acceptable. It still has inbound links (and the
-# edge HTML in functions/_lib/ linked to it until 2026-08-01), so redirect
-# rather than drop it.
-/help-hotlines   /help          301
-
-# /shop was /marketplace twice — two of its three sections were duplicates of
-# blocks the marketplace landing already rendered, and /marketplace is the
-# superset (every deep route, the slug-redirect table, the search entity).
-# Unprefixed only, deliberately: a `/:lang/shop` rule would ALSO match
-# /marketplace/shop, i.e. a listing whose slug is "shop". Localized paths
-# redirect in the router instead (src/routes.tsx) — same split as /places/*.
-# First match wins in this file: adding a broader rule above these silently
-# stops the 301 and /shop starts serving an SPA hop, which no test can see
-# because _redirects is inert off Cloudflare. scripts/smoke-pages.sh asserts it.
-/shop            /marketplace   301
-/shop/*          /marketplace   301
 
 # ---------------------------------------------------------------------------
 # There is deliberately NO SPA catch-all rule below. Do not add one.

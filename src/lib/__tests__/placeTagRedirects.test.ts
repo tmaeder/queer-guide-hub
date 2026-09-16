@@ -2,19 +2,20 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { PLACE_TAG_REDIRECTS, placeTagRedirect } from '@/lib/placeTagRedirects';
+import { placeTagEdgeLocation } from '../../../functions/_lib/placeTagRedirect';
 
 /**
- * Place-name tag redirects are described in two places that cannot see each other:
- * `public/_redirects` (the edge 301, which is what a cold inbound link and every crawler get) and
- * `PLACE_TAG_REDIRECTS` (the /:lang/ paths and in-app navigation, which _redirects never sees).
- * A pair present in only one of them is a duplicate place page on exactly the surface the other
- * does not cover — which is the defect this whole change exists to remove.
+ * Place-name tag redirects span three surfaces: `public/_redirects` for the first 100 edge rules,
+ * Pages middleware for every cold request beyond that platform boundary, and
+ * `PLACE_TAG_REDIRECTS` for locale-prefixed and in-app navigation. A pair missing from one surface
+ * leaves a duplicate place page there — which is the defect this change exists to remove.
  *
  * Mirrors src/lib/__tests__/mergedVillageRedirects.test.ts, which guards the same split for the
  * 14 hard-merged villages.
  */
 
 const redirects = readFileSync(join(process.cwd(), 'public', '_redirects'), 'utf8');
+const middleware = readFileSync(join(process.cwd(), 'functions', '_middleware.ts'), 'utf8');
 
 /**
  * Only single-segment `/tags/<slug>` rules. `_redirects` also carries `/tags/topic/*` and the
@@ -46,6 +47,25 @@ describe('place tag redirects', () => {
         `_redirects sends /tags/${tagSlug} somewhere the map does not`,
       ).not.toBeNull();
     }
+  });
+
+  it('uses the shared map from Pages middleware when _redirects reaches its rule limit', () => {
+    expect(middleware).toContain("from './_lib/placeTagRedirect'");
+    expect(middleware).toMatch(
+      /placeTagEdgeLocation\(basePath, locale, DEFAULT_LOCALE, url\.search\)/,
+    );
+  });
+
+  it('edge-redirects late rules and preserves locale plus query string', () => {
+    expect(placeTagEdgeLocation('/tags/philadelphia', 'en', 'en')).toBe('/city/philadelphia');
+    expect(placeTagEdgeLocation('/tags/san-francisco', 'de', 'en', '?ref=legacy')).toBe(
+      '/de/city/san-francisco?ref=legacy',
+    );
+  });
+
+  it('does not edge-redirect real glossary terms or category routes', () => {
+    expect(placeTagEdgeLocation('/tags/california', 'en', 'en')).toBeNull();
+    expect(placeTagEdgeLocation('/tags/c/places-scene', 'en', 'en')).toBeNull();
   });
 
   it('sends every target to a real place route, never back into /tags', () => {
