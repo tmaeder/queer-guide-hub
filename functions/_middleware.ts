@@ -55,10 +55,8 @@ import { isLocaleLocalised, LOCALISED_LOCALES } from './_lib/localisedLocales';
 import { resolveDetailRoute, isDetailPath, resolveSlugRedirect } from './_lib/detail';
 import { resolveLandingRoute, isOwnedLandingShape } from './_lib/landing';
 import { bootGuardTag } from './_lib/boot-guard';
-import {
-  applySecurityHeaders,
-  generateCspNonce,
-} from './_lib/securityHeaders';
+import { placeTagEdgeLocation } from './_lib/placeTagRedirect';
+import { applySecurityHeaders, generateCspNonce } from './_lib/securityHeaders';
 import type { Env } from './_lib/sitemap';
 
 // Prefixes that look like static assets. If the SPA catch-all in
@@ -245,6 +243,23 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   // canonical (default-locale) path. Each translated URL keeps its own
   // self-canonical and exposes hreflang alternates to its 10 siblings.
   const { locale, basePath } = splitLocale(pathname);
+
+  // `_redirects` stops applying rules after this project's 100th entry. The
+  // place-tag block straddles that boundary, so later slugs otherwise return
+  // the SPA shell with HTTP 200 and redirect only after JavaScript boots.
+  // Resolve the complete shared map here as a durable edge fallback. Earlier
+  // static rules never reach middleware; handling all entries keeps the two
+  // execution paths equivalent and also gives locale-prefixed URLs a real 301.
+  const placeTagLocation = placeTagEdgeLocation(basePath, locale, DEFAULT_LOCALE, url.search);
+  if (placeTagLocation) {
+    return new Response(null, {
+      status: 301,
+      headers: {
+        Location: placeTagLocation,
+        'Cache-Control': 'public, s-maxage=3600, max-age=600',
+      },
+    });
+  }
 
   // A doubled locale prefix (`/fr/fr/places`, `/it/fr/history`). `splitLocale`
   // strips one, leaving a basePath that still starts with a locale — not a
