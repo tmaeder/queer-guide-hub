@@ -43,6 +43,24 @@ function initialOf(name: string): string {
 }
 
 /**
+ * Sort key for a bucket: "#" files at the END of the index, never the start.
+ *
+ * `localeCompare` alone puts digits and symbols before "A", so the A–Z view
+ * OPENED on the "#" bucket — and measured on prod that bucket is 15 brands of
+ * which 13 are merchant-feed ID artifacts ("12807-203758186"), carrying 143
+ * listings between them. The count ordering had buried them; switching to A–Z
+ * promoted the worst names in the catalogue to the first thing a reader sees.
+ *
+ * Filing them last is also just what a printed index does — numbers and
+ * symbols are the tail. It does NOT fix the underlying data: those 13 rows
+ * should not be in the directory at all, which is a separate decision about
+ * whether to drop, merge or suppress them.
+ */
+function bucketRank(name: string): number {
+  return initialOf(name) === '#' ? 1 : 0;
+}
+
+/**
  * The makers directory — /marketplace/brands.
  *
  * This route did not exist. `/marketplace/brands/:slug` did, so a reader who
@@ -124,9 +142,14 @@ export default function MarketplaceBrands() {
     });
 
     // `brands` already arrives ordered by product_count, so only A–Z re-sorts.
-    // localeCompare so "Ålesund" files next to "Alexander", not after "Zebra".
+    // localeCompare so "Ålesund" files next to "Alexander", not after "Zebra";
+    // bucketRank first so the "#" tail cannot sort ahead of "A".
     return sort === 'az'
-      ? [...rows].sort((a, b) => a.display_name.localeCompare(b.display_name))
+      ? [...rows].sort(
+          (a, b) =>
+            bucketRank(a.display_name) - bucketRank(b.display_name) ||
+            a.display_name.localeCompare(b.display_name),
+        )
       : rows;
   }, [brands, featuredBrands, showCounter, search, ownership, sort, letter]);
 
