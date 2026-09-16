@@ -37,6 +37,7 @@ import { useTranslation } from 'react-i18next';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { fetchTagWithCategories, type TagLegalSourceRow } from '@/hooks/usePageFetchers';
+import { placeTagRedirect } from '@/lib/placeTagRedirects';
 import { TagLegalSource } from '@/components/tags/TagLegalSource';
 import { TagClinicalSource } from '@/components/tags/TagClinicalSource';
 import { buildTagJsonLd } from '@/lib/tags/tagJsonLd';
@@ -154,13 +155,29 @@ export default function TagDetail() {
     }
   }, [decoded, slug, navigate]);
 
+  // Place-name tags leave /tags entirely: this slug names a city, country or district that
+  // already has its own entity, so the tag page was a second page about the same place. See
+  // src/lib/placeTagRedirects.ts for why `tag_slug_redirects` cannot carry this.
+  //
+  // A hard load never reaches React — public/_redirects answers it with a real 301, which is the
+  // version crawlers and link equity need (verified live: a Function-routed path still gets the
+  // static redirect). This covers the two cases those rules cannot see: client-side navigation
+  // inside the SPA, and the /:lang/-prefixed paths, which `useLocalizedNavigate` re-prefixes.
+  //
+  // It runs BEFORE the query rather than after it: firing on the result would fetch a tag we are
+  // about to leave, and would flash its page first.
+  const placeRedirect = placeTagRedirect(slug);
+  useEffect(() => {
+    if (placeRedirect) navigate(placeRedirect, { replace: true });
+  }, [placeRedirect, navigate]);
+
   const {
     data: tag,
     isLoading,
     isError,
   } = useQuery({
     queryKey: ['tag-detail', slug],
-    enabled: !!slug,
+    enabled: !!slug && !placeRedirect,
     staleTime: 5 * 60 * 1000,
     queryFn: async () => ((await fetchTagWithCategories(slug)) as CentralizedTag | null) ?? null,
   });
@@ -213,7 +230,7 @@ export default function TagDetail() {
     data: isGatedTag,
     isPending: gateUnresolved,
     fetchStatus: gateFetchStatus,
-  } = useGatedEntityExists('tag', slug, !isLoading && (isError || !tag));
+  } = useGatedEntityExists('tag', slug, !placeRedirect && !isLoading && (isError || !tag));
   // `isPending` alone is NOT "in flight". A DISABLED React Query sits at
   // status 'pending' forever, and this query is disabled for every signed-in
   // reader (the hook's own `!user`) — so keying the title on `isPending` would
@@ -393,7 +410,9 @@ export default function TagDetail() {
     // own canonical with no robots tag: an indexable soft 404, the same failure
     // that got merged slugs indexed before they were 301'd. `noIndex` is the
     // lever that shuts that off — the canonical cannot be suppressed here.
-    if (isLoading) return { title: t('tags.detail.loading', 'Loading') };
+    if (placeRedirect || isLoading) {
+      return { title: t('tags.detail.loading', 'Loading'), noIndex: true };
+    }
     if (isError || !tag) {
       // `!tag` is TWO different pages for a signed-out reader, and titling both
       // "No such term" is the same wrong answer this page exists to stop
@@ -462,8 +481,23 @@ export default function TagDetail() {
     // `isGatedTag`/`gateIsPending` join them for exactly that reason: they
     // resolve AFTER the first render, so omitting them would freeze the title
     // at the pending value and never reach "Sign in to view this term".
-  }, [tag, publishedSources, isAdult, isLoading, isError, isGatedTag, gateIsPending, t]);
+  }, [
+    tag,
+    publishedSources,
+    isAdult,
+    placeRedirect,
+    isLoading,
+    isError,
+    isGatedTag,
+    gateIsPending,
+    t,
+  ]);
   useMeta(meta);
+
+  // The navigation effect above runs after render. Keep that transition visually and semantically
+  // neutral: the destination is known, so rendering the missing-tag branch in the meantime would
+  // flash a false 404 and expose the wrong page title to assistive technology.
+  if (placeRedirect) return null;
 
   if (isLoading) {
     return (

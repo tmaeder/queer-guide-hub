@@ -10,7 +10,7 @@ Fix the three defects found during review without changing the surrounding featu
 
 ## Implementation
 
-- Amend the unapplied `90000101100000_community_submission_status_reconcile.sql` migration; the linked production migration history has no `90000101100000` row.
+- Amend the unapplied `99000101100000_community_submission_status_reconcile.sql` migration; the linked production migration history has no matching reconciliation migration.
 - Express success precedence explicitly and validate target existence for each supported target table.
 - Extend the migration-structure tests with guards for ranking and target validation.
 - Give `TagDetail` a neutral redirect branch, exclude redirects from the gated lookup, and cover the behavior in its component tests.
