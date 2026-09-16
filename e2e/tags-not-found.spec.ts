@@ -78,16 +78,18 @@ test.describe('@p1-4 /tags/[slug] 404', () => {
   // which would turn all 57 deprecated-target rows into 301s into 404s. Neither
   // half means anything without the other.
   const RENAME_TRAIL = [
-    { from: 'm-nchen', to: 'munich' },
-    { from: 'b-hne', to: 'stage' },
-    { from: 'nonbin-r', to: 'non-binary' },
+    // Munich is itself a place duplicate, so the chain now finishes on the
+    // canonical city rather than stopping at the intermediate glossary tag.
+    { from: 'm-nchen', destination: '/city/munich' },
+    { from: 'b-hne', destination: '/tags/stage' },
+    { from: 'nonbin-r', destination: '/tags/non-binary' },
   ];
 
-  for (const { from, to } of RENAME_TRAIL) {
-    test(`rename-trail /tags/${from} reaches /tags/${to} across the merge`, async ({ page }) => {
+  for (const { from, destination } of RENAME_TRAIL) {
+    test(`rename-trail /tags/${from} reaches ${destination} across the merge`, async ({ page }) => {
       const res = await page.goto(`/tags/${from}`);
       expect(res?.status(), `/tags/${from} must not be a 404`).toBeLessThan(400);
-      await expect(page).toHaveURL(new RegExp(`/tags/${to}(?:[?#]|$)`), { timeout: 10_000 });
+      await expect(page).toHaveURL(new RegExp(`${destination}(?:[?#]|$)`), { timeout: 10_000 });
       await expect(
         page.getByRole('heading', { name: /no stop here|doesn'?t exist|not found|no such term/i }),
       ).toHaveCount(0);
