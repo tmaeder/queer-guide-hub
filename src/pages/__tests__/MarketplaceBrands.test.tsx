@@ -154,8 +154,30 @@ describe('MarketplaceBrands', () => {
 
     const names = screen.getAllByRole('heading', { level: 3 }).map((h) => h.textContent);
     // Diacritics fold, so Åberg files at A and not in the "#" bucket; a name
-    // starting with a digit does land there.
-    expect(names).toEqual(['#', 'A', 'M', 'Z']);
+    // starting with a digit does land there — and lands LAST, see below.
+    expect(names).toEqual(['A', 'M', 'Z', '#']);
+  });
+
+  it('files the "#" bucket at the end of the index, not the front', async () => {
+    // `localeCompare` alone sorts digits and symbols BEFORE "A", so the A–Z
+    // view opened on "#". On prod that bucket is 15 brands of which 13 are
+    // merchant-feed ID artifacts ("12807-203758186"), so switching to A–Z
+    // promoted the worst names in the catalogue to the top of the page.
+    //
+    // Asserted on the ROW order rather than only the headings: a heading list
+    // still reads plausibly if the rows beneath it are interleaved, and the
+    // rows are what the reader actually meets.
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(screen.getByRole('button', { name: 'A–Z' }));
+
+    const rows = screen
+      .getAllByRole('link')
+      .map((a) => a.getAttribute('aria-label'))
+      .filter((n): n is string => DIRECTORY.some((b) => b.display_name === n));
+
+    expect(rows[rows.length - 1]).toBe('4Paws Supply');
+    expect(rows.indexOf('Åberg Atelier')).toBeLessThan(rows.indexOf('4Paws Supply'));
   });
 
   it('clears a letter filter when switching back to the count ordering', async () => {
