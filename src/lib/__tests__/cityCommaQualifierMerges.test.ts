@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards `85000101100000_city_comma_qualifier_merges.sql`.
+ * Guards `99100101100000_city_comma_qualifier_merges.sql`.
  *
  * The standing requirement is that city dedup rests on real geographical
  * sources and never merges two different places. This migration merges the
@@ -22,7 +22,7 @@ const MIGRATION = join(
   process.cwd(),
   'supabase',
   'migrations',
-  '85000101100000_city_comma_qualifier_merges.sql',
+  '99100101100000_city_comma_qualifier_merges.sql',
 );
 
 const raw = readFileSync(MIGRATION, 'utf8');
